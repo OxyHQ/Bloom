@@ -1,9 +1,7 @@
-import { memo, useContext, type ComponentType, type ReactNode } from 'react';
+import { memo, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
-import { EnvContext } from './env';
-import { usePalette } from './paint';
-import { renderBody } from './render';
+import { drawRead } from './render';
 
 const NO_CHILDREN: readonly Child[] = [];
 const NO_PROPS = Object.freeze({});
@@ -23,10 +21,12 @@ const NO_PROPS = Object.freeze({});
  * that node, as a React function component of its own, so hooks work in the
  * body. The component is React's `memo` of its host, compared the way React
  * compares props (key by key, `Object.is` each), so it is ONE fiber, and the
- * body re-runs only when a prop changes, or the theme: the body is a tree of
- * its own, which reads the theme once for every node it paints, as a JSX
- * component that reads it does. The environment (the text traits set above
- * the view, and the `.animation()` in scope) arrives through one context,
+ * body re-runs only when a prop changes, or what its tree reads: the body is a
+ * tree of its own, which reads the theme once for every node it paints, as a
+ * JSX component that reads it does, and none when nothing in it paints from
+ * the theme. The environment (the text traits set above the view, the values
+ * `.environment()` and `.disabled()` set, and the `.animation()` in scope)
+ * arrives through one context, read when something in the tree takes from it,
  * which changes only where an environment modifier or a scope changes it.
  *
  * A body may return a function that builds its tree instead of the tree:
@@ -48,10 +48,8 @@ export function view<P extends object = Record<string, never>>(
   // module scope, never inside a render.
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
-    const env = useContext(EnvContext);
-    const palette = usePalette();
     const built = body(props);
-    return renderBody(typeof built === 'function' ? built() : built, env, env.animation, palette);
+    return drawRead(typeof built === 'function' ? built() : built);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;

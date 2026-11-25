@@ -5,19 +5,21 @@
  *
  * A node is measured as the marginal cost of drawing it inside a container,
  * the language's (`VStack(node)` less `VStack()`) beside the JSX's
- * (`<View>{jsx}</View>` less `<View />`), so the boundary into the language
- * is counted once, by itself: a `toElement` root reads the environment (which
- * carries the animation scope) and the theme, once for the whole tree, and
- * holds no hook.
+ * (`<View>{jsx}</View>` less `<View />`), under a boundary held to reading
+ * both contexts, so the boundary into the language is counted by itself: a
+ * `toElement` root reads the environment (which carries the animation scope)
+ * when its tree takes from it, and the theme when its tree paints from it,
+ * once each for the whole tree, and holds no hook: a tree that reads neither
+ * costs the boundary's fiber alone.
  *
  * The JSX is a component that reads the theme once, as an app's does
  * (`Themed`: one `useThemePaint()`), and paints its colours from it by hand,
  * so a node that paints costs what the host it paints does, no more.
  */
-import { createElement, type ReactElement, type ReactNode } from 'react';
+import { createElement, memo, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
-import { BloomThemeProvider } from '@oxy.so/bloom/theme';
+import { BloomThemeProvider, useThemePaint } from '@oxy.so/bloom/theme';
 import { Button } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
@@ -30,6 +32,7 @@ import * as L from '../src/primitives';
 import { defineTokens } from '../src/tokens';
 import { VirtualList as LVirtualList } from '../src/controls/list';
 import { LanguageRoot, toElement } from '../src/render';
+import { view } from '../src/view';
 import type { ThemeColors } from '@oxy.so/bloom/theme';
 import { Themed } from './support/cases';
 
@@ -112,13 +115,24 @@ interface Case {
   in?: { language: (...children: Child[]) => Child; jsx: (children?: ReactNode) => ReactElement };
 }
 
+/**
+ * A child that makes the boundary read both contexts and draws nothing (an
+ * `Embed` render function draws in its tree's context), so each case measures
+ * its node alone, whatever its own tree would read.
+ */
+const READS_BOTH = L.Embed(() => null);
+
 const STACK = {
-  language: (...children: Child[]) => L.VStack(...children),
+  language: (...children: Child[]) => L.VStack(...children, READS_BOTH),
   jsx: (children?: ReactNode) => <RN.View>{children}</RN.View>,
 };
 const ACTION_BAR = {
-  language: (...children: Child[]) => L.ActionBar(...children),
-  jsx: (children?: ReactNode) => <EngagementBar>{children}</EngagementBar>,
+  language: (...children: Child[]) => L.VStack(L.ActionBar(...children), READS_BOTH),
+  jsx: (children?: ReactNode) => (
+    <RN.View>
+      <EngagementBar>{children}</EngagementBar>
+    </RN.View>
+  ),
 };
 
 /** An app colour (`defineTokens`), the same in both schemes: Mention's verified badge. */
@@ -364,9 +378,121 @@ describe('a language node costs React what the JSX it stands for costs', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('the boundary into the language: the environment and the theme read once, no hook, one fiber', () => {
-    const root = less(measured(toElement(L.VStack())), measured(<RN.View />));
-    expect(root).toEqual({ fibers: 1, hooks: 0, contexts: 2 });
+  it('a root reads only what its tree takes, once each, and holds no hook', () => {
+    const boundary = (node: Child, jsx: ReactElement) =>
+      less(measured(toElement(node)), measured(jsx));
+    // Fixed geometry: the boundary's fiber alone.
+    expect(
+      boundary(L.VStack().frame({ width: '120' }), <RN.View style={{ width: 120 }} />),
+    ).toEqual({ fibers: 1, hooks: 0, contexts: 0 });
+    // A press: the environment, which hands it a `.disabled()` set above.
+    expect(boundary(L.VStack().onPress(onPress), <RN.Pressable onPress={onPress} />)).toEqual({
+      fibers: 1,
+      hooks: 0,
+      contexts: 1,
+    });
+    // A themed fill: the theme, as a component that reads it to paint a View does.
+    expect(
+      boundary(
+        L.VStack().background('surface'),
+        <Themed>{(c) => <RN.View style={{ backgroundColor: c.backgroundSecondary }} />}</Themed>,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // A text: the traits set above it and the theme it inks with.
+    expect(boundary(L.Text('a'), <Text>a</Text>)).toEqual({ fibers: 1, hooks: 0, contexts: 2 });
+  });
+
+  it('the compiler’s root reads what its tree takes, as toElement’s does', () => {
+    const compiled = (build: () => Child) => createElement(LanguageRoot, { build });
+    expect(less(measured(compiled(() => L.VStack())), measured(<RN.View />))).toEqual({
+      fibers: 1,
+      hooks: 0,
+      contexts: 0,
+    });
+    expect(less(measured(compiled(() => L.Text('a'))), measured(<Text>a</Text>))).toEqual({
+      fibers: 1,
+      hooks: 0,
+      contexts: 2,
+    });
+  });
+
+  it('Mention’s feed video preview as one root: a tap area and a mute button, against its JSX', () => {
+    // VideoPlayer's preview: the tap area over the whole surface, and the mute
+    // button above it, drawn among the player's other children (its video, its
+    // poster), where the JSX's fragment is a fiber of its own.
+    const tapArea = L.VStack()
+      .position({ top: 'none', right: 'none', bottom: 'none', left: 'none' })
+      .zIndex('raised')
+      .onPress(onPress);
+    const mute = L.VStack(
+      L.VStack(L.Icon(RiVolumeMuteLine).size('18').foreground('white'))
+        .frame({ width: '3xl', height: '3xl' })
+        .background('black/60')
+        .border('white/20', 'thin')
+        .corner('full')
+        .justify('center')
+        .align('center'),
+    )
+      .position({ bottom: '10', right: '10' })
+      .zIndex('2')
+      .onPress(onPress)
+      .hitSlop('md');
+    const video = <RN.View testID="video" />;
+    const language = measured(
+      <>
+        {video}
+        {createElement(LanguageRoot, { build: () => L.Group(tapArea, mute) })}
+      </>,
+    );
+    const jsx = measured(
+      <>
+        {video}
+        <>
+          <RN.Pressable style={FEED.tapArea} onPress={onPress} />
+          <RN.Pressable onPress={onPress} hitSlop={8} style={FEED.mute}>
+            <RN.View style={FEED.muteDisc}>
+              <RiVolumeMuteLine size={18} fill="#ffffff" />
+            </RN.View>
+          </RN.Pressable>
+        </>
+      </>,
+    );
+    // The root is the fragment's fiber, and paints nothing from the theme; its one
+    // read is the environment its presses take (a `.disabled()` set above them).
+    expect(language).toEqual({ ...jsx, contexts: jsx.contexts + 1 });
+  });
+
+  it('a view() body reads what its tree takes, as the memo component it stands for', () => {
+    // Mention's PresenceIndicator: a dot in an app colour, ringed in a role.
+    const Dot = view(() =>
+      L.VStack()
+        .frame({ width: '10', height: '10' })
+        .background(APP.color.verified)
+        .border('background', 'thin')
+        .corner('full'),
+    );
+    const ThemedDot = memo(function ThemedDot() {
+      const c = useThemePaint();
+      return (
+        <RN.View
+          style={{
+            width: 10,
+            height: 10,
+            backgroundColor: '#1d9bf0',
+            borderWidth: 1,
+            borderColor: c.background,
+            borderRadius: 9999,
+          }}
+        />
+      );
+    });
+    expect(measured(toElement(Dot()))).toEqual(measured(<ThemedDot />));
+    // Mention's EmptyStateSticker frame: fixed geometry reads nothing.
+    const Frame = view(() => L.VStack().frame({ width: '120', height: '120' }));
+    const PlainFrame = memo(function PlainFrame() {
+      return <RN.View style={{ width: 120, height: 120 }} />;
+    });
+    expect(measured(toElement(Frame()))).toEqual(measured(<PlainFrame />));
   });
 
   it('a list’s painted row that returns a root (toElement) and a row of themed JSX, per row', () => {

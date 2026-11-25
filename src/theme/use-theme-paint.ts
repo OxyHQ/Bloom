@@ -1,10 +1,11 @@
-import { createElement, type DependencyList, useContext, useId, useMemo } from 'react';
+import { createElement, type DependencyList, use, useContext, useId, useMemo } from 'react';
 import { Platform } from 'react-native';
+import { BloomThemeContext } from './BloomThemeProvider';
 import { useTheme } from './use-theme';
 import { ThemeScopeContext } from './color-scope/context';
-import { usePrepaintThemeConfig } from './prepaint/context';
+import { PrepaintThemeContext, usePrepaintThemeConfig } from './prepaint/context';
 import { usePaintColors } from './prepaint/use-paint-colors';
-import { themePaintRecipe, themePaintCss, presetPaintCss } from './paint';
+import { themePaintColors, themePaintRecipe, themePaintCss, presetPaintCss } from './paint';
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
 import { ServerStyleSheetFactory } from '../styles/ServerStyleSheetFactory';
 import type { Theme, ThemeColors } from './types';
@@ -91,4 +92,26 @@ export function useThemePaint(): ThemeColors {
   const paint = usePaintColors(useTheme().colors);
   if (!paint) throw new Error('useThemePaint must be used within a <BloomThemeProvider>');
   return paint;
+}
+
+const paints = new WeakMap<ThemeColors, ThemeColors>();
+
+/**
+ * `useTheme()` and `useThemePaint()` in one read, through React's `use`: not a
+ * hook, so a renderer that draws from a tree it builds (the Bloom language's
+ * roots and `view()` bodies) reads the theme only when that tree paints from
+ * it. Called during render, as a hook is. One context read natively, two on
+ * the web (the theme and its prepaint).
+ */
+export function readThemePaint(): { readonly theme: Theme; readonly paint: ThemeColors } {
+  const theme = use(BloomThemeContext)?.theme;
+  if (!theme) throw new Error('useTheme must be used within a <BloomThemeProvider>');
+  if (Platform.OS !== 'web' || use(PrepaintThemeContext) === undefined)
+    return { theme, paint: theme.colors };
+  let paint = paints.get(theme.colors);
+  if (paint === undefined) {
+    paint = themePaintColors(theme.colors);
+    paints.set(theme.colors, paint);
+  }
+  return { theme, paint };
 }

@@ -2099,6 +2099,8 @@ export interface Rendered {
 export class Node {
   /** The render memo (see `Rendered`). Internal to the renderer; not part of the node's value. */
   rendered: Rendered | undefined = undefined;
+  /** What the tree reads where it starts (the renderer's `readsOf`), once known. Internal to the renderer. */
+  reads: number | undefined = undefined;
 
   constructor(
     readonly kind: NodeKind,

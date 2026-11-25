@@ -25,6 +25,7 @@ import {
 } from '../primitives';
 import { LanguageRoot, toElement } from '../render';
 import { view } from '../view';
+import { defineEnvironment, useEnvironment } from '../environment';
 import { defineTokens } from '../tokens';
 import { clear, regular } from '../glass';
 import type { Child } from '../node';
@@ -684,6 +685,47 @@ describe('the cost of a view and of a theme switch', () => {
     expect(x?.props.style.color).toBe(LIGHT.textSecondary);
     // Outside the changed environment, Bloom's Text keeps its own ink.
     expect(y?.props.style).toBeUndefined();
+  });
+
+  it('a root that reads nothing still hands what is set above it to the trees inside it', () => {
+    const tone = defineEnvironment('render-test-tone', 'plain');
+    const Reader = view(function Reader() {
+      return Text(useEnvironment(tone));
+    });
+    // The inner root is fixed geometry around a view(): it reads no context itself.
+    const inner = toElement(VStack(Reader()).frame({ width: '120' }));
+    // An app's component between them, which a view() body places.
+    const Holder = view(() => Embed(createElement(Wrapper, null, inner)));
+    const r = mount(toElement(VStack(Holder()).environment(tone, 'loud')));
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['loud']);
+  });
+
+  it('a press in a root placed under a disabled view takes its disabled', () => {
+    const onPress = jest.fn();
+    const inner = toElement(VStack().frame({ width: '120' }).onPress(onPress));
+    const Holder = view(() => Embed(createElement(Wrapper, null, inner)));
+    const r = mount(toElement(VStack(Holder()).disabled()));
+    expect(hosts(r, 'Pressable')[0]?.props.disabled).toBe(true);
+  });
+
+  it('a root that comes to read the environment keeps the views inside it mounted', () => {
+    const Holder = view(function Holder({ inner }: { inner: ReactElement }) {
+      return Embed(createElement(Wrapper, null, inner));
+    });
+    // No read, then a text that reads it, under an inherited disabled: the counter keeps its count.
+    const tree = (hint: boolean) =>
+      toElement(
+        VStack(
+          Holder({
+            inner: toElement(VStack(Counter({ label: 'kept' }), hint && Text('Required'))),
+          }),
+        ).disabled(false),
+      );
+    const r = mount(tree(false));
+    act(() => press());
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1']);
+    update(r, tree(true));
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1', 'Required']);
   });
 
   it('a node that keeps its identity renders the same element, so React skips it', () => {

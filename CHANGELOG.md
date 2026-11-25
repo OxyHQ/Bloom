@@ -10,6 +10,10 @@
 
 The Bloom language 1.5.1 (`@oxy.so/bloom-language`) ships beside it.
 
+### Added
+
+- `readThemePaint()` (`@oxy.so/bloom/theme`): `useTheme()` and `useThemePaint()` in one read through React's `use`, not a hook, so a renderer that draws from a tree it builds reads the theme only when that tree paints from it. The Bloom language's roots and `view()` bodies read it so; the language's next release needs this Bloom.
+
 ### Fixed
 
 - A stack scene (`stackSceneLayout`) is always its own native parent. Fabric mounts the children of a view that only paints (its fill, no stacking context) straight into the view above it, and the accessibility props a covered scene takes make it a stacking context: every push moved the whole covered screen from the native screen into the scene, and every Back moved it out again, each a detach and an attach of every view in it, which then recorded all of it again and rebuilt each glass control's shaders. On a Pixel 8a that was about 50 ms of each Mention post push's mount frame (Home, about a thousand views) and about as much of each Back. Covering a scene now only updates its props.

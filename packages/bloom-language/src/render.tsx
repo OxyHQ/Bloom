@@ -4,6 +4,7 @@ import {
   createElement,
   Fragment,
   isValidElement,
+  use,
   useContext,
   type ComponentType,
   type ReactElement,
@@ -187,8 +188,9 @@ import {
   type ListColor,
   isSurfaceFill,
   paintedLeaf,
+  NO_PALETTE,
   type Palette,
-  usePalette,
+  readPalette,
   paintsSurface,
   surfaced,
   composeGeometry,
@@ -754,7 +756,14 @@ function plan(node: Node, env: Env): Plan {
     }
     // `disabled` is the view's own, and the environment of everything inside it,
     // except inside a Bloom component that takes it itself (see `handsDownDisabled`).
-    if (modifier.kind === 'disabled' && handsDownDisabled(node.kind)) result.env.push(modifier);
+    // One it inherits is already that environment: handed down again, it would only
+    // derive an equal one (and a provider around a `view()` inside it).
+    if (
+      modifier.kind === 'disabled' &&
+      handsDownDisabled(node.kind) &&
+      !(inherited.length > 0 && inherited.includes(modifier))
+    )
+      result.env.push(modifier);
     switch (modifier.kind) {
       case 'grow':
       case 'shrink':
@@ -3801,7 +3810,7 @@ function renderRuns(runs: readonly TextRun[], ctx: Context): ReactNode[] {
  * preset of its own), whose theme is not the tree's around it.
  */
 function Retheme({ child, ctx }: { child: Child; ctx: Context }): ReactNode {
-  return renderChild(child, { ...ctx, palette: usePalette() }, undefined);
+  return renderChild(child, { ...ctx, palette: readPalette() }, undefined);
 }
 Retheme.displayName = 'BloomLanguage';
 
@@ -3866,15 +3875,180 @@ function drawEmbedded(content: ReactNode, ctx: Context): ReactNode {
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
-  // Two contexts: the environment, with the animation scope it carries, and
-  // the theme, read once for every node of the tree that paints.
-  const env = useContext(EnvContext);
-  const palette = usePalette();
   if (build !== undefined) adoptLanguageSheet();
   const tree = build === undefined ? node : build();
-  return renderBody(tree ?? null, env, env.animation, palette);
+  return drawRead(tree ?? null);
 }
 LanguageRoot.displayName = 'BloomLanguage';
+
+/**
+ * A tree drawn where it starts (a root, a `view()` body), reading only what
+ * it takes (`readsOf`): the environment, with the animation scope it carries,
+ * when something in it takes a value set above it; the theme, once, when
+ * something in it paints from it. React's `use` reads each, so what a tree
+ * reads may change from one render to the next.
+ */
+export function drawRead(tree: Child): ReactNode {
+  const reads = readsOf(tree);
+  const env = reads & READS_ENVIRONMENT ? use(EnvContext) : ROOT_ENV;
+  const palette = reads & READS_THEME ? readPalette() : NO_PALETTE;
+  return renderBody(tree, env, env.animation, palette);
+}
+
+/** A tree takes a value set above it (an `.environment()`, a `.disabled()`, a navigator, a text trait, an `.animation()`). */
+const READS_ENVIRONMENT = 1;
+/** A tree paints from the theme. */
+const READS_THEME = 2;
+const READS_BOTH = READS_ENVIRONMENT | READS_THEME;
+
+/**
+ * What a tree reads where it starts (`READS_ENVIRONMENT`, `READS_THEME`),
+ * known from its nodes alone, remembered on each node (a hoisted chain is
+ * classified once). It is exact for the nodes that draw only what they are
+ * given (stacks, spacers, groups, glyphs, embedded elements, `view()` nodes,
+ * which read their own) and the modifiers that place, size, name or fill them
+ * with a colour that is not the theme's; any other node or modifier reads both.
+ * A tree that reads neither is drawn with the root environment and no palette,
+ * and a `view()` inside it reads what is provided above, as it would anyway.
+ */
+function readsOf(child: Child): number {
+  if (Array.isArray(child)) {
+    let reads = 0;
+    for (const item of child) reads |= readsOf(item);
+    return reads;
+  }
+  if (!isNode(child)) return 0;
+  let reads = child.reads;
+  if (reads === undefined) {
+    reads = nodeReads(child);
+    child.reads = reads;
+  }
+  return reads;
+}
+
+function nodeReads(node: Node): number {
+  switch (node.kind) {
+    case 'stack':
+    case 'zstack':
+    case 'spacer':
+    case 'group':
+    case 'view':
+      break;
+    case 'icon':
+      // A glyph fills with the foreground set above it unless it names its own.
+      if (!node.modifiers.some((modifier) => modifier.kind === 'foreground')) return READS_BOTH;
+      break;
+    case 'embed': {
+      // A render function draws nodes in this tree's context; a root placed here is drawn as part of it.
+      const { content } = node.props as EmbedProps;
+      if (typeof content === 'function') return READS_BOTH;
+      if (isValidElement(content) && content.type === LanguageRoot) return READS_BOTH;
+      break;
+    }
+    default:
+      return READS_BOTH;
+  }
+  let reads = modifierReads(node.kind, node.modifiers);
+  for (const child of node.children) {
+    if (reads === READS_BOTH) break;
+    reads |= readsOf(child);
+  }
+  return reads;
+}
+
+/** Modifiers that place, size or name a view, read nothing from where it is drawn. */
+const READS_NOTHING: ReadonlySet<string> = new Set([
+  'padding',
+  'frame',
+  'aspectRatio',
+  'corner',
+  'cornerCurve',
+  'clipped',
+  'borderStyle',
+  'grow',
+  'shrink',
+  'alignSelf',
+  'position',
+  'sticky',
+  'zIndex',
+  'hidden',
+  'basis',
+  'flex',
+  'margin',
+  'allowsHitTesting',
+  'accessibilityOnly',
+  'spacing',
+  'horizontalSpacing',
+  'verticalSpacing',
+  'childSpacing',
+  'align',
+  'justify',
+  'wrap',
+  'axis',
+  'alignment',
+  'size',
+  'label',
+  'hint',
+  'role',
+  'testID',
+  'id',
+  'hitSlop',
+  'accessibilityState',
+  'accessibilityValue',
+  'liveRegion',
+  'accessibilityHidden',
+  'accessibilityElement',
+  'focusable',
+  'collapsable',
+  'ref',
+  'onLayout',
+]);
+
+/** A platform or the app's own boolean: settled when the view renders, from nothing it reads. */
+const SETTLED_CONDITIONS: ReadonlySet<unknown> = new Set([
+  'web',
+  'native',
+  'ios',
+  'android',
+  true,
+  false,
+]);
+
+function modifierReads(kind: NodeKind, modifiers: readonly Modifier[]): number {
+  let reads = 0;
+  for (const modifier of modifiers) {
+    if (READS_NOTHING.has(modifier.kind)) continue;
+    switch (modifier.kind) {
+      case 'background':
+      case 'border':
+        if (!themeFree(modifier.value)) reads |= READS_THEME;
+        continue;
+      case 'foreground':
+        // A glyph's own fill; anywhere else it is a trait handed down, set over the one above.
+        if (kind !== 'icon') return READS_BOTH;
+        if (!isAppColor(modifier.value) && fixedInk(modifier.value) === undefined)
+          reads |= READS_THEME;
+        continue;
+      case 'onPress':
+      case 'onLongPress':
+        // A press takes a `.disabled()` set above it, and a `navigate()` the navigator.
+        reads |= READS_ENVIRONMENT;
+        continue;
+      case 'when':
+        if (!SETTLED_CONDITIONS.has(modifier.condition)) return READS_BOTH;
+        reads |= modifierReads(kind, modifier.modifiers);
+        continue;
+      default:
+        return READS_BOTH;
+    }
+  }
+  return reads;
+}
+
+/** A fill or an edge colour drawn as it is: an app's own colour, a fixed role natively (`fixedInk`). */
+function themeFree(value: InkToken): boolean {
+  return isAppColor(value) || fixedInk(value) !== undefined;
+}
 
 /** Whether a `LanguageStyles` around this point writes the sheets into server-rendered HTML. */
 const SheetsWritten = createContext(false);
@@ -3901,7 +4075,9 @@ function LanguageSheets(): ReactNode {
 
 /**
  * A language tree as a React element, for JSX. A bare `view()` node mounts its
- * component directly; anything else goes under one boundary component.
+ * component directly; anything else goes under one boundary component, which
+ * reads only what its tree takes (`drawRead`). It stays one component whatever
+ * the tree reads, so a tree that comes to read more keeps its state.
  */
 export function toElement(node: Child, key?: string | number): ReactElement {
   adoptLanguageSheet();

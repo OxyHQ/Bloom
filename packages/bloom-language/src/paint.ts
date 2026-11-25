@@ -11,8 +11,7 @@ import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
 import { useSurfaceFill } from '@oxy.so/bloom/styles';
 import {
   parseRgb,
-  useTheme,
-  useThemePaint,
+  readThemePaint,
   withAlpha,
   type Theme,
   type ThemeColors,
@@ -332,13 +331,29 @@ function paletteOf(paint: ThemeColors, theme: Theme): Palette {
   return palette;
 }
 
-/** The palette where a tree starts: the language's one theme read per tree. */
-export const usePalette: () => Palette = IS_WEB
-  ? () => paletteOf(useThemePaint(), useTheme())
-  : () => {
-      const theme = useTheme();
-      return paletteOf(theme.colors, theme);
-    };
+/**
+ * The palette where a tree starts: the language's one theme read per tree,
+ * through React's `use` (Bloom's `readThemePaint`), so a root or a `view()`
+ * body whose tree paints nothing from the theme reads none (`readsOf`).
+ */
+export function readPalette(): Palette {
+  const { paint, theme } = readThemePaint();
+  return paletteOf(paint, theme);
+}
+
+/**
+ * What a tree is handed when nothing in it paints from the theme (`readsOf`):
+ * reading it is a renderer bug, named rather than painted from a theme that was
+ * never read.
+ */
+export const NO_PALETTE: Palette = Object.freeze({
+  get paint(): ThemeColors {
+    throw new Error('[Bloom language] a tree that reads no theme painted from it (readsOf)');
+  },
+  get theme(): Theme {
+    throw new Error('[Bloom language] a tree that reads no theme painted from it (readsOf)');
+  },
+});
 
 export interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;

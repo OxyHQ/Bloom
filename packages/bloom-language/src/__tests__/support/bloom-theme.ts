@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use, useContext } from 'react';
 
 export type ThemeColors = Record<string, string>;
 export type AccentTone = 'default' | 'primary' | 'success' | 'error';
@@ -47,4 +47,19 @@ export function useTheme(): { colors: ThemeColors; isDark: boolean } {
     themes.set(colors, theme);
   }
   return theme;
+}
+
+/** Stands in for `readThemePaint`: `useTheme()` and `useThemePaint()` in one read, through `use`. */
+export function readThemePaint(): {
+  theme: { colors: ThemeColors; isDark: boolean };
+  paint: ThemeColors;
+} {
+  const paint = use(PaintContext);
+  const colors = use(RgbContext) ?? paint;
+  let theme = themes.get(colors);
+  if (theme === undefined) {
+    theme = { colors, isDark: colors === DARK };
+    themes.set(colors, theme);
+  }
+  return { theme, paint };
 }
