@@ -751,7 +751,8 @@ function plan(node: Node, env: Env): Plan {
     }
     if (modifier.kind === 'when') {
       const condition = settle(modifier.condition, disabled);
-      if (condition !== false) planVariant(result, condition, modifier.modifiers, disabled);
+      if (condition !== false)
+        planVariant(result, condition, modifier.modifiers, disabled, node.kind);
       continue;
     }
     if (ENV_KINDS.has(modifier.kind)) {
@@ -893,6 +894,7 @@ function planVariant(
   condition: Planned,
   modifiers: readonly Modifier[],
   disabled: boolean,
+  kind: NodeKind,
 ): void {
   for (const term of condition === null ? [] : termsOf(condition)) {
     if (STATES.has(term) && !result.states.includes(term)) result.states.push(term);
@@ -902,14 +904,14 @@ function planVariant(
       // A variant inside a variant holds while both conditions do.
       const inner = settle(modifier.condition, disabled);
       if (inner !== false)
-        planVariant(result, both(condition, inner), modifier.modifiers, disabled);
+        planVariant(result, both(condition, inner), modifier.modifiers, disabled, kind);
       continue;
     }
     if (!varies(modifier)) {
       // A condition that holds as the view renders (web, native, a platform,
       // disabled) is the chain's own: what no live variant changes applies as
       // if chained there (`when('web', (v) => v.noWrap())`).
-      if (condition === null && heldAsOwn(result, modifier)) continue;
+      if (condition === null && heldAsOwn(result, modifier, kind)) continue;
       warnNotVaried(modifier);
       continue;
     }
@@ -945,12 +947,16 @@ const NOT_HELD: ReadonlySet<string> = new Set(NOT_HELD_MODIFIERS);
  * trait joins the environment, a stack's layout its own, any other the
  * chain's own modifiers. A box layer or a placement is left out (it stacks).
  */
-function heldAsOwn(result: Plan, modifier: Modifier): boolean {
+function heldAsOwn(result: Plan, modifier: Modifier, kind: NodeKind): boolean {
   if (NOT_HELD.has(modifier.kind)) return false;
   if (ENV_KINDS.has(modifier.kind)) result.env.push(modifier);
   else if (STACK_KINDS.has(modifier.kind))
     result.hostVariants.push([null, modifier as StackModifier]);
-  else result.own.set(modifier.kind, modifier);
+  else {
+    result.own.set(modifier.kind, modifier);
+    // A held `disabled` reaches what is inside the view as one chained there does.
+    if (modifier.kind === 'disabled' && handsDownDisabled(kind)) result.env.push(modifier);
+  }
   return true;
 }
 
