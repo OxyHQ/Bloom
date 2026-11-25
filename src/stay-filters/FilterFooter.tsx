@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Button } from '../button';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useMessages } from '../locale/messages';
 import { STAY_FILTERS_MESSAGES } from './messages';
 import type { FilterFooterProps } from './types';
@@ -34,7 +34,7 @@ function FilterFooterComponent({
 }: FilterFooterProps) {
   const { messages } = useMessages(STAY_FILTERS_MESSAGES);
   const clearLabel = clearLabelProp ?? messages.clearAll;
-  const theme = useTheme();
+  const tokens = useColorTokens();
 
   return (
     <View
@@ -50,8 +50,8 @@ function FilterFooterComponent({
           paddingLeft: 24,
           paddingRight: 24,
           borderTopWidth: 1,
-          borderTopColor: theme.colors.border,
-          backgroundColor: theme.colors.background,
+          borderTopColor: tokens.border,
+          backgroundColor: tokens.background,
         },
         style,
       ]}

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Switch } from '../switch';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { SwitchFilterRowProps } from './types';
 
@@ -24,21 +24,21 @@ function SwitchFilterRowComponent({
   style,
   testID,
 }: SwitchFilterRowProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : undefined);
 
   return (
     <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 16 }, style]}>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         {typeof title === 'string' ? (
-          <Text variant="body-medium" style={{ color: theme.colors.text }}>
+          <Text variant="body-medium" style={{ color: tokens.foreground }}>
             {title}
           </Text>
         ) : (
           title
         )}
         {description == null ? null : typeof description === 'string' ? (
-          <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
             {description}
           </Text>
         ) : (

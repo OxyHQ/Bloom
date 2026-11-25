@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { DatePicker } from '../date-picker';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { SwitchFilterRow } from './SwitchFilterRow';
 import { useMessages } from '../locale/messages';
@@ -39,7 +39,7 @@ function AvailabilityFilterComponent({
   const availableNowDescription = availableNowDescriptionProp ?? messages.availableNowDescription;
   const dateLabel = dateLabelProp ?? messages.availableFrom;
   const datePlaceholder = datePlaceholderProp ?? messages.anyDate;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   return (
     <View testID={testID} style={[{ gap: 24 }, style]}>
       <SwitchFilterRow
@@ -56,7 +56,7 @@ function AvailabilityFilterComponent({
           style={{
             flex: 1,
             minWidth: 0,
-            color: availableNow ? theme.colors.textSecondary : theme.colors.text,
+            color: availableNow ? tokens.mutedForeground : tokens.foreground,
           }}
         >
           {dateLabel}

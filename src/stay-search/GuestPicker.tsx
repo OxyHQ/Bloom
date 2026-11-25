@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Button } from '../button';
 
 import { StepperRow } from '../stepper';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { GUEST_KINDS } from './constants';
 import { STAY_SEARCH_MESSAGES } from './messages';
@@ -55,7 +55,7 @@ function GuestPickerComponent({
   const common = useCommonMessages();
   const { messages } = useMessages(STAY_SEARCH_MESSAGES);
   const closeLabel = closeLabelProp ?? common.close;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const contextClose = useGuestPickerClose();
   const close = onClose ?? contextClose;
   const counted = COUNTED.reduce((sum, kind) => sum + value[kind], 0);
@@ -95,10 +95,7 @@ function GuestPickerComponent({
       })}
       {note != null ? (
         typeof note === 'string' ? (
-          <Text
-            variant="body-2-regular"
-            style={{ color: theme.colors.textSecondary, paddingTop: 8 }}
-          >
+          <Text variant="body-2-regular" style={{ color: tokens.mutedForeground, paddingTop: 8 }}>
             {note}
           </Text>
         ) : (

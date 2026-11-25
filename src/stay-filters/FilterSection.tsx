@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { FilterSectionProps } from './types';
 
@@ -28,7 +28,7 @@ function FilterSectionComponent({
   style,
   testID,
 }: FilterSectionProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : undefined);
 
   return (
@@ -42,7 +42,7 @@ function FilterSectionComponent({
           paddingTop: 32,
           paddingBottom: 32,
           borderBottomWidth: divider ? 1 : 0,
-          borderBottomColor: theme.colors.border,
+          borderBottomColor: tokens.border,
         },
         style,
       ]}
@@ -53,7 +53,7 @@ function FilterSectionComponent({
             variant="headline-semibold"
             role="heading"
             aria-level={3}
-            style={{ color: theme.colors.text }}
+            style={{ color: tokens.foreground }}
           >
             {title}
           </Text>
@@ -61,7 +61,7 @@ function FilterSectionComponent({
           title
         )}
         {description == null ? null : typeof description === 'string' ? (
-          <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
             {description}
           </Text>
         ) : (
