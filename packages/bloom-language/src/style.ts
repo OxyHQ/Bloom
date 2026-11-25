@@ -24,6 +24,7 @@ import {
   SHRINK,
   FLEX,
   Z_INDEX,
+  TEXT_SHADOW,
   resolveBorderWidth,
   INFINITE_RADIUS,
   resolveCorner,
@@ -41,6 +42,8 @@ import {
   type Justify,
   type OverlayAlignment,
   type ZIndexValue,
+  type StickyEdge,
+  type TextShadowName,
   type ShadowName,
   type ColorName,
   type AppToken,
@@ -848,6 +851,8 @@ export interface Placement {
   shrink: ShrinkPriority | undefined;
   alignSelf: Alignment | undefined;
   position: PositionEdges | undefined;
+  /** `.sticky(edge)`: the web's `position: sticky` at that edge; native has none. */
+  sticky: StickyEdge | undefined;
   zIndex: ZIndexValue | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
@@ -878,6 +883,7 @@ export type PlaceModifier = Extract<
       | 'shrink'
       | 'alignSelf'
       | 'position'
+      | 'sticky'
       | 'zIndex'
       | 'hidden'
       | 'basis'
@@ -893,6 +899,7 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'shrink',
   'alignSelf',
   'position',
+  'sticky',
   'zIndex',
   'hidden',
   'basis',
@@ -971,6 +978,7 @@ export function emptyPlacement(): Placement {
     shrink: undefined,
     alignSelf: undefined,
     position: undefined,
+    sticky: undefined,
     zIndex: undefined,
     hidden: undefined,
     basis: undefined,
@@ -1013,6 +1021,8 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
   trailing: 'end',
   left: 'left',
   right: 'right',
+  horizontal: 'insetInline',
+  vertical: 'insetBlock',
 };
 
 /** Tailwind's flex utility as the longhands NativeWind writes. */
@@ -1082,6 +1092,11 @@ export function placeStyle(place: Placement): Resolved {
       const token = place.position[edge];
       if (token !== undefined) style[POSITION_EDGE[edge]] = resolveEdge(token);
     }
+  }
+  // React Native has no sticky position (Yoga lays out static, relative and absolute views).
+  if (place.sticky !== undefined && IS_WEB) {
+    style.position = 'sticky';
+    style[place.sticky] = 0;
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
   if (place.geometry !== undefined) Object.assign(style, place.geometry);
@@ -1223,6 +1238,7 @@ const PLAIN_LOOK: TextLook = {
   link: false,
   tabular: false,
   wordBreak: undefined,
+  shadow: undefined,
 };
 
 /** A text's live variants: what each sets of the traits it changes (a colour, a whole font). */
@@ -1272,6 +1288,8 @@ export interface TextLook {
   readonly tabular: boolean;
   /** Web: where a line may break inside a word. */
   readonly wordBreak: WordBreak | undefined;
+  /** `.textShadow()`: the glyphs' shadow, by its CSS text-shadow. */
+  readonly shadow: TextShadowName | undefined;
   /**
    * `.truncation('tail')` with no line limit: on the web an ellipsis where the
    * text is cut (`text-overflow`; Tailwind's `truncate` is it with `.noWrap()`
@@ -1357,6 +1375,12 @@ export function textStyle(
   // React Native has no word breaking of its own to set; the web's is CSS.
   if (look.wordBreak === 'all' && IS_WEB) style.wordBreak = 'break-all';
   if (look.wordBreak === 'words' && IS_WEB) style.overflowWrap = 'break-word';
+  if (look.shadow !== undefined) {
+    const { color, offset, radius } = TEXT_SHADOW[look.shadow];
+    style.textShadowColor = color;
+    style.textShadowOffset = { width: offset[0], height: offset[1] };
+    style.textShadowRadius = radius;
+  }
   if (look.ellipsis && IS_WEB) style.textOverflow = 'ellipsis';
   return style;
 }

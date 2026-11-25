@@ -507,6 +507,7 @@ Modifiers:
 - [`.textCase()`](bloom-language-modifiers.mdx#textcase) `(value: TextCase)`: Draws the text in upper case, lower case, or with each word capitalised.
 - [`.monospacedDigit()`](bloom-language-modifiers.mdx#monospaceddigit) `()`: Digits of one width, so numbers in a column or a counter line up (`font-variant: tabular-nums`).
 - [`.wordBreak()`](bloom-language-modifiers.mdx#wordbreak) `(value: WordBreak)`: Web: where a line may break inside a word (`all`, `words`); native text keeps its platform's breaking.
+- [`.textShadow()`](bloom-language-modifiers.mdx#textshadow) `(value: TextShadowName)`: A shadow under the glyphs, each named by its exact CSS `text-shadow` (`'0 1px 3px rgb(0 0 0 / 0.8)'`): React Native's `textShadowColor`, `textShadowOffset` and `textShadowRadius`, the web's `text-shadow`. For text over a photo or a video.
 - [`.contentTransition()`](bloom-language-modifiers.mdx#contenttransition) `(value: ContentTransition, direction?: number)`: How a change of the text inside an animation plays, up when `direction` rose and down when it fell: `roll` rolls the old text out and the new one in; `numeric` (SwiftUI's `.contentTransition(.numericText(value:))`) rolls each character that changed, the rest staying put.
 
 And every universal modifier.
@@ -1268,7 +1269,7 @@ Modifiers:
 - [`.iconOnly()`](bloom-language-modifiers.mdx#icononly) `()`: Only its icon shows; its label still names it.
 - [`.reorderable()`](bloom-language-modifiers.mdx#reorderable) `(value?: boolean)`: It can be moved, and take a moved tab's place (with the strip's `.onReorder()`).
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: A control beside its label, in its chrome, not part of its press.
-- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: Press | undefined)`: A long press: the tab's own menu.
+- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: Press | undefined)` (here: a value): A long press: the tab's own menu.
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`: The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's.
 - [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`: The tab's own padding (`TabsTrigger`'s `style`), over Bloom's.
 - [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, 'mono' | 'display'>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
@@ -1428,6 +1429,7 @@ Modifiers:
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
 - [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`
+- [`.textContentType()`](bloom-language-modifiers.mdx#textcontenttype) `(value: TextContentType)`: iOS: what the text is (React Native's `textContentType`: `URL`, `emailAddress`, `oneTimeCode`…), which its autofill and keyboard offer; `.contentType()` is Android's and the web's `autoComplete`.
 - [`.submitLabel()`](bloom-language-modifiers.mdx#submitlabel) `(value: SubmitLabel)`
 - [`.onSubmit()`](bloom-language-modifiers.mdx#onsubmit) `(value: () => void)`: The return key's action.
 - [`.autoFocus()`](bloom-language-modifiers.mdx#autofocus) `()`: Takes the keyboard's focus when it appears.
@@ -1814,7 +1816,7 @@ Modifiers:
 - [`.shortcut()`](bloom-language-modifiers.mdx#shortcut) `(value: string)`: Its keyboard shortcut, drawn at its end and bound on the web (`⌘1`).
 - [`.secondary()`](bloom-language-modifiers.mdx#secondary) `()`: Pinned at the sidebar's foot, under its other rows.
 - [`.onPress()`](bloom-language-modifiers.mdx#onpress) `(value: Press | undefined)`
-- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)`
+- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)` (here: a value)
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1863,7 +1865,7 @@ Modifiers:
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Binding<boolean>)`
 - [`.emptyLabel()`](bloom-language-modifiers.mdx#emptylabel) `(value: string)`
 - [`.onPress()`](bloom-language-modifiers.mdx#onpress) `(value: Press | undefined)`
-- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)`
+- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)` (here: a value)
 - [`.draggable()`](bloom-language-modifiers.mdx#draggable) `(value?: boolean)`: It can be dragged (the sidebar's `.onDrop` takes it): a long press lifts it on touch.
 - [`.droppable()`](bloom-language-modifiers.mdx#droppable) `(value?: boolean)`: `false`: nothing lands inside it.
 - [`.dropBeside()`](bloom-language-modifiers.mdx#dropbeside) `(value?: boolean)`: `false`: nothing lands before or after it (a container among containers); a drop goes inside.
@@ -2006,7 +2008,7 @@ Modifiers:
 - [`.sidebar()`](bloom-language-modifiers.mdx#sidebar) `(value?: boolean)`: A row of the sidebar (shown when it has a label and an icon, by default).
 - [`.sidebarAfter()`](bloom-language-modifiers.mdx#sidebarafter) `(value: string)`: Its sidebar row goes after this destination's.
 - [`.onPress()`](bloom-language-modifiers.mdx#onpress) `(value: (() => void) | undefined)`
-- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)`
+- [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)` (here: a value)
 
 Takes only the modifiers above (no universal modifiers).
 

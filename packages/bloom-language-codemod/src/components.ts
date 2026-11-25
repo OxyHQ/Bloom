@@ -475,6 +475,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       multiline: p('multiline', 'flag'),
       editable: p('editable', 'boolean'),
       ...TEXT_INPUT,
+      textContentType: p('textContentType', 'token', tokens('textContentType')),
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
     },

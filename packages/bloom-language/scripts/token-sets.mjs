@@ -41,6 +41,7 @@ export function tokenSetsOf(spec) {
     length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
     zIndex: [...Object.keys(scales.zIndex), ...enums.zIndexExtra],
     shadow: Object.keys(scales.shadow),
+    textShadow: Object.keys(scales.textShadow),
     scale: Object.keys(scales.scale),
     ring: [...Object.keys(colors), ...enums.ringExtra],
     corner: [...Object.keys(scales.corner), ...enums.cornerExtra],

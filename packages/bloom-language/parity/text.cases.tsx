@@ -245,6 +245,26 @@ const behaviour: ParityCase[] = [
     language: () => toElement(L.Text('1,024').monospacedDigit()),
     bloom: () => <Text style={{ fontVariant: ['tabular-nums'] }}>1,024</Text>,
   },
+  ...(
+    [
+      ['0 1px 3px rgb(0 0 0 / 0.8)', 3],
+      ['0 1px 2px rgb(0 0 0 / 0.8)', 2],
+    ] as const
+  ).map(([shadow, radius]) => ({
+    name: `a text shadow (${shadow})`,
+    language: () => toElement(L.Text('caption').textShadow(shadow)),
+    bloom: () => (
+      <Text
+        style={{
+          textShadowColor: 'rgba(0, 0, 0, 0.8)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: radius,
+        }}
+      >
+        caption
+      </Text>
+    ),
+  })),
   {
     name: 'a web line that breaks anywhere',
     language: () => toElement(L.Text('0x7f3a9c2e1b').wordBreak('all')),

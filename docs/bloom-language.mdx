@@ -508,7 +508,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`) |
+| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
+| `sticky(edge?)` | the web's `position: sticky` at `top` (the default) or `bottom`: held at its scroll container's edge once scrolled to it. React Native has no sticky position, so native draws the view in place; a list's or a scroll's sticky rows are `.stickyIndices()` |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
@@ -530,12 +531,14 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `blur()` | Bloom's floating island (`BlurIsland`) |
-| `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
+| `onPress`, `onLongPress(action, duration?)`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. A long press's `duration` is how long it is held (React Native's `delayLongPress`: `'500'`, its own default, `'250'`…, the [duration](bloom-language-tokens.mdx#duration) tokens); a Bloom component that takes a long press of its own (a tab, a nav item, a tree item, a destination) takes no duration |
+| `accessibilityElement(on)`, `focusable(on?)`, `collapsable(on)` | React Native's own: whether the view is one accessibility element (`accessible`; `false` leaves what is inside to be read, its press kept), whether keyboard focus stops at it (`tabIndex` `0` or `-1`, on the web and Android), and `false` keeps its native view from being flattened (`collapsable`, Android). Each is written on the view's outermost host as the JSX writes it |
+| responder props (`onStartShouldSetResponder`, a `PanResponder`'s `panHandlers`) | no modifier: a view that claims or tracks touches by hand stays an `Embed` of its JSX. The language's gestures are `.onPress()`, `.drag()`, `.swipe()`, `.pinch()` and `.onDoubleTap()` |
 | `accessibilityState(s)`, `accessibilityValue(v)`, `liveRegion(r)`, `accessibilityHidden(on?)` | what assistive technology reads: a state (`selected`, `checked` or `'mixed'`, `busy`, `expanded`, `disabled`: React Native's `accessibilityState`); a value, a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`; numbers and a text, no tokens); a region whose changes are announced (`polite`, `assertive`, `none`: `accessibilityLiveRegion`); hidden from screen readers with what is inside (see [Layout](#layout)) |
 | `hitSlop(edge?, s)` | how far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`, or an exact slop (`'4'` `'5'`); with a side first (`top` `bottom` `horizontal` `vertical` `left` `right`, physical as React Native's insets are) only that side, a later one of a side over the earlier. Every side alike is one number (`hitSlop={8}`), sides of their own React Native's insets with the sides named. An `Action`'s is its `EngagementAction`'s (an `Action` takes no `hitSlop` option) |
 | `ref(r)`, `onLayout(f)` | escape hatches, on the view's outermost box (its host, or the Bloom component that draws it): React Native's `ref` (a ref object or a callback, for a visibility tracker, a measurement, a DOM lookup on the web) and `onLayout`. Laying a view out from state its own `onLayout` wrote is discouraged: it draws twice, the second time moved, and can loop; a frame, a grow, an aspect ratio or a `ZStack` says the layout instead |
 | `label`, `hint`, `role`, `testID`, `id` | accessibility and identity. `role` is React Native's `accessibilityRole` of the same name: `button` `link` `header` `image` `text` `none` `checkbox` `radio` `tab` `radiogroup` `tablist` `list` `alert` `progressbar` `imagebutton` `summary` |
-| `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
+| `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak`, `textShadow` | text only (see [Text](#text)) |
 | `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
 | `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
 | `contentTransition('roll', direction?)` | text only (see [Animations](#animations)) |
@@ -970,6 +973,11 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   size: its font's, or with no font the 13px of Bloom's `Text` without a
   variant (the size itself stays Bloom's, unwritten). Over a ramp step it
   replaces the step's own tracking.
+- **Shadow.** `.textShadow(shadow)` draws a shadow under the glyphs, for text
+  over a photo or a video. Each is named by its exact CSS `text-shadow`
+  (`'0 1px 3px rgb(0 0 0 / 0.8)'`, `'0 1px 2px rgb(0 0 0 / 0.8)'`): React
+  Native's `textShadowColor`, `textShadowOffset` and `textShadowRadius` as an
+  app writes them, which react-native-web draws as that `text-shadow`.
 
 ## Icons
 

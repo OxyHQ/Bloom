@@ -56,6 +56,8 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
     iconSize: Record<string, number>;
     opacity: Record<string, number>;
     hitSlop: Record<string, number>;
+    duration: Record<string, number>;
+    textShadow: Record<string, { color: string; offset: [number, number]; radius: number }>;
     space: Record<string, number>;
     corner: Record<string, number>;
     fontSize: Record<string, number>;
@@ -109,6 +111,10 @@ const HIT_SLOP = Object.fromEntries(
   Object.entries(spec.scales.hitSlop).filter(([name]) => name !== '$comment'),
 ) as Record<string, number>;
 const HIT_SLOP_TOKEN = new Map(Object.entries(HIT_SLOP).map(([name, value]) => [value, name]));
+/** A press's hold in milliseconds (`500`) as the duration token of its value (`'500'`): `delayLongPress`. */
+const DURATION_TOKEN = new Map<number, string>();
+for (const [name, value] of Object.entries(spec.scales.duration))
+  if (name !== '$comment' && !DURATION_TOKEN.has(value)) DURATION_TOKEN.set(value, name);
 
 /** One side's slop: a static number, or Bloom's `tokens.hitSlop.<name>`, as its token. */
 function hitSlopToken(value: AnyNode): string | undefined {
@@ -610,6 +616,18 @@ function staticNumber(value: AnyNode): number | undefined {
   if (n.JSXExpressionContainer.check(value)) return staticNumber(value.expression);
   if (n.NumericLiteral.check(value)) return value.value;
   if (n.Literal.check(value) && typeof value.value === 'number') return value.value;
+  if (n.UnaryExpression.check(value) && value.operator === '-') {
+    const number = staticNumber(value.argument);
+    return number === undefined ? undefined : -number;
+  }
+  return undefined;
+}
+
+/** A boolean written out (`false`), or undefined. */
+function staticBoolean(value: AnyNode): boolean | undefined {
+  if (n.JSXExpressionContainer.check(value)) return staticBoolean(value.expression);
+  if (n.BooleanLiteral.check(value) || (n.Literal.check(value) && typeof value.value === 'boolean'))
+    return value.value as boolean;
   return undefined;
 }
 
@@ -1892,6 +1910,8 @@ export function transformSource(source: string, options: TransformOptions): File
       kind === 'pressable' &&
       (sources.get(local) as Source | undefined)?.imported === 'TouchableOpacity';
     let fade: string | undefined;
+    /** A pressable's `delayLongPress`: its long press's duration token. */
+    let longPressDelay: string | undefined;
     for (const attribute of node.openingElement.attributes) {
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
         fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
@@ -1970,6 +1990,37 @@ export function transformSource(source: string, options: TransformOptions): File
         if (region !== undefined && LIVE_REGIONS.has(region))
           props.push({ name: 'liveRegion', args: [region] });
         else fail(name, 'prop:accessibilityLiveRegion', 'a live region set at runtime');
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessible') {
+        props.push({
+          name: 'accessibilityElement',
+          args: [staticBoolean(expression) ?? { node: expression, hole: 'boolean' }],
+        });
+        continue;
+      }
+      if (kind !== 'icon' && name === 'tabIndex') {
+        const index = staticNumber(value);
+        if (index === 0 || index === -1) props.push({ name: 'focusable', args: [index === 0] });
+        else fail(name, 'prop:tabIndex', 'a tabIndex other than 0 or -1, or set at runtime');
+        continue;
+      }
+      if ((kind === 'view' || kind === 'pressable') && name === 'collapsable') {
+        props.push({
+          name: 'collapsable',
+          args: [staticBoolean(expression) ?? { node: expression, hole: 'boolean' }],
+        });
+        continue;
+      }
+      if (kind === 'pressable' && name === 'delayLongPress') {
+        const token = DURATION_TOKEN.get(staticNumber(value) as number);
+        if (token === undefined)
+          fail(
+            name,
+            'prop:delayLongPress',
+            'a long press delay that is no duration token, or set at runtime',
+          );
+        else longPressDelay = token;
         continue;
       }
       if (kind !== 'icon' && name === 'accessibilityState') {
@@ -2082,6 +2133,13 @@ export function transformSource(source: string, options: TransformOptions): File
       fail(name, `prop:${name}`, `the prop \`${name}\` has no mapping`);
     }
 
+    // The long press's hold is its modifier's second argument.
+    if (longPressDelay !== undefined) {
+      const longPress = props.find((prop) => prop.name === 'onLongPress');
+      if (longPress === undefined)
+        fail('delayLongPress', 'prop:delayLongPress', 'a long press delay with no onLongPress');
+      else longPress.args.push(longPressDelay);
+    }
     // A style chosen by a condition is the className choice it writes: what each branch adds.
     if (styleChoice) {
       if (other)

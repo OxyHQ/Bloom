@@ -1211,7 +1211,122 @@ const points: ParityCase[] = [
   },
 ];
 
+/**
+ * Mention's pressables and views that took a React Native prop of their own:
+ * an element that is no accessibility element, a press out of the focus
+ * order, a native view kept from flattening, a long press's hold, a bar held
+ * at the top of its scroll on the web, a title spanning its row's inline edges.
+ */
+/** The web's sticky position, which react-native-web takes and React Native's types do not name. */
+const webSticky = (edge: 'top' | 'bottom') =>
+  ({ position: 'sticky', [edge]: 0 }) as unknown as RN.ViewStyle;
+
+const hostProps: ParityCase[] = [
+  {
+    name: 'no accessibility element of its own, its press kept (accessibilityElement(false))',
+    language: () => toElement(L.HStack(L.Text('a')).onPress(hold).accessibilityElement(false)),
+    bloom: () => (
+      <RN.Pressable onPress={hold} accessible={false} style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'a press out of the focus order and the accessibility tree',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .onPress(hold)
+          .accessibilityElement(false)
+          .focusable(false)
+          .accessibilityHidden(),
+      ),
+    bloom: () => (
+      <RN.Pressable onPress={hold} accessible={false} tabIndex={-1} {...HIDDEN}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'in the focus order again (focusable())',
+    language: () => toElement(L.VStack(L.Text('a')).focusable()),
+    bloom: () => (
+      <RN.View tabIndex={0}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a native view kept (collapsable(false))',
+    language: () => toElement(L.VStack(L.Text('a')).padding('md').collapsable(false)),
+    bloom: () => (
+      <RN.View
+        style={{ paddingTop: 12, paddingBottom: 12, paddingStart: 12, paddingEnd: 12 }}
+        collapsable={false}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  ...(['500', '250'] as const).map((duration) => ({
+    name: `a long press held ${duration} ms (delayLongPress)`,
+    language: () => toElement(L.VStack(L.Text('a')).onLongPress(hold, duration)),
+    bloom: () => (
+      <RN.Pressable onLongPress={hold} delayLongPress={Number(duration)}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  })),
+  {
+    name: 'a bar held at the top of its scroll on the web (sticky)',
+    language: () =>
+      toElement(L.VStack(L.VStack(L.Text('bar')).sticky().zIndex('floating'), L.Text('a'))),
+    bloom: () => (
+      <RN.View>
+        <RN.View
+          style={RN.Platform.OS === 'web' ? [webSticky('top'), { zIndex: 10 }] : { zIndex: 10 }}
+        >
+          <Text>bar</Text>
+        </RN.View>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'held at the bottom on the web (sticky bottom)',
+    language: () => toElement(L.VStack(L.Text('a')).sticky('bottom')),
+    bloom: () => (
+      <RN.View style={RN.Platform.OS === 'web' ? webSticky('bottom') : undefined}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'pinned along both inline edges (insetInline)',
+    language: () =>
+      toElement(L.VStack(L.Text('title').position({ horizontal: 'none' }).textAlign('center'))),
+    bloom: () => (
+      <RN.View>
+        <Text style={{ position: 'absolute', insetInline: 0, textAlign: 'center' }}>title</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'pinned along both block edges with a side (insetBlock)',
+    language: () =>
+      toElement(L.VStack(L.VStack(L.Text('a')).position({ vertical: 'sm', left: 'none' }))),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ position: 'absolute', left: 0, insetBlock: 8 }}>
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...hostProps,
   ...points,
   ...hitSlop,
   ...safeArea,

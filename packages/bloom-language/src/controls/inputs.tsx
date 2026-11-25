@@ -54,7 +54,7 @@ import {
   type ViewModifiers,
   type ViewNode,
 } from '../node';
-import type { ColorName } from '../tokens';
+import type { ColorName, TextContentType } from '../tokens';
 import { boxAs, type ControlDraw, type ControlRenderer, lastOf, slot } from './draw';
 
 /** Inputs: text fields, toggles, pickers and search. */
@@ -167,6 +167,12 @@ export interface TextFieldView
   /** Text after the input (a unit, a domain). */
   suffix(value: string): TextFieldView;
   contentType(value: ContentType): TextFieldView;
+  /**
+   * iOS: what the text is (React Native's `textContentType`: `URL`,
+   * `emailAddress`, `oneTimeCode`…), which its autofill and keyboard offer;
+   * `.contentType()` is Android's and the web's `autoComplete`.
+   */
+  textContentType(value: TextContentType): TextFieldView;
   submitLabel(value: SubmitLabel): TextFieldView;
   /** The return key's action. */
   onSubmit(value: () => void): TextFieldView;
@@ -476,6 +482,7 @@ const TEXT_INPUT_PROPS = [
   ['autocapitalize', 'autoCapitalize'],
   ['autocorrect', 'autoCorrect'],
   ['contentType', 'autoComplete'],
+  ['textContentType', 'textContentType'],
   ['submitLabel', 'returnKeyType'],
   ['onSubmit', 'onSubmitEditing'],
   ['autoFocus', 'autoFocus'],

@@ -8,6 +8,43 @@ const run = (source: string) =>
 const flat = (code: string) => code.replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
 
 describe('transformSource', () => {
+  it('maps accessible, tabIndex, collapsable and a long press delay', () => {
+    const { code } = run(`import { Pressable, View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ go, hold }) => (
+  <View collapsable={false}>
+    <Pressable onPress={go} accessible={false} tabIndex={-1}><Text>a</Text></Pressable>
+    <Pressable onLongPress={hold} delayLongPress={500}><Text>b</Text></Pressable>
+  </View>
+);
+`);
+    expect(flat(code)).toContain('.onPress(go).accessibilityElement(false).focusable(false)');
+    expect(flat(code)).toContain(".onLongPress(hold, '500')");
+    expect(flat(code)).toContain('.collapsable(false)');
+  });
+  it('keeps a long press delay that is no duration token, or has no long press', () => {
+    const result = run(`import { Pressable } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ hold }) => <Pressable onLongPress={hold} delayLongPress={600}><Text>a</Text></Pressable>;
+export const B = ({ go }) => <Pressable onPress={go} delayLongPress={500}><Text>b</Text></Pressable>;
+`);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'prop:delayLongPress',
+      'prop:delayLongPress',
+    ]);
+  });
+  it('maps a text shadow written out, inline insets and a web sticky bar', () => {
+    const { code } = run(`import { Text, View } from 'react-native';
+export const A = () => (
+  <View className="w-full z-10 web:sticky web:top-0">
+    <Text style={{ position: 'absolute', insetInline: 0, textShadowColor: 'rgba(0, 0, 0, 0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>a</Text>
+  </View>
+);
+`);
+    expect(flat(code)).toContain(".position({ horizontal: 'none' })");
+    expect(flat(code)).toContain(".textShadow('0 1px 3px rgb(0 0 0 / 0.8)')");
+    expect(flat(code)).toContain(".sticky('top')");
+  });
   it('converts a View tree and swaps the imports', () => {
     const result = run(`import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';

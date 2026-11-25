@@ -485,6 +485,19 @@ const fields: ParityCase[] = [
     ),
   },
   {
+    name: 'TextField for a URL, its iOS content type (textContentType)',
+    language: () => toElement(L.TextField(empty, 'Link').keyboard('url').textContentType('URL')),
+    bloom: () => (
+      <TextFieldInput
+        label="Link"
+        value=""
+        onValueChange={set}
+        keyboardType="url"
+        textContentType="URL"
+      />
+    ),
+  },
+  {
     name: 'SecureField, revealable',
     language: () => toElement(L.SecureField(['hunter2', set], 'Password').revealable()),
     bloom: () => (

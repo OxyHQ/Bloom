@@ -41,6 +41,42 @@ const CORNER = byValue(scales.corner as Record<string, unknown>);
 const Z_INDEX = byValue(scales.zIndex as Record<string, unknown>);
 const FONT_SIZE = byValue(scales.fontSize as Record<string, unknown>);
 const LEADING_PX = byValue(scales.leadingPx as Record<string, unknown>);
+const SPACE = byValue(scales.space as Record<string, unknown>);
+
+/** React Native's inline and block insets, as the edge of `.position()` that sets both sides. */
+const INSET_AXIS: Readonly<Record<string, string>> = {
+  insetInline: 'horizontal',
+  insetBlock: 'vertical',
+};
+
+const TEXT_SHADOW_KEYS = ['textShadowColor', 'textShadowOffset', 'textShadowRadius'];
+
+/**
+ * A text shadow written out (`textShadowColor: 'rgba(0, 0, 0, 0.8)'`,
+ * `textShadowOffset: { width: 0, height: 1 }`, `textShadowRadius: 3`) as the
+ * text shadow token of exactly those three values, or undefined.
+ */
+function textShadowToken(object: AnyNode): string | undefined {
+  const [color, offset, radius] = TEXT_SHADOW_KEYS.map((key) => declared(object, key));
+  if (!n.StringLiteral.check(color) || !n.ObjectExpression.check(offset)) return undefined;
+  if (!n.NumericLiteral.check(radius)) return undefined;
+  const width = declared(offset, 'width');
+  const height = declared(offset, 'height');
+  if (!n.NumericLiteral.check(width) || !n.NumericLiteral.check(height)) return undefined;
+  if (offset.properties.length !== 2) return undefined;
+  const shadows = scales.textShadow as unknown as Record<
+    string,
+    { color: string; offset: [number, number]; radius: number }
+  >;
+  return Object.entries(shadows).find(
+    ([name, shadow]) =>
+      name !== '$comment' &&
+      shadow.color === color.value &&
+      shadow.offset[0] === width.value &&
+      shadow.offset[1] === height.value &&
+      shadow.radius === radius.value,
+  )?.[0];
+}
 
 /**
  * A text's own `fontSize` and `lineHeight` written out, as the language's
@@ -199,6 +235,13 @@ function direct(key: string, value: AnyNode): Mod | undefined {
     return token === undefined ? undefined : { name: 'zIndex', args: [token] };
   }
   if (key === 'aspectRatio' && number > 0) return { name: 'aspectRatio', args: [number] };
+  const axis = INSET_AXIS[key];
+  if (axis !== undefined) {
+    const token = SPACE.get(Math.abs(number));
+    return token === undefined
+      ? undefined
+      : { name: 'position', args: [{ [axis]: number < 0 ? `-${token}` : token }] };
+  }
   return undefined;
 }
 
@@ -481,6 +524,18 @@ export function styleUtilities(
     )
       return { ok: false, subject: 'style', why: 'a style built at runtime' };
     const key = property.key.name as string;
+    if (TEXT_SHADOW_KEYS.includes(key)) {
+      const token = textShadowToken(object);
+      if (token === undefined)
+        return {
+          ok: false,
+          subject: key,
+          why: 'a text shadow that is no text shadow token (its colour, offset and radius written out)',
+        };
+      if (key === 'textShadowColor')
+        mods.push({ subject: key, mod: { name: 'textShadow', args: [token] } });
+      continue;
+    }
     const known = numberOf?.(property.value);
     const value =
       known === undefined
