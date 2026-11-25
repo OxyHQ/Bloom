@@ -556,7 +556,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       active: p('active', 'boolean'),
       highlighted: p('highlighted', 'flag'),
       contentDensity: p('density', 'token', densities('row')),
-      onPress: p('onPress', 'handler'),
+      // A press or none chosen by a plain condition (`full ? undefined : add`): no press, no button.
+      onPress: { ...p('onPress', 'handler'), unset: true },
       onLongPress: p('onLongPress', 'handler'),
       ...NAMED,
     },
@@ -796,7 +797,12 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   },
   '@oxy.so/bloom/loading#SpinnerIcon': {
     node: 'SpinnerIcon',
-    props: { size: p('size', 'token', ICON_SIZE), testID: p('testID', 'string') },
+    props: {
+      size: p('size', 'token', ICON_SIZE),
+      // A theme colour as its role, an app colour as its own (`ON_VIDEO_COLOR`).
+      color: p('tint', 'ink'),
+      testID: p('testID', 'string'),
+    },
   },
   // parity/slider.cases.tsx.
   '@oxy.so/bloom/slider#Slider': {

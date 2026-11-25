@@ -3168,6 +3168,8 @@ function renderHost(
           for (const [prop, token] of Object.entries(colors)) {
             if (token === undefined) continue;
             if (typeof token === 'string') roles.push(propRole(prop, token));
+            // An app's own colour is the same in both schemes: the prop as it is.
+            else if (!Array.isArray(token)) props[prop] = ink(token as InkToken);
             else {
               lists.push([prop, token.map(listColor)]);
               listKeys.push(`${prop}:${token.map(tokenKey).join('+')}`);

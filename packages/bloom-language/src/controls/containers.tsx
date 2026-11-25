@@ -357,7 +357,7 @@ export interface TabItemView<V extends string = string> extends ViewNode {
   padding(value: PaddingToken): TabItemView<V>;
   padding(edge: Edge, value: PaddingToken): TabItemView<V>;
   /** Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's. */
-  font(value: Exclude<FontName, 'mono' | 'display'>): TabItemView<V>;
+  font(value: Exclude<FontName, FontFamilyName>): TabItemView<V>;
   leading(value: LeadingToken): TabItemView<V>;
   weight(value: WeightName): TabItemView<V>;
 }

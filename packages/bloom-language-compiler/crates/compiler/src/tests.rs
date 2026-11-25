@@ -271,6 +271,20 @@ fn bloom_component_props_mention_writes_are_checked() {
 }
 
 #[test]
+fn the_tokens_and_tints_mention_writes_are_checked() {
+    let names = "SpinnerIcon, Text, VStack, defineTokens";
+    let ok = compiled_with(
+        names,
+        "const APP = defineTokens({ color: { onVideo: '#FFFFFF' } });\nexport const x = () => VStack(Text('spam').font('system-mono'), SpinnerIcon().size('2xl').tint(APP.color.onVideo)).background('primary/5').border('primary/25', 'thin').opacity('25').frame({ width: '120', height: '120' });\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => VStack().opacity('15');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown opacity token '15' for .opacity()");
+    let output = compiled_with(names, "export const x = () => Text('a').font('monospace');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown font token 'monospace' for .font()");
+}
+
+#[test]
 fn the_small_modifiers_and_numeric_tokens_are_checked() {
     let ok = compiled(
         "export const x = () => VStack(Text('1').monospacedDigit().wordBreak('all')).corner('3xl', 'top').corner('sm', 'bottom-trailing').basis('none').scale('105').allowsHitTesting(false).accessibilityOnly().zIndex('50').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)').ring('primary', '3').frame({ width: 'fit' }).listMarker('disc');\n",

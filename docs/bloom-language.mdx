@@ -517,7 +517,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
 | `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android`, or the app's own boolean (see [Variants](#variants)) |
-| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'9'` `'11'` `'12.5'` `'14'` `'16'` `'18'` `'24'` `'28'` `'30'` `'36'` `'42'` `'96'`), or a face beside the size: `mono` (Bloom's monospaced face) or `display` (the face of Bloom's big ramp steps, for a numeric size: `.font('96').font('display')`) |
+| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'9'` `'11'` `'12.5'` `'14'` `'16'` `'18'` `'24'` `'28'` `'30'` `'36'` `'42'` `'96'`), or a face beside the size: `mono` (Bloom's monospaced face), `system-mono` (the platform's own monospaced face, React Native's generic `monospace`) or `display` (the face of Bloom's big ramp steps, for a numeric size: `.font('96').font('display')`) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `tracking(t)` | `tight` `wide` `wider` `widest` (em of the size); or an exact em (`'-0.02em'` `'-0.01em'` `'0.04em'`) or px (`'-0.5px'` … `'2px'`) |
 | `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`, and `'96px'`, Tailwind's `text-8xl` line, a 96pt countdown's) |
@@ -526,7 +526,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick`, or an exact width (`'0.5'`, a fixed half point; `'1.5'` `'2.5'` `'3'` `'4'`) |
 | edges | `padding`, `margin` and `border` take `leading` and `trailing` (the reading direction's sides) and `left` and `right` (physical, the same right to left) |
 | `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'7'` `'10'` `'14'` `'15'` `'18'` `'22'`), `full` (Bloom's `radius-max`, 9999; an app's 999 is `full` too, since both round any box under 1998pt fully), `infinite` (Tailwind's `rounded-full` as NativeWind writes it: 9007199254740000 on native, `calc(infinity * 1px)` on the web; a Bloom component that takes a radius in points gets `full`), `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…), which follow the reading direction, or `left` `right` and one (`top-left`…), which do not (Tailwind's `rounded-l`, `rounded-tl`…); `round` `smooth` (see [Material](#material)) |
-| `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'10'` `'20'` `'30'` `'40'` `'45'` `'60'` `'70'` `'75'` `'80'` `'85'` `'90'`) |
+| `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'5'` `'10'` `'20'` `'25'` `'30'` `'40'` `'45'` `'60'` `'70'` `'75'` `'80'` `'85'` `'90'`) |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
@@ -957,6 +957,11 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   `@oxy.so/bloom/typography`). A family sits beside the size: it keeps the
   ramp step or size rung the text has, and a later size keeps the face, so
   `.font('body').font('mono')` is body in mono.
+- **The platform's mono.** `.font('system-mono')` is the platform's own
+  monospaced face by its generic name (`fontFamily: 'monospace'`, as an app
+  writes it), not Bloom's JetBrains Mono: a slug or an id drawn as the system
+  draws code. `.when('native', (v) => v.font('system-mono'))` keeps the web
+  in the face it inherits.
 - **Display.** `.font('display')` is the face Bloom's `Text` sets its big
   ramp steps in (`large-title`, `display-*`, `title-*`: BlomusModernus,
   `fontFamilyStyle('display')`), for a size off the ramp: Mention's camera
@@ -1221,8 +1226,10 @@ hover card on the web (a follow button), drawn as a tree of its own.
   `style`, as an app writes them.
 - **`SpinnerIcon()`**: Bloom's `SpinnerIcon` (`@oxy.so/bloom/loading`), the
   loader's morphing glyph alone. `.size()` is its side (an icon rung, a numeric
-  side such as `'18'`, or an app token; Bloom's 26 by default), `.tint(role)`
-  its `color`, painted from the theme; its box modifiers are its `style`.
+  side such as `'18'`, or an app token; Bloom's 26 by default), `.tint(color)`
+  its `color`: a role painted from the theme, or an app colour as written
+  (white over a video, the same in both schemes); its box modifiers are its
+  `style`.
 - **`Skeleton(shape)`**: `text`, `circle`, `pill` or `box`. Its frame is its
   size (a circle's and a pill's height, a box's width and height), a box's
   corner its radius, a text line's height its font's. It takes nothing else
@@ -2457,7 +2464,7 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 | Node | Draws |
 | --- | --- |
 | `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts; a card lays its children out as a stack does, `.axis()`, `.spacing()`, `.align()`, `.justify()`, in the view Bloom's Card holds them in (its `style`) |
-| `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row) |
+| `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row); `.onPress(undefined)` (a press chosen at render, `full ? undefined : add`) is an `Item` with no press, no button, as Bloom draws one |
 | `GroupedSection(...rows)`, `GroupedSectionItem(title)` | Bloom `GroupedSection`, `GroupedSectionItem` |
 | `GroupedSectionIcon(icon)`, `GroupedSectionDivider()`, `GroupedSectionCollapse(open, ...rows)` | Bloom `GroupedSectionIcon`, `GroupedSectionDivider`, `GroupedSectionCollapse` |
 | `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs; a glyph with a size or ink of its own (`Icon(X).size('sm').foreground('primary')`), or any other view, before or after the label is drawn as it is (Bloom's `leading` and `trailing`) |
@@ -4854,10 +4861,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1075 | 47195 | 87.9% |
+| Maps to a modifier and a token | 1083 | 47220 | 87.9% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 31 | 509 | 0.9% |
-| Needs a named token (raw value) | 267 | 634 | 1.2% |
+| Needs a named token (raw value) | 259 | 609 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -4871,7 +4878,7 @@ condition. The values with no rung, by scale (the owner names each as a token or
 | --- | ---: | --- |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
 | space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
-| opacity | 83 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), black at [0.025]% (2), black at [0.07]% (2) |
+| opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
 | corner | 29 | 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1), 32px (1) |

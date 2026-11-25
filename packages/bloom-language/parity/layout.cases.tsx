@@ -5,6 +5,7 @@ import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
 import { Z_INDEX } from '@oxy.so/bloom/styles';
 import { tokens } from '@oxy.so/bloom/styles';
+import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
@@ -1325,7 +1326,41 @@ const hostProps: ParityCase[] = [
   },
 ];
 
+/** Mention's unread fill at 5% and an edge at 25%, and a sticker's 120pt frame. */
+const fives: ParityCase[] = [
+  {
+    name: 'a fill of a role at 5% and an edge at 25%',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).background('primary/5').border('primary/25', 'thin')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              backgroundColor: withAlpha(c.primary, 0.05),
+              borderWidth: 1,
+              borderColor: withAlpha(c.primary, 0.25),
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a 120pt frame',
+    language: () => toElement(L.VStack(L.Text('a')).frame({ width: '120', height: '120' })),
+    bloom: () => (
+      <RN.View style={{ width: 120, height: 120 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...fives,
   ...hostProps,
   ...points,
   ...hitSlop,

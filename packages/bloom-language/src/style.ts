@@ -1267,6 +1267,8 @@ const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 const FAMILY: Record<FontFamilyName, string> = {
   mono: fontFamilyStyle('mono').fontFamily,
   display: fontFamilyStyle('display').fontFamily,
+  // The platform's own monospaced face by its generic name, as an app writes it (not Bloom's JetBrains Mono).
+  'system-mono': 'monospace',
 };
 
 /** The colour role text and icons paint with: the environment's, or the spec's default. */

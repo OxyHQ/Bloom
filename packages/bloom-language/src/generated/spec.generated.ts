@@ -183,8 +183,10 @@ export const AVATAR_SIZE = {
   "xl": 40
 } as const;
 export const OPACITY = {
+  "5": 0.05,
   "10": 0.1,
   "20": 0.2,
+  "25": 0.25,
   "30": 0.3,
   "40": 0.4,
   "45": 0.45,
@@ -1376,7 +1378,8 @@ export const ENUMS = {
   ],
   "fontFamily": [
     "mono",
-    "display"
+    "display",
+    "system-mono"
   ],
   "cornerExtra": [
     "concentric",

@@ -545,6 +545,18 @@ const tracked: ParityCase[] = [
     bloom: () => <Text style={fontFamilyStyle('mono')}>const x = 1</Text>,
   },
   {
+    name: 'the platform’s monospaced face (system-mono)',
+    language: () => toElement(L.Text('spam').font('system-mono')),
+    bloom: () => <Text style={{ fontFamily: 'monospace' }}>spam</Text>,
+  },
+  {
+    name: 'the platform’s monospaced face on native only',
+    language: () => toElement(L.Text('spam').when('native', (v) => v.font('system-mono'))),
+    bloom: () => (
+      <Text style={RN.Platform.OS === 'web' ? undefined : { fontFamily: 'monospace' }}>spam</Text>
+    ),
+  },
+  {
     name: 'body in mono, from the stack',
     language: () => toElement(L.VStack(L.Text('code')).font('body').font('mono')),
     bloom: () => (

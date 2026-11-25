@@ -214,6 +214,9 @@ const CORNER_SIDE: Readonly<Record<string, string>> = {
  * both round any box under 1998pt fully, so they draw alike.
  */
 function direct(key: string, value: AnyNode): Mod | undefined {
+  // The platform's own monospaced face, by its generic name.
+  if (key === 'fontFamily' && n.StringLiteral.check(value) && value.value === 'monospace')
+    return { name: 'font', args: ['system-mono'] };
   const number = n.NumericLiteral.check(value)
     ? (value.value as number)
     : n.UnaryExpression.check(value) &&
