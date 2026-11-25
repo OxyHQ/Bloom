@@ -10,6 +10,7 @@ import {
 
 import { useCommonMessages } from '../locale/common-messages';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { BUTTON_SHADOW } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -90,7 +91,8 @@ export function ResizeHandle({
   }, []);
   const direction = useDirectionProps();
   const horizontal = orientation === 'horizontal';
-  const { colors, isDark } = useTheme();
+  const tokens = useColorTokens();
+  const { isDark } = useTheme();
   const common = useCommonMessages();
   const label = labelProp ?? common.resizePanels;
   const [gripY, setGripY] = useState<number | null>(null);
@@ -248,8 +250,8 @@ export function ResizeHandle({
       : horizontal
         ? { left: gripY ?? '50%' }
         : { top: gripY ?? '50%' }),
-    borderColor: colors.borderLight,
-    backgroundColor: colors.card,
+    borderColor: tokens.input,
+    backgroundColor: tokens.card,
     boxShadow: isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     ...(IS_WEB ? null : { opacity: dragging ? 1 : 0 }),
   };
@@ -299,7 +301,7 @@ export function ResizeHandle({
             width: horizontal ? RESIZE_HANDLE.pill.length : RESIZE_HANDLE.pill.depth,
             height: horizontal ? RESIZE_HANDLE.pill.depth : RESIZE_HANDLE.pill.length,
             borderRadius: RESIZE_HANDLE.pill.depth / 2,
-            backgroundColor: colors.text,
+            backgroundColor: tokens.foreground,
             ...(IS_WEB
               ? null
               : { opacity: dragging ? PILL_DRAG_OPACITY : hovered ? PILL_HOVER_OPACITY : 0 }),
@@ -316,7 +318,7 @@ export function ResizeHandle({
               key={line}
               style={[
                 horizontal ? HANDLE_STYLES.lineAcross : HANDLE_STYLES.lineDown,
-                { backgroundColor: colors.textTertiary },
+                { backgroundColor: tokens.faintForeground },
               ]}
             />
           ))}

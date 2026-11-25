@@ -14,6 +14,7 @@ import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -185,7 +186,7 @@ function StepperComponent({
   const decrementLabel = decrementLabelProp ?? messages.decrease;
   const incrementLabel = incrementLabelProp ?? messages.increase;
   const removeLabel = removeLabelProp ?? common.remove;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const ringOffset = useRingOffsetStyle();
   // The digits are not a name, so the stepper is named by a prop or by the
   // enclosing `Field` — and the warning has to see the resolved name, or a
@@ -280,7 +281,7 @@ function StepperComponent({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    '--bloom-stepper-ring': theme.colors.primary,
+    '--bloom-stepper-ring': tokens.primary,
     ...ringOffset,
   };
 
@@ -303,8 +304,8 @@ function StepperComponent({
           paddingRight: 8,
           borderWidth: 1,
           borderRadius: 9999,
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.background,
+          borderColor: tokens.border,
+          backgroundColor: tokens.background,
         },
         style,
       ]}
@@ -348,7 +349,7 @@ function StepperComponent({
           numberOfLines={1}
           style={{
             ...(outlined ? { fontSize: outlineFontSize, lineHeight: 18 } : null),
-            color: disabled ? theme.colors.textTertiary : theme.colors.text,
+            color: disabled ? tokens.faintForeground : tokens.foreground,
             fontVariant: ['tabular-nums'],
             textAlign: 'center',
           }}

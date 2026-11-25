@@ -1,6 +1,7 @@
 import React, { createContext, useContext, memo } from 'react';
 import { View, Pressable, Platform, StyleSheet } from 'react-native';
 
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { fontSize } from '../styles/tokens';
 import { Text } from '../typography';
@@ -161,10 +162,10 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   leftInset,
   style,
 }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const compact = useBloomContentDensity() === 'compact';
   const hasChevron = showChevron ?? Boolean(onPress);
-  const titleColor = destructive ? theme.colors.error : theme.colors.text;
+  const titleColor = destructive ? tokens.error : tokens.foreground;
   const isDisabled = disabled || accessibilityState?.disabled === true;
   const rowState = { ...accessibilityState, disabled: isDisabled };
   const pressedOpacity = isDisabled ? 1 : 0.6;
@@ -217,7 +218,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
             {description ? (
               <Text
                 variant={compact ? 'caption-1-regular' : 'body-2-regular'}
-                style={{ color: theme.colors.textSecondary }}
+                style={{ color: tokens.mutedForeground }}
                 numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
               >
                 {description}
@@ -228,7 +229,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
           {value ? (
             <Text
               variant={compact ? 'body-regular' : 'body-2-regular'}
-              style={{ color: theme.colors.textSecondary }}
+              style={{ color: tokens.mutedForeground }}
               numberOfLines={1}
             >
               {value}
@@ -239,7 +240,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
 
       {rightElement}
 
-      {hasChevron ? <ChevronRightIcon size="sm" fill={theme.colors.textTertiary} /> : null}
+      {hasChevron ? <ChevronRightIcon size="sm" fill={tokens.faintForeground} /> : null}
     </View>
   );
 
@@ -250,7 +251,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         onPressIn={isDisabled ? undefined : onPressIn}
         onPressOut={isDisabled ? undefined : onPressOut}
         disabled={isDisabled}
-        android_ripple={{ color: theme.colors.border }}
+        android_ripple={{ color: tokens.border }}
         accessibilityRole={role}
         accessibilityLabel={label}
         accessibilityHint={accessibilityHint}
