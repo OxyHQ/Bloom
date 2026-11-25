@@ -2181,6 +2181,22 @@ fn inline_markdown_is_checked() {
 }
 
 #[test]
+fn pressable_spans_and_element_runs_compile() {
+    // A span with a press, an element run whose render function hands `Link asChild` a span,
+    // and inline markdown whose plain runs are strings beside spans: the runtime draws each.
+    let imports = "import { Embed, InlineMarkdown, RawText, Text } from '@oxy.so/bloom-language';\nimport { Link } from 'expo-router';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(concat!(
+        "export const x = (s, f) => RawText('Hi ', Embed((render) => <Link href=\"/@b\" push asChild>{render(Text('@b').foreground('primary'))}</Link>), ', see ', Text('oxy.so').foreground('primary').onPress(f), '.').onLongPress(f);\n",
+        "export const y = (s, f) => RawText(InlineMarkdown(s).plainRun((t) => [t, Text('@b').onPress(f)]).suffix([Text(' more').onPress(f), ' 1/2']));\n",
+    ));
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    // A span is a text: its modifiers are still the spec's.
+    let output = check("export const x = (f) => Text('a ', Text('b').onPress(f).spacing('md'));\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .spacing()");
+}
+
+#[test]
 fn data_tables_are_checked() {
     let imports = "import { DataTable, DataColumn, DataTableFilter, DataTableSearch, DataTableSelect, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");

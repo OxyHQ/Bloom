@@ -799,7 +799,7 @@ export interface ValueModifiers {
   floatingLabel: true;
   revealable: true;
   prefix: string | Child;
-  suffix: string | Child;
+  suffix: Child | TextRuns;
   keyboard: Keyboard;
   inputMode: InputMode;
   inputRef: RefObject<ComponentRef<typeof TextInput> | null>;
@@ -1125,8 +1125,8 @@ export interface ValueModifiers {
   sourceAnchors: readonly (string | undefined)[];
 
   // Inline markdown (controls/markdown.tsx)
-  plainRun: (text: string) => Child;
-  linkView: (link: InlineMarkdownLink) => Child | undefined;
+  plainRun: (text: string) => TextRuns;
+  linkView: (link: InlineMarkdownLink) => TextRuns;
   // Data tables (controls/data-table.tsx)
   cell: (context: DataTableCellContext<never>) => Child;
   sortable: boolean;
@@ -1983,6 +1983,8 @@ export interface ViewNode {
 export type Child = ViewNode | false | null | undefined | readonly Child[];
 /** What a `Text` takes: runs of text, and nested `Text` for inline spans. */
 export type TextRun = string | number | ViewNode | false | null | undefined;
+/** Runs of a text handed back where one run goes (an inline markdown's plain run): one run, or several in order. */
+export type TextRuns = TextRun | readonly TextRun[];
 
 export interface StackProps {
   readonly axis: 'horizontal' | 'vertical';
@@ -3375,7 +3377,7 @@ export class Node {
   prefix(value: string | Child): Node {
     return this.set('prefix', value);
   }
-  suffix(value: string | Child): Node {
+  suffix(value: Child | TextRuns): Node {
     return this.set('suffix', value);
   }
   keyboard(value: Keyboard): Node {
@@ -4224,10 +4226,10 @@ export class Node {
   }
 
   // Inline markdown (controls/markdown.tsx)
-  plainRun(value: (text: string) => Child): Node {
+  plainRun(value: (text: string) => TextRuns): Node {
     return this.set('plainRun', value);
   }
-  linkView(value: (link: InlineMarkdownLink) => Child | undefined): Node {
+  linkView(value: (link: InlineMarkdownLink) => TextRuns): Node {
     return this.set('linkView', value);
   }
 

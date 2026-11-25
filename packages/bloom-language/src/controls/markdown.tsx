@@ -5,7 +5,7 @@ import {
   type MarkdownInline,
 } from '@oxy.so/bloom/markdown';
 
-import { Node, type Child, type ViewModifiers } from '../node';
+import { Node, type Child, type TextRuns, type ViewModifiers } from '../node';
 import type { MarkdownSize } from '../tokens';
 import type { ControlRenderer } from './draw';
 
@@ -34,12 +34,15 @@ export interface InlineMarkdownView extends ViewModifiers<InlineMarkdownView> {
   streaming(value?: boolean): InlineMarkdownView;
   /** What a link does (opened outside the app by default). */
   onLinkPress(value: (url: string) => void): InlineMarkdownView;
-  /** A view of your own for each plain run (mentions, tags); not inside links or code. */
-  plainRun(value: (text: string) => Child): InlineMarkdownView;
-  /** A link of your own; `undefined` keeps Bloom's. */
-  linkView(value: (link: InlineMarkdownLink) => Child | undefined): InlineMarkdownView;
-  /** What follows the runs, in the line (a "Read more"). */
-  suffix(value: Child): InlineMarkdownView;
+  /**
+   * Runs of your own for each plain run (mentions, tags), not inside links or
+   * code: one run or several, strings beside spans, as a `Text` takes them.
+   */
+  plainRun(value: (text: string) => TextRuns): InlineMarkdownView;
+  /** A link of your own, as runs of the text; `undefined` keeps Bloom's. */
+  linkView(value: (link: InlineMarkdownLink) => TextRuns): InlineMarkdownView;
+  /** What follows the runs, in the line (a "Read more"): runs of the text. */
+  suffix(value: TextRuns): InlineMarkdownView;
 }
 
 /**
@@ -74,20 +77,20 @@ export const MARKDOWN: Record<MarkdownKind, ControlRenderer> = {
     const { source } = d.node.props as { source: string | readonly MarkdownInline[] };
     const plainRun = d.own('plainRun')?.value;
     const linkView = d.own('linkView')?.value;
-    const suffix = d.own('suffix')?.value as Child | undefined;
+    const suffix = d.own('suffix')?.value as TextRuns;
     const props = d.props();
     Object.assign(props, typeof source === 'string' ? { source } : { nodes: source }, {
       streaming: d.own('streaming')?.value,
       onLinkPress: d.own('onLinkPress')?.value,
-      renderText: plainRun === undefined ? undefined : (text: string) => d.render(plainRun(text)),
+      renderText: plainRun === undefined ? undefined : (text: string) => d.runs(plainRun(text)),
       renderLink:
         linkView === undefined
           ? undefined
           : (link: InlineMarkdownLink) => {
-              const view = linkView(link);
-              return view === undefined ? undefined : d.render(view);
+              const runs = linkView(link);
+              return runs === undefined ? undefined : d.runs(runs);
             },
-      suffix: suffix === undefined ? undefined : d.render(suffix),
+      suffix: suffix === undefined ? undefined : d.runs(suffix),
     });
     return d.component(BloomInlineMarkdown, props);
   },

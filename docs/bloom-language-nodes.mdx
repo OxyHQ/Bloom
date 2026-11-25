@@ -3538,9 +3538,9 @@ Modifiers:
 
 - [`.streaming()`](bloom-language-modifiers.mdx#streaming) `(value?: boolean)`: The text is still arriving: an unclosed span is drawn as it will close.
 - [`.onLinkPress()`](bloom-language-modifiers.mdx#onlinkpress) `(value: (url: string) => void)`: What a link does (opened outside the app by default).
-- [`.plainRun()`](bloom-language-modifiers.mdx#plainrun) `(value: (text: string) => Child)`: A view of your own for each plain run (mentions, tags); not inside links or code.
-- [`.linkView()`](bloom-language-modifiers.mdx#linkview) `(value: (link: InlineMarkdownLink) => Child | undefined)`: A link of your own; `undefined` keeps Bloom's.
-- [`.suffix()`](bloom-language-modifiers.mdx#suffix) `(value: Child)`: What follows the runs, in the line (a "Read more").
+- [`.plainRun()`](bloom-language-modifiers.mdx#plainrun) `(value: (text: string) => TextRuns)`: Runs of your own for each plain run (mentions, tags), not inside links or code: one run or several, strings beside spans, as a `Text` takes them.
+- [`.linkView()`](bloom-language-modifiers.mdx#linkview) `(value: (link: InlineMarkdownLink) => TextRuns)`: A link of your own, as runs of the text; `undefined` keeps Bloom's.
+- [`.suffix()`](bloom-language-modifiers.mdx#suffix) `(value: TextRuns)`: What follows the runs, in the line (a "Read more"): runs of the text.
 
 And every universal modifier.
 

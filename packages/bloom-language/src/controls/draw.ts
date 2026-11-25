@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
+import { type Child, isNode, type Modifier, type Node, type Press, type TextRuns } from '../node';
 import type { TextTraits } from '../style';
 import type { ColorToken, InkToken, Role } from '../tokens';
 import type { InsetRoom } from '../chrome/safe-area-inset';
@@ -78,6 +78,8 @@ export interface ControlDraw {
   readonly room?: InsetRoom;
   /** A language child, drawn where the control is. */
   render(child: Child): ReactNode;
+  /** Runs of a text (strings and spans), drawn as runs of the text the control is in. */
+  runs(runs: TextRuns): ReactNode;
   /**
    * A React element drawn where the control is: a language root
    * (`toElement(chain)`) as part of this tree, with no boundary of its own;

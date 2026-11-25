@@ -632,6 +632,28 @@ function jsxName(node: AnyNode): string | undefined {
   return n.JSXIdentifier.check(name) ? name.name : undefined;
 }
 
+/** An element with `asChild` set (bare or `{true}`): it hands its props to the one element inside it. */
+function isAsChild(element: AnyNode): boolean {
+  return (element.openingElement.attributes as AnyNode[]).some(
+    (attribute) =>
+      n.JSXAttribute.check(attribute) &&
+      n.JSXIdentifier.check(attribute.name) &&
+      attribute.name.name === 'asChild' &&
+      (attribute.value === null ||
+        (n.JSXExpressionContainer.check(attribute.value) &&
+          n.BooleanLiteral.check(attribute.value.expression) &&
+          attribute.value.expression.value === true)),
+  );
+}
+
+/** The one element among an element's children (blank text aside), if it holds nothing else. */
+function onlyElementChild(element: AnyNode): AnyNode | undefined {
+  const children = (element.children as AnyNode[]).filter(
+    (child) => !(n.JSXText.check(child) && cleanJsxText(child.value) === ''),
+  );
+  return children.length === 1 && n.JSXElement.check(children[0]) ? children[0] : undefined;
+}
+
 function staticString(value: AnyNode): string | undefined {
   if (!value) return undefined;
   if (n.StringLiteral.check(value) || n.Literal.check(value))
@@ -2119,7 +2141,11 @@ export function transformSource(source: string, options: TransformOptions): File
         });
         continue;
       }
-      if (kind === 'pressable' && (name === 'onPress' || name === 'onLongPress')) {
+      // A Text takes a press as a Pressable does: React Native's Text with its `onPress`, a span's too.
+      if (
+        (kind === 'pressable' || kind === 'bloomText' || kind === 'rnText') &&
+        (name === 'onPress' || name === 'onLongPress')
+      ) {
         props.push({ name, args: [{ node: expression, hole: 'handler' }] });
         continue;
       }
@@ -2454,6 +2480,10 @@ export function transformSource(source: string, options: TransformOptions): File
           const span = jsxName(child);
           if ('ir' in inner && innerKind === kind && !(span && textStyleOf(span)))
             runs.push(inner.ir);
+          // An element the codemod does not convert (a router's Link, an app's own component) is
+          // an element run, drawn as it is inside the text.
+          else if (!('ir' in inner))
+            runs.push({ type: 'embed', content: { node: child, hole: 'element' } });
           else
             fail(
               jsxName(child) ?? 'element',
@@ -4552,6 +4582,8 @@ export function transformSource(source: string, options: TransformOptions): File
         // `v`. (A fixture's hole stands for the element, so there it stays embedded.)
         if (isToElement(shown) && shown.arguments.length === 1 && text === recast.print(shown).code)
           return recast.print(shown.arguments[0]).code;
+        // An `asChild` element whose child is a text the codemod converted: it hands the text's host its props.
+        if (renderedAsChild.has(ir.content.node)) return `${lang('Embed')}((render) => ${text})`;
         return `${lang('Embed')}(${text})`;
       }
       case 'comment':
@@ -5069,6 +5101,38 @@ export function transformSource(source: string, options: TransformOptions): File
   // ── the walk ─────────────────────────────────────────────────────────
 
   let regions = 0;
+  /** Element runs whose `asChild` element is handed its text by `Embed`'s render function. */
+  const renderedAsChild = new WeakSet<AnyNode>();
+
+  /**
+   * An embedded `asChild` element (expo-router's `Link asChild`) around one
+   * text the codemod converts: the text becomes `render(text)`, which draws
+   * the text's host for the element to hand its props to, as its JSX child
+   * was (`Embed((render) => <Link asChild>{render(Text(…))}</Link>)`). Inside
+   * a text it is a span. A file that names `render` itself keeps the JSX.
+   */
+  function renderAsChild(element: AnyNode): void {
+    if (!n.JSXElement.check(element) || !isAsChild(element)) return;
+    const child = onlyElementChild(element);
+    const kind = child ? elementOf(child)?.kind : undefined;
+    if (!child || (kind !== 'bloomText' && kind !== 'rnText')) return;
+    const { start, end } = element as AnyNode;
+    if (/\brender\b/.test(source.slice(start, end))) return;
+    const result = convert(child);
+    if (!('ir' in result)) return;
+    markConverted(child);
+    for (const color of colorsOf(result.ir)) {
+      appColors.set(color.name, color);
+      lang('defineTokens');
+    }
+    const code = `render(${print(result.ir, (c) => recast.print(c.node).code, true)})`;
+    const call = recast.parse(`${code};`, { parser: babelTs }).program.body[0].expression;
+    element.children = (element.children as AnyNode[]).map((at) =>
+      at === child ? recast.types.builders.jsxExpressionContainer(call) : at,
+    );
+    renderedAsChild.add(element);
+  }
+
   const markConverted = (node: AnyNode) => {
     recast.visit(node, {
       visitJSXElement(path) {
@@ -5097,6 +5161,32 @@ export function transformSource(source: string, options: TransformOptions): File
         this.traverse(path);
         return undefined;
       }
+      // An `asChild` element hands the one element inside it its own props (an href, a press):
+      // a root there would take them in place of the element's host, and drop them. (A Screen
+      // whose route draws its wrappers as screen modifiers, a colour scope among them, takes them.)
+      const holder = path.parent?.node;
+      if (
+        n.JSXElement.check(holder) &&
+        isAsChild(holder) &&
+        onlyElementChild(holder) === node &&
+        !screenOuter.has(node)
+      ) {
+        if (elementOf(node))
+          unconverted.push({
+            line: node.loc?.start.line ?? 0,
+            element: jsxName(node) ?? '',
+            reasons: [
+              {
+                subject: jsxName(node) ?? 'element',
+                code: 'as-child',
+                why: 'the child of an `asChild` element, which hands it its own props: a root would drop them (a text inside a language view is `Embed((render) => …)`)',
+              },
+            ],
+          });
+        this.traverse(path);
+        return undefined;
+      }
+
       regions++;
       markConverted(node);
       const ir = result.ir;
@@ -5119,6 +5209,7 @@ export function transformSource(source: string, options: TransformOptions): File
         }
       // Regions inside the values it carries (an embedded element's children, an array's elements).
       for (const c of carriedOf(ir)) {
+        if (c.hole === 'element') renderAsChild(c.node);
         if (c.hole === 'element' || c.hole === 'items') {
           // An element can sit at the root of what is carried; visit inside it.
           const holder = { type: 'ExpressionStatement', expression: c.node };

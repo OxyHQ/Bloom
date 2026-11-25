@@ -975,6 +975,28 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   Markdown nests its runs: it writes only what its own chain names (a weight,
   an ink, a link) and inherits the rest, so a span of an `h1` keeps the
   heading's size.
+- **Pressable runs.** A span takes `.onPress()` and `.onLongPress()`, as a
+  React Native `Text` nested in a text takes `onPress`: it stays a span of the
+  line (no box of its own), a URL that opens on a press or a "Read more"
+  (`RawText(body, Text(' Read more').foreground('primary').onPress(expand))`).
+  A whole `Text` takes them too, a footer link.
+- **Element runs.** `Embed(element)` is a run like any other, drawn as it is
+  inside the line: a router's `Link`, an app's own component. A render
+  function hands an element that takes a child (`asChild`) a span: inside a
+  text, `render(Text(…))` draws the span's host, so expo-router's `Link
+  asChild` gives it its `href`, its role and its press (an anchor on the web),
+  and its own props (`hrefAttrs` with `rel: 'nofollow'`) reach the span as
+  they reach a JSX child:
+
+  ```tsx
+  const mention = (handle: string) =>
+    Embed((render) => (
+      <Link href={`/@${handle}`} push asChild>
+        {render(Text(`@${handle}`).foreground('primary'))}
+      </Link>
+    ));
+  RawText('Hi ', mention('bob'), ', see ', Text('oxy.so').foreground('primary').onPress(open))
+  ```
 - **Raw text.** `RawText(...runs)` is React Native's own `Text`, not Bloom's:
   it writes only what its chain names, so a text that names no family draws
   the platform face (Roboto on Android, San Francisco on iOS,
@@ -2889,10 +2911,12 @@ Text(InlineMarkdown(post.body).plainRun(mentions).suffix(Text(' Read more').link
 Inline markdown inside a line is `InlineMarkdown(source)`, Bloom's own: a run
 of a `Text` (emphasis, strikethrough, code and links as spans of it), its
 source a string or Bloom's parsed runs. It takes `.streaming()`,
-`.onLinkPress()`, `.plainRun(text => view)` (each plain run, not inside links
-or code), `.linkView(link => view)` (a link of your own; `undefined` keeps
-Bloom's) and `.suffix(view)`. A line the screen writes itself is nested `Text`
-spans (see [Text](#text)).
+`.onLinkPress()`, `.plainRun(text => runs)` (each plain run, not inside links
+or code), `.linkView(link => runs)` (a link of your own; `undefined` keeps
+Bloom's) and `.suffix(runs)`. Each hands back runs of the text, as `Text`
+takes them: one, or several in order, strings beside spans and element runs,
+so a post's linkified plain run is its prose as strings and its mentions,
+tags and URLs as spans, with no span around the prose (see [Text](#text)).
 
 ### Sliders
 
