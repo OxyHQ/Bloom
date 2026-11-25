@@ -2667,9 +2667,10 @@ function renderHost(
         node.children,
       );
       const shape = ownValue(p, 'shape')?.value;
+      // A bare glyph as its content, in no ink of its own: Bloom's render-function children.
+      const handed = content ? handedGlyph(node.children) : undefined;
       const iconOnly =
-        !content &&
-        icon !== undefined &&
+        ((!content && icon !== undefined) || handed !== undefined) &&
         label === undefined &&
         shape !== undefined &&
         shape !== 'fit';
@@ -2698,7 +2699,8 @@ function renderHost(
         inverted: ownValue(p, 'inverted')?.value,
         density: ownValue(p, 'density')?.value,
         // Content that is a view (a spinner, a glyph in a `Group`) is the button's children as drawn.
-        children: content ? renderChildren(node.children, ctx) : label,
+        children:
+          handed !== undefined ? handed : content ? renderChildren(node.children, ctx) : label,
         disabled: ownValue(p, 'disabled')?.value,
         loading: ownValue(p, 'loading')?.value,
         pressed: ownValue(p, 'pressed')?.value,
@@ -3168,6 +3170,8 @@ function renderHost(
           for (const [prop, token] of Object.entries(colors)) {
             if (token === undefined) continue;
             if (typeof token === 'string') roles.push(propRole(prop, token));
+            // An app's own colour is the same in both schemes: the prop as it is.
+            else if (!Array.isArray(token)) props[prop] = ink(token as InkToken);
             else {
               lists.push([prop, token.map(listColor)]);
               listKeys.push(`${prop}:${token.map(tokenKey).join('+')}`);
@@ -3716,6 +3720,27 @@ function buttonContent(children: readonly Child[]): {
     leadingView,
     trailingView,
   };
+}
+
+/**
+ * `Button(Group(Icon(X)))` whose glyph names no ink of its own: Bloom's
+ * render-function children, `(color) => glyph`, so the glyph is drawn in the
+ * ink Bloom hands it (its tone's, under the pointer its hover's, disabled its
+ * muted one), with the glyph's own side. `undefined` for any other content.
+ */
+function handedGlyph(children: readonly Child[]): ((color: string) => ReactElement) | undefined {
+  const [group, ...rest] = flatten(children);
+  if (group?.kind !== 'group' || rest.length > 0 || group.modifiers.length > 0) return undefined;
+  const [glyph, ...others] = flatten(group.children);
+  if (glyph?.kind !== 'icon' || others.length > 0) return undefined;
+  if (glyph.modifiers.some((modifier) => modifier.kind !== 'size')) return undefined;
+  const size = resolveIconSize(
+    (glyph.modifiers.find((modifier) => modifier.kind === 'size')?.value as
+      | IconSizeToken
+      | undefined) ?? 'md',
+  );
+  const { icon } = glyph.props as IconProps;
+  return (color) => draw(icon as Host, { width: size, height: size, fill: color });
 }
 
 function flatten(children: readonly Child[]): Node[] {

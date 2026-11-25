@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1075 | 47195 | 87.9% |
+| Maps to a modifier and a token | 1083 | 47220 | 87.9% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 31 | 509 | 0.9% |
-| Needs a named token (raw value) | 267 | 634 | 1.2% |
+| Needs a named token (raw value) | 259 | 609 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -43,7 +43,7 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | --- | ---: | --- |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
 | space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
-| opacity | 83 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), black at [0.025]% (2), black at [0.07]% (2) |
+| opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
 | corner | 29 | 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1), 32px (1) |
@@ -473,6 +473,7 @@ when the fill is a role's colour.
 | `z-20` | .zIndex('20') | 8 | 5 |
 | `bg-background/80` | .background('background/80') | 7 | 5 |
 | `bg-black/50` | .background('black/half') | 7 | 7 |
+| `bg-foreground/5` | .background('foreground/5') | 7 | 3 |
 | `border-l-2` | .border(role, 'thick', 'left') | 7 | 5 |
 | `gap-space-20` | .spacing('xl') | 7 | 3 |
 | `h-[30px]` | .frame({ height: '30' }) | 7 | 3 |
@@ -526,6 +527,7 @@ when the fill is a role's colour.
 | `bg-fill-secondary` | .background('mutedFill') | 5 | 2 |
 | `bg-foreground/10` | .background('foreground/10') | 5 | 3 |
 | `bg-muted/60` | .background('mutedFill/60') | 5 | 3 |
+| `bg-primary/5` | .background('primary/5') | 5 | 4 |
 | `border-background` | .border('background') | 5 | 3 |
 | `border-foreground` | .border('foreground') | 5 | 3 |
 | `border-transparent` | .border('transparent') | 5 | 4 |
@@ -661,6 +663,7 @@ when the fill is a role's colour.
 | `bg-input` | .background('input') | 2 | 2 |
 | `bg-primary/60` | .background('primary/60') | 2 | 2 |
 | `bg-white/30` | .background('white/30') | 2 | 2 |
+| `bg-white/5` | .background('white/5') | 2 | 2 |
 | `bottom-1` | .position({ bottom: 'xs' }) | 2 | 2 |
 | `bottom-6` | .position({ bottom: '2xl' }) | 2 | 2 |
 | `bottom-8` | .position({ bottom: '3xl' }) | 2 | 2 |
@@ -794,11 +797,9 @@ when the fill is a role's colour.
 | `text-[10.5px]` | 10.5px | .font(…) | 8 | 3 |
 | `text-accent-foreground` | --accent-foreground | .foreground(…) | 8 | 2 |
 | `text-red-500` | red-500 | .foreground(…) | 8 | 2 |
-| `bg-foreground/5` | --foreground at 5% | .background('foreground/…') | 7 | 3 |
 | `bg-error-subtle` | --error-subtle | .background(…) | 6 | 3 |
 | `max-w-[520px]` | 520px | .frame({ maxWidth: … }) | 6 | 4 |
 | `rounded-[23px]` | 23px | .corner(…) | 6 | 2 |
-| `bg-primary/5` | --primary at 5% | .background('primary/…') | 5 | 4 |
 | `leading-[17px]` | 17px | .leading(…) | 5 | 2 |
 | `max-w-xl` | 576px | .frame({ maxWidth: … }) | 5 | 4 |
 | `min-h-[52px]` | 52px | .frame({ minHeight: … }) | 5 | 4 |
@@ -828,7 +829,6 @@ when the fill is a role's colour.
 | `w-[7px]` | 7px | .frame({ width: … }) | 3 | 2 |
 | `bg-black/[0.07]` | black at [0.07]% | .background('black/…') | 2 | 2 |
 | `bg-tertiary-subtle` | --tertiary-subtle | .background(…) | 2 | 2 |
-| `bg-white/5` | white at 5% | .background('white/…') | 2 | 2 |
 | `bg-yellow-400/10` | yellow-400 | .background(…) | 2 | 2 |
 | `border-sidebar-border` | --sidebar-border | .border(…) | 2 | 2 |
 | `h-[199px]` | 199px | .frame({ height: … }) | 2 | 2 |

@@ -1557,7 +1557,7 @@ export type Modifier =
         | ColorName
         | AvatarColor
         | AccentTone
-        | ColorToken
+        | InkToken
         | ComposerButtonTone
         | SparklineTone
         | AiChatLineTone
@@ -2389,7 +2389,7 @@ export class Node {
       | ColorName
       | AvatarColor
       | AccentTone
-      | ColorToken
+      | InkToken
       | ComposerButtonTone
       | SparklineTone
       | AiChatLineTone
@@ -2402,7 +2402,11 @@ export class Node {
       | PriceLineTone
       | undefined,
   ): Node {
-    return this.with({ kind: 'tint', key: `tint:${value}`, value });
+    return this.with({
+      kind: 'tint',
+      key: `tint:${value === undefined ? '' : tokenKey(value)}`,
+      value,
+    });
   }
   count(value: number | string | null | undefined): Node {
     return this.with({ kind: 'count', key: 'count', value });

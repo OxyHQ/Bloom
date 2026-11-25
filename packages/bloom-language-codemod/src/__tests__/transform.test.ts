@@ -8,6 +8,28 @@ const run = (source: string) =>
 const flat = (code: string) => code.replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
 
 describe('transformSource', () => {
+  it('maps a row press chosen at render, a spinner in an app colour, a platform monospace, a 5% fill', () => {
+    const { code } = run(`import { Item } from '@oxy.so/bloom/item';
+import { SpinnerIcon } from '@oxy.so/bloom/loading';
+import { useTheme, withAlpha } from '@oxy.so/bloom/theme';
+import { Text } from 'react-native';
+import { View } from 'react-native';
+export function A({ full, add }) {
+  const theme = useTheme();
+  return (
+    <View style={{ backgroundColor: withAlpha(theme.colors.primary, 0.05) }}>
+      <Item title="Add" onPress={full ? undefined : add} />
+      <SpinnerIcon size={32} color="#FFFFFF" />
+      <Text style={{ fontFamily: 'monospace' }}>spam</Text>
+    </View>
+  );
+}
+`);
+    expect(flat(code)).toContain('.onPress(full ? undefined : add)');
+    expect(flat(code)).toContain('.tint(');
+    expect(flat(code)).toContain(".font('system-mono')");
+    expect(flat(code)).toContain(".background('primary/5')");
+  });
   it('maps accessible, tabIndex, collapsable and a long press delay', () => {
     const { code } = run(`import { Pressable, View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
@@ -44,6 +66,54 @@ export const A = () => (
     expect(flat(code)).toContain(".position({ horizontal: 'none' })");
     expect(flat(code)).toContain(".textShadow('0 1px 3px rgb(0 0 0 / 0.8)')");
     expect(flat(code)).toContain(".sticky('top')");
+  });
+  it('names a style the caller hands in as its own reason', () => {
+    const result = run(`import { View } from 'react-native';
+const styles = { row: { padding: 12 } };
+export const A = ({ style }) => <View style={[styles.row, style]} />;
+export function B(props) {
+  return <View style={props.containerStyle} />;
+}
+export const C = ({ style }) => {
+  const { gutter } = style;
+  return <View style={gutter} />;
+};
+export const D = ({ size }) => <View style={{ width: size }} />;
+`);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'caller-style',
+      'caller-style',
+      'caller-style',
+    ]);
+  });
+  it('maps a Button’s glyph drawn in the ink Bloom hands it', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiLinksLine } from '@oxy.so/bloom/icons/RiLinksLine';
+export const A = ({ go, md }) => (
+  <Button appearance="plain" iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine width={20} height={20} fill={color} />}
+  </Button>
+);
+export const B = ({ go }) => (
+  <Button iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine size="lg" fill={color} />}
+  </Button>
+);
+export const C = ({ go }) => (
+  <Button iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine size="lg" fill={color} style={{ opacity: 0.5 }} />}
+  </Button>
+);
+`);
+    expect(flat(result.code)).toContain(
+      "Button(Group(Icon(RiLinksLine))).shape('circle').style('plain')",
+    );
+    expect(flat(result.code)).toContain("Button(Group(Icon(RiLinksLine).size('lg')))");
+    // A glyph with more than its fill and side stays JSX, the function with it.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'render-children',
+      'prop:style',
+    ]);
   });
   it('converts a View tree and swaps the imports', () => {
     const result = run(`import { View } from 'react-native';

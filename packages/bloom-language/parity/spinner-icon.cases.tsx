@@ -4,7 +4,11 @@ import { withAlpha } from '@oxy.so/bloom/theme';
 
 import * as L from '../src/index';
 import { toElement } from '../src/render';
+import { defineTokens } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
+
+/** An app's own colour: Mention's white over video, the same in both schemes. */
+const APP = defineTokens({ color: { onVideo: '#FFFFFF' } });
 
 /** Bloom's `SpinnerIcon` as an app draws it: a size, a colour from the theme, a style. */
 export const SPINNER_ICON_CASES: readonly ParityCase[] = [
@@ -27,6 +31,11 @@ export const SPINNER_ICON_CASES: readonly ParityCase[] = [
     name: 'a spinner glyph in a role',
     language: () => toElement(L.SpinnerIcon().size('md').tint('primary')),
     bloom: () => <Themed>{(c) => <SpinnerIcon size={20} color={c.primary} />}</Themed>,
+  },
+  {
+    name: 'a spinner glyph in an app colour',
+    language: () => toElement(L.SpinnerIcon().size('2xl').tint(APP.color.onVideo)),
+    bloom: () => <SpinnerIcon size={32} color="#FFFFFF" />,
   },
   {
     name: 'a spinner glyph in a role at an opacity',

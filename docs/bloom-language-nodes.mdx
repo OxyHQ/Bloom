@@ -1279,7 +1279,7 @@ Modifiers:
 - [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: Press | undefined)` (here: a value): A long press: the tab's own menu.
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`: The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's.
 - [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`: The tab's own padding (`TabsTrigger`'s `style`), over Bloom's.
-- [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, 'mono' | 'display'>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
+- [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, FontFamilyName>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
 - [`.leading()`](bloom-language-modifiers.mdx#leading) `(value: LeadingToken)`
 - [`.weight()`](bloom-language-modifiers.mdx#weight) `(value: WeightName)`
 
@@ -3112,7 +3112,7 @@ Token sets:
 Modifiers:
 
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: IconSizeToken)`: Its width and height: an icon rung, a numeric side or an app token (Bloom's 26 by default).
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: Its colour (Bloom's `color`), painted from a role; the text's colour by default.
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: InkToken)`: Its colour (Bloom's `color`): a role painted from the theme, or an app's own colour (`defineTokens({ color: { onVideo: '#FFFFFF' } })`), drawn as written; the text's colour by default.
 
 And every universal modifier.
 

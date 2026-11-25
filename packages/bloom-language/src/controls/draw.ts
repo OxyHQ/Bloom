@@ -13,7 +13,7 @@ import type { InsetRoom } from '../chrome/safe-area-inset';
 import type { Palette } from '../paint';
 
 /** What a product component's colour prop is painted from: a role, or a list of colours. */
-export type ProductColor = ColorToken | readonly InkToken[];
+export type ProductColor = InkToken | readonly InkToken[];
 
 /**
  * What a control's renderer is handed (see `controls/index.ts`): its node, its
@@ -50,8 +50,9 @@ export interface ControlDraw {
   /**
    * Draws a Bloom component as `component` does, with the props `colors` names
    * painted from their colour roles (a role at an opacity included), read from
-   * the theme in the leaf that draws it. A prop given a list of colours (each a
-   * role or an app's own colour) is painted as a list.
+   * the theme in the leaf that draws it; an app's own colour is passed as it
+   * is. A prop given a list of colours (each a role or an app's own colour) is
+   * painted as a list.
    */
   painted(
     host: unknown,

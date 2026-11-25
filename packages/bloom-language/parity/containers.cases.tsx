@@ -303,6 +303,11 @@ const rows: ParityCase[] = [
     language: () => toElement(C.Row('Settings').onPress(onPress).label('Open settings')),
     bloom: () => <Item title="Settings" onPress={onPress} accessibilityLabel="Open settings" />,
   },
+  ...([false, true] as const).map((can) => ({
+    name: `a row whose press is chosen at render (${can ? 'a handler' : 'undefined'})`,
+    language: () => toElement(C.Row('Add').onPress(can ? onPress : undefined)),
+    bloom: () => <Item title="Add" onPress={can ? onPress : undefined} />,
+  })),
   {
     name: 'Row disabled',
     language: () => toElement(C.Row('Settings').onPress(onPress).disabled()),

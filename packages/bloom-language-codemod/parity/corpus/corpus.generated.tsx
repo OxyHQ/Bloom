@@ -83,6 +83,7 @@ import { Switch as I72 } from 'bloom-22/switch';
 import { RiArrowRightLine as I73 } from 'bloom-22/icons/RiArrowRightLine';
 import { RiArrowRightLine as I74 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { PageHeader as I75 } from 'bloom-22/page-header';
+import { RiLinksLine as I76 } from '@oxy.so/bloom/icons/RiLinksLine';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });
@@ -1082,5 +1083,19 @@ export const CASES = [
       {true ? <Text className="text-xs text-muted-foreground">{'⟨2⟩'}</Text> : null}
     </Screen>); },
     after: () => { const Screen = I16; const View = I14; const ScreenScrollView = I13; const Text = I4; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
+  },
+  {
+    name: "components/Toolbar.tsx:9",
+    bloom22: false,
+    before: () => { const Button = I22; const RiLinksLine = I76; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
+      {(color) => <RiLinksLine width={20} height={20} fill={color} />}
+    </Button>); },
+    after: () => { const Button = I22; const RiLinksLine = I76; const { Group, Icon, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
+  },
+  {
+    name: "components/Toolbar.tsx:16",
+    bloom22: false,
+    before: () => { const Item = I26; return (<Item title="Add" onPress={() => {}} />); },
+    after: () => { const Item = I26; const { Group, Icon, Button: LButton, toElement, Row } = L;  return (toElement(Row('Add').onPress(() => {}))); },
   },
 ];
