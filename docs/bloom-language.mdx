@@ -128,13 +128,16 @@ HStack(Badge({ label: 'New' }), …)
 - **One fiber.** The component is React's own `memo` of the body's host, with
   no comparator: props compare key by key, `Object.is` each, and the body
   re-runs only when one changes.
-- **One theme read.** The body is a tree of its own: it reads the theme once,
-  where it starts, and every node it draws paints from that read (see
-  [Rendering](#rendering)), so a theme switch re-runs it once, as it does a JSX
-  component that reads the theme.
+- **One theme read, when it paints.** The body is a tree of its own: it reads
+  the theme once, where it starts, when a node of it paints from the theme, and
+  every node it draws paints from that read (see [Rendering](#rendering)), so a
+  theme switch re-runs it once, as it does a JSX component that reads the
+  theme. A body that paints nothing from the theme reads none.
 - **The environment** (text traits set above the view) arrives through a
-  context that is provided only where an environment modifier changed it. A
-  view under an unchanged environment adds no provider.
+  context that is provided only where an environment modifier changed it, and
+  is read only when the body takes from it (see
+  [What a root costs](#interop)). A view under an unchanged environment adds no
+  provider.
 
 A view node takes the universal modifiers. Environment modifiers flow into its
 body, and box modifiers wrap it.
@@ -341,8 +344,9 @@ high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
 and colour *roles*, and one cache serves every theme. Each role is painted where
 it is cheapest:
 
-- **One theme read per tree.** A tree reads the theme once, where it starts: a
-  `toElement` root (beside the environment), a `view()` body, and the content of
+- **One theme read per tree.** A tree reads the theme once, where it starts,
+  when a node of it paints from the theme: a `toElement` root (beside the
+  environment), a `view()` body, and the content of
   a Bloom component that re-themes what it holds (a dialog's, an immersive
   player's slot), which is a tree of its own. Every node of it paints from that
   read where it is drawn: its host takes the palette's colours (built once per
@@ -4459,12 +4463,25 @@ as part of that tree, in the environment provided there.
 **What a root costs.** Every node costs React what the JSX it stands for
 costs: a press, a hit slop, a pinned edge, a fill at an opacity, an app colour,
 a glyph (the per-node cost gate, `parity/cost.parity.test.tsx`, measures each
-against its JSX). The boundary is the one thing JSX does not have: one fiber
-and two context reads, the environment (an `.environment()`, `.disabled()` or
-navigator set above reaches the root through it) and the theme. A component
-whose JSX holds two roots pays them twice; converting a region into one root,
-not each of its pieces into a root of its own, pays them once, and a region
-already inside a language tree pays nothing. Order still means nesting:
+against its JSX). The boundary is the one thing JSX does not have: one fiber,
+and a context read for each thing its tree takes from where it is placed. It
+reads the environment (an `.environment()`, `.disabled()`, `.animation()`,
+navigator or text trait set above reaches the root through it) when a node of
+its tree takes from it: a press (a `.disabled()` above disables it), a text, a
+glyph with no colour of its own, any modifier that sets a value for what is
+inside it. It reads the theme when a node paints a theme colour; a fixed
+colour (`white`, `black/60`, natively) and an app's own colour read none. A
+tree of fixed geometry, a glyph in a fixed colour, an embedded element or a
+`view()` (which reads what it takes itself) reads nothing, and a `view()`
+inside it still reads what is set above. What a tree reads is known from its
+nodes, once per node, and read with React's `use`, so a root whose tree comes
+to read more stays the same component and keeps its state; a `view()` body
+reads the same way. Mention's feed video preview (a tap area and a mute button
+in one root) is its JSX's fibers, hooks and reads, and one read more, the
+environment its presses take. A component whose JSX holds two roots pays them
+twice; converting a region into one root, not each of its pieces into a root
+of its own, pays them once, and a region already inside a language tree pays
+nothing. Order still means nesting:
 `.frame().background().border().corner()` is the one rounded, filled, outlined
 view a JSX style writes; `.corner()` before `.background()` rounds the content
 and fills a square behind it, a second view.

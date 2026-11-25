@@ -101,7 +101,7 @@ export type {
 } from './persistence';
 export { createBloomThemeStorage, webLocalStorage } from './persistence';
 
-export { useThemePaint } from './use-theme-paint';
+export { readThemePaint, useThemePaint } from './use-theme-paint';
 export { createTokenStyles, tokenAlpha, useColorTokens } from './color-tokens';
 export { ColorScopeLayerContext } from './color-scope/layer';
 export type { ColorScopeLayer } from './color-scope/layer';
