@@ -831,6 +831,12 @@ export const CASES = [
     after: () => { const Button = I22; const Loading = I25; const RiMapPinLine = I62; const { Icon, Group, Loading: LLoading, Button: LButton } = L;  return (toElement(LButton(Group(true ? LLoading().style('inline').size('sm') : Icon(RiMapPinLine))).shape('circle').style('plain').tint('neutral').label('Location').onPress(() => {}))); },
   },
   {
+    name: "components/Markers.tsx:6",
+    bloom22: false,
+    before: () => { const View = I14; return (<View pointerEvents="none" style={{ position: 'absolute', width: 0, height: 0 }} onLayout={() => {}} />); },
+    after: () => { const View = I14; const { VStack } = L;  return (toElement(VStack().frame({ width: 'none', height: 'none' }).position({}).allowsHitTesting(false).onLayout(() => {}))); },
+  },
+  {
     name: "components/Menus.tsx:17",
     bloom22: false,
     before: () => { const DropdownMenu = I63; const DropdownMenuTrigger = I64; const Button = I22; const DropdownMenuContent = I65; const DropdownMenuItem = I66; const DropdownMenuSeparator = I67; const Icon = I68; const RiMoreFill = I69; const RiShareLine = I70; return (<DropdownMenu>

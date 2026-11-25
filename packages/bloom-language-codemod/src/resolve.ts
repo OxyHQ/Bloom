@@ -545,8 +545,8 @@ function finish(
         'offset-without-absolute',
         'an inset without `absolute` offsets the view in its flow',
       );
-    else if (edges.length === 0)
-      fail(g.absolute, 'absolute-without-edges', '`absolute` with no inset class');
+    // `absolute` alone takes the view out of the flow where it would sit: a position of no edge.
+    else if (edges.length === 0) mods.push({ name: 'position', args: [{}] });
     else {
       const merged = mergeObjects(edges, 'position', subject, fail);
       if (merged) mods.push(merged);

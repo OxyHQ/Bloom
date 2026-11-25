@@ -3919,6 +3919,53 @@ export function Controls({ onTap, onSeek, bar, items }) {
 }
 
 #[test]
+fn a_runtime_chain_of_host_views_that_reads_nothing_stays_a_to_element() {
+    let source = "import { Spacer, toElement } from '@oxy.so/bloom-language';
+export function Cell({ size, label, onLayout, bar }) {
+  return <View>
+    {toElement(HStack(VStack().frame({ width: size, height: size }), Spacer(), null).padding('md'))}
+    {toElement(VStack().frame({ width: size }).label(label))}
+    {toElement(VStack().frame({ width: size }).onLayout(onLayout))}
+    {toElement(VStack().frame({ width: size }).ref(bar))}
+    {toElement(VStack(Text(label)).frame({ width: size }))}
+    {toElement(VStack().frame({ width: size }).background('surface'))}
+    {toElement(VStack().frame({ width: size }).position({}).allowsHitTesting(false))}
+  </View>;
+}
+";
+    let output = compile(&format!("{IMPORTS}{source}"), "cell.tsx");
+    assert!(output.changed && output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let code = output.code;
+    // The runtime draws these as their views, with no boundary.
+    assert!(code.contains("toElement(HStack(_bloomStatic0.frame({"), "{code}");
+    assert!(code.contains("toElement(_bloomStatic2.frame({ width: size }).label(label))"), "{code}");
+    // A handler or a ref reaches the React Compiler as a JSX prop of the boundary that builds it.
+    assert!(
+        code.contains("<_BloomRoot build={() => _bloomStatic3.frame({ width: size }).onLayout(onLayout)} />"),
+        "{code}"
+    );
+    assert!(
+        code.contains("<_BloomRoot build={() => _bloomStatic4.frame({ width: size }).ref(bar)} />"),
+        "{code}"
+    );
+    assert!(
+        code.contains("toElement(_bloomStatic6.frame({ width: size }).position({}).allowsHitTesting(false))"),
+        "{code}"
+    );
+    // A text, or a role, reads where the tree starts: a boundary reads it.
+    assert!(
+        code.contains("<_BloomRoot build={() => VStack(Text(label)).frame({ width: size })} />"),
+        "{code}"
+    );
+    assert!(
+        code.contains(
+            "<_BloomRoot build={() => _bloomStatic5.frame({ width: size }).background(\"surface\")} />"
+        ),
+        "{code}"
+    );
+}
+
+#[test]
 fn a_view_body_returns_a_function_that_builds_its_runtime_chain() {
     let source = "export const Bar = view(function Bar({ bar, onSeek, label }) {
   if (!label) return Text('none');

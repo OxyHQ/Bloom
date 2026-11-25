@@ -2590,6 +2590,26 @@
   "appColors": null
  },
  {
+  "name": "components/Markers.tsx:6",
+  "before": "<View pointerEvents=\"none\" style={{ position: 'absolute', width: 0, height: 0 }} onLayout={() => {}} />",
+  "after": "toElement(VStack().frame({ width: 'none', height: 'none' }).position({}).allowsHitTesting(false).onLayout(() => {}))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Menus.tsx:17",
   "before": "<DropdownMenu>\n      <DropdownMenuTrigger asChild label=\"More\">\n        <Button iconOnly appearance=\"plain\" leadingIcon={RiMoreFill} accessibilityLabel=\"More\" />\n      </DropdownMenuTrigger>\n      <DropdownMenuContent label=\"More\">\n        <DropdownMenuItem\n          leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))}\n          onPress={() => {}}\n        >\n          Share\n        </DropdownMenuItem>\n        <DropdownMenuSeparator />\n        <DropdownMenuItem variant=\"destructive\" onPress={() => {}}>\n          Block\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>",
   "after": "toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))",

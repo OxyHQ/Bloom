@@ -18,7 +18,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_syntax::symbol::SymbolId;
 
-use crate::spec::NODES;
+use crate::spec::{HANDLERS, HOST_VIEWS, NODES, READS_NOTHING};
 
 /// The module the language's exports come from.
 pub const LANGUAGE_MODULE: &str = "@oxy.so/bloom-language";
@@ -363,6 +363,42 @@ impl Module {
     /// Whether `expression` is a language chain: a constructor (or view) call with modifiers after it.
     pub fn is_chain(&self, expression: &Expression, scoping: &Scoping) -> bool {
         self.chain_root(expression, scoping).is_some()
+    }
+
+    /// Whether `expression` is a chain the runtime draws as its own host views,
+    /// with no boundary around it: host views (`reads.hostViews`) alone, each
+    /// modified only by what reads nothing where a tree starts (`reads.nothing`),
+    /// none of it a handler or a ref (`reads.handlers`, which the React Compiler
+    /// reads only as a JSX prop). A child that is no such chain (a variable, a
+    /// text) makes it no such chain.
+    pub fn host_views(&self, expression: &Expression, scoping: &Scoping) -> bool {
+        let mut current = expression.without_parentheses();
+        loop {
+            let Expression::CallExpression(call) = current else { return false };
+            match &call.callee {
+                Expression::StaticMemberExpression(member) => {
+                    let name = member.property.name.as_str();
+                    if !READS_NOTHING.contains(&name) || HANDLERS.contains(&name) {
+                        return false;
+                    }
+                    current = member.object.without_parentheses();
+                }
+                Expression::Identifier(_) => {
+                    let Some(Binding::Constructor { kind, .. }) = self.resolve(&call.callee, scoping) else {
+                        return false;
+                    };
+                    return HOST_VIEWS.contains(&kind)
+                        && call.arguments.iter().all(|argument| {
+                            argument.as_expression().is_some_and(|child| {
+                                matches!(child.without_parentheses(), Expression::NullLiteral(_))
+                                    || matches!(child.without_parentheses(), Expression::BooleanLiteral(literal) if !literal.value)
+                                    || self.host_views(child, scoping)
+                            })
+                        });
+                }
+                _ => return false,
+            }
+        }
     }
 
     /// The binding at the root of a chain (`HStack` in `HStack(…).padding('md')`).

@@ -101,6 +101,8 @@ import {
   OPACITY,
   TONE_ROLE,
   NOT_HELD_MODIFIERS,
+  READS_NOTHING as SPEC_READS_NOTHING,
+  HOST_VIEWS,
 } from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
@@ -3993,6 +3995,15 @@ function nodeReads(node: Node): number {
       if (isValidElement(content) && content.type === LanguageRoot) return READS_BOTH;
       break;
     }
+    case 'text':
+      // A RawText takes none of the traits set above it (`drawText`): what its own
+      // chain names is all it writes, and its runs read what they take.
+      if ((node.props as TextProps).raw === true) return rawTextReads(node);
+      return READS_BOTH;
+    case 'avatar':
+    case 'avatarGroup':
+      // Bloom's own component, handed its props as they are (`OWN_READS_NOTHING`).
+      break;
     default:
       return READS_BOTH;
   }
@@ -4004,54 +4015,76 @@ function nodeReads(node: Node): number {
   return reads;
 }
 
-/** Modifiers that place, size or name a view, read nothing from where it is drawn. */
-const READS_NOTHING: ReadonlySet<string> = new Set([
-  'padding',
-  'frame',
-  'aspectRatio',
-  'corner',
-  'cornerCurve',
-  'clipped',
-  'borderStyle',
-  'grow',
-  'shrink',
-  'alignSelf',
-  'position',
-  'sticky',
-  'cursor',
-  'zIndex',
-  'hidden',
-  'basis',
-  'flex',
-  'margin',
-  'allowsHitTesting',
-  'accessibilityOnly',
-  'spacing',
-  'horizontalSpacing',
-  'verticalSpacing',
-  'childSpacing',
-  'align',
-  'justify',
-  'wrap',
-  'axis',
-  'alignment',
-  'size',
-  'label',
-  'hint',
-  'role',
-  'testID',
-  'id',
-  'hitSlop',
-  'accessibilityState',
-  'accessibilityValue',
-  'liveRegion',
-  'accessibilityHidden',
-  'accessibilityElement',
-  'focusable',
-  'collapsable',
-  'ref',
-  'onLayout',
-]);
+/** The modifier table key of a RawText, whose type and ink are its own (`OWN_READS_NOTHING`). */
+const RAW_TEXT = 'rawText';
+
+function rawTextReads(node: Node): number {
+  let reads = modifierReads(RAW_TEXT, node.modifiers);
+  for (const run of (node.props as TextProps).runs) {
+    if (reads === READS_BOTH) break;
+    if (typeof run === 'object' && run !== null) reads |= readsOf(run);
+  }
+  return reads;
+}
+
+/** Modifiers that place, size or name a view, read nothing from where it is drawn (the spec's `reads.nothing`). */
+const READS_NOTHING: ReadonlySet<string> = new Set(SPEC_READS_NOTHING);
+/** The nodes that are a host view of their own (the spec's `reads.hostViews`). */
+const HOST_VIEW_KINDS: ReadonlySet<string> = new Set(HOST_VIEWS);
+
+/**
+ * A node's own modifiers that read nothing where it is drawn: an Avatar's and an
+ * AvatarGroup's are Bloom's props as they are given (a size rung, a shape, an
+ * avatar colour by name), and a RawText's type is its own chain's, none of it
+ * inherited. An AvatarGroup's ring colour, its item action (a tree drawn here)
+ * and a link's ink still read.
+ */
+const OWN_READS_NOTHING: Readonly<Record<string, ReadonlySet<string>>> = {
+  avatar: new Set([
+    'motion',
+    'size',
+    'tint',
+    'shape',
+    'verified',
+    'live',
+    'liveBadge',
+    'presence',
+    'cornerRadius',
+  ]),
+  avatarGroup: new Set([
+    'layout',
+    'motion',
+    'size',
+    'shape',
+    'max',
+    'total',
+    'spacing',
+    'overflow',
+    'initials',
+    'onPressItem',
+    'hoverCard',
+    'variant',
+  ]),
+  [RAW_TEXT]: new Set([
+    'font',
+    'weight',
+    'leading',
+    'tracking',
+    'lines',
+    'noWrap',
+    'truncation',
+    'selectable',
+    'textStyle',
+    'textAlign',
+    'italic',
+    'underline',
+    'strikethrough',
+    'textCase',
+    'monospacedDigit',
+    'wordBreak',
+    'textShadow',
+  ]),
+};
 
 /** A platform or the app's own boolean: settled when the view renders, from nothing it reads. */
 const SETTLED_CONDITIONS: ReadonlySet<unknown> = new Set([
@@ -4063,18 +4096,19 @@ const SETTLED_CONDITIONS: ReadonlySet<unknown> = new Set([
   false,
 ]);
 
-function modifierReads(kind: NodeKind, modifiers: readonly Modifier[]): number {
+function modifierReads(kind: NodeKind | typeof RAW_TEXT, modifiers: readonly Modifier[]): number {
   let reads = 0;
+  const own = OWN_READS_NOTHING[kind];
   for (const modifier of modifiers) {
-    if (READS_NOTHING.has(modifier.kind)) continue;
+    if (READS_NOTHING.has(modifier.kind) || own?.has(modifier.kind)) continue;
     switch (modifier.kind) {
       case 'background':
       case 'border':
         if (!themeFree(modifier.value)) reads |= READS_THEME;
         continue;
       case 'foreground':
-        // A glyph's own fill; anywhere else it is a trait handed down, set over the one above.
-        if (kind !== 'icon') return READS_BOTH;
+        // A glyph's or a RawText's own ink; anywhere else it is a trait handed down, set over the one above.
+        if (kind !== 'icon' && kind !== RAW_TEXT) return READS_BOTH;
         if (!isAppColor(modifier.value) && fixedInk(modifier.value) === undefined)
           reads |= READS_THEME;
         continue;
@@ -4124,9 +4158,11 @@ function LanguageSheets(): ReactNode {
 
 /**
  * A language tree as a React element, for JSX. A bare `view()` node mounts its
- * component directly; anything else goes under one boundary component, which
- * reads only what its tree takes (`drawRead`). It stays one component whatever
- * the tree reads, so a tree that comes to read more keeps its state.
+ * component directly, and a tree of host views that reads nothing (`hostViews`)
+ * is its view: there is nothing for a boundary to provide. Anything else goes
+ * under one boundary component, which reads only what its tree takes
+ * (`drawRead`). It stays one component whatever the tree reads, so a tree that
+ * comes to read more keeps its state.
  */
 export function toElement(node: Child, key?: string | number): ReactElement {
   adoptLanguageSheet();
@@ -4137,7 +4173,21 @@ export function toElement(node: Child, key?: string | number): ReactElement {
       key === undefined ? (props as Record<string, unknown>) : { ...props, key },
     );
   }
+  if (isNode(node) && hostViews(node) && readsOf(node) === 0)
+    return renderBody(node, ROOT_ENV, ROOT_ENV.animation, NO_PALETTE, key) as ReactElement;
   return draw(LanguageRoot, { node, key });
+}
+
+/**
+ * A tree of stacks and spacers alone: host views, with no component inside
+ * them that holds state (a `view()`, an embedded element, a control, a list,
+ * whose items leave through `Presence`), so drawn with no boundary around it,
+ * it loses nothing when it comes to read and takes one (it is drawn again
+ * under it, as JSX that comes to wrap a view in a component is).
+ */
+function hostViews(child: Child): boolean {
+  if (!isNode(child)) return child === null || child === undefined || child === false;
+  return HOST_VIEW_KINDS.has(child.kind) && child.children.every(hostViews);
 }
 
 /**
@@ -4149,12 +4199,9 @@ export function renderBody(
   env: Env,
   animation: AnimationScope | undefined,
   palette: Palette,
+  key?: string | number,
 ): ReactNode {
-  return renderChild(
-    body,
-    { env, provided: env, animation, scoped: animation, palette },
-    undefined,
-  );
+  return renderChild(body, { env, provided: env, animation, scoped: animation, palette }, key);
 }
 
 interface LottieHostProps {

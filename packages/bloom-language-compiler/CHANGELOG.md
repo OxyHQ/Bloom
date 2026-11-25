@@ -5,6 +5,7 @@
 ### Changed
 
 - An offset's axis takes points computed at render (`.offset({ y: nudge })`) and rejects a number written out with the token to write, as a frame's lengths do; the frame length `'auto'` and the stacking level `'1000'` are tokens.
+- A dynamic `toElement(chain)` whose chain is host views alone, modified only by what reads nothing (the spec's `reads`) and taking no handler or ref, stays a `toElement` call: the runtime draws it as those views, with no boundary for a `LanguageRoot` to build it in. A chain with an `.onLayout()` or a `.ref()` is still built by the boundary, so the React Compiler reads them as a JSX prop.
 
 ## 1.4.0
 

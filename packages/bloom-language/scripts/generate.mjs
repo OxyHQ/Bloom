@@ -54,6 +54,13 @@ const motion = withoutComment(spec.motion);
 const loops = withoutComment(spec.loops);
 // The parameters that take points besides their tokens: each one an object or a modifier's own set.
 const pointParams = spec.points.params;
+for (const kind of [...spec.reads.nothing, ...spec.reads.handlers])
+  if (!(kind in modifiers)) throw new Error(`reads: ${kind} is no modifier`);
+for (const kind of spec.reads.handlers)
+  if (!spec.reads.nothing.includes(kind))
+    throw new Error(`reads.handlers: ${kind} is not in reads.nothing`);
+for (const kind of spec.reads.hostViews)
+  if (!(kind in nodes)) throw new Error(`reads.hostViews: ${kind} is no node`);
 for (const param of pointParams)
   if (!(param in objects) && !Object.values(modifiers).some((params) => params.includes(param)))
     throw new Error(`points: ${param} is no object and no modifier's parameter`);
@@ -232,6 +239,11 @@ export const ENVIRONMENT = ${ts(spec.environment.traits)} as const;
 export const ENVIRONMENT_DEFAULTS = ${ts(spec.environment.defaults)} as const;
 /** Each environment value: the modifier a node inside takes it as, and the node kinds that take it. */
 export const ENVIRONMENT_TAKERS = ${ts(environmentTakers)} as const;
+
+/** The modifiers that place, size or name a view: a tree that only they modify reads nothing where it starts. */
+export const READS_NOTHING: readonly string[] = ${ts(spec.reads.nothing)};
+/** The nodes that are a host view of their own: a root whose tree is these alone and reads nothing is that view. */
+export const HOST_VIEWS: readonly string[] = ${ts(spec.reads.hostViews)};
 
 /** The object parameters (\`frame\`, \`position\`'s edges, \`offset\`): their keys and the token set of each value. */
 export const OBJECTS = ${ts(objects)} as const;
@@ -592,6 +604,15 @@ pub const FADING_LOOPS: &[&str] = ${rustList(
 
 /// The parameters that take points (a number the view computes as it renders) besides their tokens.
 pub const POINT_PARAMS: &[&str] = ${rustList(pointParams)};
+
+/// The modifiers that place, size or name a view, reading nothing where a tree starts (\`reads.nothing\`).
+pub const READS_NOTHING: &[&str] = ${rustList(spec.reads.nothing)};
+
+/// The nodes that are a host view of their own (\`reads.hostViews\`): a root of these alone that reads nothing is that view.
+pub const HOST_VIEWS: &[&str] = ${rustList(spec.reads.hostViews)};
+
+/// The modifiers of \`READS_NOTHING\` that take a function or a ref, read by the React Compiler only as a JSX prop.
+pub const HANDLERS: &[&str] = ${rustList(spec.reads.handlers)};
 
 /// What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = ${rustList(spec.contentView.modifiers)};

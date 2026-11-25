@@ -315,6 +315,15 @@ pub const FADING_LOOPS: &[&str] = &["pulse"];
 /// The parameters that take points (a number the view computes as it renders) besides their tokens.
 pub const POINT_PARAMS: &[&str] = &["frame", "edges", "zIndex", "padding", "offset"];
 
+/// The modifiers that place, size or name a view, reading nothing where a tree starts (`reads.nothing`).
+pub const READS_NOTHING: &[&str] = &["padding", "frame", "aspectRatio", "corner", "cornerCurve", "clipped", "borderStyle", "grow", "shrink", "alignSelf", "position", "sticky", "cursor", "zIndex", "hidden", "basis", "flex", "margin", "allowsHitTesting", "accessibilityOnly", "spacing", "horizontalSpacing", "verticalSpacing", "childSpacing", "align", "justify", "wrap", "axis", "alignment", "size", "label", "hint", "role", "testID", "id", "hitSlop", "accessibilityState", "accessibilityValue", "liveRegion", "accessibilityHidden", "accessibilityElement", "focusable", "collapsable", "ref", "onLayout"];
+
+/// The nodes that are a host view of their own (`reads.hostViews`): a root of these alone that reads nothing is that view.
+pub const HOST_VIEWS: &[&str] = &["stack", "zstack", "spacer"];
+
+/// The modifiers of `READS_NOTHING` that take a function or a ref, read by the React Compiler only as a JSX prop.
+pub const HANDLERS: &[&str] = &["ref", "onLayout"];
+
 /// What a scroll view's content view (`.contentView(v => v…)`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = &["padding", "spacing", "horizontalSpacing", "verticalSpacing", "align", "justify", "wrap", "axis", "frame", "flex", "grow", "shrink", "basis", "alignSelf"];
 
