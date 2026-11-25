@@ -2420,6 +2420,58 @@
   "appColors": null
  },
  {
+  "name": "components/HitTesting.tsx:19",
+  "before": "<View style={{\n  position: 'absolute',\n  left: 8,\n  right: 8,\n  bottom: 8,\n  flexDirection: 'row',\n  justifyContent: 'space-between',\n  pointerEvents: 'box-none',\n}}>\n      <Text>Left</Text>\n      <Text>Right</Text>\n    </View>",
+  "after": "toElement(HStack(LText('Left'), LText('Right')).justify('between').position({ left: 'sm', right: 'sm', bottom: 'sm' }).when('native', (v) => v.allowsHitTesting('children')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/HitTesting.tsx:28",
+  "before": "<View style={RN.StyleSheet.create({ style: { pointerEvents: 'box-none' } }).style}>\n      <Text>New</Text>\n    </View>",
+  "after": "toElement(VStack(LText('New')).allowsHitTesting('children'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText",
+   "toElement",
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/HostProps.tsx:9",
   "before": "<View collapsable={false}>\n      <Pressable onPress={() => {}} accessible={false} tabIndex={-1}>\n        <Text>Ana liked your post</Text>\n      </Pressable>\n      <Pressable onPress={() => {}} onLongPress={() => {}} delayLongPress={500}>\n        <Text>Show all</Text>\n      </Pressable>\n    </View>",
   "after": "toElement(VStack(VStack(LText('Ana liked your post')).onPress(() => {}).accessibilityElement(false).focusable(false), VStack(LText('Show all')).onPress(() => {}).onLongPress(() => {}, '500')).collapsable(false))",

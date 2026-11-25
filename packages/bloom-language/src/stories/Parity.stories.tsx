@@ -114,6 +114,7 @@ export const Collapsibles: Story = { args: { family: 'collapsible' } };
 export const DropZones: Story = { args: { family: 'dropZone' } };
 export const MediaInsetBorders: Story = { args: { family: 'mediaInsetBorder' } };
 export const ImageAspectRatios: Story = { args: { family: 'imageAspectRatio' } };
+export const ImageNames: Story = { args: { family: 'imageName' } };
 export const FactStrips: Story = { args: { family: 'factStrip' } };
 export const PhotoGrids: Story = { args: { family: 'sortableMedia' } };
 export const ChoiceLists: Story = { args: { family: 'choiceList' } };

@@ -47,6 +47,7 @@ import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
 import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
 import { MEDIA_INSET_BORDER_CASES } from '../../parity/media-inset-border.cases';
 import { IMAGE_ASPECT_RATIO_CASES } from '../../parity/image-aspect-ratio-cache.cases';
+import { IMAGE_NAME_CASES } from '../../parity/image-name.cases';
 import { FACT_STRIP_CASES } from '../../parity/fact-strip.cases';
 import { SORTABLE_MEDIA_CASES } from '../../parity/sortable-media.cases';
 import { CHOICE_LIST_CASES } from '../../parity/choice-list.cases';
@@ -167,6 +168,7 @@ export const FAMILIES = {
   dropZone: DROP_ZONE_CASES,
   mediaInsetBorder: MEDIA_INSET_BORDER_CASES,
   imageAspectRatio: IMAGE_ASPECT_RATIO_CASES,
+  imageName: IMAGE_NAME_CASES,
   factStrip: FACT_STRIP_CASES,
   sortableMedia: SORTABLE_MEDIA_CASES,
   choiceList: CHOICE_LIST_CASES,

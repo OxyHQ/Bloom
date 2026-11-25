@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as recast from 'recast';
 
-import { LANGUAGE_PACKAGE, type Mod, type PointsArg } from './table';
+import { LANGUAGE_PACKAGE, type Mod, type PointsArg, type StyleMod } from './table';
 
 const { scales, enums } = JSON.parse(
   readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8'),
@@ -286,6 +286,39 @@ function direct(key: string, value: AnyNode): Mod | undefined {
   return undefined;
 }
 
+/** React Native's `pointerEvents` as the language's hit testing. */
+const HIT_TESTING: Readonly<Record<string, boolean | string>> = {
+  auto: true,
+  none: false,
+  'box-none': 'children',
+  'box-only': 'self',
+};
+
+/**
+ * A `pointerEvents` in a style as hit testing, drawn where the JSX's is. A
+ * StyleSheet's style is compiled by react-native-web into the classes its
+ * prop writes (`box-none` is `none` on the view and `auto` on what is inside
+ * it), the language's on every platform. An inline object it writes as it is:
+ * the CSS `pointer-events: box-none` (or `box-only`) is a value the browser
+ * drops, so the web view takes touches as any view does, and only native reads
+ * it (`.when('native', …)`). An inline `none` or `auto` is CSS a browser keeps,
+ * which reaches what is inside by inheritance, not as the prop's rule: a reason.
+ */
+function hitTestingStyle(
+  key: string,
+  value: AnyNode,
+  compiled: boolean,
+): StyleMod | { readonly why: string } {
+  const hit = n.StringLiteral.check(value) ? HIT_TESTING[value.value as string] : undefined;
+  if (hit === undefined) return { why: 'a style `pointerEvents` that is no static value' };
+  const mod: Mod = { name: 'allowsHitTesting', args: [hit] };
+  if (compiled) return { subject: key, mod };
+  if (typeof hit === 'string') return { subject: key, mod, conditions: ['native'] };
+  return {
+    why: `an inline style \`pointerEvents: '${value.value}'\`: react-native-web writes it as CSS that what is inside inherits, not as its prop's rule`,
+  };
+}
+
 /** A declaration the caller reads as modifiers (a theme colour as its role, an inset's padding), or undefined. */
 export type StyleRead = (key: string, value: AnyNode) => Mod | readonly Mod[] | undefined;
 
@@ -294,7 +327,7 @@ export type StyleResult =
       readonly ok: true;
       readonly classes: readonly string[];
       /** What no utility writes, by its style key (`flex: 1` is `.grow()`). */
-      readonly mods: readonly { readonly subject: string; readonly mod: Mod }[];
+      readonly mods: readonly StyleMod[];
       readonly literal: string;
       /**
        * Points the chain draws without carrying them (a half-square radius's
@@ -586,6 +619,8 @@ export interface StyleReaders {
   readonly numberOf?: (node: AnyNode) => number | undefined;
   /** Whether a value is a number the view computes as it renders (geometry's points). */
   readonly computed?: (node: AnyNode) => boolean;
+  /** Whether react-native-web compiles the style into classes (a StyleSheet's), not an inline object. */
+  readonly compiled?: boolean;
 }
 
 /**
@@ -595,12 +630,12 @@ export interface StyleReaders {
  */
 export function styleUtilities(
   object: AnyNode,
-  { read, spreadOf, numberOf, computed }: StyleReaders = {},
+  { read, spreadOf, numberOf, computed, compiled = false }: StyleReaders = {},
 ): StyleResult {
   if (!n.ObjectExpression.check(object))
     return { ok: false, subject: 'style', why: 'a style that is no object literal' };
   const classes: string[] = [];
-  const mods: { subject: string; mod: Mod }[] = [];
+  const mods: StyleMod[] = [];
   const held: AnyNode[] = [];
   let literal = recast.print(object).code;
   // A grow, shrink and basis that are one of Tailwind's flex utilities (`flex-1`) are `.flex()`.
@@ -639,6 +674,12 @@ export function styleUtilities(
         };
       if (key === 'textShadowColor')
         mods.push({ subject: key, mod: { name: 'textShadow', args: [token] } });
+      continue;
+    }
+    if (key === 'pointerEvents') {
+      const hit = hitTestingStyle(key, property.value, compiled);
+      if ('why' in hit) return { ok: false, subject: key, why: hit.why };
+      mods.push(hit);
       continue;
     }
     const known = numberOf?.(property.value);

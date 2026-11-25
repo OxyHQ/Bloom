@@ -760,6 +760,31 @@ export const CASES = [
     after: () => { const View = I0; const { HStack, VStack, toElement } = L;  return (toElement(HStack(VStack().frame({ height: 'lg', width: 'lg' }).offset({ y: 37 }), VStack().frame({ width: 'full' }).aspectRatio(43), VStack().frame({ width: 'auto' }).zIndex('1000')))); },
   },
   {
+    name: "components/HitTesting.tsx:19",
+    bloom22: false,
+    before: () => { const View = I0; const Text = I1; return (<View style={{
+  position: 'absolute',
+  left: 8,
+  right: 8,
+  bottom: 8,
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  pointerEvents: 'box-none',
+}}>
+      <Text>Left</Text>
+      <Text>Right</Text>
+    </View>); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Text: LText } = L;  return (toElement(HStack(LText('Left'), LText('Right')).justify('between').position({ left: 'sm', right: 'sm', bottom: 'sm' }).when('native', (v) => v.allowsHitTesting('children')))); },
+  },
+  {
+    name: "components/HitTesting.tsx:28",
+    bloom22: false,
+    before: () => { const View = I0; const Text = I1; return (<View style={RN.StyleSheet.create({ style: { pointerEvents: 'box-none' } }).style}>
+      <Text>New</Text>
+    </View>); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Text: LText, toElement, VStack } = L;  return (toElement(VStack(LText('New')).allowsHitTesting('children'))); },
+  },
+  {
     name: "components/HostProps.tsx:9",
     bloom22: false,
     before: () => { const View = I0; const Pressable = I55; const Text = I1; return (<View collapsable={false}>

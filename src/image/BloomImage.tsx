@@ -100,6 +100,9 @@ function FallbackImage({
   return (
     <NativeImage
       {...nativeRest}
+      // `alt` is the image's name, as expo-image and React Native's own Image read it;
+      // react-native-web's Image reads only `accessibilityLabel` (its `aria-label` and `<img alt>`).
+      accessibilityLabel={rest.accessibilityLabel ?? rest.alt}
       source={typeof source === 'string' ? { uri: source } : (source ?? undefined)}
       resizeMode={RESIZE_MODE[contentFit]}
       fadeDuration={transition}

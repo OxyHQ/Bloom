@@ -44,7 +44,15 @@ import {
   styleUtilities,
   textDeclaration,
 } from './style';
-import { type Arg, isPoints, LANGUAGE_PACKAGE, type Mod, modKey, type Table } from './table';
+import {
+  type Arg,
+  isPoints,
+  LANGUAGE_PACKAGE,
+  type Mod,
+  modKey,
+  type StyleMod,
+  type Table,
+} from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -1409,7 +1417,7 @@ export function transformSource(source: string, options: TransformOptions): File
     | {
         ok: true;
         classes: string[];
-        mods: { subject: string; mod: Mod }[];
+        mods: StyleMod[];
         choice?: StyleChoice;
       }
     | { ok: false; subject: string; why: string } {
@@ -1417,7 +1425,7 @@ export function transformSource(source: string, options: TransformOptions): File
       ? expression.elements
       : [expression];
     const classes: string[] = [];
-    const mods: { subject: string; mod: Mod }[] = [];
+    const mods: StyleMod[] = [];
     let choice: StyleChoice | undefined;
     // A StyleSheet's style is its literal on the before side; an inline object stays as written.
     const literals = new Map<AnyNode, string>();
@@ -1497,6 +1505,7 @@ export function transformSource(source: string, options: TransformOptions): File
             spreadOf,
             numberOf: bloomTokenNumber,
             computed: computedAtRender,
+            compiled: referenced,
           })
         : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
@@ -1504,7 +1513,16 @@ export function transformSource(source: string, options: TransformOptions): File
       classes.push(...style.classes);
       mods.push(...style.mods);
       for (const side of style.held) heldPoints.add(side);
-      if (referenced) literals.set(part, style.literal);
+      // react-native-web compiles a StyleSheet's `pointerEvents` into its prop's classes, where an
+      // inline object's is written as it is: on the before side that style is compiled again,
+      // through the corpus's own React Native.
+      if (referenced)
+        literals.set(
+          part,
+          style.mods.some((mod) => mod.subject === 'pointerEvents')
+            ? `RN.StyleSheet.create({ style: ${style.literal} }).style`
+            : style.literal,
+        );
     }
     for (const [part, literal] of literals) styleLiterals.set(part, literal);
     return { ok: true, classes, mods, choice };
@@ -1527,6 +1545,8 @@ export function transformSource(source: string, options: TransformOptions): File
     });
     const style = staticStyle(expression, () => undefined);
     if (!style.ok) return reason(style.subject, style.why);
+    const held = style.mods.find((mod) => mod.conditions !== undefined);
+    if (held) return reason(held.subject, 'a style that holds on one platform only');
     const resolution = resolveClassName(style.classes.join(' '), 'view', options.table, {
       overridden: options.overridden,
     });
@@ -2023,7 +2043,7 @@ export function transformSource(source: string, options: TransformOptions): File
     let size: AnyNode;
     /** The utilities a static `style` writes, read with the className. */
     const styleClasses: string[] = [];
-    const styleMods: { subject: string; mod: Mod }[] = [];
+    const styleMods: StyleMod[] = [];
     let styleChoice: StyleChoice | undefined;
     /** An icon's `width`, `height` and `fill`. */
     const iconProps = new Map<string, AnyNode>();

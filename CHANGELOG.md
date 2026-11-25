@@ -6,6 +6,10 @@
 
 - `StatBar` and `DataTable` paint through the colour tokens (`useColorTokens()`) instead of `useTheme().colors`, their tertiary text through `--faint-foreground`. Nothing draws differently.
 
+### Fixed
+
+- `BloomImage`'s `alt` names the image on the web. Its own documentation says `alt` is the same as `accessibilityLabel`, and expo-image and React Native's native Image read it so, but on the web BloomImage draws react-native-web's Image, which reads only `accessibilityLabel`: the image wrote an empty `<img alt>` and no `aria-label`. It now hands `alt` on as the `accessibilityLabel` when none is given, so the web writes both, as React Native's Image with an `accessibilityLabel` does; native draws what it drew. The Bloom language's `Image(source, alt)` names its image on the web through it.
+
 ## 23.9.0
 
 The Bloom language 1.6.0 (`@oxy.so/bloom-language`), its compiler 1.4.0 (`@oxy.so/bloom-language-compiler`), its codemod 0.4.0 (`@oxy.so/bloom-language-codemod`) and `@oxy.so/bloom-lens` 1.2.0 ship beside it.

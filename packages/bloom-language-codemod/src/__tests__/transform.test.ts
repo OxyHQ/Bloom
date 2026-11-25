@@ -1638,6 +1638,21 @@ export const D = () => <View pointerEvents={mode} />;
     expect(result.code).toContain("toElement(VStack().allowsHitTesting('self'))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:pointerEvents']);
   });
+  it('reads a pointerEvents in a style where it draws: a StyleSheet’s everywhere, an inline box-none natively', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+export const A = () => <View style={styles.pass} />;
+export const B = () => <View style={{ position: 'absolute', left: 8, pointerEvents: 'box-none' }} />;
+export const C = () => <View style={ROW} />;
+export const D = () => <View style={{ pointerEvents: 'none' }} />;
+const ROW = { flexDirection: 'row', pointerEvents: 'box-only' };
+const styles = StyleSheet.create({ pass: { pointerEvents: 'box-none' } });
+`);
+    const code = flat(result.code);
+    expect(code).toContain("toElement(VStack().allowsHitTesting('children'))");
+    expect(code).toContain(".when('native', (v) => v.allowsHitTesting('children'))");
+    expect(code).toContain("HStack().when('native', (v) => v.allowsHitTesting('self'))");
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['pointerEvents']);
+  });
   it('draws a Dialog opened by its open and onClose as a presented dialog, and keeps an imperative one', () => {
     const result = run(`import { Dialog } from '@oxy.so/bloom/dialog';
 import { View } from 'react-native';

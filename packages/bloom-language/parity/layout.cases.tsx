@@ -178,6 +178,9 @@ const placement: ParityCase[] = [
 
 const BOX = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;
 
+/** Styles react-native-web compiles into classes (an inline object it writes as it is). */
+const SHEET = RN.StyleSheet.create({ boxNone: { pointerEvents: 'box-none' } });
+
 const overlays: ParityCase[] = [
   {
     name: 'an overlay at the top trailing corner',
@@ -481,6 +484,51 @@ const small: ParityCase[] = [
       </Themed>
     ),
   })),
+  ...(
+    [
+      ['children', 'box-none'],
+      ['self', 'box-only'],
+    ] as const
+  ).map(([value, pointerEvents]) => ({
+    // Mention's attachment move row: `pointerEvents` in an inline style. react-native-web
+    // writes it as the CSS `pointer-events: box-none` (or `box-only`), a value the browser
+    // drops, so the web view takes touches as any view does; native reads it from the style.
+    name: `hit testing of ${value === 'children' ? 'what is inside only' : 'the view only'} in an inline style: native only`,
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .when('native', (v) => v.allowsHitTesting(value)),
+      ),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View style={{ padding: 8, pointerEvents }}>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View
+          style={{
+            paddingTop: 8,
+            paddingBottom: 8,
+            paddingStart: 8,
+            paddingEnd: 8,
+            pointerEvents,
+          }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      ),
+  })),
+  {
+    // A StyleSheet's style is compiled into react-native-web's classes, the prop's: every platform.
+    name: 'hit testing of what is inside only in a StyleSheet style',
+    language: () => toElement(L.VStack(L.Text('a')).allowsHitTesting('children')),
+    bloom: () => (
+      <RN.View style={SHEET.boxNone}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
   {
     name: 'a frame as wide as its content',
     language: () => toElement(L.HStack(L.Text('chip')).frame({ width: 'fit' })),
