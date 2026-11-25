@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0
+
+### Compatibility
+
+- Its peer is `@oxy.so/bloom-language` 1.6.0 or newer, the language it writes.
+
+### Added
+
+- Maps the React Native props the language 1.6.0 takes: `accessible`, `tabIndex` 0 / -1, `collapsable`, a static `delayLongPress` with an `onLongPress`, a text shadow written out, `insetInline` / `insetBlock`, `sticky` with `top-0` / `bottom-0` (bare or `web:`), a `TextFieldInput`'s `textContentType`, a field's `inputMode` and `inputRef`, Search's `ref` and `onSelectionChange`, Item's `role="option"` and a view's `role`, and `{...hoverGroupProps}` as `.hoverGroup()`.
+- Maps Bloom component props: Dialog's `control`, `detached` and a `panelStyle` of static frame lengths; an Avatar style that is its radius alone; AvatarGroup's `ringColor`, `variant` and a one-parameter `renderItemAction`; Avatar's and AvatarGroup's `motion`; Search's `editable`; `stickyHeaderIndices`; `Loading`'s `color` and `PageHeader`'s `scrimColor`.
+- A handler or none chosen by a plain condition is mapped as written where the modifier takes `undefined`: `onEndReached`, a list's `onRefresh`, an `Item`'s `onPress`, and PageHeader's `onBack` between a handler, `undefined` and `null`.
+- A padding computed at render is points; an inset read from `useContentSafeAreaInsets()` is `.safeAreaPadding(side, 'content')`; `flexShrink: 20` is `.shrink('20')`; the className table maps `cursor-*`, `shrink-[n]`, `bg-primary/5`, `bg-foreground/5` and `bg-white/5`.
+- A glyph-alone render function (`(color) => <X fill={color} />`, or with a busy spinner as its other branch) is `Group(Icon(X))`; an icon's `style` of margins, and `fill="currentColor"` with its `color` as `.foreground(c)`.
+- A style a component's caller hands in (`style={[styles.row, style]}`, `props.containerStyle`) is the reason `caller-style`, with the documented form.
+
+### Fixed
+
+- A `Pressable` whose children are a render function of its press state stays JSX (`render-children`): it wrote `Embed(({ pressed }) => …)`, but `Embed`'s function is handed the child, not the press state.
+
 ## 0.3.0
 
 ### Compatibility

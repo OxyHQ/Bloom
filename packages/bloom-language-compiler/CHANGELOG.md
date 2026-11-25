@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+### Changed
+
+- Checks chains against the language 1.6.0 spec: the new modifiers, tokens and roles are accepted (among them `.textShadow()`, `.accessibilityElement()`, `.focusable()`, `.collapsable()`, `.sticky()`, `.cursor()`, Dialog's `.control()`, `.detached()` and `.panelFrame()`, the inputs' `.inputMode()`, `.inputRef()` and `.onSelectionChange()`, and an app colour's `.opacity()`), padding takes points computed at render, and a variant under a settled condition takes what the chain takes except the spec's `variants.held.except`, so `when('native', (v) => v.accessibilityHidden())` compiles.
+
 ## 1.3.0
 
 ### Changed

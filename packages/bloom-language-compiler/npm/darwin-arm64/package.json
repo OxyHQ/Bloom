@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-compiler-darwin-arm64",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "cpu": [
     "arm64"
   ],

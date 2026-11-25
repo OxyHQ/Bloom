@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+### Added
+
+- `LensCover` (`covered`, `fill`): marks a screen as covered. A lens base inside a covered screen draws its lens in its own place against `fill`, as a base inside a scroll does, and the window overlay no longer draws it, so it sits under whatever covers the screen. A base keeps its own backdrop if it has one, and a screen nested inside a covered screen counts as covered too. Bloom 23.9.0 uses it for a covered stack scene and for the app under a modal.
+
 ## 1.1.1
 
 ### Fixed
