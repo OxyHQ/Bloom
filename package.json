@@ -4196,6 +4196,7 @@
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
     "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
     "generate:preset-accent-hues": "bun scripts/generate-preset-accent-hues.ts",
+    "generate:default-token-vars": "bun scripts/generate-default-token-vars.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
     "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && node scripts/generate-task-catalog.mjs",
