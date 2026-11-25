@@ -27,6 +27,17 @@ const avatars: ParityCase[] = [
     language: () => toElement(L.Avatar(PHOTO).size(size)),
     bloom: () => <Avatar source={PHOTO} size={AVATAR_SIZE[size]} />,
   })),
+  ...(['auto', 'always', 'never'] as const).map((motion) => ({
+    // Mention's account avatars: the character's motion its policy chooses.
+    name: `an avatar whose character motion is ${motion}`,
+    language: () => toElement(L.Avatar(PHOTO).motion(motion)),
+    bloom: () => <Avatar source={PHOTO} motion={motion} />,
+  })),
+  {
+    name: 'a group whose members keep still (motion never)',
+    language: () => toElement(L.AvatarGroup(MEMBERS).motion('never')),
+    bloom: () => <AvatarGroup items={MEMBERS} motion="never" />,
+  },
   {
     name: 'an avatar of rounded corners (cornerRadius)',
     language: () => toElement(L.Avatar(PHOTO).size('lg').cornerRadius('md')),

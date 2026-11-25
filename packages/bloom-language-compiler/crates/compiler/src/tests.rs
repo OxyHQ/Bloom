@@ -347,6 +347,16 @@ fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
 }
 
 #[test]
+fn an_app_colour_takes_an_opacity_and_a_spinner_and_a_scrim_take_an_app_colour() {
+    let ok = compiled(
+        "const severity = defineTokens({ color: { low: '#6b7280', white: '#fff' } });\nexport const x = () => VStack(Text('Low').foreground(severity.color.low), Loading().tint(severity.color.white), Header('Videos').scrimColor(severity.color.white)).background(severity.color.low.opacity('12.5')).border('primary/31.4', 'thin');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
+    let output = compiled("export const x = () => VStack().background('primary/12');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown opacity token '12' for .background()");
+}
+
+#[test]
 fn files_without_the_language_are_untouched() {
     let source = "import { View } from 'react-native';\nexport const x = 1;\n";
     let output = compile(source, "plain.ts");

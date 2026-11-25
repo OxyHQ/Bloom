@@ -9,8 +9,9 @@ import { PageHeader } from '@oxy.so/bloom/page-header';
 
 import { type Child, type HeadingLevel, isNode, type Node, type ScrollOffset } from '../node';
 import { drawLeaf, type Paint, paintedLeaf } from '../paint';
-import { role } from '../style';
+import { isAppColor, role } from '../style';
 import type {
+  AppToken,
   ColorToken,
   HeaderPresentation,
   HeaderTone,
@@ -46,7 +47,7 @@ export function readHeader(node: Node) {
     titleAlign: values.titleAlign as TitleAlign | undefined,
     accessory: values.accessory as Child | undefined,
     tone: values.tone as HeaderTone | undefined,
-    scrimColor: values.scrimColor as ColorToken | undefined,
+    scrimColor: values.scrimColor as ColorToken | AppToken<'color'> | undefined,
     scrimFalloff: values.scrimFalloff as ScrimFalloff | undefined,
     titleReveal: values.titleReveal as TitleReveal | undefined,
   };
@@ -95,6 +96,9 @@ export function PageHeaderHost({ node, render, palette }: NodeHostProps) {
     titleReveal: header.titleReveal,
     testID: header.testID,
   };
+  // An app's own colour is the scrim's as written, in both schemes.
+  if (isAppColor(header.scrimColor))
+    return <PageHeader {...props} scrimColor={header.scrimColor.value} />;
   if (header.scrimColor !== undefined) {
     return drawLeaf(
       paintedLeaf(palette, {

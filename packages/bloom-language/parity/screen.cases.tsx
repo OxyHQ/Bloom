@@ -14,6 +14,9 @@ import { toElement } from '../src/render';
 import { ScreenHost } from '../src/router/screen-host';
 import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 
+/** An app's own black, as Mention's player paints its header's scrim. */
+const SCRIM = defineTokens({ color: { black: '#000000' } });
+
 /** An app's own colours, as Mention's reel paints its screen. */
 const REEL = defineTokens({ color: { black: '#000000' } });
 
@@ -403,6 +406,13 @@ const pageHeaders: ParityCase[] = [
         {(c) => <PageHeader title="Home" scrim="always" scrimColor={c.backgroundSecondary} />}
       </Themed>
     ),
+  },
+  {
+    // Mention's videos: a black scrim over the player, the same in both schemes.
+    name: 'a header’s scrim in an app colour',
+    language: () =>
+      toElement(L.Header('Videos').scrollEdge('always').scrimColor(SCRIM.color.black)),
+    bloom: () => <PageHeader title="Videos" scrim="always" scrimColor="#000000" />,
   },
   ...ENUMS.scrimFalloff.map((falloff) => ({
     name: `a header's scrim falloff ${falloff}`,

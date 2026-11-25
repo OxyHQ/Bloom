@@ -2249,7 +2249,10 @@ function iconGlyph(
   env: Env,
   size: number,
   key: string | number | undefined,
+  /** Its placement in its parent, when the glyph's own host takes it. */
+  placement?: StyleOut['style'],
 ): ReactElement {
+  const style = placement;
   const color = foregroundOf(env.text);
   // In the order they apply, as every other host's variants are.
   const live = (env.text.variants ?? [])
@@ -2262,7 +2265,7 @@ function iconGlyph(
   const own = isAppColor(color) ? color.value : fixedInk(color);
   if (live.length === 0)
     return own !== undefined
-      ? draw(icon, { fill: own, width: size, height: size, key })
+      ? draw(icon, { fill: own, width: size, height: size, key, style })
       : draw(
           ...paintedLeaf(palette, {
             host: icon,
@@ -2270,6 +2273,7 @@ function iconGlyph(
             width: size,
             height: size,
             key,
+            style,
           }),
         );
   if (IS_WEB) {
@@ -2279,7 +2283,13 @@ function iconGlyph(
       () => ({ color: ink(color) }),
       () => joinVariants(live.map(([condition, varied]) => [condition, { color: ink(varied) }])),
     );
-    return drawHost(palette, icon, out, { fill: 'currentColor', width: size, height: size, key });
+    return drawHost(palette, icon, out, {
+      fill: 'currentColor',
+      width: size,
+      height: size,
+      key,
+      style: style === undefined ? undefined : [style],
+    });
   }
   let paint = iconVariantPaints.get(env.key);
   if (paint === undefined) {
@@ -2305,8 +2315,8 @@ function iconGlyph(
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
   const leaf = (props: Record<string, unknown>) =>
     draw(...paintedLeaf(palette, { host: icon, paint, ...props }));
-  if (own !== undefined) return leaf({ fill: own, width: size, height: size, key });
-  return leaf({ width: size, height: size, key });
+  if (own !== undefined) return leaf({ fill: own, width: size, height: size, key, style });
+  return leaf({ width: size, height: size, key, style });
 }
 
 /** A stack's style: its layout, then its box (the innermost layer and its flex), with their variants. */
@@ -2518,14 +2528,24 @@ function renderHost(
         (ownValue(p, 'size')?.value as IconSizeToken | undefined) ?? 'md',
       );
       const bare = !boxed && !behaviour;
+      // Placed in its parent and nothing more (a margin, a flex, a pin): the glyph's own
+      // style, as the Svg an app writes takes `style={{ marginLeft: 2 }}`, with no view around it.
+      const placed =
+        !bare &&
+        layer === undefined &&
+        !behaviour &&
+        p.states.length === 0 &&
+        box === undefined &&
+        p.place.variants.length === 0;
       const glyph = iconGlyph(
         palette,
         (node.props as IconProps).icon,
         ctx.env,
         size,
-        bare ? key : undefined,
+        bare || placed ? key : undefined,
+        placed ? boxOf('host', 'I').style : undefined,
       );
-      if (bare) return glyph;
+      if (bare || placed) return glyph;
       const host = behaviour ? hostFor(p) : View;
       return drawOutermost(
         palette,
@@ -2562,6 +2582,7 @@ function renderHost(
         live: ownValue(p, 'live')?.value,
         hideLiveBadge: ownValue(p, 'liveBadge')?.value === false ? true : undefined,
         status: presence,
+        motion: ownValue(p, 'motion')?.value,
       });
       const radius = ownValue(p, 'cornerRadius')?.value;
       if (radius !== undefined) props.style = avatarCorner(radius);
@@ -2586,6 +2607,7 @@ function renderHost(
           onPressItem: ownValue(p, 'onPressItem')?.value,
           hoverCard: ownValue(p, 'hoverCard')?.value,
           variant: ownValue(p, 'variant')?.value,
+          motion: ownValue(p, 'motion')?.value,
         });
         const action = ownValue(p, 'itemAction')?.value;
         // The hover card's action is drawn where the card is, a tree of its own.
@@ -2617,10 +2639,12 @@ function renderHost(
     case 'loading': {
       const { label } = buttonContent(node.children);
       return pressAround(palette, p, behaviour, key, (props) => {
+        // A tone is Bloom's; an app's own colour is its `color`, as written.
+        const tint = ownValue(p, 'tint')?.value;
         Object.assign(props, {
           variant: ownValue(p, 'style')?.value,
           size: ownValue(p, 'size')?.value,
-          tone: ownValue(p, 'tint')?.value,
+          ...(isAppColor(tint) ? { color: tint.value } : { tone: tint }),
           text: label,
         });
         if (!boxed) return draw(BloomLoading, props);
@@ -2690,8 +2714,11 @@ function renderHost(
       const shape = ownValue(p, 'shape')?.value;
       // A bare glyph as its content, in no ink of its own: Bloom's render-function children.
       const handed = content ? handedGlyph(node.children) : undefined;
+      // A circle or pill around one glyph, or around one view (a busy spinner), is Bloom's icon button.
       const iconOnly =
-        ((!content && icon !== undefined) || handed !== undefined) &&
+        ((!content && icon !== undefined) ||
+          handed !== undefined ||
+          (content && oneView(node.children))) &&
         label === undefined &&
         shape !== undefined &&
         shape !== 'fit';
@@ -3741,6 +3768,15 @@ function buttonContent(children: readonly Child[]): {
     leadingView,
     trailingView,
   };
+}
+
+/** Content that is one view: a node alone, or a `Group` of modifiers none around one. */
+function oneView(children: readonly Child[]): boolean {
+  let nodes = flatten(children);
+  const [group] = nodes;
+  if (nodes.length === 1 && group?.kind === 'group' && group.modifiers.length === 0)
+    nodes = flatten(group.children);
+  return nodes.length === 1;
 }
 
 /**

@@ -307,7 +307,12 @@ condition between two is the condition between two roles, the modifier the
 same: `.border(isActive ? 'primary' : 'border', 'thin')`. Bloom's
 `withAlpha(colors.primary, 0.1)` is `'primary/10'`. An app's own palette chosen
 by a key is an app colour table (`defineTokens({ color: { low: '#64748b',
-high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
+high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`). An
+app colour at an opacity is the token's own, as a role's is (`'primary/20'`):
+`severity.color[level].opacity('12.5')` is the hex with its alpha in 8 bits
+(`#64748b20`), an `rgb()` an `rgba()`, so a table keeps one colour per entry.
+The opacities `'12.5'` and `'31.4'` are the hex alphas `20` and `50` (32 and 80
+of 255) apps write after a hex.
 
 **Insets.** `.safeAreaPadding()` pads by the device's insets (see
 [Layout](#layout)); a view pinned below the inset is pinned by points,
@@ -1014,6 +1019,12 @@ HStack(Icon(RiRepeat2Line), Text('Reposted')).foreground('muted')
   `primary` when given no fill; a language icon follows the text around it,
   as SwiftUI's does, so `Icon(X)` alone is `<X fill={colors.text} />`.
 - **A box** (padding, a fill, a corner, a name) is one `View` around the glyph.
+  A glyph that is only placed (a margin, a flex, a pin) takes its placement as
+  its own style, as the Svg an app writes takes `style={{ marginLeft: 2 }}`,
+  with no view around it.
+- **`currentColor`** is the glyph's `color` on every platform: react-native-svg
+  and Bloom's native glyph resolve it so (black with none), as CSS does on the
+  web. `<X fill="currentColor" color={c} />` is `Icon(X).foreground(c)`.
 - Bloom's icon `gradient` prop has no modifier: no app passes one.
 
 ## Material
@@ -1144,7 +1155,10 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   (its tone's, `.foreground()`'s, under the pointer `.hoverForeground()`'s,
   disabled its muted one) with no glyph box of its own, as a compose
   toolbar's controls draw theirs (on the web the `leadingIcon` sits in Bloom's
-  20pt glyph box; the render function's glyph does not).
+  20pt glyph box; the render function's glyph does not). A circle or pill whose
+  content is one view (`Button(Group(busy ? Loading().style('inline').size('sm') :
+  Icon(X)))`, a spinner in the glyph's place while it works) is Bloom's icon
+  button too (`iconOnly`), so it keeps its square.
 - **Inks and spinner.** `.foreground(role)` is the button's ink at rest
   (Bloom's `color`) and `.hoverForeground(role)` under the pointer
   (`hoverColor`), each painted from a colour role. `.loadingIndicator(null)`
@@ -1208,6 +1222,11 @@ rendition of a file id).
   `.badge(Badge(…))`.
 - Presence: `.presence('online' | 'idle' | 'busy' | 'offline')` is Bloom's
   `AvatarPresence`, the dot sized from the avatar.
+- Motion: `.motion('auto' | 'always' | 'never')` is Bloom's `motion`, whether
+  its character moves (an `AvatarGroup`'s, each member's); reduced motion always
+  wins. An app's avatar that forwards every prop to Bloom's is a `view()`
+  returning `Avatar(…)` with its policy's `.motion()`, which its callers chain
+  their modifiers on.
 - `.cornerRadius(radius)` rounds the avatar's own corners (Bloom's Avatar
   `style.borderRadius`, a corner token: `'md'` is 12): a rounded square no
   shape name draws (a list's cover). `.corner()` is a box around it.
@@ -1235,7 +1254,8 @@ hover card on the web (a follow button), drawn as a tree of its own.
   attached. `view.badge(Badge(…))` attaches it to any view.
 - **`IconCircle(icon)`**: an icon on Bloom's tinted disc; `.size()` an icon rung.
 - **`Loading(Text(…)?)`**: `.style('spinner' | 'top' | 'inline')`, `.size()`,
-  `.tint(tone)`; the `Text` is what it says, `.label()` names it as a progress bar.
+  `.tint(tone)` (or an app's own colour, Bloom's `color` as written: a white
+  spinner over a photo); the `Text` is what it says, `.label()` names it as a progress bar.
   Its box modifiers (padding, frame, fill, corner, margin, flex) are its
   `style`, as an app writes them.
 - **`SpinnerIcon()`**: Bloom's `SpinnerIcon` (`@oxy.so/bloom/loading`), the
@@ -1713,7 +1733,7 @@ Bloom's PageHeader. The PageHeader's own props are modifiers of the same
 name: `.safeArea(on?)`, `.titleAlign('start' | 'center')`, `.accessory(view)`
 (full-width chrome under the title row), `.tone('default' | 'onImage')`,
 `.scrimColor(role)` (the opaque colour the scrim fades from, painted from the
-theme), `.scrimFalloff('smooth' | 'linear')` and `.titleReveal('auto' |
+theme, or an app's own colour as written, the same in both schemes), `.scrimFalloff('smooth' | 'linear')` and `.titleReveal('auto' |
 'always' | 'onScroll' | 'onDock')`. The system bar has none of them: a header
 that needs them on iOS in a native stack is `.inPage()`.
 

@@ -259,6 +259,7 @@ import {
   type CornerSide,
   type WordBreak,
   type StickyEdge,
+  type AvatarMotion,
   type TextShadowName,
   type TextContentType,
   type ListMarker,
@@ -629,7 +630,7 @@ export interface ValueModifiers {
   inPage: boolean;
   safeArea: boolean;
   tone: HeaderTone;
-  scrimColor: ColorToken;
+  scrimColor: ColorToken | AppToken<'color'>;
   scrimFalloff: ScrimFalloff;
   titleReveal: TitleReveal;
   /** A screen's (no argument) or an app layout's (the reselected destination's name). */
@@ -771,6 +772,7 @@ export interface ValueModifiers {
   ringColor: InkToken;
   itemAction: (item: AvatarGroupItem, index: number) => Child;
   cornerRadius: Exclude<CornerName, 'concentric'>;
+  motion: AvatarMotion;
   control: DialogControlProps;
   panelFrame: FrameSpec;
   pressScale: true;
@@ -2735,7 +2737,7 @@ export class Node {
   tone(value: HeaderTone): Node {
     return this.set('tone', value);
   }
-  scrimColor(value: ColorToken): Node {
+  scrimColor(value: ColorToken | AppToken<'color'>): Node {
     return this.set('scrimColor', value);
   }
   scrimFalloff(value: ScrimFalloff): Node {
@@ -3179,6 +3181,9 @@ export class Node {
   }
   cornerRadius(value: Exclude<CornerName, 'concentric'>): Node {
     return this.set('cornerRadius', value);
+  }
+  motion(value: AvatarMotion): Node {
+    return this.set('motion', value);
   }
   control(value: DialogControlProps): Node {
     return this.set('control', value);
@@ -5083,6 +5088,11 @@ export interface IconView extends ViewModifiers<IconView> {
  * tinted disc. `.label()` is its `alt`.
  */
 export interface AvatarView extends ViewModifiers<AvatarView> {
+  /**
+   * Whether its character moves (Bloom's `motion`): `auto` (the default),
+   * `always`, `never` (a still portrait); reduced motion always wins.
+   */
+  motion(value: AvatarMotion): AvatarView;
   /** A rung (`xs` 20, `sm` 24, `md` 32, `lg` 36) or an app's own diameter; 40 with none. */
   size(value: AvatarSizeToken): AvatarView;
   /** The initials disc's tint; derived from the name when not set. */
@@ -5105,6 +5115,8 @@ export interface AvatarView extends ViewModifiers<AvatarView> {
 }
 /** Bloom `AvatarGroup`: a facepile, a row, a cluster or a conversation of avatars. */
 export interface AvatarGroupView extends ViewModifiers<AvatarGroupView> {
+  /** Each member's character motion (Bloom's `motion`). */
+  motion(value: AvatarMotion): AvatarGroupView;
   layout(value: AvatarLayout): AvatarGroupView;
   /** Each avatar's diameter (a cluster's whole box); Bloom's default with none. */
   size(value: AvatarSizeToken): AvatarGroupView;
@@ -5155,7 +5167,8 @@ export interface IconCircleView extends ViewModifiers<IconCircleView> {
 export interface LoadingView extends ViewModifiers<LoadingView> {
   style(value: LoadingStyle): LoadingView;
   size(value: BloomSize): LoadingView;
-  tint(value: BloomTone): LoadingView;
+  /** A Bloom tone, or an app's own colour (`defineTokens({ color })`), Bloom's `color` as written. */
+  tint(value: BloomTone | AppToken<'color'>): LoadingView;
 }
 /** A Bloom skeleton shape: `text`, `circle`, `pill` or `box`, sized by its frame (a text's by its font). */
 export type SkeletonView = ViewModifiers<SkeletonView>;
@@ -5451,7 +5464,8 @@ export interface HeaderView extends ViewNode {
   /** `onImage`: light title and text over media. */
   tone(value: HeaderTone): HeaderView;
   /** The opaque colour its scrim fades from, painted from a role (the page's background by default). */
-  scrimColor(value: ColorToken): HeaderView;
+  /** A colour role (painted from the theme, at an opacity too), or an app's own colour as written. */
+  scrimColor(value: ColorToken | AppToken<'color'>): HeaderView;
   scrimFalloff(value: ScrimFalloff): HeaderView;
   /** When the title shows: `auto` (default), `always`, `onScroll`, `onDock`. */
   titleReveal(value: TitleReveal): HeaderView;

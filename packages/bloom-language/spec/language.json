@@ -192,9 +192,11 @@
       "transparent": 0,
       "5": 0.05,
       "10": 0.1,
+      "12.5": 0.125,
       "20": 0.2,
       "25": 0.25,
       "30": 0.3,
+      "31.4": 0.314,
       "40": 0.4,
       "45": 0.45,
       "half": 0.5,
@@ -777,6 +779,7 @@
       "shipmentTrackingNumber"
     ],
     "stickyEdge": ["top", "bottom"],
+    "avatarMotion": ["auto", "always", "never"],
     "submitLabel": ["done", "go", "next", "search", "send"],
     "textareaResize": ["none", "vertical"],
     "labelSize": ["xs", "sm", "md"],
@@ -1558,6 +1561,7 @@
     "focusable": ["value?"],
     "collapsable": ["value"],
     "sticky": ["stickyEdge?"],
+    "motion": ["avatarMotion"],
     "role": ["role"],
     "hitSlop": ["physicalEdge?", "hitSlop"],
     "testID": ["value"],
@@ -2300,6 +2304,7 @@
     "avatar": {
       "constructors": ["Avatar"],
       "modifiers": [
+        "motion",
         "size",
         "tint",
         "shape",
@@ -2317,6 +2322,7 @@
       "constructors": ["AvatarGroup"],
       "modifiers": [
         "layout",
+        "motion",
         "size",
         "shape",
         "max",
