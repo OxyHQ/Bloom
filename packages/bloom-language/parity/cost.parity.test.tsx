@@ -20,13 +20,14 @@ import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { Button } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
-import { RiHeart3Line } from '@oxy.so/bloom/icons';
+import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
 import { VirtualList } from '@oxy.so/bloom/list';
 import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { Child } from '../src/node';
 import * as L from '../src/primitives';
+import { defineTokens } from '../src/tokens';
 import { VirtualList as LVirtualList } from '../src/controls/list';
 import { LanguageRoot, toElement } from '../src/render';
 import type { ThemeColors } from '@oxy.so/bloom/theme';
@@ -119,6 +120,28 @@ const ACTION_BAR = {
   language: (...children: Child[]) => L.ActionBar(...children),
   jsx: (children?: ReactNode) => <EngagementBar>{children}</EngagementBar>,
 };
+
+/** An app colour (`defineTokens`), the same in both schemes: Mention's verified badge. */
+const APP = defineTokens({ color: { verified: '#1d9bf0' } });
+
+/** A slot the JSX around a chain holds (a name, a badge component): the same element on both sides. */
+const Slot = ({ n }: { n: string }) => <RN.View testID={`slot-${n}`} />;
+
+const FEED = RN.StyleSheet.create({
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '100%', minWidth: 0 },
+  tapArea: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1 },
+  mute: { position: 'absolute', bottom: 10, right: 10, zIndex: 2 },
+  muteDisc: {
+    width: 32,
+    height: 32,
+    borderRadius: 9999,
+    backgroundColor: '#00000099',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ffffff33',
+  },
+});
 
 const CASES: Case[] = [
   {
@@ -274,6 +297,64 @@ const CASES: Case[] = [
       <RN.View style={{ width: 120, marginRight: 4 }}>
         <Text>a</Text>
       </RN.View>
+    ),
+  },
+  {
+    // Mention's UserName: the name, its verified badge in an app colour nudged on native, the
+    // account's markers, in a row that keeps the name's ellipsis.
+    name: 'a name row of slots and an app-coloured badge, and its View',
+    node: L.HStack(
+      L.Embed(<Slot n="name" />),
+      L.Icon(RiVerifiedBadgeFill)
+        .size('sm')
+        .foreground(APP.color.verified)
+        .when('native', (v) => v.offset({ y: '2xs' })),
+      L.Embed(<Slot n="marker" />),
+    )
+      .frame({ maxWidth: 'full', minWidth: 'none' })
+      .spacing('xs')
+      .align('center'),
+    jsx: (
+      <RN.View style={FEED.nameRow}>
+        <Slot n="name" />
+        <RN.View style={{ transform: [{ translateY: 2 }] }}>
+          <RiVerifiedBadgeFill size="sm" fill="#1d9bf0" />
+        </RN.View>
+        <Slot n="marker" />
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's feed video preview: the whole surface taps through to the viewer.
+    name: 'a tap area over a whole surface and its Pressable',
+    node: L.VStack()
+      .position({ top: 'none', right: 'none', bottom: 'none', left: 'none' })
+      .zIndex('raised')
+      .onPress(onPress),
+    jsx: <RN.Pressable style={FEED.tapArea} onPress={onPress} />,
+  },
+  {
+    // And its mute button: a white glyph on a translucent disc, pinned above the tap area.
+    name: 'a pinned mute button with a hit slop and its Pressable',
+    node: L.VStack(
+      L.VStack(L.Icon(RiVolumeMuteLine).size('18').foreground('white'))
+        .frame({ width: '3xl', height: '3xl' })
+        .background('black/60')
+        .border('white/20', 'thin')
+        .corner('full')
+        .justify('center')
+        .align('center'),
+    )
+      .position({ bottom: '10', right: '10' })
+      .zIndex('2')
+      .onPress(onPress)
+      .hitSlop('md'),
+    jsx: (
+      <RN.Pressable onPress={onPress} hitSlop={8} style={FEED.mute}>
+        <RN.View style={FEED.muteDisc}>
+          <RiVolumeMuteLine size={18} fill="#ffffff" />
+        </RN.View>
+      </RN.Pressable>
     ),
   },
 ];

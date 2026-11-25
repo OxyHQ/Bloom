@@ -4420,6 +4420,19 @@ A root placed back in a language tree has no boundary: `Embed(toElement(chain))`
 an `Embed` render function or a `VirtualList` row that returns one, is drawn
 as part of that tree, in the environment provided there.
 
+**What a root costs.** Every node costs React what the JSX it stands for
+costs: a press, a hit slop, a pinned edge, a fill at an opacity, an app colour,
+a glyph (the per-node cost gate, `parity/cost.parity.test.tsx`, measures each
+against its JSX). The boundary is the one thing JSX does not have: one fiber
+and two context reads, the environment (an `.environment()`, `.disabled()` or
+navigator set above reaches the root through it) and the theme. A component
+whose JSX holds two roots pays them twice; converting a region into one root,
+not each of its pieces into a root of its own, pays them once, and a region
+already inside a language tree pays nothing. Order still means nesting:
+`.frame().background().border().corner()` is the one rounded, filled, outlined
+view a JSX style writes; `.corner()` before `.background()` rounds the content
+and fills a square behind it, a second view.
+
 ## ViewThatFits
 
 `ViewThatFits(axis, ...candidates)` is SwiftUI's `ViewThatFits(in:)`: the first
