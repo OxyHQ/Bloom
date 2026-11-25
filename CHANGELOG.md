@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `StatBar` and `DataTable` paint through the colour tokens (`useColorTokens()`) instead of `useTheme().colors`, their tertiary text through `--faint-foreground`. Nothing draws differently.
+
 ## 23.9.0
 
 The Bloom language 1.6.0 (`@oxy.so/bloom-language`), its compiler 1.4.0 (`@oxy.so/bloom-language-compiler`), its codemod 0.4.0 (`@oxy.so/bloom-language-codemod`) and `@oxy.so/bloom-lens` 1.2.0 ship beside it.
