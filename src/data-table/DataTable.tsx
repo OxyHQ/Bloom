@@ -14,8 +14,7 @@ import {
 } from '../segmented-control';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '../table';
-import type { Theme } from '../theme/types';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens, type ColorTokens } from '../theme/color-tokens';
 import { Text, TYPE_SCALE } from '../typography';
 import { DATA_TABLE_MESSAGES } from './messages';
 import { clampPage, isSortable, nextSort, pageCount, sortRows } from './sorting';
@@ -63,13 +62,12 @@ interface DataTablePalette {
   text: string;
 }
 
-function resolveDataTablePalette(theme: Theme): DataTablePalette {
-  const c = theme.colors;
+function resolveDataTablePalette(tokens: ColorTokens): DataTablePalette {
   return {
-    border: c.borderLight,
-    separator: c.borderLight,
-    textTertiary: c.textSecondary,
-    text: c.text,
+    border: tokens.input,
+    separator: tokens.input,
+    textTertiary: tokens.mutedForeground,
+    text: tokens.foreground,
   };
 }
 
@@ -155,8 +153,8 @@ export function DataTable<T>({
     { size: defaultSize },
     { size: 'md', tone: 'neutral' },
   );
-  const theme = useTheme();
-  const palette = useMemo(() => resolveDataTablePalette(theme), [theme]);
+  const tokens = useColorTokens();
+  const palette = useMemo(() => resolveDataTablePalette(tokens), [tokens]);
 
   const [size, setSize] = useControllableState<DataTableSize>({
     value: sizeProp,
