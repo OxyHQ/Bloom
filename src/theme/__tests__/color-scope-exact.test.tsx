@@ -152,6 +152,33 @@ it('preserves an arbitrary seed source when adding exact overrides and local mod
     primaryDark: '#123456',
   });
 });
+it('the tertiary text follows an exact quiet text unless the scope names its own', () => {
+  const base = {
+    theme: buildTheme('blue', 'light'),
+    vars: buildScopeVars('blue', 'light'),
+  };
+  const quiet = applyScopeTokens(base, { 'muted-foreground': '#abcdef' });
+  expect(quiet.vars['--faint-foreground']).toBe('#abcdef');
+  expect(quiet.vars['--color-faint-foreground']).toBe('#abcdef');
+  expect(quiet.theme.colors).toMatchObject({
+    textSecondary: '#abcdef',
+    textTertiary: '#abcdef',
+    icon: '#abcdef',
+  });
+
+  const own = applyScopeTokens(base, {
+    'muted-foreground': '#abcdef',
+    'faint-foreground': '#123456',
+  });
+  expect(own.vars['--muted-foreground']).toBe('#abcdef');
+  expect(own.vars['--faint-foreground']).toBe('#123456');
+  expect(own.theme.colors).toMatchObject({ textSecondary: '#abcdef', textTertiary: '#123456' });
+
+  const faint = applyScopeTokens(base, { 'faint-foreground': '#123456' });
+  expect(faint.vars['--muted-foreground']).toBe(base.vars['--muted-foreground']);
+  expect(faint.theme.colors.textSecondary).toBe(base.theme.colors.textSecondary);
+  expect(faint.theme.colors.textTertiary).toBe('#123456');
+});
 it('rejects unknown and unresolved colors rather than letting CSS and native disagree', () => {
   const base = {
     theme: buildTheme('blue', 'light'),

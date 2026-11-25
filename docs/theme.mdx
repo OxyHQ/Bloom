@@ -111,6 +111,8 @@ Every preset exposes:
   `colors.backgroundTertiary` expose the secondary and tertiary backgrounds.
 - `colors.text` — body text.
 - `colors.textSecondary` — secondary text.
+- `colors.textTertiary` — tertiary text: the same colour as `textSecondary` in
+  every preset, the platform's tertiary label in `mode="adaptive"`.
 - `colors.border` — divider lines.
 - `colors.success` / `colors.warning` / `colors.error` / `colors.info` —
   semantic colors, with corresponding `*Foreground` and `*Subtle` pairs.
@@ -174,11 +176,13 @@ the provider builds the token record and `useTheme().colors` together
 (`buildPresetPalette`). In `mode="adaptive"` on Android and iOS the platform's
 dynamic colours overlay both, each token taking the colour of the
 `theme.colors` field it feeds (`COLOR_FIELDS` in
-`theme/color-scope/resolve-scope.ts`: `--muted-foreground` is `textSecondary`).
+`theme/color-scope/resolve-scope.ts`: `--muted-foreground` is `textSecondary`,
+`--faint-foreground` is `textTertiary`, so `faintForeground` is the platform's
+tertiary label there and `mutedForeground` its secondary one).
 A field that is not a token's own field can differ from that token there
-(`textTertiary`, `primaryLight`, `primaryDark` and `negative*` hold their
-own platform roles), so a family reading one of them keeps reading `colors` or
-asks for the token it means.
+(`primaryLight`, `primaryDark` and `negative*` hold their own platform roles),
+so a family reading one of them keeps reading `colors` or asks for the token it
+means.
 
 Bloom's components still read `useTheme().colors` for final styles in most
 families; they move to the tokens family by family, each move proved by the

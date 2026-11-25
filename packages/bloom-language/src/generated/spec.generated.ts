@@ -995,7 +995,7 @@ export const COLORS = {
   },
   "textTertiary": {
     "paint": "textTertiary",
-    "web": "var(--muted-foreground)"
+    "web": "var(--faint-foreground)"
   },
   "primary": {
     "paint": "primary",

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The colour token `--faint-foreground` (`faintForeground` from `useColorTokens()` and `createTokenStyles`, `--color-faint-foreground` in `theme.css`, `faint-foreground` in `tokens.json` and `BloomColorScopeTokens`): the tertiary text, `theme.colors.textTertiary`'s own token. Every preset and seed holds it at `--muted-foreground`'s colour, so nothing renders differently; in `mode="adaptive"` on Android and iOS it is the platform's tertiary label (Material You `outline`, iOS `tertiaryLabel`), as `textTertiary` is, where `--muted-foreground` is the secondary one. `textTertiary` had no token, so a component reading it could not move to the tokens. An exact `muted-foreground` in a `BloomColorScope` also sets it unless the scope names `faint-foreground` too, so a scope's tertiary text keeps following its quiet text as before. The Bloom language's `textTertiary` role paints `var(--faint-foreground)` on the web.
+
 ## 23.8.1
 
 The Bloom language 1.5.1 (`@oxy.so/bloom-language`) ships beside it.

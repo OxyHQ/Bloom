@@ -26,3 +26,18 @@ it('a token at an opacity reaches the DOM through react-native-web', () => {
   );
   act(() => root.unmount());
 });
+
+it('the web reads the tertiary text as its own variable', () => {
+  const { useColorTokens } = require('../color-tokens') as typeof import('../color-tokens');
+  let tokens: ReturnType<typeof useColorTokens> | undefined;
+  function Probe() {
+    tokens = useColorTokens();
+    return null;
+  }
+  const container = document.createElement('div');
+  const root = createRoot(container);
+  act(() => root.render(<Probe />));
+  expect(tokens?.faintForeground).toBe('var(--faint-foreground)');
+  expect(tokens?.mutedForeground).toBe('var(--muted-foreground)');
+  act(() => root.unmount());
+});

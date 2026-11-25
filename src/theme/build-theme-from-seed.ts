@@ -71,7 +71,7 @@ function buildSeedThemeValues(
       // The same ONE quiet-text colour `build-theme.ts` resolves — see the long
       // note there. The parity suite walks every preset through both paths, so a
       // change on one side that is not made on the other goes red.
-      textTertiary: g('muted-foreground'),
+      textTertiary: g('faint-foreground'),
 
       border: g('border'),
       borderLight: g('input'),

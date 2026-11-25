@@ -16,7 +16,8 @@ export const COLOR_FIELDS = {
   foreground: ['text'],
   surface: ['backgroundSecondary', 'primaryLight'],
   popover: ['backgroundTertiary'],
-  'muted-foreground': ['textSecondary', 'textTertiary', 'icon'],
+  'muted-foreground': ['textSecondary', 'icon'],
+  'faint-foreground': ['textTertiary'],
   border: ['border'],
   input: ['borderLight'],
   primary: ['primary', 'tint', 'iconActive'],
@@ -79,6 +80,19 @@ export function withFieldColors(
   return withScopeAliases(next);
 }
 
+/**
+ * The tertiary text follows an exact `muted-foreground`, unless the scope names
+ * `faint-foreground` too. Every preset holds the two at one colour (the one
+ * legible quiet text), so a scope that sets its quiet text on its own fill
+ * keeps its tertiary text legible there, as it did before the token existed,
+ * instead of painting the preset's grey on a fill it was never measured on.
+ */
+function withFaintText(overrides: BloomColorScopeTokens): BloomColorScopeTokens {
+  const muted = overrides['muted-foreground'];
+  if (muted === undefined || overrides['faint-foreground'] !== undefined) return overrides;
+  return { ...overrides, 'faint-foreground': muted };
+}
+
 /** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */
 export function applyScopeTokens(
   base: ScopePalette,
@@ -88,7 +102,7 @@ export function applyScopeTokens(
   const vars = { ...base.vars };
   const colors = { ...base.theme.colors };
   let changedCharts = false;
-  for (const [name, value] of Object.entries(overrides)) {
+  for (const [name, value] of Object.entries(withFaintText(overrides))) {
     if (value === undefined) continue;
     if (!(CANONICAL_TOKENS as readonly string[]).includes(name)) {
       throw new Error(`BloomColorScope: unknown canonical token "${name}".`);

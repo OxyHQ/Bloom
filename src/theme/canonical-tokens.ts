@@ -29,6 +29,10 @@ export const CANONICAL_TOKENS = [
   'tertiary-foreground',
   'muted',
   'muted-foreground',
+  // The tertiary text: `theme.colors.textTertiary`. Every preset holds it at
+  // `muted-foreground` (one legible quiet text, `build-theme.ts`); in an adaptive
+  // theme the platform answers it with its own tertiary label.
+  'faint-foreground',
   'accent',
   'accent-foreground',
   'destructive',
