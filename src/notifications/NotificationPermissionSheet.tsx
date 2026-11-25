@@ -6,7 +6,7 @@ import { IconCircle } from '../icon-circle';
 import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
 import { useMessages } from '../locale/messages';
 import type { SurfaceControls } from '../surfaces';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { NOTIFICATIONS_MESSAGES } from './messages';
 import type { NotificationPermissionCopy, NotificationPermissionAdapter } from './types';
@@ -40,7 +40,7 @@ export function NotificationPermissionSheet({
   laterLabel,
 }: NotificationPermissionSheetProps) {
   const { messages } = useMessages(NOTIFICATIONS_MESSAGES);
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const [requesting, setRequesting] = useState(false);
 
   const enable = async () => {
@@ -65,7 +65,7 @@ export function NotificationPermissionSheet({
         <Text variant="title-3-semibold" accessibilityRole="header" style={styles.centered}>
           {title ?? messages.permissionTitle}
         </Text>
-        <Text variant="body-regular" style={[styles.centered, { color: colors.textSecondary }]}>
+        <Text variant="body-regular" style={[styles.centered, { color: tokens.mutedForeground }]}>
           {body ?? messages.permissionBody}
         </Text>
       </View>

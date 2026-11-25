@@ -160,6 +160,11 @@ Bloom has one reader for the colours a style paints: `useColorTokens()` (or
 - `useTheme()` is the theme itself: its mode, `isDark`, and `colors` as values
   to compute with (mixing, contrast, alpha on a colour that is not a token).
   Paint the result; do not read `colors` for a colour a style takes as it is.
+  There is no token reader for arithmetic: on the web a token is a CSS
+  variable, which `withAlpha`, a surface material's tint or a contrast check
+  cannot read, so a colour that feeds one (a scrim, a `Surface` or
+  `SurfacePaint` fill, a mix) stays a `colors` value. One palette per theme
+  keeps it the token's colour.
 - `useThemePaint()` is the older paint reader (on a prepainted web document its
   colours are `--bloom-paint-*` variables). It stays public, as apps call it,
   and new Bloom code does not.
