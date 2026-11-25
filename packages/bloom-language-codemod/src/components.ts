@@ -306,6 +306,9 @@ const TEXT_INPUT = {
   onSubmitEditing: p('onSubmit', 'handler'),
   autoFocus: p('autoFocus', 'mark'),
   maxLength: p('maxLength', 'number'),
+  inputMode: p('inputMode', 'token', tokens('inputMode')),
+  // React Native's own event, handed on as it is.
+  onSelectionChange: p('onSelectionChange', 'handler'),
 } as const;
 
 /** Bloom's accent tones as the Bloom tones they paint in (`appearance/colors.ts`, `PALETTE` read backwards). */
@@ -488,6 +491,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       multiline: p('multiline', 'flag'),
       editable: p('editable', 'boolean'),
       ...TEXT_INPUT,
+      inputRef: p('inputRef', 'handler'),
       textContentType: p('textContentType', 'token', tokens('textContentType')),
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
@@ -556,6 +560,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       active: p('active', 'boolean'),
       highlighted: p('highlighted', 'flag'),
       contentDensity: p('density', 'token', densities('row')),
+      // A web role (Item's `role`): an option of a listbox is the language's `.role('option')`.
+      role: p('role', 'token', { option: 'option' }),
       // A press or none chosen by a plain condition (`full ? undefined : add`): no press, no button.
       onPress: { ...p('onPress', 'handler'), unset: true },
       onLongPress: p('onLongPress', 'handler'),
@@ -599,6 +605,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       resize: p('resize', 'token', tokens('textareaResize')),
       showCount: p('showCount', 'mark'),
       ...TEXT_INPUT,
+      // The ref of its TextInput, written as it is.
+      inputRef: p('inputRef', 'handler'),
       accessibilityLabel: p('label', 'string'),
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
@@ -616,6 +624,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       disabled: p('disabled', 'flag'),
       onClearText: p('onClearText', 'handler'),
       ...TEXT_INPUT,
+      // Bloom's Search hands its `ref` to its TextInput: the language's `.inputRef()`.
+      ref: p('inputRef', 'handler'),
       editable: p('editable', 'boolean'),
       testID: p('testID', 'string'),
     },

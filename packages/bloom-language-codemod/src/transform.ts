@@ -80,6 +80,8 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
+/** The roles React Native names only as a web `role`, which the language's `.role()` writes as that prop. */
+const WEB_ROLES = new Set(['option', 'listbox']);
 /** A React Native `fontWeight` as the spec's weight of that value (`'700'` is `bold`). */
 const WEIGHT_BY_VALUE: Readonly<Record<string, string>> = {
   ...Object.fromEntries(Object.entries(spec.scales.weight).map(([name, value]) => [value, name])),
@@ -1983,6 +1985,17 @@ export function transformSource(source: string, options: TransformOptions): File
     /** A pressable's `delayLongPress`: its long press's duration token. */
     let longPressDelay: string | undefined;
     for (const attribute of node.openingElement.attributes) {
+      // Bloom's hover group marker (`{...hoverGroupProps}`) on a view: `.hoverGroup()`, with no press of its own.
+      if (
+        n.JSXSpreadAttribute.check(attribute) &&
+        (kind === 'view' || kind === 'pressable') &&
+        n.Identifier.check(attribute.argument) &&
+        sources.get(attribute.argument.name)?.module === '@oxy.so/bloom/subtle-hover' &&
+        sources.get(attribute.argument.name)?.imported === 'hoverGroupProps'
+      ) {
+        props.push({ name: 'hoverGroup', args: [] });
+        continue;
+      }
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
         fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
         continue;
@@ -2190,6 +2203,13 @@ export function transformSource(source: string, options: TransformOptions): File
         const hitTesting = hitTestingOf(attributeExpression(value));
         if (hitTesting !== undefined) props.push({ name: 'allowsHitTesting', args: [hitTesting] });
         else fail(name, 'prop:pointerEvents', 'a pointerEvents set at runtime');
+        continue;
+      }
+      // React Native's web roles (`role="listbox"`), which it names as no `accessibilityRole`.
+      if (name === 'role' && (kind === 'view' || kind === 'pressable')) {
+        const role = staticString(value);
+        if (role !== undefined && WEB_ROLES.has(role)) props.push({ name: 'role', args: [role] });
+        else fail(name, 'role', 'a role the language does not take, or set at runtime');
         continue;
       }
       if (name === 'accessibilityRole' && kind !== 'icon') {
@@ -4821,8 +4841,11 @@ export function transformSource(source: string, options: TransformOptions): File
       [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
-    // A Bloom or React Native value the before side reads or calls (`tokens.hitSlop.md`, `fontFamilyStyle('display')`).
-    for (const match of uncommented(before).matchAll(/(?:^|[^\w.]|\.\.\.)([a-z]\w*)[.(]/g)) {
+    // A Bloom or React Native value the before side reads, calls or spreads (`tokens.hitSlop.md`,
+    // `fontFamilyStyle('display')`, `{...hoverGroupProps}`).
+    for (const match of uncommented(before).matchAll(
+      /(?:^|[^\w.]|\.\.\.)([a-z]\w*)(?:[.(]|(?<=\.\.\.\w+)\})/g,
+    )) {
       const local = match[1] as string;
       const module = sources.get(local)?.module ?? '';
       if (module.startsWith('@oxy.so/bloom/') || module === 'react-native')

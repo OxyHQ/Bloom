@@ -485,6 +485,19 @@ const fields: ParityCase[] = [
     ),
   },
   {
+    // Mention's event editor: a field that takes a number, as the web's `inputmode` asks.
+    name: 'TextField that takes a number (inputMode)',
+    language: () => toElement(L.TextField(empty, 'Seats').inputMode('numeric')),
+    bloom: () => <TextFieldInput label="Seats" value="" onValueChange={set} inputMode="numeric" />,
+  },
+  {
+    name: 'TextEditor that follows its caret (onSelectionChange)',
+    language: () => toElement(L.TextEditor(text).onSelectionChange(set).inputMode('text')),
+    bloom: () => (
+      <Textarea value="Ada Lovelace" onValueChange={set} onSelectionChange={set} inputMode="text" />
+    ),
+  },
+  {
     name: 'TextField for a URL, its iOS content type (textContentType)',
     language: () => toElement(L.TextField(empty, 'Link').keyboard('url').textContentType('URL')),
     bloom: () => (
@@ -691,6 +704,23 @@ const searches: ParityCase[] = [
     name: 'Search',
     language: () => toElement(L.Search(empty).placeholder('Search posts')),
     bloom: () => <Search value="" onValueChange={set} placeholder="Search posts" />,
+  },
+  {
+    // Mention's search screen: the caret drives its mention and hashtag suggestions.
+    name: 'Search that follows its caret (onSelectionChange)',
+    language: () =>
+      toElement(
+        L.Search(empty).placeholder('Search posts').onSelectionChange(set).inputMode('search'),
+      ),
+    bloom: () => (
+      <Search
+        value=""
+        onValueChange={set}
+        placeholder="Search posts"
+        onSelectionChange={set}
+        inputMode="search"
+      />
+    ),
   },
   {
     name: 'Search with a most characters',

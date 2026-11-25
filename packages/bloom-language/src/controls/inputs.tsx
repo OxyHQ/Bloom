@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import type { TextInput } from 'react-native';
+import type { TextInput, TextInputSelectionChangeEvent } from 'react-native';
 import type { BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import { Checkbox as BloomCheckbox } from '@oxy.so/bloom/checkbox';
 import { Field as BloomField } from '@oxy.so/bloom/field';
@@ -74,6 +74,8 @@ export type InputKind =
 
 /** The keyboard a text input asks for (React Native's `keyboardType`). */
 export type Keyboard = (typeof ENUMS.keyboard)[number];
+/** The kind of text it takes, as the web's `inputmode` (React Native's `inputMode`): what keyboard each platform shows. */
+export type InputMode = (typeof ENUMS.inputMode)[number];
 /** Which letters the keyboard capitalises (`autoCapitalize`). */
 export type Autocapitalize = (typeof ENUMS.autocapitalize)[number];
 /** What the input holds, for autofill (`autoComplete`). */
@@ -131,6 +133,12 @@ interface SearchProps {
 interface TextInputModifiers<Self> {
   /** The keyboard it asks for. */
   keyboard(value: Keyboard): Self;
+  /** The kind of text it takes (React Native's `inputMode`, the web's `inputmode`). */
+  inputMode(value: InputMode): Self;
+  /** The ref of its text input itself (React Native's `TextInput`): to focus it or move its caret. */
+  inputRef(value: RefObject<ComponentRef<typeof TextInput> | null>): Self;
+  /** React Native's `onSelectionChange`: the input's caret or selection moved. */
+  onSelectionChange(value: (event: TextInputSelectionChangeEvent) => void): Self;
   autocapitalize(value: Autocapitalize): Self;
   autocorrect(value: boolean): Self;
   /** Takes the keyboard's focus when it appears. */
@@ -445,12 +453,16 @@ interface FocusProps {
  */
 function FocusBound({
   focused: [isFocused, setFocused],
+  inputRef,
   draw,
 }: {
   focused: Binding<boolean>;
+  /** The app's own ref of the input (`.inputRef()`), which the binding then reads too. */
+  inputRef: RefObject<ComponentRef<typeof TextInput> | null> | undefined;
   draw: (focus: FocusProps) => ReactElement;
 }): ReactElement {
-  const ref = useRef<ComponentRef<typeof TextInput>>(null);
+  const own = useRef<ComponentRef<typeof TextInput>>(null);
+  const ref = inputRef ?? own;
   useEffect(() => {
     const input = ref.current;
     if (input === null || input.isFocused() === isFocused) return;
@@ -466,8 +478,9 @@ function withFocus(
   draw: (focus: Partial<FocusProps>) => ReactElement,
 ): ReactElement {
   const focused = d.own('focused')?.value;
-  if (focused === undefined) return draw({});
-  return createElement(FocusBound, { key: d.key, focused, draw });
+  const inputRef = d.own('inputRef')?.value;
+  if (focused === undefined) return draw(inputRef === undefined ? {} : { ref: inputRef });
+  return createElement(FocusBound, { key: d.key, focused, inputRef, draw });
 }
 
 /**
@@ -484,6 +497,8 @@ function textInputProps(d: ControlDraw): Record<string, unknown> {
 }
 const TEXT_INPUT_PROPS = [
   ['keyboard', 'keyboardType'],
+  ['inputMode', 'inputMode'],
+  ['onSelectionChange', 'onSelectionChange'],
   ['autocapitalize', 'autoCapitalize'],
   ['autocorrect', 'autoCorrect'],
   ['contentType', 'autoComplete'],

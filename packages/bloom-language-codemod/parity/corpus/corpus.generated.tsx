@@ -78,12 +78,13 @@ import { Icon as I67 } from '@oxy.so/bloom-language';
 import { RiMoreFill as I68 } from '@oxy.so/bloom/icons/RiMoreFill';
 import { RiShareLine as I69 } from '@oxy.so/bloom/icons/RiShareLine';
 import { withAlpha as I70 } from '@oxy.so/bloom/theme';
-import { RiHeart3Line as I71 } from 'bloom-22/icons/RiHeart3Line';
-import { Switch as I72 } from 'bloom-22/switch';
-import { RiArrowRightLine as I73 } from 'bloom-22/icons/RiArrowRightLine';
-import { RiArrowRightLine as I74 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { PageHeader as I75 } from 'bloom-22/page-header';
-import { RiLinksLine as I76 } from '@oxy.so/bloom/icons/RiLinksLine';
+import { hoverGroupProps as I71 } from '@oxy.so/bloom/subtle-hover';
+import { RiHeart3Line as I72 } from 'bloom-22/icons/RiHeart3Line';
+import { Switch as I73 } from 'bloom-22/switch';
+import { RiArrowRightLine as I74 } from 'bloom-22/icons/RiArrowRightLine';
+import { RiArrowRightLine as I75 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { PageHeader as I76 } from 'bloom-22/page-header';
+import { RiLinksLine as I77 } from '@oxy.so/bloom/icons/RiLinksLine';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });
@@ -839,6 +840,34 @@ export const CASES = [
     after: () => { const View = I14; const withAlpha = I70; const { Button: LButton, Item, Divider, Menu, VStack } = L;  return (toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))); },
   },
   {
+    name: "components/Pickers.tsx:12",
+    bloom22: false,
+    before: () => { const View = I14; const Item = I26; return (<View role="listbox">
+      <Item title="English" role="option" selected={true} onPress={() => {}} />
+      <Item title="Català" role="option" onPress={() => {}} />
+    </View>); },
+    after: () => { const View = I14; const Item = I26; const { VStack, Row } = L;  return (toElement(VStack(Row('English').role('option').selected(true).onPress(() => {}), Row('Català').role('option').onPress(() => {})).role('listbox'))); },
+  },
+  {
+    name: "components/Pickers.tsx:21",
+    bloom22: false,
+    before: () => { const View = I14; const Pressable = I55; const Text = I4; const hoverGroupProps = I71; return (<View {...hoverGroupProps}>
+      <Pressable onPress={() => {}}>
+        <Text>Row</Text>
+      </Pressable>
+    </View>); },
+    after: () => { const View = I14; const Pressable = I55; const Text = I4; const hoverGroupProps = I71; const { VStack, Row, toElement, Text: LText } = L;  return (toElement(VStack(VStack(LText('Row')).onPress(() => {})).hoverGroup())); },
+  },
+  {
+    name: "components/Pickers.tsx:39",
+    bloom22: false,
+    before: () => { const View = I14; const Search = I2; const TextFieldInput = I15; return (<View>
+      <Search value={'⟨0⟩'} onChangeText={() => {}} onSelectionChange={() => {}} />
+      <TextFieldInput label="Seats" value={'⟨3⟩'} onValueChange={() => {}} inputMode="numeric" />
+    </View>); },
+    after: () => { const View = I14; const Search = I2; const TextFieldInput = I15; const { VStack, Row, toElement, Text: LText, Search: LSearch, TextField } = L;  return (toElement(VStack(LSearch(['⟨0⟩', () => {}]).onSelectionChange(() => {}), TextField(['⟨3⟩', () => {}], 'Seats').inputMode('numeric')))); },
+  },
+  {
     name: "components/ReelRoute.tsx:8 (false)",
     bloom22: false,
     before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I4; return (<Screen
@@ -871,7 +900,7 @@ export const CASES = [
   {
     name: "components/Rows.tsx:19",
     bloom22: true,
-    before: () => { const Pressable = I55; const RiHeart3Line = I71; const View = I14; const Text = I59; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I55; const RiHeart3Line = I72; const View = I14; const Text = I59; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -885,7 +914,7 @@ export const CASES = [
   {
     name: "components/Rows.tsx:41",
     bloom22: true,
-    before: () => { const View = I14; const Text = I59; const Switch = I72; const Button = I19; const RiArrowRightLine = I73; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I14; const Text = I59; const Switch = I73; const Button = I19; const RiArrowRightLine = I74; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -893,7 +922,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I14; const Text = I4; const Switch = I8; const Button = I22; const RiArrowRightLine = I74; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I14; const Text = I4; const Switch = I8; const Button = I22; const RiArrowRightLine = I75; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -1012,7 +1041,7 @@ export const CASES = [
   {
     name: "components/SettingsRoute.tsx:13",
     bloom22: true,
-    before: () => { const Screen = I20; const PageHeader = I75; const Text = I59; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+    before: () => { const Screen = I20; const PageHeader = I76; const Text = I59; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
     after: () => { const Screen = I16; const PageHeader = I45; const Text = I4; const { Text: LText, Header } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())} />); },
@@ -1052,7 +1081,7 @@ export const CASES = [
   {
     name: "components/ThreadRoute.tsx:12",
     bloom22: true,
-    before: () => { const Screen = I20; const PageHeader = I75; const Text = I59; const View = I14; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+    before: () => { const Screen = I20; const PageHeader = I76; const Text = I59; const View = I14; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <>
           <Text className="text-sm">{'⟨0⟩'}</Text>
           <View className="p-4" />
@@ -1097,10 +1126,10 @@ export const CASES = [
   {
     name: "components/Toolbar.tsx:9",
     bloom22: false,
-    before: () => { const Button = I22; const RiLinksLine = I76; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
+    before: () => { const Button = I22; const RiLinksLine = I77; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
       {(color) => <RiLinksLine width={20} height={20} fill={color} />}
     </Button>); },
-    after: () => { const Button = I22; const RiLinksLine = I76; const { Group, Icon, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
+    after: () => { const Button = I22; const RiLinksLine = I77; const { Group, Icon, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
   },
   {
     name: "components/Toolbar.tsx:16",

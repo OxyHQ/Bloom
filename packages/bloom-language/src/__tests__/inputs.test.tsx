@@ -31,6 +31,7 @@ import {
 import type { NODE_MODIFIERS } from '../generated/spec.generated';
 import { toElement } from '../render';
 import { view } from '../view';
+import { VStack } from '../primitives';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -175,6 +176,22 @@ describe('inputs', () => {
     native.focused = true;
     act(() => setFocused(false));
     expect(native.blur).toHaveBeenCalledTimes(1);
+  });
+
+  it('the input’s own ref is the app’s (inputRef), with its focus binding or without one', () => {
+    const own = { current: null };
+    const bound = { current: null };
+    const Screen = view(function Screen() {
+      return VStack(
+        Search(useState('')).inputRef(own),
+        TextField(useState(''), 'Name').inputRef(bound).focused(useState(false)),
+        TextEditor(useState('')).inputRef(own),
+      );
+    });
+    const renderer = mount(toElement(Screen()));
+    expect(renderer.root.findByType('Search' as never).props.ref).toBe(own);
+    expect(renderer.root.findByType('TextFieldInput' as never).props.inputRef).toBe(bound);
+    expect(renderer.root.findByType('Textarea' as never).props.inputRef).toBe(own);
   });
 
   it('a picker’s groups head their first row, and an option’s mark follows the choice', () => {

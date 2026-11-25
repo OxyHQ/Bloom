@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (662). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (665). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -871,7 +871,7 @@ Web: held at its scroll container's `edge` (the top by default) once scrolled to
 - Parameters: [role](bloom-language-tokens.mdx#role)
 - Signature: `.role(value: Role)`
 - Taken by: every node (universal)
-- `role` tokens: `'button'`, `'link'`, `'header'`, `'image'`, `'text'`, `'none'`, `'checkbox'`, `'radio'`, `'tab'`, `'radiogroup'`, `'tablist'`, `'list'`, `'alert'`, `'progressbar'`, `'imagebutton'`, `'summary'`
+- `role` tokens: `'button'`, `'link'`, `'header'`, `'image'`, `'text'`, `'none'`, `'checkbox'`, `'radio'`, `'tab'`, `'radiogroup'`, `'tablist'`, `'list'`, `'alert'`, `'progressbar'`, `'imagebutton'`, `'summary'`, `'option'`, `'listbox'`
 
 ### `hitSlop`
 
@@ -2086,6 +2086,31 @@ The keyboard it asks for.
 - Signature: `.keyboard(value: Keyboard)`
 - Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [search](bloom-language-nodes.mdx#search), [settingsTextField](bloom-language-nodes.mdx#settingstextfield)
 - `keyboard` tokens: `'default'`, `'email-address'`, `'numeric'`, `'number-pad'`, `'decimal-pad'`, `'phone-pad'`, `'url'`, `'web-search'`
+
+### `inputMode`
+
+The kind of text it takes (React Native's `inputMode`, the web's `inputmode`).
+
+- Parameters: [inputMode](bloom-language-tokens.mdx#inputmode)
+- Signature: `.inputMode(value: InputMode)`
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [search](bloom-language-nodes.mdx#search)
+- `inputMode` tokens: `'none'`, `'text'`, `'decimal'`, `'numeric'`, `'tel'`, `'search'`, `'email'`, `'url'`
+
+### `inputRef`
+
+The ref of its text input itself (React Native's `TextInput`): to focus it or move its caret.
+
+- Parameters: a value
+- Signature: `.inputRef(value: RefObject<ComponentRef<typeof TextInput> | null>)`
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [search](bloom-language-nodes.mdx#search)
+
+### `onSelectionChange`
+
+React Native's `onSelectionChange`: the input's caret or selection moved.
+
+- Parameters: a value
+- Signature: `.onSelectionChange(value: (event: TextInputSelectionChangeEvent) => void)`
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [search](bloom-language-nodes.mdx#search)
 
 ### `autocapitalize`
 

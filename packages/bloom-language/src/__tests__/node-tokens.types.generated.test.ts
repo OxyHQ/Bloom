@@ -61,7 +61,7 @@ type S = {
   "physicalEdge": "all" | "top" | "bottom" | "horizontal" | "vertical" | "left" | "right";
   "edge": "all" | "horizontal" | "vertical" | "top" | "bottom" | "leading" | "trailing" | "left" | "right";
   "borderEdge": "all" | "top" | "bottom" | "leading" | "trailing" | "left" | "right";
-  "role": "button" | "link" | "header" | "image" | "text" | "none" | "checkbox" | "radio" | "tab" | "radiogroup" | "tablist" | "list" | "alert" | "progressbar" | "imagebutton" | "summary";
+  "role": "button" | "link" | "header" | "image" | "text" | "none" | "checkbox" | "radio" | "tab" | "radiogroup" | "tablist" | "list" | "alert" | "progressbar" | "imagebutton" | "summary" | "option" | "listbox";
   "buttonShape": "circle" | "pill" | "fit";
   "fabShape": "circle" | "rounded" | "squircle";
   "linkTone": "primary" | "secondary" | "text";
@@ -136,6 +136,7 @@ type S = {
   "loadingStyle": "spinner" | "top" | "inline";
   "contentTransition": "roll" | "numeric";
   "swipeDirection": "left" | "right" | "up" | "down";
+  "inputMode": "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
   "keyboard": "default" | "email-address" | "numeric" | "number-pad" | "decimal-pad" | "phone-pad" | "url" | "web-search";
   "autocapitalize": "none" | "sentences" | "words" | "characters";
   "contentType": "off" | "email" | "username" | "password" | "new-password" | "current-password" | "one-time-code" | "name" | "given-name" | "family-name" | "tel" | "postal-code" | "street-address" | "url";
@@ -828,6 +829,7 @@ type textFieldChecks = [
   Expect<'textField: the universal modifiers', Universal<View<'TextField'>, "disabled">>,
   Expect<"textField.size(size: controlSize)", Ok<At<View<'TextField'>['size'], '0'>, S['controlSize']>>,
   Expect<"textField.keyboard(keyboard)", Ok<At<View<'TextField'>['keyboard'], '0'>, S['keyboard']>>,
+  Expect<"textField.inputMode(inputMode)", Ok<At<View<'TextField'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"textField.autocapitalize(autocapitalize)", Ok<At<View<'TextField'>['autocapitalize'], '0'>, S['autocapitalize']>>,
   Expect<"textField.contentType(contentType)", Ok<At<View<'TextField'>['contentType'], '0'>, S['contentType']>>,
   Expect<"textField.textContentType(textContentType)", Ok<At<View<'TextField'>['textContentType'], '0'>, S['textContentType']>>,
@@ -839,6 +841,7 @@ type textEditorChecks = [
   Expect<"textEditor.size(size: controlSize)", Ok<At<View<'TextEditor'>['size'], '0'>, S['controlSize']>>,
   Expect<"textEditor.resize(textareaResize)", Ok<At<View<'TextEditor'>['resize'], '0'>, S['textareaResize']>>,
   Expect<"textEditor.keyboard(keyboard)", Ok<At<View<'TextEditor'>['keyboard'], '0'>, S['keyboard']>>,
+  Expect<"textEditor.inputMode(inputMode)", Ok<At<View<'TextEditor'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"textEditor.autocapitalize(autocapitalize)", Ok<At<View<'TextEditor'>['autocapitalize'], '0'>, S['autocapitalize']>>,
 ];
 
@@ -891,6 +894,7 @@ type searchChecks = [
   Expect<'search: the universal modifiers', Universal<View<'Search'>, "disabled">>,
   Expect<"search.size(size: controlSize)", Ok<At<View<'Search'>['size'], '0'>, S['controlSize']>>,
   Expect<"search.keyboard(keyboard)", Ok<At<View<'Search'>['keyboard'], '0'>, S['keyboard']>>,
+  Expect<"search.inputMode(inputMode)", Ok<At<View<'Search'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"search.autocapitalize(autocapitalize)", Ok<At<View<'Search'>['autocapitalize'], '0'>, S['autocapitalize']>>,
   Expect<"search.submitLabel(submitLabel)", Ok<At<View<'Search'>['submitLabel'], '0'>, S['submitLabel']>>,
 ];

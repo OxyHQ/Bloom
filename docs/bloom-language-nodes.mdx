@@ -1433,6 +1433,9 @@ Modifiers:
 - [`.prefix()`](bloom-language-modifiers.mdx#prefix) `(value: string)`: Text before the input (a currency, a protocol).
 - [`.suffix()`](bloom-language-modifiers.mdx#suffix) `(value: string)`: Text after the input (a unit, a domain).
 - [`.keyboard()`](bloom-language-modifiers.mdx#keyboard) `(value: Keyboard)`: The keyboard it asks for.
+- [`.inputMode()`](bloom-language-modifiers.mdx#inputmode) `(value: InputMode)`: The kind of text it takes (React Native's `inputMode`, the web's `inputmode`).
+- [`.inputRef()`](bloom-language-modifiers.mdx#inputref) `(value: RefObject<ComponentRef<typeof TextInput> | null>)`: The ref of its text input itself (React Native's `TextInput`): to focus it or move its caret.
+- [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
 - [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`
@@ -1470,6 +1473,9 @@ Modifiers:
 - [`.maxLength()`](bloom-language-modifiers.mdx#maxlength) `(value: number)`
 - [`.showCount()`](bloom-language-modifiers.mdx#showcount) `()`: The count of characters against `maxLength`.
 - [`.keyboard()`](bloom-language-modifiers.mdx#keyboard) `(value: Keyboard)`: The keyboard it asks for.
+- [`.inputMode()`](bloom-language-modifiers.mdx#inputmode) `(value: InputMode)`: The kind of text it takes (React Native's `inputMode`, the web's `inputmode`).
+- [`.inputRef()`](bloom-language-modifiers.mdx#inputref) `(value: RefObject<ComponentRef<typeof TextInput> | null>)`: The ref of its text input itself (React Native's `TextInput`): to focus it or move its caret.
+- [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
 - [`.autoFocus()`](bloom-language-modifiers.mdx#autofocus) `()`: Takes the keyboard's focus when it appears.
@@ -1626,6 +1632,9 @@ Modifiers:
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: Whether a collapsible search is open.
 - [`.tokens()`](bloom-language-modifiers.mdx#tokens) `(value: Binding<readonly SearchToken[]>)`: Filters drawn as tokens before the text; removing one takes it out.
 - [`.keyboard()`](bloom-language-modifiers.mdx#keyboard) `(value: Keyboard)`: The keyboard it asks for.
+- [`.inputMode()`](bloom-language-modifiers.mdx#inputmode) `(value: InputMode)`: The kind of text it takes (React Native's `inputMode`, the web's `inputmode`).
+- [`.inputRef()`](bloom-language-modifiers.mdx#inputref) `(value: RefObject<ComponentRef<typeof TextInput> | null>)`: The ref of its text input itself (React Native's `TextInput`): to focus it or move its caret.
+- [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
 - [`.submitLabel()`](bloom-language-modifiers.mdx#submitlabel) `(value: SubmitLabel)`

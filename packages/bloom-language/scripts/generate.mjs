@@ -187,6 +187,8 @@ export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
 /** What a variant (\`when()\`) can change, and the web selector of each scheme and state condition. */
 export const VARIANT_MODIFIERS = ${ts(spec.variants.modifiers)} as const;
 export const VARIANT_SELECTORS = ${ts(withoutComment(spec.variants.selectors))} as const;
+/** What a condition known as the view renders cannot make the chain's own (\`variants.held\`). */
+export const NOT_HELD_MODIFIERS = ${ts(spec.variants.held.except)} as const;
 
 /** What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view. */
 export const CONTENT_VIEW_MODIFIERS = ${ts(spec.contentView.modifiers)} as const;
@@ -578,6 +580,10 @@ ${Object.entries(tokenSets)
 
 /// The modifiers a variant (\`when(condition, v => v…)\`) can change.
 pub const VARIANT_MODIFIERS: &[&str] = ${rustList(spec.variants.modifiers)};
+
+/// What a condition known as the view renders (a platform, \`disabled\`, a boolean) cannot make the
+/// chain's own; any other modifier the node takes it can (\`variants.held\`).
+pub const NOT_HELD_MODIFIERS: &[&str] = ${rustList(spec.variants.held.except)};
 
 /// The loops (\`.repeatForever(loop)\`) whose frames change opacity: each one fades the view.
 pub const FADING_LOOPS: &[&str] = ${rustList(

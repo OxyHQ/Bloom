@@ -693,12 +693,22 @@ const tailwind: ParityCase[] = [
   },
 ];
 
-/** `.role()`: React Native's accessibilityRole of the same name, on the view's host. */
+/** The roles React Native names only as a web `role` (ARIA), never as an `accessibilityRole`. */
+const WEB_ROLES: readonly string[] = ['option', 'listbox'];
+
+/**
+ * `.role()`: React Native's accessibilityRole of the same name, on the view's
+ * host; a web role is React Native's `role`.
+ */
 const roles: ParityCase[] = ENUMS.role.map((role) => ({
   name: `role ${role}`,
   language: () => toElement(L.VStack(L.Text('a')).role(role)),
   bloom: () => (
-    <RN.View accessibilityRole={role}>
+    <RN.View
+      {...(WEB_ROLES.includes(role)
+        ? { role: role as 'option' }
+        : { accessibilityRole: role as RN.AccessibilityRole })}
+    >
       <Text>a</Text>
     </RN.View>
   ),
@@ -883,6 +893,17 @@ const accessibility: ParityCase[] = [
     language: () => toElement(L.VStack(L.Text('a')).accessibilityHidden()),
     bloom: () => (
       <RN.View {...HIDDEN}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's notification row: a column hidden from native screen readers only, as
+    // React Native's two props hide it (react-native-web drops them).
+    name: 'hidden from native screen readers only (when native)',
+    language: () => toElement(L.VStack(L.Text('a')).when('native', (v) => v.accessibilityHidden())),
+    bloom: () => (
+      <RN.View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text>a</Text>
       </RN.View>
     ),
