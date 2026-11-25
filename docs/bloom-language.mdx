@@ -9,7 +9,7 @@ Bloom's UI language is a way to write Bloom interfaces in TypeScript the way
 SwiftUI writes them in Swift: a component is a function, and its look is a chain
 of modifiers applied in order. Every modifier value is a Bloom token, never a
 pixel or a colour; only geometry the view computes as it renders (a size, a
-pinned edge, a stacking order) is a number of points (see
+pinned edge, a stacking order, an offset) is a number of points (see
 [Styles computed at runtime](#styles-computed-at-runtime)). The package is `packages/bloom-language`
 (`@oxy.so/bloom-language`, published from 1.0.0 beside Bloom 23):
 
@@ -241,20 +241,22 @@ Measured on Mention (the codemod at this commit, `style` kept 222 elements):
 | A static value off Tailwind's scale: an `rgba()` scrim, a radius of half a fixed side, an app constant (`HPAD`), a font size and its line | 36 | Tokens: an app colour, `'full'`, a numeric token; the codemod's to read |
 | A theme colour read at render: `useColorTokens()`, `theme.colors.*` in a list or chosen by state, `withAlpha(…)`, a hook that builds the app's ink styles | 73 | A role, chosen at render where the state chooses it: `.background(active ? 'primary' : 'card')`, `'primary/10'` for `withAlpha(primary, 0.1)` |
 | A style a caller hands in (`style`, `style?.handle`, `rowStyle`, a spread of props) | 26 | Modifiers, not a style object: the caller chains them on the view it places; a part inside takes a `ViewModifier` |
-| Geometry computed at render: a size from props or a measurement, a pinned edge, a stacking order, a playback fraction | 20 | Points: `.frame({ width: itemSize })`, `.position({ left })`, `.zIndex(count - index)`; a fraction that moves with playback is a `MotionValue` or Bloom's progress |
+| Geometry computed at render: a size from props or a measurement, a pinned edge, a stacking order, a nudge, a media's own aspect ratio, a playback fraction | 20 | Points: `.frame({ width: itemSize })`, `.position({ left })`, `.zIndex(count - index)`, `.offset({ y: nudge })`; a ratio is a number, `.aspectRatio(media.aspect)`; a fraction that moves with playback is a `MotionValue` or Bloom's progress |
 | Safe-area and bar insets | 11 | `.safeAreaPadding()` for a padding; points for a pinned edge (`.position({ top: insets.top + 8 })`) |
 | Spacing computed at render (an indent times a depth, an offset of the header's rows) | 7 | Stays JSX: spacing is a token, chosen at render (`compact ? 'none' : 'md'`), never arithmetic |
 | A colour from data (an artwork's accent, a severity's hex) | 4 | A closed set is an app colour table indexed at render (`.background(severity.color[level])`); an open one (an artwork's accent) stays JSX |
 | A style of the press state (`({ pressed }) => …`) | 1 | `.when('pressed', (v) => …)` |
 
-No element among them animates a style or transforms by a value computed at
-render: Mention's moving views are the engine's already (`MotionValue`, see
-[Animations](#animations)).
+No element among them animates a style: Mention's moving views are the
+engine's already (`MotionValue`, see [Animations](#animations)). A view drawn
+shifted by an amount its props give (a name size's nudge) is an offset of
+points, below.
 
 **Points: geometry takes numbers computed at render.** SwiftUI's `.frame`,
-`.position` and `.zIndex` take any `CGFloat` and `Double`; so do the
-language's, for geometry alone: a frame's six lengths, a pinned view's edges
-and its stacking order take a number of points (`Points`) besides their tokens.
+`.position`, `.offset` and `.zIndex` take any `CGFloat` and `Double`; so do the
+language's, for geometry alone: a frame's six lengths, a pinned view's edges,
+its offset and its stacking order take a number of points (`Points`) besides
+their tokens.
 
 ```ts
 const Cell = view(function Cell({ item, size }: { item: Media; size: number }) {
@@ -262,6 +264,8 @@ const Cell = view(function Cell({ item, size }: { item: Media; size: number }) {
 });
 CheckoutBadge().position({ top: insets.top + 8, right: 'lg' })
 Avatar(actor.avatar).zIndex(shown.length - index)
+AccountBadge({ kind }).offset({ y: NAME_SIZES[size].nudge })
+Embed(<iframe src={url} />).frame({ width: 'full' }).aspectRatio(getPlayerAspect(provider))
 ```
 
 - **Only what the view computes.** A number written out is a token: `.frame({
@@ -281,9 +285,12 @@ Avatar(actor.avatar).zIndex(shown.length - index)
   in state is still that: the language draws it, but a `Grid`, a fraction of
   the parent (`'1/3'`) or `.aspectRatio()` says the layout without a second
   pass, and is the form for new screens.
-- **The spec.** `points.params` names them (`frame`, `edges`, `zIndex`); the
-  compiler holds every other parameter to tokens and rejects a number written
-  out anywhere, with the token to write.
+- **A ratio is a number.** `.aspectRatio()` is no token: a ratio written out
+  (`16 / 9`) and a media's own one computed at render (`media.width /
+  media.height`) are both numbers, React Native's `aspectRatio` as it is.
+- **The spec.** `points.params` names them (`frame`, `edges`, `zIndex`,
+  `padding`, `offset`); the compiler holds every other parameter to tokens and
+  rejects a number written out anywhere, with the token to write.
 
 **A style a caller hands in is modifiers.** In SwiftUI a caller modifies the
 view it places, and a view never takes a style object. So it is here:
@@ -517,16 +524,17 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
 | `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, and the percentages apps write that no fraction holds, named by their value (`90%`, `31%`), or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
-| `aspectRatio(r)` | the view's width to its height (`1`, `1.6`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
+| `frame({ width: 'auto' })` | the view's own size, React Native's and the web's `auto` (`w-auto`, `h-auto`): what a view draws with no length, and what takes back a Bloom component's own length for its content's (a `Field`, full width by default, as wide as its content beside `.grow()`). A width's or a height's, not a minimum's or a maximum's |
+| `aspectRatio(r)` | the view's width to its height (`1`, `1.6`, or a ratio computed at render: `media.aspect`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
 | `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first` (0, 1, 10), or a rank named by its value (`'20'`); a frame length, its `flex-basis` |
 | `flex(f)` | Tailwind's flex utility, exactly as NativeWind writes it: `'1'` (`flex-1`: grow 1, shrink 1, basis 0%), `auto`, `initial`, `none`, `grow` (`flex-grow: 1` alone). `grow()` stays React Native's `flex: 1` |
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, `'100%'`: pinned above its parent with `bottom`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
+| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, `'100%'`: pinned above its parent with `bottom`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`), an offset's axis points computed at render too (`{ y: nudge }`, React Native's `translateY`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
 | `sticky(edge?)` | the web's `position: sticky` at `top` (the default) or `bottom`: held at its scroll container's edge once scrolled to it. React Native has no sticky position, so native draws the view in place; a list's or a scroll's sticky rows are `.stickyIndices()` |
 | `cursor(c)` | the pointer's shape over the view on the web (CSS's `cursor`): `auto` `default` `pointer` `grab` `grabbing` `text` `move` `not-allowed`; native has none, as NativeWind's `cursor-*` writes nothing there |
-| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'` `'1000'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; `'children'`: only what is inside it takes them, `'self'`: only the view; read by a screen reader and not drawn (`sr-only`) |
@@ -684,7 +692,8 @@ VStack(...).background('surface').corner('xl').shadow('m')
   `raised` 1, `floating` 10, `dropdown` 40; Tailwind's `z-20`, `z-30` and
   `z-50` are the numeric tokens `'20'`, `'30'`, `'50'`, and the exact levels
   apps write are named by their value: `'-1'` (under its siblings), `'2'` to
-  `'7'`, `'60'`.
+  `'7'`, `'60'`, and `'1000'`, a picker raised over a whole screen (Mention's
+  mention picker, `z-[1000]`).
 - **Defaults that are no modifier.** Every view is the positioned parent of
   what it pins (`position: relative`, React Native's and react-native-web's
   default) and draws what overflows it (`overflow: visible`, the default of
@@ -4917,10 +4926,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1087 | 47344 | 88.1% |
+| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
-| Redundant in the language | 30 | 420 | 0.8% |
-| Needs a named token (raw value) | 259 | 609 | 1.1% |
+| Redundant in the language | 28 | 407 | 0.8% |
+| Needs a named token (raw value) | 258 | 608 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -4939,7 +4948,7 @@ condition. The values with no rung, by scale (the owner names each as a token or
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
 | corner | 29 | 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1), 32px (1) |
 | shadow | 16 | shadow-shop-s (10), shadow-shop-m (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1) |
-| zIndex | 6 | 10000 (1), 1000 (1), 2000 (1), 2001 (1), 80 (1), 9998 (1) |
+| zIndex | 5 | 10000 (1), 2000 (1), 2001 (1), 80 (1), 9998 (1) |
 | rotation | 1 | -12° (1) |
 | weight | 1 | 900 (1) |
 | scale | 1 | 1.01 (1) |

@@ -2,7 +2,7 @@ import type { KeyframesValue } from '@oxy.so/bloom/motion';
 
 import { OPACITY } from '../generated/spec.generated';
 import type { Modifier } from '../node';
-import { type OpacityName, type PaddingToken, resolveSpace } from '../tokens';
+import { type OpacityName, type PaddingToken, type Points, resolveSpace } from '../tokens';
 import {
   type MotionToken,
   motionKey,
@@ -37,8 +37,8 @@ export function poseOf(modifiers: readonly Modifier[]): Pose {
     switch (modifier.kind) {
       case 'offset': {
         const { x, y } = modifier.value;
-        if (x !== undefined) pose.x = resolveSpace(x as PaddingToken);
-        if (y !== undefined) pose.y = resolveSpace(y as PaddingToken);
+        if (x !== undefined) pose.x = resolveSpace(x as PaddingToken | Points);
+        if (y !== undefined) pose.y = resolveSpace(y as PaddingToken | Points);
         break;
       }
       case 'scale':

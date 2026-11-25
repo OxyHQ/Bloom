@@ -527,8 +527,12 @@ function resolve(utility) {
       const fraction = scales.length[value] === undefined ? undefined : value;
       return fraction ? mapped(frame(`'${fraction}'`)) : token('length', value, frame('…'));
     }
+    // A width's or a height's own size: the length token `auto`, which takes back a Bloom
+    // component's own length (Field's full width). A minimum or maximum has no `auto` here.
     if (value === 'auto')
-      return drop('a view’s size is its content’s unless a frame says otherwise');
+      return ['w', 'h', 'size'].includes(kind)
+        ? mapped(frame("'auto'"))
+        : drop('a view’s size is its content’s unless a frame says otherwise');
     if (['screen', 'dvh', 'svh'].includes(value)) return structure('a screen() fills the window');
     if (value === 'fit') return mapped(frame("'fit'"));
     if (['min', 'max'].includes(value))

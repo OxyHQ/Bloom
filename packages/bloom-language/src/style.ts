@@ -63,6 +63,7 @@ import {
   type HitTesting,
   type MarginToken,
   type SpaceToken,
+  type Points,
   type TextAlignment,
   type TextCase,
   type WordBreak,
@@ -937,8 +938,11 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
 export type GeometryModifier = Extract<Modifier, { kind: 'scale' | 'offset' | 'rotation' }>;
 export const GEOMETRY_KINDS: ReadonlySet<string> = new Set(['scale', 'offset', 'rotation']);
 
-const isToken = (value: unknown): value is SpaceToken | AppToken<'space'> =>
-  typeof value === 'string' || (typeof value === 'object' && value !== null && 'scale' in value);
+/** An offset's axis at rest: a token, an app's own, or points computed at render (not a `MotionValue`). */
+const atRest = (value: unknown): value is SpaceToken | AppToken<'space'> | Points =>
+  typeof value === 'string' ||
+  typeof value === 'number' ||
+  (typeof value === 'object' && value !== null && 'scale' in value);
 
 /**
  * The transform components a geometry modifier sets, resolved; a
@@ -953,8 +957,8 @@ export function geometryOf(modifier: GeometryModifier): Geometry {
     case 'offset': {
       const { x, y } = modifier.value;
       const out: { translateX?: number; translateY?: number } = {};
-      if (isToken(x)) out.translateX = resolveSpace(x);
-      if (isToken(y)) out.translateY = resolveSpace(y);
+      if (atRest(x)) out.translateX = resolveSpace(x);
+      if (atRest(y)) out.translateY = resolveSpace(y);
       return out;
     }
   }

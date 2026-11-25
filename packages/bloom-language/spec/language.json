@@ -257,7 +257,7 @@
       "strong": 0.72
     },
     "length": {
-      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has. '90%' and '31%' are the percentages apps write that no fraction holds, named by their value.",
+      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has. '90%' and '31%' are the percentages apps write that no fraction holds, named by their value. auto is a width's or a height's own size (Tailwind's w-auto, React Native's and the web's 'auto'): what a view draws with no length, and what takes back a Bloom component's own length (Field's full width) for its content's.",
       "full": "100%",
       "1/2": "50%",
       "1/3": "33.333333%",
@@ -269,10 +269,11 @@
       "3/5": "60%",
       "90%": "90%",
       "31%": "31%",
-      "fit": "fit-content"
+      "fit": "fit-content",
+      "auto": "auto"
     },
     "zIndex": {
-      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value; then the levels Mention stacks its video chrome with (3 to 7), and '-1', under its siblings (apps' -z-[1] and zIndex: -1).",
+      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value; then the levels Mention stacks its video chrome with (3 to 7), '-1', under its siblings (apps' -z-[1] and zIndex: -1), and '1000', a picker raised over a whole screen (Mention's mention picker, z-[1000]).",
       "base": 0,
       "raised": 1,
       "floating": 10,
@@ -287,7 +288,8 @@
       "20": 20,
       "30": 30,
       "50": 50,
-      "60": 60
+      "60": 60,
+      "1000": 1000
     },
     "shadow": {
       "$comment": "Bloom's elevation roles (design-tokens/shadows.ts): the web box-shadow of each; native draws bloomShadowStyle(role). The rest are Tailwind's own shadows (shadow-2xs … shadow-2xl), each named by its exact box-shadow, drawn as that box-shadow on every platform.",
@@ -1268,8 +1270,8 @@
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
   },
   "points": {
-    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry: a frame's lengths, a pinned view's edges, its stacking order; and a padding the view computes (a thread's indent times its depth, a bar's measured height plus a gap), the same rule. Spacing between views, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
-    "params": ["frame", "edges", "zIndex", "padding"]
+    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry: a frame's lengths, a pinned view's edges, its stacking order, its offset from where it is laid out (a glyph nudged by a size's own amount); and a padding the view computes (a thread's indent times its depth, a bar's measured height plus a gap), the same rule. An aspect ratio is a number already (a literal 16 / 9 or a media's own ratio), not a token. Spacing between views, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
+    "params": ["frame", "edges", "zIndex", "padding", "offset"]
   },
   "variants": {
     "$comment": [

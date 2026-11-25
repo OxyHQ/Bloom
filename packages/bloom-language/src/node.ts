@@ -1323,11 +1323,14 @@ export interface PositionEdges {
   vertical?: EdgeDistance;
 }
 
-/** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
-/** A move along each axis: a space token, or a `MotionValue` the view follows. */
+/**
+ * How far a view is drawn from where it is laid out, `x` to the right, `y`
+ * down: a space token, points computed at render (a glyph nudged by its
+ * size's own amount), or a `MotionValue` the view follows.
+ */
 export interface OffsetSpec {
-  x?: PaddingToken | MotionValue;
-  y?: PaddingToken | MotionValue;
+  x?: PaddingToken | Points | MotionValue;
+  y?: PaddingToken | Points | MotionValue;
 }
 
 /** What `.drag()` takes besides its value. */
@@ -4466,8 +4469,9 @@ function objectKey<T extends object>(value: T, keys: readonly string[]): string 
  * A geometry value's part of its modifier's key: its token (a variant's style
  * is cached by it), or `@` for a `MotionValue`, whose number is no part of a style.
  */
-function geometryKey(value: string | AppToken | MotionValue | undefined): string {
+function geometryKey(value: string | AppToken | Points | MotionValue | undefined): string {
   if (value === undefined || typeof value === 'string') return value ?? '';
+  if (typeof value === 'number') return tokenKey(value);
   return 'kind' in value && value.kind === 'motion-value' ? '@' : (value as AppToken).key;
 }
 
@@ -4664,7 +4668,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * a row that drags, `pointer` over a link); native has no pointer shape to set.
    */
   cursor(value: Cursor): Self;
-  /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
+  /**
+   * Drawn shifted from where it is laid out (`x` right, `y` down); its siblings
+   * keep their places. A space token, points computed at render
+   * (`.offset({ y: nudge })`), or a `MotionValue`.
+   */
   offset(value: OffsetSpec): Self;
   /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */
   zIndex(value: ZIndexValue): Self;

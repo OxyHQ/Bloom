@@ -45,7 +45,7 @@ Padded by the device's safe area on those sides (all by default), as SwiftUI's `
 - Signature: `.frame(value: FrameSpec)`
 - Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `frame` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
+- `frame` tokens: 71, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `grow`
 
@@ -118,7 +118,7 @@ Pinned to its parent's edges, out of the stack's flow (absolute): each edge give
 
 ### `offset`
 
-Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places.
+Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. A space token, points computed at render (`.offset({ y: nudge })`), or a `MotionValue`.
 
 - Parameters: `{ x, y }`, each [padding](bloom-language-tokens.mdx#padding)
 - Signature: `.offset(value: OffsetSpec)`
@@ -134,7 +134,7 @@ Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dr
 - Signature: `.zIndex(value: ZIndexValue)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `zIndex` tokens: `'base'`, `'raised'`, `'floating'`, `'dropdown'`, `'auto'`, `'-1'`, `'2'`, `'3'`, `'4'`, `'5'`, `'6'`, `'7'`, `'20'`, `'30'`, `'50'`, `'60'`
+- `zIndex` tokens: `'base'`, `'raised'`, `'floating'`, `'dropdown'`, `'auto'`, `'-1'`, `'2'`, `'3'`, `'4'`, `'5'`, `'6'`, `'7'`, `'20'`, `'30'`, `'50'`, `'60'`, `'1000'`
 
 ### `hidden`
 
@@ -154,7 +154,7 @@ Its length along its parent's axis before free space is shared (`flex-basis`): a
 - Taken by: every node (universal), and [dataColumn](bloom-language-nodes.mdx#datacolumn)
 - Narrower on: [dataColumn](bloom-language-nodes.mdx#datacolumn) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `length` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
+- `length` tokens: 71, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `flex`
 
@@ -749,7 +749,7 @@ The side or bottom panel's own frame (Bloom's `panelStyle`): a bottom dialog kep
 - Parameters: `{ width, height, minWidth, minHeight, maxWidth, maxHeight }`, each [length](bloom-language-tokens.mdx#length)
 - Signature: `.panelFrame(value: FrameSpec)`
 - Taken by: [dialog](bloom-language-nodes.mdx#dialog)
-- `frame` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
+- `frame` tokens: 71, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `ringColor`
 

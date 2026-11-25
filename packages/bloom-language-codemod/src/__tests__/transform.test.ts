@@ -1038,6 +1038,40 @@ export function A({ itemSize, count, index }) {
     expect(fixture?.after).toContain(".zIndex(43).position({ right: 'lg', top: 49 })");
     expect(fixture?.insets).toBe(false);
   });
+  it('moves a view by translations as .offset(), and carries a ratio and an offset computed at render', () => {
+    const result = run(`import { View } from 'react-native';
+export function A({ nudge, aspect }) {
+  return (
+    <View>
+      <View style={{ transform: [{ translateY: nudge }] }} />
+      <View style={{ transform: [{ translateX: -4 }, { translateY: 2 }] }} />
+      <View style={{ width: '100%', aspectRatio: aspect }} />
+      <View style={{ transform: [{ scale: 2 }] }} />
+    </View>
+  );
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain('VStack().offset({ y: nudge })');
+    expect(code).toContain("VStack().offset({ x: '-xs', y: '2xs' })");
+    expect(code).toContain("VStack().frame({ width: 'full' }).aspectRatio(aspect)");
+    // A transform that scales is no offset.
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['transform']);
+  });
+  it('writes a width that takes back a component’s own as the length auto, and a picker’s stacking level', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => (
+  <View>
+    <View className="w-auto" style={{ zIndex: 1000 }} />
+    <View style={{ flex: 1, minWidth: 0, width: 'auto' }} />
+  </View>
+);
+`);
+    const code = flat(result.code);
+    expect(code).toContain("VStack().frame({ width: 'auto' }).zIndex('1000')");
+    expect(code).toContain("VStack().frame({ minWidth: 'none', width: 'auto' }).grow()");
+    expect(result.unconverted).toEqual([]);
+  });
   it('fills a Screen with a role or an app colour, and says where a reel’s top is', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';
 import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';

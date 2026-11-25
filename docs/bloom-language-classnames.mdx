@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1087 | 47344 | 88.1% |
+| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
-| Redundant in the language | 30 | 420 | 0.8% |
-| Needs a named token (raw value) | 259 | 609 | 1.1% |
+| Redundant in the language | 28 | 407 | 0.8% |
+| Needs a named token (raw value) | 258 | 608 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -48,7 +48,7 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
 | corner | 29 | 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1), 32px (1) |
 | shadow | 16 | shadow-shop-s (10), shadow-shop-m (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1) |
-| zIndex | 6 | 10000 (1), 1000 (1), 2000 (1), 2001 (1), 80 (1), 9998 (1) |
+| zIndex | 5 | 10000 (1), 2000 (1), 2001 (1), 80 (1), 9998 (1) |
 | rotation | 1 | -12° (1) |
 | weight | 1 | 900 (1) |
 | scale | 1 | 1.01 (1) |
@@ -480,6 +480,7 @@ when the fill is a role's colour.
 | `border-l-2` | .border(role, 'thick', 'left') | 7 | 5 |
 | `gap-space-20` | .spacing('xl') | 7 | 3 |
 | `h-[30px]` | .frame({ height: '30' }) | 7 | 3 |
+| `h-auto` | .frame({ height: 'auto' }) | 7 | 4 |
 | `justify-start` | .justify('start') | 7 | 5 |
 | `line-through` | .strikethrough() | 7 | 3 |
 | `max-h-96` | .frame({ maxHeight: '384' }) | 7 | 5 |
@@ -526,6 +527,7 @@ when the fill is a role's colour.
 | `text-black` | .foreground('black') | 6 | 2 |
 | `text-foreground/80` | .foreground('foreground/80') | 6 | 3 |
 | `w-4` | .frame({ width: 'lg' }) | 6 | 6 |
+| `w-auto` | .frame({ width: 'auto' }) | 6 | 3 |
 | `-mt-3` | .margin('top', '-md') | 5 | 3 |
 | `bg-fill-secondary` | .background('mutedFill') | 5 | 2 |
 | `bg-foreground/10` | .background('foreground/10') | 5 | 3 |
@@ -773,9 +775,7 @@ when the fill is a role's colour.
 | `font-sans` | the family is Bloom’s: Text takes it from its font | 25 | 4 |
 | `font-bloom-mono` | the family is Bloom’s: Text takes it from its font | 20 | 2 |
 | `shadow-none` | a view has no shadow unless it says so | 17 | 4 |
-| `h-auto` | a view’s size is its content’s unless a frame says otherwise | 7 | 4 |
 | `inline-block` | display: views are boxes | 6 | 2 |
-| `w-auto` | a view’s size is its content’s unless a frame says otherwise | 6 | 3 |
 | `border-b-0` | no border is the default | 3 | 2 |
 | `border-r-0` | no border is the default | 3 | 2 |
 

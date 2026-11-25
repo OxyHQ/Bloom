@@ -294,7 +294,8 @@ export const LENGTH = {
   "3/5": "60%",
   "90%": "90%",
   "31%": "31%",
-  "fit": "fit-content"
+  "fit": "fit-content",
+  "auto": "auto"
 } as const;
 export const Z_INDEX = {
   "2": 2,
@@ -307,6 +308,7 @@ export const Z_INDEX = {
   "30": 30,
   "50": 50,
   "60": 60,
+  "1000": 1000,
   "base": 0,
   "raised": 1,
   "floating": 10,

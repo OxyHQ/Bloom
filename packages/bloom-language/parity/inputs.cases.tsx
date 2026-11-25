@@ -633,6 +633,27 @@ const forms: ParityCase[] = [
     ),
   },
   {
+    // Mention's schedule sheet: the date's Field shrinks to its content where Bloom's is full width.
+    name: 'a Field of its own width that grows in its row (width auto over Field’s full width)',
+    language: () =>
+      toElement(
+        P.HStack(
+          L.Field('Date', L.TextField(empty, 'Date'))
+            .grow()
+            .frame({ minWidth: 'none', width: 'auto' }),
+          P.Text('to'),
+        ).spacing('md'),
+      ),
+    bloom: () => (
+      <View style={{ flexDirection: 'row', gap: tokens.space.md }}>
+        <Field label="Date" style={{ flex: 1, minWidth: 0, width: 'auto' }}>
+          <TextFieldInput label="Date" value="" onValueChange={set} />
+        </Field>
+        <Text>to</Text>
+      </View>
+    ),
+  },
+  {
     name: 'Field around a TextField',
     language: () =>
       toElement(L.Field('Email', L.TextField(empty, 'Email')).description('We never share it')),

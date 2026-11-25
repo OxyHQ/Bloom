@@ -605,7 +605,8 @@ export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
  * A number of points computed as the view renders (a size from a prop, a
  * column's width from its container, an inset), as SwiftUI's `.frame` and
  * `.position` take any `CGFloat`. Only geometry takes one: a frame's lengths,
- * a pinned view's edges and its stacking order. A number written out is a
+ * a pinned view's edges, its stacking order, its offset and a padding the
+ * view computes. A number written out is a
  * token (`'44'`, not `44`: the compiler rejects the literal), and spacing,
  * type and colour stay tokens.
  */
