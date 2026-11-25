@@ -57,8 +57,8 @@ describe('the typed vocabulary', () => {
   it('rejects raw values and modifiers a kind does not take', () => {
     // These lines are the test: each must be a type error. `tsc` fails the
     // package typecheck if any of them compiles.
-    // @ts-expect-error a raw number is not a space token
-    Text('x').padding(12);
+    // @ts-expect-error a raw string is not a space token
+    Text('x').padding('12px');
     // @ts-expect-error a hex is not a colour role
     Text('x').foreground('#ff0000');
     // @ts-expect-error a stack has no line limit

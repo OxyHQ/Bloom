@@ -43,6 +43,7 @@ import {
   type OverlayAlignment,
   type ZIndexValue,
   type StickyEdge,
+  type Cursor,
   type TextShadowName,
   type ShadowName,
   type ColorName,
@@ -543,7 +544,10 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const edges = modifier.kind === 'padding' ? EDGE_BITS[modifier.edge] : 0;
   // A safe-area padding pads the view it joins: its inset is added to the view's own
   // top or bottom padding (`paddingTop: insets.top + 24`), so a fill and a flex stay one view.
-  const safeArea = modifier.kind === 'safeAreaPadding' ? SAFE_AREA_BITS[modifier.edge] : 0;
+  const safeArea =
+    modifier.kind === 'safeAreaPadding'
+      ? SAFE_AREA_BITS[modifier.edge] << (modifier.source === 'content' ? CONTENT_SHIFT : 0)
+      : 0;
   const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
   // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
   const repeats =
@@ -551,7 +555,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
     (modifier.kind === 'padding'
       ? (current.edges & edges) !== 0 || sidesMeet(current.safeArea, edges)
       : modifier.kind === 'safeAreaPadding'
-        ? (current.safeArea & safeArea) !== 0 || sidesMeet(safeArea, current.edges)
+        ? (sides(current.safeArea) & sides(safeArea)) !== 0 || sidesMeet(safeArea, current.edges)
         : modifier.kind === 'corner'
           ? (current.corners & corners) !== 0
           : current.modifiers.some((existing) => existing.kind === modifier.kind));
@@ -602,8 +606,15 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   if (overlay) current.overlays.push(overlay);
 }
 
-/** The left and right safe-area sides (`SAFE_AREA_BITS`), and every side a padding writes across. */
-const SAFE_AREA_ACROSS = 0b1100;
+/**
+ * A content safe area's sides (`.safeAreaPadding(edge, 'content')`) are the
+ * device's bits shifted by this: a layer's `safeArea` holds both, its view
+ * reading each side's inset from its own source (`SafeAreaPadded`).
+ */
+export const CONTENT_SHIFT = 4;
+
+/** The left and right safe-area sides (`SAFE_AREA_BITS`, of either source), and every side a padding writes across. */
+const SAFE_AREA_ACROSS = 0b1100_1100;
 const EDGES_ACROSS = 0b111100;
 
 /**
@@ -611,6 +622,11 @@ const EDGES_ACROSS = 0b111100;
  * one view: the left or right inset beside a padding across (its start and end
  * are logical, the inset physical). Top and bottom add (`SafeAreaPadded`).
  */
+/** A layer's safe-area sides of either source, as the device's bits. */
+function sides(safeArea: number): number {
+  return (safeArea | (safeArea >> CONTENT_SHIFT)) & 0b1111;
+}
+
 function sidesMeet(safeArea: number, edges: number): boolean {
   return (safeArea & SAFE_AREA_ACROSS) !== 0 && (edges & EDGES_ACROSS) !== 0;
 }
@@ -853,6 +869,8 @@ export interface Placement {
   position: PositionEdges | undefined;
   /** `.sticky(edge)`: the web's `position: sticky` at that edge; native has none. */
   sticky: StickyEdge | undefined;
+  /** `.cursor()`: the web's pointer shape over the view; native has none. */
+  cursor: Cursor | undefined;
   zIndex: ZIndexValue | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
@@ -884,6 +902,7 @@ export type PlaceModifier = Extract<
       | 'alignSelf'
       | 'position'
       | 'sticky'
+      | 'cursor'
       | 'zIndex'
       | 'hidden'
       | 'basis'
@@ -900,6 +919,7 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'alignSelf',
   'position',
   'sticky',
+  'cursor',
   'zIndex',
   'hidden',
   'basis',
@@ -979,6 +999,7 @@ export function emptyPlacement(): Placement {
     alignSelf: undefined,
     position: undefined,
     sticky: undefined,
+    cursor: undefined,
     zIndex: undefined,
     hidden: undefined,
     basis: undefined,
@@ -1098,6 +1119,8 @@ export function placeStyle(place: Placement): Resolved {
     style.position = 'sticky';
     style[place.sticky] = 0;
   }
+  // The pointer is the web's: native has no shape to set (React Native's iOS `cursor` is a hover effect).
+  if (place.cursor !== undefined && IS_WEB) style.cursor = place.cursor;
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
   if (place.geometry !== undefined) Object.assign(style, place.geometry);
   if (place.anchor !== undefined) style.transformOrigin = place.anchor;

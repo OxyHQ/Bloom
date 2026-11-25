@@ -1104,6 +1104,25 @@ export const CASES = [
     after: () => { const Screen = I16; const ScreenScrollView = I13; const Text = I4; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
   {
+    name: "components/Spacing.tsx:10",
+    bloom22: false,
+    before: () => { const View = I14; const Text = I4; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 60 }}>
+      <View style={{ paddingLeft: 37, paddingBottom: 43 }}>
+        <Text>Reply</Text>
+      </View>
+      <View style={{ position: 'absolute', bottom: '100%', left: 0 }}>
+        <Text>Suggestions</Text>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexShrink: 20 }}>
+          <Text>Lane</Text>
+        </View>
+        <Text>Meta</Text>
+      </View>
+    </View>}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I14; const Text = I4; const { VStack, Text: LText, HStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(VStack(LText('Reply')).padding('left', 37).padding('bottom', 43), VStack(LText('Suggestions')).position({ left: 'none', bottom: '100%' }), HStack(VStack(LText('Lane')).shrink('20'), LText('Meta'))).safeAreaPadding('top', 'content').padding('top', '5xl'))}</SafeAreaInsetsContext.Provider>); },
+  },
+  {
     name: "components/Surfaces.tsx:10",
     bloom22: false,
     before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I14; const Text = I4; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>

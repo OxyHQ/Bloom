@@ -913,7 +913,7 @@ Modifiers:
 - [`.side()`](bloom-language-modifiers.mdx#side) `(side: FloatingSide, align?: FloatingAlign)`: The side of the view it opens on, and its alignment along that side.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 - [`.sideOffset()`](bloom-language-modifiers.mdx#sideoffset) `(value: SpaceToken)`: The gap between the view and the popover.
-- [`.alignOffset()`](bloom-language-modifiers.mdx#alignoffset) `(value: PaddingToken)`: A shift along the side it opens on (negative toward the start).
+- [`.alignOffset()`](bloom-language-modifiers.mdx#alignoffset) `(value: PaddingToken | Points)`: A shift along the side it opens on (negative toward the start).
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: PopoverFrame)`: Its widths and its height ceiling.
 
 Takes only the modifiers above (no universal modifiers).
@@ -1174,7 +1174,7 @@ Modifiers:
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`
 - [`.hint()`](bloom-language-modifiers.mdx#hint) `(value: string | undefined)`
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
-- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`
+- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken | Points)` or `(edge: Edge, value: PaddingToken | Points)`: A padding token, or points the view computes as it renders (a thread's indent times its depth, a bar's measured height and a gap), as `.frame()` takes; a number written out is a token (`'44'`).
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`
 - [`.grow()`](bloom-language-modifiers.mdx#grow) `()`: Takes the free space along its parent's axis.
 - [`.shrink()`](bloom-language-modifiers.mdx#shrink) `(value: ShrinkPriority)`
@@ -1280,7 +1280,7 @@ Modifiers:
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: A control beside its label, in its chrome, not part of its press.
 - [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: Press | undefined)` (here: a value): A long press: the tab's own menu.
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`: The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's.
-- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`: The tab's own padding (`TabsTrigger`'s `style`), over Bloom's.
+- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken | Points)` or `(edge: Edge, value: PaddingToken | Points)`: The tab's own padding (`TabsTrigger`'s `style`), over Bloom's.
 - [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, FontFamilyName>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
 - [`.leading()`](bloom-language-modifiers.mdx#leading) `(value: LeadingToken)`
 - [`.weight()`](bloom-language-modifiers.mdx#weight) `(value: WeightName)`
@@ -1314,7 +1314,7 @@ Modifiers:
 - [`.onError()`](bloom-language-modifiers.mdx#onerror) `(value: BoundaryErrorHandler | undefined)`
 - [`.fallback()`](bloom-language-modifiers.mdx#fallback) `(value: Child | BoundaryFallback)`: What it shows in place of Bloom's fallback: a view, or a view of what it caught.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
-- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`
+- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken | Points)` or `(edge: Edge, value: PaddingToken | Points)`: A padding token, or points the view computes as it renders (a thread's indent times its depth, a bar's measured height and a gap), as `.frame()` takes; a number written out is a token (`'44'`).
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`
 - [`.grow()`](bloom-language-modifiers.mdx#grow) `()`: Takes the free space along its parent's axis.
 - [`.shrink()`](bloom-language-modifiers.mdx#shrink) `(value: ShrinkPriority)`

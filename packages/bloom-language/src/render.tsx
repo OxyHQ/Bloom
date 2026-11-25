@@ -130,6 +130,7 @@ import {
 import {
   GEOMETRY_KINDS,
   PLACE_KINDS,
+  CONTENT_SHIFT,
   STACK_KINDS,
   geometryOf,
   type GeometryModifier,
@@ -234,7 +235,7 @@ import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { paintedHost } from './painted-host';
-import { SafeAreaPadded } from './safe-area';
+import { ContentSafeAreaPadded, SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
@@ -775,6 +776,7 @@ function plan(node: Node, env: Env): Plan {
       case 'alignSelf':
       case 'position':
       case 'sticky':
+      case 'cursor':
       case 'zIndex':
       case 'hidden':
       case 'basis':
@@ -1887,7 +1889,7 @@ function wrapLayer(
     const outer = behaviour && !p.pressable ? behaviour : null;
     const padded = drawHost(
       palette,
-      SafeAreaPadded,
+      safeAreaHost(layer),
       out,
       { ...outer, ...safeAreaProps(layer), key: behaviour && p.pressable ? undefined : key },
       ...children,
@@ -1904,6 +1906,11 @@ function wrapLayer(
     { ...behaviour, key },
     ...children,
   );
+}
+
+/** The view a safe-area layer is: one that reads the content's insets when a side names them. */
+function safeAreaHost(layer: Layer): Host {
+  return (layer.safeArea >> CONTENT_SHIFT === 0 ? SafeAreaPadded : ContentSafeAreaPadded) as Host;
 }
 
 /** What `SafeAreaPadded` pads a layer by: its sides, and its own top and bottom padding, which the insets add to. */
@@ -2461,7 +2468,7 @@ function renderHost(
         );
       }
       const padded = layer !== undefined && layer.safeArea !== 0;
-      const host = behaviour ? hostFor(p) : padded ? SafeAreaPadded : View;
+      const host = behaviour ? hostFor(p) : padded ? safeAreaHost(layer) : View;
       const props = hostProps(behaviour, key);
       if (marker !== undefined) props.role = 'list';
       if (padded) Object.assign(props, safeAreaProps(layer));
@@ -4013,6 +4020,7 @@ const READS_NOTHING: ReadonlySet<string> = new Set([
   'alignSelf',
   'position',
   'sticky',
+  'cursor',
   'zIndex',
   'hidden',
   'basis',

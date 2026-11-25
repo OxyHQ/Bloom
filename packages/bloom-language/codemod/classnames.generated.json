@@ -584,8 +584,8 @@
   "cursor-pointer": {
    "count": 89,
    "apps": 10,
-   "status": "drop",
-   "language": "a pressable view takes the pointer"
+   "status": "mapped",
+   "language": ".cursor('pointer')"
   },
   "text-white": {
    "count": 89,
@@ -1460,8 +1460,8 @@
   "cursor-not-allowed": {
    "count": 22,
    "apps": 6,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".cursor('not-allowed')"
   },
   "h-16": {
    "count": 22,
@@ -2194,8 +2194,8 @@
   "cursor-default": {
    "count": 12,
    "apps": 4,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".cursor('default')"
   },
   "grid-cols-3": {
    "count": 12,
@@ -8682,8 +8682,8 @@
   "cursor-grab": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".cursor('grab')"
   },
   "dashboard": {
    "count": 1,

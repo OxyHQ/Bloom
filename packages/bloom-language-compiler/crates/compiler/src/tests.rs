@@ -336,12 +336,25 @@ fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
         output.diagnostics[0].help.as_deref(),
         Some("a number written out is a token ('2'); points are a value the view computes as it renders")
     );
+    // A padding takes points too: a row's indent times its depth, a measured bar and a gap.
+    let ok = compiled(
+        "export function Row({ depth, bar }) {\n  return VStack(Text('a')).padding('leading', depth * 12).padding('bottom', bar + 20);\n}\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
     let output = compiled("export const x = () => VStack().padding(12);\n");
     assert_eq!(output.diagnostics[0].message, ".padding() takes padding tokens, not the number 12");
+    let output = compiled("export const x = () => VStack().spacing(12);\n");
     assert_eq!(
         output.diagnostics[0].help.as_deref(),
-        Some("write the token ('12'); .padding() takes tokens only")
+        Some("write the token ('12'); .spacing() takes tokens only")
     );
+    // The content's safe area, a full edge, a shrink rank and a web pointer are tokens.
+    let ok = compiled(
+        "export const x = () => HStack(VStack().safeAreaPadding('top', 'content').position({ bottom: '100%' }).shrink('20').cursor('grab'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().cursor('hand');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown cursor token 'hand' for .cursor()");
     let output = compiled("export const x = () => Text('a').font(15);\n");
     assert_eq!(output.diagnostics[0].message, ".font() takes font tokens, not the number 15");
 }

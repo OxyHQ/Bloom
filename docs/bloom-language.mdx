@@ -315,8 +315,14 @@ The opacities `'12.5'` and `'31.4'` are the hex alphas `20` and `50` (32 and 80
 of 255) apps write after a hex.
 
 **Insets.** `.safeAreaPadding()` pads by the device's insets (see
-[Layout](#layout)); a view pinned below the inset is pinned by points,
-`.position({ top: insets.top + 8 })`.
+[Layout](#layout)), `.safeAreaPadding(edge, 'content')` by the content's
+(`useContentSafeAreaInsets()`); a view pinned below the inset is pinned by
+points, `.position({ top: insets.top + 8 })`.
+
+**Spacing computed at render.** A padding the view works out as it renders is
+points, the same rule as geometry: a thread's indent times its depth
+(`.padding('leading', depth * 12)`), a measured bar and a gap (`.padding('bottom',
+barHeight + 20)`). A number written out is still a token (`'44'`).
 
 ## Rendering
 
@@ -503,8 +509,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 
 | Modifier | Values |
 | --- | --- |
-| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin) |
-| `safeAreaPadding(edge?)` | the device's safe-area insets (`react-native-safe-area-context`) as padding on those sides: `all` (the default), `top`, `bottom`, `horizontal`, `vertical`, `left`, `right` (physical: the insets are the device's); on the view itself, a top or bottom inset added to the view's own padding there (see [Layout](#layout)) |
+| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin); or points computed at render (`depth * 12`) |
+| `safeAreaPadding(edge?, source?)` | the device's safe-area insets (`react-native-safe-area-context`), or with `'content'` the content's (what the frame around the view left of them, Bloom's `useContentSafeAreaInsets()`), as padding on those sides: `all` (the default), `top`, `bottom`, `horizontal`, `vertical`, `left`, `right` (physical: the insets are the device's); on the view itself, a top or bottom inset added to the view's own padding there (see [Layout](#layout)) |
 | `spacing(v)` | space: the gap between a stack's children |
 | `horizontalSpacing(v)`, `verticalSpacing(v)` | space: the gap along one axis only, over `spacing`'s: between children side by side (`columnGap`, `gap-x-*`) or one above another and between wrapped lines (`rowGap`, `gap-y-*`) |
 | `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
@@ -512,13 +518,14 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, and the percentages apps write that no fraction holds, named by their value (`90%`, `31%`), or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
 | `aspectRatio(r)` | the view's width to its height (`1`, `1.6`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
-| `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
+| `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first` (0, 1, 10), or a rank named by its value (`'20'`); a frame length, its `flex-basis` |
 | `flex(f)` | Tailwind's flex utility, exactly as NativeWind writes it: `'1'` (`flex-1`: grow 1, shrink 1, basis 0%), `auto`, `initial`, `none`, `grow` (`flex-grow: 1` alone). `grow()` stays React Native's `flex: 1` |
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
+| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, `'100%'`: pinned above its parent with `bottom`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
 | `sticky(edge?)` | the web's `position: sticky` at `top` (the default) or `bottom`: held at its scroll container's edge once scrolled to it. React Native has no sticky position, so native draws the view in place; a list's or a scroll's sticky rows are `.stickyIndices()` |
+| `cursor(c)` | the pointer's shape over the view on the web (CSS's `cursor`): `auto` `default` `pointer` `grab` `grabbing` `text` `move` `not-allowed`; native has none, as NativeWind's `cursor-*` writes nothing there |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
@@ -632,8 +639,10 @@ VStack(...).background('surface').corner('xl').shadow('m')
   does not. A left or right inset beside a padding across is a view of its
   own around it (a padding's start and end are logical, the inset physical).
   On a column or row with no press, the safe area is the host itself. The insets are the device's
-  physical ones, not what a Bloom header or bar has already taken
-  (`useContentSafeAreaInsets()`).
+  physical ones, not what a Bloom header or bar has already taken; `.safeAreaPadding(edge,
+  'content')` pads by what is left (`useContentSafeAreaInsets()`, as a screen's body pads
+  itself): `paddingTop: insets.top + 60` from it is `.safeAreaPadding('top',
+  'content').padding('top', '5xl')`.
 - **Auto margins.** `.margin(edge, 'auto')` takes the free space on that side,
   as React Native's and CSS's `margin: auto` do: `.margin('leading', 'auto')`
   pushes the view to its row's trailing end (Tailwind's `ms-auto`), and
@@ -4908,14 +4917,14 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1083 | 47220 | 87.9% |
+| Maps to a modifier and a token | 1087 | 47344 | 88.1% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
-| Redundant in the language | 31 | 509 | 0.9% |
+| Redundant in the language | 30 | 420 | 0.8% |
 | Needs a named token (raw value) | 259 | 609 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 430 | 1581 | 2.9% |
+| An app’s own class | 427 | 1546 | 2.9% |
 
 53720 uses of 1920 utilities across 28 apps. Of the
 2061 variant prefixes written over them, 1739 (84.4%) are a `when()`
