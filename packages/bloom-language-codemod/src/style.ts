@@ -43,6 +43,38 @@ const Z_INDEX = byValue(scales.zIndex as Record<string, unknown>);
 const FONT_SIZE = byValue(scales.fontSize as Record<string, unknown>);
 const LEADING_PX = byValue(scales.leadingPx as Record<string, unknown>);
 const SPACE = byValue(scales.space as Record<string, unknown>);
+const BORDER_WIDTH = byValue(scales.borderWidth as Record<string, unknown>);
+
+/** A border width's key as the language's border edge. */
+const BORDER_WIDTH_EDGE: Readonly<Record<string, string>> = {
+  borderWidth: 'all',
+  borderTopWidth: 'top',
+  borderBottomWidth: 'bottom',
+  borderStartWidth: 'leading',
+  borderEndWidth: 'trailing',
+  borderLeftWidth: 'left',
+  borderRightWidth: 'right',
+};
+
+/**
+ * A border width in a style that names no border colour: the language's
+ * `.border(undefined, width, edge)`, the line in the platform's default colour
+ * (React Native's black, react-native-web's own on the web), as the style draws it.
+ */
+function defaultColorBorder(object: AnyNode, key: string, value: AnyNode): Mod | undefined {
+  const edge = BORDER_WIDTH_EDGE[key];
+  if (edge === undefined || !n.NumericLiteral.check(value)) return undefined;
+  const colored = object.properties.some(
+    (property: AnyNode) =>
+      (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+      n.Identifier.check(property.key) &&
+      /^border\w*Color$/.test(property.key.name),
+  );
+  if (colored) return undefined;
+  const width = BORDER_WIDTH.get(value.value as number);
+  if (width === undefined) return undefined;
+  return { name: 'border', args: edge === 'all' ? [undefined, width] : [undefined, width, edge] };
+}
 
 /** React Native's inline and block insets, as the edge of `.position()` that sets both sides. */
 const INSET_AXIS: Readonly<Record<string, string>> = {
@@ -625,6 +657,7 @@ export function styleUtilities(
     const mod =
       (key === 'transform' ? offsetDeclaration(property.value, numberOf, computed) : undefined) ??
       direct(key, value) ??
+      defaultColorBorder(object, key, value) ??
       read?.(key, value) ??
       (computed?.(value) ? pointsDeclaration(key, value) : undefined);
     if (mod) {

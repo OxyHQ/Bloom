@@ -85,6 +85,7 @@ export const PersonRow = view(function PersonRow({ person, onOpen }: { person: P
 | `bg-card`, `text-muted-foreground`, `bg-primary/10` | `.background('card')`, `.foreground('muted')`, `.background('primary/10')` |
 | `rounded-xl`, `rounded-full` | `.corner('xl')`, `.corner('infinite')` |
 | `border border-border` | `.border('border', 'thin')` |
+| `border` with no colour class, `style={{ borderWidth: 1 }}` with no `borderColor` | `.border(undefined, 'thin')`: the width alone, in the platform's default colour (black natively, react-native-web's own on the web) |
 | `shadow-sm` | Tailwind's shadow by its exact box-shadow (the table's token); Bloom's elevation `.shadow('s' \| 'm' \| 'floating')` in new code |
 | `opacity-60` | `.opacity('60')` |
 | `absolute top-2 right-2` | `.position({ top: 'sm', right: 'sm' })` |

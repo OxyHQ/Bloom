@@ -1440,7 +1440,8 @@ export type Modifier =
   | {
       readonly kind: 'border';
       readonly key: string;
-      readonly value: InkToken;
+      /** `undefined`: the width alone, in the platform's default colour. */
+      readonly value: InkToken | undefined;
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
@@ -2222,10 +2223,14 @@ export class Node {
     const ink = value as InkToken;
     return this.with({ kind: 'background', key: `bg:${tokenKey(ink)}`, value: ink });
   }
-  border(value: InkToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
+  border(
+    value: InkToken | undefined,
+    width: BorderWidthName = 'hairline',
+    edge: BorderEdge = 'all',
+  ): Node {
     return this.with({
       kind: 'border',
-      key: `b:${tokenKey(value)}:${width}:${edge}`,
+      key: `b:${value === undefined ? '' : tokenKey(value)}:${width}:${edge}`,
       value,
       width,
       edge,
@@ -4701,7 +4706,15 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   background(value: ViewNode, alignment?: OverlayAlignment): Self;
   /** A view over this one, the size of this one as drawn so far, placed at `alignment` (centred by default). */
   overlay(content: ViewNode, alignment?: OverlayAlignment): Self;
-  border(value: InkToken, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /**
+   * A border: a colour role (or a role at an opacity, or an app colour), a
+   * width (`hairline` by default) and an edge (`all` by default). A colour of
+   * `undefined` writes the width alone, so the line keeps the platform's
+   * default colour (black natively, react-native-web's own on the web), as a
+   * style with a `borderWidth` and no `borderColor` does:
+   * `.border(subscribed ? 'border' : undefined, 'thin')`.
+   */
+  border(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge): Self;
   /** The border's line: `solid` (the default), `dashed` or `dotted` (React Native's `borderStyle`). */
   borderStyle(value: BorderStyleName): Self;
   /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */

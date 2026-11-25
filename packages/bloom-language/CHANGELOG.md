@@ -6,6 +6,11 @@
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
+- `.border(undefined, width, edge?)`: a border width in the platform's default colour (React Native's black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` draws it; a colour chosen at render may be none (`.border(subscribed ? 'border' : undefined, 'thin')`). It paints nothing from the theme, so a root or `view()` body around it reads none.
+
+### Documentation
+
+- A Card's fill is Bloom Card's `style.backgroundColor` when it is in the card's own box (after its padding and frame, before a corner), so `.background('transparent')` there draws no surface: the parity suite holds Mention's three composer cards (an article preview, an event in a row, a room) to Bloom's Card with their caller's zeroed chrome, and the cost gate holds such a card to Bloom's Card with that style.
 
 ### Changed
 

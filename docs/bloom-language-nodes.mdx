@@ -1180,7 +1180,7 @@ Modifiers:
 - [`.shrink()`](bloom-language-modifiers.mdx#shrink) `(value: ShrinkPriority)`
 - [`.alignSelf()`](bloom-language-modifiers.mdx#alignself) `(value: Alignment)`: Its own place across its parent's axis, over the parent's `align`.
 - [`.background()`](bloom-language-modifiers.mdx#background) `(value: InkToken)` or `(value: ViewNode, alignment?: OverlayAlignment)`: A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view behind it, placed at `alignment` (centred by default).
-- [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken, width?: BorderWidthName, edge?: BorderEdge)`
+- [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge)`: A border: a colour role (or a role at an opacity, or an app colour), a width (`hairline` by default) and an edge (`all` by default). A colour of `undefined` writes the width alone, so the line keeps the platform's default colour (black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` does: `.border(subscribed ? 'border' : undefined, 'thin')`.
 - [`.corner()`](bloom-language-modifiers.mdx#corner) `(value: CornerName, side?: CornerSide)`: Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape it sits in, less the inset between them: a glass's, another concentric box's, a Bloom card's).
 - [`.opacity()`](bloom-language-modifiers.mdx#opacity) `(value: OpacityName)`
 
@@ -1320,7 +1320,7 @@ Modifiers:
 - [`.shrink()`](bloom-language-modifiers.mdx#shrink) `(value: ShrinkPriority)`
 - [`.alignSelf()`](bloom-language-modifiers.mdx#alignself) `(value: Alignment)`: Its own place across its parent's axis, over the parent's `align`.
 - [`.background()`](bloom-language-modifiers.mdx#background) `(value: InkToken)` or `(value: ViewNode, alignment?: OverlayAlignment)`: A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view behind it, placed at `alignment` (centred by default).
-- [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken, width?: BorderWidthName, edge?: BorderEdge)`
+- [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge)`: A border: a colour role (or a role at an opacity, or an app colour), a width (`hairline` by default) and an edge (`all` by default). A colour of `undefined` writes the width alone, so the line keeps the platform's default colour (black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` does: `.border(subscribed ? 'border' : undefined, 'thin')`.
 - [`.corner()`](bloom-language-modifiers.mdx#corner) `(value: CornerName, side?: CornerSide)`: Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape it sits in, less the inset between them: a glass's, another concentric box's, a Bloom card's).
 - [`.opacity()`](bloom-language-modifiers.mdx#opacity) `(value: OpacityName)`
 

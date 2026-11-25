@@ -4104,7 +4104,8 @@ function modifierReads(kind: NodeKind | typeof RAW_TEXT, modifiers: readonly Mod
     switch (modifier.kind) {
       case 'background':
       case 'border':
-        if (!themeFree(modifier.value)) reads |= READS_THEME;
+        // A border with no colour keeps the platform's: it paints nothing from the theme.
+        if (modifier.value !== undefined && !themeFree(modifier.value)) reads |= READS_THEME;
         continue;
       case 'foreground':
         // A glyph's or a RawText's own ink; anywhere else it is a trait handed down, set over the one above.

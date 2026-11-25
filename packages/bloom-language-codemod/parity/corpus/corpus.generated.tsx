@@ -7,21 +7,21 @@ import { useTheme as useParityTheme22 } from 'bloom-22/theme';
 import { useSurfaceFill as useParitySurface } from '@oxy.so/bloom/styles';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
-import { Avatar as I0 } from '@oxy.so/bloom/avatar';
-import { AvatarGroup as I1 } from '@oxy.so/bloom/avatar-group';
-import { Search as I2 } from '@oxy.so/bloom/search';
-import { Dialog as I3 } from '@oxy.so/bloom/dialog';
-import { Text as I4 } from '@oxy.so/bloom/typography';
-import { SettingsSection as I5 } from '@oxy.so/bloom/settings-modal';
-import { GroupedSection as I6 } from '@oxy.so/bloom/grouped-section';
-import { GroupedSectionItem as I7 } from '@oxy.so/bloom/grouped-section';
-import { Switch as I8 } from '@oxy.so/bloom/switch';
-import { SpinnerIcon as I9 } from '@oxy.so/bloom/loading';
-import { Card as I10 } from '@oxy.so/bloom/card';
-import { SettingsValueField as I11 } from '@oxy.so/bloom/settings-modal';
-import { RiSmartphoneLine as I12 } from '@oxy.so/bloom/icons/RiSmartphoneLine';
-import { ScreenScrollView as I13 } from '@oxy.so/bloom/screen';
-import { View as I14 } from 'react-native-css/components/View';
+import { View as I0 } from 'react-native-css/components/View';
+import { Text as I1 } from '@oxy.so/bloom/typography';
+import { Avatar as I2 } from '@oxy.so/bloom/avatar';
+import { AvatarGroup as I3 } from '@oxy.so/bloom/avatar-group';
+import { Search as I4 } from '@oxy.so/bloom/search';
+import { Dialog as I5 } from '@oxy.so/bloom/dialog';
+import { SettingsSection as I6 } from '@oxy.so/bloom/settings-modal';
+import { GroupedSection as I7 } from '@oxy.so/bloom/grouped-section';
+import { GroupedSectionItem as I8 } from '@oxy.so/bloom/grouped-section';
+import { Switch as I9 } from '@oxy.so/bloom/switch';
+import { SpinnerIcon as I10 } from '@oxy.so/bloom/loading';
+import { Card as I11 } from '@oxy.so/bloom/card';
+import { SettingsValueField as I12 } from '@oxy.so/bloom/settings-modal';
+import { RiSmartphoneLine as I13 } from '@oxy.so/bloom/icons/RiSmartphoneLine';
+import { ScreenScrollView as I14 } from '@oxy.so/bloom/screen';
 import { TextFieldInput as I15 } from '@oxy.so/bloom/text-field';
 import { Screen as I16 } from '@oxy.so/bloom/screen';
 import { ScreenScrollView as I17 } from 'bloom-22/screen';
@@ -107,35 +107,59 @@ const ITEMS = [
 
 export const CASES = [
   {
+    name: "components/Borders.tsx:8",
+    bloom22: false,
+    before: () => { const View = I0; const Text = I1; return (<View style={{ flexDirection: 'row' }}>
+      <View
+        style={{
+          borderWidth: 1,
+          borderRadius: 20,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          alignItems: 'center',
+        }}
+      >
+        <Text>Subscribe</Text>
+      </View>
+      <View className="border rounded-full px-3">
+        <Text>Class</Text>
+      </View>
+      <View style={{ borderBottomWidth: 2 }}>
+        <Text>Rule</Text>
+      </View>
+    </View>); },
+    after: () => { const View = I0; const Text = I1; const { HStack, VStack, Text: LText } = L;  return (toElement(HStack(VStack(LText('Subscribe')).padding('horizontal', 'md').padding('vertical', '6').border(undefined, 'thin').corner('xl').align('center'), VStack(LText('Class')).padding('horizontal', 'md').border(undefined, 'thin').corner('infinite'), VStack(LText('Rule')).border(undefined, 'thick', 'bottom')))); },
+  },
+  {
     name: "components/ComponentProps.tsx:17",
     bloom22: false,
-    before: () => { const Avatar = I0; return (<Avatar source={'⟨0⟩'} size={36} style={{ borderRadius: 12 }} />); },
-    after: () => { const Avatar = I0; const { Avatar: LAvatar } = L;  return (toElement(LAvatar('⟨0⟩').size('lg').cornerRadius('md'))); },
+    before: () => { const Avatar = I2; return (<Avatar source={'⟨0⟩'} size={36} style={{ borderRadius: 12 }} />); },
+    after: () => { const Avatar = I2; const { Avatar: LAvatar } = L;  return (toElement(LAvatar('⟨0⟩').size('lg').cornerRadius('md'))); },
   },
   {
     name: "components/ComponentProps.tsx:22",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const AvatarGroup = I1; return (<AvatarGroup items={ITEMS} ringColor={parityTheme.colors.background} variant="small" />); } return (<Before />); },
-    after: () => { const AvatarGroup = I1; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup } = L;  return (toElement(LAvatarGroup(ITEMS).ringColor('background').variant('small'))); },
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const AvatarGroup = I3; return (<AvatarGroup items={ITEMS} ringColor={parityTheme.colors.background} variant="small" />); } return (<Before />); },
+    after: () => { const AvatarGroup = I3; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup } = L;  return (toElement(LAvatarGroup(ITEMS).ringColor('background').variant('small'))); },
   },
   {
     name: "components/ComponentProps.tsx:26",
     bloom22: false,
-    before: () => { const Search = I2; return (<Search value={'⟨0⟩'} onValueChange={() => {}} editable={false} placeholder="Add people" />); },
-    after: () => { const Search = I2; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup, Search: LSearch } = L;  return (toElement(LSearch(['⟨0⟩', () => {}]).editable(false).placeholder('Add people'))); },
+    before: () => { const Search = I4; return (<Search value={'⟨0⟩'} onValueChange={() => {}} editable={false} placeholder="Add people" />); },
+    after: () => { const Search = I4; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup, Search: LSearch } = L;  return (toElement(LSearch(['⟨0⟩', () => {}]).editable(false).placeholder('Add people'))); },
   },
   {
     name: "components/ComponentProps.tsx:31",
     bloom22: false,
-    before: () => { const Dialog = I3; const Text = I4; return (<Dialog open={true} onClose={(() => {})} placement="bottom" detached panelStyle={{ maxWidth: 540 }}>
+    before: () => { const Dialog = I5; const Text = I1; return (<Dialog open={true} onClose={(() => {})} placement="bottom" detached panelStyle={{ maxWidth: 540 }}>
       <Text>Pay</Text>
     </Dialog>); },
-    after: () => { const Dialog = I3; const Text = I4; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup, Search: LSearch, Text: LText, Dialog: LDialog } = L;  return (toElement(LDialog(LText('Pay')).presentAt('bottom').detached().panelFrame({ maxWidth: '540' }).presented([true, () => (() => {})()]))); },
+    after: () => { const Dialog = I5; const Text = I1; const { Avatar: LAvatar, toElement, AvatarGroup: LAvatarGroup, Search: LSearch, Text: LText, Dialog: LDialog } = L;  return (toElement(LDialog(LText('Pay')).presentAt('bottom').detached().panelFrame({ maxWidth: '540' }).presented([true, () => (() => {})()]))); },
   },
   {
     name: "components/Components.tsx:59",
     bloom22: false,
-    before: () => { const SettingsSection = I5; const GroupedSection = I6; const GroupedSectionItem = I7; const Switch = I8; const SpinnerIcon = I9; return (<SettingsSection
+    before: () => { const SettingsSection = I6; const GroupedSection = I7; const GroupedSectionItem = I8; const Switch = I9; const SpinnerIcon = I10; return (<SettingsSection
       label={'⟨0⟩'}
       description={'⟨13⟩'}
     >
@@ -162,22 +186,22 @@ export const CASES = [
         <GroupedSectionItem title={'⟨10⟩'} titleNumberOfLines={0} disabled />
       </GroupedSection>
     </SettingsSection>); },
-    after: () => { const SettingsSection = I5; const GroupedSection = I6; const GroupedSectionItem = I7; const Switch = I8; const SpinnerIcon = I9; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection } = L;  return (toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))); },
+    after: () => { const SettingsSection = I6; const GroupedSection = I7; const GroupedSectionItem = I8; const Switch = I9; const SpinnerIcon = I10; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection } = L;  return (toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))); },
   },
   {
     name: "components/Components.tsx:91",
     bloom22: false,
-    before: () => { const SettingsSection = I5; const Card = I10; const SettingsValueField = I11; const RiSmartphoneLine = I12; return (<SettingsSection>
+    before: () => { const SettingsSection = I6; const Card = I11; const SettingsValueField = I12; const RiSmartphoneLine = I13; return (<SettingsSection>
       <Card appearance="outline" radius="radius-16" border="thin" elevation="none">
         <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>
       </Card>
     </SettingsSection>); },
-    after: () => { const SettingsSection = I5; const Card = I10; const SettingsValueField = I11; const RiSmartphoneLine = I12; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard } = L;  return (toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))); },
+    after: () => { const SettingsSection = I6; const Card = I11; const SettingsValueField = I12; const RiSmartphoneLine = I13; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard } = L;  return (toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))); },
   },
   {
     name: "components/Components.tsx:109",
     bloom22: false,
-    before: () => { const ScreenScrollView = I13; const View = I14; const TextFieldInput = I15; return (<I16>{<ScreenScrollView keyboardShouldPersistTaps="handled">
+    before: () => { const ScreenScrollView = I14; const View = I0; const TextFieldInput = I15; return (<I16>{<ScreenScrollView keyboardShouldPersistTaps="handled">
       {/* The profile's own fields */}
       <View className="gap-4 p-4">
         <TextFieldInput
@@ -193,7 +217,7 @@ export const CASES = [
         />
       </View>
     </ScreenScrollView>}</I16>); },
-    after: () => { const ScreenScrollView = I13; const View = I14; const TextFieldInput = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView } = L;  return (<I16>{toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const View = I0; const TextFieldInput = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView } = L;  return (<I16>{toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))}</I16>); },
   },
   {
     name: "components/Components.tsx:131",
@@ -202,7 +226,7 @@ export const CASES = [
       <Muted>{'⟨0⟩'}</Muted>
       <Button onPress={() => {}}>{'⟨1⟩'}</Button>
     </ScreenScrollView>}</I20>); },
-    after: () => { const ScreenScrollView = I13; const Muted = I21; const Button = I22; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LButton(LText('⟨1⟩')).onPress(() => {})).contentView((v) => v.padding('horizontal', 'lg').padding('bottom', '3xl').spacing('lg')))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Muted = I21; const Button = I22; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LButton(LText('⟨1⟩')).onPress(() => {})).contentView((v) => v.padding('horizontal', 'lg').padding('bottom', '3xl').spacing('lg')))}</I16>); },
   },
   {
     name: "components/Components.tsx:140",
@@ -211,7 +235,7 @@ export const CASES = [
       <Muted>{'⟨0⟩'}</Muted>
       <Muted>{'⟨1⟩'}</Muted>
     </ScreenScrollView>}</I20>); },
-    after: () => { const ScreenScrollView = I13; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.padding('horizontal', '3xl').flex('1').align('center').justify('center').spacing('md')))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.padding('horizontal', '3xl').flex('1').align('center').justify('center').spacing('md')))}</I16>); },
   },
   {
     name: "components/Components.tsx:149",
@@ -222,7 +246,7 @@ export const CASES = [
     >
       <Muted>{'⟨0⟩'}</Muted>
     </ScreenScrollView>}</I20>); },
-    after: () => { const ScreenScrollView = I13; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('all', 'lg').frame({ maxWidth: '672', width: 'full' }).spacing('lg').alignSelf('center')).contentMargins('bottom', '4xl'))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('all', 'lg').frame({ maxWidth: '672', width: 'full' }).spacing('lg').alignSelf('center')).contentMargins('bottom', '4xl'))}</I16>); },
   },
   {
     name: "components/Components.tsx:160",
@@ -231,7 +255,7 @@ export const CASES = [
       <Muted>{'⟨0⟩'}</Muted>
       <Muted>{'⟨1⟩'}</Muted>
     </ScreenScrollView>}</I20>); },
-    after: () => { const ScreenScrollView = I13; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.axis('horizontal').padding('horizontal', 'xs').padding('vertical', 'xs').spacing('sm')))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.axis('horizontal').padding('horizontal', 'xs').padding('vertical', 'xs').spacing('sm')))}</I16>); },
   },
   {
     name: "components/Components.tsx:169",
@@ -239,7 +263,7 @@ export const CASES = [
     before: () => { const ScreenScrollView = I17; const Muted = I18; return (<I20>{<ScreenScrollView contentContainerClassName="grow pb-6">
       <Muted>{'⟨0⟩'}</Muted>
     </ScreenScrollView>}</I20>); },
-    after: () => { const ScreenScrollView = I13; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('bottom', '2xl').flex('grow')))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton } = L;  return (<I16>{toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('bottom', '2xl').flex('grow')))}</I16>); },
   },
   {
     name: "components/Components.tsx:177",
@@ -254,7 +278,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:199",
     bloom22: false,
-    before: () => { const ScreenScrollView = I13; const Search = I2; const Muted = I21; const Divider = I24; const Loading = I25; return (<I16>{<ScreenScrollView onEndReached={() => {}} onEndReachedThreshold={0.5}>
+    before: () => { const ScreenScrollView = I14; const Search = I4; const Muted = I21; const Divider = I24; const Loading = I25; return (<I16>{<ScreenScrollView onEndReached={() => {}} onEndReachedThreshold={0.5}>
       <Search
         label={'⟨2⟩'}
         value={'⟨0⟩'}
@@ -266,12 +290,12 @@ export const CASES = [
       {<Hole n="4" />}
       <Loading size="sm" variant="inline" />
     </ScreenScrollView>}</I16>); },
-    after: () => { const ScreenScrollView = I13; const Search = I2; const Muted = I21; const Divider = I24; const Loading = I25; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading } = L;  return (<I16>{toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), LText('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n="4" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const Search = I4; const Muted = I21; const Divider = I24; const Loading = I25; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading } = L;  return (<I16>{toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), LText('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n="4" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))}</I16>); },
   },
   {
     name: "components/Components.tsx:209",
     bloom22: false,
-    before: () => { const Item = I26; const Avatar = I0; const Badge = I27; return (<Item
+    before: () => { const Item = I26; const Avatar = I2; const Badge = I27; return (<Item
           
           title={'⟨0⟩'}
           subtitle={'⟨1⟩'}
@@ -279,7 +303,7 @@ export const CASES = [
           trailing={<Badge content={'⟨4⟩'} variant="subtle" size="sm" />}
           onPress={() => {}}
         />); },
-    after: () => { const Item = I26; const Avatar = I0; const Badge = I27; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row } = L;  return (toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))); },
+    after: () => { const Item = I26; const Avatar = I2; const Badge = I27; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row } = L;  return (toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))); },
   },
   {
     name: "components/Components.tsx:235",
@@ -305,7 +329,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:270",
     bloom22: false,
-    before: () => { const View = I14; const Chip = I34; const EngagementAction = I35; const RiHeart3Line = I36; const RiCloseLine = I37; const RiHeart3Fill = I38; return (<I39>{<View className="flex-row items-center gap-2">
+    before: () => { const View = I0; const Chip = I34; const EngagementAction = I35; const RiHeart3Line = I36; const RiCloseLine = I37; const RiHeart3Fill = I38; return (<I39>{<View className="flex-row items-center gap-2">
       <Chip size="xl" appearance="subtle" selected={true} onPress={() => {}}>
         {'⟨0⟩'}
       </Chip>
@@ -323,7 +347,7 @@ export const CASES = [
         popOnActivate
       />
     </View>}</I39>); },
-    after: () => { const View = I14; const Chip = I34; const EngagementAction = I35; const RiHeart3Line = I36; const RiCloseLine = I37; const RiHeart3Fill = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L;  return (<I39>{toElement(HStack(LChip(LText('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), LText('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))}</I39>); },
+    after: () => { const View = I0; const Chip = I34; const EngagementAction = I35; const RiHeart3Line = I36; const RiCloseLine = I37; const RiHeart3Fill = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L;  return (<I39>{toElement(HStack(LChip(LText('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), LText('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))}</I39>); },
   },
   {
     name: "components/Components.tsx:293",
@@ -342,7 +366,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:309",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I14; const RiHeart3Line = I36; const RiMailLine = I42; const RiStarLine = I33; const RiHeart3Fill = I38; return (<View className="flex-row gap-2" accessibilityRole="header">
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const RiHeart3Line = I36; const RiMailLine = I42; const RiStarLine = I33; const RiHeart3Fill = I38; return (<View className="flex-row gap-2" accessibilityRole="header">
       <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />
       <RiStarLine fill={parityTheme.colors.error} />
@@ -352,16 +376,16 @@ export const CASES = [
       <RiHeart3Fill fill="white" />
       <RiStarLine fill={'rgba(255,255,255,0.72)'} />
     </View>); } return (<Before />); },
-    after: () => { const View = I14; const RiHeart3Line = I36; const RiMailLine = I42; const RiStarLine = I33; const RiHeart3Fill = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L; const appColors = T0; return (toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error'), Icon(RiStarLine).foreground('textTertiary'), Icon(RiStarLine).size('sm').foreground(appColors.color.STAR), Icon(RiHeart3Fill).foreground(appColors.color.hexfff), Icon(RiHeart3Fill).foreground(appColors.color.white), Icon(RiStarLine).foreground(appColors.color.VEIL)).spacing('sm').role('header'))); },
+    after: () => { const View = I0; const RiHeart3Line = I36; const RiMailLine = I42; const RiStarLine = I33; const RiHeart3Fill = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L; const appColors = T0; return (toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error'), Icon(RiStarLine).foreground('textTertiary'), Icon(RiStarLine).size('sm').foreground(appColors.color.STAR), Icon(RiHeart3Fill).foreground(appColors.color.hexfff), Icon(RiHeart3Fill).foreground(appColors.color.white), Icon(RiStarLine).foreground(appColors.color.VEIL)).spacing('sm').role('header'))); },
   },
   {
     name: "components/Components.tsx:327",
     bloom22: false,
-    before: () => { const View = I14; return (<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+    before: () => { const View = I0; return (<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
       <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n="0" />}</View>
       <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />
     </View>); },
-    after: () => { const View = I14; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L;  return (toElement(HStack(VStack(Embed(<Hole n="0" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))); },
+    after: () => { const View = I0; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L;  return (toElement(HStack(VStack(Embed(<Hole n="0" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))); },
   },
   {
     name: "components/Components.tsx:349",
@@ -416,7 +440,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:405",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const ScreenScrollView = I13; const RefreshControl = I46; return (<ScreenScrollView
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const ScreenScrollView = I14; const RefreshControl = I46; return (<ScreenScrollView
       refreshControl={
         <RefreshControl
           refreshing={true}
@@ -430,7 +454,7 @@ export const CASES = [
     >
       {<Hole n="0" />}
     </ScreenScrollView>); } return (<I16>{<Before />}</I16>); },
-    after: () => { const ScreenScrollView = I13; const RefreshControl = I46; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I16>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I16>); },
+    after: () => { const ScreenScrollView = I14; const RefreshControl = I46; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I16>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I16>); },
   },
   {
     name: "components/Components.tsx:432",
@@ -455,7 +479,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:460",
     bloom22: false,
-    before: () => { const View = I14; const SegmentedControl = I49; const SegmentedControlItem = I50; const SegmentedControlItemText = I51; return (<View className="gap-2">
+    before: () => { const View = I0; const SegmentedControl = I49; const SegmentedControlItem = I50; const SegmentedControlItemText = I51; return (<View className="gap-2">
       <SegmentedControl
         label={'⟨5⟩'}
         type="radio"
@@ -478,7 +502,7 @@ export const CASES = [
         ))}
       </SegmentedControl>
     </View>); },
-    after: () => { const View = I14; const SegmentedControl = I49; const SegmentedControlItem = I50; const SegmentedControlItemText = I51; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L;  return (toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))); },
+    after: () => { const View = I0; const SegmentedControl = I49; const SegmentedControlItem = I50; const SegmentedControlItemText = I51; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L;  return (toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))); },
   },
   {
     name: "components/Components.tsx:494",
@@ -509,7 +533,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:523",
     bloom22: false,
-    before: () => { const AvatarGroup = I1; return (<AvatarGroup
+    before: () => { const AvatarGroup = I3; return (<AvatarGroup
       items={ITEMS}
       layout="conversation"
       size={32}
@@ -517,12 +541,12 @@ export const CASES = [
       total={2}
       showInitials
     />); },
-    after: () => { const AvatarGroup = I1; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup } = L;  return (toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())); },
+    after: () => { const AvatarGroup = I3; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup } = L;  return (toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())); },
   },
   {
     name: "components/Components.tsx:536",
     bloom22: false,
-    before: () => { const View = I14; const List = I53; const Muted = I21; return (<View className="gap-2">
+    before: () => { const View = I0; const List = I53; const Muted = I21; return (<View className="gap-2">
       <List
         items={ITEMS}
         separator="line"
@@ -532,7 +556,7 @@ export const CASES = [
       />
       <List items={ITEMS} loading={true} loadingCount={2} />
     </View>); },
-    after: () => { const View = I14; const List = I53; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList } = L;  return (toElement(VStack(LList(ITEMS).separator('line').headerContent(LText('⟨1⟩').textStyle('muted')).emptyState(LText('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))); },
+    after: () => { const View = I0; const List = I53; const Muted = I21; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList } = L;  return (toElement(VStack(LList(ITEMS).separator('line').headerContent(LText('⟨1⟩').textStyle('muted')).emptyState(LText('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))); },
   },
   {
     name: "components/Components.tsx:559",
@@ -622,7 +646,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:674",
     bloom22: true,
-    before: () => { function Before() { const parityTheme = useParityTheme22(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I14; const Text = I59; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme22(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const Text = I59; return (<View
       className="flex-row p-2"
       style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}
     >
@@ -631,12 +655,12 @@ export const CASES = [
         b
       </Text>
     </View>); } return (<Before />); },
-    after: () => { const View = I14; const Text = I4; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList, ChatSearchField: LChatSearchField } = L;  return (toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())); },
+    after: () => { const View = I0; const Text = I1; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList, ChatSearchField: LChatSearchField } = L;  return (toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())); },
   },
   {
     name: "components/Corners.tsx:6",
     bloom22: false,
-    before: () => { const View = I14; return (<View
+    before: () => { const View = I0; return (<View
       style={{
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
@@ -644,22 +668,22 @@ export const CASES = [
         padding: 8,
       }}
     />); },
-    after: () => { const View = I14; const { VStack } = L;  return (toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))); },
+    after: () => { const View = I0; const { VStack } = L;  return (toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))); },
   },
   {
     name: "components/Dialogs.tsx:8",
     bloom22: true,
-    before: () => { const Dialog = I60; const View = I14; const Text = I59; return (<Dialog open={true} onClose={(() => {})} title="Post as" label="Post as">
+    before: () => { const Dialog = I60; const View = I0; const Text = I59; return (<Dialog open={true} onClose={(() => {})} title="Post as" label="Post as">
       <View className="gap-4 p-4">
         <Text className="text-sm">Choose an account</Text>
       </View>
     </Dialog>); },
-    after: () => { const Dialog = I3; const View = I14; const Text = I4; const { VStack, Text: LText, Dialog: LDialog } = L;  return (toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))); },
+    after: () => { const Dialog = I5; const View = I0; const Text = I1; const { VStack, Text: LText, Dialog: LDialog } = L;  return (toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))); },
   },
   {
     name: "components/Dialogs.tsx:18",
     bloom22: false,
-    before: () => { const Dialog = I3; const Text = I4; return (<Dialog
+    before: () => { const Dialog = I5; const Text = I1; return (<Dialog
       open={true}
       onClose={() => {}}
       label="Sources"
@@ -671,12 +695,12 @@ export const CASES = [
     >
       <Text>Where it came from</Text>
     </Dialog>); },
-    after: () => { const Dialog = I3; const Text = I4; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(LDialog(LText('Where it came from')).label('Sources').presentAt('bottom', { md: 'center' }).padding('none').frame({ maxWidth: '400' }).buttons(ITEMS).dismissOnBackdrop(false).presented([true, () => {}]))); },
+    after: () => { const Dialog = I5; const Text = I1; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(LDialog(LText('Where it came from')).label('Sources').presentAt('bottom', { md: 'center' }).padding('none').frame({ maxWidth: '400' }).buttons(ITEMS).dismissOnBackdrop(false).presented([true, () => {}]))); },
   },
   {
     name: "components/Dialogs.tsx:35",
     bloom22: false,
-    before: () => { const View = I14; const Text = I4; const Dialog = I3; return (<View className="gap-2">
+    before: () => { const View = I0; const Text = I1; const Dialog = I5; return (<View className="gap-2">
       <Text>Shortcuts</Text>
       <Dialog
         open={true}
@@ -687,58 +711,58 @@ export const CASES = [
         <View className="px-5" />
       </Dialog>
     </View>); },
-    after: () => { const View = I14; const Text = I4; const Dialog = I3; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
+    after: () => { const View = I0; const Text = I1; const Dialog = I5; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
     name: "components/Geometry.tsx:11",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="flex-row flex-wrap">
+    before: () => { const View = I0; return (<View className="flex-row flex-wrap">
       <View style={{ width: 37, height: 37 }} />
       <View className="w-12" style={{ height: 43 }} />
       <View style={{ maxWidth: 49, minHeight: 55 }} />
     </View>); },
-    after: () => { const View = I14; const { HStack, VStack } = L;  return (toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())); },
+    after: () => { const View = I0; const { HStack, VStack } = L;  return (toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())); },
   },
   {
     name: "components/Geometry.tsx:22",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="relative h-24">
+    before: () => { const View = I0; return (<View className="relative h-24">
       <View
         className="absolute right-4 p-1"
         style={{ top: 43, zIndex: 37 }}
       />
     </View>); },
-    after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
+    after: () => { const View = I0; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
   },
   {
     name: "components/Geometry.tsx:33",
     bloom22: false,
-    before: () => { const View = I14; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
-    after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
+    before: () => { const View = I0; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
+    after: () => { const View = I0; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
   },
   {
     name: "components/Geometry.tsx:38",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="relative h-24" style={{ maxHeight: '90%' }}>
+    before: () => { const View = I0; return (<View className="relative h-24" style={{ maxHeight: '90%' }}>
       <View style={{ width: '31%' }} />
       <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
     </View>); },
-    after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))); },
+    after: () => { const View = I0; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))); },
   },
   {
     name: "components/Geometry.tsx:49",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="flex-row">
+    before: () => { const View = I0; return (<View className="flex-row">
       <View className="h-4 w-4" style={{ transform: [{ translateY: 37 }] }} />
       <View className="w-full" style={{ aspectRatio: 43 }} />
       <View className="w-auto" style={{ zIndex: 1000 }} />
     </View>); },
-    after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(HStack(VStack().frame({ height: 'lg', width: 'lg' }).offset({ y: 37 }), VStack().frame({ width: 'full' }).aspectRatio(43), VStack().frame({ width: 'auto' }).zIndex('1000')))); },
+    after: () => { const View = I0; const { HStack, VStack, toElement } = L;  return (toElement(HStack(VStack().frame({ height: 'lg', width: 'lg' }).offset({ y: 37 }), VStack().frame({ width: 'full' }).aspectRatio(43), VStack().frame({ width: 'auto' }).zIndex('1000')))); },
   },
   {
     name: "components/HostProps.tsx:9",
     bloom22: false,
-    before: () => { const View = I14; const Pressable = I55; const Text = I4; return (<View collapsable={false}>
+    before: () => { const View = I0; const Pressable = I55; const Text = I1; return (<View collapsable={false}>
       <Pressable onPress={() => {}} accessible={false} tabIndex={-1}>
         <Text>Ana liked your post</Text>
       </Pressable>
@@ -746,20 +770,20 @@ export const CASES = [
         <Text>Show all</Text>
       </Pressable>
     </View>); },
-    after: () => { const View = I14; const Pressable = I55; const Text = I4; const { VStack, Text: LText } = L;  return (toElement(VStack(VStack(LText('Ana liked your post')).onPress(() => {}).accessibilityElement(false).focusable(false), VStack(LText('Show all')).onPress(() => {}).onLongPress(() => {}, '500')).collapsable(false))); },
+    after: () => { const View = I0; const Pressable = I55; const Text = I1; const { VStack, Text: LText } = L;  return (toElement(VStack(VStack(LText('Ana liked your post')).onPress(() => {}).accessibilityElement(false).focusable(false), VStack(LText('Show all')).onPress(() => {}).onLongPress(() => {}, '500')).collapsable(false))); },
   },
   {
     name: "components/HostProps.tsx:22",
     bloom22: false,
-    before: () => { const View = I14; const Text = I4; return (<View className="w-full z-10 web:sticky web:top-0">
+    before: () => { const View = I0; const Text = I1; return (<View className="w-full z-10 web:sticky web:top-0">
       <Text>Search</Text>
     </View>); },
-    after: () => { const View = I14; const Text = I4; const { VStack, Text: LText, toElement } = L;  return (toElement(VStack(LText('Search')).frame({ width: 'full' }).sticky('top').zIndex('floating'))); },
+    after: () => { const View = I0; const Text = I1; const { VStack, Text: LText, toElement } = L;  return (toElement(VStack(LText('Search')).frame({ width: 'full' }).sticky('top').zIndex('floating'))); },
   },
   {
     name: "components/HostProps.tsx:30",
     bloom22: false,
-    before: () => { const View = I14; const RNText = I61; return (<View>
+    before: () => { const View = I0; const RNText = I61; return (<View>
       <RNText
         style={{
           position: 'absolute',
@@ -772,23 +796,23 @@ export const CASES = [
         Caption
       </RNText>
     </View>); },
-    after: () => { const View = I14; const RNText = I61; const { VStack, Text: LText, toElement, RawText } = L;  return (toElement(VStack(RawText('Caption').textShadow('0 1px 2px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })))); },
+    after: () => { const View = I0; const RNText = I61; const { VStack, Text: LText, toElement, RawText } = L;  return (toElement(VStack(RawText('Caption').textShadow('0 1px 2px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })))); },
   },
   {
     name: "components/Insets.tsx:11",
     bloom22: false,
-    before: () => { const View = I14; const Text = I4; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
+    before: () => { const View = I0; const Text = I1; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
       <Text>Compose</Text>
     </View>}</SafeAreaInsetsContext.Provider>); },
-    after: () => { const View = I14; const Text = I4; const { VStack, Text: LText } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I0; const Text = I1; const { VStack, Text: LText } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/Insets.tsx:20",
     bloom22: false,
-    before: () => { const View = I14; const Text = I4; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>
+    before: () => { const View = I0; const Text = I1; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>
       <Text>Welcome</Text>
     </View>}</SafeAreaInsetsContext.Provider>); },
-    after: () => { const View = I14; const Text = I4; const { VStack, Text: LText, toElement } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I0; const Text = I1; const { VStack, Text: LText, toElement } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/LocateControl.tsx:9 (false)",
@@ -833,8 +857,8 @@ export const CASES = [
   {
     name: "components/Markers.tsx:6",
     bloom22: false,
-    before: () => { const View = I14; return (<View pointerEvents="none" style={{ position: 'absolute', width: 0, height: 0 }} onLayout={() => {}} />); },
-    after: () => { const View = I14; const { VStack } = L;  return (toElement(VStack().frame({ width: 'none', height: 'none' }).position({}).allowsHitTesting(false).onLayout(() => {}))); },
+    before: () => { const View = I0; return (<View pointerEvents="none" style={{ position: 'absolute', width: 0, height: 0 }} onLayout={() => {}} />); },
+    after: () => { const View = I0; const { VStack } = L;  return (toElement(VStack().frame({ width: 'none', height: 'none' }).position({}).allowsHitTesting(false).onLayout(() => {}))); },
   },
   {
     name: "components/Menus.tsx:17",
@@ -887,77 +911,77 @@ export const CASES = [
   {
     name: "components/Menus.tsx:57",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I14; const withAlpha = I71; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const withAlpha = I71; return (<View
       style={{
         paddingHorizontal: 12,
         paddingVertical: 8,
         backgroundColor: withAlpha(parityTheme.colors.primary, 0.1),
       }}
     />); } return (<Before />); },
-    after: () => { const View = I14; const withAlpha = I71; const { Button: LButton, Item, Divider, Menu, VStack } = L;  return (toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))); },
+    after: () => { const View = I0; const withAlpha = I71; const { Button: LButton, Item, Divider, Menu, VStack } = L;  return (toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))); },
   },
   {
     name: "components/Pickers.tsx:12",
     bloom22: false,
-    before: () => { const View = I14; const Item = I26; return (<View role="listbox">
+    before: () => { const View = I0; const Item = I26; return (<View role="listbox">
       <Item title="English" role="option" selected={true} onPress={() => {}} />
       <Item title="Català" role="option" onPress={() => {}} />
     </View>); },
-    after: () => { const View = I14; const Item = I26; const { VStack, Row } = L;  return (toElement(VStack(Row('English').role('option').selected(true).onPress(() => {}), Row('Català').role('option').onPress(() => {})).role('listbox'))); },
+    after: () => { const View = I0; const Item = I26; const { VStack, Row } = L;  return (toElement(VStack(Row('English').role('option').selected(true).onPress(() => {}), Row('Català').role('option').onPress(() => {})).role('listbox'))); },
   },
   {
     name: "components/Pickers.tsx:21",
     bloom22: false,
-    before: () => { const View = I14; const Pressable = I55; const Text = I4; const hoverGroupProps = I72; return (<View {...hoverGroupProps}>
+    before: () => { const View = I0; const Pressable = I55; const Text = I1; const hoverGroupProps = I72; return (<View {...hoverGroupProps}>
       <Pressable onPress={() => {}}>
         <Text>Row</Text>
       </Pressable>
     </View>); },
-    after: () => { const View = I14; const Pressable = I55; const Text = I4; const hoverGroupProps = I72; const { VStack, Row, toElement, Text: LText } = L;  return (toElement(VStack(VStack(LText('Row')).onPress(() => {})).hoverGroup())); },
+    after: () => { const View = I0; const Pressable = I55; const Text = I1; const hoverGroupProps = I72; const { VStack, Row, toElement, Text: LText } = L;  return (toElement(VStack(VStack(LText('Row')).onPress(() => {})).hoverGroup())); },
   },
   {
     name: "components/Pickers.tsx:39",
     bloom22: false,
-    before: () => { const View = I14; const Search = I2; const TextFieldInput = I15; return (<View>
+    before: () => { const View = I0; const Search = I4; const TextFieldInput = I15; return (<View>
       <Search value={'⟨0⟩'} onChangeText={() => {}} onSelectionChange={() => {}} />
       <TextFieldInput label="Seats" value={'⟨3⟩'} onValueChange={() => {}} inputMode="numeric" />
     </View>); },
-    after: () => { const View = I14; const Search = I2; const TextFieldInput = I15; const { VStack, Row, toElement, Text: LText, Search: LSearch, TextField } = L;  return (toElement(VStack(LSearch(['⟨0⟩', () => {}]).onSelectionChange(() => {}), TextField(['⟨3⟩', () => {}], 'Seats').inputMode('numeric')))); },
+    after: () => { const View = I0; const Search = I4; const TextFieldInput = I15; const { VStack, Row, toElement, Text: LText, Search: LSearch, TextField } = L;  return (toElement(VStack(LSearch(['⟨0⟩', () => {}]).onSelectionChange(() => {}), TextField(['⟨3⟩', () => {}], 'Seats').inputMode('numeric')))); },
   },
   {
     name: "components/ReelRoute.tsx:8 (false)",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I4; return (<Screen
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I1; return (<Screen
       reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
       style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}
     >
       <Text>Reel</Text>
     </Screen>); } return (<Before />); },
-    after: () => { const Screen = I16; const Text = I4; const { defineTokens, Text: LText } = L; const appColors = T1; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)} />); },
+    after: () => { const Screen = I16; const Text = I1; const { defineTokens, Text: LText } = L; const appColors = T1; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)} />); },
   },
   {
     name: "components/ReelRoute.tsx:8",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I4; return (<Screen
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I1; return (<Screen
       reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
       style={{ backgroundColor: true ? parityTheme.colors.background : '#000000' }}
     >
       <Text>Reel</Text>
     </Screen>); } return (<Before />); },
-    after: () => { const Screen = I16; const Text = I4; const { defineTokens, Text: LText } = L; const appColors = T2; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(true ? 'background' : appColors.color.hex000000)} />); },
+    after: () => { const Screen = I16; const Text = I1; const { defineTokens, Text: LText } = L; const appColors = T2; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(true ? 'background' : appColors.color.hex000000)} />); },
   },
   {
     name: "components/ReelRoute.tsx:18",
     bloom22: false,
-    before: () => { const Screen = I16; const Text = I4; return (<Screen scroll="none" style={{ backgroundColor: '#000' }}>
+    before: () => { const Screen = I16; const Text = I1; return (<Screen scroll="none" style={{ backgroundColor: '#000' }}>
       <Text>Camera</Text>
     </Screen>); },
-    after: () => { const Screen = I16; const Text = I4; const { defineTokens, Text: LText } = L; const appColors = T3; return (<ScreenHost root={LText('Camera').header(false).screenScroll('none').screenBackground(appColors.color.hex000)} />); },
+    after: () => { const Screen = I16; const Text = I1; const { defineTokens, Text: LText } = L; const appColors = T3; return (<ScreenHost root={LText('Camera').header(false).screenScroll('none').screenBackground(appColors.color.hex000)} />); },
   },
   {
     name: "components/Rows.tsx:19",
     bloom22: true,
-    before: () => { const Pressable = I55; const RiHeart3Line = I73; const View = I14; const Text = I59; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I55; const RiHeart3Line = I73; const View = I0; const Text = I59; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -966,12 +990,12 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I55; const RiHeart3Line = I36; const View = I14; const Text = I4; const { HStack, Icon, VStack, Text: LText } = L;  return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
+    after: () => { const Pressable = I55; const RiHeart3Line = I36; const View = I0; const Text = I1; const { HStack, Icon, VStack, Text: LText } = L;  return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:41",
     bloom22: true,
-    before: () => { const View = I14; const Text = I59; const Switch = I74; const Button = I19; const RiArrowRightLine = I75; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I0; const Text = I59; const Switch = I74; const Button = I19; const RiArrowRightLine = I75; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -979,44 +1003,44 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I14; const Text = I4; const Switch = I8; const Button = I22; const RiArrowRightLine = I76; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I0; const Text = I1; const Switch = I9; const Button = I22; const RiArrowRightLine = I76; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="gap-2 border-b border-border pb-3">
+    before: () => { const View = I0; return (<View className="gap-2 border-b border-border pb-3">
       {false ? <View className="h-10 w-full bg-muted" /> : null}
       {false && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
+    after: () => { const View = I0; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
   },
   {
     name: "components/Rows.tsx:54",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="gap-2 border-b border-border pb-3">
+    before: () => { const View = I0; return (<View className="gap-2 border-b border-border pb-3">
       {true ? <View className="h-10 w-full bg-muted" /> : null}
       {true && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
+    after: () => { const View = I0; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
   },
   {
     name: "components/Rows.tsx:58",
     bloom22: true,
-    before: () => { const View = I14; const Text = I59; return (<View  className="flex-row justify-between">
+    before: () => { const View = I0; const Text = I59; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I14; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
   },
   {
     name: "components/Rows.tsx:68",
     bloom22: false,
-    before: () => { const View = I14; const NativeText = I61; const Text = I4; return (<View className="flex-1 mt-2">
+    before: () => { const View = I0; const NativeText = I61; const Text = I1; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I14; const NativeText = I61; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I0; const NativeText = I61; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",
@@ -1033,7 +1057,7 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I55; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I55; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:85",
@@ -1050,50 +1074,50 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I55; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I55; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:101",
     bloom22: false,
-    before: () => { const View = I14; return (<View pointerEvents="none" className="h-10 w-full rounded-lg bg-muted" />); },
-    after: () => { const View = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))); },
+    before: () => { const View = I0; return (<View pointerEvents="none" className="h-10 w-full rounded-lg bg-muted" />); },
+    after: () => { const View = I0; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))); },
   },
   {
     name: "components/Rows.tsx:106",
     bloom22: false,
-    before: () => { const View = I14; return (<View pointerEvents="box-none" className="p-2">
+    before: () => { const View = I0; return (<View pointerEvents="box-none" className="p-2">
       <View pointerEvents="box-only" className="h-10 w-full rounded-lg bg-muted" />
       {<Hole n="0" />}
     </View>); },
-    after: () => { const View = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting('self'), Embed(<Hole n="0" />)).padding('all', 'sm').allowsHitTesting('children'))); },
+    after: () => { const View = I0; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting('self'), Embed(<Hole n="0" />)).padding('all', 'sm').allowsHitTesting('children'))); },
   },
   {
     name: "components/Rows.tsx:123 (false)",
     bloom22: true,
-    before: () => { const View = I14; const Text = I59; return (<View className={false ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>
+    before: () => { const View = I0; const Text = I59; return (<View className={false ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>
       <Text className={`text-sm ${false ? 'font-bold text-primary' : ''}`}>Row</Text>
       <View
         className={`rounded-xl overflow-hidden bg-card ${false ? 'border border-primary' : 'opacity-70'}`}
       />
     </View>); },
-    after: () => { const View = I14; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(false), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(false), (v) => v.border('primary', 'thin')).when(!false, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(false, (v) => v.border('border', 'thin', 'top')))); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(false), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(false), (v) => v.border('primary', 'thin')).when(!false, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(false, (v) => v.border('border', 'thin', 'top')))); },
   },
   {
     name: "components/Rows.tsx:123",
     bloom22: true,
-    before: () => { const View = I14; const Text = I59; return (<View className={true ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>
+    before: () => { const View = I0; const Text = I59; return (<View className={true ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>
       <Text className={`text-sm ${true ? 'font-bold text-primary' : ''}`}>Row</Text>
       <View
         className={`rounded-xl overflow-hidden bg-card ${true ? 'border border-primary' : 'opacity-70'}`}
       />
     </View>); },
-    after: () => { const View = I14; const Text = I4; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(true), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(true), (v) => v.border('primary', 'thin')).when(!true, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(true, (v) => v.border('border', 'thin', 'top')))); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(true), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(true), (v) => v.border('primary', 'thin')).when(!true, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(true, (v) => v.border('border', 'thin', 'top')))); },
   },
   {
     name: "components/Rows.tsx:133",
     bloom22: false,
-    before: () => { const View = I14; return (<View className="rounded-lg p-4 shadow-sm" />); },
-    after: () => { const View = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().padding('all', 'lg').corner('sm').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'))); },
+    before: () => { const View = I0; return (<View className="rounded-lg p-4 shadow-sm" />); },
+    after: () => { const View = I0; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().padding('all', 'lg').corner('sm').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'))); },
   },
   {
     name: "components/SettingsRoute.tsx:13",
@@ -1101,7 +1125,7 @@ export const CASES = [
     before: () => { const Screen = I20; const PageHeader = I77; const Text = I59; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
-    after: () => { const Screen = I16; const PageHeader = I45; const Text = I4; const { Text: LText, Header } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())} />); },
+    after: () => { const Screen = I16; const PageHeader = I45; const Text = I1; const { Text: LText, Header } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())} />); },
   },
   {
     name: "components/SettingsRoute.tsx:17",
@@ -1117,12 +1141,12 @@ export const CASES = [
         <Text className="text-sm">{'⟨0⟩'}</Text>
       </ScreenScrollView>
     </Screen>); },
-    after: () => { const Screen = I16; const ScreenScrollView = I13; const Text = I4; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
+    after: () => { const Screen = I16; const ScreenScrollView = I14; const Text = I1; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
   {
     name: "components/Spacing.tsx:10",
     bloom22: false,
-    before: () => { const View = I14; const Text = I4; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 60 }}>
+    before: () => { const View = I0; const Text = I1; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 60 }}>
       <View style={{ paddingLeft: 37, paddingBottom: 43 }}>
         <Text>Reply</Text>
       </View>
@@ -1136,39 +1160,39 @@ export const CASES = [
         <Text>Meta</Text>
       </View>
     </View>}</SafeAreaInsetsContext.Provider>); },
-    after: () => { const View = I14; const Text = I4; const { VStack, Text: LText, HStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(VStack(LText('Reply')).padding('left', 37).padding('bottom', 43), VStack(LText('Suggestions')).position({ left: 'none', bottom: '100%' }), HStack(VStack(LText('Lane')).shrink('20'), LText('Meta'))).safeAreaPadding('top', 'content').padding('top', '5xl'))}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I0; const Text = I1; const { VStack, Text: LText, HStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(VStack(LText('Reply')).padding('left', 37).padding('bottom', 43), VStack(LText('Suggestions')).position({ left: 'none', bottom: '100%' }), HStack(VStack(LText('Lane')).shrink('20'), LText('Meta'))).safeAreaPadding('top', 'content').padding('top', '5xl'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/Surfaces.tsx:10",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I14; const Text = I4; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const Text = I1; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>
       <Text style={{ color: paritySurface }}>Posts</Text>
     </View>); } return (<Before />); },
-    after: () => { const View = I14; const Text = I4; const { HStack, Text: LText } = L;  return (toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))); },
+    after: () => { const View = I0; const Text = I1; const { HStack, Text: LText } = L;  return (toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))); },
   },
   {
     name: "components/Surfaces.tsx:19",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Card = I10; return (<Card>
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Card = I11; return (<Card>
       <Hole n="0" />
     </Card>); } return (<Before />); },
-    after: () => { const Card = I10; const { HStack, Text: LText, toElement, Embed, Card: LCard } = L;  return (toElement(LCard(Embed(<Hole n="0" />)))); },
+    after: () => { const Card = I11; const { HStack, Text: LText, toElement, Embed, Card: LCard } = L;  return (toElement(LCard(Embed(<Hole n="0" />)))); },
   },
   {
     name: "components/ThreadRoute.tsx:12",
     bloom22: true,
-    before: () => { const Screen = I20; const PageHeader = I77; const Text = I59; const View = I14; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+    before: () => { const Screen = I20; const PageHeader = I77; const Text = I59; const View = I0; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <>
           <Text className="text-sm">{'⟨0⟩'}</Text>
           <View className="p-4" />
         </>
       </Screen>); },
-    after: () => { const Screen = I16; const PageHeader = I45; const Text = I4; const View = I14; const { Text: LText, VStack, Group, Header } = L;  return (<ScreenHost root={Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())} />); },
+    after: () => { const Screen = I16; const PageHeader = I45; const Text = I1; const View = I0; const { Text: LText, VStack, Group, Header } = L;  return (<ScreenHost root={Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())} />); },
   },
   {
     name: "components/ThreadRoute.tsx:20 (false)",
     bloom22: true,
-    before: () => { const Screen = I20; const View = I14; const ScreenScrollView = I17; const Text = I59; return (<Screen
+    before: () => { const Screen = I20; const View = I0; const ScreenScrollView = I17; const Text = I59; return (<Screen
       scroll="content"
       bottomBar={<View className="px-4 py-2 bg-card" />}
       bottomBarPlacement="overlay"
@@ -1180,12 +1204,12 @@ export const CASES = [
       </ScreenScrollView>
       {false ? <Text className="text-xs text-muted-foreground">{'⟨2⟩'}</Text> : null}
     </Screen>); },
-    after: () => { const Screen = I16; const View = I14; const ScreenScrollView = I13; const Text = I4; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), false ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
+    after: () => { const Screen = I16; const View = I0; const ScreenScrollView = I14; const Text = I1; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), false ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
   },
   {
     name: "components/ThreadRoute.tsx:20",
     bloom22: true,
-    before: () => { const Screen = I20; const View = I14; const ScreenScrollView = I17; const Text = I59; return (<Screen
+    before: () => { const Screen = I20; const View = I0; const ScreenScrollView = I17; const Text = I59; return (<Screen
       scroll="content"
       bottomBar={<View className="px-4 py-2 bg-card" />}
       bottomBarPlacement="overlay"
@@ -1197,7 +1221,7 @@ export const CASES = [
       </ScreenScrollView>
       {true ? <Text className="text-xs text-muted-foreground">{'⟨2⟩'}</Text> : null}
     </Screen>); },
-    after: () => { const Screen = I16; const View = I14; const ScreenScrollView = I13; const Text = I4; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
+    after: () => { const Screen = I16; const View = I0; const ScreenScrollView = I14; const Text = I1; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
   },
   {
     name: "components/Toolbar.tsx:9",

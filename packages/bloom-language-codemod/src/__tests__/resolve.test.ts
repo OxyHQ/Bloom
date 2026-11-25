@@ -51,6 +51,12 @@ describe('resolveClassName', () => {
       { name: 'border', args: ['border', 'thin', 'bottom'] },
     ]);
   });
+  it('maps a border width with no colour class in the platform’s default colour', () => {
+    const result = resolveClassName('border-b-2', 'view', table);
+    expect(result.ok && result.value.mods).toEqual([
+      { name: 'border', args: [undefined, 'thick', 'bottom'] },
+    ]);
+  });
   it('maps a colour at an opacity, a fixed one too, under any condition', () => {
     expect(codes('bg-primary/10 border-border/60 border')).toEqual([]);
     expect(codes('text-white/70', 'text')).toEqual([]);
@@ -74,7 +80,8 @@ describe('resolveClassName', () => {
     });
   });
   it.each([
-    ['border', 'border'],
+    ['border-border', 'border'],
+    ['border-border border-primary border', 'border'],
     ['p-4 px-2', 'padding-overlap'],
     ['px-2 pl-4', 'padding-overlap'],
     ['mt-2 my-2', 'margin-overlap'],
