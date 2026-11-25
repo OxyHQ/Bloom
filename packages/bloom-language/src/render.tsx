@@ -493,10 +493,11 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
       case 'offset': {
         motion.stable = true;
         const { x, y } = modifier.value;
+        // A token, an app's own, or points computed at render.
         if (isMotionValue(x)) bound.translateX = x;
-        else if (typeof x === 'string' || isAppToken(x)) translateX = resolveSpace(x);
+        else if (x !== undefined) translateX = resolveSpace(x);
         if (isMotionValue(y)) bound.translateY = y;
-        else if (typeof y === 'string' || isAppToken(y)) translateY = resolveSpace(y);
+        else if (y !== undefined) translateY = resolveSpace(y);
         break;
       }
       case 'rotation':
@@ -622,10 +623,6 @@ function changesBox(modifiers: readonly Modifier[]): boolean {
 function followsValue(modifier: GeometryModifier): boolean {
   if (modifier.kind !== 'offset') return isMotionValue(modifier.value);
   return isMotionValue(modifier.value.x) || isMotionValue(modifier.value.y);
-}
-
-function isAppToken(value: unknown): value is AppToken<'space'> {
-  return typeof value === 'object' && value !== null && 'scale' in value;
 }
 
 /** A FAB's silhouette when its chain names none (Bloom `Fab`'s `DEFAULT_FAB_SHAPE`). */

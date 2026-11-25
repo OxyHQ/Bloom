@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps a transform of translations alone as `.offset()` (a number written out as its space token, one computed at render as points), an `aspectRatio` computed at render, `width: 'auto'` and `w-auto`/`h-auto`/`size-auto` as the frame length `'auto'` (no longer dropped: on a Bloom component it takes back the component's own length), and `zIndex: 1000`/`z-[1000]` as `.zIndex('1000')`.
+
 ## 0.4.0
 
 ### Compatibility

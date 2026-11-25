@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- An offset's axis takes points computed at render (`.offset({ y: nudge })`) and rejects a number written out with the token to write, as a frame's lengths do; the frame length `'auto'` and the stacking level `'1000'` are tokens.
+
 ## 1.4.0
 
 ### Changed

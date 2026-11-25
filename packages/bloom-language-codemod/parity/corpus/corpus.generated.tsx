@@ -690,7 +690,7 @@ export const CASES = [
     after: () => { const View = I14; const Text = I4; const Dialog = I3; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
-    name: "components/Geometry.tsx:10",
+    name: "components/Geometry.tsx:11",
     bloom22: false,
     before: () => { const View = I14; return (<View className="flex-row flex-wrap">
       <View style={{ width: 37, height: 37 }} />
@@ -700,7 +700,7 @@ export const CASES = [
     after: () => { const View = I14; const { HStack, VStack } = L;  return (toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())); },
   },
   {
-    name: "components/Geometry.tsx:21",
+    name: "components/Geometry.tsx:22",
     bloom22: false,
     before: () => { const View = I14; return (<View className="relative h-24">
       <View
@@ -711,19 +711,29 @@ export const CASES = [
     after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
   },
   {
-    name: "components/Geometry.tsx:32",
+    name: "components/Geometry.tsx:33",
     bloom22: false,
     before: () => { const View = I14; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
     after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
   },
   {
-    name: "components/Geometry.tsx:37",
+    name: "components/Geometry.tsx:38",
     bloom22: false,
     before: () => { const View = I14; return (<View className="relative h-24" style={{ maxHeight: '90%' }}>
       <View style={{ width: '31%' }} />
       <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
     </View>); },
     after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))); },
+  },
+  {
+    name: "components/Geometry.tsx:49",
+    bloom22: false,
+    before: () => { const View = I14; return (<View className="flex-row">
+      <View className="h-4 w-4" style={{ transform: [{ translateY: 37 }] }} />
+      <View className="w-full" style={{ aspectRatio: 43 }} />
+      <View className="w-auto" style={{ zIndex: 1000 }} />
+    </View>); },
+    after: () => { const View = I14; const { HStack, VStack, toElement } = L;  return (toElement(HStack(VStack().frame({ height: 'lg', width: 'lg' }).offset({ y: 37 }), VStack().frame({ width: 'full' }).aspectRatio(43), VStack().frame({ width: 'auto' }).zIndex('1000')))); },
   },
   {
     name: "components/HostProps.tsx:9",

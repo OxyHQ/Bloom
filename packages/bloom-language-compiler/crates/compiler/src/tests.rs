@@ -357,6 +357,17 @@ fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
     assert_eq!(output.diagnostics[0].message, "Unknown cursor token 'hand' for .cursor()");
     let output = compiled("export const x = () => Text('a').font(15);\n");
     assert_eq!(output.diagnostics[0].message, ".font() takes font tokens, not the number 15");
+    // An offset takes points too (a glyph nudged by its size's amount), and a ratio is a number either way.
+    let ok = compiled(
+        "export function Badge({ nudge, aspect }) {\n  return VStack(Text('a')).offset({ y: nudge }).aspectRatio(aspect).frame({ width: 'auto' }).zIndex('1000');\n}\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().offset({ y: 2 });\n");
+    assert_eq!(output.diagnostics[0].message, ".offset() takes padding tokens, not the number 2");
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some("a number written out is a token ('2'); points are a value the view computes as it renders")
+    );
 }
 
 #[test]

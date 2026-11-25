@@ -1364,6 +1364,8 @@ const hitSlop: ParityCase[] = [
  * card's width from its props, a badge under the top inset, a facepile's order).
  */
 const CELL = 117.5;
+/** A nudge a size works out (Mention's name sizes: 1 point at 15, 4 at 24). */
+const NUDGE = CELL / 47;
 const points: ParityCase[] = [
   {
     name: 'a frame of points computed at render',
@@ -1407,6 +1409,74 @@ const points: ParityCase[] = [
           <Text>a</Text>
         </RN.View>,
       ),
+  },
+  {
+    // Mention's account badge: nudged down by its name size's own amount.
+    name: 'an offset of points computed at render, beside a token',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.VStack(L.Text('a')).offset({ y: NUDGE }),
+          L.VStack(L.Text('b')).offset({ x: 'xs', y: -NUDGE }),
+        ),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <RN.View style={{ transform: [{ translateY: NUDGE }] }}>
+          <Text>a</Text>
+        </RN.View>
+        <RN.View style={{ transform: [{ translateX: space.xs }, { translateY: -NUDGE }] }}>
+          <Text>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an offset of points computed at render, natively only',
+    language: () => toElement(L.VStack(L.Text('a')).when('native', (v) => v.offset({ y: NUDGE }))),
+    bloom: () => (
+      <RN.View
+        style={RN.Platform.OS === 'web' ? undefined : { transform: [{ translateY: NUDGE }] }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's embedded player and media card: the ratio is the media's own.
+    name: 'an aspect ratio computed at render, full width',
+    language: () =>
+      toElement(
+        L.VStack()
+          .frame({ width: 'full' })
+          .aspectRatio(CELL / 90),
+      ),
+    bloom: () => <RN.View style={{ width: '100%', aspectRatio: CELL / 90 }} />,
+  },
+  {
+    // Mention's mention picker, over the whole compose screen.
+    name: 'a picker raised to the stacking level 1000',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .position({ bottom: '100%', left: 'none', right: 'none' })
+          .margin('bottom', 'sm')
+          .zIndex('1000'),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: 0,
+          right: 0,
+          marginBottom: space.sm,
+          zIndex: 1000,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
   },
   {
     name: 'stacking orders computed at render',

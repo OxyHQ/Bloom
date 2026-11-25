@@ -2262,7 +2262,7 @@
   "appColors": null
  },
  {
-  "name": "components/Geometry.tsx:10",
+  "name": "components/Geometry.tsx:11",
   "before": "<View className=\"flex-row flex-wrap\">\n      <View style={{ width: 37, height: 37 }} />\n      <View className=\"w-12\" style={{ height: 43 }} />\n      <View style={{ maxWidth: 49, minHeight: 55 }} />\n    </View>",
   "after": "toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())",
   "bindings": {
@@ -2287,7 +2287,7 @@
   "appColors": null
  },
  {
-  "name": "components/Geometry.tsx:21",
+  "name": "components/Geometry.tsx:22",
   "before": "<View className=\"relative h-24\">\n      <View\n        className=\"absolute right-4 p-1\"\n        style={{ top: 43, zIndex: 37 }}\n      />\n    </View>",
   "after": "toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))",
   "bindings": {
@@ -2315,7 +2315,7 @@
   "appColors": null
  },
  {
-  "name": "components/Geometry.tsx:32",
+  "name": "components/Geometry.tsx:33",
   "before": "<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />",
   "after": "toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))",
   "bindings": {
@@ -2337,7 +2337,7 @@
   "appColors": null
  },
  {
-  "name": "components/Geometry.tsx:37",
+  "name": "components/Geometry.tsx:38",
   "before": "<View className=\"relative h-24\" style={{ maxHeight: '90%' }}>\n      <View style={{ width: '31%' }} />\n      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />\n    </View>",
   "after": "toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))",
   "bindings": {
@@ -2354,6 +2354,34 @@
   "classes": [
    "relative",
    "h-24"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:49",
+  "before": "<View className=\"flex-row\">\n      <View className=\"h-4 w-4\" style={{ transform: [{ translateY: 37 }] }} />\n      <View className=\"w-full\" style={{ aspectRatio: 43 }} />\n      <View className=\"w-auto\" style={{ zIndex: 1000 }} />\n    </View>",
+  "after": "toElement(HStack(VStack().frame({ height: 'lg', width: 'lg' }).offset({ y: 37 }), VStack().frame({ width: 'full' }).aspectRatio(43), VStack().frame({ width: 'auto' }).zIndex('1000')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [
+   "flex-row",
+   "h-4",
+   "w-4",
+   "w-full",
+   "w-auto"
   ],
   "within": [],
   "themed": false,

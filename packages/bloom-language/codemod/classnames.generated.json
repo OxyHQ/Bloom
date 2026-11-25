@@ -3150,8 +3150,8 @@
   "h-auto": {
    "count": 7,
    "apps": 4,
-   "status": "drop",
-   "language": "a view’s size is its content’s unless a frame says otherwise"
+   "status": "mapped",
+   "language": ".frame({ height: 'auto' })"
   },
   "justify-start": {
    "count": 7,
@@ -3680,8 +3680,8 @@
   "w-auto": {
    "count": 6,
    "apps": 3,
-   "status": "drop",
-   "language": "a view’s size is its content’s unless a frame says otherwise"
+   "status": "mapped",
+   "language": ".frame({ width: 'auto' })"
   },
   "-mt-3": {
    "count": 5,
@@ -12060,10 +12060,8 @@
   "z-[1000]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "1000",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('1000')"
   },
   "z-[2000]": {
    "count": 1,

@@ -105,6 +105,8 @@ const less = (a: Cost, b: Cost): Cost => ({
 });
 
 const onPress = () => {};
+/** A nudge a name size works out as it renders. */
+const NUDGE = 117.5 / 47;
 
 interface Case {
   name: string;
@@ -309,6 +311,16 @@ const CASES: Case[] = [
     node: L.VStack(L.Text('a')).frame({ width: 120 }).margin('right', '1'),
     jsx: (
       <RN.View style={{ width: 120, marginRight: 4 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's account badge, nudged by its name size's own amount (points computed at render).
+    name: 'an offset of points computed at render and a translated View',
+    node: L.VStack(L.Text('a')).offset({ y: NUDGE }),
+    jsx: (
+      <RN.View style={{ transform: [{ translateY: NUDGE }] }}>
         <Text>a</Text>
       </RN.View>
     ),

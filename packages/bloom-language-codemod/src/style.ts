@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as recast from 'recast';
 
-import { LANGUAGE_PACKAGE, type Mod } from './table';
+import { LANGUAGE_PACKAGE, type Mod, type PointsArg } from './table';
 
 const { scales, enums } = JSON.parse(
   readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8'),
@@ -438,10 +438,58 @@ function pointsDeclaration(key: string, value: AnyNode): Mod | undefined {
   if (FRAME_KEYS.has(key)) return { name: 'frame', args: [{ [key]: points }] };
   if (PINNED_EDGES.has(key)) return { name: 'position', args: [{ [key]: points }] };
   if (key === 'zIndex') return { name: 'zIndex', args: [points] };
+  // A ratio is a number either way: one the view computes (a media's own) is carried as it is.
+  if (key === 'aspectRatio') return { name: 'aspectRatio', args: [points] };
   const edge = PADDING_EDGES[key];
   if (edge === 'all') return { name: 'padding', args: [points] };
   if (edge !== undefined) return { name: 'padding', args: [edge, points] };
   return undefined;
+}
+
+/** React Native's translations as the axes of `.offset()`. */
+const TRANSLATE_AXIS: Readonly<Record<string, 'x' | 'y'>> = { translateX: 'x', translateY: 'y' };
+
+/**
+ * A transform of translations alone (`transform: [{ translateY: nudge }]`) as
+ * `.offset()`: a number written out is the space token of its value (`-4` is
+ * `'-xs'`), one the view computes as it renders its points. A transform that
+ * scales, rotates or names an axis twice stays a reason.
+ */
+function offsetDeclaration(
+  value: AnyNode,
+  numberOf: StyleReaders['numberOf'],
+  computed: StyleReaders['computed'],
+): Mod | undefined {
+  if (!n.ArrayExpression.check(value) || value.elements.length === 0) return undefined;
+  const offset: Record<string, string | PointsArg> = {};
+  for (const element of value.elements) {
+    const property =
+      n.ObjectExpression.check(element) && element.properties.length === 1
+        ? element.properties[0]
+        : undefined;
+    if (
+      !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+      property.computed ||
+      !n.Identifier.check(property.key)
+    )
+      return undefined;
+    const axis = TRANSLATE_AXIS[property.key.name as string];
+    if (axis === undefined || axis in offset) return undefined;
+    const literal = n.NumericLiteral.check(property.value)
+      ? (property.value.value as number)
+      : n.UnaryExpression.check(property.value) &&
+          property.value.operator === '-' &&
+          n.NumericLiteral.check(property.value.argument)
+        ? -(property.value.argument.value as number)
+        : numberOf?.(property.value);
+    if (literal !== undefined) {
+      const token = SPACE.get(Math.abs(literal));
+      if (token === undefined) return undefined;
+      offset[axis] = literal < 0 ? `-${token}` : token;
+    } else if (computed?.(property.value)) offset[axis] = { node: property.value, hole: 'points' };
+    else return undefined;
+  }
+  return { name: 'offset', args: [offset] };
 }
 
 /** A style's own declaration by its key, or undefined. */
@@ -575,6 +623,7 @@ export function styleUtilities(
       continue;
     }
     const mod =
+      (key === 'transform' ? offsetDeclaration(property.value, numberOf, computed) : undefined) ??
       direct(key, value) ??
       read?.(key, value) ??
       (computed?.(value) ? pointsDeclaration(key, value) : undefined);
