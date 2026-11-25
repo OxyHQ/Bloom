@@ -2501,10 +2501,10 @@ Pull to refresh: a binding a pull writes `true` (the app writes `false` when don
 
 ### `onEndReached`
 
-Called once each time the end comes within `threshold` viewports (2 by default).
+Called once each time the end comes within `threshold` viewports (2 by default); `undefined` calls nothing.
 
 - Parameters: a value; a value (optional)
-- Signature: `.onEndReached(action: () => void, threshold?: number)`
+- Signature: `.onEndReached(action: (() => void) | undefined, threshold?: number)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `scrollIndicators`
@@ -3734,10 +3734,10 @@ The header is its content's height and the list's width: its container neither g
 
 ### `stickyIndices`
 
-The indices whose rows stick to the top.
+The indices whose rows stick to the top; `undefined` sticks none, as `stickyHeaderIndices={undefined}`.
 
 - Parameters: a value
-- Signature: `.stickyIndices(value: readonly number[])`
+- Signature: `.stickyIndices(value: readonly number[] | undefined)`
 - Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `restorationKey`

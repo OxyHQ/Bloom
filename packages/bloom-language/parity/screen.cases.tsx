@@ -142,6 +142,15 @@ const scrollViews: ParityCase[] = inScreen([
     ),
   },
   {
+    name: 'the end reached with nothing more to load',
+    language: () => toElement(L.ScrollView(L.Text('a')).onEndReached(undefined).testID('feed')),
+    bloom: () => (
+      <ScreenScrollView onEndReached={undefined} testID="feed">
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
     name: 'vertical scroll indicator hidden',
     language: () => toElement(L.ScrollView(L.Text('a')).scrollIndicators('hidden', 'vertical')),
     bloom: () => (

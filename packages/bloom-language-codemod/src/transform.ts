@@ -2263,6 +2263,17 @@ export function transformSource(source: string, options: TransformOptions): File
           else fail('{/* */}', 'comment', 'a line comment in JSX (only a block comment moves)');
           continue;
         }
+        if (
+          n.ArrowFunctionExpression.check(child.expression) ||
+          n.FunctionExpression.check(child.expression)
+        ) {
+          fail(
+            'children',
+            'render-children',
+            "children as a render function (a Pressable's `({ pressed }) => …`): a view takes no function child, and `Embed`'s function is handed the child, not the press state",
+          );
+          continue;
+        }
         children.push(expressionChild(child.expression));
       } else if (n.JSXElement.check(child)) {
         const inner = convert(child);
@@ -2990,6 +3001,19 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'handler':
         // `null` is a handler's own value (a header's `onBack={null}` shows no back button).
         if (n.NullLiteral.check(expression)) return [{ $: 'null' }];
+        // A handler or none chosen by a plain condition (`hasMore ? loadMore : undefined`), as
+        // written, where the modifier takes `undefined` (`unset`): it calls nothing then.
+        if (
+          unset &&
+          n.ConditionalExpression.check(expression) &&
+          (isPlainRead(expression.test) || isBooleanForm(expression.test)) &&
+          [expression.consequent, expression.alternate].every(
+            (branch) =>
+              (n.Identifier.check(branch) && branch.name === 'undefined') ||
+              valuesOf('handler', branch, map) !== undefined,
+          )
+        )
+          return [{ node: expression, hole: 'handler' }];
         return n.ArrowFunctionExpression.check(expression) ||
           n.FunctionExpression.check(expression) ||
           n.Identifier.check(expression) ||
