@@ -16,7 +16,9 @@ env:
   ANDROID_NDK_VERSION: 27.1.12297006
   ANDROID_CMAKE_VERSION: 3.30.5
   # The SDK packages the Android gates compile against, cached by name.
-  ANDROID_SDK_CURRENT: platforms;android-36 platforms;android-37.0 build-tools;37.0.0
+  # build-tools;36.0.0 is Android Gradle Plugin 9.2's default, which it
+  # otherwise downloads itself in the middle of the build.
+  ANDROID_SDK_CURRENT: platforms;android-36 platforms;android-37.0 build-tools;36.0.0 build-tools;37.0.0
   ANDROID_SDK_MINIMUM: platforms;android-34 build-tools;33.0.1 build-tools;34.0.0
 
 concurrency:
@@ -380,7 +382,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      # The same SDK root as android-native-check, which restores these
+      # entries: their paths are under it.
       - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
         with:
           packages: platform-tools
           cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
