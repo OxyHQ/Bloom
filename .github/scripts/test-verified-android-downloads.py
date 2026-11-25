@@ -199,8 +199,11 @@ class VerifiedDownloads(unittest.TestCase):
     def test_robolectric_cache_is_saved_under_the_path_it_is_restored_from(self):
         # actions/cache versions an entry by the path text: `$HOME/.m2` and
         # `~/.m2` are different entries, and the restore never found the save.
-        workflow = (Path(__file__).parents[1] / 'workflows' / 'validate.yml').read_text()
-        restored = re.findall(r'path: (\S*android-all-instrumented)$', workflow, re.M)
+        github = Path(__file__).parents[1]
+        # The warm job saves in validate.yml; the android job restores in its action.
+        workflow = (github / 'workflows' / 'validate.yml').read_text()
+        action = (github / 'actions' / 'android-native-check' / 'action.yml').read_text()
+        restored = re.findall(r'path: (\S*android-all-instrumented)$', action, re.M)
         saved = re.findall(r"paths=(\S*android-all-instrumented)'?$", workflow, re.M)
         self.assertTrue(restored and saved)
         self.assertEqual(set(restored) | set(saved), {'~/.m2/repository/org/robolectric/android-all-instrumented'})

@@ -1,0 +1,189 @@
+name: Android native check
+description: >-
+  Sets up one Android variant (toolchains, verified transports, SDK packages,
+  patches) and runs its Gradle gate. Used by validate.yml's `android` job, which
+  gates on it, and by its `gradle-dependency-cache` job, which runs it on main to
+  fill Gradle's dependency cache. The caller checks out the repository and
+  restores that cache first.
+
+inputs:
+  variant:
+    description: legacy, default or predictive.
+    required: true
+  gradle-version:
+    description: The Gradle version the variant runs (gradle-dependency-cache.sh says which).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      with:
+        node-version: '24.21.0'
+        package-manager-cache: false
+    - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      with:
+        bun-version-file: package.json
+    - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+      with:
+        # The legacy SDK "tools" package was removed from the repository.
+        packages: platform-tools
+        cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
+    - name: Verify official Android download fallback
+      shell: bash
+      run: python3 .github/scripts/test-verified-android-downloads.py
+    - name: Prepare the exact verified Gradle distribution
+      shell: bash
+      env:
+        GRADLE_VERSION: ${{ inputs.gradle-version }}
+      run: python3 .github/scripts/verified-android-downloads.py gradle --version "$GRADLE_VERSION" --directory "$RUNNER_TEMP/bloom-verified-gradle"
+    - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      with:
+        gradle-version: ${{ inputs.gradle-version }}
+        # The caller restores Gradle's dependency cache itself, from entries the
+        # gradle-dependency-cache job saves on main. setup-gradle would only ever
+        # save its own on main too, where this never ran, so it found nothing and
+        # saved nothing. Its Gradle install (and that distribution's cache) stays.
+        cache-provider: external
+    - name: Prepare verified Kotlin transport fallback when required
+      if: inputs.variant != 'legacy'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.0 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+    - name: Prepare verified root Kotlin transport when required
+      if: inputs.variant != 'legacy'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.21 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+    - name: Prepare verified ReactAndroid Kotlin transport when required
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.10 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+
+    - shell: bash
+      run: bun install --frozen-lockfile --ignore-scripts
+    # The platforms and build tools each variant compiles against: legacy the
+    # declared minimum React Native toolchain, the others the current SDK
+    # (ANDROID_SDK_MINIMUM and ANDROID_SDK_CURRENT in validate.yml).
+    - name: The variant's SDK packages
+      id: sdk
+      shell: bash
+      env:
+        VARIANT: ${{ inputs.variant }}
+      run: |
+        if [ "$VARIANT" = legacy ]; then packages="$ANDROID_SDK_MINIMUM"; else packages="$ANDROID_SDK_CURRENT"; fi
+        bash .github/scripts/android-sdk-cache.sh "$packages" >> "$GITHUB_OUTPUT"
+    - name: Restore the SDK packages
+      id: sdk-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.sdk.outputs.paths }}
+        key: ${{ steps.sdk.outputs.key }}
+    - name: Install the SDK packages
+      if: steps.sdk-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PACKAGES: ${{ steps.sdk.outputs.packages }}
+      # Word splitting is the package list.
+      run: bash .github/scripts/install-android-sdk-packages.sh $PACKAGES
+    # Robolectric's runtimes (android-all-instrumented, ~420 MB): restored,
+    # verified, and fetched with retries only when missing, so the unit tests
+    # never download one themselves (Robolectric's own fetch has no retry).
+    - name: Robolectric runtime cache key
+      id: robolectric
+      if: inputs.variant != 'legacy'
+      shell: bash
+      run: echo "key=$(python3 .github/scripts/verified-android-downloads.py robolectric-key --directory .)" >> "$GITHUB_OUTPUT"
+    - name: Restore Robolectric runtimes
+      if: inputs.variant != 'legacy'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.m2/repository/org/robolectric/android-all-instrumented
+        key: ${{ steps.robolectric.outputs.key }}
+    - name: Verified Robolectric runtimes
+      if: inputs.variant != 'legacy'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py robolectric --directory ~/.m2/repository
+    # Only predictive compiles native code (React Native and Hermes from
+    # source); Bloom's own Android library has no native build.
+    - name: The cached NDK is the one the fixture builds with
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: grep -qxF "  ndkVersion = '${ANDROID_NDK_VERSION}'" scripts/native-check/build.gradle
+    # The same entry the Warm Android caches job saves (its `native` entry).
+    - name: NDK and CMake cache entry
+      id: native
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: bash .github/scripts/android-sdk-cache.sh "ndk;${ANDROID_NDK_VERSION} cmake;${ANDROID_CMAKE_VERSION}" >> "$GITHUB_OUTPUT"
+    - name: Restore NDK and CMake
+      id: native-toolchain
+      if: inputs.variant == 'predictive'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.native.outputs.paths }}
+        key: ${{ steps.native.outputs.key }}
+    - name: Install NDK and CMake
+      if: inputs.variant == 'predictive' && steps.native-toolchain.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PACKAGES: ${{ steps.native.outputs.packages }}
+      # Word splitting is the package list.
+      run: bash .github/scripts/install-android-sdk-packages.sh $PACKAGES
+    - name: Prepare verified Hermes source transport when required
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py hermes --react-native node_modules/react-native --directory "$RUNNER_TEMP/bloom-verified-hermes"
+    - name: Hermes source prerequisites
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: |
+        if dpkg-query -W -f='${Status}\n' libicu-dev 2>/dev/null | grep -qx 'install ok installed'; then
+          echo 'The runner already provides the ICU development files.'
+        else
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y libicu-dev
+        fi
+    - name: Apply exact public API source backport
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: |
+        echo '16b6577b14184ca971fb19692930ab85936103880bf42ccbaafce8e93ccf0a51  scripts/native-check/patches/react-native-0.88.0.patch' | sha256sum -c -
+        patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native < scripts/native-check/patches/react-native-0.88.0.patch
+        echo '5b4e3d2eb483c5c4fca1b96abf17f11eabef45aa572b08b38bdd9df80670daf0  scripts/native-check/patches/react-native-screens-4.30.0.patch' | sha256sum -c -
+        patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native-screens < scripts/native-check/patches/react-native-screens-4.30.0.patch
+    - name: Verify public build capability contract
+      if: inputs.variant == 'default'
+      shell: bash
+      run: python3 scripts/native-check/test-capability-contract.py
+    - name: Compile production native source and run AndroidX callback tests
+      shell: bash
+      env:
+        VARIANT: ${{ inputs.variant }}
+      run: |
+        gradle=.github/scripts/gradle-retrying-downloads.sh
+        if [ "$VARIANT" = legacy ]; then
+          bash "$gradle" -p scripts/native-check/legacy :bloom:compileDebugKotlin :bloom:processDebugManifest --console=plain --max-workers=2
+          python3 scripts/native-check/legacy/verify-manifest.py
+        else
+          if [ "$VARIANT" = predictive ]; then
+            bash "$gradle" -p scripts/native-check -Pbloom.predictiveBackEnabled=true -Prnscreens.nativeBackOwnershipEnabled=true :bloom:testDebugUnitTest :screensWithCustomAutolinkName:compileDebugKotlin :screensWithCustomAutolinkName:compileDebugJavaWithJavac --console=plain --max-workers=2
+          else
+            bash "$gradle" -p scripts/native-check :bloom:testDebugUnitTest --console=plain --max-workers=2
+          fi
+        fi
+
+    - name: Prove unresolved-target host regression coverage
+      if: inputs.variant == 'predictive'
+      shell: bash
+      run: python3 scripts/native-check/verify-host-regression.py
+    - name: Remove temporary Hermes source
+      if: always() && inputs.variant == 'predictive'
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py cleanup-hermes --directory "$RUNNER_TEMP/bloom-verified-hermes"
+    - name: Remove the temporary Kotlin artifact repository's init scripts
+      if: always()
+      shell: bash
+      run: python3 .github/scripts/verified-android-downloads.py cleanup --directory "$RUNNER_TEMP/bloom-verified-kotlin"

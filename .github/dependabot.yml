@@ -10,6 +10,7 @@
 version: 2
 updates:
   - package-ecosystem: 'github-actions'
-    directory: '/'
+    # The workflows, and the local composite actions their jobs share.
+    directories: ['/', '/.github/actions/*']
     schedule:
       interval: 'weekly'
