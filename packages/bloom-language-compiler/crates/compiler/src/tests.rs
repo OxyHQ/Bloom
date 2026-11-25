@@ -641,6 +641,19 @@ fn a_variant_under_a_settled_condition_takes_what_the_chain_does() {
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
     let output = compiled("export const x = () => HStack().when('web', (v) => v.label('a'));\n");
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .label()");
+    // Inside a live variant, a settled one holds only while both do: style alone, in either order.
+    let output = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('native', (n) => n.accessibilityHidden()));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .accessibilityHidden()");
+    let output = compiled(
+        "export const x = () => HStack().when('native', (n) => n.when('md', (v) => v.accessibilityHidden()));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .accessibilityHidden()");
+    let ok = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('native', (n) => n.padding('lg'))).when('native', (n) => n.when(true, (b) => b.focusable(false)));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
 }
 
 #[test]

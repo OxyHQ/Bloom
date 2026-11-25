@@ -714,6 +714,22 @@ const roles: ParityCase[] = ENUMS.role.map((role) => ({
   ),
 }));
 
+/** An option of a listbox that is no Bloom Item: its selection flat on the web (`aria-selected`). */
+const options: ParityCase[] = [true, false].map((selected) => ({
+  name: `an option ${selected ? 'selected' : 'not selected'}`,
+  language: () =>
+    toElement(L.VStack(L.Text('English')).role('option').accessibilityState({ selected })),
+  bloom: () => (
+    <RN.View
+      role="option"
+      accessibilityState={{ selected }}
+      {...(RN.Platform.OS === 'web' ? { 'aria-selected': selected } : null)}
+    >
+      <Text>English</Text>
+    </RN.View>
+  ),
+}));
+
 /** What Mention's screens write that the language lacked: auto margins, a gap per axis, a border's line. */
 const appLayout: ParityCase[] = [
   {
@@ -1391,6 +1407,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...accessibility,
   ...appLayout,
   ...roles,
+  ...options,
   ...tailwind,
   ...distribution,
   ...placement,

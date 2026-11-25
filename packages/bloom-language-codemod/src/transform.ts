@@ -685,6 +685,16 @@ const pointsOf = (arg: unknown): Carried[] =>
       ? Object.values(arg).filter(isPoints)
       : [];
 
+/** Whether a JSX element writes the attribute `name`. */
+function hasAttribute(node: AnyNode, name: string): boolean {
+  return node.openingElement.attributes.some(
+    (attribute: AnyNode) =>
+      n.JSXAttribute.check(attribute) &&
+      n.JSXIdentifier.check(attribute.name) &&
+      attribute.name.name === name,
+  );
+}
+
 /** Transforms one file's source. */
 export function transformSource(source: string, options: TransformOptions): FileResult {
   const ast = recast.parse(source, { parser: babelTs });
@@ -2208,12 +2218,22 @@ export function transformSource(source: string, options: TransformOptions): File
       // React Native's web roles (`role="listbox"`), which it names as no `accessibilityRole`.
       if (name === 'role' && (kind === 'view' || kind === 'pressable')) {
         const role = staticString(value);
+        // React Native's web takes `role` over `accessibilityRole`, native the other: one modifier holds neither.
+        if (hasAttribute(node, 'accessibilityRole')) {
+          fail(
+            name,
+            'role',
+            'a `role` beside an `accessibilityRole`, which each platform reads alone',
+          );
+          continue;
+        }
         if (role !== undefined && WEB_ROLES.has(role)) props.push({ name: 'role', args: [role] });
         else fail(name, 'role', 'a role the language does not take, or set at runtime');
         continue;
       }
       if (name === 'accessibilityRole' && kind !== 'icon') {
         const role = staticString(value);
+        if ((kind === 'view' || kind === 'pressable') && hasAttribute(node, 'role')) continue;
         if (role !== undefined && ROLES.has(role)) props.push({ name: 'role', args: [role] });
         else fail(name, 'role', 'a role the language does not take, or set at runtime');
         continue;

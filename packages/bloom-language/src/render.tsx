@@ -1053,6 +1053,9 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
   const state = ownValue(p, 'accessibilityState')?.value;
   if (state !== undefined) props.accessibilityState = state;
+  // react-native-web reads no `accessibilityState`: an option's selection is its flat `aria-selected`.
+  if (IS_WEB && p.role === 'option' && state?.selected !== undefined)
+    props['aria-selected'] = state.selected;
   const value = ownValue(p, 'accessibilityValue')?.value;
   if (value !== undefined) props.accessibilityValue = value;
   const live = ownValue(p, 'liveRegion')?.value;

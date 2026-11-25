@@ -51,6 +51,17 @@ export const A = ({ pick, chosen }) => (
     expect(flat(code)).toContain(".role('option')");
     expect(flat(code)).toContain(".role('listbox')");
   });
+  it('leaves a view with both a role and an accessibilityRole as JSX, in either order', () => {
+    for (const attributes of [
+      'role="listbox" accessibilityRole="list"',
+      'accessibilityRole="list" role="listbox"',
+    ]) {
+      const result = run(`import { View } from 'react-native';
+export const A = () => <View ${attributes} />;
+`);
+      expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([['role']]);
+    }
+  });
   it("maps a header's back chosen at render between Bloom's own and none", () => {
     const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
 export const A = ({ showBack }) => (

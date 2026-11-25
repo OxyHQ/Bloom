@@ -726,6 +726,8 @@ describe('the cost of a view and of a theme switch', () => {
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1']);
     update(r, tree(true));
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1', 'Required']);
+  });
+
   it('a disabled held under a condition known as the view renders reaches what is inside it', () => {
     const save = jest.fn();
     const tree = (saving: boolean) =>
