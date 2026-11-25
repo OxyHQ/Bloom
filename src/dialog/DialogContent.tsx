@@ -8,6 +8,7 @@ import {
 
 import { Text } from '../typography';
 
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { ScreenScope } from '../layout';
 import { Button } from '../button';
@@ -54,7 +55,7 @@ export function DialogBody({
   actions?: DialogAction[];
   children?: React.ReactNode;
 }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const desktop = useDesktopPlatform();
   if (desktop) {
     return (
@@ -98,7 +99,7 @@ export function DialogBody({
           nativeID={descriptionId}
           style={{
             fontSize: 16,
-            color: theme.colors.textSecondary,
+            color: tokens.mutedForeground,
             paddingBottom: 16,
             lineHeight: 22,
           }}

@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { pointerEventsStyles } from '../styles/pointer-events';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { CoverImage } from './CoverImage';
 import { CENTER_POSITION, clampPosition, dragCoverPosition, coverSourceIdentity } from './geometry';
 import { COVER_HEADER_MESSAGES } from './messages';
@@ -35,7 +35,7 @@ function CoverHeaderComponent({
   onChangeCover,
   labels,
 }: CoverHeaderProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const common = useCommonMessages();
   const { messages } = useMessages(COVER_HEADER_MESSAGES);
   const m = { ...messages, save: common.save, cancel: common.cancel, ...labels };
@@ -207,7 +207,7 @@ function CoverHeaderComponent({
             right: 0,
             height: coverHeight,
             overflow: 'hidden',
-            backgroundColor: theme.colors.backgroundTertiary,
+            backgroundColor: tokens.popover,
           },
           coverStyle,
         ]}

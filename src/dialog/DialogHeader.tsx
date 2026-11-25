@@ -35,6 +35,7 @@ import {
   SegmentedControlItemText,
 } from '../segmented-control';
 import { useSurfaceFill } from '../styles/surface-levels';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { H1, Subtitle, TYPE_SCALE } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -357,7 +358,7 @@ function HeaderProgressBar({
   total: number;
   onImage: boolean;
 }): React.ReactElement {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const common = useCommonMessages();
   return (
     <Meter
@@ -365,7 +366,7 @@ function HeaderProgressBar({
       value={step}
       max={total}
       height={4}
-      track={onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border}
+      track={onImage ? 'rgba(255,255,255,0.25)' : tokens.border}
       // The NAME and the reading: the bar always means the same thing, so Bloom
       // supplies both itself rather than taking a prop for them.
       accessibilityLabel={common.progress}
@@ -518,7 +519,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   controller: DialogHeaderController;
   header: DialogHeaderConfig;
 }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const common = useCommonMessages();
   const { messages } = useMessages(DIALOG_MESSAGES);
   const config = useMergedHeaderConfig(header, controller.store);
@@ -579,7 +580,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
                     ? TYPE_SCALE[config.largeTitleVariant]
                     : styles.largeTitle,
                   {
-                    color: onImage ? ON_IMAGE_TEXT : theme.colors.text,
+                    color: onImage ? ON_IMAGE_TEXT : tokens.foreground,
                     textAlign: config.largeTitleAlign ?? 'left',
                   },
                 ]}
@@ -592,7 +593,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
                 style={[
                   styles.largeSubtitle,
                   { textAlign: config.largeTitleAlign ?? 'left' },
-                  { color: onImage ? ON_IMAGE_SUBTEXT : theme.colors.textSecondary },
+                  { color: onImage ? ON_IMAGE_SUBTEXT : tokens.mutedForeground },
                 ]}
               >
                 {config.subtitle}

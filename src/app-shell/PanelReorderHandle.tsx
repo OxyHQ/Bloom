@@ -5,7 +5,7 @@ import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-w
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { Platform, Pressable, View } from 'react-native';
 import { RiDraggable } from '../icons/remix/RiDraggable';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -40,7 +40,7 @@ export function PanelReorderHandle({
   pointer: SharedValue<{ x: number; y: number }>;
   testID?: string;
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss('bloom-panel-reorder', HANDLE_CSS);
   const { messages } = useMessages(APP_SHELL_MESSAGES);
@@ -101,12 +101,12 @@ export function PanelReorderHandle({
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 6,
-              '--bloom-panel-reorder-ring': colors.primary,
+              '--bloom-panel-reorder-ring': tokens.primary,
               ...ringOffset,
             } as WebCssStyle
           }
         >
-          <RiDraggable width={18} height={18} fill={colors.textSecondary} />
+          <RiDraggable width={18} height={18} fill={tokens.mutedForeground} />
         </Pressable>
       </View>
     </GestureDetector>

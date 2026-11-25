@@ -9,7 +9,7 @@ import { useMessages } from '../locale/messages';
 import { NotificationCenter } from '../notification-center';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { borderRadius } from '../styles/tokens';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { APP_SHELL_MESSAGES } from './messages';
 import type { NotificationBellProps } from './types';
@@ -37,7 +37,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
 }) => {
   const { messages } = useMessages(APP_SHELL_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.notifications;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const rtl = useIsRtl();
   const dirProps = useDirectionProps();
   const [open, setOpen] = useState(false);
@@ -45,12 +45,12 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   const unread = unreadCount ?? notifications.filter((item) => item.unread).length;
   const palette = useMemo(() => {
     return {
-      badge: theme.colors.error,
-      badgeForeground: theme.colors.errorForeground,
+      badge: tokens.error,
+      badgeForeground: tokens.errorForeground,
       // `border-background-primary-default`: the secondary button's own fill.
-      ring: theme.colors.card,
+      ring: tokens.card,
     };
-  }, [theme]);
+  }, [tokens]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

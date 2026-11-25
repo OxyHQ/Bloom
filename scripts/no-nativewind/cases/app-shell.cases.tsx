@@ -1,5 +1,10 @@
 import { Text } from 'react-native';
-import { AppShell, AppShellPanel, AppShellPanelVisibility } from '@bloom/app-shell';
+import {
+  AppShell,
+  AppShellPanel,
+  AppShellPanelVisibility,
+  NotificationBell,
+} from '@bloom/app-shell';
 import type { Cases } from '../support/cases';
 
 const NAV = [
@@ -22,5 +27,21 @@ export const CASES: Cases = {
     <AppShell testID="shell" variant="focus">
       <Text>Body</Text>
     </AppShell>
+  ),
+  'NotificationBell unread': () => (
+    <NotificationBell
+      notifications={[
+        {
+          id: 'a',
+          category: 'activity',
+          group: 'Today',
+          title: 'Invoice paid',
+          description: 'Ana paid you',
+          timestamp: '2m',
+          unread: true,
+        },
+      ]}
+      testID="bell"
+    />
   ),
 };

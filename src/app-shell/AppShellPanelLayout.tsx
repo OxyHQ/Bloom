@@ -52,7 +52,7 @@ import { useMeasuredSizeClass, useWindowSizeWhile } from '../hooks/use-width-cla
 import { IS_WEB } from '../styles/platform';
 import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webViewportHeightMinus, WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { useShellLayoutReady } from './use-shell-viewport';
@@ -483,7 +483,7 @@ export function createPanelLayoutView(
       };
     }, [dragLayer, dragOffset, vertical, restingZIndex]);
     const region = useAppShellRegion();
-    const theme = useTheme();
+    const tokens = useColorTokens();
     const rtl = useIsRtl();
     // Only the web places a sticky panel from the viewport's height.
     const viewportHeight = useWindowSizeWhile(
@@ -1008,7 +1008,7 @@ export function createPanelLayoutView(
                       : vertical
                         ? { left: 0, right: 0, top: -track.gap, height: track.gap }
                         : { top: 0, bottom: 0, insetInlineStart: -track.gap, width: track.gap }),
-                    backgroundColor: theme.colors.border,
+                    backgroundColor: tokens.border,
                   } as WebCssStyle
                 }
               />
