@@ -135,7 +135,7 @@ const FEED = RN.StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 9999,
-    backgroundColor: '#0000008c',
+    backgroundColor: '#00000099',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -338,8 +338,8 @@ const CASES: Case[] = [
     name: 'a pinned mute button with a hit slop and its Pressable',
     node: L.VStack(
       L.VStack(L.Icon(RiVolumeMuteLine).size('18').foreground('white'))
-        .frame({ width: '32', height: '32' })
-        .background('black/55')
+        .frame({ width: '3xl', height: '3xl' })
+        .background('black/60')
         .border('white/20', 'thin')
         .corner('full')
         .justify('center')
