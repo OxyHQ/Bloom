@@ -19,6 +19,7 @@ import {
   LANGUAGE_PACKAGE,
   type Mod,
   type PointsArg,
+  type StyleMod,
   type Table,
 } from './table';
 
@@ -285,7 +286,7 @@ export interface ResolveOptions {
    * as `.grow()`, a theme colour as its role), by the style key: they join the
    * classes' modifiers, so a class setting the same thing is a conflict.
    */
-  readonly styleMods?: readonly { readonly subject: string; readonly mod: Mod }[];
+  readonly styleMods?: readonly StyleMod[];
   /** The classes a `style` was read as (`gap: 12` is `gap-3`): inline, so no variant overrides them. */
   readonly styleClasses?: ReadonlySet<string>;
 }
@@ -439,8 +440,8 @@ export function resolveClassName(
         fail(token, entry.status, entry.language);
     }
   }
-  for (const { subject, mod } of options.styleMods ?? []) {
-    const into = group([]);
+  for (const { subject, mod, conditions } of options.styleMods ?? []) {
+    const into = group([...(conditions ?? [])]);
     into.mods.push(mod);
     into.subjects.set(mod, subject);
   }

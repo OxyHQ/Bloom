@@ -19,6 +19,11 @@
 - An Avatar's and an AvatarGroup's own props (size, shape, avatar colour, motion, presence, the group's layout and counts) read nothing where a tree starts, so a `view()` that hands its props to Bloom's Avatar costs what the component that renders it does (Mention's `AccountAvatar`: two context reads fewer).
 - The modifiers that read nothing where a tree starts are the spec's `reads.nothing`, one list for the runtime and the compiler.
 
+### Fixed
+
+- `Image(source, alt)` names the image on the web (its `aria-label` and `<img alt>`), as `.label()` does and React Native's Image with an `accessibilityLabel` does, with the next Bloom's `BloomImage` (which hands `alt` on to react-native-web as its `accessibilityLabel`). Parity: `parity/image-name.cases.tsx`, against React Native's Image on the web and Bloom's image natively.
+- The web parity harness drops what a browser drops: a `pointer-events` of `box-none` or `box-only` (react-native-web writes React Native's values as they are for a `pointerEvents` in an inline style), which jsdom kept. Layout parity holds `.when('native', (v) => v.allowsHitTesting('children'))` (and `'self'`) equal to such an inline style, and `.allowsHitTesting('children')` to a StyleSheet's, which react-native-web compiles into its prop's classes.
+
 ## 1.6.0
 
 ### Compatibility

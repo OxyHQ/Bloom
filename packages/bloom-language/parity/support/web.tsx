@@ -116,10 +116,21 @@ const LONGHANDS: Record<string, string[]> = {
 
 type Declarations = [string, string][];
 
+/**
+ * Declarations jsdom keeps that a browser drops as invalid: React Native's
+ * `box-none` and `box-only`, which react-native-web writes as they are for a
+ * `pointerEvents` in an inline style (its class compiler writes them as
+ * `none` and `auto` rules), are no CSS `pointer-events`.
+ */
+function invalid(name: string, value: string): boolean {
+  return name === 'pointer-events' && (value === 'box-none' || value === 'box-only');
+}
+
 function declarations(style: CSSStyleDeclaration, into: Declarations): void {
   for (let i = 0; i < style.length; i++) {
     const name = style[i] as string;
-    into.push([name, style.getPropertyValue(name).trim()]);
+    const value = style.getPropertyValue(name).trim();
+    if (!invalid(name, value)) into.push([name, value]);
   }
 }
 

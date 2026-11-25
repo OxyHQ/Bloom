@@ -378,6 +378,13 @@ A View's or a Pressable's `pointerEvents` is `.allowsHitTesting()`: `none`
 `false`, `box-none` `'children'`, `box-only` `'self'`, and values chosen by a
 plain condition that choice, `undefined` none and `auto` `true`
 (`split ? 'box-none' : undefined` is `.allowsHitTesting(split ? 'children' : undefined)`).
+A `pointerEvents` in a style is drawn where the JSX's is: a StyleSheet's
+style is compiled by react-native-web into the prop's classes, so it is
+`.allowsHitTesting()` alike; an inline object or a module style constant
+writes `box-none` and `box-only` as CSS the browser drops, so it is
+`.when('native', (v) => v.allowsHitTesting('children'))` (or `'self'`). An
+inline `none` or `auto` stays JSX: the browser keeps it, and what is inside
+inherits it rather than taking the prop's rule.
 
 A theme colour at an opacity, Bloom's `withAlpha(colors.primary, 0.1)` or
 `tokenAlpha(tokens.primary, 0.1)` of a `useTheme()` or `useColorTokens()` read,

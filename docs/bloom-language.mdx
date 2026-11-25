@@ -730,7 +730,13 @@ VStack(...).background('surface').corner('xl').shadow('m')
   (`box-none`: `pointer-events: none` on the view, `auto` on each child), held
   equal to it by the layout parity, a value chosen at render included;
   react-native-web drops an inline `pointerEvents`, so on the web a Bloom
-  component's is a box of its own around it.
+  component's is a box of its own around it. React Native's `pointerEvents`
+  written in an inline style is a native hit testing: react-native-web writes
+  `box-none` and `box-only` there as they are, CSS values the browser drops,
+  so the web view takes touches as any view does. Its form is
+  `.when('native', (v) => v.allowsHitTesting('children'))`, held equal to the
+  inline style by the layout parity; a StyleSheet's style is compiled into
+  the prop's classes, and is `.allowsHitTesting()` on every platform.
 - **Drawn, not read.** `.accessibilityHidden()` hides the view and everything
   inside it from screen readers, each platform its own way: on Android and iOS
   `accessibilityElementsHidden` and `importantForAccessibility:
@@ -2485,6 +2491,12 @@ Image(post.cover, 'Cover')
   `crossFade` is a Bloom duration (`instant` 100, `fast` 150, `normal` 200,
   `slow` 300 ms); without it the image appears at once. `onLoad` receives the
   intrinsic `{ width, height }` and `onError` `{ error }`.
+- **Name.** `alt` is the image's name, Bloom's `alt`: expo-image and React
+  Native's Image read it as `accessibilityLabel` (natively it also makes the
+  image an accessibility element), and on the web react-native-web's Image
+  writes it as its `aria-label` and `<img alt>`, as React Native's Image with
+  an `accessibilityLabel` does (`parity/image-name.cases.tsx`). `.label()`
+  names it the same way on the web.
 - **Presses.** `BloomImage` takes accessibility props but no presses, so an image
   with `onPress`, `onHover` or `hoverGroup` is drawn inside its pressable host,
   which also takes `grow` and `shrink`.

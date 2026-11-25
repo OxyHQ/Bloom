@@ -42,6 +42,16 @@ export interface Mod {
   readonly args: readonly Arg[];
 }
 
+/**
+ * A modifier a style writes, by its style key, and the platform it holds on
+ * when it holds on one only (`['native']`): a variant, as a `native:` class's.
+ */
+export interface StyleMod {
+  readonly subject: string;
+  readonly mod: Mod;
+  readonly conditions?: readonly string[];
+}
+
 export type Status =
   | 'mapped'
   | 'structure'
