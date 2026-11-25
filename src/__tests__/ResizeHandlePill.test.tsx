@@ -28,17 +28,10 @@ import {
 import { AppShell } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { useTheme } from '../theme/use-theme';
 import { mockWindowSize } from './support/window-size';
 
-let foreground = '';
-function Foreground() {
-  foreground = useTheme().colors.text;
-  return null;
-}
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
-    <Foreground />
     {children}
   </BloomThemeProvider>
 );
@@ -77,9 +70,8 @@ describe('the pill resize handle', () => {
       width: RESIZE_HANDLE.pill.depth,
       height: RESIZE_HANDLE.pill.length,
       borderRadius: 2,
-      backgroundColor: foreground,
+      backgroundColor: 'var(--foreground)',
     });
-    expect(foreground).toBeTruthy();
   });
 
   it('lies along a horizontal separator, and takes its strip depth from the caller', () => {

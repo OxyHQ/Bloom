@@ -6,4 +6,6 @@ export const CASES: Cases = {
   'Stepper bounded, small': () => (
     <Stepper value={0} min={0} max={5} step={1} size="sm" onValueChange={() => {}} />
   ),
+  'Stepper disabled': () => <Stepper value={3} disabled onValueChange={() => {}} />,
+  'Stepper outline': () => <Stepper value={1} appearance="outline" onValueChange={() => {}} />,
 };
