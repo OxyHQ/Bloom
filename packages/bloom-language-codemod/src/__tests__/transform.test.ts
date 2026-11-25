@@ -106,6 +106,27 @@ export const A = ({ busy, locate }) => (
       "Group(busy ? LLoading().style('inline').size('sm') : Icon(RiMapPinLine))",
     );
   });
+  it('maps padding a view computes, the content’s safe area, a full edge and a shrink rank', () => {
+    const { code } = run(`import { useContentSafeAreaInsets } from '@oxy.so/bloom/layout';
+import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export function A({ depth, bar }) {
+  const insets = useContentSafeAreaInsets();
+  return (
+    <View style={{ paddingTop: insets.top + 60 }}>
+      <View style={{ paddingLeft: depth * 12, paddingBottom: bar + 20 }}><Text>a</Text></View>
+      <View style={{ position: 'absolute', bottom: '100%', left: 0 }}><Text>b</Text></View>
+      <View style={{ flexShrink: 20 }}><Text>c</Text></View>
+    </View>
+  );
+}
+`);
+    expect(flat(code)).toContain(".safeAreaPadding('top', 'content').padding('top', '5xl')");
+    expect(flat(code)).toContain(".padding('left', depth * 12)");
+    expect(flat(code)).toContain(".padding('bottom', bar + 20)");
+    expect(flat(code)).toContain("bottom: '100%'");
+    expect(flat(code)).toContain(".shrink('20')");
+  });
   it("maps a header's back chosen at render between Bloom's own and none", () => {
     const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
 export const A = ({ showBack }) => (
@@ -984,7 +1005,10 @@ export function C() {
     expect(flat(result.code)).toContain(
       "toElement(VStack().safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom'))",
     );
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['style', 'style']);
+    // An inset read from a prop, or one beside no space token, is a padding the view computes: points.
+    expect(flat(result.code)).toContain(".padding('top', insets.top)");
+    expect(flat(result.code)).toContain(".padding('top', insets.top + 5)");
+    expect(result.unconverted).toEqual([]);
     expect(result.fixtures[0]?.insets).toBe(true);
     expect(result.fixtures[0]?.before).toContain('PARITY_INSETS.top + 24');
   });

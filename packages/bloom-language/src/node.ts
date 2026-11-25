@@ -260,6 +260,8 @@ import {
   type WordBreak,
   type StickyEdge,
   type AvatarMotion,
+  type Cursor,
+  type SafeArea,
   type TextShadowName,
   type TextContentType,
   type ListMarker,
@@ -843,7 +845,7 @@ export interface ValueModifiers {
   buttons: readonly DialogAction[] | readonly NotificationAction[];
   presentAt: { readonly base: DialogPlacement; readonly tiers: DialogTiers | undefined };
   sideOffset: SpaceToken;
-  alignOffset: PaddingToken;
+  alignOffset: PaddingToken | Points;
   offlineMessage: string;
   reconnectingMessage: string;
   restoredMessage: string;
@@ -1357,9 +1359,14 @@ export type Modifier =
       readonly kind: 'padding';
       readonly key: string;
       readonly edge: Edge;
-      readonly value: PaddingToken;
+      readonly value: PaddingToken | Points;
     }
-  | { readonly kind: 'safeAreaPadding'; readonly key: string; readonly edge: PhysicalEdge }
+  | {
+      readonly kind: 'safeAreaPadding';
+      readonly key: string;
+      readonly edge: PhysicalEdge;
+      readonly source: SafeArea;
+    }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
   | { readonly kind: 'flex'; readonly key: string; readonly value: FlexName }
@@ -1629,6 +1636,7 @@ export type Modifier =
   | { readonly kind: 'focusable'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'collapsable'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'sticky'; readonly key: string; readonly value: StickyEdge }
+  | { readonly kind: 'cursor'; readonly key: string; readonly value: Cursor }
   | { readonly kind: 'textShadow'; readonly key: string; readonly value: TextShadowName }
   | {
       readonly kind: 'hitSlop';
@@ -2121,13 +2129,13 @@ export class Node {
     return new Node(this.kind, this.props, this.children, [...this.modifiers, modifier]);
   }
 
-  padding(edgeOrValue: Edge | PaddingToken, value?: PaddingToken): Node {
+  padding(edgeOrValue: Edge | PaddingToken | Points, value?: PaddingToken | Points): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
-    const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
+    const token = value === undefined ? (edgeOrValue as PaddingToken | Points) : value;
     return this.with({ kind: 'padding', key: `p:${edge}:${tokenKey(token)}`, edge, value: token });
   }
-  safeAreaPadding(edge: PhysicalEdge = 'all'): Node {
-    return this.with({ kind: 'safeAreaPadding', key: `sa:${edge}`, edge });
+  safeAreaPadding(edge: PhysicalEdge = 'all', source: SafeArea = 'device'): Node {
+    return this.with({ kind: 'safeAreaPadding', key: `sa:${edge}:${source}`, edge, source });
   }
   frame(value: FrameSpec): Node {
     return this.with({ kind: 'frame', key: `f:${objectKey(value, FRAME_KEYS)}`, value });
@@ -2490,6 +2498,9 @@ export class Node {
   }
   sticky(value: StickyEdge = 'top'): Node {
     return this.with({ kind: 'sticky', key: `sticky:${value}`, value });
+  }
+  cursor(value: Cursor): Node {
+    return this.with({ kind: 'cursor', key: `cursor:${value}`, value });
   }
   hitSlop(edgeOrValue: PhysicalEdge | HitSlopName, value?: HitSlopName): Node {
     const edge: PhysicalEdge = value === undefined ? 'all' : (edgeOrValue as PhysicalEdge);
@@ -3503,7 +3514,7 @@ export class Node {
   sideOffset(value: SpaceToken): Node {
     return this.set('sideOffset', value);
   }
-  alignOffset(value: PaddingToken): Node {
+  alignOffset(value: PaddingToken | Points): Node {
     return this.set('alignOffset', value);
   }
   offlineMessage(value: string): Node {
@@ -4594,8 +4605,13 @@ export interface ReselectTop {
 }
 
 export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
-  padding(value: PaddingToken): Self;
-  padding(edge: Edge, value: PaddingToken): Self;
+  /**
+   * A padding token, or points the view computes as it renders (a thread's
+   * indent times its depth, a bar's measured height and a gap), as `.frame()`
+   * takes; a number written out is a token (`'44'`).
+   */
+  padding(value: PaddingToken | Points): Self;
+  padding(edge: Edge, value: PaddingToken | Points): Self;
   /**
    * Padded by the device's safe area on those sides (all by default), as
    * SwiftUI's `.safeAreaPadding()`: React Native's safe-area insets
@@ -4603,6 +4619,8 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * it adds to it. The sides are physical: the insets are the device's.
    */
   safeAreaPadding(edge?: PhysicalEdge): Self;
+  /** By the content's insets (`'content'`): what the frame around the view left of the device's. */
+  safeAreaPadding(edge: PhysicalEdge, source: SafeArea): Self;
   frame(value: FrameSpec): Self;
   /** Takes the free space along its parent's axis. */
   grow(): Self;
@@ -4641,6 +4659,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * place; a list's or a scroll's own sticky rows are `.stickyIndices()`.
    */
   sticky(edge?: StickyEdge): Self;
+  /**
+   * The pointer's shape over the view, on the web (CSS's `cursor`: `grab` over
+   * a row that drags, `pointer` over a link); native has no pointer shape to set.
+   */
+  cursor(value: Cursor): Self;
   /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
   offset(value: OffsetSpec): Self;
   /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */

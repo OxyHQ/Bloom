@@ -26,6 +26,7 @@ import {
 import {
   type DurationName,
   type PaddingToken,
+  type Points,
   resolveDuration,
   resolveLength,
   resolveSpace,
@@ -174,7 +175,7 @@ export interface PopoverView extends PresentedNode {
   /** The gap between the view and the popover. */
   sideOffset(value: SpaceToken): PopoverView;
   /** A shift along the side it opens on (negative toward the start). */
-  alignOffset(value: PaddingToken): PopoverView;
+  alignOffset(value: PaddingToken | Points): PopoverView;
   /** Its widths and its height ceiling. */
   frame(value: PopoverFrame): PopoverView;
 }
@@ -250,7 +251,7 @@ type Own = Partial<
 >;
 
 /** A space token as Bloom's number prop, when it is set. */
-function space(token: PaddingToken | undefined): number | undefined {
+function space(token: PaddingToken | Points | undefined): number | undefined {
   return token === undefined ? undefined : resolveSpace(token);
 }
 

@@ -3518,6 +3518,32 @@
   "appColors": null
  },
  {
+  "name": "components/Spacing.tsx:10",
+  "before": "<View style={{ paddingTop: PARITY_INSETS.top + 60 }}>\n      <View style={{ paddingLeft: 37, paddingBottom: 43 }}>\n        <Text>Reply</Text>\n      </View>\n      <View style={{ position: 'absolute', bottom: '100%', left: 0 }}>\n        <Text>Suggestions</Text>\n      </View>\n      <View style={{ flexDirection: 'row' }}>\n        <View style={{ flexShrink: 20 }}>\n          <Text>Lane</Text>\n        </View>\n        <Text>Meta</Text>\n      </View>\n    </View>",
+  "after": "toElement(VStack(VStack(LText('Reply')).padding('left', 37).padding('bottom', 43), VStack(LText('Suggestions')).position({ left: 'none', bottom: '100%' }), HStack(VStack(LText('Lane')).shrink('20'), LText('Meta'))).safeAreaPadding('top', 'content').padding('top', '5xl'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "HStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": true,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Surfaces.tsx:10",
   "before": "<View className=\"flex-row gap-2 px-4\" style={{ backgroundColor: paritySurface }}>\n      <Text style={{ color: paritySurface }}>Posts</Text>\n    </View>",
   "after": "toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))",

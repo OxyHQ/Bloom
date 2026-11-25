@@ -21,7 +21,7 @@ import type { AppToken } from '../tokens';
 type S = {
   "space": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
   "padding": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-540" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl";
-  "edgeDistance": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-540" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl" | "25%";
+  "edgeDistance": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-540" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl" | "25%" | "100%";
   "margin": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-540" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl" | "auto";
   "length": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full" | "1/2" | "1/3" | "2/3" | "1/4" | "3/4" | "1/5" | "2/5" | "3/5" | "90%" | "31%" | "fit";
   "zIndex": "2" | "3" | "4" | "5" | "6" | "7" | "20" | "30" | "50" | "60" | "base" | "raised" | "floating" | "dropdown" | "-1" | "auto";
@@ -43,7 +43,7 @@ type S = {
   "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "0.5" | "1.5" | "2.5";
   "opacity": "5" | "10" | "20" | "25" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "85" | "90" | "transparent" | "12.5" | "31.4" | "half" | "opaque";
   "hitSlop": "4" | "5" | "none" | "sm" | "md" | "lg";
-  "shrink": "never" | "normal" | "first";
+  "shrink": "20" | "never" | "normal" | "first";
   "flex": "1" | "auto" | "initial" | "none" | "grow";
   "alignment": "start" | "center" | "end" | "stretch" | "baseline";
   "iconSize": "10" | "11" | "13" | "14" | "15" | "17" | "18" | "21" | "22" | "40" | "44" | "64" | "96" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
@@ -99,7 +99,7 @@ type S = {
   "cornerExtra": "concentric" | "infinite";
   "zIndexExtra": "auto";
   "marginExtra": "auto";
-  "insetPercent": "25%";
+  "insetPercent": "25%" | "100%";
   "liveRegion": "polite" | "assertive" | "none";
   "accessibilityChecked": "mixed";
   "borderStyle": "solid" | "dashed" | "dotted";
@@ -143,6 +143,8 @@ type S = {
   "textContentType": "none" | "URL" | "addressCity" | "addressCityAndState" | "addressState" | "countryName" | "creditCardNumber" | "creditCardExpiration" | "creditCardExpirationMonth" | "creditCardExpirationYear" | "creditCardSecurityCode" | "creditCardType" | "creditCardName" | "creditCardGivenName" | "creditCardMiddleName" | "creditCardFamilyName" | "emailAddress" | "familyName" | "fullStreetAddress" | "givenName" | "jobTitle" | "location" | "middleName" | "name" | "namePrefix" | "nameSuffix" | "nickname" | "organizationName" | "postalCode" | "sublocality" | "telephoneNumber" | "username" | "password" | "newPassword" | "oneTimeCode" | "birthdate" | "birthdateDay" | "birthdateMonth" | "birthdateYear" | "cellularEID" | "cellularIMEI" | "dateTime" | "flightNumber" | "shipmentTrackingNumber";
   "stickyEdge": "top" | "bottom";
   "avatarMotion": "auto" | "always" | "never";
+  "safeArea": "device" | "content";
+  "cursor": "auto" | "default" | "pointer" | "grab" | "grabbing" | "text" | "move" | "not-allowed";
   "submitLabel": "done" | "go" | "next" | "search" | "send";
   "textareaResize": "none" | "vertical";
   "labelSize": "xs" | "sm" | "md";
@@ -358,12 +360,14 @@ type Expect<_Label extends string, T extends true> = T;
 
 type UniversalChecks = [
   Expect<"padding(edge)", Ok<Lead<Any['padding']>, S['edge']>>,
-  Expect<"padding(padding)", Ok<Last<Any['padding']>, S['padding']>>,
+  Expect<"padding(padding)", OkPoints<Last<Any['padding']>, S['padding']>>,
   Expect<"padding(padding) takes AppToken<'space'>", Takes<Last<Any['padding']>, AppToken<'space'>>>,
-  Expect<"safeAreaPadding(physicalEdge)", Ok<At<Any['safeAreaPadding'], '0'>, S['physicalEdge']>>,
+  Expect<"safeAreaPadding(physicalEdge)", Ok<Lead<Any['safeAreaPadding']>, S['physicalEdge']>>,
+  Expect<"safeAreaPadding(safeArea)", Ok<Last<Any['safeAreaPadding']>, S['safeArea']>>,
   Expect<"shrink(shrink)", Ok<At<Any['shrink'], '0'>, S['shrink']>>,
   Expect<"alignSelf(alignment)", Ok<At<Any['alignSelf'], '0'>, S['alignment']>>,
   Expect<"sticky(stickyEdge)", Ok<At<Any['sticky'], '0'>, S['stickyEdge']>>,
+  Expect<"cursor(cursor)", Ok<At<Any['cursor'], '0'>, S['cursor']>>,
   Expect<"zIndex(zIndex)", OkPoints<At<Any['zIndex'], '0'>, S['zIndex']>>,
   Expect<"basis(length)", Ok<At<Any['basis'], '0'>, S['length']>>,
   Expect<"basis(length) takes AppToken<'space'>", Takes<At<Any['basis'], '0'>, AppToken<'space'>>>,
@@ -639,7 +643,7 @@ type popoverChecks = [
   Expect<"popover.side(floatingAlign)", Ok<At<View<'Popover'>['side'], '1'>, S['floatingAlign']>>,
   Expect<"popover.sideOffset(space)", Ok<At<View<'Popover'>['sideOffset'], '0'>, S['space']>>,
   Expect<"popover.sideOffset(space) takes AppToken<'space'>", Takes<At<View<'Popover'>['sideOffset'], '0'>, AppToken<'space'>>>,
-  Expect<"popover.alignOffset(padding)", Ok<At<View<'Popover'>['alignOffset'], '0'>, S['padding']>>,
+  Expect<"popover.alignOffset(padding)", OkPoints<At<View<'Popover'>['alignOffset'], '0'>, S['padding']>>,
   Expect<"popover.alignOffset(padding) takes AppToken<'space'>", Takes<At<View<'Popover'>['alignOffset'], '0'>, AppToken<'space'>>>,
 ];
 
@@ -722,7 +726,7 @@ type groupedSectionChecks = [
 
 type groupedSectionItemChecks = [
   Expect<"groupedSectionItem.padding(edge)", Ok<Lead<View<'GroupedSectionItem'>['padding']>, S['edge']>>,
-  Expect<"groupedSectionItem.padding(padding)", Ok<Last<View<'GroupedSectionItem'>['padding']>, S['padding']>>,
+  Expect<"groupedSectionItem.padding(padding)", OkPoints<Last<View<'GroupedSectionItem'>['padding']>, S['padding']>>,
   Expect<"groupedSectionItem.padding(padding) takes AppToken<'space'>", Takes<Last<View<'GroupedSectionItem'>['padding']>, AppToken<'space'>>>,
   Expect<"groupedSectionItem.shrink(shrink)", Ok<At<View<'GroupedSectionItem'>['shrink'], '0'>, S['shrink']>>,
   Expect<"groupedSectionItem.alignSelf(alignment)", Ok<At<View<'GroupedSectionItem'>['alignSelf'], '0'>, S['alignment']>>,
@@ -767,7 +771,7 @@ type tabsChecks = [
 type tabItemChecks = [
   Expect<"tabItem.onLongPress arity", Same<Lengths<View<'TabItem'>['onLongPress']>, 1>>,
   Expect<"tabItem.padding(edge)", Ok<Lead<View<'TabItem'>['padding']>, S['edge']>>,
-  Expect<"tabItem.padding(padding)", Ok<Last<View<'TabItem'>['padding']>, S['padding']>>,
+  Expect<"tabItem.padding(padding)", OkPoints<Last<View<'TabItem'>['padding']>, S['padding']>>,
   Expect<"tabItem.padding(padding) takes AppToken<'space'>", Takes<Last<View<'TabItem'>['padding']>, AppToken<'space'>>>,
   Expect<"tabItem.font arity", Same<Lengths<View<'TabItem'>['font']>, 1>>,
   Expect<"tabItem.font(labelFont)", Ok<At<View<'TabItem'>['font'], '0'>, S['labelFont']>>,
@@ -783,7 +787,7 @@ type kbdChecks = [
 
 type errorBoundaryChecks = [
   Expect<"errorBoundary.padding(edge)", Ok<Lead<View<'ErrorBoundary'>['padding']>, S['edge']>>,
-  Expect<"errorBoundary.padding(padding)", Ok<Last<View<'ErrorBoundary'>['padding']>, S['padding']>>,
+  Expect<"errorBoundary.padding(padding)", OkPoints<Last<View<'ErrorBoundary'>['padding']>, S['padding']>>,
   Expect<"errorBoundary.padding(padding) takes AppToken<'space'>", Takes<Last<View<'ErrorBoundary'>['padding']>, AppToken<'space'>>>,
   Expect<"errorBoundary.shrink(shrink)", Ok<At<View<'ErrorBoundary'>['shrink'], '0'>, S['shrink']>>,
   Expect<"errorBoundary.alignSelf(alignment)", Ok<At<View<'ErrorBoundary'>['alignSelf'], '0'>, S['alignment']>>,

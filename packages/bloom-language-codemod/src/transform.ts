@@ -901,9 +901,13 @@ export function transformSource(source: string, options: TransformOptions): File
   /**
    * Each `insets.top` (`bottom`, `left`, `right`) where `insets` is a `const`
    * holding `useSafeAreaInsets()` (react-native-safe-area-context): the device's
-   * inset on that side, which `.safeAreaPadding(side)` pads by.
+   * inset on that side, which `.safeAreaPadding(side)` pads by; or Bloom's
+   * `useContentSafeAreaInsets()`, the content's, `.safeAreaPadding(side, 'content')`.
    */
-  const insetReads = new Map<AnyNode, 'top' | 'bottom' | 'left' | 'right'>();
+  const insetReads = new Map<
+    AnyNode,
+    { side: 'top' | 'bottom' | 'left' | 'right'; source: 'device' | 'content' }
+  >();
   recast.visit(ast, {
     visitMemberExpression(path) {
       const { object, property } = path.node;
@@ -916,14 +920,24 @@ export function transformSource(source: string, options: TransformOptions): File
         const init = at?.node.init;
         const callee = n.CallExpression.check(init) ? init.callee : undefined;
         const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+        const from =
+          source?.module === 'react-native-safe-area-context' &&
+          source.imported === 'useSafeAreaInsets'
+            ? 'device'
+            : source?.module === '@oxy.so/bloom/layout' &&
+                source.imported === 'useContentSafeAreaInsets'
+              ? 'content'
+              : undefined;
         if (
           at?.parent?.node.kind === 'const' &&
           n.Identifier.check(at.node.id) &&
           init.arguments.length === 0 &&
-          source?.module === 'react-native-safe-area-context' &&
-          source.imported === 'useSafeAreaInsets'
+          from !== undefined
         )
-          insetReads.set(path.node, side as 'top' | 'bottom' | 'left' | 'right');
+          insetReads.set(path.node, {
+            side: side as 'top' | 'bottom' | 'left' | 'right',
+            source: from,
+          });
       }
       this.traverse(path);
     },
@@ -1009,14 +1023,16 @@ export function transformSource(source: string, options: TransformOptions): File
     if (!side) return undefined;
     const sum = n.BinaryExpression.check(value) && value.operator === '+' ? value : undefined;
     const inset = sum ? sum.left : value;
-    if (insetReads.get(inset) !== side) return undefined;
-    if (!sum) return [{ name: 'safeAreaPadding', args: [side] }];
+    const read = insetReads.get(inset);
+    if (read?.side !== side) return undefined;
+    const padded: Mod = {
+      name: 'safeAreaPadding',
+      args: read.source === 'content' ? [side, 'content'] : [side],
+    };
+    if (!sum) return [padded];
     const beyond = n.NumericLiteral.check(sum.right) ? SPACE[String(sum.right.value)] : undefined;
     if (beyond === undefined || (side !== 'top' && side !== 'bottom')) return undefined;
-    return [
-      { name: 'safeAreaPadding', args: [side] },
-      { name: 'padding', args: [side, beyond] },
-    ];
+    return [padded, { name: 'padding', args: [side, beyond] }];
   };
   /**
    * Each read of a `const` holding Bloom's `useSurfaceFill()`: the fill of the
@@ -4865,9 +4881,10 @@ export function transformSource(source: string, options: TransformOptions): File
           end: behavior.test.left.object.end,
           text: 'RN.Platform',
         });
-    // An inset the chain pads by is the corpus's on the before side, both sides drawn under it.
+    // An inset the chain pads by is the corpus's on the before side, both sides drawn under it
+    // (with no frame around the view, the content's insets are the device's).
     let insets = false;
-    for (const [read, side] of insetReads)
+    for (const [read, { side }] of insetReads)
       if (
         read.start >= node.start &&
         read.end <= node.end &&

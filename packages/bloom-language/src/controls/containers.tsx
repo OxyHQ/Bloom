@@ -64,6 +64,7 @@ import {
   type FontName,
   type LeadingToken,
   type PaddingToken,
+  type Points,
   type WeightName,
   resolveFont,
   type CardRadius,
@@ -354,8 +355,8 @@ export interface TabItemView<V extends string = string> extends ViewNode {
   /** The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's. */
   frame(value: FrameSpec): TabItemView<V>;
   /** The tab's own padding (`TabsTrigger`'s `style`), over Bloom's. */
-  padding(value: PaddingToken): TabItemView<V>;
-  padding(edge: Edge, value: PaddingToken): TabItemView<V>;
+  padding(value: PaddingToken | Points): TabItemView<V>;
+  padding(edge: Edge, value: PaddingToken | Points): TabItemView<V>;
   /** Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's. */
   font(value: Exclude<FontName, FontFamilyName>): TabItemView<V>;
   leading(value: LeadingToken): TabItemView<V>;

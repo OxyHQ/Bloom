@@ -133,6 +133,14 @@ export type WordBreak = (typeof ENUMS.wordBreak)[number];
 export type StickyEdge = (typeof ENUMS.stickyEdge)[number];
 /** Whether an avatar's character moves: Bloom's `AvatarMotion`. */
 export type AvatarMotion = (typeof ENUMS.avatarMotion)[number];
+/**
+ * Whose safe area `.safeAreaPadding()` pads by: the device's insets, or the
+ * content's, what is left of them inside the frame around the view (Bloom's
+ * `useContentSafeAreaInsets()`: a screen's header or bar consumed the rest).
+ */
+export type SafeArea = (typeof ENUMS.safeArea)[number];
+/** The pointer's shape over a view, on the web (CSS's `cursor`). */
+export type Cursor = (typeof ENUMS.cursor)[number];
 /** iOS's kind of a text input's content (React Native's `textContentType`), which its autofill offers. */
 export type TextContentType = (typeof ENUMS.textContentType)[number];
 /** The marker a web list draws before each of its rows: `disc` (Tailwind's `list-disc`) or `decimal`. */

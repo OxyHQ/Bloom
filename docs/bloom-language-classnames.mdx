@@ -24,14 +24,14 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1083 | 47220 | 87.9% |
+| Maps to a modifier and a token | 1087 | 47344 | 88.1% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
-| Redundant in the language | 31 | 509 | 0.9% |
+| Redundant in the language | 30 | 420 | 0.8% |
 | Needs a named token (raw value) | 259 | 609 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 430 | 1581 | 2.9% |
+| An app’s own class | 427 | 1546 | 2.9% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
@@ -159,6 +159,7 @@ when the fill is a role's colour.
 | `text-caption` | .font('11').leading('14px') | 94 | 2 |
 | `text-xl` | .font('xl').leading('28px') | 92 | 19 |
 | `text-2xl` | .font('24').leading('32px') | 90 | 16 |
+| `cursor-pointer` | .cursor('pointer') | 89 | 10 |
 | `text-white` | .foreground('white') | 89 | 13 |
 | `py-16` | .padding('vertical', '64') | 88 | 11 |
 | `h-10` | .frame({ height: '4xl' }) | 82 | 18 |
@@ -288,6 +289,7 @@ when the fill is a role's colour.
 | `py-24` | .padding('vertical', '96') | 23 | 3 |
 | `py-space-12` | .padding('vertical', 'md') | 23 | 3 |
 | `text-body` | .font('md').leading('22px') | 23 | 2 |
+| `cursor-not-allowed` | .cursor('not-allowed') | 22 | 6 |
 | `h-16` | .frame({ height: '64' }) | 22 | 10 |
 | `max-w-sm` | .frame({ maxWidth: '384' }) | 22 | 12 |
 | `mt-space-4` | .margin('top', 'xs') | 22 | 2 |
@@ -375,6 +377,7 @@ when the fill is a role's colour.
 | `w-6` | .frame({ width: '2xl' }) | 13 | 8 |
 | `border-border-image` | .border('border') | 12 | 2 |
 | `border-r` | .border(role, 'thin', 'right') | 12 | 4 |
+| `cursor-default` | .cursor('default') | 12 | 4 |
 | `leading-[20px]` | .leading('20px') | 12 | 4 |
 | `ml-1` | .margin('left', 'xs') | 12 | 7 |
 | `mt-space-8` | .margin('top', 'sm') | 12 | 3 |
@@ -765,7 +768,6 @@ when the fill is a role's colour.
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
 | `relative` | a view is the positioned parent of what it pins | 117 | 14 |
-| `cursor-pointer` | a pressable view takes the pointer | 89 | 10 |
 | `border-0` | no border is the default | 45 | 8 |
 | `block` | display: views are boxes | 29 | 4 |
 | `font-sans` | the family is Bloom’s: Text takes it from its font | 25 | 4 |
@@ -940,12 +942,10 @@ a Bloom role: it becomes the app's own token, declared once with
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `cursor-not-allowed` | not a Bloom or Tailwind utility (an app’s own class) | 22 | 6 |
 | `fixed` | not a Bloom or Tailwind utility (an app’s own class) | 21 | 8 |
 | `sticky` | not a Bloom or Tailwind utility (an app’s own class) | 20 | 7 |
 | `inset-x-0` | not a Bloom or Tailwind utility (an app’s own class) | 19 | 8 |
 | `rounded-radius-lg` | not a Bloom or Tailwind utility (an app’s own class) | 16 | 2 |
-| `cursor-default` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 4 |
 | `text-error-primary` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 3 |
 | `inset-y-0` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |
 | `w-(--sidebar-width)` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |

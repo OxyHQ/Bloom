@@ -231,7 +231,8 @@
     "shrink": {
       "never": 0,
       "normal": 1,
-      "first": 10
+      "first": 10,
+      "20": 20
     },
     "flex": {
       "$comment": "Tailwind's flex utilities as React Native's longhands, exactly as NativeWind writes them: [grow, shrink, basis], null where the utility writes none. 1 is flex-1, grow is grow (flex-grow: 1).",
@@ -588,7 +589,7 @@
     "cornerExtra": ["concentric", "infinite"],
     "zIndexExtra": ["auto"],
     "marginExtra": ["auto"],
-    "insetPercent": ["25%"],
+    "insetPercent": ["25%", "100%"],
     "liveRegion": ["polite", "assertive", "none"],
     "accessibilityChecked": ["mixed"],
     "borderStyle": ["solid", "dashed", "dotted"],
@@ -780,6 +781,8 @@
     ],
     "stickyEdge": ["top", "bottom"],
     "avatarMotion": ["auto", "always", "never"],
+    "safeArea": ["device", "content"],
+    "cursor": ["auto", "default", "pointer", "grab", "grabbing", "text", "move", "not-allowed"],
     "submitLabel": ["done", "go", "next", "search", "send"],
     "textareaResize": ["none", "vertical"],
     "labelSize": ["xs", "sm", "md"],
@@ -1265,8 +1268,8 @@
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
   },
   "points": {
-    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry only: a frame's lengths, a pinned view's edges, its stacking order. Spacing, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
-    "params": ["frame", "edges", "zIndex"]
+    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry: a frame's lengths, a pinned view's edges, its stacking order; and a padding the view computes (a thread's indent times its depth, a bar's measured height plus a gap), the same rule. Spacing between views, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
+    "params": ["frame", "edges", "zIndex", "padding"]
   },
   "variants": {
     "$comment": [
@@ -1335,6 +1338,7 @@
         "alignSelf",
         "position",
         "sticky",
+        "cursor",
         "zIndex",
         "hidden",
         "basis",
@@ -1464,7 +1468,7 @@
   "modifiers": {
     "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token. colors: a list of colours, each a color token (a role, a role at an opacity) or an app colour.",
     "padding": ["edge?", "padding"],
-    "safeAreaPadding": ["physicalEdge?"],
+    "safeAreaPadding": ["physicalEdge?", "safeArea?"],
     "frame": ["frame"],
     "grow": [],
     "shrink": ["shrink"],
@@ -1562,6 +1566,7 @@
     "collapsable": ["value"],
     "sticky": ["stickyEdge?"],
     "motion": ["avatarMotion"],
+    "cursor": ["cursor"],
     "role": ["role"],
     "hitSlop": ["physicalEdge?", "hitSlop"],
     "testID": ["value"],
@@ -2140,6 +2145,7 @@
     "alignSelf",
     "position",
     "sticky",
+    "cursor",
     "offset",
     "zIndex",
     "hidden",

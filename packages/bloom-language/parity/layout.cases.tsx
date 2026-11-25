@@ -1,6 +1,9 @@
 import { useState, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { useContentSafeAreaInsets } from '@oxy.so/bloom/layout';
+// The context a Bloom frame publishes what it consumed of the insets through (not a public subpath).
+import { SafeAreaConsumedContext } from '../../../src/layout/safe-area-ownership';
 import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
 import { Z_INDEX } from '@oxy.so/bloom/styles';
@@ -1179,6 +1182,131 @@ const appColorsAtOpacity: ParityCase[] = (
     </RN.View>
   ),
 }));
+/** A frame that consumed the top inset's first 20 points (a screen's header over part of it). */
+const CONSUMED = { top: 20, bottom: 0, left: 0, right: 0 };
+const inContent = (element: ReactElement) =>
+  withInsets(
+    <SafeAreaConsumedContext.Provider value={CONSUMED}>{element}</SafeAreaConsumedContext.Provider>,
+  );
+/** The JSX an app writes for its content's insets: `useContentSafeAreaInsets()` in the component. */
+function ContentPadded({ extra, children }: { extra: number; children: ReactNode }) {
+  const insets = useContentSafeAreaInsets();
+  return <RN.View style={{ paddingTop: insets.top + extra }}>{children}</RN.View>;
+}
+
+/** `.safeAreaPadding(edge, 'content')`: padded by what the frame around the view left of the insets. */
+const contentSafeArea: ParityCase[] = [
+  {
+    // Mention's profile skeleton: the content's top inset and 60 more.
+    name: 'a column padded by the content’s safe area top and a padding beyond it',
+    language: () =>
+      inContent(
+        toElement(L.VStack(L.Text('a')).safeAreaPadding('top', 'content').padding('top', '5xl')),
+      ),
+    bloom: () =>
+      inContent(
+        <ContentPadded extra={60}>
+          <Text>a</Text>
+        </ContentPadded>,
+      ),
+  },
+  {
+    // Mention's boost screen: the content's top inset alone.
+    name: 'a column padded by the content’s safe area top',
+    language: () => inContent(toElement(L.VStack(L.Text('a')).safeAreaPadding('top', 'content'))),
+    bloom: () =>
+      inContent(
+        <ContentPadded extra={0}>
+          <Text>a</Text>
+        </ContentPadded>,
+      ),
+  },
+];
+
+/** A depth Mention's thread rows compute as they render: an indent of 12 per level. */
+const DEPTH = 3;
+const INDENT = 12 * DEPTH;
+/** A bar's height measured as the screen renders, beside a 20-point gap. */
+const BAR = 83;
+
+/** Padding in points the view computes as it renders, as `.frame()` takes them. */
+const computedPadding: ParityCase[] = [
+  {
+    name: 'a padding of points a row computes (an indent times its depth)',
+    language: () => toElement(L.VStack(L.Text('a')).padding('leading', INDENT)),
+    bloom: () => (
+      <RN.View style={{ paddingStart: INDENT }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's videos: the floating bar's measured height and 20 more.
+    name: 'a padding of points beside a measured bar',
+    language: () => toElement(L.VStack(L.Text('a')).padding('bottom', BAR + 20)),
+    bloom: () => (
+      <RN.View style={{ paddingBottom: BAR + 20 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a padding of points on every side',
+    language: () => toElement(L.VStack(L.Text('a')).padding(INDENT)),
+    bloom: () => (
+      <RN.View
+        style={{
+          paddingTop: INDENT,
+          paddingBottom: INDENT,
+          paddingStart: INDENT,
+          paddingEnd: INDENT,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+];
+
+/** What Mention writes that the language lacked: a pin at a full edge, a shrink rank, a web pointer. */
+const pinsAndPointers: ParityCase[] = [
+  {
+    // Mention's mention picker: pinned above its input, its bottom at the input's top.
+    name: 'a view pinned above its parent (bottom 100%)',
+    language: () =>
+      toElement(L.VStack(L.VStack(L.Text('a')).position({ bottom: '100%', left: 'none' }))),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ position: 'absolute', bottom: '100%', left: 0 }}>
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's lane chip: the label gives way twenty times sooner than its neighbours.
+    name: 'a shrink rank of 20',
+    language: () => toElement(L.HStack(L.VStack(L.Text('a')).shrink('20'), L.Text('b'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <RN.View style={{ flexShrink: 20 }}>
+          <Text>a</Text>
+        </RN.View>
+        <Text>b</Text>
+      </RN.View>
+    ),
+  },
+  ...(['grab', 'pointer'] as const).map((cursor) => ({
+    // Mention's carousels (grab) and its sidebar links (pointer): the web's pointer, nothing natively.
+    name: `a ${cursor} pointer on the web`,
+    language: () => toElement(L.VStack(L.Text('a')).cursor(cursor)),
+    bloom: () => (
+      <RN.View style={RN.Platform.OS === 'web' ? ({ cursor } as RN.ViewStyle) : undefined}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  })),
+];
 
 /** `.hitSlop()`: one slop on every side, or each side's (React Native's insets). */
 const hitSlop: ParityCase[] = [
@@ -1442,6 +1570,9 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...hitSlop,
   ...safeArea,
   ...appColorsAtOpacity,
+  ...contentSafeArea,
+  ...computedPadding,
+  ...pinsAndPointers,
   ...aspectRatio,
   ...pressFade,
   ...accessibility,

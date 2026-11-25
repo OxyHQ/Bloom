@@ -438,6 +438,11 @@ function resolve(utility) {
   if ((m = /^flex-(auto|initial|none)$/.exec(utility))) return mapped(`.flex('${m[1]}')`);
   if (utility === 'shrink-0' || utility === 'flex-shrink-0') return mapped(".shrink('never')");
   if (utility === 'shrink' || utility === 'flex-shrink') return mapped(".shrink('normal')");
+  // A shrink rank written as a number (`shrink-[20]`): the rank of that value, when the spec names one.
+  if ((m = /^(?:flex-)?shrink-\[(\d+)\]$/.exec(utility))) {
+    const name = Object.keys(scales.shrink).find((rank) => scales.shrink[rank] === Number(m[1]));
+    return name ? mapped(`.shrink('${name}')`) : token('shrink', m[1], '.shrink(…)');
+  }
   if ((m = /^items-(start|center|end|stretch|baseline)$/.exec(utility)))
     return mapped(`.align('${ALIGN[m[1]]}')`);
   if ((m = /^justify-(start|center|end|between|around|evenly)$/.exec(utility)))
@@ -639,7 +644,9 @@ function resolve(utility) {
   if (utility === 'overflow-visible') return mapped('.clipped(false)');
   if (/^overflow-/.test(utility)) return structure('a ScrollView (Embed) for scrolling');
   // What the language says by other means, or does not say.
-  if (utility === 'cursor-pointer') return drop('a pressable view takes the pointer');
+  // The web's pointer shape, as NativeWind writes it there (native has none).
+  if ((m = /^cursor-(.+)$/.exec(utility)) && spec.enums.cursor.includes(m[1]))
+    return mapped(`.cursor('${m[1]}')`);
   if (utility === 'group') return mapped('.hoverGroup()');
   if ((m = /^shadow(?:-(.+))?$/.exec(utility))) {
     const value = m[1] ?? '';

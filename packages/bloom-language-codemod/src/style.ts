@@ -38,6 +38,7 @@ function byValue(scale: Record<string, unknown>): ReadonlyMap<number, string> {
   return out;
 }
 const CORNER = byValue(scales.corner as Record<string, unknown>);
+const SHRINK = byValue(scales.shrink as Record<string, unknown>);
 const Z_INDEX = byValue(scales.zIndex as Record<string, unknown>);
 const FONT_SIZE = byValue(scales.fontSize as Record<string, unknown>);
 const LEADING_PX = byValue(scales.leadingPx as Record<string, unknown>);
@@ -238,6 +239,11 @@ function direct(key: string, value: AnyNode): Mod | undefined {
     return token === undefined ? undefined : { name: 'zIndex', args: [token] };
   }
   if (key === 'aspectRatio' && number > 0) return { name: 'aspectRatio', args: [number] };
+  // A shrink rank Tailwind has no utility for (`flexShrink: 20`): the spec's rank of that value.
+  if (key === 'flexShrink' && number > 1) {
+    const rank = SHRINK.get(number);
+    return rank === undefined ? undefined : { name: 'shrink', args: [rank] };
+  }
   const axis = INSET_AXIS[key];
   if (axis !== undefined) {
     const token = SPACE.get(Math.abs(number));
@@ -406,12 +412,25 @@ export interface SpreadStyle {
 const FRAME_KEYS = new Set(['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']);
 /** A pinned view's physical edges, as React Native's keys (spec `objects.edges`). */
 const PINNED_EDGES = new Set(['top', 'bottom', 'left', 'right']);
+/** React Native's padding keys as the language's edges. */
+const PADDING_EDGES: Readonly<Record<string, string>> = {
+  padding: 'all',
+  paddingTop: 'top',
+  paddingBottom: 'bottom',
+  paddingLeft: 'left',
+  paddingRight: 'right',
+  paddingStart: 'leading',
+  paddingEnd: 'trailing',
+  paddingHorizontal: 'horizontal',
+  paddingVertical: 'vertical',
+};
 
 /**
  * Geometry computed at render as the language's points (spec `points`):
  * `width: itemSize` is `.frame({ width: itemSize })`, `top: insets.top + 8`
  * `.position({ top: insets.top + 8 })` (which joins the view's `absolute`),
- * `zIndex: count - index` `.zIndex(count - index)`. Only a value `computed`
+ * `zIndex: count - index` `.zIndex(count - index)`, and a padding the view
+ * computes, `paddingLeft: depth * 12` `.padding('left', depth * 12)`. Only a value `computed`
  * says the view works out as it renders; a number written out is a token.
  */
 function pointsDeclaration(key: string, value: AnyNode): Mod | undefined {
@@ -419,6 +438,9 @@ function pointsDeclaration(key: string, value: AnyNode): Mod | undefined {
   if (FRAME_KEYS.has(key)) return { name: 'frame', args: [{ [key]: points }] };
   if (PINNED_EDGES.has(key)) return { name: 'position', args: [{ [key]: points }] };
   if (key === 'zIndex') return { name: 'zIndex', args: [points] };
+  const edge = PADDING_EDGES[key];
+  if (edge === 'all') return { name: 'padding', args: [points] };
+  if (edge !== undefined) return { name: 'padding', args: [edge, points] };
   return undefined;
 }
 
