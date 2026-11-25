@@ -1,7 +1,7 @@
 import type React from 'react';
 import { TextInput, type TextStyle } from 'react-native';
 import { useFieldMembership } from '../field/membership';
-import { useThemePaint } from '../theme/use-theme-paint';
+import { useColorTokens } from '../theme/color-tokens';
 import { TYPE_SCALE } from '../typography/scale';
 import { IS_WEB } from '../styles/platform';
 import type { PageHeaderTitleInputProps } from './types';
@@ -18,7 +18,7 @@ export function PageHeaderTitleInput({
   style,
   ...props
 }: PageHeaderTitleInputProps) {
-  const colors = useThemePaint();
+  const tokens = useColorTokens();
   const field = useFieldMembership({
     label,
     accessibilityLabel,
@@ -41,11 +41,11 @@ export function PageHeaderTitleInput({
       aria-invalid={field.invalid || undefined}
       aria-required={field.required || undefined}
       editable={!field.disabled}
-      placeholderTextColor={colors.textSecondary}
+      placeholderTextColor={tokens.mutedForeground}
       underlineColorAndroid="transparent"
       style={[
         TYPE_SCALE['title-1-bold'],
-        { color: colors.text, minWidth: 0, padding: 0, borderWidth: 0 },
+        { color: tokens.foreground, minWidth: 0, padding: 0, borderWidth: 0 },
         // Native multiline inputs grow intrinsically. Web's default textarea
         // reserves two rows and then scrolls unless field sizing owns its height.
         multiline && { minHeight: TYPE_SCALE['title-1-bold'].lineHeight, textAlignVertical: 'top' },

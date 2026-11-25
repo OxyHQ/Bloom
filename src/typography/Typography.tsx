@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 
-import { useThemePaint } from '../theme/use-theme-paint';
+import { useColorTokens } from '../theme/color-tokens';
 import { DISPLAY_FACE_FAMILIES, withDisplayFaceCut } from '../fonts/display-face';
 import { fontFamilies } from '../fonts/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -96,7 +96,7 @@ const DESKTOP_DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  * variants). A caller's `style` overrides the defaults.
  */
 const TextComponent = function Text({ children, style, variant, ...rest }: TextProps) {
-  const colors = useThemePaint();
+  const tokens = useColorTokens();
   const { systemFamily, desktop } = useTypographyScope();
 
   const merged: StyleProp<TextStyle> = [
@@ -106,7 +106,7 @@ const TextComponent = function Text({ children, style, variant, ...rest }: TextP
         : desktop
           ? DESKTOP_DEFAULT_TEXT_TYPOGRAPHY
           : DEFAULT_TEXT_TYPOGRAPHY),
-      color: colors.text,
+      color: tokens.foreground,
     },
     (rest.accessibilityRole === 'header' || rest.role === 'heading') && !desktop
       ? DISPLAY_FONT_FAMILY
@@ -167,7 +167,7 @@ const H2_RULE: TextStyle = { borderBottomWidth: 1, paddingBottom: 8 };
 
 function createHeadingElement({ level }: { level: number }): React.FC<TextProps> {
   return function HeadingElement({ style, ...rest }: TextProps) {
-    const colors = useThemePaint();
+    const tokens = useColorTokens();
     const extraProps: Record<string, unknown> =
       Platform.OS === 'web' ? { role: 'heading', 'aria-level': level } : {};
 
@@ -175,7 +175,7 @@ function createHeadingElement({ level }: { level: number }): React.FC<TextProps>
       ...DISPLAY_FONT_FAMILY,
       ...HEADING_SCALE[level],
       ...(level === 1 ? H1_ALIGNMENT : null),
-      ...(level === 2 ? { ...H2_RULE, borderBottomColor: colors.border } : null),
+      ...(level === 2 ? { ...H2_RULE, borderBottomColor: tokens.border } : null),
     };
 
     return <Text {...extraProps} {...rest} style={[headingBase, style]} />;
@@ -256,10 +256,10 @@ const LEAD_TYPOGRAPHY: TextStyle = {
 
 /** An intro paragraph — larger than body text and set in the secondary colour. */
 export function Lead({ style, ...rest }: TextProps) {
-  const colors = useThemePaint();
+  const tokens = useColorTokens();
   const defaults = {
     ...LEAD_TYPOGRAPHY,
-    color: colors.textSecondary,
+    color: tokens.mutedForeground,
   };
   return <Text {...rest} style={[defaults, style]} />;
 }
@@ -299,10 +299,10 @@ const MUTED_TYPOGRAPHY: TextStyle = {
 
 /** De-emphasised supporting text. */
 export function Muted({ style, ...rest }: TextProps) {
-  const colors = useThemePaint();
+  const tokens = useColorTokens();
   const defaults = {
     ...MUTED_TYPOGRAPHY,
-    color: colors.textSecondary,
+    color: tokens.mutedForeground,
   };
   return <Text {...rest} style={[defaults, style]} />;
 }
@@ -317,7 +317,7 @@ Muted.displayName = 'Muted';
  * the container, `textStyle` the quotation.
  */
 export function Blockquote({ children, style, textStyle, testID }: BlockquoteProps) {
-  const colors = useThemePaint();
+  const tokens = useColorTokens();
   const width = useWindowWidthClass(SM_WIDTH);
   const wide = width >= BREAKPOINTS.sm;
   const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'blockquote' } : {};
@@ -331,11 +331,11 @@ export function Blockquote({ children, style, textStyle, testID }: BlockquotePro
         // `mt-4 sm:mt-6` and `pl-3 sm:pl-6` — a leading margin only, never a
         // trailing one, so a quotation sits against the paragraph it follows.
         { marginTop: wide ? space._2xl : space.lg, paddingLeft: wide ? space._2xl : space.md },
-        { borderLeftColor: colors.border },
+        { borderLeftColor: tokens.border },
         style,
       ]}
     >
-      <Text style={[styles.blockquoteText, { color: colors.textSecondary }, textStyle]}>
+      <Text style={[styles.blockquoteText, { color: tokens.mutedForeground }, textStyle]}>
         {children}
       </Text>
     </View>

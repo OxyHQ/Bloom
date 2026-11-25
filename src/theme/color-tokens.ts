@@ -2,9 +2,9 @@ import { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import { IS_WEB } from '../styles/platform';
 import { ThemeScopeContext } from './color-scope/context';
-import { buildScopeVars } from './color-scope/style-builder';
 import { parseRgba } from './color-utils';
-import { CANONICAL_TOKENS, type CanonicalToken } from './token-registry';
+import { DEFAULT_TOKEN_VARS } from './default-token-vars';
+import { CANONICAL_TOKENS, type CanonicalToken } from './canonical-tokens';
 
 /** `primary-foreground` → `primaryForeground`, `chart-1-active` → `chart1Active`. */
 type Camel<S extends string> = S extends `${infer Head}-${infer Tail}`
@@ -47,22 +47,22 @@ function tokensOf(vars: Record<string, string>): ColorTokens {
   return tokens;
 }
 
-let fallbackVars: Record<string, string> | undefined;
-
 /**
  * The colour tokens of the theme or colour scope a component is drawn in.
  *
  * Native reads the nearest scope's token record (the provider's, a
  * `BloomColorScope`'s, a `BloomSeedScope`'s, or the one a portal bridge
  * carries): the same values the theme publishes, in an adaptive theme as well.
- * The web returns the CSS variables, which the cascade resolves.
+ * Outside any provider it reads Bloom's default palette (`oxy`, light), from a
+ * generated table (`default-token-vars.ts`), so a component that paints
+ * through the tokens does not import the colour engine. The web returns the
+ * CSS variables, which the cascade resolves.
  */
 export function useColorTokens(): ColorTokens {
   const scope = useContext(ThemeScopeContext);
   if (IS_WEB) return WEB_TOKENS;
   if (scope) return tokensOf(scope.vars);
-  fallbackVars ??= buildScopeVars('oxy', 'light');
-  return tokensOf(fallbackVars);
+  return tokensOf(DEFAULT_TOKEN_VARS);
 }
 
 /**
