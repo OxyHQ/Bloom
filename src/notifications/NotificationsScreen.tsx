@@ -18,7 +18,7 @@ import { useMessages } from '../locale/messages';
 import { NOTIFICATION_CENTER_MESSAGES } from '../notification-center/messages';
 import type { NotificationCenterStatus } from '../notification-center/types';
 import { Switch } from '../switch';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { NOTIFICATIONS_MESSAGES } from './messages';
 import type {
@@ -41,7 +41,7 @@ function NotificationRow({
   item: NotificationsScreenItem;
   onPress?: (id: string) => void;
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(NOTIFICATION_CENTER_MESSAGES);
   const name =
     item.accessibilityLabel ??
@@ -75,13 +75,13 @@ function NotificationRow({
             {item.title}
           </Text>
           {item.timestamp ? (
-            <Text variant="caption-1-medium" style={{ color: colors.textTertiary }}>
+            <Text variant="caption-1-medium" style={{ color: tokens.faintForeground }}>
               {item.timestamp}
             </Text>
           ) : null}
         </View>
         {item.description ? (
-          <Text variant="body-regular" style={{ color: colors.textSecondary }} numberOfLines={3}>
+          <Text variant="body-regular" style={{ color: tokens.mutedForeground }} numberOfLines={3}>
             {item.description}
           </Text>
         ) : null}
@@ -89,7 +89,7 @@ function NotificationRow({
       {item.unread ? (
         <View
           testID={`notification-${item.id}-unread`}
-          style={[styles.dot, { backgroundColor: colors.primary }]}
+          style={[styles.dot, { backgroundColor: tokens.primary }]}
         />
       ) : null}
     </Pressable>
@@ -97,7 +97,7 @@ function NotificationRow({
 }
 
 function PushRow({ push }: { push: NotificationsScreenPush }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(NOTIFICATIONS_MESSAGES);
   const [busy, setBusy] = useState(false);
   const change = async (next: boolean) => {
@@ -112,7 +112,7 @@ function PushRow({ push }: { push: NotificationsScreenPush }) {
     <View style={styles.pushRow}>
       <View style={styles.body}>
         <Text variant="body-medium">{messages.pushTitle}</Text>
-        <Text variant="body-regular" style={{ color: colors.textSecondary }}>
+        <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
           {push.blocked ? messages.pushBlocked : messages.pushDescription}
         </Text>
       </View>
@@ -169,7 +169,7 @@ export const NotificationsScreen = memo(function NotificationsScreen({
   style,
   testID,
 }: NotificationsScreenProps) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(NOTIFICATIONS_MESSAGES);
   const { messages: center } = useMessages(NOTIFICATION_CENTER_MESSAGES);
   const { messages: common } = useMessages(COMMON_MESSAGES);
@@ -234,7 +234,7 @@ export const NotificationsScreen = memo(function NotificationsScreen({
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }, style]} testID={testID}>
+    <View style={[styles.root, { backgroundColor: tokens.background }, style]} testID={testID}>
       <VirtualList
         data={items}
         renderItem={renderItem}

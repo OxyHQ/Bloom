@@ -21,8 +21,7 @@ import {
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import type { Theme } from '../theme/types';
-import { useTheme } from '../theme/use-theme';
+import { type ColorTokens, useColorTokens } from '../theme/color-tokens';
 import { useCommonMessages } from '../locale/common-messages';
 import { Text } from '../typography';
 import type { TaskListChip, TaskListProps, TaskListStep, TaskListTask } from './types';
@@ -76,19 +75,18 @@ export interface TaskListPalette {
   ring: string;
 }
 
-/** Canonical theme surfaces, foregrounds and focus roles. */
-export function resolveTaskListPalette(theme: Theme): TaskListPalette {
-  const c = theme.colors;
+/** The colour tokens it paints: surfaces, foregrounds and focus roles. */
+export function resolveTaskListPalette(t: ColorTokens): TaskListPalette {
   return {
-    textPrimary: c.text,
-    textSecondary: c.textSecondary,
-    iconSecondary: c.textSecondary,
-    iconTertiary: c.textTertiary,
-    ring: c.primary,
-    chipBorder: c.borderLight,
-    chipBorderHover: c.border,
-    chipSurface: c.backgroundSecondary,
-    chipSurfaceHover: c.backgroundTertiary,
+    textPrimary: t.foreground,
+    textSecondary: t.mutedForeground,
+    iconSecondary: t.mutedForeground,
+    iconTertiary: t.faintForeground,
+    ring: t.primary,
+    chipBorder: t.input,
+    chipBorderHover: t.border,
+    chipSurface: t.surface,
+    chipSurfaceHover: t.popover,
   };
 }
 
@@ -575,8 +573,8 @@ function TaskListComponent({
 }: TaskListProps) {
   const common = useCommonMessages();
   const working = workingProp ?? common.working;
-  const theme = useTheme();
-  const palette = useMemo(() => resolveTaskListPalette(theme), [theme]);
+  const tokens = useColorTokens();
+  const palette = useMemo(() => resolveTaskListPalette(tokens), [tokens]);
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
 

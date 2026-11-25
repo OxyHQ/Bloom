@@ -20,8 +20,7 @@ import Animated, {
 import { AgentThinking } from '../agent-thinking';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import type { Theme } from '../theme/types';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import {
   AGENT_LOG_BRANCH,
   AGENT_LOG_ROW_INDENT,
@@ -56,19 +55,6 @@ import { IS_WEB } from '../styles/platform';
  * opacity and lift. The label shimmer is web-only too (`background-clip: text`);
  * native shows the flat text-secondary it rests on under reduced motion.
  */
-
-// ---------------------------------------------------------------------------
-//  Palette
-// ---------------------------------------------------------------------------
-
-/** Canonical theme surfaces, foregrounds and focus roles. */
-function resolveLogPalette(theme: Theme) {
-  return {
-    guide: theme.colors.border,
-    textSecondary: theme.colors.textSecondary,
-    textPrimary: theme.colors.text,
-  };
-}
 
 // ---------------------------------------------------------------------------
 //  Reveal
@@ -211,10 +197,10 @@ function AgentLogRowConnectorComponent({
   last,
   reduce: reduceProp,
 }: AgentLogRowConnectorProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
-  const { guide } = resolveLogPalette(theme);
+  const guide = tokens.border;
 
   const [animate] = useState(!reduce);
   const draw = useSharedValue(animate ? 0 : 1);
@@ -298,10 +284,10 @@ function AgentLogGuideBridgeComponent({
   offset = 8,
   reduce: reduceProp,
 }: AgentLogGuideBridgeProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
-  const { guide } = resolveLogPalette(theme);
+  const guide = tokens.border;
 
   const [animate] = useState(!reduce);
   const scale = useSharedValue(animate ? 0 : 1);
@@ -431,8 +417,9 @@ type ShimmerStyle = TextStyle & {
  * `<span>` inherits its paragraph's `text-body-regular`.
  */
 function AgentLogShimmerTextComponent({ children, style }: AgentLogShimmerTextProps) {
-  const theme = useTheme();
-  const { textSecondary, textPrimary } = resolveLogPalette(theme);
+  const tokens = useColorTokens();
+  const textSecondary = tokens.mutedForeground;
+  const textPrimary = tokens.foreground;
 
   useEffect(() => {
     if (Platform.OS === 'web') adoptStyleSheet(STYLE_ID, WEB_CSS);

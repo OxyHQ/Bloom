@@ -48,8 +48,7 @@ import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { WebCssStyle } from '../styles/web-view-style';
-import type { Theme } from '../theme/types';
-import { useTheme } from '../theme/use-theme';
+import { type ColorTokens, useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { WEB_SEARCH_MESSAGES } from './messages';
@@ -104,21 +103,20 @@ export interface WebSearchPalette {
   accent: string;
 }
 
-/** Canonical theme surfaces, foregrounds and focus roles. */
-export function resolveWebSearchPalette(theme: Theme): WebSearchPalette {
-  const c = theme.colors;
+/** The colour tokens it paints: surfaces, foregrounds and focus roles. */
+export function resolveWebSearchPalette(t: ColorTokens): WebSearchPalette {
   return {
-    textPrimary: c.text,
-    textSecondary: c.textSecondary,
-    textTertiary: c.textTertiary,
-    iconSecondary: c.textSecondary,
-    iconQuaternary: c.textTertiary,
-    ring: c.primary,
-    accent: c.primary,
-    markBorder: c.borderLight,
-    markSurface: c.card,
-    markDot: c.textTertiary,
-    rowHover: c.backgroundSecondary,
+    textPrimary: t.foreground,
+    textSecondary: t.mutedForeground,
+    textTertiary: t.faintForeground,
+    iconSecondary: t.mutedForeground,
+    iconQuaternary: t.faintForeground,
+    ring: t.primary,
+    accent: t.primary,
+    markBorder: t.input,
+    markSurface: t.card,
+    markDot: t.faintForeground,
+    rowHover: t.surface,
   };
 }
 
@@ -963,8 +961,8 @@ function WebSearchComponent({
   const { messages } = useMessages(WEB_SEARCH_MESSAGES);
   const common = useCommonMessages();
   const working = workingProp ?? common.working;
-  const theme = useTheme();
-  const palette = useMemo(() => resolveWebSearchPalette(theme), [theme]);
+  const tokens = useColorTokens();
+  const palette = useMemo(() => resolveWebSearchPalette(tokens), [tokens]);
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
   const sourcesLabel = labels?.sources ?? messages.sources;
