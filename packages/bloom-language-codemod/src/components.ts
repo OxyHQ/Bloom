@@ -74,6 +74,12 @@ export type Form =
   | 'content'
   /** A style that is its fill alone (`{ backgroundColor }`): a role or an app colour. */
   | 'fill'
+  /** A colour value (`theme.colors.background`): a role or an app colour. */
+  | 'ink'
+  /** A style that is its corner radius alone (`{ borderRadius: 12 }`): the radius token. */
+  | 'radius'
+  /** A style of frame lengths alone (`{ maxWidth: 540 }`): an object of their space tokens. */
+  | 'frame'
   /** Bloom Screen's `reselect` handler: `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`. */
   | 'reselect'
   /** A list header container style that keeps the header to its content (`{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }`): the bare modifier. */
@@ -118,6 +124,8 @@ export interface PropRule {
    * a modifier that ends the chain (`.presented()`). Either alone is a reason.
    */
   readonly closedBy?: string;
+  /** A modifier that ends the chain (`.control()`), drawn after every other. */
+  readonly last?: boolean;
   /**
    * Props that are the modifier's options object after its value
    * (`bottomBarPlacement` to `.footer(view, { placement })`), each by its key
@@ -359,6 +367,10 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       maxHeightRatio: p('maxHeightRatio', 'number'),
       dismissOnBackdrop: p('dismissOnBackdrop', 'boolean'),
       scrollable: p('scrollable', 'flag'),
+      detached: p('detached', 'flag'),
+      panelStyle: p('panelFrame', 'frame'),
+      // Bloom's dialog control (`useDialogControl()`): presented by it, the chain's end as `.presented()` is.
+      control: { ...p('control', 'handler'), last: true },
       testID: p('testID', 'string'),
     },
   },
@@ -423,6 +435,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       showsHorizontalScrollIndicator: indicator('horizontal'),
       contentContainerStyle: p('contentMargins', 'contentStyle'),
       contentContainerClassName: p('contentView', 'className'),
+      stickyHeaderIndices: p('stickyIndices', 'items'),
       testID: p('testID', 'string'),
     },
   },
@@ -602,6 +615,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       disabled: p('disabled', 'flag'),
       onClearText: p('onClearText', 'handler'),
       ...TEXT_INPUT,
+      editable: p('editable', 'boolean'),
       testID: p('testID', 'string'),
     },
   },
@@ -674,6 +688,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       verified: p('verified', 'flag'),
       live: p('live', 'flag'),
       alt: p('label', 'string'),
+      style: p('cornerRadius', 'radius'),
       testID: p('testID', 'string'),
     },
   },
@@ -881,6 +896,9 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       showInitials: p('initials', 'mark'),
       onPressItem: p('onPressItem', 'handler'),
       hoverCard: p('hoverCard', 'flag'),
+      ringColor: p('ringColor', 'ink'),
+      renderItemAction: p('itemAction', 'row'),
+      variant: p('variant', 'string'),
       accessibilityLabel: p('label', 'string'),
       testID: p('testID', 'string'),
     },

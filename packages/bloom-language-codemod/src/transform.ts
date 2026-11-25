@@ -115,6 +115,21 @@ const HIT_SLOP_TOKEN = new Map(Object.entries(HIT_SLOP).map(([name, value]) => [
 const DURATION_TOKEN = new Map<number, string>();
 for (const [name, value] of Object.entries(spec.scales.duration))
   if (name !== '$comment' && !DURATION_TOKEN.has(value)) DURATION_TOKEN.set(value, name);
+/** A scale's tokens by value, a named rung over a numeric token of the same value. */
+function tokensByValue(scale: Record<string, unknown>): ReadonlyMap<number, string> {
+  const out = new Map<number, string>();
+  for (const [name, value] of Object.entries(scale)) {
+    if (typeof value !== 'number') continue;
+    if (!/^-?\d/.test(name) || !out.has(value)) out.set(value, name);
+  }
+  return out;
+}
+/** A radius in points (`12`) as its corner token (`'md'`): an avatar's own corners. */
+const CORNER_TOKEN = tokensByValue(spec.scales.corner);
+/** A length in points (`540`) as its space token (`'540'`): a dialog panel's frame. */
+const SPACE_TOKEN = tokensByValue(spec.scales.space);
+/** A frame's own length keys (spec `objects.frame`). */
+const FRAME_KEYS = new Set(['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']);
 
 /** One side's slop: a static number, or Bloom's `tokens.hitSlop.<name>`, as its token. */
 function hitSlopToken(value: AnyNode): string | undefined {
@@ -2747,6 +2762,31 @@ export function transformSource(source: string, options: TransformOptions): File
         else props.push({ name: prop.modifier, args: [ink] });
         continue;
       }
+      if (prop?.form === 'ink') {
+        const ink = value ? inkOf(node, attributeExpression(value)) : undefined;
+        if (ink === undefined) unmapped(name);
+        else props.push({ name: prop.modifier, args: [ink] });
+        continue;
+      }
+      if (prop?.form === 'radius' || prop?.form === 'frame') {
+        const lengths = value ? lengthsOf(attributeExpression(value)) : undefined;
+        const radius = lengths?.size === 1 ? lengths.get('borderRadius') : undefined;
+        const token = radius === undefined ? undefined : CORNER_TOKEN.get(radius);
+        if (prop.form === 'radius') {
+          if (token === undefined) unmapped(name);
+          else props.push({ name: prop.modifier, args: [token] });
+          continue;
+        }
+        const entries: [string, Value][] = [];
+        for (const [key, points] of lengths ?? []) {
+          const space = FRAME_KEYS.has(key) ? SPACE_TOKEN.get(points) : undefined;
+          if (space !== undefined) entries.push([key, space]);
+        }
+        if (lengths === undefined || entries.length !== lengths.size || entries.length === 0)
+          unmapped(name);
+        else props.push({ name: prop.modifier, args: [{ $: 'options', entries }] });
+        continue;
+      }
       if (prop?.form === 'reselect') {
         const handlers = value ? reselectOf(attributeExpression(value)) : undefined;
         if (!handlers) unmapped(name);
@@ -2789,12 +2829,17 @@ export function transformSource(source: string, options: TransformOptions): File
         if (next?.length !== 1) unmapped(prop.with[0]);
         else values.push(next[0] as Value);
       }
+      if (prop.last) {
+        if (last !== undefined || values.length !== 1) unmapped(name);
+        else last = { name: prop.modifier, args: values };
+        continue;
+      }
       if (prop.closedBy) {
         // The value and the close handler, one binding: setting it false calls the handler.
         const close = given.has(prop.closedBy)
           ? actionOf(attributeExpression(given.get(prop.closedBy)))
           : undefined;
-        if (values.length !== 1 || !close) unmapped(name);
+        if (values.length !== 1 || !close || last !== undefined) unmapped(name);
         else
           last = {
             name: prop.modifier,
@@ -3332,6 +3377,24 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   /** A style that is a fill alone (`{ backgroundColor: '#000' }`) as its colour (`inkOf`). */
+  /** A style object of static numbers alone (`{ maxWidth: 540 }`), by key; undefined for any other. */
+  function lengthsOf(expression: AnyNode): Map<string, number> | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const out = new Map<string, number>();
+    for (const property of expression.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return undefined;
+      const number = staticNumber(property.value);
+      if (number === undefined) return undefined;
+      out.set(property.key.name, number);
+    }
+    return out;
+  }
+
   function fillOf(node: AnyNode, expression: AnyNode): Value | undefined {
     const [property, ...rest] = n.ObjectExpression.check(expression) ? expression.properties : [];
     if (

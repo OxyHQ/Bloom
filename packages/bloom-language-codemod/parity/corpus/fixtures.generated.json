@@ -1,5 +1,99 @@
 [
  {
+  "name": "components/ComponentProps.tsx:17",
+  "before": "<Avatar source={'⟨0⟩'} size={36} style={{ borderRadius: 12 }} />",
+  "after": "toElement(LAvatar('⟨0⟩').size('lg').cornerRadius('md'))",
+  "bindings": {
+   "Avatar": {
+    "module": "@oxy.so/bloom/avatar",
+    "imported": "Avatar"
+   }
+  },
+  "language": [
+   "Avatar: LAvatar"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/ComponentProps.tsx:22",
+  "before": "<AvatarGroup items={ITEMS} ringColor={parityTheme.colors.background} variant=\"small\" />",
+  "after": "toElement(LAvatarGroup(ITEMS).ringColor('background').variant('small'))",
+  "bindings": {
+   "AvatarGroup": {
+    "module": "@oxy.so/bloom/avatar-group",
+    "imported": "AvatarGroup"
+   }
+  },
+  "language": [
+   "Avatar: LAvatar",
+   "toElement",
+   "AvatarGroup: LAvatarGroup"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/ComponentProps.tsx:26",
+  "before": "<Search value={'⟨0⟩'} onValueChange={() => {}} editable={false} placeholder=\"Add people\" />",
+  "after": "toElement(LSearch(['⟨0⟩', () => {}]).editable(false).placeholder('Add people'))",
+  "bindings": {
+   "Search": {
+    "module": "@oxy.so/bloom/search",
+    "imported": "Search"
+   }
+  },
+  "language": [
+   "Avatar: LAvatar",
+   "toElement",
+   "AvatarGroup: LAvatarGroup",
+   "Search: LSearch"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/ComponentProps.tsx:31",
+  "before": "<Dialog open={true} onClose={(() => {})} placement=\"bottom\" detached panelStyle={{ maxWidth: 540 }}>\n      <Text>Pay</Text>\n    </Dialog>",
+  "after": "toElement(LDialog(LText('Pay')).presentAt('bottom').detached().panelFrame({ maxWidth: '540' }).presented([true, () => (() => {})()]))",
+  "bindings": {
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Avatar: LAvatar",
+   "toElement",
+   "AvatarGroup: LAvatarGroup",
+   "Search: LSearch",
+   "Text: LText",
+   "Dialog: LDialog"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Components.tsx:59",
   "before": "<SettingsSection\n      label={'⟨0⟩'}\n      description={'⟨13⟩'}\n    >\n      <GroupedSection title={'⟨11⟩'} footer={'⟨12⟩'} variant=\"filled\">\n        <GroupedSectionItem\n          title={'⟨1⟩'}\n          description={'⟨2⟩'}\n          rightElement={<Switch checked={true} onCheckedChange={() => {}} />}\n        />\n        <GroupedSectionItem title=\"Language\" value=\"English\" onPress={() => {}} />\n        <GroupedSectionItem\n          title={'⟨6⟩'}\n          description={'⟨7⟩'}\n          descriptionLines={0}\n          wrapControl\n          rightElement={<SpinnerIcon size={20} />}\n        />\n        <GroupedSectionItem\n          title={'⟨8⟩'}\n          destructive\n          showChevron={false}\n          onPress={() => {}}\n        />\n        <GroupedSectionItem title={'⟨10⟩'} titleNumberOfLines={0} disabled />\n      </GroupedSection>\n    </SettingsSection>",
   "after": "toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))",

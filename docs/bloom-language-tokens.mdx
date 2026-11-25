@@ -70,6 +70,7 @@ Every value a modifier takes is a token of a named set: a Bloom rung, never a pi
 | `'448'` | 448 |
 | `'480'` | 480 |
 | `'512'` | 512 |
+| `'540'` | 540 |
 | `'560'` | 560 |
 | `'640'` | 640 |
 | `'672'` | 672 |
@@ -85,19 +86,19 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [shape](bloom-la
 
 ### `padding`
 
-`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-540'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Taken by: [`.padding()`](bloom-language-modifiers.mdx#padding), [`.offset()`](bloom-language-modifiers.mdx#offset), [`.alignOffset()`](bloom-language-modifiers.mdx#alignoffset).
 
 ### `edgeDistance`
 
-`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'25%'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'25%'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-540'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Taken by: [`.position()`](bloom-language-modifiers.mdx#position).
 
 ### `margin`
 
-`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'auto'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'-none'`, `'-2xs'`, `'-xs'`, `'-sm'`, `'-md'`, `'-lg'`, `'-xl'`, `'-2xl'`, `'-3xl'`, `'-4xl'`, `'-5xl'`, `'auto'`, `'-1200'`, `'-768'`, `'-720'`, `'-672'`, `'-640'`, `'-560'`, `'-540'`, `'-512'`, `'-480'`, `'-448'`, `'-440'`, `'-420'`, `'-400'`, `'-384'`, `'-380'`, `'-360'`, `'-320'`, `'-300'`, `'-288'`, `'-280'`, `'-260'`, `'-256'`, `'-240'`, `'-224'`, `'-200'`, `'-192'`, `'-160'`, `'-140'`, `'-128'`, `'-120'`, `'-96'`, `'-80'`, `'-76'`, `'-72'`, `'-64'`, `'-56'`, `'-48'`, `'-44'`, `'-38'`, `'-36'`, `'-30'`, `'-28'`, `'-14'`, `'-10'`, `'-6'`, `'-3'`, `'-1'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Taken by: [`.margin()`](bloom-language-modifiers.mdx#margin).
 
@@ -168,6 +169,7 @@ Taken by: [`.margin()`](bloom-language-modifiers.mdx#margin).
 | `'448'` |  |
 | `'480'` |  |
 | `'512'` |  |
+| `'540'` |  |
 | `'560'` |  |
 | `'640'` |  |
 | `'672'` |  |
@@ -175,7 +177,7 @@ Taken by: [`.margin()`](bloom-language-modifiers.mdx#margin).
 | `'768'` |  |
 | `'1200'` |  |
 
-Taken by: [`.frame()`](bloom-language-modifiers.mdx#frame), [`.basis()`](bloom-language-modifiers.mdx#basis).
+Taken by: [`.frame()`](bloom-language-modifiers.mdx#frame), [`.basis()`](bloom-language-modifiers.mdx#basis), [`.panelFrame()`](bloom-language-modifiers.mdx#panelframe).
 
 ### `zIndex`
 
@@ -278,11 +280,13 @@ Taken by: [`.corner()`](bloom-language-modifiers.mdx#corner), [`.barCorner()`](b
 
 `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'infinite'`, `'6'`, `'7'`, `'10'`, `'14'`, `'15'`, `'18'`, `'22'`
 
+Taken by: [`.cornerRadius()`](bloom-language-modifiers.mdx#cornerradius).
+
 Taken by these nodes' own parameters: [meter](bloom-language-nodes.mdx#meter) `.barCorner()`, [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder) `.mediaCorner()`, [gallery](bloom-language-nodes.mdx#gallery) `.mediaCorner()`.
 
 ### `columnWidth`
 
-`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'fit'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'fit'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Taken by: [`.width()`](bloom-language-modifiers.mdx#width).
 
@@ -400,7 +404,7 @@ Taken by: [`.tracking()`](bloom-language-modifiers.mdx#tracking).
 
 A colour token is a role above (on native the theme's colour named first, on the web the CSS variable), a role at an opacity of the [opacity](#opacity) scale (`'primary/10'`), or an app colour from `defineTokens({ color })`.
 
-Taken by: [`.background()`](bloom-language-modifiers.mdx#background), [`.border()`](bloom-language-modifiers.mdx#border), [`.foreground()`](bloom-language-modifiers.mdx#foreground), [`.hoverForeground()`](bloom-language-modifiers.mdx#hoverforeground), [`.scrimColor()`](bloom-language-modifiers.mdx#scrimcolor), [`.colors()`](bloom-language-modifiers.mdx#colors), [`.fill()`](bloom-language-modifiers.mdx#fill), [`.stroke()`](bloom-language-modifiers.mdx#stroke), [`.fade()`](bloom-language-modifiers.mdx#fade), [`.refreshable()`](bloom-language-modifiers.mdx#refreshable), [`.screenBackground()`](bloom-language-modifiers.mdx#screenbackground), [`.band()`](bloom-language-modifiers.mdx#band), [`.starTint()`](bloom-language-modifiers.mdx#startint), [`.countTint()`](bloom-language-modifiers.mdx#counttint), [`.emptyTint()`](bloom-language-modifiers.mdx#emptytint), [`.trackTint()`](bloom-language-modifiers.mdx#tracktint), [`.backdrop()`](bloom-language-modifiers.mdx#backdrop), [`.fillTint()`](bloom-language-modifiers.mdx#filltint), [`.thumbTint()`](bloom-language-modifiers.mdx#thumbtint), [`.iconForeground()`](bloom-language-modifiers.mdx#iconforeground), [`.activeTint()`](bloom-language-modifiers.mdx#activetint), [`.bubbleTint()`](bloom-language-modifiers.mdx#bubbletint), [`.contentTint()`](bloom-language-modifiers.mdx#contenttint), [`.placeholderTint()`](bloom-language-modifiers.mdx#placeholdertint), [`.senderTint()`](bloom-language-modifiers.mdx#sendertint).
+Taken by: [`.background()`](bloom-language-modifiers.mdx#background), [`.border()`](bloom-language-modifiers.mdx#border), [`.foreground()`](bloom-language-modifiers.mdx#foreground), [`.hoverForeground()`](bloom-language-modifiers.mdx#hoverforeground), [`.ringColor()`](bloom-language-modifiers.mdx#ringcolor), [`.scrimColor()`](bloom-language-modifiers.mdx#scrimcolor), [`.colors()`](bloom-language-modifiers.mdx#colors), [`.fill()`](bloom-language-modifiers.mdx#fill), [`.stroke()`](bloom-language-modifiers.mdx#stroke), [`.fade()`](bloom-language-modifiers.mdx#fade), [`.refreshable()`](bloom-language-modifiers.mdx#refreshable), [`.screenBackground()`](bloom-language-modifiers.mdx#screenbackground), [`.band()`](bloom-language-modifiers.mdx#band), [`.starTint()`](bloom-language-modifiers.mdx#startint), [`.countTint()`](bloom-language-modifiers.mdx#counttint), [`.emptyTint()`](bloom-language-modifiers.mdx#emptytint), [`.trackTint()`](bloom-language-modifiers.mdx#tracktint), [`.backdrop()`](bloom-language-modifiers.mdx#backdrop), [`.fillTint()`](bloom-language-modifiers.mdx#filltint), [`.thumbTint()`](bloom-language-modifiers.mdx#thumbtint), [`.iconForeground()`](bloom-language-modifiers.mdx#iconforeground), [`.activeTint()`](bloom-language-modifiers.mdx#activetint), [`.bubbleTint()`](bloom-language-modifiers.mdx#bubbletint), [`.contentTint()`](bloom-language-modifiers.mdx#contenttint), [`.placeholderTint()`](bloom-language-modifiers.mdx#placeholdertint), [`.senderTint()`](bloom-language-modifiers.mdx#sendertint).
 
 Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [rating](bloom-language-nodes.mdx#rating), [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [animatedCheck](bloom-language-nodes.mdx#animatedcheck), [spinnerIcon](bloom-language-nodes.mdx#spinnericon), [composerBanner](bloom-language-nodes.mdx#composerbanner), [barListCard](bloom-language-nodes.mdx#barlistcard), [contributionsCard](bloom-language-nodes.mdx#contributionscard), [heatmapChartCard](bloom-language-nodes.mdx#heatmapchartcard), [lineChartCard](bloom-language-nodes.mdx#linechartcard), [stepsCard](bloom-language-nodes.mdx#stepscard), [tokensChartCard](bloom-language-nodes.mdx#tokenschartcard), [chatBackground](bloom-language-nodes.mdx#chatbackground), [typingDots](bloom-language-nodes.mdx#typingdots), [callScreen](bloom-language-nodes.mdx#callscreen), [callMinimisedPill](bloom-language-nodes.mdx#callminimisedpill), [incomingCallScreen](bloom-language-nodes.mdx#incomingcallscreen), [incomingCallBanner](bloom-language-nodes.mdx#incomingcallbanner), [placeListCard](bloom-language-nodes.mdx#placelistcard), [wishlistCard](bloom-language-nodes.mdx#wishlistcard), [aiProfileCard](bloom-language-nodes.mdx#aiprofilecard), [swipeRow](bloom-language-nodes.mdx#swiperow).
 

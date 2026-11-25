@@ -312,6 +312,11 @@ export interface SearchView extends ViewModifiers<SearchView>, TextInputModifier
   trailing(...value: Child[]): SearchView;
   /** The most characters the field takes (React Native's `maxLength`). */
   maxLength(value: number): SearchView;
+  /**
+   * `false`: the text is shown but takes no typing (React Native's
+   * `editable`), as a search that is full; `.disabled()` is Bloom's disabled look.
+   */
+  editable(value: boolean): SearchView;
 }
 
 const NO_CHILDREN: readonly Child[] = [];

@@ -698,6 +698,13 @@ const searches: ParityCase[] = [
     bloom: () => <Search value="" onValueChange={set} placeholder="Search posts" maxLength={50} />,
   },
   {
+    name: 'Search that takes no typing (editable(false))',
+    language: () => toElement(L.Search(empty).placeholder('Search people').editable(false)),
+    bloom: () => (
+      <Search value="" onValueChange={set} placeholder="Search people" editable={false} />
+    ),
+  },
+  {
     name: 'Search with text, named',
     language: () => toElement(L.Search(['bloom', set]).label('Search people')),
     bloom: () => <Search value="bloom" onValueChange={set} label="Search people" />,

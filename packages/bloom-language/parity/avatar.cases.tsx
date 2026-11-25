@@ -8,11 +8,13 @@ import { AVATAR_SIZE, ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { defineTokens, type AvatarSizeName } from '../src/tokens';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
+import { Text } from '@oxy.so/bloom/typography';
 
 const PHOTO = 'https://cdn.oxy.so/avatars/ana.jpg';
 const onPress = () => {};
 const row = defineTokens({ avatarSize: { feed: 48 } });
+const APP = defineTokens({ color: { ring: '#101010' } });
 
 const avatars: ParityCase[] = [
   {
@@ -25,6 +27,11 @@ const avatars: ParityCase[] = [
     language: () => toElement(L.Avatar(PHOTO).size(size)),
     bloom: () => <Avatar source={PHOTO} size={AVATAR_SIZE[size]} />,
   })),
+  {
+    name: 'an avatar of rounded corners (cornerRadius)',
+    language: () => toElement(L.Avatar(PHOTO).size('lg').cornerRadius('md')),
+    bloom: () => <Avatar source={PHOTO} size={36} style={{ borderRadius: 12 }} />,
+  },
   {
     name: 'an avatar touches pass through',
     language: () => toElement(L.Avatar(PHOTO).allowsHitTesting(false)),
@@ -150,6 +157,36 @@ const groups: ParityCase[] = [
     language: () => toElement(L.AvatarGroup(MEMBERS.slice(0, 4)).layout(layout).size('md')),
     bloom: () => <AvatarGroup items={MEMBERS.slice(0, 4)} layout={layout} size={32} />,
   })),
+  {
+    // Mention's live room: the ring the theme's background, a follow button in each card, small renditions.
+    name: 'a facepile ringed in the background, an action per member, a rendition',
+    language: () =>
+      toElement(
+        L.AvatarGroup(MEMBERS)
+          .ringColor('background')
+          .variant('small')
+          .hoverCard()
+          .itemAction((item) => L.Text(`Follow ${item.name ?? ''}`)),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <AvatarGroup
+            items={MEMBERS}
+            ringColor={c.background}
+            variant="small"
+            hoverCard
+            renderItemAction={(item) => <Text>{`Follow ${item.name ?? ''}`}</Text>}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a facepile ringed in an app colour',
+    language: () => toElement(L.AvatarGroup(MEMBERS).ringColor(APP.color.ring)),
+    bloom: () => <AvatarGroup items={MEMBERS} ringColor="#101010" />,
+  },
   {
     name: 'a capped facepile with a total',
     language: () => toElement(L.AvatarGroup(MEMBERS).max(3).total(42)),

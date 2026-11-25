@@ -42,6 +42,7 @@ export const SPACE = {
   "448": 448,
   "480": 480,
   "512": 512,
+  "540": 540,
   "560": 560,
   "640": 640,
   "672": 672,
@@ -3211,6 +3212,21 @@ export const MODIFIERS = {
   "editable": [
     "value"
   ],
+  "control": [
+    "value"
+  ],
+  "panelFrame": [
+    "frame"
+  ],
+  "ringColor": [
+    "color"
+  ],
+  "itemAction": [
+    "value"
+  ],
+  "cornerRadius": [
+    "cornerRadius"
+  ],
   "pressOpenTab": [
     "pressOpenTab"
   ],
@@ -5690,7 +5706,8 @@ export const NODE_MODIFIERS = {
     "verified",
     "live",
     "liveBadge",
-    "presence"
+    "presence",
+    "cornerRadius"
   ],
   "avatarGroup": [
     "padding",
@@ -5820,7 +5837,10 @@ export const NODE_MODIFIERS = {
     "overflow",
     "initials",
     "onPressItem",
-    "hoverCard"
+    "hoverCard",
+    "ringColor",
+    "itemAction",
+    "variant"
   ],
   "badge": [
     "padding",
@@ -7737,7 +7757,10 @@ export const NODE_MODIFIERS = {
     "sideGutter",
     "maxHeightRatio",
     "onDismissed",
-    "presented"
+    "presented",
+    "control",
+    "detached",
+    "panelFrame"
   ],
   "popover": [
     "label",
@@ -11287,7 +11310,8 @@ export const NODE_MODIFIERS = {
     "maxLength",
     "trigger",
     "trailing",
-    "focused"
+    "focused",
+    "editable"
   ],
   "optionGroup": [],
   "chipRow": [
@@ -11926,7 +11950,8 @@ export const NODE_MODIFIERS = {
     "keyboardTaps",
     "contentView",
     "safeAreaInset",
-    "safeAreaBar"
+    "safeAreaBar",
+    "stickyIndices"
   ],
   "bottomSheet": [
     "detached",

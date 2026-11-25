@@ -4,6 +4,7 @@ import { ConnectionStatusToasts } from '@oxy.so/bloom/connection-status';
 import {
   Dialog as BloomDialog,
   type DialogAction,
+  type DialogControlProps,
   type DialogHeaderConfig,
   type DialogScreenFrame,
 } from '@oxy.so/bloom/dialog';
@@ -26,6 +27,7 @@ import {
   type DurationName,
   type PaddingToken,
   resolveDuration,
+  resolveLength,
   resolveSpace,
   type SpaceToken,
 } from '../tokens';
@@ -137,11 +139,29 @@ export interface DialogView extends PresentedNode {
   scrollable(value?: boolean): DialogView;
   testID(value: string): DialogView;
   /**
+   * Floats a bottom dialog above the window's safe area, with rounded corners
+   * and gutters beside it (Bloom's `detached`); other placements are as they were.
+   */
+  detached(value?: boolean): DialogView;
+  /**
+   * The side or bottom panel's own frame (Bloom's `panelStyle`): a bottom
+   * dialog kept to a width on a wide window (`{ maxWidth: '540' }`). `.frame()`
+   * is the centred card's width and ceiling.
+   */
+  panelFrame(value: FrameSpec): DialogView;
+  /**
    * The dialog as a view of its own, shown while `isPresented` holds; dismissing
    * it sets it false. It ends the chain: what a component that is a dialog
    * returns, its binding handed in by the caller.
    */
   presented(isPresented: Binding<boolean>): ViewNode;
+  /**
+   * The dialog as a view of its own, opened and closed by Bloom's dialog
+   * control (`useDialogControl()`: `control.open()`, `control.close()`), for
+   * a dialog another view opens imperatively. It ends the chain, as
+   * `.presented()` does.
+   */
+  control(control: DialogControlProps): ViewNode;
 }
 
 /** Bloom `Popover`: content anchored on the view that presents it. */
@@ -312,12 +332,18 @@ function drawAlert(
  * content is a tree of its own (`tree`), which paints from them.
  */
 export function drawDialog(
-  { isPresented: [open, setOpen], content }: Presentation,
+  { isPresented, content }: Presentation | { isPresented: undefined; content: PresentedNode },
   render: (children: readonly Child[]) => ReactNode[],
   tree: (child: Child) => ReactNode,
   key: string | number | undefined,
 ): ReactElement {
   const own = values(content);
+  // Presented by a binding (Bloom's controlled `open`), else by Bloom's dialog control.
+  const presentation =
+    isPresented === undefined
+      ? { control: own.control }
+      : { open: isPresented[0], onClose: () => isPresented[1](false) };
+  const panel = own.panelFrame;
   const children: readonly Child[] = isNode(content) ? content.children : [];
   const at = own.presentAt;
   const footer = isNode(content) ? lastOf(content, 'footer')?.content : undefined;
@@ -325,8 +351,7 @@ export function drawDialog(
     BloomDialog,
     {
       key,
-      open,
-      onClose: () => setOpen(false),
+      ...presentation,
       header: own.header as DialogHeaderConfig | undefined,
       footer: one(render, footer),
       frame: own.page as DialogScreenFrame | undefined,
@@ -348,10 +373,21 @@ export function drawDialog(
             : { base: at.base, ...at.tiers },
       dismissOnBackdrop: own.dismissOnBackdrop,
       scrollable: own.scrollable,
+      detached: own.detached,
+      panelStyle: panel === undefined ? undefined : panelStyle(panel),
       testID: own.testID,
     },
     tree(children),
   );
+}
+
+/** A panel's frame as the style Bloom's `panelStyle` takes: each length it names. */
+function panelStyle(frame: FrameSpec): Record<string, number | string> {
+  const style: Record<string, number | string> = {};
+  for (const [name, token] of Object.entries(frame))
+    if (token !== undefined)
+      style[name] = resolveLength(token as Parameters<typeof resolveLength>[0]);
+  return style;
 }
 
 function drawPopover(

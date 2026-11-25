@@ -1189,6 +1189,9 @@ rendition of a file id).
   `.badge(Badge(…))`.
 - Presence: `.presence('online' | 'idle' | 'busy' | 'offline')` is Bloom's
   `AvatarPresence`, the dot sized from the avatar.
+- `.cornerRadius(radius)` rounds the avatar's own corners (Bloom's Avatar
+  `style.borderRadius`, a corner token: `'md'` is 12): a rounded square no
+  shape name draws (a list's cover). `.corner()` is a box around it.
 - `.label(name)` is its `alt`; `.onPress` its own press.
 
 `AvatarGroup(items)` takes Bloom's `AvatarGroupItem`s: `.layout('stack' |
@@ -1196,6 +1199,12 @@ rendition of a file id).
 `.total(n)`, `.spacing(space)` (a row's gap), `.overflow('count' |
 'truncate')`, `.initials()` (tinted initials instead of the neutral
 placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
+`.ringColor(color)` is the ring each face is cut out of its neighbours by
+(Bloom's `ringColor`): a role painted from the theme (`'background'`, the
+colour behind the group) or an app colour. `.variant(name)` is the rendition
+the members' images load (`'thumb'` with none). `.itemAction((item, index) =>
+view)` is Bloom's `renderItemAction`: a view under the member's name in its
+hover card on the web (a follow button), drawn as a tree of its own.
 
 ## Small pieces
 
@@ -1299,7 +1308,7 @@ binding on a node that has no such value.
 | `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`, `.presented(isOpen)` (its list open through a binding: Bloom's controlled `open`); `.label()` names it |
 | `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID`, `.leadingView(...)` (a picker row's mark), `.tint(role)` and `.foreground(role)` (a swatch's colour and its chosen dot) |
 | `OptionGroup(label, ...options)` | a picker's `SelectGroup` with its `SelectLabel`, heading its first row | none |
-| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), `.maxLength(n)` (the most characters it takes), the keyboard modifiers |
+| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.editable(false)` (shown, taking no typing: React Native's `editable`), `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), `.maxLength(n)` (the most characters it takes), the keyboard modifiers |
 
 - **The box.** A field's box modifiers (`frame`, `padding`…) are its shell's
   style, as an app writes `<TextField style>`; a picker's are its trigger's;
@@ -1862,6 +1871,7 @@ toast.success('Saved')
 | `.alert(isPresented, Alert(title))` | Bloom `AlertDialog` beside the view (`open`, `onOpenChange`) |
 | `.dialog(isPresented, Dialog(...content))` | Bloom `Dialog` beside the view (`open`, `onClose`), its content the children |
 | `Dialog(...content).presented(isPresented)` | the same Bloom `Dialog`, as a view of its own in place |
+| `Dialog(...content).control(control)` | the same, opened and closed by Bloom's dialog control (`useDialogControl()`: `control.open()`, `control.close()`), for a dialog another view opens (a FAB): Bloom's `control` |
 | `.popover(isPresented, Popover(...content))` | Bloom `Popover`: the view is its `PopoverTrigger asChild`, the content its `PopoverContent` |
 | `.confirmationDialog(isPresented, ConfirmationDialog(title, ...rows))` | the lens menu grown out of the view (Android, OxyOS), SwiftUI's `confirmationDialog` (iOS), Bloom `Dialog` (the web) |
 | `ConnectionStatus()` | Bloom `ConnectionStatusToasts` |
@@ -1929,7 +1939,11 @@ toast.success('Saved')
   where the view is, by the same code `.dialog()` draws it with. `.presented()`
   ends the chain (it is a view, with no modifier of its own); every modifier
   before it is the dialog's, so `.frame()` and `.padding()` are its width and
-  `contentPadding`, never a box around it.
+  `contentPadding`, never a box around it. `.control(control)` ends it the
+  same way for a dialog Bloom's control opens. `.detached()` floats a bottom
+  dialog above the safe area with gutters (Bloom's `detached`), and
+  `.panelFrame({ maxWidth: '540' })` is the side or bottom panel's own frame
+  (Bloom's `panelStyle`); `.frame()` stays the centred card's.
 
 ```ts
 const PublishAs = view(({ open, onClose }: { open: boolean; onClose: () => void }) =>
@@ -2024,6 +2038,7 @@ inside a screen, as Bloom's is.
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
 | `.safeAreaInset(edge, view, spacing?)`, `.safeAreaBar(edge, view)` | a view pinned at the `top` or `bottom` and the content padded by its height (see below) |
 | `.keyboardTaps('never' \| 'always' \| 'handled')` | `keyboardShouldPersistTaps` |
+| `.stickyIndices(indices)` | `stickyHeaderIndices`: the children, by index, that stay at the top once scrolled to it (a profile's tabs); `undefined` keeps none |
 | `.contentView((v) => v…)` | Bloom's `ScreenScrollView contentView` (what an app's `contentContainerClassName` drew): the content laid out in a view of its own inside the content container, which then grows to the viewport and pads only the screen's chrome (a content-sized screen reads no intrinsic height from it). `v` takes the layout of one view: `padding`, `spacing`, `align`, `justify`, `wrap`, `axis`, `frame`, `flex`, `grow`, `shrink`, `basis`, `alignSelf` (the spec's `contentView.modifiers`), drawn as a vertical stack of them is, in layer order (a frame after its padding: one view); the content margins and spacing go on that view after its own, as an app's `contentContainerStyle` followed its class |
 
 Only what the chain names reaches the scroll view, so Bloom's own defaults

@@ -1392,12 +1392,48 @@ export const E = ({ open }) => <Dialog open={open} label="E" />;
     expect(result.code).toContain(
       "import { Dialog as LDialog, VStack, toElement } from '@oxy.so/bloom-language';",
     );
-    // An imperative control, a handler that may read an argument, and an open no one closes stay JSX.
+    // A control's close handler, a handler that may read an argument, and an open no one closes stay JSX.
     expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
-      ['Dialog:control', 'Dialog:onClose'],
+      ['Dialog:onClose'],
       ['Dialog:open'],
       ['Dialog:open'],
     ]);
+  });
+  it('maps a dialog its control opens, detached, its panel kept to a width', () => {
+    const { code } = run(`import { Dialog } from '@oxy.so/bloom/dialog';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ control }) => (
+  <Dialog control={control} placement="bottom" detached panelStyle={{ maxWidth: 540 }} contentPadding={0}>
+    <Text>a</Text>
+  </Dialog>
+);
+`);
+    expect(flat(code)).toContain(
+      ".presentAt('bottom').detached().panelFrame({ maxWidth: '540' }).padding('none').control(control)",
+    );
+  });
+  it('maps an avatar’s corner radius, a group’s ring, rendition and action, a search’s editable', () => {
+    const { code } = run(`import { Avatar } from '@oxy.so/bloom/avatar';
+import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { Search } from '@oxy.so/bloom/search';
+import { useTheme } from '@oxy.so/bloom/theme';
+import { Text } from '@oxy.so/bloom/typography';
+export function A({ uri, members, value, set, full }) {
+  const theme = useTheme();
+  return (
+    <>
+      <Avatar source={uri} size={36} style={{ borderRadius: 12 }} />
+      <AvatarGroup items={members} ringColor={theme.colors.background} variant="small" renderItemAction={(item) => <Text>Follow</Text>} />
+      <Search value={value} onValueChange={set} editable={!full} />
+    </>
+  );
+}
+`);
+    expect(flat(code)).toContain(".cornerRadius('md')");
+    expect(flat(code)).toContain(".ringColor('background')");
+    expect(flat(code)).toContain(".variant('small')");
+    expect(flat(code)).toContain(".itemAction((item) => LText('Follow'))");
+    expect(flat(code)).toContain('.editable(!full)');
   });
   it('moves a dialog’s onDismissed and a virtual list’s content padding and gap', () => {
     const result = run(`import { Dialog } from '@oxy.so/bloom/dialog';

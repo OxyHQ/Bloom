@@ -18,7 +18,7 @@ import {
   type GestureResponderEvent,
 } from 'react-native';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
-import { AvatarGroup as BloomAvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { AvatarGroup as BloomAvatarGroup, type AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import { Badge as BloomBadge } from '@oxy.so/bloom/badge';
 import { AvatarPresence } from '@oxy.so/bloom/chat-indicators';
 import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
@@ -230,6 +230,7 @@ import {
 import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
+import { paintedHost } from './painted-host';
 import { SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
@@ -2541,6 +2542,8 @@ function renderHost(
         hideLiveBadge: ownValue(p, 'liveBadge')?.value === false ? true : undefined,
         status: presence,
       });
+      const radius = ownValue(p, 'cornerRadius')?.value;
+      if (radius !== undefined) props.style = avatarCorner(radius);
       const host = presence === undefined ? BloomAvatar : AvatarPresence;
       if (!boxed) return draw(host, props);
       return drawHost(palette, host, boxOf('component', 'A'), props);
@@ -2561,9 +2564,20 @@ function renderHost(
           showInitials: ownValue(p, 'initials') === undefined ? undefined : true,
           onPressItem: ownValue(p, 'onPressItem')?.value,
           hoverCard: ownValue(p, 'hoverCard')?.value,
+          variant: ownValue(p, 'variant')?.value,
         });
-        if (!boxed) return draw(BloomAvatarGroup, props);
-        return drawHost(palette, BloomAvatarGroup, boxOf('component', 'AG'), props);
+        const action = ownValue(p, 'itemAction')?.value;
+        // The hover card's action is drawn where the card is, a tree of its own.
+        if (action !== undefined)
+          props.renderItemAction = (item: AvatarGroupItem, index: number) =>
+            renderTree(action(item, index), ctx);
+        // The ring is a colour prop: painted from the tree's palette (a role) or as written (an app colour).
+        const ring = ownValue(p, 'ringColor')?.value;
+        const group =
+          ring === undefined ? BloomAvatarGroup : paintedHost(BloomAvatarGroup, 'ringColor', ring);
+        if (ring !== undefined) props.palette = palette;
+        if (!boxed) return draw(group, props);
+        return drawHost(palette, group as Host, boxOf('component', 'AG'), props);
       });
     }
     case 'badge':
@@ -3201,8 +3215,21 @@ function renderHost(
   }
 }
 
+/** An avatar's own corner radius (`.cornerRadius()`): Bloom's Avatar `style`. */
+const avatarCorners = new Map<string, Readonly<{ borderRadius: number }>>();
+function avatarCorner(
+  token: Exclude<CornerName, 'concentric'>,
+): Readonly<{ borderRadius: number }> {
+  let style = avatarCorners.get(token);
+  if (style === undefined) {
+    style = Object.freeze({ borderRadius: resolveCorner(token) });
+    avatarCorners.set(token, style);
+  }
+  return style;
+}
+
 /**
- * `Dialog(...).presented(binding)`: Bloom's Dialog in place, drawn as
+ * `Dialog(...).presented(binding)` (or `.control(control)`): Bloom's Dialog in place, drawn as
  * `.dialog(binding, Dialog(...))` draws it beside its view. Every modifier of
  * a dialog is its own (`drawDialog` reads them), so none is a box around it.
  */
@@ -3213,12 +3240,12 @@ function drawPresentedDialog(
   key: string | number | undefined,
 ): ReactElement {
   const presented = ownValue(p, 'presented');
-  if (presented === undefined)
+  if (presented === undefined && ownValue(p, 'control') === undefined)
     throw new Error(
-      `bloom-language: a Dialog is a view only with .presented(isPresented). See ${SEE.overlays}`,
+      `bloom-language: a Dialog is a view only with .presented(isPresented) or .control(control). See ${SEE.overlays}`,
     );
   return drawDialog(
-    { isPresented: presented.value, content: node },
+    { isPresented: presented?.value, content: node },
     (children) => renderChildren(children, inner),
     (child) => renderTree(child, inner),
     key,
