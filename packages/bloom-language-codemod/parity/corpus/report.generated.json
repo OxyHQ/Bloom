@@ -1,11 +1,11 @@
 {
   "app": "parity/sample-app",
-  "files": 11,
-  "changedFiles": 11,
-  "candidates": 181,
-  "converted": 180,
-  "regions": 67,
-  "rate": 99.4,
+  "files": 12,
+  "changedFiles": 12,
+  "candidates": 190,
+  "converted": 189,
+  "regions": 70,
+  "rate": 99.5,
   "overridden": [],
   "bloomComponents": {
     "@oxy.so/bloom/segmented-control#SegmentedControlItemText": 5,

@@ -177,6 +177,7 @@ export const DURATION = ${ts(scales.duration)} as const;
 export const LENGTH = ${ts(scales.length)} as const;
 export const Z_INDEX = ${ts(scales.zIndex)} as const;
 export const SHADOW = ${ts(scales.shadow)} as const;
+export const TEXT_SHADOW = ${ts(scales.textShadow)} as const;
 export const SCALE = ${ts(scales.scale)} as const;
 export const ROTATION = ${ts(scales.rotation)} as const;
 /** The point a view scales and rotates about: its transform-origin. */

@@ -227,6 +227,31 @@ fn elevation_rings_and_overlays_are_checked() {
 }
 
 #[test]
+fn mentions_host_props_text_shadow_and_inline_insets_are_checked() {
+    let ok = compiled(
+        "export const x = (f) => VStack(Text('a').textShadow('0 1px 3px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })).onPress(f).onLongPress(f, '500').accessibilityElement(false).focusable(false).collapsable(false).sticky().position({ vertical: 'sm' });\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let ok =
+        compiled_with("TextField", "export const x = (v) => TextField(v, 'Link').textContentType('URL');\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => Text('a').textShadow('0 1px 3px rgb(0 0 0 / 0.5)');\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown textShadow token '0 1px 3px rgb(0 0 0 / 0.5)' for .textShadow()"
+    );
+    let output = compiled("export const x = () => HStack().textShadow('0 1px 3px rgb(0 0 0 / 0.8)');\n");
+    assert_eq!(output.diagnostics[0].message, "HStack has no modifier .textShadow()");
+    let output = compiled("export const x = () => HStack().sticky('leading');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown stickyEdge token 'leading' for .sticky()");
+    let output = compiled("export const x = (f) => HStack().onLongPress(f, '600');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown duration token '600' for .onLongPress()");
+    let output =
+        compiled_with("TextField", "export const x = (v) => TextField(v, 'Link').textContentType('url');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown textContentType token 'url' for .textContentType()");
+}
+
+#[test]
 fn the_small_modifiers_and_numeric_tokens_are_checked() {
     let ok = compiled(
         "export const x = () => VStack(Text('1').monospacedDigit().wordBreak('all')).corner('3xl', 'top').corner('sm', 'bottom-trailing').basis('none').scale('105').allowsHitTesting(false).accessibilityOnly().zIndex('50').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)').ring('primary', '3').frame({ width: 'fit' }).listMarker('disc');\n",

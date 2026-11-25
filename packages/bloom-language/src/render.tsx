@@ -202,6 +202,7 @@ import {
   HIT_SLOP,
   isFontFamily,
   resolveAvatarSize,
+  resolveDuration,
   resolveCorner,
   resolveFont,
   resolveBorderWidth,
@@ -352,6 +353,8 @@ interface Plan {
   /** A press that goes somewhere (`navigate()`), resolved against the environment's navigator. */
   navigation: Navigation | undefined;
   onLongPress: (() => void) | undefined;
+  /** `.onLongPress(action, duration)`: React Native's `delayLongPress`, in milliseconds. */
+  longPressDelay: number | undefined;
   onHoverIn: (() => void) | undefined;
   onHoverOut: (() => void) | undefined;
   hoverGroup: boolean;
@@ -679,6 +682,7 @@ function plan(node: Node, env: Env): Plan {
     onPress: undefined,
     navigation: undefined,
     onLongPress: undefined,
+    longPressDelay: undefined,
     onHoverIn: undefined,
     onHoverOut: undefined,
     hoverGroup: false,
@@ -755,6 +759,7 @@ function plan(node: Node, env: Env): Plan {
       case 'shrink':
       case 'alignSelf':
       case 'position':
+      case 'sticky':
       case 'zIndex':
       case 'hidden':
       case 'basis':
@@ -775,6 +780,7 @@ function plan(node: Node, env: Env): Plan {
       case 'onLongPress':
         result.pressable = true;
         result.onLongPress = modifier.value;
+        result.longPressDelay = resolveDuration(modifier.duration);
         break;
       case 'hoverGroup':
         result.hoverGroup = true;
@@ -1034,6 +1040,12 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (live !== undefined) props.accessibilityLiveRegion = live;
   const hidden = ownValue(p, 'accessibilityHidden')?.value;
   if (hidden !== undefined) Object.assign(props, hidden ? HIDDEN : SHOWN);
+  const element = ownValue(p, 'accessibilityElement')?.value;
+  if (element !== undefined) props.accessible = element;
+  const focusable = ownValue(p, 'focusable')?.value;
+  if (focusable !== undefined) props.tabIndex = focusable ? 0 : -1;
+  const collapsable = ownValue(p, 'collapsable')?.value;
+  if (collapsable !== undefined) props.collapsable = collapsable;
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
   // The escape hatches, on whichever host is outermost.
@@ -1051,6 +1063,7 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
     else if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
+    if (p.longPressDelay !== undefined) props.delayLongPress = p.longPressDelay;
     if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
@@ -3464,10 +3477,11 @@ function drawText(
     link: link !== undefined,
     tabular: ownValue(p, 'monospacedDigit') !== undefined,
     wordBreak: ownValue(p, 'wordBreak')?.value,
+    shadow: ownValue(p, 'textShadow')?.value,
     ellipsis: ownValue(p, 'truncation')?.value === 'tail' && ownValue(p, 'lines') === undefined,
   };
   const textStyleName = span === undefined ? ownValue(p, 'textStyle')?.value : undefined;
-  const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}|${look.tabular ? 'tn' : ''}|${look.wordBreak ?? ''}|${look.ellipsis ? 'el' : ''}`;
+  const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}|${look.tabular ? 'tn' : ''}|${look.wordBreak ?? ''}|${look.shadow ?? ''}|${look.ellipsis ? 'el' : ''}`;
   const spanKey = span === undefined ? '' : [...span].sort().join(',');
   const blockquote = textStyleName === 'blockquote';
   const props = hostProps(behaviour, key);

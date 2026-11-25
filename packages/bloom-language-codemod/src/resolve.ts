@@ -308,7 +308,24 @@ export function resolveClassName(
     return found;
   };
 
-  for (const token of className.split(/\s+/).filter(Boolean)) {
+  const tokens = className.split(/\s+/).filter(Boolean);
+  const sticky = stickyOf(tokens);
+  if (sticky !== undefined) {
+    const into = group([]);
+    const mod: Mod = { name: 'sticky', args: [sticky.edge] };
+    into.mods.push(mod);
+    into.subjects.set(mod, sticky.tokens.join(' '));
+  }
+  for (const token of tokens) {
+    if (sticky?.tokens.includes(token)) continue;
+    if (splitVariants(token).utility === 'sticky') {
+      fail(
+        token,
+        'sticky',
+        'a sticky position held at no edge but `top-0` or `bottom-0` of the same variant (web only)',
+      );
+      continue;
+    }
     const { variants, utility: rawUtility } = splitVariants(token);
     if (rawUtility.startsWith('!') || rawUtility.endsWith('!')) {
       fail(token, 'important', 'an !important utility outranks every other rule');
@@ -458,6 +475,27 @@ export function resolveClassName(
     .filter((v) => v.conditions.length > 0)
     .sort((a, b) => rank(a.conditions) - rank(b.conditions));
   return { ok: true, value: { axis, mods: base, variants } };
+}
+
+/**
+ * `sticky` with `top-0` or `bottom-0`, both bare or both `web:`: the
+ * language's `.sticky(edge)`, which is the web's alone (NativeWind draws no
+ * sticky position natively, and a relative view's zero inset moves nothing),
+ * so the `web:` its classes are written under is the modifier's own.
+ */
+function stickyOf(
+  tokens: readonly string[],
+): { readonly edge: 'top' | 'bottom'; readonly tokens: readonly string[] } | undefined {
+  for (const prefix of ['', 'web:']) {
+    if (!tokens.includes(`${prefix}sticky`)) continue;
+    const edges = (['top', 'bottom'] as const).filter((edge) =>
+      tokens.includes(`${prefix}${edge}-0`),
+    );
+    if (edges.length !== 1) return undefined;
+    const edge = edges[0] as 'top' | 'bottom';
+    return { edge, tokens: [`${prefix}sticky`, `${prefix}${edge}-0`] };
+  }
+  return undefined;
 }
 
 function rank(conditions: readonly string[]): number {

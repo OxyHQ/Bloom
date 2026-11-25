@@ -26,6 +26,7 @@ type S = {
   "length": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full" | "1/2" | "1/3" | "2/3" | "1/4" | "3/4" | "1/5" | "2/5" | "3/5" | "90%" | "31%" | "fit";
   "zIndex": "2" | "3" | "4" | "5" | "6" | "7" | "20" | "30" | "50" | "60" | "base" | "raised" | "floating" | "dropdown" | "-1" | "auto";
   "shadow": "s" | "m" | "floating" | "0 1px rgb(0 0 0 / 0.05)" | "0 1px 2px 0 rgb(0 0 0 / 0.05)" | "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)" | "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" | "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)" | "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" | "0 25px 50px -12px rgb(0 0 0 / 0.25)";
+  "textShadow": "0 1px 2px rgb(0 0 0 / 0.8)" | "0 1px 3px rgb(0 0 0 / 0.8)";
   "scale": "95" | "99" | "103" | "105" | "110" | "dip" | "pressed" | "full" | "swell";
   "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill" | "none";
   "corner": "6" | "7" | "10" | "14" | "15" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "concentric" | "infinite";
@@ -48,7 +49,7 @@ type S = {
   "iconSize": "10" | "11" | "13" | "14" | "15" | "17" | "18" | "21" | "22" | "40" | "44" | "64" | "96" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
   "avatarSize": "xs" | "sm" | "md" | "lg" | "xl";
   "glassOpacity": "subtle" | "dim" | "medium" | "strong";
-  "duration": "0" | "250" | "400" | "800" | "1000" | "2500" | "3000" | "4000" | "instant" | "fast" | "normal" | "slow";
+  "duration": "0" | "250" | "400" | "500" | "800" | "1000" | "2500" | "3000" | "4000" | "instant" | "fast" | "normal" | "slow";
   "rotation": "45" | "none" | "quarter" | "half";
   "motion": "press" | "select" | "expand" | "present" | "dismiss" | "fade" | "slide" | "thumb" | "pop" | "roll" | "enter" | "exit" | "restack" | "spin" | "pulse";
   "timedMotion": "press" | "present" | "dismiss" | "fade" | "slide" | "thumb" | "pop" | "roll" | "enter" | "exit" | "restack" | "spin" | "pulse";
@@ -138,6 +139,8 @@ type S = {
   "keyboard": "default" | "email-address" | "numeric" | "number-pad" | "decimal-pad" | "phone-pad" | "url" | "web-search";
   "autocapitalize": "none" | "sentences" | "words" | "characters";
   "contentType": "off" | "email" | "username" | "password" | "new-password" | "current-password" | "one-time-code" | "name" | "given-name" | "family-name" | "tel" | "postal-code" | "street-address" | "url";
+  "textContentType": "none" | "URL" | "addressCity" | "addressCityAndState" | "addressState" | "countryName" | "creditCardNumber" | "creditCardExpiration" | "creditCardExpirationMonth" | "creditCardExpirationYear" | "creditCardSecurityCode" | "creditCardType" | "creditCardName" | "creditCardGivenName" | "creditCardMiddleName" | "creditCardFamilyName" | "emailAddress" | "familyName" | "fullStreetAddress" | "givenName" | "jobTitle" | "location" | "middleName" | "name" | "namePrefix" | "nameSuffix" | "nickname" | "organizationName" | "postalCode" | "sublocality" | "telephoneNumber" | "username" | "password" | "newPassword" | "oneTimeCode" | "birthdate" | "birthdateDay" | "birthdateMonth" | "birthdateYear" | "cellularEID" | "cellularIMEI" | "dateTime" | "flightNumber" | "shipmentTrackingNumber";
+  "stickyEdge": "top" | "bottom";
   "submitLabel": "done" | "go" | "next" | "search" | "send";
   "textareaResize": "none" | "vertical";
   "labelSize": "xs" | "sm" | "md";
@@ -358,6 +361,7 @@ type UniversalChecks = [
   Expect<"safeAreaPadding(physicalEdge)", Ok<At<Any['safeAreaPadding'], '0'>, S['physicalEdge']>>,
   Expect<"shrink(shrink)", Ok<At<Any['shrink'], '0'>, S['shrink']>>,
   Expect<"alignSelf(alignment)", Ok<At<Any['alignSelf'], '0'>, S['alignment']>>,
+  Expect<"sticky(stickyEdge)", Ok<At<Any['sticky'], '0'>, S['stickyEdge']>>,
   Expect<"zIndex(zIndex)", OkPoints<At<Any['zIndex'], '0'>, S['zIndex']>>,
   Expect<"basis(length)", Ok<At<Any['basis'], '0'>, S['length']>>,
   Expect<"basis(length) takes AppToken<'space'>", Takes<At<Any['basis'], '0'>, AppToken<'space'>>>,
@@ -392,6 +396,7 @@ type UniversalChecks = [
   Expect<"leading(leading)", Ok<At<Any['leading'], '0'>, S['leading']>>,
   Expect<"leading(leading) takes AppToken<'leading'>", Takes<At<Any['leading'], '0'>, AppToken<'leading'>>>,
   Expect<"tracking(tracking)", Ok<At<Any['tracking'], '0'>, S['tracking']>>,
+  Expect<"onLongPress(duration)", Ok<At<Any['onLongPress'], '1'>, S['duration']>>,
   Expect<"pressFade(opacity)", Ok<At<Any['pressFade'], '0'>, S['opacity']>>,
   Expect<"role(role)", Ok<At<Any['role'], '0'>, S['role']>>,
   Expect<"liveRegion(liveRegion)", Ok<At<Any['liveRegion'], '0'>, S['liveRegion']>>,
@@ -460,6 +465,7 @@ type textChecks = [
   Expect<"text.textAlign(textAlign)", Ok<At<View<'Text'>['textAlign'], '0'>, S['textAlign']>>,
   Expect<"text.textCase(textCase)", Ok<At<View<'Text'>['textCase'], '0'>, S['textCase']>>,
   Expect<"text.wordBreak(wordBreak)", Ok<At<View<'Text'>['wordBreak'], '0'>, S['wordBreak']>>,
+  Expect<"text.textShadow(textShadow)", Ok<At<View<'Text'>['textShadow'], '0'>, S['textShadow']>>,
   Expect<"text.contentTransition(contentTransition)", Ok<At<View<'Text'>['contentTransition'], '0'>, S['contentTransition']>>,
 ];
 
@@ -752,6 +758,7 @@ type tabsChecks = [
 ];
 
 type tabItemChecks = [
+  Expect<"tabItem.onLongPress arity", Same<Lengths<View<'TabItem'>['onLongPress']>, 1>>,
   Expect<"tabItem.padding(edge)", Ok<Lead<View<'TabItem'>['padding']>, S['edge']>>,
   Expect<"tabItem.padding(padding)", Ok<Last<View<'TabItem'>['padding']>, S['padding']>>,
   Expect<"tabItem.padding(padding) takes AppToken<'space'>", Takes<Last<View<'TabItem'>['padding']>, AppToken<'space'>>>,
@@ -820,6 +827,7 @@ type textFieldChecks = [
   Expect<"textField.keyboard(keyboard)", Ok<At<View<'TextField'>['keyboard'], '0'>, S['keyboard']>>,
   Expect<"textField.autocapitalize(autocapitalize)", Ok<At<View<'TextField'>['autocapitalize'], '0'>, S['autocapitalize']>>,
   Expect<"textField.contentType(contentType)", Ok<At<View<'TextField'>['contentType'], '0'>, S['contentType']>>,
+  Expect<"textField.textContentType(textContentType)", Ok<At<View<'TextField'>['textContentType'], '0'>, S['textContentType']>>,
   Expect<"textField.submitLabel(submitLabel)", Ok<At<View<'TextField'>['submitLabel'], '0'>, S['submitLabel']>>,
 ];
 
@@ -953,6 +961,14 @@ type sidebarChecks = [
   Expect<"sidebar.teamPlacement(teamPlacement)", Ok<At<View<'Sidebar'>['teamPlacement'], '0'>, S['teamPlacement']>>,
 ];
 
+type navItemChecks = [
+  Expect<"navItem.onLongPress arity", Same<Lengths<View<'NavItem'>['onLongPress']>, 1>>,
+];
+
+type treeItemChecks = [
+  Expect<"treeItem.onLongPress arity", Same<Lengths<View<'TreeItem'>['onLongPress']>, 1>>,
+];
+
 type railChecks = [
   Expect<"rail.width arity", Same<Lengths<View<'Rail'>['width']>, 1>>,
   Expect<"rail.width(space)", Ok<At<View<'Rail'>['width'], '0'>, S['space']>>,
@@ -974,6 +990,10 @@ type panelChecks = [
   Expect<"panel.minWidth(space) takes AppToken<'space'>", Takes<At<View<'Panel'>['minWidth'], '0'>, AppToken<'space'>>>,
   Expect<"panel.maxWidth(space)", Ok<At<View<'Panel'>['maxWidth'], '0'>, S['space']>>,
   Expect<"panel.maxWidth(space) takes AppToken<'space'>", Takes<At<View<'Panel'>['maxWidth'], '0'>, AppToken<'space'>>>,
+];
+
+type destinationChecks = [
+  Expect<"destination.onLongPress arity", Same<Lengths<View<'Destination'>['onLongPress']>, 1>>,
 ];
 
 type toolbarViewChecks = [

@@ -2215,6 +2215,93 @@
   "appColors": null
  },
  {
+  "name": "components/HostProps.tsx:9",
+  "before": "<View collapsable={false}>\n      <Pressable onPress={() => {}} accessible={false} tabIndex={-1}>\n        <Text>Ana liked your post</Text>\n      </Pressable>\n      <Pressable onPress={() => {}} onLongPress={() => {}} delayLongPress={500}>\n        <Text>Show all</Text>\n      </Pressable>\n    </View>",
+  "after": "toElement(VStack(VStack(LText('Ana liked your post')).onPress(() => {}).accessibilityElement(false).focusable(false), VStack(LText('Show all')).onPress(() => {}).onLongPress(() => {}, '500')).collapsable(false))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/HostProps.tsx:22",
+  "before": "<View className=\"w-full z-10 web:sticky web:top-0\">\n      <Text>Search</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Search')).frame({ width: 'full' }).sticky('top').zIndex('floating'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "toElement"
+  ],
+  "classes": [
+   "w-full",
+   "z-10",
+   "web:sticky",
+   "web:top-0"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/HostProps.tsx:30",
+  "before": "<View>\n      <RNText\n        style={{\n          position: 'absolute',\n          insetInline: 0,\n          textShadowColor: 'rgba(0, 0, 0, 0.8)',\n          textShadowOffset: { width: 0, height: 1 },\n          textShadowRadius: 2,\n        }}\n      >\n        Caption\n      </RNText>\n    </View>",
+  "after": "toElement(VStack(RawText('Caption').textShadow('0 1px 2px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "RNText": {
+    "module": "react-native",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "RawText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Insets.tsx:11",
   "before": "<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>\n      <Text>Compose</Text>\n    </View>",
   "after": "toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))",

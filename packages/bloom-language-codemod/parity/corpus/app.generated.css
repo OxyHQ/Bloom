@@ -3053,6 +3053,9 @@
   .web\:sticky {
     position: sticky;
   }
+  .web\:top-0 {
+    top: 0px;
+  }
   .web\:top-2 {
     top: calc(4px * 2);
   }

@@ -250,6 +250,9 @@ import {
   type ScaleName,
   type CornerSide,
   type WordBreak,
+  type StickyEdge,
+  type TextShadowName,
+  type TextContentType,
   type ListMarker,
   type ButtonLinkTone,
   type ButtonShape,
@@ -783,6 +786,7 @@ export interface ValueModifiers {
   autocapitalize: Autocapitalize;
   autocorrect: boolean;
   contentType: ContentType;
+  textContentType: TextContentType;
   submitLabel: SubmitLabel;
   onSubmit: () => void;
   onClearText: () => void;
@@ -1292,6 +1296,10 @@ export interface PositionEdges {
   /** A physical side, the same in a right-to-left layout. */
   left?: EdgeDistance;
   right?: EdgeDistance;
+  /** Both inline edges at once (React Native's `insetInline`): its start and its end. */
+  horizontal?: EdgeDistance;
+  /** Both block edges at once (React Native's `insetBlock`): its top and its bottom. */
+  vertical?: EdgeDistance;
 }
 
 /** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
@@ -1564,7 +1572,12 @@ export type Modifier =
       readonly value: (count: number) => string;
     }
   | { readonly kind: 'onPress'; readonly key: string; readonly value: Press | undefined }
-  | { readonly kind: 'onLongPress'; readonly key: string; readonly value: (() => void) | undefined }
+  | {
+      readonly kind: 'onLongPress';
+      readonly key: string;
+      readonly value: (() => void) | undefined;
+      readonly duration: DurationName | undefined;
+    }
   | {
       readonly kind: 'onHover';
       readonly key: string;
@@ -1593,6 +1606,11 @@ export type Modifier =
     }
   | { readonly kind: 'liveRegion'; readonly key: string; readonly value: LiveRegion }
   | { readonly kind: 'accessibilityHidden'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'accessibilityElement'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'focusable'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'collapsable'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'sticky'; readonly key: string; readonly value: StickyEdge }
+  | { readonly kind: 'textShadow'; readonly key: string; readonly value: TextShadowName }
   | {
       readonly kind: 'hitSlop';
       readonly key: string;
@@ -2395,8 +2413,13 @@ export class Node {
   onPress(value: Press | undefined): Node {
     return this.with({ kind: 'onPress', key: 'onPress', value });
   }
-  onLongPress(value: (() => void) | undefined): Node {
-    return this.with({ kind: 'onLongPress', key: 'onLongPress', value });
+  onLongPress(value: (() => void) | undefined, duration?: DurationName): Node {
+    return this.with({
+      kind: 'onLongPress',
+      key: duration === undefined ? 'onLongPress' : `onLongPress:${duration}`,
+      value,
+      duration,
+    });
   }
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Node {
     return this.with({ kind: 'onHover', key: 'onHover', enter, leave });
@@ -2430,6 +2453,18 @@ export class Node {
   }
   accessibilityHidden(value = true): Node {
     return this.with({ kind: 'accessibilityHidden', key: `a11yHidden:${value}`, value });
+  }
+  accessibilityElement(value: boolean): Node {
+    return this.with({ kind: 'accessibilityElement', key: `a11yElement:${value}`, value });
+  }
+  focusable(value = true): Node {
+    return this.with({ kind: 'focusable', key: `focusable:${value}`, value });
+  }
+  collapsable(value: boolean): Node {
+    return this.with({ kind: 'collapsable', key: `collapsable:${value}`, value });
+  }
+  sticky(value: StickyEdge = 'top'): Node {
+    return this.with({ kind: 'sticky', key: `sticky:${value}`, value });
   }
   hitSlop(edgeOrValue: PhysicalEdge | HitSlopName, value?: HitSlopName): Node {
     const edge: PhysicalEdge = value === undefined ? 'all' : (edgeOrValue as PhysicalEdge);
@@ -3056,6 +3091,9 @@ export class Node {
   wordBreak(value: WordBreak): Node {
     return this.with({ kind: 'wordBreak', key: `break:${value}`, value });
   }
+  textShadow(value: TextShadowName): Node {
+    return this.with({ kind: 'textShadow', key: `tshadow:${value}`, value });
+  }
   lineStyle(value: DividerStyle): Node {
     return this.set('lineStyle', value);
   }
@@ -3289,6 +3327,9 @@ export class Node {
   }
   contentType(value: ContentType): Node {
     return this.set('contentType', value);
+  }
+  textContentType(value: TextContentType): Node {
+    return this.set('textContentType', value);
   }
   submitLabel(value: SubmitLabel): Node {
     return this.set('submitLabel', value);
@@ -4541,6 +4582,13 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * (`.overlay(view, alignment)`) is the way to lay one view over another.
    */
   position(value: PositionEdges): Self;
+  /**
+   * Web: held at its scroll container's `edge` (the top by default) once
+   * scrolled to it, in its parent's flow until then (CSS `position: sticky`
+   * at 0). React Native has no sticky position, so native draws the view in
+   * place; a list's or a scroll's own sticky rows are `.stickyIndices()`.
+   */
+  sticky(edge?: StickyEdge): Self;
   /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
   offset(value: OffsetSpec): Self;
   /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */
@@ -4624,7 +4672,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /** Letter spacing for this view's text, in em of its size (`tight` … `widest`): its font's, else Bloom Text's 13px. */
   tracking(value: TrackingName): Self;
   onPress(value: Press | undefined): Self;
-  onLongPress(value: (() => void) | undefined): Self;
+  /**
+   * The action of a press held down, after `duration` (React Native's
+   * `delayLongPress`: its own 500 ms when the chain names none).
+   */
+  onLongPress(value: (() => void) | undefined, duration?: DurationName): Self;
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Self;
   /**
    * Web: the pointer over this view is what `group-hover:` styles inside it
@@ -4687,6 +4739,26 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * 'no-hide-descendants'`, on the web `aria-hidden`. `false` reads it again.
    */
   accessibilityHidden(value?: boolean): Self;
+  /**
+   * Whether the view is one element to assistive technology (React Native's
+   * `accessible`): `false` makes it no element of its own, so what is inside
+   * it is read on its own (a row whose label area hands its name to the box
+   * beside it). Its press and focus stay.
+   */
+  accessibilityElement(value: boolean): Self;
+  /**
+   * Whether keyboard focus stops at the view (React Native's `tabIndex`: `0`,
+   * or `-1` for `false`): `false` keeps its press but takes it out of the
+   * focus order on the web and Android, as a pressable whose action another
+   * control already offers.
+   */
+  focusable(value?: boolean): Self;
+  /**
+   * `false` keeps the view's own native view (React Native's `collapsable`):
+   * Android flattens a view that only lays out its children, which a native
+   * component measuring or animating it needs to find. Draws nothing.
+   */
+  collapsable(value: boolean): Self;
   /**
    * How far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`,
    * or an exact slop (`'4'` `'5'`). With a side first (`top`, `bottom`,
@@ -4932,6 +5004,13 @@ export interface TextView extends ViewModifiers<TextView> {
   monospacedDigit(): TextView;
   /** Web: where a line may break inside a word (`all`, `words`); native text keeps its platform's breaking. */
   wordBreak(value: WordBreak): TextView;
+  /**
+   * A shadow under the glyphs, each named by its exact CSS `text-shadow`
+   * (`'0 1px 3px rgb(0 0 0 / 0.8)'`): React Native's `textShadowColor`,
+   * `textShadowOffset` and `textShadowRadius`, the web's `text-shadow`. For
+   * text over a photo or a video.
+   */
+  textShadow(value: TextShadowName): TextView;
   /**
    * How a change of the text inside an animation plays, up when `direction`
    * rose and down when it fell: `roll` rolls the old text out and the new one

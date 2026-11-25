@@ -25,6 +25,7 @@ import {
   SHRINK,
   FLEX,
   SPACE,
+  TEXT_SHADOW,
   TRACKING,
   TRACKING_PX,
   type TYPE_FAMILIES,
@@ -117,6 +118,8 @@ export type ZIndexName = keyof typeof Z_INDEX | (typeof ENUMS.zIndexExtra)[numbe
  * box-shadow (`'0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'` is `shadow-sm`).
  */
 export type ShadowName = keyof typeof SHADOW;
+/** A text's shadow, named by its exact CSS `text-shadow`. */
+export type TextShadowName = keyof typeof TEXT_SHADOW;
 /**
  * How much a view is scaled: Bloom's `dip` 0.7, `pressed` 0.98, `full` 1,
  * `swell` 1.2; or an exact factor from apps, in percent (`'105'` is 1.05).
@@ -126,6 +129,10 @@ export type ScaleName = keyof typeof SCALE;
 export type CornerSide = (typeof ENUMS.cornerSide)[number];
 /** Where a web line may break inside a word: `all` anywhere (`word-break: break-all`), `words` only a word too long for its line (`overflow-wrap: break-word`). */
 export type WordBreak = (typeof ENUMS.wordBreak)[number];
+/** The scroll container's edge a sticky view is held at. */
+export type StickyEdge = (typeof ENUMS.stickyEdge)[number];
+/** iOS's kind of a text input's content (React Native's `textContentType`), which its autofill offers. */
+export type TextContentType = (typeof ENUMS.textContentType)[number];
 /** The marker a web list draws before each of its rows: `disc` (Tailwind's `list-disc`) or `decimal`. */
 export type ListMarker = (typeof ENUMS.listMarker)[number];
 /** How a stack spreads its children along its axis. */
@@ -380,6 +387,7 @@ export {
   OPACITY,
   SCALE,
   SHADOW,
+  TEXT_SHADOW,
   SHRINK,
   FLEX,
   ALIGNMENT,

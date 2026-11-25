@@ -7,13 +7,13 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (651). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (657). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
 Every node takes these, except the 65 nodes that take only their own ([menuItem](bloom-language-nodes.mdx#menuitem), [menuSubmenu](bloom-language-nodes.mdx#menusubmenu), [menuSection](bloom-language-nodes.mdx#menusection), [alert](bloom-language-nodes.mdx#alert), [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [connectionStatus](bloom-language-nodes.mdx#connectionstatus), [menuContent](bloom-language-nodes.mdx#menucontent), [menuActions](bloom-language-nodes.mdx#menuactions), [header](bloom-language-nodes.mdx#header), [bottomBar](bloom-language-nodes.mdx#bottombar), [tab](bloom-language-nodes.mdx#tab), [cardTitle](bloom-language-nodes.mdx#cardtitle), [cardDescription](bloom-language-nodes.mdx#carddescription), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary), [group](bloom-language-nodes.mdx#group), [appLayout](bloom-language-nodes.mdx#applayout), [navStack](bloom-language-nodes.mdx#navstack), [route](bloom-language-nodes.mdx#route), [tabView](bloom-language-nodes.mdx#tabview), [option](bloom-language-nodes.mdx#option), [optionGroup](bloom-language-nodes.mdx#optiongroup), [groupedSectionIcon](bloom-language-nodes.mdx#groupedsectionicon), [groupedSectionDivider](bloom-language-nodes.mdx#groupedsectiondivider), [groupedSectionCollapse](bloom-language-nodes.mdx#groupedsectioncollapse), [bottomSheet](bloom-language-nodes.mdx#bottomsheet), [sidebar](bloom-language-nodes.mdx#sidebar), [navItem](bloom-language-nodes.mdx#navitem), [treeSection](bloom-language-nodes.mdx#treesection), [treeFolder](bloom-language-nodes.mdx#treefolder), [treeItem](bloom-language-nodes.mdx#treeitem), [rail](bloom-language-nodes.mdx#rail), [railItem](bloom-language-nodes.mdx#railitem), [command](bloom-language-nodes.mdx#command), [commandItem](bloom-language-nodes.mdx#commanditem), [commandGroup](bloom-language-nodes.mdx#commandgroup), [settings](bloom-language-nodes.mdx#settings), [settingsGroup](bloom-language-nodes.mdx#settingsgroup), [settingsItem](bloom-language-nodes.mdx#settingsitem), [panel](bloom-language-nodes.mdx#panel), [destination](bloom-language-nodes.mdx#destination), [toolbarView](bloom-language-nodes.mdx#toolbarview), [stickySection](bloom-language-nodes.mdx#stickysection), [pageFooter](bloom-language-nodes.mdx#pagefooter), [autoHideBar](bloom-language-nodes.mdx#autohidebar), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [sidebarMode](bloom-language-nodes.mdx#sidebarmode), [settingsTextField](bloom-language-nodes.mdx#settingstextfield), [settingsDateField](bloom-language-nodes.mdx#settingsdatefield), [fact](bloom-language-nodes.mdx#fact), [videoPlayback](bloom-language-nodes.mdx#videoplayback), [videoViewability](bloom-language-nodes.mdx#videoviewability), [videoViewabilityScope](bloom-language-nodes.mdx#videoviewabilityscope), [menubarMenu](bloom-language-nodes.mdx#menubarmenu), [mediaFlightLayer](bloom-language-nodes.mdx#mediaflightlayer), [avatarFlightLayer](bloom-language-nodes.mdx#avatarflightlayer), [gallery](bloom-language-nodes.mdx#gallery), [dataColumn](bloom-language-nodes.mdx#datacolumn), [sortableChip](bloom-language-nodes.mdx#sortablechip), [viewport](bloom-language-nodes.mdx#viewport), [toolbarGroup](bloom-language-nodes.mdx#toolbargroup), [toolbarSpacer](bloom-language-nodes.mdx#toolbarspacer), [confirmationDialog](bloom-language-nodes.mdx#confirmationdialog)):
 
-[`.padding()`](#padding), [`.safeAreaPadding()`](#safeareapadding), [`.frame()`](#frame), [`.aspectRatio()`](#aspectratio), [`.grow()`](#grow), [`.shrink()`](#shrink), [`.alignSelf()`](#alignself), [`.position()`](#position), [`.offset()`](#offset), [`.zIndex()`](#zindex), [`.hidden()`](#hidden), [`.basis()`](#basis), [`.flex()`](#flex), [`.margin()`](#margin), [`.scale()`](#scale), [`.allowsHitTesting()`](#allowshittesting), [`.accessibilityOnly()`](#accessibilityonly), [`.background()`](#background), [`.overlay()`](#overlay), [`.border()`](#border), [`.borderStyle()`](#borderstyle), [`.ring()`](#ring), [`.corner()`](#corner), [`.cornerCurve()`](#cornercurve), [`.clipped()`](#clipped), [`.opacity()`](#opacity), [`.shadow()`](#shadow), [`.glass()`](#glass), [`.blur()`](#blur), [`.foreground()`](#foreground), [`.font()`](#font), [`.weight()`](#weight), [`.leading()`](#leading), [`.tracking()`](#tracking), [`.onPress()`](#onpress), [`.onLongPress()`](#onlongpress), [`.onHover()`](#onhover), [`.hoverGroup()`](#hovergroup), [`.pressScale()`](#pressscale), [`.pressFade()`](#pressfade), [`.label()`](#label), [`.hint()`](#hint), [`.role()`](#role), [`.accessibilityState()`](#accessibilitystate), [`.accessibilityValue()`](#accessibilityvalue), [`.liveRegion()`](#liveregion), [`.accessibilityHidden()`](#accessibilityhidden), [`.hitSlop()`](#hitslop), [`.testID()`](#testid), [`.ref()`](#ref), [`.onLayout()`](#onlayout), [`.badge()`](#badge), [`.id()`](#id), [`.title()`](#title), [`.titleDisplay()`](#titledisplay), [`.subtitle()`](#subtitle), [`.header()`](#header), [`.toolbar()`](#toolbar), [`.toolbarLeading()`](#toolbarleading), [`.onBack()`](#onback), [`.backLabel()`](#backlabel), [`.headingLevel()`](#headinglevel), [`.footer()`](#footer), [`.sheet()`](#sheet), [`.alert()`](#alert), [`.dialog()`](#dialog), [`.popover()`](#popover), [`.onReselect()`](#onreselect), [`.when()`](#when), [`.rotation()`](#rotation), [`.animation()`](#animation), [`.animatesColors()`](#animatescolors), [`.transition()`](#transition), [`.keyframes()`](#keyframes), [`.repeatForever()`](#repeatforever), [`.delay()`](#delay), [`.anchor()`](#anchor), [`.matchedGeometry()`](#matchedgeometry), [`.drag()`](#drag), [`.swipe()`](#swipe), [`.pinch()`](#pinch), [`.onDoubleTap()`](#ondoubletap), [`.screenKind()`](#screenkind), [`.screenScroll()`](#screenscroll), [`.documentScroll()`](#documentscroll), [`.headerPlacement()`](#headerplacement), [`.scrollEdge()`](#scrolledge), [`.underlay()`](#underlay), [`.floatingAction()`](#floatingaction), [`.contentClearance()`](#contentclearance), [`.navigationScope()`](#navigationscope), [`.colorPreset()`](#colorpreset), [`.seed()`](#seed), [`.screenActive()`](#screenactive), [`.replacesBottomBar()`](#replacesbottombar), [`.screenBackground()`](#screenbackground), [`.reselectTop()`](#reselecttop), [`.initialHeaderHeight()`](#initialheaderheight), [`.initialFooterHeight()`](#initialfooterheight), [`.colorScope()`](#colorscope), [`.keyboardAvoiding()`](#keyboardavoiding), [`.provider()`](#provider), [`.fullScreenCover()`](#fullscreencover), [`.glassID()`](#glassid), [`.glassUnion()`](#glassunion), [`.glassTransition()`](#glasstransition), [`.inContent()`](#incontent), [`.disabled()`](#disabled), [`.environment()`](#environment), [`.controlSize()`](#controlsize), [`.buttonStyle()`](#buttonstyle), [`.modifier()`](#modifier), [`.confirmationDialog()`](#confirmationdialog), [`.phases()`](#phases)
+[`.padding()`](#padding), [`.safeAreaPadding()`](#safeareapadding), [`.frame()`](#frame), [`.aspectRatio()`](#aspectratio), [`.grow()`](#grow), [`.shrink()`](#shrink), [`.alignSelf()`](#alignself), [`.position()`](#position), [`.sticky()`](#sticky), [`.offset()`](#offset), [`.zIndex()`](#zindex), [`.hidden()`](#hidden), [`.basis()`](#basis), [`.flex()`](#flex), [`.margin()`](#margin), [`.scale()`](#scale), [`.allowsHitTesting()`](#allowshittesting), [`.accessibilityOnly()`](#accessibilityonly), [`.background()`](#background), [`.overlay()`](#overlay), [`.border()`](#border), [`.borderStyle()`](#borderstyle), [`.ring()`](#ring), [`.corner()`](#corner), [`.cornerCurve()`](#cornercurve), [`.clipped()`](#clipped), [`.opacity()`](#opacity), [`.shadow()`](#shadow), [`.glass()`](#glass), [`.blur()`](#blur), [`.foreground()`](#foreground), [`.font()`](#font), [`.weight()`](#weight), [`.leading()`](#leading), [`.tracking()`](#tracking), [`.onPress()`](#onpress), [`.onLongPress()`](#onlongpress), [`.onHover()`](#onhover), [`.hoverGroup()`](#hovergroup), [`.pressScale()`](#pressscale), [`.pressFade()`](#pressfade), [`.label()`](#label), [`.hint()`](#hint), [`.role()`](#role), [`.accessibilityState()`](#accessibilitystate), [`.accessibilityValue()`](#accessibilityvalue), [`.liveRegion()`](#liveregion), [`.accessibilityHidden()`](#accessibilityhidden), [`.accessibilityElement()`](#accessibilityelement), [`.focusable()`](#focusable), [`.collapsable()`](#collapsable), [`.hitSlop()`](#hitslop), [`.testID()`](#testid), [`.ref()`](#ref), [`.onLayout()`](#onlayout), [`.badge()`](#badge), [`.id()`](#id), [`.title()`](#title), [`.titleDisplay()`](#titledisplay), [`.subtitle()`](#subtitle), [`.header()`](#header), [`.toolbar()`](#toolbar), [`.toolbarLeading()`](#toolbarleading), [`.onBack()`](#onback), [`.backLabel()`](#backlabel), [`.headingLevel()`](#headinglevel), [`.footer()`](#footer), [`.sheet()`](#sheet), [`.alert()`](#alert), [`.dialog()`](#dialog), [`.popover()`](#popover), [`.onReselect()`](#onreselect), [`.when()`](#when), [`.rotation()`](#rotation), [`.animation()`](#animation), [`.animatesColors()`](#animatescolors), [`.transition()`](#transition), [`.keyframes()`](#keyframes), [`.repeatForever()`](#repeatforever), [`.delay()`](#delay), [`.anchor()`](#anchor), [`.matchedGeometry()`](#matchedgeometry), [`.drag()`](#drag), [`.swipe()`](#swipe), [`.pinch()`](#pinch), [`.onDoubleTap()`](#ondoubletap), [`.screenKind()`](#screenkind), [`.screenScroll()`](#screenscroll), [`.documentScroll()`](#documentscroll), [`.headerPlacement()`](#headerplacement), [`.scrollEdge()`](#scrolledge), [`.underlay()`](#underlay), [`.floatingAction()`](#floatingaction), [`.contentClearance()`](#contentclearance), [`.navigationScope()`](#navigationscope), [`.colorPreset()`](#colorpreset), [`.seed()`](#seed), [`.screenActive()`](#screenactive), [`.replacesBottomBar()`](#replacesbottombar), [`.screenBackground()`](#screenbackground), [`.reselectTop()`](#reselecttop), [`.initialHeaderHeight()`](#initialheaderheight), [`.initialFooterHeight()`](#initialfooterheight), [`.colorScope()`](#colorscope), [`.keyboardAvoiding()`](#keyboardavoiding), [`.provider()`](#provider), [`.fullScreenCover()`](#fullscreencover), [`.glassID()`](#glassid), [`.glassUnion()`](#glassunion), [`.glassTransition()`](#glasstransition), [`.inContent()`](#incontent), [`.disabled()`](#disabled), [`.environment()`](#environment), [`.controlSize()`](#controlsize), [`.buttonStyle()`](#buttonstyle), [`.modifier()`](#modifier), [`.confirmationDialog()`](#confirmationdialog), [`.phases()`](#phases)
 
 ## Modifiers
 
@@ -107,7 +107,7 @@ A ring outside the box (an outline, which takes no room): a role, `thin` by defa
 
 Pinned to its parent's edges, out of the stack's flow (absolute): each edge given is a distance from that edge of the parent. An overlay (`.overlay(view, alignment)`) is the way to lay one view over another.
 
-- Parameters: `{ top, bottom, leading, trailing, left, right }`, each [edgeDistance](bloom-language-tokens.mdx#edgedistance)
+- Parameters: `{ top, bottom, leading, trailing, left, right, horizontal, vertical }`, each [edgeDistance](bloom-language-tokens.mdx#edgedistance)
 - Signature: `.position(value: PositionEdges)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
@@ -445,7 +445,7 @@ Cross-fades the image in when it arrives, over a Bloom duration. Defaults to non
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.crossFade(value: DurationName)`
 - Taken by: [image](bloom-language-nodes.mdx#image)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `onLoad`
 
@@ -647,9 +647,13 @@ The side of the view it opens on, and its alignment along that side.
 
 ### `onLongPress`
 
-- Parameters: a value
-- Signature: `.onLongPress(value: (() => void) | undefined)`
+The action of a press held down, after `duration` (React Native's `delayLongPress`: its own 500 ms when the chain names none).
+
+- Parameters: a value; [duration](bloom-language-tokens.mdx#duration) (optional)
+- Signature: `.onLongPress(value: (() => void) | undefined, duration?: DurationName)`
 - Taken by: every node (universal), and [tabItem](bloom-language-nodes.mdx#tabitem), [navItem](bloom-language-nodes.mdx#navitem), [treeItem](bloom-language-nodes.mdx#treeitem), [destination](bloom-language-nodes.mdx#destination)
+- Narrower on: [tabItem](bloom-language-nodes.mdx#tabitem) (a value), [navItem](bloom-language-nodes.mdx#navitem) (a value), [treeItem](bloom-language-nodes.mdx#treeitem) (a value), [destination](bloom-language-nodes.mdx#destination) (a value)
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `onHover`
 
@@ -785,6 +789,39 @@ Hidden from screen readers, with everything inside it: on Android and iOS `acces
 - Parameters: a value (optional)
 - Signature: `.accessibilityHidden(value?: boolean)`
 - Taken by: every node (universal)
+
+### `accessibilityElement`
+
+Whether the view is one element to assistive technology (React Native's `accessible`): `false` makes it no element of its own, so what is inside it is read on its own (a row whose label area hands its name to the box beside it). Its press and focus stay.
+
+- Parameters: a value
+- Signature: `.accessibilityElement(value: boolean)`
+- Taken by: every node (universal)
+
+### `focusable`
+
+Whether keyboard focus stops at the view (React Native's `tabIndex`: `0`, or `-1` for `false`): `false` keeps its press but takes it out of the focus order on the web and Android, as a pressable whose action another control already offers.
+
+- Parameters: a value (optional)
+- Signature: `.focusable(value?: boolean)`
+- Taken by: every node (universal)
+
+### `collapsable`
+
+`false` keeps the view's own native view (React Native's `collapsable`): Android flattens a view that only lays out its children, which a native component measuring or animating it needs to find. Draws nothing.
+
+- Parameters: a value
+- Signature: `.collapsable(value: boolean)`
+- Taken by: every node (universal)
+
+### `sticky`
+
+Web: held at its scroll container's `edge` (the top by default) once scrolled to it, in its parent's flow until then (CSS `position: sticky` at 0). React Native has no sticky position, so native draws the view in place; a list's or a scroll's own sticky rows are `.stickyIndices()`.
+
+- Parameters: [stickyEdge](bloom-language-tokens.mdx#stickyedge) (optional)
+- Signature: `.sticky(edge?: StickyEdge)`
+- Taken by: every node (universal)
+- `stickyEdge` tokens: `'top'`, `'bottom'`
 
 ### `role`
 
@@ -1225,6 +1262,15 @@ Web: where a line may break inside a word (`all`, `words`); native text keeps it
 - Signature: `.wordBreak(value: WordBreak)`
 - Taken by: [text](bloom-language-nodes.mdx#text)
 - `wordBreak` tokens: `'all'`, `'words'`
+
+### `textShadow`
+
+A shadow under the glyphs, each named by its exact CSS `text-shadow` (`'0 1px 3px rgb(0 0 0 / 0.8)'`): React Native's `textShadowColor`, `textShadowOffset` and `textShadowRadius`, the web's `text-shadow`. For text over a photo or a video.
+
+- Parameters: [textShadow](bloom-language-tokens.mdx#textshadow)
+- Signature: `.textShadow(value: TextShadowName)`
+- Taken by: [text](bloom-language-nodes.mdx#text)
+- `textShadow` tokens: `'0 1px 2px rgb(0 0 0 / 0.8)'`, `'0 1px 3px rgb(0 0 0 / 0.8)'`
 
 ### `listMarker`
 
@@ -1741,7 +1787,7 @@ How long what this view plays waits before it starts: a change under its `.anima
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.delay(value: DurationName)`
 - Taken by: every node (universal)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `anchor`
 
@@ -2018,6 +2064,15 @@ The keyboard it asks for.
 - Taken by: [textField](bloom-language-nodes.mdx#textfield), [settingsTextField](bloom-language-nodes.mdx#settingstextfield)
 - `contentType` tokens: `'off'`, `'email'`, `'username'`, `'password'`, `'new-password'`, `'current-password'`, `'one-time-code'`, `'name'`, `'given-name'`, `'family-name'`, `'tel'`, `'postal-code'`, `'street-address'`, `'url'`
 
+### `textContentType`
+
+iOS: what the text is (React Native's `textContentType`: `URL`, `emailAddress`, `oneTimeCode`…), which its autofill and keyboard offer; `.contentType()` is Android's and the web's `autoComplete`.
+
+- Parameters: [textContentType](bloom-language-tokens.mdx#textcontenttype)
+- Signature: `.textContentType(value: TextContentType)`
+- Taken by: [textField](bloom-language-nodes.mdx#textfield)
+- `textContentType` tokens: 44, listed under [textContentType](bloom-language-tokens.mdx#textcontenttype)
+
 ### `submitLabel`
 
 - Parameters: [submitLabel](bloom-language-tokens.mdx#submitlabel)
@@ -2233,7 +2288,7 @@ How long an outage lasts before the reconnecting toast shows: a duration token (
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.reconnectingDelay(value: DurationName)`
 - Taken by: [connectionStatus](bloom-language-nodes.mdx#connectionstatus)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `restoredDuration`
 
@@ -2242,7 +2297,7 @@ How long the restored toast stays: a duration token (`'2500'` by default).
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.restoredDuration(value: DurationName)`
 - Taken by: [connectionStatus](bloom-language-nodes.mdx#connectionstatus)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `contentInset`
 
@@ -3064,7 +3119,7 @@ How long the pointer rests on the strip before the bar peeks: a duration token (
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.peekDelay(value: DurationName)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `unpeekDelay`
 
@@ -3073,7 +3128,7 @@ How long after the pointer leaves a peeked bar it collapses again: a duration to
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.unpeekDelay(value: DurationName)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `hideMotion`
 
@@ -3439,7 +3494,7 @@ The bar's entrance, which never changes its accessible measurement.
 - Parameters: `{ visible, once, delay }`, each [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.reveal(value: MeterReveal)`
 - Taken by: [ratingBar](bloom-language-nodes.mdx#ratingbar), [meter](bloom-language-nodes.mdx#meter)
-- `meterReveal` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `meterReveal` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `valueText`
 
@@ -3473,7 +3528,7 @@ Web: how long the fill eases to a new value (native snaps); none by default.
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.fillDuration(value: DurationName)`
 - Taken by: [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `barCorner`
 
@@ -4058,7 +4113,7 @@ How long the pointer rests before it shows: a duration token (a desktop's own wa
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.openDelay(value: DurationName)`
 - Taken by: [tooltip](bloom-language-nodes.mdx#tooltip), [hoverCard](bloom-language-nodes.mdx#hovercard)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `collapses`
 
@@ -4356,7 +4411,7 @@ How long it stays after the pointer leaves: a duration token (`fast` by default;
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.closeDelay(value: DurationName)`
 - Taken by: [hoverCard](bloom-language-nodes.mdx#hovercard)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `padded`
 
@@ -4495,7 +4550,7 @@ It dismisses itself after a duration token's wait, a countdown bar along its foo
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.autoDismiss(value: DurationName)`
 - Taken by: [notification](bloom-language-nodes.mdx#notification)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `introDelay`
 
@@ -4504,7 +4559,7 @@ It plays its entrance, after a duration token's wait (`'0'`: at once).
 - Parameters: [duration](bloom-language-tokens.mdx#duration)
 - Signature: `.introDelay(value: DurationName)`
 - Taken by: [notification](bloom-language-nodes.mdx#notification)
-- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
+- `duration` tokens: `'instant'`, `'fast'`, `'normal'`, `'slow'`, `'0'`, `'250'`, `'400'`, `'500'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`
 
 ### `liveRole`
 
