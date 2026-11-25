@@ -380,6 +380,17 @@ export function TopHeader() {
   return <PageHeader title={t('home.title')} onBack={null} presentation="floating" />;
 }
 
+// A profile's header: Bloom's own back on a pushed screen, none on a root tab.
+export function ProfileHeader({ showBack }: { showBack: boolean }) {
+  return (
+    <PageHeader
+      title={t('home.title')}
+      onBack={showBack ? undefined : null}
+      presentation="floating"
+    />
+  );
+}
+
 export function Inbox({
   refreshing,
   refresh,
