@@ -100,6 +100,7 @@ import {
   OWN_ASPECT_RATIO,
   OPACITY,
   TONE_ROLE,
+  NOT_HELD_MODIFIERS,
 } from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
@@ -317,6 +318,9 @@ const ROLE: Record<Role, string | undefined> = {
   progressbar: 'progressbar',
   imagebutton: 'imagebutton',
   summary: 'summary',
+  // Web roles React Native names only as `role` (ARIA), never as an `accessibilityRole`.
+  option: undefined,
+  listbox: undefined,
 };
 
 /** What sets the environment of what is inside: the text traits, and the environment values. */
@@ -747,7 +751,8 @@ function plan(node: Node, env: Env): Plan {
     }
     if (modifier.kind === 'when') {
       const condition = settle(modifier.condition, disabled);
-      if (condition !== false) planVariant(result, condition, modifier.modifiers, disabled);
+      if (condition !== false)
+        planVariant(result, condition, modifier.modifiers, disabled, node.kind);
       continue;
     }
     if (ENV_KINDS.has(modifier.kind)) {
@@ -889,6 +894,7 @@ function planVariant(
   condition: Planned,
   modifiers: readonly Modifier[],
   disabled: boolean,
+  kind: NodeKind,
 ): void {
   for (const term of condition === null ? [] : termsOf(condition)) {
     if (STATES.has(term) && !result.states.includes(term)) result.states.push(term);
@@ -898,14 +904,14 @@ function planVariant(
       // A variant inside a variant holds while both conditions do.
       const inner = settle(modifier.condition, disabled);
       if (inner !== false)
-        planVariant(result, both(condition, inner), modifier.modifiers, disabled);
+        planVariant(result, both(condition, inner), modifier.modifiers, disabled, kind);
       continue;
     }
     if (!varies(modifier)) {
       // A condition that holds as the view renders (web, native, a platform,
       // disabled) is the chain's own: what no live variant changes applies as
       // if chained there (`when('web', (v) => v.noWrap())`).
-      if (condition === null && heldAsOwn(result, modifier)) continue;
+      if (condition === null && heldAsOwn(result, modifier, kind)) continue;
       warnNotVaried(modifier);
       continue;
     }
@@ -933,32 +939,24 @@ function planVariant(
   }
 }
 
-/** Kinds the plan reads into fields of its own (presses, names): a held variant does not set them. */
-const PLANNED_KINDS: ReadonlySet<string> = new Set([
-  'onPress',
-  'onLongPress',
-  'hoverGroup',
-  'onHover',
-  'label',
-  'hint',
-  'role',
-  'hitSlop',
-  'testID',
-  'id',
-]);
+/** The spec's `variants.held.except`: a box layer, a placement, a planned field, motion. */
+const NOT_HELD: ReadonlySet<string> = new Set(NOT_HELD_MODIFIERS);
 
 /**
  * A modifier no live variant can change, under a condition that holds: a text
  * trait joins the environment, a stack's layout its own, any other the
  * chain's own modifiers. A box layer or a placement is left out (it stacks).
  */
-function heldAsOwn(result: Plan, modifier: Modifier): boolean {
-  if (isLayerModifier(modifier) || PLACE_KINDS.has(modifier.kind)) return false;
-  if (PLANNED_KINDS.has(modifier.kind) || MOTION_KINDS.has(modifier.kind)) return false;
+function heldAsOwn(result: Plan, modifier: Modifier, kind: NodeKind): boolean {
+  if (NOT_HELD.has(modifier.kind)) return false;
   if (ENV_KINDS.has(modifier.kind)) result.env.push(modifier);
   else if (STACK_KINDS.has(modifier.kind))
     result.hostVariants.push([null, modifier as StackModifier]);
-  else result.own.set(modifier.kind, modifier);
+  else {
+    result.own.set(modifier.kind, modifier);
+    // A held `disabled` reaches what is inside the view as one chained there does.
+    if (modifier.kind === 'disabled' && handsDownDisabled(kind)) result.env.push(modifier);
+  }
   return true;
 }
 
@@ -1044,11 +1042,20 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   const props: Record<string, unknown> = {};
   if (p.label !== undefined) props.accessibilityLabel = p.label;
   if (p.hint !== undefined) props.accessibilityHint = p.hint;
-  if (p.role !== undefined) props.accessibilityRole = ROLE[p.role];
+  // A role React Native has as an `accessibilityRole` is one; a web role (an
+  // `option`, a `listbox`) is React Native's `role`, as Bloom's Item takes it.
+  if (p.role !== undefined) {
+    const role = ROLE[p.role];
+    if (role === undefined) props.role = p.role;
+    else props.accessibilityRole = role;
+  }
   // Press feedback is Bloom's PressableScale, which a button is.
   else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
   const state = ownValue(p, 'accessibilityState')?.value;
   if (state !== undefined) props.accessibilityState = state;
+  // react-native-web reads no `accessibilityState`: an option's selection is its flat `aria-selected`.
+  if (IS_WEB && p.role === 'option' && state?.selected !== undefined)
+    props['aria-selected'] = state.selected;
   const value = ownValue(p, 'accessibilityValue')?.value;
   if (value !== undefined) props.accessibilityValue = value;
   const live = ownValue(p, 'liveRegion')?.value;

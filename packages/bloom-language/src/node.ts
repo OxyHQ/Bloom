@@ -1,10 +1,12 @@
 import type { MotionValue } from '@oxy.so/bloom/motion';
-import type { ComponentRef, ComponentType, ReactNode, Ref } from 'react';
+import type { ComponentRef, ComponentType, ReactNode, Ref, RefObject } from 'react';
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
   GestureResponderEvent,
   LayoutChangeEvent,
+  TextInput,
+  TextInputSelectionChangeEvent,
   View,
 } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
@@ -196,6 +198,7 @@ import type {
   Autocapitalize,
   ContentType,
   InputKind,
+  InputMode,
   Keyboard,
   RadioStyle,
   SearchCollapse,
@@ -794,6 +797,9 @@ export interface ValueModifiers {
   prefix: string | Child;
   suffix: string | Child;
   keyboard: Keyboard;
+  inputMode: InputMode;
+  inputRef: RefObject<ComponentRef<typeof TextInput> | null>;
+  onSelectionChange: (event: TextInputSelectionChangeEvent) => void;
   autocapitalize: Autocapitalize;
   autocorrect: boolean;
   contentType: ContentType;
@@ -3350,6 +3356,15 @@ export class Node {
   }
   keyboard(value: Keyboard): Node {
     return this.set('keyboard', value);
+  }
+  inputMode(value: InputMode): Node {
+    return this.set('inputMode', value);
+  }
+  inputRef(value: RefObject<ComponentRef<typeof TextInput> | null>): Node {
+    return this.set('inputRef', value);
+  }
+  onSelectionChange(value: (event: TextInputSelectionChangeEvent) => void): Node {
+    return this.set('onSelectionChange', value);
   }
   autocapitalize(value: Autocapitalize): Node {
     return this.set('autocapitalize', value);

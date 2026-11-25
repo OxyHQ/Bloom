@@ -216,6 +216,20 @@ const presses: ParityCase[] = [
     ),
   },
   {
+    // Mention's notification row: the hover group is a plain View, its press a layer inside it.
+    name: 'a hover group with no press of its own',
+    language: () =>
+      toElement(L.VStack(L.VStack(L.Text('Row')).onPress(onPress), L.Text('Meta')).hoverGroup()),
+    bloom: () => (
+      <RN.View {...hoverGroupProps}>
+        <RN.Pressable onPress={onPress}>
+          <Text>Row</Text>
+        </RN.Pressable>
+        <Text>Meta</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'a coordinated highlight',
     language: () => toElement(L.VStack(L.Text('Post')).hoverHighlight(true)),
     bloom: () => (

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import {
   Admonition,
   AdmonitionButton,
@@ -332,6 +332,24 @@ const rows: ParityCase[] = [
     name: 'Row highlighted',
     language: () => toElement(C.Row('Open file').onPress(onPress).highlighted()),
     bloom: () => <Item title="Open file" onPress={onPress} highlighted />,
+  },
+  {
+    // Mention's language pickers: each language an option of a listbox, the chosen one selected.
+    name: 'Rows as the options of a listbox',
+    language: () =>
+      toElement(
+        L.VStack(
+          C.Row('English').role('option').selected().onPress(onPress),
+          C.Row('Català').role('option').onPress(onPress),
+        ).role('listbox'),
+      ),
+    bloom: () => (
+      // React Native's types have no `listbox` (react-native-web writes it; native has none).
+      <View role={'listbox' as 'list'}>
+        <Item title="English" role="option" selected onPress={onPress} />
+        <Item title="Català" role="option" onPress={onPress} />
+      </View>
+    ),
   },
   {
     name: 'Row title in two lines',

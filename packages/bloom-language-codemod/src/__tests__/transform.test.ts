@@ -8,6 +8,60 @@ const run = (source: string) =>
 const flat = (code: string) => code.replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
 
 describe('transformSource', () => {
+  it("maps a search's input ref and caret, and a field's input mode", () => {
+    const { code } = run(`import { Search } from '@oxy.so/bloom/search';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { Textarea } from '@oxy.so/bloom/textarea';
+import { View } from 'react-native';
+export const A = ({ q, setQ, inputRef, onCaret, seats, setSeats, body, setBody, bodyRef }) => (
+  <View>
+    <Search ref={inputRef} value={q} onChangeText={setQ} onSelectionChange={onCaret} />
+    <TextFieldInput label="Seats" value={seats} onValueChange={setSeats} inputMode="numeric" />
+    <Textarea value={body} onValueChange={setBody} inputRef={bodyRef} />
+  </View>
+);
+`);
+    expect(flat(code)).toContain('.inputRef(inputRef)');
+    expect(flat(code)).toContain('.onSelectionChange(onCaret)');
+    expect(flat(code)).toContain(".inputMode('numeric')");
+    expect(flat(code)).toContain('.inputRef(bodyRef)');
+  });
+  it("maps Bloom's hover group marker on a view with no press of its own", () => {
+    const { code } = run(`import { hoverGroupProps } from '@oxy.so/bloom/subtle-hover';
+import { Pressable, View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ open }) => (
+  <View {...hoverGroupProps}>
+    <Pressable onPress={open}><Text>Row</Text></Pressable>
+  </View>
+);
+`);
+    expect(flat(code)).toContain('.hoverGroup()');
+    expect(flat(code)).not.toContain('hoverGroupProps}');
+  });
+  it('maps the options of a listbox: an Item role and a view role', () => {
+    const { code } = run(`import { Item } from '@oxy.so/bloom/item';
+import { View } from 'react-native';
+export const A = ({ pick, chosen }) => (
+  <View role="listbox">
+    <Item title="English" role="option" selected={chosen} onPress={pick} />
+  </View>
+);
+`);
+    expect(flat(code)).toContain(".role('option')");
+    expect(flat(code)).toContain(".role('listbox')");
+  });
+  it('leaves a view with both a role and an accessibilityRole as JSX, in either order', () => {
+    for (const attributes of [
+      'role="listbox" accessibilityRole="list"',
+      'accessibilityRole="list" role="listbox"',
+    ]) {
+      const result = run(`import { View } from 'react-native';
+export const A = () => <View ${attributes} />;
+`);
+      expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([['role']]);
+    }
+  });
   it("maps a header's back chosen at render between Bloom's own and none", () => {
     const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
 export const A = ({ showBack }) => (

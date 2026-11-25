@@ -728,6 +728,14 @@ describe('the cost of a view and of a theme switch', () => {
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1', 'Required']);
   });
 
+  it('a disabled held under a condition known as the view renders reaches what is inside it', () => {
+    const save = jest.fn();
+    const tree = (saving: boolean) =>
+      toElement(VStack(Button(Text('Save')).onPress(save)).when(saving, (v) => v.disabled()));
+    expect(hosts(mount(tree(true)), 'BloomButton')[0]?.props.disabled).toBe(true);
+    expect(hosts(mount(tree(false)), 'BloomButton')[0]?.props.disabled).toBeFalsy();
+  });
+
   it('a node that keeps its identity renders the same element, so React skips it', () => {
     const r = mount(toElement(StaticParent()));
     act(() => bump());

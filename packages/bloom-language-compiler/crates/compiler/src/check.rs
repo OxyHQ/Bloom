@@ -15,8 +15,8 @@ use crate::diagnostics::suggest;
 use crate::docs::{Doc, Tour};
 use crate::module::{Binding, Literal, Module};
 use crate::spec::{
-    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS,
-    TOKEN_SETS, VARIANT_MODIFIERS,
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NOT_HELD_MODIFIERS, NodeSpec,
+    OBJECTS, POINT_PARAMS, TOKEN_SETS, VARIANT_MODIFIERS,
 };
 
 pub struct Problem {
@@ -720,10 +720,31 @@ fn check_arguments(
 ) -> Result<(), Problem> {
     let params = params_of(spec, modifier);
     check_arity(modifier, params, arguments.len(), call_span, Doc::modifier(modifier))?;
+    // A variant under a condition known as the view renders may set what the chain itself does.
+    let settled = modifier == "when"
+        && arguments.first().and_then(Argument::as_expression).is_some_and(settled_condition);
     for (param, value) in paired(params, arguments) {
-        check_value(modifier, param, value, spec, module, scoping)?;
+        if param == "variant" && settled {
+            check_held_variant(value, spec, module, scoping)?;
+        } else {
+            check_value(modifier, param, value, spec, module, scoping)?;
+        }
     }
     Ok(())
+}
+
+/// A `when()` condition the runtime settles as the view renders: a platform, `disabled`,
+/// or the app's own condition (any expression but a string literal of a live condition).
+fn settled_condition(condition: &Expression) -> bool {
+    match condition.without_parentheses() {
+        Expression::StringLiteral(literal) => {
+            matches!(
+                literal.value.as_str().unwrap_or_default(),
+                "web" | "native" | "ios" | "android" | "disabled"
+            )
+        }
+        _ => true,
+    }
 }
 
 /// The node's own parameters for `modifier` where it takes them narrower, else the modifier's.
@@ -988,6 +1009,33 @@ fn check_variant(
         takes: "a variant changes",
         tokens_only: true,
         doc: Doc::Tour(Tour::Variants),
+        live: true,
+    };
+    check_built(value, spec, &build, module, scoping)
+}
+
+/// A variant under a settled condition (`when('native', (v) => v.accessibilityHidden())`): what a
+/// variant changes, and any other modifier the node takes but what `NOT_HELD_MODIFIERS` names (a
+/// box layer, a placement, a press or a name, motion), which the runtime makes the chain's own.
+fn check_held_variant(
+    value: &Expression,
+    spec: &NodeSpec,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
+    let held: Vec<&'static str> = spec
+        .modifiers
+        .iter()
+        .copied()
+        .filter(|name| VARIANT_MODIFIERS.contains(name) || !NOT_HELD_MODIFIERS.contains(name))
+        .collect();
+    let build = Build {
+        allowed: &held,
+        refused: &|modifier| format!("A variant cannot change .{modifier}()"),
+        takes: "a variant under a platform, disabled or a boolean changes",
+        tokens_only: true,
+        doc: Doc::Tour(Tour::Variants),
+        live: false,
     };
     check_built(value, spec, &build, module, scoping)
 }
@@ -1007,6 +1055,7 @@ fn check_phase(
         takes: "a phase changes",
         tokens_only: true,
         doc: Doc::Tour(Tour::AnimationAndGestures),
+        live: false,
     };
     check_built(value, spec, &build, module, scoping)
 }
@@ -1027,6 +1076,7 @@ fn check_define_modifier(expression: &Expression, module: &Module, scoping: &Sco
         takes: "a modifier chains the universal modifiers",
         tokens_only: false,
         doc: Doc::Tour(Tour::CustomModifiers),
+        live: false,
     };
     check_built(body, view, &build, module, scoping)
 }
@@ -1041,6 +1091,7 @@ fn check_content_view(value: &Expression, module: &Module, scoping: &Scoping) ->
         takes: "a content view takes",
         tokens_only: false,
         doc: Doc::modifier("contentView"),
+        live: false,
     };
     check_built(value, node("stack"), &build, module, scoping)
 }
@@ -1062,6 +1113,9 @@ struct Build<'a> {
     tokens_only: bool,
     /// Where what it may set is explained.
     doc: Doc,
+    /// A variant under a live condition: a variant inside it holds only while this one does, so it
+    /// changes only what a variant changes, whatever its own condition.
+    live: bool,
 }
 
 /// The chain a build function (`(v) => v…`) returns on its first parameter:
@@ -1134,7 +1188,28 @@ fn check_built(
                 docs: vec![build.doc, Doc::Tour(Tour::AnimationAndGestures)],
             });
         }
-        check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+        if build.live && modifier == "when" {
+            // Inside a live variant, a variant holds only while both do: it changes style alone.
+            check_live_when(arguments, spec, call_span, module, scoping)?;
+        } else {
+            check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+        }
+    }
+    Ok(())
+}
+
+/// A `when()` inside a live variant: its condition and values checked, its variant as a live one.
+fn check_live_when(
+    arguments: &[Argument],
+    spec: &NodeSpec,
+    call_span: Span,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
+    let params = params_of(spec, "when");
+    check_arity("when", params, arguments.len(), call_span, Doc::modifier("when"))?;
+    for (param, value) in paired(params, arguments) {
+        check_value("when", param, value, spec, module, scoping)?;
     }
     Ok(())
 }

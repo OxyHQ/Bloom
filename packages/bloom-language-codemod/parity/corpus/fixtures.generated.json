@@ -2645,6 +2645,99 @@
   "appColors": null
  },
  {
+  "name": "components/Pickers.tsx:12",
+  "before": "<View role=\"listbox\">\n      <Item title=\"English\" role=\"option\" selected={true} onPress={() => {}} />\n      <Item title=\"Català\" role=\"option\" onPress={() => {}} />\n    </View>",
+  "after": "toElement(VStack(Row('English').role('option').selected(true).onPress(() => {}), Row('Català').role('option').onPress(() => {})).role('listbox'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Item": {
+    "module": "@oxy.so/bloom/item",
+    "imported": "Item"
+   }
+  },
+  "language": [
+   "VStack",
+   "Row"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Pickers.tsx:21",
+  "before": "<View {...hoverGroupProps}>\n      <Pressable onPress={() => {}}>\n        <Text>Row</Text>\n      </Pressable>\n    </View>",
+  "after": "toElement(VStack(VStack(LText('Row')).onPress(() => {})).hoverGroup())",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "hoverGroupProps": {
+    "module": "@oxy.so/bloom/subtle-hover",
+    "imported": "hoverGroupProps"
+   }
+  },
+  "language": [
+   "VStack",
+   "Row",
+   "toElement",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Pickers.tsx:39",
+  "before": "<View>\n      <Search value={'⟨0⟩'} onChangeText={() => {}} onSelectionChange={() => {}} />\n      <TextFieldInput label=\"Seats\" value={'⟨3⟩'} onValueChange={() => {}} inputMode=\"numeric\" />\n    </View>",
+  "after": "toElement(VStack(LSearch(['⟨0⟩', () => {}]).onSelectionChange(() => {}), TextField(['⟨3⟩', () => {}], 'Seats').inputMode('numeric')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Search": {
+    "module": "@oxy.so/bloom/search",
+    "imported": "Search"
+   },
+   "TextFieldInput": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldInput"
+   }
+  },
+  "language": [
+   "VStack",
+   "Row",
+   "toElement",
+   "Text: LText",
+   "Search: LSearch",
+   "TextField"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/ReelRoute.tsx:8 (false)",
   "before": "<Screen\n      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}\n      style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}\n    >\n      <Text>Reel</Text>\n    </Screen>",
   "after": "LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)",

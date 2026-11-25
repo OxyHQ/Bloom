@@ -625,6 +625,38 @@ fn a_variant_is_checked_against_what_a_variant_changes() {
 }
 
 #[test]
+fn a_variant_under_a_settled_condition_takes_what_the_chain_does() {
+    // A platform, `disabled` or the app's boolean is settled as the view renders: the
+    // runtime makes a modifier no live variant changes the chain's own.
+    let ok = compiled(
+        "export const x = (hide) => HStack().when('native', (v) => v.accessibilityHidden()).when(hide, (v) => v.focusable(false));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
+    // A live condition changes style only.
+    let output =
+        compiled("export const x = () => HStack().when('hovered', (v) => v.accessibilityHidden());\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .accessibilityHidden()");
+    // A press, a name and motion are the view's own fields: no condition sets them.
+    let output = compiled("export const x = () => HStack().when('native', (v) => v.onPress(go));\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
+    let output = compiled("export const x = () => HStack().when('web', (v) => v.label('a'));\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .label()");
+    // Inside a live variant, a settled one holds only while both do: style alone, in either order.
+    let output = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('native', (n) => n.accessibilityHidden()));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .accessibilityHidden()");
+    let output = compiled(
+        "export const x = () => HStack().when('native', (n) => n.when('md', (v) => v.accessibilityHidden()));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .accessibilityHidden()");
+    let ok = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('native', (n) => n.padding('lg'))).when('native', (n) => n.when(true, (b) => b.focusable(false)));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
+}
+
+#[test]
 fn the_button_leftovers_are_checked() {
     let check = |body: &str| {
         compile(&format!("import {{ Button, Text }} from '@oxy.so/bloom-language';\n{body}"), "row.tsx")

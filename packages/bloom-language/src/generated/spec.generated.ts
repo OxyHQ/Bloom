@@ -420,6 +420,65 @@ export const VARIANT_SELECTORS = {
   "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
   "pressed": "&:is(.blsg:active:where(:not(:has(:is(.blsp, [tabindex=\"0\"]):active))), .blsg:active:where(:not(:has(:is(.blsp, [tabindex=\"0\"]):active))) *):where(:not(.blsg:active:where(:not(:has(:is(.blsp, [tabindex=\"0\"]):active))) .blsg, .blsg:active:where(:not(:has(:is(.blsp, [tabindex=\"0\"]):active))) .blsg *))"
 } as const;
+/** What a condition known as the view renders cannot make the chain's own (`variants.held`). */
+export const NOT_HELD_MODIFIERS = [
+  "padding",
+  "safeAreaPadding",
+  "frame",
+  "aspectRatio",
+  "overlay",
+  "background",
+  "glass",
+  "blur",
+  "border",
+  "borderStyle",
+  "ring",
+  "corner",
+  "cornerCurve",
+  "clipped",
+  "opacity",
+  "shadow",
+  "grow",
+  "shrink",
+  "alignSelf",
+  "position",
+  "sticky",
+  "zIndex",
+  "hidden",
+  "basis",
+  "flex",
+  "margin",
+  "allowsHitTesting",
+  "accessibilityOnly",
+  "scale",
+  "offset",
+  "rotation",
+  "onPress",
+  "onLongPress",
+  "hoverGroup",
+  "onHover",
+  "label",
+  "hint",
+  "role",
+  "hitSlop",
+  "testID",
+  "id",
+  "animation",
+  "animatesColors",
+  "transition",
+  "keyframes",
+  "repeatForever",
+  "delay",
+  "anchor",
+  "matchedGeometry",
+  "glassID",
+  "glassTransition",
+  "pressScale",
+  "drag",
+  "swipe",
+  "pinch",
+  "onDoubleTap"
+] as const;
 
 /** What a scroll view's content view (`.contentView(v => v…)`) sets: the layout of one view. */
 export const CONTENT_VIEW_MODIFIERS = [
@@ -1169,7 +1228,9 @@ export const ENUMS = {
     "alert",
     "progressbar",
     "imagebutton",
-    "summary"
+    "summary",
+    "option",
+    "listbox"
   ],
   "buttonShape": [
     "circle",
@@ -1650,6 +1711,16 @@ export const ENUMS = {
     "right",
     "up",
     "down"
+  ],
+  "inputMode": [
+    "none",
+    "text",
+    "decimal",
+    "numeric",
+    "tel",
+    "search",
+    "email",
+    "url"
   ],
   "keyboard": [
     "default",
@@ -3716,6 +3787,15 @@ export const MODIFIERS = {
   ],
   "keyboard": [
     "keyboard"
+  ],
+  "inputMode": [
+    "inputMode"
+  ],
+  "inputRef": [
+    "value"
+  ],
+  "onSelectionChange": [
+    "value"
   ],
   "autocapitalize": [
     "autocapitalize"
@@ -10160,6 +10240,9 @@ export const NODE_MODIFIERS = {
     "prefix",
     "suffix",
     "keyboard",
+    "inputMode",
+    "inputRef",
+    "onSelectionChange",
     "autocapitalize",
     "autocorrect",
     "contentType",
@@ -10304,6 +10387,9 @@ export const NODE_MODIFIERS = {
     "maxLength",
     "showCount",
     "keyboard",
+    "inputMode",
+    "inputRef",
+    "onSelectionChange",
     "autocapitalize",
     "autocorrect",
     "autoFocus",
@@ -11304,6 +11390,9 @@ export const NODE_MODIFIERS = {
     "presented",
     "tokens",
     "keyboard",
+    "inputMode",
+    "inputRef",
+    "onSelectionChange",
     "autocapitalize",
     "autocorrect",
     "submitLabel",
