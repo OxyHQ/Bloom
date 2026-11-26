@@ -3,6 +3,7 @@
 //! ```text
 //! bloomc check [--jobs N] <paths…>
 //! bloomc fmt [--check] [--jobs N] <paths…>
+//! bloomc migrate --from 0.x [--check] [--jobs N] <paths…>
 //! bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
 //! bloomc lsp
 //! ```
@@ -24,6 +25,7 @@ use std::process::ExitCode;
 const USAGE: &str = "usage:
   bloomc check [--jobs N] <paths…>
   bloomc fmt [--check] [--jobs N] <paths…>
+  bloomc migrate --from 0.x [--check] [--jobs N] <paths…>
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
   bloomc lsp";
 
@@ -37,6 +39,7 @@ struct Args {
     check: bool,
     no_cache: bool,
     dev: bool,
+    from: Option<String>,
 }
 
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
@@ -48,6 +51,7 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--no-cache" => args.no_cache = true,
             "--dev" => args.dev = true,
             "--out" => args.out = Some(raw.next().ok_or("--out needs a directory")?.into()),
+            "--from" => args.from = Some(raw.next().ok_or("--from needs a version (0.x)")?),
             "--jobs" | "-j" => {
                 let n = raw.next().ok_or("--jobs needs a number")?;
                 args.jobs =
@@ -72,6 +76,11 @@ fn main() -> ExitCode {
     let result = match args.command.as_str() {
         "check" => build::check(&args.paths, jobs),
         "fmt" => build::fmt(&args.paths, args.check, jobs),
+        "migrate" => match args.from.as_deref() {
+            Some("0.x") => build::migrate(&args.paths, args.check, jobs),
+            Some(other) => Err(format!("migrate --from {other}: only 0.x is known")),
+            None => Err("migrate needs --from 0.x".to_string()),
+        },
         "build" => match (args.paths.as_slice(), &args.out) {
             ([dir], Some(out)) => {
                 build::build(dir, out, &build::BuildOptions { jobs, cache: !args.no_cache, dev: args.dev })

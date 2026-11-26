@@ -892,6 +892,7 @@ impl<'o> Checker<'o> {
                     .iter()
                     .map(|p| ParamTy {
                         labelled: false,
+                        positional: false,
                         name: None,
                         ty: self.resolve_type(p),
                         optional: false,
@@ -1295,12 +1296,12 @@ impl<'o> Checker<'o> {
                     _ => (ty, false),
                 };
                 // A `func`'s parameter is called by its label (its name unless written), `_` by position.
-                let (labelled, name) = match (&p.label, f.func) {
-                    (Some(label), _) if label.name == "_" => (false, None),
-                    (Some(label), _) => (true, Some(label.name.clone())),
-                    (None, func) => (func && !rest, Some(p.name.name.clone())),
+                let (labelled, positional, name) = match (&p.label, f.func) {
+                    (Some(label), _) if label.name == "_" => (false, true, Some(p.name.name.clone())),
+                    (Some(label), _) => (true, false, Some(label.name.clone())),
+                    (None, func) => (func && !rest, false, Some(p.name.name.clone())),
                 };
-                ParamTy { labelled, name, ty, optional: p.default.is_some(), rest }
+                ParamTy { labelled, positional, name, ty, optional: p.default.is_some(), rest }
             })
             .collect();
         let ret = match &f.ret {
@@ -1486,6 +1487,7 @@ impl<'o> Checker<'o> {
             }
             out.push(ParamTy {
                 labelled: false,
+                positional: false,
                 name: Some(p.name.name.clone()),
                 ty: self.resolve_type(&p.ty),
                 optional: p.default.is_some(),
@@ -1508,6 +1510,7 @@ impl<'o> Checker<'o> {
             .iter()
             .map(|f| ParamTy {
                 labelled: false,
+                positional: false,
                 name: Some(f.name.clone()),
                 ty: substitute(&f.ty, &targs),
                 optional: f.default != FieldDefault::None,
@@ -4495,6 +4498,7 @@ impl<'o> Checker<'o> {
             };
             param_tys.push(ParamTy {
                 labelled: false,
+                positional: false,
                 name: Some(param.name.name.clone()),
                 ty: ty.clone(),
                 optional: false,
@@ -4504,8 +4508,14 @@ impl<'o> Checker<'o> {
         }
         if c.tuple {
             let tuple = Ty::Tuple(param_tys.iter().map(|p| p.ty.clone()).collect());
-            param_tys =
-                vec![ParamTy { labelled: false, name: None, ty: tuple, optional: false, rest: false }];
+            param_tys = vec![ParamTy {
+                labelled: false,
+                positional: false,
+                name: None,
+                ty: tuple,
+                optional: false,
+                rest: false,
+            }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
         // TS's `() => Promise<T>` taking a closure that awaits: the closure's result is `T`.
