@@ -112,6 +112,7 @@ impl Checker<'_> {
                         }
                         return if name == "toast" { Ty::Unit } else { Ty::Foreign("Navigation".into()) };
                     }
+                    "fail" => return self.fail(expr, call),
                     "sleep" => {
                         self.out.calls.insert(expr.id, CallRes::Sleep);
                         self.positional(call, &[Ty::Int]);
@@ -537,6 +538,27 @@ impl Checker<'_> {
         }
     }
 
+    /// `fail(e)`: throws `e` from a closure TS calls (or `catching { … }`'s block),
+    /// where a thrown error is how TS hears of it. Elsewhere a failure is a value.
+    fn fail(&mut self, expr: &Expr, call: &Call) -> Ty {
+        self.out.calls.insert(expr.id, CallRes::Fail);
+        self.positional(call, &[Ty::JsError]);
+        if !self.frames.last().is_some_and(|f| f.throws) {
+            let ret = self.frames.last().map(|f| self.resolve(&f.ret));
+            let help = match ret {
+                Some(Ty::Result(..)) => "return the error: `return err(e)`".to_string(),
+                _ => "return a `Result` and `return err(e)`; only a closure TS calls throws".to_string(),
+            };
+            self.report(
+                Diagnostic::error("B0222", expr.span, "`fail(e)` throws, and nothing here catches a throw")
+                    .label("not a closure TS calls, nor `catching { … }`")
+                    .help(help)
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        Ty::Never
+    }
+
     /// Calling a value of type `ty`: a Bloom function, a TS function, or a foreign value.
     fn value_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         match self.resolve(ty) {
@@ -897,6 +919,7 @@ impl Checker<'_> {
         }
         if let Some(trailing) = &call.trailing {
             let ty = f.params.get(slot).map(|p| p.ty.clone());
+            self.closure_throws = true;
             let closure = self.closure(
                 trailing,
                 ty.as_ref().filter(|t| matches!(self.resolve(t), Ty::Fn(_))),
