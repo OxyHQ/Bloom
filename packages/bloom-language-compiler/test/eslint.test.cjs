@@ -42,6 +42,7 @@ const IMPORTS = `import { useCallback, useMemo, useRef } from 'react';
 import { Button, HStack, Text, toElement } from '@oxy.so/bloom-language';
 import { CallScreen } from '@oxy.so/bloom-language/call-ui';
 import { MessageContextMenu } from '@oxy.so/bloom-language/chat-composer';
+import { TextField } from '@oxy.so/bloom-language/inputs';
 `;
 
 const CASES = {
@@ -58,6 +59,14 @@ const CASES = {
   const ref = useRef(null);
   const play = useCallback(() => ref.current?.play(), []);
   return toElement(HStack(Button(Text('Play')).onPress(play).padding('md')).padding('lg').onLongPress(play));
+}`,
+  ],
+  'a handler that reads a ref, given to .onSubmit()': [
+    'refs',
+    `export function Search() {
+  const ref = useRef(null);
+  const submit = useCallback(() => ref.current?.blur(), []);
+  return toElement(TextField(['', () => {}], 'Search').onSubmit(submit));
 }`,
   ],
   'a handler that writes a ref, in a constructor’s options': [

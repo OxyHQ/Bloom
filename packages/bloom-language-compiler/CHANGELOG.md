@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `@oxy.so/bloom-language-compiler/eslint`: `withLanguageTypes(require('eslint-plugin-react-hooks'))`, the React Compiler's lint rules told that a view's constructor and its modifiers keep their arguments as JSX keeps its props (the compiler's `moduleTypeProvider` for every constructor the language's entries export, and the constructors allowed for `capitalized-calls`). A handler that reads or writes a ref, given to a modifier or in a constructor's options, and a memoised value given to a constructor, no longer fail `react-hooks/refs` and `react-hooks/preserve-manual-memoization`; a ref read while rendering still does. `languageEnvironment()` is the same types as the compiler's `environment`.
+
 ## 1.7.0
 
 ### Compatibility
@@ -11,10 +17,6 @@
 - `bloomc`, the `.bloom` command line (`build`, `check`, `fmt`), ships in each platform package as `bloomc.<platform>`; `npx bloomc` runs this platform's, and the `bloom-lang-check` bin checks a project's `.bloom` files.
 - `.bloom`, phase 1 of ADR 0001 (`docs/bloom-lang-spec.mdx`): record literals and inline record types, string-literal unions with exhaustive `match`, key paths, structural `==`, optional calls and rest spreads, an `effect { … }` member, an `equal(old, new) { … }` member (`view()`'s comparator), props spreads, `Map` and `Set`, `@ref`, `Int` widening to `Float`, typed routes from the app's `app/` tree, `catching { … }`, and TypeScript interop with class components, `memo`, `lazy` and react-native's values.
 - bloomc checks a node's arguments against its constructor's signature (the spec's `signatures`): the count, string, number and boolean arguments, and bindings.
-
-### Added
-
-- `@oxy.so/bloom-language-compiler/eslint`: `withLanguageTypes(require('eslint-plugin-react-hooks'))`, the React Compiler's lint rules told that a view's constructor and its modifiers keep their arguments as JSX keeps its props (the compiler's `moduleTypeProvider` for every constructor the language's entries export, and the constructors allowed for `capitalized-calls`). A handler that reads or writes a ref, given to a modifier or in a constructor's options, and a memoised value given to a constructor, no longer fail `react-hooks/refs` and `react-hooks/preserve-manual-memoization`; a ref read while rendering still does. `languageEnvironment()` is the same types as the compiler's `environment`.
 
 ### Changed
 
