@@ -153,11 +153,17 @@ impl Tr<'_> {
         module: &[Statement],
         span: Span,
     ) -> String {
+        let equal = self.pending_equal.take();
         self.scope = Default::default();
         let params = self.view_params(params, props_ty, module, span);
         let (members, body) = match fn_body {
             Body::Expr(e) => (String::new(), self.view_value(e)),
             Body::Block(statements, end) => self.view_members(statements, end),
+        };
+        let members = match equal {
+            Some(equal) if members.is_empty() => equal,
+            Some(equal) => format!("{equal}\n\n{members}"),
+            None => members,
         };
         self.scope = Default::default();
         let params = params.map_or(String::new(), |p| format!("({p})"));
@@ -1358,6 +1364,43 @@ impl Tr<'_> {
         };
         self.scope = saved;
         format!("{head} {{\n{body}\n}}")
+    }
+
+    /// A `memo` comparator as the view's `equal(old, new) { … }` member: a module
+    /// function is called with both; an arrow's parameters are the member's.
+    pub fn equal_member(&mut self, comparator: &Expression) -> String {
+        let saved = std::mem::take(&mut self.scope);
+        let out = match comparator.without_parentheses() {
+            Expression::Identifier(_) => {
+                let f = self.expr(comparator);
+                format!("equal(old, new) {{ {f}(old, new) }}")
+            }
+            Expression::ArrowFunctionExpression(arrow) => match arrow.params.items.as_slice() {
+                [a, b] if arrow.params.rest.is_none() => match (&a.pattern, &b.pattern) {
+                    (BindingPattern::BindingIdentifier(a), BindingPattern::BindingIdentifier(b)) => {
+                        let (a, b) = (self.bind(&a.name, a.span), self.bind(&b.name, b.span));
+                        let body = match arrow.get_expression() {
+                            Some(e) => self.expr(e),
+                            None => self.block_stmts(arrow_statements(arrow), arrow_end(arrow), true),
+                        };
+                        format!("equal({a}, {b}) {{\n{body}\n}}")
+                    }
+                    _ => self.refuse(
+                        "react:memo-compare",
+                        "a comparator with destructured parameters",
+                        arrow.span,
+                    ),
+                },
+                _ => self.refuse("react:memo-compare", "a comparator without two parameters", arrow.span),
+            },
+            other => self.refuse(
+                "react:memo-compare",
+                format!("the comparator `{}`", self.slice(other.span())),
+                other.span(),
+            ),
+        };
+        self.scope = saved;
+        out
     }
 
     /// `f?.(a)` as a statement.

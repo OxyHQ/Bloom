@@ -63,8 +63,11 @@ impl Tr<'_> {
             }
             // JSX (or a conditional of it) is a node now: the boundary goes.
             // (A mapped list stays a value: `xs.map { … }`, one `[View]`.)
-            other if self.is_view(other.to_expression()) => match other.to_expression().without_parentheses() {
-                Expression::CallExpression(call) if crate::expr::is_map(call) => self.expr(other.to_expression()),
+            other if self.is_view(other.to_expression()) => match other.to_expression().without_parentheses()
+            {
+                Expression::CallExpression(call) if crate::expr::is_map(call) => {
+                    self.expr(other.to_expression())
+                }
                 e => self.child(e),
             },
             other => {

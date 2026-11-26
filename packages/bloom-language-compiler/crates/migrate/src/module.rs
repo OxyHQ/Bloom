@@ -109,6 +109,8 @@ pub struct Tr<'s> {
     pub typed_calls: HashSet<u32>,
     /// `let x = x ?? d` lines a pattern's defaults leave for after its `let`.
     pub pattern_defaults: Vec<String>,
+    /// The `equal(old, new) { … }` member of the view being declared (a memo comparator).
+    pub pending_equal: Option<String>,
 }
 
 impl<'s> Tr<'s> {
@@ -249,6 +251,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         wrapped: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
+        pending_equal: None,
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
@@ -717,8 +720,7 @@ impl<'s> Tr<'s> {
                         let BindingPattern::BindingIdentifier(id) = &d.id else { return None };
                         let init = d.init.as_ref()?;
                         let init = match memo_call(init, &self.react) {
-                            Some(m) if m.comparator.is_none() => m.function,
-                            Some(_) => return None,
+                            Some(m) => m.function,
                             None => init,
                         };
                         match init {
@@ -1131,14 +1133,9 @@ impl<'s> Tr<'s> {
         }
         if let Some(memo) = memo_call(init, &self.react) {
             if let Some(comparator) = memo.comparator {
-                return self.refuse(
-                    "react:memo-compare",
-                    format!(
-                        "`memo` with the comparator `{}` (a view compares its arguments shallowly)",
-                        self.slice(comparator.span())
-                    ),
-                    comparator.span(),
-                );
+                // The comparator is the view's `equal(old, new) { … }` member.
+                let member = self.equal_member(comparator);
+                self.pending_equal = Some(member);
             }
             // A view is already `memo`'d: the wrapper goes.
             return match memo.function {

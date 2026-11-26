@@ -1,0 +1,9 @@
+// A memo comparator is the view's `equal` member.
+
+pub view Row(id: String, title: String) {
+  equal(prev, next) { prev.id == next.id }
+
+  body {
+    Text(title)
+  }
+}
