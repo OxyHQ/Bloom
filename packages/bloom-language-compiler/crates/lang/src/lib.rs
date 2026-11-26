@@ -21,6 +21,7 @@ mod sourcemap;
 mod ts;
 mod types;
 mod ui;
+mod visibility;
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -46,6 +47,9 @@ pub struct Options {
     /// `navigate` is checked against (spec 9). Without it, `app/` or `src/app/` under
     /// `root`; without either, routes are not checked.
     pub app: Option<PathBuf>,
+    /// The file is one of a directory module's (2.0): its `internal` names are exported for
+    /// the module's other files. Off, a file is its own module.
+    pub modules: bool,
 }
 
 /// A compiled `.bloom` module.
@@ -93,7 +97,7 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut result = check::check(&file, source, filename, options);
-    rules(&file, &mut result);
+    rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
@@ -108,7 +112,7 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
-    rules(&file, &mut result);
+    rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
@@ -144,7 +148,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut checked = check::check_for_emit(&file, source, filename, options);
-    rules(&file, &mut checked);
+    rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
     let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
     let mut output = Output {
@@ -176,7 +180,8 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
 
 /// The chain rules (glass, toolbars, labels, choices), once the module checks:
 /// on a module with type errors they would be about what failed to resolve.
-fn rules(file: &Ast, result: &mut check::CheckResult) {
+fn rules(file: &Ast, source: &str, result: &mut check::CheckResult) {
+    result.diagnostics.extend(visibility::check(file, source));
     if result.diagnostics.iter().all(|d| d.severity != Severity::Error) {
         let found = chains::check(file, result);
         result.diagnostics.extend(found);

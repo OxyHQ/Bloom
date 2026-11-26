@@ -422,6 +422,9 @@ impl<'a> Emitter<'a> {
     }
 
     fn import(&mut self, import: &Import) -> Frag {
+        if matches!(import.kind, ImportKind::Module(_)) {
+            return Frag::default();
+        }
         let specifier = match import.source.as_str() {
             "bloom/data" => DATA,
             "bloom/router" => ROUTER,
@@ -432,6 +435,7 @@ impl<'a> Emitter<'a> {
         };
         let mut out = Frag::at(import.span, "import ");
         match &import.kind {
+            ImportKind::Module(_) => {}
             ImportKind::Namespace(name) => {
                 out.s(&format!("* as {}", js_name(&name.name)));
             }
@@ -629,7 +633,7 @@ impl<'a> Emitter<'a> {
     // ---- items ------------------------------------------------------------
 
     fn item(&mut self, index: usize, item: &Item) -> Frag {
-        let export = if item.visibility == Visibility::Private { "" } else { "export " };
+        let export = if !item.visibility.exported(self.options.modules) { "" } else { "export " };
         match &item.kind {
             ItemKind::Struct(s) => self.struct_decl(s, export),
             ItemKind::Enum(e) => self.enum_decl(e, export),
@@ -3637,8 +3641,11 @@ impl<'a> Emitter<'a> {
         self.view = Some(ViewState { slots: 0, reactive, setters });
         self.bufs.push(Vec::new());
         // Props.
-        let export =
-            if item.visibility == Visibility::Private || v.kind != ViewKind::View { "" } else { "export " };
+        let export = if !item.visibility.exported(self.options.modules) || v.kind != ViewKind::View {
+            ""
+        } else {
+            "export "
+        };
         let mut props_name = format!("{}Props", v.name.name);
         let mut props_decl = Frag::default();
         if !info.props.is_empty() {
@@ -3786,7 +3793,7 @@ impl<'a> Emitter<'a> {
                 LANGUAGE,
                 format!(
                     "{}const {name} = ",
-                    if item.visibility == Visibility::Private { "" } else { "export " }
+                    if !item.visibility.exported(self.options.modules) { "" } else { "export " }
                 ),
             ),
             ViewKind::Screen => ("screen", ROUTER, "export default ".to_string()),
@@ -4152,7 +4159,7 @@ impl<'a> Emitter<'a> {
         let mut out = String::new();
         let mut uses_composed = false;
         for (index, item) in file.items.iter().enumerate() {
-            if item.visibility == Visibility::Private
+            if !item.visibility.exported(self.options.modules)
                 && !matches!(&item.kind, ItemKind::View(v) if v.kind != ViewKind::View)
             {
                 continue;
@@ -4255,7 +4262,7 @@ impl<'a> Emitter<'a> {
         loop {
             let mut added = false;
             for item in &file.items {
-                if item.visibility != Visibility::Private {
+                if item.visibility.exported(self.options.modules) {
                     continue;
                 }
                 let name = item.kind.name().name.clone();

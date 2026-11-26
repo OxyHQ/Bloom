@@ -680,6 +680,24 @@ impl Checker<'_> {
                         self.boundary(&arg.value, None);
                         continue;
                     }
+                    // A `func`'s labelled parameter is named by the call (Swift's labels).
+                    if f.params[next].labelled
+                        && let Some(name) = f.params[next].name.as_deref()
+                    {
+                        self.report(
+                            Diagnostic::error(
+                                "B0207",
+                                arg.span,
+                                format!("missing argument label `{name}:`"),
+                            )
+                            .label(format!("this argument is `{name}`"))
+                            .help(format!(
+                                "write `{name}: …`, or declare the parameter `_ {name}` to call it by position"
+                            ))
+                            .fix(Span::new(arg.span.start, arg.span.start), format!("{name}: "))
+                            .spec("5-values-functions-and-closures"),
+                        );
+                    }
                     next
                 }
             };
@@ -723,7 +741,11 @@ impl Checker<'_> {
             .iter()
             .zip(&order)
             .filter(|(p, given)| given.is_none() && !p.optional && !p.rest)
-            .map(|(p, _)| format!("`{}`", p.name.clone().unwrap_or_default()))
+            .enumerate()
+            .map(|(index, (p, _))| match &p.name {
+                Some(name) => format!("`{name}`"),
+                None => format!("the {} (unlabelled)", ordinal(index + 1)),
+            })
             .collect();
         if !missing.is_empty() {
             let at = call.args.last().map_or(call.callee.span, |a| a.span);
@@ -1332,6 +1354,7 @@ impl Checker<'_> {
         let value = self.fresh();
         let setter = Ty::Fn(Rc::new(FnTy {
             params: vec![ParamTy {
+                labelled: false,
                 name: Some("value".into()),
                 ty: value.clone(),
                 optional: false,
@@ -1980,7 +2003,7 @@ impl Checker<'_> {
                 };
                 let params = params
                     .into_iter()
-                    .map(|ty| ParamTy { name: None, ty, optional: false, rest: false })
+                    .map(|ty| ParamTy { labelled: false, name: None, ty, optional: false, rest: false })
                     .collect();
                 let handler =
                     Ty::Fn(Rc::new(FnTy { params, ret: Ty::Unit, is_async: false, generics: 0, ts: false }));
@@ -2093,7 +2116,7 @@ impl Checker<'_> {
             Ty::Fn(Rc::new(FnTy {
                 params: params
                     .into_iter()
-                    .map(|ty| ParamTy { name: None, ty, optional: false, rest: false })
+                    .map(|ty| ParamTy { labelled: false, name: None, ty, optional: false, rest: false })
                     .collect(),
                 ret,
                 is_async: false,
@@ -2278,4 +2301,16 @@ fn written_number(value: &Expr) -> Option<String> {
         ExprKind::Unary(UnaryOp::Neg, inner) => written_number(inner).map(|n| format!("-{n}")),
         _ => None,
     }
+}
+
+/// `1st`, `2nd`, `3rd`, `4th`…
+fn ordinal(n: usize) -> String {
+    let suffix = match (n % 10, n % 100) {
+        (1, 11) | (2, 12) | (3, 13) => "th",
+        (1, _) => "st",
+        (2, _) => "nd",
+        (3, _) => "rd",
+        _ => "th",
+    };
+    format!("{n}{suffix}")
 }

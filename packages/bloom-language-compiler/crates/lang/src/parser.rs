@@ -30,6 +30,8 @@ struct Parser<'s, 'i> {
     panicking: bool,
     /// Comments found inside interpolations.
     sub_comments: Vec<Comment>,
+    /// Per closure being read, how many `$0`, `$1`… shorthand parameters it uses.
+    shorthand: Vec<u32>,
 }
 
 /// Where an expression is read: a head (`if x {`) never takes a trailing closure.
@@ -52,6 +54,36 @@ fn describe(tok: &Tok) -> String {
     }
 }
 
+/// `public`, `internal`, `private`, `fileprivate`.
+fn visibility_word(word: &str) -> Option<Visibility> {
+    Some(match word {
+        "public" | "open" => Visibility::Public,
+        "internal" => Visibility::Internal,
+        "private" | "fileprivate" => Visibility::Private,
+        _ => return None,
+    })
+}
+
+/// A word that starts a declaration or is one of its modifiers (2.0's contextual keywords).
+fn is_decl_word(word: &str) -> bool {
+    matches!(
+        word,
+        "func"
+            | "class"
+            | "protocol"
+            | "extension"
+            | "static"
+            | "final"
+            | "public"
+            | "internal"
+            | "private"
+            | "fileprivate"
+            | "open"
+            | "mutating"
+            | "init"
+    )
+}
+
 fn is_upper(name: &str) -> bool {
     name.chars().next().is_some_and(|c| c.is_ascii_uppercase())
 }
@@ -66,6 +98,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             diagnostics: Vec::new(),
             panicking: false,
             sub_comments: Vec::new(),
+            shorthand: Vec::new(),
         }
     }
 
@@ -412,6 +445,23 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn import(&mut self) -> Option<Import> {
         let start = self.bump();
+        // `import Bloom`, `import Mention.Posts`: a module by name (2.0).
+        if matches!(self.tok(), Tok::Ident(_)) && !matches!(self.nth(1), Tok::Kw(Kw::From) | Tok::P(P::Comma))
+        {
+            let mut path = vec![self.ident("a module name")];
+            while self.at(P::Dot) && matches!(self.nth(1), Tok::Ident(_)) {
+                self.bump();
+                path.push(self.ident("a module name"));
+            }
+            let source_span = path[0].span.to(path[path.len() - 1].span);
+            let source = path.iter().map(|segment| segment.name.as_str()).collect::<Vec<_>>().join(".");
+            return Some(Import {
+                kind: ImportKind::Module(path),
+                source,
+                source_span,
+                span: start.to(source_span),
+            });
+        }
         let kind = if self.eat(P::Star) {
             if !self.eat_kw(Kw::As) {
                 self.unexpected("`as` (`import * as name from \"…\"`)");
@@ -474,21 +524,85 @@ impl<'s, 'i> Parser<'s, 'i> {
         Some(Import { kind, source, source_span, span: start.to(source_span) })
     }
 
-    fn item(&mut self) -> Option<Item> {
-        let start = self.span();
-        let mut visibility = Visibility::Private;
-        if self.eat_kw(Kw::Pub) {
-            visibility = Visibility::Pub;
-            if self.at_kw(Kw::Default) {
-                self.bump();
-                visibility = Visibility::PubDefault;
+    /// The attributes and modifiers before a declaration: `@Observable public final`,
+    /// `public private(set)`, `static`, 0.x `pub` and `pub default`.
+    fn modifiers(&mut self) -> (Visibility, Modifiers) {
+        let mut visibility = Visibility::Internal;
+        let mut modifiers = Modifiers::default();
+        loop {
+            match self.tok().clone() {
+                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern") => {
+                    let start = self.bump();
+                    let name = self.ident("an attribute");
+                    let args = if self.at(P::LParen) && !self.token().space_before {
+                        self.args().0
+                    } else {
+                        Vec::new()
+                    };
+                    let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                    modifiers.attrs.push(Attr { name, args, span });
+                    self.skip_newlines();
+                }
+                Tok::Kw(Kw::Pub) => {
+                    let span = self.bump();
+                    visibility = Visibility::Public;
+                    modifiers.visibility_span = Some(span);
+                    if self.at_kw(Kw::Default) {
+                        let end = self.bump();
+                        visibility = Visibility::PubDefault;
+                        modifiers.visibility_span = Some(span.to(end));
+                    }
+                }
+                Tok::Ident(word) if visibility_word(&word).is_some() && self.modifier_follows() => {
+                    let level = visibility_word(&word).expect("a visibility");
+                    let span = self.bump();
+                    // `private(set)`: who may assign, after who may read.
+                    if self.at(P::LParen)
+                        && matches!(self.nth(1), Tok::Ident(n) if n == "set")
+                        && matches!(self.nth(2), Tok::P(P::RParen))
+                    {
+                        self.bump();
+                        self.bump();
+                        let end = self.bump();
+                        modifiers.setter = Some((level, span.to(end)));
+                    } else {
+                        visibility = level;
+                        modifiers.visibility_span = Some(span);
+                    }
+                }
+                Tok::Ident(word) if word == "static" && self.modifier_follows() => {
+                    self.bump();
+                    modifiers.is_static = true;
+                }
+                Tok::Ident(word) if word == "final" && self.modifier_follows() => {
+                    self.bump();
+                    modifiers.is_final = true;
+                }
+                _ => break,
             }
         }
+        (visibility, modifiers)
+    }
+
+    /// After a modifier word: a declaration (or another modifier), not a value named so.
+    fn modifier_follows(&self) -> bool {
+        match self.nth(1) {
+            Tok::Kw(_) => true,
+            Tok::P(P::LParen) => matches!(self.nth(2), Tok::Ident(n) if n == "set"),
+            Tok::Ident(n) => is_decl_word(n),
+            _ => false,
+        }
+    }
+
+    fn item(&mut self) -> Option<Item> {
+        let start = self.span();
+        let (visibility, modifiers) = self.modifiers();
         let kind = match self.tok() {
             Tok::Kw(Kw::Struct) => ItemKind::Struct(self.struct_decl()),
             Tok::Kw(Kw::Enum) => ItemKind::Enum(self.enum_decl()),
             Tok::Kw(Kw::Type) => ItemKind::Alias(self.alias_decl()),
             Tok::Kw(Kw::Fn | Kw::Async) => ItemKind::Fn(self.fn_decl()),
+            Tok::Ident(word) if word == "func" => ItemKind::Fn(self.fn_decl()),
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
             Tok::Kw(Kw::Var) => {
@@ -520,7 +634,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                 return None;
             }
         };
-        Some(Item { visibility, kind, span: start.to(Span::new(self.prev_end(), self.prev_end())) })
+        Some(Item {
+            visibility,
+            modifiers,
+            kind,
+            span: start.to(Span::new(self.prev_end(), self.prev_end())),
+        })
     }
 
     fn generics(&mut self) -> Vec<Ident> {
@@ -657,21 +776,107 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn fn_decl(&mut self) -> FnDecl {
         let start = self.span();
-        let is_async = self.eat_kw(Kw::Async);
-        if !self.eat_kw(Kw::Fn) {
-            self.unexpected("`fn` after `async`");
+        let mut is_async = self.eat_kw(Kw::Async);
+        let func = matches!(self.tok(), Tok::Ident(w) if w == "func");
+        if func {
+            self.bump();
+        } else if !self.eat_kw(Kw::Fn) {
+            self.unexpected("`func`");
         }
-        let name = self.ident("the function's name");
-        let generics = self.generics();
+        // `static func == (a: Self, b: Self)`: an operator's name.
+        let name = match self.tok() {
+            Tok::P(P::EqEq) => {
+                let span = self.bump();
+                Ident { name: "==".into(), span }
+            }
+            _ => self.ident("the function's name"),
+        };
+        let (generics, mut constraints) = self.constrained_generics();
         let params = if self.at(P::LParen) {
             self.params()
         } else {
             self.unexpected("`(` and the parameters");
             Vec::new()
         };
+        // `async throws(E)` after the parameters, as Swift writes them.
+        if self.eat_kw(Kw::Async) {
+            is_async = true;
+        }
+        let throws = self.throws_clause();
         let ret = if self.eat(P::Arrow) { Some(self.type_expr()) } else { None };
+        constraints.extend(self.where_clause());
         let body = self.block();
-        FnDecl { is_async, name, generics, params, ret, span: start.to(body.span), body }
+        FnDecl {
+            is_async,
+            func,
+            name,
+            generics,
+            constraints,
+            params,
+            throws,
+            ret,
+            span: start.to(body.span),
+            body,
+        }
+    }
+
+    /// `throws` or `throws(E)`.
+    fn throws_clause(&mut self) -> Option<Throws> {
+        if !matches!(self.tok(), Tok::Ident(w) if w == "throws" || w == "rethrows") {
+            return None;
+        }
+        let span = self.bump();
+        let ty = if self.at(P::LParen) && !self.token().space_before {
+            let open = self.bump();
+            let ty = self.type_expr();
+            self.expect_close(P::RParen, open);
+            Some(ty)
+        } else {
+            None
+        };
+        Some(Throws { span: span.to(Span::new(self.prev_end(), self.prev_end())), ty })
+    }
+
+    /// `<T, U: Equatable>`: the type parameters and the protocols each conforms to.
+    fn constrained_generics(&mut self) -> (Vec<Ident>, Vec<(Ident, TypeExpr)>) {
+        let mut generics = Vec::new();
+        let mut constraints = Vec::new();
+        if self.eat(P::Lt) {
+            loop {
+                let name = self.ident("a type parameter");
+                if self.eat(P::Colon) {
+                    loop {
+                        constraints.push((name.clone(), self.base_type()));
+                        if !self.eat(P::Amp) {
+                            break;
+                        }
+                    }
+                }
+                generics.push(name);
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+            self.expect(P::Gt, "`>` to close the type parameters");
+        }
+        (generics, constraints)
+    }
+
+    /// `where T: Equatable, U: P`.
+    fn where_clause(&mut self) -> Vec<(Ident, TypeExpr)> {
+        let mut constraints = Vec::new();
+        if matches!(self.tok(), Tok::Ident(w) if w == "where") {
+            self.bump();
+            loop {
+                let name = self.ident("a type parameter");
+                self.expect(P::Colon, "`:` and a protocol");
+                constraints.push((name, self.base_type()));
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+        }
+        constraints
     }
 
     fn params(&mut self) -> Vec<Param> {
@@ -695,6 +900,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     _ => Ident { name: String::new(), span: ty.span },
                 };
                 params.push(Param {
+                    label: None,
                     name,
                     rest: false,
                     spread: true,
@@ -708,6 +914,15 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 continue;
             }
+            // `to x: Int`: the label a call writes, then the name the body uses (`_`: none).
+            let label = if matches!(self.tok(), Tok::Ident(_) | Tok::Kw(_))
+                && matches!(self.nth(1), Tok::Ident(_))
+                && matches!(self.nth(2), Tok::P(P::Colon))
+            {
+                Some(self.name_or_keyword("an argument label"))
+            } else {
+                None
+            };
             let name = self.soft_name("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
@@ -729,6 +944,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             // `..props: Props`, a named type and not a list: the props spread, their whole named.
             if rest && let TypeKind::Named { name: type_name, .. } = &ty.kind {
                 params.push(Param {
+                    label: None,
                     name: type_name.clone(),
                     rest: false,
                     spread: true,
@@ -743,6 +959,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 continue;
             }
             params.push(Param {
+                label,
                 name,
                 rest,
                 spread: false,
@@ -1697,7 +1914,15 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.diagnostics.truncate(quiet);
             self.panicking = was_panicking;
         }
+        self.shorthand.push(0);
         let body = self.stmts_until_close();
+        let shorthand = self.shorthand.pop().unwrap_or(0);
+        if !has_in {
+            // `{ $0.id == id }`: the parameters it names, `$0` up to the last.
+            params = (0..shorthand)
+                .map(|n| ClosureParam { name: Ident { name: format!("${n}"), span: open }, ty: None })
+                .collect();
+        }
         self.expect_close(P::RBrace, open);
         Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
     }
@@ -1876,6 +2101,26 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(Span::new(self.prev_end(), self.prev_end()));
                 self.expr_node(ExprKind::KeyPath { root, path }, span)
             }
+            // `$0`: a closure's shorthand parameter.
+            Tok::P(P::Dollar)
+                if matches!(self.nth(1), Tok::Int(_)) && !self.tokens[self.pos + 1].space_before =>
+            {
+                self.bump();
+                let Tok::Int(n) = *self.tok() else { unreachable!("an Int") };
+                let start = start.to(self.bump());
+                let n = u32::try_from(n).unwrap_or(u32::MAX);
+                match self.shorthand.last_mut() {
+                    Some(count) => *count = (*count).max(n.saturating_add(1)),
+                    None => self.error(
+                        Diagnostic::error("B0101", start, format!("`${n}` outside a closure"))
+                            .label("a shorthand parameter names a closure's argument")
+                            .help("write it inside `{ … }`, or name the parameter: `{ x in … }`")
+                            .spec("3-grammar-ebnf"),
+                    ),
+                }
+                let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                self.expr_node(ExprKind::Name(format!("${n}")), span)
+            }
             Tok::P(P::Dollar) => {
                 self.bump();
                 let mut path = vec![self.ident("the state to bind (`$draft`)")];
@@ -2009,6 +2254,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.sub_comments.extend(lexed.comments);
         let mut sub = Parser::new(self.source, lexed.tokens, self.next_id);
         sub.diagnostics = lexed.diagnostics;
+        // `"\($0)"` inside a closure: the closure's shorthand parameter.
+        if !self.shorthand.is_empty() {
+            sub.shorthand.push(0);
+        }
         sub.skip_newlines();
         let expr = if matches!(sub.tok(), Tok::Eof) {
             sub.error(
@@ -2030,7 +2279,11 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         let diagnostics = std::mem::take(&mut sub.diagnostics);
         let comments = std::mem::take(&mut sub.sub_comments);
+        let used = sub.shorthand.pop().unwrap_or(0);
         drop(sub);
+        if let Some(count) = self.shorthand.last_mut() {
+            *count = (*count).max(used);
+        }
         if !self.panicking {
             self.panicking = !diagnostics.is_empty();
             self.diagnostics.extend(diagnostics);

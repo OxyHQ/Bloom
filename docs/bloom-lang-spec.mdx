@@ -80,7 +80,7 @@ pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, St
   let match none pub return screen layout struct task true type var view while`. Attribute words after `@`:
   `state list record env`.
 - **Literals:** `42`, `1_000`, `0xff` (Int); `1.5`, `2e3` (Float); `true`/`false`; `none`;
-  strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `${expr}`;
+  strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `\(expr)` (2.0; 0.x `${expr}`);
   raw multi-line strings `"""…"""` (interpolation kept, indentation stripped to the closing
   delimiter).
 - **Binding projection:** `$name` (a binding to `@state name`, see 7.2).
@@ -380,7 +380,19 @@ parameter takes it is B0207 (outside a construction, where `..s` spreads a struc
 props, never a rest parameter.
 
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
-in any order after the positional ones. **In a call to a TS function, named arguments form one
+in any order after the positional ones.
+
+**2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
+unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
+is called `move(p, to: q)`. A positional argument where a label is due is B0207 ("missing
+argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. A closure without
+`in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
+outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
+parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
+`private` (the file), plus `private(set)` for who assigns; a `public` declaration that names an
+`internal` or `private` type of its file is B0108. `import Bloom` and `import Mention.Posts` name
+modules (resolved by the module graph). A file compiled on its own is its own module, so its
+`internal` names are not exported; inside a directory module they are. **In a call to a TS function, named arguments form one
 object passed last**: `t("key", defaultValue: "General")` is `t("key", { defaultValue: "General" })`.
 
 ## 6. Expressions and control flow
