@@ -186,7 +186,7 @@ jobs:
 
   # build's hosted twin in the Seldon race: the same name, strategy and steps.
   build-hosted:
-    name: Build, package and types
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Build, package and types' || 'Build, package and types (seldon twin, off)' }}
     needs: race
     # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
@@ -199,7 +199,7 @@ jobs:
 
   # build's rescue: reruns it hosted when a Seldon lane of it failed.
   build-rescue:
-    name: Build, package and types
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Build, package and types' || 'Build, package and types (seldon rescue, off)' }}
     needs: [provenance, build]
     if: ${{ !cancelled() && needs.build.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
@@ -301,7 +301,7 @@ jobs:
           test -z "$(git ls-files --others --exclude-standard)"
 
   language-hosted:
-    name: Language packages
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Language packages' || 'Language packages (seldon twin, off)' }}
     needs: race
     # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
@@ -314,7 +314,7 @@ jobs:
 
   # language's rescue: reruns it hosted when a Seldon lane of it failed.
   language-rescue:
-    name: Language packages
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Language packages' || 'Language packages (seldon rescue, off)' }}
     needs: [provenance, language]
     if: ${{ !cancelled() && needs.language.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
@@ -359,7 +359,7 @@ jobs:
         run: cd packages/bloom-language && bun run test:parity --shard=${{ matrix.shard }}/2
 
   language-parity-hosted:
-    name: Language parity (${{ matrix.shard }}/2)
+    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Language parity ({0}/2)', matrix.shard) || format('Language parity ({0}/2) (seldon twin, off)', matrix.shard) }}
     needs: race
     # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
@@ -373,7 +373,7 @@ jobs:
 
   # language-parity's rescue: reruns it hosted when a Seldon lane of it failed.
   language-parity-rescue:
-    name: Language parity (${{ matrix.shard }}/2)
+    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Language parity ({0}/2)', matrix.shard) || format('Language parity ({0}/2) (seldon rescue, off)', matrix.shard) }}
     needs: [provenance, language-parity]
     if: ${{ !cancelled() && needs.language-parity.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
@@ -418,7 +418,7 @@ jobs:
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
 
   tests-hosted:
-    name: Tests (${{ matrix.shard }}/5)
+    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Tests ({0}/5)', matrix.shard) || format('Tests ({0}/5) (seldon twin, off)', matrix.shard) }}
     needs: race
     # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
@@ -432,7 +432,7 @@ jobs:
 
   # tests's rescue: reruns it hosted when a Seldon lane of it failed.
   tests-rescue:
-    name: Tests (${{ matrix.shard }}/5)
+    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Tests ({0}/5)', matrix.shard) || format('Tests ({0}/5) (seldon rescue, off)', matrix.shard) }}
     needs: [provenance, tests]
     if: ${{ !cancelled() && needs.tests.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
