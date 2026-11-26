@@ -1,0 +1,37 @@
+// A TS value's fields are TS's to write; a test that is always true folds to
+// its branch. In an async closure TS calls, a rejection (or a throw) rejects it.
+
+import { load } from "./api"
+import { usePlayer, useTask } from "./player"
+import { Error } from "js"
+
+struct Track {
+  id: String
+  title: String
+}
+
+fn labelOf(track: Track) -> String {
+  let id = track.id
+  id + track.title
+}
+
+pub view Deck(track: Track) {
+  let player = usePlayer()
+  let _ = useTask {
+    if track.id.isEmpty { fail(Error("No track")) }
+    let loaded = await load(track.id)?
+    return loaded.data.url
+  }
+  effect(id: player) { player.loop = true }
+
+  body {
+    VStack {
+      Text(labelOf(track))
+      Button("Skip")
+      .onPress {
+        player.time += 5
+        player.time += 1
+      }
+    }
+  }
+}

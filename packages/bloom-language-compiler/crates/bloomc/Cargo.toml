@@ -19,6 +19,7 @@ path = "src/main.rs"
 [dependencies]
 bloom_fmt = { path = "../fmt" }
 bloom_lang = { path = "../lang" }
+bloom_migrate = { path = "../migrate" }
 bloom_language_compiler = { path = "../compiler" }
 oxc_sourcemap = { workspace = true }
 

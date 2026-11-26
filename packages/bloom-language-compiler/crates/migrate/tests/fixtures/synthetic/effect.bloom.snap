@@ -1,0 +1,17 @@
+// `useEffect` is an `effect` member: one dep is its id, `[]` runs once, and the
+// returned cleanup is a `defer`.
+
+import { subscribe } from "./feed"
+
+pub view Live(topic: String) {
+  @state count = 0
+  effect(id: topic) {
+    let stop = subscribe(topic, { count = count + 1 })
+    defer { stop() }
+  }
+  effect(id: 0) { count = 0 }
+
+  body {
+    Text("${count}")
+  }
+}
