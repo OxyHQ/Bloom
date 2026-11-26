@@ -1,0 +1,35 @@
+// The chain rules the embedded pass holds over TSX, held over `.bloom`.
+import { clear, regular } from "@oxy.so/bloom-language"
+
+view Bars(items: [String]) {
+  body {
+    VStack {
+      HStack {
+        Button(Icon("share"))
+        VStack {
+          Text("b").glass(clear.dimmed())
+        }
+        .glass(regular)
+      }
+      ScrollView {
+        Text("c").glass(regular)
+        for item in items {
+          Text(item).glass(regular).inContent()
+        }
+      }
+      for item in items {
+        Button(Text(item)).style("glass")
+      }
+      ToolbarGroup {
+        Button(Text("Edit"))
+        Button(Icon("trash")).label("Delete")
+      }
+      Section {
+        Item("One").tag("one")
+        Text("Two")
+      }
+      .selection("one")
+    }
+    .opacity("half")
+  }
+}

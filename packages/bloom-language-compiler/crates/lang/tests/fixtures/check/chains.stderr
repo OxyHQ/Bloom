@@ -1,0 +1,62 @@
+error[B0500]: .opacity() fades a view that holds glass
+  --> check/chains.bloom:33:6
+   |
+33 |     .opacity("half")
+   |      ^^^^^^^^^^^^^^^
+   |
+help: on the web a faded ancestor flattens the material (it stops blurring); put the fade on the .glass() view itself, which fades the material's own layers instead
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#liquid-glass-rules
+
+error[B0500]: an icon-only Button has no .label()
+ --> check/chains.bloom:8:9
+  |
+8 |         Button(Icon("share"))
+  |         ^^^^^^^^^^^^^^^^^^^^^
+  |
+help: name what it does: Button(Icon(…)).label('Share')
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#accessibility
+
+error[B0500]: glass on glass: this glass is inside another glass
+  --> check/chains.bloom:10:21
+   |
+10 |           Text("b").glass(clear.dimmed())
+   |                     ^^^^^^^^^^^^^^^^^^^^^
+   |
+help: Liquid Glass is one layer: drop this .glass(), or put both side by side in a GlassGroup
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#liquid-glass-rules
+
+error[B0500]: a Section with a .selection() holds its choices only
+  --> check/chains.bloom:29:9
+   |
+29 |         Text("Two")
+   |         ^^^^^^^^^^^
+   |
+help: each row is a choice: Item(title).tag(value)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#menusection
+
+warning[B0500]: glass in scrolling content: glass belongs to the navigation layer
+  --> check/chains.bloom:15:19
+   |
+15 |         Text("c").glass(regular)
+   |                   ^^^^^^^^^^^^^^
+   |
+help: put it on a bar, a toolbar or a floating control; a control in a row that is glass on purpose says so with .inContent()
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#liquid-glass-rules
+
+warning[B0500]: a glass per item of a list
+  --> check/chains.bloom:21:28
+   |
+21 |         Button(Text(item)).style("glass")
+   |                            ^^^^^^^^^^^^^^
+   |
+help: every lens is drawn each frame; a row's control that is glass on purpose says so with .inContent()
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#liquid-glass-rules
+
+warning[B0500]: a toolbar group mixes text and icon buttons
+  --> check/chains.bloom:23:7
+   |
+23 |       ToolbarGroup {
+   |       ^^^^^^^^^^^^^^
+   |
+help: Apple: keep actions with text labels apart; put them in groups of their own
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#navigation

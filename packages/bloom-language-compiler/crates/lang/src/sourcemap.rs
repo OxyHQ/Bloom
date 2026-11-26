@@ -1,10 +1,4 @@
-//! The map from the emitted TypeScript back to the `.bloom` source, and its
-//! composition with the embedded pass's map, so the final code maps to `.bloom`.
-
-use oxc_sourcemap::SourceMap;
-
-use crate::ast::Span;
-use crate::diagnostic::{Diagnostic, Severity, line_column};
+//! The map from the emitted TypeScript back to the `.bloom` source.
 
 /// (offset in the emitted TS, offset in the `.bloom` source), by emitted offset.
 #[derive(Debug, Default, Clone)]
@@ -44,30 +38,7 @@ fn position(text: &str, lines: &Lines, offset: u32) -> (u32, u32) {
     (line as u32, column as u32)
 }
 
-/// The offset of 0-based (line, UTF-16 column).
-fn offset(text: &str, lines: &Lines, line: u32, column: u32) -> u32 {
-    let Some(start) = lines.starts.get(line as usize).copied() else { return text.len() as u32 };
-    if lines.ascii[line as usize] {
-        let end = lines.starts.get(line as usize + 1).map_or(text.len() as u32, |e| *e);
-        return (start + column).min(end);
-    }
-    let mut units = 0;
-    for (index, ch) in text[start as usize..].char_indices() {
-        if units >= column || ch == '\n' {
-            return start + index as u32;
-        }
-        units += ch.len_utf16() as u32;
-    }
-    text.len() as u32
-}
-
 impl Mappings {
-    /// The `.bloom` offset the emitted offset came from: the nearest mark at or before it.
-    fn source_of(&self, emitted: u32) -> Option<u32> {
-        let at = self.points.partition_point(|(g, _)| *g <= emitted);
-        at.checked_sub(1).map(|i| self.points[i].1)
-    }
-
     pub fn to_json(&self, filename: &str, source: &str, code: &str) -> String {
         let code_starts = line_starts(code);
         let source_starts = line_starts(source);
@@ -77,50 +48,6 @@ impl Mappings {
             (dst_line, dst_col, src_line, src_col)
         });
         write_map(filename, source, tokens)
-    }
-
-    /// `embedded` maps the final code to the emitted TS; the result maps it to `.bloom`.
-    pub fn compose(&self, embedded: &str, emitted: &str, filename: &str, source: &str) -> String {
-        let Ok(map) = SourceMap::from_json_string(embedded) else {
-            return self.to_json(filename, source, emitted);
-        };
-        let emitted_starts = line_starts(emitted);
-        let source_starts = line_starts(source);
-        let tokens: Vec<(u32, u32, u32, u32)> = map
-            .get_tokens()
-            .filter_map(|token| {
-                let at = offset(emitted, &emitted_starts, token.get_src_line(), token.get_src_col());
-                let original = self.source_of(at)?;
-                let (src_line, src_col) = position(source, &source_starts, original);
-                Some((token.get_dst_line(), token.get_dst_col(), src_line, src_col))
-            })
-            .collect();
-        write_map(filename, source, tokens.into_iter())
-    }
-
-    /// A diagnostic of the embedded pass (on the emitted TS), at the `.bloom` span that wrote it.
-    pub fn lift(
-        &self,
-        problem: &bloom_language_compiler::Diagnostic,
-        emitted: &str,
-        source: &str,
-        severity: Severity,
-    ) -> Diagnostic {
-        let starts = line_starts(emitted);
-        let at = offset(emitted, &starts, problem.line.saturating_sub(1), problem.column.saturating_sub(1));
-        let original = self.source_of(at).unwrap_or(0);
-        let end = source[original as usize..]
-            .find(['\n', ')'])
-            .map_or(source.len(), |i| original as usize + i + 1) as u32;
-        let mut diagnostic =
-            Diagnostic::error("B0500", Span::new(original, end.max(original + 1)), problem.message.clone())
-                .maybe_help(problem.help.clone());
-        if let Some(url) = problem.docs.first() {
-            diagnostic = diagnostic.docs(url.clone());
-        }
-        diagnostic.severity = severity;
-        let _ = line_column(source, original);
-        diagnostic
     }
 }
 
