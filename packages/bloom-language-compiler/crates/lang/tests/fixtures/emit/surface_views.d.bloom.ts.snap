@@ -17,3 +17,8 @@ export interface ComposerProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Composer())`), or from TSX as `toElement(Composer())`. */
 export declare const Composer: (props: ComposerProps) => ComposedView;
+export interface Feed {
+  readonly count: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(FeedScreen())`), or from TSX as `toElement(FeedScreen())`. */
+export declare const FeedScreen: () => ComposedView;
