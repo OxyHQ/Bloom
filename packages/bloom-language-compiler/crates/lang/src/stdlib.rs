@@ -141,7 +141,7 @@ pub fn reference() -> String {
         let lead = intro(source);
         if !lead.is_empty() {
             out.push_str(&lead);
-            out.push_str("\n");
+            out.push('\n');
         }
         let lines: Vec<&str> = source.lines().collect();
         let mut docs: Vec<String> = Vec::new();
