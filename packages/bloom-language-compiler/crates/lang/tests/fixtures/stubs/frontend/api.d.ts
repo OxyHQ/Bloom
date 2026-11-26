@@ -6,14 +6,22 @@ export declare function joinClasses(base: string, ...names: string[]): string;
 /** A TS value of no known type. */
 export declare function readSetting(key: string): unknown;
 /** A TS `as const` list of strings. */
-export declare const MODES: readonly ["mixed", "tab", "hidden"];
+export declare const MODES: readonly ['mixed', 'tab', 'hidden'];
 /** A TS value Bloom does not type. */
 export declare const PRESETS: Array<{ id: string }> & { extra?: true };
 /** TS taking a function that returns a promise (a rejection is its error state). */
-export declare function useQuery<T>(options: { queryKey: string[]; queryFn: () => Promise<T> }): { data: T | undefined };
-export declare function useQueryOf(options: { queryKey: string[]; queryFn: () => Promise<number> }): { data: number | undefined };
+export declare function useQuery<T>(options: { queryKey: string[]; queryFn: () => Promise<T> }): {
+  data: T | undefined;
+};
+export declare function useQueryOf(options: {
+  queryKey: string[];
+  queryFn: () => Promise<number>;
+}): { data: number | undefined };
 export declare function onRefresh(handler: () => Promise<void>): void;
 /** TS taking a React ref object. */
-export declare function useVisible(options: { key: string; target: import('react').RefObject<unknown> }): boolean;
+export declare function useVisible(options: {
+  key: string;
+  target: import('react').RefObject<unknown>;
+}): boolean;
 export declare function useSync(run: () => string): string;
 export declare function onSave(handler: (name: string) => void): void;
