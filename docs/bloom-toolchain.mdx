@@ -56,12 +56,14 @@ the emitted TS imports only what it uses. A file outside any package (no
 ### Builds per module
 
 `bloom check` and `bloom build` check the modules level by level in dependency
-order, the modules of a level in parallel. Each module's result is cached in
-`.bloom/cache/` under a key made of the compiler, the manifest, the module's
-sources and the **interfaces** of the modules it depends on. A module's interface,
-`.bloom/modules/<Module>.bloominterface`, is the declarations its files show other
-files, so an edit inside a function body rechecks that module and not the ones that
-import it.
+order, the files of a level in parallel. Each file's result is cached in
+`.bloom/cache/` under a key made of the compiler, the manifest, the file's own text,
+the **interfaces** of its module's other files and the public interfaces of the
+modules it depends on. A file's interface is its visible declarations' types and
+signatures, not their bodies: its `internal` and `public` ones for its own module,
+its `public` ones for other modules. So an edit inside a function body, a comment or
+a private item rechecks that file only; a changed `internal` signature also rechecks
+its module's other files, and a changed `public` one the importing modules' files too.
 
 ## Package.bloom
 

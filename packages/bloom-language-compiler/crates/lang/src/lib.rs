@@ -136,6 +136,24 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     Checked { types: result.types(source), diagnostics: errors, warnings, dependencies }
 }
 
+/// What other files see of the `.bloom` file `source`, as text (see [`check::interface`]):
+/// its visible declarations' types and signatures, one per line, each starting with
+/// `public` (other modules see it) or `internal` (only its own module's other files do).
+/// A build that keys a file's importers on the lines they see rechecks them only when
+/// those change: a body, a comment or a private item changes none.
+pub fn interface(source: &str, filename: &str, options: &Options) -> String {
+    ts::next_epoch();
+    let (mut file, _, _) = parser::parse(source);
+    let resolution = modules::prepare(&mut file, source, filename, options);
+    let module_options = for_module(&resolution, options);
+    let options = module_options.as_ref().unwrap_or(options);
+    let path = match resolution.in_module {
+        true => modules::absolute(std::path::Path::new(filename)),
+        false => PathBuf::from(filename),
+    };
+    check::interface(&file, source, &path, options)
+}
+
 /// Parses and checks `source` for an editor: its definitions and references,
 /// scopes, members and expected types, with the diagnostics of [`check`].
 pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
