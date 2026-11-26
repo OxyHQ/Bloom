@@ -1,0 +1,8 @@
+// A Swift-named token must be one of its set's.
+struct Badge: View {
+  let title: String
+
+  var body: some View {
+    Text(title).font(.headlin).foreground(.muted.opacity(0.5))
+  }
+}

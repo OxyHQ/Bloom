@@ -1,0 +1,17 @@
+error[B0502]: `.font` takes font tokens, and `.headlin` is not one
+ --> check/surface_tokens.bloom:6:23
+  |
+6 |     Text(title).font(.headlin).foreground(.muted.opacity(0.5))
+  |                       ^^^^^^^ not a token of this set
+  |
+help: did you mean `.headline`?
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#font
+
+error[B0502]: `.opacity(…)` takes an opacity token
+ --> check/surface_tokens.bloom:6:58
+  |
+6 |     Text(title).font(.headlin).foreground(.muted.opacity(0.5))
+  |                                                          ^^^ not an opacity Bloom names
+  |
+help: write a fraction of the opacity scale: 0.05, 0.1, 0.2, 0.25, …
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#color
