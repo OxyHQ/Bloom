@@ -56,7 +56,10 @@ impl Tr<'_> {
                             let union = literals.join(" | ");
                             if optional { optional_ty(&union) } else { union }
                         } else {
-                            self.refuse("type:union", "a union of several types", union.span)
+                            // No Bloom union of several types: the TS union, kept as a `Foreign`.
+                            let text: Vec<&str> = rest.iter().map(|t| self.slice(t.span())).collect();
+                            let ty = self.foreign_ty(&text.join(" | "));
+                            if optional { optional_ty(&ty) } else { ty }
                         }
                     }
                 }
@@ -85,6 +88,15 @@ impl Tr<'_> {
                         );
                     }
                 };
+                // TS's utility types have no Bloom spelling: the TS type, kept as a `Foreign`.
+                const UTILITY: &[&str] = &[
+                    "ReturnType", "Parameters", "Awaited", "NonNullable", "Partial", "Required", "Pick", "Omit",
+                    "Exclude", "Extract", "InstanceType", "ComponentProps", "ComponentPropsWithoutRef",
+                ];
+                if UTILITY.contains(&name.as_str()) && !self.objects.contains(&name) && !self.unions.contains_key(&name) {
+                    let text = self.slice(reference.span).to_string();
+                    return self.foreign_ty(&text);
+                }
                 let args: Vec<String> = reference
                     .type_arguments
                     .as_ref()
@@ -135,10 +147,15 @@ impl Tr<'_> {
                 None => self.refuse("type:literal", "a literal type other than a string", literal.span),
             },
             TSType::TSIntersectionType(i) => self.refuse("type:intersection", "an intersection type", i.span),
-            TSType::TSAnyKeyword(t) => self.refuse("type:any", "`any`", t.span),
+            TSType::TSAnyKeyword(_) => self.foreign_ty("any"),
             // `unknown` is exactly a `Foreign` (bloomc writes it back as `unknown`).
             TSType::TSUnknownKeyword(_) => "Foreign".into(),
             TSType::TSNullKeyword(t) => self.refuse("type:null", "`null` alone", t.span),
+            // `X['k']`, `keyof X`, `typeof f`, `ReturnType<…>`: the TS type, kept as a `Foreign`.
+            TSType::TSIndexedAccessType(_) | TSType::TSTypeOperatorType(_) | TSType::TSTypeQuery(_) => {
+                let text = self.slice(ty.span()).to_string();
+                self.foreign_ty(&text)
+            }
             other => {
                 self.refuse("type:other", format!("the type `{}`", self.slice(other.span())), other.span())
             }

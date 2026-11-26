@@ -22,6 +22,24 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             // `xs.some(f)`, `xs.every(f)`: a Bloom list's `any` and `all`.
             ("B0209", "some") if list => Some((start, end, "any".to_string())),
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
+            // A promise-returning call JS let go unawaited: started as a task.
+            ("B0430", _) => Some((start, end, format!("task {{ await {text} }}"))),
+            // A list of views drawn as a child (`{rows}`): each of its views.
+            ("B0201", _)
+                if d.message == "expected `View`, found `[View]`"
+                    && crate::expr::is_postfix_text(text)
+                    && line_is(source, start, end) =>
+            {
+                Some((start, end, format!("for v in {text} {{ v }}")))
+            }
+            // Text of an optional string: JS drew nothing for `undefined`.
+            ("B0201", _)
+                if d.message == "`String?` may be `none` here"
+                    && (source[..start].ends_with("Text(") || source[..start].ends_with("RawText("))
+                    && source[end..].starts_with(')') =>
+            {
+                Some((start, end, format!("{text} ?? \"\"")))
+            }
             // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
             ("B0201", _)
                 if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") =>
@@ -104,4 +122,13 @@ fn operand_len(source: &str) -> Option<usize> {
         prev = c;
     }
     started.then_some(source.len())
+}
+
+/// Whether `start..end` is all of its line.
+fn line_is(source: &str, start: usize, end: usize) -> bool {
+    let before = &source[..start];
+    let line_start = before.rfind('\n').map_or(0, |i| i + 1);
+    let after = &source[end..];
+    let line_end = after.find('\n').unwrap_or(after.len());
+    before[line_start..].trim().is_empty() && after[..line_end].trim().is_empty()
 }

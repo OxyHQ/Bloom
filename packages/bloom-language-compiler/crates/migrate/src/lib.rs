@@ -131,17 +131,11 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     // JS truthiness of the conditions the codemod could not type, spelled from bloomc's types.
     let mut formatted = formatted;
     // JS members (`s.has(x)`, `m.size`) respelled from the receivers' types, the same way.
-    for _ in 0..3 {
-        let spelled = truthiness::spell(
-            &formatted,
-            &compiled.diagnostics,
-            &translated.conditions,
-            &translated.defaults,
-        );
-        let spelled = match spelled {
-            Some(s) => typed::fix(&s, &compiled.diagnostics).or(Some(s)),
-            None => typed::fix(&formatted, &compiled.diagnostics),
-        };
+    // One kind of respelling a round: each reads the spans of the text it was compiled from.
+    for _ in 0..5 {
+        let spelled = typed::fix(&formatted, &compiled.diagnostics).or_else(|| {
+            truthiness::spell(&formatted, &compiled.diagnostics, &translated.conditions, &translated.defaults)
+        });
         let Some(spelled) = spelled else { break };
         let Ok(reformatted) = bloom_fmt::format(&spelled, &target) else { break };
         if reformatted == formatted {

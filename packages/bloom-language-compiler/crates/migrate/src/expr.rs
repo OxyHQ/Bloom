@@ -268,6 +268,19 @@ impl Tr<'_> {
                     self.pairs = pairs;
                     format!("{}{targs}({})", id.name, args.join(", "))
                 }
+                // `new Date(x)`: construction is a call of the `"js"` import.
+                Expression::Identifier(id) if GLOBALS.contains(&id.name.as_str()) && !self.imported.contains(id.name.as_str()) => {
+                    self.js.insert(id.name.to_string());
+                    let args: Vec<String> = n
+                        .arguments
+                        .iter()
+                        .map(|a| match a.as_expression() {
+                            Some(e) => self.expr(e),
+                            None => self.refuse("call:spread", "a spread argument to `new`", a.span()),
+                        })
+                        .collect();
+                    format!("{}({})", id.name, args.join(", "))
+                }
                 _ => self.refuse("new", format!("`new {}`", self.slice(n.callee.span())), n.span),
             },
             Expression::SequenceExpression(s) => self.refuse("operator:comma", "a comma expression", s.span),
@@ -303,7 +316,12 @@ impl Tr<'_> {
             );
         }
         if GLOBALS.contains(&name) && !self.imported.contains(name) {
-            return self.refuse(&format!("global:{name}"), format!("the JS global `{name}`"), span);
+            if matches!(name, "Map" | "Set") {
+                return self.refuse(&format!("global:{name}"), format!("the JS global `{name}` as a value"), span);
+            }
+            // A JS global is a `Foreign` import from `"js"` (tsc checks its uses).
+            self.js.insert(name.to_string());
+            return name.to_string();
         }
         if self.react.contains_key(name) {
             return self.refuse(&format!("react:{}", self.react[name]), format!("React's `{name}`"), span);
@@ -352,6 +370,30 @@ impl Tr<'_> {
                 );
             }
         };
+        // `typeof x === "string"`: `x is String`; `"undefined"` tests `none`.
+        let typeof_of = |e: &'_ Expression<'_>| match e.without_parentheses() {
+            Expression::UnaryExpression(u) if u.operator == UnaryOperator::Typeof => Some(()),
+            _ => None,
+        };
+        if matches!(op, "==" | "!=") {
+            let (t, lit) = if typeof_of(&b.left).is_some() { (&b.left, &b.right) } else { (&b.right, &b.left) };
+            if let (Expression::UnaryExpression(u), Expression::StringLiteral(kind)) = (t.without_parentheses(), lit.without_parentheses())
+                && u.operator == UnaryOperator::Typeof
+            {
+                let value = self.expr(&u.argument);
+                let value = if is_postfix_text(&value) { value } else { format!("({value})") };
+                let ty = match kind.value.as_str().unwrap_or_default() {
+                    "string" => "String",
+                    "number" => "Float",
+                    "boolean" => "Bool",
+                    "undefined" => return format!("{value} {op} none"),
+                    other => {
+                        return self.refuse("operator:typeof", format!("`typeof … === \"{other}\"`"), b.span);
+                    }
+                };
+                return if op == "==" { format!("{value} is {ty}") } else { format!("!({value} is {ty})") };
+            }
+        }
         // `xs.indexOf(x) === -1`: a Bloom `indexOf` gives `none`, not `-1`.
         let index_of = |e: &Expression| {
             matches!(e.without_parentheses(), Expression::CallExpression(c)
@@ -649,6 +691,27 @@ impl Tr<'_> {
     }
 
     pub fn call(&mut self, call: &CallExpression) -> String {
+        // `Math.max(a, b)` and kin are the prelude's typed `max(a, b)`; `Array.isArray(x)` is `x is [Foreign]`.
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && let Expression::Identifier(object) = &m.object
+            && !self.imported.contains(object.name.as_str())
+            && call.arguments.iter().all(|a| a.as_expression().is_some())
+        {
+            let prelude = match (object.name.as_str(), m.property.name.as_str(), call.arguments.len()) {
+                ("Math", f @ ("max" | "min"), n) if n >= 1 => Some(f),
+                ("Math", f @ ("abs" | "round" | "floor" | "ceil"), 1) => Some(f),
+                _ => None,
+            };
+            if let Some(f) = prelude {
+                let args: Vec<String> = call.arguments.iter().map(|a| self.expr(a.to_expression())).collect();
+                return format!("{f}({})", args.join(", "));
+            }
+            if object.name == "Array" && m.property.name == "isArray" && call.arguments.len() == 1 {
+                let value = self.expr(call.arguments[0].to_expression());
+                let value = if is_postfix_text(&value) { value } else { format!("({value})") };
+                return format!("{value} is [Foreign]");
+            }
+        }
         if let Expression::Identifier(id) = &call.callee {
             let name = id.name.as_str();
             if name == "String"

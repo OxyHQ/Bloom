@@ -613,6 +613,9 @@ impl Tr<'_> {
             && let Expression::CallExpression(call) = init.without_parentheses()
             && let Some(args) = &call.type_arguments
             && let [only] = args.params.as_slice()
+            // A record pattern takes the type argument only when it is a record type
+            // (`useLocalSearchParams<{ id: string }>()`, not `useQuery<Lane[]>()`).
+            && (matches!(d.id, BindingPattern::BindingIdentifier(_)) || matches!(only, TSType::TSTypeLiteral(_)))
         {
             ty = format!(": {}", self.ty(only));
             self.typed_calls.insert(call.span.start);

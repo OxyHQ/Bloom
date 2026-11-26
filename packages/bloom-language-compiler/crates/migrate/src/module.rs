@@ -99,6 +99,8 @@ pub struct Tr<'s> {
     pub view_fns: HashSet<String>,
     /// Every name the output mentions, for keeping only the imports it uses.
     pub used: HashSet<String>,
+    /// JS globals the output reads, imported from `"js"`.
+    pub js: std::collections::BTreeSet<String>,
     /// React types the output names (`React.ReactNode` is `ReactNode` from `react`).
     pub react_types: std::collections::BTreeSet<String>,
     /// Every imported local name (a JS global is only one when not imported).
@@ -278,6 +280,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         fns: HashSet::new(),
         view_fns: HashSet::new(),
         used: HashSet::new(),
+        js: Default::default(),
         imported: HashSet::new(),
         react_types: Default::default(),
         scope: Scope::default(),
@@ -594,6 +597,10 @@ impl<'s> Tr<'s> {
     /// The `import` lines for the names the output uses.
     fn imports_text(&self, imports: &Imports) -> String {
         let mut out = String::new();
+        if !self.js.is_empty() {
+            let names: Vec<&str> = self.js.iter().map(String::as_str).collect();
+            out.push_str(&format!("import {{ {} }} from \"js\"\n", names.join(", ")));
+        }
         let mut react: Vec<String> =
             self.react
                 .iter()
@@ -1235,6 +1242,20 @@ pub fn is_identifier(text: &str) -> bool {
 }
 
 /// `T` as an optional, once.
+/// A TS type bloomc cannot spell, kept verbatim: `Foreign<"AvatarProps['source']">`.
+/// The names it mentions stay imported.
+impl Tr<'_> {
+    pub fn foreign_ty(&mut self, text: &str) -> String {
+        let text = text.split_whitespace().collect::<Vec<_>>().join(" ").replace('"', "'");
+        for word in text.split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$')) {
+            if word.chars().next().is_some_and(|c| c.is_alphabetic() || c == '_') {
+                self.used.insert(word.to_string());
+            }
+        }
+        format!("Foreign<\"{text}\">")
+    }
+}
+
 pub fn optional_ty(ty: &str) -> String {
     // A function or union type is parenthesised: `(() -> Unit)?`, `("a" | "b")?`.
     if ty.contains("->") || ty.contains(" | ") {
