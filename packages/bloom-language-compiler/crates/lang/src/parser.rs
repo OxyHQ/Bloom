@@ -837,7 +837,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                         return None;
                     }
                 };
-                let name = self.ident("the state's name");
+                let name = self.soft_name("the state's name");
                 let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
                 self.expect(P::Eq, "`=` and the initial value");
                 let value = self.expr(Ctx::Normal);
@@ -1239,6 +1239,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 PatternKind::Case { ty: None, name, args }
             }
             Tok::Ident(_) => PatternKind::Bind(self.ident("a name")),
+            // `let body = …`: a soft keyword binds as a name.
+            Tok::Kw(kw) if is_soft(kw) => PatternKind::Bind(self.soft_name("a name")),
             Tok::P(P::Dot) => {
                 self.bump();
                 let name = self.name_or_keyword("a case name");

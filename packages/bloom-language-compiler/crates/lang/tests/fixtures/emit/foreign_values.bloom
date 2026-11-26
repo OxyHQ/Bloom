@@ -1,0 +1,35 @@
+// TS values Bloom leaves to TS: beside a number they are numbers (`insets.top + 4`,
+// checked by `satisfies`), and `foreign ?? []` stays foreign while `[]` says less than TS knows.
+import { useInsets, useMods } from "@/hooks/useInsets"
+
+let OFFSET = 4
+
+pub view Mods(id: String) {
+  let insets = useInsets()
+  let { data } = useMods(id)
+  let mods = data ?? []
+  let names = mods.map { m in m.name }
+
+  body {
+    VStack {
+      for name in names { Text(name) }
+    }
+    .padding("top", insets.top + OFFSET)
+  }
+}
+
+// `x != none` narrows `x` in the block (and each side of `&&`).
+pub fn end(onEnd: (() -> Unit)?, label: String?) -> String {
+  if onEnd != none && label != none {
+    onEnd()
+    return label
+  }
+  return ""
+}
+
+// An absent view where a modifier takes one draws nothing.
+pub view Row(title: String, active: Bool) {
+  body {
+    GroupedSectionItem(title).trailing(active ? Text("on") : none)
+  }
+}
