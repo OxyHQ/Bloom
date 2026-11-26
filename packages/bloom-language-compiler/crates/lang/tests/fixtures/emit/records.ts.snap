@@ -1,0 +1,62 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+interface Style {
+  readonly gap: number;
+  readonly tone: string;
+  readonly label: string;
+}
+
+interface Card {
+  readonly style: Style;
+  readonly title: string;
+}
+
+function base(): Style {
+return { gap: 8, tone: "calm", label: "base" };
+}
+
+function loud(style: Style): Style {
+return { gap: style.gap, label: style.label, tone: "loud" };
+}
+
+function card(title: string): Card {
+return { title: title, style: { tone: "calm", label: title, gap: 4 } };
+}
+
+function patch(): Partial<Style> {
+return {};
+}
+
+function meta(id: number): string {
+const attributes = { "aria-label": "Close", id: id, default: true };
+return `${attributes.id}`;
+}
+
+export interface PreviewProps {
+  readonly title: string;
+}
+export const Preview = view(function Preview(props: PreviewProps) {
+"use no memo";
+const $ = $c(4);
+const { title } = props;
+let shown: Card;
+if ($[0] !== title) {
+shown = card(title);
+$[0] = title;
+$[1] = shown;
+} else {
+shown = $[1];
+}
+let $t0;
+if ($[2] !== shown.style.label) {
+$t0 = Text(shown.style.label);
+$[2] = shown.style.label;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+

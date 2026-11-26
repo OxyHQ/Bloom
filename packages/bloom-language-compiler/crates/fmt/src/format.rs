@@ -579,6 +579,20 @@ impl<'a> Formatter<'a> {
                 );
                 entries.bracketed("[", "]")
             }
+            ExprKind::Record(entries) => {
+                let entries = self.commas(entries, record_entry_span, |this, entry| match entry {
+                    RecordEntry::Field { key, value } => {
+                        let name = if record_key_is_name(&key.name) {
+                            key.name.clone()
+                        } else {
+                            format!("{:?}", key.name)
+                        };
+                        concat(vec![text(name), text(": "), this.expr(value)])
+                    }
+                    RecordEntry::Spread(value) => concat(vec![text(".."), this.expr(value)]),
+                });
+                entries.wrap("{", line, "}")
+            }
             ExprKind::Unary(op, inner) => {
                 concat(vec![text(if *op == UnaryOp::Not { "!" } else { "-" }), self.expr(inner)])
             }
@@ -910,4 +924,18 @@ fn generics(names: &[Ident]) -> Doc {
         return Doc::Nil;
     }
     text(format!("<{}>", names.iter().map(|n| n.name.as_str()).collect::<Vec<_>>().join(", ")))
+}
+
+fn record_entry_span(entry: &RecordEntry) -> Span {
+    match entry {
+        RecordEntry::Field { key, value } => key.span.to(value.span),
+        RecordEntry::Spread(value) => value.span,
+    }
+}
+
+/// Whether a record key is written bare (`name:`) rather than quoted (`"aria-label":`).
+fn record_key_is_name(key: &str) -> bool {
+    let mut chars = key.chars();
+    chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
 }

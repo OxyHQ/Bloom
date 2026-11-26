@@ -1,0 +1,51 @@
+error[B0205]: `Style` has no field `labl`
+ --> check/records.bloom:9:5
+  |
+9 |   { labl: "x" }
+  |     ^^^^ no such field
+  |
+help: did you mean `label`?
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0206]: `Style` needs `label`
+ --> check/records.bloom:9:3
+  |
+9 |   { labl: "x" }
+  |   ^^^^^^^^^^^^^ missing field(s) without a default
+  |
+help: pass it: `Style(label: …)`, or give the field a default
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0206]: `Style` needs `label`
+  --> check/records.bloom:13:3
+   |
+13 |   { gap: 2 }
+   |   ^^^^^^^^^^ missing field(s) without a default
+   |
+help: pass it: `Style(label: …)`, or give the field a default
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `String`, found `Int`
+  --> check/records.bloom:17:12
+   |
+17 |   { label: 3 }
+   |            ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0208]: `a` is given twice
+  --> check/records.bloom:21:19
+   |
+21 |   let r = { a: 1, a: 2 }
+   |                   ^ a record has each key once
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0205]: cannot spread `Int` into a record
+  --> check/records.bloom:26:15
+   |
+26 |   let r = { ..n, b: 1 }
+   |               ^ not a record
+   |
+help: spread a struct or a record: `..base`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

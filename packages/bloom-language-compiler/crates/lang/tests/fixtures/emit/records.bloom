@@ -1,0 +1,40 @@
+// Record literals: typed by what is expected (a struct, a patch, nothing).
+
+struct Style {
+  gap: Int = 8
+  tone: String = "calm"
+  label: String
+}
+
+struct Card {
+  style: Style
+  title: String
+}
+
+fn base() -> Style {
+  { label: "base" }
+}
+
+fn loud(style: Style) -> Style {
+  { ..style, tone: "loud" }
+}
+
+fn card(title: String) -> Card {
+  { title: title, style: { label: title, gap: 4 } }
+}
+
+fn patch() -> Partial<Style> {
+  {}
+}
+
+fn meta(id: Int) -> String {
+  let attributes = { "aria-label": "Close", id: id, default: true }
+  "${attributes.id}"
+}
+
+pub view Preview(title: String) {
+  let shown = card(title)
+  body {
+    Text(shown.style.label)
+  }
+}

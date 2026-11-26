@@ -170,6 +170,7 @@ impl Walker<'_> {
             | ExprKind::Field(a, _)
             | ExprKind::OptField(a, _) => self.expr(a),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|a| self.expr(a)),
+            ExprKind::Record(entries) => entries.iter().for_each(|e| self.expr(e.value())),
             ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
                 self.expr(k);
                 self.expr(v);

@@ -1,0 +1,28 @@
+// Record literals held to the struct they build.
+
+struct Style {
+  gap: Int = 8
+  label: String
+}
+
+fn typo() -> Style {
+  { labl: "x" }
+}
+
+fn missing() -> Style {
+  { gap: 2 }
+}
+
+fn wrong() -> Style {
+  { label: 3 }
+}
+
+fn twice() -> Int {
+  let r = { a: 1, a: 2 }
+  r.a
+}
+
+fn spread(n: Int) -> Int {
+  let r = { ..n, b: 1 }
+  r.b
+}

@@ -471,6 +471,14 @@ impl<'a> Emitter<'a> {
             Ty::Adt(def, args) => {
                 let d = &self.ck.defs[*def];
                 let base = match &d.origin {
+                    Origin::Record => {
+                        let fields: Vec<String> = d
+                            .fields()
+                            .iter()
+                            .map(|f| format!("{}: {}", prop_key(&f.name), self.ts_type(&f.ty)))
+                            .collect();
+                        format!("{{ {} }}", fields.join("; "))
+                    }
                     Origin::Local => d.name.clone(),
                     Origin::Bloom { specifier } => {
                         if !self.ck.type_imports.contains(&d.name) {
@@ -1367,6 +1375,32 @@ impl<'a> Emitter<'a> {
                 let list = Frag::join(items, ", ").wrap("[", "]");
                 if self.options.dev { list.wrap("Object.freeze(", ")") } else { list }
             }
+            ExprKind::Record(entries) => match self.ck.calls.get(&expr.id) {
+                Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, entries), *def, false),
+                Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, entries), *def, true),
+                _ => {
+                    let entries: Vec<Frag> = entries
+                        .iter()
+                        .map(|entry| match entry {
+                            RecordEntry::Field { key, value } => {
+                                let mut out = Frag::at(key.span, prop_key(&key.name));
+                                out.s(": ").f(self.expr(value));
+                                out
+                            }
+                            RecordEntry::Spread(value) => {
+                                let mut out = Frag::of("...");
+                                out.f(self.operand(value));
+                                out
+                            }
+                        })
+                        .collect();
+                    if entries.is_empty() {
+                        Frag::of("{}")
+                    } else {
+                        Frag::join(entries, ", ").wrap("{ ", " }")
+                    }
+                }
+            },
             ExprKind::Map(entries) => {
                 let entries: Vec<Frag> = entries
                     .iter()
@@ -1438,6 +1472,15 @@ impl<'a> Emitter<'a> {
                 out
             }
             ExprKind::Call(call) => self.call(expr, call),
+            ExprKind::Closure(_)
+                if matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_) | CallRes::Partial(_))) =>
+            {
+                match self.ck.calls.get(&expr.id) {
+                    Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, &[]), *def, false),
+                    Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, &[]), *def, true),
+                    _ => unreachable!("matched above"),
+                }
+            }
             ExprKind::Closure(c) => self.closure(c),
             ExprKind::If(if_expr) => self.if_value(expr, if_expr),
             ExprKind::Match(m) => self.match_value(expr, m),
@@ -1710,7 +1753,11 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(e);
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
-                    if matches!(e.kind, ExprKind::Map(_)) { value.wrap("(", ")") } else { value }
+                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) {
+                        value.wrap("(", ")")
+                    } else {
+                        value
+                    }
                 } else {
                     let mut out = Frag::of("{\n");
                     for s in stmts {
@@ -2666,6 +2713,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         }
         ExprKind::Match(m) => expr_awaits(&m.scrutinee),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().any(expr_awaits),
+        ExprKind::Record(entries) => entries.iter().any(|e| expr_awaits(e.value())),
         _ => false,
     }
 }
@@ -2801,6 +2849,7 @@ impl<'a> Emitter<'a> {
             | ExprKind::Field(e, _)
             | ExprKind::OptField(e, _) => go(e),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(go),
+            ExprKind::Record(entries) => entries.iter().for_each(|e| go(e.value())),
             ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
                 go(k);
                 go(v);
@@ -2955,6 +3004,7 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Binary(_, a, b) => go(a) & go(b),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().fold(true, |all, e| go(e) & all),
+            ExprKind::Record(entries) => entries.iter().fold(true, |all, e| go(e.value()) & all),
             ExprKind::Closure(c) => {
                 let mut only = !stmts_assign(&c.body);
                 crate::check::walk_stmts(&c.body, &mut |_, id| {

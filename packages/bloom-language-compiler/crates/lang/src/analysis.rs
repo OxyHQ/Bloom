@@ -477,7 +477,7 @@ impl Builder<'_> {
                 Origin::Bloom { specifier } => {
                     DefinitionOrigin::Bloom(self.path.parent().unwrap_or(Path::new(".")).join(specifier))
                 }
-                Origin::Ts { .. } => DefinitionOrigin::Ts(None, None),
+                Origin::Ts { .. } | Origin::Record => DefinitionOrigin::Ts(None, None),
             };
             let local = origin == DefinitionOrigin::Local;
             let decl = if local { spans.get(def.name.as_str()) } else { None };
@@ -923,6 +923,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         | ExprKind::Field(a, _)
         | ExprKind::OptField(a, _) => walk_expr(a, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|a| walk_expr(a, f)),
+        ExprKind::Record(entries) => entries.iter().for_each(|e| walk_expr(e.value(), f)),
         ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
             walk_expr(k, f);
             walk_expr(v, f);

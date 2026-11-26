@@ -446,6 +446,8 @@ pub enum ExprKind {
     List(Vec<Expr>),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
+    /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.
+    Record(Vec<RecordEntry>),
     Unary(UnaryOp, Box<Expr>),
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     Ternary(Box<Expr>, Box<Expr>, Box<Expr>),
@@ -463,6 +465,44 @@ pub enum ExprKind {
     Task(Block),
     /// What the parser put where it could not read an expression.
     Error,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum RecordEntry {
+    /// `key: value`; a quoted key's name is its text.
+    Field { key: Ident, value: Expr },
+    /// `..value`
+    Spread(Expr),
+}
+
+impl RecordEntry {
+    /// The entry's value: a field's, or the spread one.
+    pub fn value(&self) -> &Expr {
+        match self {
+            RecordEntry::Field { value, .. } | RecordEntry::Spread(value) => value,
+        }
+    }
+}
+
+/// A record as the struct construction it is (`S(key: v, ..spread)`), for a record
+/// typed by a struct: the same checks, the same object.
+pub fn record_call(span: Span, entries: &[RecordEntry]) -> Call {
+    let args = entries
+        .iter()
+        .map(|entry| match entry {
+            RecordEntry::Field { key, value } => Arg {
+                label: Some(key.clone()),
+                spread: false,
+                value: value.clone(),
+                span: key.span.to(value.span),
+            },
+            RecordEntry::Spread(value) => {
+                Arg { label: None, spread: true, value: value.clone(), span: value.span }
+            }
+        })
+        .collect();
+    let callee = Expr { id: ExprId(u32::MAX), kind: ExprKind::Name(String::new()), span };
+    Call { callee: Box::new(callee), args, parens: true, trailing: None }
 }
 
 #[derive(Debug, Clone, PartialEq)]
