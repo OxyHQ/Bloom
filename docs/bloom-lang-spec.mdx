@@ -72,7 +72,8 @@ pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, St
   terminate when (a) the next non-blank line starts with `.` followed by an identifier
   (a modifier or member continues the expression), or with a binary operator other than `-`
   (`&&`, `||`, `??`, `+`, `*`, `/`, `==`, …), or (b) the line ends inside `(`/`[`, after a binary
-  operator, after `,`, `=`, `->`, `=>` or `in`. `;` may separate items on one line.
+  operator, after `,`, `=`, `->`, `=>` or `in`. Comment-only lines count as blank for (a). `;`
+  may separate items on one line.
 - **Identifiers:** `[a-zA-Z_][a-zA-Z0-9_]*`. Types, views and enum names are `UpperCamel`;
   values, functions, fields and enum cases are `lowerCamel` (a warning otherwise, B0901).
 - **Keywords:** `as async await body case default defer else enum false fn for from if import in
@@ -241,7 +242,10 @@ exhaustive `match` on a fieldless enum maps a key to a field.
 ### 4.5 Enums, Option and Result
 
 ```bloom
-enum Shape { circle(radius: Float), rect(w: Float, h: Float) }
+enum Shape {
+  circle(radius: Float)
+  rect(w: Float, h: Float)
+}
 fn area(s: Shape) -> Float {
   match s {
     case .circle(r) => 3.14159 * r * r
@@ -435,8 +439,9 @@ so a wrong path is a compile error.
   An explicit import shadows a prelude name. A module is never both `X.tsx` and `X.bloom`
   (B0610): an extensionless import must mean one file.
 - **TS importing Bloom:** bloomc writes `Name.d.bloom.ts` beside `Name.bloom` (TS's
-  `allowArbitraryExtensions`), so `import { Composer } from "./Composer.bloom"` type-checks in TS.
-  A `view` is a node factory, as in the embedded language: TSX draws it with
+  `allowArbitraryExtensions`), so `import { Composer } from "./Composer.bloom"` type-checks in TS;
+  `bloom-lang-dts --root . <dirs>` writes them beside the sources (`bloomc build --out` writes
+  them into its out directory). A `view` is a node factory, as in the embedded language: TSX draws it with
   `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
   is a node like any other.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
@@ -446,6 +451,9 @@ so a wrong path is a compile error.
 For each `.bloom` file bloomc emits typed TypeScript, then runs the embedded-language pass
 (hoisting static chains) on it in the same process, then hands it to the host transformer
 (Metro/Babel/Noxcturnal, babel-jest, Vite). A source map composes all three back to `.bloom`.
+A file's output can depend on the declarations of what it imports (named arguments, whether a
+callee is a view); `bloomc build`'s cache follows imports, while Metro's and Jest's per-file
+caches do not yet (phase 1: the adapters' cache keys include the imports' declarations).
 
 ```ts
 // view Counter { @state n = 0; body { Button(Text("${n}")).onPress { n += 1 } } }
@@ -518,8 +526,11 @@ statement and closing-brace boundaries, so one typo reports one error.
 
 `bloomc fmt` is the only style (no options): 2-space indent, 100 columns, one modifier per line
 once a chain does not fit on one line, trailing commas in multi-line argument lists,
-members ordered as written, blank lines kept (at most one), imports sorted by path. Formatting
-is idempotent and preserves comments.
+members ordered as written, blank lines kept (at most one), imports sorted by path, struct fields
+and enum variants one per line. A block with one statement stays on one line when it fits (a
+view's `body` never does); an `if`/`else` chain is on one line together or breaks together; a
+builder line's chain breaks one modifier per line once its builder spans lines; a chain inside an
+expression breaks only with two or more calls. Formatting is idempotent and preserves comments.
 
 ## 15. Cheat sheet for agents
 
