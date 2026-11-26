@@ -472,6 +472,13 @@ impl<'a> Emitter<'a> {
                         }
                         _ => None,
                     }))
+                    // `Box(0)`: the class's `init` (`Box$$init`).
+                    .chain(self.ck.names.values().filter_map(|n| match n {
+                        NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
+                            Some(self.ck.locals[*l].name.as_str())
+                        }
+                        _ => None,
+                    }))
                     .collect();
                 let specs: Vec<&ImportSpec> = specs
                     .iter()

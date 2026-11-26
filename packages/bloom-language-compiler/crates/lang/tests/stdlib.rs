@@ -139,6 +139,69 @@ const FEED_TITLE: &str = r#"public struct FeedTitle: View {
 }
 "#;
 
+const TICKER: &str = r#"public struct Ticker: View {
+  @State private var timer = Ref(0)
+  @State private var shown = 0
+
+  var body: some View {
+    VStack {
+      Text("\(shown)")
+      Button(Text("Tick")).onPress { timer.value += 1 }
+      Button(Text("Show")).onPress { shown = timer.value }
+    }
+  }
+}
+"#;
+
+#[test]
+fn a_ref_keeps_a_value_across_renders_without_one() {
+    // `useRef(0)`'s 2.0 form: the standard library's `Ref<T>` held in `@State`, made once
+    // (one hook); writing `timer.value` draws nothing.
+    let root = package("ref", &[("Sources/Model/Ticker.bloom", TICKER)]);
+    let path = root.join("Sources/Model/Ticker.bloom");
+    let out = compile(TICKER, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("useState<Ref<number>>(() => Ref$$init(0))"), "{}", out.code);
+    assert!(out.code.contains("timer.value = timer.value + (1);"), "{}", out.code);
+    // The class's `init` is imported with it, as a value.
+    assert!(out.code.contains("import { type Ref, Ref$$init } from"), "{}", out.code);
+}
+
+const RECIPES: &str = r#"let card = defineModifier { v in v.padding(.md) }
+
+private func control(_ icon: IconComponent, _ look: ViewModifier?) -> View {
+  Icon(icon).modifier(look ?? card)
+}
+"#;
+
+#[test]
+fn bloom_ui_types_and_recipes_need_no_import() {
+    // M8: `ViewModifier`, `IconComponent`, `defineModifier` and `defineTokens` are BloomUI's,
+    // so a package file names them without `import … from "@oxy.so/bloom-language"`.
+    let root = package("bloom-ui", &[("Sources/Model/Controls.bloom", RECIPES)]);
+    let path = root.join("Sources/Model/Controls.bloom");
+    // The embedded language's declarations are the repository's (`node_modules`).
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../..");
+    let options = Options { root: Some(repo.clone()), ..Options::default() };
+    let out = compile(RECIPES, &path.to_string_lossy(), &options);
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(
+        out.code.contains(
+            "import { defineModifier, type IconComponent, type ViewModifier } from \"@oxy.so/bloom-language\";"
+        ),
+        "{}",
+        out.code
+    );
+    // A file that still imports them (the migration mode) keeps its one import.
+    let written = format!(
+        "import {{ type IconComponent, type ViewModifier, defineModifier }} from \"@oxy.so/bloom-language\"\n{RECIPES}"
+    );
+    std::fs::write(&path, &written).unwrap();
+    let options = Options { allow_ts_imports: true, root: Some(repo), ..Options::default() };
+    let out = compile(&written, &path.to_string_lossy(), &options);
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+}
+
 #[test]
 fn a_plural_count_is_a_double() {
     // M4: a TS number is a `Double`, and CLDR plural rules take decimals, so `count:` does;

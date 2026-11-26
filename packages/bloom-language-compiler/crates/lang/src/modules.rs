@@ -433,6 +433,15 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         }
     }
 
+    // BloomUI's types and recipes that are the embedded language's own (M8): a package file
+    // names them without importing `@oxy.so/bloom-language`, as it names `VStack`.
+    for name in BLOOM_UI_NAMES {
+        offered.entry((*name).to_string()).or_default().push(Offer::Runtime {
+            specifier: "@oxy.so/bloom-language",
+            module: crate::stdlib::MODULE.to_string(),
+        });
+    }
+
     import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
     // Two files of a module declaring one name.
     for item in &file.items {
@@ -457,6 +466,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     out
 }
 
+/// The embedded language's names a package file uses as BloomUI's, without an import.
+pub const BLOOM_UI_NAMES: &[&str] = &["IconComponent", "ViewModifier", "defineModifier", "defineTokens"];
+/// Those of [`BLOOM_UI_NAMES`] that are TS types only (imported `type`).
+const BLOOM_UI_TYPES: &[&str] = &["IconComponent", "ViewModifier"];
+
 /// Imports, into `file`, each name it uses (`free_names`, and the extension members
 /// written after a dot) from the one place `offered` has it.
 fn import_uses(
@@ -474,8 +488,17 @@ fn import_uses(
     // What derived code (`Codable`) names, as if written at the start.
     uses.extend(derived.iter().map(|n| (n.clone(), crate::codable::synthetic(Span::new(0, 0)))));
     let members = member_names(source);
+    // `Box(0)` calls the class's `init` (`Box$$init`), declared beside it.
+    let called: BTreeMap<String, Span> = uses.iter().map(|(n, s)| (n.clone(), *s)).collect();
     for name in offered.keys() {
         if own.contains(name) {
+            continue;
+        }
+        if let Some((owner, "init", true)) = crate::extensions::demangle(name)
+            && let Some(span) = called.get(owner)
+        {
+            // Its own span: the class may be imported as a type only, its `init` never is.
+            uses.push((name.clone(), crate::codable::synthetic(*span)));
             continue;
         }
         if let Some((_, member, _)) = crate::extensions::demangle(name)
@@ -487,8 +510,18 @@ fn import_uses(
     let mut seen = BTreeSet::new();
     uses.retain(|(name, _)| seen.insert(name.clone()));
     let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
+    // A name the file imports itself (a TS import kept in the migration mode) is that import.
+    let written: BTreeSet<String> = file
+        .imports
+        .iter()
+        .flat_map(|i| match &i.kind {
+            ImportKind::Named(specs) => specs.iter().map(|s| s.local().name.clone()).collect(),
+            ImportKind::Namespace(name) => vec![name.name.clone()],
+            ImportKind::Module(_) => Vec::new(),
+        })
+        .collect();
     for (name, span) in uses {
-        if own.contains(&name) {
+        if own.contains(&name) || written.contains(&name) {
             continue;
         }
         let Some(offers) = offered.get(&name) else {
@@ -517,8 +550,8 @@ fn import_uses(
             }
             Offer::Runtime { specifier, .. } => (specifier.to_string(), specifier.to_string()),
         };
-        let spec =
-            ImportSpec { type_only: false, name: Ident { name: name.clone(), span }, alias: None, span };
+        let type_only = BLOOM_UI_TYPES.contains(&name.as_str()) && matches!(chosen[0], Offer::Runtime { .. });
+        let spec = ImportSpec { type_only, name: Ident { name: name.clone(), span }, alias: None, span };
         synthesized.entry(key).or_insert_with(|| (specifier, Vec::new())).1.push(spec);
     }
     for (_, (specifier, specs)) in synthesized {
@@ -597,7 +630,10 @@ enum Offer {
 
 impl Offer {
     fn is_std(&self) -> bool {
-        matches!(self, Offer::Bloom { file, .. } if crate::stdlib::contains(file))
+        match self {
+            Offer::Bloom { file, .. } => crate::stdlib::contains(file),
+            Offer::Runtime { module, .. } => module == crate::stdlib::MODULE,
+        }
     }
 
     fn module(&self) -> &str {

@@ -339,6 +339,18 @@ extension Result<Success, Failure> {
 
 }
 
+// ---- Ref --------------------------------------------------------------------------------
+
+/// A value a view keeps across renders without drawing again (React's `useRef`), held as
+/// `@State private var timer = Ref(0)`: the object is made once, and writing
+/// `timer.value` changes it in place, so it costs one hook and no render. A host view's
+/// instance is `ViewRef<T>()` instead (`.ref(field)`).
+public final class Ref<T> {
+  public var value: T
+
+  public init(_ value: T) { self.value = value }
+}
+
 // ---- Error ------------------------------------------------------------------------------
 
 /// An error with a message: what `throw` takes when no domain error type fits.

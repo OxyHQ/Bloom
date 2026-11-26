@@ -812,6 +812,11 @@ so a wrong path is a compile error.
 - **Prelude** (always in scope): the core types, `ok`/`err`/`none`, `all`/`race`/`sleep`, every
   node of `spec/language.json` (`VStack`, `Text`, `Button`, …) with its modifiers, `Embed`,
   `toast`, `navigate`.
+- **BloomUI's own types and recipes (2.0):** a package file names `ViewModifier`,
+  `IconComponent`, `defineModifier` and `defineTokens` without importing
+  `@oxy.so/bloom-language` (the types are imported `type`). A file that still imports one of
+  them (the migration mode) keeps its import, and a name a file imports itself is never
+  imported a second time. A class's `init` (`Box(0)`, `Box$$init`) is imported with the class.
 - **Bloom modules:** `import { PostRow } from "./PostRow.bloom"`.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
