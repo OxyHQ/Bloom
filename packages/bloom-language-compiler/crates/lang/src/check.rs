@@ -3106,7 +3106,11 @@ impl<'o> Checker<'o> {
             ExprKind::Binary(op, lhs, rhs) => self.binary(expr, *op, lhs, rhs, expected_resolved.as_ref()),
             ExprKind::Ternary(cond, then, otherwise) => {
                 self.expr(cond, Some(&Ty::Bool));
+                // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
+                self.push();
+                self.narrow_present(cond);
                 let a = self.expr(then, expected);
+                self.pop();
                 // `c ? f : none` is `F?`: `none` is not held to the other branch's type.
                 // An `Int` branch does not hold a `Float` one to `Int` (`c ? 0 : 0.5` is `Float`).
                 let int = Ty::Int == self.resolve(&a);
@@ -3115,7 +3119,10 @@ impl<'o> Checker<'o> {
                     _ if int => expected,
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
+                self.push();
+                self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
                 let b = self.expr(otherwise, hint);
+                self.pop();
                 self.join(&a, &b, expr.span)
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),
@@ -3575,9 +3582,12 @@ impl<'o> Checker<'o> {
             BinaryOp::And | BinaryOp::Or => {
                 self.expr(lhs, Some(&Ty::Bool));
                 // `x != none && x.isEmpty`: `x` is present on the right of `&&`.
+                // `x == none || x.isEmpty`: present on the right of `||`.
                 self.push();
                 if op == BinaryOp::And {
                     self.narrow_present(lhs);
+                } else {
+                    self.narrow(lhs, BinaryOp::Eq, BinaryOp::Or);
                 }
                 self.expr(rhs, Some(&Ty::Bool));
                 self.pop();
