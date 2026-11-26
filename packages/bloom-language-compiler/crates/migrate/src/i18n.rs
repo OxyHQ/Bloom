@@ -31,7 +31,8 @@ pub fn localize(source: &str, filename: &str) -> Option<String> {
         let trimmed = line.trim();
         let start = at;
         at += line.len();
-        let Some(inner) = trimmed.strip_prefix("let {").and_then(|l| l.strip_suffix(&format!("}} = {HOOK}()")))
+        let Some(inner) =
+            trimmed.strip_prefix("let {").and_then(|l| l.strip_suffix(&format!("}} = {HOOK}()")))
         else {
             continue;
         };
@@ -122,8 +123,11 @@ pub fn localize(source: &str, filename: &str) -> Option<String> {
                 }
                 let open = l.find('{')?;
                 let close = l.find('}')?;
-                let names: Vec<&str> =
-                    l[open + 1..close].split(',').map(str::trim).filter(|n| !n.is_empty() && *n != HOOK).collect();
+                let names: Vec<&str> = l[open + 1..close]
+                    .split(',')
+                    .map(str::trim)
+                    .filter(|n| !n.is_empty() && *n != HOOK)
+                    .collect();
                 (!names.is_empty())
                     .then(|| format!("{}{{ {} }}{}", &l[..open], names.join(", "), &l[close + 1..]))
             })
