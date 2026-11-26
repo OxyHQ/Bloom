@@ -116,6 +116,13 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
+    let module_options;
+    let options = if resolution.in_module && !options.modules {
+        module_options = Options { modules: true, ..options.clone() };
+        &module_options
+    } else {
+        options
+    };
     let mut result = check::check(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -133,6 +140,13 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
+    let module_options;
+    let options = if resolution.in_module && !options.modules {
+        module_options = Options { modules: true, ..options.clone() };
+        &module_options
+    } else {
+        options
+    };
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -172,6 +186,13 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
+    let module_options;
+    let options = if resolution.in_module && !options.modules {
+        module_options = Options { modules: true, ..options.clone() };
+        &module_options
+    } else {
+        options
+    };
     let mut checked = check::check_for_emit(&file, source, filename, options);
     rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
