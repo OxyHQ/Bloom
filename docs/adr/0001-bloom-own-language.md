@@ -290,7 +290,7 @@ Kept current as the phases run (last update 2026-11-26).
 | 0 | design, prototype, proof | merged: #963 (this ADR, spec), #964 (core and tooling combined; #967 closed into it) |
 | 0 | publish | release PR #984: compiler 1.6.0, its six platform packages, `bloom-vscode` 0.1.0 as a CI `.vsix` artifact |
 | 0 | Mention proof on the published compiler | #2046, onto the language line `feat/mention-on-language` after #984 publishes |
-| 1 | language | #979: key paths, structural `==`, `.onChange`, `all`/`race`, the await helper removed (inline `try`), builder IIFEs removed, typed routes (B0701/B0702), node constructor signatures for all 441 nodes, the shared chain-rule module (`crates/compiler/src/rules.rs`, fed by both compilers; bloomc no longer re-runs the embedded pass), record literals, inline record types, string-literal unions. In progress: `?.()` and argument spread, `effect`, `defineTokens`, typed bloom-data, emitted bytes |
+| 1 | language | #979 (tip c00976646): key paths, structural `==`, `.onChange`, `all`/`race`, the await helper removed (inline `try`), builder IIFEs removed, typed routes (B0701/B0702), node constructor signatures for all 441 nodes, the shared chain-rule module (`crates/compiler/src/rules.rs`, fed by both compilers; bloomc no longer re-runs the embedded pass), record literals, inline record types, string-literal unions, `?.()` and rest spread, the `effect` member (one `useEffect`, inferred deps, `defer` as cleanup), props spread `view X(..P)`, optional modifier params, the memo comparator `equal(old, new)` (the runtime's `view()` takes it as a second argument), `Map`/`Set`, `[..a]`, `@ref`, `T == T?`, `.enumerated()` and list methods, prelude math, `Int(s)`/`Float(s)`, `is` narrowing, `import … from "js"`, TS class and exotic components, soft keywords as names. Next (lang-p1-core4): Int→Float widening (decided: implicit where a Float is expected, never the reverse), react-native values, `lazy`, hook modules, whole props, `memo(Named)`, builder `for` cost, `defineTokens`, typed bloom-data, emitted bytes |
 | 1 | tooling | #980: `bloomc check --tsc` (B0620), LSP (definition, references, completion, hover, incremental sync), import-aware Jest/Metro/`bloomc build` caches, `bloomc` for six platforms with an `npx` shim |
 | 1 | compile cost | per file 47 / 60 / 136 µs (models / rows / screens) from 94 / 193 / 381; the embedded pass on the same TSX is 3.9 / 11.3 / 23.5 µs (12x / 5.3x / 5.8x). The ≤ 3x target is not met; emit (allocation and copying) is half of a screen's time |
 | 2 | codemod | #983 `bloomc migrate`; Mention #2049 (four PostItem rows in `.bloom`: one fiber fewer each, pixels equal, +56 B gzip) |
@@ -315,6 +315,13 @@ Kept current as the phases run (last update 2026-11-26).
 | Date | Compiler | Result |
 |---|---|---|
 | 2026-11-26 | #979 before record literals | 2.8% / 0% / 97.2% |
+| 2026-11-26 | record literals, record types, unions | 8.0% |
+| 2026-11-26 | `Bool` params, Map/Set, `[..a]`, `@ref`, `.enumerated()` | 14.5% (clean + review) |
+| 2026-11-26 | `"js"` imports, `is`, prelude math, TS components | 18.8% (56 clean, 5 review, 263 refused) |
+
+Most remaining refusals are now bloomc errors on the output rather than codemod refusals; the
+largest codemod-side ones are statements among a view's returns (24), field writes (17), spread
+props (15), TS hook modules (15) and `try` around sync code (14).
 
 **Next:** #984 publishes; #2046 merges on the language line; #979 and #980 land after Bloom #971
 (per-family language entries) and go out in the next release together with the language bump that
