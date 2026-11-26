@@ -18,8 +18,7 @@ fn describe(item: { title: String, subtitle: String? }) -> String {
 
 pub fn uses() -> Int {
   let a = extent({ x: 1, y: 2 })
-  let labelled = Labelled(x: 3, y: 4, label: "c")
-  let b = extent(labelled)
+  let b = extent(Labelled(x: 3, y: 4, label: "c"))
   let c: { x: Int, y: Int } = { x: 5, y: 6 }
   let t = describe({ title: "t" })
   a + b + extent(c) + t.count

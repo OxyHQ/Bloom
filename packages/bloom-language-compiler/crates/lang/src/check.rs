@@ -230,6 +230,8 @@ pub struct CheckResult {
     /// Every file the check read: imported `.bloom` modules, TS declarations
     /// (through re-exports), the `tsconfig.json` whose `paths` resolved them.
     pub dependencies: BTreeSet<PathBuf>,
+    /// Struct constructions passed as a record type with fewer fields (emitted through a temp).
+    pub widened: HashSet<ExprId>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
 }
@@ -2421,6 +2423,15 @@ impl<'o> Checker<'o> {
                 if !self.coerce(&ty, expected) {
                     self.mismatch(expr.span, &ty, expected);
                     return Ty::Unknown;
+                }
+                // A struct built here and passed as a record type with fewer fields: TS would
+                // refuse the extra ones on a fresh object literal, so the emitter names it first.
+                if let (Ty::Adt(built, _), Ty::Adt(record, _)) = (self.resolve(&ty), self.resolve(expected))
+                    && built != record
+                    && self.out.defs[record].origin == Origin::Record
+                    && matches!(self.out.calls.get(&expr.id), Some(CallRes::Struct(_)))
+                {
+                    self.out.widened.insert(expr.id);
                 }
                 if matches!(self.resolve(&ty), Ty::Never) { ty } else { expected.clone() }
             }
