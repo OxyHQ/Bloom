@@ -1,0 +1,13 @@
+/// A list row: a view with params and a conditional child, drawn once per item.
+pub view Row(title: String, pinned: Bool = false) {
+  body {
+    HStack {
+      Text(title).font("headline")
+      if pinned {
+        Text("Pinned").foreground("muted")
+      }
+    }
+    .spacing("sm")
+    .padding("md")
+  }
+}
