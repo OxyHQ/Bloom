@@ -55,7 +55,9 @@ fn emit_fixtures() {
     for path in sources("emit") {
         let source = std::fs::read_to_string(&path).expect("the fixture");
         let name = format!("emit/{}", path.file_name().expect("a name").to_string_lossy());
-        let output = compile(&source, &name, &options());
+        // `dev_*.bloom` is compiled as a development build (`bloomc build --dev`).
+        let dev = name.starts_with("emit/dev_");
+        let output = compile(&source, &name, &Options { dev, ..options() });
         if !output.diagnostics.is_empty() {
             let rendered: Vec<&str> = output.diagnostics.iter().map(|d| d.rendered.as_str()).collect();
             failures.push(format!("{name} has errors:\n{}", rendered.join("\n\n")));

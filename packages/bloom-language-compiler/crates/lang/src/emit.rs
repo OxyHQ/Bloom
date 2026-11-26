@@ -365,6 +365,9 @@ fn helper_text(name: &str) -> &'static str {
         "at" => {
             "function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {\n  const out = items.slice();\n  out[at] = item;\n  return out;\n}"
         }
+        "get" => {
+            "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
+        }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
         }
@@ -2057,6 +2060,21 @@ impl<'a> Emitter<'a> {
                 }
                 out
             }
+            // `xs[i]`: the element. A dev build traps out of range (Swift's check); a
+            // release build reads it as is, and TS reads it present.
+            ExprKind::Index(object, index) if self.ck.list_reads.contains_key(&expr.id) => {
+                let optional = self.ck.list_reads[&expr.id];
+                if self.options.dev {
+                    self.helpers.insert("get");
+                    let mut out = Frag::of("$get(");
+                    out.f(self.expr(object)).s(", ").f(self.expr(index)).s(")");
+                    out
+                } else {
+                    let mut out = self.operand(object);
+                    out.s("[").f(self.expr(index)).s(if optional { "]" } else { "]!" });
+                    out
+                }
+            }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
                 out.s("[").f(self.expr(index)).s("]");
@@ -3195,6 +3213,12 @@ impl<'a> Emitter<'a> {
                 call_on(object, if name == "any" { "some" } else { "every" }, vec![f])
             }
             (Recv::List, "slice") => call_on(object, "slice", args),
+            // `xs.at(i)`: the element or `none` (a negative index is `none`, unlike JS's `at`).
+            (Recv::List, "at") => {
+                let mut out = object;
+                out.s("[").f(args.into_iter().next().unwrap_or_default()).s("]");
+                out
+            }
             (Recv::List, "indexOf") => helper(self, "index", vec![call_on(object, "indexOf", args)]),
             (Recv::List, "enumerated") => call_on(object, "map", vec![Frag::of("(x, i) => [i, x] as const")]),
             (Recv::List, "compactMap") => {

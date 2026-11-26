@@ -258,6 +258,10 @@ is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditi
   optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
   Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
+- An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
+  programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
+  `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
+  `xs.at(i)`, `first` and `last` are the optional reads; a dictionary's `d[k]` stays `V?`.
 
 ### 4.4 Structs
 
@@ -868,7 +872,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 |---|---|
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T?`; there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
