@@ -1,0 +1,552 @@
+---
+title: Bloom (.bloom) language specification, draft 0
+description: The grammar, type system, reactivity model, effects, modules, interop and standard library of Bloom's own language, written in .bloom files and compiled by bloomc. Phase 0 draft for the owner's review.
+---
+
+# Bloom (`.bloom`) language specification: draft 0
+
+Status: **draft 0.2, phase 0** (2026-11-26; 0.1 and 0.2 fold in what porting Mention's Settings → Notifications and building the prototype found). Nothing here is released. The
+decision record is [ADR 0001](https://github.com/OxyHQ/Bloom/blob/main/docs/adr/0001-bloom-own-language.md). The
+TS-embedded language (`@oxy.so/bloom-language` chains in `.tsx`) is called
+**the embedded language** below; `.bloom` compiles *to* it, so everything the
+embedded language draws, `.bloom` draws the same way.
+
+Notation: `«x»` is a placeholder; "phase 0" marks what the prototype
+implements, "phase 1+" what is specified but not built yet.
+
+## 1. A taste
+
+```bloom
+import { useTranslation } from "react-i18next"
+
+enum Load<T> {
+  loading
+  failed(message: String)
+  ready(T)
+}
+
+struct Draft {
+  text: String = ""
+  sensitive: Bool = false
+}
+
+pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, String>) {
+  let { t } = useTranslation()
+  @state draft = Draft()
+  @state sending = false
+
+  let left = maxLength - draft.text.count          // derived, recomputed only when draft changes
+  let canSend = !sending && left >= 0 && !draft.text.isEmpty
+
+  async fn send() {
+    sending = true
+    match await onSend(draft) {
+      case .ok(_) => draft = Draft()
+      case .err(message) => toast(message, type: "error")
+    }
+    sending = false
+  }
+
+  body {
+    VStack {
+      TextField($draft.text, t("compose.placeholder"))
+      HStack {
+        Toggle($draft.sensitive).label(t("compose.sensitive"))
+        Spacer()
+        Text("${left}").foreground(left < 0 ? "error" : "muted")
+        Button(Text(t("compose.send"))).disabled(!canSend).onPress { await send() }
+      }
+      .spacing("sm")
+    }
+    .spacing("md")
+    .padding("lg")
+  }
+}
+```
+
+## 2. Lexical structure
+
+- **Source** is UTF-8. A file is one module.
+- **Comments:** `// line`, `/* block */` (nesting), `/// doc` (attached to the next item; shown on hover).
+- **Newlines terminate** statements, fields, variants and builder items. A newline does **not**
+  terminate when (a) the next non-blank line starts with `.` followed by an identifier
+  (a modifier or member continues the expression), or with a binary operator other than `-`
+  (`&&`, `||`, `??`, `+`, `*`, `/`, `==`, …), or (b) the line ends inside `(`/`[`, after a binary
+  operator, after `,`, `=`, `->`, `=>` or `in`. Comment-only lines count as blank for (a). `;`
+  may separate items on one line.
+- **Identifiers:** `[a-zA-Z_][a-zA-Z0-9_]*`. Types, views and enum names are `UpperCamel`;
+  values, functions, fields and enum cases are `lowerCamel` (a warning otherwise, B0901).
+- **Keywords:** `as async await body case default defer else enum false fn for from if import in
+  let match none pub return screen layout struct task true type var view while`. Attribute words after `@`:
+  `state list record env`.
+- **Literals:** `42`, `1_000`, `0xff` (Int); `1.5`, `2e3` (Float); `true`/`false`; `none`;
+  strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `${expr}`;
+  raw multi-line strings `"""…"""` (interpolation kept, indentation stripped to the closing
+  delimiter).
+- **Binding projection:** `$name` (a binding to `@state name`, see 7.2).
+
+## 3. Grammar (EBNF)
+
+`NL` is a terminating newline (section 2). `{ x }` is zero or more, `[ x ]` optional.
+
+```ebnf
+file          = { import NL } { item NL } ;
+
+import        = "import" "{" import_spec { "," import_spec } [ "," ] "}" "from" STRING
+              | "import" "*" "as" IDENT "from" STRING ;
+import_spec   = [ "type" ] NAME [ "as" NAME ] ;
+
+item          = { doc } [ "pub" [ "default" ] ]
+                ( struct | enum | alias | fn | view | screen | layout | const ) ;
+const         = "let" IDENT [ ":" type ] "=" expr ;
+struct        = "struct" TYPE_NAME [ generics ] "{" { field NL } "}" ;
+field         = IDENT ":" type [ "=" expr ] ;
+enum          = "enum" TYPE_NAME [ generics ] "{" { variant ( NL | "," ) } "}" ;
+variant       = IDENT [ "(" payload { "," payload } ")" ] ;
+payload       = [ IDENT ":" ] type ;
+alias         = "type" TYPE_NAME [ generics ] "=" type ;
+generics      = "<" TYPE_NAME { "," TYPE_NAME } ">" ;
+
+fn            = [ "async" ] "fn" IDENT [ generics ] "(" [ params ] ")" [ "->" type ] block ;
+params        = param { "," param } [ "," ] ;
+param         = IDENT ":" type [ "=" expr ] ;
+
+view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;
+screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
+layout        = "layout" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route layout *)
+view_block    = "{" { member NL } "body" block "}" ;
+member        = state | let_stmt | fn ;
+state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
+
+block         = "{" { stmt ( NL | ";" ) } "}" ;
+stmt          = let_stmt | var_stmt | assign | "return" [ expr ] | "defer" block | while | for | expr ;
+let_stmt      = "let" pattern [ ":" type ] "=" expr ;
+var_stmt      = "var" IDENT [ ":" type ] "=" expr ;
+assign        = place ( "=" | "+=" | "-=" | "*=" ) expr ;
+place         = IDENT { "." IDENT } ;
+while         = "while" expr_no_trailing block ;
+for           = "for" pattern "in" expr_no_trailing block ;
+
+type          = base_type [ "?" ] ;
+base_type     = TYPE_NAME [ "<" type { "," type } ">" ]
+              | "[" type "]"                       (* List<T> *)
+              | "[" type ":" type "]"              (* Map<K, V> *)
+              | "(" type "," type { "," type } ")" (* tuple *)
+              | [ "async" ] "(" [ type { "," type } ] ")" "->" type ;
+
+expr          = if_expr | match_expr | closure | binary ;
+if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
+cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
+match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
+                (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit;
+                   an arm may also be one statement: case .ok(_) => draft = Draft() *)
+task_expr     = "task" block ;                     (* spawns; the expression is Unit *)
+closure       = "{" [ closure_params "in" ] { stmt ( NL | ";" ) } "}" ;
+closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
+
+binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
+unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
+                                                      await f()? is (await f())? *)
+postfix       = primary { call | "." NAME | "?." NAME | "[" expr "]" | "?" } ;
+call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
+                                                          expr_no_trailing heads *)
+args          = arg { "," arg } [ "," ] ;
+arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; struct spread *)
+primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
+              | "(" expr ")" | "(" expr "," expr { "," expr } ")"
+              | "[" [ expr { "," expr } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
+
+pattern       = "_" | IDENT | literal | "." IDENT [ "(" pattern { "," pattern } ")" ]
+              | TYPE_NAME "." IDENT [ "(" … ")" ] | "(" pattern { "," pattern } ")"
+              | "{" IDENT [ ":" pattern ] { "," … } "}"     (* record destructuring *)
+              | pattern "|" pattern ;
+```
+
+Three grammar rules keep it unambiguous, as in Swift:
+
+1. **No trailing closure in a head.** `if x { … }`, `match x {`, `for p in xs {` and `while`
+   never read the `{` as a trailing closure of `x`.
+2. **Match arms start with `case`**, so a line starting with `.` is always a continuation.
+3. **An enum case at the start of a line is qualified** (`Load.ready(x)`), since `.ready(x)` there
+   would continue the previous line. `ok(x)`, `err(e)` are prelude constructors.
+
+## 4. Types
+
+### 4.1 The types
+
+| Bloom | Meaning | Runtime representation (zero-cost) | `.d.ts` emitted |
+|---|---|---|---|
+| `Int` | 53-bit safe integer | JS number | `number` |
+| `Float` | IEEE double | JS number | `number` |
+| `Bool`, `String`, `Unit` | | boolean, string, `undefined` | `boolean`, `string`, `void` |
+| `[T]` | immutable list | frozen-in-dev JS array | `readonly T[]` |
+| `[String: V]` | immutable dictionary | plain object | `Readonly<Record<string, V>>` |
+| `[K: V]` (other K) | immutable map | `Map` | `ReadonlyMap<K, V>` |
+| `(A, B)` | tuple | array | `readonly [A, B]` |
+| `T?` | `Option<T>` | the value or `undefined` | `T \| undefined` |
+| `Result<T, E>` | success or error | `{ ok: true, value } \| { ok: false, error }` | the same union |
+| `struct S { … }` | nominal record | plain object | `interface S { readonly … }` |
+| `enum E { a, b }` (no payloads) | | string literal | `"a" \| "b"` |
+| `enum E { a, b(T) }` | tagged union | `"a"` or `{ tag: "b", _0: T }` (named payloads keep their names) | the union |
+| `(A) -> R`, `async (A) -> R` | a Bloom function (async: one that awaits) | JS function (async → returns a Promise) | `(a: A) => R` / `Promise<R>` |
+| `Promise<T>` | a TS promise (it may reject) | the promise | `Promise<T>` |
+| `Error` | a JS error: `message: String`, `name: String` | the `Error` object | `Error` |
+| `View` | a UI value | an embedded-language node (`Child`) | `Child` |
+| `Binding<T>` | read and write of a state | `[value, set]` (the embedded language's binding) | `Binding<T>` |
+| token sets (`Space`, `Color`, `Font`, …) | closed string sets from `spec/language.json` | string | the literal union |
+| `Foreign` | a TS value Bloom could not type (4.6) | as is | the TS type |
+
+`T??` is rejected (B0203): an optional is never nested, so `undefined` alone can represent it.
+
+### 4.2 Inference
+
+Local bidirectional inference with unification (Hindley–Milner without let-generalisation of
+locals). Signatures are required at module level (parameters and results of `fn`, fields,
+view parameters), inferred everywhere inside: `let`, closure parameters (from the expected
+function type), generic arguments at call sites, empty collections from use. A literal
+`"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
+promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
+`?.`, `match` or `?`).
+
+### 4.3 Soundness rules
+
+- No `any`, no implicit null, no implicit numeric conversion (`Int` → `Float` is `.toFloat()`;
+  `Float` → `Int` is `.rounded()`, `.floor()`, `.ceil()`, `.truncated()`).
+- Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
+- Values are immutable. `var` exists only as a function-local; it cannot be captured by a
+  closure (B0402), so no closure observes a mutation.
+- Equality `==` is defined on `Int`, `Float`, `Bool`, `String`, fieldless enums and `none`
+  checks; on structs and payload enums it is structural and compiled to a field comparison
+  (phase 1; phase 0 rejects it with B0210).
+- Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
+
+### 4.4 Structs
+
+```bloom
+struct Prefs {
+  pushEnabled: Bool = true
+  likes: Bool = true
+}
+let p = Prefs()                      // every field has a default
+let q = p.with(likes: false)         // an updated copy
+let r = Prefs(..patch, likes: true)  // spread a Prefs or a Partial<Prefs>, then fields
+```
+
+A field without a default is required at construction. `Partial<S>` is the struct with every
+field optional (a patch), built with `S.patch(field: v, …)`. Construction compiles to an object
+literal (no function call). A spread `..p` of a `Partial<S>` fills only the fields `p` has: an
+absent or `undefined` field keeps the default (compiled per field, `p?.likes ?? true`), unlike a
+JS object spread; an optional patch (`Partial<S>?`) spreads the same way. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+exhaustive `match` on a fieldless enum maps a key to a field.
+
+### 4.5 Enums, Option and Result
+
+```bloom
+enum Shape {
+  circle(radius: Float)
+  rect(w: Float, h: Float)
+}
+fn area(s: Shape) -> Float {
+  match s {
+    case .circle(r) => 3.14159 * r * r
+    case .rect(w, h) => w * h
+  }
+}
+```
+
+`Option<T>` is written `T?`: `none`, `x ?? fallback`, `x?.field`, `if let v = x { … }`.
+`Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
+`Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Methods:
+`.map`, `.mapErr`, `.unwrapOr`, `.ok()` (to an optional), `.isOk`.
+
+### 4.6 Generics
+
+`fn first<T>(xs: [T]) -> T?`, `struct Page<T> { items: [T], cursor: String? }`,
+`enum Load<T>`. Type parameters are inferred at call sites; no bounds in phase 0 (phase 1:
+`<T: Equatable>`-style protocol bounds compiled away by monomorphising the comparison).
+
+### 4.7 The foreign boundary
+
+A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map (primitives,
+arrays, `T | undefined | null`, object types, interfaces, string-literal unions, function
+types, `Promise<T>`, generic functions and interfaces without conditional or mapped types)
+get Bloom types. Anything else is `Foreign`: a value you may pass back to TS, call, or read
+members from (each read is `Foreign` again). **A `Foreign` value is accepted wherever a Bloom
+type is expected** (an argument, a modifier, a condition, an annotated `let`, a field, a
+return), and there the emitter writes a checked boundary, `(expr satisfies T)`, so the
+TypeScript checker verifies it against the real `.d.ts` and its diagnostic maps back to the
+`.bloom` span. Where nothing is expected (`let x = foreignCall()`) the value stays `Foreign`,
+and using it as a Bloom value with no expected type (an operator, a `match`, a member of a Bloom
+type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
+is checked by bloomc, and every crossing by `tsc`.
+
+## 5. Values, functions and closures
+
+```bloom
+let x = 1                  // immutable
+var total = 0              // function-local, mutable, not capturable
+fn double(x: Int) -> Int { x * 2 }       // the last expression is the result
+async fn load(id: String) -> Result<Post, String> { … }
+let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
+xs.map { p in p.title }                  // trailing closure
+```
+
+Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
+in any order after the positional ones. **In a call to a TS function, named arguments form one
+object passed last**: `t("key", defaultValue: "General")` is `t("key", { defaultValue: "General" })`.
+
+## 6. Expressions and control flow
+
+### 6.1 Precedence (high to low)
+
+| Level | Operators | Assoc. |
+|---|---|---|
+| postfix | call, `.x`, `?.x`, `[i]`, `?` | left |
+| prefix | `!` `-` `await` | right |
+| multiplicative | `*` `/` `%` | left |
+| additive | `+` `-` (`+` also joins `String`s) | left |
+| comparison | `<` `<=` `>` `>=` | none |
+| equality | `==` `!=` | none |
+| and | `&&` | left |
+| or | `\|\|` | left |
+| default | `??` | right |
+| conditional | `c ? a : b` | right |
+
+`if`/`else` and `match` are expressions; every branch has the same type (an `if` without
+`else` in a builder yields an optional child).
+
+## 7. Views
+
+### 7.1 A view
+
+```bloom
+pub view PostRow(post: Post, compact: Bool = false) {
+  «members: @state / @list / @record / @env / let / fn»
+  body { «one View expression» }
+}
+```
+
+- A `view` is a component: it compiles to `view(function PostRow(props) { … })` in the
+  embedded language, one memoised fiber, the same as a hand-written `view()`. Parameters are its
+  props.
+- A `fn … -> View`, at module level or as a view member, is **inlined UI**: a plain call, no
+  fiber, no state; prefer it for repeated rows inside one view.
+- `screen Name { … }` is a view that is the file's default export and an Expo Router route
+  (`screen()` from `@oxy.so/bloom-language/router`); `layout Name { … }` the same for `layout()`.
+- `pub` exports; `pub default` makes it the default export.
+
+### 7.2 Builders, modifiers and tokens
+
+- A trailing closure passed to a parameter of type `Children` is a **builder**: each line is a
+  child (`View`, `View?` or `[View]`); `if`/`else`, `match` and `for … in` lines build
+  conditional and repeated children; `let` lines bind locals. `VStack { a; b }` is
+  `VStack(a, b)`. A conditional keeps its slot (structural identity, as SwiftUI does).
+- **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
+  own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
+  nesting, as in the embedded language.
+- **Tokens are string literals checked against the token set** the modifier takes:
+  `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
+  A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`).
+- **Events take closures**: `.onPress { saving = true }`; an `async` closure
+  (`.onPress { await save() }`) runs as a task (section 8).
+- **Inputs take bindings**: `TextField($draft)`, `Toggle($prefs.likes)`. `$x` projects
+  `@state x`; `$x.field` projects a field (writes `x.with(field: v)`). A closure pair is
+  `Binding(get: v, set: { v in … })`.
+- **TS React components are nodes**: an imported component `OxyAuthPrompt` is called with its
+  props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
+  trailing builder as `children`.
+
+### 7.3 Reactivity (compile-time)
+
+| Declaration | Meaning | Compiles to |
+|---|---|---|
+| `@state x = e` | local state | `useState(e)` (lazy `() => e` when `e` is not a constant) |
+| `@list feed = src` | a bloom-data list | `useList(src)` |
+| `@record post = Post.record(id)` | a bloom-data record, field-level subscribed | `useRecord(Post, id)` |
+| `@env scheme = Env.colorScheme` | an environment value | `useEnvironment(key)` |
+| `let v = expr` (member) | derived value | inlined if trivial, else memoised on its dependencies |
+| `let x = useThing()` | a TS hook (a `use[A-Z]` import) | the call, at the top, unconditionally |
+| `fn f() {}` (member) | handler | a closure memoised on what it reads; hoisted to module scope when it reads nothing reactive |
+
+**The dependency graph is known at compile time.** Every member's reads are resolved by the
+checker: state, props, hook results and other members. The emitter then writes the memo cache
+itself (`react/compiler-runtime`'s `c(n)`, the slot array the React Compiler uses) with exact
+dependencies, and marks the body `"use no memo"` so the React Compiler skips it. Because values
+are immutable, a dependency is the value itself (no mutation analysis, no proxies, no
+subscriptions at runtime). Static subtrees are hoisted to module scope by the existing language
+compiler pass, which runs on bloomc's output in the same process.
+
+**Writes.** Assigning a state member in a closure is `setX(v)`; when the right side reads the
+state (`count += 1`, `count = count + 1`) it is the functional update `setX(count => count + 1)`.
+Reading a state member after assigning it in the same closure is B0410 (it would read the
+render's value); bind the new value to a `let` first. Hook calls are only allowed as view
+members (B0420), so the rules of hooks hold by construction.
+
+### 7.4 Environment
+
+`@env x = key` reads a value set above with `.environment(key, value)`. Keys are made with
+`defineEnvironment` (embedded language) and imported. Text traits (`foreground`, `font`, …)
+inherit as in the embedded language.
+
+## 8. Effects, tasks and concurrency
+
+- `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
+  returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
+  `Result<T, Error>`**, because a JS promise can reject; `await f()?` propagates (`await` binds tighter than `?`, as Rust's `.await?`). A synchronous
+  TS throw is a panic (a bug), as in Rust.
+- **An async call is awaited or spawned, never dropped**: calling an async function or a
+  promise-returning TS function without `await` is B0430, except as `task { await save(v) }`,
+  which spawns it (fire and forget, completing like a handler) and is `Unit`. A binding setter
+  that saves is `Binding(get: prefs.likes, set: { v in task { await save(.likes, v) } })`.
+- `defer { … }` runs when the enclosing block exits, after an early `return` too (compiled to
+  `try`/`finally`); the place for "`saving = false` whatever happened".
+- **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
+  disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
+  `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
+  Compiles to one `useEffect` with an `AbortController` (what a careful hand-written effect does).
+- **`.onChange(of: value) { old, new in … }`** runs after a change (one `useEffect`, comparing in a
+  ref only when `old` is used).
+- **Handlers' async closures complete**: a user action (a save, a like) is not cancelled by
+  navigating away; the state writes after unmount are no-ops.
+- **Structured concurrency:** `let (a, b) = await all(loadA(), loadB())` (both or the first error);
+  `await race(…)`; `sleep(ms)`. A task's children are cancelled with it.
+
+## 9. Navigation
+
+`navigate("/settings/notifications/subscriptions")` returns a press handler (the embedded
+language's panel-aware `navigate`); `navigate("/posts/[id]", id: post.id)` fills params.
+Phase 1: the route table is read from the app's `app/` tree and routes become a generated enum,
+so a wrong path is a compile error.
+
+## 10. Modules and interop
+
+- **A file is a module**; items are private unless `pub`. Module-level `let` must be a constant
+  expression (no calls with effects), so there is no global mutable state; shared state lives in
+  bloom-data entities, lists and models, which are explicit stores.
+- **Prelude** (always in scope): the core types, `ok`/`err`/`none`, `all`/`race`/`sleep`, every
+  node of `spec/language.json` (`VStack`, `Text`, `Button`, …) with its modifiers, `Embed`,
+  `toast`, `navigate`.
+- **Bloom modules:** `import { PostRow } from "./PostRow.bloom"`.
+- **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
+  `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
+- **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
+  `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
+  7.2) when its type is a React component type (`ComponentType`, `FC`, a function of one props
+  object returning an element), or, when it is `Foreign`, when its name is `UpperCamel` and it is
+  used as a node.
+- **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
+  packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).
+  An explicit import shadows a prelude name. A module is never both `X.tsx` and `X.bloom`
+  (B0610): an extensionless import must mean one file.
+- **TS importing Bloom:** bloomc writes `Name.d.bloom.ts` beside `Name.bloom` (TS's
+  `allowArbitraryExtensions`), so `import { Composer } from "./Composer.bloom"` type-checks in TS;
+  `bloom-lang-dts --root . <dirs>` writes them beside the sources (`bloomc build --out` writes
+  them into its out directory). A `view` is a node factory, as in the embedded language: TSX draws it with
+  `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
+  is a node like any other.
+- **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
+
+## 11. What bloomc emits
+
+For each `.bloom` file bloomc emits typed TypeScript, then runs the embedded-language pass
+(hoisting static chains) on it in the same process, then hands it to the host transformer
+(Metro/Babel/Noxcturnal, babel-jest, Vite). A source map composes all three back to `.bloom`.
+A file's output can depend on the declarations of what it imports (named arguments, whether a
+callee is a view); `bloomc build`'s cache follows imports, while Metro's and Jest's per-file
+caches do not yet (phase 1: the adapters' cache keys include the imports' declarations).
+
+```ts
+// view Counter { @state n = 0; body { Button(Text("${n}")).onPress { n += 1 } } }
+import { c as _c } from "react/compiler-runtime";
+import { useState } from "react";
+import { Button, Text, view } from "@oxy.so/bloom-language";
+export const Counter = view(function Counter() {
+  "use no memo";
+  const $ = _c(3);
+  const [n, setN] = useState(0);
+  let t0;
+  if ($[0] !== n) {
+    t0 = Button(Text(`${n}`)).onPress(() => setN((n) => n + 1));
+    $[0] = n;
+    $[1] = t0;
+  } else t0 = $[1];
+  return t0;
+});
+```
+
+Zero-cost rules the emitter keeps (each is gated, see the ADR):
+
+1. Struct construction and `with` are object literals; fieldless enums are strings; `T?` is
+   `undefined`; `?`/`??`/`?.` are inline conditionals. No wrapper objects, no runtime library
+   calls for language features.
+2. One fiber per `view`, none per `fn -> View`. Hooks only for `@state`/`@list`/`@record`/`@env`,
+   imported hooks, `.task`/`.onChange`, and one memo cache when anything is memoised.
+3. Closures that read nothing reactive are module-scope constants.
+4. `"use no memo"` on every emitted view body; bloomc owns the memoisation.
+
+## 12. Standard library surface (draft)
+
+| Type | Members (each compiles to the JS intrinsic, inline) |
+|---|---|
+| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)`, `toInt() -> Int?`, `toFloat() -> Float?` |
+| `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `[i] -> T?` |
+| `[K: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `Option`/`Result` | as in 4.5 |
+| tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
+| UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
+
+## 13. Diagnostics
+
+Every error has a code, a primary span, a one-line message, labels on related spans, a
+`help:` with the fix (and a machine-applicable edit when there is one), and a `= docs:` link:
+
+```text
+error[B0502]: `"medium"` is not a space token
+  --> components/settings/pages/notifications.bloom:42:18
+   |
+42 |       .padding("medium")
+   |                ^^^^^^^^ expected one of: none 2xs xs sm md lg xl 2xl 3xl 4xl 5xl
+   |
+help: did you mean `"md"`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#space
+```
+
+Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
+(nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
+(mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
+`==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
+(captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
+call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
+outside a task), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
+statement and closing-brace boundaries, so one typo reports one error.
+
+## 14. Formatting
+
+`bloomc fmt` is the only style (no options): 2-space indent, 100 columns, one modifier per line
+once a chain does not fit on one line, trailing commas in multi-line argument lists,
+members ordered as written, blank lines kept (at most one), imports sorted by path, struct fields
+and enum variants one per line. A block with one statement stays on one line when it fits (a
+view's `body` never does); an `if`/`else` chain is on one line together or breaks together; a
+builder line's chain breaks one modifier per line once its builder spans lines; a chain inside an
+expression breaks only with two or more calls. Formatting is idempotent and preserves comments.
+
+## 15. Cheat sheet for agents
+
+1. A file is a module. `pub view Name(params) { members; body { … } }`; a route is `screen`.
+2. UI is a builder: one child per line; `if`, `for`, `match` build children; modifiers chain with
+   `.name(…)` on the next line; order is nesting.
+3. Every style value is a token string: `.padding("md")`, `.foreground("muted")`.
+4. State is `@state x = v`; write it with `x = …` in a closure; inputs take `$x`.
+5. Derived values are `let` members; handlers are `fn` members or closures. Never memoise by hand.
+6. No null: `T?`, `none`, `??`, `?.`, `if let`. No exceptions: `Result`, `?`, `match`.
+7. `match` arms start with `case`; an enum case at the start of a line is `Type.case`.
+8. Awaiting a TS promise gives `Result<T, Error>`.
+9. TS: `import { x } from "pkg"`; hooks (`useX`) only as view members; TS components are nodes
+   with named-argument props; named arguments to a TS function become one options object; a TS
+   value goes straight into any typed position (tsc checks it there).
+10. An async call is `await`ed or spawned with `task { … }`; `defer { … }` for cleanup.
+11. Navigation: `navigate("/path")` in screens; inside a surface with its own router (a settings
+   modal), use that surface's router hook.
+12. Run `bloomc check` and `bloomc fmt`; every error says what to write instead.
