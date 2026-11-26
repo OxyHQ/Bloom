@@ -871,6 +871,24 @@ impl<'a> Formatter<'a> {
             }
             TypeKind::List(inner) => concat(vec![text("["), self.ty(inner), text("]")]),
             TypeKind::Map(k, v) => concat(vec![text("["), self.ty(k), text(": "), self.ty(v), text("]")]),
+            TypeKind::Record(fields) => {
+                let fields: Vec<Doc> = fields
+                    .iter()
+                    .map(|(name, t)| {
+                        let key = if record_key_is_name(&name.name) {
+                            name.name.clone()
+                        } else {
+                            format!("{:?}", name.name)
+                        };
+                        concat(vec![text(key), text(": "), self.ty(t)])
+                    })
+                    .collect();
+                if fields.is_empty() {
+                    text("{}")
+                } else {
+                    concat(vec![text("{ "), join(fields, || text(", ")), text(" }")])
+                }
+            }
             TypeKind::Tuple(items) => {
                 let items = items.iter().map(|a| self.ty(a)).collect();
                 concat(vec![text("("), join(items, || text(", ")), text(")")])
