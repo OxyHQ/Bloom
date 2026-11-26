@@ -293,7 +293,7 @@ JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs
 is not `none`. An optional call of a Unit function is Unit.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
 `Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Inside
-`catching { … }` and in a closure TS calls (a TS parameter's function, or one of no Bloom type),
+`catching { … }` and in a closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type),
 `expr?` on a `Result` throws its error instead: `catching` gives it as `.err`, and the promise
 TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). Methods:
 `.map`, `.mapErr`, `.unwrapOr`, `.ok()` (to an optional), `.isOk`.
@@ -527,6 +527,15 @@ inherit as in the embedded language.
 value is `.ok`, and what TS code in it throws synchronously (`URL(link)`, `JSON.parse(s)`) is
 `.err`. It is emitted as an inline `try`/`catch`, with no helper; the block cannot `return`, and
 `?` in it ends at it (`let r = (await fetch(url))?` inside: a rejection is `.err`).
+
+**`fail(e: Error) -> Never`** throws `e`. It is allowed where a throw has a catcher: in a
+closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type), where a
+thrown error is how TS hears of a failure (`mutationFn: { v in if v.isEmpty { fail(Error("Empty")) } … }`,
+a rejected promise; a sync TS callback's throw), and in `catching { … }`'s block, which gives
+it as `.err`. As a statement or a block's last line it is `throw e;`; where a value is needed
+(`c ? x : fail(e)`), an inline throw. Anywhere else a failure is a value: `fail` is B0222,
+whose fix is to return `err(e)` from a function that returns a `Result`. `?` on a `Result`
+in those closures throws the same way (4.5).
 
 - `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
   returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields

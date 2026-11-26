@@ -123,6 +123,8 @@ pub enum CallRes {
     Navigate,
     Binding,
     Sleep,
+    /// `fail(e)`: `throw e`, an expression (`(() => { throw e; })()` where a value is needed).
+    Fail,
     /// `all(a, b)`: `Promise.all`.
     All,
     /// `race(a, b)`: `Promise.race`.
@@ -819,7 +821,9 @@ impl<'o> Checker<'o> {
 
     fn names_in_scope(&self) -> Vec<String> {
         let mut names: Vec<String> = self.scopes.iter().flat_map(|s| s.keys().cloned()).collect();
-        names.extend(["ok", "err", "toast", "navigate", "Binding", "sleep", "all", "race"].map(String::from));
+        names.extend(
+            ["ok", "err", "fail", "toast", "navigate", "Binding", "sleep", "all", "race"].map(String::from),
+        );
         names.extend(ui::constructors().map(String::from));
         names
     }
@@ -3078,6 +3082,10 @@ impl<'o> Checker<'o> {
                 ty
             }
             _ => {
+                // A closure TS calls throws: `?` and `fail(e)` there throw its error.
+                if matches!(expr.kind, ExprKind::Closure(_)) {
+                    self.closure_throws = true;
+                }
                 let ty = self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_))));
                 if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty()
                 {
@@ -3521,7 +3529,7 @@ impl<'o> Checker<'o> {
             return self.instantiate(&info.ty);
         }
         match name {
-            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" | "Regex"
+            "ok" | "err" | "fail" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" | "Regex"
             | "catching" | "min" | "max" | "abs" | "round" | "floor" | "ceil" => {
                 self.report(
                     Diagnostic::error("B0208", expr.span, format!("`{name}` is called, not passed"))

@@ -1,0 +1,16 @@
+import { Error } from "js"
+
+fn named(name: String) -> Result<String, Error> {
+  if name.isEmpty { fail(Error("No name")) }
+  ok(name)
+}
+
+fn plain(name: String) -> String {
+  if name.isEmpty { fail(Error("No name")) }
+  name
+}
+
+fn wrong() -> Result<Int, Error> {
+  let f = { fail(1) }
+  ok(0)
+}
