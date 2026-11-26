@@ -9,8 +9,8 @@ order: 74
 ## `createStorage`
 
 Apps kept a byte-identical `storage.ts`: `get`/`set`/`remove` over `AsyncStorage`
-with `JSON.parse`/`stringify` and a try/catch each. `createStorage(namespace,
-{ adapter?, onError? })` from `@oxy.so/bloom/storage` is that file.
+with `JSON.parse`/`stringify` and a try/catch each.
+`createStorage(namespace, { adapter?, onError? })` from `@oxy.so/bloom/storage` is that file.
 
 ```ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
