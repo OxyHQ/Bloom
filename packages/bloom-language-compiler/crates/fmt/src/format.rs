@@ -391,7 +391,8 @@ impl<'a> Formatter<'a> {
             |p| p.span,
             |this, param| {
                 if param.spread {
-                    return concat(vec![text(".."), this.ty(&param.ty)]);
+                    let whole = param.whole.as_ref().map_or(String::new(), |w| format!("{}: ", w.name));
+                    return concat(vec![text(format!("..{whole}")), this.ty(&param.ty)]);
                 }
                 let name =
                     if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };

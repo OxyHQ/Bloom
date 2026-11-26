@@ -53,7 +53,9 @@ impl Checker<'_> {
                     return match &info.kind {
                         LocalKind::Component { props } => self.component_call(expr, call, props),
                         LocalKind::View => self.view_call(expr, call, &info.ty),
-                        LocalKind::Import { hook: true } => {
+                        LocalKind::Import { hook: true } | LocalKind::ModuleFn
+                            if !matches!(info.kind, LocalKind::ModuleFn) || super::is_hook_name(name) =>
+                        {
                             if !hook_allowed {
                                 self.report(
                                     Diagnostic::error(
@@ -62,7 +64,9 @@ impl Checker<'_> {
                                         format!("the hook `{name}` is called outside a view member"),
                                     )
                                     .label("a hook runs on every render, in the same order")
-                                    .help(format!("call it as a view member: `let value = {name}(…)`"))
+                                    .help(format!(
+                                        "call it as a view member (`let value = {name}(…)`), or at the top level of a hook function (`fn useX`)"
+                                    ))
                                     .spec("73-reactivity-compile-time"),
                                 );
                             }
@@ -116,6 +120,38 @@ impl Checker<'_> {
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }
                     "Binding" => return self.binding_ctor(expr, call),
+                    // `import("./X")`: the module's promise, TS's to type.
+                    "import" if self.lookup("import").is_none() => {
+                        self.out.calls.insert(expr.id, CallRes::Ts);
+                        let spec = match call.args.as_slice() {
+                            [arg] if arg.label.is_none() => match &arg.value.kind {
+                                ExprKind::Str { parts, .. } => match parts.as_slice() {
+                                    [StrPart::Text(s)] => Some(s.clone()),
+                                    [] => Some(String::new()),
+                                    _ => None,
+                                },
+                                _ => None,
+                            },
+                            _ => None,
+                        };
+                        let Some(spec) = spec else {
+                            self.report(
+                                Diagnostic::error(
+                                    "B0207",
+                                    call.callee.span,
+                                    "`import(…)` takes one module path",
+                                )
+                                .label("a string literal")
+                                .spec("10-modules-and-interop"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Unknown;
+                        };
+                        self.boundary(&call.args[0].value, None);
+                        return Ty::Foreign(
+                            format!("Promise<typeof import({})>", crate::emit::string_literal(&spec)).into(),
+                        );
+                    }
                     _ => {}
                 }
                 if let Some(TypeName::Def(def)) = self.type_names.get(name).cloned() {

@@ -92,6 +92,8 @@ pub enum TsDecl {
         extends: bool,
         props: Option<TsType>,
     },
+    /// `const X = memo(Inner)`: the component `Inner` is (its props).
+    Memo(String),
     /// An enum, a namespace: foreign.
     Other,
 }
@@ -114,6 +116,10 @@ pub struct TsFile {
     pub exports: HashMap<String, Export>,
     /// `export * from "…"`.
     pub stars: Vec<String>,
+    /// `export = N`: the namespace whose members are the module's exports (`@types/react`).
+    pub export_equals: Option<String>,
+    /// A namespace's member names (`declare namespace React { … }`).
+    pub namespaces: HashMap<String, Vec<String>>,
     /// Local name → (specifier, imported name).
     pub imports: HashMap<String, (String, String)>,
 }
@@ -218,6 +224,11 @@ fn summarise(path: &Path, text: &str) -> TsFile {
     for statement in &parsed.program.body {
         reader.statement(statement, &mut file, false);
     }
+    if let Some(members) = file.export_equals.as_ref().and_then(|n| file.namespaces.get(n)).cloned() {
+        for member in members {
+            file.exports.entry(member.clone()).or_insert(Export::Local(member));
+        }
+    }
     file
 }
 
@@ -277,6 +288,11 @@ impl Reader {
                 }
                 None => file.stars.push(export.source.value.as_str().unwrap_or_default().to_string()),
             },
+            Statement::TSExportAssignment(export) => {
+                if let oxc_ast::ast::Expression::Identifier(id) = &export.expression {
+                    file.export_equals = Some(id.name.to_string());
+                }
+            }
             Statement::ExportDefaultDeclaration(export) => match &export.declaration {
                 ExportDefaultDeclarationKind::FunctionDeclaration(function) => {
                     let name = function.id.as_ref().map_or("default".to_string(), |id| id.name.to_string());
@@ -341,6 +357,23 @@ impl Reader {
             }
             Declaration::VariableDeclaration(variables) => {
                 for declarator in &variables.declarations {
+                    if let BindingPattern::BindingIdentifier(id) = &declarator.id
+                        && declarator.type_annotation.is_none()
+                        && let Some(decl) = self.memo(declarator.init.as_ref())
+                    {
+                        let name = id.name.to_string();
+                        let decl = match decl {
+                            // `memo(function Inner(…) { … })`: the inner function, kept unexported.
+                            TsDecl::Fn(_) => {
+                                let inner = format!("{name}$memo");
+                                file.decls.insert(inner.clone(), decl);
+                                TsDecl::Memo(inner)
+                            }
+                            decl => decl,
+                        };
+                        add(file, name, decl);
+                        continue;
+                    }
                     if let BindingPattern::BindingIdentifier(id) = &declarator.id {
                         let ty =
                             declarator.type_annotation.as_ref().map(|t| self.ty(&t.type_annotation)).or_else(
@@ -423,7 +456,53 @@ impl Reader {
             Declaration::TSEnumDeclaration(enumeration) => {
                 add(file, enumeration.id.name.to_string(), TsDecl::Other)
             }
+            // `declare namespace React { … }`: its members are read beside the file's own, for
+            // an `export = React` to export them.
+            Declaration::TSNamespaceDeclaration(namespace) => {
+                let name = namespace.id.name.to_string();
+                if let oxc_ast::ast::TSNamespaceDeclarationBody::TSModuleBlock(block) = &namespace.body {
+                    let before: std::collections::HashSet<String> = file.decls.keys().cloned().collect();
+                    for statement in &block.body {
+                        self.statement(statement, file, false);
+                    }
+                    let members: Vec<String> =
+                        file.decls.keys().filter(|k| !before.contains(*k)).cloned().collect();
+                    file.namespaces.entry(name.clone()).or_default().extend(members);
+                }
+                add(file, name, TsDecl::Other);
+            }
             _ => {}
+        }
+    }
+
+    /// `memo(Inner)`, `memo(function Inner(props: P) { … })`, `memo((props: P) => …)` (also
+    /// `React.memo`): a component with the inner one's props.
+    fn memo(&self, init: Option<&oxc_ast::ast::Expression>) -> Option<TsDecl> {
+        use oxc_ast::ast::{Argument, Expression};
+        let Some(Expression::CallExpression(call)) = init else { return None };
+        let callee = match &call.callee {
+            Expression::Identifier(id) => id.name.as_str(),
+            Expression::StaticMemberExpression(member) if matches!(&member.object, Expression::Identifier(o) if o.name == "React") => {
+                member.property.name.as_str()
+            }
+            _ => return None,
+        };
+        if callee != "memo" {
+            return None;
+        }
+        match call.arguments.first()? {
+            Argument::Identifier(inner) => Some(TsDecl::Memo(inner.name.to_string())),
+            Argument::FunctionExpression(function) => Some(TsDecl::Fn(self.function(
+                &function.type_parameters,
+                &function.params,
+                function.return_type.as_ref().map(|t| &t.type_annotation),
+            ))),
+            Argument::ArrowFunctionExpression(arrow) => Some(TsDecl::Fn(self.function(
+                &arrow.type_parameters,
+                &arrow.params,
+                arrow.return_type.as_ref().map(|t| &t.type_annotation),
+            ))),
+            _ => None,
         }
     }
 
@@ -951,9 +1030,34 @@ impl Mapper<'_> {
                 mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()));
                 mapped.ty = Some(Ty::Foreign(path.into()));
             }
+            TsDecl::Memo(inner) => {
+                let mapped = self.local(file, &inner, path, depth + 1)?;
+                return Some(match mapped.component {
+                    // Named through the memo itself: `Parameters<typeof X>` has no call to read.
+                    Some(_) => Mapped {
+                        component: Some(self.memo_props(file, &inner, path, depth)),
+                        ..Mapped::default()
+                    },
+                    None => mapped,
+                });
+            }
             TsDecl::Other => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
         }
         Some(mapped)
+    }
+
+    /// The props of the component `inner` names, as `React.ComponentProps<typeof {path}>`.
+    fn memo_props(&mut self, file: &Rc<TsFile>, inner: &str, path: &str, depth: usize) -> Ty {
+        let props = match file.decls.get(inner) {
+            Some(TsDecl::Fn(function)) => function.params.first().and_then(|p| p.ty.clone()),
+            _ => None,
+        };
+        match props {
+            Some(props) => {
+                self.ty(file, &props, &Vec::new(), &format!("React.ComponentProps<typeof {path}>"), depth)
+            }
+            None => Ty::Foreign("".into()),
+        }
     }
 
     /// The type declared beside a value of the same name, named as TS names it.

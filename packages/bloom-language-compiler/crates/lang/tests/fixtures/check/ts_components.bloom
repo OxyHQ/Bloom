@@ -10,3 +10,10 @@ view Uses {
     }
   }
 }
+
+// `memo(CardInner)` has CardInner's props: `title` is required.
+import { Card } from "@/ui/memoed"
+
+pub view NoTitle() {
+  body { Card(count: 1) }
+}
