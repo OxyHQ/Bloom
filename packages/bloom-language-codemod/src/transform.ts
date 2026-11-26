@@ -1741,7 +1741,10 @@ export function transformSource(source: string, options: TransformOptions): File
       };
     }
     if (source && /Provider$/.test(local) && !source.module.startsWith('react-native')) {
-      if (named.size > 0) return reason('a provider with props: `.provider()` draws one with none');
+      if (named.size > 0)
+        return reason(
+          'a provider with props: the codemod does not carry them (`.provider(Name, props)` takes them, written by hand)',
+        );
       return { mod: { name: 'provider', args: [{ $: 'component', name: local }] } };
     }
     return reason(

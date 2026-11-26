@@ -2197,6 +2197,22 @@ fn pressable_spans_and_element_runs_compile() {
 }
 
 #[test]
+fn own_screens_and_providers_with_props_compile() {
+    // A screen() branch that is a surface of its own, and a provider with props or none.
+    let imports = "import { CallScreen, Embed, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "call.tsx");
+    let valid = check(concat!(
+        "export const x = (end, P) => CallScreen('Ana', 'active', { controls: { onEndCall: end } }).colorScope('dark').ownScreen();\n",
+        "export const y = (on, P) => Embed(<Viewer />).ownScreen(on);\n",
+        "export const z = (s, P) => Text('a').title('Chats').provider(s ? undefined : P, { context: 'unread' });\n",
+    ));
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    // A provider takes its component and its props, no more.
+    let output = check("export const x = (P) => Text('a').provider(P, {}, 1);\n");
+    assert!(!output.diagnostics.is_empty());
+}
+
+#[test]
 fn data_tables_are_checked() {
     let imports = "import { DataTable, DataColumn, DataTableFilter, DataTableSearch, DataTableSelect, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");

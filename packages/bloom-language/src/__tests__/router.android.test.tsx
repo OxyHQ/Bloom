@@ -386,6 +386,46 @@ describe('screen() on Android', () => {
       expect(plain[name]).toBeUndefined();
   });
 
+  it('a branch that is a surface of its own is drawn with no Screen; null draws nothing', () => {
+    const Call = screen(function call(props: { state: 'idle' | 'ringing' | 'none' }) {
+      if (props.state === 'idle') return null;
+      if (props.state === 'ringing')
+        return Embed(createElement('IncomingCall'))
+          .title('Ignored')
+          .sheet(true, () => Text('options'))
+          .ownScreen();
+      return Text('nobody').title('Call');
+    });
+    const ringing = mount(createElement(Call, { state: 'ringing' }));
+    expect(hosts(ringing, 'Screen')).toHaveLength(0);
+    // The Screen's chrome is not drawn; its sheets are, over the surface.
+    expect(hosts(ringing, 'PageHeader')).toHaveLength(0);
+    expect(hosts(ringing, 'IncomingCall')).toHaveLength(1);
+    expect(only(ringing, 'Dialog').props.open).toBe(true);
+    const none = mount(createElement(Call, { state: 'none' }));
+    expect(only(none, 'Screen')).toBeTruthy();
+    expect(only(none, 'PageHeader').props.title).toBe('Call');
+    expect(mount(createElement(Call, { state: 'idle' })).toJSON()).toBeNull();
+    // `.ownScreen(false)` is a Screen again.
+    const Again = screen(() => Text('a').ownScreen(false));
+    expect(hosts(mount(createElement(Again)), 'Screen')).toHaveLength(1);
+  });
+
+  it('a provider takes its props, and undefined draws none', () => {
+    const Ask = ({ context, children }: { context: string; children?: ReactNode }) =>
+      createElement('Ask', { context }, children);
+    const Chats = screen(function chats(props: { supervised: boolean }) {
+      return Text('a').provider(props.supervised ? undefined : Ask, { context: '2 unread' });
+    });
+    const asked = mount(createElement(Chats, { supervised: false }));
+    expect(only(asked, 'Ask').props.context).toBe('2 unread');
+    // The Screen is inside the provider.
+    expect(only(asked, 'Ask').findAll((i) => (i.type as unknown) === 'Screen')).toHaveLength(1);
+    const supervised = mount(createElement(Chats, { supervised: true }));
+    expect(hosts(supervised, 'Ask')).toHaveLength(0);
+    expect(hosts(supervised, 'Screen')).toHaveLength(1);
+  });
+
   it('a ScrollView is Bloom’s ScreenScrollView: its margins, gap, indicators, keyboard and end', () => {
     const more = jest.fn();
     const Feed = screen(() =>

@@ -1892,7 +1892,8 @@
     "initialFooterHeight": ["space"],
     "colorScope": ["colorScopeMode"],
     "keyboardAvoiding": ["flex?"],
-    "provider": ["value"],
+    "provider": ["value", "value?"],
+    "ownScreen": ["value?"],
     "scrollbar": ["scrollbarVisibility"],
     "scrollbarSide": ["scrollbarSide"],
     "stickyHeader": ["value"],
@@ -2297,6 +2298,7 @@
     "colorScope",
     "keyboardAvoiding",
     "provider",
+    "ownScreen",
     "fullScreenCover",
     "glassID",
     "glassUnion",
@@ -2855,7 +2857,8 @@
         "initialFooterHeight",
         "colorScope",
         "keyboardAvoiding",
-        "provider"
+        "provider",
+        "ownScreen"
       ]
     },
     "view": {
