@@ -511,6 +511,70 @@ const fields: ParityCase[] = [
     ),
   },
   {
+    // Allo's group rename: a bare input that saves when focus leaves it.
+    name: 'TextField saved when it loses focus (onBlur), no spelling marks (spellCheck)',
+    language: () =>
+      toElement(
+        L.TextField(empty, 'Name')
+          .placeholder(null)
+          .size('sm')
+          .spellCheck(false)
+          .onBlur(set)
+          .onSubmit(set)
+          .submitLabel('done')
+          .maxLength(128),
+      ),
+    bloom: () => (
+      <TextFieldInput
+        label="Name"
+        placeholder={null}
+        value=""
+        onValueChange={set}
+        size="sm"
+        spellCheck={false}
+        onBlur={set}
+        onSubmitEditing={set}
+        returnKeyType="done"
+        maxLength={128}
+      />
+    ),
+  },
+  {
+    // Allo's recovery phrase: no autofill, corrections or spelling marks on any platform.
+    name: 'TextEditor that offers no autofill (contentType, textContentType, spellCheck)',
+    language: () =>
+      toElement(
+        L.TextEditor(empty)
+          .label('Recovery phrase')
+          .rows(3)
+          .autocapitalize('none')
+          .autocorrect(false)
+          .contentType('off')
+          .spellCheck(false)
+          .textContentType('none')
+          .onBlur(set),
+      ),
+    bloom: () => (
+      <Textarea
+        accessibilityLabel="Recovery phrase"
+        value=""
+        onValueChange={set}
+        rows={3}
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="off"
+        spellCheck={false}
+        textContentType="none"
+        onBlur={set}
+      />
+    ),
+  },
+  {
+    name: 'Search with no spelling marks (spellCheck), left (onBlur)',
+    language: () => toElement(L.Search(empty).spellCheck(false).onBlur(set)),
+    bloom: () => <Search value="" onValueChange={set} spellCheck={false} onBlur={set} />,
+  },
+  {
     name: 'SecureField, revealable',
     language: () => toElement(L.SecureField(['hunter2', set], 'Password').revealable()),
     bloom: () => (

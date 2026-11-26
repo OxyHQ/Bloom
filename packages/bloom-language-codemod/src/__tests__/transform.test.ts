@@ -187,6 +187,20 @@ export const A = ({ go, hold }) => (
     expect(flat(code)).toContain(".onLongPress(hold, '500')");
     expect(flat(code)).toContain('.collapsable(false)');
   });
+  it('maps a hold that ends as the touch lifts, and an input that saves as it is left', () => {
+    const { code, unconverted } = run(`import { Pressable } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { Textarea } from '@oxy.so/bloom/textarea';
+export const A = ({ hold, release }) => <Pressable onLongPress={hold} onPressIn={release} onPressOut={release}><Text>a</Text></Pressable>;
+export const B = ({ name, setName, save }) => <TextFieldInput label="Name" value={name} onChangeText={setName} onBlur={save} spellCheck={false} />;
+export const C = ({ text, setText }) => <Textarea value={text} onChangeText={setText} autoComplete="off" spellCheck={false} textContentType="none" />;
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain('.onLongPress(hold).onPressIn(release).onPressOut(release)');
+    expect(flat(code)).toContain('.onBlur(save).spellCheck(false)');
+    expect(flat(code)).toContain(".contentType('off').spellCheck(false).textContentType('none')");
+  });
   it('keeps a long press delay that is no duration token, or has no long press', () => {
     const result = run(`import { Pressable } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
@@ -466,6 +480,26 @@ const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
       '<View style={{ flexDirection: \'row\', gap: 8 }} accessibilityRole="header">',
     );
     expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
+  });
+  it('reads Bloom’s scrim and brand container as their roles', () => {
+    const { code, unconverted } = run(`import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View style={{ backgroundColor: theme.colors.overlay }}>
+      <View style={{ backgroundColor: theme.colors.primarySubtle }}>
+        <Text style={{ color: theme.colors.primarySubtleForeground }}>a</Text>
+      </View>
+    </View>
+  );
+}
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain(
+      "VStack(VStack(LText('a').foreground('primaryText')).background('primarySubtle')).background('overlay')",
+    );
   });
   it('reads a style’s flex: 1 as .grow() and a theme colour as its role, and keeps a style a variant would override', () => {
     const result = run(`import { View } from 'react-native';

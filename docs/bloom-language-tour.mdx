@@ -112,7 +112,7 @@ export const card = VStack(
 - **A colour at an opacity** is `'role/opacity'` (`'muted/70'`,
   `'primary/10'`).
 - **App tokens** (`defineTokens`) cover space, icon and avatar sizes,
-  leading, motion and brand colours. A hex or a number at a call site does not
+  leading (a ratio, `leading`, or points, `leadingPx`), motion and brand colours. A hex or a number at a call site does not
   compile.
 - **Each node has its own sets**: a `Button`'s `.size()` is the control size
   (`xs` `sm` `md` `lg`), an `Avatar`'s its avatar rungs, an `Icon`'s the icon

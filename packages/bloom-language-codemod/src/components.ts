@@ -301,6 +301,8 @@ const TEXT_INPUT = {
   keyboardType: p('keyboard', 'token', tokens('keyboard')),
   autoCapitalize: p('autocapitalize', 'token', tokens('autocapitalize')),
   autoCorrect: p('autocorrect', 'boolean'),
+  spellCheck: p('spellCheck', 'boolean'),
+  onBlur: p('onBlur', 'handler'),
   autoComplete: p('contentType', 'token', tokens('contentType')),
   returnKeyType: p('submitLabel', 'token', tokens('submitLabel')),
   onSubmitEditing: p('onSubmit', 'handler'),
@@ -605,6 +607,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       resize: p('resize', 'token', tokens('textareaResize')),
       showCount: p('showCount', 'mark'),
       ...TEXT_INPUT,
+      textContentType: p('textContentType', 'token', tokens('textContentType')),
       // The ref of its TextInput, written as it is.
       inputRef: p('inputRef', 'handler'),
       accessibilityLabel: p('label', 'string'),

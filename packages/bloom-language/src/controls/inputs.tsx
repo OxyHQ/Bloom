@@ -141,6 +141,16 @@ interface TextInputModifiers<Self> {
   onSelectionChange(value: (event: TextInputSelectionChangeEvent) => void): Self;
   autocapitalize(value: Autocapitalize): Self;
   autocorrect(value: boolean): Self;
+  /** What the text is, for the platform's autofill (Android's and the web's `autoComplete`): `'off'` offers none. */
+  contentType(value: ContentType): Self;
+  /** `false`: no spelling marks under the text (React Native's `spellCheck`, the web's `spellcheck`). */
+  spellCheck(value: boolean): Self;
+  /**
+   * The action of the input losing the keyboard's focus (React Native's
+   * `onBlur`): a name saved when the reader leaves it. Beside `.focused()`,
+   * the binding is written first.
+   */
+  onBlur(value: () => void): Self;
   /** Takes the keyboard's focus when it appears. */
   autoFocus(): Self;
   /**
@@ -174,7 +184,6 @@ export interface TextFieldView
   prefix(value: string): TextFieldView;
   /** Text after the input (a unit, a domain). */
   suffix(value: string): TextFieldView;
-  contentType(value: ContentType): TextFieldView;
   /**
    * iOS: what the text is (React Native's `textContentType`: `URL`,
    * `emailAddress`, `oneTimeCode`…), which its autofill and keyboard offer;
@@ -198,6 +207,8 @@ export interface TextEditorView
   placeholder(value: string): TextEditorView;
   /** The hint under the field. */
   description(value: string): TextEditorView;
+  /** iOS: what the text is (React Native's `textContentType`): `'none'` offers no autofill. */
+  textContentType(value: TextContentType): TextEditorView;
   size(value: BloomSize): TextEditorView;
   disabled(value?: boolean): TextEditorView;
   invalid(value?: boolean): TextEditorView;
@@ -454,11 +465,14 @@ interface FocusProps {
 function FocusBound({
   focused: [isFocused, setFocused],
   inputRef,
+  onBlur,
   draw,
 }: {
   focused: Binding<boolean>;
   /** The app's own ref of the input (`.inputRef()`), which the binding then reads too. */
   inputRef: RefObject<ComponentRef<typeof TextInput> | null> | undefined;
+  /** The app's own blur action (`.onBlur()`), after the binding is written. */
+  onBlur: (() => void) | undefined;
   draw: (focus: FocusProps) => ReactElement;
 }): ReactElement {
   const own = useRef<ComponentRef<typeof TextInput>>(null);
@@ -469,7 +483,14 @@ function FocusBound({
     if (isFocused) input.focus();
     else input.blur();
   }, [isFocused]);
-  return draw({ ref, onFocus: () => setFocused(true), onBlur: () => setFocused(false) });
+  return draw({
+    ref,
+    onFocus: () => setFocused(true),
+    onBlur: () => {
+      setFocused(false);
+      onBlur?.();
+    },
+  });
 }
 
 /** `draw` with the input's focus bound when the node has `.focused()`, as it is otherwise. */
@@ -479,8 +500,9 @@ function withFocus(
 ): ReactElement {
   const focused = d.own('focused')?.value;
   const inputRef = d.own('inputRef')?.value;
-  if (focused === undefined) return draw(inputRef === undefined ? {} : { ref: inputRef });
-  return createElement(FocusBound, { key: d.key, focused, inputRef, draw });
+  const onBlur = d.own('onBlur')?.value;
+  if (focused === undefined) return draw({ ref: inputRef, onBlur });
+  return createElement(FocusBound, { key: d.key, focused, inputRef, onBlur, draw });
 }
 
 /**
@@ -501,6 +523,7 @@ const TEXT_INPUT_PROPS = [
   ['onSelectionChange', 'onSelectionChange'],
   ['autocapitalize', 'autoCapitalize'],
   ['autocorrect', 'autoCorrect'],
+  ['spellCheck', 'spellCheck'],
   ['contentType', 'autoComplete'],
   ['textContentType', 'textContentType'],
   ['submitLabel', 'returnKeyType'],

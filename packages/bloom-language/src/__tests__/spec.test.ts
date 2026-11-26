@@ -608,14 +608,16 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
   it('each colour role names the theme colour Bloom builds from its CSS variable', () => {
     // build-theme.ts: `textSecondary: g('muted-foreground')`: the ThemeColors key
     // and the canonical variable the web reads are one pair. A fixed colour
-    // (`white: '#ffffff'`) is the same literal on both sides.
+    // (`white: '#ffffff'`, `overlay: 'rgba(0, 0, 0, 0.5)'`) is the same literal on both sides.
     const theme = read('theme/build-theme.ts');
     // The surface fill is no theme colour: its leaf reads Bloom's `useSurfaceFill()`.
     for (const { paint, web } of Object.values(COLORS)) {
       if (web === null) continue;
       const variable = /^var\(--([\w-]+)\)$/.exec(web)?.[1];
       expect(theme).toMatch(
-        new RegExp(`\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web}'`},`),
+        new RegExp(
+          `\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web.replace(/[()]/g, '\\$&')}'`},`,
+        ),
       );
     }
   });

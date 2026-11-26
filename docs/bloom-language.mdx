@@ -555,7 +555,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `blur()` | Bloom's floating island (`BlurIsland`) |
-| `onPress`, `onLongPress(action, duration?)`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. `hoverGroup()` on a view with no press of its own is a plain view with Bloom's marker (`hoverGroupProps`), its press a view inside it. A long press's `duration` is how long it is held (React Native's `delayLongPress`: `'500'`, its own default, `'250'`…, the [duration](bloom-language-tokens.mdx#duration) tokens); a Bloom component that takes a long press of its own (a tab, a nav item, a tree item, a destination) takes no duration |
+| `onPress`, `onLongPress(action, duration?)`, `onPressIn`, `onPressOut`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. `onPressIn` and `onPressOut` are a touch going down and lifting off (React Native's own, a hold that ends): they make the view pressable and leave it out of the focus order unless it has a press or a long press. `hoverGroup()` on a view with no press of its own is a plain view with Bloom's marker (`hoverGroupProps`), its press a view inside it. A long press's `duration` is how long it is held (React Native's `delayLongPress`: `'500'`, its own default, `'250'`…, the [duration](bloom-language-tokens.mdx#duration) tokens); a Bloom component that takes a long press of its own (a tab, a nav item, a tree item, a destination) takes no duration |
 | `accessibilityElement(on)`, `focusable(on?)`, `collapsable(on)` | React Native's own: whether the view is one accessibility element (`accessible`; `false` leaves what is inside to be read, its press kept), whether keyboard focus stops at it (`tabIndex` `0` or `-1`, on the web and Android), and `false` keeps its native view from being flattened (`collapsable`, Android). Each is written on the view's outermost host as the JSX writes it |
 | responder props (`onStartShouldSetResponder`, a `PanResponder`'s `panHandlers`) | no modifier: a view that claims or tracks touches by hand stays an `Embed` of its JSX. The language's gestures are `.onPress()`, `.drag()`, `.swipe()`, `.pinch()` and `.onDoubleTap()` |
 | `accessibilityState(s)`, `accessibilityValue(v)`, `liveRegion(r)`, `accessibilityHidden(on?)` | what assistive technology reads: a state (`selected`, `checked` or `'mixed'`, `busy`, `expanded`, `disabled`: React Native's `accessibilityState`); a value, a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`; numbers and a text, no tokens); a region whose changes are announced (`polite`, `assertive`, `none`: `accessibilityLiveRegion`); hidden from screen readers with what is inside (see [Layout](#layout)) |
@@ -595,6 +595,29 @@ Icon(RiRepeat2Line).size(row.iconSize.context);
 Mention's row needed seven of them. Two are Bloom rungs now: the 64px body
 gutter is `'64'` and `leading-tight` (1.25) is `close`. The 18px context row,
 the 3px gap before its text and the 13, 14 and 18px glyphs stay app tokens.
+
+A leading is a ratio of the font's size (`defineTokens({ leading: { loose: 1.8 }
+})`) or a line height in points (`defineTokens({ leadingPx: { name: 26 } })`),
+as Bloom's own rungs are both (`snug`, `'24px'`); `.leading()` takes either.
+Allo's profile skeleton draws its 26pt name line as
+`Skeleton('text').frame({ width: profile.space.name }).leading(profile.leadingPx.name)`.
+
+Which mechanism an app length takes:
+
+- **A Bloom rung**, named or numeric, when Bloom's scale has the value (`'96'`
+  for a 96pt frame, `'1/3'` for a third of the parent).
+- **An app token** for a value of the app's own design that Bloom's scales lack:
+  Allo's 180pt rename field and 144pt sticker placeholder are
+  `defineTokens({ space: { rename: 180, sticker: 144 } })`, its 96pt conversation
+  cluster `defineTokens({ avatarSize: { hero: 96 } })` (Bloom's avatar takes any
+  diameter; its rungs stop at 40). The spec's numeric rungs are values several
+  apps write, not one screen's.
+- **Points computed at render** only for geometry the view computes as it
+  renders (the spec's `points`): a size from a prop, a measured inset.
+- **A fraction** for a length relative to the parent: `'1/3'` is
+  `33.333333%`, Tailwind's `w-1/3`. A cell written `33.333%` is a third: it
+  takes `'1/3'`, which draws it 0.0003% wider (less than a thousandth of a
+  point at any width), not a second, nearly equal length.
 
 An app's brand colour is an app token too: `defineTokens({ color: { blue:
 '#1877f2' } })` declares a colour, the same in both schemes, and
@@ -5009,10 +5032,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
+| Maps to a modifier and a token | 1091 | 47378 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 28 | 407 | 0.8% |
-| Needs a named token (raw value) | 258 | 608 | 1.1% |
+| Needs a named token (raw value) | 257 | 588 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -5024,7 +5047,7 @@ condition. The values with no rung, by scale (the owner names each as a token or
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
+| color | 199 | --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8), yellow-400 (7) |
 | space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
 | opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |

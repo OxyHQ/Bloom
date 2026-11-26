@@ -248,7 +248,7 @@ Taken by: [`.scale()`](bloom-language-modifiers.mdx#scale).
 
 ### `ring`
 
-`'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`, `'none'`
+`'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`, `'none'`
 
 Taken by: [`.ring()`](bloom-language-modifiers.mdx#ring).
 
@@ -376,6 +376,7 @@ Taken by: [`.tracking()`](bloom-language-modifiers.mdx#tracking).
 | `'textTertiary'` | textTertiary / var(--faint-foreground) |
 | `'primary'` | primary / var(--primary) |
 | `'primaryText'` | primarySubtleForeground / var(--primary-text) |
+| `'primarySubtle'` | primarySubtle / var(--primary-subtle) |
 | `'onPrimary'` | primaryForeground / var(--primary-foreground) |
 | `'secondary'` | secondary / var(--secondary) |
 | `'onSecondary'` | secondaryForeground / var(--secondary-foreground) |
@@ -402,6 +403,7 @@ Taken by: [`.tracking()`](bloom-language-modifiers.mdx#tracking).
 | `'accent'` | accent / var(--accent) |
 | `'errorText'` | errorSubtleForeground / var(--error-text) |
 | `'infoText'` | infoSubtleForeground / var(--info-text) |
+| `'overlay'` | overlay / var(--rgba(0, 0, 0, 0.5)) |
 | `'surfaceFill'` | surfaceFill (the surface the view is on) |
 
 A colour token is a role above (on native the theme's colour named first, on the web the CSS variable), a role at an opacity of the [opacity](#opacity) scale (`'primary/10'`), or an app colour from `defineTokens({ color })`.
@@ -412,7 +414,7 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [rating](bloom-l
 
 ### `colorRole`
 
-`'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+`'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 A colour role alone: never at an opacity, nor an app colour. What a node paints by the role's name takes it.
 

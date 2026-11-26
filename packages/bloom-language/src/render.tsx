@@ -365,6 +365,9 @@ interface Plan {
   onLongPress: (() => void) | undefined;
   /** `.onLongPress(action, duration)`: React Native's `delayLongPress`, in milliseconds. */
   longPressDelay: number | undefined;
+  /** `.onPressIn()` and `.onPressOut()`: a touch going down and lifting off. */
+  onPressIn: (() => void) | undefined;
+  onPressOut: (() => void) | undefined;
   onHoverIn: (() => void) | undefined;
   onHoverOut: (() => void) | undefined;
   hoverGroup: boolean;
@@ -690,6 +693,8 @@ function plan(node: Node, env: Env): Plan {
     navigation: undefined,
     onLongPress: undefined,
     longPressDelay: undefined,
+    onPressIn: undefined,
+    onPressOut: undefined,
     onHoverIn: undefined,
     onHoverOut: undefined,
     hoverGroup: false,
@@ -797,6 +802,14 @@ function plan(node: Node, env: Env): Plan {
         result.pressable = true;
         result.onLongPress = modifier.value;
         result.longPressDelay = resolveDuration(modifier.duration);
+        break;
+      case 'onPressIn':
+        result.pressable = true;
+        result.onPressIn = modifier.value;
+        break;
+      case 'onPressOut':
+        result.pressable = true;
+        result.onPressOut = modifier.value;
         break;
       case 'hoverGroup':
         result.hoverGroup = true;
@@ -1088,6 +1101,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
     if (p.longPressDelay !== undefined) props.delayLongPress = p.longPressDelay;
+    if (p.onPressIn) props.onPressIn = p.onPressIn;
+    if (p.onPressOut) props.onPressOut = p.onPressOut;
     if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
@@ -1191,7 +1206,8 @@ function drawOutermost(
     return drawHost(palette, host, out, props, ...children);
   box.used = true;
   const { outer } = box;
-  if (!outer.active) return drawHost(palette, host, out, { ...props, ...outer.props }, ...children);
+  if (!outer.active)
+    return drawHost(palette, host, out, underMotion(props, outer.props), ...children);
   // The animated twin takes the motion's style after its own, through the
   // leaf that paints it and the `StateHost` whose state its variants answer,
   // so a variant's change (a press's scale, a hover's fill) plays on it.
@@ -1199,9 +1215,33 @@ function drawOutermost(
     palette,
     animated,
     out,
-    { ...props, ...outer.props, style: outer.style },
+    { ...underMotion(props, outer.props), style: outer.style },
     ...children,
   );
+}
+
+const PRESS_PHASES = ['onPressIn', 'onPressOut'] as const;
+
+/**
+ * The host's props under its motion's (a `.pressScale()` takes the press's
+ * phases to drive its scale): a phase both take runs the motion's, then the
+ * view's own `.onPressIn()` / `.onPressOut()`.
+ */
+function underMotion(
+  props: Record<string, unknown>,
+  motion: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const out = { ...props, ...motion };
+  for (const phase of PRESS_PHASES) {
+    const own = props[phase] as ((event: unknown) => void) | undefined;
+    const moving = motion[phase] as ((event: unknown) => void) | undefined;
+    if (own !== undefined && moving !== undefined)
+      out[phase] = (event: unknown) => {
+        moving(event);
+        own(event);
+      };
+  }
+  return out;
 }
 
 /** `element` in a box of its own that carries `outer` (`style` first): how what cannot take it moves. */
@@ -3096,6 +3136,8 @@ function renderHost(
         tone: ownValue(p, 'tint')?.value,
         onPress: p.onPress,
         onLongPress: p.onLongPress,
+        onPressIn: p.onPressIn,
+        onPressOut: p.onPressOut,
         popOnActivate: options.pop,
         rollCount: options.rollCount,
         busy: options.busy,
@@ -4119,6 +4161,8 @@ function modifierReads(kind: NodeKind | typeof RAW_TEXT, modifiers: readonly Mod
         continue;
       case 'onPress':
       case 'onLongPress':
+      case 'onPressIn':
+      case 'onPressOut':
         // A press takes a `.disabled()` set above it, and a `navigate()` the navigator.
         reads |= READS_ENVIRONMENT;
         continue;

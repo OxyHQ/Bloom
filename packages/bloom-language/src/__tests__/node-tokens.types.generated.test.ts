@@ -28,7 +28,7 @@ type S = {
   "shadow": "s" | "m" | "floating" | "0 1px rgb(0 0 0 / 0.05)" | "0 1px 2px 0 rgb(0 0 0 / 0.05)" | "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)" | "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" | "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)" | "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" | "0 25px 50px -12px rgb(0 0 0 / 0.25)";
   "textShadow": "0 1px 2px rgb(0 0 0 / 0.8)" | "0 1px 3px rgb(0 0 0 / 0.8)";
   "scale": "95" | "99" | "103" | "105" | "110" | "dip" | "pressed" | "full" | "swell";
-  "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill" | "none";
+  "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "primarySubtle" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "overlay" | "surfaceFill" | "none";
   "corner": "6" | "7" | "10" | "14" | "15" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "concentric" | "infinite";
   "cornerRadius": "6" | "7" | "10" | "14" | "15" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "infinite";
   "columnWidth": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "540" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "fit";
@@ -38,8 +38,8 @@ type S = {
   "weight": "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold";
   "leading": "tight" | "close" | "snug" | "easy" | "normal" | "relaxed" | "14px" | "16px" | "18px" | "20px" | "22px" | "24px" | "28px" | "32px" | "36px" | "40px" | "96px";
   "tracking": "tight" | "wide" | "wider" | "widest" | "-0.02em" | "-0.01em" | "0.04em" | "-0.5px" | "-0.4px" | "-0.2px" | "0.5px" | "1.5px" | "2px";
-  "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
-  "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
+  "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "primarySubtle" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "overlay" | "surfaceFill";
+  "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "primarySubtle" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "overlay" | "surfaceFill";
   "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "0.5" | "1.5" | "2.5";
   "opacity": "5" | "10" | "20" | "25" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "85" | "90" | "transparent" | "12.5" | "31.4" | "half" | "opaque";
   "hitSlop": "4" | "5" | "none" | "sm" | "md" | "lg";
@@ -850,6 +850,8 @@ type textEditorChecks = [
   Expect<"textEditor.keyboard(keyboard)", Ok<At<View<'TextEditor'>['keyboard'], '0'>, S['keyboard']>>,
   Expect<"textEditor.inputMode(inputMode)", Ok<At<View<'TextEditor'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"textEditor.autocapitalize(autocapitalize)", Ok<At<View<'TextEditor'>['autocapitalize'], '0'>, S['autocapitalize']>>,
+  Expect<"textEditor.contentType(contentType)", Ok<At<View<'TextEditor'>['contentType'], '0'>, S['contentType']>>,
+  Expect<"textEditor.textContentType(textContentType)", Ok<At<View<'TextEditor'>['textContentType'], '0'>, S['textContentType']>>,
 ];
 
 type fieldChecks = [
@@ -903,6 +905,7 @@ type searchChecks = [
   Expect<"search.keyboard(keyboard)", Ok<At<View<'Search'>['keyboard'], '0'>, S['keyboard']>>,
   Expect<"search.inputMode(inputMode)", Ok<At<View<'Search'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"search.autocapitalize(autocapitalize)", Ok<At<View<'Search'>['autocapitalize'], '0'>, S['autocapitalize']>>,
+  Expect<"search.contentType(contentType)", Ok<At<View<'Search'>['contentType'], '0'>, S['contentType']>>,
   Expect<"search.submitLabel(submitLabel)", Ok<At<View<'Search'>['submitLabel'], '0'>, S['submitLabel']>>,
 ];
 

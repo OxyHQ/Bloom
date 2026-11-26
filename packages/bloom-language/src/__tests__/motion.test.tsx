@@ -611,6 +611,21 @@ describe('.pressScale()', () => {
     expect(() => pressable?.props.onPressIn()).not.toThrow();
   });
 
+  it('a press that scales runs the view’s own press in and out after its scale’s', () => {
+    const phases: string[] = [];
+    const r = mount(
+      HStack(Text('a'))
+        .onLongPress(() => {})
+        .onPressIn(() => phases.push('in'))
+        .onPressOut(() => phases.push('out'))
+        .pressScale(),
+    );
+    const [pressable] = all(r, 'Animated.Pressable');
+    act(() => pressable?.props.onPressIn());
+    act(() => all(r, 'Animated.Pressable')[0]?.props.onPressOut());
+    expect(phases).toEqual(['in', 'out']);
+  });
+
   it("a hover group's press scales and lights the highlight on the one animated pressable", () => {
     const r = mount(
       VStack(Text('Post'))

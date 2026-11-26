@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Checks `.onPressIn()` and `.onPressOut()` on every view, `.onBlur()` and `.spellCheck()` on the text inputs, `.contentType()` and `.textContentType()` on `TextEditor` and `.contentType()` on `Search`, from the spec.
+
 ## 1.5.0
 
 ### Changed

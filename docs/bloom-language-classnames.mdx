@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
+| Maps to a modifier and a token | 1091 | 47378 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 28 | 407 | 0.8% |
-| Needs a named token (raw value) | 258 | 608 | 1.1% |
+| Needs a named token (raw value) | 257 | 588 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -41,7 +41,7 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
+| color | 199 | --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8), yellow-400 (7) |
 | space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
 | opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
@@ -303,6 +303,7 @@ when the fill is a role's colour.
 | `h-6` | .frame({ height: '2xl' }) | 21 | 12 |
 | `px-space-8` | .padding('horizontal', 'sm') | 21 | 3 |
 | `size-4` | .frame({ width: 'lg', height: 'lg' }) | 21 | 4 |
+| `bg-primary-subtle` | .background('primarySubtle') | 20 | 3 |
 | `border-2` | .border(role, 'thick') | 20 | 12 |
 | `border-input` | .border('input') | 20 | 7 |
 | `my-1` | .margin('vertical', 'xs') | 20 | 5 |
@@ -783,7 +784,6 @@ when the fill is a role's colour.
 
 | Utility | Raw value | Becomes | Uses | Apps |
 | --- | --- | --- | ---: | ---: |
-| `bg-primary-subtle` | --primary-subtle | .background(…) | 20 | 3 |
 | `ring-ring/50` | --ring at 50% | .ring(…) | 16 | 3 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |

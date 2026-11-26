@@ -25,7 +25,7 @@ export const PaintContext = createContext<ThemeColors>(LIGHT);
 export function useThemePaint(): ThemeColors {
   return useContext(PaintContext);
 }
-export { parseRgb, withAlpha } from '../../../../../src/theme/color-utils';
+export { parseRgb, parseRgba, withAlpha } from '../../../../../src/theme/color-utils';
 
 /**
  * The theme's RGB palette when a test paints with another one: a web prepaint,

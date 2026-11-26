@@ -1574,10 +1574,8 @@
   "bg-primary-subtle": {
    "count": 20,
    "apps": 3,
-   "status": "token",
-   "scale": "color",
-   "value": "--primary-subtle",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('primarySubtle')"
   },
   "border-2": {
    "count": 20,

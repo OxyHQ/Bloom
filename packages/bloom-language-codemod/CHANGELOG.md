@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps `theme.colors.overlay` and `theme.colors.primarySubtle` to the roles `overlay` and `primarySubtle` (from the spec's colours).
+- Maps a Pressable's `onPressIn`/`onPressOut` to `.onPressIn()`/`.onPressOut()`, a text input's `onBlur` and `spellCheck` to `.onBlur()` and `.spellCheck()`, and a `Textarea`'s `textContentType` to `.textContentType()`.
+
 ## 0.5.0
 
 ### Compatibility

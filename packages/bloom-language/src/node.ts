@@ -808,6 +808,8 @@ export interface ValueModifiers {
   onSelectionChange: (event: TextInputSelectionChangeEvent) => void;
   autocapitalize: Autocapitalize;
   autocorrect: boolean;
+  spellCheck: boolean;
+  onBlur: () => void;
   contentType: ContentType;
   textContentType: TextContentType;
   submitLabel: SubmitLabel;
@@ -1610,6 +1612,8 @@ export type Modifier =
       readonly value: (() => void) | undefined;
       readonly duration: DurationName | undefined;
     }
+  | { readonly kind: 'onPressIn'; readonly key: string; readonly value: (() => void) | undefined }
+  | { readonly kind: 'onPressOut'; readonly key: string; readonly value: (() => void) | undefined }
   | {
       readonly kind: 'onHover';
       readonly key: string;
@@ -2465,6 +2469,12 @@ export class Node {
       value,
       duration,
     });
+  }
+  onPressIn(value: (() => void) | undefined): Node {
+    return this.with({ kind: 'onPressIn', key: 'onPressIn', value });
+  }
+  onPressOut(value: (() => void) | undefined): Node {
+    return this.with({ kind: 'onPressOut', key: 'onPressOut', value });
   }
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Node {
     return this.with({ kind: 'onHover', key: 'onHover', enter, leave });
@@ -3408,6 +3418,12 @@ export class Node {
   }
   autocorrect(value: boolean): Node {
     return this.set('autocorrect', value);
+  }
+  spellCheck(value: boolean): Node {
+    return this.set('spellCheck', value);
+  }
+  onBlur(value: () => void): Node {
+    return this.set('onBlur', value);
   }
   contentType(value: ContentType): Node {
     return this.set('contentType', value);
@@ -4810,6 +4826,17 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `delayLongPress`: its own 500 ms when the chain names none).
    */
   onLongPress(value: (() => void) | undefined, duration?: DurationName): Self;
+  /**
+   * The action of a touch going down on the view, before it is a press or a
+   * long press (React Native's `onPressIn`). Makes the view pressable, as
+   * `.onPress()` does.
+   */
+  onPressIn(value: (() => void) | undefined): Self;
+  /**
+   * The action of the touch lifting off the view or leaving it, after a press,
+   * a long press or neither (React Native's `onPressOut`): a hold that ends.
+   */
+  onPressOut(value: (() => void) | undefined): Self;
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Self;
   /**
    * Web: the pointer over this view is what `group-hover:` styles inside it
