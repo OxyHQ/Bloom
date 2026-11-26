@@ -85,7 +85,7 @@ import type {
   TitleLayout,
   VideoMessageStyle,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { type CornerToken, length, product, type ProductSpec } from './product';
 
 /** The person-to-person chat families: the screen's parts, the list's parts, the indicators and the media in a bubble. */
@@ -522,7 +522,7 @@ const bubble = (spec: ProductSpec, placeholder = false): ProductSpec => ({
 const sized = ['width'] as const;
 const rounded = ['radius'] as const;
 
-export const CHATS: Record<ChatKind, ControlRenderer> = {
+const CHATS: Record<ChatKind, ControlRenderer> = {
   chatBackground: product(BloomChatBackground, {
     own: (d) => {
       const options = optionsOf<ChatBackgroundOptions>(d);
@@ -657,3 +657,4 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
     }),
   ),
 };
+defineControls(CHATS);

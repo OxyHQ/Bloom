@@ -6,7 +6,7 @@ import {
 } from '@oxy.so/bloom/place-reviews';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** Reviews of a place: its summary, and the prompt to write one. */
@@ -40,7 +40,8 @@ export function WriteReviewPrompt(
   return new Node('writeReviewPrompt', { buildingTitle, options }, []);
 }
 
-export const PLACE_REVIEWS: Record<PlaceReviewKind, ControlRenderer> = {
+const PLACE_REVIEWS: Record<PlaceReviewKind, ControlRenderer> = {
   placeReviewSummary: product(BloomPlaceReviewSummary),
   writeReviewPrompt: product(BloomWriteReviewPrompt, { slots: ['media'] }),
 };
+defineControls(PLACE_REVIEWS);

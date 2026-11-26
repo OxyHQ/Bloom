@@ -5,7 +5,6 @@ import { RiDeleteBinLine, RiPencilLine, RiQuillPenLine, RiShareLine } from '@oxy
 
 import {
   Button,
-  GlassGroup,
   HStack,
   Icon,
   Text,
@@ -15,6 +14,7 @@ import {
   toElement,
   useNamespace,
 } from '../index';
+import { GlassGroup } from '../entries/glass-group';
 
 /** Colour behind the glass, so the material shows. */
 function Backdrop({ children }: { children: React.ReactNode }) {

@@ -2,7 +2,8 @@ import { createElement, useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { mount, only, quietRenderer } from './support/mount';
-import { Embed, List, ScrollArea, Text, VirtualList } from '../index';
+import { Embed, ScrollArea, Text } from '../index';
+import { List, VirtualList } from '../entries/list';
 import { toElement } from '../render';
 import { resolveSpace } from '../tokens';
 

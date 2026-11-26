@@ -7,7 +7,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { LockupSize, ShapeName } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product, type TextSlot } from './product';
 
 /** A product's lockup: its icon, name and action in a row, and its placeholder. */
@@ -52,7 +52,7 @@ export function LockupSkeleton(options: LockupSkeletonOptions = {}): LockupSkele
   return new Node('lockupSkeleton', { options }, []);
 }
 
-export const LOCKUPS: Record<LockupKind, ControlRenderer> = {
+const LOCKUPS: Record<LockupKind, ControlRenderer> = {
   lockup: product(BloomLockup, {
     slots: ['caption', 'action'],
     press: true,
@@ -67,3 +67,4 @@ export const LOCKUPS: Record<LockupKind, ControlRenderer> = {
     own: (d) => ({ size: d.own('size')?.value, divider: d.own('divider')?.value }),
   }),
 };
+defineControls(LOCKUPS);

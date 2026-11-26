@@ -6,7 +6,7 @@ import {
 
 import type { ENUMS } from '../generated/spec.generated';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A sign-in button for an identity provider (Bloom `social-button`). */
 export type SocialButtonKind = 'socialButton';
@@ -43,7 +43,7 @@ export function SocialButton(
   return new Node('socialButton', { brand, title }, []);
 }
 
-export const SOCIAL_BUTTONS: Record<SocialButtonKind, ControlRenderer> = {
+const SOCIAL_BUTTONS: Record<SocialButtonKind, ControlRenderer> = {
   socialButton: (d) => {
     const { brand, title } = d.node.props as {
       brand: Exclude<SocialBrand, 'custom'> | SocialBrandConfig;
@@ -66,3 +66,4 @@ export const SOCIAL_BUTTONS: Record<SocialButtonKind, ControlRenderer> = {
     return d.component(BloomSocialButton, props, title);
   },
 };
+defineControls(SOCIAL_BUTTONS);

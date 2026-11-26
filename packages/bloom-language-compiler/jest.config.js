@@ -39,5 +39,13 @@ module.exports = {
   moduleNameMapper: {
     ...runtime.moduleNameMapper,
     '^@oxy.so/bloom-language$': path.join(__dirname, '../bloom-language/src/index.ts'),
+    '^@oxy.so/bloom-language/router$': path.join(
+      __dirname,
+      '../bloom-language/src/router/index.ts',
+    ),
+    '^@oxy.so/bloom-language/([a-z-]+)$': path.join(
+      __dirname,
+      '../bloom-language/src/entries/$1.ts',
+    ),
   },
 };

@@ -11,7 +11,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density, SpaceToken } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The month calendar: the whole view, its header and its grid of days. */
@@ -84,7 +84,7 @@ const compact = (d: ControlDraw) => {
 };
 const header = { slots: ['breadcrumb', 'actions'], lengths: ['monthSwitcherWidth'] } as const;
 
-export const CALENDAR_VIEWS: Record<CalendarViewKind, ControlRenderer> = {
+const CALENDAR_VIEWS: Record<CalendarViewKind, ControlRenderer> = {
   calendarView: product(BloomCalendarView, {
     bindings: { month: ['month', 'onMonthChange'] },
     ...header,
@@ -95,3 +95,4 @@ export const CALENDAR_VIEWS: Record<CalendarViewKind, ControlRenderer> = {
     own: (d) => ({ compact: compact(d) }),
   }),
 };
+defineControls(CALENDAR_VIEWS);

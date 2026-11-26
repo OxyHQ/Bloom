@@ -9,7 +9,7 @@ import {
 import type { Binding } from '../binding';
 import { resolveTimedMotion, type TimedMotionToken } from '../motion/tokens';
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Collapsible sections, fully controlled (Bloom `accordion`). */
 export type AccordionKind = 'accordion' | 'accordionItem' | 'accordionTrigger' | 'accordionContent';
@@ -56,7 +56,7 @@ export function AccordionContent(...children: Child[]): AccordionContentView {
 
 const children = (d: ControlDraw) => d.children(d.node.children);
 
-export const ACCORDIONS: Record<AccordionKind, ControlRenderer> = {
+const ACCORDIONS: Record<AccordionKind, ControlRenderer> = {
   accordion: (d) => {
     const [value, onValueChange] = (d.node.props as { open: Binding<AccordionSelection> }).open;
     const props = d.props();
@@ -89,3 +89,4 @@ export const ACCORDIONS: Record<AccordionKind, ControlRenderer> = {
   },
   accordionContent: (d) => d.component(BloomAccordionContent, d.props(), ...children(d)),
 };
+defineControls(ACCORDIONS);

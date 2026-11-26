@@ -167,7 +167,16 @@ writes it, as SwiftUI's `$value`.
 
 ```tsx check
 import { useState } from 'react';
-import { Button, Field, Option, Picker, Segmented, TextEditor, TextField, Text, Toggle, VStack, HStack, Spacer } from '@oxy.so/bloom-language';
+import { Button, Text, VStack, HStack, Spacer } from '@oxy.so/bloom-language';
+import {
+  Field,
+  Option,
+  Picker,
+  Segmented,
+  TextEditor,
+  TextField,
+  Toggle,
+} from '@oxy.so/bloom-language/inputs';
 
 export function ProfileForm({ save }: { save: (profile: { name: string; bio: string }) => void }) {
   const [name, setName] = useState('');
@@ -199,7 +208,15 @@ export function ProfileForm({ save }: { save: (profile: { name: string; bio: str
 A view sets values on everything inside it, as SwiftUI's environment does.
 
 ```tsx check
-import { Button, HStack, Text, VStack, defineEnvironment, useEnvironment, view } from '@oxy.so/bloom-language';
+import {
+  Button,
+  HStack,
+  Text,
+  VStack,
+  defineEnvironment,
+  useEnvironment,
+  view,
+} from '@oxy.so/bloom-language';
 
 export const Compact = defineEnvironment('compact', false);
 
@@ -249,7 +266,18 @@ Bloom, not in each app.
 ## Layout
 
 ```tsx check
-import { Avatar, Badge, Button, HStack, Icon, Text, VStack, ViewThatFits, ZStack, Fill } from '@oxy.so/bloom-language';
+import {
+  Avatar,
+  Badge,
+  Button,
+  HStack,
+  Icon,
+  Text,
+  VStack,
+  ZStack,
+  Fill,
+} from '@oxy.so/bloom-language';
+import { ViewThatFits } from '@oxy.so/bloom-language/view-that-fits';
 import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';
 
 export const header = HStack(Avatar('https://example.com/a.png').size('md'), Text('Ana Lima'))
@@ -291,7 +319,8 @@ export const progress = ViewThatFits('horizontal', Text('12 of 40 done'), Text('
 
 ```tsx check
 import { useCallback } from 'react';
-import { Avatar, HStack, ListItem, ScrollView, Text, VStack, VirtualList, type VirtualListRow } from '@oxy.so/bloom-language';
+import { Avatar, HStack, ScrollView, Text, VStack } from '@oxy.so/bloom-language';
+import { ListItem, VirtualList, type VirtualListRow } from '@oxy.so/bloom-language/list';
 
 interface Person { id: string; name: string; role: string; avatar: string }
 
@@ -349,7 +378,8 @@ export default layout(() => TabView());
 ```tsx check
 // app/(app)/(tabs)/index.tsx
 import { useState } from 'react';
-import { Button, Icon, ListItem, ScrollView, Text, VStack } from '@oxy.so/bloom-language';
+import { Button, Icon, ScrollView, Text, VStack } from '@oxy.so/bloom-language';
+import { ListItem } from '@oxy.so/bloom-language/list';
 import { navigate, screen } from '@oxy.so/bloom-language/router';
 import { RiFilter3Line } from '@oxy.so/bloom/icons/RiFilter3Line';
 
@@ -387,7 +417,9 @@ What a view presents is a modifier on it, shown while its binding holds:
 
 ```tsx check
 import { useState } from 'react';
-import { Alert, Button, ConfirmationDialog, Dialog, Icon, Item, Popover, Text, toast } from '@oxy.so/bloom-language';
+import { Button, Icon, Item, Text, toast } from '@oxy.so/bloom-language';
+import { ConfirmationDialog } from '@oxy.so/bloom-language/confirmation-dialog';
+import { Alert, Dialog, Popover } from '@oxy.so/bloom-language/overlays';
 import { RiInformationLine } from '@oxy.so/bloom/icons/RiInformationLine';
 
 export function DeleteButton({ remove }: { remove: () => void }) {
@@ -438,7 +470,18 @@ Motion is a token too (Bloom's `select`, `expand`, `pop`, `fade`…, or an
 app's `defineTokens({ motion })`). A view says what animates and with what:
 
 ```tsx check
-import { Button, HStack, Icon, Text, VStack, animate, move, opacity, useMappedValue, useMotionValue } from '@oxy.so/bloom-language';
+import {
+  Button,
+  HStack,
+  Icon,
+  Text,
+  VStack,
+  animate,
+  move,
+  opacity,
+  useMappedValue,
+  useMotionValue,
+} from '@oxy.so/bloom-language';
 import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
 
 export function Like({ liked, toggle }: { liked: boolean; toggle: () => void }) {
@@ -497,7 +540,8 @@ Nearby glasses go in one `GlassGroup`, so they render together and blend:
 
 ```tsx check
 import { useState } from 'react';
-import { Button, GlassGroup, HStack, Icon, useNamespace } from '@oxy.so/bloom-language';
+import { Button, HStack, Icon, useNamespace } from '@oxy.so/bloom-language';
+import { GlassGroup } from '@oxy.so/bloom-language/glass-group';
 import { RiMarkPenLine } from '@oxy.so/bloom/icons/RiMarkPenLine';
 import { RiPencilLine } from '@oxy.so/bloom/icons/RiPencilLine';
 
@@ -557,7 +601,8 @@ re-renders only for the fields it read.
 
 ```tsx check
 import { action, entity, list, source, useEntity, useList } from '@oxy.so/bloom-data';
-import { Button, ListItem, ScrollView, Text, view } from '@oxy.so/bloom-language';
+import { Button, ScrollView, Text, view } from '@oxy.so/bloom-language';
+import { ListItem } from '@oxy.so/bloom-language/list';
 
 interface Note { id: string; title: string; done: boolean }
 

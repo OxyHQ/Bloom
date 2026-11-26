@@ -2,7 +2,7 @@ import { ActivityFeed, type ActivityFeedEntry } from '@oxy.so/bloom/activity-fee
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

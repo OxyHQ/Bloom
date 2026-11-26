@@ -7,7 +7,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { VoiceSize } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The voice session's controls. */
@@ -52,10 +52,11 @@ export function VoiceControls(
   return new Node('voiceControls', { state, options }, []);
 }
 
-export const VOICES: Record<VoiceKind, ControlRenderer> = {
+const VOICES: Record<VoiceKind, ControlRenderer> = {
   voiceControls: product(BloomVoiceControls, {
     bindings: { muted: ['muted', 'onMutedChange'], paused: ['paused', 'onPausedChange'] },
     slots: ['leading', 'trailing'],
     own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(VOICES);

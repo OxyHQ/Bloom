@@ -4,7 +4,7 @@ import { RangeSlider as BloomRangeSlider, Slider as BloomSlider } from '@oxy.so/
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import { resolveSpace, type ColorToken, type SpaceToken } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** A value on a continuum, or a range of one (Bloom `slider`). */
 export type SliderKind = 'slider' | 'rangeSlider';
@@ -99,7 +99,8 @@ function draw(host: unknown) {
   };
 }
 
-export const SLIDERS: Record<SliderKind, ControlRenderer> = {
+const SLIDERS: Record<SliderKind, ControlRenderer> = {
   slider: draw(BloomSlider),
   rangeSlider: draw(BloomRangeSlider),
 };
+defineControls(SLIDERS);

@@ -6,6 +6,10 @@
 
 - Its peer is `@oxy.so/bloom-language` 1.7.0 or newer, the language it writes (an offset in points, the frame length `'auto'`, the stacking level `'1000'` and a border width with no colour).
 
+### Changed
+
+- Imports each language name from its entry: the root, `/router`, or its family's (`@oxy.so/bloom-language/inputs`…), from the language's `spec/entries.generated.json`; a file's existing import of a name from any entry is reused.
+
 ### Added
 
 - Maps a transform of translations alone as `.offset()` (a number written out as its space token, one computed at render as points), an `aspectRatio` computed at render, `width: 'auto'` and `w-auto`/`h-auto`/`size-auto` as the frame length `'auto'` (no longer dropped: on a Bloom component it takes back the component's own length), and `zIndex: 1000`/`z-[1000]` as `.zIndex('1000')`.

@@ -5,7 +5,6 @@ import { RiHeart3Line, RiShareLine, RiStarLine } from '@oxy.so/bloom/icons';
 
 import {
   Button,
-  ConfirmationDialog,
   defineKeyframes,
   Header,
   HStack,
@@ -13,12 +12,12 @@ import {
   Item,
   ScrollArea,
   Text,
-  ToolbarGroup,
-  ToolbarSpacer,
   toElement,
-  ViewThatFits,
   VStack,
 } from '../index';
+import { ConfirmationDialog } from '../entries/confirmation-dialog';
+import { ToolbarGroup, ToolbarSpacer } from '../entries/toolbar-group';
+import { ViewThatFits } from '../entries/view-that-fits';
 
 const bounce = defineKeyframes({
   y: [

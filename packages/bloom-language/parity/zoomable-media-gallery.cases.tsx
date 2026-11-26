@@ -9,7 +9,7 @@ import {
   type ZoomableMediaGalleryProps,
 } from '@oxy.so/bloom/zoomable-media-gallery';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

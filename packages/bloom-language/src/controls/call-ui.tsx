@@ -24,7 +24,7 @@ import type {
   IncomingCallAnswer,
   SpaceToken,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { bound, length, product, slot } from './product';
 
 /** The call screens: a call in progress, minimised, in a group, and ringing. */
@@ -224,7 +224,7 @@ function controlsOf(d: ControlDraw): CallControlsProps | undefined {
   return { ...rest, ...toggles, size, children: slot(d, extra) };
 }
 
-export const CALL_UIS: Record<CallUiKind, ControlRenderer> = {
+const CALL_UIS: Record<CallUiKind, ControlRenderer> = {
   callScreen: product(BloomCallScreen, {
     ...look,
     bindings: { localVideoCorner: ['localVideoCorner', 'onMoveLocal'] },
@@ -263,3 +263,4 @@ export const CALL_UIS: Record<CallUiKind, ControlRenderer> = {
     own: (d) => ({ mode: mode(d) }),
   }),
 };
+defineControls(CALL_UIS);

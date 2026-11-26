@@ -2,7 +2,7 @@ import { Badge } from '@oxy.so/bloom/badge';
 import { RouteStops } from '@oxy.so/bloom/route-stops';
 
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

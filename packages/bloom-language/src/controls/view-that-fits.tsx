@@ -9,7 +9,7 @@ import {
 
 import { Node, type Child, type ViewModifiers } from '../node';
 import type { Axis } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 export type ViewThatFitsKind = 'viewThatFits';
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   ideal: { alignSelf: 'flex-start' },
 });
 
-export const VIEWS_THAT_FIT: Record<ViewThatFitsKind, ControlRenderer> = {
+const VIEWS_THAT_FIT: Record<ViewThatFitsKind, ControlRenderer> = {
   viewThatFits: (d) =>
     d.component(FitsHost, {
       ...d.props(),
@@ -116,3 +116,4 @@ export const VIEWS_THAT_FIT: Record<ViewThatFitsKind, ControlRenderer> = {
       candidates: d.children(d.node.children),
     }),
 };
+defineControls(VIEWS_THAT_FIT);

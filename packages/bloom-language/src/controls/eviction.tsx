@@ -8,7 +8,7 @@ import {
 
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An eviction reported to a community: the report and what happened since. */
@@ -47,10 +47,11 @@ export function EvictionTimeline(
   return new Node('evictionTimeline', { events, options }, []);
 }
 
-export const EVICTION: Record<EvictionKind, ControlRenderer> = {
+const EVICTION: Record<EvictionKind, ControlRenderer> = {
   evictionReportCard: product(BloomEvictionReportCard, {
     binding: ['attending', 'onAttendingChange'],
     own: (d) => ({ numberOfLines: d.own('lines')?.value }),
   }),
   evictionTimeline: product(BloomEvictionTimeline),
 };
+defineControls(EVICTION);

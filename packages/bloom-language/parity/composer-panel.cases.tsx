@@ -7,7 +7,7 @@ import {
 } from '@oxy.so/bloom/composer-panel';
 import { Text } from '@oxy.so/bloom/typography';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { hold, type ParityCase } from './support/cases';
 

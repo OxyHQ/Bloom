@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import { resolveSpace, type ColorToken, type SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A checkmark that draws itself: confirmation for something that just finished (Bloom `animated-check`). */
 export type AnimatedCheckKind = 'animatedCheck';
@@ -42,7 +42,7 @@ function PlayedCheck({ trigger, size, color }: PlayedCheckProps): ReactElement {
   return <BloomAnimatedCheck ref={check} size={size} color={color} />;
 }
 
-export const ANIMATED_CHECKS: Record<AnimatedCheckKind, ControlRenderer> = {
+const ANIMATED_CHECKS: Record<AnimatedCheckKind, ControlRenderer> = {
   // Bloom's check takes no style: its box is a view around it.
   animatedCheck: (d) => {
     const size = d.own('size')?.value as SpaceToken | undefined;
@@ -59,3 +59,4 @@ export const ANIMATED_CHECKS: Record<AnimatedCheckKind, ControlRenderer> = {
     );
   },
 };
+defineControls(ANIMATED_CHECKS);

@@ -12,7 +12,7 @@ import {
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewNode } from '../node';
 import { type CornerName, resolveCorner } from '../tokens';
-import { type ControlRenderer, lastOf } from './draw';
+import { type ControlRenderer, defineControls, defineCover, lastOf } from './draw';
 import { SEE } from '../docs';
 
 /** The full-screen media viewer, presented by a binding (Bloom `zoomable-media-gallery`). */
@@ -52,13 +52,14 @@ export function Gallery(items: readonly GalleryMedia[]): GalleryView {
   return new Node('gallery', { items }, []);
 }
 
-export const GALLERIES: Record<GalleryKind, ControlRenderer> = {
+const GALLERIES: Record<GalleryKind, ControlRenderer> = {
   gallery: () => {
     throw new Error(
       `bloom-language: a Gallery is content; present it with .fullScreenCover(). See ${SEE.overlays}`,
     );
   },
 };
+defineControls(GALLERIES);
 
 /** What a view's `.fullScreenCover()` holds: its binding and the content it presents. */
 export type Cover = readonly [isPresented: Binding<boolean>, content: GalleryView];
@@ -131,10 +132,7 @@ function GalleryCover({ isPresented: [open, setOpen], gallery, render }: Gallery
   });
 }
 
-/** The gallery a view's `.fullScreenCover()` presents, drawn beside the view. */
-export function drawCover(
-  [isPresented, gallery]: Cover,
-  render: (child: Child) => ReactNode,
-): ReactElement {
-  return createElement(GalleryCover, { isPresented, gallery: gallery as Node, render });
-}
+// The gallery a view's `.fullScreenCover()` presents, drawn beside the view.
+defineCover('gallery', (isPresented, gallery, render) =>
+  createElement(GalleryCover, { isPresented, gallery, render }),
+);

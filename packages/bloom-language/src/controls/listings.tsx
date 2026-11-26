@@ -31,7 +31,7 @@ import type {
   MapMarkerState,
   MapPriceMarkerSize,
 } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A listing's details and the markers of a map of listings. */
@@ -165,7 +165,7 @@ export function MapSearchAreaButton(
   return new Node('mapSearchAreaButton', { options }, []);
 }
 
-export const LISTINGS: Record<ListingKind, ControlRenderer> = {
+const LISTINGS: Record<ListingKind, ControlRenderer> = {
   amenityList: product(BloomAmenityList),
   hostCard: product(BloomHostCard),
   listingHeader: product(BloomListingHeader, {
@@ -196,3 +196,4 @@ export const LISTINGS: Record<ListingKind, ControlRenderer> = {
     own: (d) => ({ disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(LISTINGS);

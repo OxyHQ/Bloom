@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { DurationName } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The task list: an agent's tasks, their steps revealed as it works. */
@@ -29,6 +29,7 @@ export function TaskList(
   return new Node('taskList', { tasks, options }, []);
 }
 
-export const TASK_LISTS: Record<TaskListKind, ControlRenderer> = {
+const TASK_LISTS: Record<TaskListKind, ControlRenderer> = {
   taskList: product(BloomTaskList, { durations: ['stepInterval', 'startDelay'] }),
 };
+defineControls(TASK_LISTS);

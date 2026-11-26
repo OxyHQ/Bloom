@@ -7,7 +7,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { PlaybackTimes, PlayButtonSize, PlayButtonStyle } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** Media controls: the play button and the playback scrubber. */
@@ -54,7 +54,7 @@ export function PlaybackProgress(
   return new Node('playbackProgress', { value, duration, options }, []);
 }
 
-export const MEDIA_CONTROLS: Record<MediaControlKind, ControlRenderer> = {
+const MEDIA_CONTROLS: Record<MediaControlKind, ControlRenderer> = {
   playButton: (d) => {
     const { playing, options } = d.node.props as { playing: boolean; options: PlayButtonOptions };
     return d.component(BloomPlayButton, {
@@ -71,3 +71,4 @@ export const MEDIA_CONTROLS: Record<MediaControlKind, ControlRenderer> = {
     own: (d) => ({ timesPosition: d.own('style')?.value, disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(MEDIA_CONTROLS);

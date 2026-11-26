@@ -1,7 +1,7 @@
 import { CompositionBar } from '@oxy.so/bloom/composition-bar';
 import { withAlpha } from '@oxy.so/bloom/theme';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
 

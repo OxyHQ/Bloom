@@ -16,7 +16,7 @@ import type {
   MessageTone,
   SpaceToken,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The message bubbles: one message, the typing bubble and a list grouped by sender. */
@@ -103,7 +103,7 @@ export function MessageList(
 const flag = (d: ControlDraw, kind: 'tail' | 'metaOverlay') =>
   d.own(kind)?.value as boolean | undefined;
 
-export const MESSAGE_BUBBLES: Record<MessageBubbleKind, ControlRenderer> = {
+const MESSAGE_BUBBLES: Record<MessageBubbleKind, ControlRenderer> = {
   messageBubble: product(BloomMessageBubble, {
     slots: ['media'],
     lengths: ['maxWidth'],
@@ -122,3 +122,4 @@ export const MESSAGE_BUBBLES: Record<MessageBubbleKind, ControlRenderer> = {
   }),
   messageList: product(BloomMessageList, { lengths: ['avatarSize'] }),
 };
+defineControls(MESSAGE_BUBBLES);

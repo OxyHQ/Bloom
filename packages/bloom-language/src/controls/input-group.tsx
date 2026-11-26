@@ -5,7 +5,7 @@ import {
 } from '@oxy.so/bloom/input-group';
 
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** A control with things attached to it, one bordered box (Bloom `input-group`). */
 export type InputGroupKind = 'inputGroup' | 'inputGroupAddon';
@@ -45,7 +45,7 @@ const content = (d: ControlDraw) =>
     typeof part === 'string' ? part : d.render(part),
   );
 
-export const INPUT_GROUPS: Record<InputGroupKind, ControlRenderer> = {
+const INPUT_GROUPS: Record<InputGroupKind, ControlRenderer> = {
   inputGroup: (d) => {
     const props = d.props();
     Object.assign(props, {
@@ -64,3 +64,4 @@ export const INPUT_GROUPS: Record<InputGroupKind, ControlRenderer> = {
     return d.component(BloomInputGroupAddon, props, ...content(d));
   },
 };
+defineControls(INPUT_GROUPS);

@@ -2,7 +2,7 @@ import { SpinnerIcon as BloomSpinnerIcon } from '@oxy.so/bloom/loading';
 
 import { Node, type ViewModifiers } from '../node';
 import { type IconSizeToken, type InkToken, resolveIconSize } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** Bloom's morphing loader glyph, alone (`@oxy.so/bloom/loading`). */
 export type SpinnerIconKind = 'spinnerIcon';
@@ -24,7 +24,7 @@ export function SpinnerIcon(): SpinnerIconView {
   return new Node('spinnerIcon', null, []);
 }
 
-export const SPINNER_ICONS: Record<SpinnerIconKind, ControlRenderer> = {
+const SPINNER_ICONS: Record<SpinnerIconKind, ControlRenderer> = {
   // Its box is its `style`, after its own size, as an app writes it.
   spinnerIcon: (d) => {
     const size = d.own('size')?.value as IconSizeToken | undefined;
@@ -35,3 +35,4 @@ export const SPINNER_ICONS: Record<SpinnerIconKind, ControlRenderer> = {
     );
   },
 };
+defineControls(SPINNER_ICONS);

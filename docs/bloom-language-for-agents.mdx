@@ -42,11 +42,21 @@ the `check` blocks); the full lists are in the generated reference:
 
 ## Imports
 
+The root, `@oxy.so/bloom-language`, is the language: its layout, text, media and navigation views,
+modifiers and values. Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>`
+(`/inputs`, `/list`, `/containers`, `/overlays`, `/chart-cards`…), so an app's bundle carries only the
+families it imports. The reference names each node's module ([nodes](bloom-language-nodes.mdx)); the
+codemod writes these imports.
+
 ```ts
 import { view, HStack, VStack, ZStack, Spacer, Group, Text, Icon, Image, Button, Avatar, Badge,
-  Card, ListItem, List, VirtualList, ScrollView, TextField, Toggle, Picker, Option, Segmented, Field,
-  Alert, Dialog, Popover, GlassGroup, regular, clear, defineTokens, defineModifier, defineEnvironment,
-  useEnvironment, useNamespace, useMotionValue, animate, toast, Embed, toElement } from '@oxy.so/bloom-language';
+  ScrollView, regular, clear, defineTokens, defineModifier, defineEnvironment, useEnvironment,
+  useNamespace, useMotionValue, animate, toast, Embed, toElement } from '@oxy.so/bloom-language';
+import { Card } from '@oxy.so/bloom-language/containers';
+import { GlassGroup } from '@oxy.so/bloom-language/glass-group';
+import { TextField, Toggle, Picker, Option, Segmented, Field } from '@oxy.so/bloom-language/inputs';
+import { ListItem, List, VirtualList } from '@oxy.so/bloom-language/list';
+import { Alert, Dialog, Popover } from '@oxy.so/bloom-language/overlays';
 import { layout, screen, Stack, TabView, Sheet, AppLayout, navigate } from '@oxy.so/bloom-language/router';
 import { entity, list, source, action, useEntity, useList } from '@oxy.so/bloom-data';
 ```
@@ -55,7 +65,9 @@ import { entity, list, source, action, useEntity, useList } from '@oxy.so/bloom-
 
 ```tsx check
 import { useState } from 'react';
-import { Button, Field, HStack, Icon, ListItem, ScrollView, Spacer, Text, TextField, Toggle, VStack } from '@oxy.so/bloom-language';
+import { Button, HStack, Icon, ScrollView, Spacer, Text, VStack } from '@oxy.so/bloom-language';
+import { Field, TextField, Toggle } from '@oxy.so/bloom-language/inputs';
+import { ListItem } from '@oxy.so/bloom-language/list';
 import { navigate, screen } from '@oxy.so/bloom-language/router';
 import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
 

@@ -6,7 +6,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken, DurationName } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The AI profile card: an agent's cover, identity, stats and activity. */
@@ -43,7 +43,7 @@ export function AiProfileCard(name: string, options: AiProfileCardOptions = {}):
   return new Node('aiProfileCard', { name, options }, []);
 }
 
-export const AI_PROFILE_CARDS: Record<AiProfileCardKind, ControlRenderer> = {
+const AI_PROFILE_CARDS: Record<AiProfileCardKind, ControlRenderer> = {
   aiProfileCard: product(BloomAiProfileCard, {
     bindings: {
       period: ['period', 'onPeriodChange'],
@@ -54,3 +54,4 @@ export const AI_PROFILE_CARDS: Record<AiProfileCardKind, ControlRenderer> = {
     colors: (d) => ({ color: d.own('tint')?.value as ColorToken | undefined }),
   }),
 };
+defineControls(AI_PROFILE_CARDS);

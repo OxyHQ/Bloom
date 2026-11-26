@@ -5,7 +5,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import { resolveSpace, type ColorToken, type SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A calendar grid coloured by count (Bloom `activity-heatmap`). */
 export type ActivityHeatmapKind = 'activityHeatmap';
@@ -50,7 +50,7 @@ export function ActivityHeatmap(data: ActivityHeatmapDay[]): ActivityHeatmapView
 const space = (token: SpaceToken | undefined) =>
   token === undefined ? undefined : resolveSpace(token);
 
-export const ACTIVITY_HEATMAPS: Record<ActivityHeatmapKind, ControlRenderer> = {
+const ACTIVITY_HEATMAPS: Record<ActivityHeatmapKind, ControlRenderer> = {
   activityHeatmap: (d) => {
     const props = d.props();
     const labels = d.own('labels')?.value as ActivityHeatmapLabels | undefined;
@@ -72,3 +72,4 @@ export const ACTIVITY_HEATMAPS: Record<ActivityHeatmapKind, ControlRenderer> = {
     });
   },
 };
+defineControls(ACTIVITY_HEATMAPS);

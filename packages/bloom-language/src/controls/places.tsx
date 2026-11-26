@@ -32,7 +32,7 @@ import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { BloomSize } from '@oxy.so/bloom/appearance';
 import type { ColorToken, DirectionsDensity, PlaceCardStyle } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product, slot } from './product';
 
 /** A place, its details, a saved list of places, the steps to one, and the field that picks one. */
@@ -170,7 +170,7 @@ export function PlacePicker<Option extends PlacePickerOption = PlacePickerOption
   return new Node('placePicker', { label, binding: place, options }, []);
 }
 
-export const PLACES: Record<PlaceKind, ControlRenderer> = {
+const PLACES: Record<PlaceKind, ControlRenderer> = {
   placeCard: product(BloomPlaceCard, {
     bindings: { favorite: ['favorite', 'onFavoriteChange'] },
     press: true,
@@ -207,3 +207,4 @@ export const PLACES: Record<PlaceKind, ControlRenderer> = {
     own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(PLACES);

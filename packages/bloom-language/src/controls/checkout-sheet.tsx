@@ -5,7 +5,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MethodTitleAlign, TypeRampStep } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The checkout sheet: an order reviewed, paid and confirmed, step by step. */
@@ -36,7 +36,7 @@ export function CheckoutSheet(options: CheckoutSheetOptions): CheckoutSheetView 
   return new Node('checkoutSheet', { options }, []);
 }
 
-export const CHECKOUT_SHEETS: Record<CheckoutSheetKind, ControlRenderer> = {
+const CHECKOUT_SHEETS: Record<CheckoutSheetKind, ControlRenderer> = {
   checkoutSheet: product(BloomCheckoutSheet, {
     slots: ['methodContent', 'footer', 'resultIllustration', 'cardEntry', 'notice'],
     own: (d) => ({
@@ -45,3 +45,4 @@ export const CHECKOUT_SHEETS: Record<CheckoutSheetKind, ControlRenderer> = {
     }),
   }),
 };
+defineControls(CHECKOUT_SHEETS);

@@ -9,7 +9,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken, Density, ListingCardLayout } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A listing in a search's results: its card, the grid of cards, a wishlist. */
@@ -77,7 +77,7 @@ export function WishlistCard(
   return new Node('wishlistCard', { name, photos, options }, []);
 }
 
-export const LISTING_CARDS: Record<ListingCardKind, ControlRenderer> = {
+const LISTING_CARDS: Record<ListingCardKind, ControlRenderer> = {
   listingCard: product(BloomListingCard, {
     bindings: { favorite: ['favorite', 'onFavoriteChange'] },
     slots: ['badge'],
@@ -97,3 +97,4 @@ export const LISTING_CARDS: Record<ListingCardKind, ControlRenderer> = {
     colors: (d) => ({ color: d.own('tint')?.value as ColorToken | undefined }),
   }),
 };
+defineControls(LISTING_CARDS);

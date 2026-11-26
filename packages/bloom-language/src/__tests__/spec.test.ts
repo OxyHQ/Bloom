@@ -31,7 +31,7 @@ import {
   LEADING_PX,
   MOTION,
   type CONTENT_VIEW_MODIFIERS,
-  type NODE_MODIFIERS,
+  type NodeModifiers,
   OPACITY,
   ROTATION,
   SCALE,
@@ -675,7 +675,7 @@ describe('the spec drives the rules', () => {
       [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never;
     }[keyof T];
     type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-    type Of<K extends keyof typeof NODE_MODIFIERS> = (typeof NODE_MODIFIERS)[K][number];
+    type Of<K extends keyof NodeModifiers> = NodeModifiers[K][number];
     // A type error here means a node interface and spec/language.json disagree.
     const checks: [
       Same<MethodsOf<StackView>, Of<'stack'>>,

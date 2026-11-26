@@ -6,7 +6,7 @@ import {
 } from '@oxy.so/bloom/file-upload';
 
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A drag-and-drop file zone with validation, a progress ring and a success state (Bloom `file-upload`). */
 export type FileUploadKind = 'fileUpload';
@@ -39,7 +39,7 @@ export function FileUpload(): FileUploadView {
   return new Node('fileUpload', null, []);
 }
 
-export const FILE_UPLOADS: Record<FileUploadKind, ControlRenderer> = {
+const FILE_UPLOADS: Record<FileUploadKind, ControlRenderer> = {
   fileUpload: (d) => {
     const fileIcon = d.own('fileIcon')?.value;
     const props = d.props();
@@ -60,3 +60,4 @@ export const FILE_UPLOADS: Record<FileUploadKind, ControlRenderer> = {
     return d.component(BloomFileUpload, props);
   },
 };
+defineControls(FILE_UPLOADS);

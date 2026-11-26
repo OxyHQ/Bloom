@@ -1730,7 +1730,7 @@ export const E = ({ open }) => <Dialog open={open} label="E" />;
     );
     // The language's Dialog beside Bloom's, which the dialogs kept JSX still draw.
     expect(result.code).toContain(
-      "import { Dialog as LDialog, VStack, toElement } from '@oxy.so/bloom-language';",
+      "import { VStack, toElement } from '@oxy.so/bloom-language';\nimport { Dialog as LDialog } from '@oxy.so/bloom-language/overlays';",
     );
     // A control's close handler, a handler that may read an argument, and an open no one closes stay JSX.
     expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([

@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { MODULE_OF } from './entries';
 import { type Arg, LANGUAGE_PACKAGE } from './table';
 
 /**
@@ -1103,10 +1104,8 @@ export const SCREEN: ComponentRule = {
   },
 };
 
-const exported = readFileSync(join(LANGUAGE_PACKAGE, 'src/index.ts'), 'utf8');
-
 /** The rule for a Bloom component, when the checked-out language draws its node. */
 export function ruleFor(module: string, imported: string): ComponentRule | undefined {
   const rule = COMPONENT_RULES[`${module}#${imported}`];
-  return rule && new RegExp(`\\b${rule.node}\\b`).test(exported) ? rule : undefined;
+  return rule && MODULE_OF.has(rule.node) ? rule : undefined;
 }
