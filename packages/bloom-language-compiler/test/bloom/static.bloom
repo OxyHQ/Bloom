@@ -1,0 +1,11 @@
+/// A view with nothing reactive: its chain is hoisted to module scope.
+pub view Banner() {
+  body {
+    VStack {
+      Text("Welcome").font("title-3")
+      Text("Nothing to do yet").foreground("muted")
+    }
+    .spacing("sm")
+    .padding("lg")
+  }
+}

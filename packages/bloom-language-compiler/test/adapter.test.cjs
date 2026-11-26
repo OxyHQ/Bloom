@@ -9,6 +9,7 @@ const { vlqMapFromTuples } = require('metro-source-map');
 const { compileModule } = require('../js/compile');
 const { remapMetroMap } = require('../js/remap');
 const { createTransformer } = require('../js/jest');
+const { withBloomLanguage } = require('../js/metro');
 
 const ROW = `import { HStack, Text } from '@oxy.so/bloom-language';
 
@@ -97,4 +98,54 @@ export function Feed() {
   assert.equal(said.length, 1);
   assert.match(said[0], /^warning\[bloom\]: glass in scrolling content/);
   assert.match(said[0], /= docs: https:\/\/\S+\/bloom-language-tour\.mdx#liquid-glass-rules$/m);
+});
+
+test('withBloomLanguage lets Metro resolve .bloom modules, once', () => {
+  const config = withBloomLanguage({ resolver: { sourceExts: ['ts', 'tsx', 'js'] } });
+  assert.deepEqual(config.resolver.sourceExts, ['ts', 'tsx', 'js', 'bloom']);
+  assert.deepEqual(withBloomLanguage(config).resolver.sourceExts, ['ts', 'tsx', 'js', 'bloom']);
+  assert.match(config.transformerPath, /metro-transformer\.js$/);
+});
+
+const COUNTER = `pub view Counter() {
+  @state count = 0
+
+  body {
+    Button(Text("\${count}")).onPress { count += 1 }
+  }
+}
+`;
+
+test('a .bloom module reaches the upstream transformer as TypeScript, with its map inline', () => {
+  const upstream = require.resolve('./support/echo-transformer.cjs');
+  const transformer = createTransformer({ upstream: [upstream, {}] });
+  const result = transformer.process(COUNTER, '/app/Counter.bloom', {});
+  assert.equal(result.filename, '/app/Counter.bloom.ts');
+  assert.match(result.code, /useState/);
+  const inline = /\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,(\S+)\n$/.exec(
+    result.code,
+  );
+  assert.ok(inline, 'an inline source map');
+  const map = JSON.parse(Buffer.from(inline[1], 'base64').toString('utf8'));
+  assert.deepEqual(map.sources, ['/app/Counter.bloom']);
+});
+
+test('a .bloom error is a thrown, rendered diagnostic at its position', () => {
+  const transformer = createTransformer({
+    upstream: [require.resolve('./support/echo-transformer.cjs'), {}],
+  });
+  assert.throws(
+    () =>
+      transformer.process(
+        COUNTER.replace('Button(', 'Button(Text("a")).padding("medium")\n    Button('),
+        '/app/Bad.bloom',
+        {},
+      ),
+    (error) => {
+      assert.match(error.message, /^error\[B\d{4}\]/m);
+      assert.equal(error.filename, '/app/Bad.bloom');
+      assert.equal(typeof error.lineNumber, 'number');
+      return true;
+    },
+  );
 });

@@ -9,6 +9,8 @@ rust-version.workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
+bloom_fmt = { path = "../fmt" }
+bloom_lang = { path = "../lang" }
 bloom_language_compiler = { path = "../compiler" }
 napi.workspace = true
 napi-derive.workspace = true
