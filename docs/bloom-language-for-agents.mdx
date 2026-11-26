@@ -46,7 +46,9 @@ The root, `@oxy.so/bloom-language`, is the language: its layout, text, media and
 modifiers and values. Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>`
 (`/inputs`, `/list`, `/containers`, `/overlays`, `/chart-cards`…), so an app's bundle carries only the
 families it imports. The reference names each node's module ([nodes](bloom-language-nodes.mdx)); the
-codemod writes these imports.
+codemod writes these imports. ESLint's React Compiler rules read a chain as JSX through
+`withLanguageTypes` (`@oxy.so/bloom-language-compiler/eslint`, see
+[getting started](bloom-language-getting-started.mdx)); never silence them for a chain.
 
 ```ts
 import { view, HStack, VStack, ZStack, Spacer, Group, Text, Icon, Image, Button, Avatar, Badge,

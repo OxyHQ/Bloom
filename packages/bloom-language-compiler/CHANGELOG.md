@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `@oxy.so/bloom-language-compiler/eslint`: `withLanguageTypes(require('eslint-plugin-react-hooks'))`, the React Compiler's lint rules told that a view's constructor and its modifiers keep their arguments as JSX keeps its props (the compiler's `moduleTypeProvider` for every constructor the language's entries export, and the constructors allowed for `capitalized-calls`). A handler that reads or writes a ref, given to a modifier or in a constructor's options, and a memoised value given to a constructor, no longer fail `react-hooks/refs` and `react-hooks/preserve-manual-memoization`; a ref read while rendering still does. `languageEnvironment()` is the same types as the compiler's `environment`.
+
 ### Changed
 
 - A view's constructor imported from a family's entry (`import { Rating } from '@oxy.so/bloom-language/rating'`) is a language view, as one from the root is; the entries are generated from the language (`entries.generated.rs`).
