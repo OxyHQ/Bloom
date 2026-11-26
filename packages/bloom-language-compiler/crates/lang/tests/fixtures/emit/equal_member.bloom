@@ -1,0 +1,18 @@
+// `equal(old, new) { … }`: the view's `memo` comparator. `old` and `new` are its
+// props as passed (a prop with a default may be absent).
+
+struct Post {
+  id: String
+  likes: Int
+}
+
+pub view PostRow(post: Post, seen: Int, compact: Bool = false) {
+  equal(old, new) {
+    old.post.id == new.post.id && old.post.likes == new.post.likes && old.compact == new.compact
+  }
+
+  body {
+    Text("${post.id}: ${post.likes} (${seen})")
+      .padding(compact ? 4 : 8)
+  }
+}

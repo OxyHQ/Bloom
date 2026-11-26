@@ -839,6 +839,16 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Let) => Some(Member::Let(self.let_stmt())),
             Tok::Kw(Kw::Fn | Kw::Async) => Some(Member::Fn(self.fn_decl())),
+            Tok::Ident(word) if word == "equal" && matches!(self.nth(1), Tok::P(P::LParen)) => {
+                let keyword = self.bump();
+                let open = self.bump();
+                let old = self.ident("the old props' name");
+                self.expect(P::Comma, "`,` and the new props' name");
+                let new = self.ident("the new props' name");
+                self.expect_close(P::RParen, open);
+                let body = self.block();
+                Some(Member::Equal(EqualDecl { keyword, old, new, span: keyword.to(body.span), body }))
+            }
             Tok::Ident(word) if word == "effect" && matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
                 let keyword = self.bump();
                 let id = if self.at(P::LParen) {

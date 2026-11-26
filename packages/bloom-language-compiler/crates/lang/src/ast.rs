@@ -211,6 +211,7 @@ pub enum Member {
     Let(LetStmt),
     Fn(FnDecl),
     Effect(EffectDecl),
+    Equal(EqualDecl),
 }
 
 impl Member {
@@ -220,8 +221,20 @@ impl Member {
             Member::Let(l) => l.span,
             Member::Fn(f) => f.span,
             Member::Effect(e) => e.span,
+            Member::Equal(e) => e.span,
         }
     }
+}
+
+/// `equal(old, new) { … }`: whether two props are equal for the view (`memo`'s
+/// comparator); `old` and `new` are its props.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EqualDecl {
+    pub keyword: Span,
+    pub old: Ident,
+    pub new: Ident,
+    pub body: Block,
+    pub span: Span,
 }
 
 /// `effect { … }` or `effect(id: value) { … }`: synchronous work after a render whose
