@@ -12413,6 +12413,7 @@ export const NODE_MODIFIERS = {
     "pinning",
     "scrollEdge",
     "ignoresSafeArea",
+    "contentMargins",
     "testID"
   ],
   "scrollArea": [

@@ -317,6 +317,8 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "toolbarView.size(size: controlSize)", constructor: "Toolbar", call: "Toolbar().size(@)", sets: &["controlSize"], tokens: &[], opacity: false },
     TokenParam { label: "pageFooter.pinning(footerPinning)", constructor: "PageFooter", call: "PageFooter().pinning(@)", sets: &["footerPinning"], tokens: &[], opacity: false },
     TokenParam { label: "pageFooter.scrollEdge(scrollEdge)", constructor: "PageFooter", call: "PageFooter().scrollEdge(@)", sets: &["scrollEdge"], tokens: &[], opacity: false },
+    TokenParam { label: "pageFooter.contentMargins(edge)", constructor: "PageFooter", call: "PageFooter().contentMargins(@, v)", sets: &["edge"], tokens: &[], opacity: false },
+    TokenParam { label: "pageFooter.contentMargins(space)", constructor: "PageFooter", call: "PageFooter().contentMargins(@)", sets: &["space"], tokens: &[], opacity: false },
     TokenParam { label: "scrollArea.contentMargins(edge)", constructor: "ScrollArea", call: "ScrollArea().contentMargins(@, v)", sets: &["edge"], tokens: &[], opacity: false },
     TokenParam { label: "scrollArea.contentMargins(space)", constructor: "ScrollArea", call: "ScrollArea().contentMargins(@)", sets: &["space"], tokens: &[], opacity: false },
     TokenParam { label: "scrollArea.spacing(space)", constructor: "ScrollArea", call: "ScrollArea().spacing(@)", sets: &["space"], tokens: &[], opacity: false },

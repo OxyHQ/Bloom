@@ -3286,7 +3286,14 @@
     "pageFooter": {
       "constructors": ["PageFooter"],
       "universal": false,
-      "modifiers": ["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"]
+      "modifiers": [
+        "toolbar",
+        "pinning",
+        "scrollEdge",
+        "ignoresSafeArea",
+        "contentMargins",
+        "testID"
+      ]
     },
     "scrollArea": {
       "constructors": ["ScrollArea"],

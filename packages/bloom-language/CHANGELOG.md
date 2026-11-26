@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `PageFooter().contentMargins(edge, space)`: the footer row's padding, Bloom `PageFooter`'s `contentContainerStyle` (Mention's video replies, `.contentMargins('left', 'sm').contentMargins('right', 'sm')`), one frozen style per set of margins as a scroll's.
+
 ## 1.7.0
 
 ### Compatibility
