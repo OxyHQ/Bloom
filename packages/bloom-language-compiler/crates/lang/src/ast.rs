@@ -156,6 +156,16 @@ pub enum ItemKind {
     /// package's API (ADR 0002, section 4). Lowered before checking
     /// (`crate::modules::lower_externs`): its functions have no body.
     Extern(ExternModule),
+    /// `test("name") { … }`: a test of a `.tests` target (`bloom test`), lowered
+    /// before checking (`crate::testing::lower`).
+    Test(TestDecl),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TestDecl {
+    /// The test's name, as written in the string, and the string's span.
+    pub name: Ident,
+    pub body: Block,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -223,6 +233,7 @@ impl ItemKind {
             ItemKind::Class(c) => &c.name,
             ItemKind::Protocol(p) => &p.name,
             ItemKind::Extern(e) => &e.package,
+            ItemKind::Test(t) => &t.name,
         }
     }
 }

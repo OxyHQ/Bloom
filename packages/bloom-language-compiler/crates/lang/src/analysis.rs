@@ -373,7 +373,8 @@ impl Builder<'_> {
                 | ItemKind::Extension(_)
                 | ItemKind::Class(_)
                 | ItemKind::Protocol(_)
-                | ItemKind::Extern(_) => {}
+                | ItemKind::Extern(_)
+                | ItemKind::Test(_) => {}
             }
         }
         // Every block, closure, arm and `for` is a scope.
@@ -821,6 +822,7 @@ pub fn walk_item<'a>(item: &'a Item, f: &mut dyn FnMut(Node<'a>)) {
                 walk_item(item, f);
             }
         }
+        ItemKind::Test(t) => walk_block(&t.body, f),
         ItemKind::Class(c) => walk_members(&c.body.members, f),
         ItemKind::Protocol(_) => {}
         ItemKind::Extension(e) => walk_members(&e.body.members, f),

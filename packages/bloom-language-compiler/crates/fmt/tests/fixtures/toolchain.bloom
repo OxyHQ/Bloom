@@ -1,0 +1,10 @@
+// A binding module's declarations stay as written; a test keeps its shape.
+extern module "fake-sentry" {
+  @extern("init") public func initialize(_ dsn: String)
+  public let SDK_VERSION: String
+}
+
+test("doubles") {
+  let n = 2 * 2
+  #expect(n == 4)
+}

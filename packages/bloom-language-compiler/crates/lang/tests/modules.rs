@@ -287,3 +287,51 @@ fn bind_writes_a_binding_module_that_checks() {
     let out = build(&root, "Bindings/Sentry/Sentry.bloom", &Options::default());
     assert!(out.diagnostics.is_empty(), "{text}\n{:?}", out.diagnostics);
 }
+
+#[test]
+fn tests_lower_onto_the_runtime() {
+    let manifest = MANIFEST.replace(
+        ".module(\"Feed\")",
+        ".module(\"Feed\"),\n    .tests(\"FeedTests\", dependencies: [\"Feed\"])",
+    );
+    let root = package(
+        "tests",
+        &[
+            ("Package.bloom", &manifest),
+            ("Sources/Feed/Count.bloom", "public func double(_ n: Int) -> Int {\n  n * 2\n}\n"),
+            (
+                "Tests/FeedTests/CountTests.bloom",
+                "import Feed\n\ntest(\"doubles\") {\n  let n = double(2)\n  #expect(n == 4)\n  #expect(n > 3)\n}\n",
+            ),
+            ("Sources/Feed/Stray.bloom", "test(\"misplaced\") {\n  #expect(true)\n}\n"),
+        ],
+    );
+    let out = build(&root, "Tests/FeedTests/CountTests.bloom", &Options::default());
+    assert!(
+        out.diagnostics.is_empty() && out.warnings.is_empty(),
+        "{:?} {:?}",
+        out.diagnostics,
+        out.warnings
+    );
+    let code = &out.code;
+    assert!(code.contains("import * as __testing from \"bloom:testing\";"), "{code}");
+    assert!(code.contains("__testing.expectEqual(n, 4, \"n == 4\")"), "{code}");
+    assert!(code.contains("__testing.expect(n > 3, \"n > 3\")"), "{code}");
+    assert!(code.contains("__testing.test(\"doubles\", __test0)"), "{code}");
+    let stray = build(&root, "Sources/Feed/Stray.bloom", &Options::default());
+    assert_eq!(codes(&stray), ["B0823"]);
+}
+
+#[test]
+fn foreign_types_stay_in_binding_modules() {
+    let root = package(
+        "foreign",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/Raw.bloom", "public func raw(_ x: Foreign<\"unknown\">) -> Int {\n  1\n}\n"),
+            ("Bindings/Sentry/Raw.bloom", "public func raw(_ x: Foreign<\"unknown\">) -> Int {\n  1\n}\n"),
+        ],
+    );
+    assert_eq!(codes(&build(&root, "Sources/Feed/Raw.bloom", &Options::default())), ["B0822"]);
+    assert!(build(&root, "Bindings/Sentry/Raw.bloom", &Options::default()).diagnostics.is_empty());
+}

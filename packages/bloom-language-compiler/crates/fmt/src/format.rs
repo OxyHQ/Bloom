@@ -374,6 +374,12 @@ impl<'a> Formatter<'a> {
             ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
             // A binding module's declarations stay as written (they are curated by hand).
             ItemKind::Extern(_) => return text(self.slice(item.span).trim_end().to_string()),
+            ItemKind::Test(t) => concat(vec![
+                text("test("),
+                text(self.slice(t.name.span).to_string()),
+                text(") "),
+                self.block(&t.body, Layout::Broken),
+            ]),
         };
         concat(vec![modifiers, kind])
     }
