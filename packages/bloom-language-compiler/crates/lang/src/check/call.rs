@@ -1633,7 +1633,8 @@ impl Checker<'_> {
         if name.name == "task" {
             return self.task(expr, call, name, recv, task_allowed);
         }
-        if name.name == "ref"
+        // `.ref(x)`, `.inputRef(x)`: the `@ref` itself, for the node to fill.
+        if (name.name == "ref" || name.name.ends_with("Ref"))
             && let [arg] = call.args.as_slice()
             && matches!(arg.value.kind, ExprKind::Name(_))
         {

@@ -25,3 +25,5 @@ export declare const ListTitle: () => ComposedView;
 export declare function named(u: Author): number;
 export declare function present(u: Author | undefined): number;
 export declare function pictured(u: Author): number;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Player())`), or from TSX as `toElement(Player())`. */
+export declare const Player: () => ComposedView;
