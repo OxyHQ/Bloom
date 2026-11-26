@@ -2099,6 +2099,8 @@ export function transformSource(source: string, options: TransformOptions): File
       const value = attribute.value;
       if (value === null || value === undefined) {
         if (kind === 'pressable' && name === 'disabled') props.push({ name: 'disabled', args: [] });
+        else if ((kind === 'bloomText' || kind === 'rnText') && name === 'selectable')
+          props.push({ name: 'selectable', args: [] });
         else fail(name, `prop:${name}`, 'a boolean prop the codemod does not map');
         continue;
       }
@@ -4225,6 +4227,7 @@ export function transformSource(source: string, options: TransformOptions): File
     let key: Carried | null = null;
     let leading: string | null = null;
     let trailing: string | null = null;
+    let glyph: string | null = null;
     const flags = new Set<string>();
     const ENUM: Record<string, string> = {
       appearance: 'style',
@@ -4304,6 +4307,8 @@ export function transformSource(source: string, options: TransformOptions): File
           args: [roleOf(expression) as Value],
         });
       else if (name === 'leadingIcon' && icon(value)) leading = icon(value) as string;
+      // An icon component is the leading glyph Bloom sizes and colours as `leadingIcon`; alone, the button is square.
+      else if (name === 'icon' && icon(value)) glyph = icon(value) as string;
       else if (name === 'trailingIcon' && icon(value)) trailing = icon(value) as string;
       else if (name === 'accessibilityLabel' && value)
         props.push({
@@ -4324,18 +4329,6 @@ export function transformSource(source: string, options: TransformOptions): File
       } else fail(name, `button:${name}`, `Button's \`${name}\` (or its form here) has no mapping`);
     }
     props.push(...styled);
-    const shape = flags.has('iconOnly')
-      ? flags.has('wide')
-        ? 'pill'
-        : 'circle'
-      : flags.has('grow')
-        ? 'fit'
-        : null;
-    if (flags.has('wide') && !flags.has('iconOnly'))
-      fail('wide', 'button:wide', 'wide without iconOnly');
-    if (flags.has('grow') && flags.has('iconOnly'))
-      fail('grow', 'button:grow', 'grow with iconOnly');
-    if (shape) props.unshift({ name: 'shape', args: [shape] });
     const runs: TextRun[] = [];
     let handed: Handed | undefined;
     for (const child of node.children) {
@@ -4366,6 +4359,31 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (handed !== undefined && (leading || trailing || runs.length))
       fail('children', 'render-children', 'a render function beside a glyph or a label');
+    if (glyph !== null) {
+      if (leading !== null || handed !== undefined)
+        fail('icon', 'button:icon', 'an icon beside a leading icon or a render function');
+      leading = glyph;
+      // No label: Bloom draws it square, as `iconOnly`.
+      if (runs.length === 0) flags.add('iconOnly');
+      if (runs.length === 0 && trailing !== null)
+        fail(
+          'trailingIcon',
+          'button:trailingIcon',
+          'a trailing icon on a square button (Bloom hides it)',
+        );
+    }
+    const shape = flags.has('iconOnly')
+      ? flags.has('wide')
+        ? 'pill'
+        : 'circle'
+      : flags.has('grow')
+        ? 'fit'
+        : null;
+    if (flags.has('wide') && !flags.has('iconOnly'))
+      fail('wide', 'button:wide', 'wide without iconOnly');
+    if (flags.has('grow') && flags.has('iconOnly'))
+      fail('grow', 'button:grow', 'grow with iconOnly');
+    if (shape) props.unshift({ name: 'shape', args: [shape] });
     if (reasons.length) return { reasons };
     return { ir: { type: 'button', leading, trailing, handed, runs, props, key } };
   }

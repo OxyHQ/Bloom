@@ -53,6 +53,13 @@ const rungs: ParityCase[] = (Object.keys(ICON_SIZE) as IconSizeName[]).map((size
   ),
 }));
 
+/** A Bloom glyph with no fill paints primary (on the web its variable, `var(--primary)`). */
+const bare: ParityCase = {
+  name: 'a bare Bloom icon',
+  language: () => toElement(L.Icon(Heart).foreground('primary')),
+  bloom: () => <Heart />,
+};
+
 const inks: ParityCase[] = PALETTE_ROLES.flatMap((role) => [
   {
     name: `foreground ${role}`,
@@ -210,5 +217,5 @@ const translucent: ParityCase[] = [
   },
 ];
 
-export const ICON_CASES: ParityCase[] = [...rungs, ...inks, ...translucent, ...placed];
+export const ICON_CASES: ParityCase[] = [...rungs, bare, ...inks, ...translucent, ...placed];
 export const ICON_CASES_EVERY: ParityCase[] = every;

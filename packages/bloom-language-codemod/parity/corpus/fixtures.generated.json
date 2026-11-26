@@ -3777,6 +3777,124 @@
   "appColors": null
  },
  {
+  "name": "components/TextAndGlyphs.tsx:11",
+  "before": "<Text variant=\"title-1-semibold\" style={{ textAlign: 'center' }}>\n      Welcome\n    </Text>",
+  "after": "toElement(LText('Welcome').textAlign('center').font('title-1').weight('semibold'))",
+  "bindings": {
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/TextAndGlyphs.tsx:19",
+  "before": "<Text variant=\"body-regular\" selectable>\n      falcon\n    </Text>",
+  "after": "toElement(LText('falcon').font('body').selectable())",
+  "bindings": {
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/TextAndGlyphs.tsx:27",
+  "before": "<Button icon={RiAddLine} onPress={() => {}} tone=\"accent\" appearance=\"plain\">\n      Add option\n    </Button>",
+  "after": "toElement(LButton(Icon(RiAddLine), LText('Add option')).onPress(() => {}).tint('accent').style('plain'))",
+  "bindings": {
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "RiAddLine": {
+    "module": "@oxy.so/bloom/icons/RiAddLine",
+    "imported": "RiAddLine"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "toElement",
+   "Icon",
+   "Button: LButton"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/TextAndGlyphs.tsx:34",
+  "before": "<Button icon={RiMore2Line} onPress={() => {}} accessibilityLabel=\"More\" />",
+  "after": "toElement(LButton(Icon(RiMore2Line)).shape('circle').onPress(() => {}).label('More'))",
+  "bindings": {
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "RiMore2Line": {
+    "module": "@oxy.so/bloom/icons/RiMore2Line",
+    "imported": "RiMore2Line"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "toElement",
+   "Icon",
+   "Button: LButton"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/TextAndGlyphs.tsx:38",
+  "before": "<RiArrowRightSLine />",
+  "after": "toElement(Icon(RiArrowRightSLine).foreground('primary'))",
+  "bindings": {
+   "RiArrowRightSLine": {
+    "module": "@oxy.so/bloom/icons/RiArrowRightSLine",
+    "imported": "RiArrowRightSLine"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "toElement",
+   "Icon",
+   "Button: LButton"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/ThreadRoute.tsx:12",
   "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <>\n          <Text className=\"text-sm\">{'⟨0⟩'}</Text>\n          <View className=\"p-4\" />\n        </>\n      </Screen>",
   "after": "Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())",

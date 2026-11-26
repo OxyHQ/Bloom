@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- On the web an icon's fill from a colour role is the role's CSS variable (`var(--primary)`), as a Bloom glyph paints its default, so `Icon(X).foreground('primary')` draws what a bare `<X />` draws; natively it is the theme's colour, as before.
+- The className table maps NativeWind's safe-area classes (`pt-safe`, `pt-safe-offset-6`) to `.safeAreaPadding()`.
+- The web parity harness compares an SVG paint attribute (`fill`, `stroke`) as the colour it draws, its variable resolved.
+
 ## 1.7.0
 
 ### Compatibility

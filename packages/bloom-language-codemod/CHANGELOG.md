@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps `textAlign` (`center`, `left`, `right`) in a Bloom or React Native Text's style to `.textAlign()`, and a Text's `selectable` to `.selectable()`.
+- Maps a Bloom Button's `icon` component to its leading glyph, `Button(Icon(X), Text(label))`; with no label it is `.shape('circle')`, the square button Bloom draws.
+- Maps NativeWind's safe-area classes: `p-safe`, `pt-safe`, `pb-safe`, `px-safe`, `py-safe`, `pl-safe`, `pr-safe` to `.safeAreaPadding(edge)`, and `pt-safe-offset-N`/`pb-safe-offset-N` to `.safeAreaPadding(edge).padding(edge, token)`. A safe-area padding beside another padding of the same side (`p-6 pt-safe`) is a reason (`padding-overlap`): NativeWind replaces the side, the language adds the two.
+- The sample app's `TextAndGlyphs.tsx` joins the parity corpus. The safe-area classes are proven by unit tests only: NativeWind's web form writes `env(safe-area-inset-*)` where the language writes the measured insets (Allo gap 22), and the corpus's native NativeWind draws no `pt-safe` padding under Bloom's Jest mock of the insets.
+
 ## 0.5.0
 
 ### Compatibility

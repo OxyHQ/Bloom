@@ -207,6 +207,22 @@ function customProperties(list: Declarations, into: Record<string, string>): voi
   for (const [name, text] of list) if (name.startsWith('--')) into[name] = text;
 }
 
+/** SVG presentation attributes that take a colour (a glyph's `fill`), which may name a variable. */
+const PAINT_ATTRIBUTES = new Set(['fill', 'stroke', 'color', 'stop-color', 'flood-color']);
+
+/**
+ * A paint attribute as the colour it draws: a variable resolved in `scope`, as
+ * a declaration's is (a Bloom glyph fills with `var(--primary)`, an app's with
+ * the theme's colour), then serialised as CSS writes it, so `#fff`,
+ * `rgb(255 255 255)` and the variable naming white are one value.
+ */
+function paintAttribute(text: string, scope: Record<string, string>): string {
+  const value = resolve(text, scope);
+  const probe = document.createElement('div');
+  probe.style.setProperty('color', value);
+  return probe.style.getPropertyValue('color') || value;
+}
+
 function walk(element: Element, rules: CSSStyleRule[], inherited: Record<string, string>): DomTree {
   const own = declared(element, rules);
   const scope = { ...inherited };
@@ -217,7 +233,9 @@ function walk(element: Element, rules: CSSStyleRule[], inherited: Record<string,
     a.name < b.name ? -1 : 1,
   )) {
     if (attribute.name === 'class' || attribute.name === 'style') continue;
-    attributes[attribute.name] = reactIds(attribute.value);
+    attributes[attribute.name] = PAINT_ATTRIBUTES.has(attribute.name)
+      ? paintAttribute(reactIds(attribute.value), scope)
+      : reactIds(attribute.value);
   }
   const children: (DomTree | string)[] = [];
   for (const child of Array.from(element.childNodes)) {

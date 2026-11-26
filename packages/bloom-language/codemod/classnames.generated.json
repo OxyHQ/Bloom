@@ -5462,8 +5462,8 @@
   "pt-safe": {
    "count": 3,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".safeAreaPadding('top')"
   },
   "py-0": {
    "count": 3,
@@ -6910,14 +6910,14 @@
   "pb-safe": {
    "count": 2,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".safeAreaPadding('bottom')"
   },
   "pb-safe-offset-6": {
    "count": 2,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".safeAreaPadding('bottom').padding('bottom', '2xl')"
   },
   "pb-space-4": {
    "count": 2,
@@ -7012,8 +7012,8 @@
   "pt-safe-offset-6": {
    "count": 2,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".safeAreaPadding('top').padding('top', '2xl')"
   },
   "pt-space-20": {
    "count": 2,

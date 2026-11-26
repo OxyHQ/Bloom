@@ -85,7 +85,10 @@ import { Switch as I74 } from 'bloom-22/switch';
 import { RiArrowRightLine as I75 } from 'bloom-22/icons/RiArrowRightLine';
 import { RiArrowRightLine as I76 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { PageHeader as I77 } from 'bloom-22/page-header';
-import { RiLinksLine as I78 } from '@oxy.so/bloom/icons/RiLinksLine';
+import { RiAddLine as I78 } from '@oxy.so/bloom/icons/RiAddLine';
+import { RiMore2Line as I79 } from '@oxy.so/bloom/icons/RiMore2Line';
+import { RiArrowRightSLine as I80 } from '@oxy.so/bloom/icons/RiArrowRightSLine';
+import { RiLinksLine as I81 } from '@oxy.so/bloom/icons/RiLinksLine';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });
@@ -1225,6 +1228,42 @@ export const CASES = [
     after: () => { const Card = I11; const { HStack, Text: LText, toElement, Embed, Card: LCard } = L;  return (toElement(LCard(Embed(<Hole n="0" />)))); },
   },
   {
+    name: "components/TextAndGlyphs.tsx:11",
+    bloom22: false,
+    before: () => { const Text = I1; return (<Text variant="title-1-semibold" style={{ textAlign: 'center' }}>
+      Welcome
+    </Text>); },
+    after: () => { const Text = I1; const { Text: LText } = L;  return (toElement(LText('Welcome').textAlign('center').font('title-1').weight('semibold'))); },
+  },
+  {
+    name: "components/TextAndGlyphs.tsx:19",
+    bloom22: false,
+    before: () => { const Text = I1; return (<Text variant="body-regular" selectable>
+      falcon
+    </Text>); },
+    after: () => { const Text = I1; const { Text: LText, toElement } = L;  return (toElement(LText('falcon').font('body').selectable())); },
+  },
+  {
+    name: "components/TextAndGlyphs.tsx:27",
+    bloom22: false,
+    before: () => { const Button = I22; const RiAddLine = I78; return (<Button icon={RiAddLine} onPress={() => {}} tone="accent" appearance="plain">
+      Add option
+    </Button>); },
+    after: () => { const Button = I22; const RiAddLine = I78; const { Text: LText, toElement, Icon, Button: LButton } = L;  return (toElement(LButton(Icon(RiAddLine), LText('Add option')).onPress(() => {}).tint('accent').style('plain'))); },
+  },
+  {
+    name: "components/TextAndGlyphs.tsx:34",
+    bloom22: false,
+    before: () => { const Button = I22; const RiMore2Line = I79; return (<Button icon={RiMore2Line} onPress={() => {}} accessibilityLabel="More" />); },
+    after: () => { const Button = I22; const RiMore2Line = I79; const { Text: LText, toElement, Icon, Button: LButton } = L;  return (toElement(LButton(Icon(RiMore2Line)).shape('circle').onPress(() => {}).label('More'))); },
+  },
+  {
+    name: "components/TextAndGlyphs.tsx:38",
+    bloom22: false,
+    before: () => { const RiArrowRightSLine = I80; return (<RiArrowRightSLine />); },
+    after: () => { const RiArrowRightSLine = I80; const { Text: LText, toElement, Icon, Button: LButton } = L;  return (toElement(Icon(RiArrowRightSLine).foreground('primary'))); },
+  },
+  {
     name: "components/ThreadRoute.tsx:12",
     bloom22: true,
     before: () => { const Screen = I20; const PageHeader = I77; const Text = I59; const View = I0; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
@@ -1272,10 +1311,10 @@ export const CASES = [
   {
     name: "components/Toolbar.tsx:9",
     bloom22: false,
-    before: () => { const Button = I22; const RiLinksLine = I78; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
+    before: () => { const Button = I22; const RiLinksLine = I81; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
       {(color) => <RiLinksLine width={20} height={20} fill={color} />}
     </Button>); },
-    after: () => { const Button = I22; const RiLinksLine = I78; const { Icon, Group, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
+    after: () => { const Button = I22; const RiLinksLine = I81; const { Icon, Group, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
   },
   {
     name: "components/Toolbar.tsx:16",

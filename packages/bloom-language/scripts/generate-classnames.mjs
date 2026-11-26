@@ -492,6 +492,19 @@ function resolve(utility) {
   if ((m = /^aspect-(square|video)$/.exec(utility)))
     return structure(`AspectRatio(${m[1] === 'square' ? '1' : '16 / 9'}, …)`);
   if (/^grid-cols-|^grid$|^col-|^row-|^grid-/.test(utility)) return structure('Grid(…).columns(n)');
+  // NativeWind's safe-area padding: the device's inset on its edges (`pt-safe`), plus a space
+  // beyond it on the top or bottom (`pt-safe-offset-6`), which the language adds to the inset.
+  if ((m = /^p([xytblr]?)-safe(?:-(offset|or)-(.+))?$/.exec(utility))) {
+    const [, side, form, value] = m;
+    const edge = EDGE[side];
+    const padded = side === '' ? '.safeAreaPadding()' : `.safeAreaPadding('${edge}')`;
+    if (form === undefined) return mapped(padded);
+    if (form === 'or')
+      return modifier(`${padded} with a least padding (the larger of the inset and a space)`);
+    if (edge !== 'top' && edge !== 'bottom')
+      return modifier(`${padded} with a padding beyond it on a side other than the top or bottom`);
+    return space(value, (t) => `${padded}.padding('${edge}', ${t})`);
+  }
   // Spacing.
   if ((m = /^(-?)(p|m)([xytbserl]?)-(.+)$/.exec(utility))) {
     const [, negative, kind, edge, value] = m;

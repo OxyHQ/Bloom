@@ -24,14 +24,14 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
+| Maps to a modifier and a token | 1094 | 47367 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 28 | 407 | 0.8% |
 | Needs a named token (raw value) | 258 | 608 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 427 | 1546 | 2.9% |
+| An app’s own class | 423 | 1537 | 2.9% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
@@ -648,6 +648,7 @@ when the fill is a role's colour.
 | `ps-space-16` | .padding('leading', 'lg') | 3 | 2 |
 | `pt-0` | .padding('top', 'none') | 3 | 2 |
 | `pt-14` | .padding('top', '56') | 3 | 2 |
+| `pt-safe` | .safeAreaPadding('top') | 3 | 2 |
 | `ring-offset-0` | .ring(role, width, 'none') | 3 | 2 |
 | `rounded-[12px]` | .corner('md') | 3 | 3 |
 | `size-14` | .frame({ width: '56', height: '56' }) | 3 | 2 |
@@ -710,10 +711,13 @@ when the fill is a role's colour.
 | `opacity-75` | .opacity('75') | 2 | 2 |
 | `outline` | .ring(role, 'thin') | 2 | 2 |
 | `overflow-visible` | .clipped(false) | 2 | 2 |
+| `pb-safe` | .safeAreaPadding('bottom') | 2 | 2 |
+| `pb-safe-offset-6` | .safeAreaPadding('bottom').padding('bottom', '2xl') | 2 | 2 |
 | `pr-6` | .padding('right', '2xl') | 2 | 2 |
 | `pt-10` | .padding('top', '4xl') | 2 | 2 |
 | `pt-12` | .padding('top', '48') | 2 | 2 |
 | `pt-7` | .padding('top', '28') | 2 | 2 |
+| `pt-safe-offset-6` | .safeAreaPadding('top').padding('top', '2xl') | 2 | 2 |
 | `px-7` | .padding('horizontal', '28') | 2 | 2 |
 | `px-[14px]` | .padding('horizontal', '14') | 2 | 2 |
 | `right-6` | .position({ right: '2xl' }) | 2 | 2 |
@@ -968,7 +972,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `bottom` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
 | `left` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `peer` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
-| `pt-safe` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `whitespace-pre` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
 | `auto-rows-min` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `bg-background-secondary` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
@@ -987,9 +990,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `max-h-(--radix-dropdown-menu-content-available-height)` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `max-w-(--skeleton-width)` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `max-w-[90%]` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
-| `pb-safe` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
-| `pb-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
-| `pt-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `rounded-[inherit]` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `text-8xl` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `touch-none` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
