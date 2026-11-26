@@ -1316,7 +1316,8 @@ impl<'a> Emitter<'a> {
                 let root = self.local_name(local);
                 let path = |base: &str, seg: &Seg| match seg {
                     Seg::Field(f) => member_path(base, f),
-                    Seg::Index(i) => format!("{base}[{i}]"),
+                    // The element is there (Swift traps when it is not): TS reads it non-null.
+                    Seg::Index(i) => format!("{base}[{i}]!"),
                 };
                 let mut current = root.clone();
                 for seg in &segs {

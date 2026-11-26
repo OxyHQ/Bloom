@@ -42,8 +42,8 @@ self.$set("isLoading", false);
 export function FeedModel$like(self: FeedModel, post: Post): void {
 for (const [i, p] of self.posts.entries()) {
 if (p.id === post.id) {
-self.$set("posts", $at(self.posts, i, { ...self.posts[i], isLiked: true }));
-self.$set("posts", $at(self.posts, i, { ...self.posts[i], likes: self.posts[i].likes + (1) }));
+self.$set("posts", $at(self.posts, i, { ...self.posts[i]!, isLiked: true }));
+self.$set("posts", $at(self.posts, i, { ...self.posts[i]!, likes: self.posts[i]!.likes + (1) }));
 }
 }
 }
