@@ -75,7 +75,8 @@ fn is_test(name: &str) -> bool {
 pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, String> {
     let files = modules(paths, false)?;
     let root = std::env::current_dir().ok();
-    let lang = bloom_lang::Options { root: root.clone(), ..Default::default() };
+    // The migration mode (ADR 0002, section 4): a migrated module may still import TS by path.
+    let lang = bloom_lang::Options { root: root.clone(), allow_ts_imports: true, ..Default::default() };
     let shown = |path: &Path| -> String {
         let cwd = root.clone().unwrap_or_default();
         path.strip_prefix(&cwd).unwrap_or(path).to_string_lossy().into_owned()
@@ -112,13 +113,13 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
             std::fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))?;
         }
     }
-    let written: Vec<PathBuf> = files
+    let written: Vec<(PathBuf, Option<String>)> = files
         .iter()
         .zip(&entries)
         .filter(|(_, e)| {
             options.write && matches!(e.migration.status, Status::Migrated | Status::NeedsReview)
         })
-        .map(|(p, _)| p.clone())
+        .map(|(p, e)| (p.clone(), e.migration.default_export.clone()))
         .collect();
     if !written.is_empty()
         && let Some(root) = &root
@@ -145,8 +146,9 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
 
 /// Points the TS importers of `migrated` at their `.bloom` modules; returns what
 /// still needs a person (JSX that draws a module that is now a view).
-fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, String> {
-    let stems: Vec<PathBuf> = migrated.iter().map(|p| normalize(&root.join(p.with_extension("")))).collect();
+fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Result<Vec<String>, String> {
+    let stems: Vec<PathBuf> =
+        migrated.iter().map(|(p, _)| normalize(&root.join(p.with_extension("")))).collect();
     let mut notes = Vec::new();
     for file in modules(&[root.to_path_buf()], true)? {
         let Ok(source) = std::fs::read_to_string(&file) else { continue };
@@ -171,8 +173,13 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
             };
             if is_specifier
                 && let Some(target) = target
-                && stems.contains(&target)
+                && let Some(index) = stems.iter().position(|s| s == &target)
             {
+                // 2.0 exports a TS default export by name: `import X from` becomes
+                // `import { Name as X } from`.
+                if let Some(name) = &migrated[index].1 {
+                    named_default_import(&mut out, name);
+                }
                 out.push_str(spec);
                 out.push_str(".bloom");
                 changed = true;
@@ -203,6 +210,30 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
         }
     }
     Ok(notes)
+}
+
+/// The `import` statement `out` ends inside (at its specifier's opening quote), with its
+/// default import `X` (`import X from`, `import X, { … } from`) as `{ name as X }`.
+fn named_default_import(out: &mut String, name: &str) {
+    let Some(start) = out.rfind("import") else { return };
+    let Some(from) = out[start..].rfind("from").map(|i| start + i) else { return };
+    let clause = out[start + "import".len()..from].trim().to_string();
+    if clause.starts_with('{') || clause.starts_with('*') || clause.starts_with("type ") {
+        return;
+    }
+    let (default, rest) = match clause.split_once(',') {
+        Some((d, r)) => (d.trim().to_string(), r.trim().to_string()),
+        None => (clause.clone(), String::new()),
+    };
+    if default.is_empty() {
+        return;
+    }
+    let named = if default == name { name.to_string() } else { format!("{name} as {default}") };
+    let clause = match rest.strip_prefix('{').and_then(|r| r.strip_suffix('}')) {
+        Some(inner) if !inner.trim().is_empty() => format!("{{ {named}, {} }}", inner.trim()),
+        _ => format!("{{ {named} }}"),
+    };
+    out.replace_range(start..from, &format!("import {clause} "));
 }
 
 /// The local names an `import … from` statement binds (`import X`, `{ A, B as C }`).

@@ -341,9 +341,20 @@ impl<'a> Formatter<'a> {
     fn item(&mut self, item: &Item) -> Doc {
         let publicize = self.migrate.as_ref().is_some_and(|m| m.publicize.contains(&item.kind.name().name))
             && item.modifiers.visibility_span.is_none();
+        // A screen or a layout is its route file's default export in 2.0 without `default`.
+        let visibility = match &item.kind {
+            ItemKind::View(v)
+                if self.migrating_now()
+                    && item.visibility == Visibility::PubDefault
+                    && v.kind != ViewKind::View =>
+            {
+                Visibility::Public
+            }
+            _ => item.visibility,
+        };
         let modifiers = concat(vec![
             if publicize { text("public ") } else { Doc::Nil },
-            self.modifiers(item.visibility, &item.modifiers, false),
+            self.modifiers(visibility, &item.modifiers, false),
         ]);
         let kind = match &item.kind {
             ItemKind::Struct(StructDecl { name, generics: g, surface: Some(body), .. }) => {
