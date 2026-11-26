@@ -582,7 +582,9 @@ impl<'o> Checker<'o> {
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
             (Ty::Strings(_), Ty::Str) => true,
-            (Ty::Strings(x), Ty::Strings(y)) => x.values.iter().all(|v| ui::token_ok(y, v)),
+            (Ty::Strings(x), Ty::Strings(y)) => {
+                Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
+            }
             (Ty::Adt(d1, x), Ty::Partial(inner)) => match self.resolve(inner) {
                 Ty::Adt(d2, y) => *d1 == d2 && x.iter().zip(&y).all(|(x, y)| self.unify(x, y)),
                 _ => false,
