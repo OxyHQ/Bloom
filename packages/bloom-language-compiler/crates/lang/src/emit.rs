@@ -364,6 +364,12 @@ fn helper_text(name: &str) -> &'static str {
         "removing" => {
             "function $removing<T>(items: readonly T[], at: number): readonly T[] {\n  return [...items.slice(0, at), ...items.slice(at + 1)];\n}"
         }
+        "mapDeleting" => {
+            "function $mapDeleting<K, V>(map: ReadonlyMap<K, V>, key: K): ReadonlyMap<K, V> {\n  const copy = new Map(map);\n  copy.delete(key);\n  return copy;\n}"
+        }
+        "setDeleting" => {
+            "function $setDeleting<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {\n  const copy = new Set(set);\n  copy.delete(value);\n  return copy;\n}"
+        }
         "without" => {
             "function $without<V>(map: Readonly<Record<string, V>>, key: string): Readonly<Record<string, V>> {\n  const { [key]: _, ...rest } = map;\n  return rest;\n}"
         }
@@ -460,6 +466,8 @@ impl<'a> Emitter<'a> {
             Ty::JsError => "Error".into(),
             Ty::List(t) => format!("readonly {}[]", self.ts_operand(t)),
             Ty::Map(v) => format!("Readonly<Record<string, {}>>", self.ts_type(v)),
+            Ty::JsMap(k, v) => format!("ReadonlyMap<{}, {}>", self.ts_type(k), self.ts_type(v)),
+            Ty::Set(t) => format!("ReadonlySet<{}>", self.ts_type(t)),
             Ty::Tuple(items) => {
                 format!("readonly [{}]", items.iter().map(|t| self.ts_type(t)).collect::<Vec<_>>().join(", "))
             }
@@ -1670,6 +1678,11 @@ impl<'a> Emitter<'a> {
                     (Recv::Map, "keys") => object.wrap("Object.keys(", ")"),
                     (Recv::Map, "values") => object.wrap("Object.values(", ")"),
                     (Recv::Map, "entries") => object.wrap("Object.entries(", ")"),
+                    (Recv::JsMap | Recv::Set, "count") => member(object, "size"),
+                    (Recv::JsMap | Recv::Set, "isEmpty") => member(object, "size").wrap("(", " === 0)"),
+                    (Recv::JsMap | Recv::Set, "keys" | "values" | "entries") => {
+                        object.wrap("[...", &format!(".{prop}()]"))
+                    }
                     (Recv::Result, _) => member(object, "ok"),
                     _ => member(object, prop),
                 }
@@ -1926,6 +1939,19 @@ impl<'a> Emitter<'a> {
                 }
                 let mut out = self.operand(&call.callee);
                 out.f(Frag::join(values, ", ").wrap(open, ")"));
+                out
+            }
+            CallRes::Collection(ty) => {
+                let types = match &ty {
+                    Ty::JsMap(k, v) => format!("Map<{}, {}>", self.ts_type(k), self.ts_type(v)),
+                    Ty::Set(t) => format!("Set<{}>", self.ts_type(t)),
+                    _ => "Map".into(),
+                };
+                let mut out = Frag::at(call.callee.span, format!("new {types}("));
+                if let Some(arg) = call.args.first() {
+                    out.f(self.expr(&arg.value));
+                }
+                out.s(")");
                 out
             }
             CallRes::Struct(def) => self.construct(call, def, false),
@@ -2367,6 +2393,23 @@ impl<'a> Emitter<'a> {
                 helper(self, if name == "inserting" { "inserting" } else { "removing" }, values)
             }
             (Recv::List, "joined") => call_on(object, "join", args),
+            (Recv::JsMap, "get") => call_on(object, "get", args),
+            (Recv::JsMap | Recv::Set, "contains") => call_on(object, "has", args),
+            (Recv::JsMap, "setting") => {
+                let mut out = object.wrap("new Map(", ")");
+                out.s(".set").f(Frag::join(args, ", ").wrap("(", ")"));
+                out
+            }
+            (Recv::Set, "inserting") => {
+                let mut out = object.wrap("new Set(", ")");
+                out.s(".add").f(Frag::join(args, ", ").wrap("(", ")"));
+                out
+            }
+            (Recv::JsMap | Recv::Set, _) => {
+                let mut values = vec![object];
+                values.extend(args);
+                helper(self, if recv == Recv::JsMap { "mapDeleting" } else { "setDeleting" }, values)
+            }
             (Recv::Map, "setting") => {
                 let mut args = args.into_iter();
                 let mut out = Frag::of("{ ...");
@@ -2422,6 +2465,9 @@ impl<'a> Emitter<'a> {
                     let mut iter = self.operand(&f.iter);
                     if matches!(iter_ty, Ty::Map(_)) {
                         iter = iter.wrap("Object.entries(", ")");
+                    } else if matches!(iter_ty, Ty::JsMap(..) | Ty::Set(_)) {
+                        // A builder `for` maps over an array.
+                        iter = iter.wrap("[...", "]");
                     }
                     let target = self.binding_target(&f.pattern);
                     self.bufs.push(Vec::new());

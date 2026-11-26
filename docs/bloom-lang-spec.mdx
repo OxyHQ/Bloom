@@ -184,7 +184,8 @@ Three grammar rules keep it unambiguous, as in Swift:
 | `Bool`, `String`, `Unit` | | boolean, string, `undefined` | `boolean`, `string`, `void` |
 | `[T]` | immutable list | frozen-in-dev JS array | `readonly T[]` |
 | `[String: V]` | immutable dictionary | plain object | `Readonly<Record<string, V>>` |
-| `[K: V]` (other K) | immutable map | `Map` | `ReadonlyMap<K, V>` |
+| `Map<K, V>` | immutable map, any key | `Map` | `ReadonlyMap<K, V>` |
+| `Set<T>` | immutable set | `Set` | `ReadonlySet<T>` |
 | `(A, B)` | tuple | array | `readonly [A, B]` |
 | `T?` | `Option<T>` | the value or `undefined` | `T \| undefined` |
 | `Result<T, E>` | success or error | `{ ok: true, value } \| { ok: false, error }` | the same union |
@@ -539,10 +540,18 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)`, `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
 | `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `[i] -> T?` |
-| `[K: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
+| `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
+
+`[k: v]` is the dictionary literal (string keys). `Map` and `Set` are the prelude's JS
+collections: a method that changes one gives a new one (`setting`, `inserting`, `removing`
+copy it), so a `var` or `@state` holding one is assigned as any other value
+(`picked = picked.inserting(id)`), and they have no `==` (B0210). A TS `Map`/`ReadonlyMap`/
+`Set`/`ReadonlySet` reads as one.
 
 ## 13. Diagnostics
 
