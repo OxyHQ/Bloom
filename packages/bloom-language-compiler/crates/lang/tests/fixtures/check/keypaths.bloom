@@ -1,0 +1,25 @@
+struct Prefs {
+  likes: Bool = true
+  name: String = ""
+}
+
+fn isOn(prefs: Prefs, key: KeyPath<Prefs, Bool>) -> Bool {
+  prefs[key]
+}
+
+fn wrongField(prefs: Prefs) -> Bool {
+  isOn(prefs, \.name)
+}
+
+fn unknownField(prefs: Prefs) -> Bool {
+  isOn(prefs, \.lieks)
+}
+
+fn noRoot() -> Int {
+  let key = \.likes
+  1
+}
+
+fn notAStruct(key: KeyPath<Int, Bool>) -> Int {
+  1
+}
