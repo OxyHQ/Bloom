@@ -2237,6 +2237,15 @@ fn visit_calls(expr: &Expr, f: &mut dyn FnMut(ExprId)) {
     }
 }
 
+/// Whether `text` names `name` as a whole word.
+fn mentions(text: &str, name: &str) -> bool {
+    let word = |c: char| c.is_alphanumeric() || c == '_' || c == '$';
+    text.match_indices(name).any(|(at, _)| {
+        !text[..at].chars().next_back().is_some_and(word)
+            && !text[at + name.len()..].chars().next().is_some_and(word)
+    })
+}
+
 /// Whether the dependency `outer` changes whenever `inner` does (`auth` covers `auth.x`).
 fn covers(outer: &str, inner: &str) -> bool {
     outer == inner
@@ -2776,6 +2785,10 @@ impl<'a> Emitter<'a> {
         self.import_name(module, wrapper);
         let mut out = props_decl;
         out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("});\n");
+        // `pub default view`: the module's default export too.
+        if v.kind == ViewKind::View && item.visibility == Visibility::PubDefault {
+            out.s(&format!("export default {name};\n"));
+        }
         out
     }
 
@@ -3048,9 +3061,16 @@ impl<'a> Emitter<'a> {
                         ViewKind::View => {
                             uses_composed = true;
                             out.push_str(&format!(
+                                "/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack({}())`), or from TSX as `toElement({}())`. */\n",
+                                v.name.name, v.name.name
+                            ));
+                            out.push_str(&format!(
                                 "export declare const {}: ({props}) => ComposedView;\n",
                                 v.name.name
                             ));
+                            if item.visibility == Visibility::PubDefault {
+                                out.push_str(&format!("export default {};\n", v.name.name));
+                            }
                         }
                         _ => {
                             let props_ty =
@@ -3061,22 +3081,71 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
+        // The private types an exported declaration names are declared (not exported).
+        let mut private = String::new();
+        loop {
+            let mut added = false;
+            for item in &file.items {
+                if item.visibility != Visibility::Private {
+                    continue;
+                }
+                let name = item.kind.name().name.clone();
+                let declared = mentions(&private, &format!("interface {name}"))
+                    || mentions(&private, &format!("type {name}"));
+                if declared || !(mentions(&out, &name) || mentions(&private, &name)) {
+                    continue;
+                }
+                let text = match &item.kind {
+                    ItemKind::Struct(s) => self.struct_decl(s, "").text,
+                    ItemKind::Enum(e) => self.enum_decl(e, "").text,
+                    ItemKind::Alias(_) => self.item(0, item).text,
+                    _ => continue,
+                };
+                private.push_str(&text);
+                added = true;
+            }
+            if !added {
+                break;
+            }
+        }
+        let out = private + &out;
+        // Only what the declarations name, imported as types.
         let mut header = String::new();
         for import in &file.imports {
-            header.push_str(&self.import(import).text);
+            let ImportKind::Named(specs) = &import.kind else { continue };
+            let used: Vec<String> = specs
+                .iter()
+                .filter(|spec| mentions(&out, &spec.local().name))
+                .map(|spec| {
+                    if spec.local().name == spec.name.name {
+                        spec.name.name.clone()
+                    } else {
+                        format!("{} as {}", spec.name.name, spec.local().name)
+                    }
+                })
+                .collect();
+            if !used.is_empty() {
+                header.push_str(&format!(
+                    "import type {{ {} }} from {};\n",
+                    used.join(", "),
+                    string_literal(&import.source)
+                ));
+            }
         }
         if uses_composed {
             self.type_imports.entry(LANGUAGE.into()).or_default().insert("ComposedView".into());
         }
         for (module, names) in &self.type_imports {
-            let names: Vec<&str> = names.iter().map(String::as_str).collect();
-            header.push_str(&format!(
-                "import type {{ {} }} from {};\n",
-                names.join(", "),
-                string_literal(module)
-            ));
+            let names: Vec<&str> = names.iter().map(String::as_str).filter(|n| mentions(&out, n)).collect();
+            if !names.is_empty() {
+                header.push_str(&format!(
+                    "import type {{ {} }} from {};\n",
+                    names.join(", "),
+                    string_literal(module)
+                ));
+            }
         }
-        if self.uses_result {
+        if mentions(&out, "$Result") {
             header.push_str("type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };\n");
         }
         header + &out

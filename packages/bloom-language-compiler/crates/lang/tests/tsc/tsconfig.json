@@ -26,5 +26,5 @@
       "@oxy.so/core/logger": ["../fixtures/stubs/oxy-logger.d.ts"]
     }
   },
-  "include": ["out/*.ts"]
+  "include": ["out/*.ts", "out/*.d.ts"]
 }

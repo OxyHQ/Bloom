@@ -1,11 +1,2 @@
-import { useTranslation } from "react-i18next";
-import { OxyAuthPrompt, useAuth } from "@oxy.so/services/ui/client";
-import { logger } from "@oxy.so/core/logger";
-import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
-import { useSettingsRouter } from "@/context/MentionSettingsContext";
-import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
-import type { Child } from "@oxy.so/bloom-language";
-import type { ComponentProps } from "react";
-type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 declare const _default: import("react").ComponentType<{}>;
 export default _default;
