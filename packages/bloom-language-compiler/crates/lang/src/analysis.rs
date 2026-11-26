@@ -6,7 +6,8 @@
 //! compile pays nothing for it; only the expected types are recorded during
 //! the check, and only when analysing.
 
-use std::collections::{BTreeSet, HashMap};
+use rustc_hash::FxHashMap as HashMap;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use crate::Options;
@@ -304,10 +305,10 @@ pub fn build(
         path,
         options,
         out: Analysis { defs: ck.defs.clone(), source: source.to_string(), ..Analysis::default() },
-        ids: HashMap::new(),
-        full: HashMap::new(),
+        ids: HashMap::default(),
+        full: HashMap::default(),
         containers: vec![file.span],
-        imports: HashMap::new(),
+        imports: HashMap::default(),
     };
     b.declarations();
     b.definitions();

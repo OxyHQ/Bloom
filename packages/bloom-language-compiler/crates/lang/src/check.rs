@@ -6,7 +6,8 @@
 pub(crate) mod call;
 mod exhaust;
 
-use std::collections::{BTreeSet, HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -293,10 +294,20 @@ pub struct Checker<'o> {
     reported: HashSet<Span>,
     /// When analysing for an editor: each checked expression's expected type.
     pub expected: Option<Vec<(Span, Ty)>>,
+    /// Whether every typed span is kept (for hover and analysis; a compile does not read them).
+    spans: bool,
 }
 
 pub fn check(file: &File, source: &str, filename: &str, options: &Options) -> CheckResult {
     let mut checker = Checker::new(source, filename, options);
+    checker.module(file);
+    checker.finish()
+}
+
+/// Checks `file` for the emitter, without the typed spans hover reads.
+pub fn check_for_emit(file: &File, source: &str, filename: &str, options: &Options) -> CheckResult {
+    let mut checker = Checker::new(source, filename, options);
+    checker.spans = false;
     checker.module(file);
     checker.finish()
 }
@@ -329,25 +340,26 @@ impl<'o> Checker<'o> {
             options,
             out: CheckResult::default(),
             vars: Vec::new(),
-            scopes: vec![HashMap::new()],
-            type_names: HashMap::new(),
+            scopes: vec![HashMap::default()],
+            type_names: HashMap::default(),
             generics: Vec::new(),
             frames: vec![Frame {
                 ret: Ty::Unit,
                 is_async: false,
                 closure: false,
-                written: HashSet::new(),
+                written: HashSet::default(),
                 task: false,
                 render: false,
                 spawn: false,
             }],
-            ts_named: HashMap::new(),
+            ts_named: HashMap::default(),
             view: None,
             hook_allowed: false,
             was_hook: false,
             task_allowed: false,
-            reported: HashSet::new(),
+            reported: HashSet::default(),
             expected: None,
+            spans: true,
         }
     }
 
@@ -387,6 +399,13 @@ impl<'o> Checker<'o> {
     }
 
     // ---- diagnostics ----------------------------------------------------
+
+    /// Records `span`'s type for hover and analysis.
+    fn span_type(&mut self, (span, ty): (Span, Ty)) {
+        if self.spans {
+            self.out.spans.push((span, ty));
+        }
+    }
 
     fn report(&mut self, diagnostic: Diagnostic) {
         if self.reported.insert(diagnostic.span) {
@@ -591,7 +610,7 @@ impl<'o> Checker<'o> {
     // ---- scopes ---------------------------------------------------------
 
     fn push(&mut self) {
-        self.scopes.push(HashMap::new());
+        self.scopes.push(HashMap::default());
     }
 
     fn pop(&mut self) {
@@ -608,7 +627,7 @@ impl<'o> Checker<'o> {
             frame: self.frames.len() - 1,
             view: self.view,
         });
-        self.out.spans.push((name.span, ty));
+        self.span_type((name.span, ty));
         if name.name != "_" {
             self.scopes.last_mut().expect("a scope").insert(name.name.clone(), id);
         }
@@ -630,7 +649,7 @@ impl<'o> Checker<'o> {
 
     fn resolve_type(&mut self, te: &TypeExpr) -> Ty {
         let ty = self.resolve_type_inner(te);
-        self.out.spans.push((te.span, ty.clone()));
+        self.span_type((te.span, ty.clone()));
         self.out.type_exprs.insert(te.span, ty.clone());
         ty
     }
@@ -872,7 +891,7 @@ impl<'o> Checker<'o> {
                 origin: Origin::Local,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
-            self.out.spans.push((name.span, Ty::Adt(def, Vec::new())));
+            self.span_type((name.span, Ty::Adt(def, Vec::new())));
         }
         for index in pending {
             if let ItemKind::Alias(alias) = &file.items[index].kind {
@@ -1049,7 +1068,7 @@ impl<'o> Checker<'o> {
             ret: fn_ty.ret.clone(),
             is_async: f.is_async,
             closure: false,
-            written: HashSet::new(),
+            written: HashSet::default(),
             task: false,
             render: false,
             spawn: false,
@@ -1091,7 +1110,7 @@ impl<'o> Checker<'o> {
             ret: Ty::View(None),
             is_async: false,
             closure: false,
-            written: HashSet::new(),
+            written: HashSet::default(),
             task: false,
             render: true,
             spawn: false,
@@ -1339,7 +1358,7 @@ impl<'o> Checker<'o> {
     /// Declares `names` (exported name, local name, the import spec's span) of
     /// the `.bloom` module at `path`, imported as `specifier`.
     fn bloom_names(&mut self, path: &Path, specifier: &str, at: Span, names: &[(Ident, Ident, Span)]) {
-        let Ok(source) = std::fs::read_to_string(path) else {
+        let Some(module) = signatures(path, specifier, self.options) else {
             self.report(
                 Diagnostic::error("B0602", at, format!("cannot read \"{specifier}\""))
                     .label("no such .bloom file")
@@ -1348,25 +1367,20 @@ impl<'o> Checker<'o> {
             );
             return;
         };
-        let (file, _, _) = crate::parser::parse(&source);
-        let options = self.options;
-        let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
-        sub.out.defs = std::mem::take(&mut self.out.defs);
-        sub.declare_signatures(&file, specifier);
-        self.out.defs = std::mem::take(&mut sub.out.defs);
-        self.out.dependencies.append(&mut sub.out.dependencies);
-        self.out.dependencies.insert(path.to_path_buf());
+        // Its types are numbered from 0 there: after this module's here.
+        let offset = self.out.defs.len();
+        self.out.defs.extend(module.defs.iter().map(|d| shift_def(d, offset)));
+        self.out.dependencies.extend(module.files.iter().map(|(p, _)| p.clone()));
         for (name, local, spec_span) in names {
-            if let Some(TypeName::Def(def)) = sub.type_names.get(&name.name).cloned() {
-                self.type_names.insert(local.name.clone(), TypeName::Def(def));
+            if let Some(def) = module.types.get(&name.name) {
+                self.type_names.insert(local.name.clone(), TypeName::Def(def + offset));
                 self.out.type_imports.push(local.name.clone());
                 self.out.type_only_imports.insert(*spec_span);
                 continue;
             }
-            match sub.lookup(&name.name).map(|id| sub.out.locals[id].clone()) {
-                Some(found) => {
-                    let ty = sub.zonk(&found.ty);
-                    self.declare_unique(local, ty, found.kind);
+            match module.values.get(&name.name) {
+                Some((ty, kind)) => {
+                    self.declare_unique(local, shift(ty, offset), kind.clone());
                 }
                 None => {
                     self.report(
@@ -1808,7 +1822,7 @@ impl<'o> Checker<'o> {
 
     fn record(&mut self, expr: &Expr, ty: Ty) {
         self.out.types.insert(expr.id, ty.clone());
-        self.out.spans.push((expr.span, ty));
+        self.span_type((expr.span, ty));
     }
 
     // ---- patterns -------------------------------------------------------
@@ -2295,7 +2309,7 @@ impl<'o> Checker<'o> {
         }
         let ty = self.infer(expr, expected);
         self.out.types.insert(expr.id, ty.clone());
-        self.out.spans.push((expr.span, ty.clone()));
+        self.span_type((expr.span, ty.clone()));
         match expected {
             Some(expected) => {
                 // A TS value Bloom could not type is accepted where a type is
@@ -2350,7 +2364,7 @@ impl<'o> Checker<'o> {
             _ => self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_)))),
         };
         self.out.types.insert(expr.id, ty.clone());
-        self.out.spans.push((expr.span, ty.clone()));
+        self.span_type((expr.span, ty.clone()));
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
@@ -2388,7 +2402,7 @@ impl<'o> Checker<'o> {
                     ret: Ty::Unit,
                     is_async: true,
                     closure: true,
-                    written: HashSet::new(),
+                    written: HashSet::default(),
                     task,
                     render: false,
                     spawn: true,
@@ -3402,7 +3416,7 @@ impl<'o> Checker<'o> {
             ret: ret.clone(),
             is_async: false,
             closure: true,
-            written: HashSet::new(),
+            written: HashSet::default(),
             task,
             render: false,
             spawn: false,
@@ -3437,6 +3451,126 @@ impl<'o> Checker<'o> {
         self.out.closures.insert(c.span, info);
         Ty::Fn(Rc::new(FnTy { params: param_tys, ret, is_async: frame.is_async, generics: 0, ts: false }))
     }
+}
+
+/// A `.bloom` module's public signatures as its importers see them: its types
+/// (numbered from 0), its type names and values, and the files they were
+/// read from, with their stamps.
+struct Signatures {
+    defs: Vec<Def>,
+    types: HashMap<String, DefId>,
+    values: HashMap<String, (Ty, LocalKind)>,
+    files: Vec<(PathBuf, ts::Stamp)>,
+    checked: std::cell::Cell<u64>,
+}
+
+thread_local! {
+    /// Imported `.bloom` modules, by path and the specifier their types are imported by.
+    static MODULES: std::cell::RefCell<HashMap<(PathBuf, String), Rc<Signatures>>> =
+        std::cell::RefCell::new(HashMap::default());
+}
+
+/// Forgets the imported modules read from `path` (or every one).
+pub fn forget(path: Option<&Path>) {
+    MODULES.with(|m| match path {
+        Some(path) => m.borrow_mut().retain(|_, sig| sig.files.iter().all(|(p, _)| p != path)),
+        None => m.borrow_mut().clear(),
+    });
+}
+
+/// The signatures of the `.bloom` module at `path`, read once and reused while
+/// it and what it imports are unchanged on disk (checked once per compile).
+fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Signatures>> {
+    let key = (path.to_path_buf(), specifier.to_string());
+    let epoch = ts::epoch();
+    let cached = MODULES.with(|m| m.borrow().get(&key).cloned());
+    if let Some(sig) = cached
+        && (sig.checked.get() == epoch
+            || sig.files.iter().all(|(p, stamp)| ts::stamp(p).unwrap_or((None, 0)) == *stamp))
+    {
+        sig.checked.set(epoch);
+        return Some(sig);
+    }
+    let source = std::fs::read_to_string(path).ok()?;
+    let (file, _, _) = crate::parser::parse(&source);
+    let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
+    sub.declare_signatures(&file, specifier);
+    let types = sub
+        .type_names
+        .iter()
+        .filter_map(|(name, t)| match t {
+            TypeName::Def(def) => Some((name.clone(), *def)),
+            _ => None,
+        })
+        .collect();
+    let values = sub.scopes[0]
+        .iter()
+        .map(|(name, id)| {
+            let local = &sub.out.locals[*id];
+            (name.clone(), (sub.zonk(&local.ty), local.kind.clone()))
+        })
+        .collect();
+    let mut files: Vec<PathBuf> = std::mem::take(&mut sub.out.dependencies).into_iter().collect();
+    files.push(path.to_path_buf());
+    let files = files.into_iter().map(|p| {
+        let stamp = ts::stamp(&p).unwrap_or((None, 0));
+        (p, stamp)
+    });
+    let sig = Rc::new(Signatures {
+        defs: sub.out.defs.iter().map(|d| Def { kind: zonk_kind(&sub, &d.kind), ..d.clone() }).collect(),
+        types,
+        values,
+        files: files.collect(),
+        checked: std::cell::Cell::new(epoch),
+    });
+    MODULES.with(|m| m.borrow_mut().insert(key, sig.clone()));
+    Some(sig)
+}
+
+fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
+    match kind {
+        DefKind::Struct(fields) => DefKind::Struct(
+            fields.iter().map(|f| FieldDef { ty: checker.zonk(&f.ty), ..f.clone() }).collect(),
+        ),
+        DefKind::Enum(variants) => DefKind::Enum(
+            variants
+                .iter()
+                .map(|v| VariantDef {
+                    payload: v.payload.iter().map(|(n, t)| (n.clone(), checker.zonk(t))).collect(),
+                    ..v.clone()
+                })
+                .collect(),
+        ),
+    }
+}
+
+/// `ty` with every struct and enum renumbered by `offset`.
+fn shift(ty: &Ty, offset: usize) -> Ty {
+    if offset == 0 {
+        return ty.clone();
+    }
+    map_ty(ty, &mut |t| match t {
+        Ty::Adt(def, args) => Some(Ty::Adt(def + offset, args.iter().map(|a| shift(a, offset)).collect())),
+        _ => None,
+    })
+}
+
+fn shift_def(def: &Def, offset: usize) -> Def {
+    let kind = match &def.kind {
+        DefKind::Struct(fields) => DefKind::Struct(
+            fields.iter().map(|f| FieldDef { ty: shift(&f.ty, offset), ..f.clone() }).collect(),
+        ),
+        DefKind::Enum(variants) => DefKind::Enum(
+            variants
+                .iter()
+                .map(|v| VariantDef {
+                    payload: v.payload.iter().map(|(n, t)| (n.clone(), shift(t, offset))).collect(),
+                    ..v.clone()
+                })
+                .collect(),
+        ),
+    };
+    Def { kind, ..def.clone() }
 }
 
 /// How `==` compares values of a type (spec 4.3).

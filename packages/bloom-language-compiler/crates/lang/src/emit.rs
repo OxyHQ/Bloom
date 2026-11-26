@@ -7,7 +7,8 @@
 //! the body `"use no memo"`. A closure that reads nothing reactive is a module
 //! constant. What would read a value twice is a small module-local helper.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::Options;
 use crate::ast::*;
@@ -116,6 +117,10 @@ struct Emitter<'a> {
     hoisted_names: HashMap<Span, String>,
     /// Static trees hoisted to module scope, by their text.
     hoisted_trees: HashMap<String, String>,
+    /// The item's expressions that are the same value on every evaluation (`mark_static`).
+    statics: HashSet<ExprId>,
+    /// Emitting a hoisted tree: what is inside it is not hoisted again.
+    in_static: bool,
     diagnostics: Vec<Diagnostic>,
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
@@ -142,7 +147,7 @@ struct Emitter<'a> {
 
 pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, options: &Options) -> Emitted {
     let names: HashSet<String> = ck.locals.iter().map(|l| l.name.clone()).collect();
-    let mut defaults = HashMap::new();
+    let mut defaults = HashMap::default();
     for item in &file.items {
         if let ItemKind::Struct(s) = &item.kind {
             for field in &s.fields {
@@ -162,16 +167,18 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         type_imports: BTreeMap::new(),
         helpers: BTreeSet::new(),
         hoisted: Vec::new(),
-        hoisted_names: HashMap::new(),
-        hoisted_trees: HashMap::new(),
+        hoisted_names: HashMap::default(),
+        hoisted_trees: HashMap::default(),
+        statics: HashSet::default(),
+        in_static: false,
         diagnostics: Vec::new(),
         view: None,
         signal: None,
         conditional: 0,
         uses_result: false,
         uses_key_path: false,
-        aliases: HashMap::new(),
-        splits: HashMap::new(),
+        aliases: HashMap::default(),
+        splits: HashMap::default(),
         eq_helpers: Vec::new(),
         eq_vars: 0,
         names,
@@ -186,6 +193,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     let mut items = Frag::default();
     for (index, item) in file.items.iter().enumerate() {
         emitter.item_start = item.span.start;
+        emitter.statics = emitter.static_exprs(item);
         let emitted = emitter.item(index, item);
         for hoisted in std::mem::take(&mut emitter.hoisted) {
             items.f(hoisted).s("\n");
@@ -578,13 +586,7 @@ impl<'a> Emitter<'a> {
             ItemKind::Enum(e) => self.enum_decl(e, export),
             ItemKind::Alias(a) => {
                 let generics = self.generics(&a.generics);
-                let ty = self
-                    .ck
-                    .spans
-                    .iter()
-                    .find(|(span, _)| *span == a.ty.span)
-                    .map(|(_, t)| t.clone())
-                    .unwrap_or(Ty::Unknown);
+                let ty = self.ck.type_exprs.get(&a.ty.span).cloned().unwrap_or(Ty::Unknown);
                 let text = self.ts_type(&ty);
                 Frag::at(item.span, format!("{export}type {}{generics} = {text};\n", a.name.name))
             }
@@ -1775,6 +1777,9 @@ impl<'a> Emitter<'a> {
     }
 
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
+        if self.hoistable(expr) {
+            return self.hoist(expr);
+        }
         let Some(res) = self.ck.calls.get(&expr.id).cloned() else {
             let callee = self.operand(&call.callee);
             let mut out = callee;
@@ -2032,7 +2037,7 @@ impl<'a> Emitter<'a> {
     fn view_order(&mut self, call: &Call, params: &[String]) -> Vec<(String, Frag)> {
         let mut out = Vec::new();
         let mut next = 0;
-        let mut given: HashMap<String, Frag> = HashMap::new();
+        let mut given: HashMap<String, Frag> = HashMap::default();
         for arg in &call.args {
             let name = match &arg.label {
                 Some(label) => label.name.clone(),
@@ -2588,36 +2593,6 @@ fn field_path(name: &str, fields: &[String]) -> String {
     out
 }
 
-/// Calls `f` with the id of every call in `expr` (closures included: a static tree has none).
-fn visit_calls(expr: &Expr, f: &mut dyn FnMut(ExprId)) {
-    match &expr.kind {
-        ExprKind::Call(call) => {
-            f(expr.id);
-            visit_calls(&call.callee, f);
-            call.args.iter().for_each(|a| visit_calls(&a.value, f));
-            if let Some(trailing) = &call.trailing {
-                for stmt in &trailing.body {
-                    match &stmt.kind {
-                        StmtKind::Expr(e) => visit_calls(e, f),
-                        _ => f(ExprId(u32::MAX)),
-                    }
-                }
-            }
-        }
-        ExprKind::Field(e, _) | ExprKind::Paren(e) => visit_calls(e, f),
-        ExprKind::Int(_)
-        | ExprKind::Float(_)
-        | ExprKind::Bool(_)
-        | ExprKind::None
-        | ExprKind::Unit
-        | ExprKind::Name(_)
-        | ExprKind::ImplicitMember(_) => {}
-        ExprKind::Str { parts, .. } if parts.iter().all(|p| matches!(p, StrPart::Text(_))) => {}
-        // Anything else (an operator, a closure, a conditional) is not a static tree.
-        _ => f(ExprId(u32::MAX)),
-    }
-}
-
 /// Whether `text` names `name` as a whole word.
 fn mentions(text: &str, name: &str) -> bool {
     let word = |c: char| c.is_alphanumeric() || c == '_' || c == '$';
@@ -2912,19 +2887,8 @@ impl<'a> Emitter<'a> {
         if matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_)) || self.reads_body_local(expr) {
             return self.child(expr);
         }
-        // A subtree of nodes that reads nothing of the view is built once, at module scope.
-        if self.static_tree(expr) {
-            let value = self.child(expr);
-            // The same tree twice is one constant.
-            if let Some(name) = self.hoisted_trees.get(&value.text) {
-                return Frag::of(name.clone());
-            }
-            let name = format!("$view{}", self.hoisted_trees.len());
-            self.hoisted_trees.insert(value.text.clone(), name.clone());
-            let mut decl = Frag::of(format!("const {name} = "));
-            decl.f(value).s(";");
-            self.hoisted.push(decl);
-            return Frag::of(name);
+        if self.hoistable(expr) {
+            return self.expr(expr);
         }
         let deps = self.expr_deps(expr);
         let narrower = !deps.is_empty()
@@ -2953,31 +2917,97 @@ impl<'a> Emitter<'a> {
         out
     }
 
-    /// Whether `expr` builds nodes only (node, modifier and component calls, literals)
-    /// from names already defined at module scope: the same value on every render.
-    fn static_tree(&self, expr: &Expr) -> bool {
-        let mut only_nodes = true;
-        let mut calls = 0;
-        visit_calls(expr, &mut |id| {
-            calls += 1;
-            if !matches!(
-                self.ck.calls.get(&id),
-                Some(
-                    CallRes::Node(_)
-                        | CallRes::Modifier { .. }
-                        | CallRes::Component
-                        | CallRes::EnumCase(..)
-                        | CallRes::Struct(_)
-                )
-            ) {
-                only_nodes = false;
+    /// The expressions of `item` that are the same value on every evaluation:
+    /// literals, names defined at module scope (before the item), closures that
+    /// read only those, and node, modifier, component, struct and enum-case
+    /// calls of static parts. One walk, bottom-up.
+    fn static_exprs(&self, item: &Item) -> HashSet<ExprId> {
+        let mut statics = HashSet::default();
+        let mut decided = HashSet::default();
+        crate::analysis::walk_item(item, &mut |node| {
+            if let crate::analysis::Node::Expr(expr) = node
+                && !decided.contains(&expr.id)
+            {
+                self.mark_static(expr, &mut statics, &mut decided);
             }
         });
-        if !only_nodes || calls == 0 || matches!(expr.kind, ExprKind::Name(_)) {
-            return false;
+        statics
+    }
+
+    fn mark_static(&self, expr: &Expr, statics: &mut HashSet<ExprId>, decided: &mut HashSet<ExprId>) -> bool {
+        let mut go = |e: &Expr| self.mark_static(e, statics, decided);
+        let is_static = match &expr.kind {
+            ExprKind::Int(_)
+            | ExprKind::Float(_)
+            | ExprKind::Bool(_)
+            | ExprKind::None
+            | ExprKind::Unit
+            | ExprKind::ImplicitMember(_)
+            | ExprKind::KeyPath { .. } => true,
+            ExprKind::Str { parts, .. } => parts.iter().all(|p| match p {
+                StrPart::Text(_) => true,
+                StrPart::Interp(e) => go(e),
+            }),
+            ExprKind::Name(_) => self.module_name(expr.id),
+            ExprKind::Paren(e) | ExprKind::Unary(_, e) => go(e),
+            ExprKind::Field(object, _) => {
+                matches!(self.ck.fields.get(&expr.id), Some(FieldRes::EnumCase(..))) || go(object)
+            }
+            ExprKind::Binary(_, a, b) => go(a) & go(b),
+            ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().fold(true, |all, e| go(e) & all),
+            ExprKind::Closure(c) => {
+                let mut only = !stmts_assign(&c.body);
+                crate::check::walk_stmts(&c.body, &mut |_, id| {
+                    if !self.module_name(id) {
+                        only = false;
+                    }
+                });
+                only
+            }
+            ExprKind::Call(call) => {
+                let node = matches!(
+                    self.ck.calls.get(&expr.id),
+                    Some(
+                        CallRes::Node(_)
+                            | CallRes::Modifier { .. }
+                            | CallRes::Component
+                            | CallRes::EnumCase(..)
+                            | CallRes::Struct(_)
+                    )
+                );
+                let callee = match &call.callee.kind {
+                    ExprKind::Field(receiver, _) => go(receiver),
+                    _ => true,
+                };
+                let args = call.args.iter().fold(true, |all, a| go(&a.value) & all);
+                let trailing = call.trailing.as_ref().is_none_or(|c| {
+                    let mut all = true;
+                    for stmt in &c.body {
+                        match &stmt.kind {
+                            StmtKind::Expr(e) => all &= go(e),
+                            _ => all = false,
+                        }
+                    }
+                    all && (self.ck.closures.get(&c.span).is_some_and(|i| i.builder) || {
+                        let mut only = !stmts_assign(&c.body);
+                        crate::check::walk_stmts(&c.body, &mut |_, id| only &= self.module_name(id));
+                        only
+                    })
+                });
+                node && callee && args && trailing
+            }
+            _ => false,
+        };
+        decided.insert(expr.id);
+        if is_static {
+            statics.insert(expr.id);
         }
-        let mut module = true;
-        crate::check::walk_names(expr, &mut |_, id| match self.ck.names.get(&id) {
+        is_static
+    }
+
+    /// Whether the name read at `id` is defined at module scope before the item being emitted.
+    fn module_name(&self, id: ExprId) -> bool {
+        match self.ck.names.get(&id) {
             Some(NameRes::Local(local)) => {
                 let info = &self.ck.locals[*local];
                 let defined = match info.kind {
@@ -2985,17 +3015,36 @@ impl<'a> Emitter<'a> {
                     LocalKind::ModuleConst | LocalKind::View => info.span.start < self.item_start,
                     _ => false,
                 };
-                if !defined || info.frame != 0 {
-                    module = false;
-                }
+                defined && info.frame == 0
             }
-            None => {
-                if self.ck.bindings.contains_key(&id) {
-                    module = false;
-                }
-            }
-        });
-        module
+            None => !self.ck.bindings.contains_key(&id),
+        }
+    }
+
+    /// A static node chain: built once, at module scope.
+    fn hoistable(&self, expr: &Expr) -> bool {
+        !self.in_static
+            && self.statics.contains(&expr.id)
+            && matches!(
+                self.ck.calls.get(&expr.id),
+                Some(CallRes::Node(_) | CallRes::Modifier { .. } | CallRes::Component)
+            )
+    }
+
+    /// `expr` (a static chain) as a module constant; the same tree twice is one constant.
+    fn hoist(&mut self, expr: &Expr) -> Frag {
+        self.in_static = true;
+        let value = self.child(expr);
+        self.in_static = false;
+        if let Some(name) = self.hoisted_trees.get(&value.text) {
+            return Frag::of(name.clone());
+        }
+        let name = format!("$view{}", self.hoisted_trees.len());
+        self.hoisted_trees.insert(value.text.clone(), name.clone());
+        let mut decl = Frag::of(format!("const {name} = "));
+        decl.f(value).s(";");
+        self.hoisted.push(decl);
+        Frag::of(name)
     }
 
     /// A node's argument: a view is a child that may be cached on its own.
@@ -3051,7 +3100,7 @@ impl<'a> Emitter<'a> {
 
     fn view_decl(&mut self, index: usize, item: &Item, v: &ViewDecl) -> Frag {
         let info = self.ck.views.get(&index).cloned().unwrap_or_default();
-        let mut setters = HashMap::new();
+        let mut setters = HashMap::default();
         for locals in &info.members {
             for local in locals {
                 if self.ck.locals[*local].kind == LocalKind::State {

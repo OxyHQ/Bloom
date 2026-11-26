@@ -30,9 +30,8 @@ function toggleRow(title: string, detail: string, isOn: boolean, onChange: (p0: 
 return GroupedSectionItem(title).wrapControl().description(detail).trailing(Toggle([isOn, onChange] as const).label(title));
 }
 
-const $view0 = Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>));
-const $view1 = VStack($view0).spacing("lg");
-const $view2 = Loading().style("inline").size("sm");
+const $view0 = VStack(Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>))).spacing("lg");
+const $view1 = Loading().style("inline").size("sm");
 export default screen(function NotificationSettings() {
 "use no memo";
 const $ = $c(27);
@@ -75,7 +74,7 @@ save = $[4];
 }
 let $t1;
 if ($[12] !== auth.isPrivateApiPending || $[13] !== loading || $[14] !== auth.canUsePrivateApi || $[15] !== t || $[16] !== saving || $[17] !== prefs.pushEnabled || $[18] !== save || $[19] !== router || $[20] !== prefs.likes || $[21] !== prefs.boosts || $[22] !== prefs.follows || $[23] !== prefs.mentions || $[24] !== prefs.replies || $[25] !== prefs.quotes) {
-$t1 = (auth.isPrivateApiPending || loading) ? $view1 : (!auth.canUsePrivateApi) ? ($[5] !== t ? ($[5] = t, $[6] = VStack(Embed($jsx(OxyAuthPrompt, { label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }), description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." }) } satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg")) : $[6]) : VStack((saving) ? $view2 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => void (async () => {
+$t1 = (auth.isPrivateApiPending || loading) ? $view0 : (!auth.canUsePrivateApi) ? ($[5] !== t ? ($[5] = t, $[6] = VStack(Embed($jsx(OxyAuthPrompt, { label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }), description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." }) } satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg")) : $[6]) : VStack((saving) ? $view1 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => void (async () => {
 await (save({ pushEnabled: v }));
 })()))), ($[9] !== t || $[10] !== router ? ($[9] = t, $[10] = router, $[11] = SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(($[7] !== t ? ($[7] = t, $[8] = Text(t("common.open", { defaultValue: "Open" }))) : $[8])).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" })))))) : $[11]), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => void (async () => {
 await (save({ likes: v }));

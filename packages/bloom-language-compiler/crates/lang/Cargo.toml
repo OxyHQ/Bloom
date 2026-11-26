@@ -12,3 +12,4 @@ oxc_ast.workspace = true
 oxc_parser.workspace = true
 oxc_span.workspace = true
 oxc_sourcemap.workspace = true
+rustc-hash = "=2.1.3"
