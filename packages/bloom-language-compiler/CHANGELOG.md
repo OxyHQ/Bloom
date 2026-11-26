@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.0
+
+### Added
+
+- `.bloom` modules: Bloom's own language (ADR 0001, spec draft 0.1), with structs, enums, `T?`, `Result`, exhaustive `match`, generics, closures, `async`/`await`, `task {}`, `defer {}`, views, screens and `@state`, compiled to typed TypeScript on `@oxy.so/bloom-language`. Each view gets its own memo cache, and structs, enums, `T?` and `Result` cost nothing at runtime. TypeScript imports are read through their declarations, resolved from the project root, and a value the compiler cannot type is `Foreign`. Source maps lead back to the `.bloom` file.
+- The Metro worker and the Jest transformer compile `.bloom` modules, and `withBloomLanguage` adds `bloom` to Metro's `sourceExts`. A throw in a `.bloom` handler is reported at its `.bloom` line.
+- The Node addon has `compileBloom`, `checkBloom` and `formatBloom` beside `compile`.
+- The `bloom-lang-dts` bin writes `Name.d.bloom.ts` beside each `.bloom` file, so TypeScript can import `./Name.bloom` (with `allowArbitraryExtensions`).
+
+### Changed
+
+- Checks chains against the spec on `main`, which adds a screen's `.ownScreen()` and `.provider(Component, props)` (#972). The language release that draws them comes next: the language 1.7.0 has neither, and its types refuse them.
+
 ## 1.5.0
 
 ### Changed

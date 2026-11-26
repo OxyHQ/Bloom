@@ -1,10 +1,15 @@
 {
   "name": "bloom-vscode",
   "displayName": "Bloom",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Bloom language (.bloom) support for VS Code: syntax highlighting, and diagnostics and hover from bloomc lsp.",
   "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-vscode"
+  },
   "publisher": "oxy",
   "engines": {
     "vscode": "^1.90.0"
@@ -47,7 +52,8 @@
     }
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "package": "npx --yes @vscode/vsce@4.1.1 package --no-dependencies --out bloom-vscode.vsix"
   },
   "devDependencies": {
     "vscode-oniguruma": "2.0.1",
