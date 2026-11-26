@@ -173,26 +173,120 @@ react-native-web) is the renderer: a signal graph would either re-enter React th
 
 ## Prototype (phase 0)
 
-Branches (draft PRs, nothing merged or published):
+Draft PRs, nothing merged or published:
 
-- `feat/bloom-lang-design`: this ADR and the spec.
-- `feat/bloom-lang-core`: `crates/lang` — lexer, recovering parser, resolver, type checker
-  (subset), emitter, `.d.bloom.ts`.
-- `feat/bloom-lang-tooling`: `crates/fmt`, `crates/bloomc` (CLI), napi `compileBloom`, Metro and
-  Jest adapters for `.bloom`, `packages/bloom-vscode` (TextMate grammar), benchmarks, `.bloom`
-  cost gates.
-- Mention `feat/bloom-lang-proof`: Settings → Notifications ported to `.bloom`, logic included,
-  with measurements against the TS version.
+| PR | Branch | What |
+|---|---|---|
+| [Bloom #963](https://github.com/OxyHQ/Bloom/pull/963) | `feat/bloom-lang-design` | this ADR and the spec (draft 0.2) |
+| [Bloom #967](https://github.com/OxyHQ/Bloom/pull/967) | `feat/bloom-lang-core` | `crates/lang` (`bloom_lang`): lexer, recovering parser with a comment table, resolver, type checker, `.d.ts` reader for the boundary, emitter with its own memo scopes, source maps, `.d.bloom.ts`; goldens and a `tsc` check of every emitted file |
+| [Bloom #964](https://github.com/OxyHQ/Bloom/pull/964) (stacked on #967) | `feat/bloom-lang-tooling` | `crates/fmt` (the formatter), `crates/bloomc` (`check`, `fmt`, `build` with an incremental cache, `lsp` with diagnostics, hover and formatting), napi `compileBloom`/`checkBloom`/`formatBloom`, Metro and Jest adapters, `bloom-lang-dts`, `packages/bloom-vscode` (TextMate grammar, LSP client), the `.bloom` cost gate, the 1000-file benchmark |
+| [Mention #2046](https://github.com/OxyHQ/Mention/pull/2046) | `feat/bloom-lang-proof` | Settings → Notifications in `.bloom`, logic included, running in Mention's web build and Jest, with the measurement harness |
+
+What the subset covers: primitives, lists, string-keyed maps, tuples, structs (defaults, `.with`,
+`S.patch`, per-field spread), enums with payloads, `T?`, `Result` with `?`, exhaustive `match`,
+generics by unification, closures with trailing-closure syntax, `async`/`await`, `task`, `defer`,
+views and screens with `@state`, derived `let`s and handler `fn`s, builders, modifiers and tokens
+checked from `spec/language.json`, `$` bindings, the state-write and hook rules, and the
+`Foreign` boundary. Not yet: `.onChange`, `all`/`race`, typed `@list`/`@record`/`@env` (they emit
+the hooks, typed `Foreign`), structural `==`, key paths, node-argument checking (left to `tsc`).
 
 ## Measurements
 
-_To be filled from the prototype's runs (Jest cost harness, render timing, web export, bloomc
-bench)._
+The real proof is Mention's Settings → Notifications (auth gating, `useViewerSettingsSection`
+load and update, `saving` state, the async save with error toast, seven toggles, a navigation
+button), measured in three forms: **original** (the TS screen on `feat/mention-on-language`),
+**cleaned** (the best hand-written embedded-language TS: no `Embed(<>{toElement()}</>)` wrappers,
+a row helper, React Compiler on, as Mention runs it) and **`.bloom`**. Jest: i9-14900K, Node 24,
+jest-expo, development React, 200 runs after 30 warm-up, the three forms interleaved in rotating
+order. The machine was shared (load average 7–11), so timings are indicative; React-cost counts
+and bytes are exact.
+
+**Pixels.** 0 differing pixels between all three forms, in all four branches, at 1x and 2x (16
+diffs, production web export, Chrome), and equal to the captures taken before the port.
+
+**React cost** (fibers / hooks / context reads under the screen):
+
+| Branch | original | cleaned | `.bloom` |
+|---|---|---|---|
+| loaded | 413 / 535 / 273 | 396 / 534 / 257 | 396 / 534 / 257 |
+| saving | 434 / 556 / 279 | 417 / 555 / 263 | 417 / 555 / 263 |
+| pending, loading | 110 / 355 / 54 | 109 / 354 / 54 | 109 / 354 / 54 |
+| signed out | 17 / 19 / 3 | 16 / 18 / 3 | 16 / 18 / 3 |
+
+`.bloom` costs exactly what the best hand-written form costs, in every branch. The synthetic
+`.bloom` cost gate (a view with state, derived value and handler; five list rows; a static view)
+is likewise equal to its hand-written equivalent (8/1/3, 36/0/15, 8/0/3).
+
+**Render time** (wall, median / p95, ms):
+
+| | original | cleaned | `.bloom` |
+|---|---|---|---|
+| mount | 25.92 / 37.13 | 24.43 / 43.39 | 23.54 / 35.06 |
+| toggle press (`saving` on) | 9.17 / 15.82 | 8.68 / 16.09 | 7.81 / 12.47 |
+| save settles (`saving` off) | 17.80 / 28.39 | 17.49 / 29.87 | **10.84 / 18.57** |
+| whole update | 27.26 / 40.89 | 26.66 / 42.48 | **19.38 / 30.38** |
+
+The React Profiler's time for the settle render is 6 / 6 / 0 ms. The cause is structural: **the
+React Compiler bails out of both TS forms** (it does not compile `try`/`finally`), so neither is
+memoised, in Jest or in the production bundle. The `.bloom` form has no `try`: the save is a
+`match` on a `Result` with `defer`, and bloomc memoises it with per-child scopes on member-path
+dependencies, so a `saving` change rebuilds only the spinner slot. Mount is within noise.
+
+**Bundle** (production web export, tree shaking; bytes min / gzip / brotli):
+
+| | screen module | its chunk | entry | all JS (gzip) |
+|---|---|---|---|---|
+| original | 5,320 / 1,282 / 1,061 | 148,065 / 38,278 / 30,510 | 9,856,928 | 30,605,602 (11,421,462) |
+| cleaned | 3,404 / 1,173 / 984 | 146,213 / 38,229 / 30,592 | 9,857,649 | 30,604,471 (11,421,602) |
+| `.bloom` | 4,711 / 1,745 / 1,468 | 147,524 / 38,827 / 30,961 | 9,857,649 | 30,605,782 (11,422,196) |
+
+`.bloom` is +572 B gzip over cleaned for the module (+1.5% of its chunk): the memo cache (38
+slots), the `$settle` helper for awaited promises, and the per-field patch spread. Both `view()`
+forms add 721 B to the entry (tree shaking now keeps `view`). Phase 1 lowers `$settle` to an
+inline `try`/`catch` around the await only.
+
+**Compile time** (release build, 32 cores):
+
+| | time |
+|---|---|
+| bloomc, the Notifications file | 0.94 ms median (p95 1.44) |
+| bloomc, per file, synthetic models / rows / screens | 94 / 193 / 381 µs (embedded pass on equivalent TSX: 4.6 / 12.6 / 26.6 µs) |
+| `bloomc build`, 1000 files, cold, 1 thread / 32 threads | 355 ms / 73 ms |
+| `bloomc build`, 1000 files, warm / one file changed | 23 ms / 22 ms |
+| whole per-file pipeline with Babel (Expo preset + React Compiler) | original 25.5 ms, cleaned 12.7 ms, `.bloom` 15.4 ms (bloomc 1.3 of it) |
+| Node pipeline over the 1000 files, `.bloom` → Babel vs TSX → embedded pass → Babel | 1,993 ms vs 1,028 ms |
+
+Babel dominates every pipeline. bloomc does far more per file than the embedded pass (parse,
+check, read declarations, emit, then the embedded pass), and is 10–20x its cost; a profile and the
+known fixes (one dependency walk instead of one per nesting level, no token clones, a declaration
+cache shared across files) are phase 1, with a target of ≤ 3x.
+
+**Source maps.** A throw inside a `.bloom` handler under Jest reports the `.bloom` file and line;
+Metro composes the same maps. On-device (Hermes) stack traces are not yet verified.
+
+**Interop.** The emitted TS of the port type-checks with 0 errors against Mention's real types;
+every `Foreign` crossing is a `satisfies` that `tsc` verifies (a planted error is caught).
+
+**Not measured:** native render time and an Android build (device work belongs to another agent;
+the phones were not touched).
 
 ## Roadmap to 100%
 
-_To be filled with the prototype's findings._
+| Phase | What | Effort (agent-weeks, rough) | Exit criterion |
+|---|---|---|---|
+| **1. Language complete for app logic** | key paths; structural `==`; `.onChange`, `all`/`race`; bloom-data typed natively (`@list`/`@record`/`@env` not `Foreign`); node constructor signatures in `language.json`; `$settle` → inline try/catch; builder IIFEs removed; `bloomc check --tsc`; adapter cache keys that include imports; compile-time profile (≤ 3x the embedded pass); LSP go-to-definition and completion; prebuilt binaries for the six platforms through the existing CI; Mention's i18n, logger and coverage gates read `.bloom`; device check of the proof screen | 4–6 | the proof screen ships behind a flag on all platforms; every gate green |
+| **2. Mention migration** | the UI codemod (embedded TSX → `.bloom`) and the assisted logic port; typed routes from `app/`; generated route shims until expo-router accepts `.bloom`; screens in order: rows (`PostItem`), lists (notifications), compose, settings; Hermes stack traces verified; an agent first-compile-rate eval on a task set | 6–10 | ≥ 90% of Mention's UI and view logic in `.bloom`, each screen at or under its old cost, bytes and pixels |
+| **3. Fleet and maturity** | other apps (Alia, Allo, Homiio, …); app hooks and stores in `.bloom`; emit JS + `.d.ts` once the `.d.ts` importer types ≥ 95% of imported symbols; lowering experiments past the embedded runtime if device profiles show interpretation cost; editions for breaking changes | open | the owner's "100%": UI and logic in `.bloom` across the apps |
+
+Main risks to the roadmap: agent fluency in a new language (mitigated by the cheat sheet and
+errors, measured in phase 2), `.d.ts` coverage, and the per-file compile cost.
 
 ## State and next steps
 
-_Kept current while phase 0 runs._
+- **State (2026-11-26):** phase 0 complete. Four draft PRs (above), none merged or published.
+  The Mention PR installs the compiler from a local tarball (`file:` path) and its `bun.lock` was
+  written by bun 1.4.3 rather than the pinned 1.4.4, so it cannot leave draft until the compiler
+  is published and the lockfile regenerated.
+- **Next:** the owner reviews this ADR and the spec; on approval, phase 1 starts from the gaps
+  listed under "Prototype" and "Roadmap", merged in order #963 → #967 → #964, then the Mention PR
+  against the published compiler.
