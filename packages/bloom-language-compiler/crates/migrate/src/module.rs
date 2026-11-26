@@ -71,6 +71,9 @@ pub struct Scope {
     /// Object literals whose fields are then written (`params.q = v`, `counts[k] += 1`):
     /// a `var` each write reassigns; `true` for one written by key (a dictionary).
     pub grown: HashMap<String, bool>,
+    /// A value whose branches give it (`let body; if (c) body = a; else body = b`):
+    /// a write of it is the branch's `return`.
+    pub assign_returns: Option<String>,
 }
 
 pub struct Tr<'s> {

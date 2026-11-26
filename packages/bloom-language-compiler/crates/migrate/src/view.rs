@@ -338,8 +338,27 @@ impl Tr<'_> {
     fn view_members(&mut self, statements: &[Statement], end: u32) -> (String, String) {
         let mut members: Vec<String> = Vec::new();
         let mut previous: Option<u32> = None;
+        let mut skip_to = 0;
         for (i, statement) in statements.iter().enumerate() {
+            if i < skip_to {
+                continue;
+            }
             let span = statement.span();
+            // `let x = init` and the statements after it that build `x` (`if (c) x = …`,
+            // `xs.push(…)`): one value, computed by a closure called in place.
+            if let Some((name, last)) = self.built_value(statements, i) {
+                let note = self.note(span.start);
+                let blank = previous.is_some_and(|p| self.blank_between(p, span.start));
+                previous = Some(statements[last].span().end);
+                skip_to = last + 1;
+                let member = self.built_member(&name, statements, i, last);
+                let member = self.take_reviews() + &member;
+                if blank {
+                    members.push(String::new());
+                }
+                members.push(format!("{note}{member}"));
+                continue;
+            }
             let returns = match statement {
                 Statement::ReturnStatement(_) => true,
                 Statement::IfStatement(s) => branch_returns(&s.consequent),
@@ -797,6 +816,12 @@ impl Tr<'_> {
             let note = self.note(statement.span().start);
             if !note.is_empty() {
                 lines.push(note.trim_end().to_string());
+            }
+            if let Some((name, last)) = self.built_value(statements, i) {
+                let member = self.built_member(&name, statements, i, last);
+                lines.push(self.take_reviews() + &member);
+                i = last + 1;
+                continue;
             }
             match statement {
                 Statement::ReturnStatement(r) => {
@@ -1335,6 +1360,83 @@ impl Tr<'_> {
         }
     }
 
+    /// `statements[i]` declaring a value the statements after it build: its name and
+    /// the index of the last statement that writes it. Each statement in between
+    /// writes it (and no state); none returns.
+    fn built_value(&self, statements: &[Statement], i: usize) -> Option<(String, usize)> {
+        let Statement::VariableDeclaration(v) = &statements[i] else { return None };
+        let [d] = v.declarations.as_slice() else { return None };
+        let BindingPattern::BindingIdentifier(id) = &d.id else { return None };
+        let name = id.name.as_str();
+        let built = v.kind == VariableDeclarationKind::Let
+            || matches!(
+                d.init.as_ref().map(|e| e.without_parentheses()),
+                Some(Expression::ArrayExpression(_))
+            );
+        if !built {
+            return None;
+        }
+        let text = |s: &Statement| &self.src[s.span().start as usize..s.span().end as usize];
+        let mut last = None;
+        for (j, statement) in statements.iter().enumerate().skip(i + 1) {
+            let t = text(statement);
+            if !writes_name(t, name) {
+                break;
+            }
+            let mut returns = Vec::new();
+            collect_returns(std::slice::from_ref(statement), &mut returns);
+            if !returns.is_empty()
+                || matches!(statement, Statement::VariableDeclaration(_) | Statement::FunctionDeclaration(_))
+                || writes_state(self, statement)
+            {
+                break;
+            }
+            last = Some(j);
+        }
+        let last = last?;
+        // Read after it is built (a `let` never written after is a plain member).
+        Some((name.to_string(), last))
+    }
+
+    /// The member for [`Tr::built_value`]: `let x = { var x = init … return x }()`.
+    fn built_member(&mut self, name: &str, statements: &[Statement], first: usize, last: usize) -> String {
+        let Statement::VariableDeclaration(v) = &statements[first] else { unreachable!() };
+        let d = &v.declarations[0];
+        let saved = self.scope.clone();
+        let declared = match &d.init {
+            Some(init) => self.let_decl(d, init, false),
+            // `let body; if (c) { body = a } else { body = b }`: the branches give it.
+            None if first + 1 == last && assigns_every_branch(&statements[last], name) => {
+                let saved_assign = self.scope.assign_returns.replace(name.to_string());
+                let body = self.block_stmts(&statements[last..=last], statements[last].span().end, false);
+                self.scope.assign_returns = saved_assign;
+                self.scope = saved;
+                let outer = self.bind(name, d.span);
+                return format!("let {outer} = {{\n{body}\n}}()");
+            }
+            // `let label: string;` then assigned on every path (TS checks it): any start value.
+            None => {
+                let ty = d.type_annotation.as_ref().map(|t| self.ty(&t.type_annotation));
+                let start = match ty.as_deref() {
+                    Some("String") => "\"\"",
+                    Some("Float") | Some("Int") => "0",
+                    Some("Bool") => "false",
+                    Some(t) if t.ends_with('?') => "none",
+                    _ => {
+                        self.scope = saved;
+                        return self.refuse("view:mutable", "a `let` without a value in a view", d.span);
+                    }
+                };
+                format!("var {name}: {} = {start}", ty.unwrap_or_default())
+            }
+        };
+        let declared = declared.replacen("let ", "var ", 1);
+        let body = self.block_stmts(&statements[first + 1..=last], statements[last].span().end, false);
+        self.scope = saved;
+        let outer = self.bind(name, d.span);
+        format!("let {outer} = {{\n{declared}\n{body}\nreturn {name}\n}}()")
+    }
+
     /// A `switch` as a `match` on its literals (an `if` chain on other cases): each
     /// case group ends in `break`, `return` or `throw`; a fallthrough into a case
     /// with statements of its own is refused.
@@ -1522,6 +1624,12 @@ impl Tr<'_> {
                     }
                 };
                 let target = match &a.left {
+                    // A branch's last write of a value the branches give: its `return`.
+                    AssignmentTarget::AssignmentTargetIdentifier(id)
+                        if op == "=" && self.scope.assign_returns.as_deref() == Some(id.name.as_str()) =>
+                    {
+                        return format!("return {}", self.expr(&a.right));
+                    }
                     AssignmentTarget::AssignmentTargetIdentifier(id) => self.name(&id.name, id.span),
                     // `r.current = v`: a `@ref` is written by its name.
                     AssignmentTarget::StaticMemberExpression(m)
@@ -2388,6 +2496,80 @@ fn has_break(statement: &Statement) -> bool {
                 || t.handler.as_ref().is_some_and(|h| h.body.body.iter().any(has_break))
                 || t.finalizer.as_ref().is_some_and(|f| f.body.iter().any(has_break))
         }
+        _ => false,
+    }
+}
+
+/// Whether `text` writes `name`: `name = …`, `name += …`, `name.f = …`,
+/// `name[k] = …` or `name.push(…)`.
+fn writes_name(text: &str, name: &str) -> bool {
+    text.match_indices(name).any(|(i, _)| {
+        if text[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.') {
+            return false;
+        }
+        let mut rest = &text[i + name.len()..];
+        if rest.starts_with(|c: char| c.is_alphanumeric() || c == '_') {
+            return false;
+        }
+        if rest.starts_with(".push(") {
+            return true;
+        }
+        if let Some(r) = rest.strip_prefix('[') {
+            let Some(j) = r.find(']') else { return false };
+            rest = &r[j + 1..];
+        } else if let Some(r) = rest.strip_prefix('.') {
+            let j = r.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(r.len());
+            rest = &r[j..];
+        }
+        let after = rest.trim_start();
+        (after.starts_with('=') && !after.starts_with("==") && !after.starts_with("=>"))
+            || after.starts_with("+=")
+            || after.starts_with("-=")
+    })
+}
+
+/// Whether `statement` is an `if`/`else` chain with a final `else` whose every branch
+/// ends with `name = …` and writes `name` nowhere else.
+fn assigns_every_branch(statement: &Statement, name: &str) -> bool {
+    let ends_with_write = |s: &Statement| {
+        let body = branch(s);
+        let Some((last, rest)) = body.split_last() else { return false };
+        let writes = |s: &Statement| {
+            matches!(s, Statement::ExpressionStatement(e)
+            if matches!(&e.expression, Expression::AssignmentExpression(a)
+                if a.operator == AssignmentOperator::Assign
+                    && matches!(&a.left, AssignmentTarget::AssignmentTargetIdentifier(id) if id.name == name)))
+        };
+        writes(last) && !rest.iter().any(writes)
+    };
+    match statement {
+        Statement::IfStatement(s) => {
+            ends_with_write(&s.consequent)
+                && match &s.alternate {
+                    Some(Statement::IfStatement(_)) => {
+                        assigns_every_branch(s.alternate.as_ref().unwrap(), name)
+                    }
+                    Some(other) => ends_with_write(other),
+                    None => false,
+                }
+        }
+        _ => false,
+    }
+}
+
+/// Whether `statement` calls a state setter while it runs (not in a closure it makes).
+fn writes_state(tr: &Tr, statement: &Statement) -> bool {
+    match statement {
+        Statement::IfStatement(s) => {
+            writes_state(tr, &s.consequent) || s.alternate.as_ref().is_some_and(|a| writes_state(tr, a))
+        }
+        Statement::BlockStatement(b) => b.body.iter().any(|s| writes_state(tr, s)),
+        Statement::ForOfStatement(f) => writes_state(tr, &f.body),
+        Statement::ExpressionStatement(e) => matches!(
+            e.expression.without_parentheses(),
+            Expression::CallExpression(call)
+                if matches!(&call.callee, Expression::Identifier(id) if tr.scope.setters.contains_key(id.name.as_str()))
+        ),
         _ => false,
     }
 }
