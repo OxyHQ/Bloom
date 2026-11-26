@@ -1,0 +1,20 @@
+# Throwaway: occupies all four seldon-ci runners for SECONDS, so a race test
+# finds Seldon busy. Each push to ci/seldon-occupy is one occupation.
+name: Seldon occupy
+
+on:
+  push:
+    branches: [ci/seldon-occupy]
+
+permissions: {}
+
+jobs:
+  occupy:
+    name: Occupy (${{ matrix.n }})
+    runs-on: seldon-ci
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        n: [1, 2, 3, 4]
+    steps:
+      - run: sleep 240

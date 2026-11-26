@@ -1,0 +1,93 @@
+# Throwaway: exercises the Seldon race paths (OxyHQ/oxy seldon-race). Each push
+# to ci/seldon-race-test is one test; LABEL and WORK are edited per test.
+name: Seldon race test
+
+on:
+  push:
+    branches: [ci/seldon-race-test]
+
+permissions:
+  contents: read
+
+jobs:
+  race:
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@ci/seldon-ci-router
+    permissions:
+      actions: read
+    with:
+      label: &label seldon-ci-offline-sim
+
+  race-finish:
+    needs: race
+    if: needs.race.outputs.race == 'true'
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@ci/seldon-ci-router
+    permissions:
+      actions: read
+    with:
+      label: *label
+
+  lane:
+    name: Lane (${{ matrix.shard }}/2)
+    runs-on: *label
+    timeout-minutes: 30
+    permissions: &permissions
+      contents: read
+      actions: read
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Lane (${{ matrix.shard }}/2)
+    strategy: &strategy
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps: &steps
+      - uses: OxyHQ/oxy/.github/actions/seldon-race@ci/seldon-ci-router
+        with:
+          mode: guard
+          label: *label
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+          no-cache: ${{ runner.environment == 'self-hosted' }}
+      - name: Work
+        run: |
+          echo "runner=$RUNNER_NAME environment=$RUNNER_ENVIRONMENT bun=$(bun --version)"
+          sleep 90
+
+  lane-hosted:
+    name: Lane (${{ matrix.shard }}/2)
+    needs: race
+    if: needs.race.outputs.race == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions: *permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Lane (${{ matrix.shard }}/2)
+    strategy: *strategy
+    steps: *steps
+
+  complete:
+    name: CI complete
+    if: always()
+    needs: [race, lane, lane-hosted]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Seldon race verdict
+        id: race
+        if: needs.race.outputs.race == 'true'
+        uses: OxyHQ/oxy/.github/actions/seldon-race@ci/seldon-ci-router
+        with:
+          mode: verdict
+          label: *label
+      - env:
+          RACED: ${{ needs.race.outputs.race }}
+          RACE_VERDICT: ${{ steps.race.outputs.outcome }}
+          LANE: ${{ needs.lane.result }}
+        run: |
+          echo "raced=$RACED verdict=$RACE_VERDICT lane=$LANE"
+          if [ "$RACED" = true ]; then [ "$RACE_VERDICT" = success ]; else [ "$LANE" = success ]; fi
