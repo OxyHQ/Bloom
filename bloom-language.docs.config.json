@@ -1,0 +1,11 @@
+{
+  "package": "@oxy.so/bloom-language",
+  "displayName": "Bloom language",
+  "shortName": "bloom-language",
+  "repo": "https://github.com/OxyHQ/Bloom",
+  "category": "ui-library",
+  "versioned": false,
+  "docsPath": "docs/",
+  "docsInclude": ["bloom-language*.mdx", "no-nativewind.mdx"],
+  "description": "SwiftUI-style views and chained modifiers for Bloom in TypeScript, every value a Bloom token, checked and optimised by a Rust compiler."
+}
