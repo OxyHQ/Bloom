@@ -1,0 +1,6 @@
+export type Load = "loading" | { readonly tag: "failed"; readonly message: string } | { readonly tag: "ready"; readonly count: number };
+export declare function describe(load: Load): string;
+export declare function first(names: readonly string[]): string;
+export declare function total(counts: readonly number[]): number;
+export declare function status(code: number): string;
+export declare function maybe(code: number): number | undefined;
