@@ -15,7 +15,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         let receiver = d.message.strip_prefix('`').and_then(|m| m.split_once('`')).map(|(r, _)| r);
         let list = receiver.is_some_and(|r| r.starts_with('['));
         let collection = receiver.is_some_and(|r| r.starts_with("Set<") || r.starts_with("Map<"));
-        let edit = match (&*d.code, text) {
+        let edit = match (d.code, text) {
             // `s.has(x)`, `m.size`: a Bloom `Set`/`Map` has `contains` and `count`.
             ("B0209", "has") if collection => Some((start, end, "contains".to_string())),
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
@@ -23,14 +23,18 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             ("B0209", "some") if list => Some((start, end, "any".to_string())),
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
             // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
-            ("B0201", _) if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") => {
+            ("B0201", _)
+                if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") =>
+            {
                 Some((start - 2, start, ".".to_string()))
             }
             // `x ?? fallback` where `x` is never `none`: `x`.
             ("B0201", _) if d.message.starts_with("`??` gives a fallback") => {
                 let rest = &source[end..];
                 let op = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("??"));
-                op.and_then(|i| operand_len(&rest[i + 2..]).map(|n| (start, end + i + 2 + n, text.to_string())))
+                op.and_then(|i| {
+                    operand_len(&rest[i + 2..]).map(|n| (start, end + i + 2 + n, text.to_string()))
+                })
             }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
             ("B0201", _) => {

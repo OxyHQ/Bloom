@@ -592,7 +592,8 @@ impl Tr<'_> {
     fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
         // A `Map`/`Set` changed in place (`s.add(x)`) is a `var` its changes reassign.
         let mut immutable = immutable;
-        if let (BindingPattern::BindingIdentifier(id), Expression::NewExpression(n)) = (&d.id, init.without_parentheses())
+        if let (BindingPattern::BindingIdentifier(id), Expression::NewExpression(n)) =
+            (&d.id, init.without_parentheses())
             && matches!(&n.callee, Expression::Identifier(c) if matches!(c.name.as_str(), "Map" | "Set"))
         {
             let Expression::Identifier(c) = &n.callee else { unreachable!() };
@@ -1228,8 +1229,11 @@ impl Tr<'_> {
             {
                 // `s.add(x)` changes `s` in place; a Bloom `Set` is a value, so it is reassigned.
                 let name = self.name(&object.name, object.span);
-                let args: Vec<String> =
-                    call.arguments.iter().map(|a| a.as_expression().map_or_else(String::new, |e| self.expr(e))).collect();
+                let args: Vec<String> = call
+                    .arguments
+                    .iter()
+                    .map(|a| a.as_expression().map_or_else(String::new, |e| self.expr(e)))
+                    .collect();
                 let method = match m.property.name.as_str() {
                     "add" => "inserting",
                     "set" => "setting",
@@ -1246,7 +1250,11 @@ impl Tr<'_> {
                     && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
                     && !arrow.r#async
                     && arrow.params.rest.is_none()
-                    && arrow.params.items.iter().all(|p| matches!(p.pattern, BindingPattern::BindingIdentifier(_)))
+                    && arrow
+                        .params
+                        .items
+                        .iter()
+                        .all(|p| matches!(p.pattern, BindingPattern::BindingIdentifier(_)))
                     && matches!(arrow.params.items.len(), 1 | 2)
                     && {
                         // A `return` in the callback is a `continue` in a `for`.
@@ -1574,7 +1582,10 @@ impl Tr<'_> {
                         }
                         Expression::StaticMemberExpression(m) => {
                             matches!(&m.object, Expression::Identifier(o) if o.name.to_lowercase().ends_with("logger"))
-                                && matches!(m.property.name.as_str(), "debug" | "info" | "warn" | "error" | "log")
+                                && matches!(
+                                    m.property.name.as_str(),
+                                    "debug" | "info" | "warn" | "error" | "log"
+                                )
                                 && args_pure
                         }
                         _ => false,
@@ -1585,7 +1596,8 @@ impl Tr<'_> {
             Statement::VariableDeclaration(v) => {
                 v.kind == VariableDeclarationKind::Const
                     && v.declarations.iter().all(|d| {
-                        matches!(d.id, BindingPattern::BindingIdentifier(_)) && d.init.as_ref().is_some_and(is_pure)
+                        matches!(d.id, BindingPattern::BindingIdentifier(_))
+                            && d.init.as_ref().is_some_and(is_pure)
                     })
             }
             Statement::EmptyStatement(_) => true,
@@ -1690,7 +1702,10 @@ enum AwaitStart<'b, 'a> {
 impl<'b, 'a> AwaitStart<'b, 'a> {
     fn value(&self) -> &'b Expression<'a> {
         match self {
-            AwaitStart::Expr(a) | AwaitStart::Let(_, a) | AwaitStart::Return(a) | AwaitStart::Pattern(_, a) => a,
+            AwaitStart::Expr(a)
+            | AwaitStart::Let(_, a)
+            | AwaitStart::Return(a)
+            | AwaitStart::Pattern(_, a) => a,
         }
     }
 }
@@ -1725,14 +1740,16 @@ fn awaited_start<'b, 'a>(statement: &'b Statement<'a>) -> Option<AwaitStart<'b, 
 fn mutates(src: &str, name: &str) -> bool {
     ["add", "set", "delete", "clear"].iter().any(|m| {
         let needle = format!("{name}.{m}(");
-        src.match_indices(&needle).any(|(i, _)| {
-            !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.')
-        })
+        src.match_indices(&needle)
+            .any(|(i, _)| !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.'))
     })
 }
 
 /// The `return`s of a block, outside nested functions.
-fn collect_returns<'b, 'a>(statements: &'b [Statement<'a>], out: &mut Vec<&'b oxc_ast::ast::ReturnStatement<'a>>) {
+fn collect_returns<'b, 'a>(
+    statements: &'b [Statement<'a>],
+    out: &mut Vec<&'b oxc_ast::ast::ReturnStatement<'a>>,
+) {
     for statement in statements {
         match statement {
             Statement::ReturnStatement(r) => out.push(r),
@@ -1770,7 +1787,9 @@ fn is_pure(e: &Expression) -> bool {
             oxc_ast::ast::ChainElement::StaticMemberExpression(m) => is_pure(&m.object),
             _ => false,
         },
-        Expression::ConditionalExpression(c) => is_pure(&c.test) && is_pure(&c.consequent) && is_pure(&c.alternate),
+        Expression::ConditionalExpression(c) => {
+            is_pure(&c.test) && is_pure(&c.consequent) && is_pure(&c.alternate)
+        }
         Expression::LogicalExpression(l) => is_pure(&l.left) && is_pure(&l.right),
         Expression::UnaryExpression(u) => u.operator == UnaryOperator::LogicalNot && is_pure(&u.argument),
         Expression::ObjectExpression(o) => o.properties.iter().all(|p| match p {

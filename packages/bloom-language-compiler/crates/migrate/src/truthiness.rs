@@ -93,7 +93,8 @@ pub fn defaults(
         let Some(right) = defaults.get(&squeeze(left)) else { continue };
         // ` || right`, however bloom_fmt broke the lines.
         let rest = &source[end..];
-        let Some(op) = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("||")) else {
+        let Some(op) = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("||"))
+        else {
             continue;
         };
         let Some(len) = squeezed_prefix(&rest[op + 2..], right) else { continue };
@@ -115,7 +116,8 @@ pub fn defaults(
         let after = source[end + tail_len..].trim_start();
         let bare = (before.ends_with([':', '(', '{', ',', '=']) || before.ends_with("return"))
             && (after.starts_with([')', ',', '}', '\n']) || after.is_empty());
-        let text = if bare || text.contains("??") && !text.contains('?') { text } else { format!("({text})") };
+        let text =
+            if bare || text.contains("??") && !text.contains('?') { text } else { format!("({text})") };
         edits.push((start, end + tail_len, text));
     }
     edits

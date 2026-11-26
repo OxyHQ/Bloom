@@ -97,9 +97,7 @@ impl Tr<'_> {
                     ("Array" | "ReadonlyArray", [element]) => format!("[{element}]"),
                     ("Record", [key, value]) if key == "String" => format!("[String: {value}]"),
                     // Keyed by a union of strings: a `[String: V]`, whose keys bloomc no longer checks.
-                    ("Record", [key, value])
-                        if key != "Float" && key != "Int" && !key.starts_with('[') =>
-                    {
+                    ("Record", [key, value]) if key != "Float" && key != "Int" && !key.starts_with('[') => {
                         self.review(format!(
                             "`{}` is a `[String: {value}]`: its keys are no longer checked",
                             self.slice(reference.span)

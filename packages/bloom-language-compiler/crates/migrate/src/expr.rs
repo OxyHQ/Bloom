@@ -204,7 +204,9 @@ impl Tr<'_> {
                 }
                 // `x || undefined`: `x`, an empty one kept (JS gave `undefined`).
                 if l.operator == LogicalOperator::Or && is_nothing(&l.right) {
-                    self.review("`|| undefined` dropped: a falsy value (`\"\"`, `0`) is kept, not `none`".into());
+                    self.review(
+                        "`|| undefined` dropped: a falsy value (`\"\"`, `0`) is kept, not `none`".into(),
+                    );
                     return self.expr(&l.left);
                 }
                 let left = self.expr(&l.left);
@@ -227,7 +229,11 @@ impl Tr<'_> {
             },
             Expression::AwaitExpression(a) => {
                 let value = self.expr(&a.argument);
-                if self.propagate && !self.awaits_bloom(&a.argument) { format!("await {value}?") } else { format!("await {value}") }
+                if self.propagate && !self.awaits_bloom(&a.argument) {
+                    format!("await {value}?")
+                } else {
+                    format!("await {value}")
+                }
             }
             Expression::JSXElement(el) => self.component(el),
             Expression::JSXFragment(f) => self.fragment_value(f),
@@ -239,7 +245,8 @@ impl Tr<'_> {
             }
             Expression::NewExpression(n) => match &n.callee {
                 Expression::Identifier(id)
-                    if matches!(id.name.as_str(), "Map" | "Set") && !self.imported.contains(id.name.as_str()) =>
+                    if matches!(id.name.as_str(), "Map" | "Set")
+                        && !self.imported.contains(id.name.as_str()) =>
                 {
                     let targs = n
                         .type_arguments
@@ -352,7 +359,8 @@ impl Tr<'_> {
         };
         let number = |e: &Expression| match e.without_parentheses() {
             Expression::NumericLiteral(n) => Some(n.value),
-            Expression::UnaryExpression(u) if u.operator == UnaryOperator::UnaryNegation => match &u.argument {
+            Expression::UnaryExpression(u) if u.operator == UnaryOperator::UnaryNegation => match &u.argument
+            {
                 Expression::NumericLiteral(n) => Some(-n.value),
                 _ => None,
             },
@@ -689,7 +697,10 @@ impl Tr<'_> {
             let list = self.expr(&member.object);
             let (x, i) = (self.bind(x, arrow.span), self.bind(i, arrow.span));
             let body = self.closure_body(arrow);
-            return format!("{list}.enumerated().{}{{ ({i}, {x}) in\n{body}\n}}", member.property.name.as_str().to_owned() + " ");
+            return format!(
+                "{list}.enumerated().{}{{ ({i}, {x}) in\n{body}\n}}",
+                member.property.name.as_str().to_owned() + " "
+            );
         }
         match self.callee(call) {
             Callee::Embed => self.embed(call),
@@ -1055,7 +1066,8 @@ impl Tr<'_> {
     /// A list literal's items as sibling builder lines.
     fn splice(&mut self, e: &Expression) -> String {
         let Expression::ArrayExpression(a) = e.without_parentheses() else { return self.child(e) };
-        let lines: Vec<String> = a.elements.iter().filter_map(|x| x.as_expression()).map(|x| self.child(x)).collect();
+        let lines: Vec<String> =
+            a.elements.iter().filter_map(|x| x.as_expression()).map(|x| self.child(x)).collect();
         lines.join("\n")
     }
 
@@ -1162,7 +1174,9 @@ impl Tr<'_> {
         let returning = std::mem::replace(&mut self.try_return, false);
         let body = match arrow.get_expression() {
             Some(e) => self.stmt_expr(e),
-            None => self.block_stmts(crate::view::arrow_statements(arrow), crate::view::arrow_end(arrow), false),
+            None => {
+                self.block_stmts(crate::view::arrow_statements(arrow), crate::view::arrow_end(arrow), false)
+            }
         };
         self.propagate = propagate;
         self.try_return = returning;
@@ -1334,7 +1348,8 @@ fn is_conditional_child(e: &Expression) -> bool {
 pub fn indexed_callback<'b, 'a>(
     call: &'b CallExpression<'a>,
     methods: &[&str],
-) -> Option<(&'b oxc_ast::ast::StaticMemberExpression<'a>, &'b str, &'b str, &'b ArrowFunctionExpression<'a>)> {
+) -> Option<(&'b oxc_ast::ast::StaticMemberExpression<'a>, &'b str, &'b str, &'b ArrowFunctionExpression<'a>)>
+{
     let Expression::StaticMemberExpression(m) = &call.callee else { return None };
     if !methods.contains(&m.property.name.as_str()) || m.optional {
         return None;
