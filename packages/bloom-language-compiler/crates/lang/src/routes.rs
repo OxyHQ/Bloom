@@ -8,7 +8,6 @@
 //! or renamed), and its folders are a compile's dependencies, so a cache
 //! keyed on them invalidates when `app/` changes.
 
-use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::SystemTime;
@@ -27,7 +26,7 @@ pub struct Routes {
 }
 
 thread_local! {
-    static TREES: RefCell<HashMap<PathBuf, Rc<Routes>>> = RefCell::new(HashMap::default());
+    static TREES: crate::ts::ThreadCache<HashMap<PathBuf, Rc<Routes>>> = crate::ts::thread_cache(HashMap::default());
 }
 
 /// The app's routes: from `Options::app`, else `app/` or `src/app/` under the root.
