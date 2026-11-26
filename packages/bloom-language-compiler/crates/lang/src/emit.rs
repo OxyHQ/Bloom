@@ -1485,6 +1485,11 @@ impl<'a> Emitter<'a> {
     fn expr(&mut self, expr: &Expr) -> Frag {
         let mut out = Frag::default();
         out.mark(expr.span);
+        // `.xxl` where a token goes: the token string.
+        if let Some(token) = self.ck.swift_tokens.get(&expr.id) {
+            out.s(&string_literal(token));
+            return out;
+        }
         out.f(self.expr_inner(expr));
         // A struct passed as a record type with fewer fields: named, so TS does not refuse
         // its other fields as excess properties of a fresh literal (the checker proved it fits).

@@ -28,13 +28,14 @@
     "build:addon": "./scripts/build-addon.sh",
     "build:cli": "./scripts/build-cli.sh",
     "typescript": "tsc --noEmit -p .",
-    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs test/worker-exit.test.cjs test/import-cache.test.cjs test/cli.test.cjs && jest",
+    "test": "node scripts/generate-swift-tokens.mjs --check && cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs test/worker-exit.test.cjs test/import-cache.test.cjs test/cli.test.cjs && jest",
     "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
     "generate:platforms": "napi create-npm-dirs --npm-dir npm && node scripts/generate-platforms.mjs",
     "pack:prebuilt": "node scripts/pack-prebuilt.mjs",
-    "pack:local": "node scripts/pack-local.mjs"
+    "pack:local": "node scripts/pack-local.mjs",
+    "generate:swift-tokens": "node scripts/generate-swift-tokens.mjs"
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "0.3.31"

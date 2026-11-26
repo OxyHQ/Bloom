@@ -229,6 +229,9 @@ pub struct CheckResult {
     pub types: HashMap<ExprId, Ty>,
     pub spans: Vec<(Span, Ty)>,
     pub names: HashMap<ExprId, NameRes>,
+    /// `.xxl`, `.caption1`, `.primary.opacity(0.1)` where a token goes (2.0): the token string
+    /// each compiles to (`"2xl"`, `"caption-1"`, `"primary/10"`).
+    pub swift_tokens: HashMap<ExprId, String>,
     pub calls: HashMap<ExprId, CallRes>,
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
