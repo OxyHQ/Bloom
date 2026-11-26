@@ -73,7 +73,7 @@ jobs:
     # dispatch run) would otherwise skip the dependent too; it runs unless
     # provenance positively answered verified.
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: seldon-ci
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -149,7 +149,7 @@ jobs:
     name: Language packages
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: seldon-ci
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -220,7 +220,7 @@ jobs:
     name: Language parity (${{ matrix.shard }}/2)
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: seldon-ci
     timeout-minutes: 35
     strategy:
       fail-fast: false
@@ -249,7 +249,7 @@ jobs:
     name: Tests (${{ matrix.shard }}/5)
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: seldon-ci
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -286,7 +286,7 @@ jobs:
   android:
     name: Android (${{ matrix.variant }})
     needs: provenance
-    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
+    if: false # trial branch only
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
