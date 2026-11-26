@@ -6,6 +6,7 @@
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
+- A `List`'s and a `SectionedList`'s entries take language nodes in their slots (`leading: AvatarGroup(faces)`, `trailing: Badge(role)`, the `ListRow` type), drawn in the list's own tree: a row costs what the JSX in its slots does (the cost gate holds Allo's share and members rows to it). A language root in a slot (`toElement(chain)`) is drawn as part of the tree too, where it was a boundary per row.
 - `.border(undefined, width, edge?)`: a border width in the platform's default colour (React Native's black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` draws it; a colour chosen at render may be none (`.border(subscribed ? 'border' : undefined, 'thin')`). It paints nothing from the theme, so a root or `view()` body around it reads none.
 
 ### Documentation

@@ -27,7 +27,7 @@ import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
 import { type Binding, type Refresh, refreshing } from '../binding';
-import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
+import { isNode, Node, type Child, type ViewModifiers, type ViewNode } from '../node';
 import {
   resolveSpace,
   type Density,
@@ -267,12 +267,39 @@ export function ConversationRow(data: ListConversationData): ListItemView {
 export function MailRow(data: MailRowData): MailRowView {
   return new Node('mailRow', { recipe: 'mail', data } satisfies ListItemProps, []);
 }
-/** Bloom `List`: its rows (Bloom's `ListEntry` data, an `id` each), or `sections` of them. */
-export function List(items: readonly ListEntry[]): ListView {
+/** A row's slots that hold a view. */
+const ROW_SLOTS = [
+  'title',
+  'supporting',
+  'content',
+  'leading',
+  'trailing',
+  'footer',
+  'attachments',
+  'contextMenu',
+] as const;
+type RowSlot = (typeof ROW_SLOTS)[number];
+
+/**
+ * A row of a `List`: Bloom's `ListEntry` (an `id`, a recipe's data, its
+ * press), each slot an element or a language node (`leading: AvatarGroup(faces)`,
+ * `trailing: Badge(role)`), which the list draws in its own tree, as JSX in
+ * the slot is: no root, component or context read of its own per row.
+ */
+export type ListRow = Omit<ListEntry, RowSlot> & {
+  readonly [K in RowSlot]?: ReactNode | Child;
+};
+/** A section of a `SectionedList`: its rows (`ListRow`s), under its title. */
+export interface ListRowSection extends Omit<ListSection, 'items'> {
+  readonly items: readonly ListRow[];
+}
+
+/** Bloom `List`: its rows (Bloom's `ListEntry` data, an `id` each, its slots elements or nodes), or `sections` of them. */
+export function List(items: readonly ListRow[]): ListView {
   return new Node('list', { items }, []);
 }
 /** Bloom `List` in sections. */
-export function SectionedList(sections: readonly ListSection[]): ListView {
+export function SectionedList(sections: readonly ListRowSection[]): ListView {
   return new Node('list', { sections }, []);
 }
 /**
@@ -319,6 +346,50 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
   props.header = slot(d, header);
   props.footer = slot(d, footer);
   props.empty = slot(d, empty);
+}
+
+/**
+ * A row as Bloom's `ListEntry`: each slot that holds a node drawn in the
+ * list's tree, and a language root (`toElement(chain)`) drawn as part of it,
+ * so a row has no boundary of its own. A row with neither is the one given.
+ */
+function entryOf(d: ControlDraw, row: ListRow): ListEntry {
+  let entry: Record<string, unknown> | undefined;
+  for (const key of ROW_SLOTS) {
+    const value = row[key];
+    if (typeof value !== 'object' || value === null) continue;
+    const drawn = isNode(value) ? d.render(value) : isValidElement(value) ? d.embed(value) : value;
+    if (drawn === value) continue;
+    entry ??= { ...row };
+    entry[key] = drawn;
+  }
+  return (entry ?? row) as ListEntry;
+}
+
+/** Rows as Bloom's entries: the array given when no row changes. */
+function entriesOf(d: ControlDraw, rows: readonly ListRow[]): readonly ListEntry[] {
+  let entries: ListEntry[] | undefined;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i] as ListRow;
+    const entry = entryOf(d, row);
+    if (entry === row && entries === undefined) continue;
+    entries ??= rows.slice(0, i) as ListEntry[];
+    entries.push(entry);
+  }
+  return entries ?? (rows as readonly ListEntry[]);
+}
+
+/** Sections as Bloom's: the array given when no row changes. */
+function sectionsOf(d: ControlDraw, sections: readonly ListRowSection[]): readonly ListSection[] {
+  let out: ListSection[] | undefined;
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i] as ListRowSection;
+    const items = entriesOf(d, section.items);
+    if (items === section.items && out === undefined) continue;
+    out ??= sections.slice(0, i) as ListSection[];
+    out.push(items === section.items ? (section as ListSection) : { ...section, items });
+  }
+  return out ?? (sections as readonly ListSection[]);
 }
 
 /** A header container that keeps to its content (`.headerFitsContent()`): one object for every list. */
@@ -400,7 +471,13 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
   mailRow: listItem,
   list: (d) => {
     const props = d.props();
-    Object.assign(props, d.node.props as object, {
+    const { items, sections } = d.node.props as {
+      items?: readonly ListRow[];
+      sections?: readonly ListRowSection[];
+    };
+    if (items !== undefined) props.items = entriesOf(d, items);
+    if (sections !== undefined) props.sections = sectionsOf(d, sections);
+    Object.assign(props, {
       separator: d.own('separator')?.value,
       scrollable: d.own('scrollable')?.value,
       height: space(d.own('scrollHeight')?.value),

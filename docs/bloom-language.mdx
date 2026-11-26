@@ -2826,7 +2826,26 @@ one; a `List`'s entries stay Bloom's data, each entry's star with it.
 `List(entries)` and `SectionedList(sections)` take Bloom's `ListEntry` data:
 `.separator('none' | 'line' | 'inset')`, `.scrollable()`, `.scrollHeight()`,
 `.stickyHeaders()`, `.sectionIndex()`, `.headerContent()`, `.footerContent()`,
-`.emptyState()`, `.loading()` and `.loadingRows(n)`.
+`.emptyState()`, `.loading()` and `.loadingRows(n)`. An entry's slots (`title`,
+`supporting`, `content`, `leading`, `trailing`, `footer`, `attachments`,
+`contextMenu`) take an element or a language node (a `ListRow`), drawn in the
+list's own tree: a row costs what the JSX in its slots does, with no root,
+component or context read of its own (the cost gate holds it). A language root
+there (`toElement(chain)`) is drawn as part of the tree too, as a
+`VirtualList` row's is.
+
+```ts
+List(members.map((member) => ({
+  id: member.id,
+  person: member,
+  trailing: member.role ? Badge(t(`role.${member.role}`)) : undefined,
+})))
+SectionedList([{ id: 'recent', title: t('share.recent'), items: recent.map((chat) => ({
+  id: chat.id,
+  conversation: chat,
+  leading: chat.faces.length > 1 ? AvatarGroup(chat.faces).layout('conversation').size('lg') : undefined,
+})) }])
+```
 
 `VirtualList(data, row)` is Bloom's: FlashList (or FlatList) on native, the
 virtualizer on the web. `row({ item, index })` returns the item's view, or the
