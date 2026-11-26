@@ -3421,12 +3421,22 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// What an `id:` re-runs for, as effect dependencies: a tuple's values each, so
+    /// `id: (a, b)` is `[a, b]` and not a fresh array every render.
+    fn dep_values(&mut self, id: &Expr) -> Vec<Frag> {
+        match &id.kind {
+            ExprKind::Tuple(values) => values.iter().map(|v| self.expr(v)).collect(),
+            ExprKind::Paren(inner) => self.dep_values(inner),
+            _ => vec![self.expr(id)],
+        }
+    }
+
     /// `effect { … }`: one `useEffect` on its reads (or `id:`); the `defer`s at its
     /// top are the cleanup it returns, last first.
     fn effect(&mut self, e: &EffectDecl) {
         self.import_name("react", "useEffect");
         let deps = match &e.id {
-            Some(id) => vec![self.expr(id)],
+            Some(id) => self.dep_values(id),
             None => self.deps(&e.body.stmts).into_iter().map(Frag::of).collect(),
         };
         enum Cleanup {
@@ -3670,7 +3680,7 @@ impl<'a> Emitter<'a> {
         let saved = self.signal.replace(signal.clone());
         let body = self.block_body(&trailing.body, Tail::Discard, Some(&signal));
         self.signal = saved;
-        let deps: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
+        let deps: Vec<Frag> = call.args.iter().flat_map(|a| self.dep_values(&a.value)).collect();
         let mut line = Frag::at(
             call.callee.span,
             "useEffect(() => {\nconst $controller = new AbortController();\nconst $signal = $controller.signal;\nvoid (async () => ",

@@ -28,6 +28,9 @@ useEffect(() => {
 setSeen(count);
 }, [count]);
 useEffect(() => {
+logger.info("changed");
+}, [count, paused]);
+useEffect(() => {
 logger.info("a");
 const $t0 = () => {
 logger.info("a done");
@@ -58,7 +61,7 @@ if (!$signal.aborted) $t1();
 }
 })();
 return () => $controller.abort();
-}, [label]);
+}, [label, step]);
 let $t2;
 if ($[0] !== label || $[1] !== count) {
 $t2 = Text(`${label}: ${count}`);
