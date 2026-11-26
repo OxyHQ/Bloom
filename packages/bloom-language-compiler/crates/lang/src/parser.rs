@@ -1787,8 +1787,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.bump();
                 self.expr_node(ExprKind::Name("import".into()), start)
             }
-            // `type`, `body`, …: a name where a value goes (a prop or field of a TS API).
-            Tok::Kw(kw) if is_soft(kw) => {
+            // `type`, `body`, …: a name where a value goes (a prop or field of a TS API). Not
+            // `body {` or `view X`, which start a member or a declaration, not a value.
+            Tok::Kw(kw)
+                if is_soft(kw)
+                    && !(matches!(kw, Kw::Body) && matches!(self.nth(1), Tok::P(P::LBrace)))
+                    && !(matches!(kw, Kw::View | Kw::Screen | Kw::Layout)
+                        && matches!(self.nth(1), Tok::Ident(_))) =>
+            {
                 let ident = self.name_or_keyword("a name");
                 self.expr_node(ExprKind::Name(ident.name), start)
             }

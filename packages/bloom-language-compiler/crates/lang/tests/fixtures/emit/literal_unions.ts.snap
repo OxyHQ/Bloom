@@ -1,3 +1,6 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
 
 export type Tone = "calm" | "loud";
 
@@ -13,4 +16,61 @@ return base + volume(tone ?? "calm");
 export function uses(): number {
 return pick("lg", "loud") + pick("sm", undefined);
 }
+
+type Gutter = "sm" | "md" | "lg";
+
+export interface InsetProps {
+  readonly card: boolean;
+  readonly gutter: "sm" | "md" | "lg";
+}
+export const Inset = view(function Inset(props: InsetProps) {
+"use no memo";
+const $ = $c(16);
+const { card, gutter } = props;
+let inset: "md" | "sm" | "lg";
+if ($[0] !== card || $[1] !== gutter) {
+inset = card ? "md" : gutter;
+$[0] = card;
+$[1] = gutter;
+$[2] = inset;
+} else {
+inset = $[2];
+}
+let side: "96" | "48";
+if ($[3] !== card) {
+side = card ? "96" : "48";
+$[3] = card;
+$[4] = side;
+} else {
+side = $[4];
+}
+let corner: "10" | "lg";
+if ($[5] !== card) {
+corner = card ? "10" : "lg";
+$[5] = card;
+$[6] = corner;
+} else {
+corner = $[6];
+}
+let label: "card" | "row";
+if ($[7] !== card) {
+label = card ? "card" : "row";
+$[7] = card;
+$[8] = label;
+} else {
+label = $[8];
+}
+let $t0;
+if ($[11] !== label || $[12] !== inset || $[13] !== side || $[14] !== corner) {
+$t0 = VStack(Text(label + "!").padding("leading", inset).frame({ width: side, height: side }).corner(corner), ($[9] !== label ? ($[9] = label, $[10] = Text(`${label.length}`)) : $[10]));
+$[11] = label;
+$[12] = inset;
+$[13] = side;
+$[14] = corner;
+$[15] = $t0;
+} else {
+$t0 = $[15];
+}
+return $t0;
+});
 

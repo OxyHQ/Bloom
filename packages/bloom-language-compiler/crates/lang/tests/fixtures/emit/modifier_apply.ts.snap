@@ -1,8 +1,9 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Text, view } from "@oxy.so/bloom-language";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
 import { card } from "@/components/modifiers";
 import { type ViewModifier } from "@oxy.so/bloom-language";
+import { defineModifier } from "@oxy.so/bloom-language";
 
 const $view0 = Text("x").modifier(card);
 export const Panel = view(function Panel() {
@@ -35,5 +36,29 @@ $[1] = $t1;
 $t1 = $[1];
 }
 return $t1;
+});
+
+const framed = defineModifier((v) => v.padding("md").background("card"));
+
+const tagged = defineModifier((v) => v.padding("horizontal", "xs"));
+
+const $view2 = Text("a");
+const $view3 = Text("b").modifier(tagged);
+export interface FramedProps {
+  readonly look?: ViewModifier | undefined;
+}
+export const Framed = view(function Framed(props: FramedProps) {
+"use no memo";
+const $ = $c(2);
+const { look = undefined } = props;
+let $t2;
+if ($[0] !== look) {
+$t2 = VStack($view2.modifier(look ?? (framed satisfies ViewModifier | undefined)), $view3);
+$[0] = look;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
 });
 

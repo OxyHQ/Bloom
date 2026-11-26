@@ -537,7 +537,7 @@ impl Reader {
                 rest: true,
             });
         }
-        TsFn { type_params: type_params(type_parameters), params: out, ret: ret.map(|t| self.ty(t)) }
+        TsFn { type_params: fn_type_params(type_parameters), params: out, ret: ret.map(|t| self.ty(t)) }
     }
 
     fn members(&self, signatures: &[TSSignature]) -> Vec<TsMember> {
@@ -661,6 +661,30 @@ fn type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaratio
         .map(|d| d.params.iter().map(|p| p.name.name.to_string()).collect())
         .unwrap_or_default()
 }
+
+/// A function's type parameters; one bound by a view's modifiers (`<V extends
+/// ViewModifiers<V>>`, `AnyView`, `ViewNode`) is marked `V\0view`: Bloom reads it as a view.
+fn fn_type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaration>>) -> Vec<String> {
+    declaration
+        .as_ref()
+        .map(|d| {
+            d.params
+                .iter()
+                .map(|p| {
+                    let view = matches!(
+                        &p.constraint,
+                        Some(TSType::TSTypeReference(r))
+                            if matches!(type_name(&r.type_name).as_str(), "ViewModifiers" | "AnyView" | "ViewNode")
+                    );
+                    if view { format!("{}{VIEW_PARAM}", p.name.name) } else { p.name.name.to_string() }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The mark of a type parameter bound by a view's modifiers.
+const VIEW_PARAM: &str = "\0view";
 
 fn type_name(name: &TSTypeName) -> String {
     match name {
@@ -1259,6 +1283,9 @@ impl Mapper<'_> {
         path: &str,
         depth: usize,
     ) -> Ty {
+        if scope.iter().any(|p| p.strip_suffix(VIEW_PARAM) == Some(name)) {
+            return Ty::View(None);
+        }
         if let Some(index) = scope.iter().position(|p| p == name) {
             return Ty::Param(index as u32, name.into());
         }
