@@ -1310,6 +1310,15 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::default();
         out.mark(expr.span);
         out.f(self.expr_inner(expr));
+        // A struct passed as a record type with fewer fields: named, so TS does not refuse
+        // its other fields as excess properties of a fresh literal (the checker proved it fits).
+        if self.ck.widened.contains(&expr.id) && !self.bufs.is_empty() {
+            let name = self.temp();
+            let mut stmt = Frag::of(format!("const {name} = "));
+            stmt.f(out).s(";");
+            self.push_stmt(stmt);
+            return Frag::of(name);
+        }
         // A `Foreign` value where Bloom expects a type: TypeScript checks it is one.
         if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
             let ty = self.ts_type(&ty);
