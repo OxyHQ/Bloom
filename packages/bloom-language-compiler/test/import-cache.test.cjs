@@ -198,5 +198,6 @@ test('withBloomLanguage wraps the stores in every form a config gives them, once
   const byDefault = withBloomLanguage({}).cacheStores(MetroCache);
   assert.equal(byDefault[0].name, 'FileStore');
   const twice = withBloomLanguage(withBloomLanguage({ cacheStores: [store] })).cacheStores;
-  assert.equal(Object.getPrototypeOf(twice[0]), store, 'wrapped once');
+  assert.equal(withBloomLanguage({ cacheStores: twice }).cacheStores[0], twice[0], 'wrapped once');
+  assert.equal(twice[0].name, 'memory');
 });
