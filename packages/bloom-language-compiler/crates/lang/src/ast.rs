@@ -192,6 +192,8 @@ pub enum TypeMemberKind {
     Computed { name: Ident, ty: TypeExpr, body: Block },
     /// `func`, `static func ==`, `init(…)`.
     Func(FnDecl),
+    /// `let { t } = useTranslation()`: a destructuring constant, per render (a view's).
+    Let(LetStmt),
 }
 
 #[derive(Debug, Clone, PartialEq)]

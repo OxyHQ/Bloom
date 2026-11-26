@@ -69,6 +69,8 @@ pub struct FnTy {
 pub struct ParamTy {
     /// A `func`'s labelled parameter: a call names it (`move(to: 1)`), never by position.
     pub labelled: bool,
+    /// A `func`'s `_ name` parameter: called by position only (its name is the body's).
+    pub positional: bool,
     pub name: Option<String>,
     pub ty: Ty,
     /// Has a default (Bloom) or is optional (TS `?`).
@@ -212,6 +214,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
                 .iter()
                 .map(|p| ParamTy {
                     labelled: p.labelled,
+                    positional: p.positional,
                     name: p.name.clone(),
                     ty: map_ty(&p.ty, f),
                     optional: p.optional,

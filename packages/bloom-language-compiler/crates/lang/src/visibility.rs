@@ -62,6 +62,19 @@ pub fn check(file: &File, source: &str) -> Vec<Diagnostic> {
     out
 }
 
+/// The names of `file`'s internal and private types that its `public` declarations name.
+pub fn exposed(file: &File, source: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for diagnostic in check(file, source) {
+        if let Some(name) = diagnostic.message.split('`').nth(1)
+            && !out.iter().any(|n| n == name)
+        {
+            out.push(name.to_string());
+        }
+    }
+    out
+}
+
 fn names<'a>(ty: &'a TypeExpr, f: &mut impl FnMut(&'a Ident)) {
     match &ty.kind {
         TypeKind::Named { name, args } => {

@@ -95,6 +95,44 @@ pub fn fmt(paths: &[PathBuf], check: bool, jobs: usize) -> Result<bool, String> 
     Ok(ok)
 }
 
+/// `bloomc migrate --from 0.x [--check] <paths…>`: rewrites 0.x files in 2.0's forms, and
+/// prints what each leaves in 0.x form. `--check` lists the files it would change.
+pub fn migrate(paths: &[PathBuf], check: bool, jobs: usize) -> Result<bool, String> {
+    let files = bloom_files(paths)?;
+    let results = parallel::map(&files, jobs, |path| -> Result<_, String> {
+        let source = read(path)?;
+        Ok(match bloom_fmt::migrate(&source, &shown(path)) {
+            Ok((migrated, notes)) => {
+                let changed = migrated != source;
+                if changed && !check {
+                    std::fs::write(path, migrated).map_err(|e| format!("{}: {e}", path.display()))?;
+                }
+                Ok((changed, notes))
+            }
+            Err(diagnostics) => Err(diagnostics),
+        })
+    });
+    let mut ok = true;
+    for (path, result) in files.iter().zip(results) {
+        match result? {
+            Ok((changed, notes)) => {
+                if changed {
+                    println!("{} {}", if check { "would migrate" } else { "migrated" }, shown(path));
+                    ok &= !check;
+                }
+                for note in notes {
+                    println!("  note: {note}");
+                }
+            }
+            Err(diagnostics) => {
+                report(&diagnostics);
+                ok = false;
+            }
+        }
+    }
+    Ok(ok)
+}
+
 pub struct BuildOptions {
     pub jobs: usize,
     pub cache: bool,

@@ -1192,6 +1192,7 @@ impl Mapper<'_> {
             };
             params.push(ParamTy {
                 labelled: false,
+                positional: false,
                 name: Some(param.name.clone()),
                 ty,
                 optional: param.optional,
