@@ -440,6 +440,18 @@ impl Tr<'_> {
     }
 
     fn static_member(&mut self, object: &Expression, property: &str, optional: bool, _span: Span) -> String {
+        // `React.Children.toArray(node).length`: a `View` is one child.
+        if property == "length"
+            && let Expression::CallExpression(call) = object.without_parentheses()
+            && let Expression::StaticMemberExpression(m) = &call.callee
+            && m.property.name == "toArray"
+            && matches!(&m.object, Expression::StaticMemberExpression(c) if c.property.name == "Children")
+        {
+            self.review(
+                "`React.Children.toArray(x).length` is 1: a view is one child (a `Group` counts once)".into(),
+            );
+            return "1".into();
+        }
         if let Expression::Identifier(id) = object
             && self.scope.props.as_deref() == Some(id.name.as_str())
             && !self.scope.renames.contains_key(id.name.as_str())

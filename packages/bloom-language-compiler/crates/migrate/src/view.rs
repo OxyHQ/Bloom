@@ -1291,6 +1291,15 @@ impl Tr<'_> {
             self.scope.renames.remove(id.name.as_str());
             let name = self.bind_param(&id.name, id.span);
             let Some(t) = &param.type_annotation else {
+                // `tallRow = false`: the default's literal type.
+                if let Some(default) = &param.initializer
+                    && let Some(ty) = literal_type(default)
+                {
+                    let value = self.expr(default);
+                    self.scope.decl.insert(name.clone(), ty.to_string());
+                    out.push(format!("{name}: {ty} = {value}"));
+                    continue;
+                }
                 out.push(self.refuse("param:untyped", format!("`{}` has no type", id.name), param.span));
                 continue;
             };
