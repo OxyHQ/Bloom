@@ -118,7 +118,7 @@ view_block    = "{" { member NL } "body" block "}" ;
 member        = state | let_stmt | fn | effect | equal ;
 equal         = "equal" "(" IDENT "," IDENT ")" block ;   (* contextual, like effect *)
 effect        = "effect" [ "(" "id" ":" expr ")" ] block ;   (* contextual: `effect` stays a name *)
-state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
+state         = "@" ( "state" | "list" | "record" | "env" | "ref" ) IDENT [ ":" type ] "=" expr ;
 
 block         = "{" { stmt ( NL | ";" ) } "}" ;
 stmt          = let_stmt | var_stmt | assign | "return" [ expr ] | "defer" block | while | for | expr ;
@@ -422,6 +422,13 @@ Reading a state member after assigning it in the same closure is B0410 (it would
 render's value); bind the new value to a `let` first. Hook calls are only allowed as view
 members (B0420), so the rules of hooks hold by construction.
 
+**Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
+and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
+effects and tasks: reading or writing it while the view draws is B0411, since the body would
+not follow it. `.ref(x)` passes the ref itself for a host view to fill; such a ref (`@ref field:
+ViewInstance? = none`) holds `null` in JS when empty and reads as `none`. A ref is never a memo
+dependency.
+
 ### 7.4 Environment
 
 `@env x = key` reads a value set above with `.environment(key, value)`. Keys are made with
@@ -574,7 +581,7 @@ Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects,
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
 `==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
-(captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
+(captured `var`), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
 outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,

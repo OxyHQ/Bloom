@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface SearchProps {
+  readonly onDone: () => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Search())`), or from TSX as `toElement(Search())`. */
+export declare const Search: (props: SearchProps) => ComposedView;

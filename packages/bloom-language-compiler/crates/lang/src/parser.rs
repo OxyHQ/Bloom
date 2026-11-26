@@ -805,12 +805,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                     "list" => StateAttr::List,
                     "record" => StateAttr::Record,
                     "env" => StateAttr::Env,
+                    "ref" => StateAttr::Ref,
                     other => {
-                        let help = crate::diagnostic::closest(other, ["state", "list", "record", "env"])
-                            .map_or(
-                                "the attributes are @state, @list, @record and @env".to_string(),
-                                |near| format!("did you mean `@{near}`?"),
-                            );
+                        let help =
+                            crate::diagnostic::closest(other, ["state", "list", "record", "env", "ref"])
+                                .map_or(
+                                    "the attributes are @state, @list, @record, @env and @ref".to_string(),
+                                    |near| format!("did you mean `@{near}`?"),
+                                );
                         self.error(
                             Diagnostic::error(
                                 "B0101",

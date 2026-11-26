@@ -254,6 +254,8 @@ pub enum StateAttr {
     List,
     Record,
     Env,
+    /// `@ref x = v`: a value that lives across renders without causing one (`useRef`).
+    Ref,
 }
 
 impl StateAttr {
@@ -263,6 +265,7 @@ impl StateAttr {
             StateAttr::List => "list",
             StateAttr::Record => "record",
             StateAttr::Env => "env",
+            StateAttr::Ref => "ref",
         }
     }
 }

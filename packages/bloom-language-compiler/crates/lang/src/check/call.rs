@@ -1381,6 +1381,16 @@ impl Checker<'_> {
         if name.name == "task" {
             return self.task(expr, call, name, recv, task_allowed);
         }
+        if name.name == "ref"
+            && let [arg] = call.args.as_slice()
+            && matches!(arg.value.kind, ExprKind::Name(_))
+        {
+            self.ref_object = true;
+            self.boundary(&arg.value, None);
+            self.ref_object = false;
+            self.out.calls.insert(expr.id, CallRes::Modifier { object: false });
+            return recv.clone();
+        }
         if name.name == "onChange" {
             return self.on_change(expr, call, name, recv, task_allowed);
         }

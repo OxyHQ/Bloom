@@ -31,6 +31,8 @@ pub enum LocalKind {
     Prop,
     /// `@state`; written through its setter.
     State,
+    /// `@ref`: read and written as `x.current`, outside the render.
+    Ref,
     /// A view member whose value is a hook (`let x = useX()`, `@list`, `@record`, `@env`).
     Hook,
     /// A view's `let` member.
@@ -213,6 +215,8 @@ pub struct CheckResult {
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
     pub assigns: HashMap<Span, AssignRes>,
+    /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
+    pub ref_objects: HashSet<ExprId>,
     pub awaits: HashMap<ExprId, AwaitRes>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
@@ -309,6 +313,8 @@ pub struct Checker<'o> {
     /// Expressions optional only because a `?.` before them in their chain was `none`:
     /// the rest of the chain reads their value (`b?.label.count`), as JS short-circuits.
     chained: HashSet<ExprId>,
+    /// Checking `.ref(x)`'s argument: a `@ref` there is the ref itself.
+    ref_object: bool,
     /// When analysing for an editor: each checked expression's expected type.
     pub expected: Option<Vec<(Span, Ty)>>,
     /// Whether every typed span is kept (for hover and analysis; a compile does not read them).
@@ -378,6 +384,7 @@ impl<'o> Checker<'o> {
             task_allowed: false,
             reported: HashSet::default(),
             chained: HashSet::default(),
+            ref_object: false,
             expected: None,
             spans: true,
         }
@@ -1428,15 +1435,18 @@ impl<'o> Checker<'o> {
                 Member::State(state) => {
                     let declared = state.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = match state.attr {
-                        StateAttr::State => self.expr(&state.value, declared.as_ref()),
+                        StateAttr::State | StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
                             self.boundary(&state.value, None);
                             declared.unwrap_or_else(|| Ty::Foreign("".into()))
                         }
                     };
-                    let kind =
-                        if state.attr == StateAttr::State { LocalKind::State } else { LocalKind::Hook };
+                    let kind = match state.attr {
+                        StateAttr::State => LocalKind::State,
+                        StateAttr::Ref => LocalKind::Ref,
+                        _ => LocalKind::Hook,
+                    };
                     vec![self.declare(&state.name, ty, kind)]
                 }
                 Member::Let(stmt) => {
@@ -1966,7 +1976,7 @@ impl<'o> Checker<'o> {
             return;
         };
         let info = self.out.locals[local].clone();
-        let mutable = matches!(info.kind, LocalKind::State | LocalKind::Var);
+        let mutable = matches!(info.kind, LocalKind::State | LocalKind::Var | LocalKind::Ref);
         if !mutable {
             let help = match info.kind {
                 LocalKind::Let | LocalKind::Derived => format!(
@@ -2014,6 +2024,9 @@ impl<'o> Checker<'o> {
             }
             ty
         };
+        if info.kind == LocalKind::Ref && self.frames.last().is_some_and(|f| f.render) {
+            self.ref_in_render(name, a.target.span);
+        }
         if info.kind == LocalKind::State && self.frames.last().is_some_and(|f| f.render) {
             self.report(
                 Diagnostic::error(
@@ -2056,6 +2069,17 @@ impl<'o> Checker<'o> {
             AssignRes::Var { local, fields }
         };
         self.out.assigns.insert(a.span, res);
+    }
+
+    /// A ref is read and written in handlers, effects and tasks; while the view draws
+    /// it would not be what the next render sees.
+    fn ref_in_render(&mut self, name: &str, span: Span) {
+        self.report(
+            Diagnostic::error("B0411", span, format!("`{name}` is a `@ref`, used while the view draws"))
+                .label("a ref changes without a render, so the body would not follow it")
+                .help("read or write it in a handler, an `effect` or a `.task`; make it `@state` to draw it; pass it to `.ref(x)` as is")
+                .spec("73-reactivity-compile-time"),
+        );
     }
 
     fn var_captured(&mut self, info: &Local, span: Span) {
@@ -3040,6 +3064,14 @@ impl<'o> Checker<'o> {
             let info = self.out.locals[local].clone();
             if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
                 self.var_captured(&info, expr.span);
+            }
+            if info.kind == LocalKind::Ref {
+                if self.ref_object {
+                    // `.ref(x)`: the ref itself, for the host view to fill.
+                    self.out.ref_objects.insert(expr.id);
+                } else if self.frames.last().is_some_and(|f| f.render) {
+                    self.ref_in_render(name, expr.span);
+                }
             }
             if info.kind == LocalKind::State && self.frames.last().is_some_and(|f| f.written.contains(&local))
             {
