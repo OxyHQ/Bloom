@@ -73,6 +73,9 @@ pub fn spell(
     if edits.is_empty() && out == source { None } else { Some(out) }
 }
 
+/// A replacement: the span `start..end` and its text.
+type Edit = (usize, usize, String);
+
 /// `a || b` as a value, where bloomc found `a` not `Bool`: JS's "`b` when `a` is
 /// falsy", spelled from `a`'s type. Returns the edits, whole `a || b` spans, and
 /// the spans of the `||`s left for a later round (one holding another: the inner
@@ -81,8 +84,8 @@ pub fn defaults(
     source: &str,
     diagnostics: &[Diagnostic],
     defaults: &HashMap<String, Vec<String>>,
-) -> (Vec<(usize, usize, String)>, Vec<(usize, usize)>) {
-    let mut edits: Vec<(usize, usize, String)> = Vec::new();
+) -> (Vec<Edit>, Vec<(usize, usize)>) {
+    let mut edits: Vec<Edit> = Vec::new();
     for d in diagnostics {
         if d.code != "B0201" {
             continue;
