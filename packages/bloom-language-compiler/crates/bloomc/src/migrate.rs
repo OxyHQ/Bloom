@@ -127,6 +127,14 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
         for note in rewrite_importers(root, &written)? {
             println!("{note}");
         }
+        // Now that the modules are `.bloom` on disk: their imports of one another by path
+        // become module imports (or go, within one module), and npm imports with a binding
+        // target import it; each file is kept so only when it still compiles.
+        for (path, _) in &written {
+            if let Some(note) = module_imports(root, &bloom_path(path), &lang)? {
+                println!("{note}");
+            }
+        }
     }
     if options.report {
         print!("{}", report::render(&entries));
@@ -142,6 +150,86 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
         }
     }
     Ok(ok)
+}
+
+/// `file`'s string imports, in 2.0's module imports where the manifest says (ADR 0002,
+/// sections 1 and 4): another `.bloom` module of its own target is dropped (its names are
+/// the module's), one of another target is `import Target`, and an npm package that a
+/// `.bindings` target binds is `import Target`. Kept only when the file compiles so.
+fn module_imports(root: &Path, file: &Path, lang: &bloom_lang::Options) -> Result<Option<String>, String> {
+    use bloom_lang::ast::ImportKind;
+    let absolute = std::path::absolute(file).map_err(|e| e.to_string())?;
+    let Some(package) = bloom_lang::modules::find_root(&absolute) else { return Ok(None) };
+    let loaded = bloom_lang::modules::load(&package);
+    let Ok(graph) = loaded.as_ref() else { return Ok(None) };
+    let Some(own) = graph.target_of(&absolute) else { return Ok(None) };
+    let source = std::fs::read_to_string(file).map_err(|e| format!("{}: {e}", file.display()))?;
+    let shown = file.strip_prefix(root).unwrap_or(file).to_string_lossy().into_owned();
+    let (ast, _, diagnostics) = bloom_lang::parse(&source, &shown);
+    if !diagnostics.is_empty() {
+        return Ok(None);
+    }
+    let dir = absolute.parent().map(Path::to_path_buf).unwrap_or_default();
+    let mut out = String::new();
+    let mut at = 0;
+    let mut modules: Vec<String> = Vec::new();
+    let mut changed = 0;
+    for import in &ast.imports {
+        if matches!(import.kind, ImportKind::Module(_)) {
+            continue;
+        }
+        let spec = import.source.as_str();
+        let target = if spec.starts_with('.') {
+            Some(normalize(&dir.join(spec)))
+        } else {
+            spec.strip_prefix("@/").map(|s| normalize(&root.join(s)))
+        };
+        let module = match target {
+            Some(stem) => {
+                let bloom = if stem.extension().is_some_and(|e| e == "bloom") {
+                    stem.clone()
+                } else {
+                    stem.with_extension("bloom")
+                };
+                if !bloom.is_file() {
+                    continue;
+                }
+                match graph.target_of(&bloom) {
+                    Some(t) if t == own => None,
+                    Some(t) => Some(graph.manifest.targets[t].name.clone()),
+                    None => continue,
+                }
+            }
+            None => {
+                let bound = graph.manifest.targets.iter().find(|t| t.npm().is_some_and(|(npm, _)| npm == spec));
+                match bound {
+                    Some(t) => Some(t.name.clone()),
+                    None => continue,
+                }
+            }
+        };
+        let (start, end) = (import.span.start as usize, import.span.end as usize);
+        out.push_str(&source[at..start]);
+        if let Some(module) = module
+            && !modules.contains(&module)
+        {
+            out.push_str(&format!("import {module}"));
+            modules.push(module);
+        }
+        at = end;
+        changed += 1;
+    }
+    if changed == 0 {
+        return Ok(None);
+    }
+    out.push_str(&source[at..]);
+    let Ok(formatted) = bloom_fmt::format(&out, &shown) else { return Ok(None) };
+    let compiled = bloom_lang::compile(&formatted, &absolute.to_string_lossy(), lang);
+    if !compiled.diagnostics.is_empty() {
+        return Ok(Some(format!("{shown}: keeps its path imports ({})", compiled.diagnostics[0].message)));
+    }
+    std::fs::write(file, &formatted).map_err(|e| format!("{}: {e}", file.display()))?;
+    Ok(Some(format!("{shown}: {changed} path import(s) as module imports")))
 }
 
 /// Points the TS importers of `migrated` at their `.bloom` modules; returns what
