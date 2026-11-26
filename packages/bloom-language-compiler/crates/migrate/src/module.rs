@@ -1,0 +1,935 @@
+//! The module: imports, items and what the rest of the translation needs to
+//! know about the file before it starts (which names are language nodes,
+//! views, local functions, modifiers and string-literal unions).
+
+use std::collections::{HashMap, HashSet};
+
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{
+    Argument, BindingPattern, Declaration, ExportDefaultDeclarationKind, Expression, Function,
+    ImportDeclarationSpecifier, ModuleExportName, Statement, TSSignature, TSType, TSTypeName,
+    VariableDeclarationKind,
+};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType, Span};
+
+use crate::Reason;
+use crate::comments::Comments;
+
+/// The language modules: their names are the `.bloom` prelude.
+const LANGUAGE: &str = "@oxy.so/bloom-language";
+
+pub struct Translated {
+    pub text: String,
+    pub reasons: Vec<Reason>,
+}
+
+/// One kept TS import, by module, in source order.
+#[derive(Default)]
+struct Imports {
+    order: Vec<String>,
+    /// module → (local, imported, type-only)
+    names: HashMap<String, Vec<(String, String, bool)>>,
+    namespaces: Vec<(String, String)>,
+}
+
+/// What a state setter writes.
+#[derive(Clone)]
+pub struct Setter {
+    pub state: String,
+}
+
+/// The names in scope while translating a view or a function.
+#[derive(Default, Clone)]
+pub struct Scope {
+    /// `setX` → the `@state x` it writes.
+    pub setters: HashMap<String, Setter>,
+    /// The view's props parameter (`props.x` is `x`).
+    pub props: Option<String>,
+    /// A name written as another (`(prev) => …` in a functional update is the state).
+    pub renames: HashMap<String, String>,
+    /// A name's declared type name, for string literals of a local union.
+    pub types: HashMap<String, String>,
+    /// The parameter of an `Embed((render) => …)`.
+    pub render: Option<String>,
+    /// Names bound to UI values (`const header = HStack(…)`).
+    pub view_values: HashSet<String>,
+    /// Member functions of the view being translated.
+    pub member_fns: HashSet<String>,
+}
+
+pub struct Tr<'s> {
+    pub src: &'s str,
+    /// The `.tsx` path: names an anonymous default `screen`/`layout`.
+    pub filename: String,
+    line_starts: Vec<u32>,
+    pub comments: Comments,
+    pub reasons: Vec<Reason>,
+    /// Language imports: local name → exported name.
+    pub lang: HashMap<String, String>,
+    /// `react` imports: local name → exported name (`default`, `*`).
+    pub react: HashMap<String, String>,
+    /// `defineModifier` constants → the modifiers they apply, as `.a(…).b(…)`.
+    pub modifiers: HashMap<String, String>,
+    /// Local string-literal unions → their cases.
+    pub unions: HashMap<String, Vec<String>>,
+    /// Local object types (interfaces, object aliases) → their members' names.
+    pub objects: HashSet<String>,
+    /// Object types that only type a view's props: they become its parameters.
+    pub props_types: HashSet<String>,
+    /// Local views (and the module functions a `view(F)` wraps).
+    pub views: HashSet<String>,
+    /// Module functions (Bloom `fn`s).
+    pub fns: HashSet<String>,
+    /// Module functions and constants that return or hold UI.
+    pub view_fns: HashSet<String>,
+    /// Every name the output mentions, for keeping only the imports it uses.
+    pub used: HashSet<String>,
+    /// React types the output names (`React.ReactNode` is `ReactNode` from `react`).
+    pub react_types: std::collections::BTreeSet<String>,
+    /// Every imported local name (a JS global is only one when not imported).
+    pub imported: HashSet<String>,
+    pub scope: Scope,
+    /// Module functions a `view(F)` constant wraps: translated as that view.
+    pub wrapped: HashSet<String>,
+    /// While set, comments stay queued (a `defineModifier` read ahead of its place).
+    pub quiet: bool,
+}
+
+impl<'s> Tr<'s> {
+    pub fn line(&self, pos: u32) -> u32 {
+        match self.line_starts.binary_search(&pos) {
+            Ok(i) => i as u32 + 1,
+            Err(i) => i as u32,
+        }
+    }
+
+    pub fn slice(&self, span: Span) -> &'s str {
+        &self.src[span.start as usize..span.end as usize]
+    }
+
+    /// Records why the file cannot move and returns a placeholder for the draft.
+    pub fn refuse(&mut self, code: &str, detail: impl Into<String>, span: Span) -> String {
+        let line = self.line(span.start);
+        self.reasons.push(Reason { code: code.to_string(), detail: detail.into(), line });
+        "«?»".to_string()
+    }
+
+    /// A name the output uses.
+    pub fn name(&mut self, name: &str, span: Span) -> String {
+        if bloom_lang::KEYWORDS.contains(&name) {
+            return self.refuse("name:keyword", format!("`{name}` is a Bloom keyword"), span);
+        }
+        self.used.insert(name.to_string());
+        name.to_string()
+    }
+
+    /// Whether `name` is the language export `export`.
+    pub fn is_lang(&self, name: &str, export: &str) -> bool {
+        self.lang.get(name).is_some_and(|e| e == export)
+    }
+
+    /// The node constructor a local name is, when it is one.
+    pub fn node_ctor(&self, name: &str) -> Option<&str> {
+        let export = self.lang.get(name)?;
+        bloom_lang_nodes().contains(export.as_str()).then_some(export.as_str())
+    }
+
+    /// Whether the text between two offsets holds an empty line.
+    pub fn blank_between(&self, from: u32, to: u32) -> bool {
+        if from >= to {
+            return false;
+        }
+        let between = &self.src[from as usize..to as usize];
+        let mut newlines = 0;
+        for line in between.split('\n').skip(1) {
+            if line.trim().is_empty() {
+                newlines += 1;
+            } else {
+                newlines = 0;
+            }
+            if newlines >= 1 && between.matches('\n').count() >= 2 {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+/// The names the prelude gives every `.bloom` module from the language.
+fn bloom_lang_nodes() -> &'static HashSet<&'static str> {
+    use std::sync::OnceLock;
+    static NODES: OnceLock<HashSet<&'static str>> = OnceLock::new();
+    NODES.get_or_init(|| {
+        bloom_language_compiler::spec::NODES.iter().flat_map(|n| n.constructors.iter().copied()).collect()
+    })
+}
+
+/// Language exports with a `.bloom` form: prelude names or what the codemod rewrites.
+const LANG_HANDLED: &[&str] = &[
+    "Embed",
+    "toElement",
+    "view",
+    "screen",
+    "layout",
+    "toast",
+    "navigate",
+    "defineModifier",
+    "Child",
+    "Binding",
+];
+
+/// Types the language exports that `.bloom` writes as `View`.
+const LANG_VIEW_TYPES: &[&str] = &["Child", "ViewNode"];
+
+pub fn translate(source: &str, filename: &str) -> Translated {
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path(filename).unwrap_or_default();
+    let parsed = Parser::new(&allocator, source, source_type).parse();
+    if parsed.diagnostics.has_errors() {
+        return Translated {
+            text: String::new(),
+            reasons: vec![Reason {
+                code: "parse".into(),
+                detail: "the TypeScript does not parse".into(),
+                line: 0,
+            }],
+        };
+    }
+    let program = parsed.program;
+    let mut line_starts = vec![0];
+    line_starts.extend(source.match_indices('\n').map(|(i, _)| i as u32 + 1));
+    let mut tr = Tr {
+        src: source,
+        filename: filename.to_string(),
+        line_starts,
+        comments: Comments::new(source, &program.comments),
+        reasons: Vec::new(),
+        lang: HashMap::new(),
+        react: HashMap::new(),
+        modifiers: HashMap::new(),
+        unions: HashMap::new(),
+        objects: HashSet::new(),
+        props_types: HashSet::new(),
+        views: HashSet::new(),
+        fns: HashSet::new(),
+        view_fns: HashSet::new(),
+        used: HashSet::new(),
+        imported: HashSet::new(),
+        react_types: Default::default(),
+        scope: Scope::default(),
+        wrapped: HashSet::new(),
+        quiet: false,
+    };
+
+    // The imports first: every later decision depends on where a name comes from.
+    let mut imports = Imports::default();
+    // The file's header: the comments above its first import or item.
+    let first = program.body.first().map_or(source.len() as u32, |s| s.span().start);
+    for statement in &program.body {
+        if let Statement::ImportDeclaration(import) = statement {
+            tr.import(import, &mut imports);
+        }
+    }
+    let header = tr.comments.before(first, false);
+    tr.scan(&program.body);
+
+    let defaults = default_exports(&program.body);
+    let mut items = Vec::new();
+    // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
+    // a props interface) go above the next item, as plain comments.
+    let mut pending = String::new();
+    for statement in &program.body {
+        if matches!(statement, Statement::ImportDeclaration(_)) {
+            continue;
+        }
+        let comments = tr.comments.before(statement.span().start, true);
+        let item = tr.item(statement, &defaults, &program.body);
+        if item.is_empty() {
+            pending.push_str(&undoc(&comments));
+            pending.push_str(&undoc(&tr.comments.before(statement.span().end, false)));
+            continue;
+        }
+        let comments = if pending.is_empty() {
+            comments
+        } else {
+            format!("{}\n{comments}", std::mem::take(&mut pending))
+        };
+        items.push(comments + &item);
+    }
+    let trailing = pending + &tr.comments.rest();
+
+    let mut out = header;
+    if !out.is_empty() {
+        out.push('\n');
+    }
+    out.push_str(&tr.imports_text(&imports));
+    for item in items {
+        if !out.is_empty() {
+            out.push('\n');
+        }
+        out.push_str(&item);
+        out.push('\n');
+    }
+    if !trailing.is_empty() {
+        out.push('\n');
+        out.push_str(&trailing);
+    }
+    Translated { text: out, reasons: tr.reasons }
+}
+
+/// Doc comments as plain comments: what they documented is not in the output.
+fn undoc(comments: &str) -> String {
+    comments
+        .lines()
+        .map(|l| l.strip_prefix('/').filter(|r| r.starts_with("//")).unwrap_or(l).to_string() + "\n")
+        .collect()
+}
+
+/// The local names `export default X;` exports.
+fn default_exports(body: &[Statement]) -> HashSet<String> {
+    let mut out = HashSet::new();
+    for statement in body {
+        if let Statement::ExportDefaultDeclaration(export) = statement
+            && let Some(Expression::Identifier(id)) = export.declaration.as_expression()
+        {
+            out.insert(id.name.to_string());
+        }
+    }
+    out
+}
+
+impl<'s> Tr<'s> {
+    fn import(&mut self, import: &oxc_ast::ast::ImportDeclaration, imports: &mut Imports) {
+        let source = import.source.value.as_str().unwrap_or_default().to_string();
+        let Some(specifiers) = &import.specifiers else {
+            self.refuse(
+                "import:side-effect",
+                format!("`import '{source}'` has no `.bloom` form"),
+                import.span,
+            );
+            return;
+        };
+        let type_only = import.import_kind.is_type();
+        let language = source == LANGUAGE || source.starts_with(&format!("{LANGUAGE}/"));
+        for specifier in specifiers {
+            match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(s) => {
+                    let imported = match &s.imported {
+                        ModuleExportName::IdentifierName(n) => n.name.to_string(),
+                        ModuleExportName::IdentifierReference(n) => n.name.to_string(),
+                        ModuleExportName::StringLiteral(n) => {
+                            n.value.as_str().unwrap_or_default().to_string()
+                        }
+                    };
+                    let local = s.local.name.to_string();
+                    self.imported.insert(local.clone());
+                    if language {
+                        self.lang.insert(local.clone(), imported.clone());
+                        if !bloom_lang_nodes().contains(imported.as_str())
+                            && !LANG_HANDLED.contains(&imported.as_str())
+                        {
+                            // No `.bloom` form: kept as a TS import of the language (types, environments).
+                            let entry = imports.names.entry(source.clone()).or_default();
+                            if entry.is_empty() && !imports.order.contains(&source) {
+                                imports.order.push(source.clone());
+                            }
+                            entry.push((local, imported, type_only || s.import_kind.is_type()));
+                        }
+                        continue;
+                    }
+                    if source == "react" {
+                        self.react.insert(local.clone(), imported.clone());
+                        continue;
+                    }
+                    if !imports.order.contains(&source) {
+                        imports.order.push(source.clone());
+                    }
+                    imports.names.entry(source.clone()).or_default().push((
+                        local,
+                        imported,
+                        type_only || s.import_kind.is_type(),
+                    ));
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
+                    let local = s.local.name.to_string();
+                    self.imported.insert(local.clone());
+                    if source == "react" {
+                        self.react.insert(local, "default".into());
+                        continue;
+                    }
+                    if !imports.order.contains(&source) {
+                        imports.order.push(source.clone());
+                    }
+                    imports.names.entry(source.clone()).or_default().push((
+                        local,
+                        "default".into(),
+                        type_only,
+                    ));
+                }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
+                    let local = s.local.name.to_string();
+                    self.imported.insert(local.clone());
+                    if source == "react" {
+                        self.react.insert(local, "*".into());
+                        continue;
+                    }
+                    imports.namespaces.push((local, source.clone()));
+                }
+            }
+        }
+    }
+
+    /// The `import` lines for the names the output uses.
+    fn imports_text(&self, imports: &Imports) -> String {
+        let mut out = String::new();
+        let mut react: Vec<String> =
+            self.react
+                .iter()
+                .filter(|(local, export)| {
+                    self.used.contains(*local) && export.chars().next().is_some_and(char::is_uppercase)
+                })
+                .map(|(local, export)| {
+                    if local == export {
+                        format!("type {local}")
+                    } else {
+                        format!("type {export} as {local}")
+                    }
+                })
+                .collect();
+        react.extend(
+            self.react_types.iter().filter(|t| !self.react.contains_key(*t)).map(|t| format!("type {t}")),
+        );
+        react.sort();
+        if !react.is_empty() {
+            out.push_str(&format!("import {{ {} }} from \"react\"\n", react.join(", ")));
+        }
+        for source in &imports.order {
+            let names: Vec<String> = imports.names[source]
+                .iter()
+                .filter(|(local, ..)| self.used.contains(local))
+                .map(|(local, imported, type_only)| {
+                    let kind = if *type_only { "type " } else { "" };
+                    if local == imported {
+                        format!("{kind}{local}")
+                    } else {
+                        format!("{kind}{imported} as {local}")
+                    }
+                })
+                .collect();
+            if !names.is_empty() {
+                out.push_str(&format!("import {{ {} }} from \"{source}\"\n", names.join(", ")));
+            }
+        }
+        for (local, source) in &imports.namespaces {
+            if self.used.contains(local) {
+                out.push_str(&format!("import * as {local} from \"{source}\"\n"));
+            }
+        }
+        out
+    }
+
+    /// What the translation needs to know about the module's own names.
+    fn scan(&mut self, body: &[Statement]) {
+        let mut wrapped = Vec::new();
+        for statement in body {
+            let declaration = match statement {
+                Statement::ExportDeclaration(export) => Some(&export.declaration),
+                _ => statement.as_declaration(),
+            };
+            if let Some(Declaration::FunctionDeclaration(f)) = declaration
+                && let Some(id) = &f.id
+            {
+                self.fns.insert(id.name.to_string());
+            }
+            if let Some(Declaration::TSTypeAliasDeclaration(alias)) = declaration {
+                let name = alias.id.name.to_string();
+                if let Some(cases) = string_union(&alias.type_annotation) {
+                    self.unions.insert(name, cases);
+                } else if matches!(alias.type_annotation, TSType::TSTypeLiteral(_)) {
+                    self.objects.insert(name);
+                }
+            }
+            if let Some(Declaration::TSInterfaceDeclaration(interface)) = declaration {
+                self.objects.insert(interface.id.name.to_string());
+            }
+            let init = match declaration {
+                Some(Declaration::VariableDeclaration(v)) if v.kind == VariableDeclarationKind::Const => {
+                    v.declarations.first().and_then(|d| match (&d.id, &d.init) {
+                        (BindingPattern::BindingIdentifier(id), Some(init)) => {
+                            Some((id.name.to_string(), init))
+                        }
+                        _ => None,
+                    })
+                }
+                _ => None,
+            };
+            if let Some(Declaration::VariableDeclaration(v)) = declaration {
+                for d in &v.declarations {
+                    if let (BindingPattern::BindingIdentifier(id), Some(init)) = (&d.id, &d.init)
+                        && matches!(
+                            init.without_parentheses(),
+                            Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+                        )
+                    {
+                        self.fns.insert(id.name.to_string());
+                    }
+                }
+            }
+            if let Some((name, init)) = init
+                && let Expression::CallExpression(call) = init.without_parentheses()
+                && let Expression::Identifier(callee) = &call.callee
+            {
+                let callee = callee.name.as_str();
+                if self.is_lang(callee, "view")
+                    || self.is_lang(callee, "screen")
+                    || self.is_lang(callee, "layout")
+                {
+                    self.views.insert(name.clone());
+                    if let Some(Argument::Identifier(f)) = call.arguments.first() {
+                        wrapped.push(f.name.to_string());
+                    }
+                    if let Some(f) = call.arguments.first().and_then(|a| a.as_expression()) {
+                        self.note_props_type(f);
+                    }
+                }
+                if self.is_lang(callee, "defineModifier") {
+                    self.define_modifier(&name, call);
+                }
+            }
+        }
+        // `view(F)`: F's props type is the view's.
+        self.wrapped.extend(wrapped.iter().cloned());
+        for statement in body {
+            if let Statement::FunctionDeclaration(f) = statement
+                && f.id.as_ref().is_some_and(|id| wrapped.contains(&id.name.to_string()))
+            {
+                self.note_function_props(f);
+            }
+        }
+        // Module functions and constants that build UI.
+        for statement in body {
+            let declaration = match statement {
+                Statement::ExportDeclaration(export) => Some(&export.declaration),
+                _ => statement.as_declaration(),
+            };
+            match declaration {
+                Some(Declaration::FunctionDeclaration(f)) => {
+                    if let Some(id) = &f.id
+                        && self.function_builds_ui(f)
+                    {
+                        self.view_fns.insert(id.name.to_string());
+                    }
+                }
+                Some(Declaration::VariableDeclaration(v)) => {
+                    for d in &v.declarations {
+                        if let (BindingPattern::BindingIdentifier(id), Some(init)) = (&d.id, &d.init) {
+                            let builds = match init.without_parentheses() {
+                                Expression::ArrowFunctionExpression(arrow) => self.arrow_builds_ui(arrow),
+                                other => self.is_view(other),
+                            };
+                            if builds {
+                                self.view_fns.insert(id.name.to_string());
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn note_props_type(&mut self, f: &Expression) {
+        let params = match f.without_parentheses() {
+            Expression::FunctionExpression(f) => &f.params,
+            Expression::ArrowFunctionExpression(a) => &a.params,
+            _ => return,
+        };
+        if let Some(name) = params.items.first().and_then(|p| p.type_annotation.as_ref()).and_then(|t| {
+            if let TSType::TSTypeReference(r) = &t.type_annotation
+                && let TSTypeName::IdentifierReference(id) = &r.type_name
+            {
+                Some(id.name.to_string())
+            } else {
+                None
+            }
+        }) {
+            self.props_types.insert(name);
+        }
+    }
+
+    fn note_function_props(&mut self, f: &Function) {
+        if let Some(name) = f.params.items.first().and_then(|p| p.type_annotation.as_ref()).and_then(|t| {
+            if let TSType::TSTypeReference(r) = &t.type_annotation
+                && let TSTypeName::IdentifierReference(id) = &r.type_name
+            {
+                Some(id.name.to_string())
+            } else {
+                None
+            }
+        }) {
+            self.props_types.insert(name);
+        }
+    }
+
+    /// `defineModifier((v) => v.a(…).b(…))`: the chain after `v`, inlined where it is applied.
+    fn define_modifier(&mut self, name: &str, call: &oxc_ast::ast::CallExpression) {
+        let Some(Expression::ArrowFunctionExpression(arrow)) =
+            call.arguments.first().and_then(|a| a.as_expression())
+        else {
+            self.refuse("modifier:define", "`defineModifier` takes an arrow over one view", call.span);
+            return;
+        };
+        let (Some(param), Some(body)) = (
+            arrow.params.items.first().and_then(|p| match &p.pattern {
+                BindingPattern::BindingIdentifier(id) => Some(id.name.to_string()),
+                _ => None,
+            }),
+            arrow.get_expression(),
+        ) else {
+            self.refuse("modifier:define", "`defineModifier` takes an arrow over one view", call.span);
+            return;
+        };
+        match chain_root(body) {
+            Some(root) if root == param => {
+                // The body without its parameter is the chain applied where `.modifier(M)` was.
+                self.quiet = true;
+                let text = self.expr(body);
+                self.quiet = false;
+                let chain = text.strip_prefix(&param).map(str::to_string).unwrap_or_default();
+                self.modifiers.insert(name.to_string(), chain);
+            }
+            _ => {
+                self.refuse(
+                    "modifier:define",
+                    "`defineModifier`'s body is not a chain on its view",
+                    call.span,
+                );
+            }
+        }
+    }
+
+    // ---- items ---------------------------------------------------------------
+
+    fn item(&mut self, statement: &Statement, defaults: &HashSet<String>, body: &[Statement]) -> String {
+        match statement {
+            Statement::ExportDeclaration(export) => {
+                self.declaration(&export.declaration, "pub ", defaults, body)
+            }
+            Statement::ExportNamedDeclaration(export) => {
+                self.refuse("export:list", "an `export { … }` list (export each item instead)", export.span)
+            }
+            Statement::ExportFromDeclaration(export) => {
+                self.refuse("export:list", "an `export { … } from` re-export", export.span)
+            }
+            Statement::ExportDefaultDeclaration(export) => match &export.declaration {
+                ExportDefaultDeclarationKind::Identifier(_) => String::new(),
+                ExportDefaultDeclarationKind::CallExpression(call) => {
+                    let name = match call.arguments.first().and_then(|a| a.as_expression()) {
+                        Some(Expression::FunctionExpression(f)) => {
+                            f.id.as_ref().map(|id| id.name.to_string())
+                        }
+                        Some(Expression::ArrowFunctionExpression(_)) => self.default_name(call),
+                        _ => None,
+                    };
+                    match name {
+                        Some(name) => self.view_item(&name, call, "pub default ", body),
+                        None => self.refuse(
+                            "export:default",
+                            "a default export that is not a named view",
+                            export.span,
+                        ),
+                    }
+                }
+                ExportDefaultDeclarationKind::FunctionDeclaration(f) => {
+                    self.refuse("component:react", "a default-exported function component", f.span)
+                }
+                _ => self.refuse("export:default", "a default export that is not a named view", export.span),
+            },
+            Statement::ExportAllDeclaration(export) => {
+                self.refuse("export:list", "an `export * from` re-export", export.span)
+            }
+            _ => match statement.as_declaration() {
+                Some(declaration) => self.declaration(declaration, "", defaults, body),
+                None => self.refuse("statement:top-level", "a statement at module level", statement.span()),
+            },
+        }
+    }
+
+    /// An anonymous default `screen`/`layout`/`view` is named after its route:
+    /// `app/(tabs)/_layout.tsx` is `TabsLayout`, `settings/index.tsx` `SettingsScreen`.
+    fn default_name(&self, call: &oxc_ast::ast::CallExpression) -> Option<String> {
+        let Expression::Identifier(callee) = &call.callee else { return None };
+        let suffix = match self.lang.get(callee.name.as_str()).map(String::as_str) {
+            Some("layout") => "Layout",
+            Some("screen") => "Screen",
+            Some("view") => "View",
+            _ => return None,
+        };
+        let path = std::path::Path::new(&self.filename);
+        let stem = path.file_stem()?.to_string_lossy().into_owned();
+        let word = if stem.starts_with('_') || stem == "index" {
+            path.parent()?.file_name()?.to_string_lossy().into_owned()
+        } else {
+            stem
+        };
+        let camel: String = word
+            .split(|c: char| !c.is_ascii_alphanumeric())
+            .filter(|p| !p.is_empty())
+            .map(|p| p[..1].to_ascii_uppercase() + &p[1..])
+            .collect();
+        let camel = if camel.starts_with(|c: char| c.is_ascii_alphabetic()) {
+            camel
+        } else {
+            format!("Route{camel}")
+        };
+        Some(format!("{camel}{suffix}"))
+    }
+
+    fn visibility(&self, name: &str, given: &'static str, defaults: &HashSet<String>) -> &'static str {
+        if defaults.contains(name) { "pub default " } else { given }
+    }
+
+    fn declaration(
+        &mut self,
+        declaration: &Declaration,
+        vis: &'static str,
+        defaults: &HashSet<String>,
+        body: &[Statement],
+    ) -> String {
+        match declaration {
+            Declaration::VariableDeclaration(v) => {
+                if v.kind != VariableDeclarationKind::Const {
+                    return self.refuse("module:mutable", "a module-level `let`/`var`", v.span);
+                }
+                let mut out = Vec::new();
+                for d in &v.declarations {
+                    let BindingPattern::BindingIdentifier(id) = &d.id else {
+                        out.push(self.refuse("module:destructure", "a destructured module constant", d.span));
+                        continue;
+                    };
+                    let name = id.name.to_string();
+                    let vis = self.visibility(&name, vis, defaults);
+                    let Some(init) = &d.init else {
+                        out.push(self.refuse("module:uninitialised", "a constant without a value", d.span));
+                        continue;
+                    };
+                    out.push(self.constant(&name, d.type_annotation.as_deref(), init, vis, body));
+                }
+                out.retain(|s| !s.is_empty());
+                out.join("\n\n")
+            }
+            Declaration::FunctionDeclaration(f) => {
+                let Some(id) = &f.id else {
+                    return self.refuse("fn:anonymous", "an anonymous function", f.span);
+                };
+                let name = id.name.to_string();
+                if self.wrapped.contains(&name) {
+                    // Drawn by its `view(F)` constant, where it is translated.
+                    return String::new();
+                }
+                let vis = self.visibility(&name, vis, defaults);
+                self.function_item(&name, f, vis)
+            }
+            Declaration::TSInterfaceDeclaration(interface) => {
+                let name = interface.id.name.to_string();
+                if self.props_types.contains(&name) && vis.is_empty() {
+                    return String::new();
+                }
+                if !interface.extends.is_empty() {
+                    return self.refuse(
+                        "type:extends",
+                        format!("`interface {name}` extends another type"),
+                        interface.span,
+                    );
+                }
+                let generics = self.generics(interface.type_parameters.as_deref());
+                let fields = self.struct_fields(&interface.body.body);
+                let vis = self.visibility(&name, vis, defaults);
+                format!("{vis}struct {name}{generics} {{\n{fields}}}")
+            }
+            Declaration::TSTypeAliasDeclaration(alias) => {
+                let name = alias.id.name.to_string();
+                let vis = self.visibility(&name, vis, defaults);
+                if let Some(cases) = self.unions.get(&name).cloned() {
+                    if let Some(bad) = cases.iter().find(|c| !is_identifier(c)) {
+                        return self.refuse(
+                            "type:union-case",
+                            format!("`{name}` has the case \"{bad}\", which is not a name"),
+                            alias.span,
+                        );
+                    }
+                    return format!("{vis}enum {name} {{\n{}\n}}", cases.join("\n"));
+                }
+                if let TSType::TSTypeLiteral(literal) = &alias.type_annotation {
+                    if self.props_types.contains(&name) && vis.is_empty() {
+                        return String::new();
+                    }
+                    let generics = self.generics(alias.type_parameters.as_deref());
+                    let fields = self.struct_fields(&literal.members);
+                    return format!("{vis}struct {name}{generics} {{\n{fields}}}");
+                }
+                let generics = self.generics(alias.type_parameters.as_deref());
+                let ty = self.ty(&alias.type_annotation);
+                format!("{vis}type {name}{generics} = {ty}")
+            }
+            Declaration::TSEnumDeclaration(e) => self.refuse("type:ts-enum", "a TypeScript `enum`", e.span),
+            Declaration::ClassDeclaration(c) => self.refuse("class", "a class", c.span),
+            other => self.refuse("declaration", "a declaration with no `.bloom` form", other.span()),
+        }
+    }
+
+    fn generics(&mut self, params: Option<&oxc_ast::ast::TSTypeParameterDeclaration>) -> String {
+        match params {
+            Some(p) if !p.params.is_empty() => {
+                let names: Vec<String> = p.params.iter().map(|t| t.name.name.to_string()).collect();
+                format!("<{}>", names.join(", "))
+            }
+            _ => String::new(),
+        }
+    }
+
+    fn struct_fields(&mut self, members: &[TSSignature]) -> String {
+        let mut out = String::new();
+        for member in members {
+            let comments = self.comments.before(member.span().start, false);
+            out.push_str(&comments);
+            match self.field(member) {
+                Some((name, ty, optional)) => {
+                    if optional {
+                        out.push_str(&format!("{name}: {} = none\n", optional_ty(&ty)));
+                    } else {
+                        out.push_str(&format!("{name}: {ty}\n"));
+                    }
+                }
+                None => continue,
+            }
+        }
+        out
+    }
+
+    /// A member of an object type: its name, type and whether it may be absent.
+    pub fn field(&mut self, member: &TSSignature) -> Option<(String, String, bool)> {
+        match member {
+            TSSignature::TSPropertySignature(p) => {
+                let name = match &p.key {
+                    oxc_ast::ast::PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                    _ => {
+                        self.refuse("type:computed-key", "a computed or quoted member name", p.span);
+                        return None;
+                    }
+                };
+                let Some(ty) = &p.type_annotation else {
+                    self.refuse("type:untyped-member", format!("`{name}` has no type"), p.span);
+                    return None;
+                };
+                let ty = self.ty(&ty.type_annotation);
+                Some((name, ty, p.optional))
+            }
+            TSSignature::TSMethodSignature(m) => {
+                let name = match &m.key {
+                    oxc_ast::ast::PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                    _ => {
+                        self.refuse("type:computed-key", "a computed or quoted member name", m.span);
+                        return None;
+                    }
+                };
+                let ty =
+                    self.fn_type(&m.params, m.return_type.as_deref().map(|t| &t.type_annotation), m.span);
+                Some((name, ty, m.optional))
+            }
+            other => {
+                self.refuse("type:signature", "an index, call or construct signature", other.span());
+                None
+            }
+        }
+    }
+
+    fn constant(
+        &mut self,
+        name: &str,
+        annotation: Option<&oxc_ast::ast::TSTypeAnnotation>,
+        init: &Expression,
+        vis: &'static str,
+        body: &[Statement],
+    ) -> String {
+        let init = init.without_parentheses();
+        if let Expression::CallExpression(call) = init
+            && let Expression::Identifier(callee) = &call.callee
+        {
+            let callee = callee.name.to_string();
+            if self.is_lang(&callee, "view")
+                || self.is_lang(&callee, "screen")
+                || self.is_lang(&callee, "layout")
+            {
+                return self.view_item(name, call, vis, body);
+            }
+            if self.is_lang(&callee, "defineModifier") {
+                return String::new();
+            }
+            if matches!(self.react.get(&callee).map(String::as_str), Some("memo" | "lazy" | "forwardRef")) {
+                return self.refuse(
+                    &format!("react:{}", self.react[&callee]),
+                    format!("`{callee}(…)`"),
+                    call.span,
+                );
+            }
+        }
+        if let Expression::CallExpression(call) = init
+            && let Expression::StaticMemberExpression(member) = &call.callee
+            && let Expression::Identifier(object) = &member.object
+            && self.react.get(object.name.as_str()).is_some_and(|e| e == "default" || e == "*")
+        {
+            return self.refuse(
+                &format!("react:{}", member.property.name),
+                format!("`React.{}(…)`", member.property.name),
+                call.span,
+            );
+        }
+        match init {
+            Expression::ArrowFunctionExpression(arrow) => self.arrow_item(name, arrow, vis),
+            Expression::FunctionExpression(f) => self.function_item(name, f, vis),
+            _ => {
+                let ty = annotation.map(|t| format!(": {}", self.ty(&t.type_annotation))).unwrap_or_default();
+                let value = self.expr(init);
+                format!("{vis}let {name}{ty} = {value}")
+            }
+        }
+    }
+}
+
+/// A union of string literals (`'a' | 'b'`): its cases.
+pub fn string_union(ty: &TSType) -> Option<Vec<String>> {
+    let TSType::TSUnionType(union) = ty else { return None };
+    let mut cases = Vec::new();
+    for member in &union.types {
+        let TSType::TSLiteralType(literal) = member else { return None };
+        let oxc_ast::ast::TSLiteral::StringLiteral(s) = &literal.literal else { return None };
+        cases.push(s.value.as_str().unwrap_or_default().to_string());
+    }
+    Some(cases)
+}
+
+pub fn is_identifier(text: &str) -> bool {
+    let mut chars = text.chars();
+    chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+        && !bloom_lang::KEYWORDS.contains(&text)
+}
+
+/// `T` as an optional, once.
+pub fn optional_ty(ty: &str) -> String {
+    if ty.ends_with('?') { ty.to_string() } else { format!("{ty}?") }
+}
+
+/// The identifier a chain (`v.a().b()`) starts from.
+fn chain_root(expression: &Expression) -> Option<String> {
+    match expression.without_parentheses() {
+        Expression::Identifier(id) => Some(id.name.to_string()),
+        Expression::CallExpression(call) => chain_root(&call.callee),
+        Expression::StaticMemberExpression(m) => chain_root(&m.object),
+        _ => None,
+    }
+}
+
+pub const VIEW_TYPES: &[&str] = LANG_VIEW_TYPES;

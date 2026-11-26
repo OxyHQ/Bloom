@@ -4,11 +4,12 @@
 //! bloomc check [--jobs N] <paths…>
 //! bloomc fmt [--check] [--jobs N] <paths…>
 //! bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
+//! bloomc migrate [--write] [--report] [--print] [--jobs N] <paths…>
 //! bloomc lsp
 //! ```
 //!
 //! A path is a `.bloom` file or a directory searched for them (skipping
-//! `node_modules` and hidden directories). Files run in parallel on
+//! `node_modules` and hidden directories); `migrate` takes `.tsx`/`.ts` modules. Files run in parallel on
 //! `--jobs` threads (the machine's parallelism by default); output and
 //! diagnostics come out in path order, so a run is deterministic.
 
@@ -16,6 +17,7 @@ mod build;
 mod files;
 mod json;
 mod lsp;
+mod migrate;
 mod parallel;
 
 use std::path::PathBuf;
@@ -25,6 +27,7 @@ const USAGE: &str = "usage:
   bloomc check [--jobs N] <paths…>
   bloomc fmt [--check] [--jobs N] <paths…>
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
+  bloomc migrate [--write] [--report] [--print] [--jobs N] <paths…>
   bloomc lsp";
 
 /// The command line, read by hand (the workspace takes no new crates).
@@ -37,6 +40,9 @@ struct Args {
     check: bool,
     no_cache: bool,
     dev: bool,
+    write: bool,
+    report: bool,
+    print: bool,
 }
 
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
@@ -47,6 +53,9 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--check" => args.check = true,
             "--no-cache" => args.no_cache = true,
             "--dev" => args.dev = true,
+            "--write" => args.write = true,
+            "--report" => args.report = true,
+            "--print" => args.print = true,
             "--out" => args.out = Some(raw.next().ok_or("--out needs a directory")?.into()),
             "--jobs" | "-j" => {
                 let n = raw.next().ok_or("--jobs needs a number")?;
@@ -78,6 +87,10 @@ fn main() -> ExitCode {
             }
             _ => Err("build takes one source directory and --out <dir>".to_string()),
         },
+        "migrate" => migrate::migrate(
+            &args.paths,
+            &migrate::MigrateOptions { jobs, write: args.write, report: args.report, print: args.print },
+        ),
         "lsp" => lsp::serve(std::io::stdin().lock(), std::io::stdout().lock()),
         "help" | "--help" | "-h" => {
             println!("{USAGE}");
@@ -115,7 +128,7 @@ mod tests {
 
     #[test]
     fn rejects_unknown_flags_and_bad_counts() {
-        assert!(args("fmt --write x").is_err());
+        assert!(args("fmt --frobnicate x").is_err());
         assert!(args("check -j 0 x").is_err());
         assert!(args("").is_err());
     }

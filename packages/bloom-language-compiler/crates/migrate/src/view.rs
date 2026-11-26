@@ -1,0 +1,1444 @@
+//! Views, functions and statements.
+//!
+//! A `view(function X(props) { … })` is `view X(params) { members; body { … } }`:
+//! the props type's fields are the parameters, the hooks and derived values
+//! before the first `return` are members (`useState` is `@state`,
+//! `useMemo`/`useCallback` are dropped: bloomc memoises), and the returns are
+//! the body, an early `if (c) return A` becoming `if c { A } else { … }`.
+
+use oxc_ast::ast::{
+    Argument, ArrowFunctionExpression, AssignmentOperator, AssignmentTarget, BindingPattern, CallExpression,
+    Declaration, Expression, FormalParameters, Function, ObjectPattern, PropertyKey, SimpleAssignmentTarget,
+    Statement, TSSignature, TSType, TSTypeName, VariableDeclarationKind, VariableDeclarator,
+};
+use oxc_span::{GetSpan, Span};
+use oxc_syntax::operator::UnaryOperator;
+
+use crate::REVIEW_MARKER;
+use crate::expr::is_nothing;
+use crate::module::{Setter, Tr, optional_ty};
+
+/// A function's body: an arrow's expression or statements.
+#[derive(Clone, Copy)]
+pub enum Body<'b, 'a> {
+    Expr(&'b Expression<'a>),
+    Block(&'b [Statement<'a>], u32),
+}
+
+impl<'b, 'a> Body<'b, 'a> {
+    fn of_arrow(arrow: &'b ArrowFunctionExpression<'a>) -> Self {
+        match arrow.get_expression() {
+            Some(e) => Body::Expr(e),
+            None => Body::Block(arrow_statements(arrow), arrow_end(arrow)),
+        }
+    }
+
+    fn of_function(f: &'b Function<'a>) -> Option<Self> {
+        f.body.as_ref().map(|b| Body::Block(&b.statements, b.span.end))
+    }
+}
+
+/// React hooks the codemod rewrites; every other React hook is a refusal.
+fn react_hook<'e>(tr: &Tr, call: &'e CallExpression) -> Option<String> {
+    match &call.callee {
+        Expression::Identifier(id) => tr.react.get(id.name.as_str()).cloned(),
+        Expression::StaticMemberExpression(m) => match &m.object {
+            Expression::Identifier(id)
+                if tr.react.get(id.name.as_str()).is_some_and(|e| e == "default" || e == "*") =>
+            {
+                Some(m.property.name.to_string())
+            }
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+impl Tr<'_> {
+    // ---- views -----------------------------------------------------------------
+
+    pub fn view_item(
+        &mut self,
+        name: &str,
+        call: &CallExpression,
+        vis: &'static str,
+        body: &[Statement],
+    ) -> String {
+        let Expression::Identifier(callee) = &call.callee else { unreachable!("a view call") };
+        let kind = match self.lang.get(callee.name.as_str()).map(String::as_str) {
+            Some("screen") => "screen",
+            Some("layout") => "layout",
+            _ => "view",
+        };
+        if call.arguments.len() != 1 {
+            return self.refuse("view:options", format!("`{}(…)` with options", callee.name), call.span);
+        }
+        match call.arguments[0].as_expression().map(|e| e.without_parentheses()) {
+            Some(Expression::FunctionExpression(f)) => match Body::of_function(f) {
+                Some(b) => self.view_decl(kind, name, vis, &f.params, b, body, f.span),
+                None => self.refuse("view:body", "a view without a body", f.span),
+            },
+            Some(Expression::ArrowFunctionExpression(arrow)) => {
+                self.view_decl(kind, name, vis, &arrow.params, Body::of_arrow(arrow), body, arrow.span)
+            }
+            Some(Expression::Identifier(id)) => {
+                let target = body.iter().find_map(|s| match s {
+                    Statement::FunctionDeclaration(f) if f.id.as_ref().is_some_and(|i| i.name == id.name) => {
+                        Some(f)
+                    }
+                    _ => None,
+                });
+                match target.and_then(|f| Body::of_function(f).map(|b| (f, b))) {
+                    Some((f, b)) => self.view_decl(kind, name, vis, &f.params, b, body, f.span),
+                    None => self.refuse(
+                        "view:wrapped",
+                        format!("`view({})` of a function not in this module", id.name),
+                        id.span,
+                    ),
+                }
+            }
+            _ => self.refuse("view:wrapped", "a view of something other than a function", call.span),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn view_decl(
+        &mut self,
+        kind: &str,
+        name: &str,
+        vis: &'static str,
+        params: &FormalParameters,
+        fn_body: Body,
+        module: &[Statement],
+        span: Span,
+    ) -> String {
+        self.scope = Default::default();
+        let params = self.view_params(params, module, span);
+        let (members, body) = match fn_body {
+            Body::Expr(e) => (String::new(), self.view_value(e)),
+            Body::Block(statements, end) => self.view_members(statements, end),
+        };
+        self.scope = Default::default();
+        let params = params.map_or(String::new(), |p| format!("({p})"));
+        let members = if members.is_empty() { String::new() } else { format!("{members}\n\n") };
+        format!("{vis}{kind} {name}{params} {{\n{members}body {{\n{body}\n}}\n}}")
+    }
+
+    /// The props as parameters, from the props type's fields.
+    fn view_params(&mut self, params: &FormalParameters, module: &[Statement], span: Span) -> Option<String> {
+        let param = match params.items.as_slice() {
+            [] => return None,
+            [param] => param,
+            _ => {
+                return Some(self.refuse("view:params", "a view function with more than one parameter", span));
+            }
+        };
+        let Some(annotation) = &param.type_annotation else {
+            return Some(self.refuse("view:untyped-props", "untyped props", param.span));
+        };
+        let members: Vec<&TSSignature> = match &annotation.type_annotation {
+            TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
+            TSType::TSTypeReference(reference) => {
+                let TSTypeName::IdentifierReference(id) = &reference.type_name else {
+                    return Some(self.refuse("view:props-type", "props of a qualified type", reference.span));
+                };
+                match local_object(module, &id.name) {
+                    Some(members) => members,
+                    None => {
+                        return Some(self.refuse(
+                            "view:imported-props",
+                            format!(
+                                "props typed by `{}`, which is not an object type of this module",
+                                id.name
+                            ),
+                            reference.span,
+                        ));
+                    }
+                }
+            }
+            other => {
+                return Some(self.refuse(
+                    "view:props-type",
+                    "props of an intersection or computed type",
+                    other.span(),
+                ));
+            }
+        };
+        // Destructured props: their local names and defaults.
+        let mut defaults: Vec<(String, &Expression)> = Vec::new();
+        match &param.pattern {
+            BindingPattern::BindingIdentifier(id) => self.scope.props = Some(id.name.to_string()),
+            BindingPattern::ObjectPattern(pattern) => {
+                if pattern.rest.is_some() {
+                    return Some(self.refuse("view:rest-props", "rest props `{ a, ...rest }`", pattern.span));
+                }
+                for property in &pattern.properties {
+                    let Some(key) = key_name(&property.key) else {
+                        return Some(self.refuse(
+                            "view:props-pattern",
+                            "a computed prop name",
+                            property.span,
+                        ));
+                    };
+                    match &property.value {
+                        BindingPattern::BindingIdentifier(local) => {
+                            if local.name != key.as_str() {
+                                self.scope.renames.insert(local.name.to_string(), key.clone());
+                            }
+                        }
+                        BindingPattern::AssignmentPattern(a) => {
+                            let BindingPattern::BindingIdentifier(local) = &a.left else {
+                                return Some(self.refuse(
+                                    "view:props-pattern",
+                                    "a nested props pattern",
+                                    property.span,
+                                ));
+                            };
+                            if local.name != key.as_str() {
+                                self.scope.renames.insert(local.name.to_string(), key.clone());
+                            }
+                            defaults.push((key, &a.right));
+                        }
+                        _ => {
+                            return Some(self.refuse(
+                                "view:props-pattern",
+                                "a nested props pattern",
+                                property.span,
+                            ));
+                        }
+                    }
+                }
+            }
+            _ => return Some(self.refuse("view:props-pattern", "an array props pattern", param.span)),
+        }
+        let mut out = Vec::new();
+        for member in members {
+            if let TSSignature::TSPropertySignature(p) = member
+                && let Some(t) = &p.type_annotation
+                && let TSType::TSTypeReference(r) = &t.type_annotation
+                && let TSTypeName::IdentifierReference(id) = &r.type_name
+                && let Some(key) = key_name(&p.key)
+            {
+                self.scope.types.insert(key, id.name.to_string());
+            }
+            let Some((field, ty, optional)) = self.field(member) else { continue };
+            let default = defaults.iter().find(|(k, _)| *k == field).map(|(_, e)| *e);
+            let text = match (default, optional) {
+                (Some(value), _) => {
+                    let value = self.typed_value(value, self.scope.types.get(&field).cloned());
+                    format!("{field}: {ty} = {value}")
+                }
+                (None, true) => format!("{field}: {} = none", optional_ty(&ty)),
+                (None, false) => format!("{field}: {ty}"),
+            };
+            out.push(text);
+        }
+        Some(out.join(", "))
+    }
+
+    /// A value where a local union is expected: its string literal is the case.
+    fn typed_value(&mut self, value: &Expression, ty: Option<String>) -> String {
+        if let Expression::StringLiteral(s) = value
+            && let Some(cases) = ty.and_then(|t| self.unions.get(&t))
+            && cases.iter().any(|c| c == s.value.as_str().unwrap_or_default())
+        {
+            return format!(".{}", s.value.as_str().unwrap_or_default());
+        }
+        self.expr(value)
+    }
+
+    /// The view function's statements as members and a body.
+    fn view_members(&mut self, statements: &[Statement], end: u32) -> (String, String) {
+        let mut members: Vec<String> = Vec::new();
+        let mut previous: Option<u32> = None;
+        for (i, statement) in statements.iter().enumerate() {
+            let span = statement.span();
+            let returns = match statement {
+                Statement::ReturnStatement(_) => true,
+                Statement::IfStatement(s) => branch_returns(&s.consequent),
+                _ => false,
+            };
+            if returns {
+                let body = self.view_lines(&statements[i..], end);
+                return (members.join("\n"), body);
+            }
+            let note = self.note(span.start);
+            let blank = previous.is_some_and(|p| self.blank_between(p, span.start));
+            previous = Some(span.end);
+            let member = match statement {
+                Statement::VariableDeclaration(v) => {
+                    if v.kind != VariableDeclarationKind::Const {
+                        self.refuse(
+                            "view:mutable",
+                            "a `let` in a view (a view's values are immutable)",
+                            v.span,
+                        )
+                    } else {
+                        let parts: Vec<String> = v.declarations.iter().map(|d| self.member(d)).collect();
+                        parts.into_iter().filter(|p| !p.is_empty()).collect::<Vec<_>>().join("\n")
+                    }
+                }
+                Statement::FunctionDeclaration(f) => match (&f.id, Body::of_function(f)) {
+                    (Some(id), Some(body)) => {
+                        let name = id.name.to_string();
+                        self.scope.member_fns.insert(name.clone());
+                        self.fn_text(
+                            &name,
+                            "",
+                            f.r#async,
+                            &f.params,
+                            f.return_type.as_deref().map(|t| &t.type_annotation),
+                            body,
+                        )
+                    }
+                    _ => self.refuse("fn:anonymous", "an anonymous function", f.span),
+                },
+                Statement::ExpressionStatement(s) => match &s.expression {
+                    Expression::CallExpression(call) if react_hook(self, call).is_some() => {
+                        let hook = react_hook(self, call).unwrap_or_default();
+                        self.refuse(&format!("react:{hook}"), format!("React's `{hook}`"), call.span)
+                    }
+                    _ => self.refuse(
+                        "view:statement",
+                        "a statement in a view body (a view computes, it does not do)",
+                        s.span,
+                    ),
+                },
+                other => self.refuse("view:statement", "a statement in a view body", other.span()),
+            };
+            if member.is_empty() {
+                members.push(note.trim_end().to_string());
+                continue;
+            }
+            if blank {
+                members.push(String::new());
+            }
+            members.push(format!("{note}{member}"));
+        }
+        members.retain(|m| !m.is_empty() || true);
+        let body = self.refuse("view:no-return", "a view that does not return", Span::new(end, end));
+        (members.join("\n"), body)
+    }
+
+    /// One `const` of a view body as a member.
+    fn member(&mut self, d: &VariableDeclarator) -> String {
+        let Some(init) = &d.init else {
+            return self.refuse("view:uninitialised", "a constant without a value", d.span);
+        };
+        let init = init.without_parentheses();
+        if let Expression::CallExpression(call) = init
+            && let Some(hook) = react_hook(self, call)
+        {
+            return self.react_member(d, call, &hook);
+        }
+        match (&d.id, init) {
+            (BindingPattern::BindingIdentifier(id), Expression::ArrowFunctionExpression(arrow)) => {
+                let name = id.name.to_string();
+                self.scope.member_fns.insert(name.clone());
+                self.arrow_fn(&name, "", arrow)
+            }
+            (BindingPattern::ObjectPattern(pattern), Expression::Identifier(source))
+                if self.scope.props.as_deref() == Some(source.name.as_str()) =>
+            {
+                // `const { a, b: c } = props`: the parameters are already in scope.
+                for property in &pattern.properties {
+                    if let (Some(key), BindingPattern::BindingIdentifier(local)) =
+                        (key_name(&property.key), &property.value)
+                    {
+                        if local.name != key.as_str() {
+                            self.scope.renames.insert(local.name.to_string(), key);
+                        }
+                    } else {
+                        return self.refuse(
+                            "view:props-pattern",
+                            "a nested or defaulted props pattern",
+                            property.span,
+                        );
+                    }
+                }
+                if pattern.rest.is_some() {
+                    return self.refuse("view:rest-props", "rest props `{ a, ...rest }`", pattern.span);
+                }
+                String::new()
+            }
+            _ => self.let_decl(d, init, true),
+        }
+    }
+
+    fn react_member(&mut self, d: &VariableDeclarator, call: &CallExpression, hook: &str) -> String {
+        match hook {
+            "useState" => {
+                let BindingPattern::ArrayPattern(pattern) = &d.id else {
+                    return self.refuse(
+                        "react:useState",
+                        "`useState` not destructured as `[value, setValue]`",
+                        d.span,
+                    );
+                };
+                let value = match pattern.elements.first() {
+                    Some(Some(BindingPattern::BindingIdentifier(id))) => id.name.to_string(),
+                    _ => return self.refuse("react:useState", "`useState` without a value name", d.span),
+                };
+                if let Some(Some(BindingPattern::BindingIdentifier(setter))) = pattern.elements.get(1) {
+                    self.scope.setters.insert(setter.name.to_string(), Setter { state: value.clone() });
+                }
+                let ty = call.type_arguments.as_ref().and_then(|a| a.params.first()).map(|t| {
+                    if let TSType::TSTypeReference(r) = t
+                        && let TSTypeName::IdentifierReference(id) = &r.type_name
+                    {
+                        self.scope.types.insert(value.clone(), id.name.to_string());
+                    }
+                    self.ty(t)
+                });
+                let init = match call.arguments.first().and_then(|a| a.as_expression()) {
+                    Some(Expression::ArrowFunctionExpression(arrow)) if arrow.params.items.is_empty() => {
+                        match arrow.get_expression() {
+                            Some(e) => self.typed_value(e, self.scope.types.get(&value).cloned()),
+                            None => {
+                                return self.refuse(
+                                    "react:useState",
+                                    "a lazy initialiser with statements",
+                                    arrow.span,
+                                );
+                            }
+                        }
+                    }
+                    Some(e) => self.typed_value(e, self.scope.types.get(&value).cloned()),
+                    None if ty.as_deref().is_some_and(|t| t.ends_with('?')) => "none".into(),
+                    None => {
+                        return self.refuse(
+                            "react:useState",
+                            "`useState()` without an initial value",
+                            call.span,
+                        );
+                    }
+                };
+                let name = self.name(&value, d.span);
+                match ty {
+                    Some(ty) => format!("@state {name}: {ty} = {init}"),
+                    None => format!("@state {name} = {init}"),
+                }
+            }
+            "useMemo" | "useCallback" => {
+                let BindingPattern::BindingIdentifier(id) = &d.id else {
+                    return self.refuse(&format!("react:{hook}"), format!("a destructured `{hook}`"), d.span);
+                };
+                let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() else {
+                    return self.refuse(
+                        &format!("react:{hook}"),
+                        format!("`{hook}` of something other than an arrow"),
+                        call.span,
+                    );
+                };
+                let name = id.name.to_string();
+                let out = if hook == "useCallback" {
+                    self.scope.member_fns.insert(name.clone());
+                    self.arrow_fn(&name, "", arrow)
+                } else {
+                    let value = match arrow.get_expression() {
+                        Some(e) => Some(e),
+                        None => match crate::view::arrow_statements(arrow) {
+                            [Statement::ReturnStatement(r)] => r.argument.as_ref(),
+                            _ => None,
+                        },
+                    };
+                    match value {
+                        Some(value) => {
+                            if self.is_view(value) {
+                                self.scope.view_values.insert(name.clone());
+                            }
+                            let ty = d
+                                .type_annotation
+                                .as_ref()
+                                .map(|t| format!(": {}", self.ty(&t.type_annotation)));
+                            let value = self.expr(value);
+                            let name = self.name(&name, id.span);
+                            format!("let {name}{} = {value}", ty.unwrap_or_default())
+                        }
+                        None => self.refuse("react:useMemo-block", "a `useMemo` with statements", arrow.span),
+                    }
+                };
+                if let Some(deps) = call.arguments.get(1) {
+                    let span = deps.span();
+                    self.comments.skip_within(span.start, span.end);
+                }
+                out
+            }
+            other => self.refuse(&format!("react:{other}"), format!("React's `{other}`"), call.span),
+        }
+    }
+
+    /// `const pattern = value` as `let`: a name, or a record pattern.
+    fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
+        let keyword = if immutable { "let" } else { "var" };
+        let ty = d
+            .type_annotation
+            .as_ref()
+            .map(|t| format!(": {}", self.ty(&t.type_annotation)))
+            .unwrap_or_default();
+        let pattern = match &d.id {
+            BindingPattern::BindingIdentifier(id) => {
+                if self.is_view(init) {
+                    self.scope.view_values.insert(id.name.to_string());
+                }
+                self.scope.renames.remove(id.name.as_str());
+                self.name(&id.name, id.span)
+            }
+            BindingPattern::ObjectPattern(pattern) if immutable => self.record_pattern(pattern),
+            BindingPattern::ArrayPattern(p) if immutable => {
+                // `const [a, b] = f()`: a tuple pattern (a TS tuple is a Bloom tuple).
+                if p.rest.is_some() {
+                    return self.refuse("destructure:rest", "a rest element in an array pattern", p.span);
+                }
+                let mut items = Vec::new();
+                for element in &p.elements {
+                    match element {
+                        None => items.push("_".to_string()),
+                        Some(BindingPattern::BindingIdentifier(id)) => {
+                            items.push(self.name(&id.name, id.span))
+                        }
+                        Some(other) => items.push(self.refuse(
+                            "destructure:array",
+                            "a nested array pattern",
+                            other.span(),
+                        )),
+                    }
+                }
+                format!("({})", items.join(", "))
+            }
+            other => return self.refuse("destructure", "a destructuring pattern", other.span()),
+        };
+        let value = self.expr(init);
+        format!("{keyword} {pattern}{ty} = {value}")
+    }
+
+    pub fn record_pattern(&mut self, pattern: &ObjectPattern) -> String {
+        if pattern.rest.is_some() {
+            return self.refuse("destructure:rest", "a rest pattern `{ a, ...rest }`", pattern.span);
+        }
+        let mut parts = Vec::new();
+        for property in &pattern.properties {
+            let Some(key) = key_name(&property.key) else {
+                parts.push(self.refuse("destructure:computed", "a computed key in a pattern", property.span));
+                continue;
+            };
+            match &property.value {
+                BindingPattern::BindingIdentifier(local) if local.name == key.as_str() => {
+                    parts.push(self.name(&key, local.span))
+                }
+                BindingPattern::BindingIdentifier(local) => {
+                    let local = self.name(&local.name, local.span);
+                    parts.push(format!("{key}: {local}"));
+                }
+                BindingPattern::ObjectPattern(inner) => {
+                    let inner = self.record_pattern(inner);
+                    parts.push(format!("{key}: {inner}"));
+                }
+                BindingPattern::AssignmentPattern(a) => {
+                    parts.push(self.refuse(
+                        "destructure:default",
+                        "a default in a pattern (`?? value` instead)",
+                        a.span,
+                    ));
+                }
+                BindingPattern::ArrayPattern(a) => {
+                    parts.push(self.refuse("destructure:array", "array destructuring", a.span));
+                }
+            }
+        }
+        format!("{{ {} }}", parts.join(", "))
+    }
+
+    /// The returns of a view (or of a function returning UI), as builder lines.
+    fn view_lines(&mut self, statements: &[Statement], end: u32) -> String {
+        let mut lines = Vec::new();
+        let mut i = 0;
+        while i < statements.len() {
+            let statement = &statements[i];
+            let note = self.note(statement.span().start);
+            if !note.is_empty() {
+                lines.push(note.trim_end().to_string());
+            }
+            match statement {
+                Statement::ReturnStatement(r) => {
+                    if let Some(value) = &r.argument {
+                        lines.push(self.view_value(value));
+                    }
+                    return lines.join("\n");
+                }
+                Statement::IfStatement(s) if branch_returns(&s.consequent) => {
+                    let test = self.expr(&s.test);
+                    let then = self.view_lines(branch(&s.consequent), s.consequent.span().end);
+                    let otherwise = match &s.alternate {
+                        Some(alternate) => self.view_lines(branch(alternate), alternate.span().end),
+                        None => self.view_lines(&statements[i + 1..], end),
+                    };
+                    if then.trim().is_empty() {
+                        // `if (c) return null; …`: the rest, under the negated condition.
+                        lines.push(format!("if {} {{\n{otherwise}\n}}", negate(&s.test, &test)));
+                    } else if is_single_if(&otherwise) {
+                        lines.push(format!("if {test} {{\n{then}\n}} else {otherwise}"));
+                    } else {
+                        lines.push(format!("if {test} {{\n{then}\n}} else {{\n{otherwise}\n}}"));
+                    }
+                    return lines.join("\n");
+                }
+                Statement::VariableDeclaration(v) if v.kind == VariableDeclarationKind::Const => {
+                    for d in &v.declarations {
+                        let Some(init) = &d.init else {
+                            lines.push(self.refuse(
+                                "view:uninitialised",
+                                "a constant without a value",
+                                d.span,
+                            ));
+                            continue;
+                        };
+                        if let Expression::CallExpression(call) = init.without_parentheses()
+                            && (react_hook(self, call).is_some() || is_hook_call(call))
+                        {
+                            lines.push(self.refuse(
+                                "hook:after-return",
+                                "a hook after an early return",
+                                call.span,
+                            ));
+                            continue;
+                        }
+                        lines.push(self.let_decl(d, init, true));
+                    }
+                }
+                other => lines.push(self.refuse(
+                    "view:statement",
+                    "a statement among a view's returns",
+                    other.span(),
+                )),
+            }
+            i += 1;
+        }
+        let tail = self.note(end);
+        if !tail.is_empty() {
+            lines.push(tail.trim_end().to_string());
+        }
+        lines.join("\n")
+    }
+
+    /// A returned UI value as builder lines: nothing is no line, a conditional an `if`.
+    fn view_value(&mut self, value: &Expression) -> String {
+        if is_nothing(value) { String::new() } else { self.child(value) }
+    }
+
+    /// The lines of a `for` built from `xs.map((x) => …)`.
+    pub fn arrow_view_lines(&mut self, arrow: &ArrowFunctionExpression) -> String {
+        match arrow.get_expression() {
+            Some(e) => self.view_value(e),
+            None => self.view_lines(crate::view::arrow_statements(arrow), crate::view::arrow_end(arrow)),
+        }
+    }
+
+    // ---- functions -------------------------------------------------------------
+
+    pub fn function_item(&mut self, name: &str, f: &Function, vis: &'static str) -> String {
+        if let Some(refusal) = self.module_fn_kind(name, f.span) {
+            return refusal;
+        }
+        match Body::of_function(f) {
+            Some(body) => {
+                self.scope = Default::default();
+                let out = self.fn_text(
+                    name,
+                    vis,
+                    f.r#async,
+                    &f.params,
+                    f.return_type.as_deref().map(|t| &t.type_annotation),
+                    body,
+                );
+                self.scope = Default::default();
+                out
+            }
+            None => self.refuse("fn:declare", "a function without a body", f.span),
+        }
+    }
+
+    pub fn arrow_item(&mut self, name: &str, arrow: &ArrowFunctionExpression, vis: &'static str) -> String {
+        if let Some(refusal) = self.module_fn_kind(name, arrow.span) {
+            return refusal;
+        }
+        self.scope = Default::default();
+        let out = self.arrow_fn(name, vis, arrow);
+        self.scope = Default::default();
+        out
+    }
+
+    /// A TS hook or a React component at module level: neither is a `.bloom` function
+    /// (hooks are view members; a component that returns JSX is still React).
+    fn module_fn_kind(&mut self, name: &str, span: Span) -> Option<String> {
+        if is_hook_name(name) {
+            return Some(self.refuse(
+                "hook:module",
+                format!("`{name}` is a TS hook (hooks are view members in `.bloom`)"),
+                span,
+            ));
+        }
+        if name.starts_with(|c: char| c.is_ascii_uppercase()) && has_jsx(self.src, span) {
+            return Some(self.refuse(
+                "component:react",
+                format!("`{name}` is a React component (it returns JSX)"),
+                span,
+            ));
+        }
+        None
+    }
+
+    fn arrow_fn(&mut self, name: &str, vis: &'static str, arrow: &ArrowFunctionExpression) -> String {
+        let ret = arrow.return_type.as_deref().map(|t| &t.type_annotation);
+        self.fn_text(name, vis, arrow.r#async, &arrow.params, ret, Body::of_arrow(arrow))
+    }
+
+    pub fn fn_text(
+        &mut self,
+        name: &str,
+        vis: &'static str,
+        is_async: bool,
+        params: &FormalParameters,
+        ret: Option<&TSType>,
+        body: Body,
+    ) -> String {
+        let saved = self.scope.clone();
+        let (params, prelude) = self.fn_params(params);
+        let ret = match ret {
+            Some(t) => self.ret_type(t, is_async),
+            None => self.infer_ret(body),
+        };
+        let text = match body {
+            Body::Expr(e) => {
+                if ret.is_some() {
+                    if ret.as_deref().is_some_and(|r| r.starts_with("View")) {
+                        self.view_value_expr(e)
+                    } else {
+                        self.expr(e)
+                    }
+                } else {
+                    self.stmt_expr(e)
+                }
+            }
+            Body::Block(statements, end) => {
+                if ret.as_deref().is_some_and(|r| r.starts_with("View")) && is_view_returns(statements) {
+                    self.view_lines(statements, end)
+                } else {
+                    self.block_stmts(statements, end, ret.is_some())
+                }
+            }
+        };
+        self.scope = saved;
+        let text = if prelude.is_empty() { text } else { format!("{}\n{text}", prelude.join("\n")) };
+        let name = self.name(name, Span::default());
+        let keyword = if is_async { "async fn" } else { "fn" };
+        let ret = ret.map(|r| format!(" -> {r}")).unwrap_or_default();
+        format!("{vis}{keyword} {name}({params}){ret} {{\n{text}\n}}")
+    }
+
+    /// A UI value an arrow returns: a conditional of views stays one expression.
+    fn view_value_expr(&mut self, e: &Expression) -> String {
+        self.view_value(e)
+    }
+
+    /// A function's parameters, and the `let`s that destructure a typed object parameter.
+    fn fn_params(&mut self, params: &FormalParameters) -> (String, Vec<String>) {
+        let mut out = Vec::new();
+        let mut prelude = Vec::new();
+        let several = params.items.len() > 1;
+        for (index, param) in params.items.iter().enumerate() {
+            if let (BindingPattern::ObjectPattern(pattern), Some(t)) =
+                (&param.pattern, &param.type_annotation)
+            {
+                let name = if several { format!("arg{index}") } else { "arg".to_string() };
+                let ty = self.ty(&t.type_annotation);
+                let pattern = self.record_pattern(pattern);
+                prelude.push(format!("let {pattern} = {name}"));
+                out.push(format!("{name}: {ty}"));
+                continue;
+            }
+            let BindingPattern::BindingIdentifier(id) = &param.pattern else {
+                let (pattern, default) = match &param.pattern {
+                    BindingPattern::AssignmentPattern(a) => (&a.left, Some(&a.right)),
+                    other => (other, None),
+                };
+                if let (BindingPattern::BindingIdentifier(id), Some(default)) = (pattern, default) {
+                    let ty = match &param.type_annotation {
+                        Some(t) => self.ty(&t.type_annotation),
+                        None => match literal_type(default) {
+                            Some(t) => t.to_string(),
+                            None => {
+                                out.push(self.refuse(
+                                    "param:untyped",
+                                    format!("`{}` has no type", id.name),
+                                    param.span,
+                                ));
+                                continue;
+                            }
+                        },
+                    };
+                    let value = self.expr(default);
+                    out.push(format!("{}: {ty} = {value}", self.name(&id.name, id.span)));
+                    continue;
+                }
+                out.push(self.refuse("param:destructure", "a destructured parameter", param.span));
+                continue;
+            };
+            let name = self.name(&id.name, id.span);
+            self.scope.renames.remove(id.name.as_str());
+            let Some(t) = &param.type_annotation else {
+                out.push(self.refuse("param:untyped", format!("`{}` has no type", id.name), param.span));
+                continue;
+            };
+            if let TSType::TSTypeReference(r) = &t.type_annotation
+                && let TSTypeName::IdentifierReference(tid) = &r.type_name
+            {
+                self.scope.types.insert(id.name.to_string(), tid.name.to_string());
+            }
+            let ty = self.ty(&t.type_annotation);
+            let text = match &param.initializer {
+                Some(default) => format!(
+                    "{name}: {ty} = {}",
+                    self.typed_value(default, self.scope.types.get(id.name.as_str()).cloned())
+                ),
+                None if param.optional => format!("{name}: {} = none", optional_ty(&ty)),
+                None => format!("{name}: {ty}"),
+            };
+            out.push(text);
+        }
+        if let Some(rest) = &params.rest {
+            out.push(self.refuse("param:rest", "a rest parameter (a list in `.bloom`)", rest.span));
+        }
+        (out.join(", "), prelude)
+    }
+
+    /// A written return type; `void` (and an async function's `Promise<void>`) is none.
+    fn ret_type(&mut self, t: &TSType, is_async: bool) -> Option<String> {
+        if matches!(t, TSType::TSVoidKeyword(_)) {
+            return None;
+        }
+        if is_async
+            && let TSType::TSTypeReference(r) = t
+            && let TSTypeName::IdentifierReference(id) = &r.type_name
+            && id.name == "Promise"
+            && let Some(inner) = r.type_arguments.as_ref().and_then(|a| a.params.first())
+        {
+            if matches!(inner, TSType::TSVoidKeyword(_)) {
+                return None;
+            }
+            return Some(self.ty(inner));
+        }
+        Some(self.ty(t))
+    }
+
+    /// The return type left unwritten: UI, nothing, or a refusal.
+    fn infer_ret(&mut self, body: Body) -> Option<String> {
+        match body {
+            Body::Expr(e) => {
+                if self.is_view(e) {
+                    Some(if may_be_nothing(e) { "View?".into() } else { "View".into() })
+                } else if is_effect(e) {
+                    None
+                } else if let Some(ty) = value_type(e) {
+                    Some(ty.to_string())
+                } else {
+                    Some(self.refuse(
+                        "fn:return-type",
+                        "a function returning a value without a return type",
+                        e.span(),
+                    ))
+                }
+            }
+            Body::Block(statements, end) => {
+                let values = return_values(statements);
+                if values.is_empty() {
+                    None
+                } else if values.iter().all(|v| self.is_view(v) || is_nothing(v)) {
+                    Some(if values.iter().any(|v| is_nothing(v) || may_be_nothing(v)) {
+                        "View?".into()
+                    } else {
+                        "View".into()
+                    })
+                } else if let Some(ty) =
+                    value_type(values[0]).filter(|t| values.iter().all(|v| value_type(v) == Some(t)))
+                {
+                    Some(ty.to_string())
+                } else {
+                    Some(self.refuse(
+                        "fn:return-type",
+                        "a function returning a value without a return type",
+                        Span::new(end, end),
+                    ))
+                }
+            }
+        }
+    }
+
+    // ---- statements ------------------------------------------------------------
+
+    /// A block's statements; with `tail`, a last `return e` is the result `e`.
+    pub fn block_stmts(&mut self, statements: &[Statement], end: u32, tail: bool) -> String {
+        let mut lines = Vec::new();
+        let mut previous: Option<u32> = None;
+        for (i, statement) in statements.iter().enumerate() {
+            let span = statement.span();
+            let note = self.note(span.start);
+            if previous.is_some_and(|p| self.blank_between(p, span.start)) {
+                lines.push(String::new());
+            }
+            previous = Some(span.end);
+            let last = i + 1 == statements.len();
+            let text = match statement {
+                Statement::ReturnStatement(r) if last && tail => match &r.argument {
+                    Some(value) => self.expr(value),
+                    None => String::new(),
+                },
+                Statement::TryStatement(t) => self.try_stmt(t, last),
+                other => self.stmt(other),
+            };
+            lines.push(format!("{note}{text}"));
+        }
+        let note = self.note(end);
+        if !note.is_empty() {
+            lines.push(note.trim_end().to_string());
+        }
+        lines.join("\n")
+    }
+
+    fn stmt(&mut self, statement: &Statement) -> String {
+        match statement {
+            Statement::VariableDeclaration(v) => {
+                let immutable = v.kind == VariableDeclarationKind::Const;
+                if !immutable && v.kind != VariableDeclarationKind::Let {
+                    return self.refuse("statement:var", "a `var`", v.span);
+                }
+                let mut out = Vec::new();
+                for d in &v.declarations {
+                    match &d.init {
+                        Some(init) => out.push(self.let_decl(d, init, immutable)),
+                        None => out.push(self.refuse(
+                            "statement:uninitialised",
+                            "a `let` without a value",
+                            d.span,
+                        )),
+                    }
+                }
+                out.join("\n")
+            }
+            Statement::ExpressionStatement(s) => self.stmt_expr(&s.expression),
+            Statement::IfStatement(s) => {
+                let test = self.expr(&s.test);
+                let then = self.block_of(&s.consequent);
+                match &s.alternate {
+                    None => format!("if {test} {{\n{then}\n}}"),
+                    Some(Statement::IfStatement(_)) => {
+                        let otherwise = self.stmt(s.alternate.as_ref().expect("an else"));
+                        format!("if {test} {{\n{then}\n}} else {otherwise}")
+                    }
+                    Some(alternate) => {
+                        let otherwise = self.block_of(alternate);
+                        format!("if {test} {{\n{then}\n}} else {{\n{otherwise}\n}}")
+                    }
+                }
+            }
+            Statement::ReturnStatement(r) => match &r.argument {
+                Some(value) => format!("return {}", self.expr(value)),
+                None => "return".into(),
+            },
+            Statement::ForOfStatement(f) => {
+                let item = match &f.left {
+                    oxc_ast::ast::ForStatementLeft::VariableDeclaration(v) => match v.declarations.as_slice()
+                    {
+                        [d] => match &d.id {
+                            BindingPattern::BindingIdentifier(id) => Some(self.name(&id.name, id.span)),
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let Some(item) = item else {
+                    return self.refuse("statement:for-pattern", "a `for…of` over a pattern", f.span);
+                };
+                let list = self.expr(&f.right);
+                let body = self.block_of(&f.body);
+                format!("for {item} in {list} {{\n{body}\n}}")
+            }
+            Statement::TryStatement(t) => self.try_stmt(t, false),
+            Statement::ThrowStatement(t) => {
+                self.refuse("statement:throw", "`throw` (return a `Result`)", t.span)
+            }
+            Statement::SwitchStatement(s) => {
+                self.refuse("statement:switch", "a `switch` (a `match`)", s.span)
+            }
+            Statement::BlockStatement(b) => self.refuse("statement:block", "a bare block", b.span),
+            Statement::FunctionDeclaration(f) => {
+                self.refuse("fn:nested", "a function inside a function", f.span)
+            }
+            Statement::ForStatement(f) => self.refuse("statement:for", "a C-style `for`", f.span),
+            Statement::WhileStatement(w) => {
+                let test = self.expr(&w.test);
+                let body = self.block_of(&w.body);
+                format!("while {test} {{\n{body}\n}}")
+            }
+            Statement::EmptyStatement(_) => String::new(),
+            other => self.refuse("statement", "a statement with no `.bloom` form", other.span()),
+        }
+    }
+
+    fn block_of(&mut self, statement: &Statement) -> String {
+        match statement {
+            Statement::BlockStatement(b) => self.block_stmts(&b.body, b.span.end, false),
+            other => self.stmt(other),
+        }
+    }
+
+    /// An expression in statement position: a setter call is an assignment.
+    pub fn stmt_expr(&mut self, e: &Expression) -> String {
+        match e {
+            Expression::CallExpression(call) => {
+                if let Expression::Identifier(id) = &call.callee
+                    && let Some(setter) = self.scope.setters.get(id.name.as_str()).cloned()
+                {
+                    return self.set_state(&setter.state, call);
+                }
+                self.expr(e)
+            }
+            Expression::UnaryExpression(u) if u.operator == UnaryOperator::Void => match &u.argument {
+                Expression::CallExpression(_) => format!("task {{ await {} }}", self.expr(&u.argument)),
+                other => self.refuse("operator:void", "`void` of something other than a call", other.span()),
+            },
+            Expression::AssignmentExpression(a) => {
+                let op = match a.operator {
+                    AssignmentOperator::Assign => "=",
+                    AssignmentOperator::Addition => "+=",
+                    AssignmentOperator::Subtraction => "-=",
+                    AssignmentOperator::Multiplication => "*=",
+                    op => {
+                        return self.refuse(
+                            &format!("operator:{}", op.as_str()),
+                            format!("`{}`", op.as_str()),
+                            a.span,
+                        );
+                    }
+                };
+                let target = match &a.left {
+                    AssignmentTarget::AssignmentTargetIdentifier(id) => self.name(&id.name, id.span),
+                    other => {
+                        return self.refuse(
+                            "mutation",
+                            "a write to an object's field (values are immutable)",
+                            other.span(),
+                        );
+                    }
+                };
+                let value = self.expr(&a.right);
+                format!("{target} {op} {value}")
+            }
+            Expression::UpdateExpression(u) => match &u.argument {
+                SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
+                    let op = if u.operator == oxc_syntax::operator::UpdateOperator::Increment {
+                        "+="
+                    } else {
+                        "-="
+                    };
+                    format!("{} {op} 1", self.name(&id.name, id.span))
+                }
+                other => self.refuse("mutation", "`++` on an object's field", other.span()),
+            },
+            Expression::ChainExpression(chain) => match &chain.expression {
+                oxc_ast::ast::ChainElement::CallExpression(call) => self.optional_call(call),
+                _ => self.expr(e),
+            },
+            _ => self.expr(e),
+        }
+    }
+
+    /// `setX(v)` as `x = v`; a functional update `setX((p) => f(p))` as `x = f(x)`.
+    fn set_state(&mut self, state: &str, call: &CallExpression) -> String {
+        let [arg] = call.arguments.as_slice() else {
+            return self.refuse("state:setter", "a state setter with other than one argument", call.span);
+        };
+        let value = match arg {
+            Argument::ArrowFunctionExpression(arrow) => {
+                let param = match arrow.params.items.as_slice() {
+                    [p] => match &p.pattern {
+                        BindingPattern::BindingIdentifier(id) => Some(id.name.to_string()),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let value = match arrow.get_expression() {
+                    Some(e) => Some(e),
+                    None => match crate::view::arrow_statements(arrow) {
+                        [Statement::ReturnStatement(r)] => r.argument.as_ref(),
+                        _ => None,
+                    },
+                };
+                match (param, value) {
+                    (Some(param), Some(value)) => {
+                        let saved = self.scope.renames.insert(param.clone(), state.to_string());
+                        let text = self.expr(value);
+                        match saved {
+                            Some(s) => self.scope.renames.insert(param, s),
+                            None => self.scope.renames.remove(&param),
+                        };
+                        text
+                    }
+                    _ => {
+                        return self.refuse("state:update", "a functional update with statements", arrow.span);
+                    }
+                }
+            }
+            other => {
+                let ty = self.scope.types.get(state).cloned();
+                self.typed_value(other.to_expression(), ty)
+            }
+        };
+        format!("{state} = {value}")
+    }
+
+    /// `f?.(a)` as a statement: `if let f = f { f(a) }`.
+    fn optional_call(&mut self, call: &CallExpression) -> String {
+        let (bound, callee_text) = match &call.callee {
+            Expression::Identifier(id) if call.optional => {
+                let name = self.expr(&call.callee);
+                (self.name(&id.name, id.span), name)
+            }
+            Expression::StaticMemberExpression(m)
+                if call.optional && !crate::expr::has_optional(&m.object) =>
+            {
+                (m.property.name.to_string(), self.expr(&call.callee))
+            }
+            _ => return self.refuse("optional:call", "an optional call inside a longer chain", call.span),
+        };
+        let args = self.positional(&call.arguments, false);
+        format!("if let {bound} = {callee_text} {{\n{bound}({args})\n}}")
+    }
+
+    /// `try { await x } catch (e) { … } finally { … }`: a `match` on the awaited
+    /// `Result` and a `defer`, under a review marker (the TS caught a throw anywhere
+    /// in the block; the match handles the awaited call's rejection).
+    fn try_stmt(&mut self, t: &oxc_ast::ast::TryStatement, last: bool) -> String {
+        let finalizer = match &t.finalizer {
+            Some(f) if !last => {
+                return self.refuse(
+                    "try:finally",
+                    "a `finally` with statements after the `try` (a `defer` runs at the block's end)",
+                    f.span,
+                );
+            }
+            Some(f) => {
+                let body = self.block_stmts(&f.body, f.span.end, false);
+                Some(format!("defer {{\n{body}\n}}"))
+            }
+            None => None,
+        };
+        let Some(handler) = &t.handler else {
+            // `try { … } finally { … }` is exactly a `defer`.
+            let body = self.block_stmts(&t.block.body, t.block.span.end, false);
+            return format!("{}\n{body}", finalizer.unwrap_or_default());
+        };
+        let (bound, awaited, rest) = match t.block.body.split_first() {
+            Some((Statement::ExpressionStatement(s), rest)) => match &s.expression {
+                Expression::AwaitExpression(a) => ("_".to_string(), &a.argument, rest),
+                _ => return self.refuse("try:shape", "a `try` that does not start with an `await`", t.span),
+            },
+            Some((Statement::VariableDeclaration(v), rest)) if v.declarations.len() == 1 => {
+                let d = &v.declarations[0];
+                match (&d.id, d.init.as_ref().map(|i| i.without_parentheses())) {
+                    (BindingPattern::BindingIdentifier(id), Some(Expression::AwaitExpression(a))) => {
+                        (self.name(&id.name, id.span), &a.argument, rest)
+                    }
+                    _ => {
+                        return self.refuse(
+                            "try:shape",
+                            "a `try` that does not start with an `await`",
+                            t.span,
+                        );
+                    }
+                }
+            }
+            _ => return self.refuse("try:shape", "a `try` that does not start with an `await`", t.span),
+        };
+        let error = match handler.param.as_ref().map(|p| &p.pattern) {
+            Some(BindingPattern::BindingIdentifier(id)) => self.name(&id.name, id.span),
+            None => "_".into(),
+            Some(other) => {
+                return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
+            }
+        };
+        let awaited = self.expr(awaited);
+        let ok = self.block_stmts(rest, t.block.span.end, false);
+        let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
+        let marker = format!(
+            "// {REVIEW_MARKER}: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection"
+        );
+        let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
+        format!(
+            "{marker}\n{defer}match await {awaited} {{\ncase .ok({bound}) => {{\n{ok}\n}}\ncase .err({error}) => {{\n{err}\n}}\n}}"
+        )
+    }
+}
+
+/// An arrow's statements (none when its body is an expression).
+pub fn arrow_statements<'b, 'a>(arrow: &'b ArrowFunctionExpression<'a>) -> &'b [Statement<'a>] {
+    arrow.get_function_body().map_or(&[], |b| &b.statements)
+}
+
+/// Where an arrow's body ends.
+pub fn arrow_end(arrow: &ArrowFunctionExpression) -> u32 {
+    arrow.get_function_body().map_or(arrow.span.end, |b| b.span.end)
+}
+
+/// `!(test)`, written the short way when `test` is a comparison or a negation.
+fn negate(test: &Expression, text: &str) -> String {
+    use oxc_syntax::operator::BinaryOperator;
+    match test.without_parentheses() {
+        Expression::BinaryExpression(b) => {
+            let swapped = match b.operator {
+                BinaryOperator::StrictEquality | BinaryOperator::Equality => Some((" == ", " != ")),
+                BinaryOperator::StrictInequality | BinaryOperator::Inequality => Some((" != ", " == ")),
+                _ => None,
+            };
+            match swapped {
+                Some((from, to)) if text.matches(from).count() == 1 => text.replacen(from, to, 1),
+                _ => format!("!({text})"),
+            }
+        }
+        Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => {
+            text.strip_prefix('!').map_or_else(|| format!("!({text})"), str::to_string)
+        }
+        Expression::Identifier(_) | Expression::StaticMemberExpression(_) | Expression::CallExpression(_) => {
+            format!("!{text}")
+        }
+        _ => format!("!({text})"),
+    }
+}
+
+/// Whether builder lines are one `if … else …` chain (it can follow `else` directly).
+fn is_single_if(lines: &str) -> bool {
+    lines.starts_with("if ") && lines.ends_with('}') && {
+        // Balanced braces that close only at the end: one statement.
+        let mut depth = 0i32;
+        let mut closed_early = false;
+        let bytes: Vec<char> = lines.chars().collect();
+        for (i, c) in bytes.iter().enumerate() {
+            match c {
+                '{' => depth += 1,
+                '}' => {
+                    depth -= 1;
+                    if depth == 0 && i + 1 < bytes.len() {
+                        let rest: String = bytes[i + 1..].iter().collect();
+                        if !rest.trim_start().starts_with("else") {
+                            closed_early = true;
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        !closed_early
+    }
+}
+
+/// The members of a module object type named `name` (an interface or an object alias).
+fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
+    for statement in module {
+        let declaration = match statement {
+            Statement::ExportDeclaration(e) => Some(&e.declaration),
+            other => other.as_declaration(),
+        };
+        match declaration {
+            Some(Declaration::TSInterfaceDeclaration(i)) if i.id.name == name && i.extends.is_empty() => {
+                return Some(i.body.body.iter().collect());
+            }
+            Some(Declaration::TSTypeAliasDeclaration(a)) if a.id.name == name => {
+                if let TSType::TSTypeLiteral(literal) = &a.type_annotation {
+                    return Some(literal.members.iter().collect());
+                }
+                return None;
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn key_name(key: &PropertyKey) -> Option<String> {
+    match key {
+        PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
+        _ => None,
+    }
+}
+
+/// Whether a branch ends in a `return`.
+fn branch_returns(statement: &Statement) -> bool {
+    match statement {
+        Statement::ReturnStatement(_) => true,
+        Statement::BlockStatement(b) => b.body.last().is_some_and(branch_returns),
+        Statement::IfStatement(i) => {
+            branch_returns(&i.consequent) && i.alternate.as_ref().is_some_and(branch_returns)
+        }
+        _ => false,
+    }
+}
+
+fn branch<'b, 'a>(statement: &'b Statement<'a>) -> &'b [Statement<'a>] {
+    match statement {
+        Statement::BlockStatement(b) => &b.body,
+        other => std::slice::from_ref(other),
+    }
+}
+
+/// Whether the statements are only `const`s, early-return `if`s and returns.
+fn is_view_returns(statements: &[Statement]) -> bool {
+    statements.iter().all(|s| match s {
+        Statement::ReturnStatement(_) => true,
+        Statement::VariableDeclaration(v) => v.kind == VariableDeclarationKind::Const,
+        Statement::IfStatement(i) => branch_returns(&i.consequent),
+        _ => false,
+    })
+}
+
+/// Every value a function's `return`s give (nested `if`s included).
+fn return_values<'b, 'a>(statements: &'b [Statement<'a>]) -> Vec<&'b Expression<'a>> {
+    let mut out = Vec::new();
+    for statement in statements {
+        match statement {
+            Statement::ReturnStatement(r) => out.extend(r.argument.as_ref()),
+            Statement::IfStatement(i) => {
+                out.extend(return_values(branch(&i.consequent)));
+                if let Some(alternate) = &i.alternate {
+                    out.extend(return_values(branch(alternate)));
+                }
+            }
+            Statement::BlockStatement(b) => out.extend(return_values(&b.body)),
+            _ => {}
+        }
+    }
+    out
+}
+
+fn may_be_nothing(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::ConditionalExpression(c) => {
+            is_nothing(&c.consequent)
+                || is_nothing(&c.alternate)
+                || may_be_nothing(&c.consequent)
+                || may_be_nothing(&c.alternate)
+        }
+        Expression::LogicalExpression(_) => true,
+        other => is_nothing(other),
+    }
+}
+
+/// An expression used for what it does: a call, an assignment, `void`.
+fn is_effect(e: &Expression) -> bool {
+    matches!(
+        e.without_parentheses(),
+        Expression::CallExpression(_)
+            | Expression::ChainExpression(_)
+            | Expression::AssignmentExpression(_)
+            | Expression::UpdateExpression(_)
+            | Expression::AwaitExpression(_)
+    ) || matches!(e, Expression::UnaryExpression(u) if u.operator == UnaryOperator::Void)
+}
+
+/// The type a value's own shape gives it: a literal, a comparison, arithmetic.
+fn value_type(e: &Expression) -> Option<&'static str> {
+    use oxc_syntax::operator::{BinaryOperator as B, LogicalOperator};
+    match e.without_parentheses() {
+        Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => Some("String"),
+        Expression::BooleanLiteral(_) => Some("Bool"),
+        Expression::NumericLiteral(_) => Some("Float"),
+        Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => Some("Bool"),
+        Expression::UnaryExpression(u) if u.operator == UnaryOperator::UnaryNegation => {
+            value_type(&u.argument)
+        }
+        Expression::BinaryExpression(b) => match b.operator {
+            B::StrictEquality
+            | B::StrictInequality
+            | B::Equality
+            | B::Inequality
+            | B::LessThan
+            | B::LessEqualThan
+            | B::GreaterThan
+            | B::GreaterEqualThan => Some("Bool"),
+            B::Addition
+                if value_type(&b.left) == Some("String") || value_type(&b.right) == Some("String") =>
+            {
+                Some("String")
+            }
+            B::Addition | B::Subtraction | B::Multiplication | B::Division | B::Remainder
+                if value_type(&b.left) == Some("Float") && value_type(&b.right) == Some("Float") =>
+            {
+                Some("Float")
+            }
+            _ => None,
+        },
+        Expression::LogicalExpression(l) => match l.operator {
+            LogicalOperator::And | LogicalOperator::Or
+                if value_type(&l.left) == Some("Bool") && value_type(&l.right) == Some("Bool") =>
+            {
+                Some("Bool")
+            }
+            LogicalOperator::Coalesce => value_type(&l.right),
+            _ => None,
+        },
+        Expression::ConditionalExpression(c) => {
+            let a = value_type(&c.consequent)?;
+            (value_type(&c.alternate) == Some(a)).then_some(a)
+        }
+        _ => None,
+    }
+}
+
+fn literal_type(e: &Expression) -> Option<&'static str> {
+    match e {
+        Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => Some("String"),
+        Expression::NumericLiteral(_) => Some("Float"),
+        Expression::BooleanLiteral(_) => Some("Bool"),
+        _ => None,
+    }
+}
+
+fn is_hook_call(call: &CallExpression) -> bool {
+    matches!(&call.callee, Expression::Identifier(id) if is_hook_name(&id.name))
+}
+
+fn is_hook_name(name: &str) -> bool {
+    name.starts_with("use") && name.chars().nth(3).is_some_and(|c| c.is_ascii_uppercase())
+}
+
+/// Whether the code in `span` holds JSX outside an `Embed(…)`.
+fn has_jsx(source: &str, span: Span) -> bool {
+    use oxc_ast_visit::Visit;
+    struct Finder {
+        found: bool,
+    }
+    impl<'a> Visit<'a> for Finder {
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            if matches!(&call.callee, Expression::Identifier(id) if id.name == "Embed") {
+                return;
+            }
+            oxc_ast_visit::walk::walk_call_expression(self, call);
+        }
+        fn visit_jsx_element(&mut self, _: &oxc_ast::ast::JSXElement<'a>) {
+            self.found = true;
+        }
+        fn visit_jsx_fragment(&mut self, _: &oxc_ast::ast::JSXFragment<'a>) {
+            self.found = true;
+        }
+    }
+    let text = &source[span.start as usize..span.end as usize];
+    if !text.contains('<') {
+        return false;
+    }
+    let allocator = oxc_allocator::Allocator::default();
+    let wrapped = format!("({text})");
+    let parsed = oxc_parser::Parser::new(&allocator, &wrapped, oxc_span::SourceType::tsx()).parse();
+    let mut finder = Finder { found: false };
+    finder.visit_program(&parsed.program);
+    finder.found
+}
