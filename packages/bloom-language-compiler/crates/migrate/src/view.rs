@@ -1377,20 +1377,50 @@ impl Tr<'_> {
                     oxc_ast::ast::ForStatementLeft::VariableDeclaration(v) => match v.declarations.as_slice()
                     {
                         [d] => match &d.id {
-                            BindingPattern::BindingIdentifier(id) => Some(self.bind(&id.name, id.span)),
+                            BindingPattern::BindingIdentifier(id) => {
+                                Some((self.bind(&id.name, id.span), None))
+                            }
+                            // `for (const { a } of xs)`: the item, then its fields.
+                            BindingPattern::ObjectPattern(p) => {
+                                Some(("item".to_string(), Some(self.record_pattern(p))))
+                            }
+                            // `for (const [k, v] of entries)`: a tuple.
+                            BindingPattern::ArrayPattern(p)
+                                if p.rest.is_none()
+                                    && p.elements.iter().all(|e| {
+                                        e.as_ref()
+                                            .is_none_or(|e| matches!(e, BindingPattern::BindingIdentifier(_)))
+                                    }) =>
+                            {
+                                let names: Vec<String> = p
+                                    .elements
+                                    .iter()
+                                    .map(|e| match e {
+                                        Some(BindingPattern::BindingIdentifier(id)) => {
+                                            self.bind(&id.name, id.span)
+                                        }
+                                        _ => "_".to_string(),
+                                    })
+                                    .collect();
+                                Some((format!("({})", names.join(", ")), None))
+                            }
                             _ => None,
                         },
                         _ => None,
                     },
                     _ => None,
                 };
-                let Some(item) = item else {
+                let Some((item, pattern)) = item else {
                     return self.refuse("statement:for-pattern", "a `for…of` over a pattern", f.span);
                 };
                 let list = self.head_expr(&f.right);
                 self.loop_block = true;
                 let body = self.block_of(&f.body);
                 self.loop_block = false;
+                let body = match pattern {
+                    Some(p) => format!("let {p} = {item}\n{body}"),
+                    None => body,
+                };
                 format!("for {item} in {list} {{\n{body}\n}}")
             }
             Statement::TryStatement(t) => self.try_stmt(t, false),

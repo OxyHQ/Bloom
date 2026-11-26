@@ -137,6 +137,8 @@ pub struct Tr<'s> {
     pub loop_block: bool,
     /// Translating a hook function (`fn useX`): React's memo hooks are TS calls.
     pub hook_fn: bool,
+    /// Names an `export { a, b }` list exports: `pub` where they are declared.
+    pub listed_exports: HashSet<String>,
     /// `const X = memo(Named, compare)`: Named's `equal(old, new)` member.
     pub equal_for: HashMap<String, String>,
     /// Translating `lazy`'s closure: `import("./X")` is written as is.
@@ -346,6 +348,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         hook_fn: false,
         dynamic_import: false,
         equal_for: HashMap::new(),
+        listed_exports: HashSet::new(),
         react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
@@ -384,6 +387,13 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     tr.scan_memo_aliases(&program.body);
 
     let defaults = default_exports(&program.body);
+    for statement in &program.body {
+        if let Statement::ExportNamedDeclaration(export) = statement
+            && let Some(names) = export_list(export)
+        {
+            tr.listed_exports.extend(names);
+        }
+    }
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -1040,6 +1050,8 @@ impl<'s> Tr<'s> {
             Statement::ExportDeclaration(export) => {
                 self.declaration(&export.declaration, "pub ", defaults, body)
             }
+            // `export { a, b }`: each item is `pub` where it is declared.
+            Statement::ExportNamedDeclaration(export) if export_list(export).is_some() => String::new(),
             Statement::ExportNamedDeclaration(export) => {
                 self.refuse("export:list", "an `export { … }` list (export each item instead)", export.span)
             }
@@ -1128,7 +1140,13 @@ impl<'s> Tr<'s> {
     }
 
     fn visibility(&self, name: &str, given: &'static str, defaults: &HashSet<String>) -> &'static str {
-        if defaults.contains(name) { "pub default " } else { given }
+        if defaults.contains(name) {
+            "pub default "
+        } else if self.listed_exports.contains(name) {
+            "pub "
+        } else {
+            given
+        }
     }
 
     fn declaration(
@@ -1546,4 +1564,16 @@ pub fn props_used_whole(src: &str, span: Span, name: &str) -> bool {
         }
         !(after.starts_with('.') || after.starts_with("?.") || after.starts_with(':'))
     })
+}
+
+/// `export { a, b }` (no renames, no source): the names.
+fn export_list(export: &oxc_ast::ast::ExportNamedDeclaration) -> Option<Vec<String>> {
+    export
+        .specifiers
+        .iter()
+        .map(|s| {
+            let local = s.local.name().to_string();
+            (s.exported.name() == local.as_str()).then_some(local)
+        })
+        .collect()
 }

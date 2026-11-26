@@ -177,8 +177,10 @@ impl Tr<'_> {
                     self.static_member(&m.object, &m.property.name, m.optional, m.span)
                 }
                 ChainElement::ComputedMemberExpression(m) => {
+                    // `a?.[i]` is `a?[i]`.
                     if m.optional {
-                        self.refuse("optional:index", "an optional index `a?.[i]`", m.span)
+                        let object = self.expr(&m.object);
+                        format!("{object}?[{}]", self.expr(&m.expression))
                     } else {
                         let object = self.expr(&m.object);
                         format!("{object}[{}]", self.expr(&m.expression))
