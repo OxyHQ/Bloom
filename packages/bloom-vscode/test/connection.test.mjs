@@ -46,7 +46,11 @@ test('bloomc lsp publishes diagnostics, hovers and formats', {
     contentChanges: [{ text: fixed }],
   });
   await arrived;
-  assert.deepEqual(published.at(-1).diagnostics, []);
+  // Errors only: the 0.x forms it is written in warn (B0950, severity 2).
+  assert.deepEqual(
+    published.at(-1).diagnostics.filter((d) => d.severity === 1),
+    [],
+  );
 
   const edits = await connection.request('textDocument/formatting', {
     textDocument: { uri },
