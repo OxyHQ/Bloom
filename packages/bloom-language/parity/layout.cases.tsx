@@ -179,9 +179,22 @@ const placement: ParityCase[] = [
 const BOX = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;
 
 /** Styles react-native-web compiles into classes (an inline object it writes as it is). */
-const SHEET = RN.StyleSheet.create({ boxNone: { pointerEvents: 'box-none' } });
+const SHEET = RN.StyleSheet.create({
+  boxNone: { pointerEvents: 'box-none' },
+  padded: { paddingTop: 16, paddingBottom: 16, paddingStart: 16, paddingEnd: 16 },
+});
 
 const overlays: ParityCase[] = [
+  {
+    // The web harness reads react-native-web's sheet: a StyleSheet's style is compared, not dropped.
+    name: 'a padding against a StyleSheet style',
+    language: () => toElement(L.VStack(L.Text('a')).padding('lg')),
+    bloom: () => (
+      <RN.View style={SHEET.padded}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
   {
     name: 'an overlay at the top trailing corner',
     language: () =>

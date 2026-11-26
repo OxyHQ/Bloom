@@ -3,7 +3,7 @@ import { BloomImage } from '@oxy.so/bloom/image';
 
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const COVER = 'https://example.com/cover.jpg';
 
@@ -35,6 +35,33 @@ export const IMAGE_NAME_CASES: readonly ParityCase[] = [
     language: () => toElement(L.Image(COVER).label('Cover').frame({ width: '120', height: '120' })),
     bloom: () => (
       <BloomImage source={COVER} accessibilityLabel="Cover" style={{ width: 120, height: 120 }} />
+    ),
+  },
+  {
+    // react-native-web counts each tinted image's filter (`tint-N`): the two sides differ by it alone.
+    name: 'an image tinted by a role, its filter counted apart',
+    language: () =>
+      toElement(L.Image(COVER, 'Cover').tint('primary').frame({ width: '120', height: '120' })),
+    bloom: () => (
+      <Themed>
+        {(c) =>
+          RN.Platform.OS === 'web' ? (
+            <RN.Image
+              source={{ uri: COVER }}
+              resizeMode="cover"
+              accessibilityLabel="Cover"
+              style={{ width: 120, height: 120, tintColor: c.primary }}
+            />
+          ) : (
+            <BloomImage
+              source={COVER}
+              alt="Cover"
+              tintColor={c.primary}
+              style={{ width: 120, height: 120 }}
+            />
+          )
+        }
+      </Themed>
     ),
   },
 ];

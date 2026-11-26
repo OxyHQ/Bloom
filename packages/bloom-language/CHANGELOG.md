@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- The web parity harness counts react-native-web Image's tint filter ids (`tint-N`, a module counter per image drawn) by their order in the tree, as it counts React's and Bloom's ids, so two draws of one tinted image compare equal (Allo's `ChatBackground`). A layout case holds that a `StyleSheet.create` style reaches the compared CSS on the web.
+
 ## 1.7.0
 
 ### Compatibility
