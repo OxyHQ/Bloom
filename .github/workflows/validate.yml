@@ -80,7 +80,7 @@ jobs:
   # loser is never a red.
   race:
     needs: provenance
-    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
     uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@main
     permissions:
       actions: read
@@ -103,7 +103,7 @@ jobs:
     # Each raced lane: Seldon when the race is on (never for a fork), its own
     # concurrency group (the race cancels a loser by queuing into it; the name
     # must be the job's display name), and the guard as its first step.
-    runs-on: &seldon-lane ${{ vars.CI_SELDON_RACE == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
+    runs-on: &seldon-lane ${{ vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
     timeout-minutes: 20
     permissions: &race-lane-permissions
       contents: read
