@@ -35,6 +35,21 @@ fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
     Ok(())
 }
 
+/// `a/./b/../c` as `a/c`, without touching the file system.
+pub fn normalize(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                out.pop();
+            }
+            other => out.push(other),
+        }
+    }
+    out
+}
+
 /// `path` relative to `base` when it is under it (`a/b/c` from `a` is `b/c`),
 /// else `path` itself.
 pub fn relative(path: &Path, base: &Path) -> PathBuf {
@@ -55,6 +70,11 @@ pub fn relative_url(from: &Path, to: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn normalizes_lexically() {
+        assert_eq!(normalize(Path::new("/a/b/./../c/d.bloom")), PathBuf::from("/a/c/d.bloom"));
+    }
 
     #[test]
     fn relative_urls_climb_then_descend() {
