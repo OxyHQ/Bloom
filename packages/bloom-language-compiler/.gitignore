@@ -1,5 +1,8 @@
 target/
 *.node
+# The bloomc build scripts/build-addon.sh puts beside the package.
+/bloomc
+/bloomc.exe
 # The parity suite writes each fixture's compiled form beside it.
 fixtures/*.compiled.tsx
 dist/
