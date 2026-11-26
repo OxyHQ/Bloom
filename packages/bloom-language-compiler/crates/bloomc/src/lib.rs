@@ -30,6 +30,7 @@ mod expo;
 mod files;
 mod json;
 mod lsp;
+mod navigation;
 mod parallel;
 mod project;
 mod scaffold;

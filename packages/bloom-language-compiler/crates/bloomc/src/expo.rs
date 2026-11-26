@@ -304,26 +304,68 @@ pub fn generate(package: &Package) -> Result<(), String> {
         let std_dir = bloom_lang::stdlib::dir(&package.root);
         bloom_lang::stdlib::ensure(&package.root);
         // The package's string catalogs (`Resources/Localizable/<locale>.json`), registered at startup.
-        let mut catalogs = String::new();
-        if let Ok(entries) = std::fs::read_dir(package.root.join(bloom_lang::i18n::DIR)) {
-            let mut files: Vec<std::path::PathBuf> = entries
-                .filter_map(|e| e.ok().map(|e| e.path()))
-                .filter(|p| p.extension().is_some_and(|x| x == "json"))
-                .collect();
-            files.sort();
-            for file in files {
-                let locale = file.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
-                catalogs.push_str(&format!("registerCatalog('{locale}', require('{}'));\n", rel(&file)));
+        let mut catalog_files: Vec<std::path::PathBuf> =
+            std::fs::read_dir(package.root.join(bloom_lang::i18n::DIR))
+                .map(|entries| {
+                    entries
+                        .filter_map(|e| e.ok().map(|e| e.path()))
+                        .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                        .collect()
+                })
+                .unwrap_or_default();
+        catalog_files.sort();
+        let catalogs_from = |base: &Path| -> String {
+            catalog_files
+                .iter()
+                .map(|file| {
+                    let locale =
+                        file.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+                    format!(
+                        "registerCatalog('{locale}', require('{}'));\n",
+                        crate::files::relative_url(base, file)
+                    )
+                })
+                .collect()
+        };
+        let catalogs = catalogs_from(&build);
+        let runtime = rel(&std_dir.join("runtime"));
+        let entry_rel = rel(&entry_file);
+        match crate::navigation::table(package)? {
+            None => {
+                let _ = std::fs::remove_dir_all(build.join("app"));
+                write(
+                    &build.join("index.js"),
+                    &single_root(header, &runtime, &entry_name, &entry_rel, &catalogs),
+                )?;
+            }
+            Some(table) => {
+                // Today's router: expo-router's file routes, written from the app's routes enum.
+                let routing = crate::files::relative_url(&build.join("app"), &std_dir.join("routing"));
+                let registration =
+                    crate::navigation::write_routes(&build, routing.trim_start_matches("./"), &table)?;
+                let (icons, destinations) = crate::navigation::destinations(&table);
+                write(
+                    &build.join("app/_layout.js"),
+                    &routed_root(
+                        header,
+                        &RoutedRoot {
+                            runtime: &crate::files::relative_url(
+                                &build.join("app"),
+                                &std_dir.join("runtime"),
+                            ),
+                            routing: &routing,
+                            entry_name: &entry_name,
+                            entry: &crate::files::relative_url(&build.join("app"), &entry_file),
+                            catalogs: &catalogs_from(&build.join("app")),
+                            registration: &registration,
+                            icons: &icons,
+                            destinations: (!table.tabs.is_empty()).then_some(destinations.as_str()),
+                        },
+                    ),
+                )?;
+                write(&build.join("index.js"), &format!("{header}import 'expo-router/entry';\n"))?;
             }
         }
-        write(
-            &build.join("index.js"),
-            &format!(
-                "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{}';\nimport {{ {entry_name} }} from '{}';\n\n{catalogs}\n// The app's root view: a screen under Bloom's provider, inside the window's safe area\n// (the status bar, the notch and the navigation bar's edges), once for every screen.\nfunction Root() {{\n  return createElement(\n    SafeAreaProvider,\n    null,\n    createElement(\n      BloomProvider,\n      null,\n      createElement(\n        SafeAreaView,\n        {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }},\n        createElement(Screen, null, toElement({entry_name}())),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n",
-                rel(&std_dir.join("runtime")),
-                rel(&entry_file)
-            ),
-        )?;
     }
     write(
         &build.join("metro.config.js"),
@@ -386,6 +428,57 @@ fn bunfig() -> String {
     )
 }
 
+/// The root of an app without a `NavigationStack`: its root view on one Bloom screen, drawn
+/// edge to edge (the screen's background under the status and navigation bars) with the
+/// content inside the window's safe area.
+fn single_root(header: &str, runtime: &str, entry_name: &str, entry: &str, catalogs: &str) -> String {
+    format!(
+        "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{runtime}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The app's root view on a screen under Bloom's provider. The screen draws edge to edge\n// (its background under the status bar and the navigation bar); the view sits inside the\n// window's safe area (the status bar, the notch, the navigation bar's edges).\nfunction Root() {{\n  return createElement(\n    SafeAreaProvider,\n    null,\n    createElement(\n      BloomProvider,\n      null,\n      createElement(\n        Screen,\n        null,\n        createElement(SafeAreaView, {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }}, toElement({entry_name}())),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n"
+    )
+}
+
+struct RoutedRoot<'a> {
+    runtime: &'a str,
+    routing: &'a str,
+    entry_name: &'a str,
+    entry: &'a str,
+    catalogs: &'a str,
+    registration: &'a str,
+    icons: &'a [String],
+    destinations: Option<&'a str>,
+}
+
+/// `app/_layout.js` of an app with a `NavigationStack`: the providers, the route table, and
+/// the root view (whose `NavigationStack` draws the router's navigator).
+fn routed_root(header: &str, r: &RoutedRoot) -> String {
+    let mut imports = String::new();
+    for icon in r.icons {
+        imports.push_str(&format!("import {{ {icon} }} from '@oxy.so/bloom/icons/{icon}';\n"));
+    }
+    let (tab_import, root) = match r.destinations {
+        Some(destinations) => (
+            "import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';\n".to_string(),
+            format!(
+                "const destinations = {destinations};\n\nfunction Navigation() {{\n  return createElement(TabPagerProvider, {{ destinations }}, toElement({}()));\n}}\n",
+                r.entry_name
+            ),
+        ),
+        None => (
+            String::new(),
+            format!("function Navigation() {{\n  return toElement({}());\n}}\n", r.entry_name),
+        ),
+    };
+    format!(
+        "{header}import {{ createElement }} from 'react';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge.\n{root}\nexport default function RootLayout() {{\n  return createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation)));\n}}\n",
+        runtime = r.runtime,
+        routing = r.routing,
+        entry_name = r.entry_name,
+        entry = r.entry,
+        catalogs = r.catalogs,
+        registration = r.registration,
+    )
+}
+
 fn app_json(package: &Package) -> String {
     let m = &package.manifest;
     let slug: String = m
@@ -414,6 +507,7 @@ fn app_json(package: &Package) -> String {
     "name": "{name}",
     "slug": "{slug}",
     "version": "1.0.0",
+    "scheme": "{slug}",
     "platforms": [{platforms}],
     "newArchEnabled": true,
     "android": {{ "package": "{id}", "minSdkVersion": {min_sdk} }},

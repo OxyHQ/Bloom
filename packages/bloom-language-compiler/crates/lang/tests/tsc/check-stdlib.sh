@@ -19,6 +19,7 @@ cat > "$out/bloom-language.d.ts" <<'TS'
 declare module '@oxy.so/bloom-language' {
   export type Child = { readonly kind: string } | string | number | null | undefined;
   export type Binding<T> = readonly [value: T, set: (value: T) => void];
+  export function Embed(content: unknown): Child;
 }
 TS
 for ts in "$std"/*.ts; do

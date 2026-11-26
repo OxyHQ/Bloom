@@ -1,0 +1,15 @@
+import Bloom
+
+/// `Route.post(id:)`: pushed over the tabs, and what `demo://post/<id>` opens.
+struct PostScreen: View {
+  let id: String
+
+  var body: some View {
+    VStack(spacing: .md) {
+      Text("Post \(id)").font(.title2)
+      Text(href(Route.post(id: id))).foregroundStyle(.muted)
+      Button("Back") { dismiss() }
+    }
+    .padding(.lg)
+  }
+}

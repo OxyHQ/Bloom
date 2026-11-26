@@ -2,15 +2,44 @@ import Bloom
 import Feed
 import Settings
 
+/// The app's screens: `NavigationStack`'s typed routes. `demo://post/2` opens a post.
+public enum Route: Routable {
+  case feed
+  case settings
+  case post(id: String)
+  case about
+}
+
 /// The app's root view: `bloom build` starts here.
 public struct App: View {
   var body: some View {
-    ScrollView {
-      VStack(spacing: .xl) {
-        NotificationSettings()
-        FeedScreen()
+    NavigationStack(
+      root: Route.feed,
+      tabs: [
+        Tab(route: Route.feed, title: "Home", icon: "home"),
+        Tab(route: Route.settings, title: "Settings", icon: "settings"),
+      ],
+      sheets: [Route.about]
+    ) { route in
+      switch route {
+      case .feed: FeedScreen(onOpen: { id in push(Route.post(id: id)) })
+      case .settings:
+        ScrollView {
+          VStack(spacing: .lg) {
+            NotificationSettings()
+            Button("About") { push(Route.about) }
+          }
+          .padding(.horizontal, .lg)
+        }
+      case .post(let id): PostScreen(id: id)
+      case .about:
+        VStack(spacing: .md) {
+          Text("Bloom 2.0").font(.title2)
+          Text("A sheet over the stack.").foregroundStyle(.muted)
+          Button("Close") { dismiss() }
+        }
+        .padding(.lg)
       }
-      .padding(.horizontal, .lg)
     }
   }
 }

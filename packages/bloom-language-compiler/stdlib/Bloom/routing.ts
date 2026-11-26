@@ -5,7 +5,9 @@
 // `registerNavigation` and `routeScreen` here. Phase F replaces expo-router with the Bloom
 // router; this file is the only one that changes.
 
-import type { Child } from '@oxy.so/bloom-language';
+// An ES import, not `require`: a `require` resolves a package's CommonJS build, and
+// Bloom's must load as the rest of the app loads it.
+import { type Child, Embed } from '@oxy.so/bloom-language';
 
 declare const require: (id: string) => unknown;
 
@@ -98,8 +100,18 @@ function NavigationRoot(props: { destination: (route: Route) => Child }): unknow
 
 /** `NavigationStack`'s view: the router's navigator, its screens drawn by `destination`. */
 export function navigationRoot<R>(destination: (route: R) => Child): Child {
-  const { Embed } = require('@oxy.so/bloom-language') as { Embed(content: unknown): Child };
-  return Embed(react().createElement(NavigationRoot, { destination }));
+  return Embed(
+    react().createElement(NavigationRoot, { destination }) as Parameters<typeof Embed>[0],
+  );
+}
+
+/**
+ * A screen's view inside the window's top safe area (the status bar, the notch), as a
+ * SwiftUI stack's content is: the screen draws edge to edge, its content below the bar.
+ */
+function insideSafeArea(view: Child): Child {
+  const padded = view as { safeAreaPadding?: (edge: string) => Child } | null | undefined;
+  return typeof padded?.safeAreaPadding === 'function' ? padded.safeAreaPadding('top') : view;
 }
 
 /**
@@ -121,6 +133,6 @@ export function routeScreen(
       const first = Array.isArray(value) ? value[0] : value;
       if (typeof first === 'string') params[key] = first;
     }
-    return destination(route(params));
+    return insideSafeArea(destination(route(params)));
   };
 }
