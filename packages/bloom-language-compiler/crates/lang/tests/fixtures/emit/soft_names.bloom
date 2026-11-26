@@ -20,3 +20,21 @@ pub view NoticeRow(type: String, body: String) {
 fn make(type: String, body: String) -> Notice {
   Notice(type: type, body: body)
 }
+
+// As `let` and `@state` names too.
+pub view Composer(from: String) {
+  @state body = ""
+  let type = "note"
+
+  body {
+    VStack {
+      Text("${type} from ${from}: ${body}")
+      Button(Text("Clear")).onPress { body = "" }
+    }
+  }
+}
+
+fn label(n: Int) -> String {
+  let view = "row ${n}"
+  view
+}

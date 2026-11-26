@@ -1404,6 +1404,13 @@ impl<'a> Emitter<'a> {
                 body.wrap("void (async () => ", ")()")
             }
             ExprKind::Str { parts, .. } => self.string(parts),
+            // `x != none` narrowed `x` in its block: the narrowed name reads as this one does.
+            ExprKind::Name(_) if self.ck.narrowed.contains_key(&expr.id) => {
+                let (narrowed, original) = self.ck.narrowed[&expr.id];
+                let text = self.local_name(original);
+                self.aliases.insert(narrowed, text.clone());
+                Frag::of(text)
+            }
             ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
                 Some(NameRes::Local(local)) if self.ck.ref_objects.contains(&expr.id) => {
                     Frag::of(js_name(&self.ck.locals[*local].name))
