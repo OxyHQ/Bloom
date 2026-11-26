@@ -89,7 +89,8 @@ jobs:
 
   race-finish:
     needs: race
-    if: needs.race.outputs.race == 'true'
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
     uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@main
     permissions:
       actions: read
@@ -187,7 +188,8 @@ jobs:
   build-hosted:
     name: Build, package and types
     needs: race
-    if: needs.race.outputs.race == 'true'
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions: *race-lane-permissions
@@ -288,7 +290,8 @@ jobs:
   language-hosted:
     name: Language packages
     needs: race
-    if: needs.race.outputs.race == 'true'
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions: *race-lane-permissions
@@ -345,7 +348,8 @@ jobs:
   language-parity-hosted:
     name: Language parity (${{ matrix.shard }}/2)
     needs: race
-    if: needs.race.outputs.race == 'true'
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     permissions: *race-lane-permissions
@@ -403,7 +407,8 @@ jobs:
   tests-hosted:
     name: Tests (${{ matrix.shard }}/5)
     needs: race
-    if: needs.race.outputs.race == 'true'
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions: *race-lane-permissions
