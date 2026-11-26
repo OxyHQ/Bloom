@@ -119,7 +119,8 @@ pub fn find(paths: &[PathBuf]) -> Result<Option<Package>, String> {
 /// The package around the working directory, or an error that says how to make one.
 pub fn require(paths: &[PathBuf]) -> Result<Package, String> {
     find(paths)?.ok_or_else(|| {
-        "not inside a Bloom package (no Package.bloom here or above): create one with `bloom new <Name>`".to_string()
+        "not inside a Bloom package (no Package.bloom here or above): create one with `bloom new <Name>`"
+            .to_string()
     })
 }
 
@@ -210,7 +211,8 @@ pub fn check_modules(package: &Package, options: &CheckOptions, force: bool) -> 
                 }
             }
             let key = hash(&[&bytes]);
-            let interface_file = package.dot().join("modules").join(format!("{}.bloominterface", target.name));
+            let interface_file =
+                package.dot().join("modules").join(format!("{}.bloominterface", target.name));
             match cache.get(&target.name) {
                 Some(entry) if entry.key == key && interface_file.is_file() => {
                     interfaces.insert(index, entry.interface);
@@ -235,7 +237,8 @@ pub fn check_modules(package: &Package, options: &CheckOptions, force: bool) -> 
             let outputs = by_module.remove(&index).unwrap_or_default();
             modules_checked += 1;
             files_checked += outputs.len();
-            let mut interface = format!("// The interface of module {}: what its files show other files.\n", target.name);
+            let mut interface =
+                format!("// The interface of module {}: what its files show other files.\n", target.name);
             let mut module_errors = 0;
             let mut code = Vec::new();
             for (path, output) in &outputs {
@@ -244,7 +247,11 @@ pub fn check_modules(package: &Package, options: &CheckOptions, force: bool) -> 
                 module_errors += output.diagnostics.len();
                 warnings += output.warnings.len();
                 let rel = path.strip_prefix(&package.root).unwrap_or(path);
-                interface.push_str(&format!("\n// {}\n{}", rel.display(), output.dts.as_deref().unwrap_or("")));
+                interface.push_str(&format!(
+                    "\n// {}\n{}",
+                    rel.display(),
+                    output.dts.as_deref().unwrap_or("")
+                ));
                 code.push((path.clone(), output.code.clone()));
             }
             errors += module_errors;
@@ -252,7 +259,10 @@ pub fn check_modules(package: &Package, options: &CheckOptions, force: bool) -> 
             interfaces.insert(index, interface_hash);
             emitted.insert(index, code);
             if module_errors == 0 {
-                write(&package.dot().join("modules").join(format!("{}.bloominterface", target.name)), &interface)?;
+                write(
+                    &package.dot().join("modules").join(format!("{}.bloominterface", target.name)),
+                    &interface,
+                )?;
                 entries.insert(target.name.clone(), Cached { key, interface: interface_hash });
             }
         }
