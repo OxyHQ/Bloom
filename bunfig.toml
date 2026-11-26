@@ -12,9 +12,79 @@
 # anyone reproducing bun.lock. Override deliberately, for a fix you have reason
 # to take immediately, with `bun install --minimum-release-age=0`.
 #
-# The editor's required UI peer is a verified first-party release. Exclude only
-# that exact package; third-party dependencies retain the quarantine. Names in
-# `minimumReleaseAgeExcludes` are matched EXACTLY, since a scope glob
-# ("@oxy.so/*") is accepted by the parser and silently matches nothing.
+# First-party packages are exempt: the quarantine guards against a freshly
+# compromised THIRD-PARTY release, and publishing an Oxy package then bumping
+# its consumer in the same session is the normal workflow. Bun matches
+# `minimumReleaseAgeExcludes` by EXACT name (a scope glob such as "@oxy.so/*"
+# is accepted and silently matches nothing), so the list names every published
+# first-party package: the same list in every Oxy repo with the quarantine.
+# `scripts/check-release-age-excludes.mjs` (run in CI) fails if bun.lock
+# resolves a first-party package the list misses, or if the list names a glob
+# or anything outside the first-party scopes. A newly published first-party
+# package is added here in each of those repos.
 minimumReleaseAge = 604800
-minimumReleaseAgeExcludes = ["@oxy.so/bloom"]
+minimumReleaseAgeExcludes = [
+  "@alia-codea/cli",
+  "@alia.onl/sdk",
+  "@alia.onl/server",
+  "@clarity.surf/sdk",
+  "@crowdsource.you/contracts",
+  "@crowdsource.you/core",
+  "@fairco.in/core",
+  "@fairco.in/rpc-client",
+  "@gemies/sdk",
+  "@gemies/server",
+  "@goway.to/maps",
+  "@goway.to/sdk",
+  "@kaana.ai/contracts",
+  "@kaana.ai/sdk",
+  "@mercaria.co/sdk",
+  "@oxy.so/allo-contracts",
+  "@oxy.so/allo-sdk",
+  "@oxy.so/app-preset",
+  "@oxy.so/bloom",
+  "@oxy.so/bloom-ai-icons",
+  "@oxy.so/bloom-avatar-native",
+  "@oxy.so/bloom-data",
+  "@oxy.so/bloom-editor",
+  "@oxy.so/bloom-language",
+  "@oxy.so/bloom-language-codemod",
+  "@oxy.so/bloom-language-compiler",
+  "@oxy.so/bloom-language-compiler-darwin-arm64",
+  "@oxy.so/bloom-language-compiler-darwin-x64",
+  "@oxy.so/bloom-language-compiler-linux-arm64-gnu",
+  "@oxy.so/bloom-language-compiler-linux-x64-gnu",
+  "@oxy.so/bloom-language-compiler-wasm32-wasi",
+  "@oxy.so/bloom-language-compiler-win32-x64-msvc",
+  "@oxy.so/bloom-lens",
+  "@oxy.so/bloom-text",
+  "@oxy.so/contracts",
+  "@oxy.so/core",
+  "@oxy.so/db",
+  "@oxy.so/doctor",
+  "@oxy.so/expo-splash",
+  "@oxy.so/federation",
+  "@oxy.so/homiio-contracts",
+  "@oxy.so/homiio-sdk",
+  "@oxy.so/mcp",
+  "@oxy.so/mention-contracts",
+  "@oxy.so/mention-sdk",
+  "@oxy.so/moovo-contracts",
+  "@oxy.so/moovo-sdk",
+  "@oxy.so/nilo-contracts",
+  "@oxy.so/protocol",
+  "@oxy.so/services",
+  "@oxy.so/ship",
+  "@oxy.so/stickers",
+  "@oxy.so/telemetry",
+  "@oxy.so/utils",
+  "@peable.to/contracts",
+  "@peable.to/pay",
+  "@peable.to/sdk",
+  "@peable.to/shared-types",
+  "@syra.fm/contracts",
+  "@syra.fm/sdk",
+  "@vibbr.co/contracts",
+  "@vibbr.co/sdk",
+  "create-oxy-app",
+]
