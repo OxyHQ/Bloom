@@ -2176,6 +2176,7 @@ impl Tr<'_> {
         handler: &oxc_ast::ast::CatchClause,
         finalizer: Option<String>,
         last: bool,
+        awaits: bool,
     ) -> String {
         let error = match handler.param.as_ref().map(|p| &p.pattern) {
             Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
@@ -2196,14 +2197,14 @@ impl Tr<'_> {
         // Returns elsewhere (guards): the block is a closure called in place, its
         // value returned from the `.ok` arm; only where the `try` ends its block.
         let called = tail.is_none() && !returns.is_empty();
-        if called && (!last || returns.iter().any(|r| r.argument.is_none())) {
+        if called && (awaits || !last || returns.iter().any(|r| r.argument.is_none())) {
             return self.refuse(
                 "try:return",
                 "a `return` inside a `try` that does not end its block",
                 returns[0].span,
             );
         }
-        let propagate = std::mem::replace(&mut self.propagate, false);
+        let propagate = std::mem::replace(&mut self.propagate, awaits);
         let returning = std::mem::replace(&mut self.try_return, false);
         let (block, ok) = match tail {
             Some(r) => {
@@ -2293,6 +2294,18 @@ impl Tr<'_> {
             let body = self.block_stmts(&t.block.body, t.block.span.end, false);
             return format!("{}\n{body}", finalizer.unwrap_or_default());
         };
+        // `catching { … }` is TS's try/catch: every TS `await` in it propagates its
+        // rejection with `?` (a `?` throws inside `catching`), a sync throw is caught too.
+        let awaits = self.slice(t.block.span).contains("await");
+        // A `return` inside an async `try` (other than one ending it): `catching` cannot
+        // hold it; the awaited call's `Result` is matched instead (under review).
+        let mut returns = Vec::new();
+        collect_returns(&t.block.body, &mut returns);
+        let tail_only = returns.is_empty()
+            || returns.len() == 1 && matches!(t.block.body.last(), Some(Statement::ReturnStatement(_)));
+        if !awaits || tail_only {
+            return self.try_catching(t, handler, finalizer, last, awaits);
+        }
         let body = &t.block.body;
         let fast = body.iter().position(|s| awaited_start(s).is_some()).filter(|&k| {
             !self.awaits_bloom(awaited_start(&body[k]).expect("an awaited start").value())
@@ -2300,9 +2313,6 @@ impl Tr<'_> {
                 && !body[k + 1..].iter().any(|s| self.slice(s.span()).contains("await"))
         });
         let Some(k) = fast else {
-            if !self.slice(t.block.span).contains("await") {
-                return self.try_catching(t, handler, finalizer, last);
-            }
             return self.try_closure(t, handler, finalizer, last);
         };
         let prefix = self.block_stmts(&body[..k], body[k].span().start, false);

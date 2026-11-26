@@ -342,7 +342,7 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
     Some(match ty {
         "String" => format!("{not}{operand}.isEmpty"),
         "Int" | "Float" => format!("{operand} {eq} 0"),
-        // A name is narrowed on the right of `&&` and of `||` after `== none`.
+        // A name or member chain is narrowed on the right of `&&` and of `||` after `== none`.
         "String?" if !negated && is_name(text) => format!("{text} != none && !{text}.isEmpty"),
         "String?" if is_name(text) => format!("{text} == none || {text}.isEmpty"),
         "String?" => format!("({text} ?? \"\") {eq} \"\""),
@@ -357,9 +357,11 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
     })
 }
 
-/// Whether `text` is a plain name (bloomc narrows a name, not a member chain).
+/// Whether `text` is a name or a member chain without calls (bloomc narrows both).
 fn is_name(text: &str) -> bool {
-    !text.is_empty() && text.chars().all(|c| c.is_alphanumeric() || c == '_')
+    !text.is_empty()
+        && !text.starts_with(|c: char| c.is_ascii_digit() || c == '.')
+        && text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.' || c == '?')
 }
 
 /// Whether `text` is a name or a member chain (`a.b.c`, `a?.b`): no parentheses needed.

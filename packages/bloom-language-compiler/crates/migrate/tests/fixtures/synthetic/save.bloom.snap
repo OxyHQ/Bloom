@@ -7,9 +7,8 @@ pub view SaveButton(id: String) {
 
   async fn onSave() {
     saving = true
-    // bloom: review: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection
     defer { saving = false }
-    match await save(id) {
+    match (catching { await save(id)? }) {
       case .ok(_) => {}
       case .err(error) => { toast("Could not save", type: "error") }
     }
