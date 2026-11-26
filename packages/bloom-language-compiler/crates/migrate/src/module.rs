@@ -62,6 +62,8 @@ pub struct Scope {
     pub view_values: HashSet<String>,
     /// Names with a declared Bloom type (parameters, props): conditions read it.
     pub decl: HashMap<String, String>,
+    /// `useRef` names: `r.current` is the `@ref r`.
+    pub refs: HashSet<String>,
     /// Names bound to a `new Map`/`new Set`: their in-place changes reassign them.
     pub collections: HashMap<String, String>,
     /// Member functions of the view being translated.

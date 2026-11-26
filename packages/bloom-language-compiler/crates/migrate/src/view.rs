@@ -507,6 +507,27 @@ impl Tr<'_> {
                     None => format!("@state {name} = {init}"),
                 }
             }
+            "useRef" => {
+                let BindingPattern::BindingIdentifier(id) = &d.id else {
+                    return self.refuse("react:useRef", "a destructured `useRef`", d.span);
+                };
+                let name = self.bind(&id.name, id.span);
+                let init = call.arguments.first().and_then(|a| a.as_expression());
+                let ty = call.type_arguments.as_ref().and_then(|a| a.params.first()).map(|t| {
+                    let ty = self.ty(t);
+                    // `useRef<T>(null)`: a ref that holds a `T` once it is set.
+                    if init.is_none_or(is_nothing) { optional_ty(&ty) } else { ty }
+                });
+                let init = match init {
+                    Some(e) => self.expr(e),
+                    None => "none".into(),
+                };
+                self.scope.refs.insert(id.name.to_string());
+                match ty {
+                    Some(ty) => format!("@ref {name}: {ty} = {init}"),
+                    None => format!("@ref {name} = {init}"),
+                }
+            }
             "useMemo" | "useCallback" => {
                 let BindingPattern::BindingIdentifier(id) = &d.id else {
                     return self.refuse(&format!("react:{hook}"), format!("a destructured `{hook}`"), d.span);
@@ -1217,6 +1238,40 @@ impl Tr<'_> {
                 };
                 format!("{name} = {name}.{method}({})", args.join(", "))
             }
+            // `xs.forEach((x) => …)` is a `for`; `(x, i)` iterates `xs.enumerated()`.
+            Expression::CallExpression(call)
+                if let Expression::StaticMemberExpression(m) = &call.callee
+                    && m.property.name == "forEach"
+                    && !m.optional
+                    && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
+                    && !arrow.r#async
+                    && arrow.params.rest.is_none()
+                    && arrow.params.items.iter().all(|p| matches!(p.pattern, BindingPattern::BindingIdentifier(_)))
+                    && matches!(arrow.params.items.len(), 1 | 2)
+                    && {
+                        // A `return` in the callback is a `continue` in a `for`.
+                        let mut returns = Vec::new();
+                        collect_returns(crate::view::arrow_statements(arrow), &mut returns);
+                        returns.is_empty()
+                    } =>
+            {
+                let list = self.expr(&m.object);
+                let names: Vec<String> = arrow
+                    .params
+                    .items
+                    .iter()
+                    .map(|p| {
+                        let BindingPattern::BindingIdentifier(id) = &p.pattern else { unreachable!() };
+                        self.bind(&id.name, id.span)
+                    })
+                    .collect();
+                let body = self.closure_body(arrow);
+                match names.as_slice() {
+                    [x] => format!("for {x} in {list} {{\n{body}\n}}"),
+                    [x, i] => format!("for ({i}, {x}) in {list}.enumerated() {{\n{body}\n}}"),
+                    _ => unreachable!(),
+                }
+            }
             Expression::CallExpression(call) => {
                 if let Expression::Identifier(id) = &call.callee
                     && let Some(setter) = self.scope.setters.get(id.name.as_str()).cloned()
@@ -1245,6 +1300,14 @@ impl Tr<'_> {
                 };
                 let target = match &a.left {
                     AssignmentTarget::AssignmentTargetIdentifier(id) => self.name(&id.name, id.span),
+                    // `r.current = v`: a `@ref` is written by its name.
+                    AssignmentTarget::StaticMemberExpression(m)
+                        if m.property.name == "current"
+                            && matches!(&m.object, Expression::Identifier(o) if self.scope.refs.contains(o.name.as_str())) =>
+                    {
+                        let Expression::Identifier(o) = &m.object else { unreachable!() };
+                        self.name(&o.name, o.span)
+                    }
                     other => {
                         return self.refuse(
                             "mutation",

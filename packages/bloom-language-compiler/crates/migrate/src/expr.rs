@@ -310,6 +310,13 @@ impl Tr<'_> {
         {
             return self.name(property, id.span);
         }
+        // `r.current`: a `@ref` is read by its name.
+        if property == "current"
+            && let Expression::Identifier(id) = object
+            && self.scope.refs.contains(id.name.as_str())
+        {
+            return self.name(&id.name, id.span);
+        }
         let dot = if optional || has_optional(object) { "?." } else { "." };
         let object_text = self.expr(object);
         let property = if property == "length" { "count" } else { property };
@@ -337,6 +344,32 @@ impl Tr<'_> {
                 );
             }
         };
+        // `xs.indexOf(x) === -1`: a Bloom `indexOf` gives `none`, not `-1`.
+        let index_of = |e: &Expression| {
+            matches!(e.without_parentheses(), Expression::CallExpression(c)
+                if matches!(&c.callee, Expression::StaticMemberExpression(m) if m.property.name == "indexOf"))
+        };
+        let number = |e: &Expression| match e.without_parentheses() {
+            Expression::NumericLiteral(n) => Some(n.value),
+            Expression::UnaryExpression(u) if u.operator == UnaryOperator::UnaryNegation => match &u.argument {
+                Expression::NumericLiteral(n) => Some(-n.value),
+                _ => None,
+            },
+            _ => None,
+        };
+        if index_of(&b.left)
+            && let Some(n) = number(&b.right)
+        {
+            let found = match (op, n) {
+                ("==", -1.0) | ("<", 0.0) | ("<=", -1.0) => Some(false),
+                ("!=", -1.0) | (">=", 0.0) | (">", -1.0) => Some(true),
+                _ => None,
+            };
+            if let Some(found) = found {
+                let call = self.expr(&b.left);
+                return format!("{call} {} none", if found { "!=" } else { "==" });
+            }
+        }
         let left = self.operand(&b.left, &b.right);
         let right = self.operand(&b.right, &b.left);
         format!("{left} {op} {right}")
@@ -649,6 +682,13 @@ impl Tr<'_> {
             && self.is_view(&member.object)
         {
             return self.modifier(call, &member.object, &member.property.name, member.property.span);
+        }
+        // `xs.map((x, i) => …)`: `xs.enumerated().map { (i, x) in … }`.
+        if let Some((member, x, i, arrow)) = indexed_callback(call, &["map", "flatMap"]) {
+            let list = self.expr(&member.object);
+            let (x, i) = (self.bind(x, arrow.span), self.bind(i, arrow.span));
+            let body = self.closure_body(arrow);
+            return format!("{list}.enumerated().{}{{ ({i}, {x}) in\n{body}\n}}", member.property.name.as_str().to_owned() + " ");
         }
         match self.callee(call) {
             Callee::Embed => self.embed(call),
@@ -971,6 +1011,12 @@ impl Tr<'_> {
                     unreachable!()
                 };
                 let Expression::StaticMemberExpression(member) = &call.callee else { unreachable!() };
+                if let Some((_, x, i, arrow)) = indexed_callback(call, &["map"]) {
+                    let list = self.expr(&member.object);
+                    let (x, i) = (self.bind(x, arrow.span), self.bind(i, arrow.span));
+                    let body = self.arrow_view_lines(arrow);
+                    return format!("for ({i}, {x}) in {list}.enumerated() {{\n{body}\n}}");
+                }
                 match (arrow.params.items.as_slice(), arrow.params.rest.is_none()) {
                     ([param], true) if matches!(param.pattern, BindingPattern::BindingIdentifier(_)) => {
                         let BindingPattern::BindingIdentifier(id) = &param.pattern else { unreachable!() };
@@ -1106,6 +1152,21 @@ impl Tr<'_> {
         self.propagate = propagate;
         self.try_return = returning;
         text
+    }
+
+    /// A closure's body lines, its parameters bound by the caller.
+    pub fn closure_body(&mut self, arrow: &ArrowFunctionExpression) -> String {
+        let saved = self.scope.clone();
+        let propagate = std::mem::replace(&mut self.propagate, false);
+        let returning = std::mem::replace(&mut self.try_return, false);
+        let body = match arrow.get_expression() {
+            Some(e) => self.stmt_expr(e),
+            None => self.block_stmts(crate::view::arrow_statements(arrow), crate::view::arrow_end(arrow), false),
+        };
+        self.propagate = propagate;
+        self.try_return = returning;
+        self.scope = saved;
+        body
     }
 
     fn closure_inner(&mut self, arrow: &ArrowFunctionExpression) -> String {
@@ -1264,6 +1325,28 @@ fn is_conditional_child(e: &Expression) -> bool {
         Expression::ConditionalExpression(_) | Expression::LogicalExpression(_) => true,
         Expression::CallExpression(call) => is_map(call),
         _ => false,
+    }
+}
+
+/// `xs.m((x, i) => …)` for a method in `methods`: the member, the item and index
+/// names, and the closure.
+pub fn indexed_callback<'b, 'a>(
+    call: &'b CallExpression<'a>,
+    methods: &[&str],
+) -> Option<(&'b oxc_ast::ast::StaticMemberExpression<'a>, &'b str, &'b str, &'b ArrowFunctionExpression<'a>)> {
+    let Expression::StaticMemberExpression(m) = &call.callee else { return None };
+    if !methods.contains(&m.property.name.as_str()) || m.optional {
+        return None;
+    }
+    let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice() else { return None };
+    match arrow.params.items.as_slice() {
+        [x, i] if arrow.params.rest.is_none() => match (&x.pattern, &i.pattern) {
+            (BindingPattern::BindingIdentifier(x), BindingPattern::BindingIdentifier(i)) => {
+                Some((m, x.name.as_str(), i.name.as_str(), arrow))
+            }
+            _ => None,
+        },
+        _ => None,
     }
 }
 

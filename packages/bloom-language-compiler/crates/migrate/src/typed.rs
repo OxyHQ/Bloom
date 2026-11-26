@@ -13,11 +13,25 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         let (start, end) = (d.span.start as usize, d.span.end as usize);
         let Some(text) = source.get(start..end) else { continue };
         let receiver = d.message.strip_prefix('`').and_then(|m| m.split_once('`')).map(|(r, _)| r);
+        let list = receiver.is_some_and(|r| r.starts_with('['));
         let collection = receiver.is_some_and(|r| r.starts_with("Set<") || r.starts_with("Map<"));
         let edit = match (&*d.code, text) {
             // `s.has(x)`, `m.size`: a Bloom `Set`/`Map` has `contains` and `count`.
             ("B0209", "has") if collection => Some((start, end, "contains".to_string())),
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
+            // `xs.some(f)`, `xs.every(f)`: a Bloom list's `any` and `all`.
+            ("B0209", "some") if list => Some((start, end, "any".to_string())),
+            ("B0209", "every") if list => Some((start, end, "all".to_string())),
+            // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
+            ("B0201", _) if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") => {
+                Some((start - 2, start, ".".to_string()))
+            }
+            // `x ?? fallback` where `x` is never `none`: `x`.
+            ("B0201", _) if d.message.starts_with("`??` gives a fallback") => {
+                let rest = &source[end..];
+                let op = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("??"));
+                op.and_then(|i| operand_len(&rest[i + 2..]).map(|n| (start, end + i + 2 + n, text.to_string())))
+            }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
             ("B0201", _) => {
                 let found = d.message.split("found `").nth(1).unwrap_or_default();
@@ -48,4 +62,42 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         out.replace_range(*start..*end, text);
     }
     Some(out)
+}
+
+/// The length of the operand at the start of `source` (after spaces): up to a
+/// delimiter outside brackets and strings.
+fn operand_len(source: &str) -> Option<usize> {
+    let mut depth = 0i32;
+    let mut quote: Option<char> = None;
+    let mut started = false;
+    let mut prev = ' ';
+    for (i, c) in source.char_indices() {
+        if let Some(q) = quote {
+            if c == q && prev != '\\' {
+                quote = None;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' | '\'' | '`' => quote = Some(c),
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth == 0 => return started.then_some(i),
+            ')' | ']' | '}' => depth -= 1,
+            ',' | '\n' | '?' | ':' | '|' | '&' if depth == 0 && started => return Some(i),
+            c if c.is_whitespace() && depth == 0 && started => {
+                // `a ?? b c`: an operator follows; the operand ended.
+                let next = source[i..].trim_start();
+                if !next.starts_with('.') {
+                    return Some(i);
+                }
+            }
+            _ => {}
+        }
+        if !c.is_whitespace() {
+            started = true;
+        }
+        prev = c;
+    }
+    started.then_some(source.len())
 }
