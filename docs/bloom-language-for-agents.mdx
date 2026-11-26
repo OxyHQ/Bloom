@@ -108,6 +108,7 @@ export default screen(function Items() {
 | `.onPress(() => router.push('/x'))` | `.onPress(navigate('/x'))` | the panel-aware navigator |
 | `<Link asChild>` around a span in a text | `Embed((render) => <Link href={h} asChild>{render(Text(…))}</Link>)` as a run | the Link hands the span's host its href and press |
 | `.plainRun((t) => Text(...linkify(t)))` | `.plainRun(linkify)` returning strings and spans | runs, no extra span around the prose |
+| `List([{ id, leading: toElement(AvatarGroup(f)) }])` | `List([{ id, leading: AvatarGroup(f) }])` | an entry's slots take nodes, drawn in the list's tree |
 | `.when('hover', …)` | `.when('hovered', …)` | condition names |
 | `.when('md', v => v.onPress(…))` | handlers outside `when()` | variants change style only |
 | `.opacity('half')` on a glass | no opacity on glass | a material is never faded |

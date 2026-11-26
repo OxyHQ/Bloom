@@ -32,7 +32,9 @@ import { Button } from '@oxy.so/bloom/button';
 import { Card } from '@oxy.so/bloom/card';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
-import { VirtualList } from '@oxy.so/bloom/list';
+import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { Badge } from '@oxy.so/bloom/badge';
+import { List, VirtualList } from '@oxy.so/bloom/list';
 import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import { Text } from '@oxy.so/bloom/typography';
@@ -41,7 +43,7 @@ import type { Child, ViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { defineTokens } from '../src/tokens';
 import { Card as LCard } from '../src/controls/containers';
-import { VirtualList as LVirtualList } from '../src/controls/list';
+import { List as LList, VirtualList as LVirtualList, type ListRow } from '../src/controls/list';
 import { InlineMarkdown as LInlineMarkdown } from '../src/controls/markdown';
 import { LanguageRoot, toElement } from '../src/render';
 import { view } from '../src/view';
@@ -699,6 +701,40 @@ describe('a language node costs React what the JSX it stands for costs', () => {
     // A list that drew no rows would cost nothing on both sides.
     expect(perRow.jsx.fibers).toBeGreaterThan(0);
     expect(perRow.language).toEqual(perRow.jsx);
+  });
+
+  it('a list row whose slots hold nodes or roots (toElement) costs what the JSX in its slots does', () => {
+    // Allo's share sheet and members: a recent group led by its faces, a member ended by a role badge.
+    const faces = [
+      { id: 'ana', name: 'Ana' },
+      { id: 'rui', name: 'Rui' },
+    ];
+    const rows = <Slots extends Partial<ListRow>>(count: number, slots: () => Slots) =>
+      Array.from({ length: count }, (_, i) => ({ id: `r${i}`, title: `Row ${i}`, ...slots() }));
+    const language = (slots: () => Partial<ListRow>) => (count: number) =>
+      measured(toElement(LList(rows(count, slots))));
+    const jsx = (count: number) =>
+      measured(
+        <List
+          items={rows(count, () => ({
+            leading: <AvatarGroup items={faces} layout="conversation" size={36} />,
+            trailing: <Badge content="Admin" />,
+          }))}
+        />,
+      );
+    const perRow = (draw: (count: number) => Cost) => less(draw(2), draw(1));
+    const nodes = language(() => ({
+      leading: L.AvatarGroup(faces).layout('conversation').size('lg'),
+      trailing: L.Badge('Admin'),
+    }));
+    const roots = language(() => ({
+      leading: toElement(L.AvatarGroup(faces).layout('conversation').size('lg')),
+      trailing: toElement(L.Badge('Admin')),
+    }));
+    expect(perRow(jsx).fibers).toBeGreaterThan(0);
+    expect(perRow(nodes)).toEqual(perRow(jsx));
+    // A root in a slot is drawn as part of the list's tree: no boundary per row.
+    expect(perRow(roots)).toEqual(perRow(jsx));
   });
 
   it('a grid list’s span and its header kept to its content cost what the JSX props do', () => {
