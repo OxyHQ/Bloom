@@ -1,0 +1,35 @@
+// A view's stored `View` or `View?` takes the trailing builder, as Swift's
+// `@ViewBuilder let content: Content` does: its lines are the prop's children.
+public struct Card: View {
+  let title: String
+  var children: View? = none
+
+  var body: some View {
+    VStack {
+      Text(title)
+      if let children = children { children }
+    }
+  }
+}
+
+public struct Panel: View {
+  let content: View
+  var body: some View { HStack { content } }
+}
+
+public struct Page: View {
+  let signedIn: Bool
+  let names: [String]
+
+  var body: some View {
+    VStack {
+      Card(title: "Hi") { Text("inside") }
+      Card(title: "Empty")
+      Panel {
+        Text("Names")
+        if signedIn { Text("Welcome") }
+        for name in names { Text(name) }
+      }
+    }
+  }
+}
