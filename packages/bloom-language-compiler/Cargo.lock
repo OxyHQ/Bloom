@@ -81,6 +81,7 @@ version = "0.0.0"
 dependencies = [
  "bloom_fmt",
  "bloom_lang",
+ "bloom_language_compiler",
 ]
 
 [[package]]
