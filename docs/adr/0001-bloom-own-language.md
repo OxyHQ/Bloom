@@ -318,10 +318,27 @@ Kept current as the phases run (last update 2026-11-26).
 | 2026-11-26 | record literals, record types, unions | 8.0% |
 | 2026-11-26 | `Bool` params, Map/Set, `[..a]`, `@ref`, `.enumerated()` | 14.5% (clean + review) |
 | 2026-11-26 | `"js"` imports, `is`, prelude math, TS components | 18.8% (56 clean, 5 review, 263 refused) |
+| 2026-11-26 | narrowing, hook fns, `lazy`, `memo(Named)`, `catching`, spread props | 31.5% (85 clean, 17 review, 222 refused) |
 
 Most remaining refusals are now bloomc errors on the output rather than codemod refusals; the
 largest codemod-side ones are statements among a view's returns (24), field writes (17), spread
 props (15), TS hook modules (15) and `try` around sync code (14).
+
+**Android (emulator `enriched_test`, x86_64 release APK carrying both forms, ABBA interleaved,
+Mention #2053):**
+
+| | TS | `.bloom` |
+|---|---|---|
+| Notifications mount, render → layout (release / profiling build) | 85 / 65 ms | 71 / 49 ms |
+| Toggle update, React time (save + settle) | 45.7 ms | 18.4 ms |
+| Tap → settled commit (release) | 91 ms | 75 ms |
+| Tap → first frame after the commit | 128 ms | 134 ms |
+| Feed scroll (12 runs): janky % / p50 / p90 / p99 frame | 50.6% / 16 / 29 / 54.5 ms | 53.9% / 16 / 29.5 / 48 ms |
+| Per-post render while scrolling | 1.96 ms | 2.03 ms |
+
+No app crash in 28 scripted runs. Feed rows and the Notifications data were synthetic (no account;
+no public post carries the four rows), and the emulator host was loaded. One Node segfault at
+process exit with the addon loaded is under investigation (a memory-safety item outranks features).
 
 **Next:** #984 publishes; #2046 merges on the language line; #979 and #980 land after Bloom #971
 (per-family language entries) and go out in the next release together with the language bump that
