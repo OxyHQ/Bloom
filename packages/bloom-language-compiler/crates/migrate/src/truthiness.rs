@@ -147,6 +147,74 @@ pub fn defaults(
             if bare || text.contains("??") && !text.contains('?') { text } else { format!("({text})") };
         edits.push((start, end + tail_len, text));
     }
+    // `a || b` with a TS value `a` (bloomc reads it as a condition and finds the
+    // right side not `Bool`): JS's value `||`, `a ? a : b` (a member chain, read twice).
+    for d in diagnostics {
+        if d.code != "B0201" || !d.message.starts_with("expected `Bool`, found `") {
+            continue;
+        }
+        let (start, end) = (d.span.start as usize, d.span.end as usize);
+        let Some(right) = source.get(start..end) else { continue };
+        let Some(head) = source[..start].trim_end().strip_suffix("||") else { continue };
+        let head = head.trim_end();
+        let right_sq = squeeze(right);
+        let Some(left) = defaults.iter().find_map(|(left, rights)| {
+            (rights.iter().any(|r| squeeze(r) == right_sq) && head.ends_with(left.as_str()) && is_postfix(left))
+                .then_some(left.as_str())
+        }) else {
+            continue;
+        };
+        let left_start = head.len() - left.len();
+        // The whole left operand: not the tail of a longer chain (`x.a` of `y.x.a`).
+        if source[..left_start].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.' || c == '?') {
+            continue;
+        }
+        let before = source[..left_start].trim_end();
+        let after = source[end..].trim_start();
+        let starts_line = source[..left_start].rsplit('\n').next().unwrap_or("").trim().is_empty();
+        let bare = (before.ends_with([':', '(', '{', ',', '=']) || before.ends_with("return") || starts_line)
+            && (after.starts_with([')', ',', '}', '\n']) || after.is_empty());
+        let text = format!("{left} ? {left} : {right}");
+        let text = if bare { text } else { format!("({text})") };
+        if edits.iter().any(|(s, e, _)| left_start < *e && *s < end) {
+            continue;
+        }
+        edits.push((left_start, end, text));
+    }
+    // The same `a || b` of two TS values, typed `Bool` where a value is expected
+    // (bloomc reports the whole expression).
+    for d in diagnostics {
+        if d.code != "B0201" || !d.message.ends_with("found `Bool`") || d.message.starts_with("expected `Bool") {
+            continue;
+        }
+        let (start, end) = (d.span.start as usize, d.span.end as usize);
+        let Some(text) = source.get(start..end) else { continue };
+        let whole = squeeze(text);
+        let Some((left, right)) = defaults.iter().find_map(|(left, rights)| {
+            rights
+                .iter()
+                .find(|r| whole == format!("{}||{}", squeeze(left), squeeze(r)))
+                .filter(|_| is_postfix(left) && text.starts_with(left.as_str()))
+                .map(|r| (left.as_str(), r.as_str()))
+        }) else {
+            continue;
+        };
+        let op = text[left.len()..].find("||").map(|i| left.len() + i + 2);
+        let Some(op) = op else { continue };
+        let right_text = squeeze_lines(text[op..].trim());
+        let _ = right;
+        let before = source[..start].trim_end();
+        let after = source[end..].trim_start();
+        let starts_line = source[..start].rsplit('\n').next().unwrap_or("").trim().is_empty();
+        let bare = (before.ends_with([':', '(', '{', ',', '=']) || before.ends_with("return") || starts_line)
+            && (after.starts_with([')', ',', '}', '\n']) || after.is_empty());
+        let out = format!("{left} ? {left} : {right_text}");
+        let out = if bare { out } else { format!("({out})") };
+        if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
+            continue;
+        }
+        edits.push((start, end, out));
+    }
     // An `||` holding another waits: the inner one is spelled this round.
     let held: Vec<usize> = (0..edits.len())
         .filter(|&i| {

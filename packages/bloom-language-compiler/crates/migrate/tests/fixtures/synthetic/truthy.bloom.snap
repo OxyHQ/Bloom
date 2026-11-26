@@ -1,6 +1,7 @@
 // JS truthiness of values the codemod cannot type is spelled from bloomc's types.
 
 import { useSession } from "./session"
+import { JSON } from "js"
 
 fn initial(nick: String? = none) -> String {
   if nick == none || nick.isEmpty { return "" }
@@ -8,6 +9,11 @@ fn initial(nick: String? = none) -> String {
 }
 
 fn trimmedNick(nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
+
+fn titleOf(raw: String) -> String {
+  let parsed = JSON.parse(raw)
+  parsed.title ? parsed.title : "Untitled"
+}
 
 pub view Greeting {
   let session = useSession()
@@ -19,7 +25,7 @@ pub view Greeting {
       if !session.title.isEmpty { Text(session.title) }
       if signedIn && session.count == 0 { Text("Welcome") }
       if nick != none && !nick.isEmpty { Text(nick) }
-      Text(initial(nick) + trimmedNick(nick))
+      Text(initial(nick) + trimmedNick(nick) + titleOf(session.title))
     }
   }
 }

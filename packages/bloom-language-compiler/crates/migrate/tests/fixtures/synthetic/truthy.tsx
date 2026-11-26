@@ -11,6 +11,11 @@ function trimmedNick(nick?: string): string {
   return typeof nick === 'string' ? nick.trim() : '';
 }
 
+function titleOf(raw: string): string {
+  const parsed = JSON.parse(raw);
+  return parsed.title || 'Untitled';
+}
+
 export const Greeting = view(function Greeting() {
   const session = useSession();
   const signedIn = Boolean(session.user);
@@ -19,6 +24,6 @@ export const Greeting = view(function Greeting() {
     session.title ? Text(session.title) : null,
     signedIn && !session.count ? Text('Welcome') : null,
     nick ? Text(nick) : null,
-    Text(initial(nick) + trimmedNick(nick)),
+    Text(initial(nick) + trimmedNick(nick) + titleOf(session.title)),
   );
 });
