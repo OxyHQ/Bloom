@@ -1,0 +1,15 @@
+// `is` tests TS values, for the types JS can test.
+
+import { readSetting } from "@/api"
+
+struct Post {
+  id: String
+}
+
+fn known(n: Int) -> Bool {
+  n is Int
+}
+
+fn shape() -> Bool {
+  readSetting("a") is Post
+}

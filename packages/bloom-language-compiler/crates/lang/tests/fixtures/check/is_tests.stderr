@@ -1,0 +1,17 @@
+error[B0213]: `is` tests a TS value, and this is `Int`
+  --> check/is_tests.bloom:10:3
+   |
+10 |   n is Int
+   |   ^ its type is already known
+   |
+help: a Bloom value's cases are an enum's: `match` on it
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
+
+error[B0213]: `is` tests for a string, a number, a bool or a list, not `Post`
+  --> check/is_tests.bloom:14:23
+   |
+14 |   readSetting("a") is Post
+   |                       ^^^^ not a type JS can test
+   |
+help: a Bloom type's cases are an enum's: `match` on it
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary

@@ -1343,7 +1343,16 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn binary(&mut self, min: u8, ctx: Ctx) -> Expr {
         let mut lhs = self.unary(ctx);
-        while let Some(op) = self.binary_op() {
+        loop {
+            // `x is T`, at the comparisons' level.
+            if min <= BinaryOp::Eq.precedence() && matches!(self.tok(), Tok::Ident(word) if word == "is") {
+                self.bump();
+                let ty = self.type_expr();
+                let span = lhs.span.to(ty.span);
+                lhs = self.expr_node(ExprKind::Is(Box::new(lhs), ty), span);
+                continue;
+            }
+            let Some(op) = self.binary_op() else { break };
             let prec = op.precedence();
             if prec < min {
                 break;

@@ -480,6 +480,9 @@ pub enum ExprKind {
     List(Vec<Expr>),
     /// `..xs` in a list literal (`[..a, b]`): its items, in place.
     Spread(Box<Expr>),
+    /// `x is String`: whether a TS value is of a Bloom type (`String`, `Int`, `Float`,
+    /// `Bool`, `[T]`); `if x is T { … }` narrows `x` there.
+    Is(Box<Expr>, TypeExpr),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
     /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.

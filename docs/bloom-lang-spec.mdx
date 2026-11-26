@@ -294,6 +294,13 @@ and using it as a Bloom value with no expected type (an operator, a `match`, a m
 type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
 is checked by bloomc, and every crossing by `tsc`.
 
+`x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
+can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its
+items are taken as `T`). `if x is T { … }` narrows a name to `T` in the block. It sits at the
+comparisons' precedence. `is` on a Bloom value, or for another type, is B0213: a Bloom type's
+cases are an enum's, matched with `match`. A Bloom file reads no JS global implicitly: numbers
+come from the prelude (section 12) and timers are `task { await sleep(ms) … }`.
+
 ## 5. Values, functions and closures
 
 ```bloom
