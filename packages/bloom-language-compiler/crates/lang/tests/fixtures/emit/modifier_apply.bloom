@@ -4,3 +4,10 @@ import { card } from "@/components/modifiers"
 pub view Panel {
   body { Text("x").modifier(card) }
 }
+
+// A modifier value taken as a prop: `ViewModifier`, the language's class, is a type.
+import { type ViewModifier } from "@oxy.so/bloom-language"
+
+view Styled(look: ViewModifier? = none) {
+  body { Text("y").modifier(look ?? card) }
+}

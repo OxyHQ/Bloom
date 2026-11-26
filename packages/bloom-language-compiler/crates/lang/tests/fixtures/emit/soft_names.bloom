@@ -1,0 +1,22 @@
+// A keyword that never starts an expression (`type`, `body`, `view`, `screen`, `layout`,
+// `from`) may name a parameter, a field or a value: a TS API's props keep their names.
+
+struct Notice {
+  type: String
+  body: String
+  from: String? = none
+}
+
+fn line(notice: Notice) -> String {
+  "${notice.type}: ${notice.body}"
+}
+
+pub view NoticeRow(type: String, body: String) {
+  body {
+    Text("${type} ${body}")
+  }
+}
+
+fn make(type: String, body: String) -> Notice {
+  Notice(type: type, body: body)
+}

@@ -169,6 +169,11 @@ pattern       = "_" | IDENT | literal | "." IDENT [ "(" pattern { "," pattern } 
 
 Three grammar rules keep it unambiguous, as in Swift:
 
+A keyword that never starts an expression (`type`, `body`, `view`, `screen`, `layout`, `from`)
+may name a parameter, a struct field or a value, so a TS API's props and fields keep their
+names (`view NoticeRow(type: String, body: String)`, `Text(body)`). Record keys, labels and
+members after `.` may be any keyword.
+
 1. **No trailing closure in a head.** `if x { … }`, `match x {`, `for p in xs {` and `while`
    never read the `{` as a trailing closure of `x`.
 2. **Match arms start with `case`**, so a line starting with `.` is always a continuation.
@@ -293,6 +298,10 @@ TypeScript checker verifies it against the real `.d.ts` and its diagnostic maps 
 and using it as a Bloom value with no expected type (an operator, a `match`, a member of a Bloom
 type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
 is checked by bloomc, and every crossing by `tsc`.
+
+`foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
+TS checks the whole where it lands. A TS class that extends nothing (`ViewModifier`) is a value
+and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
 `x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
 can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its

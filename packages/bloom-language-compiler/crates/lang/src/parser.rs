@@ -359,6 +359,17 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     /// A name where keywords are names too: argument labels, members after `.`.
+    /// A name that may be a keyword which never starts an expression (`type`, `body`,
+    /// `view`, `screen`, `layout`, `from`): a TS API's prop or field keeps its name.
+    fn soft_name(&mut self, what: &str) -> Ident {
+        if let Tok::Kw(kw) = self.tok()
+            && is_soft(*kw)
+        {
+            return self.name_or_keyword(what);
+        }
+        self.ident(what)
+    }
+
     fn name_or_keyword(&mut self, what: &str) -> Ident {
         if let Tok::Kw(kw) = self.tok() {
             let ident = Ident { name: kw.word().to_string(), span: self.span() };
@@ -535,7 +546,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
-                let field_name = self.ident("a field name");
+                let field_name = self.soft_name("a field name");
                 self.expect(P::Colon, "`:` and the field's type");
                 let ty = self.type_expr();
                 let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
@@ -696,7 +707,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 continue;
             }
-            let name = self.ident("a parameter name");
+            let name = self.soft_name("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
                 self.error(
@@ -1751,6 +1762,11 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn primary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok().clone() {
+            // `type`, `body`, …: a name where a value goes (a prop or field of a TS API).
+            Tok::Kw(kw) if is_soft(kw) => {
+                let ident = self.name_or_keyword("a name");
+                self.expr_node(ExprKind::Name(ident.name), start)
+            }
             Tok::Int(value) => {
                 self.bump();
                 self.expr_node(ExprKind::Int(value), start)
@@ -2087,4 +2103,9 @@ mod tests {
         let (_, _, diagnostics) = parse("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
         assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
     }
+}
+
+/// Keywords that never start an expression, so they may name a parameter, a field or a value.
+fn is_soft(kw: Kw) -> bool {
+    matches!(kw, Kw::Type | Kw::Body | Kw::View | Kw::Screen | Kw::Layout | Kw::From)
 }
