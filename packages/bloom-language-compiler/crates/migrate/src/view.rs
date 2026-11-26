@@ -1915,6 +1915,11 @@ impl Tr<'_> {
                         };
                         return format!("{name} = {name}.setting({key}, {value})");
                     }
+                    // `player.loop = true`: a field of a TS value is TS's to write (spec 4.6);
+                    // on a Bloom value the checker refuses it.
+                    AssignmentTarget::StaticMemberExpression(m) => {
+                        format!("{}.{}", self.expr(&m.object), m.property.name)
+                    }
                     other => {
                         return self.refuse(
                             "mutation",
@@ -1934,6 +1939,14 @@ impl Tr<'_> {
                         "-="
                     };
                     format!("{} {op} 1", self.name(&id.name, id.span))
+                }
+                SimpleAssignmentTarget::StaticMemberExpression(m) => {
+                    let op = if u.operator == oxc_syntax::operator::UpdateOperator::Increment {
+                        "+="
+                    } else {
+                        "-="
+                    };
+                    format!("{}.{} {op} 1", self.expr(&m.object), m.property.name)
                 }
                 other => self.refuse("mutation", "`++` on an object's field", other.span()),
             },

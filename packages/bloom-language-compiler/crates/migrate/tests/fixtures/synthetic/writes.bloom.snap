@@ -1,0 +1,30 @@
+// A TS value's fields are TS's to write; a test that is always true folds to
+// its branch.
+
+import { usePlayer } from "./player"
+
+struct Track {
+  id: String
+  title: String
+}
+
+fn labelOf(track: Track) -> String {
+  let id = track.id
+  id + track.title
+}
+
+pub view Deck(track: Track) {
+  let player = usePlayer()
+  effect(id: player) { player.loop = true }
+
+  body {
+    VStack {
+      Text(labelOf(track))
+      Button("Skip")
+      .onPress {
+        player.time += 5
+        player.time += 1
+      }
+    }
+  }
+}

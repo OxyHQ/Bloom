@@ -402,3 +402,135 @@ fn always_object(ty: &str) -> bool {
         && ty.chars().all(|c| c.is_alphanumeric() || c == '_')
         && !matches!(ty, "String" | "Int" | "Float" | "Bool" | "Unit" | "View")
 }
+
+/// `true ? a : b` as `a` (`false ? a : b` as `b`), `true && a` and `false || a` as
+/// `a`: the conditions a value that is never `none` spelled as `true`. Only a whole
+/// expression is folded (after `(`, `=`, `,`, `:`, `{`, `[`, `return` or `=>`), so
+/// the branch left in its place needs no parentheses. `None` when there is none.
+pub fn fold(source: &str) -> Option<String> {
+    let mut out = fold_once(source)?;
+    for _ in 0..64 {
+        match fold_once(&out) {
+            Some(next) => out = next,
+            None => break,
+        }
+    }
+    Some(out)
+}
+
+fn fold_once(source: &str) -> Option<String> {
+    let bytes = source.as_bytes();
+    let mut quote = false;
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if quote {
+            if c == b'\\' {
+                i += 2;
+                continue;
+            }
+            if c == b'"' {
+                quote = false;
+            }
+            i += 1;
+            continue;
+        }
+        if c == b'"' {
+            quote = true;
+            i += 1;
+            continue;
+        }
+        let word = ["true", "false"].into_iter().find(|w| bytes[i..].starts_with(w.as_bytes()));
+        let boundary =
+            i == 0 || !(bytes[i - 1].is_ascii_alphanumeric() || matches!(bytes[i - 1], b'_' | b'.'));
+        if let Some(w) = word
+            && boundary
+        {
+            let before = source[..i].trim_end();
+            let whole = before.ends_with(['(', '=', ',', ':', '{', '['])
+                && !before.ends_with("==")
+                && !before.ends_with("!=")
+                && !before.ends_with("<=")
+                && !before.ends_with(">=")
+                || before.ends_with("return")
+                || before.ends_with("=>");
+            let rest = &source[i + w.len()..];
+            let after = rest.trim_start();
+            let gap = rest.len() - after.len();
+            if whole && gap > 0 {
+                let at = i + w.len() + gap;
+                if after.starts_with("? ") {
+                    let then_start = at + 2;
+                    let then_len = branch_len(&source[then_start..], true)?;
+                    let else_start = then_start + then_len + 2;
+                    let else_len = branch_len(&source[else_start..], false)?;
+                    let keep = if w == "true" {
+                        &source[then_start..then_start + then_len]
+                    } else {
+                        &source[else_start..else_start + else_len]
+                    };
+                    let keep = keep.trim();
+                    return Some(format!("{}{keep}{}", &source[..i], &source[else_start + else_len..]));
+                }
+                let op = if w == "true" { "&&" } else { "||" };
+                if after.starts_with(op) && after[2..].starts_with(char::is_whitespace) {
+                    let tail = after[2..].trim_start();
+                    return Some(format!("{}{tail}", &source[..i]));
+                }
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// The length of a conditional's branch at the start of `source`: the `then`
+/// branch ends at its `:` (`then` true), the `else` branch where the enclosing
+/// expression does (a closer, a `,`, or a line that does not continue it).
+fn branch_len(source: &str, then: bool) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let (mut depth, mut pending) = (0i32, 0i32);
+    let mut quote = false;
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if quote {
+            if c == b'\\' {
+                i += 2;
+                continue;
+            }
+            if c == b'"' {
+                quote = false;
+            }
+            i += 1;
+            continue;
+        }
+        match c {
+            b'"' => quote = true,
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' if depth == 0 => return (!then).then_some(i),
+            b')' | b']' | b'}' => depth -= 1,
+            b',' if depth == 0 => return (!then).then_some(i),
+            b'?' if depth == 0 && bytes.get(i + 1) == Some(&b' ') && i > 0 && bytes[i - 1] == b' ' => {
+                pending += 1
+            }
+            b':' if depth == 0 && bytes.get(i + 1) == Some(&b' ') && i > 0 && bytes[i - 1] == b' ' => {
+                if pending == 0 {
+                    return then.then_some(i - 1);
+                }
+                pending -= 1;
+            }
+            b'\n' if depth == 0 && !then => {
+                let next = source[i..].trim_start();
+                let continues =
+                    [".", "?", ":", "&&", "||", "+", "-", "*", "/", "=="].iter().any(|p| next.starts_with(p));
+                if !continues {
+                    return Some(i);
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    (!then).then_some(bytes.len())
+}
