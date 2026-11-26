@@ -823,12 +823,32 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// A generic call's witnesses, after every parameter (defaults written out).
+    fn push_witnesses(
+        &mut self,
+        expr: &Expr,
+        order: &[Option<usize>],
+        rest: &[usize],
+        values: &mut Vec<Frag>,
+    ) {
+        let Some(witnesses) = self.ck.witness_args.get(&expr.id).cloned() else { return };
+        while rest.is_empty() && values.len() < order.len() {
+            values.push(Frag::of("undefined"));
+        }
+        for witness in witnesses {
+            let text = match witness {
+                Some(w) => self.witness_value(&w),
+                None => "undefined".into(),
+            };
+            values.push(Frag::of(text));
+        }
+    }
+
     /// A witness passed to a generic call.
     fn witness_value(&mut self, witness: &WitnessArg) -> String {
         match witness {
-            WitnessArg::Conformance { def, protocol } => {
-                crate::extensions::mangle(&self.ck.defs[*def].name, &self.ck.defs[*protocol].name, true)
-            }
+            WitnessArg::Conformance { ty, protocol } => crate::extensions::mangle(ty, protocol, true),
+            WitnessArg::Codec(text) => text.clone(),
             WitnessArg::Param(name) => name.clone(),
             WitnessArg::Equal(ty) => self.eq_helper(ty),
         }
@@ -843,7 +863,8 @@ impl<'a> Emitter<'a> {
                 let t = generics.get(*index as usize).map_or("unknown".to_string(), |g| g.name.clone());
                 match bound {
                     Bound::Equatable => format!("{name}: (a: {t}, b: {t}) => boolean"),
-                    Bound::Protocol(p) => format!("{name}: {}$Witness<{t}>", self.ck.defs[*p].name),
+                    Bound::Codable => format!("{name}: Codec<{t}>"),
+                    Bound::Protocol(p) => format!("{name}: {p}$Witness<{t}>"),
                 }
             })
             .collect()
@@ -2576,27 +2597,16 @@ impl<'a> Emitter<'a> {
                 let (ExprKind::Field(object, _) | ExprKind::OptField(object, _)) = &call.callee.kind else {
                     unreachable!("an extension call is a member call")
                 };
-                let mut values = vec![self.expr(object)];
-                values.extend(self.ordered_args(call, &order, &rest));
+                let mut values = self.ordered_args(call, &order, &rest);
+                self.push_witnesses(expr, &order, &rest, &mut values);
+                values.insert(0, self.expr(object));
                 let mut out = Frag::of(func.to_string());
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
-                // A generic's witnesses follow every parameter.
-                if let Some(witnesses) = self.ck.witness_args.get(&expr.id).cloned() {
-                    while rest.is_empty() && values.len() < order.len() {
-                        values.push(Frag::of("undefined"));
-                    }
-                    for witness in witnesses {
-                        let text = match witness {
-                            Some(w) => self.witness_value(&w),
-                            None => "undefined".into(),
-                        };
-                        values.push(Frag::of(text));
-                    }
-                }
+                self.push_witnesses(expr, &order, &rest, &mut values);
                 let mut out = self.operand(&call.callee);
                 out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out

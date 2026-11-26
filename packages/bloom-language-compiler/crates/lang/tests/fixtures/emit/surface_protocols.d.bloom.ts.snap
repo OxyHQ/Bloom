@@ -12,5 +12,17 @@ export declare function Post$title(self: Post): string;
 export declare function Post$badge(self: Post, count: number): string;
 export type PrefKey = "likes" | "replies";
 export declare const PrefKey$$allCases: readonly PrefKey[];
+export interface Codec<T> {
+  readonly name: string;
+}
+export declare const Post$$self: Codec<Post>;
+export interface Page<T> {
+  readonly items: readonly T[];
+}
+export declare function Page$$codec<T>(item: Codec<T>): Codec<Page<T>>;
+export interface API {
+  readonly base: string;
+}
+export declare function API$describe<T>(self: API, value: T, $w_T_Codable: Codec<T>): string;
 export declare function demo(post: Post): string;
 export declare const Post$$Titled: Titled$Witness<Post>;

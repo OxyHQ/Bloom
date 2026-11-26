@@ -67,6 +67,10 @@ pub struct FnTy {
     pub ts: bool,
     /// `throws` (2.0): a call of it is written `try`.
     pub throws: bool,
+    /// Its constrained type parameters that take a witness (2.0): each one's type
+    /// (`Ty::Param`, then what a call instantiates it with) and its protocol's name
+    /// (`Equatable`, `Codable`, or a protocol of a `.bloom` module).
+    pub bounds: Vec<(Ty, Rc<str>)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -262,6 +266,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             generics: fn_ty.generics,
             ts: fn_ty.ts,
             throws: fn_ty.throws,
+            bounds: fn_ty.bounds.iter().map(|(t, p)| (map_ty(t, f), p.clone())).collect(),
         })),
         other => other.clone(),
     }
