@@ -4,13 +4,13 @@ import { Avatar, Button, HStack, Icon, ScrollView, Spacer, Text, VStack, useObse
 import { useState } from "react";
 import { RiHeartFill } from "@oxy.so/bloom/icons/RiHeartFill";
 import { RiHeartLine } from "@oxy.so/bloom/icons/RiHeartLine";
-import { RiVerifiedLine } from "@oxy.so/bloom/icons/RiVerifiedLine";
-import { type Task } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { RiVerifiedBadgeLine } from "@oxy.so/bloom/icons/RiVerifiedBadgeLine";
+import { type Task, refreshAction } from "../../.bloom/std/Bloom/Concurrency.bloom";
 import { Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
 import { type MentionAPI, MentionAPI$$live } from "../API/MentionAPI.bloom";
 import { type Post, type FeedModel, FeedModel$like, FeedModel$refresh, FeedModel$$init } from "./FeedModel.bloom";
 
-const $view0 = Icon(RiVerifiedLine).foreground("primary");
+const $view0 = Icon(RiVerifiedBadgeLine).foreground("primary");
 const $view1 = Spacer();
 export interface PostRowProps {
   readonly post: Post;
@@ -45,23 +45,25 @@ return a.post.id === b.post.id && a.post.text === b.post.text && a.post.author.i
 const $fields2 = ["posts"] as const;
 export const FeedScreen = view(function FeedScreen() {
 "use no memo";
-const $ = $c(3);
+const $ = $c(4);
 const [model, setModel] = useState<FeedModel>(() => FeedModel$$init(MentionAPI$$live()));
 const $t1 = useObserved(model, $fields2);
+const [__refreshing0, set__refreshing0] = useState<boolean>(false);
 let $t2;
-if ($[0] !== model.posts || $[1] !== $t1) {
-$t2 = ScrollView(VStack(...model.posts.map((post) => PostRow({ post: post, onLike: async () => await (FeedModel$like(model, post)) })))).refreshable(async () => (await (async () => {
+if ($[0] !== model.posts || $[1] !== $t1 || $[2] !== __refreshing0) {
+$t2 = ScrollView(VStack(...model.posts.map((post) => PostRow({ post: post, onLike: async () => await (FeedModel$like(model, post)) })))).refreshable(refreshAction([__refreshing0, set__refreshing0] as const, async () => (await (async () => {
 try {
 return await (FeedModel$refresh(model));
 } catch {
 return undefined;
 }
-})()));
+})())));
 $[0] = model.posts;
 $[1] = $t1;
-$[2] = $t2;
+$[2] = __refreshing0;
+$[3] = $t2;
 } else {
-$t2 = $[2];
+$t2 = $[3];
 }
 return $t2;
 });

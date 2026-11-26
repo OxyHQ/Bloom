@@ -6,7 +6,7 @@ import { Dictionary$merging } from "../../.bloom/std/Bloom/Core.bloom";
 
 export type Session = "signedOut" | "signedIn";
 
-export const session = defineEnvironment("session", "signedOut");
+export const session = (defineEnvironment("session", "signedOut") as import("@oxy.so/bloom-language").EnvironmentKey<Session>);
 
 export type PrefsState = "loading" | "signedOut" | "ready";
 
