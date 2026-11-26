@@ -125,6 +125,12 @@ pub struct BloomOutput {
     pub dts: Option<String>,
     pub diagnostics: Vec<BloomDiagnostic>,
     pub warnings: Vec<BloomDiagnostic>,
+    /// The files the compile read: the `.bloom` modules and TS declarations it imports.
+    pub dependencies: Vec<String>,
+}
+
+fn paths(paths: Vec<std::path::PathBuf>) -> Vec<String> {
+    paths.into_iter().map(|p| p.to_string_lossy().into_owned()).collect()
 }
 
 /// Compile one `.bloom` module to TypeScript (the embedded pass included).
@@ -137,7 +143,15 @@ pub fn compile_bloom(source: String, filename: String, options: Option<BloomOpti
         dts: output.dts,
         diagnostics: bloom_diagnostics(output.diagnostics),
         warnings: bloom_diagnostics(output.warnings),
+        dependencies: paths(output.dependencies),
     }
+}
+
+/// The files compiling a `.bloom` module reads (its imported `.bloom` modules
+/// and TS declarations), without emitting: what a transform cache key hashes.
+#[napi]
+pub fn bloom_dependencies(source: String, filename: String, options: Option<BloomOptions>) -> Vec<String> {
+    paths(bloom_lang::dependencies(&source, &filename, &lang_options(options)))
 }
 
 /// A type the checker found: its byte span and the type as Bloom writes it.

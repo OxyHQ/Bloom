@@ -66,12 +66,13 @@ const digest = crypto.createHash('sha1').update(fs.readFileSync(binary)).digest(
 /**
  * `binary` names the build that loaded (a local one, a platform package's, or
  * the WASI module); `docLinks()` lists every docs link a diagnostic can carry.
- * `compileBloom`, `checkBloom` and `formatBloom` are the `.bloom` compiler's
+ * `compileBloom`, `bloomDependencies`, `checkBloom` and `formatBloom` are the `.bloom` compiler's
  * (absent from a build that predates it).
  */
 module.exports = {
   compile: addon.compile,
   compileBloom: addon.compileBloom,
+  bloomDependencies: addon.bloomDependencies,
   checkBloom: addon.checkBloom,
   formatBloom: addon.formatBloom,
   docLinks: addon.docLinks,
