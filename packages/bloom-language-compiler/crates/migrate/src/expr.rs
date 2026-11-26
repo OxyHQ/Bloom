@@ -246,7 +246,10 @@ impl Tr<'_> {
                     let mut acc = texts.last().cloned().unwrap_or_default();
                     for left in texts.iter().rev().skip(1) {
                         let right = if acc.contains("||") { format!("({acc})") } else { acc };
-                        self.defaults.insert(crate::truthiness::squeeze(left), right.clone());
+                        self.defaults
+                            .entry(crate::truthiness::squeeze(left))
+                            .or_default()
+                            .push(right.clone());
                         acc = format!("{left} || {right}");
                     }
                     return acc;
@@ -926,14 +929,10 @@ impl Tr<'_> {
             }
         }
         // One closure argument reads as a trailing closure (`xs.map { x in … }`).
-        // (After an optional chain bloomc reads `{` as a new statement: it stays an argument.)
+        // (In a statement head `{` opens the body: there it stays an argument.)
         if let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice() {
             let closure = self.closure(arrow);
-            return if callee.contains("?.") || self.head {
-                format!("{callee}({closure})")
-            } else {
-                format!("{callee} {closure}")
-            };
+            return if self.head { format!("{callee}({closure})") } else { format!("{callee} {closure}") };
         }
         format!("{callee}({args})")
     }

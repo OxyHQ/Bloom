@@ -15,7 +15,7 @@ pub fn spell(
     source: &str,
     diagnostics: &[Diagnostic],
     conditions: &HashSet<String>,
-    defaults_of: &HashMap<String, String>,
+    defaults_of: &HashMap<String, Vec<String>>,
 ) -> Option<String> {
     let (mut edits, reserved) = defaults(source, diagnostics, defaults_of);
     for d in diagnostics {
@@ -80,7 +80,7 @@ pub fn spell(
 pub fn defaults(
     source: &str,
     diagnostics: &[Diagnostic],
-    defaults: &HashMap<String, String>,
+    defaults: &HashMap<String, Vec<String>>,
 ) -> (Vec<(usize, usize, String)>, Vec<(usize, usize)>) {
     let mut edits: Vec<(usize, usize, String)> = Vec::new();
     for d in diagnostics {
@@ -94,7 +94,7 @@ pub fn defaults(
         };
         let (start, end) = (d.span.start as usize, d.span.end as usize);
         let Some(left) = source.get(start..end) else { continue };
-        let Some(right) = defaults.get(&squeeze(left)) else { continue };
+        let Some(rights) = defaults.get(&squeeze(left)) else { continue };
         // ` || right`, however bloom_fmt broke the lines.
         let rest = &source[end..];
         let Some(op) = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("||"))
@@ -102,9 +102,12 @@ pub fn defaults(
             continue;
         };
         // A parenthesised default (the rest of a chain) is matched as a group: an
-        // earlier round may have spelled the `||` inside it.
-        let grouped = right.starts_with('(') && right.ends_with(')');
-        let len = if grouped { group_len(&rest[op + 2..]) } else { squeezed_prefix(&rest[op + 2..], right) };
+        // earlier round may have spelled the `||` inside it. (One left operand may
+        // have several defaults in a module: the one written after it.)
+        let len = rights.iter().find_map(|right| {
+            let grouped = right.starts_with('(') && right.ends_with(')');
+            if grouped { group_len(&rest[op + 2..]) } else { squeezed_prefix(&rest[op + 2..], right) }
+        });
         let Some(len) = len else { continue };
         let tail_len = op + 2 + len;
         let right_text = squeeze_lines(rest[op + 2..op + 2 + len].trim());
@@ -117,7 +120,9 @@ pub fn defaults(
             "String?" => format!("({left} ?? \"\") == \"\" ? {right} : {a} ?? \"\""),
             "Int?" | "Float?" => format!("({left} ?? 0) == 0 ? {right} : {a} ?? 0"),
             "Bool?" => format!("{a} == true || {right}"),
-            t if t.ends_with('?') && (!t.contains('|') || literal_union(t)) => format!("{a} ?? {right}"),
+            t if t.ends_with('?') && (!t.contains('|') || literal_union(t) || foreign_object(t)) => {
+                format!("{a} ?? {right}")
+            }
             _ => continue,
         };
         // Inside a larger expression the conditional keeps its own parentheses.
@@ -255,7 +260,7 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
         "Int?" | "Float?" => format!("({text} ?? 0) {eq} 0"),
         "Bool?" => format!("{operand} {} true", if negated { "!=" } else { "==" }),
         // Any other optional is truthy when present: an object, a list, a view, a function.
-        t if t.ends_with('?') && !t.contains('|') => format!("{operand} {eq} none"),
+        t if t.ends_with('?') && (!t.contains('|') || foreign_object(t)) => format!("{operand} {eq} none"),
         _ => return None,
     })
 }
@@ -263,4 +268,13 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
 /// Whether `text` is a name or a member chain (`a.b.c`, `a?.b`): no parentheses needed.
 fn is_postfix(text: &str) -> bool {
     crate::expr::is_postfix_text(text)
+}
+
+/// `Foreign(Pick<User, 'id' | 'name'>)?`: an optional TS object type (its `|` is the
+/// TS text's own); falsy only when absent. A TS primitive in it (`string`, `number`,
+/// `boolean`) has falsy values of its own, so it is not one.
+fn foreign_object(ty: &str) -> bool {
+    let Some(inner) = ty.strip_prefix("Foreign(").and_then(|t| t.strip_suffix(")?")) else { return false };
+    let words: Vec<&str> = inner.split(|c: char| !c.is_alphanumeric()).collect();
+    !["string", "number", "boolean", "bigint", "any", "unknown"].iter().any(|p| words.contains(p))
 }

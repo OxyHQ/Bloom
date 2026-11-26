@@ -169,6 +169,20 @@ impl Tr<'_> {
             }
         }
         let lines = self.jsx_children(&el.children);
+        // `<React.Fragment key={k}>…</React.Fragment>`: its children, one keyed `Group`.
+        let fragment = match name.split_once('.') {
+            Some((ns, "Fragment")) => self.react.get(ns).is_some_and(|e| e == "default" || e == "*"),
+            None => self.react.get(&name).is_some_and(|e| e == "Fragment"),
+            _ => false,
+        };
+        if fragment && props.is_empty() {
+            self.used.remove(name.split('.').next().unwrap_or_default());
+            let group = format!("{} {{\n{lines}\n}}", self.name("Group", el.span));
+            return match node_id {
+                Some(key) => format!("{group}.id({key})"),
+                None => group,
+            };
+        }
         let head = format!("{name}({})", props.join(", "));
         let node = if lines.is_empty() { head } else { format!("{head} {{\n{lines}\n}}") };
         match node_id {

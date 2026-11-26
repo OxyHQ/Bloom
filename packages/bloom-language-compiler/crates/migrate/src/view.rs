@@ -615,6 +615,14 @@ impl Tr<'_> {
                 immutable = false;
             }
         }
+        // A list literal grown in place (`xs.push(x)`): a `var` each push reassigns.
+        if let (BindingPattern::BindingIdentifier(id), Expression::ArrayExpression(_)) =
+            (&d.id, init.without_parentheses())
+            && pushes(self.src, &id.name)
+        {
+            self.scope.collections.insert(id.name.to_string(), "Array".to_string());
+            immutable = false;
+        }
         let keyword = if immutable { "let" } else { "var" };
         let mut ty = d
             .type_annotation
@@ -1262,8 +1270,9 @@ impl Tr<'_> {
             Expression::CallExpression(call)
                 if let Expression::StaticMemberExpression(m) = &call.callee
                     && let Expression::Identifier(object) = &m.object
-                    && self.scope.collections.contains_key(object.name.as_str())
-                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear") =>
+                    && let Some(kind) = self.scope.collections.get(object.name.as_str())
+                    && (kind == "Array") == (m.property.name == "push")
+                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear" | "push") =>
             {
                 // `s.add(x)` changes `s` in place; a Bloom `Set` is a value, so it is reassigned.
                 let name = self.name(&object.name, object.span);
@@ -1273,6 +1282,8 @@ impl Tr<'_> {
                     .map(|a| a.as_expression().map_or_else(String::new, |e| self.expr(e)))
                     .collect();
                 let method = match m.property.name.as_str() {
+                    // `xs.push(a, b)`: a Bloom list is a value too.
+                    "push" => return format!("{name} = [..{name}, {}]", args.join(", ")),
                     "add" => "inserting",
                     "set" => "setting",
                     "delete" => "removing",
@@ -1775,6 +1786,13 @@ fn awaited_start<'b, 'a>(statement: &'b Statement<'a>) -> Option<AwaitStart<'b, 
 }
 
 /// Whether the module changes the collection `name` in place (`name.add(…)`).
+/// Whether `name.push(` occurs in `src` (as a name of its own, not `a.name.push(`).
+fn pushes(src: &str, name: &str) -> bool {
+    let needle = format!("{name}.push(");
+    src.match_indices(&needle)
+        .any(|(i, _)| !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.'))
+}
+
 fn mutates(src: &str, name: &str) -> bool {
     ["add", "set", "delete", "clear"].iter().any(|m| {
         let needle = format!("{name}.{m}(");

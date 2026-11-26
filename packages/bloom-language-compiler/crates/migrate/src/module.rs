@@ -27,7 +27,7 @@ pub struct Translated {
     pub conditions: HashSet<String>,
     /// `a || b` as a value, left → right: JS's default for a falsy `a`, spelled
     /// from bloomc's type of `a` (`crate::truthiness::defaults`).
-    pub defaults: HashMap<String, String>,
+    pub defaults: HashMap<String, Vec<String>>,
 }
 
 /// One kept TS import, by module, in source order.
@@ -126,7 +126,7 @@ pub struct Tr<'s> {
     /// argument stays inside the parentheses.
     pub head: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
-    pub defaults: HashMap<String, String>,
+    pub defaults: HashMap<String, Vec<String>>,
     pub conditions: HashSet<String>,
     /// Calls whose one type argument types the binding they initialise.
     pub typed_calls: HashSet<u32>,
@@ -384,6 +384,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         items.push(comments + &item);
     }
     let trailing = pending + &tr.comments.rest();
+    let items = hoist_lets(items);
 
     // Sections one empty line apart: the header, the imports, each item, what trails.
     let imports = tr.imports_text(&imports);
@@ -1344,3 +1345,47 @@ fn chain_root(expression: &Expression) -> Option<String> {
 }
 
 pub const VIEW_TYPES: &[&str] = LANG_VIEW_TYPES;
+
+/// A module `let` read by an item above it moves up, above the first item that is
+/// not a `let` (the order of the `let`s kept): a module value is in scope after its
+/// declaration, while TS's functions read a later `const` when they run.
+fn hoist_lets(items: Vec<String>) -> Vec<String> {
+    fn let_name(item: &str) -> Option<&str> {
+        let code = item.lines().find(|l| !l.trim_start().starts_with("//") && !l.trim().is_empty())?;
+        let rest = code.strip_prefix("pub ").unwrap_or(code).strip_prefix("let ")?;
+        let end = rest.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(rest.len());
+        (end > 0).then(|| &rest[..end])
+    }
+    fn mentions(text: &str, name: &str) -> bool {
+        text.match_indices(name).any(|(i, _)| {
+            let before = text[..i].chars().next_back();
+            let after = text[i + name.len()..].chars().next();
+            let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_');
+            !word(before) && !word(after)
+        })
+    }
+    let Some(first) = items.iter().position(|item| let_name(item).is_none()) else { return items };
+    let late: Vec<usize> = (first..items.len())
+        .filter(|&i| let_name(&items[i]).is_some_and(|n| items[..i].iter().any(|it| mentions(it, n))))
+        .collect();
+    if late.is_empty() {
+        return items;
+    }
+    // A hoisted `let` takes the `let`s it reads along (they stay in order).
+    let mut moved: Vec<usize> = late.clone();
+    for &i in late.iter().rev() {
+        for j in first..i {
+            if !moved.contains(&j)
+                && let Some(n) = let_name(&items[j])
+                && mentions(&items[i], n)
+            {
+                moved.push(j);
+            }
+        }
+    }
+    moved.sort_unstable();
+    let mut out: Vec<String> = items[..first].to_vec();
+    out.extend(moved.iter().map(|&i| items[i].clone()));
+    out.extend((first..items.len()).filter(|i| !moved.contains(i)).map(|i| items[i].clone()));
+    out
+}

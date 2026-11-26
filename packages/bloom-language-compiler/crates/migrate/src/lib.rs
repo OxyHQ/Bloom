@@ -133,9 +133,15 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     // JS members (`s.has(x)`, `m.size`) respelled from the receivers' types, the same way.
     // One kind of respelling a round: each reads the spans of the text it was compiled from.
     for _ in 0..12 {
-        let spelled = typed::fix(&formatted, &compiled.diagnostics).or_else(|| {
-            truthiness::spell(&formatted, &compiled.diagnostics, &translated.conditions, &translated.defaults)
-        });
+        // Truthiness first: a value `a || b` types as `Bool` until it is spelled, and
+        // what reads it (`owner?.name`) would be respelled from that.
+        let spelled = truthiness::spell(
+            &formatted,
+            &compiled.diagnostics,
+            &translated.conditions,
+            &translated.defaults,
+        )
+        .or_else(|| typed::fix(&formatted, &compiled.diagnostics));
         let Some(spelled) = spelled else { break };
         let Ok(reformatted) = bloom_fmt::format(&spelled, &target) else { break };
         if reformatted == formatted {
