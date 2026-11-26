@@ -1,0 +1,40 @@
+// Module forms: a TS hook is a hook function, `lazy(() => import(…))` a lazy
+// component, `memo(Named, compare)` the view with its `equal`, an `export { … }`
+// list `pub`, a rest parameter `..xs`, and JSX children of a local view its prop.
+
+import { lazy, useMemo } from "react"
+
+pub let Panel = lazy { import("./card") }
+
+struct Row {
+  id: String
+  title: String? = none
+}
+
+fn useTitles(rows: [Row]) -> [String] { useMemo({ rows.map { r in r.title ?? r.id } }, [rows]) }
+
+pub fn joinAll(..parts: [String]) -> String {
+  var out = ""
+  for part in parts { if part != "" { out = "${out}${part}" } }
+  out
+}
+
+view Section(title: String, children: View) {
+  body {
+    VStack(Text(title), children)
+  }
+}
+
+view ListBody(rows: [Row]) {
+  equal(old, new) { sameRows(old, new) }
+
+  let titles = useTitles(rows)
+
+  body {
+    Section(title: joinAll("Rows", ":"), children: Text(titles.joined(", ")))
+  }
+}
+
+fn sameRows(a: { rows: [Row] }, b: { rows: [Row] }) -> Bool { a.rows.count == b.rows.count }
+
+pub let List = ListBody
