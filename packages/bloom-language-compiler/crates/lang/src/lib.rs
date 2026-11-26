@@ -119,13 +119,8 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
-    let module_options;
-    let options = if resolution.in_module && !options.modules {
-        module_options = Options { modules: true, ..options.clone() };
-        &module_options
-    } else {
-        options
-    };
+    let module_options = for_module(&resolution, options);
+    let options = module_options.as_ref().unwrap_or(options);
     let mut result = check::check(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -143,13 +138,8 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
-    let module_options;
-    let options = if resolution.in_module && !options.modules {
-        module_options = Options { modules: true, ..options.clone() };
-        &module_options
-    } else {
-        options
-    };
+    let module_options = for_module(&resolution, options);
+    let options = module_options.as_ref().unwrap_or(options);
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -189,13 +179,8 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
-    let module_options;
-    let options = if resolution.in_module && !options.modules {
-        module_options = Options { modules: true, ..options.clone() };
-        &module_options
-    } else {
-        options
-    };
+    let module_options = for_module(&resolution, options);
+    let options = module_options.as_ref().unwrap_or(options);
     let mut checked = check::check_for_emit(&file, source, filename, options);
     rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
@@ -243,6 +228,18 @@ fn rules(file: &Ast, source: &str, result: &mut check::CheckResult) {
         let found = chains::check(file, result);
         result.diagnostics.extend(found);
     }
+}
+
+/// A directory module's options: `internal` names exported for the module's
+/// other files, and TS imports (binding modules, runtime packages) resolved in
+/// the package's generated build directory once it is installed.
+fn for_module(resolution: &modules::Resolution, options: &Options) -> Option<Options> {
+    if !resolution.in_module {
+        return None;
+    }
+    let build = resolution.reads.first().and_then(|m| m.parent()).map(|r| r.join(".bloom/build"));
+    let root = build.filter(|b| b.join("node_modules").is_dir()).or_else(|| options.root.clone());
+    Some(Options { modules: true, root, ..options.clone() })
 }
 
 /// The module resolution's findings beside the checker's: its errors, why a

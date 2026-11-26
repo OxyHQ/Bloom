@@ -78,7 +78,7 @@ struct Args {
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
     let mut raw = raw.into_iter();
     let mut args = Args { command: raw.next().ok_or("no command")?, ..Args::default() };
-    let mut value = |raw: &mut dyn Iterator<Item = String>, flag: &str, what: &str| {
+    let value = |raw: &mut dyn Iterator<Item = String>, flag: &str, what: &str| {
         raw.next().ok_or(format!("{flag} needs {what}"))
     };
     while let Some(arg) = raw.next() {
@@ -134,7 +134,8 @@ pub fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let jobs = args.jobs.unwrap_or_else(|| std::thread::available_parallelism().map_or(1, |n| n.get()).min(6));
+    let jobs =
+        args.jobs.unwrap_or_else(|| std::thread::available_parallelism().map_or(1, |n| n.get()).min(6));
     let result = run(&args, jobs);
     match result {
         Ok(true) => ExitCode::SUCCESS,
@@ -147,7 +148,8 @@ pub fn main() -> ExitCode {
 }
 
 fn run(args: &Args, jobs: usize) -> Result<bool, String> {
-    let check_options = project::CheckOptions { jobs, tsc: args.tsc, allow_ts_imports: args.allow_ts_imports };
+    let check_options =
+        project::CheckOptions { jobs, tsc: args.tsc, allow_ts_imports: args.allow_ts_imports };
     match args.command.as_str() {
         "new" => scaffold::new(&one(args, "a package name")?, args.template.as_deref().unwrap_or("app")),
         "check" => match project::find(&args.paths)? {
@@ -179,7 +181,11 @@ fn run(args: &Args, jobs: usize) -> Result<bool, String> {
         }
         "test" => {
             let package = project::require(&[])?;
-            testing::run(&package, args.paths.first().map(|p| p.to_string_lossy().into_owned()), &check_options)
+            testing::run(
+                &package,
+                args.paths.first().map(|p| p.to_string_lossy().into_owned()),
+                &check_options,
+            )
         }
         "add" => {
             let package = project::require(&[])?;

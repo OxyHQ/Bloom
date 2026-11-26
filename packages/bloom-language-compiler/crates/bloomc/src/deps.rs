@@ -10,10 +10,10 @@
 //! of them again (bun's `overrides`), so a fresh checkout builds what was locked.
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
-use bloom_lang::package::{self, KNOWN_PACKAGES, Requirement, TargetKind, Version, known_package};
+use bloom_lang::package::{self, KNOWN_PACKAGES, Requirement, Version, known_package};
 
 use crate::expo::{RUNTIME, TOOLS};
 use crate::project::{Package, write};
@@ -46,12 +46,14 @@ pub struct Resolved {
     pub npm: Vec<Locked>,
 }
 
-const RESOLVED_HEADER: &str = "// Package.resolved: written by bloom (`bloom add`, `bloom build`). Do not edit.";
+const RESOLVED_HEADER: &str =
+    "// Package.resolved: written by bloom (`bloom add`, `bloom build`). Do not edit.";
 
 impl Resolved {
     pub fn read(package: &Package) -> Option<Resolved> {
         let text = std::fs::read_to_string(package.root.join(package::RESOLVED)).ok()?;
-        let body: String = text.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
+        let body: String =
+            text.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
         let value = crate::json::parse(&body).ok()?;
         let mut out = Resolved::default();
         for entry in value.get("packages").as_array() {
@@ -67,7 +69,11 @@ impl Resolved {
             let mut parts = line.split(' ');
             let (Some(spec), Some(integrity)) = (parts.next(), parts.next()) else { continue };
             let (name, version) = package::split_npm_spec(spec);
-            out.npm.push(Locked { name: name.into(), version: version.unwrap_or_default().into(), integrity: integrity.into() });
+            out.npm.push(Locked {
+                name: name.into(),
+                version: version.unwrap_or_default().into(),
+                integrity: integrity.into(),
+            });
         }
         Some(out)
     }
@@ -146,7 +152,8 @@ fn links() -> BTreeMap<String, String> {
 
 /// The generated app's `package.json`.
 pub fn package_json(package: &Package) -> Result<String, String> {
-    let mut deps: BTreeMap<String, String> = RUNTIME.iter().map(|(n, v)| (n.to_string(), v.to_string())).collect();
+    let mut deps: BTreeMap<String, String> =
+        RUNTIME.iter().map(|(n, v)| (n.to_string(), v.to_string())).collect();
     let resolved = Resolved::read(package).unwrap_or_default();
     for dep in &package.manifest.dependencies {
         let Some(npm) = dep.npm_name() else { continue };
@@ -157,7 +164,9 @@ pub fn package_json(package: &Package) -> Result<String, String> {
         };
         // A locked version within the requirement is the one installed.
         let version = match resolved.bloom.get(&dep.name) {
-            Some((_, locked)) if Version::parse(locked).is_some_and(|l| dep.requirement.allows(&l)) => locked.clone(),
+            Some((_, locked)) if Version::parse(locked).is_some_and(|l| dep.requirement.allows(&l)) => {
+                locked.clone()
+            }
             _ => version,
         };
         deps.insert(npm, version);
@@ -178,7 +187,12 @@ pub fn package_json(package: &Package) -> Result<String, String> {
     let overrides: BTreeMap<String, String> = if package.build_dir().join("bun.lock").is_file() {
         BTreeMap::new()
     } else {
-        resolved.npm.iter().filter(|l| !deps.contains_key(&l.name)).map(|l| (l.name.clone(), l.version.clone())).collect()
+        resolved
+            .npm
+            .iter()
+            .filter(|l| !deps.contains_key(&l.name))
+            .map(|l| (l.name.clone(), l.version.clone()))
+            .collect()
     };
     let block = |map: &BTreeMap<String, String>| {
         let lines: Vec<String> = map
@@ -193,8 +207,12 @@ pub fn package_json(package: &Package) -> Result<String, String> {
             .collect();
         format!("{{\n{}\n  }}", lines.join(",\n"))
     };
-    let name: String =
-        package.manifest.name.chars().map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' }).collect();
+    let name: String = package
+        .manifest
+        .name
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' })
+        .collect();
     let mut out = format!(
         "{{\n  \"name\": \"{name}\",\n  \"private\": true,\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"dependencies\": {},\n  \"devDependencies\": {}",
         block(&deps),
@@ -213,7 +231,9 @@ pub fn install(package: &Package) -> Result<(), String> {
     let manifest = std::fs::read_to_string(build.join("package.json")).unwrap_or_default();
     let key = format!("{:032x}", crate::build::hash(&[manifest.as_bytes()]));
     let stamp = build.join(".installed");
-    if build.join("node_modules").is_dir() && std::fs::read_to_string(&stamp).ok().as_deref() == Some(key.as_str()) {
+    if build.join("node_modules").is_dir()
+        && std::fs::read_to_string(&stamp).ok().as_deref() == Some(key.as_str())
+    {
         return Ok(());
     }
     crate::expo::run_in(&build, "bun", &["install"])?;
@@ -247,7 +267,8 @@ pub fn newest(npm: &str, requirement: Option<&Requirement>) -> Result<String, St
     if !out.status.success() {
         return Err(format!("no npm package {npm}: {}", String::from_utf8_lossy(&out.stderr).trim()));
     }
-    let times = crate::json::parse(&String::from_utf8_lossy(&out.stdout)).map_err(|e| format!("bun info {npm}: {e}"))?;
+    let times = crate::json::parse(&String::from_utf8_lossy(&out.stdout))
+        .map_err(|e| format!("bun info {npm}: {e}"))?;
     let crate::json::Value::Object(times) = times else {
         return Err(format!("bun info {npm}: no publish times"));
     };
@@ -292,7 +313,10 @@ pub fn parse_iso_seconds(text: &str) -> Option<u64> {
 
 /// `bloom add <package>`: a Bloom package, recorded in `Package.bloom` and `Package.resolved`.
 pub fn add(package: &Package, name: &str, from: Option<&str>, npm: Option<&str>) -> Result<bool, String> {
-    if name.contains('/') || name.starts_with('@') || name.chars().next().is_some_and(|c| c.is_ascii_lowercase()) {
+    if name.contains('/')
+        || name.starts_with('@')
+        || name.chars().next().is_some_and(|c| c.is_ascii_lowercase())
+    {
         return Err(format!(
             "`{name}` is an npm package: generate a binding module for it with `bloom bind {name}` (`bloom add` adds Bloom packages, such as {})",
             KNOWN_PACKAGES.iter().map(|k| k.name).collect::<Vec<_>>().join(", ")
@@ -319,28 +343,14 @@ pub fn add(package: &Package, name: &str, from: Option<&str>, npm: Option<&str>)
     let npm_part = if npm.is_some() { format!(", npm: \"{npm_name}\"") } else { String::new() };
     let entry = format!(".package(\"{name}\"{npm_part}, from: \"{version}\")");
     let updated = package::with_dependency(&package.source, &package.manifest, &entry);
-    package::parse(&updated, package::MANIFEST).map_err(|e| format!("the edited manifest does not evaluate: {:?}", e.first().map(|d| &d.message)))?;
+    package::parse(&updated, package::MANIFEST)
+        .map_err(|e| format!("the edited manifest does not evaluate: {:?}", e.first().map(|d| &d.message)))?;
     write(&package.root.join(package::MANIFEST), &updated)?;
     let mut resolved = Resolved::read(package).unwrap_or_default();
     resolved.bloom.insert(name.to_string(), (npm_name.clone(), version.clone()));
     write(&package.root.join(package::RESOLVED), &resolved.render())?;
     println!("bloom: added {name} {version} (`import {name}` in a module)");
     Ok(true)
-}
-
-/// The binding targets' npm packages, for `bloom bind`.
-pub fn bindings(package: &Package) -> Vec<(String, String)> {
-    package
-        .manifest
-        .targets
-        .iter()
-        .filter(|t| matches!(t.kind, TargetKind::Bindings { .. }))
-        .filter_map(|t| t.npm().map(|(n, _)| (t.name.clone(), n.to_string())))
-        .collect()
-}
-
-pub fn exists(path: &Path) -> bool {
-    path.exists()
 }
 
 #[cfg(test)]
@@ -360,23 +370,34 @@ mod tests {
 }"#;
         let locked = read_bun_lock(lock);
         assert_eq!(locked.len(), 2);
-        assert_eq!(locked[0], Locked { name: "@sentry/react-native".into(), version: "6.2.0".into(), integrity: "sha512-AAA==".into() });
+        assert_eq!(
+            locked[0],
+            Locked {
+                name: "@sentry/react-native".into(),
+                version: "6.2.0".into(),
+                integrity: "sha512-AAA==".into()
+            }
+        );
     }
 
     #[test]
     fn a_resolved_file_round_trips() {
         let mut resolved = Resolved::default();
         resolved.bloom.insert("BloomData".into(), ("@oxy.so/bloom-data".into(), "0.1.2".into()));
-        resolved.npm.push(Locked { name: "left-pad".into(), version: "1.3.0".into(), integrity: "sha512-BBB==".into() });
+        resolved.npm.push(Locked {
+            name: "left-pad".into(),
+            version: "1.3.0".into(),
+            integrity: "sha512-BBB==".into(),
+        });
         let text = resolved.render();
         assert!(text.contains("\n    \"left-pad@1.3.0 sha512-BBB==\"\n"), "{text}");
-        let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("resolved");
+        let dir = std::env::temp_dir().join(format!("bloom-resolved-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join(package::RESOLVED), &text).unwrap();
         let source = "let package = Package(name: \"A\", targets: [.app(\"A\")])".to_string();
         let pkg = Package { root: dir, manifest: package::parse(&source, "x").unwrap(), source };
         assert_eq!(Resolved::read(&pkg), Some(resolved));
-        assert_eq!(Resolved::default().render().lines().count(), 5);
+        assert_eq!(Resolved::default().render().lines().count(), 6);
     }
 
     #[test]
