@@ -128,8 +128,10 @@ impl Tr<'_> {
         for attribute in &el.opening_element.attributes {
             let note = self.note(attribute.span().start);
             match attribute {
+                // `{...p}`: its fields as arguments, where JSX put them (a later prop wins).
                 JSXAttributeItem::SpreadAttribute(s) => {
-                    props.push(self.refuse("jsx:spread", "spread props `{...p}`", s.span));
+                    let value = self.expr(&s.argument);
+                    props.push(format!("{note}..{value}"));
                 }
                 JSXAttributeItem::Attribute(a) => {
                     let JSXAttributeName::Identifier(key) = &a.name else {
