@@ -1,0 +1,2 @@
+refused
+22: statement:throw: `throw` outside a closure (return a `Result`)

@@ -77,12 +77,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "bloom_migrate"
+version = "0.0.0"
+dependencies = [
+ "bloom_fmt",
+ "bloom_lang",
+ "bloom_language_compiler",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
+ "oxc_syntax",
+]
+
+[[package]]
 name = "bloomc"
 version = "0.0.0"
 dependencies = [
  "bloom_fmt",
  "bloom_lang",
  "bloom_language_compiler",
+ "bloom_migrate",
  "oxc_sourcemap",
 ]
 

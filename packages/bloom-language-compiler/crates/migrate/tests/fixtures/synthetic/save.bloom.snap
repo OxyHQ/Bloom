@@ -1,0 +1,26 @@
+// try/catch around one await: a `match` on the `Result`, under a review marker.
+
+import { save } from "./api"
+
+pub view SaveButton(id: String) {
+  @state saving = false
+
+  async fn onSave() {
+    saving = true
+    defer { saving = false }
+    match (catching { await save(id)? }) {
+      case .ok(_) => {}
+      case .err(error) => { toast("Could not save", type: "error") }
+    }
+  }
+
+  body {
+    Button(Text(saving ? "Saving" : "Save")).disabled(saving).onPress { task { await onSave() } }
+  }
+}
+
+/// An assertion says nothing at run time: dropped, under review.
+pub fn label(text: String) -> String {
+  // bloom: review: `as string` dropped: annotate where the value lands if tsc needs it
+  text
+}
