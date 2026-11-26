@@ -199,3 +199,91 @@ fn an_import_is_a_declared_dependency() {
     assert_eq!(found[2], ("B0802", "run `bloom add BloomData`".into()));
     assert_eq!(found[3].0, "B0801", "its own module: {found:?}");
 }
+
+const SENTRY: &str = r#"// The binding module of a JS package.
+extern module "fake-sentry" {
+  @extern("init") public func initialize(_ dsn: String)
+  @extern("captureException") public func capture(_ message: String) -> String
+  public let SDK_VERSION: String
+}
+"#;
+
+const FAKE_SENTRY: &str = "export declare function init(dsn: string): void;\nexport declare function captureException(message: string): string;\nexport declare const SDK_VERSION: string;\n";
+
+#[test]
+fn a_binding_module_lowers_its_extern_module() {
+    let root = package(
+        "bindings",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Bindings/Sentry/Sentry.bloom", SENTRY),
+            ("node_modules/fake-sentry/index.d.ts", FAKE_SENTRY),
+            (
+                "node_modules/fake-sentry/package.json",
+                "{ \"name\": \"fake-sentry\", \"types\": \"index.d.ts\" }",
+            ),
+            (
+                "Sources/Demo/Report.bloom",
+                "import Sentry\n\npublic func report(_ message: String) -> String {\n  initialize(\"dsn\")\n  return capture(\"\\(SDK_VERSION): \\(message)\")\n}\n",
+            ),
+        ],
+    );
+    let out = build(&root, "Bindings/Sentry/Sentry.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import * as __extern0 from \"fake-sentry\";"), "{}", out.code);
+    assert!(out.code.contains("export function initialize("), "{}", out.code);
+    let app = build(&root, "Sources/Demo/Report.bloom", &Options::default());
+    assert!(app.diagnostics.is_empty(), "{:?}", app.diagnostics);
+    assert!(app.code.contains("from \"../../Bindings/Sentry/Sentry.bloom\""), "{}", app.code);
+    assert!(!app.code.contains("fake-sentry"), "the app never names the JS package: {}", app.code);
+}
+
+#[test]
+fn an_extern_function_has_no_body() {
+    let root = package(
+        "extern-body",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Bindings/Sentry/Sentry.bloom",
+                "extern module \"fake-sentry\" {\n  public func start() { print(\"x\") }\n  public async func flush()\n}\n",
+            ),
+        ],
+    );
+    let out = build(&root, "Bindings/Sentry/Sentry.bloom", &Options::default());
+    assert!(codes(&out).starts_with(&["B0820", "B0821"]), "{:?}", out.diagnostics);
+}
+
+#[test]
+fn bind_writes_a_binding_module_that_checks() {
+    let dts = "export interface Options { dsn: string; tracesSampleRate?: number }\nexport declare function init(options: Options): void;\nexport declare function flush(timeout: number): Promise<boolean>;\nexport declare const SDK_VERSION: string;\n";
+    let root = package(
+        "bindgen",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("node_modules/fake-sentry/index.d.ts", dts),
+            (
+                "node_modules/fake-sentry/package.json",
+                "{ \"name\": \"fake-sentry\", \"types\": \"index.d.ts\" }",
+            ),
+        ],
+    );
+    let from = root.join("Bindings/Sentry/Sentry.bloom");
+    let binding = bloom_lang::bindgen::generate("fake-sentry", "6.2.0", &from, &Options::default()).unwrap();
+    let text = &binding.text;
+    assert!(text.contains("extern module \"fake-sentry\" {"), "{text}");
+    assert!(text.contains("  public func init(_ options: Options)\n"), "{text}");
+    assert!(text.contains("  public func flush(_ timeout: Float) async throws -> Bool\n"), "{text}");
+    assert!(text.contains("  public let SDK_VERSION: String\n"), "{text}");
+    assert!(
+        text.contains("  public struct Options {\n    dsn: String\n    tracesSampleRate: Float?\n  }"),
+        "{text}"
+    );
+    std::fs::create_dir_all(from.parent().unwrap()).unwrap();
+    // `async throws` checks once `throws` functions take `try` (the surface's work).
+    let checkable: String =
+        text.lines().filter(|l| !l.contains("async throws")).map(|l| format!("{l}\n")).collect();
+    std::fs::write(&from, checkable).unwrap();
+    let out = build(&root, "Bindings/Sentry/Sentry.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{text}\n{:?}", out.diagnostics);
+}

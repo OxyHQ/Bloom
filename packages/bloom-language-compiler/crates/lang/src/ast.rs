@@ -152,6 +152,10 @@ pub enum ItemKind {
     /// `protocol P: Q { var id: String { get }; func f() -> Int }` (2.0): requirements a
     /// conforming type meets with fields, computed properties or methods.
     Protocol(ProtocolDecl),
+    /// `extern module "pkg" { … }`: a binding module's declarations of a JS
+    /// package's API (ADR 0002, section 4). Lowered before checking
+    /// (`crate::modules::lower_externs`): its functions have no body.
+    Extern(ExternModule),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -199,6 +203,13 @@ pub struct ExtensionDecl {
     pub body: TypeBody,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExternModule {
+    /// The npm package, as written (without quotes), and its span.
+    pub package: Ident,
+    pub items: Vec<Item>,
+}
+
 impl ItemKind {
     pub fn name(&self) -> &Ident {
         match self {
@@ -211,6 +222,7 @@ impl ItemKind {
             ItemKind::Extension(e) => &e.name,
             ItemKind::Class(c) => &c.name,
             ItemKind::Protocol(p) => &p.name,
+            ItemKind::Extern(e) => &e.package,
         }
     }
 }

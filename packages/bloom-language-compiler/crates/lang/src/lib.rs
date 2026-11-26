@@ -10,11 +10,13 @@
 
 pub mod analysis;
 pub mod ast;
+pub mod bindgen;
 mod chains;
 mod check;
 pub mod diagnostic;
 mod emit;
 mod extensions;
+mod externs;
 mod lexer;
 pub mod modules;
 pub mod package;

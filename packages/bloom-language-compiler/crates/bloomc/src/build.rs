@@ -14,7 +14,7 @@ fn read(path: &Path) -> Result<String, String> {
 }
 
 /// How a path is shown in diagnostics: relative to the working directory when under it.
-fn shown(path: &Path) -> String {
+pub(crate) fn shown(path: &Path) -> String {
     let cwd = std::env::current_dir().unwrap_or_default();
     relative(path, &cwd).to_string_lossy().into_owned()
 }
@@ -23,7 +23,7 @@ fn options(dev: bool) -> bloom_lang::Options {
     bloom_lang::Options { root: std::env::current_dir().ok(), dev, ..Default::default() }
 }
 
-fn report(diagnostics: &[bloom_lang::Diagnostic]) {
+pub(crate) fn report(diagnostics: &[bloom_lang::Diagnostic]) {
     for diagnostic in diagnostics {
         eprintln!("{}\n", diagnostic.rendered);
     }
@@ -41,10 +41,10 @@ fn summary(verb: &str, files: usize, errors: usize, warnings: usize, started: In
 }
 
 /// Type-checks every file; false when any has an error.
-pub fn check(paths: &[PathBuf], jobs: usize) -> Result<bool, String> {
+pub fn check(paths: &[PathBuf], jobs: usize, allow_ts_imports: bool) -> Result<bool, String> {
     let started = Instant::now();
     let files = bloom_files(paths)?;
-    let options = options(false);
+    let options = bloom_lang::Options { allow_ts_imports, ..options(false) };
     let results = parallel::map(&files, jobs, |path| {
         read(path).map(|source| bloom_lang::check(&source, &shown(path), &options))
     });
@@ -143,7 +143,7 @@ const CACHE_FILE: &str = ".bloomc-cache";
 const CACHE_HEADER: &str = "bloomc-cache 1";
 
 /// 128 bits of SipHash over `parts` (two keyed passes): a cache key, not a signature.
-fn hash(parts: &[&[u8]]) -> u128 {
+pub(crate) fn hash(parts: &[&[u8]]) -> u128 {
     let pass = |seed: u8| {
         let mut hasher = DefaultHasher::new();
         hasher.write_u8(seed);
@@ -196,7 +196,7 @@ fn save_cache(path: &Path, entries: &BTreeMap<PathBuf, Entry>) -> Result<(), Str
 }
 
 /// The binary's digest: a new compiler invalidates every cached file.
-fn compiler_digest(dev: bool) -> u128 {
+pub(crate) fn compiler_digest(dev: bool) -> u128 {
     let binary = std::env::current_exe().and_then(std::fs::read).unwrap_or_default();
     hash(&[&binary, &[u8::from(dev)]])
 }

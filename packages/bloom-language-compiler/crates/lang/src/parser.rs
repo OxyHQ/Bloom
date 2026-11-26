@@ -35,6 +35,8 @@ struct Parser<'s, 'i> {
     shorthand: Vec<u32>,
     /// The 0.x forms 2.0 retires, each with where it first appears and how often.
     deprecated: Vec<(Deprecated, Span, u32)>,
+    /// Inside `extern module "…" { … }`: functions have no body, constants no value.
+    in_extern: bool,
 }
 
 /// A 0.x form that 2.0 retires; it parses, with one warning per form per file, until
@@ -154,6 +156,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             sub_comments: Vec::new(),
             shorthand: Vec::new(),
             deprecated: Vec::new(),
+            in_extern: false,
         }
     }
 
@@ -659,6 +662,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Kw(Kw::Type) => ItemKind::Alias(self.alias_decl()),
             Tok::Kw(Kw::Fn | Kw::Async) => ItemKind::Fn(self.fn_decl()),
             Tok::Ident(word) if word == "func" => ItemKind::Fn(self.fn_decl()),
+            Tok::Ident(word) if word == "extern" && !self.in_extern => ItemKind::Extern(self.extern_decl()),
             Tok::Ident(word) if word == "extension" && matches!(self.nth(1), Tok::Ident(_)) => {
                 ItemKind::Extension(self.extension_decl())
             }
@@ -1215,6 +1219,16 @@ impl<'s, 'i> Parser<'s, 'i> {
         let start = self.bump();
         let name = self.ident("the constant's name");
         let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
+        if self.in_extern && !self.at(P::Eq) {
+            // `let version: String` in an extern module: the package's value of that name.
+            let value = Expr { id: self.id(), kind: ExprKind::Name(name.name.clone()), span: name.span };
+            return ConstDecl {
+                span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                name,
+                ty,
+                value,
+            };
+        }
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
         ConstDecl { name, ty, span: start.to(value.span), value }
@@ -1414,6 +1428,48 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
     }
 
+    /// `extern module "pkg" { declarations }`.
+    fn extern_decl(&mut self) -> ExternModule {
+        self.bump();
+        if matches!(self.tok(), Tok::Ident(w) if w == "module") {
+            self.bump();
+        } else {
+            self.unexpected("`module` (`extern module \"package\" { … }`)");
+        }
+        let package = match self.tok().clone() {
+            Tok::Str { parts, .. } => {
+                let span = self.bump();
+                let name = parts
+                    .iter()
+                    .map(|p| match p {
+                        RawPart::Text(t) => t.as_str(),
+                        RawPart::Interp(_) => "",
+                    })
+                    .collect::<String>();
+                Ident { name, span }
+            }
+            _ => {
+                self.unexpected("the npm package's name, as a string");
+                Ident { name: String::new(), span: self.span() }
+            }
+        };
+        let mut items = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the package's declarations") {
+            let outer = std::mem::replace(&mut self.in_extern, true);
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(item) = self.item() {
+                    items.push(item);
+                }
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.in_extern = outer;
+            self.expect_close(P::RBrace, open);
+        }
+        ExternModule { package, items }
+    }
+
     fn fn_decl(&mut self) -> FnDecl {
         let start = self.span();
         let mut is_async = self.eat_kw(Kw::Async);
@@ -1448,7 +1504,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let throws = self.throws_clause();
         let ret = if self.eat(P::Arrow) { Some(self.type_expr()) } else { None };
         constraints.extend(self.where_clause());
-        let body = self.block();
+        let body = if self.in_extern && !self.at(P::LBrace) {
+            // An extern function: the package's, called by the binding module's lowering.
+            let end = Span::new(self.prev_end(), self.prev_end());
+            Block { stmts: Vec::new(), span: end }
+        } else {
+            self.block()
+        };
         FnDecl {
             is_async,
             func,

@@ -81,7 +81,11 @@ impl Walker<'_> {
                 self.stmts(&view.body.stmts);
             }
             ItemKind::Const(c) => self.expr(&c.value),
-            ItemKind::Enum(_) | ItemKind::Alias(_) | ItemKind::Extension(_) | ItemKind::Protocol(_) => {}
+            ItemKind::Enum(_)
+            | ItemKind::Alias(_)
+            | ItemKind::Extension(_)
+            | ItemKind::Protocol(_)
+            | ItemKind::Extern(_) => {}
             ItemKind::Class(c) => {
                 for member in &c.body.members {
                     if let TypeMemberKind::Stored { value: Some(v), .. } = &member.kind {

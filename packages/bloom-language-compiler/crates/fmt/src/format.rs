@@ -372,6 +372,8 @@ impl<'a> Formatter<'a> {
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
             ItemKind::Class(c) => self.type_body("class ", &c.name, &c.generics, &c.body, item.span),
             ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
+            // A binding module's declarations stay as written (they are curated by hand).
+            ItemKind::Extern(_) => return text(self.slice(item.span).trim_end().to_string()),
         };
         concat(vec![modifiers, kind])
     }

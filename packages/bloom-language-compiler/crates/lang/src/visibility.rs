@@ -37,7 +37,7 @@ pub fn check(file: &File, source: &str) -> Vec<Diagnostic> {
             ItemKind::Const(c) => types.extend(c.ty.iter()),
             ItemKind::View(v) => types.extend(v.params.iter().flatten().map(|p| &p.ty)),
             // Lowered before checking (`crate::extensions::lower`).
-            ItemKind::Extension(_) => {}
+            ItemKind::Extension(_) | ItemKind::Extern(_) => {}
             ItemKind::Class(c) => types.extend(c.body.members.iter().filter_map(|m| match &m.kind {
                 TypeMemberKind::Stored { ty, .. } if m.visibility != Visibility::Private => ty.as_ref(),
                 _ => None,
