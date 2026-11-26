@@ -154,3 +154,78 @@ pub fn private_items(source: &str, filename: &str) -> Option<String> {
     }
     apply(source, edits)
 }
+
+/// `Icon(RiCloseLine)` with the glyph imported from `@oxy.so/bloom/icons/…` as `Icon(.close)`,
+/// Bloom's icon set by name (checked at compile time); the import goes once nothing else
+/// reads it. The inverse of `bloom_lang::bloomui::icon_component`.
+pub fn icons(source: &str, filename: &str) -> Option<String> {
+    let (file, _, diagnostics) = bloom_lang::parse(source, filename);
+    if !diagnostics.is_empty() {
+        return None;
+    }
+    let glyphs: HashSet<String> = file
+        .imports
+        .iter()
+        .filter(|i| i.source.starts_with("@oxy.so/bloom/icons/"))
+        .filter_map(|i| match &i.kind {
+            ImportKind::Named(specs) => {
+                Some(specs.iter().map(|s| s.local().name.clone()).collect::<Vec<_>>())
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    let mut edits = BTreeMap::new();
+    walk_file(&file, &mut |node| {
+        let Node::Expr(e) = node else { return };
+        let ExprKind::Call(call) = &e.kind else { return };
+        if !matches!(&call.callee.kind, ExprKind::Name(n) if n == "Icon") {
+            return;
+        }
+        let [only] = call.args.as_slice() else { return };
+        let ExprKind::Name(glyph) = &only.value.kind else { return };
+        if only.label.is_some() || !glyphs.contains(glyph) {
+            return;
+        }
+        let Some(name) = icon_name(glyph) else { return };
+        if bloom_lang::bloomui::icon_component(&name) != *glyph {
+            return;
+        }
+        let span = only.value.span;
+        edits.insert(span.start as usize, (span.end as usize, format!(".{name}")));
+    });
+    let out = apply(source, edits)?;
+    // The imports of glyphs nothing reads now.
+    let code: String = out.lines().filter(|l| !l.starts_with("import ")).collect::<Vec<_>>().join("\n");
+    let reads = |name: &str| {
+        code.match_indices(name).any(|(i, _)| {
+            let word = |c: char| c.is_alphanumeric() || c == '_';
+            !code[..i].chars().next_back().is_some_and(word)
+                && !code[i + name.len()..].chars().next().is_some_and(word)
+        })
+    };
+    let kept: Vec<&str> = out
+        .split_inclusive('\n')
+        .filter(|line| {
+            let Some(rest) = line.strip_prefix("import { ") else { return true };
+            match rest.split_once(" } from \"@oxy.so/bloom/icons/") {
+                Some((name, _)) => reads(name),
+                None => true,
+            }
+        })
+        .collect();
+    Some(kept.concat())
+}
+
+/// `RiCloseLine` → `close`, `RiHeartFill` → `heartFill`, `LikeIcon` → `like`.
+fn icon_name(component: &str) -> Option<String> {
+    let base = if let Some(own) = component.strip_suffix("Icon") {
+        own.to_string()
+    } else {
+        let remix = component.strip_prefix("Ri")?;
+        remix.strip_suffix("Line").map_or_else(|| remix.to_string(), str::to_string)
+    };
+    let mut chars = base.chars();
+    let first = chars.next()?;
+    Some(first.to_ascii_lowercase().to_string() + chars.as_str())
+}

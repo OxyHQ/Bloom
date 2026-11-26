@@ -222,11 +222,12 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
     let mut bloom = bloom;
     let mut compiled = compiled;
-    let passes: [Pass; 4] = [
+    let passes: [Pass; 5] = [
         &|text| swiftui::private_items(text, &target),
         &|text| i18n::localize(text, &target),
         &|text| tokens::typed(text, &target, options),
         &|text| swiftui::names(text, &target),
+        &|text| swiftui::icons(text, &target),
     ];
     for pass in passes {
         let Some(next) = pass(&bloom) else { continue };
