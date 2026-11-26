@@ -2,7 +2,6 @@
 //! spec tables (`bloom_language_compiler::spec`), never a copy of them.
 
 use rustc_hash::FxHashMap as HashMap;
-use std::cell::RefCell;
 
 use std::rc::Rc;
 
@@ -47,7 +46,8 @@ pub fn token_set_by_type(name: &str) -> Option<Rc<StrSet>> {
 }
 
 thread_local! {
-    static SETS: RefCell<HashMap<String, Rc<StrSet>>> = RefCell::new(HashMap::default());
+    /// Never dropped: see [`crate::ts::ThreadCache`].
+    static SETS: crate::ts::ThreadCache<HashMap<String, Rc<StrSet>>> = crate::ts::thread_cache(HashMap::default());
 }
 
 /// The token set `name` as a type, one shared value per set.

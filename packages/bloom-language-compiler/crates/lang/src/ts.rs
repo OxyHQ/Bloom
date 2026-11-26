@@ -139,9 +139,31 @@ struct Cached<T> {
     checked: u64,
 }
 
+/// A per-thread cache that is never dropped: the thread's exit leaves it to the
+/// OS instead of running its destructor.
+///
+/// The addon runs in Node worker threads (jest-worker, Metro's workers) and in
+/// processes that `process.exit()` while other threads still compile. A
+/// `thread_local!` whose value needs dropping registers a TLS destructor
+/// (`__cxa_thread_atexit_impl`), which runs during the thread's or process's
+/// teardown, after Node has begun tearing down the environment the addon was
+/// loaded into, and in an order no caller controls. These caches hold only
+/// Rust data, so dropping them buys nothing at exit, and a value with no drop
+/// glue registers no destructor at all: the compiler stays out of the exit path
+/// (a segfault and a glibc "double free" were seen at worker exit with the
+/// addon loaded; `test/worker-exit.test.cjs` loops those exits). The cost is
+/// one cache per exited thread, which long-lived workers make rare;
+/// `clear_caches` and `forget` still free one on demand.
+pub(crate) type ThreadCache<T> = std::mem::ManuallyDrop<RefCell<T>>;
+
+/// A [`ThreadCache`] holding `value`.
+pub(crate) const fn thread_cache<T>(value: T) -> ThreadCache<T> {
+    std::mem::ManuallyDrop::new(RefCell::new(value))
+}
+
 thread_local! {
-    static FILES: RefCell<HashMap<PathBuf, Cached<Rc<TsFile>>>> = RefCell::new(HashMap::default());
-    static TSCONFIG: RefCell<HashMap<PathBuf, Cached<Paths>>> = RefCell::new(HashMap::default());
+    static FILES: ThreadCache<HashMap<PathBuf, Cached<Rc<TsFile>>>> = thread_cache(HashMap::default());
+    static TSCONFIG: ThreadCache<HashMap<PathBuf, Cached<Paths>>> = thread_cache(HashMap::default());
     /// Bumped by each compile: a cached file is checked against the disk once per compile.
     static EPOCH: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
 }
@@ -170,7 +192,7 @@ pub fn clear_caches() {
 
 /// `cache[path]` while the file on disk is unchanged (checked once per compile), else `load()`.
 fn cached<T: Clone>(
-    cache: &'static std::thread::LocalKey<RefCell<HashMap<PathBuf, Cached<T>>>>,
+    cache: &'static std::thread::LocalKey<ThreadCache<HashMap<PathBuf, Cached<T>>>>,
     path: &Path,
     key: &Path,
     load: impl FnOnce() -> Option<T>,

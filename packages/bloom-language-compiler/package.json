@@ -25,7 +25,7 @@
   "scripts": {
     "build:addon": "./scripts/build-addon.sh",
     "typescript": "tsc --noEmit -p .",
-    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs && jest",
+    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs test/worker-exit.test.cjs && jest",
     "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
