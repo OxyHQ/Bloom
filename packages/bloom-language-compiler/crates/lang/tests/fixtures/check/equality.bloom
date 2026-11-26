@@ -1,0 +1,15 @@
+struct Handler {
+  run: () -> Unit
+}
+
+fn sameHandler(a: Handler, b: Handler) -> Bool {
+  a == b
+}
+
+fn sameView(a: View, b: View) -> Bool {
+  a == b
+}
+
+fn contains<T>(items: [T], item: T) -> Bool {
+  items.first == item
+}
