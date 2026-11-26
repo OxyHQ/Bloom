@@ -18,6 +18,11 @@
 - A RawText reads nothing set above it (it takes no inherited trait), and the theme only when a role inks it: a lone RawText, or one in a `view()` body, costs React Native's `Text` in a component that inks it.
 - An Avatar's and an AvatarGroup's own props (size, shape, avatar colour, motion, presence, the group's layout and counts) read nothing where a tree starts, so a `view()` that hands its props to Bloom's Avatar costs what the component that renders it does (Mention's `AccountAvatar`: two context reads fewer).
 - The modifiers that read nothing where a tree starts are the spec's `reads.nothing`, one list for the runtime and the compiler.
+- `InlineMarkdown`'s `.plainRun()`, `.linkView()` and `.suffix()` hand back runs of the text (`TextRuns`: one run, or several in order, strings beside spans and element runs), drawn as runs of the line, so a post's linkified plain run is its prose as strings and its mentions, tags and URLs as spans, with no span around the prose. A string they returned was dropped before.
+
+### Documented
+
+- Pressable runs and element runs inside a text: a span takes `.onPress()` and `.onLongPress()` as a nested React Native `Text` takes `onPress`, and `Embed((render) => <Link href asChild>{render(Text(…))}</Link>)` hands expo-router's `Link asChild` a span's host (its href, role and press, an anchor on the web, and the Link's own `hrefAttrs` such as `rel: 'nofollow'`). Parity and the per-node cost gate measure each against the JSX it stands for.
 
 ### Fixed
 

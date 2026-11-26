@@ -8,6 +8,12 @@
 - Maps `absolute` with no inset (a class or `position: 'absolute'` in a style) to `.position({})`, a view taken out of the flow where it sits, where it gave up (`absolute-without-edges`); an edge computed at render stays the position on its own.
 - Maps a border width with no colour, a style's `borderWidth` (or an edge's, `borderBottomWidth`…) beside no border colour and a `border` / `border-b-2` class beside no colour class, to `.border(undefined, width, edge?)`: the line in the platform's default colour, where it was left JSX. A sample-app pill and rule join the corpus.
 - Maps a `pointerEvents` in a style where it draws. A StyleSheet's style is compiled by react-native-web into the prop's classes, so it is `.allowsHitTesting()` on every platform (`none` `false`, `box-none` `'children'`, `box-only` `'self'`, `auto` `true`); in an inline object or a module style constant react-native-web writes `box-none` and `box-only` as CSS the browser drops, so it is `.when('native', (v) => v.allowsHitTesting('children'))` (or `'self'`), as Mention's attachment move row draws. An inline `none` or `auto` stays JSX with its own reason (the browser keeps it, and what is inside inherits it instead of taking the prop's rule). A style modifier can hold on one platform, a variant as a `native:` class's.
+- Maps a Text's (and a span's) `onPress` and `onLongPress` to `.onPress()` and `.onLongPress()`.
+- An element inside a Text that the codemod does not convert (a router's `Link`, an app's component) is an element run, `Embed(element)`, so the Text converts around it; an embedded `asChild` element around one text it converts is `Embed((render) => <Link … asChild>{render(Text(…))}</Link>)`.
+
+### Fixed
+
+- The child of an `asChild` element is no longer made a `toElement` root outside a language view: the element hands its child its own props (expo-router's `Link asChild`: the href and the press), which a root took in place of its host and dropped. It stays JSX, with the reason `as-child`.
 
 ## 0.4.0
 

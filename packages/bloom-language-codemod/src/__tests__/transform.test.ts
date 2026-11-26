@@ -287,6 +287,56 @@ export const A = () => <Text className="text-sm">a <Text className="font-bold">b
       "RawText('a ', RawText('b').weight('bold')).font('14').leading('20px')",
     );
   });
+  it('maps a text’s press, and a pressable span', () => {
+    const result = run(`import { Text } from 'react-native';
+export const A = ({ go }) => <Text onPress={go}>a <Text onLongPress={go}>b</Text></Text>;
+`);
+    expect(flat(result.code)).toContain("RawText('a ', RawText('b').onLongPress(go)).onPress(go)");
+  });
+  it('draws an element a Text holds that it does not convert as an element run', () => {
+    const result = run(`import { Text } from 'react-native';
+import { Link } from 'expo-router';
+export const A = ({ href }) => <Text>by <Link href={href} push>Bob</Link></Text>;
+`);
+    expect(flat(result.code)).toContain("RawText('by ', Embed(<Link href={href} push>Bob</Link>))");
+  });
+  it('hands an asChild element’s text to it through Embed’s render function', () => {
+    const result = run(`import { Text } from 'react-native';
+import { Link } from 'expo-router';
+export const A = ({ href }) => (
+  <Text>
+    hi{' '}
+    <Link href={href} push asChild>
+      <Text className="text-primary">@bob</Text>
+    </Link>
+  </Text>
+);
+`);
+    expect(flat(result.code)).toContain(
+      "RawText('hi', ' ', Embed((render) => <Link href={href} push asChild> {render(RawText('@bob').foreground('primary'))} </Link>))",
+    );
+  });
+  it('keeps an asChild element’s child JSX outside a language view, and in a file that names render', () => {
+    const outside = run(`import { Text } from 'react-native';
+import { Link } from 'expo-router';
+export const A = ({ href }) => <Link href={href} asChild><Text className="text-primary">a</Text></Link>;
+`);
+    expect(outside.code).not.toContain('toElement');
+    expect(outside.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['as-child']);
+    const named = run(`import { Text } from 'react-native';
+import { Link } from 'expo-router';
+export const A = ({ href, render }) => (
+  <Text>
+    <Link href={href} asChild>
+      <Text className="text-primary">{render}</Text>
+    </Link>
+  </Text>
+);
+`);
+    expect(flat(named.code)).toContain('RawText(Embed(<Link href={href} asChild>');
+    expect(named.code).not.toContain('(render) =>');
+    expect(named.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['as-child']);
+  });
   it('leaves an element with an unmapped prop as it is', () => {
     const source = `import { View } from 'react-native';
 export const A = () => <View className="p-4" style={s} />;
@@ -1291,7 +1341,11 @@ export const C = () => <DropdownMenu open={open} onOpenChange={setOpen} modal><D
     expect(flat(result.code)).toContain(
       ".label('x').menuStyle('dropdown').presented([open, setOpen])",
     );
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['DropdownMenu:props']);
+    // C's menu stays JSX, and its trigger's button with it: the trigger hands it its own props.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'DropdownMenu:props',
+      'as-child',
+    ]);
   });
   it('makes a label over a radio group a Section of choices', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';

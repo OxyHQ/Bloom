@@ -2930,6 +2930,56 @@
   "appColors": null
  },
  {
+  "name": "components/PostText.tsx:8",
+  "before": "<Text className=\"text-sm text-foreground\">\n      Hi{' '}\n      <Hole n=\"0\" />\n      , see{' '}\n      <Text className=\"text-primary\" onPress={() => {}}>\n        oxy.so\n      </Text>\n    </Text>",
+  "after": "toElement(RawText('Hi', ' ', Embed(<Hole n=\"0\" />), ', see', ' ', RawText('oxy.so').foreground('primary').onPress(() => {})).font('14').leading('20px').foreground('foreground'))",
+  "bindings": {
+   "Text": {
+    "module": "react-native",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Embed",
+   "RawText"
+  ],
+  "classes": [
+   "text-sm",
+   "text-foreground",
+   "text-primary"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/PostText.tsx:23",
+  "before": "<Text className=\"text-xs text-muted-foreground\" onPress={() => {}}>\n      Terms\n    </Text>",
+  "after": "toElement(RawText('Terms').font('xs').leading('16px').foreground('muted').onPress(() => {}))",
+  "bindings": {
+   "Text": {
+    "module": "react-native",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Embed",
+   "RawText",
+   "toElement"
+  ],
+  "classes": [
+   "text-xs",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/ReelRoute.tsx:8 (false)",
   "before": "<Screen\n      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}\n      style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}\n    >\n      <Text>Reel</Text>\n    </Screen>",
   "after": "LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)",

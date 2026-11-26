@@ -974,6 +974,27 @@ export const CASES = [
     after: () => { const View = I0; const Search = I4; const TextFieldInput = I15; const { VStack, Row, toElement, Text: LText, Search: LSearch, TextField } = L;  return (toElement(VStack(LSearch(['⟨0⟩', () => {}]).onSelectionChange(() => {}), TextField(['⟨3⟩', () => {}], 'Seats').inputMode('numeric')))); },
   },
   {
+    name: "components/PostText.tsx:8",
+    bloom22: false,
+    before: () => { const Text = I61; return (<Text className="text-sm text-foreground">
+      Hi{' '}
+      <Hole n="0" />
+      , see{' '}
+      <Text className="text-primary" onPress={() => {}}>
+        oxy.so
+      </Text>
+    </Text>); },
+    after: () => { const Text = I61; const { Embed, RawText } = L;  return (toElement(RawText('Hi', ' ', Embed(<Hole n="0" />), ', see', ' ', RawText('oxy.so').foreground('primary').onPress(() => {})).font('14').leading('20px').foreground('foreground'))); },
+  },
+  {
+    name: "components/PostText.tsx:23",
+    bloom22: false,
+    before: () => { const Text = I61; return (<Text className="text-xs text-muted-foreground" onPress={() => {}}>
+      Terms
+    </Text>); },
+    after: () => { const Text = I61; const { Embed, RawText, toElement } = L;  return (toElement(RawText('Terms').font('xs').leading('16px').foreground('muted').onPress(() => {}))); },
+  },
+  {
     name: "components/ReelRoute.tsx:8 (false)",
     bloom22: false,
     before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I16; const Text = I1; return (<Screen

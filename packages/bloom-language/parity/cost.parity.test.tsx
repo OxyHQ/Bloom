@@ -16,7 +16,14 @@
  * (`Themed`: one `useThemePaint()`), and paints its colours from it by hand,
  * so a node that paints costs what the host it paints does, no more.
  */
-import { createElement, memo, type ReactElement, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  createElement,
+  memo,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import * as RN from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider, useThemePaint } from '@oxy.so/bloom/theme';
@@ -26,14 +33,16 @@ import { Card } from '@oxy.so/bloom/card';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
 import { VirtualList } from '@oxy.so/bloom/list';
+import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import { Text } from '@oxy.so/bloom/typography';
 
-import type { Child } from '../src/node';
+import type { Child, ViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { defineTokens } from '../src/tokens';
 import { Card as LCard } from '../src/controls/containers';
 import { VirtualList as LVirtualList } from '../src/controls/list';
+import { InlineMarkdown as LInlineMarkdown } from '../src/controls/markdown';
 import { LanguageRoot, toElement } from '../src/render';
 import { view } from '../src/view';
 import type { ThemeColors } from '@oxy.so/bloom/theme';
@@ -139,6 +148,29 @@ const ACTION_BAR = {
     </RN.View>
   ),
 };
+
+/** A run of a text (React Native's), as Mention's post text holds its links. */
+const IN_TEXT = {
+  language: (...children: Child[]) =>
+    L.VStack(L.RawText('a ', ...(children as ViewNode[])), READS_BOTH),
+  jsx: (children?: ReactNode) => (
+    <RN.View>
+      <RN.Text>
+        {'a '}
+        {children}
+      </RN.Text>
+    </RN.View>
+  ),
+};
+
+/** What expo-router's `Link asChild` does: hands the element inside it an href, the link role and a press. */
+function AsChild({ children }: { children: ReactNode }): ReactElement {
+  return cloneElement(Children.only(children) as ReactElement<Record<string, unknown>>, {
+    href: '/@b',
+    role: 'link',
+    onPress,
+  });
+}
 
 /** An app colour (`defineTokens`), the same in both schemes: Mention's verified badge. */
 const APP = defineTokens({ color: { verified: '#1d9bf0' } });
@@ -346,6 +378,52 @@ const CASES: Case[] = [
         <Text>a</Text>
       </RN.View>
     ),
+  },
+  {
+    name: 'a pressable span and a nested Text with its press',
+    node: L.Text('b').foreground('primary').onPress(onPress),
+    jsx: (c) => (
+      <RN.Text style={{ color: c.primary }} onPress={onPress}>
+        b
+      </RN.Text>
+    ),
+    in: IN_TEXT,
+  },
+  {
+    name: 'an element run handing Link asChild a span and its JSX',
+    node: L.Embed((render) => <AsChild>{render(L.Text('@b').foreground('primary'))}</AsChild>),
+    jsx: (c) => (
+      <AsChild>
+        <RN.Text style={{ color: c.primary }}>@b</RN.Text>
+      </AsChild>
+    ),
+    in: IN_TEXT,
+  },
+  {
+    // Mention's post text: its markdown's plain runs linkified, strings beside spans.
+    name: 'inline markdown whose plain runs are strings and spans, and its JSX',
+    node: LInlineMarkdown('see @b').plainRun((text) =>
+      text.split(/(@b)/).map((part) => (part === '@b' ? L.Text(part).onPress(onPress) : part)),
+    ),
+    jsx: (
+      <InlineMarkdown
+        source="see @b"
+        renderText={(text) => (
+          <>
+            {text.split(/(@b)/).map((part) =>
+              part === '@b' ? (
+                <RN.Text key="b" onPress={onPress}>
+                  {part}
+                </RN.Text>
+              ) : (
+                part
+              ),
+            )}
+          </>
+        )}
+      />
+    ),
+    in: IN_TEXT,
   },
   {
     // Mention's UserName: the name, its verified badge in an app colour nudged on native, the

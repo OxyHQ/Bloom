@@ -3254,6 +3254,10 @@ function renderHost(
             : element,
         pressAround: (drawn) => pressAround(palette, p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
+        runs: (runs) => {
+          const drawn = renderRuns(Array.isArray(runs) ? runs : [runs as TextRun], ctx);
+          return drawn.length === 1 ? drawn[0] : draw(Fragment, null, ...drawn);
+        },
         embed: (content) => drawEmbedded(content, ctx),
         tree: (child) => renderTree(child, ctx),
         children: (children) => renderChildren(children, ctx),

@@ -4732,18 +4732,18 @@ The trigger's text (Bloom's `Schedule a meeting` by default).
 
 ### `plainRun`
 
-A view of your own for each plain run (mentions, tags); not inside links or code.
+Runs of your own for each plain run (mentions, tags), not inside links or code: one run or several, strings beside spans, as a `Text` takes them.
 
 - Parameters: a value
-- Signature: `.plainRun(value: (text: string) => Child)`
+- Signature: `.plainRun(value: (text: string) => TextRuns)`
 - Taken by: [inlineMarkdown](bloom-language-nodes.mdx#inlinemarkdown)
 
 ### `linkView`
 
-A link of your own; `undefined` keeps Bloom's.
+A link of your own, as runs of the text; `undefined` keeps Bloom's.
 
 - Parameters: a value
-- Signature: `.linkView(value: (link: InlineMarkdownLink) => Child | undefined)`
+- Signature: `.linkView(value: (link: InlineMarkdownLink) => TextRuns)`
 - Taken by: [inlineMarkdown](bloom-language-nodes.mdx#inlinemarkdown)
 
 ### `cell`

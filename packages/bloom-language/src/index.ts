@@ -244,6 +244,7 @@ export type {
   TextCase,
   SwipeDirection,
   TextRun,
+  TextRuns,
   TextStyleName,
   TextView,
   TitleDisplay,

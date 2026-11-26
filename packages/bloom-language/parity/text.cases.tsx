@@ -1,4 +1,10 @@
-import type { ComponentType } from 'react';
+import {
+  Children,
+  cloneElement,
+  type ComponentType,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import * as RN from 'react-native';
 import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { tokens } from '@oxy.so/bloom/styles';
@@ -33,6 +39,8 @@ import {
   TRACKING,
   TRACKING_PX,
 } from '../src/generated/spec.generated';
+import { InlineMarkdown as LInlineMarkdown } from '../src/controls/markdown';
+import type { TextRuns } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
@@ -349,6 +357,206 @@ const behaviour: ParityCase[] = [
           >
             Boxed
           </Text>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+/** A press a run hands its handler (opening a URL, a "Read more"). */
+const openRun = (): void => {};
+/** What expo-router's router does with a link's press. */
+const followLink = (): void => {};
+
+/**
+ * What expo-router's `Link asChild` hands the one element inside it: its
+ * resolved `href`, the link role and its press, with the Link's own props
+ * (an `hrefAttrs` with `rel`, Mention's unverified profiles) merged over them.
+ * expo-router itself is absent from this suite.
+ */
+function AsChildLink({
+  href,
+  children,
+  ...rest
+}: {
+  href: string;
+  children: ReactNode;
+  [prop: string]: unknown;
+}): ReactElement {
+  return cloneElement(Children.only(children) as ReactElement<Record<string, unknown>>, {
+    href,
+    role: 'link',
+    onPress: followLink,
+    ...rest,
+  });
+}
+const NOFOLLOW = { hrefAttrs: { rel: 'nofollow' } };
+
+/** Mention's linkified runs of a post's plain text: a mention, a hashtag and a URL, each a span. */
+function linkified(text: string): TextRuns {
+  return text
+    .split(/(@bob|#oxy|oxy\.so)/)
+    .filter(Boolean)
+    .map((part) =>
+      part === '@bob'
+        ? L.Embed((render) => (
+            <AsChildLink href="/@bob" {...NOFOLLOW}>
+              {render(L.Text(part).foreground('primary'))}
+            </AsChildLink>
+          ))
+        : part === '#oxy'
+          ? L.Embed((render) => (
+              <AsChildLink href="/hashtag/oxy">
+                {render(L.Text(part).foreground('primary'))}
+              </AsChildLink>
+            ))
+          : part === 'oxy.so'
+            ? L.Text(part).foreground('primary').onPress(openRun)
+            : part,
+    );
+}
+
+/** The same runs as Mention's JSX writes them: strings, `Link asChild` around a span, a pressable span. */
+function LinkifiedJsx({ text, primary }: { text: string; primary: string }): ReactNode {
+  return (
+    <>
+      {text
+        .split(/(@bob|#oxy|oxy\.so)/)
+        .filter(Boolean)
+        .map((part) =>
+          part === '@bob' ? (
+            <AsChildLink key="m" href="/@bob" {...NOFOLLOW}>
+              <RN.Text style={{ color: primary }}>{part}</RN.Text>
+            </AsChildLink>
+          ) : part === '#oxy' ? (
+            <AsChildLink key="h" href="/hashtag/oxy">
+              <RN.Text style={{ color: primary }}>{part}</RN.Text>
+            </AsChildLink>
+          ) : part === 'oxy.so' ? (
+            <RN.Text key="u" style={{ color: primary }} onPress={openRun}>
+              {part}
+            </RN.Text>
+          ) : (
+            part
+          ),
+        )}
+    </>
+  );
+}
+
+const POST = 'Hi @bob, **see** #oxy at oxy.so today';
+
+/**
+ * Pressable runs inside a text, as Mention's post text draws them: a span with
+ * a press, an element run (`Embed`) whose render function hands expo-router's
+ * `Link asChild` a span, and inline markdown whose plain runs are such runs,
+ * strings beside spans.
+ */
+const pressableRuns: ParityCase[] = [
+  {
+    name: 'a pressable span',
+    language: () =>
+      toElement(L.RawText('Read ', L.Text('oxy.so').foreground('primary').onPress(openRun), '.')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.Text>
+            {'Read '}
+            <RN.Text style={{ color: c.primary }} onPress={openRun}>
+              oxy.so
+            </RN.Text>
+            .
+          </RN.Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a pressable span of Bloom’s Text',
+    language: () =>
+      toElement(L.Text('Read the ', L.Text('terms').weight('semibold').onPress(openRun))),
+    bloom: () => (
+      <Text>
+        {'Read the '}
+        <RN.Text style={{ fontWeight: '600' }} onPress={openRun}>
+          terms
+        </RN.Text>
+      </Text>
+    ),
+  },
+  {
+    name: 'a pressable text (a footer link)',
+    language: () => toElement(L.RawText('Terms').font('12.5').foreground('muted').onPress(openRun)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.Text
+            style={{ color: c.textSecondary, fontSize: FONT_SIZE['12.5'] }}
+            onPress={openRun}
+          >
+            Terms
+          </RN.Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an element run handing Link asChild a span, with its rel',
+    language: () =>
+      toElement(
+        L.RawText(
+          'by ',
+          L.Embed((render) => (
+            <AsChildLink href="/@bob" {...NOFOLLOW}>
+              {render(L.Text('@bob').foreground('primary'))}
+            </AsChildLink>
+          )),
+          '!',
+        ),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.Text>
+            {'by '}
+            <AsChildLink href="/@bob" {...NOFOLLOW}>
+              <RN.Text style={{ color: c.primary }}>@bob</RN.Text>
+            </AsChildLink>
+            !
+          </RN.Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a post text: a mention, a hashtag and a URL among markdown, and a Read more',
+    language: () =>
+      toElement(
+        L.RawText(
+          LInlineMarkdown(POST)
+            .onLinkPress(openRun)
+            .plainRun(linkified)
+            .suffix([L.Text(' Read more').foreground('primary').onPress(openRun), ' · 1/2']),
+        ).foreground('foreground'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.Text style={{ color: c.text }}>
+            <InlineMarkdown
+              source={POST}
+              onLinkPress={openRun}
+              renderText={(text) => <LinkifiedJsx text={text} primary={c.primary} />}
+              suffix={
+                <>
+                  <RN.Text style={{ color: c.primary }} onPress={openRun}>
+                    {' Read more'}
+                  </RN.Text>
+                  {' · 1/2'}
+                </>
+              }
+            />
+          </RN.Text>
         )}
       </Themed>
     ),
@@ -777,4 +985,5 @@ export const TEXT_CASES: ParityCase[] = [
   ...textStyles,
   ...behaviour,
   ...inline,
+  ...pressableRuns,
 ];
