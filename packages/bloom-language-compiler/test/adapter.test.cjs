@@ -137,15 +137,38 @@ test('a .bloom error is a thrown, rendered diagnostic at its position', () => {
   assert.throws(
     () =>
       transformer.process(
-        COUNTER.replace('Button(', 'Button(Text("a")).padding("medium")\n    Button('),
+        COUNTER.replace('@state count = 0', '@state count = '),
         '/app/Bad.bloom',
         {},
       ),
     (error) => {
-      assert.match(error.message, /^error\[B\d{4}\]/m);
+      assert.match(error.message, /^error\[B01\d\d\]/m);
+      assert.match(error.message, /--> \/app\/Bad\.bloom:4:3\n/);
       assert.equal(error.filename, '/app/Bad.bloom');
-      assert.equal(typeof error.lineNumber, 'number');
+      assert.equal(error.lineNumber, 4);
+      assert.equal(error.column, 2);
       return true;
     },
   );
+});
+
+test('the Metro worker hands a .bloom module on as TypeScript and maps it back to the .bloom', async () => {
+  const { transform } = require('../js/metro-transformer');
+  const config = {
+    bloomLanguage: { upstreamTransformerPath: require.resolve('./support/echo-worker.cjs') },
+  };
+  const result = await transform(config, '/app', '/app/Counter.bloom', Buffer.from(COUNTER), {});
+  assert.equal(result.filename, '/app/Counter.bloom.ts');
+  const [output] = result.output;
+  assert.match(output.data.code, /useState/);
+  // Every mapped segment now points into the .bloom file (7 lines).
+  const lines = output.data.map
+    .filter((segment) => segment.length >= 4)
+    .map((segment) => segment[2]);
+  assert.ok(lines.length > 0);
+  assert.ok(
+    lines.every((line) => line >= 1 && line <= 7),
+    `lines ${lines}`,
+  );
+  assert.equal(output.data.functionMap, null);
 });
