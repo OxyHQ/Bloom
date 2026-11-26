@@ -2382,6 +2382,12 @@ impl<'a> Emitter<'a> {
         if let Some(name) = self.hoisted_names.get(&c.span).cloned() {
             return Frag::of(name);
         }
+        // A builder passed as a value (`() -> View`): its children, which a stack flattens.
+        if info.builder {
+            let child = self.ts_type(&Ty::View(None));
+            let children = self.children(&c.body);
+            return Frag::join(children, ", ").wrap(&format!("(): {child} => ["), "]");
+        }
         let params: Vec<String> = c
             .params
             .iter()

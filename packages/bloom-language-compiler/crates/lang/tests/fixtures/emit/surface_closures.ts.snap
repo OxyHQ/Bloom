@@ -1,6 +1,7 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
 import { Button, Text, VStack, defineEnvironment, environmentValues, useEnvironment, view } from "@oxy.so/bloom-language";
+import type { Child } from "@oxy.so/bloom-language";
 
 function row(action: () => void, label: () => string): string {
 return label();
@@ -52,4 +53,29 @@ $t1 = $[1];
 }
 return $t1;
 });
+
+export interface SectionProps {
+  readonly title: string;
+  readonly rows: () => Child;
+}
+export const Section = view(function Section(props: SectionProps) {
+"use no memo";
+const $ = $c(7);
+const { title, rows } = props;
+let $t2;
+if ($[4] !== title || $[5] !== rows) {
+$t2 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), ($[2] !== rows ? ($[2] = rows, $[3] = rows()) : $[3]));
+$[4] = title;
+$[5] = rows;
+$[6] = $t2;
+} else {
+$t2 = $[6];
+}
+return $t2;
+});
+
+const $view2 = Text("First");
+function names(xs: readonly string[]): Child {
+return Section({ title: "Names", rows: (): Child => [$view2, xs.map((x) => Text(x))] });
+}
 
