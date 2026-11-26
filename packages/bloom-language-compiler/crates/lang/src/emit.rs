@@ -1409,6 +1409,7 @@ impl<'a> Emitter<'a> {
                 let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
                 Frag::join(items, ", ").wrap("[", "] as const")
             }
+            ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
             ExprKind::List(items) => {
                 let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
                 let list = Frag::join(items, ", ").wrap("[", "]");
@@ -2827,6 +2828,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Await(_) => true,
         ExprKind::Closure(_) => false,
         ExprKind::Paren(e)
+        | ExprKind::Spread(e)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Field(e, _)
@@ -2970,6 +2972,7 @@ impl<'a> Emitter<'a> {
                 }
             }),
             ExprKind::Paren(e)
+            | ExprKind::Spread(e)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
@@ -3125,7 +3128,7 @@ impl<'a> Emitter<'a> {
                 StrPart::Interp(e) => go(e),
             }),
             ExprKind::Name(_) => self.module_name(expr.id),
-            ExprKind::Paren(e) | ExprKind::Unary(_, e) => go(e),
+            ExprKind::Paren(e) | ExprKind::Spread(e) | ExprKind::Unary(_, e) => go(e),
             ExprKind::Field(object, _) => {
                 matches!(self.ck.fields.get(&expr.id), Some(FieldRes::EnumCase(..))) || go(object)
             }

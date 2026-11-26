@@ -2787,12 +2787,27 @@ impl<'o> Checker<'o> {
                     _ => self.fresh(),
                 };
                 for item in items {
+                    if let ExprKind::Spread(inner) = &item.kind {
+                        let list = Ty::List(Box::new(elem.clone()));
+                        let ty = self.expr(inner, Some(&list));
+                        self.out.types.insert(item.id, ty);
+                        continue;
+                    }
                     let ty = self.expr(item, Some(&elem));
                     let _ = ty;
                 }
                 Ty::List(Box::new(elem))
             }
             ExprKind::Record(entries) => self.record_literal(expr, entries, expected),
+            ExprKind::Spread(inner) => {
+                self.report(
+                    Diagnostic::error("B0207", expr.span, "`..` spreads a list into a list literal")
+                        .label("not in `[…]`")
+                        .help("write `[..a, b]`, or `S(..s)` for a struct")
+                        .spec("6-expressions-and-control-flow"),
+                );
+                self.expr(inner, None)
+            }
             ExprKind::Map(entries) => {
                 let value = match &expected_resolved {
                     Some(Ty::Map(value)) => (**value).clone(),
@@ -4061,6 +4076,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             }
         }
         ExprKind::Paren(e)
+        | ExprKind::Spread(e)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)

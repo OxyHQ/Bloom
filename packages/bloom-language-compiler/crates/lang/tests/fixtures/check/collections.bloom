@@ -19,3 +19,7 @@ fn same(a: Set<Int>, b: Set<Int>) -> Bool {
 fn noPush(s: Set<Int>) -> Set<Int> {
   s.add(1)
 }
+
+fn spreadWrong(a: [String]) -> [Int] {
+  [1, ..a]
+}

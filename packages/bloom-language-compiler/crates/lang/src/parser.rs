@@ -1853,6 +1853,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let mut items = Vec::new();
                 let mut entries = Vec::new();
                 while !self.at(P::RBracket) && !matches!(self.tok(), Tok::Eof) {
+                    let dots = self.span();
+                    if self.eat(P::DotDot) {
+                        let inner = self.expr(Ctx::Normal);
+                        let span = dots.to(inner.span);
+                        items.push(self.expr_node(ExprKind::Spread(Box::new(inner)), span));
+                        if !self.eat(P::Comma) {
+                            break;
+                        }
+                        continue;
+                    }
                     let key = self.expr(Ctx::Normal);
                     if self.eat(P::Colon) {
                         let value = self.expr(Ctx::Normal);
