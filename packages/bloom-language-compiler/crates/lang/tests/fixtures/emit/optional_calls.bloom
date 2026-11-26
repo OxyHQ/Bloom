@@ -49,3 +49,6 @@ fn classes(names: [String]) -> String {
 fn more(names: [String]) -> String {
   joinClasses("row", "dense", ..names)
 }
+
+// A trailing closure after `?.m`: `a?.m { … }` is `a?.m({ … })`.
+pub fn pages(data: { pages: [[String]] }?) -> [String] { data?.pages.flatMap { page in page } ?? [] }

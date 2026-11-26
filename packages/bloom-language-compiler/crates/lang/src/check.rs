@@ -494,11 +494,8 @@ impl<'o> Checker<'o> {
         .label(format!("this is {}", self.show(&actual)))
         .spec("43-soundness-rules");
         let help = match (&actual, &expected) {
-            (Ty::Int, Ty::Float) => {
-                Some("convert it: `.toFloat()` (Bloom never converts numbers implicitly)".to_string())
-            }
             (Ty::Float, Ty::Int) => {
-                Some("convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()`".to_string())
+                Some("convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)".to_string())
             }
             (Ty::Option(inner), other) if self.compatible(inner, other) => Some(
                 "it may be `none`: unwrap it with `?? fallback`, `if let value = …`, `?.` or `match`"
@@ -671,6 +668,18 @@ impl<'o> Checker<'o> {
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
             (Ty::Strings(_), Ty::Str) => true,
+            // An `Int` widens to `Float` (both are JS numbers; spec 4.2). Never the other way.
+            (Ty::Int, Ty::Float) => true,
+            (Ty::Map(x), Ty::Map(y)) => self.coerce(x, y),
+            // A record, or a TS object type, is a dictionary of its fields when each fits.
+            (Ty::Adt(def, args), Ty::Map(value))
+                if matches!(self.out.defs[*def].origin, Origin::Record | Origin::Ts { .. })
+                    && matches!(self.out.defs[*def].kind, DefKind::Struct(_)) =>
+            {
+                let (args, value) = (args.clone(), (**value).clone());
+                let fields = self.out.defs[*def].fields().to_vec();
+                fields.iter().all(|f| self.coerce(&substitute(&f.ty, &args), &value))
+            }
             (Ty::Adt(d1, x), Ty::Adt(d2, y))
                 if d1 != d2
                     && (self.out.defs[*d1].origin == Origin::Record
@@ -2587,6 +2596,7 @@ impl<'o> Checker<'o> {
             (Ty::Option(_), _) if self.coerce(&rb, &ra) => ra,
             (_, Ty::Option(_)) if self.coerce(&ra, &rb) => rb,
             (Ty::Strings(_), Ty::Str) | (Ty::Str, Ty::Strings(_)) => Ty::Str,
+            (Ty::Int, Ty::Float) | (Ty::Float, Ty::Int) => Ty::Float,
             (Ty::Strings(x), Ty::Strings(y)) if x.token && x.name == y.name => ra,
             (Ty::Strings(x), Ty::Strings(y)) if !x.token && !y.token => {
                 let mut values = x.values.clone();
@@ -2951,8 +2961,11 @@ impl<'o> Checker<'o> {
                 self.expr(cond, Some(&Ty::Bool));
                 let a = self.expr(then, expected);
                 // `c ? f : none` is `F?`: `none` is not held to the other branch's type.
+                // An `Int` branch does not hold a `Float` one to `Int` (`c ? 0 : 0.5` is `Float`).
+                let int = Ty::Int == self.resolve(&a);
                 let hint = match otherwise.kind {
                     ExprKind::None => expected,
+                    _ if int => expected,
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
                 let b = self.expr(otherwise, hint);
@@ -3519,7 +3532,9 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => {
                 let left = self.expr(lhs, expected.filter(|e| matches!(e, Ty::Int | Ty::Float)));
-                let left = self.resolve(&left);
+                // The operand's own type: an `Int` stays one where a `Float` is expected, so
+                // `i / j` truncates even then.
+                let left = self.actual(lhs, &left);
                 match &left {
                     Ty::Str | Ty::Strings(_) if op == BinaryOp::Add => {
                         let right = self.expr(rhs, None);
@@ -3537,10 +3552,25 @@ impl<'o> Checker<'o> {
                         }
                         Ty::Str
                     }
-                    Ty::Int | Ty::Float => {
-                        let right = self.expr(rhs, Some(&left));
-                        let _ = right;
+                    Ty::Float => {
+                        self.expr(rhs, Some(&left));
                         left
+                    }
+                    // `Int` with a `Float` is a `Float` (the `Int` widens).
+                    Ty::Int => {
+                        let right = self.expr(rhs, expected.filter(|e| matches!(e, Ty::Int | Ty::Float)));
+                        match self.actual(rhs, &right) {
+                            Ty::Float => Ty::Float,
+                            Ty::Int | Ty::Unknown | Ty::Never => Ty::Int,
+                            Ty::Var(_) => {
+                                self.unify(&right, &Ty::Int);
+                                Ty::Int
+                            }
+                            other => {
+                                self.mismatch(rhs.span, &other, &Ty::Int);
+                                Ty::Int
+                            }
+                        }
                     }
                     Ty::Var(_) => {
                         let right = self.expr(rhs, None);
@@ -3559,6 +3589,12 @@ impl<'o> Checker<'o> {
                 }
             }
         }
+    }
+
+    /// The type `expr` has itself, before it met what was expected of it (`returned`).
+    fn actual(&mut self, expr: &Expr, returned: &Ty) -> Ty {
+        let own = self.out.types.get(&expr.id).cloned().unwrap_or_else(|| returned.clone());
+        self.resolve(&own)
     }
 
     fn await_expr(&mut self, expr: &Expr, inner: &Expr) -> Ty {

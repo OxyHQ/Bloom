@@ -1,0 +1,26 @@
+// An `Int` widens to `Float` wherever a `Float` is expected (spec 4.2); a literal is a `Float` there.
+
+let SIZE = 32
+let RING = 2
+
+fn scaled(size: Float) -> Float { size * 1.5 }
+
+pub fn ring() -> Float { scaled(size: SIZE - RING * 2) }
+
+pub fn each(xs: [String], on: (Float, String) -> Unit) {
+  for (i, x) in xs.enumerated() { on(i, x) }
+}
+
+pub fn atLeast(start: Float) -> Float { max(0, start - 5) }
+
+pub fn pick(on: Bool, x: Float) -> Float { on ? 0 : x }
+
+pub fn mixed(i: Int, x: Float) -> Float { i * x + x / i }
+
+pub fn half(i: Int, j: Int) -> Float { i / j }
+
+pub fn widths(xs: [Int]) -> [Float] { xs }
+
+pub fn maybe(i: Int?) -> Float? { i }
+
+pub fn stops() -> [Float] { [0, SIZE] }

@@ -3,7 +3,7 @@ struct Post {
   likes: Int = 0
 }
 
-fn ratio(a: Int, b: Float) -> Float {
+fn ratio(a: Int, b: Float) -> Int {
   a * b
 }
 

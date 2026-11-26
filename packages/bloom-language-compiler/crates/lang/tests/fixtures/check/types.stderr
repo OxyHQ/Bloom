@@ -7,13 +7,22 @@ error[B0203]: an optional is never optional again
 help: write one `?`: an optional's absence is `none` alone
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#41-the-types
 
-error[B0201]: expected `Float`, found `Int`
+error[B0201]: expected `Int`, found `Float`
+ --> check/types.bloom:7:7
+  |
+7 |   a * b
+  |       ^ this is `Float`
+  |
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `Int`, found `Float`
  --> check/types.bloom:7:3
   |
 7 |   a * b
-  |   ^ this is `Int`
+  |   ^^^^^ this is `Float`
   |
-help: convert it: `.toFloat()` (Bloom never converts numbers implicitly)
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
 
 error[B0201]: `Post?` may be `none`

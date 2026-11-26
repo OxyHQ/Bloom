@@ -548,7 +548,14 @@ impl<'a> Emitter<'a> {
                 format!("Binding<{}>", self.ts_type(t))
             }
             Ty::Strings(set) => set.values.iter().map(|v| string_literal(v)).collect::<Vec<_>>().join(" | "),
-            Ty::Foreign(path) if !path.is_empty() && !path.contains("Navigation") => path.to_string(),
+            Ty::Foreign(path) if !path.is_empty() && !path.contains("Navigation") => {
+                for name in ["ComponentRef", "ComponentProps"] {
+                    if path.contains(&format!("{name}<")) {
+                        self.type_imports.entry("react".into()).or_default().insert(name.into());
+                    }
+                }
+                path.to_string()
+            }
             Ty::Param(_, name) => name.to_string(),
             Ty::Foreign(_) | Ty::Var(_) | Ty::Unknown => "unknown".into(),
         }
