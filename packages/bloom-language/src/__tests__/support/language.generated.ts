@@ -84,6 +84,7 @@ export * from '../../entries/project-board';
 export * from '../../entries/property-insights';
 export * from '../../entries/rating';
 export * from '../../entries/route-stops';
+export * from '../../entries/scroll-pane';
 export * from '../../entries/settings';
 export * from '../../entries/slider';
 export * from '../../entries/social-button';

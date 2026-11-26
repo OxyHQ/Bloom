@@ -2500,6 +2500,35 @@ The rest of Bloom's `layout` family, each Bloom's own component:
 | `AutoHideBar(bar, ...body)` | `AutoHideBar`: the bar over the body, a strip while `collapsed` that peeks the bar under the pointer | `.collapsed()`, `.onReveal(fn)`, `.summary(view \| text)`, `.peek(false)`, `.barHeight(space)`, `.collapsedHeight(space)`, `.band(color)` (its `background`), `.peekDelay(duration)`, `.unpeekDelay(duration)`, `.hideMotion(motion)` and `.showMotion(motion)` (its `motion`), `.label` (the strip's button), `.testID` |
 | `ResizeHandle(onResize)` | `ResizeHandle`: the separator a drag (or, on the web, an arrow key) resizes; `onResize` is told the distance from where the drag started | `.axis` (its `orientation`), `.style('grip' \| 'pill')`, `.thickness(space)`, `.onResizeStart`, `.onResizeEnd`, `.onNudge`, `.label`, `.testID` |
 
+A plain scroll, React Native's own `ScrollView` inside a dialog, a panel or a
+pane, is `ScrollPane(...children)` (`@oxy.so/bloom-language/scroll-pane`). Its
+box modifiers are the scroll view's `style`, with no view around it, so a
+frame bounds it as the `ScrollView` an app writes is bounded:
+
+```ts
+import { ScrollPane } from '@oxy.so/bloom-language/scroll-pane';
+
+ScrollPane(question, ...options)
+  .frame({ maxHeight: BODY_MAX_HEIGHT })
+  .spacing('md')
+  .contentMargins('bottom', 'xs')
+  .keyboardTaps('handled')
+
+ScrollPane(messages)
+  .ref(scroller)                       // the ScrollView: scrollToEnd()
+  .contentGrows()
+  .justify('end')                      // a short history sits at the bottom
+  .scrollDismissesKeyboard('interactively')
+  .scrollEvents({ onScroll, scrollEventThrottle: 64, ...follow.scrollProps })
+```
+
+Its content takes `.contentMargins`, `.spacing`, `.contentGrows`, `.align` and
+`.justify` (the content container's); the scroll `.axis('horizontal')`,
+`.scrollIndicators(value, axis?)`, `.bounces(on?)`, `.scrollDismissesKeyboard`
+and `.keyboardTaps`; `.scrollEvents({...})` hands React Native's scroll events
+(`onScroll`, `scrollEventThrottle`, a drag's and a fling's start and end,
+`onContentSizeChange`) to it as its props.
+
 A `ScrollArea`'s and a `ScrollSurface`'s box modifiers are a view around the
 scroll, as a `ScrollView`'s are; their margins and gap are the same code as
 its. A bar, a handle, a toolbar and a sticky section take only their own

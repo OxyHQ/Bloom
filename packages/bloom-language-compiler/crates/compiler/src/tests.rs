@@ -25,6 +25,23 @@ fn a_static_chain_inside_a_function_is_hoisted_to_module_scope() {
 }
 
 #[test]
+fn a_plain_scroll_is_checked() {
+    let head = "import { Text } from '@oxy.so/bloom-language';\nimport { ScrollPane } from '@oxy.so/bloom-language/scroll-pane';\n";
+    let ok = compile(
+        &format!(
+            "{head}export const x = () => ScrollPane(Text('a')).frame({{ maxHeight: bodyMax }}).spacing('md').contentMargins('bottom', 'xs').contentGrows().justify('end').bounces(false).scrollIndicators('hidden').keyboardTaps('handled').scrollDismissesKeyboard('interactively');\n"
+        ),
+        "pane.tsx",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compile(
+        &format!("{head}export const x = () => ScrollPane(Text('a')).justify('bottom');\n"),
+        "pane.tsx",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown justify token 'bottom' for .justify()");
+}
+
+#[test]
 fn a_node_imported_from_its_family_entry_is_a_language_view() {
     let source = "import { HStack, Text } from '@oxy.so/bloom-language';\nimport { Rating } from '@oxy.so/bloom-language/rating';\nexport function Stars() {\n  return HStack(Text('x'), Rating(4)).padding('md');\n}\n";
     let output = compile(source, "row.tsx");

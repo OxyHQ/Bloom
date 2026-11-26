@@ -1452,6 +1452,22 @@ type spinnerIconChecks = [
   Expect<"spinnerIcon.tint(tint: color)", Ok<At<View<'SpinnerIcon'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
+type scrollPaneChecks = [
+  Expect<'scrollPane: the universal modifiers', Universal<View<'ScrollPane'>, "ref">>,
+  Expect<"scrollPane.axis(axis)", Ok<At<View<'ScrollPane'>['axis'], '0'>, S['axis']>>,
+  Expect<"scrollPane.contentMargins(edge)", Ok<Lead<View<'ScrollPane'>['contentMargins']>, S['edge']>>,
+  Expect<"scrollPane.contentMargins(space)", Ok<Last<View<'ScrollPane'>['contentMargins']>, S['space']>>,
+  Expect<"scrollPane.contentMargins(space) takes AppToken<'space'>", Takes<Last<View<'ScrollPane'>['contentMargins']>, AppToken<'space'>>>,
+  Expect<"scrollPane.spacing(space)", Ok<At<View<'ScrollPane'>['spacing'], '0'>, S['space']>>,
+  Expect<"scrollPane.spacing(space) takes AppToken<'space'>", Takes<At<View<'ScrollPane'>['spacing'], '0'>, AppToken<'space'>>>,
+  Expect<"scrollPane.align(alignment)", Ok<At<View<'ScrollPane'>['align'], '0'>, S['alignment']>>,
+  Expect<"scrollPane.justify(justify)", Ok<At<View<'ScrollPane'>['justify'], '0'>, S['justify']>>,
+  Expect<"scrollPane.scrollIndicators(scrollIndicators)", Ok<At<View<'ScrollPane'>['scrollIndicators'], '0'>, S['scrollIndicators']>>,
+  Expect<"scrollPane.scrollIndicators(axis)", Ok<At<View<'ScrollPane'>['scrollIndicators'], '1'>, S['axis']>>,
+  Expect<"scrollPane.scrollDismissesKeyboard(keyboardDismiss)", Ok<At<View<'ScrollPane'>['scrollDismissesKeyboard'], '0'>, S['keyboardDismiss']>>,
+  Expect<"scrollPane.keyboardTaps(keyboardTaps)", Ok<At<View<'ScrollPane'>['keyboardTaps'], '0'>, S['keyboardTaps']>>,
+];
+
 type contextMenuChecks = [
   Expect<'contextMenu: the universal modifiers', Universal<View<'ContextMenu'>, "disabled">>,
 ];
