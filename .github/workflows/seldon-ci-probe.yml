@@ -1,0 +1,72 @@
+name: seldon-ci isolation probe
+# Throwaway: reports yes/no facts about a seldon-ci runner. Prints no secret and no file contents.
+on:
+  push:
+    branches: [ci/seldon-ci-probe]
+permissions: {}
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        n: [1, 2]
+    runs-on: [seldon-ci]
+    timeout-minutes: 10
+    steps:
+      - name: Probe
+        shell: bash
+        run: |
+          yn() { if "$@" 2>/dev/null; then echo yes; else echo no; fi; }
+          echo "== identity"
+          echo "user=$(id -un) uid=$(id -u) groups=$(id -Gn)"
+          echo "user_is_gha=$( [ "$(id -un)" = gha ] && echo yes || echo no )"
+          echo "same_uid_as_gha=$( [ "$(id -u)" = "$(id -u gha 2>/dev/null || echo none)" ] && echo yes || echo no )"
+          echo "gha_user_exists_in_view=$(yn id gha)"
+          echo "HOME=$HOME"
+          echo "sudo_nopasswd=$(yn sudo -n true)"
+          echo "docker_sock_writable=$(yn test -w /var/run/docker.sock)"
+          echo "== release secrets (test -r / -w / -x only)"
+          for p in /home/gha /home/gha/.oxy /home/gha/.gradle /home/gha/.m2 /srv/oxy-releases \
+                   /opt/actions-runner /opt/actions-runner-2 /opt/actions-runner-3 \
+                   /opt/actions-runner/.env /opt/actions-runner-2/.env /opt/actions-runner-3/.env \
+                   /opt/actions-runner/.credentials /opt/actions-runner/.credentials_rsaparams \
+                   /opt/actions-runner-2/.credentials_rsaparams /opt/actions-runner-3/.credentials_rsaparams \
+                   /opt/actions-runner/_work /opt/actions-runner-2/_work /opt/actions-runner-3/_work; do
+            echo "$p exists=$(yn test -e "$p") r=$(yn test -r "$p") w=$(yn test -w "$p") x=$(yn test -x "$p")"
+          done
+          n=0; r=0
+          if [ -d /home/gha/.oxy ] && [ -r /home/gha/.oxy ]; then
+            for f in /home/gha/.oxy/* /home/gha/.oxy/.*; do [ -f "$f" ] || continue; n=$((n+1)); [ -r "$f" ] && r=$((r+1)); done
+          fi
+          echo "/home/gha/.oxy files_seen=$n files_readable=$r"
+          for v in GOOGLE_PLAY_SERVICE_ACCOUNT_FILE OXY_RELEASE_ARCHIVE ORG_GRADLE_PROJECT_OXY_UPLOAD_STORE_FILE ORG_GRADLE_PROJECT_OXY_UPLOAD_STORE_PASSWORD ORG_GRADLE_PROJECT_OXY_UPLOAD_KEY_PASSWORD; do
+            if [ -n "${!v:-}" ]; then echo "env $v set=yes readable=$(yn test -r "${!v}")"; else echo "env $v set=no"; fi
+          done
+          echo "env_names_matching_secret_patterns=$(env | cut -d= -f1 | grep -c -i -E 'OXY_UPLOAD|GOOGLE_PLAY|KEYSTORE|NPM_TOKEN' || true)"
+          echo "== other processes"
+          seen=0; readable=0
+          for d in /proc/[0-9]*; do
+            u=$(stat -c %U "$d" 2>/dev/null) || continue
+            [ "$u" = "$(id -un)" ] && continue
+            seen=$((seen+1)); [ -r "$d/environ" ] && readable=$((readable+1))
+          done
+          echo "foreign_processes_visible=$seen foreign_environ_readable=$readable"
+          echo "gha_processes_visible=$(ps -u gha -o pid= 2>/dev/null | wc -l)"
+          echo "== container / ephemeral"
+          echo "pid1=$(cat /proc/1/comm 2>/dev/null)"
+          echo "dockerenv=$(yn test -e /.dockerenv) containerenv=$(yn test -e /run/.containerenv)"
+          echo "systemd_detect_virt=$(systemd-detect-virt 2>/dev/null || echo n/a) container=$(systemd-detect-virt -c 2>/dev/null || echo n/a)"
+          echo "cgroup=$(head -c 200 /proc/self/cgroup | tr '\n' ' ')"
+          echo "hostname=$(hostname)"
+          echo "runner_name=$RUNNER_NAME runner_tool_cache=$RUNNER_TOOL_CACHE runner_temp=$RUNNER_TEMP"
+          echo "workspace=$GITHUB_WORKSPACE"
+          echo "runner_root=$(dirname "$(dirname "$RUNNER_TEMP")")"
+          echo "work_dir_entries=$(ls -1A "$(dirname "$RUNNER_TEMP")" 2>/dev/null | wc -l)"
+          echo "== resources"
+          echo "nproc=$(nproc)"
+          free -g | sed -n 1,2p
+          df -h "$GITHUB_WORKSPACE" /tmp "$HOME" 2>/dev/null
+          echo "== toolchain"
+          for t in bun node npm git cargo rustc docker podman java python3 gh jq; do echo "$t=$(command -v $t >/dev/null && echo yes || echo no)"; done
+          ls -1A "$RUNNER_TOOL_CACHE" 2>/dev/null | head -20
+          uname -srm; . /etc/os-release && echo "$PRETTY_NAME"
