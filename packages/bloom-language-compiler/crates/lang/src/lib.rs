@@ -87,6 +87,12 @@ pub struct Checked {
 /// Parses `source`: the tree, the comments and the syntax errors (rendered).
 /// Parsing recovers at item, statement and closing-brace boundaries, so the
 /// tree is complete even with errors (unreadable parts are `ExprKind::Error`).
+/// The internal and private types of `source` that its `public` declarations name (B0108).
+pub fn exposed_types(source: &str) -> Vec<String> {
+    let (file, _, _) = parser::parse(source);
+    visibility::exposed(&file, source)
+}
+
 pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
     let (file, comments, mut diagnostics) = parser::parse(source);
     for diagnostic in &mut diagnostics {

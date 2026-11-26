@@ -749,6 +749,11 @@ impl<'s, 'i> Parser<'s, 'i> {
                     .label("phase A compiles a data struct's stored properties")
                     .spec("44-structs"),
                 ),
+                TypeMemberKind::Let(l) => self.error(
+                    Diagnostic::error("B0106", l.span, "a struct's stored properties are named")
+                        .label("a destructuring `let` is a view's, computed each render")
+                        .spec("44-structs"),
+                ),
             }
         }
         ItemKind::Struct(StructDecl { name, generics, fields, surface: Some(Box::new(surface)) })
@@ -760,6 +765,9 @@ impl<'s, 'i> Parser<'s, 'i> {
         let start = self.span();
         let (visibility, modifiers) = self.modifiers();
         let kind = match self.tok() {
+            Tok::Kw(Kw::Let) if matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
+                TypeMemberKind::Let(self.let_stmt())
+            }
             Tok::Kw(Kw::Let | Kw::Var) => {
                 let mutable = self.at_kw(Kw::Var);
                 self.bump();
@@ -902,7 +910,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                     }
                     // `let x = v`: a constant, computed per render.
                     (None, Some(value)) if !mutable => members.push(Member::Let(LetStmt {
-                        pattern: Pattern { kind: PatternKind::Bind(prop.clone()), span: prop.span },
+                        pattern: Pattern {
+                            kind: if prop.name == "_" {
+                                PatternKind::Wildcard
+                            } else {
+                                PatternKind::Bind(prop.clone())
+                            },
+                            span: prop.span,
+                        },
                         ty: ty.clone(),
                         value: value.clone(),
                         span: member.span,
@@ -959,6 +974,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     }
                 }
                 TypeMemberKind::Func(f) => members.push(Member::Fn(f.clone())),
+                TypeMemberKind::Let(l) => members.push(Member::Let(l.clone())),
             }
         }
         let (body_keyword, mut body) = body.unwrap_or_else(|| {
@@ -1283,7 +1299,8 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             // `to x: Int`: the label a call writes, then the name the body uses (`_`: none).
             let label = if matches!(self.tok(), Tok::Ident(_) | Tok::Kw(_))
-                && matches!(self.nth(1), Tok::Ident(_))
+                && (matches!(self.nth(1), Tok::Ident(_))
+                    || matches!(self.nth(1), Tok::Kw(kw) if is_soft(*kw)))
                 && matches!(self.nth(2), Tok::P(P::Colon))
             {
                 Some(self.name_or_keyword("an argument label"))
@@ -1454,6 +1471,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Let) => Some(Member::Let(self.let_stmt())),
             Tok::Kw(Kw::Fn | Kw::Async) => Some(Member::Fn(self.fn_decl())),
+            Tok::Ident(word) if word == "func" => Some(Member::Fn(self.fn_decl())),
             Tok::Ident(word) if word == "equal" && matches!(self.nth(1), Tok::P(P::LParen)) => {
                 let keyword = self.bump();
                 let open = self.bump();

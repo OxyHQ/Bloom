@@ -818,6 +818,22 @@ expression breaks only with two or more calls. A binary expression breaks after 
 before `<` and `>` (a line ending in `>` may close a type's arguments; one ending in `<` goes on).
 Formatting is idempotent and preserves comments.
 
+### 14.1 `bloomc migrate --from 0.x` (2.0)
+
+`bloomc migrate --from 0.x [--check] <paths…>` rewrites 0.x files in 2.0's forms, mechanically:
+`fn` → `func` (a parameter a call in the file labels keeps its label, the others become `_ name`,
+and a positional argument to a labelled one gets the label), `pub` → `public` (and the file's
+types a `public` declaration names become `public`), `${x}` → `\(x)`, `match … =>` → `switch …:`,
+enum cases → `case`, struct fields → `let` / `var` (a field with a default), and
+`view X(p: T) { @state s = v; body { … } }` → `struct X: View { let p: T; @State private var s = v;
+var body: some View { … } }` (`@env` → `@Environment(…)`, `equal(a, b)` → `static func ==`). What
+2.0 cannot say mechanically stays 0.x, with a note: a view with `..Props`, an `effect`, an `@ref`,
+`@list` or `@record`. The output is formatted and re-parsed (never written when it does not parse).
+Its test (`crates/fmt/tests/migrate.rs`) migrates every 0.x emit fixture, Mention's Notifications
+screen among them, and requires the same TypeScript (exports aside); the migrated Notifications is
+itself a golden (`emit/surface_mention_notifications.bloom`). The `bloom` CLI exposes it as
+`bloom migrate`. The 0.x forms keep parsing for it.
+
 ## 15. Cheat sheet for agents
 
 1. A file is a module. `pub view Name(params) { members; body { … } }`; a route is `screen`.

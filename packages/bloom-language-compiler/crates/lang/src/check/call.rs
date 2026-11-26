@@ -633,11 +633,19 @@ impl Checker<'_> {
             }
             let slot = match &arg.label {
                 Some(label) => {
-                    match f.params.iter().position(|p| p.name.as_deref() == Some(label.name.as_str())) {
+                    match f
+                        .params
+                        .iter()
+                        .position(|p| !p.positional && p.name.as_deref() == Some(label.name.as_str()))
+                    {
                         Some(slot) => slot,
                         None => {
-                            let names: Vec<&str> =
-                                f.params.iter().filter_map(|p| p.name.as_deref()).collect();
+                            let names: Vec<&str> = f
+                                .params
+                                .iter()
+                                .filter(|p| !p.positional)
+                                .filter_map(|p| p.name.as_deref())
+                                .collect();
                             let help = closest(&label.name, names.iter().copied())
                                 .map(|near| format!("did you mean `{near}:`?"))
                                 .unwrap_or_else(|| {
@@ -743,8 +751,8 @@ impl Checker<'_> {
             .filter(|(p, given)| given.is_none() && !p.optional && !p.rest)
             .enumerate()
             .map(|(index, (p, _))| match &p.name {
-                Some(name) => format!("`{name}`"),
-                None => format!("the {} (unlabelled)", ordinal(index + 1)),
+                Some(name) if !p.positional => format!("`{name}`"),
+                _ => format!("the {} (unlabelled)", ordinal(index + 1)),
             })
             .collect();
         if !missing.is_empty() {
@@ -1355,6 +1363,7 @@ impl Checker<'_> {
         let setter = Ty::Fn(Rc::new(FnTy {
             params: vec![ParamTy {
                 labelled: false,
+                positional: false,
                 name: Some("value".into()),
                 ty: value.clone(),
                 optional: false,
@@ -2076,7 +2085,14 @@ impl Checker<'_> {
                 };
                 let params = params
                     .into_iter()
-                    .map(|ty| ParamTy { labelled: false, name: None, ty, optional: false, rest: false })
+                    .map(|ty| ParamTy {
+                        labelled: false,
+                        positional: false,
+                        name: None,
+                        ty,
+                        optional: false,
+                        rest: false,
+                    })
                     .collect();
                 let handler =
                     Ty::Fn(Rc::new(FnTy { params, ret: Ty::Unit, is_async: false, generics: 0, ts: false }));
@@ -2189,7 +2205,14 @@ impl Checker<'_> {
             Ty::Fn(Rc::new(FnTy {
                 params: params
                     .into_iter()
-                    .map(|ty| ParamTy { labelled: false, name: None, ty, optional: false, rest: false })
+                    .map(|ty| ParamTy {
+                        labelled: false,
+                        positional: false,
+                        name: None,
+                        ty,
+                        optional: false,
+                        rest: false,
+                    })
                     .collect(),
                 ret,
                 is_async: false,
