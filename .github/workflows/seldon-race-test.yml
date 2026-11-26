@@ -15,7 +15,7 @@ jobs:
     permissions:
       actions: read
     with:
-      label: &label seldon-ci-offline-sim
+      label: &label seldon-ci
 
   race-finish:
     needs: race

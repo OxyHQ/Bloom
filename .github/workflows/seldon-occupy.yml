@@ -1,4 +1,4 @@
-# Throwaway: occupies all four seldon-ci runners for SECONDS, so a race test
+# Throwaway: occupies all three seldon-ci runners for SECONDS, so a race test
 # finds Seldon busy. Each push to ci/seldon-occupy is one occupation.
 name: Seldon occupy
 
@@ -15,6 +15,6 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        n: [1, 2, 3, 4]
+        n: [1, 2, 3]
     steps:
-      - run: sleep 240
+      - run: sleep 900
