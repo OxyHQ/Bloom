@@ -20,6 +20,8 @@ mod expr;
 mod jsx;
 mod module;
 pub mod report;
+mod swiftui;
+mod tokens;
 mod truthiness;
 mod typed;
 mod types;
@@ -74,6 +76,9 @@ pub struct Migration {
     pub reviews: usize,
     /// The module's `Name.d.bloom.ts`, when it compiled.
     pub dts: Option<String>,
+    /// The view or function the TS module exported as its default: 2.0 exports it by name,
+    /// so its TS importers import it by name (`import { X as Y }`).
+    pub default_export: Option<String>,
 }
 
 /// The `.bloom` path a `.tsx`/`.ts` module moves to.
@@ -96,9 +101,11 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             reasons: Vec::new(),
             reviews: 0,
             dts: None,
+            default_export: None,
         };
     }
-    let translated = module::translate(source, filename);
+    let mut translated = module::translate(source, filename);
+    let default_export = named_default(&mut translated.text);
     let reviews = translated.text.matches(REVIEW_MARKER).count();
     if !translated.reasons.is_empty() {
         return Migration {
@@ -107,6 +114,7 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             reasons: translated.reasons,
             reviews,
             dts: None,
+            default_export: None,
         };
     }
     let target = bloom_path(Path::new(filename)).to_string_lossy().into_owned();
@@ -124,6 +132,7 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
                 reasons,
                 reviews,
                 dts: None,
+                default_export: None,
             };
         }
     };
@@ -157,8 +166,74 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             .iter()
             .map(|d| Reason { code: format!("bloomc:{}", d.code), detail: d.message.clone(), line: 0 })
             .collect();
-        return Migration { status: Status::Refused, bloom: Some(formatted), reasons, reviews, dts: None };
+        return Migration { status: Status::Refused, bloom: Some(formatted), reasons, reviews, dts: None, default_export: None };
+    }
+    // Bloom 2.0 (ADR 0002): the checked draft printed in 2.0's forms, then compiled again. A
+    // form 2.0 retires that is left (B0950) or an error of the 2.0 text is a reason: the file
+    // is migrated only when it is 2.0 throughout.
+    let (bloom, notes) = match bloom_fmt::migrate(&formatted, &target) {
+        Ok(migrated) => migrated,
+        Err(diagnostics) => {
+            let reasons = diagnostics
+                .iter()
+                .map(|d| Reason { code: "codemod:2.0-unparsable".into(), detail: d.message.clone(), line: 0 })
+                .collect();
+            return Migration { status: Status::Refused, bloom: Some(formatted), reasons, reviews, dts: None, default_export: None };
+        }
+    };
+    let _ = notes;
+    let compiled = bloom_lang::compile(&bloom, &target, options);
+    let mut reasons: Vec<Reason> = compiled
+        .diagnostics
+        .iter()
+        .map(|d| Reason { code: format!("2.0:bloomc:{}", d.code), detail: d.message.clone(), line: 0 })
+        .collect();
+    reasons.extend(compiled.warnings.iter().filter(|w| w.code == "B0950").map(|w| Reason {
+        code: format!("0.x:{}", retired_form(&w.message)),
+        detail: w.message.clone(),
+        line: 0,
+    }));
+    if !reasons.is_empty() {
+        return Migration { status: Status::Refused, bloom: Some(bloom), reasons, reviews, dts: None, default_export: None };
+    }
+    // String tokens as typed ones (`.padding("md")` → `.padding(.md)`), then SwiftUI's names
+    // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
+    let mut bloom = bloom;
+    let mut compiled = compiled;
+    let passes: [&dyn Fn(&str) -> Option<String>; 2] =
+        [&|text| tokens::typed(text, &target, options), &|text| swiftui::names(text, &target)];
+    for pass in passes {
+        let Some(next) = pass(&bloom) else { continue };
+        let Ok(next) = bloom_fmt::format(&next, &target) else { continue };
+        let again = bloom_lang::compile(&next, &target, options);
+        if again.diagnostics.is_empty() {
+            bloom = next;
+            compiled = again;
+        }
     }
     let status = if reviews > 0 { Status::NeedsReview } else { Status::Migrated };
-    Migration { status, bloom: Some(formatted), reasons: Vec::new(), reviews, dts: compiled.dts }
+    Migration { status, bloom: Some(bloom), reasons: Vec::new(), reviews, dts: compiled.dts, default_export }
+}
+
+/// A default-exported view or function (`pub default view X`) as a named one: 2.0 has no
+/// default exports but a route's screen or layout. Returns its name.
+fn named_default(text: &mut String) -> Option<String> {
+    for kind in ["view ", "fn "] {
+        let marker = format!("pub default {kind}");
+        let Some(at) = text.find(&marker) else { continue };
+        let at_line = at == 0 || text.as_bytes()[at - 1] == b'\n';
+        if !at_line {
+            continue;
+        }
+        let rest = &text[at + marker.len()..];
+        let name: String = rest.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+        text.replace_range(at..at + marker.len(), &format!("pub {kind}"));
+        return Some(name);
+    }
+    None
+}
+
+/// The retired form a B0950 warning names (its first backquoted word): `effect`, `@ref`, ….
+fn retired_form(message: &str) -> String {
+    message.split('`').nth(1).unwrap_or(message).to_string()
 }
