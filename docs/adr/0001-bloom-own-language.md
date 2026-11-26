@@ -283,10 +283,40 @@ errors, measured in phase 2), `.d.ts` coverage, and the per-file compile cost.
 
 ## State and next steps
 
-- **State (2026-11-26):** phase 0 complete. Four draft PRs (above), none merged or published.
-  The Mention PR installs the compiler from a local tarball (`file:` path) and its `bun.lock` was
-  written by bun 1.4.3 rather than the pinned 1.4.4, so it cannot leave draft until the compiler
-  is published and the lockfile regenerated.
-- **Next:** approved; #963 → #967 → #964 merge through the queue, one release PR publishes the
-  compiler and its tooling, the Mention PR moves to the published compiler on the language line,
-  and phase 1 starts from the gaps listed under "Prototype" and "Roadmap".
+Kept current as the phases run (last update 2026-11-26).
+
+| Phase | Item | State |
+|---|---|---|
+| 0 | design, prototype, proof | merged: #963 (this ADR, spec), #964 (core and tooling combined; #967 closed into it) |
+| 0 | publish | release PR #984: compiler 1.6.0, its six platform packages, `bloom-vscode` 0.1.0 as a CI `.vsix` artifact |
+| 0 | Mention proof on the published compiler | #2046, onto the language line `feat/mention-on-language` after #984 publishes |
+| 1 | language | #979: key paths, structural `==`, `.onChange`, `all`/`race`, the await helper removed (inline `try`), builder IIFEs removed, typed routes (B0701/B0702), node constructor signatures for all 441 nodes, the shared chain-rule module (`crates/compiler/src/rules.rs`, fed by both compilers; bloomc no longer re-runs the embedded pass), record literals, inline record types, string-literal unions. In progress: `?.()` and argument spread, `effect`, `defineTokens`, typed bloom-data, emitted bytes |
+| 1 | tooling | #980: `bloomc check --tsc` (B0620), LSP (definition, references, completion, hover, incremental sync), import-aware Jest/Metro/`bloomc build` caches, `bloomc` for six platforms with an `npx` shim |
+| 1 | compile cost | per file 47 / 60 / 136 µs (models / rows / screens) from 94 / 193 / 381; the embedded pass on the same TSX is 3.9 / 11.3 / 23.5 µs (12x / 5.3x / 5.8x). The ≤ 3x target is not met; emit (allocation and copying) is half of a screen's time |
+| 2 | codemod | #983 `bloomc migrate`; Mention #2049 (four PostItem rows in `.bloom`: one fiber fewer each, pixels equal, +56 B gzip) |
+| 2 | corpus (Mention `packages/frontend`, 324 files) | 2.8% clean at the start; tracked below |
+
+**Language gaps the corpus found, and the decision for each:**
+
+| Gap (files) | Decision |
+|---|---|
+| object literals (≈200), inline object types (45) | the language: record literals `{ k: v, ..s }` and structural record types |
+| inline string-literal unions (49) | the language: literal union types |
+| optional calls, argument spread | the language: `x?.m()`, `f(..xs)` |
+| `useEffect` (32) | the language: an `effect { … defer { } }` member with inferred dependencies; async stays `.task` |
+| `defineTokens` | the language: a compile-time intrinsic |
+| node options objects | the language: constructor signatures plus record literals |
+| JSX (121), `toElement` outside `Embed` (76), `memo()` (63) | the codemod: reuses the JSX → embedded mapping; views are already memoised |
+| explicit type arguments, `as` | the codemod: annotations, marked "needs review" (`bloomc check --tsc` verifies them) |
+| spread children | the codemod: `for` or a `[View]` child |
+
+**Corpus history** (clean / needs review / refused):
+
+| Date | Compiler | Result |
+|---|---|---|
+| 2026-11-26 | #979 before record literals | 2.8% / 0% / 97.2% |
+
+**Next:** #984 publishes; #2046 merges on the language line; #979 and #980 land after Bloom #971
+(per-family language entries) and go out in the next release together with the language bump that
+ships those entries; the corpus passes 80% before phase 2's screen-by-screen migration; then
+phase 3 starts with Allo (OxyHQ/Allo#332).
