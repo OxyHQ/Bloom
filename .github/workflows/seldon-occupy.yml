@@ -17,4 +17,4 @@ jobs:
       matrix:
         n: [1, 2, 3]
     steps:
-      - run: sleep 900
+      - run: sleep 240
