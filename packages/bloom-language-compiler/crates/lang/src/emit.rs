@@ -1566,6 +1566,9 @@ impl<'a> Emitter<'a> {
                 Frag::of(string_literal(&self.ck.defs[def].variants()[index].name))
             }
             Some(FieldRes::TaskSignal) => Frag::of(self.signal.clone().unwrap_or_else(|| "undefined".into())),
+            Some(FieldRes::TaskCancelled) => {
+                Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
+            }
             Some(FieldRes::Index(index)) => {
                 let mut out = self.operand(object);
                 out.s(&format!("[{index}]"));
@@ -1912,8 +1915,8 @@ impl<'a> Emitter<'a> {
                 out.s(".").mark(name.span).s(&name.name).f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
-            // A task runs in an effect of its view: the chain is its receiver.
-            CallRes::Task => {
+            // A task or an `.onChange` runs in an effect of its view: the chain is its receiver.
+            CallRes::Task | CallRes::OnChange(_) => {
                 let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
                 self.expr(receiver)
             }
@@ -2017,6 +2020,10 @@ impl<'a> Emitter<'a> {
             CallRes::Sleep => {
                 let ms = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
                 ms.wrap("new Promise<void>((resolve) => setTimeout(resolve, ", "))")
+            }
+            CallRes::All | CallRes::Race => {
+                let method = if res == CallRes::All { "Promise.all([" } else { "Promise.race([" };
+                Frag::join(self.args(call), ", ").wrap(method, "])")
             }
         }
     }
@@ -2833,6 +2840,13 @@ impl<'a> Emitter<'a> {
                 go(c);
             }
             ExprKind::Call(call) => {
+                // `.task` and `.onChange` run in effects: the render reads only their receiver.
+                if let (Some(CallRes::Task | CallRes::OnChange(_)), ExprKind::Field(receiver, _)) =
+                    (self.ck.calls.get(&expr.id), &call.callee.kind)
+                {
+                    go(receiver);
+                    return;
+                }
                 // A method reads its receiver whole.
                 match &call.callee.kind {
                     ExprKind::Field(receiver, _) => go(receiver),
@@ -3088,8 +3102,11 @@ impl<'a> Emitter<'a> {
             .rev()
             .find_map(|s| if let StmtKind::Expr(e) = &s.kind { Some(e) } else { None });
         if let Some(root) = root {
-            for task in self.tasks(root) {
-                self.task_effect(task);
+            for (call, watched) in self.effects(root) {
+                match watched {
+                    Some(ty) => self.change_effect(call, &ty),
+                    None => self.task_effect(call),
+                }
             }
         }
         // The body, cached on what it reads.
@@ -3302,19 +3319,23 @@ impl<'a> Emitter<'a> {
         reads || stmts_assign(&f.body.stmts)
     }
 
-    /// The `.task` calls of the body's root chain, outermost first.
-    fn tasks<'e>(&self, root: &'e Expr) -> Vec<&'e Call> {
+    /// The `.task` and `.onChange` calls of the body's root chain, in the order
+    /// they are written; an `.onChange` with the type it watches.
+    fn effects<'e>(&self, root: &'e Expr) -> Vec<(&'e Call, Option<Ty>)> {
         let mut out = Vec::new();
         let mut current = root;
         while let ExprKind::Call(call) = &current.kind {
-            if self.ck.calls.get(&current.id) == Some(&CallRes::Task) {
-                out.push(call);
+            match self.ck.calls.get(&current.id) {
+                Some(CallRes::Task) => out.push((call, None)),
+                Some(CallRes::OnChange(ty)) => out.push((call, Some(ty.clone()))),
+                _ => {}
             }
             match &call.callee.kind {
                 ExprKind::Field(receiver, _) => current = receiver,
                 _ => break,
             }
         }
+        out.reverse();
         out
     }
 
@@ -3334,6 +3355,43 @@ impl<'a> Emitter<'a> {
             .s(")();\nreturn () => $controller.abort();\n}, ")
             .f(Frag::join(deps, ", ").wrap("[", "]"))
             .s(");");
+        self.push_stmt(line);
+    }
+
+    /// `.onChange(of: value) { old, new in … }`: one effect on `value`, with the
+    /// value it last ran for in a ref, so the first render and an equal value
+    /// (`==`, structural) do not run it.
+    fn change_effect(&mut self, call: &Call, ty: &Ty) {
+        let (Some(trailing), Some(arg)) = (&call.trailing, call.args.first()) else { return };
+        self.import_name("react", "useEffect");
+        self.import_name("react", "useRef");
+        let value = self.path_or_temp(&arg.value);
+        let previous = self.temp();
+        let ts = self.ts_type(ty);
+        self.push_stmt(Frag::of(format!("const {previous} = useRef<{ts}>({value});")));
+        let info = self.ck.closures.get(&trailing.span).cloned();
+        let params = info.as_ref().map(|i| i.params.clone()).unwrap_or_default();
+        let old = match params.first() {
+            Some(local) => self.local_name(*local),
+            None => self.temp(),
+        };
+        if let Some(new) = params.get(1) {
+            self.aliases.insert(*new, value.clone());
+        }
+        let same = self.equal(&old, &value, ty, &mut Vec::new());
+        let body = self.block_body(&trailing.body, Tail::Discard, None);
+        let mut line = Frag::at(
+            call.callee.span,
+            format!(
+                "useEffect(() => {{\nconst {old} = {previous}.current;\nif ({same}) return;\n{previous}.current = {value};\n"
+            ),
+        );
+        if info.is_some_and(|i| i.is_async) {
+            line.s("void (async () => ").f(body).s(")();\n");
+        } else {
+            line.f(body).s("\n");
+        }
+        line.s(&format!("}}, [{value}]);"));
         self.push_stmt(line);
     }
 

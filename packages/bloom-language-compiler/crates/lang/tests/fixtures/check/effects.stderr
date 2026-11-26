@@ -1,0 +1,53 @@
+error[B0432]: `Task.isCancelled` is read outside a `.task { … }`
+ --> check/effects.bloom:6:3
+  |
+6 |   Task.isCancelled
+  |   ^^^^^^^^^^^^^^^^ no task here
+  |
+help: read it inside `.task { … }` on the body
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0215]: `all` waits for pending calls, and this is `Int`
+  --> check/effects.bloom:10:34
+   |
+10 |   let (a, b) = await all(load(), 2)
+   |                                  ^ nothing to wait for
+   |
+help: pass the call itself, without `await`: `all(loadA(), loadB())`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0431]: `.onChange` goes on the body's root view
+  --> check/effects.bloom:20:18
+   |
+20 |       Text(text).onChange(of: text) { old, new in text = new }
+   |                  ^^^^^^^^ an effect belongs to the view that runs it
+   |
+help: move it to the end of the body's outermost chain
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0210]: `.onChange` compares values, and `() -> Int` has no equality
+  --> check/effects.bloom:22:19
+   |
+22 |     .onChange(of: onTap) { }
+   |                   ^^^^^ cannot tell whether it changed
+   |
+help: watch what it holds (a field, an id) instead
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0207]: `.onChange` takes the value it watches as `of:`
+  --> check/effects.bloom:23:15
+   |
+23 |     .onChange(text) { v in text = v }
+   |               ^^^^ not `of: value`
+   |
+help: write `.onChange(of: value) { old, new in … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0207]: `.onChange` gives the old and the new value
+  --> check/effects.bloom:23:21
+   |
+23 |     .onChange(text) { v in text = v }
+   |                     ^^^^^^^^^^^^^^^^^ one parameter
+   |
+help: write `{ old, new in … }`, or `{ … }` without parameters
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
