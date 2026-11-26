@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
+
+### Compatibility
+
+- Its peer is `@oxy.so/bloom-language` 1.7.0 or newer, the language it writes (an offset in points, the frame length `'auto'`, the stacking level `'1000'` and a border width with no colour).
 
 ### Added
 

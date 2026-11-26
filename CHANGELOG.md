@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 23.9.1
+
+The Bloom language 1.7.0 (`@oxy.so/bloom-language`), its compiler 1.5.0 (`@oxy.so/bloom-language-compiler`) and its codemod 0.5.0 (`@oxy.so/bloom-language-codemod`) ship beside it.
 
 ### Changed
 
