@@ -569,6 +569,17 @@ impl Tr<'_> {
 
     /// `const pattern = value` as `let`: a name, or a record pattern.
     fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
+        // A `Map`/`Set` changed in place (`s.add(x)`) is a `var` its changes reassign.
+        let mut immutable = immutable;
+        if let (BindingPattern::BindingIdentifier(id), Expression::NewExpression(n)) = (&d.id, init.without_parentheses())
+            && matches!(&n.callee, Expression::Identifier(c) if matches!(c.name.as_str(), "Map" | "Set"))
+        {
+            let Expression::Identifier(c) = &n.callee else { unreachable!() };
+            self.scope.collections.insert(id.name.to_string(), c.name.to_string());
+            if mutates(self.src, &id.name) {
+                immutable = false;
+            }
+        }
         let keyword = if immutable { "let" } else { "var" };
         let mut ty = d
             .type_annotation
@@ -1188,6 +1199,24 @@ impl Tr<'_> {
     /// An expression in statement position: a setter call is an assignment.
     pub fn stmt_expr(&mut self, e: &Expression) -> String {
         match e {
+            Expression::CallExpression(call)
+                if let Expression::StaticMemberExpression(m) = &call.callee
+                    && let Expression::Identifier(object) = &m.object
+                    && self.scope.collections.contains_key(object.name.as_str())
+                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear") =>
+            {
+                // `s.add(x)` changes `s` in place; a Bloom `Set` is a value, so it is reassigned.
+                let name = self.name(&object.name, object.span);
+                let args: Vec<String> =
+                    call.arguments.iter().map(|a| a.as_expression().map_or_else(String::new, |e| self.expr(e))).collect();
+                let method = match m.property.name.as_str() {
+                    "add" => "inserting",
+                    "set" => "setting",
+                    "delete" => "removing",
+                    _ => return format!("{name} = {}()", self.scope.collections[object.name.as_str()]),
+                };
+                format!("{name} = {name}.{method}({})", args.join(", "))
+            }
             Expression::CallExpression(call) => {
                 if let Expression::Identifier(id) = &call.callee
                     && let Some(setter) = self.scope.setters.get(id.name.as_str()).cloned()
@@ -1267,6 +1296,26 @@ impl Tr<'_> {
                         _ => None,
                     },
                 };
+                // `setX((prev) => { …; return next })`: the statements, then `x = next`.
+                let statements = crate::view::arrow_statements(arrow);
+                if let (Some(param), None, [init @ .., Statement::ReturnStatement(last)]) =
+                    (&param, value, statements)
+                    && let Some(result) = &last.argument
+                {
+                    let mut returns = Vec::new();
+                    collect_returns(init, &mut returns);
+                    if let Some(r) = returns.first() {
+                        return self.refuse("state:update", "a functional update that returns early", r.span);
+                    }
+                    let saved = self.scope.renames.insert(param.clone(), state.to_string());
+                    let lines = self.block_stmts(init, last.span.start, false);
+                    let value = self.expr(result);
+                    match saved {
+                        Some(s) => self.scope.renames.insert(param.clone(), s),
+                        None => self.scope.renames.remove(param),
+                    };
+                    return format!("{lines}\n{state} = {value}");
+                }
                 match (param, value) {
                     (Some(param), Some(value)) => {
                         let saved = self.scope.renames.insert(param.clone(), state.to_string());
@@ -1607,6 +1656,16 @@ fn awaited_start<'b, 'a>(statement: &'b Statement<'a>) -> Option<AwaitStart<'b, 
         },
         _ => None,
     }
+}
+
+/// Whether the module changes the collection `name` in place (`name.add(…)`).
+fn mutates(src: &str, name: &str) -> bool {
+    ["add", "set", "delete", "clear"].iter().any(|m| {
+        let needle = format!("{name}.{m}(");
+        src.match_indices(&needle).any(|(i, _)| {
+            !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.')
+        })
+    })
 }
 
 /// The `return`s of a block, outside nested functions.

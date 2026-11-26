@@ -119,11 +119,12 @@ impl Tr<'_> {
                 self.refuse("ts:non-null", "a non-null assertion `!` (use `if let`)", n.span)
             }
             Expression::ArrayExpression(array) => {
+                let pairs = std::mem::replace(&mut self.pairs, false);
                 let mut items = Vec::new();
                 for element in &array.elements {
                     match element {
                         ArrayExpressionElement::SpreadElement(s) => {
-                            items.push(self.refuse("array:spread", "an array spread", s.span))
+                            items.push(format!("..{}", self.expr(&s.argument)))
                         }
                         ArrayExpressionElement::Elision(s) => {
                             items.push(self.refuse("array:hole", "an array hole", s.span))
@@ -133,6 +134,11 @@ impl Tr<'_> {
                             items.push(self.expr(value));
                         }
                     }
+                }
+                // A `Map`'s entries: a `[k, v]` pair is a tuple.
+                self.pairs = pairs;
+                if pairs && items.len() == 2 && array.elements.iter().all(|e| !e.is_spread()) {
+                    return format!("({})", items.join(", "));
                 }
                 format!("[{}]", items.join(", "))
             }
@@ -218,9 +224,32 @@ impl Tr<'_> {
             Expression::UpdateExpression(u) => {
                 self.refuse("assign:expression", "`++`/`--` inside an expression", u.span)
             }
-            Expression::NewExpression(n) => {
-                self.refuse("new", format!("`new {}`", self.slice(n.callee.span())), n.span)
-            }
+            Expression::NewExpression(n) => match &n.callee {
+                Expression::Identifier(id)
+                    if matches!(id.name.as_str(), "Map" | "Set") && !self.imported.contains(id.name.as_str()) =>
+                {
+                    let targs = n
+                        .type_arguments
+                        .as_ref()
+                        .map(|t| {
+                            let tys: Vec<String> = t.params.iter().map(|p| self.ty(p)).collect();
+                            format!("<{}>", tys.join(", "))
+                        })
+                        .unwrap_or_default();
+                    let pairs = std::mem::replace(&mut self.pairs, id.name == "Map");
+                    let args: Vec<String> = n
+                        .arguments
+                        .iter()
+                        .map(|a| match a.as_expression() {
+                            Some(e) => self.entries(e),
+                            None => self.refuse("call:spread", "a spread argument to `new`", a.span()),
+                        })
+                        .collect();
+                    self.pairs = pairs;
+                    format!("{}{targs}({})", id.name, args.join(", "))
+                }
+                _ => self.refuse("new", format!("`new {}`", self.slice(n.callee.span())), n.span),
+            },
             Expression::SequenceExpression(s) => self.refuse("operator:comma", "a comma expression", s.span),
             Expression::TaggedTemplateExpression(t) => {
                 self.refuse("template:tagged", "a tagged template", t.span)
@@ -510,6 +539,47 @@ impl Tr<'_> {
             return Callee::LocalFn;
         }
         Callee::Ts
+    }
+
+    /// A `Map`'s entries: a list literal of pairs, or a `map` whose closure gives
+    /// a pair; the pairs (and only they) are tuples.
+    fn entries(&mut self, e: &Expression) -> String {
+        if !self.pairs {
+            return self.expr(e);
+        }
+        match e.without_parentheses() {
+            Expression::ArrayExpression(array) => {
+                let items: Vec<String> = array
+                    .elements
+                    .iter()
+                    .map(|el| match el {
+                        ArrayExpressionElement::ArrayExpression(pair) if pair.elements.len() == 2 => {
+                            self.expr(el.to_expression())
+                        }
+                        ArrayExpressionElement::SpreadElement(s) => {
+                            let pairs = std::mem::replace(&mut self.pairs, false);
+                            let text = format!("..{}", self.expr(&s.argument));
+                            self.pairs = pairs;
+                            text
+                        }
+                        other => {
+                            let pairs = std::mem::replace(&mut self.pairs, false);
+                            let text = self.expr(other.to_expression());
+                            self.pairs = pairs;
+                            text
+                        }
+                    })
+                    .collect();
+                format!("[{}]", items.join(", "))
+            }
+            Expression::CallExpression(_) => self.expr(e),
+            _ => {
+                let pairs = std::mem::replace(&mut self.pairs, false);
+                let text = self.expr(e);
+                self.pairs = pairs;
+                text
+            }
+        }
     }
 
     /// An awaited value that is a Bloom async function's result (no `Result`:

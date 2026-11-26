@@ -59,6 +59,8 @@ pub struct Scope {
     pub view_values: HashSet<String>,
     /// Names with a declared Bloom type (parameters, props): conditions read it.
     pub decl: HashMap<String, String>,
+    /// Names bound to a `new Map`/`new Set`: their in-place changes reassign them.
+    pub collections: HashMap<String, String>,
     /// Member functions of the view being translated.
     pub member_fns: HashSet<String>,
 }
@@ -105,6 +107,8 @@ pub struct Tr<'s> {
     pub quiet: bool,
     /// Inside a `try` written as a `Result` closure: an `await` propagates with `?`.
     pub propagate: bool,
+    /// Translating a `Map`'s entries: a two-item list literal is a tuple.
+    pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
     pub try_return: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
@@ -274,6 +278,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
+        pairs: false,
         try_return: false,
         pending_equal: None,
         pattern_defaults: Vec::new(),
