@@ -168,9 +168,7 @@ impl Lowering<'_> {
             return;
         }
         match name.as_str() {
-            "ProgressView" if c.args.is_empty() => {
-                c.callee = Box::new(expr(ExprKind::Name("Loading".into()), span))
-            }
+            "ProgressView" if c.args.is_empty() => *c.callee = expr(ExprKind::Name("Loading".into()), span),
             "Label" => {
                 if let Some((text, icon)) = label_parts(e) {
                     let hstack = node("HStack", Vec::new(), Some(icon_and_text(text, icon)), span);
