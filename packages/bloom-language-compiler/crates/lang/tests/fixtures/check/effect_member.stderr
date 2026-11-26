@@ -1,0 +1,26 @@
+error[B0434]: an effect returns after its cleanup is set
+  --> check/effect_member.bloom:14:5
+   |
+14 |     return
+   |     ^^^^^^ a `defer` above set the cleanup
+   |
+help: return before the `defer`, or put the rest in an `if`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0215]: `await` is only allowed in an async function
+  --> check/effect_member.bloom:18:13
+   |
+18 |     let x = await load()
+   |             ^^^^^^^^^^^^ this function is not async
+   |
+help: mark the function `async fn`, or await in a closure (`.onPress { await … }`)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0430]: this async call is neither awaited nor started as a task
+  --> check/effect_member.bloom:23:5
+   |
+23 |     load()
+   |     ^^^^^^ its result (and any failure) would be dropped
+   |
+help: write `await` before it, or start it on its own: `task { await … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency

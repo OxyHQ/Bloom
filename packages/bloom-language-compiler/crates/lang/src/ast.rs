@@ -207,6 +207,7 @@ pub enum Member {
     State(StateDecl),
     Let(LetStmt),
     Fn(FnDecl),
+    Effect(EffectDecl),
 }
 
 impl Member {
@@ -215,8 +216,20 @@ impl Member {
             Member::State(s) => s.span,
             Member::Let(l) => l.span,
             Member::Fn(f) => f.span,
+            Member::Effect(e) => e.span,
         }
     }
+}
+
+/// `effect { … }` or `effect(id: value) { … }`: synchronous work after a render whose
+/// reads (or `id:`) changed; a `defer` at its top is its cleanup.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EffectDecl {
+    pub keyword: Span,
+    /// `id:`: what it re-runs for, in place of its reads.
+    pub id: Option<Expr>,
+    pub body: Block,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

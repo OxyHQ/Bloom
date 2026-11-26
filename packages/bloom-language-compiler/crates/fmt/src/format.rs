@@ -443,6 +443,17 @@ impl<'a> Formatter<'a> {
             }
             Member::Let(l) => self.let_stmt(l),
             Member::Fn(f) => self.fn_decl(f),
+            Member::Effect(e) => {
+                let mut parts = vec![text("effect")];
+                if let Some(id) = &e.id {
+                    parts.push(text("(id: "));
+                    parts.push(self.expr(id));
+                    parts.push(text(")"));
+                }
+                parts.push(text(" "));
+                parts.push(self.block(&e.body, Layout::Own));
+                concat(parts)
+            }
         }
     }
 

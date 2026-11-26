@@ -815,6 +815,29 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Let) => Some(Member::Let(self.let_stmt())),
             Tok::Kw(Kw::Fn | Kw::Async) => Some(Member::Fn(self.fn_decl())),
+            Tok::Ident(word) if word == "effect" && matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
+                let keyword = self.bump();
+                let id = if self.at(P::LParen) {
+                    let open = self.bump();
+                    let label = self.name_or_keyword("`id`");
+                    if label.name != "id" {
+                        self.error(
+                            Diagnostic::error("B0101", label.span, "an effect takes `id:` only")
+                                .label("not `id:`")
+                                .help("write `effect(id: value) { … }`, or `effect { … }` to re-run on its reads")
+                                .spec("8-effects-tasks-and-concurrency"),
+                        );
+                    }
+                    self.expect(P::Colon, "`:` and the value it re-runs for");
+                    let value = self.expr(Ctx::Normal);
+                    self.expect_close(P::RParen, open);
+                    Some(value)
+                } else {
+                    None
+                };
+                let body = self.block();
+                Some(Member::Effect(EffectDecl { keyword, id, span: keyword.to(body.span), body }))
+            }
             Tok::Kw(Kw::Var) => {
                 let span = self.span();
                 self.error(
