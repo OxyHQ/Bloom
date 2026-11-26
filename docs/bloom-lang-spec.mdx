@@ -438,7 +438,8 @@ inherit as in the embedded language.
   changes), at once rather than at the next `await`, and then not again.
 - **`effect { … }`** is a view member: synchronous work that runs after a render. Its
   dependencies are inferred from its reads, exactly as the memo scopes' are (no deps array);
-  `effect(id: x) { … }` re-runs for `x` instead. It writes states as a handler does. A `defer`
+  `effect(id: x) { … }` re-runs for `x` instead; a tuple `id: (a, b)` is its values, each a
+  dependency (`[a, b]`, never a fresh array per render), for `.task(id:)` too. It writes states as a handler does. A `defer`
   at the top of its body is its cleanup, run before the next run and on unmount (several run
   last first); a `defer` in a nested block keeps its block meaning. Once a cleanup is set the
   effect does not `return` (B0434): return before the `defer`. It does not `await` (B0215):
