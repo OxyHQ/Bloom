@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Checks a stack's `.avoidsKeyboard(behavior, offset?)` against the spec: a `keyboardBehavior` token, then a padding token or a number computed at render; a written-out number is rejected with the token to write, and only a stack takes it.
+
 ## 1.6.0
 
 ### Added

@@ -34,6 +34,7 @@ export function Pressable(props: { children?: PressChildren; [prop: string]: unk
   return usePressHost('Pressable', props);
 }
 export const RefreshControl = 'RefreshControl';
+export const KeyboardAvoidingView = 'KeyboardAvoidingView';
 export const Platform = {
   OS: 'ios',
   select: <T>(spec: { ios?: T; default?: T }) => spec.ios ?? spec.default,

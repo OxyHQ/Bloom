@@ -71,6 +71,29 @@ describe('rendering through React Native hosts', () => {
     expect(built).not.toBeNull();
   });
 
+  it('a keyboard region is React Native’s KeyboardAvoidingView, and a press keeps its own host', () => {
+    const region = mount(
+      toElement(VStack(Text('a')).padding('md').avoidsKeyboard('padding', 'xl')),
+    );
+    const [host] = hosts(region, 'KeyboardAvoidingView');
+    expect(host?.props).toMatchObject({ behavior: 'padding', keyboardVerticalOffset: 20 });
+    expect(hosts(region, 'View')).toHaveLength(0);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const pressed = mount(
+      toElement(
+        VStack(Text('a'))
+          .onPress(() => {})
+          .avoidsKeyboard('height'),
+      ),
+    );
+    expect(hosts(pressed, 'KeyboardAvoidingView')).toHaveLength(0);
+    expect(hosts(pressed, 'Pressable')[0]?.props.behavior).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('.avoidsKeyboard() on a view that takes presses'),
+    );
+    warn.mockRestore();
+  });
+
   it('a grid stretches its chart cards only when asked: Bloom’s stretchItems', () => {
     const grid = (node: ReturnType<typeof Grid>) =>
       hosts(mount(toElement(node)), 'ResponsiveGrid')[0]?.props;

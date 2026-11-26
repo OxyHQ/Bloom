@@ -1587,6 +1587,135 @@ const points: ParityCase[] = [
  * at the top of its scroll on the web, a title spanning its row's inline edges.
  */
 /** The web's sticky position, which react-native-web takes and React Native's types do not name. */
+/** What a header above a region measures as it renders (`useHeaderHeight()`): the offset it hands the region. */
+const HEADER = 91;
+
+/**
+ * `.avoidsKeyboard()`: a region kept above the keyboard, drawn as React
+ * Native's own `KeyboardAvoidingView` with no view around it, on every
+ * platform, as the JSX it stands for.
+ */
+const keyboardRegions: ParityCase[] = [
+  {
+    // Allo's conversation: the transcript and the composer, padded clear of the keyboard on
+    // every platform; the composer clear of the home bar.
+    name: 'a chat’s transcript and composer kept above the keyboard (Allo)',
+    language: () =>
+      withInsets(
+        toElement(
+          L.VStack(
+            L.VStack(L.Text('transcript')).frame({ minHeight: 'none' }).grow(),
+            L.VStack(L.Text('composer')).safeAreaPadding('bottom'),
+          )
+            .flex('1')
+            .frame({ minHeight: 'none' })
+            .avoidsKeyboard('padding'),
+        ),
+      ),
+    bloom: () =>
+      withInsets(
+        <RN.KeyboardAvoidingView
+          behavior="padding"
+          style={{ flexGrow: 1, flexShrink: 1, flexBasis: '0%', minHeight: 0 }}
+        >
+          <RN.View style={{ minHeight: 0, flex: 1 }}>
+            <Text>transcript</Text>
+          </RN.View>
+          <RN.View style={{ paddingBottom: INSETS.bottom }}>
+            <Text>composer</Text>
+          </RN.View>
+        </RN.KeyboardAvoidingView>,
+      ),
+  },
+  ...ENUMS.keyboardBehavior.map((behavior) => ({
+    name: `a region kept above the keyboard by its ${behavior}`,
+    language: () => toElement(L.VStack(L.Text('a')).avoidsKeyboard(behavior)),
+    bloom: () => (
+      <RN.KeyboardAvoidingView behavior={behavior}>
+        <Text>a</Text>
+      </RN.KeyboardAvoidingView>
+    ),
+  })),
+  {
+    name: 'a region below a header, offset by a token and by the header’s measured height',
+    language: () =>
+      toElement(
+        L.VStack(
+          L.HStack(L.Text('a')).avoidsKeyboard('height', 'xl'),
+          L.HStack(L.Text('b')).avoidsKeyboard('height', HEADER),
+        ),
+      ),
+    bloom: () => (
+      <RN.View>
+        <RN.KeyboardAvoidingView
+          behavior="height"
+          keyboardVerticalOffset={20}
+          style={{ flexDirection: 'row' }}
+        >
+          <Text>a</Text>
+        </RN.KeyboardAvoidingView>
+        <RN.KeyboardAvoidingView
+          behavior="height"
+          keyboardVerticalOffset={HEADER}
+          style={{ flexDirection: 'row' }}
+        >
+          <Text>b</Text>
+        </RN.KeyboardAvoidingView>
+      </RN.View>
+    ),
+  },
+  {
+    // Its padding and fill are the region's own style: one view.
+    name: 'a padded region on a fill, one view',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).padding('md').background('card').avoidsKeyboard('padding')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.KeyboardAvoidingView
+            behavior="padding"
+            style={{
+              paddingTop: 12,
+              paddingBottom: 12,
+              paddingStart: 12,
+              paddingEnd: 12,
+              backgroundColor: c.card,
+            }}
+          >
+            <Text>a</Text>
+          </RN.KeyboardAvoidingView>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    // Its name and test id are the region's own props; React Native's padding behaviour
+    // writes the region's bottom padding, so the home bar's inset pads a view inside it.
+    name: 'a named region whose bottom is padded clear of the home bar inside it',
+    language: () =>
+      withInsets(
+        toElement(
+          L.VStack(L.VStack(L.Text('a')).safeAreaPadding('bottom'))
+            .testID('region')
+            .label('Conversation')
+            .avoidsKeyboard('padding'),
+        ),
+      ),
+    bloom: () =>
+      withInsets(
+        <RN.KeyboardAvoidingView
+          behavior="padding"
+          testID="region"
+          accessibilityLabel="Conversation"
+        >
+          <RN.View style={{ paddingBottom: INSETS.bottom }}>
+            <Text>a</Text>
+          </RN.View>
+        </RN.KeyboardAvoidingView>,
+      ),
+  },
+];
+
 const webSticky = (edge: 'top' | 'bottom') =>
   ({ position: 'sticky', [edge]: 0 }) as unknown as RN.ViewStyle;
 
@@ -1769,6 +1898,7 @@ const fives: ParityCase[] = [
 
 export const LAYOUT_CASES: ParityCase[] = [
   ...fives,
+  ...keyboardRegions,
   ...hostProps,
   ...points,
   ...hitSlop,

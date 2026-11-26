@@ -782,6 +782,7 @@
       "shipmentTrackingNumber"
     ],
     "stickyEdge": ["top", "bottom"],
+    "keyboardBehavior": ["padding", "height", "position"],
     "avatarMotion": ["auto", "always", "never"],
     "safeArea": ["device", "content"],
     "cursor": ["auto", "default", "pointer", "grab", "grabbing", "text", "move", "not-allowed"],
@@ -1513,6 +1514,7 @@
       "accessibilityElement",
       "focusable",
       "collapsable",
+      "avoidsKeyboard",
       "ref",
       "onLayout"
     ],
@@ -1892,6 +1894,7 @@
     "initialFooterHeight": ["space"],
     "colorScope": ["colorScopeMode"],
     "keyboardAvoiding": ["flex?"],
+    "avoidsKeyboard": ["keyboardBehavior", "padding?"],
     "provider": ["value", "value?"],
     "ownScreen": ["value?"],
     "scrollbar": ["scrollbarVisibility"],
@@ -2327,7 +2330,8 @@
         "axis",
         "disabled",
         "hoverHighlight",
-        "listMarker"
+        "listMarker",
+        "avoidsKeyboard"
       ]
     },
     "zstack": {

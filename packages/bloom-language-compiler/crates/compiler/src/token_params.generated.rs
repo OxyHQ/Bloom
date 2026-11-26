@@ -90,6 +90,8 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "stack.justify(justify)", constructor: "HStack", call: "HStack().justify(@)", sets: &["justify"], tokens: &[], opacity: false },
     TokenParam { label: "stack.axis(axis)", constructor: "HStack", call: "HStack().axis(@)", sets: &["axis"], tokens: &[], opacity: false },
     TokenParam { label: "stack.listMarker(listMarker)", constructor: "HStack", call: "HStack().listMarker(@)", sets: &["listMarker"], tokens: &[], opacity: false },
+    TokenParam { label: "stack.avoidsKeyboard(keyboardBehavior)", constructor: "HStack", call: "HStack().avoidsKeyboard(@)", sets: &["keyboardBehavior"], tokens: &[], opacity: false },
+    TokenParam { label: "stack.avoidsKeyboard(padding)", constructor: "HStack", call: "HStack().avoidsKeyboard(v, @)", sets: &["padding"], tokens: &[], opacity: false },
     TokenParam { label: "zstack.alignment(overlayAlignment)", constructor: "ZStack", call: "ZStack().alignment(@)", sets: &["overlayAlignment"], tokens: &[], opacity: false },
     TokenParam { label: "text.truncation(truncation)", constructor: "Text", call: "Text().truncation(@)", sets: &["truncation"], tokens: &[], opacity: false },
     TokenParam { label: "text.textStyle(textStyle)", constructor: "Text", call: "Text().textStyle(@)", sets: &["textStyle"], tokens: &[], opacity: false },

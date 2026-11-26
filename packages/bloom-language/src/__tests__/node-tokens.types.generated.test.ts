@@ -142,6 +142,7 @@ type S = {
   "contentType": "off" | "email" | "username" | "password" | "new-password" | "current-password" | "one-time-code" | "name" | "given-name" | "family-name" | "tel" | "postal-code" | "street-address" | "url";
   "textContentType": "none" | "URL" | "addressCity" | "addressCityAndState" | "addressState" | "countryName" | "creditCardNumber" | "creditCardExpiration" | "creditCardExpirationMonth" | "creditCardExpirationYear" | "creditCardSecurityCode" | "creditCardType" | "creditCardName" | "creditCardGivenName" | "creditCardMiddleName" | "creditCardFamilyName" | "emailAddress" | "familyName" | "fullStreetAddress" | "givenName" | "jobTitle" | "location" | "middleName" | "name" | "namePrefix" | "nameSuffix" | "nickname" | "organizationName" | "postalCode" | "sublocality" | "telephoneNumber" | "username" | "password" | "newPassword" | "oneTimeCode" | "birthdate" | "birthdateDay" | "birthdateMonth" | "birthdateYear" | "cellularEID" | "cellularIMEI" | "dateTime" | "flightNumber" | "shipmentTrackingNumber";
   "stickyEdge": "top" | "bottom";
+  "keyboardBehavior": "padding" | "height" | "position";
   "avatarMotion": "auto" | "always" | "never";
   "safeArea": "device" | "content";
   "cursor": "auto" | "default" | "pointer" | "grab" | "grabbing" | "text" | "move" | "not-allowed";
@@ -453,6 +454,9 @@ type stackChecks = [
   Expect<"stack.justify(justify)", Ok<At<View<'HStack'>['justify'], '0'>, S['justify']>>,
   Expect<"stack.axis(axis)", Ok<At<View<'HStack'>['axis'], '0'>, S['axis']>>,
   Expect<"stack.listMarker(listMarker)", Ok<At<View<'HStack'>['listMarker'], '0'>, S['listMarker']>>,
+  Expect<"stack.avoidsKeyboard(keyboardBehavior)", Ok<At<View<'HStack'>['avoidsKeyboard'], '0'>, S['keyboardBehavior']>>,
+  Expect<"stack.avoidsKeyboard(padding)", OkPoints<At<View<'HStack'>['avoidsKeyboard'], '1'>, S['padding']>>,
+  Expect<"stack.avoidsKeyboard(padding) takes AppToken<'space'>", Takes<At<View<'HStack'>['avoidsKeyboard'], '1'>, AppToken<'space'>>>,
 ];
 
 type zstackChecks = [

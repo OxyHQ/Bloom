@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   Text as RNText,
@@ -1072,6 +1073,21 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (collapsable !== undefined) props.collapsable = collapsable;
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
+  // A keyboard region's own props, on the KeyboardAvoidingView it is (`hostFor`);
+  // a view that takes presses is its press host instead.
+  const keyboard = ownValue(p, 'avoidsKeyboard');
+  if (keyboard !== undefined) {
+    if (p.pressable)
+      warnOnce(
+        'avoidsKeyboard-press',
+        `[Bloom language] .avoidsKeyboard() on a view that takes presses: the view is its press host, which does not avoid the keyboard. Put the region on the stack around it. See ${SEE.avoidsKeyboard}`,
+      );
+    else {
+      props.behavior = keyboard.value;
+      if (keyboard.offset !== undefined)
+        props.keyboardVerticalOffset = resolveSpace(keyboard.offset);
+    }
+  }
   // The escape hatches, on whichever host is outermost.
   const ref = ownValue(p, 'ref')?.value;
   if (ref !== undefined) props.ref = ref;
@@ -1102,6 +1118,11 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.states.length > 0) props[STATEFUL] = p.pressable ? p.states : [];
   for (const _ in props) return props;
   return undefined;
+}
+
+/** A view whose outermost host is its own (`hostFor`): a press, or a keyboard region. */
+function ownsHost(p: Plan): boolean {
+  return p.pressable || p.own.has('avoidsKeyboard');
 }
 
 /** The style key of a node's placement in its parent, '' when it has none. */
@@ -1698,6 +1719,8 @@ function wrapLayer(
 ): ReactElement {
   const styleKey = `L|${layer.key}|${flex}`;
   const glass = layer.glass;
+  // A press or a keyboard region is a host of its own, around the layer's.
+  const owned = ownsHost(p);
   const children = Array.isArray(content) ? (content as ReactNode[]) : [content as ReactNode];
   if (glass !== undefined) {
     // The glass's corner is its radius (it clips itself), not a style of its host.
@@ -1705,8 +1728,8 @@ function wrapLayer(
     const radius = typeof corner === 'number' ? corner : undefined;
     const surfaceRadius = layer.concentric ? 'concentric' : radius;
     const varied = glassVariants(layer);
-    const outer = behaviour && !p.pressable ? behaviour : null;
-    const ownKey = behaviour && p.pressable ? undefined : key;
+    const outer = behaviour && !owned ? behaviour : null;
+    const ownKey = behaviour && owned ? undefined : key;
     // A variant of the material that answers the view's state reads it from the
     // box around the glass, which then tracks it in JS (on the web too).
     const around = varied.stateful ? AROUND : NO_OUT;
@@ -1760,7 +1783,7 @@ function wrapLayer(
         ...children,
       );
       if (p.control?.reports.length) return draw(ReportedState, { key }, drawn);
-      return behaviour && p.pressable
+      return behaviour && owned
         ? drawOutermost(palette, box, hostFor(p), around, { ...behaviour, key }, drawn)
         : drawn;
     }
@@ -1810,7 +1833,7 @@ function wrapLayer(
     );
     // A control's glass varies with the control's state, which it reports to a box around the glass.
     if (p.control?.reports.length) return draw(ReportedState, { key }, surface);
-    return behaviour && p.pressable
+    return behaviour && owned
       ? drawOutermost(palette, box, hostFor(p), around, { ...behaviour, key }, surface)
       : surface;
   }
@@ -1825,7 +1848,7 @@ function wrapLayer(
       () => resolved,
       () => varied.style,
     );
-    const outer = behaviour && !p.pressable ? behaviour : null;
+    const outer = behaviour && !owned ? behaviour : null;
     const paint = variedPaint(`I|${styleKey}`, out, NO_ROLES, () => radiusVariants(varied));
     const island = drawHost(
       palette,
@@ -1835,11 +1858,11 @@ function wrapLayer(
         ...(typeof corner === 'number' ? { radius: corner } : null),
         ...(layer.curve ? { cornerCurve: layer.curve } : null),
         ...outer,
-        key: behaviour && p.pressable ? undefined : key,
+        key: behaviour && owned ? undefined : key,
       },
       ...children,
     );
-    return behaviour && p.pressable
+    return behaviour && owned
       ? drawOutermost(
           palette,
           box,
@@ -1859,15 +1882,15 @@ function wrapLayer(
       () => boxStyle(layer, flex, p),
       () => varied.style,
     );
-    const outer = behaviour && !p.pressable ? behaviour : null;
+    const outer = behaviour && !owned ? behaviour : null;
     const view = drawHost(
       palette,
       ConcentricView,
       out,
-      { ...outer, radius: 'concentric', key: behaviour && p.pressable ? undefined : key },
+      { ...outer, radius: 'concentric', key: behaviour && owned ? undefined : key },
       ...children,
     );
-    return behaviour && p.pressable
+    return behaviour && owned
       ? drawOutermost(
           palette,
           box,
@@ -1886,15 +1909,15 @@ function wrapLayer(
   );
   if (layer.safeArea !== 0) {
     // A view padded by the device's safe area, which it reads as it renders; a press is a host around it.
-    const outer = behaviour && !p.pressable ? behaviour : null;
+    const outer = behaviour && !owned ? behaviour : null;
     const padded = drawHost(
       palette,
       safeAreaHost(layer),
       out,
-      { ...outer, ...safeAreaProps(layer), key: behaviour && p.pressable ? undefined : key },
+      { ...outer, ...safeAreaProps(layer), key: behaviour && owned ? undefined : key },
       ...children,
     );
-    return behaviour && p.pressable
+    return behaviour && owned
       ? drawOutermost(palette, box, hostFor(p), AROUND, { ...behaviour, key }, padded)
       : padded;
   }
@@ -2209,9 +2232,11 @@ const HIGHLIGHTED: Host = Symbol('a highlighted Pressable');
  * The outermost box's host: pressable when the view takes presses or hovers,
  * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`),
  * and on Android and iOS a hover group's press highlights it (`HIGHLIGHTED`).
+ * A keyboard region (`.avoidsKeyboard()`) is React Native's own
+ * `KeyboardAvoidingView`, on every platform, as the JSX it stands for.
  */
 function hostFor(p: Plan): Host {
-  if (!p.pressable) return View;
+  if (!p.pressable) return p.own.has('avoidsKeyboard') ? KeyboardAvoidingView : View;
   if (p.own.has('pressFade')) return TouchableOpacity;
   return !IS_WEB && p.hoverGroup ? HIGHLIGHTED : Pressable;
 }

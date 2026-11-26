@@ -1811,6 +1811,11 @@ export const ENUMS = {
     "top",
     "bottom"
   ],
+  "keyboardBehavior": [
+    "padding",
+    "height",
+    "position"
+  ],
   "avatarMotion": [
     "auto",
     "always",
@@ -3017,6 +3022,7 @@ export const READS_NOTHING: readonly string[] = [
   "accessibilityElement",
   "focusable",
   "collapsable",
+  "avoidsKeyboard",
   "ref",
   "onLayout"
 ];
@@ -4234,6 +4240,10 @@ export const MODIFIERS = {
   "keyboardAvoiding": [
     "flex?"
   ],
+  "avoidsKeyboard": [
+    "keyboardBehavior",
+    "padding?"
+  ],
   "provider": [
     "value",
     "value?"
@@ -5258,7 +5268,8 @@ export const NODE_MODIFIERS = {
     "wrap",
     "axis",
     "hoverHighlight",
-    "listMarker"
+    "listMarker",
+    "avoidsKeyboard"
   ],
   "zstack": [
     "padding",
