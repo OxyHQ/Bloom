@@ -51,3 +51,30 @@ error[B0207]: `.onChange` gives the old and the new value
    |
 help: write `{ old, new in … }`, or `{ … }` without parameters
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+ --> check/effects.bloom:1:7
+  |
+1 | async fn load() -> Int {
+  |       ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> check/effects.bloom:14:1
+   |
+14 | pub view Field {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> check/effects.bloom:14:5
+   |
+14 | pub view Field {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

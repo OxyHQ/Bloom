@@ -1,0 +1,17 @@
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+  --> emit/notifications.bloom:21:1
+   |
+21 | fn toggleRow(title: String, detail: String, isOn: Bool, onChange: (Bool) -> Unit) -> View {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> emit/notifications.bloom:28:1
+   |
+28 | screen NotificationSettings {
+   | ^^^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

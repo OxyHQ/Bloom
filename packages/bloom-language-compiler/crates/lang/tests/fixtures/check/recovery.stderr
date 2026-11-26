@@ -24,3 +24,21 @@ error[B0104]: expected `)`, found `}`
    | ^ expected `)` here
    |
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> check/recovery.bloom:1:1
+  |
+1 | view Broken {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+  --> check/recovery.bloom:10:1
+   |
+10 | fn ok() -> Int {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

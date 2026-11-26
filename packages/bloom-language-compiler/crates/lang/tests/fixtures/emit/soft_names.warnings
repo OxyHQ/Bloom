@@ -1,0 +1,35 @@
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+  --> emit/soft_names.bloom:10:1
+   |
+10 | fn line(notice: Notice) -> String {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (8 times in this file)
+  --> emit/soft_names.bloom:11:4
+   |
+11 |   "${notice.type}: ${notice.body}"
+   |    ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (2 times in this file)
+  --> emit/soft_names.bloom:14:1
+   |
+14 | pub view NoticeRow(type: String, body: String) {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (2 times in this file)
+  --> emit/soft_names.bloom:14:5
+   |
+14 | pub view NoticeRow(type: String, body: String) {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -1,0 +1,35 @@
+warning[B0950]: `fn` is Bloom 0.x (5 times in this file)
+  --> emit/records.bloom:14:1
+   |
+14 | fn base() -> Style {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (once in this file)
+  --> emit/records.bloom:32:4
+   |
+32 |   "${attributes.id}"
+   |    ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> emit/records.bloom:35:1
+   |
+35 | pub view Preview(title: String) {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> emit/records.bloom:35:5
+   |
+35 | pub view Preview(title: String) {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

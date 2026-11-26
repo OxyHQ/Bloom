@@ -34,6 +34,15 @@ error[B0500]: a Section with a .selection() holds its choices only
 help: each row is a choice: Item(title).tag(value)
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#menusection
 
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> check/chains.bloom:4:1
+  |
+4 | view Bars(items: [String]) {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
 warning[B0500]: glass in scrolling content: glass belongs to the navigation layer
   --> check/chains.bloom:15:19
    |

@@ -832,7 +832,9 @@ var body: some View { … } }` (`@env` → `@Environment(…)`, `equal(a, b)` �
 Its test (`crates/fmt/tests/migrate.rs`) migrates every 0.x emit fixture, Mention's Notifications
 screen among them, and requires the same TypeScript (exports aside); the migrated Notifications is
 itself a golden (`emit/surface_mention_notifications.bloom`). The `bloom` CLI exposes it as
-`bloom migrate`. The 0.x forms keep parsing for it.
+`bloom migrate`. The 0.x forms keep parsing for it, each with one warning per file (B0950, at its
+first use, with how often the file uses it): `fn`, `pub`, `${…}`, `match`, `view`/`screen`/`layout`,
+the `effect` member, `@ref`, `equal(old, new)` and `..Props`.
 
 ## 15. Cheat sheet for agents
 

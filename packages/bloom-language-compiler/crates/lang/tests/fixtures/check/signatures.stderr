@@ -41,3 +41,12 @@ error[B0503]: `Spacer` takes 0 argument(s), not 1
    |
 help: write `Spacer()`: a parameter marked ? is optional
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#spacer
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> check/signatures.bloom:3:1
+  |
+3 | view Form {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
