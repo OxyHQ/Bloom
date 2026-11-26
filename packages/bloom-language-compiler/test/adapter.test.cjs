@@ -172,3 +172,23 @@ test('the Metro worker hands a .bloom module on as TypeScript and maps it back t
   );
   assert.equal(output.data.functionMap, null);
 });
+
+test('the addon compiles .bloom: a tiny view has code, a bad token a diagnostic', () => {
+  const { compileBloom, checkBloom } = require('../js/native');
+  const view = 'view A {\n  body { Text("a") }\n}\n';
+  const output = compileBloom(view, 'min.bloom', {});
+  assert.deepEqual(output.diagnostics, []);
+  assert.match(output.code, /view\(function A\(/);
+  assert.ok(JSON.parse(output.map).mappings.length > 0);
+  const bad = compileBloom(
+    view.replace('Text("a")', 'Text("a").padding("medium")'),
+    'min.bloom',
+    {},
+  );
+  assert.equal(bad.code, '');
+  assert.deepEqual(
+    bad.diagnostics.map((d) => d.code),
+    ['B0502'],
+  );
+  assert.ok(checkBloom(view, 'min.bloom', {}).types.length > 0);
+});
