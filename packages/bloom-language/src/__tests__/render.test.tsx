@@ -801,3 +801,41 @@ describe('an island’s controls share its material', () => {
     expect(hosts(plain, 'BloomButton')[0]?.props.material).toBeUndefined();
   });
 });
+
+describe('a root under a parent’s asChild', () => {
+  /** What an Expo Router `<Link asChild>`'s Slot does with its child: its props merged into the child's. */
+  const asChild = (child: ReactElement, props: Record<string, unknown>) =>
+    createElement(child.type, { ...props, ...(child.props as object) });
+
+  it('takes the link’s href, press and role on its outermost host, painted or not', () => {
+    const onPress = jest.fn();
+    for (const chain of [Text('· 2h').foreground('muted'), Text('· 2h')]) {
+      const root = mount(asChild(toElement(chain), { href: '/p/1', onPress, role: 'link' }));
+      const text = hosts(root, 'Text')[0];
+      expect(text?.props).toMatchObject({ href: '/p/1', role: 'link' });
+      act(() => (text?.props.onPress as () => void)());
+    }
+    expect(onPress).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs its own press before the link’s', () => {
+    const calls: string[] = [];
+    const root = mount(
+      asChild(
+        toElement(
+          Text('x')
+            .foreground('muted')
+            .onPress(() => calls.push('own')),
+        ),
+        {
+          onPress: () => calls.push('link'),
+        },
+      ),
+    );
+    const pressable = root.root.findAll(
+      (i) => typeof i.type === 'string' && typeof i.props.onPress === 'function',
+    )[0];
+    act(() => (pressable?.props.onPress as () => void)());
+    expect(calls).toEqual(['own', 'link']);
+  });
+});

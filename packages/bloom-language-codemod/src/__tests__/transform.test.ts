@@ -316,13 +316,15 @@ export const A = ({ href }) => (
       "RawText('hi', ' ', Embed((render) => <Link href={href} push asChild> {render(RawText('@bob').foreground('primary'))} </Link>))",
     );
   });
-  it('keeps an asChild element’s child JSX outside a language view, and in a file that names render', () => {
+  it('makes an asChild element’s child a root outside a language view (it takes the element’s props), and keeps it JSX in a file that names render', () => {
     const outside = run(`import { Text } from 'react-native';
 import { Link } from 'expo-router';
 export const A = ({ href }) => <Link href={href} asChild><Text className="text-primary">a</Text></Link>;
 `);
-    expect(outside.code).not.toContain('toElement');
-    expect(outside.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['as-child']);
+    expect(flat(outside.code)).toContain(
+      "<Link href={href} asChild>{toElement(RawText('a').foreground('primary'))}</Link>",
+    );
+    expect(outside.unconverted).toEqual([]);
     const named = run(`import { Text } from 'react-native';
 import { Link } from 'expo-router';
 export const A = ({ href, render }) => (
@@ -1341,11 +1343,11 @@ export const C = () => <DropdownMenu open={open} onOpenChange={setOpen} modal><D
     expect(flat(result.code)).toContain(
       ".label('x').menuStyle('dropdown').presented([open, setOpen])",
     );
-    // C's menu stays JSX, and its trigger's button with it: the trigger hands it its own props.
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'DropdownMenu:props',
-      'as-child',
-    ]);
+    // C's menu stays JSX; its trigger's button is a root, which takes the props the trigger hands it.
+    expect(flat(result.code)).toContain(
+      '<DropdownMenuTrigger asChild label="x">{toElement(LButton())}',
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['DropdownMenu:props']);
   });
   it('makes a label over a radio group a Section of choices', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';

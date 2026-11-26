@@ -3897,6 +3897,8 @@ export interface LanguageRootProps {
    * memoization).
    */
   build?: () => Child;
+  /** What a parent's `asChild` merges in (`<Link asChild>`): handed to the root's outermost element. */
+  readonly [hostProp: string]: unknown;
 }
 
 /**
@@ -3907,7 +3909,7 @@ export interface LanguageRootProps {
  */
 function inlineRoot(content: unknown, ctx: Context): ReactNode | undefined {
   if (!isValidElement(content) || content.type !== LanguageRoot) return undefined;
-  const { node, build } = content.props as LanguageRootProps;
+  const { node, build, ...host } = content.props as LanguageRootProps;
   if (build !== undefined) adoptLanguageSheet();
   const tree = build === undefined ? node : build();
   const here: Context = {
@@ -3917,7 +3919,8 @@ function inlineRoot(content: unknown, ctx: Context): ReactNode | undefined {
     scoped: ctx.scoped,
     palette: ctx.palette,
   };
-  return renderChild(tree ?? null, here, content.key ?? undefined);
+  const drawn = renderChild(tree ?? null, here, content.key ?? undefined);
+  return Object.keys(host).length > 0 && isValidElement(drawn) ? asChildOf(host, drawn) : drawn;
 }
 
 /**
@@ -3930,10 +3933,34 @@ function drawEmbedded(content: ReactNode, ctx: Context): ReactNode {
 }
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
-export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
+export function LanguageRoot({ node, build, ...host }: LanguageRootProps): ReactNode {
   if (build !== undefined) adoptLanguageSheet();
   const tree = build === undefined ? node : build();
-  return drawRead(tree ?? null);
+  const drawn = drawRead(tree ?? null);
+  return Object.keys(host).length > 0 && isValidElement(drawn) ? asChildOf(host, drawn) : drawn;
+}
+
+/**
+ * What a parent's `asChild` merges into the root (an Expo Router `<Link
+ * asChild>`'s `href`, press and role): the props reach the root's outermost
+ * element, as they reach a JSX child, merged as the parent's Slot merges them:
+ * both handlers run (the element's first), the styles stack (the element's on
+ * top) and any other prop the element sets is its own.
+ */
+function asChildOf(host: Record<string, unknown>, drawn: ReactElement): ReactElement {
+  const own = drawn.props as Record<string, unknown>;
+  const merged: Record<string, unknown> = { ...host, ...own };
+  for (const [name, value] of Object.entries(host)) {
+    const mine = own[name];
+    if (mine === undefined) continue;
+    if (name === 'style') merged.style = [value, mine];
+    else if (/^on[A-Z]/.test(name) && typeof value === 'function' && typeof mine === 'function')
+      merged[name] = (...args: unknown[]) => {
+        mine(...args);
+        value(...args);
+      };
+  }
+  return cloneElement(drawn, merged);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 

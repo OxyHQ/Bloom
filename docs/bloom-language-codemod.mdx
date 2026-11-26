@@ -38,7 +38,7 @@ is `toElement`'s second argument, a child's `.id()`).
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
 | a Text's `onPress` or `onLongPress` (a span's too) | `.onPress()` / `.onLongPress()` on the `Text` or the span |
 | an element inside a Text the codemod does not convert (a router's `Link`, an app's component) | an element run, `Embed(element)`, drawn as it is inside the line; one that converts as anything but a span of the Text (a Bloom `Text` inside React Native's) stays a reason (`text-child`) |
-| an `asChild` element (expo-router's `Link asChild`) around one text, embedded | `Embed((render) => <Link … asChild>{render(Text(…))}</Link>)`: the element hands the text's host its props, as it did the JSX child. Outside a language view the child stays JSX (`as-child`): a root there would take the props in place of its host and drop them |
+| an `asChild` element (expo-router's `Link asChild`) around one text, embedded | `Embed((render) => <Link … asChild>{render(Text(…))}</Link>)`: the element hands the text's host its props, as it did the JSX child. Outside a language view the child is a root of its own, `<Link … asChild>{toElement(…)}</Link>`, and the root hands the props to its outermost host. Inside a view in a file that names `render` itself, the child stays JSX (`as-child`) |
 | Bloom's typography components (`Muted`, `H2`, `Small`…), without a `className` | `Text(…runs).textStyle('muted')` |
 | a Bloom component with a rule (`src/components.ts`, below) | its node, prop by prop |
 | React Native `Text` | `RawText(…runs)`: React Native's own Text, only what its chain names, in the platform face when it names no family |
