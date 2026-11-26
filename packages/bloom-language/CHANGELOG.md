@@ -6,6 +6,11 @@
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
+- `AppLayout` says more of Bloom's `AppShell`: `.primaryAction(icon, label, action)` takes a handler in the destination's place (a page's own action, chosen by the page in front; on iOS no prominent tab), `.sidebar(Sidebar(...))` is the shell's sidebar (its variant, logo, search, `.secondary()` rows and the rest), `.activeDestination(name)` its selection, `.navFrom()`, `.contentMaxWidth()` (`'none'` no cap), `.reserveBottomBarSpace()` and `.panelAppearance('joined')` the shell's own. `.panels()` takes `false`, `null` and `undefined` for a panel that is not there.
+- A `Panel`'s `.resizable([width, setWidth])` is a width the app holds (Bloom's `width` and `onWidthChange`), and `.resizeLabel()` names its divider.
+- A `Sidebar`'s `.primaryAction(icon, label, onPress)`: its main command below the rows (Bloom `Sidebar`'s `primaryAction`).
+- Tokens: the space `'520'` (a split list's widest, Allo's).
+- `AppShellMenuButton()`: Bloom's drawer button for a page that draws its own header, named with `.label()`.
 - `.border(undefined, width, edge?)`: a border width in the platform's default colour (React Native's black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` draws it; a colour chosen at render may be none (`.border(subscribed ? 'border' : undefined, 'thin')`). It paints nothing from the theme, so a root or `view()` body around it reads none.
 
 ### Documentation
@@ -14,6 +19,7 @@
 
 ### Changed
 
+- The router's `PrimaryDestination` (the layout's primary action, which the iOS tabs read) holds `action`, a destination's name or a handler, in place of `destination`.
 - A root whose tree is host views alone (stacks and spacers, the spec's new `reads.hostViews`) and reads nothing is those views, with no boundary fiber: a root over a bare `View` costs what the `View` does (Mention's splash marker, an empty sticker frame). A tree that comes to read something is drawn again under a boundary; one that holds a `view()`, an embedded element, a control or a list keeps its boundary whatever it reads.
 - A RawText reads nothing set above it (it takes no inherited trait), and the theme only when a role inks it: a lone RawText, or one in a `view()` body, costs React Native's `Text` in a component that inks it.
 - An Avatar's and an AvatarGroup's own props (size, shape, avatar colour, motion, presence, the group's layout and counts) read nothing where a tree starts, so a `view()` that hands its props to Bloom's Avatar costs what the component that renders it does (Mention's `AccountAvatar`: two context reads fewer).

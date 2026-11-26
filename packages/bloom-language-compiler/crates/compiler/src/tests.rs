@@ -1034,7 +1034,7 @@ fn a_group_takes_the_screen_s_chrome_and_no_box() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { SettingsSection, SettingsValue, SettingsSelect, SettingsTextField, SettingsDateField, SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { SettingsSection, SettingsValue, SettingsSelect, SettingsTextField, SettingsDateField, SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, AppShellMenuButton, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -2194,6 +2194,28 @@ fn pressable_spans_and_element_runs_compile() {
     // A span is a text: its modifiers are still the spec's.
     let output = check("export const x = (f) => Text('a ', Text('b').onPress(f).spacing('md'));\n");
     assert_eq!(output.diagnostics[0].message, "Text has no modifier .spacing()");
+}
+
+#[test]
+fn app_layout_shell_options_compile() {
+    // A handler as the primary action, the shell's sidebar, a panel whose width is the app's state.
+    let valid = chrome(concat!(
+        "export const x = (I, go, w, setW, split) => AppLayout(Stack())\n",
+        "  .primaryAction(I, 'New chat', go)\n",
+        "  .sidebar(Sidebar(NavItem('Settings', I).secondary().onPress(go)).variant('rail').searchable(false).primaryAction(I, 'New', go))\n",
+        "  .activeDestination(split ? 'index' : undefined).navFrom('md').contentMaxWidth('none').reserveBottomBarSpace(false)\n",
+        "  .panelAppearance('joined')\n",
+        "  .panels(split ? Panel('list', Text('l')).resizable([w, setW]).minWidth('280').maxWidth('520').resizeLabel('Resize') : null, Panel('detail'));\n",
+    ));
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let menu =
+        chrome("export const M = () => AppShellMenuButton().label('Open navigation').testID('menu');\n");
+    assert!(menu.diagnostics.is_empty(), "{:?}", first_message(&menu));
+    // The breakpoints are the shell's, and an appearance is one of Bloom's.
+    let from = chrome("export const x = () => AppLayout(Stack()).navFrom('2xl');\n");
+    assert_eq!(first_message(&from), Some("Unknown shellBreakpoint token '2xl' for .navFrom()"));
+    let look = chrome("export const x = () => AppLayout(Stack()).panelAppearance('glued');\n");
+    assert_eq!(first_message(&look), Some("Unknown panelAppearance token 'glued' for .panelAppearance()"));
 }
 
 #[test]

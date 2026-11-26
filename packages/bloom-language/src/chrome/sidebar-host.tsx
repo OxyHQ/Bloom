@@ -196,7 +196,14 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
   const header = values.header as Node | false | undefined;
   const toolbar = values.toolbar as readonly Child[] | undefined;
   let footer: Child;
-  for (const modifier of node.modifiers) if (modifier.kind === 'footer') footer = modifier.content;
+  let action: SidebarProps['primaryAction'];
+  for (const modifier of node.modifiers) {
+    if (modifier.kind === 'footer') footer = modifier.content;
+    else if (modifier.kind === 'primaryAction') {
+      const onPress = press(modifier.action as Press);
+      if (onPress) action = { icon: modifier.icon, label: modifier.label, onPress };
+    }
+  }
   return defined({
     items: primary.length > 0 ? primary.map((row) => navItemOf(row, press)) : undefined,
     secondaryItems:
@@ -217,6 +224,7 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
     showSearch: values.searchable as boolean | undefined,
     showThemeToggle: values.themeToggle as boolean | undefined,
     logo: values.logo as SidebarLogo | undefined,
+    primaryAction: action,
     account: values.account as SidebarAccount | undefined,
     accessibilityLabel: values.label as string | undefined,
     testID: values.testID as string | undefined,

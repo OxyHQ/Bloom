@@ -92,6 +92,7 @@ import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
 import type { TooltipKind } from './controls/tooltip';
 import type { BreadcrumbKind } from './controls/breadcrumb';
+import type { AppShellMenuButtonKind } from './controls/app-shell-menu-button';
 import type { ActivityHeatmapKind } from './controls/activity-heatmap';
 import type { BreadcrumbHoverMenu } from '@oxy.so/bloom/breadcrumb';
 import type { ActivityHeatmapDay } from '@oxy.so/bloom/activity-heatmap';
@@ -432,6 +433,8 @@ import {
   type SidebarSize,
   type FooterPinning,
   type SettingsView,
+  type PanelAppearance,
+  type ShellBreakpoint,
   type ShellLayout,
   type ShellPresentation,
   type PanelRole,
@@ -494,6 +497,8 @@ export type {
   SidebarSize,
   FooterPinning,
   SettingsView,
+  PanelAppearance,
+  ShellBreakpoint,
   ShellLayout,
   ShellPresentation,
   PanelRole,
@@ -701,13 +706,21 @@ export interface ValueModifiers {
   panelRole: PanelRole;
   minWidth: SpaceToken;
   maxWidth: SpaceToken;
-  resizable: boolean;
+  /** The reader can drag its edge; a binding is the width it settles on, the app's state. */
+  resizable: boolean | Binding<number>;
+  resizeLabel: string;
   keepMounted: boolean;
   page: boolean | DialogScreenFrame | Binding<number>;
   preload: boolean;
   bar: boolean;
-  sidebar: boolean;
+  /** A destination's (a row of the sidebar) or an app layout's (the shell's sidebar, a `Sidebar`). */
+  sidebar: boolean | Child;
   sidebarAfter: string;
+  activeDestination: string | undefined;
+  panelAppearance: PanelAppearance;
+  navFrom: ShellBreakpoint;
+  contentMaxWidth: SpaceToken;
+  reserveBottomBarSpace: boolean;
   accessory: Child;
   scrollbar: ScrollbarVisibility;
   scrollbarSide: ScrollbarSide;
@@ -1703,7 +1716,8 @@ export type Modifier =
       readonly key: string;
       readonly icon: IconComponent;
       readonly label: string;
-      readonly destination: string;
+      /** A destination's name (an app layout's), or what a press does. */
+      readonly action: string | Press;
     }
   | { readonly kind: 'rotation'; readonly key: string; readonly value: RotationName | MotionValue }
   | {
@@ -1880,6 +1894,7 @@ export type NodeKind =
   | StepperKind
   | TooltipKind
   | BreadcrumbKind
+  | AppShellMenuButtonKind
   | ActivityHeatmapKind
   | TagFieldKind
   | FileUploadKind
@@ -2975,8 +2990,11 @@ export class Node {
   maxWidth(value: SpaceToken): Node {
     return this.set('maxWidth', value);
   }
-  resizable(value = true): Node {
+  resizable(value: boolean | Binding<number> = true): Node {
     return this.set('resizable', value);
+  }
+  resizeLabel(value: string): Node {
+    return this.set('resizeLabel', value);
   }
   keepMounted(value = true): Node {
     return this.set('keepMounted', value);
@@ -2990,7 +3008,7 @@ export class Node {
   bar(value = true): Node {
     return this.set('bar', value);
   }
-  sidebar(value = true): Node {
+  sidebar(value: boolean | Child = true): Node {
     return this.set('sidebar', value);
   }
   sidebarAfter(value: string): Node {
@@ -3095,8 +3113,23 @@ export class Node {
   dropBeside(value = true): Node {
     return this.set('dropBeside', value);
   }
-  primaryAction(icon: IconComponent, label: string, destination: string): Node {
-    return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
+  primaryAction(icon: IconComponent, label: string, action: string | Press): Node {
+    return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, action });
+  }
+  activeDestination(value: string | undefined): Node {
+    return this.set('activeDestination', value);
+  }
+  panelAppearance(value: PanelAppearance): Node {
+    return this.set('panelAppearance', value);
+  }
+  navFrom(value: ShellBreakpoint): Node {
+    return this.set('navFrom', value);
+  }
+  contentMaxWidth(value: SpaceToken): Node {
+    return this.set('contentMaxWidth', value);
+  }
+  reserveBottomBarSpace(value = true): Node {
+    return this.set('reserveBottomBarSpace', value);
   }
   bottomBar(value: boolean): Node {
     return this.set('bottomBar', value);
@@ -5721,6 +5754,13 @@ export interface SidebarView extends ViewNode {
   /** Its theme toggle (shown by default). */
   themeToggle(value?: boolean): SidebarView;
   logo(value: SidebarLogo): SidebarView;
+  /**
+   * Its main command, below the rows (Bloom `Sidebar`'s `primaryAction`): a
+   * named icon button in a rail. In an app layout's sidebar it stays this
+   * action whatever page is in front (a new chat), where the layout's
+   * `.primaryAction()` is the bar's FAB.
+   */
+  primaryAction(icon: IconComponent, label: string, onPress: Press): SidebarView;
   account(value: SidebarAccount): SidebarView;
   /** Its accessible name. */
   label(value: string | undefined): SidebarView;
@@ -6082,11 +6122,40 @@ export interface ResizeHandleView extends ViewNode {
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
 export interface AppLayoutView extends ViewNode {
   /**
-   * The prominent action: the bar's FAB and the sidebar's first row on
-   * Android, OxyOS and the web; on iOS, `destination`'s tab, drawn on its own
-   * surface. `destination` is a destination's name (a page of the pager).
+   * The prominent action (Bloom `AppShell`'s `primaryAction`): the bar's FAB
+   * and the sidebar's first row on Android, OxyOS and the web. `action` is a
+   * destination's name (a page of the pager; on iOS that destination's tab,
+   * drawn on its own surface) or what a press does, which the layout's body
+   * may choose by the page in front (a chats page's new chat, an updates
+   * page's new status); on iOS a handler is the sidebar's first row on iPad,
+   * and the system tab bar has no place for it.
    */
-  primaryAction(icon: IconComponent, label: string, destination: string): AppLayoutView;
+  primaryAction(icon: IconComponent, label: string, action: string | (() => void)): AppLayoutView;
+  /**
+   * The shell's sidebar (Bloom `AppShell`'s `sidebar`), a `Sidebar` without
+   * rows of its own: the shell draws the destinations as its rows, and the
+   * Sidebar's `.secondary()` rows, `.variant()` (`rail`), `.logo()`,
+   * `.searchable()`, `.primaryAction()` and the rest are the sidebar's own.
+   */
+  sidebar(value: SidebarView): AppLayoutView;
+  /**
+   * The destination the route in front belongs to, selected in the sidebar
+   * (Bloom `AppShell`'s `sidebar.selected`): a conversation is the chats
+   * destination's. `undefined` is the page in front, as Bloom selects it.
+   */
+  activeDestination(name: string | undefined): AppLayoutView;
+  /** How the panels draw (Bloom's `panelLayout.appearance`): `separated` surfaces, one `joined` surface, or `plain`. */
+  panelAppearance(value: PanelAppearance): AppLayoutView;
+  /** The width from which the navigation is in flow, a sidebar or a rail (Bloom `AppShell`'s `navFrom`); a drawer below it. */
+  navFrom(value: ShellBreakpoint): AppLayoutView;
+  /** The content column's widest (Bloom `AppShell`'s `contentMaxWidth`); `'none'` is no cap, the window's width. */
+  contentMaxWidth(value: SpaceToken): AppLayoutView;
+  /**
+   * Whether the content keeps the bottom bar's height under it (Bloom
+   * `AppShell`'s `reserveBottomBarSpace`, `true` by default): `false` floats
+   * the bar over the content, and Bloom's scrollers clear it themselves.
+   */
+  reserveBottomBarSpace(value?: boolean): AppLayoutView;
   /** Whether the bottom bar shows on this route (the system tab bar on iOS draws itself). */
   bottomBar(value: boolean): AppLayoutView;
   /** The shell's own options (panels, layout mode, error boundaries); `navigator` is where the stack goes. */
@@ -6096,8 +6165,8 @@ export interface AppLayoutView extends ViewNode {
   shellLayout(value: ShellLayout): AppLayoutView;
   /** How the shell frames its content: `continuous`, `framed` or `floating`. */
   shellPresentation(value: ShellPresentation): AppLayoutView;
-  /** The shell's panels, in order; a `Panel` without content holds the navigator. */
-  panels(...value: PanelView[]): AppLayoutView;
+  /** The shell's panels, in order; a `Panel` without content holds the navigator. A panel that is `false`, `null` or `undefined` is none. */
+  panels(...value: (PanelView | false | null | undefined)[]): AppLayoutView;
   /** The app's destinations (Bloom's `TabPagerProvider`): the pager's pages, the bar's tabs, the sidebar's rows. */
   destinations(...value: DestinationView[]): AppLayoutView;
   /** Pressing the destination in front again, by its name (Bloom's scroll to the top, then reload, by default). */
@@ -6112,8 +6181,14 @@ export interface PanelView extends ViewNode {
   width(value: SpaceToken): PanelView;
   minWidth(value: SpaceToken): PanelView;
   maxWidth(value: SpaceToken): PanelView;
-  /** The reader can drag its edge. */
-  resizable(value?: boolean): PanelView;
+  /**
+   * The reader can drag its edge. A binding is its width as the app's state
+   * (Bloom's `width` and `onWidthChange`): the width it rests at, and the one
+   * a drag or an arrow key settles on, written back.
+   */
+  resizable(value?: boolean | Binding<number>): PanelView;
+  /** Names its divider (Bloom's `resizeLabel`, `"Resize panes"` in English). */
+  resizeLabel(value: string): PanelView;
   /** Not shown (Bloom's `visible={false}`). */
   hidden(value?: boolean): PanelView;
   /** Kept mounted while hidden. */

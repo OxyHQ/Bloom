@@ -108,6 +108,8 @@ export default screen(function Items() {
 | `.onPress(() => router.push('/x'))` | `.onPress(navigate('/x'))` | the panel-aware navigator |
 | `<Link asChild>` around a span in a text | `Embed((render) => <Link href={h} asChild>{render(Text(…))}</Link>)` as a run | the Link hands the span's host its href and press |
 | `.plainRun((t) => Text(...linkify(t)))` | `.plainRun(linkify)` returning strings and spans | runs, no extra span around the prose |
+| `Embed(<AppShellMenuButton accessibilityLabel={l} />)` | `AppShellMenuButton().label(l)` | Bloom's drawer button is a node |
+| `.shell(() => ({ sidebar, navFrom, contentMaxWidth }))` | `.sidebar(Sidebar(…))`, `.navFrom('md')`, `.contentMaxWidth('none')` | the shell's options the language names |
 | `.when('hover', …)` | `.when('hovered', …)` | condition names |
 | `.when('md', v => v.onPress(…))` | handlers outside `when()` | variants change style only |
 | `.opacity('half')` on a glass | no opacity on glass | a material is never faded |

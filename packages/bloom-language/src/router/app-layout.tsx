@@ -16,22 +16,26 @@
  * frame the top and paint a band behind the status bar. An app that wants the
  * frame says so: `.shell(() => ({ safeArea: true }))`.
  */
+import { useContext } from 'react';
 import { AppShell } from '@oxy.so/bloom/app-shell';
 import { useTabPagerActions } from '@oxy.so/bloom/tab-pager';
 import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';
 
-import type { Child, IconComponent, Modifier, Node, ShellOptions } from '../node';
+import { EnvContext } from '../env';
+import type { Child, Modifier, Node, ShellOptions } from '../node';
 import { valuesOf } from '../platform/values';
+import { pressOf } from '../render';
 import { destinationBar } from './bar';
 import { drawNavigation } from './navigators';
-import { PrimaryDestinationContext, type PrimaryDestination } from './primary';
-import { destinationsOf, shellLayoutOf } from './shell-panels';
+import { PrimaryDestinationContext, primaryPress, type PrimaryDestination } from './primary';
+import { destinationsOf, shellLayoutOf, sidebarOf } from './shell-panels';
 
 function primaryOf(node: Node): PrimaryDestination | null {
   for (let i = node.modifiers.length - 1; i >= 0; i--) {
     const modifier = node.modifiers[i] as Modifier;
     if (modifier.kind === 'primaryAction') {
-      return { icon: modifier.icon, label: modifier.label, destination: modifier.destination };
+      const { icon, label, action } = modifier;
+      return { icon, label, action: action as PrimaryDestination['action'] };
     }
   }
   return null;
@@ -59,13 +63,15 @@ function ShellHost({ node }: { node: Node }) {
   // The actions alone: the shell's whole tree re-rendered on every navigation
   // when this read the page in front, which only the bar draws.
   const pager = useTabPagerActions();
+  const env = useContext(EnvContext);
   const primary = primaryOf(node);
   const navigator = drawNavigation((node.props as { navigator: Child }).navigator);
   const options = (values.shell as ShellOptions | undefined)?.(navigator);
   const semantic = shellLayoutOf(node, navigator, options);
   // The navigator is a panel's content when the shell has panels, the shell's child otherwise.
   const placed = options !== undefined || semantic.panelLayout !== undefined;
-  const shell = { ...options, ...semantic };
+  const sidebar = sidebarOf(node, (press) => pressOf(press, env));
+  const shell = sidebar ? { ...options, ...semantic, sidebar } : { ...options, ...semantic };
   return (
     <PrimaryDestinationContext.Provider value={primary}>
       <AppShell
@@ -81,13 +87,10 @@ function ShellHost({ node }: { node: Node }) {
   );
 }
 
-function primaryAction(
-  primary: PrimaryDestination,
-  select: (name: string) => void,
-): { icon: IconComponent; accessibilityLabel: string; onPress: () => void } {
+function primaryAction(primary: PrimaryDestination, select: (name: string) => void) {
   return {
     icon: primary.icon,
     accessibilityLabel: primary.label,
-    onPress: () => select(primary.destination),
+    onPress: primaryPress(primary, select),
   };
 }

@@ -1890,7 +1890,8 @@ and selection), which stays above the shell: bottom sheets and Bloom's native
 portal outlet render above the route, so a provider mounted in the layout is
 invisible to them. `.primaryAction(icon, label, destination)` is the sidebar's
 first row and the bar's FAB, and on iOS the destination's tab, drawn on its own
-surface (`prominent`, iOS 27). `.bottomBar(shown)` says whether the bar shows on
+surface (`prominent`, iOS 27); a handler in the destination's place is pressed
+instead (a page's own action, chosen by the page in front). `.bottomBar(shown)` says whether the bar shows on
 this route. The shell's own options (layout mode, panels, error boundaries)
 stay the app's: `.shell(navigator => options)` places the navigator in the
 panel it names.
@@ -2420,15 +2421,24 @@ language does not name):
 | --- | --- |
 | `.shellLayout('workspace' \| 'collection-detail' \| 'feed' \| 'deck' \| 'catalog' \| 'map-browser')` | `AppShell`'s `layout` (a deck: columns side by side that scroll across) |
 | `.shellPresentation('continuous' \| 'framed' \| 'floating')` | `presentation` |
-| `.panels(...panels)` | `panelLayout.panels`, over the options' own `panelLayout` |
+| `.panels(...panels)` | `panelLayout.panels`, over the options' own `panelLayout`; a `false`, `null` or `undefined` panel is none (a list beside the navigator only when the window splits) |
+| `.panelAppearance('separated' \| 'joined' \| 'plain')` | `panelLayout.appearance`: a surface each, or one surface the panels share |
+| `.primaryAction(icon, label, action)` | `primaryAction`, the bar's FAB and the sidebar's first row: `action` a destination's name (on iOS its prominent tab) or a handler, which the layout's body may choose by the page in front (on iOS a handler is the iPad sidebar's row; the system tab bar has no place for it) |
+| `.sidebar(Sidebar(...))` | `sidebar`: the `Sidebar`'s own props (`.variant('rail')`, `.logo()`, `.searchable(false)`, its `.secondary()` rows, `.primaryAction(icon, label, onPress)`, the action it keeps whatever page is in front); the shell draws the destinations as its rows (rows of its own replace them, as Bloom's `sidebar.items` do) |
+| `.activeDestination(name \| undefined)` | `sidebar.selected`: the destination the route in front belongs to (a conversation is the chats destination's); `undefined` is the page in front |
+| `.navFrom('sm' \| 'md' \| 'lg' \| 'xl')` | `navFrom`: from that width the navigation is in flow, a drawer below it |
+| `.contentMaxWidth(space)` | `contentMaxWidth`; `'none'` is no cap |
+| `.reserveBottomBarSpace(false)` | `reserveBottomBarSpace={false}`: the bar floats over the content, and Bloom's scrollers clear it |
 | `.destinations(...destinations)`, `.onReselect(name => …)` | a `TabPagerProvider` above the shell, with these `destinations` and its `onReselect` |
 
 A `Panel(id, content?)` is an `AppShellPanelDefinition`: without content it
 holds the layout's navigator, with it that view beside it. `.panelRole` is its
 `role` (`main`, `collection`, `detail`, `inspector`, `context`, `canvas`,
 each with Bloom's widths), and `.label`, `.width`, `.minWidth`, `.maxWidth`,
-`.resizable`, `.hidden` (`visible={false}`), `.keepMounted` and `.testID` its
-own. An **inspector** is a panel with the `inspector` role and
+`.resizable`, `.resizeLabel` (its divider's name), `.hidden` (`visible={false}`),
+`.keepMounted` and `.testID` its own. `.resizable([width, setWidth])` is a
+width the app holds: Bloom's `width` and `onWidthChange`, the width it rests at
+and the one a drag or an arrow key settles on. An **inspector** is a panel with the `inspector` role and
 `.presented([open, setOpen])` (a binding: Bloom's `open`/`onOpenChange`,
 and it needs a `.label`): a column at the end from `lg`, a floating sheet from
 the end below it, as Bloom draws it.
@@ -2440,6 +2450,38 @@ A `Destination(name, href)` is Bloom's `AppDestination`: `.label`, `.icon`,
 layout draws Bloom's pager provider above the shell, so the app no longer
 mounts one by hand; the router's `TabView()` is the pager itself (see
 [Navigation](#navigation)).
+
+`AppShellMenuButton()` is Bloom's drawer button for a page that draws its own
+header (`Header(title).toolbarLeading(AppShellMenuButton().label(t('navigation.open')))`):
+it hides while the sidebar is in flow and shows a close glyph while the drawer
+is open.
+
+Allo's chats shell, a rail and a list beside the conversation once the window
+splits:
+
+```ts
+export default layout(function Chats() {
+  const [listWidth, setListWidth] = useState(360);
+  const split = useSplitLayout();
+  return AppLayout(Embed(<ChatNavigator split={split} />))
+    .primaryAction(RiChatNewLine, t('chat.new.title'), () => router.push('/new'))
+    .sidebar(
+      Sidebar(NavItem(t('settings.title'), RiSettings3Line).id('settings').secondary().onPress(settings.open))
+        .variant('rail')
+        .searchable(false)
+        .primaryAction(RiChatNewLine, t('chat.new.title'), () => router.push('/new')),
+    )
+    .activeDestination(conversationId ? 'index' : undefined)
+    .navFrom('md')
+    .contentMaxWidth('none')
+    .reserveBottomBarSpace(false)
+    .panelAppearance('joined')
+    .panels(
+      split ? Panel('list', ConversationList()).resizable([listWidth, setListWidth]).minWidth('280').maxWidth('520').resizeLabel(t('chat.resize')) : null,
+      Panel('detail'),
+    );
+});
+```
 
 The shell lays its panels out once it has measured itself, which neither jsdom
 nor the test renderer does: the parity suite proves the shell's frame and
@@ -4990,10 +5032,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
+| Maps to a modifier and a token | 1092 | 47365 | 88.2% |
 | Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 28 | 407 | 0.8% |
-| Needs a named token (raw value) | 258 | 608 | 1.1% |
+| Needs a named token (raw value) | 256 | 601 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
@@ -5006,7 +5048,7 @@ condition. The values with no rung, by scale (the owner names each as a token or
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
-| space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
+| space | 192 | 18px (9), 600px (8), 144px (8), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6), 576px (5) |
 | opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
