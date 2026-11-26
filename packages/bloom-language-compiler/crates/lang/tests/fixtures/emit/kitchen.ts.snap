@@ -92,7 +92,7 @@ export interface ComposerProps {
 }
 export const Composer = view(function Composer(props: ComposerProps) {
 	"use no memo";
-	const $ = $c(30);
+	const $ = $c(29);
 	const { maxLength = 280, onSend } = props;
 	const [draft, setDraft] = useState<Draft>(() => ({
 		text: "",
@@ -148,7 +148,7 @@ export const Composer = view(function Composer(props: ComposerProps) {
 		return () => $controller.abort();
 	}, [sent]);
 	let $t4;
-	if ($[21] !== draft.text || $[22] !== draft.sensitive || $[23] !== left || $[24] !== canSend || $[25] !== send || $[26] !== draft.tags || $[27] !== tone || $[28] !== sent) {
+	if ($[21] !== draft.text || $[22] !== draft.sensitive || $[23] !== left || $[24] !== canSend || $[25] !== send || $[26] !== draft.tags || $[27] !== tone) {
 		const $t3 = first(draft.tags);
 		$t4 = VStack($[5] !== draft.text ? ($[5] = draft.text, $[6] = TextField([draft.text, (value: string) => setDraft((draft) => ({
 			...draft,
@@ -166,10 +166,9 @@ export const Composer = view(function Composer(props: ComposerProps) {
 		$[25] = send;
 		$[26] = draft.tags;
 		$[27] = tone;
-		$[28] = sent;
-		$[29] = $t4;
+		$[28] = $t4;
 	} else {
-		$t4 = $[29];
+		$t4 = $[28];
 	}
 	return $t4;
 });
