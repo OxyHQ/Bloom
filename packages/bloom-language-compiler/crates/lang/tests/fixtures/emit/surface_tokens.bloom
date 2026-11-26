@@ -14,3 +14,15 @@ public struct Badge: View {
     .padding(.md)
   }
 }
+
+// SwiftUI's alignment names (`.top`, `.leading`), and a token each way of a condition.
+public struct LikeButton: View {
+  let liked: Bool
+
+  var body: some View {
+    HStack {
+      Button(Text("Like")).tint(liked ? .danger : .neutral)
+    }
+    .align(.top)
+  }
+}

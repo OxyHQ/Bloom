@@ -681,8 +681,10 @@ a table GENERATED over `spec/language.json`'s token sets
 `crates/lang/src/swift_tokens.generated.rs`, checked by the package's `test`): `Nxl`/`Nxs` become
 N `x`s (`2xl` → `.xxl`), kebab-case becomes camelCase (`caption-1` → `.caption1`,
 `top-leading` → `.topLeading`), and a token with no Swift name (a number, a CSS value) stays a
-number or a string. A name not in the set is B0502 with the closest name; an opacity not on the
-scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
+number or a string. SwiftUI's own names of a set's tokens are aliases in the table (alignment:
+`.top`/`.leading` are `start`, `.bottom`/`.trailing` `end`, `.firstTextBaseline` `baseline`), and a
+condition may choose between two tokens (`.tint(isLiked ? .danger : .neutral)`). A name not in the
+set is B0502 with the closest name; an opacity not on the scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
 `.background(_:)` as a style) are BloomUI's, phase B.
 
 ### 7.3 Reactivity (compile-time)

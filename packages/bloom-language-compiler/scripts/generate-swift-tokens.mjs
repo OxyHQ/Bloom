@@ -22,6 +22,12 @@ export function swiftName(token) {
   return /^[a-z][A-Za-z0-9]*$/.test(name) ? name : null;
 }
 
+/** SwiftUI's names for a set's tokens, where they differ: `HStack(alignment: .top)` aligns
+ * the children's starts (cross-axis), as `.leading` does in a `VStack`. */
+const ALIASES = {
+  alignment: { top: 'start', leading: 'start', bottom: 'end', trailing: 'end', firstTextBaseline: 'baseline' },
+};
+
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
 const sets = tokenSetsOf(spec);
 const lines = [];
@@ -33,6 +39,12 @@ for (const [set, tokens] of Object.entries(sets).sort(([a], [b]) => a.localeComp
     if (swift === null || seen.has(swift)) continue;
     seen.add(swift);
     pairs.push(`(${JSON.stringify(swift)}, ${JSON.stringify(token)})`);
+  }
+  for (const [swift, token] of Object.entries(ALIASES[set] ?? {})) {
+    if (tokens.includes(token) && !seen.has(swift)) {
+      seen.add(swift);
+      pairs.push(`(${JSON.stringify(swift)}, ${JSON.stringify(token)})`);
+    }
   }
   if (pairs.length > 0) lines.push(`    (${JSON.stringify(set)}, &[${pairs.join(', ')}]),`);
 }
