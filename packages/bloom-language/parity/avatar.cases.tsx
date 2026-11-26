@@ -13,7 +13,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 const PHOTO = 'https://cdn.oxy.so/avatars/ana.jpg';
 const onPress = () => {};
-const row = defineTokens({ avatarSize: { feed: 48 } });
+const row = defineTokens({ avatarSize: { feed: 48, hero: 96 } });
 const APP = defineTokens({ color: { ring: '#101010' } });
 
 const avatars: ParityCase[] = [
@@ -162,6 +162,15 @@ const groups: ParityCase[] = [
     name: 'a facepile',
     language: () => toElement(L.AvatarGroup(MEMBERS)),
     bloom: () => <AvatarGroup items={MEMBERS} />,
+  },
+  {
+    // Allo's conversation info: the cluster at an app's own diameter, past Bloom's rungs.
+    name: 'a conversation cluster at an app size (96)',
+    language: () =>
+      toElement(
+        L.AvatarGroup(MEMBERS.slice(0, 3)).layout('conversation').size(row.avatarSize.hero),
+      ),
+    bloom: () => <AvatarGroup items={MEMBERS.slice(0, 3)} layout="conversation" size={96} />,
   },
   ...ENUMS.avatarLayout.map((layout) => ({
     name: `layout ${layout}`,

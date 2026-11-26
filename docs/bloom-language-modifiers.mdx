@@ -72,7 +72,7 @@ A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view 
 - Signature: `.background(value: InkToken)` or `.background(value: ViewNode, alignment?: OverlayAlignment)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 - `overlayAlignment` tokens: `'center'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'top-leading'`, `'top-trailing'`, `'bottom-leading'`, `'bottom-trailing'`
 
 ### `overlay`
@@ -102,7 +102,7 @@ A ring outside the box (an outline, which takes no room): a role, `thin` by defa
 - Signature: `.ring(value: InkToken | 'none', width?: BorderWidthName, offset?: SpaceToken)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `ring` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`, `'none'`
+- `ring` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`, `'none'`
 - `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 - `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
@@ -263,7 +263,7 @@ A border: a colour role (or a role at an opacity, or an app colour), a width (`h
 - Signature: `.border(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 - `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 - `borderEdge` tokens: `'all'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
 
@@ -312,7 +312,7 @@ Text and icon colour for this view and everything inside it; a role, or a role a
 - Taken by: every node (universal), and [option](bloom-language-nodes.mdx#option)
 - Narrower on: [option](bloom-language-nodes.mdx#option) ([colorRole](bloom-language-tokens.mdx#colorrole))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `font`
 
@@ -726,7 +726,7 @@ Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at rest
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.hoverForeground(value: ColorToken | undefined)`
 - Taken by: [button](bloom-language-nodes.mdx#button)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `editable`
 
@@ -760,7 +760,7 @@ The ring each face is cut out of its neighbours by (Bloom's `ringColor`): the co
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.ringColor(value: InkToken)`
 - Taken by: [avatarGroup](bloom-language-nodes.mdx#avatargroup)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `itemAction`
 
@@ -1224,7 +1224,7 @@ A colour role (painted from the theme, at an opacity too), or an app's own colou
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.scrimColor(value: ColorToken | AppToken<'color'>)`
 - Taken by: [header](bloom-language-nodes.mdx#header)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `scrimFalloff`
 
@@ -1731,8 +1731,8 @@ A paired fill and label from two colour roles (Bloom's `colors`), for a brand ac
 - Parameters: [color](bloom-language-tokens.mdx#color); [color](bloom-language-tokens.mdx#color)
 - Signature: `.colors(background: ColorToken, foreground: ColorToken)`
 - Taken by: [button](bloom-language-nodes.mdx#button)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `linkTone`
 
@@ -1780,14 +1780,14 @@ Flat segments with a gap between them, under the shared outer pill.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fill(value: ColorToken)`
 - Taken by: [shape](bloom-language-nodes.mdx#shape)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `stroke`
 
 - Parameters: [color](bloom-language-tokens.mdx#color); [borderWidth](bloom-language-tokens.mdx#borderwidth) (optional)
 - Signature: `.stroke(value: ColorToken, width?: BorderWidthName)`
 - Taken by: [shape](bloom-language-nodes.mdx#shape)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 - `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 
 ### `image`
@@ -2487,7 +2487,7 @@ The colour its edges fade into on the web: a role or an app's own (the surface b
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fade(value: InkToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [scrollSurface](bloom-language-nodes.mdx#scrollsurface)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `ringInset`
 
@@ -2643,7 +2643,7 @@ Pull to refresh: a binding a pull writes `true` (the app writes `false` when don
 - Signature: `.refreshable(value: Refresh, tint?: RefreshTint<ColorToken>)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - Narrower on: [virtualList](bloom-language-nodes.mdx#virtuallist) (a value)
-- `refreshTint` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `refreshTint` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `onEndReached`
 
@@ -3049,7 +3049,7 @@ The screen's own fill, behind its header and content (Bloom `Screen`'s `style.ba
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.screenBackground(value: InkToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `reselectTop`
 
@@ -3210,7 +3210,7 @@ The band behind the bar: a role or an app's own (the fill of the surface it sits
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.band(value: InkToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `peekDelay`
 
@@ -3534,7 +3534,7 @@ The filled stars alone.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.starTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `countTint`
 
@@ -3543,7 +3543,7 @@ The count alone.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.countTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `emptyTint`
 
@@ -3552,7 +3552,7 @@ The unfilled part of each star (`stars`).
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.emptyTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `fillValue`
 
@@ -3619,7 +3619,7 @@ The rail behind the fill (neutral by default).
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.trackTint(value: ColorToken)`
 - Taken by: [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `fillDuration`
 
@@ -3647,7 +3647,7 @@ A disc under the whole ring: the scrim that lets it read over a photo.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.backdrop(value: ColorToken)`
 - Taken by: [meterRing](bloom-language-nodes.mdx#meterring), [categoryBar](bloom-language-nodes.mdx#categorybar)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `cap`
 
@@ -4035,14 +4035,14 @@ The filled part of the track.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fillTint(value: ColorToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `thumbTint`
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.thumbTint(value: ColorToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `onCommit`
 
@@ -4875,7 +4875,7 @@ The glyph's ink, a colour role, over the menu's (its quiet ink, or the negative 
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.iconForeground(value: InkToken)`
 - Taken by: [menuItem](bloom-language-nodes.mdx#menuitem), [menuSubmenu](bloom-language-nodes.mdx#menusubmenu)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `activeTint`
 
@@ -4884,7 +4884,7 @@ The active point's colour.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.activeTint(value: ColorToken)`
 - Taken by: [heatmapChartCard](bloom-language-nodes.mdx#heatmapchartcard), [lineChartCard](bloom-language-nodes.mdx#linechartcard), [stepsCard](bloom-language-nodes.mdx#stepscard), [tokensChartCard](bloom-language-nodes.mdx#tokenschartcard)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `bubbleTint`
 
@@ -4893,7 +4893,7 @@ The bubble's fill it sits on, when it is not Bloom's.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.bubbleTint(value: ColorToken)`
 - Taken by: [contactMessage](bloom-language-nodes.mdx#contactmessage), [fileMessage](bloom-language-nodes.mdx#filemessage), [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [locationMessage](bloom-language-nodes.mdx#locationmessage), [pollMessage](bloom-language-nodes.mdx#pollmessage), [stickerMessage](bloom-language-nodes.mdx#stickermessage), [videoMessage](bloom-language-nodes.mdx#videomessage), [voiceMessage](bloom-language-nodes.mdx#voicemessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `contentTint`
 
@@ -4902,14 +4902,14 @@ What is drawn on the bubble (text, icons), when it is not Bloom's.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.contentTint(value: ColorToken)`
 - Taken by: [contactMessage](bloom-language-nodes.mdx#contactmessage), [fileMessage](bloom-language-nodes.mdx#filemessage), [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [locationMessage](bloom-language-nodes.mdx#locationmessage), [pollMessage](bloom-language-nodes.mdx#pollmessage), [stickerMessage](bloom-language-nodes.mdx#stickermessage), [videoMessage](bloom-language-nodes.mdx#videomessage), [voiceMessage](bloom-language-nodes.mdx#voicemessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `placeholderTint`
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.placeholderTint(value: ColorToken)`
 - Taken by: [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [videoMessage](bloom-language-nodes.mdx#videomessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `gradient`
 
@@ -4969,7 +4969,7 @@ The sender's name's colour, a role (by default one picked from the sender's seed
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.senderTint(value: ColorToken)`
 - Taken by: [messageBubble](bloom-language-nodes.mdx#messagebubble)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'primarySubtle'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'overlay'`, `'surfaceFill'`
 
 ### `showZeroCounts`
 

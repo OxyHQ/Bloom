@@ -78,7 +78,11 @@ const motionSpecs = Object.fromEntries(
 /** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
 /** A role's web value; the surface fill has none (\`null\`): its leaf paints it. */
 const webColor = (css) =>
-  css === null ? null : css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`;
+  css === null
+    ? null
+    : css.startsWith('#') || css.startsWith('rgba(') || css === 'transparent'
+      ? css
+      : `var(--${css})`;
 /** The roles a class paints: every one with a web value. */
 const classRoles = Object.keys(colors).filter((role) => colors[role][1] !== null);
 

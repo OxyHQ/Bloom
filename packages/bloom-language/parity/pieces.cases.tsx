@@ -17,6 +17,8 @@ import { defineTokens } from '../src/tokens';
 
 /** An app's own white, as Mention writes it (`#fff`). */
 const PIECE = defineTokens({ color: { white: '#fff' } });
+/** Allo's profile skeleton: a name line 180 wide on a 26pt line, an app's own values. */
+const PROFILE = defineTokens({ space: { name: 180 }, leadingPx: { name: 26 } });
 
 const onPress = () => {};
 const { space, borderRadius } = tokens;
@@ -171,6 +173,19 @@ const skeletons: ParityCase[] = [
     bloom: () => (
       <Skeleton.Text style={{ lineHeight: TYPE_SCALE['body-regular'].lineHeight, width: 60 }} />
     ),
+  },
+  {
+    name: 'Skeleton text on an app line height in points (leadingPx)',
+    language: () =>
+      toElement(
+        L.Skeleton('text').frame({ width: PROFILE.space.name }).leading(PROFILE.leadingPx.name),
+      ),
+    bloom: () => <Skeleton.Text style={{ width: 180, lineHeight: 26 }} />,
+  },
+  {
+    name: 'a text on an app line height in points, whatever its size (leadingPx)',
+    language: () => toElement(L.Text('a').font('18').leading(PROFILE.leadingPx.name)),
+    bloom: () => <Text style={{ fontSize: 18, lineHeight: 26 }}>a</Text>,
   },
   {
     name: 'a circle',

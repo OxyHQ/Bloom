@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps `theme.colors.overlay` and `theme.colors.primarySubtle` to the roles `overlay` and `primarySubtle` (from the spec's colours).
+
 ## 0.5.0
 
 ### Compatibility

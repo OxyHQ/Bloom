@@ -467,6 +467,26 @@ const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
     );
     expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
   });
+  it('reads Bloom’s scrim and brand container as their roles', () => {
+    const { code, unconverted } = run(`import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View style={{ backgroundColor: theme.colors.overlay }}>
+      <View style={{ backgroundColor: theme.colors.primarySubtle }}>
+        <Text style={{ color: theme.colors.primarySubtleForeground }}>a</Text>
+      </View>
+    </View>
+  );
+}
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain(
+      "VStack(VStack(LText('a').foreground('primaryText')).background('primarySubtle')).background('overlay')",
+    );
+  });
   it('reads a style’s flex: 1 as .grow() and a theme colour as its role, and keeps a style a variant would override', () => {
     const result = run(`import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
