@@ -58,3 +58,9 @@ pub default view Long(items: [String]) {
     .padding("lg")
   }
 }
+
+async fn persist(value: Int) -> Unit {
+  defer { log("done") }
+  task { await store(value) }
+  ()
+}
