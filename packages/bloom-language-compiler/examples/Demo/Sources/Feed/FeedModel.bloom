@@ -2,25 +2,27 @@ import API
 import Posts
 
 // ADR 0002, example 1: the feed, with an optimistic like.
-// Stand-in (phase A has no `@Observable final class`): the model is a value and
-// functions that return its next state; the screen keeps it in `@State`.
 
 public struct FeedState: Equatable {
   public var posts: [Post] = []
   public var isLoading: Bool = false
-  public var cursor: String = ""
+  public var cursor: String? = none
   public var failed: String = ""
 }
 
 public func refresh(_ state: FeedState) async -> FeedState {
-  let page = await homeFeed()
-  FeedState(posts: page.items, isLoading: false, cursor: page.cursor, failed: "")
+  do {
+    let page = try await homeFeed()
+    return FeedState(posts: page.items, isLoading: false, cursor: page.cursor, failed: "")
+  } catch {
+    return FeedState(posts: state.posts, isLoading: false, cursor: state.cursor, failed: error.localizedDescription)
+  }
 }
 
 /// The feed with `post` (un)liked: before the server answers.
 public func optimistic(_ state: FeedState, _ post: Post) -> FeedState {
   FeedState(
-    posts: state.posts.map { $0.id == post.id ? liked($0, !post.isLiked) : $0 },
+    posts: state.posts.updating(where: { $0.id == post.id }, { $0.liked(!post.isLiked) }),
     isLoading: state.isLoading,
     cursor: state.cursor,
     failed: "",
@@ -31,7 +33,7 @@ public func optimistic(_ state: FeedState, _ post: Post) -> FeedState {
 public func settled(_ state: FeedState, _ post: Post, _ ok: Bool) -> FeedState {
   if ok { return state }
   FeedState(
-    posts: state.posts.map { $0.id == post.id ? post : $0 },
+    posts: state.posts.updating(where: { $0.id == post.id }, { _ in post }),
     isLoading: state.isLoading,
     cursor: state.cursor,
     failed: "Could not like the post",

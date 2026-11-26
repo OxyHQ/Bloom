@@ -1,47 +1,19 @@
 import Posts
 
-// Stand-in (phase B, `HTTPClient`): the API answers from a local fixture, with a
-// failure switch so the optimistic like can be seen rolling back.
+// The demo's API answers from a local JSON fixture (no server), decoded exactly as
+// `HTTPClient.get(_:as:)` decodes a response: `JSON.decode(Page.self, from:)`.
 
-public struct Page: Equatable {
+public struct Page: Codable, Equatable {
   public let items: [Post]
-  public let cursor: String
+  public let cursor: String?
 }
 
-let ada = User(name: "Ada Lovelace", initials: "AL", isVerified: true)
-let alan = User(name: "Alan Turing", initials: "AT", isVerified: false)
+let fixture = "{\"cursor\":\"next\",\"items\":[{\"id\":\"1\",\"text\":\"Bloom 2.0 reads like Swift.\",\"author\":{\"name\":\"Ada Lovelace\",\"initials\":\"AL\",\"isVerified\":true},\"createdAt\":\"2026-11-26T18:00:00Z\",\"likes\":12},{\"id\":\"2\",\"text\":\"Modules, not paths.\",\"author\":{\"name\":\"Alan Turing\",\"initials\":\"AT\"},\"createdAt\":\"2026-11-26T17:00:00Z\",\"likes\":3,\"isLiked\":true},{\"id\":\"3\",\"text\":\"One CLI: bloom build, bloom run, bloom test.\",\"author\":{\"name\":\"Ada Lovelace\",\"initials\":\"AL\",\"isVerified\":true},\"createdAt\":\"2026-11-26T15:00:00Z\",\"likes\":40}]}"
 
 /// `GET /feeds/home`.
-public func homeFeed() async -> Page {
-  Page(
-    items: [
-      Post(
-        id: "1",
-        text: "Bloom 2.0 reads like Swift.",
-        author: ada,
-        createdAt: "2m",
-        likes: 12,
-        isLiked: false,
-      ),
-      Post(
-        id: "2",
-        text: "Modules, not paths.",
-        author: alan,
-        createdAt: "1h",
-        likes: 3,
-        isLiked: true,
-      ),
-      Post(
-        id: "3",
-        text: "One CLI: bloom build, bloom run, bloom test.",
-        author: ada,
-        createdAt: "3h",
-        likes: 40,
-        isLiked: false,
-      ),
-    ],
-    cursor: "next",
-  )
+public func homeFeed() async throws -> Page {
+  try await sleep(for: Duration.milliseconds(150.0))
+  return try JSON.decode(Page.self, from: fixture)
 }
 
 /// `POST /posts/:id/like`: false when the server refuses (post "3" does, to show the rollback).

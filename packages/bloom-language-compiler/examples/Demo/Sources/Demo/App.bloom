@@ -6,12 +6,11 @@ import Settings
 public struct App: View {
   var body: some View {
     ScrollView {
-      VStack {
+      VStack(spacing: .xl) {
         NotificationSettings()
         FeedScreen()
       }
-      .spacing(.xl)
-      .padding(.lg)
+      .padding(.horizontal, .lg)
     }
   }
 }

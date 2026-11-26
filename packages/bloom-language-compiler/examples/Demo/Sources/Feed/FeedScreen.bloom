@@ -1,7 +1,7 @@
 import API
 import Posts
 
-// ADR 0002, example 3 (the screen): the list of rows over the model.
+// ADR 0002, example 3 (the screen): the rows over the model.
 
 public struct FeedScreen: View {
   @State private var state = FeedState()
@@ -14,13 +14,13 @@ public struct FeedScreen: View {
   }
 
   var body: some View {
-    VStack {
+    VStack(spacing: .sm) {
       Text("Home").font(.title2)
-      if state.failed != "" { Text(state.failed).foreground(.muted) }
-      // Stand-in (phase B, BloomUI): `List(model.posts) { … }.refreshable { … }`.
-      for post in state.posts { PostRow(post: post, onLike: { task { await like(post) } }) }
+      if state.failed != "" { Text(state.failed).foregroundStyle(.muted) }
+      ForEach(state.posts) { post in
+        PostRow(post: post, onLike: { task { await like(post) } })
+      }
     }
-    .spacing(.sm)
     .task { state = await refresh(state) }
   }
 }

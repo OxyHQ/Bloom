@@ -168,6 +168,23 @@ impl Lowering<'_> {
         !self.own.contains(name)
     }
 
+    /// `.heart` (or `on ? .likeFill : .like`) as the icon set's glyphs.
+    fn glyph(&mut self, value: &Expr) -> Option<Expr> {
+        match &value.kind {
+            ExprKind::ImplicitMember(name) => {
+                let component = icon_component(&name.name);
+                self.icons.insert(component.clone());
+                Some(expr(ExprKind::Name(component), value.span))
+            }
+            ExprKind::Ternary(cond, a, b) => {
+                let (a, b) = (self.glyph(a)?, self.glyph(b)?);
+                Some(expr(ExprKind::Ternary(cond.clone(), Box::new(a), Box::new(b)), value.span))
+            }
+            ExprKind::Paren(inner) => self.glyph(inner),
+            _ => None,
+        }
+    }
+
     fn rewrite(&mut self, e: &mut Expr) {
         let span = e.span;
         let ExprKind::Call(c) = &mut e.kind else { return };
@@ -175,11 +192,9 @@ impl Lowering<'_> {
         if name_of(&c.callee) == Some("Icon")
             && self.ours("Icon")
             && let [only] = c.args.as_mut_slice()
-            && let ExprKind::ImplicitMember(name) = &only.value.kind
+            && let Some(glyph) = self.glyph(&only.value)
         {
-            let component = icon_component(&name.name);
-            only.value = expr(ExprKind::Name(component.clone()), only.value.span);
-            self.icons.insert(component);
+            only.value = glyph;
             return;
         }
         // `.foregroundStyle(x)` / `.lineLimit(n)`: renamed modifiers.

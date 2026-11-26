@@ -2,10 +2,18 @@ import API
 import Posts
 
 test("a like counts once, and an unlike takes it back") {
-  let page = await homeFeed()
+  let page = try await homeFeed()
   guard let post = page.items[0] else { return }
-  let once = liked(post, true)
+  let once = post.liked(true)
   #expect(once.likes == post.likes + 1)
   #expect(once.isLiked)
-  #expect(liked(once, false) == post)
+  #expect(once.liked(false) == post)
+}
+
+test("the fixture decodes through derived Codable") {
+  let page = try await homeFeed()
+  #expect(page.items.count == 3)
+  #expect(page.cursor == "next")
+  #expect(page.items[1]?.isLiked == true)
+  #expect(page.items[0]?.createdAt.iso8601 == "2026-11-26T18:00:00.000Z")
 }

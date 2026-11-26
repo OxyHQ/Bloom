@@ -5,24 +5,22 @@ public struct PostRow: View, Equatable {
   let onLike: () -> Void
 
   var body: some View {
-    HStack {
+    HStack(alignment: .start, spacing: .sm) {
       Avatar(post.author.initials)
-      VStack {
-        HStack {
+      VStack(spacing: .xs) {
+        HStack(spacing: .xs) {
           Text(post.author.name).font(.headline)
-          if post.author.isVerified { Text("✓").foreground(.primary) }
+          if post.author.isVerified { Icon(.verifiedBadgeFill).foregroundStyle(.primary) }
           Spacer()
-          Text(post.createdAt).foreground(.muted)
+          Text(post.createdAt, format: .abbreviated).foregroundStyle(.muted)
         }
-        .spacing(.xs)
         Text(post.text)
-        // Stand-in (phase B, BloomUI): `Button { } label: { Label(…, icon:) }`.
-        Button(Text(post.isLiked ? "♥ \(post.likes)" : "♡ \(post.likes)")).onPress { onLike() }
+        HStack {
+          Button(action: onLike) { Label("\(post.likes)", icon: post.isLiked ? .likeFill : .like) }
+        }
       }
-      .spacing(.xs)
     }
-    .spacing(.sm)
-    .padding(.md)
+    .padding(.vertical, .sm)
   }
 
   static func == (a: Self, b: Self) -> Bool { a.post == b.post }
