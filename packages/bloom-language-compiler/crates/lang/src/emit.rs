@@ -1126,6 +1126,15 @@ impl<'a> Emitter<'a> {
 
     fn stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
+            // `async let x = f()`: the promise, started now; marked handled, so an error it
+            // ends in before `await x` (which throws it) is not reported as unhandled.
+            StmtKind::Let(l) if l.is_async => {
+                let value = self.expr(&l.value);
+                let target = self.binding_target(&l.pattern);
+                let mut line = Frag::at(stmt.span, format!("const {target} = "));
+                line.f(value).s(&format!(";\n{target}.catch(() => {{}});"));
+                self.push_stmt(line);
+            }
             StmtKind::Let(l) => {
                 let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let value = self.value_expr(&l.value);
@@ -2039,6 +2048,18 @@ impl<'a> Emitter<'a> {
                     &ty,
                     false,
                 )
+            }
+            // `await (a, b)` of `async let`s: together.
+            ExprKind::Await(inner) if self.ck.await_all.contains(&expr.id) => {
+                let mut inner = inner.as_ref();
+                while let ExprKind::Paren(inside) = &inner.kind {
+                    inner = inside;
+                }
+                let items: Vec<Frag> = match &inner.kind {
+                    ExprKind::Tuple(items) => items.iter().map(|i| self.expr(i)).collect(),
+                    _ => vec![self.expr(inner)],
+                };
+                Frag::join(items, ", ").wrap("(await Promise.all([", "]))")
             }
             ExprKind::Await(inner) => match self.ck.awaits.get(&expr.id) {
                 // A `Result` that escapes (bound, passed, returned): built in place.

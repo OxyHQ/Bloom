@@ -231,6 +231,161 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
     out.push(Item { visibility, modifiers, kind, span: member.span });
 }
 
+/// The standard library's queues an actor's methods run through (to import as written
+/// names are: the source never spells them).
+pub fn actor_runners(file: &File) -> Vec<String> {
+    let mut out = Vec::new();
+    for item in &file.items {
+        let ItemKind::Class(c) = &item.kind else { continue };
+        if !c.actor {
+            continue;
+        }
+        for member in &c.body.members {
+            let TypeMemberKind::Func(f) = &member.kind else { continue };
+            let Some(Stmt { kind: StmtKind::Expr(mut e), .. }) = f.body.stmts.first().cloned() else {
+                continue;
+            };
+            while let ExprKind::Throwing(_, inner) | ExprKind::Await(inner) = e.kind {
+                e = *inner;
+            }
+            if let ExprKind::Call(call) = &e.kind
+                && let ExprKind::Name(name) = &call.callee.kind
+                && name.starts_with("actorIsolated")
+                && !out.contains(name)
+            {
+                out.push(name.clone());
+            }
+        }
+    }
+    out
+}
+
+/// The isolated body of an actor's method `m`: what its own members call.
+fn isolated(name: &str) -> String {
+    format!("{name}$isolated")
+}
+
+/// An `actor`'s methods, serialised (ADR 0002, section 3: concurrency). Each method `m`
+/// becomes `m$isolated` (private: its body as written), and a new `m` that is `async`
+/// and runs it through the actor's queue (`actorIsolated`, `stdlib/Bloom/Concurrency.bloom`),
+/// so a call from outside is awaited and waits for the calls before it. The actor's own
+/// members call `m$isolated` directly: a call from inside never waits on itself.
+fn isolate(c: &mut ClassDecl, ids: &mut Ids) {
+    let methods: Vec<String> = c
+        .body
+        .members
+        .iter()
+        .filter_map(|m| match &m.kind {
+            TypeMemberKind::Func(f)
+                if !m.modifiers.is_static && f.name.name != "init" && f.name.name != "==" =>
+            {
+                Some(f.name.name.clone())
+            }
+            _ => None,
+        })
+        .collect();
+    if methods.is_empty() {
+        return;
+    }
+    let rename = |e: &mut Expr| match &mut e.kind {
+        ExprKind::Name(name) if methods.contains(name) => *name = isolated(name),
+        ExprKind::Field(object, member)
+            if matches!(&object.kind, ExprKind::Name(n) if n == "self") && methods.contains(&member.name) =>
+        {
+            member.name = isolated(&member.name);
+        }
+        _ => {}
+    };
+    let mut wrappers = Vec::new();
+    for member in &mut c.body.members {
+        match &mut member.kind {
+            TypeMemberKind::Func(f) => {
+                walk_block(&mut f.body, &mut |e| rename(e), &mut |_| {});
+                if member.modifiers.is_static || !methods.contains(&f.name.name) {
+                    continue;
+                }
+                wrappers.push(queued(member.visibility, &member.modifiers, member.span, f, ids));
+                f.name.name = isolated(&f.name.name);
+                member.visibility = Visibility::Private;
+                member.modifiers.visibility_span = None;
+            }
+            TypeMemberKind::Computed { body, .. } => walk_block(body, &mut |e| rename(e), &mut |_| {}),
+            _ => {}
+        }
+    }
+    c.body.members.extend(wrappers);
+}
+
+/// `func m(…) async [throws] -> R { [try] await actorIsolated…(self) { [try] [await] self.m$isolated(…) } }`.
+fn queued(visibility: Visibility, modifiers: &Modifiers, at: Span, f: &FnDecl, ids: &mut Ids) -> TypeMember {
+    let span = f.name.span;
+    let mut expr = |kind: ExprKind| Expr { id: ids.next(), kind, span };
+    let ident = |name: &str| Ident { name: name.to_string(), span };
+    let args: Vec<Arg> = f
+        .params
+        .iter()
+        .map(|p| {
+            let label = match &p.label {
+                Some(l) if l.name == "_" => None,
+                Some(l) => Some(l.clone()),
+                None if f.func => Some(p.name.clone()),
+                None => None,
+            };
+            Arg { label, spread: false, value: expr(ExprKind::Name(p.name.name.clone())), span }
+        })
+        .collect();
+    let receiver = expr(ExprKind::Name("self".into()));
+    let callee = expr(ExprKind::Field(Box::new(receiver), ident(&isolated(&f.name.name))));
+    let call = ExprKind::Call(Call {
+        callee: Box::new(callee),
+        args,
+        parens: true,
+        trailing: None,
+        optional: false,
+    });
+    let mut work = expr(call);
+    if f.is_async {
+        work = expr(ExprKind::Await(Box::new(work)));
+    }
+    if f.throws.is_some() {
+        work = expr(ExprKind::Throwing(TryKind::Plain, Box::new(work)));
+    }
+    let closure = Closure {
+        params: Vec::new(),
+        has_in: false,
+        tuple: false,
+        body: vec![Stmt { kind: StmtKind::Expr(work), span }],
+        span,
+    };
+    let runner = match (f.is_async, f.throws.is_some()) {
+        (false, false) => "actorIsolated",
+        (false, true) => "actorIsolatedThrowing",
+        (true, false) => "actorIsolatedAsync",
+        (true, true) => "actorIsolatedAsyncThrowing",
+    };
+    let runner = expr(ExprKind::Name(runner.into()));
+    let this = expr(ExprKind::Name("self".into()));
+    let closure = expr(ExprKind::Closure(closure));
+    let run = expr(ExprKind::Call(Call {
+        callee: Box::new(runner),
+        args: vec![
+            Arg { label: None, spread: false, value: this, span },
+            Arg { label: None, spread: false, value: closure, span },
+        ],
+        parens: true,
+        trailing: None,
+        optional: false,
+    }));
+    let mut body = expr(ExprKind::Await(Box::new(run)));
+    if f.throws.is_some() {
+        body = expr(ExprKind::Throwing(TryKind::Plain, Box::new(body)));
+    }
+    let mut wrapper = f.clone();
+    wrapper.is_async = true;
+    wrapper.body = Block { stmts: vec![Stmt { kind: StmtKind::Expr(body), span }], span: f.body.span };
+    TypeMember { visibility, modifiers: modifiers.clone(), kind: TypeMemberKind::Func(wrapper), span: at }
+}
+
 /// Whether `body` lowers members: a method, a computed property, an `init` or a `static let`.
 fn has_members(members: &[TypeMember]) -> bool {
     members.iter().any(|m| match &m.kind {
@@ -287,6 +442,14 @@ fn member_names(file: &File) -> Vec<(String, Vec<String>)> {
 
 /// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place.
 pub fn lower(file: &mut File) {
+    let mut ids = Ids(u32::MAX / 2);
+    for item in &mut file.items {
+        if let ItemKind::Class(c) = &mut item.kind
+            && c.actor
+        {
+            isolate(c, &mut ids);
+        }
+    }
     let lowers = |i: &Item| match &i.kind {
         ItemKind::Extension(_) | ItemKind::Class(_) => true,
         ItemKind::Struct(s) => s.surface.as_ref().is_some_and(|b| has_members(&b.members)),
@@ -309,7 +472,6 @@ pub fn lower(file: &mut File) {
     let names = member_names(file);
     let none = Vec::new();
     let names_of = |owner: &str| names.iter().find(|(n, _)| n == owner).map_or(&none, |(_, m)| m);
-    let mut ids = Ids(u32::MAX / 2);
     let mut items = Vec::new();
     for item in std::mem::take(&mut file.items) {
         let (name, generics, members, extension) = match &item.kind {

@@ -240,6 +240,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
     let mut derived = crate::codable::lower(file, &mut out.diagnostics);
     derived.extend(crate::model::query_names(file));
+    derived.extend(crate::extensions::actor_runners(file));
     let path = absolute(Path::new(filename));
     let tests_allowed = in_tests(&path, options);
     out.diagnostics.extend(crate::testing::lower(file, source, tests_allowed));

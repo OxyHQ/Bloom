@@ -300,6 +300,10 @@ pub struct CheckResult {
     /// fn's span).
     pub fn_rets: HashMap<Span, Ty>,
     pub awaits: HashMap<ExprId, AwaitRes>,
+    /// `await (a, b)` of `async let`s: every one awaited together (`Promise.all`).
+    pub await_all: HashSet<ExprId>,
+    /// The `async let` locals (each holds its call's promise).
+    pub async_lets: HashSet<LocalId>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
     /// Pattern span → the type it matches; binding span → its local.
@@ -429,6 +433,8 @@ pub struct Checker<'o> {
     ts_named: HashMap<(PathBuf, String), Ty>,
     /// The view being checked.
     view: Option<usize>,
+    /// The `async let`s not yet awaited: whether the call throws, and the scope depth.
+    pending: HashMap<LocalId, (bool, usize)>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
@@ -536,6 +542,7 @@ impl<'o> Checker<'o> {
             }],
             ts_named: HashMap::default(),
             view: None,
+            pending: HashMap::default(),
             hook_allowed: false,
             hook_body: None,
             was_hook: false,
@@ -919,6 +926,24 @@ impl<'o> Checker<'o> {
     }
 
     fn pop(&mut self) {
+        // An `async let` is awaited in its scope: its result (or its error) is read.
+        let depth = self.scopes.len();
+        let mut left: Vec<LocalId> =
+            self.pending.iter().filter(|(_, (_, d))| *d == depth).map(|(l, _)| *l).collect();
+        left.sort_unstable();
+        for local in left {
+            self.pending.remove(&local);
+            let info = self.out.locals[local].clone();
+            self.report(
+                Diagnostic::error("B0227", info.span, format!("`async let {}` is never awaited", info.name))
+                    .label("its call runs, and nothing reads its result or its error")
+                    .help(format!(
+                        "read it with `await {}` before the block ends, or call it without `async let`",
+                        info.name
+                    ))
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
         self.scopes.pop();
         let depth = self.scopes.len();
         self.paths.retain(|p| p.0 <= depth);
@@ -2455,6 +2480,7 @@ impl<'o> Checker<'o> {
 
     fn stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
+            StmtKind::Let(l) if l.is_async => self.async_let(l),
             StmtKind::Let(l) => {
                 let declared = l.ty.as_ref().map(|t| self.resolve_type(t));
                 // A hook function's top-level `let` may call a hook, as a view member does.
@@ -4201,6 +4227,18 @@ impl<'o> Checker<'o> {
     fn name(&mut self, expr: &Expr, name: &str) -> Ty {
         if let Some(local) = self.lookup(name) {
             self.out.names.insert(expr.id, NameRes::Local(local));
+            if self.out.async_lets.contains(&local) {
+                self.report(
+                    Diagnostic::error(
+                        "B0227",
+                        expr.span,
+                        format!("`{name}` is an `async let`: read it with `await {name}`"),
+                    )
+                    .label("its result is not there yet")
+                    .fix(Span::new(expr.span.start, expr.span.start), "await ")
+                    .spec("8-effects-tasks-and-concurrency"),
+                );
+            }
             let info = self.out.locals[local].clone();
             if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
                 self.var_captured(&info, expr.span);
@@ -4714,7 +4752,126 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `async let x = f()`: `f()` starts now; `x` holds its promise until `await x`.
+    fn async_let(&mut self, l: &LetStmt) {
+        let frame = self.frames.last().expect("a frame");
+        if !frame.is_async || frame.closure {
+            self.report(
+                Diagnostic::error("B0215", l.span, "`async let` is only allowed in an async function")
+                    .label("this function is not async")
+                    .help("mark the function `async`")
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        let PatternKind::Bind(name) = &l.pattern.kind else {
+            self.report(
+                Diagnostic::error("B0227", l.pattern.span, "`async let` binds one name")
+                    .label("not a name")
+                    .help("write `async let x = f()`, and destructure `await x`")
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+            return;
+        };
+        // Its errors surface where it is awaited (`try await x`), not here.
+        let before = self.out.diagnostics.len();
+        let ty = self.expr(&l.value, None);
+        let mut throws = false;
+        let mut index = before;
+        while index < self.out.diagnostics.len() {
+            if self.out.diagnostics[index].code == "B0223" {
+                let removed = self.out.diagnostics.remove(index);
+                self.reported.remove(&removed.span);
+                throws = true;
+            } else {
+                index += 1;
+            }
+        }
+        let value = match self.resolve(&ty) {
+            Ty::Async(value) => *value,
+            Ty::Unknown => Ty::Unknown,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0215",
+                        l.value.span,
+                        format!("`async let` starts an async call, and this is {}", self.show(&other)),
+                    )
+                    .label("not an async call")
+                    .help("write `let`")
+                    .spec("8-effects-tasks-and-concurrency"),
+                );
+                other
+            }
+        };
+        if let Some(declared) = l.ty.as_ref().map(|t| self.resolve_type(t))
+            && !self.unify(&value, &declared)
+        {
+            self.mismatch(l.value.span, &value, &declared);
+        }
+        let local = self.declare(name, Ty::Async(Box::new(value)), LocalKind::Let);
+        self.out.async_lets.insert(local);
+        self.pending.insert(local, (throws, self.scopes.len()));
+    }
+
+    /// `await x` of an `async let` (or `await (a, b)` of several): its result, once.
+    fn await_pending(&mut self, expr: &Expr, inner: &Expr) -> Option<Ty> {
+        let names: Vec<&Expr> = match &inner.kind {
+            ExprKind::Name(_) => vec![inner],
+            ExprKind::Tuple(items) if !items.is_empty() => items.iter().collect(),
+            ExprKind::Paren(inside) => return self.await_pending(expr, inside),
+            _ => return None,
+        };
+        let mut locals = Vec::new();
+        for name in &names {
+            let ExprKind::Name(text) = &name.kind else { return None };
+            let local = self.lookup(text)?;
+            if !self.out.async_lets.contains(&local) {
+                return None;
+            }
+            locals.push((local, *name));
+        }
+        let mut tys = Vec::new();
+        for (local, name) in locals {
+            self.out.names.insert(name.id, NameRes::Local(local));
+            let ty = self.out.locals[local].ty.clone();
+            self.out.types.insert(name.id, ty.clone());
+            if let Some((throws, _)) = self.pending.remove(&local)
+                && throws
+                && !self.trying
+            {
+                self.report(
+                    Diagnostic::error(
+                        "B0223",
+                        name.span,
+                        "this `async let` can throw, and it is not awaited with `try`",
+                    )
+                    .label("its call throws")
+                    .help("write `try await`")
+                    .fix(Span::new(expr.span.start, expr.span.start), "try ")
+                    .spec("6-expressions-and-control-flow"),
+                );
+            }
+            tys.push(match ty {
+                Ty::Async(value) => *value,
+                other => other,
+            });
+        }
+        self.out.awaits.insert(expr.id, AwaitRes::Bloom);
+        if names.len() == 1 && !matches!(inner.kind, ExprKind::Tuple(_)) {
+            return tys.pop();
+        }
+        self.out.await_all.insert(expr.id);
+        Some(Ty::Tuple(tys))
+    }
+
     fn await_expr(&mut self, expr: &Expr, inner: &Expr) -> Ty {
+        if let Some(ty) = self.await_pending(expr, inner) {
+            let frame = self.frames.last_mut().expect("a frame");
+            if frame.closure {
+                frame.is_async = true;
+            }
+            return ty;
+        }
         let frame = self.frames.last_mut().expect("a frame");
         if frame.closure {
             frame.is_async = true;

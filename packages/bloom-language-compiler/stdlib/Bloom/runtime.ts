@@ -954,6 +954,26 @@ export function storageKeys(kind: string, name: string): readonly string[] {
   return backend(kind).keys(name);
 }
 
+// ---- actors -------------------------------------------------------------------
+
+/** Each actor's last queued call (settled or not): the next one starts after it. */
+const actorTails = new WeakMap<object, Promise<unknown>>();
+
+/**
+ * An actor's method: `work` starts once the actor's earlier calls have ended (whether
+ * they returned or threw), so its methods run one at a time, in call order.
+ */
+export function actorQueue<A, T>(actor: A, work: () => T | Promise<T>): Promise<T> {
+  const key = actor as object;
+  const previous = actorTails.get(key) ?? Promise.resolve();
+  const next = previous.then(work, work);
+  actorTails.set(
+    key,
+    next.catch(() => undefined),
+  );
+  return next;
+}
+
 // ---- refresh ------------------------------------------------------------------
 
 /**

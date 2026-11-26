@@ -126,6 +126,7 @@ fn is_decl_word(word: &str) -> bool {
         word,
         "func"
             | "class"
+            | "actor"
             | "protocol"
             | "extension"
             | "static"
@@ -670,6 +671,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let observable = modifiers.attrs.iter().any(|a| a.name.name == "Observable");
                 ItemKind::Class(self.class_decl(observable))
             }
+            // `actor Name { … }`: a class whose methods are serialised (see `extensions`).
+            Tok::Ident(word) if word == "actor" && matches!(self.nth(1), Tok::Ident(_)) => {
+                let mut actor = self.class_decl(false);
+                actor.actor = true;
+                ItemKind::Class(actor)
+            }
             Tok::Ident(word) if word == "protocol" && matches!(self.nth(1), Tok::Ident(_)) => {
                 ItemKind::Protocol(self.protocol_decl())
             }
@@ -1011,6 +1018,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             ty: ty.clone(),
                             value,
                             span: member.span,
+                            is_async: false,
                         }));
                     }
                     (Some(other), _) => {
@@ -1040,6 +1048,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                         ty: ty.clone(),
                         value: value.clone(),
                         span: member.span,
+                        is_async: false,
                     })),
                     // `let x: T` and `var x: T = default`: a prop.
                     (None, default) => {
@@ -1388,7 +1397,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             members,
             span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
         };
-        ClassDecl { name, generics, observable, body }
+        ClassDecl { name, generics, observable, actor: false, body }
     }
 
     /// `protocol Name[: Q] { var x: T { get [set] }; func f(…) -> R }`.
@@ -2174,13 +2183,21 @@ impl<'s, 'i> Parser<'s, 'i> {
         let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
-        LetStmt { pattern, ty, span: start.to(value.span), value }
+        LetStmt { pattern, ty, span: start.to(value.span), value, is_async: false }
     }
 
     fn stmt(&mut self) -> Option<Stmt> {
         let start = self.span();
         let kind = match self.tok() {
             Tok::Kw(Kw::Let) => StmtKind::Let(self.let_stmt()),
+            // `async let x = f()`: the call starts now; `await x` reads it.
+            Tok::Kw(Kw::Async) if *self.nth(1) == Tok::Kw(Kw::Let) => {
+                let start = self.bump();
+                let mut l = self.let_stmt();
+                l.span = start.to(l.span);
+                l.is_async = true;
+                StmtKind::Let(l)
+            }
             Tok::Kw(Kw::Var) => {
                 self.bump();
                 let name = self.ident("the variable's name");

@@ -406,3 +406,119 @@ fn a_model_without_a_string_key_is_reported() {
         );
     }
 }
+
+const ASYNC_LET: &str = r#"public func profile(_ id: String) async throws -> String {
+  try await sleep(for: Duration.milliseconds(1.0))
+  return "profile \(id)"
+}
+
+public func count(_ id: String) async -> Int {
+  id.count
+}
+
+/// Both calls start at once; the result waits for the two.
+public func header(_ id: String) async throws -> String {
+  async let name = profile(id)
+  async let posts = count(id)
+  let (n, p) = try await (name, posts)
+  return "\(n): \(p)"
+}
+
+public func one(_ id: String) async -> Int {
+  async let posts = count(id)
+  return await posts
+}
+"#;
+
+/// `async let`: each call starts where it is declared, and `await` reads it (a tuple of
+/// them, together); errors surface at the `try await`.
+#[test]
+fn async_let_starts_now_and_is_read_with_await() {
+    let root = package("async-let", &[("Sources/Model/Header.bloom", ASYNC_LET)]);
+    let path = root.join("Sources/Model/Header.bloom");
+    let out = compile(ASYNC_LET, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("const name = profile(id);\nname.catch(() => {});"), "{}", out.code);
+    assert!(out.code.contains("(await Promise.all([name, posts]))"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/async-let.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+#[test]
+fn an_async_let_is_awaited_with_try_once_in_its_scope() {
+    let head = "public func profile(_ id: String) async throws -> String { id }\n\n";
+    for (body, expected) in [
+        (
+            "public func a() async throws -> String {\n  async let p = profile(\"x\")\n  return \"\"\n}\n",
+            "is never awaited",
+        ),
+        (
+            "public func b() async throws -> String {\n  async let p = profile(\"x\")\n  return await p\n}\n",
+            "not awaited with `try`",
+        ),
+        (
+            "public func c() async throws -> String {\n  async let p = profile(\"x\")\n  let q = p\n  return try await p\n}\n",
+            "read it with `await p`",
+        ),
+        (
+            "public func d() throws -> String {\n  async let p = profile(\"x\")\n  return \"\"\n}\n",
+            "only allowed in an async function",
+        ),
+    ] {
+        let source = format!("{head}{body}");
+        let root = package("async-let-errors", &[("Sources/Model/A.bloom", &source)]);
+        let path = root.join("Sources/Model/A.bloom");
+        let out = compile(&source, &path.to_string_lossy(), &Options::default());
+        assert!(
+            out.diagnostics.iter().any(|d| d.message.contains(expected)),
+            "{expected}:\n{}",
+            rendered(&out)
+        );
+    }
+}
+
+const ACTOR: &str = r#"public actor Counter {
+  public var count: Int = 0
+
+  public func increment() -> Int {
+    count += 1
+    return count
+  }
+
+  public func add(_ n: Int) async throws -> Int {
+    try await sleep(for: Duration.milliseconds(1.0))
+    count += n
+    return increment()
+  }
+}
+
+public func tick(_ counter: Counter) async throws -> Int {
+  let a = await counter.increment()
+  let b = try await counter.add(2)
+  return a + b
+}
+"#;
+
+/// `actor`: a class whose methods run one at a time through its queue, awaited from
+/// outside; its own members call one another directly.
+#[test]
+fn an_actor_serialises_its_methods() {
+    let root = package("actor", &[("Sources/Model/Counter.bloom", ACTOR)]);
+    let path = root.join("Sources/Model/Counter.bloom");
+    let out = compile(ACTOR, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("actorIsolated(self, "), "{}", out.code);
+    assert!(out.code.contains("Counter$increment$isolated(self)"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/actor.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+    // From outside, a call is awaited.
+    let sync = format!("{ACTOR}\npublic func now(_ counter: Counter) -> Int {{ counter.increment() }}\n");
+    let out = compile(&sync, &path.to_string_lossy(), &Options::default());
+    assert!(!out.diagnostics.is_empty(), "a call without await compiles:\n{}", out.code);
+}

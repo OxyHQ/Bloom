@@ -731,6 +731,22 @@ Values over time, to every subscriber: what a socket or a sensor sends.
 - `func finish()`: Ends the stream: subscribers get `onFinish`, and later ones get it at once.
 - `func subscribe(_ each: (Element) -> Void, onFinish: () -> Void = {}) -> () -> Void`: Calls `each` with every value sent from now on; returns the unsubscribe.
 
+### `func actorIsolated<A, T>(_ actor: A, _ work: () -> T) async -> T`
+
+What an `actor`'s method lowers onto: `work` runs once the actor's earlier calls have ended, one at a time (a per-instance queue).  actor Counter { var count = 0 func increment() -> Int { count += 1; return count } } let n = await counter.increment()
+
+### `func actorIsolatedThrowing<A, T>(_ actor: A, _ work: () throws -> T) async throws -> T`
+
+`actorIsolated` for a method that throws: its error reaches the caller.
+
+### `func actorIsolatedAsync<A, T>(_ actor: A, _ work: () async -> T) async -> T`
+
+`actorIsolated` for an `async` method: the next call waits for its end, awaits included.
+
+### `func actorIsolatedAsyncThrowing<A, T>(_ actor: A, _ work: () async throws -> T) async throws -> T`
+
+`actorIsolatedAsync` for a method that throws.
+
 ### `func refreshAction(_ state: Binding<Bool>, _ action: () async -> Unit) -> Binding<Bool>`
 
 What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`, which runs `action` and clears it when the action ends (the spinner shows until then).

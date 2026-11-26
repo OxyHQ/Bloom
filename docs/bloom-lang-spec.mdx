@@ -780,6 +780,18 @@ in those closures throws the same way (4.5).
   navigating away; the state writes after unmount are no-ops.
 - **Structured concurrency:** `let (a, b) = await all(loadA(), loadB())` (both or the first error);
   `await race(…)`; `sleep(ms)`. A task's children are cancelled with it.
+- **`async let x = f()`** (2.0) starts the async call `f()` where it is declared, and `await x`
+  reads its result; `try await (a, b)` reads several together (`Promise.all`). A throwing call
+  is written without `try` in the declaration, and its error surfaces at `try await x`. Only in
+  an async function (B0215); `x` is read only with `await` (B0227), and it is awaited before its
+  block ends (B0227: an unread result would drop its error). Compiled to `const x = f();`, the
+  promise marked handled until it is awaited.
+- **`actor Name { … }`** (2.0) is a class whose instance methods run one at a time, in call
+  order: each method `m` is `async` from outside (a call is `await counter.increment()`) and
+  runs through the actor's queue (`actorIsolated`, the standard library's Concurrency), an
+  `async` one holding it until its end. The actor's own members call each other directly
+  (`m$isolated`), so a call from inside never waits on itself. Unlike Swift's, an actor is not
+  re-entrant at its `await`s.
 
 ## 9. Navigation
 

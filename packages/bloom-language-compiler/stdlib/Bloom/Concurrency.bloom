@@ -14,6 +14,8 @@ extern module "./runtime" {
   private func isCancellation(_ error: Error) -> Bool
   private func channel<T>() -> Channel<T>
   private func refreshRun(_ state: Binding<Bool>, _ action: () async -> Unit) -> Binding<Bool>
+  private func actorQueue<A, T>(_ actor: A, _ work: () async throws -> T) async throws -> T
+  @extern("actorQueue") private func actorQueueSync<A, T>(_ actor: A, _ work: () throws -> T) async throws -> T
 }
 
 /// A cancellation signal: `Task.signal` in `.task { }`, or a `Task`'s own.
@@ -112,6 +114,33 @@ extension AsyncStream {
   public func subscribe(_ each: (Element) -> Void, onFinish: () -> Void = {}) -> () -> Void {
     self.channel.listen(each, onFinish)
   }
+}
+
+/// What an `actor`'s method lowers onto: `work` runs once the actor's earlier calls have
+/// ended, one at a time (a per-instance queue).
+///
+///     actor Counter {
+///       var count = 0
+///       func increment() -> Int { count += 1; return count }
+///     }
+///     let n = await counter.increment()
+public func actorIsolated<A, T>(_ actor: A, _ work: () -> T) async -> T {
+  try! await actorQueueSync(actor, work)
+}
+
+/// `actorIsolated` for a method that throws: its error reaches the caller.
+public func actorIsolatedThrowing<A, T>(_ actor: A, _ work: () throws -> T) async throws -> T {
+  try await actorQueueSync(actor, work)
+}
+
+/// `actorIsolated` for an `async` method: the next call waits for its end, awaits included.
+public func actorIsolatedAsync<A, T>(_ actor: A, _ work: () async -> T) async -> T {
+  try! await actorQueue(actor, work)
+}
+
+/// `actorIsolatedAsync` for a method that throws.
+public func actorIsolatedAsyncThrowing<A, T>(_ actor: A, _ work: () async throws -> T) async throws -> T {
+  try await actorQueue(actor, work)
 }
 
 /// What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`, which
