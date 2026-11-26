@@ -105,6 +105,8 @@ pub struct Tr<'s> {
     pub quiet: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub conditions: HashSet<String>,
+    /// Calls whose one type argument types the binding they initialise.
+    pub typed_calls: HashSet<u32>,
 }
 
 impl<'s> Tr<'s> {
@@ -245,6 +247,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         wrapped: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
+        typed_calls: HashSet::new(),
         conditions: HashSet::new(),
     };
 
@@ -1194,7 +1197,30 @@ pub fn is_identifier(text: &str) -> bool {
 
 /// `T` as an optional, once.
 pub fn optional_ty(ty: &str) -> String {
+    // A function or union type is parenthesised: `(() -> Unit)?`, `("a" | "b")?`.
+    if ty.contains("->") || ty.contains(" | ") {
+        let whole = ty.strip_suffix('?').is_some_and(|t| t.starts_with('(') && closes_at_end(t));
+        return if whole { ty.to_string() } else { format!("({ty})?") };
+    }
     if ty.ends_with('?') { ty.to_string() } else { format!("{ty}?") }
+}
+
+/// Whether the `(` that starts `t` closes at its last character.
+fn closes_at_end(t: &str) -> bool {
+    let mut depth = 0i32;
+    for (i, c) in t.char_indices() {
+        match c {
+            '(' => depth += 1,
+            ')' => {
+                depth -= 1;
+                if depth == 0 {
+                    return i == t.len() - 1;
+                }
+            }
+            _ => {}
+        }
+    }
+    false
 }
 
 /// The identifier a chain (`v.a().b()`) starts from.

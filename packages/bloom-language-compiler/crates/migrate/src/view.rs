@@ -529,18 +529,27 @@ impl Tr<'_> {
     /// `const pattern = value` as `let`: a name, or a record pattern.
     fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
         let keyword = if immutable { "let" } else { "var" };
-        let ty = d
+        let mut ty = d
             .type_annotation
             .as_ref()
             .map(|t| format!(": {}", self.ty(&t.type_annotation)))
             .unwrap_or_default();
+        // `const x = f<T>(…)`: the type argument types the binding (`let x: T = f(…)`).
+        if ty.is_empty()
+            && let Expression::CallExpression(call) = init.without_parentheses()
+            && let Some(args) = &call.type_arguments
+            && let [only] = args.params.as_slice()
+        {
+            ty = format!(": {}", self.ty(only));
+            self.typed_calls.insert(call.span.start);
+        }
         let pattern = match &d.id {
             BindingPattern::BindingIdentifier(id) => {
                 if self.is_view(init) {
                     self.scope.view_values.insert(id.name.to_string());
                 }
                 self.scope.renames.remove(id.name.as_str());
-                self.name(&id.name, id.span)
+                self.bind(&id.name, id.span)
             }
             BindingPattern::ObjectPattern(pattern) if immutable => self.record_pattern(pattern),
             BindingPattern::ArrayPattern(p) if immutable => {

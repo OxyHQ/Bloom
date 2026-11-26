@@ -54,7 +54,7 @@ impl Tr<'_> {
                         let literals: Option<Vec<String>> = rest.iter().map(|t| string_literal(t)).collect();
                         if let Some(literals) = literals {
                             let union = literals.join(" | ");
-                            if optional { format!("({union})?") } else { union }
+                            if optional { optional_ty(&union) } else { union }
                         } else {
                             self.refuse("type:union", "a union of several types", union.span)
                         }

@@ -41,6 +41,14 @@ pub fn spell(source: &str, diagnostics: &[Diagnostic], conditions: &HashSet<Stri
         } else {
             (start, negated)
         };
+        // `if x {` on an optional object: the branch may read it, so it is unwrapped.
+        let whole_if = source[..start].ends_with("if ") && source[end..].starts_with(" {");
+        let plain = operand.chars().all(|c| c.is_alphanumeric() || c == '_');
+        let object = found.ends_with('?') && !matches!(found, "String?" | "Int?" | "Float?" | "Bool?");
+        if whole_if && plain && object && !negated {
+            edits.push((start, end, format!("let {operand} = {operand}")));
+            continue;
+        }
         let Some(test) = test(operand, found, negated) else { continue };
         let test = if source[..start].ends_with(['.', '!']) { format!("({test})") } else { test };
         if edits.iter().any(|(s, e, _)| start < *e && *s < end) {

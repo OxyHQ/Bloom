@@ -594,7 +594,9 @@ impl Tr<'_> {
             }
             other => self.expr(other),
         };
-        if let Some(args) = &call.type_arguments {
+        if let Some(args) = &call.type_arguments
+            && !self.typed_calls.contains(&call.span.start)
+        {
             // Type arguments steer TS inference only: dropped under review.
             let args = self.slice(args.span);
             self.review(format!(
