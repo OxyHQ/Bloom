@@ -54,6 +54,9 @@ fn react_hook(tr: &Tr, call: &CallExpression) -> Option<String> {
     }
 }
 
+/// `infer_ret`'s answer when bloomc infers the result (a closure `let`).
+const INFERRED: &str = "_";
+
 impl Tr<'_> {
     // ---- views -----------------------------------------------------------------
 
@@ -545,7 +548,7 @@ impl Tr<'_> {
                     match element {
                         None => items.push("_".to_string()),
                         Some(BindingPattern::BindingIdentifier(id)) => {
-                            items.push(self.name(&id.name, id.span))
+                            items.push(self.bind(&id.name, id.span))
                         }
                         Some(other) => items.push(self.refuse(
                             "destructure:array",
@@ -821,6 +824,19 @@ impl Tr<'_> {
             Some(t) => self.ret_type(t, is_async),
             None => self.infer_ret(body),
         };
+        // A result type bloomc infers: a closure `let` (a `fn` signature is required).
+        let closure = ret.as_deref() == Some(INFERRED);
+        if closure && (is_async || params.contains(" = ")) {
+            self.scope = saved;
+            return self.refuse(
+                "fn:return-type",
+                "a function returning a value without a return type",
+                match body {
+                    Body::Expr(e) => e.span(),
+                    Body::Block(_, end) => Span::new(end, end),
+                },
+            );
+        }
         let text = match body {
             Body::Expr(e) => {
                 if ret.is_some() {
@@ -844,6 +860,10 @@ impl Tr<'_> {
         self.scope = saved;
         let text = if prelude.is_empty() { text } else { format!("{}\n{text}", prelude.join("\n")) };
         let name = self.name(name, Span::default());
+        if closure {
+            let head = if params.is_empty() { String::new() } else { format!(" {params} in") };
+            return format!("{vis}let {name} = {{{head}\n{text}\n}}");
+        }
         let keyword = if is_async { "async fn" } else { "fn" };
         let ret = ret.map(|r| format!(" -> {r}")).unwrap_or_default();
         format!("{vis}{keyword} {name}({params}){ret} {{\n{text}\n}}")
@@ -886,14 +906,14 @@ impl Tr<'_> {
                         },
                     };
                     let value = self.expr(default);
-                    out.push(format!("{}: {ty} = {value}", self.name(&id.name, id.span)));
+                    out.push(format!("{}: {ty} = {value}", self.bind(&id.name, id.span)));
                     continue;
                 }
                 out.push(self.refuse("param:destructure", "a destructured parameter", param.span));
                 continue;
             };
-            let name = self.name(&id.name, id.span);
             self.scope.renames.remove(id.name.as_str());
+            let name = self.bind(&id.name, id.span);
             let Some(t) = &param.type_annotation else {
                 out.push(self.refuse("param:untyped", format!("`{}` has no type", id.name), param.span));
                 continue;
@@ -953,11 +973,7 @@ impl Tr<'_> {
                 } else if let Some(ty) = value_type(e) {
                     Some(ty.to_string())
                 } else {
-                    Some(self.refuse(
-                        "fn:return-type",
-                        "a function returning a value without a return type",
-                        e.span(),
-                    ))
+                    Some(INFERRED.into())
                 }
             }
             Body::Block(statements, end) => {
@@ -975,11 +991,8 @@ impl Tr<'_> {
                 {
                     Some(ty.to_string())
                 } else {
-                    Some(self.refuse(
-                        "fn:return-type",
-                        "a function returning a value without a return type",
-                        Span::new(end, end),
-                    ))
+                    let _ = end;
+                    Some(INFERRED.into())
                 }
             }
         }
@@ -1062,7 +1075,7 @@ impl Tr<'_> {
                     oxc_ast::ast::ForStatementLeft::VariableDeclaration(v) => match v.declarations.as_slice()
                     {
                         [d] => match &d.id {
-                            BindingPattern::BindingIdentifier(id) => Some(self.name(&id.name, id.span)),
+                            BindingPattern::BindingIdentifier(id) => Some(self.bind(&id.name, id.span)),
                             _ => None,
                         },
                         _ => None,
@@ -1264,7 +1277,7 @@ impl Tr<'_> {
                 let d = &v.declarations[0];
                 match (&d.id, d.init.as_ref().map(|i| i.without_parentheses())) {
                     (BindingPattern::BindingIdentifier(id), Some(Expression::AwaitExpression(a))) => {
-                        (self.name(&id.name, id.span), &a.argument, rest)
+                        (self.bind(&id.name, id.span), &a.argument, rest)
                     }
                     _ => {
                         return self.refuse(
@@ -1278,7 +1291,7 @@ impl Tr<'_> {
             _ => return self.refuse("try:shape", "a `try` that does not start with an `await`", t.span),
         };
         let error = match handler.param.as_ref().map(|p| &p.pattern) {
-            Some(BindingPattern::BindingIdentifier(id)) => self.name(&id.name, id.span),
+            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
             None => "_".into(),
             Some(other) => {
                 return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());

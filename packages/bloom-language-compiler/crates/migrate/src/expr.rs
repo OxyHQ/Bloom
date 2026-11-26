@@ -676,7 +676,9 @@ impl Tr<'_> {
             return format!("{receiver}{sep}{chain}");
         }
         let args = match call.arguments.as_slice() {
-            [Argument::ObjectExpression(o)] if named_args_fit(o) => format!("({})", self.named_args(o)),
+            [Argument::ObjectExpression(o)] if named_args_fit(o) && keyed_modifier(name) => {
+                format!("({})", self.named_args(o))
+            }
             [Argument::ArrowFunctionExpression(arrow)] => format!(" {}", self.closure(arrow)),
             args => {
                 let mut out = Vec::new();
@@ -797,7 +799,7 @@ impl Tr<'_> {
                     ([param], true) if matches!(param.pattern, BindingPattern::BindingIdentifier(_)) => {
                         let BindingPattern::BindingIdentifier(id) = &param.pattern else { unreachable!() };
                         let list = self.expr(&member.object);
-                        let item = self.name(&id.name, id.span);
+                        let item = self.bind(&id.name, id.span);
                         let body = self.arrow_view_lines(arrow);
                         format!("for {item} in {list} {{\n{body}\n}}")
                     }
@@ -943,7 +945,7 @@ impl Tr<'_> {
             let name = match &param.pattern {
                 BindingPattern::BindingIdentifier(id) => {
                     self.scope.renames.remove(id.name.as_str());
-                    self.name(&id.name, id.span)
+                    self.bind(&id.name, id.span)
                 }
                 BindingPattern::ObjectPattern(pattern) => {
                     let name = if several { format!("arg{index}") } else { "arg".to_string() };
@@ -1015,6 +1017,17 @@ fn returns_view(statements: &[oxc_ast::ast::Statement], tr: &Tr) -> bool {
 
 fn is_plain_name(text: &str) -> bool {
     crate::module::is_identifier(text)
+}
+
+/// Whether a modifier's one object is its keyed arguments (`.frame(width: …)`): the
+/// spec types its parameter as a keyed object kind on every node. Any other object
+/// (`.refreshable({ refreshing, onRefresh })`) is a record.
+fn keyed_modifier(name: &str) -> bool {
+    use bloom_language_compiler::spec;
+    let Some((_, kinds)) = spec::MODIFIERS.iter().find(|(m, _)| *m == name) else { return false };
+    let [kind] = kinds else { return false };
+    spec::OBJECTS.iter().any(|(k, ..)| k == kind)
+        && !spec::NODES.iter().any(|n| n.params.iter().any(|(m, _)| *m == name))
 }
 
 /// Whether an object literal reads as named arguments: plain keys, no spread.

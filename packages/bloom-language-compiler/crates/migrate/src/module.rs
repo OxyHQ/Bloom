@@ -121,6 +121,17 @@ impl<'s> Tr<'s> {
         "«?»".to_string()
     }
 
+    /// A local binding: a Bloom keyword (`body`, `type`) is renamed `body_` in its scope.
+    pub fn bind(&mut self, name: &str, span: Span) -> String {
+        if bloom_lang::KEYWORDS.contains(&name) {
+            let renamed = format!("{name}_");
+            self.scope.renames.insert(name.to_string(), renamed.clone());
+            self.used.insert(renamed.clone());
+            return renamed;
+        }
+        self.name(name, span)
+    }
+
     /// A name the output uses.
     pub fn name(&mut self, name: &str, span: Span) -> String {
         if bloom_lang::KEYWORDS.contains(&name) {

@@ -1,2 +1,8 @@
 refused
-53: fn:return-type: a function returning a value without a return type
+0: bloomc:B0201: `?.` reads an optional, and this is `CrosspostProvenance`
+0: bloomc:B0201: `??` gives a fallback for an optional, and this is `[CrosspostVariant]`
+0: bloomc:B0201: expected `IconSize`, found `Float`
+0: bloomc:B0201: expected `Margin`, found `Float`
+0: bloomc:B0209: `[CrosspostVariant]` has no method `flatMap`
+0: bloomc:B0601: a `Foreign` value flows into `Float`
+0: bloomc:B0201: expected `String`, found `View`
