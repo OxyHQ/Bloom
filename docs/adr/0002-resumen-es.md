@@ -1,6 +1,6 @@
 # Bloom 2.0: un lenguaje al nivel de Swift, con sus propias herramientas
 
-Propuesta para revisar antes de construirla. El detalle está en
+Aprobada el 2026-11-26. El detalle está en
 [ADR 0002](0002-swift-grade-language-and-toolchain.md).
 
 ## Qué cambia
@@ -168,6 +168,14 @@ List(model.posts) { post in
 3. **C. Backends:** Static Hermes y wasm.
 4. **D. Mention entera en Bloom 2.0.**
 5. **E. El resto de apps**, empezando por Allo.
+6. **F. Bloom sin Expo:**
+   - **Proyectos nativos:** `bloom build` genera y maneja los proyectos de Gradle y Xcode, la firma y los artefactos de tienda.
+   - **Módulos nativos propios:** en Swift y Kotlin, con bindings tipados generados.
+   - **Navegación propia:** sustituye a expo-router.
+   - **Actualizaciones:** por Oxy Updates.
+   - **Todos los `expo-*` de Mention, Allo e Inbox:** cada uno se sustituye por un módulo de la biblioteca (imagen, vídeo, hápticos, archivos, almacenamiento seguro, notificaciones, cámara, splash, fuentes…). El inventario completo está en el ADR.
+   - **Orden:** va después de A y B, y avanza módulo a módulo, cada uno medido y verificado en el dispositivo; sin «big bang».
+   - **Debajo:** React Native (Fabric, Hermes o Static Hermes) sigue por ahora; más adelante se evaluará un renderizador propio, sin prometerlo.
 
 Lo ya construido se conserva: el parser, el comprobador de tipos, el emisor, el LSP y el codemod.
 El port de Mention espera a que apruebes esta superficie.

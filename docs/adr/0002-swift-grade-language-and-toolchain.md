@@ -1,7 +1,7 @@
 # ADR 0002: A Swift-grade language and toolchain
 
-- **Status:** proposed (2026-11-26). The owner reviews the surface (this ADR and
-  [its Spanish summary](0002-resumen-es.md)) before it is built out.
+- **Status:** accepted (2026-11-26; the owner: "todo lo que propones me encanta", adding: leave
+  Expo completely). Spanish summary: [0002-resumen-es.md](0002-resumen-es.md).
 - **Amends:** [ADR 0001](0001-bloom-own-language.md). It keeps 0001's goals, pipeline, type
   system and compile-time reactivity. It replaces 0001's *surface* (TS-flavoured syntax, string-path
   imports, npm in app code) and adds a toolchain and a standard library.
@@ -162,6 +162,52 @@ extern module "@sentry/react-native" {
   incremental cache keyed by module interfaces (Swift's `.swiftmodule`, Rust's metadata). Target:
   a one-file edit rebuilds in under 50 ms.
 
+### 7. The Bloom platform without Expo
+
+Bloom becomes one language and platform for everything. Expo leaves completely; React Native core
+(Fabric, with Hermes or Static Hermes) stays underneath as the runtime for now.
+
+- **Build.** `bloom build` generates and drives the native projects itself: the Gradle/Android Studio
+  project and the Xcode project. It owns prebuild, config plugins (as Bloom manifest settings:
+  permissions, entitlements, icons, splash, deep links), signing and store artifacts. This replaces
+  the Expo CLI, prebuild and EAS. Native projects are generated into `.bloom/build/` and are
+  reproducible from `Package.bloom`.
+- **Native modules.** A Bloom native module is a Swift module (iOS) and a Kotlin module (Android)
+  declared in `Package.bloom` (`.native("Haptics", swift: "Native/Haptics/ios", kotlin: "Native/Haptics/android")`).
+  Its Bloom interface is written once in `.bloom` (`extern native`). The typed bridges are generated
+  as TurboModules/JSI for Fabric, so they are type-checked on both sides, with no Expo Modules core.
+- **Router.** Bloom's own typed navigation: `NavigationStack`, `TabView`, sheets and deep links over
+  the native stack (react-native-screens), with typed routes from the module graph. This replaces
+  expo-router.
+- **Updates.** Over-the-air updates ship through Oxy's self-hosted update protocol (Oxy Updates),
+  signed and channelled per app. This replaces expo-updates.
+- **Runtime.** A later evaluation, not a promise, will decide whether a Bloom-owned renderer pays
+  off over React Native's Fabric. It needs device measurements first.
+- **Order.** This track runs after A (surface) and B (standard library). Mention leaves Expo module
+  by module, each replacement measured and verified on the emulator (and on a device by the device
+  agent), with no big bang. The first steps are `bloom build android` generating Mention's Gradle
+  project, then the router, then modules by usage.
+
+**Inventory and replacements** (every `expo*` package used by Mention, Allo and Inbox, 2026-11-26):
+
+| Expo package(s) | Used by | Bloom replacement |
+|---|---|---|
+| `expo`, `expo-dev-client`, `expo-build-properties`, `expo-constants`, `@expo/metro-runtime`, `@expo/ngrok` | all | the `bloom` CLI, `Package.bloom` settings, `App.info` (version, build, platform) in `Bloom` |
+| `expo-router`, `expo-linking` | all | `BloomUI` `NavigationStack`/`TabView` with typed routes; `URL` and `App.openURL`, deep links in the manifest |
+| `expo-updates` | all | `Bloom.Updates` over Oxy Updates |
+| `expo-splash-screen`, `expo-system-ui`, `expo-status-bar`, `expo-font`, `expo-asset` | all | manifest settings (splash, colours, fonts, assets) plus `App.statusBar`; assets as typed resources (`Resource.image("logo")`) |
+| `expo-image`, `expo-image-manipulator`, `expo-image-picker`, `expo-camera` | all (camera: Mention, Allo) | `BloomUI.Image` (native cache), `ImageEditor`, `PhotoPicker`, `Camera` native modules |
+| `expo-video`, `expo-audio` | all | `BloomMedia` (`VideoPlayer`, `AudioPlayer`, recording) native module |
+| `expo-blur`, `expo-glass-effect`, `expo-linear-gradient`, `expo-gl` | all (gl: Mention) | `BloomUI` materials and glass (Bloom's glass engine), `LinearGradient`, `Canvas` |
+| `expo-haptics`, `expo-keep-awake`, `expo-sensors` | all (sensors: Inbox) | `Bloom.Device` (`Haptics`, `Screen.keepAwake`, `Motion`) |
+| `expo-file-system`, `expo-document-picker`, `expo-sharing`, `expo-share-intent`, `expo-print` | all | `Bloom.Files` (`FileStore`, `DocumentPicker`, `ShareSheet`, incoming shares, `Print`) |
+| `expo-secure-store`, `expo-local-authentication`, `expo-crypto`, `@expo/app-integrity` | all | `Bloom.Security` (`SecureStore`, `Biometrics`, `Crypto`, `AppIntegrity`) |
+| `expo-sqlite` | Mention, Allo | `BloomData` persistence (SQLite native module) |
+| `expo-notifications` | all | `Bloom.Notifications` (permissions, tokens, local and push) |
+| `expo-location`, `expo-contacts`, `expo-network` | Mention, Allo / Allo / Inbox | `Bloom.Location`, `Bloom.Contacts`, `Bloom.Network` (reachability) |
+| `expo-clipboard`, `expo-web-browser` | all | `Bloom.Clipboard`, `Bloom.WebSession` (in-app browser, auth sessions) |
+| `expo-symbols`, `@expo/vector-icons`, `expo-checkbox` | Allo / Mention, Inbox / Inbox | `BloomUI.Icon` (Bloom icons, SF Symbols on iOS), `Toggle(.checkbox)` |
+
 ## Consequences
 
 - **Kept:** the lexer, parser, recovery, checker, inference, the memo emitter, source maps,
@@ -189,6 +235,7 @@ extern module "@sentry/react-native" {
 | **C. Backends** | the Static Hermes evaluation and per-module adoption; the wasm evaluation for standard-library internals; compile-speed targets | measured, adopted where it wins |
 | **D. Mention** | the codemod retargeted to 2.0 (components, hooks, models, bindings); Mention ported module by module, each screen equal or better in cost, bytes and pixels; iOS via `bloom build ios` | Mention builds with `bloom build` and has no npm in app code |
 | **E. The fleet** | Allo (OxyHQ/Allo#332), then the other apps | each app on `bloom build` |
+| **F. Platform without Expo** (section 7; after A and B, overlapping D and E) | `bloom build` generates and drives the Gradle and Xcode projects, signing and store artifacts; Bloom native modules (Swift/Kotlin, typed TurboModule bindings); the router; Oxy Updates; every package in the inventory replaced module by module, each measured and device-verified | Mention, Allo and Inbox build and update with no `expo*` dependency |
 
 What already merged or is in flight, and still ships, because the internals are reused: #984
 (compiler 1.6.0), #979 and #980 (phase-1 internals and tooling), Mention #2046 (the proof).
