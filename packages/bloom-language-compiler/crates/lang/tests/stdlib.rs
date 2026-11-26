@@ -196,7 +196,11 @@ fn mentions_model_network_and_settings_layers_need_no_bindings() {
         files.sort();
         for path in files {
             let source = std::fs::read_to_string(&path).unwrap();
-            assert!(!source.contains("extern module") && !source.contains("Foreign"), "no bindings: {}", path.display());
+            assert!(
+                !source.contains("extern module") && !source.contains("Foreign"),
+                "no bindings: {}",
+                path.display()
+            );
             let out = compile(&source, &path.to_string_lossy(), &Options::default());
             if !out.diagnostics.is_empty() {
                 failures.push(format!("{}:\n{}", path.display(), rendered(&out)));

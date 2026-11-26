@@ -16,7 +16,7 @@ extern module "./runtime" {
   private func registerCatalog(_ locale: String, _ catalog: JSONValue)
   private func setPreferredLocale(_ locale: String)
   private func preferredLocale() -> String
-  private func pluralCategory(_ n: Double, _ locale: String) -> String
+  @extern("pluralCategory") private func pluralCategoryOf(_ n: Double, _ locale: String) -> String
 }
 
 /// A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
@@ -38,7 +38,7 @@ extension Locale {
   public var regionCode: String? { self.identifier.split("-").element(at: 1) }
 
   /// The CLDR plural category of `n` here: `zero`, `one`, `two`, `few`, `many` or `other`.
-  public func pluralCategory(_ n: Double) -> String { pluralCategory(n, self.identifier) }
+  public func pluralCategory(_ n: Double) -> String { pluralCategoryOf(n, self.identifier) }
 }
 
 extension String {

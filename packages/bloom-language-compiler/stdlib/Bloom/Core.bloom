@@ -5,7 +5,7 @@
 // compiler's; these extend them, statically dispatched (`crate::extensions`).
 
 extern module "./runtime" {
-  private func characters(_ s: String) -> [String]
+  @extern("characters") private func graphemes(_ s: String) -> [String]
   private func indexOf(_ s: String, _ sub: String, _ from: Int) -> Int
   private func lastIndexOf(_ s: String, _ sub: String) -> Int
   private func replaceAll(_ s: String, _ target: String, _ replacement: String) -> String
@@ -20,9 +20,9 @@ extern module "./runtime" {
   private func arrayOfRange(_ from: Int, _ to: Int, _ step: Int) -> [Int]
   private func setOf<T>(_ xs: [T]) -> Set<T>
   private func setValues<T>(_ s: Set<T>) -> [T]
-  private func union<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
-  private func intersection<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
-  private func subtracting<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  @extern("union") private func setUnion<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  @extern("intersection") private func setIntersection<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  @extern("subtracting") private func setSubtracting<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
   private func errorMessage(_ error: Error) -> String
 }
 
@@ -34,10 +34,10 @@ public type Character = String
 extension String {
   /// The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1`
   /// where `count` (UTF-16 units) is 4.
-  public var characters: [Character] { characters(self) }
+  public var characters: [Character] { graphemes(self) }
 
   /// How many user-perceived characters the string has.
-  public var characterCount: Int { characters(self).count }
+  public var characterCount: Int { graphemes(self).count }
 
   /// Whether the string is empty or only whitespace.
   public var isBlank: Bool { self.trimmed().isEmpty }
@@ -79,17 +79,17 @@ extension String {
   }
 
   /// The first `n` characters (user-perceived).
-  public func prefix(_ n: Int) -> String { characters(self).prefix(n).joined("") }
+  public func prefix(_ n: Int) -> String { graphemes(self).prefix(n).joined("") }
 
   /// The last `n` characters (user-perceived).
   public func suffix(_ n: Int) -> String {
-    let all = characters(self)
+    let all = graphemes(self)
     return all.dropFirst(all.count > n ? all.count - n : 0).joined("")
   }
 
   /// At most `length` characters, with `ellipsis` in place of the rest.
   public func truncated(to length: Int, ellipsis: String = "…") -> String {
-    let all = characters(self)
+    let all = graphemes(self)
     if all.count <= length { return self }
     return all.prefix(length).joined("") + ellipsis
   }
@@ -108,7 +108,7 @@ extension String {
 
   /// The first character upper-cased.
   public var capitalized: String {
-    let all = characters(self)
+    let all = graphemes(self)
     guard let first = all.first else { return self }
     return first.uppercased() + all.dropFirst(1).joined("")
   }
@@ -282,13 +282,13 @@ extension Set {
   public var elements: [Element] { setValues(self) }
 
   /// The elements of either set.
-  public func union(_ other: Set<Element>) -> Set<Element> { union(self, other) }
+  public func union(_ other: Set<Element>) -> Set<Element> { setUnion(self, other) }
 
   /// The elements of both sets.
-  public func intersection(_ other: Set<Element>) -> Set<Element> { intersection(self, other) }
+  public func intersection(_ other: Set<Element>) -> Set<Element> { setIntersection(self, other) }
 
   /// The elements not in `other`.
-  public func subtracting(_ other: Set<Element>) -> Set<Element> { subtracting(self, other) }
+  public func subtracting(_ other: Set<Element>) -> Set<Element> { setSubtracting(self, other) }
 
   /// Whether every element is in `other`.
   public func isSubset(of other: Set<Element>) -> Bool { setValues(self).all { other.contains($0) } }
