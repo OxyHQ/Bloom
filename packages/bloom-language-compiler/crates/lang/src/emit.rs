@@ -995,6 +995,11 @@ impl<'a> Emitter<'a> {
                 line.s(");");
                 self.push_stmt(line);
             }
+            AssignRes::Foreign => {
+                let mut line = Frag::at(span, "");
+                line.f(self.expr(&a.target)).s(&format!(" {} ", a.op.text())).f(value).s(";");
+                self.push_stmt(line);
+            }
             AssignRes::Var { local, fields } => {
                 let name = self.local_name(local);
                 let new = if fields.is_empty() {

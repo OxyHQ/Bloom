@@ -8,3 +8,6 @@ export function useMods(id: string) {
 export function useList() {
   return { title: '' as string | undefined, count: 0 };
 }
+export function usePlayer() {
+  return { loop: false, currentTime: 0, source: { uri: '' } };
+}

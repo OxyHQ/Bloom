@@ -177,6 +177,8 @@ pub enum AssignRes {
         local: LocalId,
         fields: Vec<String>,
     },
+    /// A field of a TS value (`player.loop = true`): TS's own write, which tsc checks.
+    Foreign,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -308,6 +310,17 @@ struct Frame {
     /// A closure TS calls, or `catching { … }`'s block: `?` on a `Result` throws its
     /// error (rejecting the promise, or caught), and does not change the result.
     throws: bool,
+}
+
+/// A TS type that is a React ref: a `@ref` passed there is the ref, not its value.
+fn is_ref_type(text: &str) -> bool {
+    // `RefObject<T>`, `React.Ref<T>`, `import("react").MutableRefObject<T>`, a union with one.
+    text.split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '<')).any(|word| {
+        matches!(
+            word.split('<').next(),
+            Some("RefObject" | "MutableRefObject" | "Ref" | "LegacyRef" | "ForwardedRef" | "RefCallback")
+        ) && word.contains('<')
+    })
 }
 
 /// A member chain's fields from its root, each marked when read through `?.`.
@@ -2128,6 +2141,31 @@ impl<'o> Checker<'o> {
             return;
         };
         let info = self.out.locals[local].clone();
+        // A field of a TS value (an expo-video player, a DOM node): TS's own object.
+        let mut through = info.ty.clone();
+        let mut foreign = false;
+        for field in &fields {
+            match self.resolve(&through) {
+                Ty::Foreign(_) => {
+                    foreign = true;
+                    break;
+                }
+                Ty::Adt(def, args) => match self.out.defs[def].fields().iter().find(|f| f.name == *field) {
+                    Some(f) => through = substitute(&f.ty, &args),
+                    None => break,
+                },
+                _ => break,
+            }
+        }
+        if foreign && info.kind != LocalKind::State {
+            if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+                self.var_captured(&info, a.target.span);
+            }
+            self.expr(&a.target, None);
+            self.boundary(&a.value, None);
+            self.out.assigns.insert(a.span, AssignRes::Foreign);
+            return;
+        }
         let mutable = matches!(info.kind, LocalKind::State | LocalKind::Var | LocalKind::Ref);
         if !mutable {
             let help = match info.kind {
@@ -3013,6 +3051,26 @@ impl<'o> Checker<'o> {
     /// a TS `number` is, a closure whose untyped parameters TS infers.
     pub fn boundary(&mut self, expr: &Expr, ts_ty: Option<&Ty>) -> Ty {
         let hint = ts_ty.map(|t| self.resolve(t));
+        // A `@ref` where TS takes a ref (`RefObject<…>`, `Ref<…>`): the ref itself. While the
+        // view draws, where TS's type is not known to Bloom, too (its value would be B0411;
+        // tsc checks the ref against what TS takes).
+        let drawing = self.frames.last().is_some_and(|f| f.render);
+        let ref_hint = match &hint {
+            Some(Ty::Foreign(text)) => is_ref_type(text) || drawing,
+            Some(Ty::Adt(def, _)) => is_ref_type(&format!("{}<", self.out.defs[*def].name)),
+            None => drawing,
+            _ => false,
+        };
+        if let ExprKind::Name(name) = &expr.kind
+            && ref_hint
+            && !self.ref_object
+            && self.lookup(name).is_some_and(|l| self.out.locals[l].kind == LocalKind::Ref)
+        {
+            self.ref_object = true;
+            let ty = self.boundary(expr, None);
+            self.ref_object = false;
+            return ty;
+        }
         let ty = match (&expr.kind, &hint) {
             (ExprKind::Closure(c), None | Some(Ty::Foreign(_))) => {
                 let ty = self.closure(c, None, true);
