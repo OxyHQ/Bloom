@@ -600,8 +600,8 @@ const catalogs = new Map<string, Catalog>();
 let preferred: string | undefined;
 
 /** Registers the strings of `locale` (`bloom build` registers the package's catalogs). */
-export function registerCatalog(locale: string, catalog: Catalog): void {
-  catalogs.set(locale, catalog);
+export function registerCatalog(locale: string, catalog: unknown): void {
+  catalogs.set(locale, catalog as Catalog);
 }
 
 export function setPreferredLocale(locale: string): void {
@@ -615,7 +615,7 @@ export function preferredLocale(): string {
 function lookup(key: string, locale: string): string | Readonly<Record<string, string>> | undefined {
   const exact = catalogs.get(locale)?.[key];
   if (exact !== undefined) return exact;
-  const language = locale.split('-')[0];
+  const language = locale.split('-')[0] ?? locale;
   const general = catalogs.get(language)?.[key];
   if (general !== undefined) return general;
   return catalogs.get('en')?.[key];

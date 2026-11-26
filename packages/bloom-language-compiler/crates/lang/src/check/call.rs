@@ -139,7 +139,8 @@ impl Checker<'_> {
                     // `EnvironmentKey("session", default: Session.signedOut)`: an app's own
                     // environment value, which `@Environment(\.session)` reads.
                     "EnvironmentKey" => return self.environment_key_value(expr, call),
-                    "Regex" => {
+                    // The standard library's `Regex` struct, where it is in scope, is constructed.
+                    "Regex" if !self.type_names.contains_key("Regex") => {
                         // `Regex("^www\\.", "g")`: a JS `RegExp`, for `replace`/`match` and its `test`.
                         if call.args.is_empty() || call.args.len() > 2 || call.trailing.is_some() {
                             self.report(
