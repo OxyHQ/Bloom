@@ -1017,6 +1017,9 @@ type toolbarViewChecks = [
 type pageFooterChecks = [
   Expect<"pageFooter.pinning(footerPinning)", Ok<At<View<'PageFooter'>['pinning'], '0'>, S['footerPinning']>>,
   Expect<"pageFooter.scrollEdge(scrollEdge)", Ok<At<View<'PageFooter'>['scrollEdge'], '0'>, S['scrollEdge']>>,
+  Expect<"pageFooter.contentMargins(edge)", Ok<Lead<View<'PageFooter'>['contentMargins']>, S['edge']>>,
+  Expect<"pageFooter.contentMargins(space)", Ok<Last<View<'PageFooter'>['contentMargins']>, S['space']>>,
+  Expect<"pageFooter.contentMargins(space) takes AppToken<'space'>", Takes<Last<View<'PageFooter'>['contentMargins']>, AppToken<'space'>>>,
 ];
 
 type scrollAreaChecks = [

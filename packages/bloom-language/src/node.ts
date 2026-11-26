@@ -5907,6 +5907,9 @@ export interface PageFooterView extends ViewNode {
   scrollEdge(value: ScrollEdge): PageFooterView;
   /** No bottom safe-area padding (native pads it by default). */
   ignoresSafeArea(value?: boolean): PageFooterView;
+  /** Its row's padding, Bloom's `contentContainerStyle`: `.contentMargins('left', 'sm')`. */
+  contentMargins(value: SpaceToken): PageFooterView;
+  contentMargins(edge: Edge, value: SpaceToken): PageFooterView;
   testID(value: string): PageFooterView;
 }
 

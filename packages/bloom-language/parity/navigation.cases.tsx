@@ -403,6 +403,22 @@ const rails: ParityCase[] = [
 
 const footers: ParityCase[] = [
   {
+    // Mention's video replies: the composer row padded 8 on each side, on the scrim as the page scrolls.
+    name: 'a page footer with its row’s margins',
+    language: () =>
+      toElement(
+        L.PageFooter(L.Text('Reply'))
+          .scrollEdge('auto')
+          .contentMargins('left', 'sm')
+          .contentMargins('right', 'sm'),
+      ),
+    bloom: () => (
+      <PageFooter scrim="auto" contentContainerStyle={{ paddingLeft: 8, paddingRight: 8 }}>
+        <Text>Reply</Text>
+      </PageFooter>
+    ),
+  },
+  {
     name: 'a page footer with its actions',
     language: () => toElement(L.PageFooter(L.Text('2 selected')).toolbar(L.Text('Delete'))),
     bloom: () => (

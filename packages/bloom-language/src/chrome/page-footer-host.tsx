@@ -1,6 +1,7 @@
 /**
  * A `PageFooter` as Bloom's `PageFooter`, on every platform: its children
- * before its actions (`.toolbar`), on its scrim.
+ * before its actions (`.toolbar`), on its scrim, its row's padding its
+ * `.contentMargins()` (Bloom's `contentContainerStyle`).
  */
 import type { ReactNode } from 'react';
 import { PageFooter, type PageFooterProps } from '@oxy.so/bloom/page-footer';
@@ -10,6 +11,7 @@ import { valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
 import type { FooterPinning, ScrollEdge } from '../tokens';
 import { defined } from './defined';
+import { containerStyle } from './scroll-view-host';
 
 export function PageFooterHost({
   node,
@@ -24,6 +26,7 @@ export function PageFooterHost({
     position: values.pinning as FooterPinning | undefined,
     scrim: values.scrollEdge as ScrollEdge | undefined,
     safeArea: ignores === undefined ? undefined : !ignores,
+    contentContainerStyle: containerStyle(node, undefined),
     testID: values.testID as string | undefined,
   });
   return <PageFooter {...props}>{children}</PageFooter>;
