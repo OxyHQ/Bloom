@@ -1,0 +1,16 @@
+// navigate() against the fixtures' Expo Router tree (tests/fixtures/app).
+
+view Links(postId: Int, slug: String) {
+  body {
+    VStack {
+      Button(Text("Home")).onPress(navigate("/"))
+      Button(Text("Settings")).onPress(navigate("/settings/notifications"))
+      Button(Text("Post")).onPress(navigate("/posts/[id]", id: postId))
+      Button(Text("Post 7")).onPress(navigate("/posts/7?ref=feed"))
+      Button(Text("Typo")).onPress(navigate("/setings/notifications"))
+      Button(Text("No id")).onPress(navigate("/posts/[id]"))
+      Button(Text("Extra")).onPress(navigate("/posts/[id]", id: postId, slug: slug))
+      Button(Text("Gone")).onPress(navigate("/about"))
+    }
+  }
+}

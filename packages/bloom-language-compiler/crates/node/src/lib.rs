@@ -101,6 +101,8 @@ pub struct BloomOptions {
     pub paths: Option<std::collections::HashMap<String, Vec<String>>>,
     /// A development build.
     pub dev: Option<bool>,
+    /// The app's Expo Router folder, relative to `root` (default: `app/` or `src/app/`).
+    pub app: Option<String>,
 }
 
 fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
@@ -109,6 +111,7 @@ fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
         root: options.root.map(Into::into),
         paths: options.paths.unwrap_or_default().into_iter().collect(),
         dev: options.dev.unwrap_or(false),
+        app: options.app.map(Into::into),
     }
 }
 

@@ -1,0 +1,35 @@
+error[B0701]: no route `/setings/notifications` in the app
+  --> check/routes.bloom:10:45
+   |
+10 |       Button(Text("Typo")).onPress(navigate("/setings/notifications"))
+   |                                             ^^^^^^^^^^^^^^^^^^^^^^^^ not a file of `app/`
+   |
+help: did you mean `/settings/notifications`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#9-navigation
+
+error[B0702]: `/posts/[id]` needs `id`
+  --> check/routes.bloom:11:46
+   |
+11 |       Button(Text("No id")).onPress(navigate("/posts/[id]"))
+   |                                              ^^^^^^^^^^^^^ a parameter of the route is not given
+   |
+help: navigate("/posts/[id]", id: …)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#9-navigation
+
+error[B0702]: `/posts/[id]` has no parameter `slug`
+  --> check/routes.bloom:12:73
+   |
+12 |       Button(Text("Extra")).onPress(navigate("/posts/[id]", id: postId, slug: slug))
+   |                                                                         ^^^^ not a parameter of this route
+   |
+help: its parameters: id
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#9-navigation
+
+error[B0701]: no route `/about` in the app
+  --> check/routes.bloom:13:45
+   |
+13 |       Button(Text("Gone")).onPress(navigate("/about"))
+   |                                             ^^^^^^^^ not a file of `app/`
+   |
+help: the app's routes: /, /posts/[id], /settings, /settings/notifications
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#9-navigation

@@ -16,6 +16,7 @@ pub mod diagnostic;
 mod emit;
 mod lexer;
 mod parser;
+mod routes;
 mod sourcemap;
 mod ts;
 mod types;
@@ -41,6 +42,10 @@ pub struct Options {
     pub paths: BTreeMap<String, Vec<String>>,
     /// A development build: lists are frozen in dev (spec 4.1), and names are kept readable.
     pub dev: bool,
+    /// The app's Expo Router folder (relative to `root`), whose files are the routes
+    /// `navigate` is checked against (spec 9). Without it, `app/` or `src/app/` under
+    /// `root`; without either, routes are not checked.
+    pub app: Option<PathBuf>,
 }
 
 /// A compiled `.bloom` module.
@@ -130,6 +135,7 @@ pub fn invalidate(path: &std::path::Path) {
 /// Forgets every TS summary this thread has read.
 pub fn clear_caches() {
     ts::clear_caches();
+    routes::clear();
     check::forget(None);
 }
 
