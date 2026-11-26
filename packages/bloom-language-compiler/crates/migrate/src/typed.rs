@@ -78,6 +78,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 let re = if text == "trimEnd" { r"\\s+$" } else { r"^\\s+" };
                 Some((start, end + 2, format!("replace(Regex(\"{re}\"), \"\")")))
             }
+            // Named arguments to a function whose one parameter is unnamed (a TS
+            // options object, `(data: { text: string }) => void`): the record itself.
+            ("B0207", _) if d.message == "missing argument(s): ``" => call_args(source, start, end)
+                .filter(|(a, b)| {
+                    let inner = &source[*a..*b];
+                    // Every argument named (`a: x, b: y`): one record.
+                    inner.trim_start().starts_with(|c: char| c.is_alphabetic() || c == '_')
+                        && inner.split(',').next().is_some_and(|first| {
+                            first.split_once(':').is_some_and(|(k, _)| {
+                                k.trim().chars().all(|c| c.is_alphanumeric() || c == '_')
+                            })
+                        })
+                })
+                .map(|(a, b)| (a, b, format!("{{ {} }}", source[a..b].trim()))),
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if (d.message == "expected `View`, found `[View]`" || d.message == "expected `View?`, found `[View]`")
@@ -228,6 +242,40 @@ fn operand_len(source: &str) -> Option<usize> {
 }
 
 /// Whether `start..end` is all of its line.
+/// The argument list holding `start..end`: from just after its `(` to its `)`
+/// (strings skipped crudely: a quote toggles).
+fn call_args(source: &str, start: usize, end: usize) -> Option<(usize, usize)> {
+    let bytes = source.as_bytes();
+    let mut depth = 0i32;
+    let mut open = None;
+    let mut quoted = false;
+    for i in (0..start).rev() {
+        match bytes[i] {
+            b'"' => quoted = !quoted,
+            b')' | b']' | b'}' if !quoted => depth += 1,
+            b'(' if !quoted && depth == 0 => {
+                open = Some(i + 1);
+                break;
+            }
+            b'(' | b'[' | b'{' if !quoted => depth -= 1,
+            _ => {}
+        }
+    }
+    let open = open?;
+    let mut depth = 0i32;
+    let mut quoted = false;
+    for (i, &b) in bytes.iter().enumerate().skip(end) {
+        match b {
+            b'"' => quoted = !quoted,
+            b'(' | b'[' | b'{' if !quoted => depth += 1,
+            b')' if !quoted && depth == 0 => return Some((open, i)),
+            b')' | b']' | b'}' if !quoted => depth -= 1,
+            _ => {}
+        }
+    }
+    None
+}
+
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
 fn braced(source: &str, start: usize, end: usize) -> bool {
     source[..start].trim_end().ends_with('{') && source[end..].trim_start().starts_with('}')

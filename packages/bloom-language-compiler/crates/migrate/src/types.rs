@@ -113,6 +113,21 @@ impl Tr<'_> {
                     "ComponentProps",
                     "ComponentPropsWithoutRef",
                 ];
+                // JS's own classes and DOM types as types: the TS type, kept as a `Foreign`.
+                const JS_TYPES: &[&str] = &[
+                    "Date", "RegExp", "Error", "URL", "Blob", "File", "FormData", "HTMLElement",
+                    "HTMLDivElement", "HTMLInputElement", "Element", "Event", "KeyboardEvent",
+                    "MouseEvent", "AbortController", "AbortSignal", "Response", "Headers",
+                ];
+                if JS_TYPES.contains(&name.as_str())
+                    && reference.type_arguments.is_none()
+                    && !self.objects.contains(&name)
+                    && !self.unions.contains_key(&name)
+                    && !self.imported.contains(name.as_str())
+                {
+                    let text = self.slice(reference.span).to_string();
+                    return self.foreign_ty(&text);
+                }
                 if UTILITY.contains(&name.as_str())
                     && !self.objects.contains(&name)
                     && !self.unions.contains_key(&name)

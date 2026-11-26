@@ -13,3 +13,7 @@ pub view Item(name: String, size: "sm" | "lg") {
     Text(describe({ name: name, size: size }).label)
   }
 }
+
+pub fn submitNote(onSubmit: ({ text: String, url: String }) -> Unit, text: String) {
+  onSubmit({ text: text.trimmed(), url: text })
+}
