@@ -215,35 +215,18 @@ fn path_of(uri: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
-/// LSP's position (0-based line, UTF-16 column) of a byte offset.
+/// LSP's position of a byte offset.
 fn position(text: &str, offset: u32) -> Value {
-    let offset = (offset as usize).min(text.len());
-    let before = &text[..offset];
-    let line = before.matches('\n').count() as u32;
-    let start = before.rfind('\n').map_or(0, |i| i + 1);
-    let character: usize = text[start..offset].chars().map(char::len_utf16).sum();
-    object([("line", line.into()), ("character", (character as u32).into())])
+    let (line, character) = crate::text::position(text, offset);
+    object([("line", line.into()), ("character", character.into())])
 }
 
 fn range(text: &str, span: Span) -> Value {
     object([("start", position(text, span.start)), ("end", position(text, span.end))])
 }
 
-/// The byte offset of LSP's position (clamped to its line).
 fn offset_of(text: &str, line: u32, character: u32) -> u32 {
-    let start = if line == 0 {
-        0
-    } else {
-        text.match_indices('\n').nth(line as usize - 1).map_or(text.len(), |(i, _)| i + 1)
-    };
-    let mut units = 0;
-    for (index, c) in text[start..].char_indices() {
-        if units >= character as usize || c == '\n' {
-            return (start + index) as u32;
-        }
-        units += c.len_utf16();
-    }
-    text.len() as u32
+    crate::text::offset(text, line, character)
 }
 
 #[cfg(test)]
@@ -279,14 +262,6 @@ mod tests {
         assert_eq!(out[0].get("result").get("capabilities").get("hoverProvider"), &Value::Bool(true));
         assert_eq!(out[1].get("error").get("code"), &Value::Number(-32601.0));
         assert!(out[2].get("result").is_null());
-    }
-
-    #[test]
-    fn positions_count_utf16_units() {
-        let text = "a\n😀b";
-        assert_eq!(json::write(&position(text, 6)), r#"{"character":2,"line":1}"#);
-        assert_eq!(offset_of(text, 1, 2), 6);
-        assert_eq!(offset_of(text, 0, 9), 1);
     }
 
     #[test]
