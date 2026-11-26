@@ -1,0 +1,42 @@
+import { Item1, Status1, label1 } from "../models/Model1.bloom"
+import { Row1 } from "../rows/Row1.bloom"
+
+pub view Screen1(items: [Item1], title: String = "Screen 1") {
+  @state query = ""
+  @state compact = false
+  @state status: Status1 = .idle
+
+  let visible = items.filter { it in it.title.lowercased().contains(query.lowercased()) }
+  let total = visible.count
+  let heading = total == 0 ? "Nothing yet" : "${title}: ${total}"
+
+  fn toggle() {
+    compact = !compact
+  }
+
+  fn reload() {
+    status = Status1.ready(count: total)
+  }
+
+  body {
+    VStack {
+      Text(heading).font("title-3")
+      TextField($query, "Search")
+      Text(label1(status)).foreground("muted")
+      for item in visible {
+        Row1(item: item, compact: compact)
+      }
+      match status {
+        case .failed(message) => Text(message).foreground("error")
+        case _ => Spacer()
+      }
+      HStack {
+        Button(Text(compact ? "Expand" : "Compact")).onPress { toggle() }
+        Button(Text("Reload")).onPress { reload() }
+      }
+      .spacing("sm")
+    }
+    .spacing("lg")
+    .padding("md")
+  }
+}
