@@ -1,6 +1,13 @@
 const crypto = require('node:crypto');
 
-const { compileBloomModule, compileModule, hostFilename, isBloomFile } = require('./compile');
+const {
+  bloomDependencies,
+  compileBloomModule,
+  compileModule,
+  hostFilename,
+  isBloomFile,
+} = require('./compile');
+const { digestOf } = require('./dependencies');
 const { digest } = require('./native');
 
 /**
@@ -20,6 +27,10 @@ const { digest } = require('./native');
  * (`inputSourceMap`), so a stack trace from a `.bloom` handler names the
  * `.bloom` file and line. A `.tsx` module's hoisted declarations still shift
  * lines below them (its map is not composed here; Metro's adapter composes it).
+ *
+ * A `.bloom` module's cache key holds the content of every file its compile
+ * reads (the `.bloom` modules and TS declarations it imports), so editing a
+ * declaration it imports compiles it again.
  */
 function createTransformer(options = {}) {
   const [upstreamPath, upstreamOptions] = options.upstream ?? ['babel-jest', {}];
@@ -34,12 +45,15 @@ function createTransformer(options = {}) {
    * parses it by. A `.bloom` module's TS imports resolve from the project's
    * root (Jest's `rootDir`: its tsconfig's `paths`, `node_modules`).
    */
+  const bloomOptions = (transformOptions) => {
+    const root = transformOptions?.config?.rootDir;
+    return root ? { root } : {};
+  };
   const prepared = (source, filename, transformOptions) => {
     if (!isBloomFile(filename)) {
       return { code: compileModule(source, filename)?.code ?? source, filename };
     }
-    const root = transformOptions?.config?.rootDir;
-    const { code, map } = compileBloomModule(source, filename, root ? { root } : {});
+    const { code, map } = compileBloomModule(source, filename, bloomOptions(transformOptions));
     const inline = map
       ? `\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(map).toString('base64')}\n`
       : '';
@@ -52,7 +66,13 @@ function createTransformer(options = {}) {
       const key = upstream.getCacheKey
         ? upstream.getCacheKey(source, filename, transformOptions)
         : '';
-      return crypto.createHash('sha1').update(`${key}$bloom-language$${digest}`).digest('hex');
+      const imports = isBloomFile(filename)
+        ? digestOf(bloomDependencies(source, filename, bloomOptions(transformOptions)))
+        : '';
+      return crypto
+        .createHash('sha1')
+        .update(`${key}$bloom-language$${digest}$${imports}`)
+        .digest('hex');
     },
     process(source, filename, transformOptions) {
       const module = prepared(source, filename, transformOptions);

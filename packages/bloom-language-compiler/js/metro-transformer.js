@@ -1,6 +1,8 @@
 const path = require('node:path');
 
 const { compileBloomModule, compileModule, hostFilename, isBloomFile } = require('./compile');
+const { manifest } = require('./dependencies');
+const { DEPENDENCIES } = require('./metro-cache');
 const { digest } = require('./native');
 const { remapMetroMap } = require('./remap');
 
@@ -17,6 +19,7 @@ const { remapMetroMap } = require('./remap');
  * A `.bloom` module reaches the wrapped worker as the TypeScript it compiles
  * to, named `<file>.bloom.ts` so Babel parses it as TypeScript; Metro names
  * the module by its own path, and its map is composed back to the `.bloom`.
+ * Its result carries the files its compile read, for the cache (`./metro-cache`).
  */
 
 function upstream(config) {
@@ -31,12 +34,12 @@ function upstream(config) {
  */
 function compiled(projectRoot, filename, data) {
   if (isBloomFile(filename)) {
-    const { code, map } = compileBloomModule(
+    const { code, map, dependencies } = compileBloomModule(
       data.toString('utf8'),
       path.resolve(projectRoot, filename),
       { root: projectRoot },
     );
-    return { filename: hostFilename(filename), code, map };
+    return { filename: hostFilename(filename), code, map, dependencies };
   }
   // The output is the same on every platform: the runtime resolves tokens.
   const output = /\.[cm]?[jt]sx?$/.test(filename)
@@ -62,6 +65,10 @@ async function transform(config, projectRoot, filename, data, options) {
     // the map when this is absent; a production adapter would remap it too.
     output.data.functionMap = null;
   }
+  // What the compile read, with each file's digest: Metro caches the result by
+  // the module's own content, and `withBloomLanguage`'s cache stores refuse it
+  // once one of these files has changed (`./metro-cache`).
+  if (module.dependencies) return { ...result, [DEPENDENCIES]: manifest(module.dependencies) };
   return result;
 }
 

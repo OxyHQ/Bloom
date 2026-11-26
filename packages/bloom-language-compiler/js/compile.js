@@ -52,17 +52,40 @@ const isBloomFile = (filename) => filename.endsWith(BLOOM_EXTENSION);
  * @param {string} source
  * @param {string} filename
  * @param {{ root?: string, dev?: boolean, paths?: Record<string, string[]> }} [options]
- * @returns {{ code: string, map: string | null }}
+ * @returns {{ code: string, map: string | null, dependencies: string[] }}
  */
 function compileBloomModule(source, filename, options = {}) {
-  if (!native.compileBloom) {
+  const output = bloomCompiler(filename, 'compileBloom')(source, filename, options);
+  settle(output, filename);
+  return {
+    code: output.code,
+    map: output.map ? pointAt(output.map, filename) : null,
+    dependencies: output.dependencies,
+  };
+}
+
+/**
+ * The files compiling a `.bloom` module reads, its imported `.bloom` modules
+ * and TS declarations (without emitting): what a cache key hashes besides the
+ * module itself, so editing one compiles the module again.
+ *
+ * @param {string} source
+ * @param {string} filename
+ * @param {{ root?: string, paths?: Record<string, string[]> }} [options]
+ * @returns {string[]}
+ */
+function bloomDependencies(source, filename, options = {}) {
+  return bloomCompiler(filename, 'bloomDependencies')(source, filename, options);
+}
+
+/** The addon's `.bloom` entry point `name`, or why this build has none. */
+function bloomCompiler(filename, name) {
+  if (!native[name]) {
     throw new Error(
-      `${filename}: this build of the Bloom language compiler has no .bloom compiler (${native.binary}); rebuild it (bun run build:addon).`,
+      `${filename}: this build of the Bloom language compiler has no .bloom compiler (${native.binary}, no ${name}); rebuild it (bun run build:addon).`,
     );
   }
-  const output = native.compileBloom(source, filename, options);
-  settle(output, filename);
-  return { code: output.code, map: output.map ? pointAt(output.map, filename) : null };
+  return native[name];
 }
 
 /** The map with `filename` as its one source, so frames name the file on disk. */
@@ -80,6 +103,7 @@ function pointAt(map, filename) {
 const hostFilename = (filename) => `${filename}.ts`;
 
 module.exports = {
+  bloomDependencies,
   compileModule,
   compileBloomModule,
   hostFilename,
