@@ -7,11 +7,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { NPM_DIR, platformPackages, ROOT } from '../scripts/platform-packages.mjs';
+import { NPM_DIR, platformPackages, ROOT, withCli } from '../scripts/platform-packages.mjs';
 
 const compiler = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
 
-test('npm/ is what `bun run generate:platforms` writes for this version', () => {
+test('npm/ is what `bun run generate:platforms` writes for this version, bloomc included', () => {
   const scratch = mkdtempSync(join(tmpdir(), 'bloom-language-compiler-npm-'));
   copyFileSync(join(ROOT, 'package.json'), join(scratch, 'package.json'));
   const napi = join(ROOT, '..', '..', 'node_modules', '.bin', 'napi');
@@ -24,7 +24,10 @@ test('npm/ is what `bun run generate:platforms` writes for this version', () => 
   for (const platform of generated)
     assert.deepEqual(
       JSON.parse(readFileSync(join(NPM_DIR, platform, 'package.json'), 'utf8')),
-      JSON.parse(readFileSync(join(scratch, 'npm', platform, 'package.json'), 'utf8')),
+      withCli(
+        JSON.parse(readFileSync(join(scratch, 'npm', platform, 'package.json'), 'utf8')),
+        platform,
+      ),
       `npm/${platform}/package.json is stale: run bun run generate:platforms`,
     );
 });
@@ -48,6 +51,15 @@ test('the compiler lists every platform package as an optional workspace depende
   );
 });
 
-test('the published compiler carries no local addon', () => {
-  assert.ok(!compiler.files.some((entry) => entry.endsWith('.node')));
+test('the published compiler carries no local addon or bloomc', () => {
+  assert.ok(!compiler.files.some((entry) => entry.endsWith('.node') || entry.startsWith('bloomc')));
+});
+
+test('every platform package ships its bloomc, and the compiler runs it as `bloomc`', () => {
+  for (const { platform, manifest } of platformPackages()) {
+    const [cli] = manifest.files.filter((file) => file.startsWith('bloomc.'));
+    assert.match(cli, new RegExp(`^bloomc\\.${platform}(\\.exe|\\.wasm)?$`), platform);
+  }
+  assert.equal(compiler.bin.bloomc, './js/bloomc.js');
+  assert.equal(compiler.bin['bloom-lang-check'], './js/check.js');
 });

@@ -1,12 +1,14 @@
 name: Language compiler binaries
 
-# Builds the Bloom language compiler's prebuilt addons, one per platform, and
-# its WASI fallback; packs them as the platform packages beside
+# Builds the Bloom language compiler's prebuilt addons and bloomc CLI binaries,
+# one of each per platform, and their WASI fallbacks; packs them as the
+# platform packages beside
 # @oxy.so/bloom-language-compiler (its optional dependencies, committed under
 # packages/bloom-language-compiler/npm); then installs the packs on each
-# platform with no Rust on PATH and compiles the fixtures through them. It
-# publishes nothing. (js/native.js loads them, scripts/pack-prebuilt.mjs packs
-# them, scripts/verify-prebuilt.cjs checks an install.)
+# platform with no Rust on PATH, compiles the fixtures through them and runs
+# bloomc through its npm shim. It publishes nothing. (js/native.js loads the
+# addons, js/bloomc.js runs bloomc, scripts/pack-prebuilt.mjs packs them,
+# scripts/verify-prebuilt.cjs checks an install.)
 #
 # release-packages.yml calls it with `release: true` when the compiler's
 # version is not on npm yet: each build is then also staged at its repository
@@ -77,9 +79,14 @@ jobs:
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --target "${{ matrix.target }}"
           rustup default "$RUST_TOOLCHAIN"
+          # The WASI package's bloomc is built for wasm32-wasip1: Node's WASI has no threads.
+          if [ "${{ matrix.target }}" = wasm32-wasip1-threads ]; then rustup target add wasm32-wasip1; fi
       - name: Build the addon
         working-directory: packages/bloom-language-compiler
         run: bun run build:prebuilt --target "${{ matrix.target }}" --output-dir dist
+      - name: Build bloomc
+        working-directory: packages/bloom-language-compiler
+        run: ./scripts/build-cli.sh "${{ matrix.target }}" dist
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: addon-${{ matrix.target }}
@@ -90,6 +97,7 @@ jobs:
             packages/bloom-language-compiler/dist/*.wasi.d.cts
             packages/bloom-language-compiler/dist/*.wasi-browser.js
             packages/bloom-language-compiler/dist/wasi-worker*.mjs
+            packages/bloom-language-compiler/dist/bloomc.*
           if-no-files-found: error
       - name: Stage the build in its platform package, for the release
         if: inputs.release
@@ -178,8 +186,11 @@ jobs:
             ../packed/oxy.so-bloom-language-compiler-wasm32-wasi-[0-9]*.tgz
           cp ../packages/bloom-language-compiler/scripts/verify-prebuilt.cjs .
           fixtures=../packages/bloom-language-compiler/fixtures
-          # The prebuilt addon loads, and compiles every fixture as the WASI build does.
+          # The prebuilt addon loads, and compiles every fixture as the WASI build does;
+          # npx bloomc runs this platform's bloomc.
           node verify-prebuilt.cjs "$fixtures"
-          # Without it, the compiler falls back to the WASI build.
+          npx --no-install bloomc check ../packages/bloom-language-compiler/test/bloom
+          # Without it, the compiler and bloomc fall back to the WASI builds.
           rm -rf "node_modules/@oxy.so/bloom-language-compiler-${{ matrix.platform }}"
           node verify-prebuilt.cjs "$fixtures" --wasi
+          npx --no-install bloomc check ../packages/bloom-language-compiler/test/bloom
