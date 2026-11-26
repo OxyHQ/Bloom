@@ -1,0 +1,22 @@
+// A `switch` must cover every case; a `guard`'s `else` must leave.
+enum Load {
+  case loading
+  case failed(message: String)
+  case ready(count: Int)
+}
+
+func describe(_ load: Load) -> String {
+  switch load {
+  case .loading:
+    "…"
+  case .failed(let message):
+    message
+  }
+}
+
+func first(_ names: [String]) -> String {
+  guard let name = names.first else {
+    let missing = true
+  }
+  name
+}

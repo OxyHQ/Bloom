@@ -696,21 +696,16 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.bump();
         let name = self.ident("the enum's name");
         let generics = self.generics();
+        let conformances = self.conformances();
         let mut variants = Vec::new();
+        let mut swift = false;
         if let Some(open) = self.expect(P::LBrace, "`{` and the enum's cases") {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
-                if self.at_kw(Kw::Case) {
-                    let span = self.span();
-                    self.error(
-                        Diagnostic::error("B0101", span, "an enum's cases are written without `case`")
-                            .label("remove this")
-                            .help("write each case on its own line: `loading`, `failed(message: String)`")
-                            .fix(span, "")
-                            .spec("45-enums-option-and-result"),
-                    );
-                    self.bump();
+                // `case loading, failed(Error)` (2.0): Swift's cases.
+                if self.eat_kw(Kw::Case) {
+                    swift = true;
                 }
                 let variant_name = self.ident("a case name");
                 let mut payload = Vec::new();
@@ -753,7 +748,21 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             self.expect_close(P::RBrace, open);
         }
-        EnumDecl { name, generics, variants }
+        EnumDecl { name, generics, conformances, variants, swift }
+    }
+
+    /// `: View, Equatable`: the protocols a type conforms to (2.0).
+    fn conformances(&mut self) -> Vec<TypeExpr> {
+        let mut out = Vec::new();
+        if self.eat(P::Colon) {
+            loop {
+                out.push(self.base_type());
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+        }
+        out
     }
 
     fn alias_decl(&mut self) -> AliasDecl {
@@ -1377,6 +1386,48 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let body = self.block();
                 StmtKind::While(WhileStmt { cond, body })
             }
+            // `guard let x = v else { return }`, `guard ok else { … }` (2.0).
+            Tok::Ident(word) if word == "guard" && self.statement_word() => {
+                self.bump();
+                let cond = if self.eat_kw(Kw::Let) {
+                    let pattern = self.pattern();
+                    self.expect(P::Eq, "`=` and the value to unwrap");
+                    Cond::Let(pattern, Box::new(self.expr(Ctx::Head)))
+                } else {
+                    Cond::Expr(Box::new(self.expr(Ctx::Head)))
+                };
+                if !self.eat_kw(Kw::Else) {
+                    self.unexpected("`else` and the block that leaves (`guard … else { return }`)");
+                }
+                let otherwise = self.block();
+                StmtKind::Guard(GuardStmt { cond, otherwise })
+            }
+            Tok::Ident(word) if word == "throw" && self.statement_word() => {
+                self.bump();
+                StmtKind::Throw(self.expr(Ctx::Normal))
+            }
+            Tok::Ident(word) if word == "do" && matches!(self.nth(1), Tok::P(P::LBrace)) => {
+                self.bump();
+                let body = self.block();
+                let mut catches = Vec::new();
+                while matches!(self.tok(), Tok::Ident(w) if w == "catch") || (self.next_line_word("catch")) {
+                    self.skip_newlines();
+                    let keyword = self.bump();
+                    let (mut name, mut ty, mut pattern) = (None, None, None);
+                    if self.eat_kw(Kw::Let) {
+                        name = Some(self.ident("the error's name"));
+                        if self.eat_kw(Kw::As) {
+                            ty = Some(self.type_expr());
+                        }
+                    } else if !self.at(P::LBrace) {
+                        pattern = Some(self.pattern());
+                    }
+                    let body = self.block();
+                    let span = keyword.to(body.span);
+                    catches.push(Catch { keyword, name, ty, pattern, body, span });
+                }
+                StmtKind::Do(DoStmt { body, catches })
+            }
             Tok::Kw(Kw::For) => {
                 self.bump();
                 let pattern = self.pattern();
@@ -1428,7 +1479,30 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     // ---- patterns -----------------------------------------------------
 
+    /// A statement word (`guard`, `throw`) followed by what it takes, not a value named so.
+    fn statement_word(&self) -> bool {
+        !matches!(
+            self.nth(1),
+            Tok::P(P::Eq | P::Dot | P::LParen | P::PlusEq | P::MinusEq | P::StarEq | P::QuestionDot)
+                | Tok::Newline
+                | Tok::Eof
+        )
+    }
+
+    /// The next non-blank line starts with the word `word` (a `catch` after `}`).
+    fn next_line_word(&self, word: &str) -> bool {
+        let mut at = self.pos;
+        while matches!(self.tokens[at].tok, Tok::Newline) {
+            at += 1;
+        }
+        at > self.pos && matches!(&self.tokens[at].tok, Tok::Ident(w) if w == word)
+    }
+
     fn pattern(&mut self) -> Pattern {
+        // `case let .ready(x)`, `.ready(let x)`: Swift's `let` binds what Bloom's names bind.
+        if self.at_kw(Kw::Let) || self.at_kw(Kw::Var) {
+            self.bump();
+        }
         let first = self.single_pattern();
         if !self.at(P::Pipe) {
             return first;
@@ -1645,6 +1719,22 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Unary(UnaryOp::Neg, Box::new(operand)), span)
             }
+            // `try f()`, `try? f()`, `try! f()` (2.0).
+            Tok::Ident(word) if word == "try" && self.try_ahead() => {
+                self.bump();
+                let kind = if self.at(P::Question) && !self.token().space_before {
+                    self.bump();
+                    TryKind::Optional
+                } else if self.at(P::Bang) && !self.token().space_before {
+                    self.bump();
+                    TryKind::Force
+                } else {
+                    TryKind::Plain
+                };
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span)
+            }
             Tok::Kw(Kw::Await) => {
                 self.bump();
                 let primary = self.primary(ctx);
@@ -1661,6 +1751,105 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.postfix_loop(primary, ctx, None)
             }
         }
+    }
+
+    /// `try` starts a throwing expression, not a value named `try`.
+    fn try_ahead(&self) -> bool {
+        let next = &self.tokens[self.pos + 1];
+        match &next.tok {
+            Tok::P(P::Question | P::Bang) => !next.space_before,
+            Tok::Ident(_) | Tok::Kw(Kw::Await) | Tok::P(P::Dot | P::LParen | P::LBracket) => {
+                next.space_before
+            }
+            _ => false,
+        }
+    }
+
+    /// `switch x { case .a, .b: … case let .c(v) where v > 0: … default: … }` (2.0): a
+    /// `match` whose arms run to the next `case`.
+    fn switch_expr(&mut self) -> Expr {
+        let start = self.bump();
+        let scrutinee = self.expr(Ctx::Head);
+        let mut arms = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the switch's `case`s") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                let arm_start = self.span();
+                let pattern = if self.at_kw(Kw::Default) {
+                    let span = self.bump();
+                    Pattern { kind: PatternKind::Wildcard, span }
+                } else if self.eat_kw(Kw::Case) {
+                    // `case .a, .b:`: either.
+                    let first = self.pattern();
+                    let mut alternatives = vec![first];
+                    while self.eat(P::Comma) {
+                        self.skip_newlines();
+                        alternatives.push(self.pattern());
+                    }
+                    if alternatives.len() == 1 {
+                        alternatives.pop().expect("one")
+                    } else {
+                        let span = alternatives[0].span.to(alternatives.last().expect("two").span);
+                        Pattern { kind: PatternKind::Or(alternatives), span }
+                    }
+                } else {
+                    let span = self.span();
+                    self.error(
+                        Diagnostic::error(
+                            "B0101",
+                            span,
+                            format!("expected `case` or `default`, found {}", describe(self.tok())),
+                        )
+                        .label("a switch's arm starts with `case`")
+                        .help("write `case .ready(let value):`")
+                        .spec("3-grammar-ebnf"),
+                    );
+                    self.recover_line();
+                    continue;
+                };
+                let guard = if matches!(self.tok(), Tok::Ident(w) if w == "where") {
+                    self.bump();
+                    Some(self.expr(Ctx::Head))
+                } else {
+                    None
+                };
+                self.expect(P::Colon, "`:` and the case's statements");
+                let body_start = self.span();
+                let mut stmts = Vec::new();
+                self.skip_newlines();
+                while !self.at(P::RBrace) && !self.at_kw(Kw::Case) && !self.at_kw(Kw::Default) {
+                    if matches!(self.tok(), Tok::Eof) {
+                        break;
+                    }
+                    let before = self.pos;
+                    if let Some(stmt) = self.stmt() {
+                        stmts.push(stmt);
+                    }
+                    self.member_end();
+                    if self.pos == before {
+                        self.bump();
+                    }
+                    self.skip_newlines();
+                }
+                let end = Span::new(self.prev_end(), self.prev_end());
+                // `break`: an empty case.
+                stmts.retain(|s| !matches!(&s.kind, StmtKind::Expr(Expr { kind: ExprKind::Name(n), .. }) if n == "break"));
+                let body = match stmts.as_slice() {
+                    [Stmt { kind: StmtKind::Expr(_), .. }] => {
+                        let Some(Stmt { kind: StmtKind::Expr(expr), .. }) = stmts.pop() else {
+                            unreachable!()
+                        };
+                        ArmBody::Expr(expr)
+                    }
+                    _ => ArmBody::Block(Block { stmts, span: body_start.to(end) }),
+                };
+                arms.push(Arm { pattern, guard, body, span: arm_start.to(end) });
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let end = Span::new(self.prev_end(), self.prev_end());
+        let kind = ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms, switch: true });
+        self.expr_node(kind, start.to(end))
     }
 
     /// Calls, members, indexing, `?` and trailing closures after `expr`.
@@ -2001,12 +2190,21 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.expect_close(P::RBrace, open);
         }
         let end = Span::new(self.prev_end(), self.prev_end());
-        self.expr_node(ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms }), start.to(end))
+        self.expr_node(
+            ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms, switch: false }),
+            start.to(end),
+        )
     }
 
     fn primary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok().clone() {
+            Tok::Ident(word)
+                if word == "switch"
+                    && !matches!(self.nth(1), Tok::P(P::Eq | P::Dot | P::LParen | P::Comma | P::RParen)) =>
+            {
+                self.switch_expr()
+            }
             // `import("./X")`: a dynamic import, a call TS types (`lazy(() => import("./X"))`).
             Tok::Kw(Kw::Import) if matches!(self.nth(1), Tok::P(P::LParen)) => {
                 self.bump();

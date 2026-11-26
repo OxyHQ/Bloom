@@ -415,6 +415,51 @@ object passed last**: `t("key", defaultValue: "General")` is `t("key", { default
 `if`/`else` and `match` are expressions; every branch has the same type (an `if` without
 `else` in a builder yields an optional child).
 
+### 6.2 Control flow and errors (2.0)
+
+```bloom
+switch load {
+case .loading:
+  ProgressView()
+case let .failed(message):
+  Text(message)
+case .ready(let count) where count == 0:
+  Text("empty")
+case .ready(let count):
+  Text("\(count) items")
+}
+
+guard let name = names.first else { return "nobody" }   // `name` is in scope after it
+
+func check(code: Int) throws(APIError) -> Int {
+  if code >= 500 { throw APIError.status(code: code) }
+  code
+}
+
+do {
+  let ok = try check(code: code)
+} catch let error as APIError {
+  …
+}
+let value = try? check(code: 1)                       // Int?: `none` when it throws
+```
+
+- `switch` replaces 0.x `match` (which still parses). Each `case` runs to the next one, with no
+  fallthrough; `case .a, .b:` matches either, `case let .x(v)` and `.x(let v)` bind (a Bloom
+  pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
+  rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
+- `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
+  `return`, `throw`, `break`, `continue` or `fatalError(…)` (B0110), and what the condition binds
+  is in scope after it. It compiles to `if (!(cond)) { … }`.
+- An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
+- Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
+  call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
+  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error`, `catch let e as T`
+  types it, and catches with patterns (`catch .offline`) test it in order and rethrow what none
+  matches. A function's last statement may be a `do` whose body and catches all return.
+  `throws(E)` is parsed and printed; that a throwing call is marked `try`, and that a `throw`
+  matches `E`, are not checked yet (phase A follow-up). `Result` and 0.x `?` stay.
+
 ## 7. Views
 
 ### 7.1 A view

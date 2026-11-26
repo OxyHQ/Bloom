@@ -176,6 +176,10 @@ pub struct Field {
 pub struct EnumDecl {
     pub name: Ident,
     pub generics: Vec<Ident>,
+    /// `: Equatable, CaseIterable` (2.0).
+    pub conformances: Vec<TypeExpr>,
+    /// Written with Swift's `case` before its cases (2.0).
+    pub swift: bool,
     pub variants: Vec<Variant>,
 }
 
@@ -368,7 +372,38 @@ pub enum StmtKind {
     Defer(Block),
     While(WhileStmt),
     For(ForStmt),
+    /// `guard cond else { … }` (2.0): the block runs and leaves when `cond` fails; the names
+    /// an `if let`-style condition binds are in scope after it.
+    Guard(GuardStmt),
+    /// `throw error` (2.0): a JS `throw`.
+    Throw(Expr),
+    /// `do { … } catch … { … }` (2.0): a JS `try`/`catch`.
+    Do(DoStmt),
     Expr(Expr),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GuardStmt {
+    pub cond: Cond,
+    pub otherwise: Block,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DoStmt {
+    pub body: Block,
+    pub catches: Vec<Catch>,
+}
+
+/// `catch { … }` (binds `error`), `catch let e { … }`, `catch let e as APIError { … }`, or
+/// `catch .offline { … }` (a pattern over a typed error).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Catch {
+    pub keyword: Span,
+    pub name: Option<Ident>,
+    pub ty: Option<TypeExpr>,
+    pub pattern: Option<Pattern>,
+    pub body: Block,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -551,6 +586,8 @@ pub enum ExprKind {
     Await(Box<Expr>),
     /// `expr?`: return the error (or `none`) early.
     Try(Box<Expr>),
+    /// `try f()`, `try? f()`, `try! f()` (2.0): a call that throws.
+    Throwing(TryKind, Box<Expr>),
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
@@ -664,6 +701,18 @@ pub enum Cond {
 pub struct MatchExpr {
     pub scrutinee: Box<Expr>,
     pub arms: Vec<Arm>,
+    /// Written `switch x { case .a: … }` (2.0) rather than 0.x `match x { case .a => … }`.
+    pub switch: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TryKind {
+    /// `try f()`: the error propagates.
+    Plain,
+    /// `try? f()`: `none` when it throws.
+    Optional,
+    /// `try! f()`: the error is a crash.
+    Force,
 }
 
 #[derive(Debug, Clone, PartialEq)]

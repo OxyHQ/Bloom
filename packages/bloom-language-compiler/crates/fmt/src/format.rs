@@ -369,10 +369,28 @@ impl<'a> Formatter<'a> {
     }
 
     fn enum_decl(&mut self, e: &EnumDecl, span: Span) -> Doc {
-        let head = concat(vec![text("enum "), text(e.name.name.clone()), generics(&e.generics), text(" ")]);
+        let conformances = self.conformances(&e.conformances);
+        let head = concat(vec![
+            text("enum "),
+            text(e.name.name.clone()),
+            generics(&e.generics),
+            conformances,
+            text(" "),
+        ]);
         // One variant per line, as a struct's fields.
-        let variants = self.lines(&e.variants, |v| v.span, Self::variant);
+        let case = if e.swift { "case " } else { "" };
+        let variants =
+            self.lines(&e.variants, |v| v.span, |this, v| concat(vec![text(case), this.variant(v)]));
         concat(vec![head, self.braced(variants, span.end)])
+    }
+
+    /// `: View, Equatable`.
+    fn conformances(&mut self, types: &[TypeExpr]) -> Doc {
+        if types.is_empty() {
+            return Doc::Nil;
+        }
+        let docs = types.iter().map(|t| self.ty(t)).collect();
+        concat(vec![text(": "), join(docs, || text(", "))])
     }
 
     fn variant(&mut self, variant: &Variant) -> Doc {
@@ -585,6 +603,30 @@ impl<'a> Formatter<'a> {
                 self.block(&f.body, Layout::Own),
             ]),
             StmtKind::Defer(b) => concat(vec![text("defer "), self.block(b, Layout::Own)]),
+            StmtKind::Guard(g) => {
+                let cond = self.cond(&g.cond);
+                concat(vec![text("guard "), cond, text(" else "), self.block(&g.otherwise, Layout::Own)])
+            }
+            StmtKind::Throw(e) => concat(vec![text("throw "), self.expr(e)]),
+            StmtKind::Do(d) => {
+                let mut parts = vec![text("do "), self.block(&d.body, Layout::Own)];
+                for catch in &d.catches {
+                    parts.push(text(" catch "));
+                    if let Some(name) = &catch.name {
+                        parts.push(text(format!("let {}", name.name)));
+                        if let Some(ty) = &catch.ty {
+                            parts.push(text(" as "));
+                            parts.push(self.ty(ty));
+                        }
+                        parts.push(text(" "));
+                    } else if let Some(pattern) = &catch.pattern {
+                        parts.push(self.pattern(pattern));
+                        parts.push(text(" "));
+                    }
+                    parts.push(self.block(&catch.body, Layout::Own));
+                }
+                concat(parts)
+            }
             StmtKind::Expr(e) => self.expr_in(e, Context::Statement),
         }
     }
@@ -624,6 +666,14 @@ impl<'a> Formatter<'a> {
                 concat(vec![text(name.name.clone()), text("<"), join(args, || text(", ")), text(">")])
             }
             ExprKind::Paren(inner) => concat(vec![text("("), self.expr(inner), text(")")]),
+            ExprKind::Throwing(kind, inner) => {
+                let word = match kind {
+                    TryKind::Plain => "try ",
+                    TryKind::Optional => "try? ",
+                    TryKind::Force => "try! ",
+                };
+                concat(vec![text(word), self.expr(inner)])
+            }
             ExprKind::Tuple(items) => self.commas(items, |i| i.span, Self::expr).bracketed("(", ")"),
             ExprKind::List(items) => self.commas(items, |i| i.span, Self::expr).bracketed("[", "]"),
             ExprKind::Spread(inner) => concat(vec![text(".."), self.expr(inner)]),
@@ -838,13 +888,17 @@ impl<'a> Formatter<'a> {
         group(self.if_chain(i))
     }
 
-    fn if_chain(&mut self, i: &IfExpr) -> Doc {
-        let cond = match &i.cond {
+    fn cond(&mut self, cond: &Cond) -> Doc {
+        match cond {
             Cond::Expr(e) => self.expr(e),
             Cond::Let(pattern, value) => {
                 concat(vec![text("let "), self.pattern(pattern), text(" = "), self.expr(value)])
             }
-        };
+        }
+    }
+
+    fn if_chain(&mut self, i: &IfExpr) -> Doc {
+        let cond = self.cond(&i.cond);
         let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, Layout::Shared)];
         if let Some(otherwise) = &i.otherwise {
             parts.push(text(" else "));
@@ -857,7 +911,58 @@ impl<'a> Formatter<'a> {
         concat(parts)
     }
 
+    /// `switch x {` then `case .a, .b:`, `case let .c(v) where v > 0:`, `default:`, each
+    /// with its statements indented under it.
+    fn switch_expr(&mut self, m: &MatchExpr, span: Span) -> Doc {
+        let scrutinee = self.expr(&m.scrutinee);
+        let arms = self.lines(
+            &m.arms,
+            |a| a.span,
+            |this, arm| {
+                let mut parts = Vec::new();
+                if arm.pattern.kind == PatternKind::Wildcard && this.slice(arm.pattern.span) == "default" {
+                    parts.push(text("default"));
+                } else {
+                    parts.push(text(if binds(&arm.pattern) { "case let " } else { "case " }));
+                    let alternatives = match &arm.pattern.kind {
+                        PatternKind::Or(alternatives) => alternatives.iter().collect(),
+                        _ => vec![&arm.pattern],
+                    };
+                    let docs: Vec<Doc> = alternatives.into_iter().map(|p| this.pattern(p)).collect();
+                    parts.push(join(docs, || text(", ")));
+                }
+                if let Some(guard) = &arm.guard {
+                    parts.push(text(" where "));
+                    parts.push(this.expr(guard));
+                }
+                parts.push(text(":"));
+                let body = match &arm.body {
+                    ArmBody::Expr(e) => this.expr_in(e, Context::Statement),
+                    ArmBody::Block(b) if b.stmts.is_empty() => text("break"),
+                    ArmBody::Block(b) => this.lines(&b.stmts, |s| s.span, |this, stmt| this.stmt(stmt)),
+                };
+                parts.push(indent(concat(vec![hardline(), body])));
+                concat(parts)
+            },
+        );
+        // Swift's layout: the cases at the switch's own indentation.
+        let dangling = self.dangling(span.end);
+        concat(vec![
+            text("switch "),
+            scrutinee,
+            text(" {"),
+            hardline(),
+            arms,
+            dangling,
+            hardline(),
+            text("}"),
+        ])
+    }
+
     fn match_expr(&mut self, m: &MatchExpr, span: Span) -> Doc {
+        if m.switch {
+            return self.switch_expr(m, span);
+        }
         let scrutinee = self.expr(&m.scrutinee);
         let arms = self.lines(
             &m.arms,
@@ -1057,4 +1162,15 @@ fn record_key_is_name(key: &str) -> bool {
     let mut chars = key.chars();
     chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
         && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+/// A pattern that binds a name (`case let` in a `switch`).
+fn binds(p: &Pattern) -> bool {
+    match &p.kind {
+        PatternKind::Bind(_) => true,
+        PatternKind::Case { args, .. } => args.iter().flatten().any(binds),
+        PatternKind::Tuple(items) | PatternKind::Or(items) => items.iter().any(binds),
+        PatternKind::Record(fields) => fields.iter().any(|(_, p)| p.as_ref().is_none_or(binds)),
+        PatternKind::Wildcard | PatternKind::Literal(_) | PatternKind::None => false,
+    }
 }

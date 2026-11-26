@@ -2016,6 +2016,7 @@ impl<'o> Checker<'o> {
         if let Some(expected) = expected
             && !discard
             && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
+            && !stmts.last().is_some_and(always_exits)
         {
             let expected = expected.clone();
             if !self.coerce(&Ty::Unit, &expected) {
@@ -2097,6 +2098,46 @@ impl<'o> Checker<'o> {
             }
             StmtKind::Defer(block) => {
                 self.block(block, Some(&Ty::Unit));
+            }
+            // The else block first, without the names the condition binds; they are in
+            // scope for the statements after the guard.
+            StmtKind::Guard(g) => {
+                self.block(&g.otherwise, Some(&Ty::Unit));
+                if !g.otherwise.stmts.last().is_some_and(exits) {
+                    self.report(
+                        Diagnostic::error("B0110", g.otherwise.span, "a `guard`'s `else` must leave")
+                            .label("this block falls through")
+                            .help("end it with `return`, `throw`, `break` or `continue`")
+                            .spec("6-expressions-and-control-flow"),
+                    );
+                }
+                self.cond(&g.cond);
+            }
+            StmtKind::Throw(value) => {
+                self.expr(value, None);
+            }
+            StmtKind::Do(d) => {
+                self.block(&d.body, Some(&Ty::Unit));
+                for catch in &d.catches {
+                    self.push();
+                    let ty = catch.ty.as_ref().map_or(Ty::JsError, |t| self.resolve_type(t));
+                    match (&catch.pattern, &catch.name) {
+                        (Some(pattern), _) => {
+                            let mut locals = Vec::new();
+                            self.bind(pattern, &ty, &LocalKind::Let, &mut locals);
+                        }
+                        (None, Some(name)) => {
+                            self.declare(name, ty, LocalKind::Let);
+                        }
+                        // `catch { … }`: the error is `error`.
+                        (None, None) => {
+                            let name = Ident { name: "error".into(), span: catch.keyword };
+                            self.declare(&name, ty, LocalKind::Let);
+                        }
+                    }
+                    self.stmts(&catch.body.stmts, Some(&Ty::Unit), catch.body.span);
+                    self.pop();
+                }
             }
             StmtKind::Expr(expr) => {
                 let ty = self.expr(expr, None);
@@ -2978,10 +3019,14 @@ impl<'o> Checker<'o> {
                 let list = missing.iter().map(|m| format!("`{m}`")).collect::<Vec<_>>().join(", ");
                 let arms: String = missing.iter().map(|m| format!("\n      case {m} => …")).collect();
                 self.report(
-                    Diagnostic::error("B0301", m.scrutinee.span, format!("this match does not cover {list}"))
-                        .label(format!("{} is not matched by every value", self.show(&zonked)))
-                        .help(format!("add the missing arm(s), or `case _ =>` for the rest:{arms}"))
-                        .spec("43-soundness-rules"),
+                    Diagnostic::error(
+                        "B0301",
+                        m.scrutinee.span,
+                        format!("this {} does not cover {list}", if m.switch { "switch" } else { "match" }),
+                    )
+                    .label(format!("{} is not matched by every value", self.show(&zonked)))
+                    .help(format!("add the missing arm(s), or `case _ =>` for the rest:{arms}"))
+                    .spec("43-soundness-rules"),
                 );
             }
         }
@@ -3331,6 +3376,21 @@ impl<'o> Checker<'o> {
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // `try f()`: a JS exception propagates; `try? f()` is `none` when it throws.
+            ExprKind::Throwing(kind, inner) => {
+                let expected_inner = match (kind, expected.map(|e| self.resolve(e))) {
+                    (TryKind::Optional, Some(Ty::Option(inner))) => Some(*inner),
+                    (TryKind::Optional, _) => None,
+                    (_, want) => want,
+                };
+                let ty = self.expr(inner, expected_inner.as_ref());
+                match (kind, self.resolve(&ty)) {
+                    (TryKind::Optional, Ty::Option(_)) => ty,
+                    (TryKind::Optional, Ty::Unit) => Ty::Unit,
+                    (TryKind::Optional, _) => Ty::Option(Box::new(ty)),
+                    _ => ty,
+                }
+            }
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
                 let ty = self.expr(object, None);
@@ -4750,6 +4810,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
+        | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_names(e, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|e| walk_names(e, f)),
@@ -4847,11 +4908,47 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
                 walk_names(&w.cond, f);
                 walk_stmts(&w.body.stmts, f);
             }
+            StmtKind::Guard(g) => {
+                match &g.cond {
+                    Cond::Expr(e) | Cond::Let(_, e) => walk_names(e, f),
+                }
+                walk_stmts(&g.otherwise.stmts, f);
+            }
+            StmtKind::Throw(e) => walk_names(e, f),
+            StmtKind::Do(d) => {
+                walk_stmts(&d.body.stmts, f);
+                d.catches.iter().for_each(|c| walk_stmts(&c.body.stmts, f));
+            }
             StmtKind::For(fs) => {
                 walk_names(&fs.iter, f);
                 walk_stmts(&fs.body.stmts, f);
             }
         }
+    }
+}
+
+/// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
+fn exits(stmt: &Stmt) -> bool {
+    match &stmt.kind {
+        StmtKind::Return(_) | StmtKind::Throw(_) => true,
+        StmtKind::Expr(e) => match &e.kind {
+            ExprKind::Name(n) => n == "break" || n == "continue",
+            ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+/// A statement no path falls out of: an exit, or a `do` whose body and catches all exit.
+fn always_exits(stmt: &Stmt) -> bool {
+    match &stmt.kind {
+        StmtKind::Do(d) => {
+            d.body.stmts.last().is_some_and(always_exits)
+                && !d.catches.is_empty()
+                && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(always_exits))
+        }
+        _ => exits(stmt),
     }
 }
 

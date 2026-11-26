@@ -118,6 +118,17 @@ impl Walker<'_> {
                 self.expr(&f.iter);
                 self.stmts(&f.body.stmts);
             }
+            StmtKind::Guard(g) => {
+                match &g.cond {
+                    Cond::Expr(e) | Cond::Let(_, e) => self.expr(e),
+                }
+                self.stmts(&g.otherwise.stmts);
+            }
+            StmtKind::Throw(e) => self.expr(e),
+            StmtKind::Do(d) => {
+                self.stmts(&d.body.stmts);
+                d.catches.iter().for_each(|c| self.stmts(&c.body.stmts));
+            }
             StmtKind::Expr(e) => self.expr(e),
         }
     }
@@ -171,6 +182,7 @@ impl Walker<'_> {
             | ExprKind::Unary(_, a)
             | ExprKind::Await(a)
             | ExprKind::Try(a)
+            | ExprKind::Throwing(_, a)
             | ExprKind::Field(a, _)
             | ExprKind::OptField(a, _) => self.expr(a),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|a| self.expr(a)),

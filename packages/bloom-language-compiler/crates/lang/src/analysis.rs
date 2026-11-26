@@ -872,6 +872,26 @@ pub fn walk_stmt<'a>(stmt: &'a Stmt, f: &mut dyn FnMut(Node<'a>)) {
             walk_expr(&fs.iter, f);
             walk_block(&fs.body, f);
         }
+        StmtKind::Guard(g) => {
+            match &g.cond {
+                Cond::Expr(e) => walk_expr(e, f),
+                Cond::Let(p, e) => {
+                    walk_pattern(p, f);
+                    walk_expr(e, f);
+                }
+            }
+            walk_block(&g.otherwise, f);
+        }
+        StmtKind::Throw(e) => walk_expr(e, f),
+        StmtKind::Do(d) => {
+            walk_block(&d.body, f);
+            for catch in &d.catches {
+                if let Some(p) = &catch.pattern {
+                    walk_pattern(p, f);
+                }
+                walk_block(&catch.body, f);
+            }
+        }
         StmtKind::Expr(e) => walk_expr(e, f),
     }
 }
@@ -933,6 +953,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         | ExprKind::Unary(_, a)
         | ExprKind::Await(a)
         | ExprKind::Try(a)
+        | ExprKind::Throwing(_, a)
         | ExprKind::Field(a, _)
         | ExprKind::OptField(a, _) => walk_expr(a, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|a| walk_expr(a, f)),

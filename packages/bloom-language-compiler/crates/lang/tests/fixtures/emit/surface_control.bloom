@@ -1,0 +1,51 @@
+// Bloom 2.0's control flow and errors: `switch`, `guard`, `if let`, `throws`, `try`, `do`/`catch`.
+public enum Load {
+  case loading
+  case failed(message: String)
+  case ready(count: Int)
+}
+
+enum APIError {
+  case offline
+  case status(code: Int)
+}
+
+public func describe(_ load: Load) -> String {
+  switch load {
+  case .loading:
+    "…"
+  case let .failed(message):
+    "failed: \(message)"
+  case let .ready(count) where count == 0:
+    "empty"
+  case let .ready(count):
+    "\(count) items"
+  }
+}
+
+public func first(_ names: [String]) -> String {
+  guard let name = names.first else { return "nobody" }
+  name
+}
+
+public func total(_ counts: [Int]) -> Int {
+  var sum = 0
+  for count in counts { sum += count }
+  var left = 3
+  while left > 0 { left -= 1 }
+  sum
+}
+
+func check(code: Int) throws(APIError) -> Int {
+  if code >= 500 { throw APIError.status(code: code) }
+  code
+}
+
+public func status(_ code: Int) -> String {
+  do {
+    let ok = try check(code: code)
+    return "ok \(ok)"
+  } catch { return "failed" }
+}
+
+public func maybe(_ code: Int) -> Int? { try? check(code: code) }
