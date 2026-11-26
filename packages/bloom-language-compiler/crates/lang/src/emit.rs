@@ -3001,7 +3001,16 @@ impl<'a> Emitter<'a> {
             && let Some(name) =
                 trailing.or_else(|| params.iter().rev().find(|p| !given.contains_key(*p)).map(|p| p.as_str()))
         {
-            let value = self.closure(closure);
+            let value = if self.ck.builder_props.contains(&closure.span) {
+                let children = self.children(&closure.body);
+                match children.len() {
+                    0 => Frag::of("null"),
+                    1 => children.into_iter().next().expect("one child"),
+                    _ => Frag::join(children, ", ").wrap("[", "]"),
+                }
+            } else {
+                self.closure(closure)
+            };
             if written {
                 out.push((name.to_string(), value));
                 return out;

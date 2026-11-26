@@ -326,6 +326,8 @@ pub struct CheckResult {
     pub widened: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
+    /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
+    pub builder_props: HashSet<Span>,
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,

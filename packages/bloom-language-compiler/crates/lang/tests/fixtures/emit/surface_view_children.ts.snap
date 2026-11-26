@@ -1,0 +1,67 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Text, VStack, view } from "@oxy.so/bloom-language";
+import type { Child } from "@oxy.so/bloom-language";
+
+export interface CardProps {
+  readonly title: string;
+  readonly children?: Child | undefined;
+}
+export const Card = view(function Card(props: CardProps) {
+"use no memo";
+const $ = $c(5);
+const { title, children = undefined } = props;
+let $t0;
+if ($[2] !== title || $[3] !== children) {
+$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), (children !== undefined) ? children : null);
+$[2] = title;
+$[3] = children;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+});
+
+export interface PanelProps {
+  readonly content: Child;
+}
+export const Panel = view(function Panel(props: PanelProps) {
+"use no memo";
+const $ = $c(2);
+const { content } = props;
+let $t1;
+if ($[0] !== content) {
+$t1 = HStack(content);
+$[0] = content;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+
+const $view0 = Card({ title: "Hi", children: Text("inside") });
+const $view1 = Card({ title: "Empty" });
+const $view2 = Text("Names");
+const $view3 = Text("Welcome");
+export interface PageProps {
+  readonly signedIn: boolean;
+  readonly names: readonly string[];
+}
+export const Page = view(function Page(props: PageProps) {
+"use no memo";
+const $ = $c(3);
+const { signedIn, names } = props;
+let $t2;
+if ($[0] !== signedIn || $[1] !== names) {
+$t2 = VStack($view0, $view1, Panel({ content: [$view2, (signedIn) ? $view3 : null, names.map((name) => Text(name))] }));
+$[0] = signedIn;
+$[1] = names;
+$[2] = $t2;
+} else {
+$t2 = $[2];
+}
+return $t2;
+});
+

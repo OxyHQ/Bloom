@@ -638,6 +638,11 @@ are labelled arguments. `Task { … }` starts async work without awaiting it (0.
 `() -> View` is expected and written over several lines is a builder (Swift's `@ViewBuilder`):
 each line, `if` and `for` a child, compiled to the list of them, which the stack it lands in
 flattens (`let rows: () -> View` called as `rows()` in a `VStack`).
+A view's stored `View` or `View?` (`var children: View? = none`, `let content: View`) takes the
+trailing builder when no function parameter does, as Swift's `@ViewBuilder let content: Content`
+does: `Card(title: "Hi") { Text("inside") }` passes the builder's lines as the prop's value (one
+child, or the list of them), built in the caller's render, not a closure. The last such
+property not given by label takes it.
 A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).

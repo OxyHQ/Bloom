@@ -849,7 +849,30 @@ impl Checker<'_> {
             let slot = (0..order.len())
                 .rev()
                 .find(|&i| order[i].is_none() && matches!(self.resolve(&f.params[i].ty), Ty::Fn(_)));
+            // A view's stored `View`/`View?` (`children`, `content`) takes the trailing
+            // builder, as Swift's `@ViewBuilder let content: Content` does: its lines are
+            // the children, passed as the prop's value.
+            let builder = slot.is_none() && props;
+            let slot = slot.or_else(|| {
+                builder
+                    .then(|| {
+                        (0..order.len()).rev().find(|&i| {
+                            order[i].is_none()
+                                && match self.resolve(&f.params[i].ty) {
+                                    Ty::View(_) => true,
+                                    Ty::Option(inner) => matches!(self.resolve(&inner), Ty::View(_)),
+                                    _ => false,
+                                }
+                        })
+                    })
+                    .flatten()
+            });
             match slot {
+                Some(slot) if builder => {
+                    order[slot] = Some(call.args.len());
+                    self.builder_closure(trailing);
+                    self.out.builder_props.insert(trailing.span);
+                }
                 Some(slot) => {
                     order[slot] = Some(call.args.len());
                     let ty = f.params[slot].ty.clone();
@@ -861,7 +884,11 @@ impl Checker<'_> {
                 None => {
                     self.report(
                         Diagnostic::error("B0207", trailing.span, "no parameter takes this trailing closure")
-                            .label("a trailing closure fills a function parameter")
+                            .label(if props {
+                                "a trailing closure fills a function parameter, or a view's `View` property"
+                            } else {
+                                "a trailing closure fills a function parameter"
+                            })
                             .spec("5-values-functions-and-closures"),
                     );
                     self.closure(trailing, None, false);
