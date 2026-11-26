@@ -14,7 +14,37 @@ impl Checker<'_> {
     pub(super) fn call(&mut self, expr: &Expr, call: &Call, expected: Option<&Ty>) -> Ty {
         let hook_allowed = std::mem::take(&mut self.hook_allowed);
         let task_allowed = std::mem::take(&mut self.task_allowed);
+        if call.optional {
+            // `f?.(…)`: the call of `f`'s value when it is not `none`.
+            let ty = self.expr(&call.callee, None);
+            let end = call.callee.span.end;
+            return match self.optional_target(&ty, call.callee.span, (Span::new(end, end + 2), "")) {
+                Some(inner) => {
+                    let ret = self.value_call(expr, call, &inner);
+                    self.rechain(expr, ret)
+                }
+                None => {
+                    let ty = self.resolve(&ty);
+                    self.value_call(expr, call, &ty)
+                }
+            };
+        }
         match &call.callee.kind {
+            ExprKind::OptField(object, member) => {
+                // `x?.m(…)`: the method of `x`'s value when it is not `none`.
+                let recv = self.expr(object, None);
+                let fix = (Span::new(member.span.start - 2, member.span.start), ".");
+                match self.optional_target(&recv, member.span, fix) {
+                    Some(inner) => {
+                        let ret = self.member_call(expr, call, &inner, member, object.span, false, true);
+                        self.rechain(expr, ret)
+                    }
+                    None => {
+                        let recv = self.resolve(&recv);
+                        self.member_call(expr, call, &recv, member, object.span, false, true)
+                    }
+                }
+            }
             ExprKind::Name(name) => {
                 if let Some(local) = self.lookup(name) {
                     self.out.names.insert(call.callee.id, NameRes::Local(local));
@@ -174,27 +204,12 @@ impl Checker<'_> {
                 self.task_allowed = task_allowed;
                 let recv = self.expr(object, None);
                 self.task_allowed = false;
-                let recv = self.resolve(&recv);
-                match &recv {
-                    Ty::View(kind) => self.modifier(expr, call, *kind, member, &recv, task_allowed),
-                    Ty::Adt(def, targs)
-                        if member.name == "with"
-                            && matches!(self.out.defs[*def].kind, DefKind::Struct(_)) =>
-                    {
-                        let (def, targs) = (*def, targs.clone());
-                        self.with_update(expr, call, def, targs)
-                    }
-                    Ty::Foreign(_) | Ty::Adt(..) => {
-                        let field = self.member(&call.callee, &recv, member, object.span);
-                        self.out.types.insert(call.callee.id, field.clone());
-                        self.value_call(expr, call, &field)
-                    }
-                    Ty::Unknown => {
-                        self.args_unchecked(call);
-                        Ty::Unknown
-                    }
-                    _ => self.method_call(expr, call, &recv, member),
+                if let Some(inner) = self.unchain(object, &recv) {
+                    let ret = self.member_call(expr, call, &inner, member, object.span, false, false);
+                    return self.rechain(expr, ret);
                 }
+                let recv = self.resolve(&recv);
+                self.member_call(expr, call, &recv, member, object.span, task_allowed, false)
             }
             ExprKind::ImplicitMember(name) => {
                 let target = match expected.map(|e| self.resolve(e)) {
@@ -224,6 +239,63 @@ impl Checker<'_> {
                 let ty = self.expr(&call.callee, None);
                 let ty = self.resolve(&ty);
                 self.value_call(expr, call, &ty)
+            }
+        }
+    }
+
+    /// `recv.member(…)` once `recv` is typed; `optional`: written `recv?.member(…)`.
+    #[allow(clippy::too_many_arguments)]
+    fn member_call(
+        &mut self,
+        expr: &Expr,
+        call: &Call,
+        recv: &Ty,
+        member: &Ident,
+        object_span: Span,
+        task_allowed: bool,
+        optional: bool,
+    ) -> Ty {
+        match recv {
+            Ty::View(kind) if !optional => self.modifier(expr, call, *kind, member, recv, task_allowed),
+            Ty::Adt(def, targs)
+                if !optional
+                    && member.name == "with"
+                    && matches!(self.out.defs[*def].kind, DefKind::Struct(_)) =>
+            {
+                let (def, targs) = (*def, targs.clone());
+                self.with_update(expr, call, def, targs)
+            }
+            Ty::Foreign(_) | Ty::Adt(..) => {
+                let field = self.member(&call.callee, recv, member, object_span);
+                self.out.types.insert(call.callee.id, field.clone());
+                self.value_call(expr, call, &field)
+            }
+            Ty::Unknown => {
+                self.args_unchecked(call);
+                Ty::Unknown
+            }
+            _ => self.method_call(expr, call, recv, member),
+        }
+    }
+
+    /// What `?.` reaches: the value of an optional; `None` (reported) when `ty` is never `none`.
+    fn optional_target(&mut self, ty: &Ty, span: Span, fix: (Span, &str)) -> Option<Ty> {
+        match self.resolve(ty) {
+            Ty::Option(inner) => Some(self.resolve(&inner)),
+            Ty::Foreign(_) | Ty::Unknown => None,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        span,
+                        format!("`?.` reads an optional, and this is {}", self.show(&other)),
+                    )
+                    .label("never `none`")
+                    .help(if fix.1.is_empty() { "call it: `f(…)`" } else { "write `.`" })
+                    .fix(fix.0, fix.1)
+                    .spec("45-enums-option-and-result"),
+                );
+                None
             }
         }
     }
@@ -272,8 +344,8 @@ impl Checker<'_> {
                 f.ret.clone()
             }
             Ty::Fn(f) => {
-                let order = self.bloom_args(call, &f);
-                self.out.calls.insert(expr.id, CallRes::Bloom { order });
+                let (order, rest) = self.bloom_args(call, &f);
+                self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
             }
             Ty::Foreign(text) => {
@@ -308,20 +380,25 @@ impl Checker<'_> {
 
     /// Named arguments in any order after the positional ones (spec 5);
     /// a trailing closure is the next parameter that takes a function.
-    fn bloom_args(&mut self, call: &Call, f: &FnTy) -> Vec<Option<usize>> {
+    fn bloom_args(&mut self, call: &Call, f: &FnTy) -> (Vec<Option<usize>>, Vec<usize>) {
         let mut order: Vec<Option<usize>> = vec![None; f.params.len()];
+        let mut rest = Vec::new();
+        let rest_slot = f.params.last().filter(|p| p.rest).map(|_| f.params.len() - 1);
         let mut next = 0;
         for (index, arg) in call.args.iter().enumerate() {
+            // Positional arguments past the others go to the rest parameter.
+            if arg.label.is_none()
+                && let Some(slot) = rest_slot
+                && (arg.spread || (next..slot).all(|i| order[i].is_some()))
+            {
+                let element = f.params[slot].ty.clone();
+                self.rest_arg(arg, &element, false);
+                rest.push(index);
+                next = slot;
+                continue;
+            }
             if arg.spread {
-                self.report(
-                    Diagnostic::error(
-                        "B0207",
-                        arg.span,
-                        "`..` spreads a struct into a construction, not a call",
-                    )
-                    .label("not a struct construction")
-                    .spec("44-structs"),
-                );
+                self.spread_not_rest(arg);
                 continue;
             }
             let slot = match &arg.label {
@@ -358,7 +435,7 @@ impl Checker<'_> {
                     while next < order.len() && order[next].is_some() {
                         next += 1;
                     }
-                    if next >= order.len() {
+                    if next >= rest_slot.unwrap_or(order.len()) {
                         self.report(
                             Diagnostic::error(
                                 "B0207",
@@ -415,7 +492,7 @@ impl Checker<'_> {
             .params
             .iter()
             .zip(&order)
-            .filter(|(p, given)| given.is_none() && !p.optional)
+            .filter(|(p, given)| given.is_none() && !p.optional && !p.rest)
             .map(|(p, _)| format!("`{}`", p.name.clone().unwrap_or_default()))
             .collect();
         if !missing.is_empty() {
@@ -427,7 +504,38 @@ impl Checker<'_> {
                     .spec("5-values-functions-and-closures"),
             );
         }
-        order
+        (order, rest)
+    }
+
+    /// An argument a rest parameter of `element`s takes: one element, or `..xs` of a list of them.
+    fn rest_arg(&mut self, arg: &Arg, element: &Ty, ts: bool) {
+        let list;
+        let ty = if arg.spread {
+            list = Ty::List(Box::new(element.clone()));
+            &list
+        } else {
+            element
+        };
+        if ts {
+            self.boundary(&arg.value, Some(ty));
+        } else {
+            self.expr(&arg.value, Some(ty));
+        }
+    }
+
+    /// `..value` where no rest parameter takes it.
+    fn spread_not_rest(&mut self, arg: &Arg) {
+        self.report(
+            Diagnostic::error(
+                "B0207",
+                arg.span,
+                "`..` spreads a list into a rest parameter, and none is here",
+            )
+            .label("no rest parameter takes it")
+            .help("a struct spreads into a construction: `S(..s, field: v)`")
+            .spec("5-values-functions-and-closures"),
+        );
+        self.boundary(&arg.value, None);
     }
 
     /// A TS function: positional arguments in order (a rest parameter takes the
@@ -442,6 +550,19 @@ impl Checker<'_> {
                 .params
                 .get(slot.min(f.params.len().saturating_sub(1)))
                 .filter(|p| slot < f.params.len() || p.rest);
+            if arg.spread {
+                // `..xs` fills the rest parameter; the ones before it are given or optional.
+                let rest = f.params.iter().position(|p| p.rest).filter(|&r| r >= slot);
+                match rest {
+                    Some(r) => {
+                        let element = f.params[r].ty.clone();
+                        self.rest_arg(arg, &element, true);
+                        slot = r;
+                    }
+                    None => self.spread_not_rest(arg),
+                }
+                continue;
+            }
             match param {
                 Some(param) => {
                     let ty = param.ty.clone();
@@ -1590,8 +1711,15 @@ impl Checker<'_> {
     fn method_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, name: &Ident) -> Ty {
         let Some((recv_kind, method, params, ret)) = self.method_sig(recv, &name.name) else {
             let methods = method_names(recv);
-            let help =
-                closest(&name.name, methods.iter().copied()).map(|near| format!("did you mean `.{near}`?"));
+            let optional = match recv {
+                Ty::Option(inner) => method_names(&self.resolve(inner)).contains(&name.name.as_str()),
+                _ => false,
+            };
+            let help = if optional {
+                Some(format!("it may be `none`: write `?.{}`", name.name))
+            } else {
+                closest(&name.name, methods.iter().copied()).map(|near| format!("did you mean `.{near}`?"))
+            };
             self.report(
                 Diagnostic::error(
                     "B0209",

@@ -515,6 +515,9 @@ impl<'a> Emitter<'a> {
                     .enumerate()
                     .map(|(i, p)| {
                         let name = p.name.clone().map_or(format!("p{i}"), |n| js_name(&n));
+                        if p.rest {
+                            return format!("...{name}: {}[]", self.ts_type(&p.ty));
+                        }
                         let optional = if p.optional { "?" } else { "" };
                         format!("{name}{optional}: {}", self.ts_type(&p.ty))
                     })
@@ -688,7 +691,9 @@ impl<'a> Emitter<'a> {
         let mut list = Vec::new();
         for (param, local) in f.params.iter().zip(&params) {
             let ty = self.ck.locals[*local].ty.clone();
-            let mut p = Frag::at(param.span, format!("{}: {}", js_name(&param.name.name), self.ts_type(&ty)));
+            let dots = if param.rest { "..." } else { "" };
+            let mut p =
+                Frag::at(param.span, format!("{dots}{}: {}", js_name(&param.name.name), self.ts_type(&ty)));
             if let Some(default) = &param.default {
                 p.s(" = ").f(self.value_expr(default));
             }
@@ -1835,18 +1840,25 @@ impl<'a> Emitter<'a> {
         call.args.iter().map(|a| self.expr(&a.value)).collect()
     }
 
+    /// A positional argument; `..xs` into a rest parameter is `...xs`.
+    fn spread_arg(&mut self, arg: &Arg) -> Frag {
+        let value = self.expr(&arg.value);
+        if arg.spread { value.wrap("...", "") } else { value }
+    }
+
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
         if self.hoistable(expr) {
             return self.hoist(expr);
         }
+        let open = if call.optional { "?.(" } else { "(" };
         let Some(res) = self.ck.calls.get(&expr.id).cloned() else {
             let callee = self.operand(&call.callee);
             let mut out = callee;
-            out.f(Frag::join(self.args(call), ", ").wrap("(", ")"));
+            out.f(Frag::join(self.args(call), ", ").wrap(open, ")"));
             return out;
         };
         match res {
-            CallRes::Bloom { order } => {
+            CallRes::Bloom { order, rest } => {
                 let mut values: Vec<Frag> = order
                     .iter()
                     .map(|slot| match slot {
@@ -1857,7 +1869,8 @@ impl<'a> Emitter<'a> {
                         None => Frag::of("undefined"),
                     })
                     .collect();
-                while values.last().is_some_and(|v| v.text == "undefined")
+                while rest.is_empty()
+                    && values.last().is_some_and(|v| v.text == "undefined")
                     && order.last().is_some_and(Option::is_none)
                 {
                     values.pop();
@@ -1865,13 +1878,20 @@ impl<'a> Emitter<'a> {
                         break;
                     }
                 }
+                if !rest.is_empty() {
+                    // The rest parameter's slot is the last; its arguments follow the others.
+                    values.truncate(order.len().saturating_sub(1));
+                    for &index in &rest {
+                        values.push(self.spread_arg(&call.args[index]));
+                    }
+                }
                 let mut out = self.operand(&call.callee);
-                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out
             }
             CallRes::Ts => {
                 let mut values: Vec<Frag> =
-                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.expr(&a.value)).collect();
+                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.spread_arg(a)).collect();
                 let named: Vec<Frag> = call
                     .args
                     .iter()
@@ -1889,7 +1909,7 @@ impl<'a> Emitter<'a> {
                     values.push(self.closure(trailing));
                 }
                 let mut out = self.operand(&call.callee);
-                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out
             }
             CallRes::Struct(def) => self.construct(call, def, false),
@@ -2193,8 +2213,41 @@ impl<'a> Emitter<'a> {
     }
 
     fn method(&mut self, call: &Call, recv: Recv, name: &str) -> Frag {
-        let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
-        let object = self.operand(receiver);
+        let (receiver, optional) = match &call.callee.kind {
+            ExprKind::Field(receiver, _) => (receiver, false),
+            ExprKind::OptField(receiver, _) => (receiver, true),
+            _ => unreachable!("a method's callee is a member"),
+        };
+        // `x?.m(…)`: a JS method is `x?.m(…)`; any other lowering reads `x` once, then
+        // runs only when it is not `none`.
+        let direct = match recv {
+            Recv::Str => !matches!(name, "toInt" | "toFloat"),
+            Recv::List => {
+                matches!(
+                    name,
+                    "map" | "filter" | "find" | "reduce" | "contains" | "prefix" | "dropFirst" | "joined"
+                )
+            }
+            _ => false,
+        };
+        let guard = (optional && !direct).then(|| self.path_or_temp(receiver));
+        let object = match &guard {
+            Some(name) => Frag::of(name.clone()),
+            None => self.operand(receiver),
+        };
+        let lowered = self.method_lowered(call, recv, name, object, optional && direct);
+        match guard {
+            Some(name) => {
+                let mut out = Frag::of(format!("({name} == null ? undefined : "));
+                out.f(lowered).s(")");
+                out
+            }
+            None => lowered,
+        }
+    }
+
+    fn method_lowered(&mut self, call: &Call, recv: Recv, name: &str, object: Frag, optional: bool) -> Frag {
+        let dot = if optional { "?." } else { "." };
         let mut args: Vec<Frag> = self.args(call);
         if let Some(trailing) = &call.trailing {
             args.push(self.closure(trailing));
@@ -2212,7 +2265,7 @@ impl<'a> Emitter<'a> {
         };
         let call_on = |object: Frag, method: &str, args: Vec<Frag>| -> Frag {
             let mut out = object;
-            out.s(&format!(".{method}")).f(Frag::join(args, ", ").wrap("(", ")"));
+            out.s(&format!("{dot}{method}")).f(Frag::join(args, ", ").wrap("(", ")"));
             out
         };
         let helper = |this: &mut Self, helper: &'static str, mut values: Vec<Frag>| -> Frag {
@@ -3539,6 +3592,9 @@ impl<'a> Emitter<'a> {
                         .iter()
                         .zip(&fn_ty.params)
                         .map(|(p, t)| {
+                            if t.rest {
+                                return format!("...{}: {}[]", js_name(&p.name.name), self.ts_type(&t.ty));
+                            }
                             format!(
                                 "{}{}: {}",
                                 js_name(&p.name.name),

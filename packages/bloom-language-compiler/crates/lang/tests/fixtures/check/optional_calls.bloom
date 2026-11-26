@@ -1,0 +1,49 @@
+// Optional calls and spreads, held to their types.
+
+import { joinClasses } from "@/api"
+
+struct Box {
+  label: String
+  note: String?
+}
+
+fn plain(b: Box) -> String? {
+  b?.label.uppercased()
+}
+
+fn never(f: () -> Int) -> Int? {
+  f?.()
+}
+
+// The field is optional itself: the chain does not read through it.
+fn deep(b: Box?) -> String? {
+  b?.note.trimmed()
+}
+
+fn total(..xs: [Int]) -> Int {
+  xs.count
+}
+
+fn wrong(xs: [String]) -> Int {
+  total(..xs) + total("a")
+}
+
+fn nowhere(xs: [Int]) -> Int {
+  plainSum(1, ..xs)
+}
+
+fn plainSum(a: Int, b: Int) -> Int {
+  a + b
+}
+
+fn first(..xs: [Int], last: Int) -> Int {
+  last
+}
+
+fn listless(..xs: Int) -> Int {
+  xs
+}
+
+fn ts(xs: [Int]) -> String {
+  joinClasses("row", ..xs)
+}

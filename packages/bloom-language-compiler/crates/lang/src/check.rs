@@ -69,6 +69,8 @@ pub enum CallRes {
     /// A Bloom function: argument index for each parameter, in order (`None`: its default).
     Bloom {
         order: Vec<Option<usize>>,
+        /// The arguments a rest parameter takes, in order (a spread `..xs` among them).
+        rest: Vec<usize>,
     },
     /// A TS function: positional arguments, then the named ones as one object.
     Ts,
@@ -296,6 +298,9 @@ pub struct Checker<'o> {
     task_allowed: bool,
     /// Spans already reported: one error per place.
     reported: HashSet<Span>,
+    /// Expressions optional only because a `?.` before them in their chain was `none`:
+    /// the rest of the chain reads their value (`b?.label.count`), as JS short-circuits.
+    chained: HashSet<ExprId>,
     /// When analysing for an editor: each checked expression's expected type.
     pub expected: Option<Vec<(Span, Ty)>>,
     /// Whether every typed span is kept (for hover and analysis; a compile does not read them).
@@ -363,6 +368,7 @@ impl<'o> Checker<'o> {
             was_hook: false,
             task_allowed: false,
             reported: HashSet::default(),
+            chained: HashSet::default(),
             expected: None,
             spans: true,
         }
@@ -1128,11 +1134,14 @@ impl<'o> Checker<'o> {
         let params = f
             .params
             .iter()
-            .map(|p| ParamTy {
-                name: Some(p.name.name.clone()),
-                ty: self.resolve_type(&p.ty),
-                optional: p.default.is_some(),
-                rest: false,
+            .map(|p| {
+                let ty = self.resolve_type(&p.ty);
+                // A rest parameter takes any number of its list's elements.
+                let (ty, rest) = match (p.rest, self.resolve(&ty)) {
+                    (true, Ty::List(element)) => (*element, true),
+                    _ => (ty, false),
+                };
+                ParamTy { name: Some(p.name.name.clone()), ty, optional: p.default.is_some(), rest }
             })
             .collect();
         let ret = f.ret.as_ref().map_or(Ty::Unit, |r| self.resolve_type(r));
@@ -1163,11 +1172,15 @@ impl<'o> Checker<'o> {
             spawn: false,
         });
         let mut params = Vec::new();
-        for (param, ty) in f.params.iter().zip(&fn_ty.params) {
+        for (index, (param, ty)) in f.params.iter().zip(&fn_ty.params).enumerate() {
             if let Some(default) = &param.default {
                 self.expr(default, Some(&ty.ty));
             }
-            params.push(self.declare(&param.name, ty.ty.clone(), LocalKind::Param));
+            if param.rest {
+                self.rest_param(param, ty, index + 1 == f.params.len());
+            }
+            let local_ty = if ty.rest { Ty::List(Box::new(ty.ty.clone())) } else { ty.ty.clone() };
+            params.push(self.declare(&param.name, local_ty, LocalKind::Param));
         }
         self.out.fn_params.insert(f.span, params);
         let ret = fn_ty.ret.clone();
@@ -1177,6 +1190,30 @@ impl<'o> Checker<'o> {
         self.generics = outer_generics;
         let _ = member;
         signature
+    }
+
+    /// `..name: [T]`: a list type, last, without a default.
+    fn rest_param(&mut self, param: &Param, ty: &ParamTy, last: bool) {
+        let problem = if !ty.rest {
+            Some(("a rest parameter's type is a list", "write `[T]`"))
+        } else if !last {
+            Some(("a rest parameter comes last", "move it to the end"))
+        } else if param.default.is_some() {
+            Some((
+                "a rest parameter has no default",
+                "remove the default: it is `[]` when no argument is given",
+            ))
+        } else {
+            None
+        };
+        if let Some((message, help)) = problem {
+            self.report(
+                Diagnostic::error("B0207", param.span, message)
+                    .label("not a rest parameter")
+                    .help(help)
+                    .spec("5-values-functions-and-closures"),
+            );
+        }
     }
 
     fn view_params(&mut self, v: &ViewDecl) -> Vec<ParamTy> {
@@ -1209,6 +1246,14 @@ impl<'o> Checker<'o> {
         for (param, ty) in v.params.iter().flatten().zip(params) {
             if let Some(default) = &param.default {
                 self.expr(default, Some(&ty.ty));
+            }
+            if param.rest {
+                self.report(
+                    Diagnostic::error("B0207", param.span, "a view takes props, not a rest parameter")
+                        .label("a prop is passed by name")
+                        .help("take a list: `items: [T]`")
+                        .spec("5-values-functions-and-closures"),
+                );
             }
             info.props.push(self.declare(&param.name, ty.ty, LocalKind::Prop));
         }
@@ -2604,10 +2649,7 @@ impl<'o> Checker<'o> {
                 match self.resolve(&ty) {
                     Ty::Option(inner) => {
                         let field = self.member(expr, &inner, name, object.span);
-                        match self.resolve(&field) {
-                            Ty::Option(_) => field,
-                            other => Ty::Option(Box::new(other)),
-                        }
+                        self.rechain(expr, field)
                     }
                     Ty::Foreign(text) => Ty::Foreign(format!("{text}[\"{}\"]", name.name).into()),
                     Ty::Unknown => Ty::Unknown,
@@ -3339,7 +3381,36 @@ impl<'o> Checker<'o> {
             return self.enum_case_value(expr, def, name, args);
         }
         let ty = self.expr(object, None);
-        self.member(expr, &ty, name, object.span)
+        match self.unchain(object, &ty) {
+            Some(inner) => {
+                let field = self.member(expr, &inner, name, object.span);
+                self.rechain(expr, field)
+            }
+            None => self.member(expr, &ty, name, object.span),
+        }
+    }
+
+    /// The value an optional chain carries on, when `object` is optional only by a `?.` in it.
+    pub(super) fn unchain(&mut self, object: &Expr, ty: &Ty) -> Option<Ty> {
+        if !self.chained.contains(&object.id) {
+            return None;
+        }
+        match self.resolve(ty) {
+            Ty::Option(inner) => Some(self.resolve(&inner)),
+            _ => None,
+        }
+    }
+
+    /// A link of an optional chain: `none` when an earlier `?.` was. Marks it when the
+    /// option is the chain's own, so the next link reads through it.
+    pub(super) fn rechain(&mut self, expr: &Expr, ty: Ty) -> Ty {
+        match self.resolve(&ty) {
+            Ty::Option(_) | Ty::Unit | Ty::Unknown | Ty::Never => ty,
+            other => {
+                self.chained.insert(expr.id);
+                Ty::Option(Box::new(other))
+            }
+        }
     }
 
     fn enum_case_value(&mut self, expr: &Expr, def: DefId, name: &Ident, args: Vec<Ty>) -> Ty {
