@@ -140,6 +140,22 @@ const FEED_TITLE: &str = r#"public struct FeedTitle: View {
 "#;
 
 #[test]
+fn a_plural_count_is_a_double() {
+    // M4: a TS number is a `Double`, and CLDR plural rules take decimals, so `count:` does;
+    // an `Int` widens to it.
+    let source = "public func label(_ n: Double, _ xs: [String]) -> String {\n  String(localized: \"feed.count\", count: n) + String(localized: \"feed.count\", count: xs.count)\n}\n";
+    let en = r#"{ "feed.count": { "one": "{count} post", "other": "{count} posts" } }"#;
+    let root = package(
+        "i18n-double",
+        &[("Resources/Localizable/en.json", en), ("Sources/Model/Label.bloom", source)],
+    );
+    let path = root.join("Sources/Model/Label.bloom");
+    let out = compile(source, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("String$$localized(\"feed.count\", undefined, n)"), "{}", out.code);
+}
+
+#[test]
 fn localized_strings_are_checked_against_the_catalogs() {
     let en = r#"{ "feed.title": "Home", "feed.count": { "one": "{count} post", "other": "{count} posts" } }"#;
     let es = r#"{ "feed.title": "Inicio" }"#;
