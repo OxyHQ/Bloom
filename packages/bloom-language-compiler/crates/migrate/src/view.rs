@@ -2075,8 +2075,7 @@ impl Tr<'_> {
                 }
                 // `[a, b]`: re-run when any changes, as React's deps (a tuple `id:` is flat).
                 elements if elements.iter().all(|e| e.as_expression().is_some()) => {
-                    let deps: Vec<String> =
-                        elements.iter().map(|e| self.expr(e.to_expression())).collect();
+                    let deps: Vec<String> = elements.iter().map(|e| self.expr(e.to_expression())).collect();
                     format!("effect(id: ({}))", deps.join(", "))
                 }
                 _ => {
@@ -2159,149 +2158,6 @@ impl Tr<'_> {
         };
         self.scope = saved;
         out
-    }
-
-    /// `f?.(a)` as a statement.
-    /// Any other `try` around awaits: its block as a closure returning a `Result`,
-    /// each `await` propagating with `?`, matched like an awaited call. A `return`
-    /// in the block would return from the closure, so it is refused unless it is a
-    /// bare `return` of a `try` that ends its block (then `return ok(())` is the same).
-    fn try_closure(
-        &mut self,
-        t: &oxc_ast::ast::TryStatement,
-        handler: &oxc_ast::ast::CatchClause,
-        finalizer: Option<String>,
-        last: bool,
-    ) -> String {
-        let mut returns = Vec::new();
-        collect_returns(&t.block.body, &mut returns);
-        if let Some(r) = returns.iter().find(|r| r.argument.is_some() || !last) {
-            return self.refuse(
-                "try:return",
-                "a `return` inside a `try` around several awaits (it would return from the `Result` closure)",
-                r.span,
-            );
-        }
-        let error = match handler.param.as_ref().map(|p| &p.pattern) {
-            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
-            None => "_".into(),
-            Some(other) => {
-                return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
-            }
-        };
-        let propagate = std::mem::replace(&mut self.propagate, true);
-        let returning = std::mem::replace(&mut self.try_return, true);
-        let block = self.block_stmts(&t.block.body, t.block.span.end, false);
-        self.propagate = propagate;
-        self.try_return = returning;
-        let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
-        let marker = format!(
-            "// {REVIEW_MARKER}: the `try` block as a `Result` closure; every `await` propagates its rejection with `?` (a synchronous TS throw is not caught)"
-        );
-        let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
-        format!(
-            "{marker}\nlet attempt = {{\n{block}\nreturn ok(())\n}}\n{defer}match await attempt() {{\ncase .ok(_) => {{ }}\ncase .err({error}) => {{\n{err}\n}}\n}}"
-        )
-    }
-
-    /// A `try` around synchronous code: `match (catching { … })`, the prelude's
-    /// inline try/catch. A `return` in the block returns from the function, as TS's
-    /// did, so the block is written as it is.
-    fn try_catching(
-        &mut self,
-        t: &oxc_ast::ast::TryStatement,
-        handler: &oxc_ast::ast::CatchClause,
-        finalizer: Option<String>,
-        last: bool,
-        awaits: bool,
-    ) -> String {
-        let error = match handler.param.as_ref().map(|p| &p.pattern) {
-            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
-            None => "_".into(),
-            Some(other) => {
-                return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
-            }
-        };
-        // A `return` may only end the block: its value is the block's, returned
-        // from the `.ok` arm (`catching` cannot return from the function).
-        let body = &t.block.body;
-        let mut returns = Vec::new();
-        collect_returns(body, &mut returns);
-        let tail = match body.last() {
-            Some(Statement::ReturnStatement(r)) if returns.len() == 1 => Some(r),
-            _ => None,
-        };
-        // Returns elsewhere (guards): the block is a closure called in place, its
-        // value returned from the `.ok` arm; only where the `try` ends its block.
-        let called = tail.is_none() && !returns.is_empty();
-        if called && (awaits || !last || returns.iter().any(|r| r.argument.is_none())) {
-            return self.refuse(
-                "try:return",
-                "a `return` inside a `try` that does not end its block",
-                returns[0].span,
-            );
-        }
-        let propagate = std::mem::replace(&mut self.propagate, awaits);
-        let returning = std::mem::replace(&mut self.try_return, false);
-        let (block, ok) = match tail {
-            Some(r) => {
-                let head = self.block_stmts(&body[..body.len() - 1], r.span.start, false);
-                match &r.argument {
-                    Some(value) => {
-                        let value = self.expr(value);
-                        (format!("{head}\n{value}"), "case .ok(value) => { return value }")
-                    }
-                    None => (head, "case .ok(_) => { return }"),
-                }
-            }
-            None if called => {
-                let inner = self.block_stmts(body, t.block.span.end, false);
-                (format!("{{\n{inner}\n}}()"), "case .ok(value) => { return value }")
-            }
-            None => (self.block_stmts(body, t.block.span.end, false), "case .ok(_) => { }"),
-        };
-        let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
-        self.propagate = propagate;
-        self.try_return = returning;
-        let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
-        format!("{defer}match (catching {{\n{block}\n}}) {{\n{ok}\ncase .err({error}) => {{\n{err}\n}}\n}}")
-    }
-
-    /// A statement before a `try`'s first `await` that cannot throw, so it may be
-    /// written before the `match`: a state write of a pure value, a logger call,
-    /// a `const` of a pure value.
-    fn cannot_throw(&self, statement: &Statement) -> bool {
-        match statement {
-            Statement::ExpressionStatement(s) => match s.expression.without_parentheses() {
-                Expression::CallExpression(call) => {
-                    let args_pure = call.arguments.iter().all(|a| a.as_expression().is_some_and(is_pure));
-                    match &call.callee {
-                        Expression::Identifier(id) => {
-                            self.scope.setters.contains_key(id.name.as_str()) && args_pure
-                        }
-                        Expression::StaticMemberExpression(m) => {
-                            matches!(&m.object, Expression::Identifier(o) if o.name.to_lowercase().ends_with("logger"))
-                                && matches!(
-                                    m.property.name.as_str(),
-                                    "debug" | "info" | "warn" | "error" | "log"
-                                )
-                                && args_pure
-                        }
-                        _ => false,
-                    }
-                }
-                _ => false,
-            },
-            Statement::VariableDeclaration(v) => {
-                v.kind == VariableDeclarationKind::Const
-                    && v.declarations.iter().all(|d| {
-                        matches!(d.id, BindingPattern::BindingIdentifier(_))
-                            && d.init.as_ref().is_some_and(is_pure)
-                    })
-            }
-            Statement::EmptyStatement(_) => true,
-            _ => false,
-        }
     }
 
     fn optional_call(&mut self, call: &CallExpression) -> String {
@@ -2492,34 +2348,6 @@ fn collect_returns<'b, 'a>(
             }
             _ => {}
         }
-    }
-}
-
-/// A value read that cannot throw: literals, names, field reads, records and lists of them.
-fn is_pure(e: &Expression) -> bool {
-    match e.without_parentheses() {
-        Expression::BooleanLiteral(_)
-        | Expression::NullLiteral(_)
-        | Expression::NumericLiteral(_)
-        | Expression::StringLiteral(_)
-        | Expression::Identifier(_) => true,
-        Expression::TemplateLiteral(t) => t.expressions.iter().all(is_pure),
-        Expression::StaticMemberExpression(m) => is_pure(&m.object),
-        Expression::ChainExpression(c) => match &c.expression {
-            oxc_ast::ast::ChainElement::StaticMemberExpression(m) => is_pure(&m.object),
-            _ => false,
-        },
-        Expression::ConditionalExpression(c) => {
-            is_pure(&c.test) && is_pure(&c.consequent) && is_pure(&c.alternate)
-        }
-        Expression::LogicalExpression(l) => is_pure(&l.left) && is_pure(&l.right),
-        Expression::UnaryExpression(u) => u.operator == UnaryOperator::LogicalNot && is_pure(&u.argument),
-        Expression::ObjectExpression(o) => o.properties.iter().all(|p| match p {
-            oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) => !p.computed && is_pure(&p.value),
-            oxc_ast::ast::ObjectPropertyKind::SpreadProperty(_) => false,
-        }),
-        Expression::ArrayExpression(a) => a.elements.iter().all(|e| e.as_expression().is_some_and(is_pure)),
-        _ => false,
     }
 }
 

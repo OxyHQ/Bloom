@@ -2,25 +2,23 @@
 
 import { save } from "./api"
 
-pub view SaveButton(id: String) {
-  @state saving = false
+public struct SaveButton: View {
+  let id: String
+  @State private var saving = false
 
-  async fn onSave() {
+  func onSave() async {
     saving = true
     defer { saving = false }
-    match (catching { await save(id)? }) {
-      case .ok(_) => {}
-      case .err(error) => { toast("Could not save", type: "error") }
-    }
+    do { try await save(id) } catch { toast("Could not save", type: "error") }
   }
 
-  body {
+  var body: some View {
     Button(Text(saving ? "Saving" : "Save")).disabled(saving).onPress { task { await onSave() } }
   }
 }
 
 /// An assertion says nothing at run time: dropped, under review.
-pub fn label(text: String) -> String {
+public func label(_ text: String) -> String {
   // bloom: review: `as string` dropped: annotate where the value lands if tsc needs it
   text
 }
