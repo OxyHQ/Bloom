@@ -68,6 +68,13 @@ pub struct Local {
 /// How a call is emitted.
 #[derive(Debug, Clone, PartialEq)]
 pub enum CallRes {
+    /// `x.m(…)` with `m` an extension method (`crate::extensions`): the lowered function
+    /// `func`, called with `x` first, then the arguments as [`CallRes::Bloom`] orders them.
+    Extension {
+        func: Rc<str>,
+        order: Vec<Option<usize>>,
+        rest: Vec<usize>,
+    },
     /// A Bloom function: argument index for each parameter, in order (`None`: its default).
     Bloom {
         order: Vec<Option<usize>>,
@@ -165,6 +172,10 @@ pub enum FieldRes {
     TaskSignal,
     /// `Task.isCancelled`.
     TaskCancelled,
+    /// `x.p`, an extension's computed property: `func(x)`.
+    Extension(Rc<str>),
+    /// `T.m`, an extension's static member: the lowered name.
+    Static(Rc<str>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -4237,6 +4248,9 @@ impl<'o> Checker<'o> {
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());
             }
+            if let Some(ty) = self.static_member(expr, type_name, name) {
+                return ty;
+            }
             if let Some(TypeName::Def(def)) = self.type_names.get(type_name).cloned() {
                 return self.enum_case_value(expr, def, name, Vec::new());
             }
@@ -4313,9 +4327,81 @@ impl<'o> Checker<'o> {
         Ty::Adt(def, args)
     }
 
+    /// The type an extension of `ty` is keyed by (`crate::extensions`).
+    pub(super) fn extension_owner(&self, ty: &Ty) -> Option<String> {
+        Some(match ty {
+            Ty::Str | Ty::Strings(_) => "String".into(),
+            Ty::Int => "Int".into(),
+            Ty::Float => "Double".into(),
+            Ty::Bool => "Bool".into(),
+            Ty::List(_) => "Array".into(),
+            Ty::Map(_) => "Dictionary".into(),
+            Ty::Set(_) => "Set".into(),
+            Ty::Option(_) => "Optional".into(),
+            Ty::Result(..) => "Result".into(),
+            Ty::JsError => "Error".into(),
+            Ty::Adt(def, _) => self.out.defs[*def].name.clone(),
+            _ => return None,
+        })
+    }
+
+    /// The lowered function of `ty`'s extension member `name`, when there is one in scope.
+    pub(super) fn extension_fn(&self, ty: &Ty, name: &str, is_static: bool) -> Option<(Rc<str>, LocalId)> {
+        let owner = self.extension_owner(ty)?;
+        let func = crate::extensions::mangle(&owner, name, is_static);
+        let local = self.lookup(&func)?;
+        Some((func.into(), local))
+    }
+
+    /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
+    fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
+        let owner = crate::extensions::key(type_name);
+        let func = crate::extensions::mangle(owner, &name.name, true);
+        let local = self.lookup(&func)?;
+        self.out.fields.insert(expr.id, FieldRes::Static(func.into()));
+        let ty = self.out.locals[local].ty.clone();
+        Some(self.instantiate(&ty))
+    }
+
+    /// `x.p` with `p` a computed property of an extension of `x`'s type: its function's result.
+    fn extension_property(&mut self, expr: &Expr, ty: &Ty, name: &Ident) -> Option<Ty> {
+        let (func, local) = self.extension_fn(ty, &name.name, false)?;
+        let fn_ty = self.out.locals[local].ty.clone();
+        let Ty::Fn(f) = self.instantiate(&fn_ty) else { return None };
+        if f.params.len() != 1 {
+            return None;
+        }
+        if !self.unify(&f.params[0].ty, ty) {
+            self.mismatch(name.span, ty, &f.params[0].ty);
+        }
+        self.out.fields.insert(expr.id, FieldRes::Extension(func));
+        Some(f.ret.clone())
+    }
+
     /// `value.name` on a value of type `ty`.
     fn member(&mut self, expr: &Expr, ty: &Ty, name: &Ident, object_span: Span) -> Ty {
         let resolved = self.resolve(ty);
+        let builtin = matches!(
+            (&resolved, name.name.as_str()),
+            (
+                Ty::Str | Ty::Strings(_) | Ty::List(_) | Ty::Map(_) | Ty::JsMap(..) | Ty::Set(_),
+                "count" | "isEmpty"
+            ) | (Ty::List(_), "first" | "last")
+                | (Ty::Map(_) | Ty::JsMap(..), "keys" | "values" | "entries")
+                | (Ty::Set(_), "values")
+                | (Ty::Result(..), "isOk")
+                | (Ty::JsError, "message" | "name")
+        );
+        let field = match &resolved {
+            Ty::Adt(def, _) => self.out.defs[*def].fields().iter().any(|f| f.name == name.name),
+            _ => false,
+        };
+        if !builtin
+            && !field
+            && let Some(ty) = self.extension_property(expr, &resolved, name)
+        {
+            return ty;
+        }
         let prop = |checker: &mut Self, recv: Recv, n: &'static str, ty: Ty| {
             checker.out.fields.insert(expr.id, FieldRes::Prop { recv, name: n });
             ty
@@ -4611,7 +4697,8 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         return Some(sig);
     }
     let source = std::fs::read_to_string(path).ok()?;
-    let (file, _, _) = crate::parser::parse(&source);
+    let (mut file, _, _) = crate::parser::parse(&source);
+    crate::extensions::lower(&mut file);
     let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
     sub.declare_signatures(&file, specifier);
     let types = sub

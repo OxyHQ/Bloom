@@ -251,6 +251,14 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Field(object, member) => {
+                // `Type.m(…)`: an extension's static function.
+                if let ExprKind::Name(type_name) = &object.kind
+                    && self.lookup(type_name).is_none()
+                    && let Some(ty) = self.static_member(&call.callee, type_name, member)
+                {
+                    self.out.types.insert(call.callee.id, ty.clone());
+                    return self.value_call(expr, call, &ty);
+                }
                 // `Type.case(…)`, `Type<T>.case(…)`.
                 let case_def = match &object.kind {
                     ExprKind::Name(type_name) if self.lookup(type_name).is_none() => {
@@ -337,6 +345,9 @@ impl Checker<'_> {
         task_allowed: bool,
         optional: bool,
     ) -> Ty {
+        if let Some(ret) = self.extension_call(expr, call, recv, member) {
+            return ret;
+        }
         match recv {
             Ty::View(kind) if !optional => self.modifier(expr, call, *kind, member, recv, task_allowed),
             Ty::Adt(def, targs)
@@ -358,6 +369,30 @@ impl Checker<'_> {
             }
             _ => self.method_call(expr, call, recv, member),
         }
+    }
+
+    /// `x.m(…)` with `m` an extension method of `x`'s type (`crate::extensions`), unless the
+    /// type has a field, a built-in method or a modifier of that name.
+    fn extension_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, member: &Ident) -> Option<Ty> {
+        let shadowed = match recv {
+            Ty::Adt(def, _) => self.out.defs[*def].fields().iter().any(|f| f.name == member.name),
+            Ty::View(_) | Ty::Foreign(_) | Ty::Unknown => true,
+            other => method_names(other).contains(&member.name.as_str()),
+        };
+        if shadowed {
+            return None;
+        }
+        let (func, local) = self.extension_fn(recv, &member.name, false)?;
+        let fn_ty = self.out.locals[local].ty.clone();
+        let Ty::Fn(f) = self.instantiate(&fn_ty) else { return None };
+        let (first, params) = f.params.split_first()?;
+        if !self.unify(&first.ty, recv) {
+            self.mismatch(member.span, recv, &first.ty);
+        }
+        let rest = FnTy { params: params.to_vec(), ..(*f).clone() };
+        let (order, rest_args) = self.bloom_args(call, &rest, false);
+        self.out.calls.insert(expr.id, CallRes::Extension { func, order, rest: rest_args });
+        Some(if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() })
     }
 
     /// What `?.` reaches: the value of an optional; `None` (reported) when `ty` is never `none`.
