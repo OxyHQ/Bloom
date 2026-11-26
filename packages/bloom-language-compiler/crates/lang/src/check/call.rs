@@ -502,10 +502,10 @@ impl Checker<'_> {
                 ty.as_ref().filter(|t| matches!(self.resolve(t), Ty::Fn(_))),
                 ty.is_none(),
             );
-            if let Some(ty) = ty {
-                if !self.coerce(&closure, &ty) {
-                    self.mismatch(trailing.span, &closure, &ty);
-                }
+            if let Some(ty) = ty
+                && !self.coerce(&closure, &ty)
+            {
+                self.mismatch(trailing.span, &closure, &ty);
             }
         }
         let given = positional.len() + usize::from(!named.is_empty()) + usize::from(call.trailing.is_some());
@@ -849,15 +849,15 @@ impl Checker<'_> {
     /// (constructor signatures are not in the spec tables yet), Bloom checks the value.
     fn node_arg(&mut self, value: &Expr) {
         let ty = self.boundary(value, None);
-        if let Ty::Option(inner) = self.resolve(&ty) {
-            if !matches!(self.resolve(&inner), Ty::View(_)) {
-                self.report(
-                    Diagnostic::error("B0201", value.span, format!("{} may be `none` here", self.show(&ty)))
-                        .label("a node's argument is a value")
-                        .help("unwrap it: `?? \"\"`, or draw the node under `if let`")
-                        .spec("45-enums-option-and-result"),
-                );
-            }
+        if let Ty::Option(inner) = self.resolve(&ty)
+            && !matches!(self.resolve(&inner), Ty::View(_))
+        {
+            self.report(
+                Diagnostic::error("B0201", value.span, format!("{} may be `none` here", self.show(&ty)))
+                    .label("a node's argument is a value")
+                    .help("unwrap it: `?? \"\"`, or draw the node under `if let`")
+                    .spec("45-enums-option-and-result"),
+            );
         }
     }
 
@@ -1116,14 +1116,14 @@ impl Checker<'_> {
             return;
         }
         let expected = Ty::Strings(set.clone());
-        if let ExprKind::Str { parts, .. } = &value.kind {
-            if parts.iter().all(|p| matches!(p, StrPart::Text(_))) {
-                let text = super::plain_text(parts);
-                if !ui::token_ok(set, &text) {
-                    self.bad_token(value.span, set, &text, Some(modifier));
-                    self.out.types.insert(value.id, expected);
-                    return;
-                }
+        if let ExprKind::Str { parts, .. } = &value.kind
+            && parts.iter().all(|p| matches!(p, StrPart::Text(_)))
+        {
+            let text = super::plain_text(parts);
+            if !ui::token_ok(set, &text) {
+                self.bad_token(value.span, set, &text, Some(modifier));
+                self.out.types.insert(value.id, expected);
+                return;
             }
         }
         self.expr(value, Some(&expected));

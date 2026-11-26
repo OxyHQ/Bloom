@@ -710,12 +710,11 @@ fn strip_indent(parts: Vec<RawPart>) -> Vec<RawPart> {
                 if index == 0 {
                     text = text.strip_prefix('\n').map(str::to_string).unwrap_or(text);
                 }
-                if index == count - 1 {
-                    if let Some(at) = text.rfind('\n') {
-                        if text[at + 1..].trim().is_empty() {
-                            text.truncate(at);
-                        }
-                    }
+                if index == count - 1
+                    && let Some(at) = text.rfind('\n')
+                    && text[at + 1..].trim().is_empty()
+                {
+                    text.truncate(at);
                 }
                 RawPart::Text(text)
             }
