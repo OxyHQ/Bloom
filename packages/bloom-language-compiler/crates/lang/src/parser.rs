@@ -1624,6 +1624,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         let quiet = self.diagnostics.len();
         let was_panicking = self.panicking;
         self.skip_newlines();
+        let tuple = matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
+        if tuple {
+            self.bump();
+        }
         if matches!(self.tok(), Tok::Ident(_)) {
             while let Tok::Ident(_) = self.tok() {
                 let name = self.ident("a parameter");
@@ -1638,11 +1642,15 @@ impl<'s, 'i> Parser<'s, 'i> {
                     break;
                 }
             }
-            if self.at_kw(Kw::In) {
+            if tuple && !self.eat(P::RParen) {
+                params.clear();
+            }
+            if self.at_kw(Kw::In) && (!tuple || !params.is_empty()) {
                 self.bump();
                 has_in = true;
             }
         }
+        let tuple = tuple && has_in;
         if !has_in {
             params.clear();
             self.pos = save;
@@ -1651,7 +1659,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         let body = self.stmts_until_close();
         self.expect_close(P::RBrace, open);
-        Closure { params, has_in, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
+        Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
     }
 
     fn if_expr(&mut self) -> Expr {

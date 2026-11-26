@@ -780,7 +780,8 @@ impl<'a> Formatter<'a> {
                     None => text(p.name.name.clone()),
                 })
                 .collect();
-            vec![join(params, || text(", "))]
+            let params = join(params, || text(", "));
+            vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }]
         } else {
             Vec::new()
         };

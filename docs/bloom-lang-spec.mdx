@@ -144,7 +144,8 @@ match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>"
                    an arm may also be one statement: case .ok(_) => draft = Draft() *)
 task_expr     = "task" block ;                     (* spawns; the expression is Unit *)
 closure       = "{" [ closure_params "in" ] { stmt ( NL | ";" ) } "}" ;
-closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
+closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] }
+              | "(" IDENT { "," IDENT } ")" ;          (* one tuple parameter, its items named *)
 
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
@@ -549,7 +550,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 |---|---|
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)`, `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `[i] -> T?`; the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T?`; there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
