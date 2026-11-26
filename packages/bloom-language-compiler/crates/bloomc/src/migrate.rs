@@ -201,7 +201,8 @@ fn module_imports(root: &Path, file: &Path, lang: &bloom_lang::Options) -> Resul
                 }
             }
             None => {
-                let bound = graph.manifest.targets.iter().find(|t| t.npm().is_some_and(|(npm, _)| npm == spec));
+                let bound =
+                    graph.manifest.targets.iter().find(|t| t.npm().is_some_and(|(npm, _)| npm == spec));
                 match bound {
                     Some(t) => Some(t.name.clone()),
                     None => continue,

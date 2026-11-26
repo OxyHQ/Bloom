@@ -3,14 +3,14 @@
 import { useSession } from "./session"
 import { JSON } from "js"
 
-func initial(_ nick: String? = none) -> String {
+private func initial(_ nick: String? = none) -> String {
   if nick == none || nick.isEmpty { return "" }
   nick.slice(0, 1)
 }
 
-func trimmedNick(_ nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
+private func trimmedNick(_ nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
 
-func titleOf(_ raw: String) -> String {
+private func titleOf(_ raw: String) -> String {
   let parsed = JSON.parse(raw)
   parsed.title || "Untitled"
 }

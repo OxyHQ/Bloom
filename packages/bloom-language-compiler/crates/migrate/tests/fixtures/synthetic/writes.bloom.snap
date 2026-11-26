@@ -10,7 +10,7 @@ public struct Track {
   let title: String
 }
 
-func labelOf(_ track: Track) -> String {
+private func labelOf(_ track: Track) -> String {
   let id = track.id
   id + track.title
 }
