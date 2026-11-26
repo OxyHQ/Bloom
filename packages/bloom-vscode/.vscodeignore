@@ -1,0 +1,4 @@
+# What `vsce package` leaves out of the .vsix: the tests, their fixtures and git's files.
+test/**
+*.vsix
+.gitignore

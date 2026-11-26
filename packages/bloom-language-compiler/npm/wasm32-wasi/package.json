@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-compiler-wasm32-wasi",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "cpu": [
     "wasm32"
   ],
@@ -13,7 +13,7 @@
     "wasi-worker.mjs",
     "wasi-worker-browser.mjs"
   ],
-  "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
+  "description": "Bloom's compiler: compiles .bloom modules (Bloom's own language) to typed TypeScript, and optimises @oxy.so/bloom-language chains (hoists static chains, opts view bodies into the React Compiler, checks chains against the language spec). A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=23.5.0"
