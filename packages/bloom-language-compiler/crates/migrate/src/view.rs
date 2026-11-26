@@ -1355,7 +1355,13 @@ impl Tr<'_> {
             Body::Expr(e) => {
                 if self.is_view(e) {
                     Some(if may_be_nothing(e) { "View?".into() } else { "View".into() })
-                } else if is_effect(e) {
+                } else if is_effect(e)
+                    && !matches!(e.without_parentheses(), Expression::CallExpression(c)
+                        if !matches!(&c.callee, Expression::Identifier(id)
+                            if self.scope.setters.contains_key(id.name.as_str())))
+                {
+                    // A call's value is the function's (`(r) => t(key(r))`); a setter's is
+                    // a statement.
                     None
                 } else if let Some(ty) = value_type(e) {
                     Some(ty.to_string())

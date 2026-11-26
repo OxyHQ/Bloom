@@ -19,6 +19,10 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             // `s.has(x)`, `m.size`: a Bloom `Set`/`Map` has `contains` and `count`.
             ("B0209", "has") if collection => Some((start, end, "contains".to_string())),
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
+            // `m.values()`, `m.keys()`, `m.entries()`: a Bloom `Map`/`Set`'s lists.
+            ("B0209", "values" | "keys" | "entries") if collection && source[end..].starts_with("()") => {
+                Some((start, end + 2, text.to_string()))
+            }
             // `xs.some(f)`, `xs.every(f)`: a Bloom list's `any` and `all`.
             ("B0209", "some") if list => Some((start, end, "any".to_string())),
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
