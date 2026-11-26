@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- Colour roles `overlay` (Bloom's scrim, `theme.colors.overlay`: `rgba(0, 0, 0, 0.5)` in every theme, that colour itself on the web) and `primarySubtle` (Bloom's brand container, `--primary-subtle`), whose ink is `primaryText`. Both are translucent, so a role at an opacity is now its colour's own alpha times the opacity on every platform (`overlay/70` is black at 0.35), as the web's `color-mix()` and an app colour at an opacity already were; every other role is opaque, where this is the opacity itself, as before.
+- App line heights in points: `defineTokens({ leadingPx: { name: 26 } })`, which `.leading()` takes as it takes Bloom's `'24px'` (an app's `leading` stays a ratio of the font's size).
+
+### Documentation
+
+- Which mechanism an app length takes (design document, App tokens): a Bloom rung when Bloom's scale has it, an app token for an app's own value (Allo's 180pt and 144pt frames, its 96pt avatar cluster), points only for geometry computed at render, and a fraction for a length relative to the parent (`'1/3'` is the third a `33.333%` cell writes).
+
 ### Fixed
 
 - The web parity harness counts react-native-web Image's tint filter ids (`tint-N`, a module counter per image drawn) by their order in the tree, as it counts React's and Bloom's ids, so two draws of one tinted image compare equal (Allo's `ChatBackground`). A layout case holds that a `StyleSheet.create` style reaches the compared CSS on the web.

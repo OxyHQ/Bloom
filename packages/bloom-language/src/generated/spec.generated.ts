@@ -1070,6 +1070,10 @@ export const COLORS = {
     "paint": "primarySubtleForeground",
     "web": "var(--primary-text)"
   },
+  "primarySubtle": {
+    "paint": "primarySubtle",
+    "web": "var(--primary-subtle)"
+  },
   "onPrimary": {
     "paint": "primaryForeground",
     "web": "var(--primary-foreground)"
@@ -1173,6 +1177,10 @@ export const COLORS = {
   "infoText": {
     "paint": "infoSubtleForeground",
     "web": "var(--info-text)"
+  },
+  "overlay": {
+    "paint": "overlay",
+    "web": "rgba(0, 0, 0, 0.5)"
   },
   "surfaceFill": {
     "paint": "surfaceFill",

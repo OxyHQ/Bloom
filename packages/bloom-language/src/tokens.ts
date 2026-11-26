@@ -417,8 +417,19 @@ export function resolveBorderWidth(width: BorderWidthName): number {
 
 // ── App tokens ───────────────────────────────────────────────────
 
-/** The scales an app may extend with named values of its own. */
-export type AppTokenScale = 'space' | 'iconSize' | 'avatarSize' | 'leading' | 'motion' | 'color';
+/**
+ * The scales an app may extend with named values of its own. A `leading` is a
+ * ratio of the font's size, as Bloom's `snug`; a `leadingPx` a line height in
+ * points, as Bloom's `'24px'`: both are what `.leading()` takes.
+ */
+export type AppTokenScale =
+  | 'space'
+  | 'iconSize'
+  | 'avatarSize'
+  | 'leading'
+  | 'leadingPx'
+  | 'motion'
+  | 'color';
 
 /**
  * An app colour as React Native and the browser both paint it, the string
@@ -557,7 +568,7 @@ function colorAtOpacity(color: AppColorValue, opacity: number, name: string): Ap
  * Declares an app's own tokens, for values Bloom's scales lack:
  *
  * ```ts
- * export const postTokens = defineTokens({ space: { gutter: 64 }, iconSize: { context: 13 } });
+ * export const postTokens = defineTokens({ space: { gutter: 64 }, iconSize: { context: 13 }, leadingPx: { name: 26 } });
  * HStack(...).padding('leading', postTokens.space.gutter)
  * ```
  *
@@ -622,7 +633,8 @@ export type MarginToken = PaddingToken | (typeof ENUMS.marginExtra)[number];
 export type IconSizeToken = IconSizeName | AppToken<'iconSize'>;
 /** An avatar rung, or an app's own diameter (Bloom's avatar takes any; it is 40 with none). */
 export type AvatarSizeToken = AvatarSizeName | AppToken<'avatarSize'>;
-export type LeadingToken = LeadingName | AppToken<'leading'>;
+/** A line height: a ratio of the font's size or points, a rung of Bloom's or an app's own. */
+export type LeadingToken = LeadingName | AppToken<'leading'> | AppToken<'leadingPx'>;
 
 // ── Resolution (pure; the renderer caches the results) ──────────
 
@@ -743,7 +755,9 @@ export function resolveFont(
   // Both measure from the size: the font's, else Bloom's `Text` with no variant (its size is not written).
   const size = style.fontSize ?? ENVIRONMENT_DEFAULTS.fontSize;
   if (leading !== undefined) {
-    if (typeof leading !== 'string') style.lineHeight = ofSize(size, leading.value);
+    if (typeof leading !== 'string')
+      style.lineHeight =
+        leading.scale === 'leadingPx' ? leading.value : ofSize(size, leading.value);
     else if (leading in LEADING_PX)
       style.lineHeight = LEADING_PX[leading as keyof typeof LEADING_PX];
     else style.lineHeight = ofSize(size, LEADING[leading as keyof typeof LEADING]);

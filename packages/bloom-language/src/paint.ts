@@ -11,6 +11,7 @@ import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
 import { useSurfaceFill } from '@oxy.so/bloom/styles';
 import {
   parseRgb,
+  parseRgba,
   readThemePaint,
   withAlpha,
   type Theme,
@@ -121,7 +122,7 @@ export function composeGeometry<T extends object>(style: T): T {
  * component draws the prop as.
  */
 function atOpacity(color: string, opacity: number): string {
-  if (!IS_WEB || parseRgb(color) !== null) return withAlpha(color, opacity);
+  if (!IS_WEB || parseRgb(color) !== null) return faded(color, opacity);
   const mix = `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
   const variable = /^var\(--([\w-]+)\)$/.exec(color)?.[1];
   if (variable === undefined) return mix;
@@ -281,7 +282,7 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
           if (typeof color === 'string') return color;
           const [role, opacity] = color;
           const rgb = paletteColor(colors, role);
-          return opacity === undefined ? rgb : withAlpha(rgb, opacity);
+          return opacity === undefined ? rgb : faded(rgb, opacity);
         }),
       );
     Object.freeze(props);
@@ -298,7 +299,19 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
 export function themeColor(colors: ThemeColors, value: RoleRef | string): string {
   if (typeof value === 'string') return value;
   const rgb = paletteColor(colors, value.role);
-  return value.opacity === undefined ? rgb : withAlpha(rgb, value.opacity);
+  return value.opacity === undefined ? rgb : faded(rgb, value.opacity);
+}
+
+/**
+ * A colour at an opacity: its own alpha times the opacity, as the web's
+ * `color-mix()` with transparent draws a role (Tailwind's `/70`) and an app
+ * colour at an opacity is. An opaque role takes the opacity as its alpha
+ * (Bloom's `withAlpha`); a translucent one (the scrim, the brand container)
+ * fades from its own.
+ */
+function faded(color: string, opacity: number): string {
+  const alpha = parseRgba(color)?.a ?? 1;
+  return withAlpha(color, alpha * opacity);
 }
 
 /**

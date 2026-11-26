@@ -239,6 +239,70 @@ const overlays: ParityCase[] = [
   },
 ];
 
+/** Bloom's scrim and brand container as an app paints them from its theme (`theme.colors`). */
+const scrims: ParityCase[] = [
+  {
+    // Allo's story caption and media loading scrim.
+    name: 'a scrim pinned to the bottom (overlay)',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('caption'))
+          .padding('lg')
+          .background('overlay')
+          .position({ left: 'none', right: 'none', bottom: 'none' }),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              paddingTop: space.lg,
+              paddingBottom: space.lg,
+              paddingStart: space.lg,
+              paddingEnd: space.lg,
+              backgroundColor: c.overlay,
+            }}
+          >
+            <Text>caption</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    // Allo's history transfer banner: Bloom's brand container and its ink.
+    name: 'a banner on the brand container, in its ink (primarySubtle, primaryText)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('Moving your history').foreground('primaryText'))
+          .padding('md')
+          .background('primarySubtle'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              flexDirection: 'row',
+              paddingTop: space.md,
+              paddingBottom: space.md,
+              paddingStart: space.md,
+              paddingEnd: space.md,
+              backgroundColor: c.primarySubtle,
+            }}
+          >
+            <Text style={{ color: c.primarySubtleForeground }}>Moving your history</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+];
+
 const elevation: ParityCase[] = [
   ...(['s', 'm', 'floating'] as const).map((role) => ({
     name: `shadow ${role}`,
@@ -1802,6 +1866,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...distribution,
   ...placement,
   ...overlays,
+  ...scrims,
   ...depth,
   ...elevation,
   ...small,
