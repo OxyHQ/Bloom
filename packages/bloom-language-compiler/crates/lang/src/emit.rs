@@ -475,7 +475,10 @@ impl<'a> Emitter<'a> {
                         let fields: Vec<String> = d
                             .fields()
                             .iter()
-                            .map(|f| format!("{}: {}", prop_key(&f.name), self.ts_type(&f.ty)))
+                            .map(|f| {
+                                let optional = if f.default == FieldDefault::Undefined { "?" } else { "" };
+                                format!("{}{optional}: {}", prop_key(&f.name), self.ts_type(&f.ty))
+                            })
                             .collect();
                         format!("{{ {} }}", fields.join("; "))
                     }

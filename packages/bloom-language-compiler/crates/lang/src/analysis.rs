@@ -890,6 +890,7 @@ pub fn walk_type<'a>(t: &'a TypeExpr, f: &mut dyn FnMut(Node<'a>)) {
             walk_type(v, f);
         }
         TypeKind::Tuple(items) => items.iter().for_each(|a| walk_type(a, f)),
+        TypeKind::Record(fields) => fields.iter().for_each(|(_, t)| walk_type(t, f)),
         TypeKind::Fn { params, ret, .. } => {
             params.iter().for_each(|a| walk_type(a, f));
             walk_type(ret, f);

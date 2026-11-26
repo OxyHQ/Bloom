@@ -623,17 +623,7 @@ impl Checker<'_> {
         if let Some(foreign @ Ty::Foreign(_)) = target {
             return foreign;
         }
-        let name = format!(
-            "{{ {} }}",
-            fields.iter().map(|f| format!("{}: {}", f.name, self.show(&f.ty))).collect::<Vec<_>>().join(", ")
-        );
-        self.out.defs.push(Def {
-            name,
-            generics: Vec::new(),
-            kind: DefKind::Struct(fields),
-            origin: Origin::Record,
-        });
-        let ty = Ty::Adt(self.out.defs.len() - 1, Vec::new());
+        let ty = self.record_type(fields);
         if let Some(target) = &target {
             let fits = self.coerce(&ty, target);
             if !fits {
