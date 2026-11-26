@@ -6,6 +6,7 @@
   "category": "ui-library",
   "versioned": true,
   "versions": [
+    "23.9.1",
     "9.0.0",
     "8.1.0",
     "3.0.1",
@@ -255,11 +256,11 @@
     "0.1.1",
     "0.1.0"
   ],
-  "latestVersion": "9.0.0",
+  "latestVersion": "23.9.1",
   "deprecatedVersions": [],
-  "defaultVersion": "9.0.0",
+  "defaultVersion": "23.9.1",
   "docsPath": "docs/",
-  "docsIgnore": ["superpowers"],
+  "docsIgnore": ["superpowers", "audits", "benchmarks", "bloom-language*.mdx", "no-nativewind.mdx"],
   "typedoc": {
     "entry": "src/index.ts"
   },
