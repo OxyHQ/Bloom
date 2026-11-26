@@ -68,6 +68,15 @@ valid reason to fork a web-facing component. That reasoning once produced a
 742-line fork that diverged for two months and shipped strictly worse than the
 thing it replaced.
 
+## A `<Portal>` needs a `PortalProvider` above it
+
+On native, a `<Portal>` with no `PortalProvider` among its ancestors has nowhere to go: its
+content is dropped. In development Bloom warns once (`[bloom/portal] …`). Mount the provider
+above every surface host, `<SurfaceHost />` included, not beside it. The bottom sheet checks
+(`usePortalProviderPresent`) and keeps its RN `Modal` when no provider is above it: Mention
+2.2.0's `SurfaceHost` sat beside its `PortalProvider`, and on an Android 13+ phone the account
+switcher and every other surface opened nothing, with no log.
+
 ## Where the outlet goes
 
 Near the app root, after the content it must paint over. Mounting it too early

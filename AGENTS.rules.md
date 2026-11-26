@@ -77,6 +77,7 @@ Read docs/verification.mdx before tests/installs: Node/Jest, native-resolution, 
 ## Root provider
 
 `BloomProvider` is root. Depth hazards (restoration throws; minimization silently forks), explicit adapter replaces implicit Expo binding, outlet exclusions/native-only PortalProvider/Outlet: docs/provider.mdx, docs/portal.mdx
+- A native `<Portal>` with no `PortalProvider` above it shows nothing (the default context drops it; development now warns once). Mention 2.2.0 mounted its `SurfaceHost` beside its `PortalProvider`, so on Android 13+ (the lens sheet presents through the portal) the account switcher, sign-in and every surface showed nothing and logged nothing (emulator trace: `present` → layer `open` → no window). The sheet keeps its RN `Modal` where no provider is above it (`usePortalProviderPresent`). BottomSheetLensShell.test.tsx, PortalNoProvider.test.tsx
 
 ## Screens
 

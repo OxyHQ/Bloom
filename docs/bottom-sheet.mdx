@@ -6,7 +6,7 @@ order: 4
 
 # BottomSheet
 
-A standalone, draggable bottom sheet built on React Native `Modal` + `react-native-reanimated` + `react-native-gesture-handler`. On a device with Bloom's native lens (Android 13+ with `@oxy.so/bloom-lens`) it presents in the app's own window through Bloom's `Portal` instead (like the side drawers, so the app root mounts `PortalProvider` and `PortalOutlet`; `BloomProvider` does), so its controls can take the lens. **Not** based on `@gorhom/bottom-sheet`, so it does not require `BottomSheetModalProvider`.
+A standalone, draggable bottom sheet built on React Native `Modal` + `react-native-reanimated` + `react-native-gesture-handler`. On a device with Bloom's native lens (Android 13+ with `@oxy.so/bloom-lens`) it presents in the app's own window through Bloom's `Portal` instead (like the side drawers), so its controls can take the lens. That needs a `PortalProvider` above the sheet and a `PortalOutlet` at the app root; `BloomProvider` mounts neither. Where no `PortalProvider` is above it (a surface host mounted beside the app's provider rather than under it), the sheet keeps its `Modal`, since a portal there would show nothing. **Not** based on `@gorhom/bottom-sheet`, so it does not require `BottomSheetModalProvider`.
 
 Use it when the compound `Dialog` API doesn't fit, when you want to avoid the Gorhom dependency, or when you need direct control over scroll, keyboard handling, or detached presentation.
 

@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getNativeLens } from '../floating/lens/native-lens';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
+import { usePortalProviderPresent } from '../portal/Portal';
 import type { SharedValue } from 'react-native-reanimated';
 import { BottomSheetBase } from './BottomSheetBase';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './types';
@@ -142,9 +143,19 @@ function AppWindowShell({
   );
 }
 
-/** Native shell: the app's own window where the device has the lens, else RN's `<Modal>`. */
+/**
+ * Native shell: the app's own window where the device has the lens AND a `<PortalProvider>` is
+ * above the sheet, else RN's `<Modal>`. Without the provider the portal drops the sheet: a surface
+ * host mounted beside the app's `PortalProvider` rather than under it (Mention 2.2.0) presented
+ * nothing on an Android 13+ phone, not the account switcher, not a sign-in, not a confirm.
+ */
 export function NativeShell(props: BottomSheetShellProps) {
-  return getNativeLens() != null ? <AppWindowShell {...props} /> : <ModalShell {...props} />;
+  const portalShown = usePortalProviderPresent();
+  return getNativeLens() != null && portalShown ? (
+    <AppWindowShell {...props} />
+  ) : (
+    <ModalShell {...props} />
+  );
 }
 
 const BottomSheet = forwardRef(

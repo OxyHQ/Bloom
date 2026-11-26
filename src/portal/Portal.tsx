@@ -39,7 +39,12 @@ function createPortalGroup() {
   // Two contexts, not one. The actions never change, so a `<Portal>` that only
   // needs them is not re-rendered by every other portal's append; the outlet's
   // element changes on every append and only the outlet reads it.
-  const ActionsContext = createContext<Actions>({ append: () => {}, remove: () => {} });
+  // With no `<PortalProvider>` above it a native `<Portal>` has nowhere to go:
+  // the default actions drop its content. `useHasProvider` tells a surface that
+  // can present another way (the sheet's `Modal`) to do so.
+  const NO_PROVIDER: Actions = { append: () => {}, remove: () => {} };
+  let warnedNoProvider = false;
+  const ActionsContext = createContext<Actions>(NO_PROVIDER);
   ActionsContext.displayName = 'BloomPortalContext';
   const OutletContext = createContext<Component | null>(null);
   OutletContext.displayName = 'BloomPortalOutletContext';
@@ -92,11 +97,18 @@ function createPortalGroup() {
    * portaled content without a frame where the two disagree.
    */
   function usePortalEntry(element: Component) {
-    const { append, remove } = useContext(ActionsContext);
+    const actions = useContext(ActionsContext);
+    const { append, remove } = actions;
     const id = useId();
     useLayoutEffect(() => {
+      if (process.env.NODE_ENV !== 'production' && actions === NO_PROVIDER && !warnedNoProvider) {
+        warnedNoProvider = true;
+        console.warn(
+          '[bloom/portal] A <Portal> rendered with no <PortalProvider> above it: its content is not shown. Mount PortalProvider and PortalOutlet above every surface host (docs/portal.mdx).',
+        );
+      }
       append(id, element);
-    }, [id, element, append]);
+    }, [id, element, append, actions]);
     useLayoutEffect(() => () => remove(id), [id, remove]);
   }
 
@@ -159,7 +171,12 @@ function createPortalGroup() {
     );
   }
 
-  return { Provider, Outlet, Portal };
+  /** Whether a `<PortalProvider>` is above: a `<Portal>` here is shown. */
+  function useHasProvider(): boolean {
+    return useContext(ActionsContext) !== NO_PROVIDER;
+  }
+
+  return { Provider, Outlet, Portal, useHasProvider };
 }
 
 function sameList(a: readonly unknown[], b: readonly unknown[]): boolean {
@@ -198,6 +215,12 @@ const DefaultPortal: PortalGroup = (globalThis.__oxy_so_bloom_portal_group__ ??=
 export const PortalProvider = DefaultPortal.Provider;
 export const PortalOutlet = memo(DefaultPortal.Outlet);
 export const Portal = DefaultPortal.Portal;
+/**
+ * Whether a native `<Portal>` rendered here reaches an outlet. Internal (the sheet's shell
+ * reads it); not on the `./portal` subpath. A group an older copy of this module made has no
+ * such hook, and keeps that copy's behaviour: assume a provider.
+ */
+export const usePortalProviderPresent: () => boolean = DefaultPortal.useHasProvider ?? (() => true);
 
 const styles = StyleSheet.create({
   // Applied only from the `Platform.OS === 'web'` branch of `Outlet`, which is

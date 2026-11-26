@@ -1,5 +1,11 @@
 # Changelog
 
+## 23.10.1
+
+### Fixed
+
+- A native bottom sheet on a device with Bloom's native lens (Android 13+) presents again where no `PortalProvider` is above it. Since 23.0.0 such a sheet presents through `<Portal>` into the app's window, and a `<Portal>` with no provider among its ancestors drops its content: an app whose `<SurfaceHost />` sits beside its `PortalProvider` rather than under it (Mention 2.2.0) showed nothing for any surface, the Oxy account switcher and sign-in included, and logged nothing. The sheet now keeps its RN `Modal` there, as it did before the lens, and a `<Portal>` with no provider warns once in development.
+
 ## 23.10.0
 
 The Bloom language 2.0.0 (`@oxy.so/bloom-language`) and its codemod 0.6.0 (`@oxy.so/bloom-language-codemod`) ship beside it.
