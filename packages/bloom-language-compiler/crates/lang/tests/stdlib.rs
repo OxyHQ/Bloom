@@ -125,3 +125,47 @@ fn codable_is_derived_at_compile_time() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+const FEED_TITLE: &str = r#"public struct FeedTitle: View {
+  let count: Int
+
+  var body: some View {
+    VStack {
+      Text("feed.title")
+      Text(String(localized: "feed.count", count: count))
+      Text("Plain text stays as written")
+    }
+  }
+}
+"#;
+
+#[test]
+fn localized_strings_are_checked_against_the_catalogs() {
+    let en = r#"{ "feed.title": "Home", "feed.count": { "one": "{count} post", "other": "{count} posts" } }"#;
+    let es = r#"{ "feed.title": "Inicio" }"#;
+    let root = package(
+        "i18n",
+        &[
+            ("Resources/Localizable/en.json", en),
+            ("Resources/Localizable/es.json", es),
+            ("Sources/Model/FeedTitle.bloom", FEED_TITLE),
+        ],
+    );
+    let path = root.join("Sources/Model/FeedTitle.bloom");
+    let out = compile(FEED_TITLE, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("String$$localized(\"feed.title\")"), "{}", out.code);
+    assert!(out.code.contains("String$$localized(\"feed.count\", undefined, count)"), "{}", out.code);
+    assert!(out.code.contains("\"Plain text stays as written\""), "{}", out.code);
+    let warnings: Vec<&str> = out.warnings.iter().map(|w| w.code).collect();
+    assert_eq!(warnings, ["B0842"], "es.json lacks feed.count");
+
+    let typo =
+        FEED_TITLE.replace("\"feed.count\"", "\"feed.cuont\"").replace("\"feed.title\"", "\"feed.titel\"");
+    let out = compile(&typo, &path.to_string_lossy(), &Options::default());
+    let codes: Vec<&str> = out.diagnostics.iter().map(|d| d.code).collect();
+    assert_eq!(codes, ["B0840"], "{}", rendered(&out));
+    assert_eq!(out.diagnostics[0].help.as_deref(), Some("did you mean `feed.count`?"));
+    let warnings: Vec<&str> = out.warnings.iter().map(|w| w.code).collect();
+    assert_eq!(warnings, ["B0841"]);
+}

@@ -1,1 +1,77 @@
-// Logger
+// Bloom: `Logger`, levelled logs for a subsystem and category.
+//
+//     let log = Logger(subsystem: "mention", category: "feed")
+//     log.info("loaded \(page.items.count) posts")
+//     log.error("like failed: \(error.localizedDescription)")
+//
+// Lines go to the console (`debug` only in development builds) unless a sink is
+// installed (a crash reporter's binding, a test).
+
+extern module "./runtime" {
+  private func logLine(_ level: String, _ subsystem: String, _ category: String, _ message: String)
+  private func isDevelopment() -> Bool
+}
+
+/// How severe a log line is.
+public enum LogLevel {
+  case debug
+  case info
+  case notice
+  case warning
+  case error
+  case fault
+}
+
+/// Logs for one part of an app.
+public struct Logger: Equatable {
+  /// The app or library (`mention`).
+  public let subsystem: String
+  /// The part of it (`feed`, `auth`).
+  public var category: String = ""
+}
+
+private func levelName(_ level: LogLevel) -> String {
+  switch level {
+  case .debug:
+    "debug"
+  case .info:
+    "info"
+  case .notice:
+    "notice"
+  case .warning:
+    "warning"
+  case .error:
+    "error"
+  case .fault:
+    "fault"
+  }
+}
+
+extension Logger {
+  /// A line at `level`.
+  public func log(_ level: LogLevel, _ message: String) {
+    if level == .debug && !isDevelopment() { return }
+    logLine(levelName(level), self.subsystem, self.category, message)
+  }
+
+  /// Detail for development: dropped from release builds.
+  public func debug(_ message: String) { self.log(.debug, message) }
+
+  /// What happened, for following along.
+  public func info(_ message: String) { self.log(.info, message) }
+
+  /// Worth noticing, not wrong.
+  public func notice(_ message: String) { self.log(.notice, message) }
+
+  /// Something went wrong and was recovered from.
+  public func warning(_ message: String) { self.log(.warning, message) }
+
+  /// Something failed.
+  public func error(_ message: String) { self.log(.error, message) }
+
+  /// A bug: a state the code holds impossible.
+  public func fault(_ message: String) { self.log(.fault, message) }
+}
+
+/// Writes `items` to the console, separated by spaces (Swift's `print`).
+public func print(_ message: String) { logLine("info", "print", "", message) }

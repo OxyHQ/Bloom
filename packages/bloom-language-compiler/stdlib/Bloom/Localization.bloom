@@ -1,1 +1,54 @@
-// Localization
+// Bloom (i18n): `String(localized:)`, `Text("key")` checked against the package's
+// catalogs at compile time (`Resources/Localizable/<locale>.json`), plural rules and `Locale`.
+//
+//     Text("feed.title")                                   // a key of en.json: localized
+//     Text(String(localized: "feed.count", count: posts.count))
+//     Text(String(localized: "greeting", args: ["name": user.name]))
+//
+// A catalog maps keys to strings, or to plural forms by CLDR category:
+//
+//     { "feed.title": "Home",
+//       "feed.count": { "one": "{count} post", "other": "{count} posts" },
+//       "greeting": "Hello, {name}" }
+
+extern module "./runtime" {
+  private func localize(_ key: String, _ args: [String: String], _ count: Double?) -> String
+  private func registerCatalog(_ locale: String, _ catalog: JSONValue)
+  private func setPreferredLocale(_ locale: String)
+  private func preferredLocale() -> String
+  private func pluralCategory(_ n: Double, _ locale: String) -> String
+}
+
+/// A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
+public struct Locale: Equatable {
+  public let identifier: String
+}
+
+extension Locale {
+  /// The locale strings are shown in: the one set with `Locale.prefer`, else the device's.
+  public static var current: Locale { Locale(identifier: preferredLocale()) }
+
+  /// Shows strings in `locale` from now on (a language setting in the app).
+  public static func prefer(_ locale: Locale) { setPreferredLocale(locale.identifier) }
+
+  /// The language part (`es` of `es-ES`).
+  public var languageCode: String { self.identifier.split("-").first ?? self.identifier }
+
+  /// The region part (`ES` of `es-ES`), or `none`.
+  public var regionCode: String? { self.identifier.split("-").element(at: 1) }
+
+  /// The CLDR plural category of `n` here: `zero`, `one`, `two`, `few`, `many` or `other`.
+  public func pluralCategory(_ n: Double) -> String { pluralCategory(n, self.identifier) }
+}
+
+extension String {
+  /// The string for `key` in the current locale, `{name}`s replaced from `args` and the
+  /// plural form chosen by `count` (`{count}` replaced too); `key` itself when missing.
+  /// `String(localized: "…")` is this, checked against the catalogs.
+  public static func localized(_ key: String, args: [String: String] = [:], count: Int? = none) -> String {
+    localize(key, args, count.map { $0.toFloat() })
+  }
+}
+
+/// Registers a catalog (`bloom build` registers the package's own at startup).
+public func registerLocalizations(_ locale: String, _ catalog: JSONValue) { registerCatalog(locale, catalog) }

@@ -3965,6 +3965,8 @@ impl<'o> Checker<'o> {
                 let expected_inner = match (kind, expected.map(|e| self.resolve(e))) {
                     (TryKind::Optional, Some(Ty::Option(inner))) => Some(*inner),
                     (TryKind::Optional, _) => None,
+                    // `try await`: what is awaited may be a TS promise's `Result`, unwrapped below.
+                    _ if matches!(inner.kind, ExprKind::Await(_)) => None,
                     (_, want) => want,
                 };
                 if *kind == TryKind::Plain {
@@ -3973,6 +3975,16 @@ impl<'o> Checker<'o> {
                 let outer = std::mem::replace(&mut self.trying, true);
                 let ty = self.expr(inner, expected_inner.as_ref());
                 self.trying = outer;
+                // `try await` on a TS promise: its rejection is thrown, not a `Result`.
+                if matches!(kind, TryKind::Plain | TryKind::Force)
+                    && let ExprKind::Await(_) = &inner.kind
+                    && self.out.awaits.get(&inner.id) == Some(&AwaitRes::Ts)
+                    && let Ty::Result(value, _) = self.resolve(&ty)
+                {
+                    self.out.awaits.insert(inner.id, AwaitRes::Bloom);
+                    self.out.types.insert(inner.id, (*value).clone());
+                    return *value;
+                }
                 match (kind, self.resolve(&ty)) {
                     (TryKind::Optional, Ty::Option(_)) => ty,
                     (TryKind::Optional, Ty::Unit) => Ty::Unit,

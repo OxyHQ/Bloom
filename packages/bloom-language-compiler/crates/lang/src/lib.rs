@@ -18,6 +18,7 @@ pub mod diagnostic;
 mod emit;
 mod extensions;
 mod externs;
+pub mod i18n;
 mod lexer;
 pub mod modules;
 pub mod package;

@@ -238,7 +238,7 @@ enum Hidden {
 /// string imports. Without a package above `filename`, does nothing.
 pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options) -> Resolution {
     let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
-    let derived = crate::codable::lower(file, &mut out.diagnostics);
+    let mut derived = crate::codable::lower(file, &mut out.diagnostics);
     let path = absolute(Path::new(filename));
     let tests_allowed = in_tests(&path, options);
     out.diagnostics.extend(crate::testing::lower(file, source, tests_allowed));
@@ -293,6 +293,9 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         return out;
     };
     out.in_module = true;
+    if crate::i18n::lower(file, &absolute(&root), &mut out.diagnostics) {
+        derived.insert(crate::i18n::LOOKUP.to_string());
+    }
     let target = &graph.manifest.targets[index];
     let bindings = matches!(target.kind, TargetKind::Bindings { .. });
     let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();

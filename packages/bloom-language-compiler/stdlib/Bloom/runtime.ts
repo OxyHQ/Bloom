@@ -503,7 +503,7 @@ export function channel<T>(): Channel<T> {
 export type RegexMatch = {
   readonly text: string;
   readonly start: number;
-  readonly groups: readonly (string | undefined)[];
+  readonly groups: readonly string[];
   readonly named: Readonly<Record<string, string>>;
 };
 
@@ -537,7 +537,7 @@ export function regexMatches(pattern: string, flags: string, s: string, limit: n
     out.push({
       text: m[0],
       start: m.index ?? 0,
-      groups: m.slice(1),
+      groups: m.slice(1).map((g) => g ?? ''),
       named: (m.groups ?? {}) as Record<string, string>,
     });
     if (limit > 0 && out.length >= limit) break;
