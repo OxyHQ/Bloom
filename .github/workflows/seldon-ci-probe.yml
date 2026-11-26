@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        n: [1, 2]
+        n: [1]
     runs-on: [seldon-ci]
     timeout-minutes: 10
     steps:
@@ -52,6 +52,16 @@ jobs:
           done
           echo "foreign_processes_visible=$seen foreign_environ_readable=$readable"
           echo "gha_processes_visible=$(ps -u gha -o pid= 2>/dev/null | wc -l)"
+          echo "== network"
+          gw=$(ip route | awk '/^default/{print $3; exit}')
+          echo "default_gw=$gw own=$(hostname -I)"
+          echo "dev_incus_sock=$(yn test -S /dev/incus/sock) dev_lxd_sock=$(yn test -S /dev/lxd/sock)"
+          for h in "$gw" 192.168.8.153 192.168.8.1; do
+            for port in 22 53 80 443 3000 5432 6379 8080 8443 9000; do
+              if timeout 2 bash -c "</dev/tcp/$h/$port" 2>/dev/null; then echo "tcp $h:$port open"; fi
+            done
+          done
+          echo "internet_https=$(yn timeout 5 bash -c '</dev/tcp/github.com/443')"
           echo "== container / ephemeral"
           echo "pid1=$(cat /proc/1/comm 2>/dev/null)"
           echo "dockerenv=$(yn test -e /.dockerenv) containerenv=$(yn test -e /run/.containerenv)"
