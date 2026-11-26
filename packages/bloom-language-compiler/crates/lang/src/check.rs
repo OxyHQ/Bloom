@@ -3268,12 +3268,21 @@ impl<'o> Checker<'o> {
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
                 self.narrow_present(cond);
-                let a = self.expr(then, expected);
+                // With nothing expected, a string literal branch is its literal (`c ? "96" : "48"`
+                // is `"96" | "48"`, as TS's `const` infers), so it fits a token set.
+                let then_lit = expected.is_none().then(|| string_literal(then)).flatten();
+                let a = match &then_lit {
+                    Some(lit) => self.expr(then, Some(&lit.clone())),
+                    None => self.expr(then, expected),
+                };
                 self.pop();
                 // `c ? f : none` is `F?`: `none` is not held to the other branch's type.
                 // An `Int` branch does not hold a `Float` one to `Int` (`c ? 0 : 0.5` is `Float`).
                 let int = Ty::Int == self.resolve(&a);
+                let else_lit = expected.is_none().then(|| string_literal(otherwise)).flatten();
                 let hint = match otherwise.kind {
+                    _ if else_lit.is_some() => else_lit.as_ref(),
+                    _ if then_lit.is_some() => None,
                     ExprKind::None => expected,
                     _ if int => expected,
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
@@ -4812,6 +4821,16 @@ fn is_hook_name(name: &str) -> bool {
 }
 
 /// A string literal's text (no interpolation).
+/// A string literal without interpolation, as its one-value literal type.
+fn string_literal(expr: &Expr) -> Option<Ty> {
+    let ExprKind::Str { parts, .. } = &expr.kind else { return None };
+    if !parts.iter().all(|p| matches!(p, StrPart::Text(_))) {
+        return None;
+    }
+    let value = plain_text(parts);
+    Some(Ty::Strings(Rc::new(StrSet { name: format!("{value:?}"), values: vec![value], token: false })))
+}
+
 pub fn plain_text(parts: &[StrPart]) -> String {
     parts
         .iter()
