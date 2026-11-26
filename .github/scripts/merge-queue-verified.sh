@@ -5,15 +5,18 @@
 #
 #     VERIFIED = this exact SHA has a `.github/workflows/validate.yml` run from
 #                the `merge_group` event, in this repository, that concluded
-#                `success` (or `cancelled`, below), and whose `CI complete` job
-#                concluded `success`.
+#                `success` (or `cancelled` or `failure`, below), and whose
+#                `CI complete` job concluded `success`.
 #
 # `cancelled` too, because the Seldon race (validate.yml's `race`) cancels the
 # losing lane of each raced job, and one cancelled job makes the whole run
-# conclude `cancelled`. CI complete is still the proof: it runs last, on
-# always(), and goes green only when every job (the race's verdict for the
-# raced ones) passed; a run cancelled before it finished leaves it red or
-# cancelled, never `success`.
+# conclude `cancelled`; `failure` too, because a Seldon lane that failed on the
+# house network is rescued by a hosted rerun (the `-rescue` jobs), and the
+# failed lane makes the run conclude `failure`. CI complete is still the proof:
+# it runs last, on always(), and goes green only when every job (the race's
+# verdict for the raced ones, where a failed hosted lane is never excused)
+# passed; a run cancelled before it finished leaves it red or cancelled, never
+# `success`.
 #
 # Ported from OxyHQ/Mention's .github/scripts/merge-queue-verified.sh. Its one
 # caller is validate.yml on push to main: a queue-merged push is the very SHA
@@ -54,7 +57,7 @@ candidate_runs="$(
       '.workflow_runs[]
         | select(.head_sha == $sha
             and .event == "merge_group"
-            and (.conclusion == "success" or .conclusion == "cancelled")
+            and (.conclusion == "success" or .conclusion == "cancelled" or .conclusion == "failure")
             and .head_repository.full_name == $repo
             and (.path == $path or (.path | startswith($path + "@"))))
         | .id'
