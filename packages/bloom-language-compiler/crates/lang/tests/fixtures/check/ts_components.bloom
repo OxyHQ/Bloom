@@ -1,0 +1,12 @@
+// A TS class or exotic component's props are checked.
+
+import { Badge, Chip } from "@/ui/components"
+
+view Uses {
+  body {
+    VStack {
+      Badge(labl: "x")
+      Chip(label: 1)
+    }
+  }
+}

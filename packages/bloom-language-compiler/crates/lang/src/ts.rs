@@ -82,7 +82,10 @@ pub enum TsDecl {
         params: Vec<String>,
         ty: TsType,
     },
-    /// A class, an enum, a namespace: foreign.
+    /// A class: a component when it is named in UpperCamel (`class X extends
+    /// Component<P>` gives its props; any other's are TS's to check).
+    Class(Option<TsType>),
+    /// An enum, a namespace: foreign.
     Other,
 }
 
@@ -378,7 +381,20 @@ impl Reader {
             }
             Declaration::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
-                    add(file, id.name.to_string(), TsDecl::Other);
+                    let props = class.heritage.as_ref().and_then(|heritage| {
+                        let base = match &heritage.expression {
+                            oxc_ast::ast::Expression::Identifier(id) => id.name.to_string(),
+                            oxc_ast::ast::Expression::StaticMemberExpression(member) => {
+                                member.property.name.to_string()
+                            }
+                            _ => return None,
+                        };
+                        if !matches!(base.as_str(), "Component" | "PureComponent") {
+                            return None;
+                        }
+                        heritage.type_arguments.as_ref()?.params.first().map(|t| self.ty(t))
+                    });
+                    add(file, id.name.to_string(), TsDecl::Class(props));
                 }
             }
             Declaration::TSEnumDeclaration(enumeration) => {
@@ -454,7 +470,11 @@ impl Reader {
                     let value = self.ty(&index.type_annotation.type_annotation);
                     members.push(TsMember { name: "[index]".into(), optional: false, ty: value });
                 }
-                _ => {}
+                // `(content: string) => void` inside an interface: the value is callable.
+                TSSignature::TSCallSignatureDeclaration(_)
+                | TSSignature::TSConstructSignatureDeclaration(_) => {
+                    members.push(TsMember { name: "[call]".into(), optional: false, ty: TsType::Other });
+                }
             }
         }
         members
@@ -746,6 +766,14 @@ const COMPONENT_TYPES: &[&str] = &[
     "React.NamedExoticComponent",
     "MemoExoticComponent",
     "React.MemoExoticComponent",
+    "ForwardRefExoticComponent",
+    "React.ForwardRefExoticComponent",
+    "LazyExoticComponent",
+    "React.LazyExoticComponent",
+    "ExoticComponent",
+    "React.ExoticComponent",
+    "ComponentClass",
+    "React.ComponentClass",
 ];
 
 impl Mapper<'_> {
@@ -814,9 +842,25 @@ impl Mapper<'_> {
                 if let TsType::Ref(reference, args) = &ty
                     && COMPONENT_TYPES.contains(&reference.as_str())
                 {
-                    let props = args.first().map_or(Ty::Unit, |p| {
-                        self.ty(file, p, &Vec::new(), &format!("React.ComponentProps<typeof {path}>"), depth)
-                    });
+                    // `MemoExoticComponent<ComponentType<P>>`, `LazyExoticComponent<…>`: the
+                    // component inside gives the props.
+                    let mut props = args.first();
+                    while let Some(TsType::Ref(inner, inner_args)) = props
+                        && COMPONENT_TYPES.contains(&inner.as_str())
+                    {
+                        props = inner_args.first();
+                    }
+                    let props = match props {
+                        Some(TsType::Ref(inner, _)) if inner.starts_with("typeof ") => Ty::Foreign("".into()),
+                        Some(p) => self.ty(
+                            file,
+                            p,
+                            &Vec::new(),
+                            &format!("React.ComponentProps<typeof {path}>"),
+                            depth,
+                        ),
+                        None => Ty::Unit,
+                    };
                     mapped.component = Some(props);
                     return Some(mapped);
                 }
@@ -826,7 +870,22 @@ impl Mapper<'_> {
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
                 mapped.ty = Some(self.named(file, name, &[], path, depth));
             }
-            TsDecl::Other => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
+            TsDecl::Class(props) if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
+                let props = match props {
+                    Some(props) => self.ty(
+                        file,
+                        &props,
+                        &Vec::new(),
+                        &format!("React.ComponentProps<typeof {path}>"),
+                        depth,
+                    ),
+                    None => Ty::Foreign("".into()),
+                };
+                mapped.component = Some(props);
+            }
+            TsDecl::Class(_) | TsDecl::Other => {
+                mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()))
+            }
         }
         Some(mapped)
     }
@@ -1031,6 +1090,11 @@ impl Mapper<'_> {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
+                // An index signature (`[key: string]: unknown`) takes any key, and a call
+                // signature makes it callable: TS checks those values (`Foreign`).
+                if all.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+                    return Ty::Foreign(path.into());
+                }
                 // Reserve the definition first, so a recursive field refers to it.
                 let id = self.defs.len();
                 self.defs.push(Def {
@@ -1078,7 +1142,7 @@ impl Mapper<'_> {
         name: &str,
         depth: usize,
     ) -> Ty {
-        if members.iter().any(|m| m.name == "[index]") {
+        if members.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
             return Ty::Foreign(path.into());
         }
         let id = self.defs.len();
