@@ -1,0 +1,6 @@
+/// A row view in another module, imported through the `paths` map.
+pub view Row(title: String) {
+  body {
+    Text(title)
+  }
+}
