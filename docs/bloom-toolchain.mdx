@@ -1,0 +1,215 @@
+---
+title: The Bloom toolchain
+description: Modules, Package.bloom, Package.resolved, the bloom command, binding modules and bloom test (ADR 0002, phase A).
+---
+
+# The Bloom toolchain
+
+Bloom 2.0 is a language with its own modules, manifest and command line, in the
+spirit of Swift packages and Cargo ([ADR 0002](./adr/0002-swift-grade-language-and-toolchain.md)).
+JS, npm, Metro, Expo and Gradle stay underneath as the build substrate; app code and
+app configuration never name them.
+
+## A package
+
+```text
+Demo/
+  Package.bloom          the manifest
+  Package.resolved       the lockfile (written by bloom)
+  Sources/Demo/          the app target: module Demo
+  Sources/DemoKit/       a module target: module DemoKit
+  Bindings/Sentry/       a binding module (bloom bind)
+  Tests/DemoKitTests/    a test target (bloom test)
+  .bloom/                generated, git-ignored: build/, cache/, modules/, dist/
+```
+
+`bloom new Demo` creates one (`--template module` for a library package).
+
+## Modules
+
+A **module is a directory** of `.bloom` files: every file under `Sources/Posts/` is
+module `Posts`. Its files share one namespace, so a name declared in one file is
+in scope in the others with no import.
+
+- **Imports name modules**: `import Posts`, or qualified by the package,
+  `import Mention.Posts`. `import Bloom` (the core, implicit) and `import BloomData`
+  name the toolchain's packages, which map to today's runtime packages
+  (`@oxy.so/bloom`, `@oxy.so/bloom-data`).
+- **Visibility**: `public` (the modules that import this one), `internal` (the
+  default, written or not: the whole module) and `private` (the file).
+- **Dependencies are declared**: a module imports only the targets its manifest
+  entry lists (`.module("Feed", dependencies: ["Posts"])`) and the package's
+  dependencies. There are no cycles.
+- **No string paths in app modules**: `import { x } from "pkg"` is an error
+  (B0806) outside binding modules, and so is writing `Foreign<"…">` (B0822). The
+  migration mode, `bloom check --allow-ts-imports`, allows both while a codebase
+  moves over.
+
+Underneath, a file's module imports become named imports of exactly the names it
+uses, from the files that declare them, so a module still compiles file by file and
+the emitted TS imports only what it uses. A file outside any package (no
+`Package.bloom` above it) is a 0.x file and keeps its string imports.
+
+### Builds per module
+
+`bloom check` and `bloom build` check the modules level by level in dependency
+order, the modules of a level in parallel. Each module's result is cached in
+`.bloom/cache/` under a key made of the compiler, the manifest, the module's
+sources and the **interfaces** of the modules it depends on. A module's interface,
+`.bloom/modules/<Module>.bloominterface`, is the declarations its files show other
+files, so an edit inside a function body rechecks that module and not the ones that
+import it.
+
+## Package.bloom
+
+The manifest is a declarative subset of Bloom: literals, arrays and calls of
+`Package` and the leading-dot members. The compiler evaluates it without running
+any code; there are no variables, functions, interpolation or imports.
+
+```swift
+let package = Package(
+  name: "Mention",
+  platforms: [.iOS(17), .android(26), .web],
+  dependencies: [
+    .package("Bloom", from: "23.9.1"),
+    .package("BloomData", from: "0.1.2"),
+  ],
+  targets: [
+    .app("Mention", dependencies: ["Feed", "Posts", "Sentry"]),
+    .module("Feed", dependencies: ["Posts"]),
+    .module("Posts", dependencies: ["MentionAPI"]),
+    .module("MentionAPI"),
+    .bindings("Sentry", npm: "@sentry/react-native@6.2.0"),
+    .tests("PostsTests", dependencies: ["Posts"]),
+  ]
+)
+```
+
+| Entry | Takes |
+|---|---|
+| `Package(…)` | `name:` (required), `platforms:` (default: all three), `dependencies:`, `targets:` (required) |
+| `.iOS(v)`, `.android(api)`, `.web` | the platforms the app builds for |
+| `.package(name, from:\|exact:\|path:, npm:)` | a Bloom package; `npm:` names the npm package under a package the toolchain does not know |
+| `.app(name, dependencies:)` | the app; its root view is `public view App` (or `<Name>App`) |
+| `.module(name, dependencies:, path:)` | a module, in `Sources/<Name>/` unless `path:` |
+| `.bindings(name, npm: "pkg@x.y.z")` | a binding module, in `Bindings/<Name>/` |
+| `.tests(name, dependencies:)` | tests, in `Tests/<Name>/` |
+
+Nothing depends on an `.app` or `.tests` target, and a binding module depends only
+on other binding modules. Mistakes are reported with the fix: an unknown argument
+names the closest one, an unknown target or package says which exist, and a cycle
+lists its modules.
+
+## Package.resolved
+
+`bloom add` and the first `bloom build` write `Package.resolved` beside the
+manifest: the version of each Bloom package, and every npm package underneath with
+its integrity hash. Commit it. Regenerating `.bloom/build/` pins every locked
+package again, so a fresh checkout builds what was locked.
+
+npm tarballs are fetched by bun into a content-addressed store (`$BLOOM_STORE`, by
+default `~/.local/share/bloom/store`) under the 7-day supply-chain quarantine:
+nothing published in the last week resolves, except first-party packages.
+
+## The bloom command
+
+`bloomc` is the same program, kept as an alias while apps migrate; its 0.x
+`bloomc build <dir> --out <dir>` still works.
+
+| Command | Does |
+|---|---|
+| `bloom new <Name> [--template app\|module]` | a package with `Package.bloom`, `Sources/`, `Tests/` and a `.gitignore` |
+| `bloom check [--tsc] [--allow-ts-imports] [paths…]` | the manifest and every module; with `--tsc`, also runs `tsc` over the binding modules' emitted TS |
+| `bloom fmt [--check] [paths…]` | formats the package's files |
+| `bloom lsp` | the language server, module-aware |
+| `bloom build web\|android [--release]` | checks, generates `.bloom/build/`, installs, and builds: `expo export` for the web (`.bloom/dist/web/`), `expo prebuild` and Gradle for Android (`.bloom/dist/android/<Name>.apk`, x86_64 by default) |
+| `bloom run web\|android [--release] [--device <serial>]` | the dev server with fast refresh; with `--release`, the built app, installed and started |
+| `bloom test [filter]` | the `.tests` targets, run by Jest underneath |
+| `bloom add <Package> [--from x.y.z] [--npm <pkg>]` | a Bloom package, recorded in `Package.bloom` and `Package.resolved` |
+| `bloom bind <npm-package>[@version] [--name <Name>]` | a binding module for a JS or native package (below) |
+
+iOS builds come with phase F (ADR 0002, section 7); `bloom build ios` says so.
+
+`bloom run android` uses `--device`, else `$ANDROID_SERIAL`, else the one running
+emulator: it never picks a phone by itself.
+
+### The generated build directory
+
+`.bloom/build/` is an Expo app written on every build and never edited: its
+`package.json`, `bunfig.toml` (the quarantine), `app.json` (from the manifest's name
+and platforms), `index.js` (the app's root view), `metro.config.js` (the package's
+modules through the compiler's Metro adapter), `babel.config.js`, `tsconfig.json`,
+`jest.config.js` and the test runtime. It is git-ignored with the rest of `.bloom/`.
+
+| Variable | Sets |
+|---|---|
+| `BLOOM_STORE` | the content-addressed store |
+| `BLOOM_BUN` | the bun binary |
+| `BLOOM_ANDROID_ABIS` | Gradle's `reactNativeArchitectures` (default `x86_64`) |
+| `BLOOM_LINK` | `name=path,…`: first-party packages from a checkout, for working on Bloom itself |
+
+## Binding modules
+
+A JS or native package is used only through a binding module (ADR 0002,
+section 4). `bloom bind @sentry/react-native` declares
+`.bindings("Sentry", npm: "@sentry/react-native@<newest past the quarantine>")`,
+installs it, and writes `Bindings/Sentry/Sentry.bloom` from its `.d.ts`:
+
+```swift
+extern module "@sentry/react-native" {
+  public struct Options {
+    public var dsn: String
+    public var tracesSampleRate: Float?
+  }
+
+  @extern("init") public func initialize(_ options: Options)
+  @extern("captureException") public func capture(_ error: Error) -> String
+  public func flush(_ timeout: Float) async throws -> Bool
+  public let SDK_VERSION: String
+}
+```
+
+The file is curated by hand afterwards: rename with `@extern("jsName")`, remove what
+the app does not use. A second `bloom bind` writes `.bloom/bindings/<Name>.bloom`
+to compare against. An app module writes `import Sentry` and never sees a JS name.
+
+In an `extern module`, a function has no body and a constant no value: the package
+implements them. The compiler imports the package as a namespace and gives each
+declaration a body that calls the package; every crossing is the declared Bloom
+type, which the emitted TS states, so `bloom check --tsc` checks the binding
+against the package's own declarations. A binding module's emitted TS is the only
+place in a package where `Foreign` and `satisfies` crossings remain.
+
+## Tests
+
+A test target's files hold tests:
+
+```swift
+import DemoKit
+
+test("greets by name") {
+  #expect(greeting(name: "Ada") == "Hello, Ada!")
+}
+```
+
+`bloom test` checks the package and runs them with Jest underneath. A test is an
+`async` function (it may `await`); `#expect(a == b)` reports both values when it
+fails, and `#expect(condition)` the condition as written. A test outside a `.tests`
+target is an error (B0823).
+
+## Diagnostics
+
+| Code | Means |
+|---|---|
+| B0801 | no such module, or a file importing its own module |
+| B0802 | a module not in the target's dependencies, or an app or test target imported |
+| B0803 | a name `internal` to another module |
+| B0804 | a name `private` to another file |
+| B0805 | a dependency cycle |
+| B0806 | a string-path import (or an `extern module`) in an app module |
+| B0807 | one name declared twice in a module, or offered by two imports |
+| B0810, B0811, B0812 | a manifest that does not evaluate: syntax, an unknown or mistyped argument, a missing one |
+| B0813, B0814, B0815, B0816 | a manifest name, version, unknown package or unknown target |
+| B0820, B0821 | an extern function with a body; an async extern function not declared `throws` |
+| B0822 | `Foreign<"…">` in an app module |
+| B0823 | a test outside a `.tests` target |

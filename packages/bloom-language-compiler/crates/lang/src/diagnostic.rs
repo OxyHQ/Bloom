@@ -95,6 +95,12 @@ impl Diagnostic {
         self
     }
 
+    /// A link to a section of the toolchain's guide (`docs/bloom-toolchain.mdx`).
+    pub fn toolchain(mut self, anchor: &str) -> Self {
+        self.docs = Some(format!("https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-toolchain.mdx#{anchor}"));
+        self
+    }
+
     pub fn docs(mut self, url: String) -> Self {
         self.docs = Some(url);
         self

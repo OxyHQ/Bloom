@@ -276,7 +276,7 @@ fn bind_writes_a_binding_module_that_checks() {
     assert!(text.contains("  public func flush(_ timeout: Float) async throws -> Bool\n"), "{text}");
     assert!(text.contains("  public let SDK_VERSION: String\n"), "{text}");
     assert!(
-        text.contains("  public struct Options {\n    dsn: String\n    tracesSampleRate: Float?\n  }"),
+        text.contains("  public struct Options {\n    public var dsn: String\n    public var tracesSampleRate: Float?\n  }"),
         "{text}"
     );
     std::fs::create_dir_all(from.parent().unwrap()).unwrap();

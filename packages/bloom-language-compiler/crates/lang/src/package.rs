@@ -327,12 +327,14 @@ struct Reader<'s> {
     source: &'s str,
 }
 
-const SPEC: &str = "package-bloom";
+const SPEC: &str = "packagebloom";
 
 fn syntax(span: Span, message: impl Into<String>) -> Diagnostic {
-    Diagnostic::error("B0810", span, message).spec(SPEC)
+    Diagnostic::error("B0810", span, message).toolchain(SPEC)
 }
 
+// The first syntax error ends a manifest's read, so the error path is cold.
+#[allow(clippy::result_large_err)]
 impl Reader<'_> {
     fn peek(&self) -> &Token {
         &self.tokens[self.at.min(self.tokens.len() - 1)]
@@ -563,7 +565,7 @@ impl Eval<'_> {
             self.error(
                 Diagnostic::error("B0811", span, format!("`{what}` takes arguments"))
                     .label(format!("write `{what}(…)`"))
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         };
@@ -582,7 +584,7 @@ impl Eval<'_> {
                             format!("this argument of `{what}` needs a label"),
                         )
                         .label(format!("one of {}", expected.join(", ")))
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                     );
                     continue;
                 }
@@ -599,7 +601,7 @@ impl Eval<'_> {
                             )
                             .label(format!("it takes {}", expected.join(", ")))
                             .maybe_help(help)
-                            .spec(SPEC),
+                            .toolchain(SPEC),
                         );
                         continue;
                     }
@@ -607,7 +609,7 @@ impl Eval<'_> {
                         self.error(
                             Diagnostic::error("B0811", *label_span, format!("`{label}:` is given twice"))
                                 .label("remove one")
-                                .spec(SPEC),
+                                .toolchain(SPEC),
                         );
                         continue;
                     }
@@ -629,7 +631,7 @@ impl Eval<'_> {
             self.error(
                 Diagnostic::error("B0812", args.span, format!("`{what}` needs `{label}:`"))
                     .label(format!("missing `{label}:`"))
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
         }
         value
@@ -642,7 +644,7 @@ impl Eval<'_> {
                 self.error(
                     Diagnostic::error("B0811", value.span, format!("{what} is a string"))
                         .label("expected \"…\"")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                 );
                 None
             }
@@ -656,7 +658,7 @@ impl Eval<'_> {
                 self.error(
                     Diagnostic::error("B0811", value.span, format!("{what} is an array"))
                         .label("expected `[…]`")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                 );
                 None
             }
@@ -672,7 +674,7 @@ impl Eval<'_> {
                 Diagnostic::error("B0813", span, format!("`{name}` is not a {what} name"))
                     .label("a name starts with a capital letter and has letters, digits and `_`")
                     .help("module names are imported as written: `import Feed`")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
         }
         valid
@@ -687,7 +689,7 @@ impl Eval<'_> {
             self.error(
                 Diagnostic::error("B0811", value.span, "`package` is a `Package(…)`")
                     .label("expected `Package(name: …, targets: […])`")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         }
@@ -741,7 +743,7 @@ impl Eval<'_> {
                 Diagnostic::error("B0811", value.span, format!("`.{name}` is not a {what}"))
                     .label(format!("expected {}", listed.join(", ")))
                     .maybe_help(help)
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         }
@@ -749,7 +751,7 @@ impl Eval<'_> {
         self.error(
             Diagnostic::error("B0811", value.span, format!("expected a {what}"))
                 .label(format!("one of {}", listed.join(", ")))
-                .spec(SPEC),
+                .toolchain(SPEC),
         );
         None
     }
@@ -768,7 +770,7 @@ impl Eval<'_> {
                         self.error(
                             Diagnostic::error("B0811", span, format!("`.{name}` takes one version number"))
                                 .label(format!("such as `.{name}({})`", if name == "iOS" { 17 } else { 26 }))
-                                .spec(SPEC),
+                                .toolchain(SPEC),
                         );
                         continue;
                     }
@@ -781,7 +783,7 @@ impl Eval<'_> {
                     self.error(
                         Diagnostic::error("B0811", span, "`.web` has no version")
                             .label("write `.web`")
-                            .spec(SPEC),
+                            .toolchain(SPEC),
                     );
                     continue;
                 }
@@ -792,7 +794,7 @@ impl Eval<'_> {
                 self.error(
                     Diagnostic::error("B0811", span, format!("{platform} is listed twice"))
                         .label("remove one")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                 );
                 continue;
             }
@@ -808,7 +810,7 @@ impl Eval<'_> {
             self.error(
                 Diagnostic::error("B0814", span, format!("\"{text}\" is not a version"))
                     .label("expected major.minor.patch, such as \"2.0.0\"")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
         }
         version
@@ -834,7 +836,7 @@ impl Eval<'_> {
                     Diagnostic::error("B0812", span, "a package dependency needs a version")
                         .label("add `from: \"1.0.0\"`, `exact:` or `path:`")
                         .help("`bloom add <package>` writes it with the newest version past the quarantine")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                 );
                 return None;
             }
@@ -842,7 +844,7 @@ impl Eval<'_> {
                 self.error(
                     Diagnostic::error("B0811", span, "`from:`, `exact:` and `path:` exclude each other")
                         .label("keep one")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                 );
                 return None;
             }
@@ -858,7 +860,7 @@ impl Eval<'_> {
                 Diagnostic::error("B0815", name_span, format!("no Bloom package `{name}` is known"))
                     .label(format!("the toolchain knows {}", known.join(", ")))
                     .help(help)
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         }
@@ -890,7 +892,7 @@ impl Eval<'_> {
                         )
                         .label("expected \"package@1.2.3\"")
                         .help("a binding module is generated from one exact version's declarations")
-                        .spec(SPEC),
+                        .toolchain(SPEC),
                     );
                     return None;
                 }
@@ -927,7 +929,7 @@ impl Eval<'_> {
                     )
                     .label("the second")
                     .with_label(first.name_span, "the first")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
                 );
             }
             if manifest.dependencies.iter().any(|d| d.name == target.name) {
@@ -939,7 +941,7 @@ impl Eval<'_> {
                     )
                     .label("rename the target")
                     .help("`import` would not know which one it means")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
                 );
             }
         }
@@ -953,7 +955,7 @@ impl Eval<'_> {
                     "the package has no `.app` or `.module` target",
                 )
                 .label("add `.app(\"Name\")` or `.module(\"Name\")` to `targets:`")
-                .spec(SPEC),
+                .toolchain(SPEC),
             );
         }
         for target in &manifest.targets {
@@ -973,14 +975,14 @@ impl Eval<'_> {
                             Diagnostic::error("B0816", *span, format!("no target or package `{dep}`"))
                                 .label("not declared in this manifest")
                                 .maybe_help(help)
-                                .spec(SPEC),
+                                .toolchain(SPEC),
                         );
                     }
                     Some(t) if t.name == target.name => {
                         self.error(
                             Diagnostic::error("B0805", *span, format!("`{dep}` depends on itself"))
                                 .label("remove it")
-                                .spec(SPEC),
+                                .toolchain(SPEC),
                         );
                     }
                     Some(t) if matches!(t.kind, TargetKind::App | TargetKind::Tests) => {
@@ -992,7 +994,7 @@ impl Eval<'_> {
                             )
                             .label("nothing depends on an app or a test target")
                             .help(format!("move what is shared into a `.module(\"{dep}Core\")`"))
-                            .spec(SPEC),
+                            .toolchain(SPEC),
                         );
                     }
                     Some(t)
@@ -1006,7 +1008,7 @@ impl Eval<'_> {
                                 "a binding module depends only on other binding modules",
                             )
                             .label(format!("`{dep}` is an app module"))
-                            .spec(SPEC),
+                            .toolchain(SPEC),
                         );
                     }
                     Some(_) => {}
@@ -1029,7 +1031,7 @@ impl Eval<'_> {
                 )
                 .label("this dependency closes the cycle")
                 .help("modules form a graph without cycles: move what both need into a module they both depend on")
-                .spec(SPEC),
+                .toolchain(SPEC),
             );
         }
     }
@@ -1158,11 +1160,11 @@ pub fn with_target(source: &str, entry: &str) -> Option<String> {
                     ));
                 }
             }
-            Tok::P(P::Comma) if depth == 1 => {
-                // A trailing comma before `]` does not start another element.
-                if tokens.get(i + 1).is_some_and(|t| t.tok != Tok::P(P::RBracket)) {
-                    items += 1;
-                }
+            // A trailing comma before `]` does not start another element.
+            Tok::P(P::Comma)
+                if depth == 1 && tokens.get(i + 1).is_some_and(|t| t.tok != Tok::P(P::RBracket)) =>
+            {
+                items += 1;
             }
             _ => {}
         }
