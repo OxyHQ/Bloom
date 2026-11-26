@@ -1,0 +1,44 @@
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+  --> emit/effects.bloom:11:7
+   |
+11 | async fn loadA() -> Int {
+   |       ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> emit/effects.bloom:21:1
+   |
+21 | pub view Search {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> emit/effects.bloom:21:5
+   |
+21 | pub view Search {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (once in this file)
+  --> emit/effects.bloom:31:13
+   |
+31 |       Text("${total}")
+   |             ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (once in this file)
+  --> emit/effects.bloom:47:7
+   |
+47 |       match await all(fetchCount(query), fetchCount("all")) {
+   |       ^^^^^ retired in 2.0
+   |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

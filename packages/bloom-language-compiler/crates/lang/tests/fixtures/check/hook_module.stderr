@@ -15,3 +15,21 @@ error[B0420]: the hook `useTop` is called outside a view member
    |
 help: call it as a view member (`let value = useTop(…)`), or at the top level of a hook function (`fn useX`)
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+warning[B0950]: `pub` is Bloom 0.x (2 times in this file)
+ --> check/hook_module.bloom:5:1
+  |
+5 | pub fn useTop() -> Float {
+  | ^^^ retired in 2.0
+  |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+ --> check/hook_module.bloom:5:5
+  |
+5 | pub fn useTop() -> Float {
+  |     ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

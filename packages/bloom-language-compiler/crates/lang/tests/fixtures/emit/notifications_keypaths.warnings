@@ -1,0 +1,35 @@
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> emit/notifications_keypaths.bloom:22:1
+   |
+22 | pub view NotificationSettingsScreen {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> emit/notifications_keypaths.bloom:22:5
+   |
+22 | pub view NotificationSettingsScreen {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+  --> emit/notifications_keypaths.bloom:36:9
+   |
+36 |   async fn updatePreference(key: KeyPath<Prefs, Bool>, value: Bool) {
+   |         ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (once in this file)
+  --> emit/notifications_keypaths.bloom:39:5
+   |
+39 |     match await update(Prefs.patch(key, value)) {
+   |     ^^^^^ retired in 2.0
+   |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -18,6 +18,33 @@ help: add the missing arm(s), or `case _ =>` for the rest:
       case false => …
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
 
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+ --> check/match.bloom:7:1
+  |
+7 | fn label(load: Load<Int>) -> String {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (3 times in this file)
+ --> check/match.bloom:8:3
+  |
+8 |   match load {
+  |   ^^^^^ retired in 2.0
+  |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (once in this file)
+  --> check/match.bloom:10:24
+   |
+10 |     case .ready(n) => "${n}"
+   |                        ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
 warning[B0302]: this arm is never reached
   --> check/match.bloom:17:10
    |

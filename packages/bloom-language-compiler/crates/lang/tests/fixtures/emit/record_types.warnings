@@ -1,0 +1,17 @@
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+  --> emit/record_types.bloom:11:1
+   |
+11 | fn extent(p: Point) -> Int {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> emit/record_types.bloom:19:1
+   |
+19 | pub fn uses() -> Int {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
