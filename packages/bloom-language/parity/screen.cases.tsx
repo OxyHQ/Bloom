@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, View } from 'react-native';
 import { EdgeScrim, PageHeader, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
+import { CallScreen } from '@oxy.so/bloom/call-ui';
 import { Screen, ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
 import { BloomColorScope, withAlpha } from '@oxy.so/bloom/theme';
@@ -8,10 +9,11 @@ import { Text } from '@oxy.so/bloom/typography';
 import { defineTokens } from '../src/tokens';
 
 import { ENUMS } from '../src/generated/spec.generated';
-import type { ScrollViewNode } from '../src/node';
+import type { Child, ScrollViewNode } from '../src/node';
+import { CallScreen as LCallScreen } from '../src/controls/call-ui';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import { ScreenHost } from '../src/router/screen-host';
+import { drawScreen, ScreenHost } from '../src/router/screen-host';
 import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 /** An app's own black, as Mention's player paints its header's scrim. */
@@ -876,7 +878,90 @@ const wrappers: ParityCase[] = [
   },
 ];
 
+/** A `screen()` body's branch, as the route draws it. */
+function Branch({ root }: { root: Child }) {
+  return drawScreen(root);
+}
+
+/** An app's provider that takes props besides its children (Allo's ask provider). */
+function Asking({ context, children }: { context: string; children?: ReactNode }) {
+  return (
+    <View testID="asking" accessibilityLabel={context}>
+      {children}
+    </View>
+  );
+}
+
+const CALL_CONTROLS = { muted: true, onMutedChange: noop, onEndCall: noop };
+
+/** A branch that is not a Screen: a surface of its own, and providers with props or none. */
+const branches: ParityCase[] = [
+  {
+    name: 'a branch that is a surface of its own: a call screen with no Screen around it',
+    language: () => (
+      <Branch
+        root={LCallScreen('Ana Restrepo', 'active', { controls: { onEndCall: noop } })
+          .muted([true, noop])
+          .title('Ignored')
+          .ownScreen()}
+      />
+    ),
+    bloom: () => <CallScreen name="Ana Restrepo" status="active" controls={CALL_CONTROLS} />,
+  },
+  {
+    name: 'a surface of its own in a dark scope inside an app’s provider',
+    language: () => (
+      <Branch
+        root={LCallScreen('Ana Restrepo', 'ringing', { controls: { onEndCall: noop } })
+          .muted([true, noop])
+          .colorScope('dark')
+          .provider(Dock)
+          .ownScreen()}
+      />
+    ),
+    bloom: () => (
+      <Dock>
+        <BloomColorScope mode="dark" asChild>
+          <CallScreen name="Ana Restrepo" status="ringing" controls={CALL_CONTROLS} />
+        </BloomColorScope>
+      </Dock>
+    ),
+  },
+  {
+    name: 'a branch that is a Screen beside it',
+    language: () => <Branch root={L.Text('nobody').title('Call').ownScreen(false)} />,
+    bloom: () => (
+      <Screen header={<PageHeader title="Call" presentation="floating" />}>
+        <Text>nobody</Text>
+      </Screen>
+    ),
+  },
+  {
+    name: 'a screen inside a provider with its props',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).provider(Asking, { context: '2 unread' })} />
+    ),
+    bloom: () => (
+      <Asking context="2 unread">
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </Asking>
+    ),
+  },
+  {
+    name: 'a screen whose provider is undefined: none drawn',
+    language: () => <ScreenHost root={L.Text('a').header(false).provider(undefined)} />,
+    bloom: () => (
+      <Screen>
+        <Text>a</Text>
+      </Screen>
+    ),
+  },
+];
+
 export const SCREEN_CASES: ParityCase[] = [
+  ...branches,
   ...wrappers,
   ...scrollViews,
   ...insets,

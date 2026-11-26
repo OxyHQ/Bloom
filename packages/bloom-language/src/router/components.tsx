@@ -13,7 +13,7 @@ import { EnvContext, navigatorEnv, type Env } from '../env';
 import type { Child } from '../node';
 import { LanguageStyles } from '../render';
 import { drawNavigation } from './navigators';
-import { ScreenHost } from './screen-host';
+import { drawScreen } from './screen-host';
 
 function useNavigatorEnv(): Env {
   const router = useRouter();
@@ -63,6 +63,11 @@ export function layout(body: () => Child): ComponentType {
  * props (a post's id) takes them as a component does. Bloom's `Screen` draws it; the header is Bloom's
  * PageHeader, and on iOS inside a native stack the system navigation bar.
  *
+ * A branch that is not a Screen says so: a root with `.ownScreen()` is a
+ * surface of its own (Bloom's `CallScreen`), drawn as it is, and `null` draws
+ * nothing (a story viewer with no story yet), as the same branches of a JSX
+ * route do.
+ *
  * ```ts
  * export default screen(function Saved() {
  *   const [filters, setFilters] = useState(false);
@@ -70,6 +75,12 @@ export function layout(body: () => Child): ComponentType {
  *     .title(t('saved.title'))
  *     .toolbar(Button(Icon(RiFilter3Line)).label(t('saved.filter')).onPress(() => setFilters(true)))
  *     .sheet(filters, () => SavedFilters(), { onDismiss: () => setFilters(false) });
+ * });
+ *
+ * export default screen(function Call() {
+ *   const session = useCall();
+ *   if (!session) return Text(t('calls.none')).title(t('calls.title'));
+ *   return CallScreen(session.name, session.status, { controls: { onEndCall: end } }).ownScreen();
  * });
  * ```
  */
@@ -79,11 +90,7 @@ export function screen<P extends object = Record<string, never>>(
   // biome-ignore lint/correctness/noComponentHookFactories: screen() defines one route component per call by design
   function RouteScreen(props: P): ReactNode {
     const env = useNavigatorEnv();
-    return (
-      <EnvContext.Provider value={env}>
-        <ScreenHost root={body(props)} />
-      </EnvContext.Provider>
-    );
+    return <EnvContext.Provider value={env}>{drawScreen(body(props))}</EnvContext.Provider>;
   }
   RouteScreen.displayName = body.name || 'Screen';
   return RouteScreen;

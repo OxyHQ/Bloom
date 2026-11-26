@@ -29,6 +29,7 @@ import {
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
+import { NODE_MODIFIERS } from '../generated/spec.generated';
 import { ink, flexStyle, type RoleRef } from '../style';
 import { isSurfaceFill, surfaced, themeColor, withSurface } from '../paint';
 import { useTheme } from '@oxy.so/bloom/theme';
@@ -120,6 +121,43 @@ function chromeOf(root: Child): ScreenChrome {
   chrome.header = composed as unknown as Node;
   return chrome;
 }
+
+/**
+ * What a `screen()` body's branch draws: a Bloom `Screen` around its root, or
+ * the root as it is when it is a surface of its own (`.ownScreen()`), or
+ * nothing for `null`.
+ */
+export function drawScreen(root: Child): ReactNode {
+  if (root === null || root === undefined || root === false) return null;
+  if (!isNode(root) || valuesOf(root).ownScreen !== true) return <ScreenHost root={root} />;
+  const sheets: Extract<Modifier, { kind: 'sheet' }>[] = [];
+  for (const modifier of root.modifiers) if (modifier.kind === 'sheet') sheets.push(modifier);
+  // The root is the surface: what the Screen would take is dropped, what it would sit in is drawn.
+  const content = new Node(
+    root.kind,
+    root.props,
+    root.children,
+    root.modifiers.filter((modifier) => !AROUND_A_SCREEN.has(modifier.kind)),
+  );
+  const surface = wrapped(root, toElement(content));
+  return sheets.length === 0 ? (
+    surface
+  ) : (
+    <>
+      {surface}
+      {sheetsOf(sheets)}
+    </>
+  );
+}
+
+/**
+ * A screen root's own modifiers (a `Group`'s, which is a screen's children:
+ * its chrome and what it sits in), less its identity and test id, which are
+ * the view's.
+ */
+const AROUND_A_SCREEN: ReadonlySet<string> = new Set(
+  NODE_MODIFIERS.group.filter((name) => name !== 'id' && name !== 'testID'),
+);
 
 export function ScreenHost({ root }: { root: Child }) {
   const chrome = chromeOf(root);
@@ -244,9 +282,9 @@ function wrapped(root: Child, screen: ReactElement): ReactElement {
           {out}
         </KeyboardAvoidingView>
       );
-    else if (modifier.kind === 'provider') {
-      const Provider = modifier.value;
-      out = <Provider>{out}</Provider>;
+    else if (modifier.kind === 'provider' && modifier.value !== undefined) {
+      const { component, props } = modifier.value;
+      out = createElement(component, props, out);
     }
   }
   return out;

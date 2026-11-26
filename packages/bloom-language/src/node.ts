@@ -658,8 +658,10 @@ export interface ValueModifiers {
   colorScope: ColorScopeMode | undefined;
   /** The screen kept above the keyboard, React Native's `KeyboardAvoidingView` around it: its fill, or React Native's `flex: 1`. */
   keyboardAvoiding: FlexName | undefined;
-  /** A provider (a component of children) drawn around the screen. */
-  provider: ScreenProvider;
+  /** A provider (a component of children, with its props) drawn around the screen; `undefined` none. */
+  provider: ProvidedBy | undefined;
+  /** A root drawn as it is, with no Bloom `Screen` around it (a call's own full-screen surface). */
+  ownScreen: boolean;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
   detached: boolean;
@@ -2830,8 +2832,17 @@ export class Node {
   keyboardAvoiding(fill?: FlexName): Node {
     return this.set('keyboardAvoiding', fill);
   }
-  provider(value: ScreenProvider): Node {
-    return this.set('provider', value);
+  provider<P extends object>(
+    component: ComponentType<P & { children?: ReactNode }> | undefined,
+    props?: P,
+  ): Node {
+    return this.set(
+      'provider',
+      component === undefined ? undefined : { component: component as ScreenProvider, props },
+    );
+  }
+  ownScreen(value = true): Node {
+    return this.set('ownScreen', value);
   }
   contentGrows(value = true): Node {
     return this.set('contentGrows', value);
@@ -4599,15 +4610,39 @@ export interface ScreenModifiers<Self> {
   /**
    * A provider around the screen (a React component that draws its children:
    * Bloom's `HeaderDockProvider`, an app's own context the screen's header and
-   * content share). Each
+   * content share), with the props it takes besides its children. `undefined`
+   * draws none: a provider only some people get (`supervised ? undefined :
+   * AskProvider`), the screen drawn again inside it when that changes, as JSX
+   * that wraps an element in a branch is. Each
    * of these three wraps what the root's modifiers before it drew, in chain
    * order, as SwiftUI's modifiers do: the last one is outermost.
    */
-  provider(component: ScreenProvider): Self;
+  provider(component: ScreenProvider | undefined): Self;
+  provider<P extends object>(
+    component: ComponentType<P & { children?: ReactNode }> | undefined,
+    props: P,
+  ): Self;
+  /**
+   * The root is a full-screen surface of its own (Bloom's `CallScreen` or
+   * `IncomingCallScreen`, a story viewer): a `screen()` branch that returns it
+   * draws it as it is, with no Bloom `Screen` around it, as a route that
+   * returns that surface in JSX does. Its screen chrome (title, header,
+   * footer, floating action) is the Screen's and is not drawn; its sheets,
+   * colour scope, keyboard avoidance and providers are. Another branch of the
+   * same body can still be a Screen (a call route's no-call notice), and a
+   * branch that returns `null` draws nothing. `true` by default.
+   */
+  ownScreen(value?: boolean): Self;
 }
 
 /** A provider a screen is drawn inside: a component that draws its children. */
 export type ScreenProvider = ComponentType<{ children?: ReactNode }>;
+
+/** A `.provider()` as it is stored: the component and the props it takes besides its children. */
+export interface ProvidedBy {
+  readonly component: ScreenProvider;
+  readonly props: object | undefined;
+}
 
 /** Where a screen that drives its own scroll has its top (`.reselectTop()`). */
 export interface ReselectTop {

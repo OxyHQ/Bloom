@@ -1884,6 +1884,25 @@ export default screen(function EditList() {
 });
 ```
 
+A branch that is not a Screen says so, as the same branch of a JSX route
+returns something else: a root with `.ownScreen()` is a surface of its own
+(Bloom's `CallScreen` or `IncomingCallScreen`, a story viewer), drawn as it is
+with no `Screen` around it, and `null` draws nothing (a viewer with no story
+yet). An own surface takes no screen chrome (its title, header, footer and
+floating action are the Screen's and draw nothing); its sheets, colour scope,
+keyboard avoidance and providers are drawn around it as they are around a
+Screen. Moving between a Screen branch and an own surface draws the other
+tree, as React does when a component returns a different element.
+
+```ts
+export default screen(function Call() {
+  const session = useCall();
+  if (!session) return Text(t('calls.noParticipants')).title(t('calls.title'));
+  if (session.ringing) return IncomingCallScreen(session.name, { onAccept }).ownScreen();
+  return CallScreen(session.name, session.status, { controls }).ownScreen();
+});
+```
+
 **`AppLayout(navigator)`.** Bloom's `AppShell` around the navigator. The shell
 draws its navigation from the `TabPagerProvider` above it (the sidebar's rows
 and selection), which stays above the shell: bottom sheets and Bloom's native
@@ -2163,7 +2182,7 @@ Three more draw around the `Screen`, as a route's JSX wrapped it:
 | --- | --- |
 | `.colorScope('light' \| 'dark' \| undefined)` | `<BloomColorScope mode asChild>`: the screen in a scheme of its own (a dark reel or camera in a light app); `undefined` is the app's, the scope still drawn so a scheme chosen at render never remounts the screen |
 | `.keyboardAvoiding(fill?)` | React Native's `<KeyboardAvoidingView>`: filling (React Native's `flex: 1`, or a flex token as `.flex()` writes it: `'1'` is Tailwind's `flex-1`, `flex: 1 1 0%`), padded on iOS and resized elsewhere, as React Native recommends (SwiftUI avoids the keyboard itself; React Native does not) |
-| `.provider(Component)` | a provider of children around the screen (Bloom's `<HeaderDockProvider>`, or an app's own): a context the screen's header and content share |
+| `.provider(Component, props?)` | a provider of children around the screen (Bloom's `<HeaderDockProvider>`, or an app's own, with the props it takes besides its children): a context the screen's header and content share; `undefined` draws none (a provider only some people get), the screen drawn again inside one when that changes, as JSX that wraps it in one branch is |
 
 Each wraps what the root's modifiers before it drew, in chain order, as
 SwiftUI's modifiers do, so the last is outermost:
