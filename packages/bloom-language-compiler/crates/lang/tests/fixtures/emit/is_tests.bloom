@@ -15,3 +15,8 @@ fn label(key: String) -> String {
   }
   value is Bool ? "flag" : "?"
 }
+
+// `foreign ?? e` takes `e`'s type; the left side is checked by TS against it.
+fn named(handle: Foreign<"string | null | undefined">) -> String {
+  handle ?? "anonymous"
+}
