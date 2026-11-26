@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface PreviewProps {
+  readonly title: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Preview())`), or from TSX as `toElement(Preview())`. */
+export declare const Preview: (props: PreviewProps) => ComposedView;

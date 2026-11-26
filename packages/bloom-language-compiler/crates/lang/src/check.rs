@@ -2466,6 +2466,7 @@ impl<'o> Checker<'o> {
                 }
                 Ty::List(Box::new(elem))
             }
+            ExprKind::Record(entries) => self.record_literal(expr, entries, expected),
             ExprKind::Map(entries) => {
                 let value = match &expected_resolved {
                     Some(Ty::Map(value)) => (**value).clone(),
@@ -2577,6 +2578,14 @@ impl<'o> Checker<'o> {
                 }
             }
             ExprKind::Call(call) => self.call(expr, call, expected_resolved.as_ref()),
+            // `{}` where a struct (or a patch) is expected is an empty record, not a closure.
+            ExprKind::Closure(c)
+                if c.params.is_empty()
+                    && c.body.is_empty()
+                    && matches!(&expected_resolved, Some(Ty::Adt(..) | Ty::Partial(_))) =>
+            {
+                self.record_literal(expr, &[], expected)
+            }
             ExprKind::Closure(c) => self.closure(c, expected_resolved.as_ref(), false),
             ExprKind::If(if_expr) => self.if_expr(if_expr, expected, expr.span),
             ExprKind::Match(m) => self.match_expr(m, expected, expr.span),
@@ -3675,6 +3684,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_names(e, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|e| walk_names(e, f)),
+        ExprKind::Record(entries) => entries.iter().for_each(|e| walk_names(e.value(), f)),
         ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
             walk_names(k, f);
             walk_names(v, f);

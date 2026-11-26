@@ -551,6 +551,98 @@ impl Checker<'_> {
         }
     }
 
+    /// `{ key: value, ..spread }`: a struct's construction when a struct (or a patch of
+    /// one) is expected; a TS value's object when a TS type is; else a record of its own
+    /// type, its fields' types inferred.
+    pub(super) fn record_literal(
+        &mut self,
+        expr: &Expr,
+        entries: &[RecordEntry],
+        expected: Option<&Ty>,
+    ) -> Ty {
+        let target = match expected.map(|e| self.resolve(e)) {
+            Some(Ty::Option(inner)) => Some(self.resolve(&inner)),
+            target => target,
+        };
+        let is_struct = |this: &Self, def: DefId| matches!(this.out.defs[def].kind, DefKind::Struct(_));
+        match &target {
+            Some(Ty::Adt(def, args)) if is_struct(self, *def) => {
+                let call = record_call(expr.span, entries);
+                return self.construct(expr, &call, *def, args.clone(), target.as_ref(), false);
+            }
+            Some(Ty::Partial(inner)) => {
+                if let Ty::Adt(def, args) = self.resolve(inner)
+                    && is_struct(self, def)
+                {
+                    let call = record_call(expr.span, entries);
+                    return self.construct(expr, &call, def, args, target.as_ref(), true);
+                }
+            }
+            _ => {}
+        }
+        let mut fields: Vec<FieldDef> = Vec::new();
+        for entry in entries {
+            match entry {
+                RecordEntry::Field { key, value } => {
+                    if fields.iter().any(|f| f.name == key.name) {
+                        self.report(
+                            Diagnostic::error("B0208", key.span, format!("`{}` is given twice", key.name))
+                                .label("a record has each key once")
+                                .spec("44-structs"),
+                        );
+                    }
+                    let ty = self.boundary(value, None);
+                    fields.retain(|f| f.name != key.name);
+                    fields.push(FieldDef { name: key.name.clone(), ty, default: FieldDefault::None });
+                }
+                RecordEntry::Spread(value) => {
+                    let ty = self.expr(value, None);
+                    match self.resolve(&ty) {
+                        Ty::Adt(def, args) if is_struct(self, def) => {
+                            for field in self.out.defs[def].fields().to_vec() {
+                                fields.retain(|f| f.name != field.name);
+                                let ty = substitute(&field.ty, &args);
+                                fields.push(FieldDef { name: field.name, ty, default: FieldDefault::None });
+                            }
+                        }
+                        Ty::Foreign(_) | Ty::Unknown => {}
+                        other => self.report(
+                            Diagnostic::error(
+                                "B0205",
+                                value.span,
+                                format!("cannot spread {} into a record", self.show(&other)),
+                            )
+                            .label("not a record")
+                            .help("spread a struct or a record: `..base`")
+                            .spec("44-structs"),
+                        ),
+                    }
+                }
+            }
+        }
+        if let Some(foreign @ Ty::Foreign(_)) = target {
+            return foreign;
+        }
+        let name = format!(
+            "{{ {} }}",
+            fields.iter().map(|f| format!("{}: {}", f.name, self.show(&f.ty))).collect::<Vec<_>>().join(", ")
+        );
+        self.out.defs.push(Def {
+            name,
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Record,
+        });
+        let ty = Ty::Adt(self.out.defs.len() - 1, Vec::new());
+        if let Some(target) = &target {
+            let fits = self.coerce(&ty, target);
+            if !fits {
+                self.mismatch(expr.span, &ty, target);
+            }
+        }
+        ty
+    }
+
     /// `S(field: v, ..spread)`; `partial`: `Partial<S>(…)`, every field optional.
     fn construct(
         &mut self,

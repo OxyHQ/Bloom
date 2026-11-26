@@ -283,6 +283,22 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.panicking = false;
     }
 
+    /// Skips to the `}` closing the braces the parser is in (not past it).
+    fn recover_to_close(&mut self) {
+        let mut depth = 0usize;
+        loop {
+            match self.tok() {
+                Tok::Eof => break,
+                Tok::P(P::LParen | P::LBracket | P::LBrace) => depth += 1,
+                Tok::P(P::RParen | P::RBracket) => depth = depth.saturating_sub(1),
+                Tok::P(P::RBrace) if depth == 0 => break,
+                Tok::P(P::RBrace) => depth -= 1,
+                _ => {}
+            }
+            self.bump();
+        }
+    }
+
     /// Skips to the next item keyword at the start of a line.
     fn recover_item(&mut self) {
         let mut depth = 0usize;
@@ -1365,6 +1381,86 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     /// `{ [params in] stmts }`
+    /// Whether the `{` here opens a record: a key (a name, a keyword or a string) and
+    /// `:`, or `..`, first, and no closure's `in` on its first line (`{ x: Int in … }`).
+    fn record_ahead(&self) -> bool {
+        let mut at = 1;
+        while matches!(self.nth(at), Tok::Newline) {
+            at += 1;
+        }
+        let keyed = match self.nth(at) {
+            Tok::P(P::DotDot) => return true,
+            Tok::Ident(_) | Tok::Kw(_) | Tok::Str { .. } => matches!(self.nth(at + 1), Tok::P(P::Colon)),
+            _ => false,
+        };
+        if !keyed {
+            return false;
+        }
+        let mut depth = 0usize;
+        loop {
+            at += 1;
+            match self.nth(at) {
+                Tok::P(P::LParen | P::LBracket | P::LBrace) => depth += 1,
+                Tok::P(P::RParen | P::RBracket) => depth = depth.saturating_sub(1),
+                Tok::P(P::RBrace) if depth == 0 => return true,
+                Tok::P(P::RBrace) => depth -= 1,
+                Tok::Kw(Kw::In) if depth == 0 => return false,
+                Tok::Newline if depth == 0 => return true,
+                Tok::Eof => return true,
+                _ => {}
+            }
+        }
+    }
+
+    /// `{ key: value, "quoted-key": v, ..spread }`
+    fn record(&mut self) -> Expr {
+        let open = self.bump();
+        let mut entries = Vec::new();
+        loop {
+            self.skip_newlines();
+            if self.at(P::RBrace) || matches!(self.tok(), Tok::Eof) {
+                break;
+            }
+            if self.eat(P::DotDot) {
+                entries.push(RecordEntry::Spread(self.expr(Ctx::Normal)));
+            } else {
+                let span = self.span();
+                let name = match self.tok() {
+                    Tok::Ident(name) => Some(name.clone()),
+                    Tok::Kw(kw) => Some(kw.word().to_string()),
+                    Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => Some(
+                        parts
+                            .iter()
+                            .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                            .collect(),
+                    ),
+                    _ => None,
+                };
+                let Some(name) = name else {
+                    self.unexpected("a key (`name: value`) or `..spread`");
+                    self.recover_to_close();
+                    break;
+                };
+                self.bump();
+                self.expect(P::Colon, "`:` and the value");
+                let value = self.expr(Ctx::Normal);
+                entries.push(RecordEntry::Field { key: Ident { name, span }, value });
+            }
+            self.skip_newlines();
+            if !self.eat(P::Comma) {
+                self.skip_newlines();
+                if !self.at(P::RBrace) {
+                    self.unexpected("`,` or `}`");
+                    self.recover_to_close();
+                }
+                break;
+            }
+        }
+        self.expect_close(P::RBrace, open);
+        let span = open.to(Span::new(self.prev_end(), self.prev_end()));
+        self.expr_node(ExprKind::Record(entries), span)
+    }
+
     fn closure(&mut self) -> Closure {
         let open = self.bump();
         let mut params = Vec::new();
@@ -1631,6 +1727,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 self.expr_node(ExprKind::List(items), span)
             }
+            Tok::P(P::LBrace) if self.record_ahead() => self.record(),
             Tok::P(P::LBrace) => {
                 let closure = self.closure();
                 let span = closure.span;
