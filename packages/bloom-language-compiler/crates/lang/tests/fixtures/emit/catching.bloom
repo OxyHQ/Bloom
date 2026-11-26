@@ -30,3 +30,40 @@ pub fn spaced(text: String) -> String { text.replace(" ", "_") }
 pub fn isWww(host: String) -> Bool { WWW.test(host) }
 
 pub fn digits(text: String) -> Bool { text.match(Regex("[0-9]+")) != none }
+
+// `?` inside `catching { … }` throws to it: a rejected promise or an `err` is its `.err`.
+import { fetchCount, onRefresh, useQueryOf } from "@/api"
+
+pub async fn total(id: String) -> Float {
+  let read = catching {
+    let n = (await fetchCount(id))?
+    n + 1
+  }
+  match read {
+    case .ok(n) => n
+    case .err(_) => 0
+  }
+}
+
+// A closure TS calls for a promise: `?` rejects it, and its value resolves it. A Bloom
+// `async fn` is TS's `() => Promise<T>` (it never rejects).
+async fn reload() {
+}
+
+async fn zero() -> Float {
+  0
+}
+
+pub view Counts(id: String) {
+  let { data } = useQueryOf(queryKey: [id], queryFn: {
+    let n = (await fetchCount(id))?
+    n * 2
+  })
+  let _ = onRefresh(reload)
+  // A hook's value dropped is still a hook call, on every render.
+  let _ = useQueryOf(queryKey: ["zero"], queryFn: zero)
+
+  body {
+    Text("${data ?? 0}")
+  }
+}

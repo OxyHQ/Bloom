@@ -659,8 +659,15 @@ impl<'a> Formatter<'a> {
         let first = self.expr(operands[0]);
         let mut rest = Vec::new();
         for (operator, operand) in operators.iter().zip(&operands[1..]) {
-            rest.push(text(format!(" {}", operator.text())));
-            rest.push(line());
+            // A line cannot end with `>` (it may close a type's arguments), so `<` and `>`
+            // start the next line instead.
+            if matches!(operator, BinaryOp::Lt | BinaryOp::Gt) {
+                rest.push(line());
+                rest.push(text(format!("{} ", operator.text())));
+            } else {
+                rest.push(text(format!(" {}", operator.text())));
+                rest.push(line());
+            }
             rest.push(self.expr(operand));
         }
         group(concat(vec![first, indent(concat(rest))]))
