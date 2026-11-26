@@ -1,16 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.7.0
+
+### Compatibility
+
+- Requires `@oxy.so/bloom` 23.9.1 or newer (its `BloomImage` names an image by its `alt` on the web, which `Image(source, alt)` draws through); the peer is `>=23.9.1`.
 
 ### Added
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
 - `.border(undefined, width, edge?)`: a border width in the platform's default colour (React Native's black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` draws it; a colour chosen at render may be none (`.border(subscribed ? 'border' : undefined, 'thin')`). It paints nothing from the theme, so a root or `view()` body around it reads none.
-
-### Documentation
-
-- A Card's fill is Bloom Card's `style.backgroundColor` when it is in the card's own box (after its padding and frame, before a corner), so `.background('transparent')` there draws no surface: the parity suite holds Mention's three composer cards (an article preview, an event in a row, a room) to Bloom's Card with their caller's zeroed chrome, and the cost gate holds such a card to Bloom's Card with that style.
 
 ### Changed
 
@@ -22,10 +22,12 @@
 
 ### Documented
 
+- A Card's fill is Bloom Card's `style.backgroundColor` when it is in the card's own box (after its padding and frame, before a corner), so `.background('transparent')` there draws no surface: the parity suite holds Mention's three composer cards (an article preview, an event in a row, a room) to Bloom's Card with their caller's zeroed chrome, and the cost gate holds such a card to Bloom's Card with that style.
 - Pressable runs and element runs inside a text: a span takes `.onPress()` and `.onLongPress()` as a nested React Native `Text` takes `onPress`, and `Embed((render) => <Link href asChild>{render(Text(…))}</Link>)` hands expo-router's `Link asChild` a span's host (its href, role and press, an anchor on the web, and the Link's own `hrefAttrs` such as `rel: 'nofollow'`). Parity and the per-node cost gate measure each against the JSX it stands for.
 
 ### Fixed
 
+- A tab's selection reaches the web: a view with `.role('tab')` and `.accessibilityState({ selected })` writes the flat `aria-selected`, as an option already did, the two roles ARIA gives one. react-native-web reads no `accessibilityState`, so a tab lost its selected state there. Parity: a tab selected and not, against React Native's View with `accessibilityRole="tab"` and its `aria-selected` on the web.
 - `Image(source, alt)` names the image on the web (its `aria-label` and `<img alt>`), as `.label()` does and React Native's Image with an `accessibilityLabel` does, with the next Bloom's `BloomImage` (which hands `alt` on to react-native-web as its `accessibilityLabel`). Parity: `parity/image-name.cases.tsx`, against React Native's Image on the web and Bloom's image natively.
 - The web parity harness drops what a browser drops: a `pointer-events` of `box-none` or `box-only` (react-native-web writes React Native's values as they are for a `pointerEvents` in an inline style), which jsdom kept. Layout parity holds `.when('native', (v) => v.allowsHitTesting('children'))` (and `'self'`) equal to such an inline style, and `.allowsHitTesting('children')` to a StyleSheet's, which react-native-web compiles into its prop's classes.
 
