@@ -189,6 +189,7 @@ pub fn summary(path: &Path) -> Rc<Summary> {
     }
     let source = std::fs::read_to_string(path).unwrap_or_default();
     let (mut file, _, _) = crate::parser::parse(&source);
+    crate::externs::lower(&mut file);
     // Its members as the functions other files call (`T$m`).
     crate::extensions::lower(&mut file);
     let summary = Rc::new(summarize(&file));
@@ -235,7 +236,7 @@ enum Hidden {
 /// Rewrites `file`'s module imports (see the module docs) and checks its
 /// string imports. Without a package above `filename`, does nothing.
 pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options) -> Resolution {
-    let mut out = Resolution::default();
+    let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
     let path = absolute(Path::new(filename));
     let Some(root) = options.package.clone().or_else(|| find_root(&path)) else {
         return out;
@@ -644,12 +645,35 @@ fn string_import(import: &Import) -> Diagnostic {
 /// Every name the file reads, with the span of its first use: an identifier
 /// that is not a member (`.name`), a label (`name:`) or a declaration's name.
 pub fn free_names(source: &str) -> Vec<(String, Span)> {
-    let lexed = lexer::lex(source, 0, source.len());
-    let tokens = lexed.tokens;
     let mut seen = BTreeSet::new();
     let mut out = Vec::new();
+    names_in(source, 0, source.len(), &mut seen, &mut out);
+    out.sort_by_key(|(_, span)| span.start);
+    out
+}
+
+fn names_in(
+    source: &str,
+    start: usize,
+    end: usize,
+    seen: &mut BTreeSet<String>,
+    out: &mut Vec<(String, Span)>,
+) {
+    let tokens = lexer::lex(source, start, end).tokens;
     for (i, token) in tokens.iter().enumerate() {
-        let Tok::Ident(name) = &token.tok else { continue };
+        let name = match &token.tok {
+            Tok::Ident(name) => name,
+            Tok::Str { parts, .. } => {
+                // `"\(name)"`: the names inside an interpolation.
+                for part in parts {
+                    if let lexer::RawPart::Interp(span) = part {
+                        names_in(source, span.start as usize, span.end as usize, seen, out);
+                    }
+                }
+                continue;
+            }
+            _ => continue,
+        };
         let previous = i.checked_sub(1).map(|p| &tokens[p].tok);
         if matches!(previous, Some(Tok::P(P::Dot | P::QuestionDot))) {
             continue;
@@ -661,16 +685,20 @@ pub fn free_names(source: &str) -> Vec<(String, Span)> {
             out.push((name.clone(), token.span));
         }
     }
-    out
 }
 
-/// The names a runtime package exports, through `export *`.
+/// The names a runtime package exports.
 fn runtime_exports(from: &Path, known: &KnownPackage, options: &Options) -> Vec<String> {
     let specifier = match known.specifier {
         Some("bloom/data") => "@oxy.so/bloom-data",
         Some("bloom/router") => "@oxy.so/bloom-language/router",
         _ => known.npm,
     };
+    exports_of(from, specifier, options)
+}
+
+/// The names the TS module `specifier` (resolved from `from`) exports, through `export *`.
+pub(crate) fn exports_of(from: &Path, specifier: &str, options: &Options) -> Vec<String> {
     let mut out = BTreeSet::new();
     let mut queue: Vec<(PathBuf, String, usize)> = vec![(from.to_path_buf(), specifier.to_string(), 0)];
     let mut visited = BTreeSet::new();
