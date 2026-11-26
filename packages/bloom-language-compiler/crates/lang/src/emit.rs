@@ -3938,6 +3938,8 @@ impl<'a> Emitter<'a> {
     fn effect(&mut self, e: &EffectDecl) {
         self.import_name("react", "useEffect");
         let deps = match &e.id {
+            // `id: ()` (`.onAppear`): once, after the first render.
+            Some(Expr { kind: ExprKind::Unit, .. }) => Vec::new(),
             Some(id) => self.dep_values(id),
             None => self.deps(&e.body.stmts).into_iter().map(Frag::of).collect(),
         };
