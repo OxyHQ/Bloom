@@ -1,0 +1,75 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Text, TextField, Toggle, VStack, view } from "@oxy.so/bloom-language";
+import { useEffect, useState } from "react";
+import type { Binding } from "@oxy.so/bloom-language";
+
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+
+export interface PostRowProps {
+  readonly post: Post;
+  readonly dense?: boolean;
+  readonly onLike: () => void;
+}
+export const PostRow = view(function PostRow(props: PostRowProps) {
+"use no memo";
+const $ = $c(12);
+const { post, dense = false, onLike } = props;
+let $t0;
+if ($[7] !== post.text || $[8] !== post.likes || $[9] !== onLike || $[10] !== dense) {
+$t0 = HStack(($[0] !== post.text ? ($[0] = post.text, $[1] = Text(post.text)) : $[1]), ($[4] !== post.likes || $[5] !== onLike ? ($[4] = post.likes, $[5] = onLike, $[6] = Button(($[2] !== post.likes ? ($[2] = post.likes, $[3] = Text(`${post.likes}`)) : $[3])).onPress(() => onLike())) : $[6])).spacing(dense ? "xs" : "sm");
+$[7] = post.text;
+$[8] = post.likes;
+$[9] = onLike;
+$[10] = dense;
+$[11] = $t0;
+} else {
+$t0 = $[11];
+}
+return $t0;
+}, (a: PostRowProps, b: PostRowProps): boolean => {
+return (a.post.id === b.post.id && a.post.text === b.post.text && a.post.likes === b.post.likes && a.post.isLiked === b.post.isLiked) && (a.dense === b.dense);
+});
+
+const $view0 = Button(Text("Send"));
+export interface ComposerProps {
+  readonly isOn: Binding<boolean>;
+}
+export const Composer = view(function Composer(props: ComposerProps) {
+"use no memo";
+const $ = $c(11);
+const { isOn } = props;
+const [draft, setDraft] = useState<string>("");
+const [sent, setSent] = useState<number>(0);
+const title = "Compose";
+let send: () => void;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+send = (): void => {
+setSent((sent) => sent + (1));
+setDraft("");
+};
+$[0] = send;
+} else {
+send = $[0];
+}
+useEffect(() => {
+setSent(0);
+}, []);
+let $t1;
+if ($[7] !== sent || $[8] !== draft || $[9] !== isOn) {
+$t1 = VStack(($[1] !== sent ? ($[1] = sent, $[2] = Text(`${title}: ${sent}`)) : $[2]), ($[3] !== draft ? ($[3] = draft, $[4] = TextField([draft, setDraft] as const, "Write")) : $[4]), ($[5] !== isOn ? ($[5] = isOn, $[6] = Toggle(isOn)) : $[6]), $view0.onPress(() => send()));
+$[7] = sent;
+$[8] = draft;
+$[9] = isOn;
+$[10] = $t1;
+} else {
+$t1 = $[10];
+}
+return $t1;
+});
+

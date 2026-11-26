@@ -305,8 +305,14 @@ impl<'a> Formatter<'a> {
     // ----- items -----
 
     fn item(&mut self, item: &Item) -> Doc {
-        let modifiers = self.modifiers(item.visibility, &item.modifiers);
+        let modifiers = self.modifiers(item.visibility, &item.modifiers, false);
         let kind = match &item.kind {
+            ItemKind::Struct(StructDecl { name, generics: g, surface: Some(body), .. }) => {
+                self.type_body("struct ", name, g, body, item.span)
+            }
+            ItemKind::View(ViewDecl { name, surface: Some(body), .. }) => {
+                self.type_body("struct ", name, &[], body, item.span)
+            }
             ItemKind::Struct(s) => self.struct_decl(s, item.span),
             ItemKind::Enum(e) => self.enum_decl(e, item.span),
             ItemKind::Alias(a) => concat(vec![
@@ -326,11 +332,11 @@ impl<'a> Formatter<'a> {
     }
 
     /// `@Observable` (a line each), then `public private(set) static final `, as written.
-    fn modifiers(&mut self, visibility: Visibility, modifiers: &Modifiers) -> Doc {
+    fn modifiers(&mut self, visibility: Visibility, modifiers: &Modifiers, inline: bool) -> Doc {
         let mut parts = Vec::new();
         for attr in &modifiers.attrs {
             parts.push(text(self.slice(attr.span).to_string()));
-            parts.push(hardline());
+            parts.push(if inline { text(" ") } else { hardline() });
         }
         if let Some(span) = modifiers.visibility_span {
             let word = match visibility {
@@ -366,6 +372,54 @@ impl<'a> Formatter<'a> {
             },
         );
         concat(vec![head, self.braced(fields, span.end)])
+    }
+
+    /// A 2.0 type as written: `struct Name<T>: P, Q {`, its members one per line, `}`.
+    fn type_body(
+        &mut self,
+        keyword: &'static str,
+        name: &Ident,
+        g: &[Ident],
+        body: &TypeBody,
+        span: Span,
+    ) -> Doc {
+        let conformances = self.conformances(&body.conformances);
+        let head = concat(vec![text(keyword), text(name.name.clone()), generics(g), conformances, text(" ")]);
+        let members = self.lines(&body.members, |m| m.span, Self::type_member);
+        concat(vec![head, self.braced(members, span.end)])
+    }
+
+    fn type_member(&mut self, member: &TypeMember) -> Doc {
+        let modifiers = self.modifiers(member.visibility, &member.modifiers, true);
+        let kind = match &member.kind {
+            TypeMemberKind::Stored { mutable, name, ty, value } => {
+                let mut parts = vec![text(if *mutable { "var " } else { "let " }), text(name.name.clone())];
+                if let Some(ty) = ty {
+                    parts.push(text(": "));
+                    parts.push(self.ty(ty));
+                }
+                if let Some(value) = value {
+                    parts.push(text(" = "));
+                    parts.push(self.expr(value));
+                }
+                concat(parts)
+            }
+            TypeMemberKind::Computed { name, ty, body } => concat(vec![
+                text(format!("var {}: ", name.name)),
+                self.ty(ty),
+                text(" "),
+                self.block(body, Layout::Broken),
+            ]),
+            TypeMemberKind::Func(f) if f.name.name == "init" => concat(vec![
+                text("init"),
+                self.params(&f.params),
+                text(" "),
+                self.block(&f.body, Layout::Own),
+            ]),
+            TypeMemberKind::Func(f) => self.fn_decl(f),
+        };
+        // An attribute with arguments on a property stays on its line (`@Environment(\.x) var`).
+        concat(vec![modifiers, kind])
     }
 
     fn enum_decl(&mut self, e: &EnumDecl, span: Span) -> Doc {
@@ -1037,6 +1091,17 @@ impl<'a> Formatter<'a> {
     }
 
     fn ty(&mut self, t: &TypeExpr) -> Doc {
+        // `some View`, `any P`: the word, then the type it was read as.
+        let written = self.slice(t.span);
+        for word in ["some ", "any "] {
+            if written.starts_with(word) {
+                let inner = TypeExpr {
+                    kind: t.kind.clone(),
+                    span: Span::new(t.span.start + word.len() as u32, t.span.end),
+                };
+                return concat(vec![text(word), self.ty(&inner)]);
+            }
+        }
         match &t.kind {
             TypeKind::Named { name, args } if args.is_empty() => text(name.name.clone()),
             TypeKind::Named { name, args } => {
