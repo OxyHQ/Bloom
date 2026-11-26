@@ -149,9 +149,32 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
         let emitted = emit::emit(&file, &checked, source, filename, options);
         errors.extend(emitted.diagnostics);
         if errors.is_empty() {
-            output.map = Some(emitted.map.to_json(filename, source, &emitted.code));
-            output.code = emitted.code;
-            output.dts = Some(emitted.dts);
+            // The embedded pass checks every chain again (glass, toolbars, labels, environments:
+            // its rules are the one source of them). bloomc's output is already what the pass
+            // makes of it (static chains are hoisted), so it returns it unchanged
+            // (`tests/fixtures.rs` holds that), and what it finds is reported at the `.bloom` span.
+            let embedded = bloom_language_compiler::compile(&emitted.code, &format!("{filename}.ts"));
+            for problem in embedded.diagnostics {
+                errors.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Error));
+            }
+            for problem in embedded.warnings {
+                warnings.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Warning));
+            }
+            if errors.is_empty() {
+                let (code, map) = if embedded.changed {
+                    let map = embedded
+                        .map
+                        .as_deref()
+                        .map(|map| emitted.map.compose(map, &emitted.code, filename, source));
+                    (embedded.code, map)
+                } else {
+                    let map = emitted.map.to_json(filename, source, &emitted.code);
+                    (emitted.code, Some(map))
+                };
+                output.code = code;
+                output.map = map;
+                output.dts = Some(emitted.dts);
+            }
         }
     }
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
