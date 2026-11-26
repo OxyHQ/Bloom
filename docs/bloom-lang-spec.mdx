@@ -115,7 +115,8 @@ view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a pa
 screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
 layout        = "layout" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route layout *)
 view_block    = "{" { member NL } "body" block "}" ;
-member        = state | let_stmt | fn | effect ;
+member        = state | let_stmt | fn | effect | equal ;
+equal         = "equal" "(" IDENT "," IDENT ")" block ;   (* contextual, like effect *)
 effect        = "effect" [ "(" "id" ":" expr ")" ] block ;   (* contextual: `effect` stays a name *)
 state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
 
@@ -350,6 +351,11 @@ pub view PostRow(post: Post, compact: Bool = false) {
   out. Its props interface `extends` a TS interface and writes a struct's fields out; when the
   view's `XProps` name is the spread type's own, it is `XViewProps`, and with only spreads the
   props are the type itself.
+- **`equal(old, new) { <Bool> }`** is a view member: whether two props are equal for the view,
+  compiled to `memo`'s comparator (`view(function X(props) { … }, (old, new_) => …)`); `true`
+  skips the render. `old` and `new` are the view's props record as passed, so a prop with a
+  default is optional there. It reads only them and module names (it runs outside any render).
+  A view has one (B0435), and a screen, a layout or a view without props none.
 - A view called with arguments that are all static (literals, module values) is a static
   chain like a node's: built once, at module scope.
 - A `fn … -> View`, at module level or as a view member, is **inlined UI**: a plain call, no
@@ -555,7 +561,7 @@ Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects,
 `==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
-outside a task), B0434 (an effect returns after its cleanup is set), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 

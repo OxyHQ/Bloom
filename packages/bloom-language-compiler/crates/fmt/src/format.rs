@@ -446,6 +446,10 @@ impl<'a> Formatter<'a> {
             }
             Member::Let(l) => self.let_stmt(l),
             Member::Fn(f) => self.fn_decl(f),
+            Member::Equal(e) => concat(vec![
+                text(format!("equal({}, {}) ", e.old.name, e.new.name)),
+                self.block(&e.body, Layout::Own),
+            ]),
             Member::Effect(e) => {
                 let mut parts = vec![text("effect")];
                 if let Some(id) = &e.id {

@@ -472,6 +472,17 @@ describe('view()', () => {
     expect(cardBody).toHaveBeenCalledTimes(2);
   });
 
+  it('a comparator decides when props are equal, as memo’s does', () => {
+    const rowBody = jest.fn((props: { id: string; seen: number }) => Text(props.id));
+    const Row = view(rowBody, (previous, next) => previous.id === next.id);
+    const tree = (props: { id: string; seen: number }) => VStack(Row(props));
+    const r = mount(toElement(tree({ id: 'a', seen: 1 })));
+    update(r, toElement(tree({ id: 'a', seen: 2 })));
+    expect(rowBody).toHaveBeenCalledTimes(1);
+    update(r, toElement(tree({ id: 'b', seen: 2 })));
+    expect(rowBody).toHaveBeenCalledTimes(2);
+  });
+
   it('a child that turns false keeps its slot, so later siblings keep their state', () => {
     const tree = (show: boolean) => VStack(show && Text('banner'), Counter({ label: 'kept' }));
     const r = mount(toElement(tree(false)));

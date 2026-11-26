@@ -362,7 +362,7 @@ impl Builder<'_> {
                             }
                             Member::Let(l) => self.pattern_full(&l.pattern, l.span),
                             Member::Fn(f) => self.fn_decl(f),
-                            Member::Effect(_) => {}
+                            Member::Effect(_) | Member::Equal(_) => {}
                         }
                     }
                 }
@@ -798,6 +798,7 @@ pub fn walk_item<'a>(item: &'a Item, f: &mut dyn FnMut(Node<'a>)) {
                         }
                         walk_block(&e.body, f);
                     }
+                    Member::Equal(e) => walk_block(&e.body, f),
                 }
             }
             walk_block(&v.body, f);
