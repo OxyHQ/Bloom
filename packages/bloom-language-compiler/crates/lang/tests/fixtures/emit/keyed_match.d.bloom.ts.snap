@@ -1,0 +1,10 @@
+interface Prefs {
+  readonly likes: boolean;
+  readonly boosts: boolean;
+  readonly follows: boolean;
+}
+type Key = "likes" | "boosts" | "follows";
+export declare function isOn(prefs: Prefs, key: Key): boolean;
+export declare function patch(key: Key, value: boolean): Partial<Prefs>;
+export declare function crossed(prefs: Prefs, key: Key): boolean;
+export declare function either(a: Prefs, b: Prefs, key: Key): boolean;

@@ -55,8 +55,13 @@ impl Mappings {
 /// source line and column) in generated order, written here rather than by
 /// `oxc_sourcemap`: its JSON escaping (`escape-simd` 0.1.1's AVX2 path) reads
 /// past the end of a short string (`tests/sourcemap.rs`).
-fn write_map(filename: &str, source: &str, tokens: impl Iterator<Item = (u32, u32, u32, u32)>) -> String {
-    let mut mappings = String::new();
+fn write_map(
+    filename: &str,
+    source: &str,
+    tokens: impl ExactSizeIterator<Item = (u32, u32, u32, u32)>,
+) -> String {
+    // About five characters a segment (four VLQ fields and a separator).
+    let mut mappings = String::with_capacity(tokens.len() * 6);
     let (mut line, mut col, mut src_line, mut src_col) = (0u32, 0i64, 0i64, 0i64);
     let mut first = true;
     for (dst_line, dst_col, s_line, s_col) in tokens {

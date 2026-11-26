@@ -1,0 +1,47 @@
+/// A `match` over a fieldless enum whose arms read, or patch, the field named like
+/// their case is one keyed access: `prefs[key]`, `{ [key]: value }`.
+struct Prefs {
+  likes: Bool = true
+  boosts: Bool = true
+  follows: Bool = true
+}
+
+enum Key {
+  likes
+  boosts
+  follows
+}
+
+pub fn isOn(prefs: Prefs, key: Key) -> Bool {
+  match key {
+    case .likes => prefs.likes
+    case .boosts => prefs.boosts
+    case .follows => prefs.follows
+  }
+}
+
+pub fn patch(key: Key, value: Bool) -> Partial<Prefs> {
+  match key {
+    case .likes => Prefs.patch(likes: value)
+    case .boosts => Prefs.patch(boosts: value)
+    case .follows => Prefs.patch(follows: value)
+  }
+}
+
+/// An arm that reads another field: the tests stay.
+pub fn crossed(prefs: Prefs, key: Key) -> Bool {
+  match key {
+    case .likes => prefs.boosts
+    case .boosts => prefs.likes
+    case .follows => prefs.follows
+  }
+}
+
+/// Two receivers: the tests stay.
+pub fn either(a: Prefs, b: Prefs, key: Key) -> Bool {
+  match key {
+    case .likes => a.likes
+    case .boosts => b.boosts
+    case .follows => a.follows
+  }
+}

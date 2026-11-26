@@ -1,0 +1,48 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import type { Child } from "@oxy.so/bloom-language";
+
+const $view0 = Button(Text("Add"));
+export interface CounterProps {
+  readonly step?: number;
+}
+export const Counter = view(function Counter(props: CounterProps) {
+"use no memo";
+const $ = $c(13);
+const { step = 1 } = props;
+const [count, setCount] = useState<number>(0);
+const label = `Count ${count}`;
+let long: string;
+if ($[0] !== count || $[1] !== step) {
+long = `${count} of ${step} by ${count + step}`;
+$[0] = count;
+$[1] = step;
+$[2] = long;
+} else {
+long = $[2];
+}
+let banner: Child;
+if ($[3] !== label) {
+banner = Text(label);
+$[3] = label;
+$[4] = banner;
+} else {
+banner = $[4];
+}
+let $t0;
+if ($[9] !== banner || $[10] !== long || $[11] !== step) {
+$t0 = VStack(banner, ($[5] !== long ? ($[5] = long, $[6] = Text(long)) : $[6]), ($[7] !== step ? ($[7] = step, $[8] = $view0.onPress(() => {
+setCount((count) => count + (step));
+})) : $[8]));
+$[9] = banner;
+$[10] = long;
+$[11] = step;
+$[12] = $t0;
+} else {
+$t0 = $[12];
+}
+return $t0;
+});
+
