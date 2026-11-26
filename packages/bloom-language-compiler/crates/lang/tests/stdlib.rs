@@ -169,3 +169,16 @@ fn localized_strings_are_checked_against_the_catalogs() {
     let warnings: Vec<&str> = out.warnings.iter().map(|w| w.code).collect();
     assert_eq!(warnings, ["B0841"]);
 }
+
+#[test]
+fn the_reference_is_generated_from_the_sources() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../docs/bloom-stdlib.mdx");
+    let reference = stdlib::reference();
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&path, &reference).unwrap();
+    }
+    assert!(
+        std::fs::read_to_string(&path).unwrap_or_default() == reference,
+        "docs/bloom-stdlib.mdx is stale: run BLOOM_BLESS=1 cargo test -p bloom_lang --test stdlib reference"
+    );
+}

@@ -2470,7 +2470,8 @@ impl<'a> Emitter<'a> {
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
                     // An object literal (also a `.setting(…)` spread) is not a block.
-                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) || value.text.starts_with('{') {
+                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) || value.text.starts_with('{')
+                    {
                         value.wrap("(", ")")
                     } else {
                         value
