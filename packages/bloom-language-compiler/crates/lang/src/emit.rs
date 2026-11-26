@@ -497,7 +497,7 @@ impl<'a> Emitter<'a> {
                 format!("readonly [{}]", items.iter().map(|t| self.ts_type(t)).collect::<Vec<_>>().join(", "))
             }
             Ty::Option(t) => format!("{} | undefined", self.ts_operand(t)),
-            Ty::Any(def) => format!("{}$Any", self.ck.defs[*def].name),
+            Ty::Any(def) => self.ck.defs[*def].name.clone(),
             Ty::Result(a, b) => {
                 self.uses_result = true;
                 format!("$Result<{}, {}>", self.ts_type(a), self.ts_type(b))
@@ -764,7 +764,7 @@ impl<'a> Emitter<'a> {
     }
 
     /// A protocol: the TS type of its witness (`P$Witness<Self>`, a method per requirement
-    /// taking `self` first) and of its existential (`P$Any`).
+    /// taking `self` first) and of its existential (`P`, an `any P`).
     fn protocol_decl(&mut self, p: &ProtocolDecl, export: &str) -> Frag {
         let Some(def) = self.def_of(&p.name.name) else { return Frag::default() };
         let mut out = Frag::at(p.name.span, format!("{export}interface {}$Witness<Self> {{\n", p.name.name));
@@ -792,7 +792,7 @@ impl<'a> Emitter<'a> {
             out.s(&format!("  {}({params}): {ret};\n", requirement.name));
         }
         out.s(&format!(
-            "}}\n{export}type {}$Any = {{ readonly self: unknown; readonly w: {}$Witness<unknown> }};\n",
+            "}}\n{export}type {} = {{ readonly self: unknown; readonly w: {}$Witness<unknown> }};\n",
             p.name.name, p.name.name
         ));
         out

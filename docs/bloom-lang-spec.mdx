@@ -408,7 +408,7 @@ checked as such: `Identifiable` needs an `id`, `CaseIterable` an enum whose case
 (and gives `T.allCases`, in order), `Equatable` and `Hashable` a type `==` compares.
 
 `any P` is an existential, its witness passed with it, written explicitly: a `Post` passed where
-`any Titled` is expected becomes `{ self: post, w: Post$$Titled }`, and `item.title` reads
+`any Titled` is expected becomes `{ self: post, w: Post$$Titled }` (TS type `Titled`), and `item.title` reads
 `item.w.title(item.self)`. A protocol written bare as a type (`Titled`) means `any Titled`.
 
 Members and extensions (section 5) are statically dispatched: an instance member `m` of `T`

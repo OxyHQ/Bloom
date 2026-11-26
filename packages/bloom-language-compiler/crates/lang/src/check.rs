@@ -2269,11 +2269,18 @@ impl<'o> Checker<'o> {
             }
         }
         let first = self.out.defs.len();
+        let no_generics: Vec<Ident> = Vec::new();
         for item in &file.items {
             let (name, generics, kind) = match &item.kind {
                 ItemKind::Struct(s) => (&s.name, &s.generics, DefKind::Struct(Vec::new())),
                 ItemKind::Enum(e) => (&e.name, &e.generics, DefKind::Enum(Vec::new())),
+                ItemKind::Class(c) => (&c.name, &c.generics, DefKind::Struct(Vec::new())),
+                ItemKind::Protocol(p) => (&p.name, &no_generics, DefKind::Protocol(Vec::new())),
                 _ => continue,
+            };
+            let class = match &item.kind {
+                ItemKind::Class(c) => Some(ClassDef { observable: c.observable, ..ClassDef::default() }),
+                _ => None,
             };
             let def = self.out.defs.len();
             self.out.defs.push(Def {
@@ -2281,7 +2288,7 @@ impl<'o> Checker<'o> {
                 generics: generics.iter().map(|g| g.name.clone()).collect(),
                 kind,
                 origin: Origin::Bloom { specifier: specifier.to_string() },
-                class: None,
+                class,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
         }
@@ -2304,11 +2311,17 @@ impl<'o> Checker<'o> {
                     }
                 }
                 ItemKind::Enum(e) => self.enum_variants(e),
+                ItemKind::Class(c) => self.class_fields(c),
                 ItemKind::Alias(a) => {
                     let ty = self.resolve_type(&a.ty);
                     self.type_names.insert(a.name.name.clone(), TypeName::Alias(ty, a.generics.len()));
                 }
                 _ => {}
+            }
+        }
+        for item in &file.items {
+            if let ItemKind::Protocol(p) = &item.kind {
+                self.protocol_requirements(p);
             }
         }
         let _ = first;

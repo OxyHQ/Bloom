@@ -10,7 +10,7 @@ export interface Titled$Witness<Self> {
   title(self: Self): string;
   badge(self: Self, count: number): string;
 }
-export type Titled$Any = { readonly self: unknown; readonly w: Titled$Witness<unknown> };
+export type Titled = { readonly self: unknown; readonly w: Titled$Witness<unknown> };
 
 export interface Post {
   readonly id: string;
@@ -48,7 +48,7 @@ index = index + (1);
 return undefined;
 }
 
-function describe(item: Titled$Any): string {
+function describe(item: Titled): string {
 return `${item.w.id(item.self)}: ${item.w.title(item.self)}`;
 }
 
