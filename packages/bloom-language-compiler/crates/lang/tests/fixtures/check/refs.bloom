@@ -1,0 +1,10 @@
+// `@ref` is not read or written while the view draws.
+
+pub view Bad {
+  @ref count = 0
+  let doubled = count * 2
+
+  body {
+    Text("${count}")
+  }
+}
