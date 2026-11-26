@@ -5132,6 +5132,21 @@ impl<'o> Checker<'o> {
             Some(Ty::Fn(f)) => Some(f),
             _ => None,
         };
+        // A `() -> View` closure of several lines (Swift's `@ViewBuilder`): each line a child.
+        if let Some(f) = &expected_fn
+            && f.params.is_empty()
+            && !f.is_async
+            && c.params.is_empty()
+            && matches!(self.resolve(&f.ret), Ty::View(_))
+            && !matches!(c.body.as_slice(), [Stmt { kind: StmtKind::Expr(_), .. }])
+        {
+            self.builder(&c.body);
+            self.out.closures.insert(
+                c.span,
+                ClosureInfo { params: Vec::new(), is_async: false, ret: Ty::View(None), builder: true },
+            );
+            return Ty::Fn(f.clone());
+        }
         self.push();
         let mut params = Vec::new();
         let mut param_tys = Vec::new();

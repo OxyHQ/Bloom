@@ -627,7 +627,10 @@ and passed on as the binding with `$isOn`. `@Environment(\.k)` reads the built-i
 environment key named `k` that the file declares or imports, typed by the key's default: an app
 declares one at module level as `public let session = EnvironmentKey("session", default: Session.signedOut)`. A call takes more trailing closures
 after the first, each labelled on the same line (`Button { … } label: { … }`, Swift's form); they
-are labelled arguments. `Task { … }` starts async work without awaiting it (0.x `task { … }`).
+are labelled arguments. `Task { … }` starts async work without awaiting it (0.x `task { … }`). A closure passed where a
+`() -> View` is expected and written over several lines is a builder (Swift's `@ViewBuilder`):
+each line, `if` and `for` a child, compiled to the list of them, which the stack it lands in
+flattens (`let rows: () -> View` called as `rows()` in a `VStack`).
 A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
