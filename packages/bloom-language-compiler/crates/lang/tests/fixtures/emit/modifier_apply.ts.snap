@@ -8,15 +8,7 @@ import { defineModifier } from "@oxy.so/bloom-language";
 const $view0 = Text("x").modifier(card);
 export const Panel = view(function Panel() {
 "use no memo";
-const $ = $c(1);
-let $t0;
-if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t0 = $view0;
-$[0] = $t0;
-} else {
-$t0 = $[0];
-}
-return $t0;
+return $view0;
 });
 
 const $view1 = Text("y");
@@ -27,15 +19,15 @@ const Styled = view(function Styled(props: StyledProps) {
 "use no memo";
 const $ = $c(2);
 const { look = undefined } = props;
-let $t1;
+let $t0;
 if ($[0] !== look) {
-$t1 = $view1.modifier(look ?? (card satisfies ViewModifier | undefined));
+$t0 = $view1.modifier(look ?? (card satisfies ViewModifier | undefined));
 $[0] = look;
-$[1] = $t1;
+$[1] = $t0;
 } else {
-$t1 = $[1];
+$t0 = $[1];
 }
-return $t1;
+return $t0;
 });
 
 const framed = defineModifier((v) => v.padding("md").background("card"));
@@ -51,14 +43,14 @@ export const Framed = view(function Framed(props: FramedProps) {
 "use no memo";
 const $ = $c(2);
 const { look = undefined } = props;
-let $t2;
+let $t1;
 if ($[0] !== look) {
-$t2 = VStack($view2.modifier(look ?? (framed satisfies ViewModifier | undefined)), $view3);
+$t1 = VStack($view2.modifier(look ?? (framed satisfies ViewModifier | undefined)), $view3);
 $[0] = look;
-$[1] = $t2;
+$[1] = $t1;
 } else {
-$t2 = $[1];
+$t1 = $[1];
 }
-return $t2;
+return $t1;
 });
 

@@ -1,0 +1,25 @@
+
+interface Prefs {
+  readonly likes: boolean;
+  readonly boosts: boolean;
+  readonly follows: boolean;
+}
+
+type Key = "likes" | "boosts" | "follows";
+
+export function isOn(prefs: Prefs, key: Key): boolean {
+return prefs[key];
+}
+
+export function patch(key: Key, value: boolean): Partial<Prefs> {
+return ({ [key]: value } as Partial<Prefs>);
+}
+
+export function crossed(prefs: Prefs, key: Key): boolean {
+return ((key === "likes") ? prefs.boosts : (key === "boosts") ? prefs.likes : prefs.follows);
+}
+
+export function either(a: Prefs, b: Prefs, key: Key): boolean {
+return ((key === "likes") ? a.likes : (key === "boosts") ? b.boosts : a.follows);
+}
+

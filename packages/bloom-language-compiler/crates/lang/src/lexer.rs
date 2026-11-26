@@ -303,7 +303,12 @@ pub fn lex(source: &str, start: usize, end: usize) -> Lexed {
         text: source,
         pos: start,
         end,
-        out: Lexed { tokens: Vec::new(), comments: Vec::new(), diagnostics: Vec::new() },
+        // About one token per four bytes of source: the vector is sized once, not grown.
+        out: Lexed {
+            tokens: Vec::with_capacity((end - start) / 4 + 8),
+            comments: Vec::new(),
+            diagnostics: Vec::new(),
+        },
     };
     lexer.run();
     let mut lexed = lexer.out;

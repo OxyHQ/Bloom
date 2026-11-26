@@ -56,9 +56,21 @@ impl Frag {
     }
 
     fn f(&mut self, other: Frag) -> &mut Self {
+        // Most fragments start empty: the first piece is moved in, not copied.
+        if self.text.is_empty() && self.marks.is_empty() {
+            *self = other;
+            return self;
+        }
         let base = self.text.len() as u32;
         self.marks.extend(other.marks.into_iter().map(|(g, s)| (g + base, s)));
         self.text.push_str(&other.text);
+        self
+    }
+
+    /// Room for `lines`, one per line: a block is built with one allocation, not one per line.
+    fn reserve_lines(&mut self, lines: &[Frag]) -> &mut Self {
+        self.text.reserve(lines.iter().map(|l| l.text.len() + 1).sum::<usize>() + 2);
+        self.marks.reserve(lines.iter().map(|l| l.marks.len()).sum());
         self
     }
 
@@ -68,21 +80,31 @@ impl Frag {
     }
 
     fn join(items: Vec<Frag>, sep: &str) -> Frag {
-        let mut out = Frag::default();
+        let len = items.iter().map(|i| i.text.len()).sum::<usize>() + sep.len() * items.len();
+        let marks = items.iter().map(|i| i.marks.len()).sum();
+        let mut out = Frag { text: String::with_capacity(len), marks: Vec::with_capacity(marks) };
         for (i, item) in items.into_iter().enumerate() {
             if i > 0 {
                 out.s(sep);
             }
-            out.f(item);
+            let base = out.text.len() as u32;
+            out.marks.extend(item.marks.into_iter().map(|(g, s)| (g + base, s)));
+            out.text.push_str(&item.text);
         }
         out
     }
 
-    fn wrap(mut self, open: &str, close: &str) -> Frag {
-        let mut out = Frag::of(open);
-        out.f(std::mem::take(&mut self));
-        out.s(close);
-        out
+    fn wrap(self, open: &str, close: &str) -> Frag {
+        let mut text = String::with_capacity(open.len() + self.text.len() + close.len());
+        text.push_str(open);
+        text.push_str(&self.text);
+        text.push_str(close);
+        let base = open.len() as u32;
+        let mut marks = self.marks;
+        for mark in &mut marks {
+            mark.0 += base;
+        }
+        Frag { text, marks }
     }
 }
 
@@ -205,6 +227,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     }
     let mut code = Frag::default();
     code.f(emitter.header());
+    code.text.reserve(body.text.len() + items.text.len() + 512);
+    code.marks.reserve(body.marks.len() + items.marks.len());
     code.f(body);
     if emitter.uses_key_path {
         code.s(KEY_PATH);
@@ -770,6 +794,7 @@ impl<'a> Emitter<'a> {
         self.stmts(stmts, tail, signal);
         let lines = self.bufs.pop().expect("the block's buffer");
         let mut out = Frag::of("{\n");
+        out.reserve_lines(&lines);
         for line in lines {
             out.f(line).s("\n");
         }
@@ -1882,6 +1907,9 @@ impl<'a> Emitter<'a> {
     }
 
     fn match_value(&mut self, expr: &Expr, m: &MatchExpr) -> Frag {
+        if let Some(keyed) = self.keyed_match(expr, m) {
+            return keyed;
+        }
         if self.simple_match(m) {
             let subject = self.expr(&m.scrutinee).text;
             let mut choices = Vec::new();
@@ -1914,6 +1942,79 @@ impl<'a> Emitter<'a> {
         self.push_stmt(Frag::of(format!("let {name}: {ts};")));
         self.match_stmt(m, &Tail::Bind(name.clone()));
         Frag::of(name)
+    }
+
+    /// A `match` over a fieldless Bloom enum whose every arm reads, or patches, the field named
+    /// like its case: `case .likes => prefs.likes` for each case is `prefs[key]`, and
+    /// `case .likes => Prefs.patch(likes: v)` is `{ [key]: v }`. A Bloom enum's runtime value is
+    /// its case's name, so the key is the field: one lookup instead of a test per case.
+    fn keyed_match(&mut self, expr: &Expr, m: &MatchExpr) -> Option<Frag> {
+        if !is_path(&m.scrutinee) {
+            return None;
+        }
+        let Some(Ty::Adt(def, _)) = self.ck.types.get(&m.scrutinee.id) else { return None };
+        let d = &self.ck.defs[*def];
+        let cases = d.variants().len();
+        if !d.is_fieldless()
+            || matches!(d.origin, Origin::Ts { .. } | Origin::Record)
+            || m.arms.len() != cases
+        {
+            return None;
+        }
+        // Per arm, the case and what it reads the field of (`Read`) or patches it with (`Patch`).
+        let mut read: Option<&Expr> = None;
+        let mut patch: Option<(DefId, &Expr)> = None;
+        let mut seen = HashSet::default();
+        for arm in &m.arms {
+            let (PatternKind::Case { name, args: None, .. }, None, ArmBody::Expr(body)) =
+                (&arm.pattern.kind, &arm.guard, &arm.body)
+            else {
+                return None;
+            };
+            let case = name.name.as_str();
+            if js_name(case) != case || !seen.insert(case) {
+                return None;
+            }
+            match &body.kind {
+                ExprKind::Field(object, field)
+                    if field.name == case
+                        && is_path(object)
+                        && matches!(self.ck.fields.get(&body.id), Some(FieldRes::Field))
+                        && patch.is_none() =>
+                {
+                    match read {
+                        Some(first) if !same_path(first, object) => return None,
+                        _ => read = Some(object),
+                    }
+                }
+                ExprKind::Call(call) if read.is_none() => {
+                    let Some(CallRes::Partial(target)) = self.ck.calls.get(&body.id) else { return None };
+                    let ([arg], None) = (call.args.as_slice(), &call.trailing) else { return None };
+                    if arg.spread || arg.label.as_ref().is_none_or(|l| l.name != case) || !is_path(&arg.value)
+                    {
+                        return None;
+                    }
+                    match patch {
+                        Some((first_def, first)) if first_def != *target || !same_path(first, &arg.value) => {
+                            return None;
+                        }
+                        _ => patch = Some((*target, &arg.value)),
+                    }
+                }
+                _ => return None,
+            }
+        }
+        let key = self.expr(&m.scrutinee);
+        if let Some(object) = read {
+            let mut out = self.expr(object);
+            out.s("[").f(key).s("]");
+            return Some(out);
+        }
+        let (_, value) = patch?;
+        let ts = self.ts_type(&self.expr_ty(expr));
+        let mut out = Frag::of("({ [");
+        out.f(key).s("]: ").f(self.expr(value)).s(&format!(" }} as {ts})"));
+        Some(out)
     }
 
     /// A closure; one that reads nothing of its view or function is a module constant.
@@ -3131,6 +3232,17 @@ fn is_path(expr: &Expr) -> bool {
     }
 }
 
+/// Whether two paths (`a`, `a.b`) name the same value: the same names, field by field.
+fn same_path(a: &Expr, b: &Expr) -> bool {
+    match (&a.kind, &b.kind) {
+        (ExprKind::Paren(a), _) => same_path(a, b),
+        (_, ExprKind::Paren(b)) => same_path(a, b),
+        (ExprKind::Name(x), ExprKind::Name(y)) => x == y,
+        (ExprKind::Field(a, x), ExprKind::Field(b, y)) => x.name == y.name && same_path(a, b),
+        _ => false,
+    }
+}
+
 fn binds(pattern: &Pattern) -> bool {
     match &pattern.kind {
         PatternKind::Bind(_) => true,
@@ -3403,8 +3515,11 @@ impl<'a> Emitter<'a> {
     /// other dependencies change.
     fn scoped_child(&mut self, expr: &Expr) -> Frag {
         let Some(parent) = self.scope.clone() else { return self.child(expr) };
-        // A conditional keeps its slot; its branches are cached on their own.
-        if matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_)) || self.reads_body_local(expr) {
+        // A conditional keeps its slot; its branches are cached on their own. A name is
+        // already one value (a member `let` is cached where it is defined): no slot of its own.
+        if matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_) | ExprKind::Name(_))
+            || self.reads_body_local(expr)
+        {
             return self.child(expr);
         }
         if self.hoistable(expr) {
@@ -3764,10 +3879,17 @@ impl<'a> Emitter<'a> {
         self.scope = None;
         self.body_span = None;
         let prelude = self.bufs.pop().expect("the body");
-        let tree = self.temp();
-        let memo = self.memo(&tree, None, &deps, prelude, value);
-        self.push_stmt(memo);
-        self.push_stmt(Frag::of(format!("return {tree};")));
+        if deps.is_empty() && prelude.is_empty() && is_ident(&value.text) {
+            // A body that is a hoisted tree (or a module constant) is already one value: no cache.
+            let mut line = Frag::of("return ");
+            line.f(value).s(";");
+            self.push_stmt(line);
+        } else {
+            let tree = self.temp();
+            let memo = self.memo(&tree, None, &deps, prelude, value);
+            self.push_stmt(memo);
+            self.push_stmt(Frag::of(format!("return {tree};")));
+        }
         let lines = self.bufs.pop().expect("the view");
         let slots = self.view.take().expect("the view").slots;
         let mut body = Frag::of("\"use no memo\";\n");
@@ -3775,6 +3897,7 @@ impl<'a> Emitter<'a> {
             self.import_name("react/compiler-runtime", "c");
             body.s(&format!("const $ = $c({slots});\n"));
         }
+        body.reserve_lines(&lines);
         for line in lines {
             body.f(line).s("\n");
         }
@@ -3859,6 +3982,7 @@ impl<'a> Emitter<'a> {
         }
         let lines = self.bufs.pop().expect("the effect");
         let mut out = Frag::at(e.keyword, "useEffect(() => {\n");
+        out.reserve_lines(&lines);
         for line in lines {
             out.f(line).s("\n");
         }
@@ -4324,22 +4448,26 @@ impl<'a> Emitter<'a> {
     }
 }
 
-/// A value cheap enough to recompute on every render: a name, a field, a literal, `!x`.
+/// A value cheap enough to recompute on every render: a name, a field, a literal, `!x`, and
+/// a string of those (`"Count ${count}"`): a short concatenation costs less than the cache's
+/// test and stores, and a string is compared by value, so caching it keeps no identity.
 fn trivial(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::Name(_) | ExprKind::Int(_) | ExprKind::Float(_) | ExprKind::Bool(_) | ExprKind::None => {
             true
         }
-        ExprKind::Str { parts, .. } => parts.iter().all(|p| matches!(p, StrPart::Text(_))),
+        ExprKind::Str { parts, .. } => {
+            parts.iter().filter(|p| matches!(p, StrPart::Interp(_))).count() <= 2
+                && parts.iter().all(|p| match p {
+                    StrPart::Text(_) => true,
+                    StrPart::Interp(e) => trivial(e),
+                })
+        }
         ExprKind::Field(inner, _)
         | ExprKind::OptField(inner, _)
         | ExprKind::Paren(inner)
         | ExprKind::Unary(_, inner) => trivial(inner),
-        ExprKind::Binary(op, a, b)
-            if !matches!(op, BinaryOp::Add) || !matches!(a.kind, ExprKind::Str { .. }) =>
-        {
-            trivial(a) && trivial(b)
-        }
+        ExprKind::Binary(_, a, b) => trivial(a) && trivial(b),
         _ => false,
     }
 }

@@ -143,15 +143,7 @@ return $t4;
 const $view2 = Text("a");
 export const Badge = view(function Badge() {
 "use no memo";
-const $ = $c(1);
-let $t5;
-if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t5 = $view2;
-$[0] = $t5;
-} else {
-$t5 = $[0];
-}
-return $t5;
+return $view2;
 });
 export default Badge;
 
