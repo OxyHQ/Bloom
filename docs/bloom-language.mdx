@@ -1006,6 +1006,11 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
     ));
   RawText('Hi ', mention('bob'), ', see ', Text('oxy.so').foreground('primary').onPress(open))
   ```
+
+  A root placed as the child of such an element from JSX (`<Link href={h}
+  asChild>{toElement(Text(time).foreground('muted'))}</Link>`) takes the props
+  the same way: the root hands them to its outermost host, both presses run
+  (the view's first) and the styles stack, as they do on a JSX child.
 - **Raw text.** `RawText(...runs)` is React Native's own `Text`, not Bloom's:
   it writes only what its chain names, so a text that names no family draws
   the platform face (Roboto on Android, San Francisco on iOS,

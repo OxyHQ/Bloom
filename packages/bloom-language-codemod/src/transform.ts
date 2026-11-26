@@ -5149,6 +5149,14 @@ export function transformSource(source: string, options: TransformOptions): File
     });
   };
 
+  /** The holders of what a converted region carries (an embedded element), each visited on its own. */
+  const carriedHolders = new WeakSet<AnyNode>();
+  /** Whether `path` sits in what a converted region carries: inside the view it becomes. */
+  const carried = (path: AnyNode): boolean => {
+    for (let at = path; at; at = at.parent) if (carriedHolders.has(at.node)) return true;
+    return false;
+  };
+
   const visitor = {
     visitJSXElement(this: AnyNode, path: AnyNode): false | undefined {
       const node = path.node;
@@ -5163,15 +5171,18 @@ export function transformSource(source: string, options: TransformOptions): File
         this.traverse(path);
         return undefined;
       }
-      // An `asChild` element hands the one element inside it its own props (an href, a press):
-      // a root there would take them in place of the element's host, and drop them. (A Screen
-      // whose route draws its wrappers as screen modifiers, a colour scope among them, takes them.)
+      // An `asChild` element hands the one element inside it its own props (an href, a press).
+      // Its own root takes them on its outermost host, as the JSX child did; inside an element the
+      // codemod may convert (a text's run), the form is `Embed((render) => …)` (`renderAsChild`), so
+      // a child it could not hand that way (a file that names `render`) stays JSX rather than
+      // become a root of its own inside the view.
       const holder = path.parent?.node;
       if (
         n.JSXElement.check(holder) &&
         isAsChild(holder) &&
         onlyElementChild(holder) === node &&
-        !screenOuter.has(node)
+        !screenOuter.has(node) &&
+        carried(path)
       ) {
         if (elementOf(node))
           unconverted.push({
@@ -5181,7 +5192,7 @@ export function transformSource(source: string, options: TransformOptions): File
               {
                 subject: jsxName(node) ?? 'element',
                 code: 'as-child',
-                why: 'the child of an `asChild` element, which hands it its own props: a root would drop them (a text inside a language view is `Embed((render) => …)`)',
+                why: 'the child of an `asChild` element inside a view: it is `Embed((render) => …)` there, which this file cannot write (it names `render`)',
               },
             ],
           });
@@ -5215,6 +5226,7 @@ export function transformSource(source: string, options: TransformOptions): File
         if (c.hole === 'element' || c.hole === 'items') {
           // An element can sit at the root of what is carried; visit inside it.
           const holder = { type: 'ExpressionStatement', expression: c.node };
+          carriedHolders.add(holder);
           recast.visit(holder, visitor);
           c.node.__carried = holder.expression;
         }
