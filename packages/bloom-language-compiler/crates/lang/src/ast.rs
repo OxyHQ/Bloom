@@ -173,6 +173,8 @@ pub struct FnDecl {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Param {
     pub name: Ident,
+    /// `..name: [T]`: a rest parameter, the last one; it takes any number of `T`.
+    pub rest: bool,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,
@@ -502,7 +504,7 @@ pub fn record_call(span: Span, entries: &[RecordEntry]) -> Call {
         })
         .collect();
     let callee = Expr { id: ExprId(u32::MAX), kind: ExprKind::Name(String::new()), span };
-    Call { callee: Box::new(callee), args, parens: true, trailing: None }
+    Call { callee: Box::new(callee), args, parens: true, trailing: None, optional: false }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -512,6 +514,8 @@ pub struct Call {
     /// Whether the arguments were written in parentheses (`f()` or `f { … }`).
     pub parens: bool,
     pub trailing: Option<Box<Closure>>,
+    /// `f?.(…)`: called only when the callee is not `none`.
+    pub optional: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
