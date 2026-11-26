@@ -4480,8 +4480,9 @@ struct Signatures {
 
 thread_local! {
     /// Imported `.bloom` modules, by path and the specifier their types are imported by.
-    static MODULES: std::cell::RefCell<HashMap<(PathBuf, String), Rc<Signatures>>> =
-        std::cell::RefCell::new(HashMap::default());
+    /// Never dropped: see [`ts::ThreadCache`].
+    static MODULES: ts::ThreadCache<HashMap<(PathBuf, String), Rc<Signatures>>> =
+        ts::thread_cache(HashMap::default());
 }
 
 /// Forgets the imported modules read from `path` (or every one).
