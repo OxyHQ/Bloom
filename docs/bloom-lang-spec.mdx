@@ -222,7 +222,9 @@ promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if le
   closure (B0402), so no closure observes a mutation.
 - Equality `==` is defined on `Int`, `Float`, `Bool`, `String`, fieldless enums and `none`
   checks; on structs and payload enums it is structural and compiled to a field comparison
-  (phase 1; phase 0 rejects it with B0210).
+  (phase 1; phase 0 rejects it with B0210). `x == none` / `x != none` tests presence on any
+  optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
+  Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
 
 ### 4.4 Structs

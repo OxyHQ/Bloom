@@ -52,3 +52,15 @@ const $t0 = { x: 0, y: 0 };
 return p.x === $t0.x && p.y === $t0.y;
 }
 
+function present(onPress: (() => void) | undefined): boolean {
+return onPress !== undefined;
+}
+
+function sameId(a: number, b: number | undefined): boolean {
+return a === b;
+}
+
+function samePointMaybe(a: Point, b: Point | undefined): boolean {
+return a === undefined || b === undefined ? a === b : a.x === b.x && a.y === b.y;
+}
+

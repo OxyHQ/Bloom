@@ -53,3 +53,16 @@ fn sameTree(a: Tree, b: Tree) -> Bool {
 fn isOrigin(p: Point) -> Bool {
   p == Point(x: 0, y: 0)
 }
+
+// `x != none` tests presence, whatever `x` holds; `T == T?` compares as optionals.
+fn present(onPress: (() -> Unit)?) -> Bool {
+  onPress != none
+}
+
+fn sameId(a: Int, b: Int?) -> Bool {
+  a == b
+}
+
+fn samePointMaybe(a: Point, b: Point?) -> Bool {
+  a == b
+}
