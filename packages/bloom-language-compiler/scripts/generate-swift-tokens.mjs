@@ -25,7 +25,13 @@ export function swiftName(token) {
 /** SwiftUI's names for a set's tokens, where they differ: `HStack(alignment: .top)` aligns
  * the children's starts (cross-axis), as `.leading` does in a `VStack`. */
 const ALIASES = {
-  alignment: { top: 'start', leading: 'start', bottom: 'end', trailing: 'end', firstTextBaseline: 'baseline' },
+  alignment: {
+    top: 'start',
+    leading: 'start',
+    bottom: 'end',
+    trailing: 'end',
+    firstTextBaseline: 'baseline',
+  },
 };
 
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
