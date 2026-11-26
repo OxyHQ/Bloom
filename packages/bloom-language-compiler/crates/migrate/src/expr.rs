@@ -829,6 +829,26 @@ impl Tr<'_> {
     }
 
     pub fn call(&mut self, call: &CallExpression) -> String {
+        let ts = self.ts_callee(&call.callee);
+        let saved = std::mem::replace(&mut self.ts_args, ts);
+        let text = self.call_inner(call);
+        self.ts_args = saved;
+        text
+    }
+
+    /// Whether `callee` is a TS import's (or a member of one): not the language's or React's.
+    fn ts_callee(&self, callee: &Expression) -> bool {
+        let mut root = callee;
+        while let Expression::StaticMemberExpression(m) = root {
+            root = &m.object;
+        }
+        matches!(root, Expression::Identifier(id)
+            if self.imported.contains(id.name.as_str())
+                && !self.lang.contains_key(id.name.as_str())
+                && !self.react.contains_key(id.name.as_str()))
+    }
+
+    fn call_inner(&mut self, call: &CallExpression) -> String {
         // `Math.max(a, b)` and kin are the prelude's typed `max(a, b)`; `Array.isArray(x)` is `x is [Foreign]`.
         if let Expression::StaticMemberExpression(m) = &call.callee
             && let Expression::Identifier(object) = &m.object
@@ -1494,11 +1514,15 @@ impl Tr<'_> {
 
     pub fn closure(&mut self, arrow: &ArrowFunctionExpression) -> String {
         let head = std::mem::replace(&mut self.head, false);
-        let propagate = std::mem::replace(&mut self.propagate, false);
+        // An async closure TS calls: a rejection of what it awaits rejects its promise,
+        // as TS's did (`let page = await api.list()?`).
+        let ts = std::mem::replace(&mut self.ts_args, false);
+        let propagate = std::mem::replace(&mut self.propagate, ts && arrow.r#async);
         let returning = std::mem::replace(&mut self.try_return, false);
         self.closures += 1;
         let text = self.closure_inner(arrow);
         self.closures -= 1;
+        self.ts_args = ts;
         self.head = head;
         self.propagate = propagate;
         self.try_return = returning;

@@ -126,8 +126,11 @@ pub struct Tr<'s> {
     pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
     pub try_return: bool,
-    /// How many closures the statement is in: a `throw` in one is `fail(e)`.
+    /// How many closures the statement is in: a `throw` in one is `err(e)?`.
     pub closures: u32,
+    /// Translating the arguments of a call to a TS import (`useMutation({ mutationFn })`):
+    /// an async closure among them is one TS calls, whose `await`s reject with `?`.
+    pub ts_args: bool,
     /// TS imports named like a Bloom node (`Button` from `@oxy.so/bloom/button`,
     /// `ScrollView` from `react-native`): imported under another name, since in
     /// `.bloom` the node's name is the node.
@@ -348,6 +351,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         pairs: false,
         try_return: false,
         closures: 0,
+        ts_args: false,
         head: false,
         loop_block: false,
         hook_fn: false,

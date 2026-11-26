@@ -906,8 +906,10 @@ impl Tr<'_> {
             }
             other => return self.refuse("destructure", "a destructuring pattern", other.span()),
         };
-        let value = self.expr(init);
+        // The pattern's defaults before its value: a declaration in a closure there
+        // takes its own.
         let defaults = std::mem::take(&mut self.pattern_defaults);
+        let value = self.expr(init);
         let mut out = format!("{keyword} {pattern}{ty} = {value}");
         for line in defaults {
             out.push('\n');
@@ -1587,13 +1589,15 @@ impl Tr<'_> {
                 format!("for {item} in {list} {{\n{body}\n}}")
             }
             Statement::TryStatement(t) => self.try_stmt(t, false),
-            // In a `Result` closure (a `try` written as one): its error. In a closure
+            // In a `Result` closure (a `try` written as one): its error. In `catching` or a closure
             // TS calls (`mutationFn`, `queryFn`): `err(e)?`, which throws there (spec
             // 4.5; bloomc checks that TS calls it). The prelude's `fail(e)` replaces it.
-            Statement::ThrowStatement(t) if self.propagate => {
+            Statement::ThrowStatement(t) if self.try_return => {
                 format!("return err({})", self.expr(&t.argument))
             }
-            Statement::ThrowStatement(t) if self.closures > 0 => format!("err({})?", self.expr(&t.argument)),
+            Statement::ThrowStatement(t) if self.propagate || self.closures > 0 => {
+                format!("err({})?", self.expr(&t.argument))
+            }
             Statement::ThrowStatement(t) => {
                 self.refuse("statement:throw", "`throw` outside a closure (return a `Result`)", t.span)
             }
