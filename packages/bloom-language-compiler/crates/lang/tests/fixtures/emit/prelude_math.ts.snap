@@ -20,3 +20,9 @@ function ratio(text: string): number {
 return $toFloat(text) ?? 1.0;
 }
 
+function query(text: string): string {
+const encoded: string = (encodeURIComponent(text) satisfies string);
+const payload: string = (JSON.stringify(text) satisfies string);
+return `q=${encoded}&b=${payload}`;
+}
+

@@ -426,6 +426,8 @@ impl<'a> Emitter<'a> {
             "bloom/data" => DATA,
             "bloom/router" => ROUTER,
             "bloom/motion" => LANGUAGE,
+            // JS's own globals: named in the file, imported from nowhere.
+            "js" => return Frag::default(),
             other => other,
         };
         let mut out = Frag::at(import.span, "import ");
