@@ -127,7 +127,7 @@
     },
     "packages/bloom-language": {
       "name": "@oxy.so/bloom-language",
-      "version": "1.7.0",
+      "version": "2.0.0",
       "peerDependencies": {
         "@expo/ui": ">=58.0.0",
         "@oxy.so/bloom": ">=23.9.1",
@@ -150,7 +150,7 @@
     },
     "packages/bloom-language-codemod": {
       "name": "@oxy.so/bloom-language-codemod",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "bin": {
         "bloom-language-codemod": "lib/cli.js",
       },
