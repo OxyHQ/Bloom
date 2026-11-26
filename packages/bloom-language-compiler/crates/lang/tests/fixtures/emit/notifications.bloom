@@ -68,7 +68,7 @@ screen NotificationSettings {
                 t("settings.notifications.push", defaultValue: "Push notifications"),
                 t("settings.notifications.pushDesc", defaultValue: "Receive push notifications on your device"),
                 isOn: prefs.pushEnabled,
-              ) { v in save(Partial<NotificationPreferences>(pushEnabled: v)) }
+              ) { v in task { await save(NotificationPreferences.patch(pushEnabled: v)) } }
             }
           }
           SettingsSection(t("settings.notifications.sections.activity", defaultValue: "Activity from others")) {
@@ -89,22 +89,22 @@ screen NotificationSettings {
           SettingsSection(t("settings.notifications.sections.types", defaultValue: "Notification types")) {
             GroupedSection {
               toggleRow(t("settings.notifications.likes", defaultValue: "Likes"), t("settings.notifications.likesDesc", defaultValue: "When someone likes your post"), isOn: prefs.likes) { v in
-                save(Partial<NotificationPreferences>(likes: v))
+                task { await save(NotificationPreferences.patch(likes: v)) }
               }
               toggleRow(t("settings.notifications.boosts", defaultValue: "Boosts"), t("settings.notifications.boostsDesc", defaultValue: "When someone boosts your post"), isOn: prefs.boosts) { v in
-                save(Partial<NotificationPreferences>(boosts: v))
+                task { await save(NotificationPreferences.patch(boosts: v)) }
               }
               toggleRow(t("settings.notifications.follows", defaultValue: "New followers"), t("settings.notifications.followsDesc", defaultValue: "When someone follows you"), isOn: prefs.follows) { v in
-                save(Partial<NotificationPreferences>(follows: v))
+                task { await save(NotificationPreferences.patch(follows: v)) }
               }
               toggleRow(t("settings.notifications.mentions", defaultValue: "Mentions"), t("settings.notifications.mentionsDesc", defaultValue: "When someone mentions you in a post"), isOn: prefs.mentions) { v in
-                save(Partial<NotificationPreferences>(mentions: v))
+                task { await save(NotificationPreferences.patch(mentions: v)) }
               }
               toggleRow(t("settings.notifications.replies", defaultValue: "Replies"), t("settings.notifications.repliesDesc", defaultValue: "When someone replies to your post"), isOn: prefs.replies) { v in
-                save(Partial<NotificationPreferences>(replies: v))
+                task { await save(NotificationPreferences.patch(replies: v)) }
               }
               toggleRow(t("settings.notifications.quotes", defaultValue: "Quote posts"), t("settings.notifications.quotesDesc", defaultValue: "When someone quotes your post"), isOn: prefs.quotes) { v in
-                save(Partial<NotificationPreferences>(quotes: v))
+                task { await save(NotificationPreferences.patch(quotes: v)) }
               }
             }
           }

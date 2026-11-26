@@ -491,7 +491,14 @@ pub fn resolve(from: &Path, specifier: &str, options: &Options) -> Option<PathBu
         return with_extensions(&dir.join(specifier));
     }
     let root = options.root.clone().unwrap_or_else(|| dir.to_path_buf());
-    for (pattern, targets) in &options.paths {
+    let configured;
+    let paths: Vec<(&String, &Vec<String>)> = if options.paths.is_empty() {
+        configured = tsconfig_paths(&root);
+        configured.iter().map(|(k, v)| (k, v)).collect()
+    } else {
+        options.paths.iter().collect()
+    };
+    for (pattern, targets) in paths {
         let rest = match pattern.strip_suffix('*') {
             Some(prefix) => specifier.strip_prefix(prefix),
             None => (pattern == specifier).then_some(""),
@@ -520,6 +527,42 @@ pub fn resolve(from: &Path, specifier: &str, options: &Options) -> Option<PathBu
         }
     }
     None
+}
+
+/// A `paths` map: each pattern with its targets.
+type Paths = Rc<Vec<(String, Vec<String>)>>;
+
+thread_local! {
+    static TSCONFIG: RefCell<HashMap<PathBuf, Paths>> = RefCell::new(HashMap::new());
+}
+
+/// `compilerOptions.paths` of the root's `tsconfig.json`, targets joined to its `baseUrl`;
+/// read without a JSON parser (keys and string arrays only).
+fn tsconfig_paths(root: &Path) -> Paths {
+    if let Some(found) = TSCONFIG.with(|c| c.borrow().get(root).cloned()) {
+        return found;
+    }
+    let text = std::fs::read_to_string(root.join("tsconfig.json")).unwrap_or_default();
+    let base = json_field(&text, "baseUrl").unwrap_or(".").to_string();
+    let mut out = Vec::new();
+    if let Some(at) = text.find("\"paths\"") {
+        let rest = &text[at + 7..];
+        if let (Some(open), Some(close)) = (rest.find('{'), rest.find('}')) {
+            let body = &rest[open + 1..close.max(open + 1)];
+            for entry in body.split(']') {
+                let mut strings = entry.split('"').skip(1).step_by(2);
+                if let Some(key) = strings.next() {
+                    let targets: Vec<String> = strings.map(|t| format!("{base}/{t}")).collect();
+                    if !targets.is_empty() {
+                        out.push((key.to_string(), targets));
+                    }
+                }
+            }
+        }
+    }
+    let out = Rc::new(out);
+    TSCONFIG.with(|c| c.borrow_mut().insert(root.to_path_buf(), out.clone()));
+    out
 }
 
 fn split_package(specifier: &str) -> (&str, &str) {

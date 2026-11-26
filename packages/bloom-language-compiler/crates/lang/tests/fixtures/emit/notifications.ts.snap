@@ -56,19 +56,18 @@ export default screen(function NotificationSettings() {
 	const auth = useAuth();
 	const section = useViewerSettingsSection("notificationPreferences");
 	const [saving, setSaving] = useState<boolean>(false);
-	const stored: Partial<NotificationPreferences> | undefined = section.value;
-	const loading: boolean = section.isLoading;
+	const stored: Partial<NotificationPreferences> | undefined = section.value satisfies Partial<NotificationPreferences> | undefined;
+	const loading: boolean = section.isLoading satisfies boolean;
 	let prefs: NotificationPreferences;
 	if ($[0] !== stored) {
 		prefs = {
-			pushEnabled: true,
-			likes: true,
-			boosts: true,
-			follows: true,
-			mentions: true,
-			replies: true,
-			quotes: true,
-			...stored
+			pushEnabled: stored?.pushEnabled ?? true,
+			likes: stored?.likes ?? true,
+			boosts: stored?.boosts ?? true,
+			follows: stored?.follows ?? true,
+			mentions: stored?.mentions ?? true,
+			replies: stored?.replies ?? true,
+			quotes: stored?.quotes ?? true
 		};
 		$[0] = stored;
 		$[1] = prefs;
@@ -98,7 +97,21 @@ export default screen(function NotificationSettings() {
 		$t1 = auth.isPrivateApiPending || loading ? VStack(Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>))).spacing("lg") : !auth.canUsePrivateApi ? VStack(Embed($jsx(OxyAuthPrompt, {
 			label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }),
 			description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." })
-		} satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg") : VStack(saving ? _bloomStatic0 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => save({ pushEnabled: v })))), SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(Text(t("common.open", { defaultValue: "Open" }))).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" }))))), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => save({ likes: v })), toggleRow(t("settings.notifications.boosts", { defaultValue: "Boosts" }), t("settings.notifications.boostsDesc", { defaultValue: "When someone boosts your post" }), prefs.boosts, (v: boolean) => save({ boosts: v })), toggleRow(t("settings.notifications.follows", { defaultValue: "New followers" }), t("settings.notifications.followsDesc", { defaultValue: "When someone follows you" }), prefs.follows, (v: boolean) => save({ follows: v })), toggleRow(t("settings.notifications.mentions", { defaultValue: "Mentions" }), t("settings.notifications.mentionsDesc", { defaultValue: "When someone mentions you in a post" }), prefs.mentions, (v: boolean) => save({ mentions: v })), toggleRow(t("settings.notifications.replies", { defaultValue: "Replies" }), t("settings.notifications.repliesDesc", { defaultValue: "When someone replies to your post" }), prefs.replies, (v: boolean) => save({ replies: v })), toggleRow(t("settings.notifications.quotes", { defaultValue: "Quote posts" }), t("settings.notifications.quotesDesc", { defaultValue: "When someone quotes your post" }), prefs.quotes, (v: boolean) => save({ quotes: v }))))).spacing("lg")).spacing("lg");
+		} satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg") : VStack(saving ? _bloomStatic0 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => void (async () => {
+			await save({ pushEnabled: v });
+		})()))), SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(Text(t("common.open", { defaultValue: "Open" }))).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" }))))), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => void (async () => {
+			await save({ likes: v });
+		})()), toggleRow(t("settings.notifications.boosts", { defaultValue: "Boosts" }), t("settings.notifications.boostsDesc", { defaultValue: "When someone boosts your post" }), prefs.boosts, (v: boolean) => void (async () => {
+			await save({ boosts: v });
+		})()), toggleRow(t("settings.notifications.follows", { defaultValue: "New followers" }), t("settings.notifications.followsDesc", { defaultValue: "When someone follows you" }), prefs.follows, (v: boolean) => void (async () => {
+			await save({ follows: v });
+		})()), toggleRow(t("settings.notifications.mentions", { defaultValue: "Mentions" }), t("settings.notifications.mentionsDesc", { defaultValue: "When someone mentions you in a post" }), prefs.mentions, (v: boolean) => void (async () => {
+			await save({ mentions: v });
+		})()), toggleRow(t("settings.notifications.replies", { defaultValue: "Replies" }), t("settings.notifications.repliesDesc", { defaultValue: "When someone replies to your post" }), prefs.replies, (v: boolean) => void (async () => {
+			await save({ replies: v });
+		})()), toggleRow(t("settings.notifications.quotes", { defaultValue: "Quote posts" }), t("settings.notifications.quotesDesc", { defaultValue: "When someone quotes your post" }), prefs.quotes, (v: boolean) => void (async () => {
+			await save({ quotes: v });
+		})())))).spacing("lg")).spacing("lg");
 		$[5] = auth;
 		$[6] = loading;
 		$[7] = t;

@@ -235,12 +235,37 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     /// Skips to the end of the line (or the `}` closing the current block),
     /// over balanced brackets.
+    /// Whether the current token is the first of its line.
+    fn at_line_start(&self) -> bool {
+        let start = self.span().start as usize;
+        let before = self.prev_end() as usize;
+        before == 0 || self.source.get(before.min(start)..start).is_some_and(|between| between.contains('\n'))
+    }
+
     fn recover_line(&mut self) {
         let mut depth = 0usize;
         loop {
             match self.tok() {
                 Tok::Eof => break,
                 Tok::Newline | Tok::P(P::Semi) if depth == 0 => break,
+                // A line that ended in `=` lost its break: a member or statement keyword
+                // at the start of a line is where the next one starts.
+                Tok::Kw(
+                    Kw::Body
+                    | Kw::Let
+                    | Kw::Var
+                    | Kw::Fn
+                    | Kw::Async
+                    | Kw::Return
+                    | Kw::For
+                    | Kw::While
+                    | Kw::Defer,
+                )
+                | Tok::P(P::At)
+                    if depth == 0 && self.at_line_start() =>
+                {
+                    break;
+                }
                 Tok::P(P::LParen | P::LBracket | P::LBrace) => depth += 1,
                 Tok::P(P::RParen | P::RBracket) => depth = depth.saturating_sub(1),
                 Tok::P(P::RBrace) => {
@@ -426,7 +451,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut visibility = Visibility::Private;
         if self.eat_kw(Kw::Pub) {
             visibility = Visibility::Pub;
-            if matches!(self.tok(), Tok::Ident(name) if name == "default") {
+            if self.at_kw(Kw::Default) {
                 self.bump();
                 visibility = Visibility::PubDefault;
             }
@@ -946,6 +971,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                     Some(self.expr(Ctx::Normal))
                 };
                 StmtKind::Return(value)
+            }
+            Tok::Kw(Kw::Defer) => {
+                self.bump();
+                StmtKind::Defer(self.block())
             }
             Tok::Kw(Kw::While) => {
                 self.bump();
@@ -1531,6 +1560,9 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 self.expect_close(P::RParen, open);
                 let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                if items.is_empty() {
+                    return self.expr_node(ExprKind::Unit, span);
+                }
                 if items.len() == 1 && !trailing_comma {
                     let inner = items.pop().expect("one");
                     return self.expr_node(ExprKind::Paren(Box::new(inner)), span);
@@ -1581,6 +1613,12 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::If) => self.if_expr(),
             Tok::Kw(Kw::Match) => self.match_expr(),
+            Tok::Kw(Kw::Task) => {
+                self.bump();
+                let block = self.block();
+                let span = start.to(block.span);
+                self.expr_node(ExprKind::Task(block), span)
+            }
             _ => {
                 let _ = ctx;
                 self.unexpected("an expression");

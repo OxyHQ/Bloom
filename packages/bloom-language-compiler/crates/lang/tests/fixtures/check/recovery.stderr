@@ -1,0 +1,26 @@
+error[B0101]: expected an expression, found `body`
+ --> check/recovery.bloom:3:3
+  |
+3 |   body {
+  |   ^^^^ expected an expression here
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf
+
+error[B0106]: expected an item, found `fnc`
+ --> check/recovery.bloom:8:1
+  |
+8 | fnc helper() -> Int { 1 }
+  | ^^^ a module holds imports, structs, enums, types, fns, views and `let` constants
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf
+
+error[B0104]: expected `)`, found `}`
+  --> check/recovery.bloom:13:1
+   |
+11 |   let a = (1 +
+   |           - to close this `(`
+   |
+13 | }
+   | ^ expected `)` here
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf

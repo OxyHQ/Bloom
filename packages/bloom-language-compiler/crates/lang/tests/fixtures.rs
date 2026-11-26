@@ -98,3 +98,30 @@ fn check_fixtures() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+/// `BLOOM_FILE=… BLOOM_ROOT=… cargo test -p bloom_lang --test fixtures compile_one -- --ignored --nocapture`:
+/// compiles one file against a real project (its `tsconfig.json` paths), printing
+/// the diagnostics, then writing the TS (`BLOOM_OUT`, default: stdout).
+#[test]
+#[ignore]
+fn compile_one() {
+    let file = std::env::var("BLOOM_FILE").expect("BLOOM_FILE");
+    let root = std::env::var("BLOOM_ROOT").expect("BLOOM_ROOT");
+    let source = std::fs::read_to_string(&file).expect("the file");
+    let relative =
+        Path::new(&file).strip_prefix(&root).map(Path::to_path_buf).unwrap_or_else(|_| file.clone().into());
+    let options = Options { root: Some(root.into()), paths: BTreeMap::new(), dev: false };
+    let output = compile(&source, &relative.to_string_lossy(), &options);
+    for diagnostic in output.diagnostics.iter().chain(&output.warnings) {
+        eprintln!("{}\n", diagnostic.rendered);
+    }
+    match std::env::var("BLOOM_OUT") {
+        Ok(out) => {
+            std::fs::write(&out, &output.code).expect("write");
+            if let Some(dts) = &output.dts {
+                std::fs::write(format!("{out}.d.bloom.ts"), dts).expect("write");
+            }
+        }
+        Err(_) => println!("{}", output.code),
+    }
+}

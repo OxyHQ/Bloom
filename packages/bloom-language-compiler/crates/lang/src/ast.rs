@@ -272,6 +272,8 @@ pub enum StmtKind {
     Var(VarStmt),
     Assign(AssignStmt),
     Return(Option<Expr>),
+    /// `defer { … }`: runs when the enclosing block ends, however it ends.
+    Defer(Block),
     While(WhileStmt),
     For(ForStmt),
     Expr(Expr),
@@ -417,6 +419,8 @@ pub enum ExprKind {
     Float(f64),
     Bool(bool),
     None,
+    /// `()`: the Unit value.
+    Unit,
     Str {
         parts: Vec<StrPart>,
         raw: bool,
@@ -450,6 +454,8 @@ pub enum ExprKind {
     Closure(Closure),
     If(IfExpr),
     Match(MatchExpr),
+    /// `task { … }`: starts the work and goes on (spawn); its value is Unit.
+    Task(Block),
     /// What the parser put where it could not read an expression.
     Error,
 }

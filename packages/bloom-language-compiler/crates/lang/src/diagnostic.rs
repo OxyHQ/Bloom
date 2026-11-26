@@ -179,7 +179,16 @@ fn line_text(source: &str, offset: u32) -> &str {
 pub fn closest<'c>(wrong: &str, candidates: impl IntoIterator<Item = &'c str>) -> Option<&'c str> {
     let folded = fold(wrong);
     let mut best: Option<(usize, &str)> = None;
+    let mut abbreviation: Option<&str> = None;
     for candidate in candidates {
+        // `md` for `medium`: the candidate's letters, in order, from the same first letter.
+        if candidate.len() >= 2
+            && candidate.len() < wrong.len()
+            && is_abbreviation(candidate, wrong)
+            && abbreviation.is_none_or(|a| candidate.len() > a.len())
+        {
+            abbreviation = Some(candidate);
+        }
         if fold(candidate) == folded {
             return Some(candidate);
         }
@@ -189,7 +198,14 @@ pub fn closest<'c>(wrong: &str, candidates: impl IntoIterator<Item = &'c str>) -
             best = Some((distance, candidate));
         }
     }
-    best.map(|(_, candidate)| candidate)
+    best.map(|(_, candidate)| candidate).or(abbreviation)
+}
+
+fn is_abbreviation(short: &str, long: &str) -> bool {
+    let mut long_chars = long.chars().flat_map(char::to_lowercase);
+    let mut short_chars = short.chars().flat_map(char::to_lowercase);
+    let (Some(a), Some(b)) = (short_chars.next(), long_chars.next()) else { return false };
+    a == b && short_chars.all(|c| long_chars.any(|l| l == c))
 }
 
 fn fold(name: &str) -> String {

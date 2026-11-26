@@ -40,6 +40,13 @@ impl Checker<'_> {
                             let ty = self.instantiate(&info.ty);
                             self.value_call(expr, call, &ty)
                         }
+                        // An UpperCamel TS value Bloom could not type, used as a node, is a component.
+                        LocalKind::Import { hook: false }
+                            if matches!(self.resolve(&info.ty), Ty::Foreign(_))
+                                && name.starts_with(|c: char| c.is_ascii_uppercase()) =>
+                        {
+                            self.component_call(expr, call, &Ty::Foreign("".into()))
+                        }
                         _ => {
                             let ty = self.instantiate(&info.ty);
                             self.value_call(expr, call, &ty)
@@ -145,6 +152,10 @@ impl Checker<'_> {
                     _ => None,
                 };
                 if let Some((def, targs)) = case_def {
+                    // `S.patch(field: v)` builds a `Partial<S>`.
+                    if member.name == "patch" && matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
+                        return self.construct(expr, call, def, targs, expected, true);
+                    }
                     return self.case_call(expr, call, def, member, targs, expected);
                 }
                 // The receiver is the same chain: `.task` may sit anywhere in the root's chain.
@@ -1148,7 +1159,7 @@ impl Checker<'_> {
     fn task(&mut self, expr: &Expr, call: &Call, name: &Ident, recv: &Ty, allowed: bool) -> Ty {
         if !allowed {
             self.report(
-                Diagnostic::error("B0430", name.span, "`.task` goes on the body's root view")
+                Diagnostic::error("B0431", name.span, "`.task` goes on the body's root view")
                     .label("a task belongs to the view that runs it")
                     .help("move it to the end of the body's outermost chain")
                     .spec("8-effects-tasks-and-concurrency"),
