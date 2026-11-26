@@ -159,6 +159,13 @@ List(model.posts) { post in
   para compilar a código máquina en iOS y Android. Lo mediremos módulo a módulo y lo adoptaremos
   donde gane.
 - **Web y wasm:** la web sigue en JS; wasm solo donde se note, por ejemplo en JSON o `Regex`.
+- **Medido (fase C, 26-11-2026).** Las cifras completas están en la sección 6 del ADR.
+  - **Static Hermes, de momento no.** En el emulador, compilado a código máquina, un toque en Notificaciones baja de 261 a 181 µs. Pero lo que se acelera es React, no el módulo: su propio código va igual.
+  - **Dónde se queda corto.** El modo tipado no acepta el TypeScript que genera bloomc. Ocupa 4,7 veces más y el arranque en frío tarda 0,9 ms más. Además, React Native 0.88 no puede cargar código máquina dentro de una app.
+  - **Dónde sí gana:** decodificar JSON con tipos, un 32 % más rápido. Se usará en la biblioteca estándar cuando la plataforma lo permita.
+  - **wasm, no.** Hermes no lo tiene, y en la web `JSON.parse` ya es nativo.
+  - **Compilación.** Editar un archivo recompila en 14 ms, y solo ese archivo si su interfaz no cambia. Compilar un archivo cuesta todavía de 5 a 12 veces la pasada embebida; el objetivo era 3.
+  - **Bytes.** Los ejemplos del umbral de coste ya ocupan menos bytecode que su TypeScript.
 
 ## Plan
 

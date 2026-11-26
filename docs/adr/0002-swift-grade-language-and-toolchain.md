@@ -162,6 +162,72 @@ extern module "@sentry/react-native" {
   incremental cache keyed by module interfaces (Swift's `.swiftmodule`, Rust's metadata). Target:
   a one-file edit rebuilds in under 50 ms.
 
+#### Measured (phase C, 2026-11-26)
+
+These are medians. The harness, the scripts and the raw runs are in the phase C PR (#1000),
+under `packages/bloom-language-compiler/bench/`.
+
+**Static Hermes against bytecode Hermes.**
+- Setup:
+  - Both sides use the Hermes V1 that React Native 0.88 ships. The tag is `hermes-v260318099.0.5`, built from Meta's source because no `shermes` binary is published; it is past the 7-day quarantine.
+  - The device is the Android x86_64 emulator, and each side's VM is built with React Native's release flags.
+  - The measured module is Mention's Notifications screen. It is bloomc's output, with React 19.3.1 production and headless stand-ins for the Bloom runtime.
+- Runs: interleaved, 10 per form for the screen, 8 for JSON, 50 for cold start.
+
+| | bytecode | native, untyped | native, typed |
+|---|---|---|---|
+| a Notifications tap (React and the module) | 261 µs | 181 µs (−31%) | — |
+| a warm mount | 150 µs | 107 µs (−29%) | — |
+| the module's own view function | 8.7 µs | 8.3 µs (−5%) | — |
+| cold start: a fresh process to the first commit | 6.37 ms | 7.24 ms (+0.87 ms) | — |
+| the module's code shipped | 221 KB bytecode | 1.04 MB native (4.7×) | — |
+| JSON decode: 200 notifications (76 KB) into classes | 361 µs | 350 µs | 245 µs (−32%) |
+| the same decode's typed walk, without `JSON.parse` | 157 µs | 131 µs | 77 µs (−51%) |
+
+**Decision: not adopted.** There is no `Package.bloom` setting yet, because there is nothing to adopt.
+- **The module does not get faster.** Compiled untyped, the module's own code is no faster: the 31% comes from React compiled natively. Typed mode cannot take bloomc's TypeScript:
+  - it rejects object type literals, unions and string-literal types;
+  - its typed code has no `Array.prototype.join` and no `String.length`;
+  - the module's own code is under 10% of a tap, so typing it could save at most that much.
+- **Compiling React natively is a platform decision (phase F).** React Native 0.88 cannot load a native unit in an app. The win also costs 4.7× the bytes and 0.9 ms of cold start.
+- **Typed decoding is the one clear win (−32%).** It goes to the standard library's `JSON`/`Codable` decode, for when the runtime can load native units.
+- arm64 was not measured: only the emulator is allowed.
+
+**wasm: not adopted for JSON.**
+- Hermes has no `WebAssembly`, so it is not an option on native.
+- On the web (V8), the native `JSON.parse` is 80% of the decode above (143 of 180 µs). A wasm decoder would still have to build the same JS objects.
+- `Regex` was not measured.
+
+**Compile speed.**
+- **One-file edit (met).** The target was under 50 ms. On the 1000-file bench tree it is 14 ms end to end, and the rebuild is now keyed by module interfaces (`bloom_lang::interface`):
+  - a body edit to a model rebuilds 1 file instead of 4;
+  - a signature edit still rebuilds 4.
+- **Per file (not met).** The target is at most 3× the embedded pass. It is a median over 30 files.
+
+  | | before | after | the embedded pass | after, as a multiple |
+  |---|---|---|---|---|
+  | models | 50.4 µs | 49.6 µs | 4.0 µs | 12.4× |
+  | rows | 63.5 µs | 61.1 µs | 11.3 µs | 5.4× |
+  | screens | 146.0 µs | 142.7 µs | 23.2 µs | 6.2× |
+
+  - Where the time goes (a row): parse 13 µs, check 20, chain rules 3, emit 32, source map 4.
+  - Where the memory goes (a screen): 2,290 allocations and 280 KB per compile.
+  - **Parse:** it allocates about 100× the source size, because `Stmt` is 344 bytes and `Expr` is 160. Boxing their large variants is the fix, and it belongs to phase A, which owns the AST.
+  - **Emit:** it builds 600 to 1,300 `String` fragments. The emit changes in #1000 save 2 to 4% only. The fix is an emitter that writes into one buffer, which means a rewrite of `emit.rs` after phase A's emit changes land.
+
+**Emitted bytes.**
+- Pipeline: Mention's release pipeline, that is babel-preset-expo with the React Compiler, then terser, then `hermesc`.
+- Columns: minified / gzip / Hermes bytecode.
+
+| | before | after | TS + React Compiler |
+|---|---|---|---|
+| the cost gate's four fixtures | 1868 / 1341 / 3995 | 1709 / 1251 / 3707 | 1684 / 1234 / 3804 |
+| Notifications (against `original` / `cleaned`) | 4912 / 1792 / 7669 | 4598 / 1694 / 7386 | 5575 / 1360 / 8674 · 3672 / 1259 / 6652 |
+
+- **What changed.** A `match` that reads or patches the field named like its case is now one keyed access, and a hoisted body has no cache. A string of names and a name child are no longer cached.
+- **Where the fixtures stand.** The bytecode Android ships is now smaller than the TypeScript's. Minified and gzip are within 2%.
+- **What stays larger in Notifications:** its 38-slot memo cache. That cache is what makes its update 18.4 ms against 45.7.
+
 ### 7. The Bloom platform without Expo
 
 Bloom becomes one language and platform for everything. Expo leaves completely; React Native core
