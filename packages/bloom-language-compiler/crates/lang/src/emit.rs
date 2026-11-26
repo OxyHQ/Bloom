@@ -111,6 +111,8 @@ struct Emitter<'a> {
     /// Module constants hoisted out of the current item.
     hoisted: Vec<Frag>,
     hoisted_names: HashMap<Span, String>,
+    /// Static trees hoisted to module scope, by their text.
+    hoisted_trees: HashMap<String, String>,
     diagnostics: Vec<Diagnostic>,
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
@@ -119,6 +121,11 @@ struct Emitter<'a> {
     conditional: usize,
     uses_result: bool,
     names: HashSet<String>,
+    /// While the body's tree is emitted: what the enclosing cache scope depends on.
+    scope: Option<Vec<String>>,
+    body_span: Option<Span>,
+    /// Where the item being emitted starts: a module constant before it is defined.
+    item_start: u32,
 }
 
 pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, options: &Options) -> Emitted {
@@ -144,12 +151,16 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         helpers: BTreeSet::new(),
         hoisted: Vec::new(),
         hoisted_names: HashMap::new(),
+        hoisted_trees: HashMap::new(),
         diagnostics: Vec::new(),
         view: None,
         signal: None,
         conditional: 0,
         uses_result: false,
         names,
+        scope: None,
+        body_span: None,
+        item_start: 0,
     };
     let mut body = Frag::default();
     for import in &file.imports {
@@ -157,6 +168,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     }
     let mut items = Frag::default();
     for (index, item) in file.items.iter().enumerate() {
+        emitter.item_start = item.span.start;
         let emitted = emitter.item(index, item);
         for hoisted in std::mem::take(&mut emitter.hoisted) {
             items.f(hoisted).s("\n");
@@ -1668,7 +1680,7 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Node(ctor) => {
                 self.import_name(LANGUAGE, ctor);
-                let mut values = self.args(call);
+                let mut values: Vec<Frag> = call.args.iter().map(|a| self.node_arg(&a.value)).collect();
                 if let Some(trailing) = &call.trailing {
                     values.extend(self.children(&trailing.body));
                 }
@@ -1680,7 +1692,7 @@ impl<'a> Emitter<'a> {
                 let ExprKind::Field(receiver, name) = &call.callee.kind else { unreachable!() };
                 let receiver = self.operand(receiver);
                 let mut values: Vec<Frag> =
-                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.expr(&a.value)).collect();
+                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.node_arg(&a.value)).collect();
                 if object {
                     let entries: Vec<Frag> = call
                         .args
@@ -2069,7 +2081,7 @@ impl<'a> Emitter<'a> {
         for stmt in stmts {
             match &stmt.kind {
                 StmtKind::Let(_) => self.stmt(stmt),
-                StmtKind::Expr(expr) => out.push(self.child(expr)),
+                StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
                     let mut iter = self.operand(&f.iter);
@@ -2204,6 +2216,42 @@ fn field_path(name: &str, fields: &[String]) -> String {
     out
 }
 
+/// Calls `f` with the id of every call in `expr` (closures included: a static tree has none).
+fn visit_calls(expr: &Expr, f: &mut dyn FnMut(ExprId)) {
+    match &expr.kind {
+        ExprKind::Call(call) => {
+            f(expr.id);
+            visit_calls(&call.callee, f);
+            call.args.iter().for_each(|a| visit_calls(&a.value, f));
+            if let Some(trailing) = &call.trailing {
+                for stmt in &trailing.body {
+                    match &stmt.kind {
+                        StmtKind::Expr(e) => visit_calls(e, f),
+                        _ => f(ExprId(u32::MAX)),
+                    }
+                }
+            }
+        }
+        ExprKind::Field(e, _) | ExprKind::Paren(e) => visit_calls(e, f),
+        ExprKind::Int(_)
+        | ExprKind::Float(_)
+        | ExprKind::Bool(_)
+        | ExprKind::None
+        | ExprKind::Unit
+        | ExprKind::Name(_)
+        | ExprKind::ImplicitMember(_) => {}
+        ExprKind::Str { parts, .. } if parts.iter().all(|p| matches!(p, StrPart::Text(_))) => {}
+        // Anything else (an operator, a closure, a conditional) is not a static tree.
+        _ => f(ExprId(u32::MAX)),
+    }
+}
+
+/// Whether the dependency `outer` changes whenever `inner` does (`auth` covers `auth.x`).
+fn covers(outer: &str, inner: &str) -> bool {
+    outer == inner
+        || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
+}
+
 /// Replaces whole-word occurrences of `name` in emitted `text`.
 fn replace_word(text: &str, name: &str, value: &str) -> String {
     let mut out = String::new();
@@ -2314,29 +2362,284 @@ fn expr_assigns(expr: &Expr) -> bool {
 impl<'a> Emitter<'a> {
     // ---- views ----------------------------------------------------------------
 
-    /// The reactive locals `stmts` read, in first-read order (an assigned state is written, not read).
-    fn deps(&self, stmts: &[Stmt]) -> Vec<LocalId> {
-        let Some(view) = &self.view else { return Vec::new() };
-        let mut out: Vec<LocalId> = Vec::new();
-        crate::check::walk_stmts(stmts, &mut |_, id| {
-            if self.ck.assign_targets.contains(&id) {
-                return;
-            }
-            let local = match self.ck.names.get(&id) {
-                Some(NameRes::Local(local)) => Some(*local),
-                _ => self.ck.bindings.get(&id).map(|(local, _)| *local),
-            };
-            if let Some(local) = local.filter(|l| view.reactive.contains(l))
-                && !out.contains(&local)
-            {
-                out.push(local);
-            }
-        });
+    /// What `stmts` read that can change between renders, as the longest member
+    /// paths (`auth.isPending`, `prefs.likes`): values are immutable, so a path's
+    /// value is the dependency. A method keeps its receiver (`router.push(…)`
+    /// depends on `router`); an assigned state is written, not read.
+    fn deps(&self, stmts: &[Stmt]) -> Vec<String> {
+        let mut out = Vec::new();
+        for stmt in stmts {
+            self.stmt_deps(stmt, &mut out);
+        }
+        // `auth` covers `auth.isPending`.
+        let all = out.clone();
+        out.retain(|d| !all.iter().any(|p| p != d && covers(p, d)));
         out
     }
 
-    fn expr_deps(&self, expr: &Expr) -> Vec<LocalId> {
-        self.deps(std::slice::from_ref(&Stmt { kind: StmtKind::Expr(expr.clone()), span: expr.span }))
+    fn expr_deps(&self, expr: &Expr) -> Vec<String> {
+        let mut out = Vec::new();
+        self.collect(expr, &mut out);
+        let all = out.clone();
+        out.retain(|d| !all.iter().any(|p| p != d && covers(p, d)));
+        out
+    }
+
+    fn stmt_deps(&self, stmt: &Stmt, out: &mut Vec<String>) {
+        match &stmt.kind {
+            StmtKind::Let(l) => self.collect(&l.value, out),
+            StmtKind::Var(v) => self.collect(&v.value, out),
+            StmtKind::Assign(a) => {
+                let mut target = &a.target;
+                while let ExprKind::Field(inner, _) = &target.kind {
+                    target = inner;
+                }
+                if !matches!(target.kind, ExprKind::Name(_)) {
+                    self.collect(&a.target, out);
+                }
+                self.collect(&a.value, out);
+            }
+            StmtKind::Return(Some(e)) | StmtKind::Expr(e) => self.collect(e, out),
+            StmtKind::Return(None) => {}
+            StmtKind::Defer(b) => b.stmts.iter().for_each(|s| self.stmt_deps(s, out)),
+            StmtKind::While(w) => {
+                self.collect(&w.cond, out);
+                w.body.stmts.iter().for_each(|s| self.stmt_deps(s, out));
+            }
+            StmtKind::For(f) => {
+                self.collect(&f.iter, out);
+                f.body.stmts.iter().for_each(|s| self.stmt_deps(s, out));
+            }
+        }
+    }
+
+    /// The emitted path of a reactive read (`auth`, `auth.isPending`, `post?.title`).
+    fn dep_path(&self, expr: &Expr) -> Option<String> {
+        let view = self.view.as_ref()?;
+        match &expr.kind {
+            ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
+                Some(NameRes::Local(local)) if view.reactive.contains(local) => Some(self.local_name(*local)),
+                _ => None,
+            },
+            ExprKind::Field(object, name)
+                if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
+            {
+                self.dep_path(object).map(|p| format!("{p}.{}", name.name))
+            }
+            ExprKind::OptField(object, name) if is_ident(&name.name) => {
+                self.dep_path(object).map(|p| format!("{p}?.{}", name.name))
+            }
+            ExprKind::Paren(inner) => self.dep_path(inner),
+            _ => None,
+        }
+    }
+
+    fn push_dep(out: &mut Vec<String>, dep: String) {
+        if !out.contains(&dep) {
+            out.push(dep);
+        }
+    }
+
+    fn collect(&self, expr: &Expr, out: &mut Vec<String>) {
+        if let Some(path) = self.dep_path(expr) {
+            Self::push_dep(out, path);
+            return;
+        }
+        let mut go = |e: &Expr| self.collect(e, out);
+        match &expr.kind {
+            ExprKind::Binding(_) => {
+                if let Some((local, fields)) = self.ck.bindings.get(&expr.id)
+                    && self.view.as_ref().is_some_and(|v| v.reactive.contains(local))
+                {
+                    Self::push_dep(out, field_path(&self.local_name(*local), fields));
+                }
+            }
+            ExprKind::Str { parts, .. } => parts.iter().for_each(|p| {
+                if let StrPart::Interp(e) = p {
+                    go(e);
+                }
+            }),
+            ExprKind::Paren(e)
+            | ExprKind::Unary(_, e)
+            | ExprKind::Await(e)
+            | ExprKind::Try(e)
+            | ExprKind::Field(e, _)
+            | ExprKind::OptField(e, _) => go(e),
+            ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(go),
+            ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
+                go(k);
+                go(v);
+            }),
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+                go(a);
+                go(b);
+            }
+            ExprKind::Ternary(a, b, c) => {
+                go(a);
+                go(b);
+                go(c);
+            }
+            ExprKind::Call(call) => {
+                // A method reads its receiver whole.
+                match &call.callee.kind {
+                    ExprKind::Field(receiver, _) => go(receiver),
+                    _ => go(&call.callee),
+                }
+                call.args.iter().for_each(|a| go(&a.value));
+                if let Some(trailing) = &call.trailing {
+                    trailing.body.iter().for_each(|s| self.stmt_deps(s, out));
+                }
+            }
+            ExprKind::Closure(c) => c.body.iter().for_each(|s| self.stmt_deps(s, out)),
+            ExprKind::Task(b) => b.stmts.iter().for_each(|s| self.stmt_deps(s, out)),
+            ExprKind::If(i) => {
+                match &i.cond {
+                    Cond::Expr(e) | Cond::Let(_, e) => self.collect(e, out),
+                }
+                i.then.stmts.iter().for_each(|s| self.stmt_deps(s, out));
+                match i.otherwise.as_deref() {
+                    Some(Else::If(e)) => self.collect(e, out),
+                    Some(Else::Block(b)) => b.stmts.iter().for_each(|s| self.stmt_deps(s, out)),
+                    None => {}
+                }
+            }
+            ExprKind::Match(m) => {
+                self.collect(&m.scrutinee, out);
+                for arm in &m.arms {
+                    if let Some(g) = &arm.guard {
+                        self.collect(g, out);
+                    }
+                    match &arm.body {
+                        ArmBody::Expr(e) => self.collect(e, out),
+                        ArmBody::Block(b) => b.stmts.iter().for_each(|s| self.stmt_deps(s, out)),
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// Whether `expr` reads a name the body itself binds (a `for` item, an `if let`,
+    /// a closure parameter): such a subtree is cached with its parent, never alone.
+    fn reads_body_local(&self, expr: &Expr) -> bool {
+        let Some(body) = self.body_span else { return false };
+        let mut found = false;
+        crate::check::walk_names(expr, &mut |_, id| {
+            if let Some(NameRes::Local(local)) = self.ck.names.get(&id) {
+                let span = self.ck.locals[*local].span;
+                if span.start >= body.start && span.end <= body.end {
+                    found = true;
+                }
+            }
+        });
+        found
+    }
+
+    /// A child cached on its own when it reads less than its parent (React
+    /// Compiler style): `(changed ? (… , $[n] = child) : $[n])`, lazy, so it
+    /// keeps its identity (and the runtime skips it) when only the parent's
+    /// other dependencies change.
+    fn scoped_child(&mut self, expr: &Expr) -> Frag {
+        let Some(parent) = self.scope.clone() else { return self.child(expr) };
+        // A conditional keeps its slot; its branches are cached on their own.
+        if matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_)) || self.reads_body_local(expr) {
+            return self.child(expr);
+        }
+        // A subtree of nodes that reads nothing of the view is built once, at module scope.
+        if self.static_tree(expr) {
+            let value = self.child(expr);
+            // The same tree twice is one constant.
+            if let Some(name) = self.hoisted_trees.get(&value.text) {
+                return Frag::of(name.clone());
+            }
+            let name = format!("$view{}", self.hoisted_trees.len());
+            self.hoisted_trees.insert(value.text.clone(), name.clone());
+            let mut decl = Frag::of(format!("const {name} = "));
+            decl.f(value).s(";");
+            self.hoisted.push(decl);
+            return Frag::of(name);
+        }
+        let deps = self.expr_deps(expr);
+        let narrower = !deps.is_empty()
+            && deps.iter().all(|d| parent.iter().any(|p| covers(p, d)))
+            && !(deps.len() == parent.len() && deps.iter().all(|d| parent.contains(d)));
+        if !narrower {
+            return self.child(expr);
+        }
+        self.scope = Some(deps.clone());
+        let value = self.child(expr);
+        self.scope = Some(parent);
+        let view = self.view.as_mut().expect("a view");
+        let base = view.slots;
+        view.slots += deps.len() + 1;
+        let slot = base + deps.len();
+        let cond = deps
+            .iter()
+            .enumerate()
+            .map(|(i, d)| format!("$[{}] !== {d}", base + i))
+            .collect::<Vec<_>>()
+            .join(" || ");
+        let stores: String =
+            deps.iter().enumerate().map(|(i, d)| format!("$[{}] = {d}, ", base + i)).collect();
+        let mut out = Frag::of(format!("({cond} ? ({stores}$[{slot}] = "));
+        out.f(value).s(&format!(") : $[{slot}])"));
+        out
+    }
+
+    /// Whether `expr` builds nodes only (node, modifier and component calls, literals)
+    /// from names already defined at module scope: the same value on every render.
+    fn static_tree(&self, expr: &Expr) -> bool {
+        let mut only_nodes = true;
+        let mut calls = 0;
+        visit_calls(expr, &mut |id| {
+            calls += 1;
+            if !matches!(
+                self.ck.calls.get(&id),
+                Some(
+                    CallRes::Node(_)
+                        | CallRes::Modifier { .. }
+                        | CallRes::Component
+                        | CallRes::EnumCase(..)
+                        | CallRes::Struct(_)
+                )
+            ) {
+                only_nodes = false;
+            }
+        });
+        if !only_nodes || calls == 0 || matches!(expr.kind, ExprKind::Name(_)) {
+            return false;
+        }
+        let mut module = true;
+        crate::check::walk_names(expr, &mut |_, id| match self.ck.names.get(&id) {
+            Some(NameRes::Local(local)) => {
+                let info = &self.ck.locals[*local];
+                let defined = match info.kind {
+                    LocalKind::Import { .. } | LocalKind::Component { .. } | LocalKind::ModuleFn => true,
+                    LocalKind::ModuleConst | LocalKind::View => info.span.start < self.item_start,
+                    _ => false,
+                };
+                if !defined || info.frame != 0 {
+                    module = false;
+                }
+            }
+            None => {
+                if self.ck.bindings.contains_key(&id) {
+                    module = false;
+                }
+            }
+        });
+        module
+    }
+
+    /// A node's argument: a view is a child that may be cached on its own.
+    fn node_arg(&mut self, value: &Expr) -> Frag {
+        if matches!(self.ck.types.get(&value.id), Some(Ty::View(_)))
+            && !matches!(value.kind, ExprKind::If(_) | ExprKind::Match(_))
+        {
+            self.scoped_child(value)
+        } else {
+            self.expr(value)
+        }
     }
 
     /// `name` computed by `prelude; value`, again only when a dependency changed.
@@ -2344,11 +2647,11 @@ impl<'a> Emitter<'a> {
         &mut self,
         name: &str,
         ty: Option<String>,
-        deps: &[LocalId],
+        deps: &[String],
         prelude: Vec<Frag>,
         value: Frag,
     ) -> Frag {
-        let dep_names: Vec<String> = deps.iter().map(|d| self.local_name(*d)).collect();
+        let dep_names: Vec<String> = deps.to_vec();
         let view = self.view.as_mut().expect("a view");
         let base = view.slots;
         view.slots += dep_names.len() + 1;
@@ -2439,6 +2742,8 @@ impl<'a> Emitter<'a> {
         // The body, cached on what it reads.
         let deps = self.deps(&v.body.stmts);
         self.bufs.push(Vec::new());
+        self.scope = Some(deps.clone());
+        self.body_span = Some(v.body.span);
         let mut value = Frag::default();
         for stmt in &v.body.stmts {
             match &stmt.kind {
@@ -2446,6 +2751,8 @@ impl<'a> Emitter<'a> {
                 _ => self.stmt(stmt),
             }
         }
+        self.scope = None;
+        self.body_span = None;
         let prelude = self.bufs.pop().expect("the body");
         let tree = self.temp();
         let memo = self.memo(&tree, None, &deps, prelude, value);

@@ -1,4 +1,5 @@
 // A test stub of Mention's skeletons.
-export function SettingsSkeleton({ count = 5 }: { count?: number }) {
-  return null as unknown as JSX.Element & { count: typeof count };
+import type { ReactElement } from 'react';
+export function SettingsSkeleton({ count = 5 }: { count?: number }): ReactElement | null {
+  return count > 0 ? null : null;
 }

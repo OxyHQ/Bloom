@@ -12,116 +12,103 @@ import { logger } from "@oxy.so/core/logger";
 import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
 import { useSettingsRouter } from "@/context/MentionSettingsContext";
 import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
-const _bloomStatic0 = Loading().style("inline").size("sm");
-type $Result<
-	T,
-	E
-> = {
-	readonly ok: true;
-	readonly value: T;
-} | {
-	readonly ok: false;
-	readonly error: E;
-};
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {
-	try {
-		return {
-			ok: true,
-			value: await value
-		};
-	} catch (error) {
-		return {
-			ok: false,
-			error: error instanceof Error ? error : new Error(String(error))
-		};
-	}
+  try {
+    return { ok: true, value: await value };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };
+  }
 }
+
 interface NotificationPreferences {
-	readonly pushEnabled: boolean;
-	readonly likes: boolean;
-	readonly boosts: boolean;
-	readonly follows: boolean;
-	readonly mentions: boolean;
-	readonly replies: boolean;
-	readonly quotes: boolean;
+  readonly pushEnabled: boolean;
+  readonly likes: boolean;
+  readonly boosts: boolean;
+  readonly follows: boolean;
+  readonly mentions: boolean;
+  readonly replies: boolean;
+  readonly quotes: boolean;
 }
+
 function toggleRow(title: string, detail: string, isOn: boolean, onChange: (p0: boolean) => void): Child {
-	return GroupedSectionItem(title).wrapControl().description(detail).trailing(Toggle([isOn, onChange] as const).label(title));
+return GroupedSectionItem(title).wrapControl().description(detail).trailing(Toggle([isOn, onChange] as const).label(title));
 }
+
+const $view0 = Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>));
+const $view1 = VStack($view0).spacing("lg");
+const $view2 = Loading().style("inline").size("sm");
 export default screen(function NotificationSettings() {
-	"use no memo";
-	const $ = $c(13);
-	const { t } = useTranslation();
-	const router = useSettingsRouter();
-	const auth = useAuth();
-	const section = useViewerSettingsSection("notificationPreferences");
-	const [saving, setSaving] = useState<boolean>(false);
-	const stored: Partial<NotificationPreferences> | undefined = section.value satisfies Partial<NotificationPreferences> | undefined;
-	const loading: boolean = section.isLoading satisfies boolean;
-	let prefs: NotificationPreferences;
-	if ($[0] !== stored) {
-		prefs = {
-			pushEnabled: stored?.pushEnabled ?? true,
-			likes: stored?.likes ?? true,
-			boosts: stored?.boosts ?? true,
-			follows: stored?.follows ?? true,
-			mentions: stored?.mentions ?? true,
-			replies: stored?.replies ?? true,
-			quotes: stored?.quotes ?? true
-		};
-		$[0] = stored;
-		$[1] = prefs;
-	} else {
-		prefs = $[1];
-	}
-	let save: (patch: Partial<NotificationPreferences>) => Promise<void>;
-	if ($[2] !== section || $[3] !== t) {
-		save = async (patch: Partial<NotificationPreferences>): Promise<void> => {
-			setSaving(true);
-			const $t0 = await $settle(section.update(patch));
-			if (!$t0.ok) {
-				const error = $t0.error;
-				logger.error("Error updating notification preferences", error);
-				toast(t("settings.notifications.saveError", { defaultValue: "Failed to save notification preference" }), { type: "error" });
-			}
-			setSaving(false);
-		};
-		$[2] = section;
-		$[3] = t;
-		$[4] = save;
-	} else {
-		save = $[4];
-	}
-	let $t1;
-	if ($[5] !== auth || $[6] !== loading || $[7] !== t || $[8] !== saving || $[9] !== prefs || $[10] !== save || $[11] !== router) {
-		$t1 = auth.isPrivateApiPending || loading ? VStack(Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>))).spacing("lg") : !auth.canUsePrivateApi ? VStack(Embed($jsx(OxyAuthPrompt, {
-			label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }),
-			description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." })
-		} satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg") : VStack(saving ? _bloomStatic0 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => void (async () => {
-			await save({ pushEnabled: v });
-		})()))), SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(Text(t("common.open", { defaultValue: "Open" }))).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" }))))), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => void (async () => {
-			await save({ likes: v });
-		})()), toggleRow(t("settings.notifications.boosts", { defaultValue: "Boosts" }), t("settings.notifications.boostsDesc", { defaultValue: "When someone boosts your post" }), prefs.boosts, (v: boolean) => void (async () => {
-			await save({ boosts: v });
-		})()), toggleRow(t("settings.notifications.follows", { defaultValue: "New followers" }), t("settings.notifications.followsDesc", { defaultValue: "When someone follows you" }), prefs.follows, (v: boolean) => void (async () => {
-			await save({ follows: v });
-		})()), toggleRow(t("settings.notifications.mentions", { defaultValue: "Mentions" }), t("settings.notifications.mentionsDesc", { defaultValue: "When someone mentions you in a post" }), prefs.mentions, (v: boolean) => void (async () => {
-			await save({ mentions: v });
-		})()), toggleRow(t("settings.notifications.replies", { defaultValue: "Replies" }), t("settings.notifications.repliesDesc", { defaultValue: "When someone replies to your post" }), prefs.replies, (v: boolean) => void (async () => {
-			await save({ replies: v });
-		})()), toggleRow(t("settings.notifications.quotes", { defaultValue: "Quote posts" }), t("settings.notifications.quotesDesc", { defaultValue: "When someone quotes your post" }), prefs.quotes, (v: boolean) => void (async () => {
-			await save({ quotes: v });
-		})())))).spacing("lg")).spacing("lg");
-		$[5] = auth;
-		$[6] = loading;
-		$[7] = t;
-		$[8] = saving;
-		$[9] = prefs;
-		$[10] = save;
-		$[11] = router;
-		$[12] = $t1;
-	} else {
-		$t1 = $[12];
-	}
-	return $t1;
+"use no memo";
+const $ = $c(27);
+const { t } = useTranslation();
+const router = useSettingsRouter();
+const auth = useAuth();
+const section = useViewerSettingsSection("notificationPreferences");
+const [saving, setSaving] = useState<boolean>(false);
+const stored: Partial<NotificationPreferences> | undefined = (section.value satisfies Partial<NotificationPreferences> | undefined);
+const loading: boolean = (section.isLoading satisfies boolean);
+let prefs: NotificationPreferences;
+if ($[0] !== stored) {
+prefs = { pushEnabled: stored?.pushEnabled ?? (true), likes: stored?.likes ?? (true), boosts: stored?.boosts ?? (true), follows: stored?.follows ?? (true), mentions: stored?.mentions ?? (true), replies: stored?.replies ?? (true), quotes: stored?.quotes ?? (true) };
+$[0] = stored;
+$[1] = prefs;
+} else {
+prefs = $[1];
+}
+let save: (patch: Partial<NotificationPreferences>) => Promise<void>;
+if ($[2] !== section || $[3] !== t) {
+save = async (patch: Partial<NotificationPreferences>): Promise<void> => {
+setSaving(true);
+const $t0 = await $settle(section.update(patch));
+if (!$t0.ok) {
+const error = $t0.error;
+logger.error("Error updating notification preferences", error);
+toast(t("settings.notifications.saveError", { defaultValue: "Failed to save notification preference" }), { type: "error" });
+}
+setSaving(false);
+};
+$[2] = section;
+$[3] = t;
+$[4] = save;
+} else {
+save = $[4];
+}
+let $t1;
+if ($[12] !== auth.isPrivateApiPending || $[13] !== loading || $[14] !== auth.canUsePrivateApi || $[15] !== t || $[16] !== saving || $[17] !== prefs.pushEnabled || $[18] !== save || $[19] !== router || $[20] !== prefs.likes || $[21] !== prefs.boosts || $[22] !== prefs.follows || $[23] !== prefs.mentions || $[24] !== prefs.replies || $[25] !== prefs.quotes) {
+$t1 = (auth.isPrivateApiPending || loading) ? $view1 : (!auth.canUsePrivateApi) ? ($[5] !== t ? ($[5] = t, $[6] = VStack(Embed($jsx(OxyAuthPrompt, { label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }), description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." }) } satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg")) : $[6]) : VStack((saving) ? $view2 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => void (async () => {
+await (save({ pushEnabled: v }));
+})()))), ($[9] !== t || $[10] !== router ? ($[9] = t, $[10] = router, $[11] = SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(($[7] !== t ? ($[7] = t, $[8] = Text(t("common.open", { defaultValue: "Open" }))) : $[8])).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" })))))) : $[11]), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => void (async () => {
+await (save({ likes: v }));
+})()), toggleRow(t("settings.notifications.boosts", { defaultValue: "Boosts" }), t("settings.notifications.boostsDesc", { defaultValue: "When someone boosts your post" }), prefs.boosts, (v: boolean) => void (async () => {
+await (save({ boosts: v }));
+})()), toggleRow(t("settings.notifications.follows", { defaultValue: "New followers" }), t("settings.notifications.followsDesc", { defaultValue: "When someone follows you" }), prefs.follows, (v: boolean) => void (async () => {
+await (save({ follows: v }));
+})()), toggleRow(t("settings.notifications.mentions", { defaultValue: "Mentions" }), t("settings.notifications.mentionsDesc", { defaultValue: "When someone mentions you in a post" }), prefs.mentions, (v: boolean) => void (async () => {
+await (save({ mentions: v }));
+})()), toggleRow(t("settings.notifications.replies", { defaultValue: "Replies" }), t("settings.notifications.repliesDesc", { defaultValue: "When someone replies to your post" }), prefs.replies, (v: boolean) => void (async () => {
+await (save({ replies: v }));
+})()), toggleRow(t("settings.notifications.quotes", { defaultValue: "Quote posts" }), t("settings.notifications.quotesDesc", { defaultValue: "When someone quotes your post" }), prefs.quotes, (v: boolean) => void (async () => {
+await (save({ quotes: v }));
+})())))).spacing("lg")).spacing("lg");
+$[12] = auth.isPrivateApiPending;
+$[13] = loading;
+$[14] = auth.canUsePrivateApi;
+$[15] = t;
+$[16] = saving;
+$[17] = prefs.pushEnabled;
+$[18] = save;
+$[19] = router;
+$[20] = prefs.likes;
+$[21] = prefs.boosts;
+$[22] = prefs.follows;
+$[23] = prefs.mentions;
+$[24] = prefs.replies;
+$[25] = prefs.quotes;
+$[26] = $t1;
+} else {
+$t1 = $[26];
+}
+return $t1;
 });
+

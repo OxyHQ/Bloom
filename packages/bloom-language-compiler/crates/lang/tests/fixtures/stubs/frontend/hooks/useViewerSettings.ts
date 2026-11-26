@@ -14,7 +14,7 @@ interface Sections {
 }
 export function useViewerSettingsSection<K extends keyof Sections>(section: K) {
   return {
-    value: undefined as Partial<Sections[K]> | undefined,
+    value: {} as Partial<Sections[K]>,
     isLoading: false,
     update: async (_patch: Partial<Sections[K]>): Promise<void> => {
       void section;
