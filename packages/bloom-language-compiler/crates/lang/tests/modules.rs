@@ -141,6 +141,30 @@ fn platform_files_are_alternatives_not_siblings() {
     assert!(out.code.contains("import { NotificationsList } from \"./NotificationsList\";"), "{}", out.code);
 }
 
+#[test]
+fn a_class_is_imported_with_its_init() {
+    // M9: a reference held in `@State` is often a class of another file; `Box(0)` is its
+    // `init` (`Box$$init`), imported as a value beside the type.
+    let root = package(
+        "class-init",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Box.bloom",
+                "public final class Box<T> {\n  public var value: T\n  public init(_ value: T) { self.value = value }\n}\n",
+            ),
+            (
+                "Sources/Feed/Ticker.bloom",
+                "public struct Ticker: View {\n  @State private var timer = Box(0)\n  var body: some View {\n    Button(Text(\"Tick\")).onPress { timer.value += 1 }\n  }\n}\n",
+            ),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Ticker.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { type Box, Box$$init } from \"./Box.bloom\";"), "{}", out.code);
+    assert!(out.code.contains("useState<Box<number>>(() => Box$$init(0))"), "{}", out.code);
+}
+
 fn app(imports: &str) -> String {
     format!("{imports}\n\npublic view Home {{\n  body {{\n    Lines()\n  }}\n}}\n")
 }

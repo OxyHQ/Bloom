@@ -391,7 +391,19 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
 
     // The names the file uses, at their first use.
     let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
-    for (name, span) in free_names(source) {
+    let mut uses = free_names(source);
+    // `Box(0)` calls the class's `init` (`Box$$init`), declared beside it. Its import gets a
+    // span of its own (the name's end): the class may be imported as a type only, its
+    // `init` never is.
+    let inits: Vec<(String, Span)> = uses
+        .iter()
+        .filter_map(|(name, span)| {
+            let init = crate::extensions::mangle(name, "init", true);
+            offered.contains_key(&init).then(|| (init, Span::new(span.end, span.end)))
+        })
+        .collect();
+    uses.extend(inits);
+    for (name, span) in uses {
         if own.contains(name.as_str()) {
             continue;
         }
