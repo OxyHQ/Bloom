@@ -18,6 +18,9 @@ mod lexer;
 mod parser;
 mod routes;
 mod sourcemap;
+#[rustfmt::skip]
+#[path = "swift_tokens.generated.rs"]
+mod swift_tokens;
 mod ts;
 mod types;
 mod ui;

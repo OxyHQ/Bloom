@@ -569,6 +569,21 @@ as in 0.x).
   in its signature may be left out. `c ? a : none` is `A?` wherever it is written, so the
   `none` branch is never held to the other's type.
 
+#### Typed tokens (2.0)
+
+A token is written by its Swift name, an implicit member of the parameter's token set:
+`.padding(.md)`, `.spacing(.xxl)`, `.font(.caption1)`, `.foreground(.muted)`, and a colour role at an
+opacity `.foreground(.primary.opacity(0.1))`. Each compiles to today's token string (`"md"`, `"2xl"`,
+`"caption-1"`, `"muted"`, `"primary/10"`), so the cost is the string literal's. The names come from
+a table GENERATED over `spec/language.json`'s token sets
+(`packages/bloom-language-compiler/scripts/generate-swift-tokens.mjs`, output
+`crates/lang/src/swift_tokens.generated.rs`, checked by the package's `test`): `Nxl`/`Nxs` become
+N `x`s (`2xl` → `.xxl`), kebab-case becomes camelCase (`caption-1` → `.caption1`,
+`top-leading` → `.topLeading`), and a token with no Swift name (a number, a CSS value) stays a
+number or a string. A name not in the set is B0502 with the closest name; an opacity not on the
+scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
+`.background(_:)` as a style) are BloomUI's, phase B.
+
 ### 7.3 Reactivity (compile-time)
 
 | Declaration | Meaning | Compiles to |

@@ -1832,6 +1832,75 @@ impl Checker<'_> {
         recv.clone()
     }
 
+    /// `.md`, `.caption1`, `.primary.opacity(0.1)` (2.0): a token by its Swift name, recorded
+    /// for the emitter as the token string. False when `value` is not written so.
+    fn swift_token(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) -> bool {
+        let (member, opacity) = match &value.kind {
+            ExprKind::ImplicitMember(member) => (member, None),
+            // `.primary.opacity(0.1)`: a colour role at an opacity (`"primary/10"`).
+            ExprKind::Call(call)
+                if (set.name == "color" || set.name == "ring")
+                    && let ExprKind::Field(inner, method) = &call.callee.kind
+                    && method.name == "opacity"
+                    && let ExprKind::ImplicitMember(member) = &inner.kind
+                    && let [arg] = call.args.as_slice() =>
+            {
+                (member, Some(arg))
+            }
+            _ => return false,
+        };
+        let Some(token) = ui::swift_token(&set.name, &member.name) else {
+            if !set.token && set.values.iter().any(|v| v == &member.name) {
+                return false;
+            }
+            let help = match closest(&member.name, ui::swift_names(&set.name)) {
+                Some(near) => format!("did you mean `.{near}`?"),
+                None => format!("write one of the {} tokens", set.name),
+            };
+            self.report(
+                Diagnostic::error(
+                    "B0502",
+                    member.span,
+                    format!("`.{modifier}` takes {} tokens, and `.{}` is not one", set.name, member.name),
+                )
+                .label("not a token of this set")
+                .help(help)
+                .docs(ui::token_docs(set)),
+            );
+            return true;
+        };
+        let token = match opacity {
+            None => token.to_string(),
+            Some(arg) => {
+                let percent = match &arg.value.kind {
+                    ExprKind::Float(f) => Some((f * 100.0).round() as i64),
+                    _ => None,
+                };
+                match percent
+                    .map(|p| p.to_string())
+                    .filter(|p| ui::token_set("opacity").is_some_and(|o| o.contains(&p.as_str())))
+                {
+                    Some(p) => format!("{token}/{p}"),
+                    None => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0502",
+                                arg.value.span,
+                                "`.opacity(…)` takes an opacity token",
+                            )
+                            .label("not an opacity Bloom names")
+                            .help("write a fraction of the opacity scale: 0.05, 0.1, 0.2, 0.25, …")
+                            .docs(ui::token_docs(set)),
+                        );
+                        return true;
+                    }
+                }
+            }
+        };
+        self.out.swift_tokens.insert(value.id, token);
+        true
+    }
+
     /// A token parameter: a literal in the set, or a value of the set's type.
     fn token_arg(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) {
         if let Some(number) = written_number(value) {
@@ -1854,6 +1923,10 @@ impl Checker<'_> {
             return;
         }
         let expected = Ty::Strings(set.clone());
+        if self.swift_token(value, set, modifier) {
+            self.out.types.insert(value.id, expected);
+            return;
+        }
         // A set whose TS type also takes a boolean (`HitTesting`, `Condition | boolean`).
         if ui::takes_bool(&set.name) && !matches!(value.kind, ExprKind::Str { .. }) {
             let ty = self.boundary(value, None);
@@ -1881,7 +1954,7 @@ impl Checker<'_> {
 
     /// A parameter that takes points (a computed number) or a token.
     fn points_arg(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) {
-        if written_number(value).is_some() {
+        if written_number(value).is_some() || matches!(value.kind, ExprKind::ImplicitMember(_)) {
             self.token_arg(value, set, modifier);
             return;
         }

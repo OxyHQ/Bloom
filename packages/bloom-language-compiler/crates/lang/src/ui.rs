@@ -233,6 +233,24 @@ pub fn takers(modifier: &str) -> Vec<&'static str> {
         .collect()
 }
 
+/// A token by its Swift name in `set` (`.xxl` → `"2xl"`), from the generated table.
+pub fn swift_token(set: &str, swift: &str) -> Option<&'static str> {
+    crate::swift_tokens::SWIFT_TOKENS
+        .iter()
+        .find(|(name, _)| *name == set)
+        .and_then(|(_, pairs)| pairs.iter().find(|(name, _)| *name == swift))
+        .map(|(_, token)| *token)
+}
+
+/// The Swift names of `set`'s tokens, for `did you mean`.
+pub fn swift_names(set: &str) -> impl Iterator<Item = &'static str> {
+    crate::swift_tokens::SWIFT_TOKENS
+        .iter()
+        .find(|(name, _)| *name == set)
+        .into_iter()
+        .flat_map(|(_, pairs)| pairs.iter().map(|(name, _)| *name))
+}
+
 #[cfg(test)]
 mod tests {
     /// Every token set the language's TS unions with `boolean` is one bloomc takes a `Bool` for.
