@@ -1493,6 +1493,26 @@ impl Tr<'_> {
                     prelude.push(format!("let {pattern} = {name}"));
                     name
                 }
+                // `([key, value]) => …` (an entry): the pair is a tuple.
+                BindingPattern::ArrayPattern(pattern)
+                    if pattern.rest.is_none()
+                        && pattern.elements.len() >= 2
+                        && pattern.elements.iter().all(|e| {
+                            e.as_ref().is_none_or(|e| matches!(e, BindingPattern::BindingIdentifier(_)))
+                        }) =>
+                {
+                    let name = if several { format!("arg{index}") } else { "arg".to_string() };
+                    let names: Vec<String> = pattern
+                        .elements
+                        .iter()
+                        .map(|e| match e {
+                            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
+                            _ => "_".to_string(),
+                        })
+                        .collect();
+                    prelude.push(format!("let ({}) = {name}", names.join(", ")));
+                    name
+                }
                 other => {
                     out.push(self.refuse(
                         "param:destructure",

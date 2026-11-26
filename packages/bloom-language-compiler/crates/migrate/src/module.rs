@@ -803,6 +803,8 @@ impl<'s> Tr<'s> {
                 },
                 _ => None,
             };
+            // An arrow whose body is `toElement(tree)` itself (`({ a }) => toElement(…)`).
+            let mut expression_body = false;
             let found: Option<(String, &[Statement], Span)> = if let Some(f) = default_fn {
                 match (&f.id, &f.body) {
                     (Some(id), Some(b)) => Some((id.name.to_string(), &b.statements[..], f.span)),
@@ -823,6 +825,10 @@ impl<'s> Tr<'s> {
                         };
                         match init {
                             Expression::ArrowFunctionExpression(a) => {
+                                expression_body = a.get_expression().is_some_and(|e| {
+                                    matches!(e.without_parentheses(), Expression::CallExpression(c)
+                                        if matches!(&c.callee, Expression::Identifier(t) if self.is_lang(&t.name, "toElement")))
+                                });
                                 Some((id.name.to_string(), crate::view::arrow_statements(a), a.span))
                             }
                             Expression::FunctionExpression(f) => {
@@ -836,7 +842,7 @@ impl<'s> Tr<'s> {
             };
             if let Some((name, statements, _span)) = found
                 && name.starts_with(|c: char| c.is_ascii_uppercase())
-                && returns_to_element(statements, &|n| self.is_lang(n, "toElement"))
+                && (expression_body || returns_to_element(statements, &|n| self.is_lang(n, "toElement")))
             {
                 self.components.insert(name.clone());
                 self.views.insert(name);
