@@ -203,7 +203,8 @@ impl Tr<'_> {
             }
             Expression::BinaryExpression(b) => self.binary(b),
             Expression::UnaryExpression(u) => match u.operator {
-                UnaryOperator::LogicalNot => format!("!{}", self.expr(&u.argument)),
+                // `!x` is always a boolean in JS: the negated truthiness of `x`.
+                UnaryOperator::LogicalNot => self.test_negated(&u.argument),
                 UnaryOperator::UnaryNegation => format!("-{}", self.expr(&u.argument)),
                 op => self.refuse(
                     &format!("operator:{}", op.as_str()),
@@ -356,11 +357,54 @@ impl Tr<'_> {
         }
         if let Expression::UnaryExpression(u) = e.without_parentheses()
             && u.operator == UnaryOperator::LogicalNot
-            && self.declared(&u.argument).is_some()
         {
             return Test::Plain(self.test_negated(&u.argument));
         }
-        Test::Plain(self.expr(e))
+        // In a condition, `a && b` / `a || b` is the truthiness of each side.
+        if let Expression::LogicalExpression(l) = e.without_parentheses()
+            && l.operator != LogicalOperator::Coalesce
+        {
+            let op = if l.operator == LogicalOperator::And { "&&" } else { "||" };
+            let left = self.test_operand(&l.left);
+            let right = self.test_operand(&l.right);
+            return Test::Plain(format!("{left} {op} {right}"));
+        }
+        Test::Plain(self.condition(e))
+    }
+
+    /// `Boolean(x)`: the truthiness of `x`. An operand the codemod cannot type is
+    /// `!!x` (bloomc types it, `crate::truthiness` spells it and drops the `!!`).
+    fn boolean(&mut self, value: &Expression) -> String {
+        let plain = self.declared(value).is_none()
+            && !matches!(
+                value.without_parentheses(),
+                Expression::LogicalExpression(_) | Expression::UnaryExpression(_)
+            )
+            && !is_boolean_shaped(value);
+        if plain {
+            let text = self.condition(value);
+            return if is_postfix_text(&text) { format!("!!{text}") } else { format!("!!({text})") };
+        }
+        format!("({})", self.test(value, false))
+    }
+
+    /// One side of `&&`/`||` in a condition, parenthesised when it is itself an `||`/`&&`.
+    fn test_operand(&mut self, e: &Expression) -> String {
+        let text = self.test(e, false);
+        match e.without_parentheses() {
+            Expression::LogicalExpression(_) => format!("({text})"),
+            _ => text,
+        }
+    }
+
+    /// A condition operand the codemod cannot type: written as is, and recorded,
+    /// so that bloomc's types spell its truthiness (`crate::truthiness`).
+    fn condition(&mut self, e: &Expression) -> String {
+        let text = self.expr(e);
+        if !is_boolean_shaped(e) {
+            self.conditions.insert(text.clone());
+        }
+        text
     }
 
     /// `!(test)`, with truthiness spelled out as in [`Tr::test`].
@@ -382,7 +426,7 @@ impl Tr<'_> {
         {
             return self.test(&u.argument, false);
         }
-        let text = self.expr(e);
+        let text = self.condition(e);
         crate::view::negate(e, &text)
     }
 
@@ -470,6 +514,13 @@ impl Tr<'_> {
             {
                 // `String(x)` is the template `${x}`: both convert with ToString.
                 return format!("\"${{{}}}\"", self.expr(value));
+            }
+            if name == "Boolean"
+                && !self.imported.contains(name)
+                && let [arg] = call.arguments.as_slice()
+                && let Some(value) = arg.as_expression()
+            {
+                return self.boolean(value);
             }
             if self.is_lang(name, "toElement") {
                 // The boundary disappears: a view is a value where TS takes an element.
@@ -1028,6 +1079,21 @@ fn keyed_modifier(name: &str) -> bool {
     let [kind] = kinds else { return false };
     spec::OBJECTS.iter().any(|(k, ..)| k == kind)
         && !spec::NODES.iter().any(|n| n.params.iter().any(|(m, _)| *m == name))
+}
+
+/// Whether `text` is a name or a member chain, so `!` binds to all of it.
+pub fn is_postfix_text(text: &str) -> bool {
+    !text.is_empty() && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '$'))
+}
+
+/// Whether an expression is a `Bool` by its shape (a comparison, a negation, a literal).
+fn is_boolean_shaped(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::BooleanLiteral(_) => true,
+        Expression::BinaryExpression(b) => b.operator.is_equality() || b.operator.is_compare(),
+        Expression::UnaryExpression(u) => u.operator == UnaryOperator::LogicalNot,
+        _ => false,
+    }
 }
 
 /// Whether an object literal reads as named arguments: plain keys, no spread.

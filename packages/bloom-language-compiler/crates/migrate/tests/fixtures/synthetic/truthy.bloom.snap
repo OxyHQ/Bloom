@@ -1,0 +1,15 @@
+// JS truthiness of values the codemod cannot type is spelled from bloomc's types.
+
+import { useSession } from "./session"
+
+pub view Greeting {
+  let session = useSession()
+  let signedIn = session.user != none
+
+  body {
+    VStack {
+      if !session.title.isEmpty { Text(session.title) }
+      if signedIn && session.count == 0 { Text("Welcome") }
+    }
+  }
+}

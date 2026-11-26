@@ -61,6 +61,8 @@ impl Tr<'_> {
                 self.scope.render = saved;
                 out
             }
+            // JSX (or a conditional of it) is a node now: the boundary goes.
+            other if self.is_view(other.to_expression()) => self.child(other.to_expression()),
             other => {
                 // A TS value that is already a React node: it stays embedded.
                 let value = self.expr(other.to_expression());

@@ -20,6 +20,7 @@ mod expr;
 mod jsx;
 mod module;
 pub mod report;
+mod truthiness;
 mod types;
 mod view;
 
@@ -125,7 +126,15 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             };
         }
     };
-    let compiled = bloom_lang::compile(&formatted, &target, options);
+    let mut compiled = bloom_lang::compile(&formatted, &target, options);
+    // JS truthiness of the conditions the codemod could not type, spelled from bloomc's types.
+    let mut formatted = formatted;
+    if let Some(spelled) = truthiness::spell(&formatted, &compiled.diagnostics, &translated.conditions)
+        && let Ok(reformatted) = bloom_fmt::format(&spelled, &target)
+    {
+        formatted = reformatted;
+        compiled = bloom_lang::compile(&formatted, &target, options);
+    }
     if !compiled.diagnostics.is_empty() {
         let reasons = compiled
             .diagnostics

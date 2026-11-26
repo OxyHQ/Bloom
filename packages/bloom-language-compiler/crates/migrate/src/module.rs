@@ -22,6 +22,9 @@ const LANGUAGE: &str = "@oxy.so/bloom-language";
 pub struct Translated {
     pub text: String,
     pub reasons: Vec<Reason>,
+    /// Condition operands of a type the codemod does not know, as written: JS
+    /// truthiness that bloomc's own types spell out (`crate::truthiness`).
+    pub conditions: HashSet<String>,
 }
 
 /// One kept TS import, by module, in source order.
@@ -100,6 +103,8 @@ pub struct Tr<'s> {
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
     pub quiet: bool,
+    /// Condition operands of unknown type (see [`Translated::conditions`]).
+    pub conditions: HashSet<String>,
 }
 
 impl<'s> Tr<'s> {
@@ -205,6 +210,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     let parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.diagnostics.has_errors() {
         return Translated {
+            conditions: HashSet::new(),
             text: String::new(),
             reasons: vec![Reason {
                 code: "parse".into(),
@@ -239,6 +245,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         wrapped: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
+        conditions: HashSet::new(),
     };
 
     // The imports first: every later decision depends on where a name comes from.
@@ -291,7 +298,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         .collect::<Vec<_>>()
         .join("\n\n")
         + "\n";
-    Translated { text: out, reasons: tr.reasons }
+    Translated { text: out, reasons: tr.reasons, conditions: tr.conditions }
 }
 
 /// Doc comments as plain comments: what they documented is not in the output.
