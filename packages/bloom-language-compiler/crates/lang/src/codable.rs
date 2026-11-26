@@ -42,10 +42,17 @@ pub fn reset() {
     ANCHORS.with(|a| a.borrow_mut().clear());
 }
 
-/// A fresh span that stands for `anchor`.
+/// A fresh span that stands for `anchor` (for a derived span, the written one it stands for:
+/// code derived from derived code, such as a glyph import `bloomui` adds, still points at
+/// the source).
 pub fn synthetic(anchor: Span) -> Span {
     ANCHORS.with(|a| {
         let mut a = a.borrow_mut();
+        let anchor = if anchor.start >= SYNTHETIC {
+            a.get((anchor.start - SYNTHETIC) as usize).copied().unwrap_or(Span::new(0, 0))
+        } else {
+            anchor
+        };
         a.push(anchor);
         let at = SYNTHETIC + a.len() as u32 - 1;
         Span::new(at, at)
@@ -58,8 +65,10 @@ pub fn anchor(diagnostic: &mut Diagnostic) {
         if span.start < SYNTHETIC {
             return span;
         }
-        ANCHORS
-            .with(|a| a.borrow().get((span.start - SYNTHETIC) as usize).copied().unwrap_or(Span::new(0, 0)))
+        let anchored = ANCHORS
+            .with(|a| a.borrow().get((span.start - SYNTHETIC) as usize).copied().unwrap_or(Span::new(0, 0)));
+        // Every anchor is a written span ([`synthetic`]); one that is not is no place.
+        if anchored.start >= SYNTHETIC { Span::new(0, 0) } else { anchored }
     };
     diagnostic.span = original(diagnostic.span);
     for label in &mut diagnostic.labels {
@@ -533,5 +542,24 @@ fn codec(g: &mut Gen, ty: &str, visibility: Visibility) -> Item {
             span,
         }),
         span,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_span_derived_from_a_derived_one_anchors_at_the_source() {
+        reset();
+        let written = Span::new(4, 9);
+        let derived = synthetic(synthetic(written));
+        let mut diagnostic = Diagnostic::error("B0217", derived, "twice");
+        anchor(&mut diagnostic);
+        assert_eq!(diagnostic.span, written);
+        // A span past the source is shown at its start, never a panic.
+        let mut lost = Diagnostic::error("B0217", Span::new(SYNTHETIC + 99, SYNTHETIC + 99), "twice");
+        lost.render("let a = 1\n", "a.bloom");
+        assert!(lost.rendered.contains("a.bloom:1:1"), "{}", lost.rendered);
     }
 }

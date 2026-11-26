@@ -621,6 +621,16 @@ pub fn lower(file: &mut File, diagnostics: &mut Vec<Diagnostic>) -> BTreeSet<Str
         }
     }
     for icon in &lowering.icons {
+        // A glyph the file already imports from the icon set (`import { RiCloseLine } from
+        // "@oxy.so/bloom/icons/RiCloseLine"` beside `Icon(.close)`) is that import.
+        let source = format!("@oxy.so/bloom/icons/{icon}");
+        let written = file.imports.iter().any(|i| {
+            i.source == source
+                && matches!(&i.kind, ImportKind::Named(specs) if specs.iter().any(|s| s.local().name == *icon))
+        });
+        if written {
+            continue;
+        }
         let span = fresh(Span::new(0, 0));
         file.imports.push(Import {
             kind: ImportKind::Named(vec![ImportSpec {
@@ -629,7 +639,7 @@ pub fn lower(file: &mut File, diagnostics: &mut Vec<Diagnostic>) -> BTreeSet<Str
                 alias: None,
                 span,
             }]),
-            source: format!("@oxy.so/bloom/icons/{icon}"),
+            source,
             source_span: span,
             span,
         });

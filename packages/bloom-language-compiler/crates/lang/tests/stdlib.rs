@@ -317,6 +317,19 @@ fn an_icon_outside_blooms_set_is_reported() {
     );
 }
 
+#[test]
+fn an_icon_beside_its_written_glyph_import_is_that_import() {
+    // M7: the glyph import `Icon(.close)` adds was a second `RiCloseLine` (B0217) whose
+    // derived span rendered past the source, a panic in `Diagnostic::render`.
+    let source = "import { RiCloseLine } from \"@oxy.so/bloom/icons/RiCloseLine\"\n\npublic struct CloseButton: View {\n  var body: some View {\n    VStack {\n      Icon(RiCloseLine)\n      Icon(.close)\n    }\n  }\n}\n";
+    let root = package("icon-import", &[("Sources/Model/CloseButton.bloom", source)]);
+    let path = root.join("Sources/Model/CloseButton.bloom");
+    let options = Options { allow_ts_imports: true, ..Options::default() };
+    let out = compile(source, &path.to_string_lossy(), &options);
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert_eq!(out.code.matches("from \"@oxy.so/bloom/icons/RiCloseLine\"").count(), 1, "{}", out.code);
+}
+
 const REFRESHABLE: &str = r#"func reload() async {
   try? await sleep(for: Duration.milliseconds(10))
 }

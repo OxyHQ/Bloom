@@ -645,6 +645,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
   (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
+- **Icons by name (BloomUI, 2.0):** `Icon(.close)` names a glyph of Bloom's icon set; the
+  compiler imports its component (`RiCloseLine` from `@oxy.so/bloom/icons/RiCloseLine`). A file
+  that also imports that component itself, from that path, keeps its one import: the two are the
+  same glyph, not two declarations.
 - **Tokens are string literals checked against the token set** the modifier takes:
   `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
   A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
