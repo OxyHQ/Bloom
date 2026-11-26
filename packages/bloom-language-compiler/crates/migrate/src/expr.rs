@@ -79,7 +79,8 @@ impl Tr<'_> {
     /// Notes an assisted translation; it is written above the statement holding it.
     pub fn review(&mut self, note: String) {
         if !self.quiet {
-            self.reviews.push(note);
+            // A note quoting multi-line source stays one comment line.
+            self.reviews.push(note.split_whitespace().collect::<Vec<_>>().join(" "));
         }
     }
 
