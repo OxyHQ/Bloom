@@ -2202,8 +2202,9 @@ impl<'o> Checker<'o> {
                 });
             }
             _ => {
-                let ty = self.expr(expr, Some(&Ty::View(None)));
-                let _ = ty;
+                // A child may be absent (`on ? Icon(i) : none`): nothing is drawn, as TS's `Child` allows.
+                let optional = Ty::Option(Box::new(Ty::View(None)));
+                self.expr(expr, Some(&optional));
             }
         }
     }
@@ -2514,6 +2515,42 @@ impl<'o> Checker<'o> {
 
     // ---- control flow ---------------------------------------------------
 
+    /// `if x != none { … }` (also `none != x`, and each side of `&&`): `x` is present in
+    /// the block, as TS narrows it. Locals read as themselves only (not `@ref`/`@state`).
+    fn narrow_present(&mut self, expr: &Expr) {
+        let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
+        match op {
+            BinaryOp::And => {
+                self.narrow_present(lhs);
+                self.narrow_present(rhs);
+            }
+            BinaryOp::Ne => {
+                let subject = match (&lhs.kind, &rhs.kind) {
+                    (ExprKind::Name(_), ExprKind::None) => lhs,
+                    (ExprKind::None, ExprKind::Name(_)) => rhs,
+                    _ => return,
+                };
+                let ExprKind::Name(name) = &subject.kind else { return };
+                let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned() else { return };
+                if !matches!(
+                    self.out.locals[original].kind,
+                    LocalKind::Let
+                        | LocalKind::Param
+                        | LocalKind::Prop
+                        | LocalKind::Derived
+                        | LocalKind::Hook
+                ) {
+                    return;
+                }
+                let Ty::Option(inner) = self.resolve(&self.out.locals[original].ty.clone()) else { return };
+                let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+                let narrowed = self.declare(&ident, *inner, LocalKind::Let);
+                self.out.narrowed.insert(subject.id, (narrowed, original));
+            }
+            _ => {}
+        }
+    }
+
     fn cond(&mut self, cond: &Cond) {
         match cond {
             Cond::Expr(expr) => {
@@ -2528,6 +2565,7 @@ impl<'o> Checker<'o> {
                     let narrowed = self.declare(&ident, ty, LocalKind::Let);
                     self.out.narrowed.insert(expr.id, (narrowed, original));
                 }
+                self.narrow_present(expr);
             }
             Cond::Let(pattern, value) => {
                 let ty = self.expr(value, None);
@@ -2716,6 +2754,12 @@ impl<'o> Checker<'o> {
             Some(expected) => {
                 // A TS value Bloom could not type is accepted where a type is
                 // expected; the emitted `satisfies` lets TypeScript check it (spec 4.7).
+                // Nothing known yet (a generic's `U`): the TS value's own type is what it is.
+                if matches!(self.resolve(&ty), Ty::Foreign(_)) && matches!(self.resolve(expected), Ty::Var(_))
+                {
+                    self.unify(expected, &ty);
+                    return ty;
+                }
                 if matches!(self.resolve(&ty), Ty::Foreign(_))
                     && !matches!(self.resolve(expected), Ty::Unknown | Ty::Foreign(_))
                 {
@@ -3453,10 +3497,22 @@ impl<'o> Checker<'o> {
                         self.expr(rhs, None);
                         Ty::Unknown
                     }
-                    Ty::Foreign(_) => {
+                    Ty::Foreign(path) => {
                         // `foreign ?? e` takes `e`'s type (the left side may be `null` in TS too);
-                        // TS checks the whole where it lands, typed as `e`.
-                        self.expr(rhs, expected)
+                        // TS checks the whole where it lands, typed as `e`. When `e` says less than
+                        // TS knows (`data ?? []`), its items are the TS value's (`NonNullable<…>[number]`).
+                        let right = self.expr(rhs, expected);
+                        let present = format!("NonNullable<{path}>");
+                        match self.resolve(&right) {
+                            Ty::List(item) if matches!(self.resolve(&item), Ty::Var(_)) => {
+                                self.unify(&item, &Ty::Foreign(format!("{present}[number]").into()));
+                            }
+                            Ty::Map(value) if matches!(self.resolve(&value), Ty::Var(_)) => {
+                                self.unify(&value, &Ty::Foreign(format!("{present}[string]").into()));
+                            }
+                            _ => {}
+                        }
+                        right
                     }
                     other => {
                         self.report(
@@ -3581,6 +3637,22 @@ impl<'o> Checker<'o> {
                         self.expr(rhs, None);
                         Ty::Unknown
                     }
+                    // A TS value beside a number (or, for `+`, a string) is one (`insets.top + 4`):
+                    // the emitted `satisfies` lets TS check it.
+                    Ty::Foreign(_) => {
+                        let right = self.expr(rhs, expected.filter(|e| matches!(e, Ty::Int | Ty::Float)));
+                        let ty = match self.actual(rhs, &right) {
+                            Ty::Int | Ty::Float => Ty::Float,
+                            Ty::Str | Ty::Strings(_) if op == BinaryOp::Add => Ty::Str,
+                            Ty::Foreign(_) | Ty::Unknown => return right,
+                            other => {
+                                self.operand_error(rhs.span, &format!("`{}`", op.text()), &other);
+                                return Ty::Unknown;
+                            }
+                        };
+                        self.out.foreign_checks.insert(lhs.id, ty.clone());
+                        ty
+                    }
                     other => {
                         self.operand_error(lhs.span, &format!("`{}`", op.text()), other);
                         self.expr(rhs, None);
@@ -3593,8 +3665,11 @@ impl<'o> Checker<'o> {
 
     /// The type `expr` has itself, before it met what was expected of it (`returned`).
     fn actual(&mut self, expr: &Expr, returned: &Ty) -> Ty {
-        let own = self.out.types.get(&expr.id).cloned().unwrap_or_else(|| returned.clone());
-        self.resolve(&own)
+        match self.out.types.get(&expr.id).map(|own| self.resolve(own)) {
+            // A TS value taken as what was expected (its `satisfies` checks it).
+            Some(Ty::Foreign(_)) | None => self.resolve(returned),
+            Some(own) => own,
+        }
     }
 
     fn await_expr(&mut self, expr: &Expr, inner: &Expr) -> Ty {

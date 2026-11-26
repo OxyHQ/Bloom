@@ -5,3 +5,8 @@ export interface NoticeRowProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(NoticeRow())`), or from TSX as `toElement(NoticeRow())`. */
 export declare const NoticeRow: (props: NoticeRowProps) => ComposedView;
+export interface ComposerProps {
+  readonly from: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Composer())`), or from TSX as `toElement(Composer())`. */
+export declare const Composer: (props: ComposerProps) => ComposedView;

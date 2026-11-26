@@ -1,0 +1,74 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { GroupedSectionItem, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useInsets, useMods } from "@/hooks/useInsets";
+
+const OFFSET = 4;
+
+const $fn0 = (m: NonNullable<ReturnType<typeof useMods>["data"]>[number]) => m.name;
+export interface ModsProps {
+  readonly id: string;
+}
+export const Mods = view(function Mods(props: ModsProps) {
+"use no memo";
+const $ = $c(7);
+const { id } = props;
+const insets = useInsets();
+const { data } = useMods(id);
+let mods: readonly NonNullable<ReturnType<typeof useMods>["data"]>[number][];
+if ($[0] !== data) {
+mods = data ?? [];
+$[0] = data;
+$[1] = mods;
+} else {
+mods = $[1];
+}
+let names: readonly NonNullable<ReturnType<typeof useMods>["data"]>[number]["name"][];
+if ($[2] !== mods) {
+names = mods.map((v0) => ($fn0)(v0));
+$[2] = mods;
+$[3] = names;
+} else {
+names = $[3];
+}
+let $t0;
+if ($[4] !== names || $[5] !== insets.top) {
+$t0 = VStack(names.map((name) => Text(name))).padding("top", (insets.top satisfies number) + OFFSET);
+$[4] = names;
+$[5] = insets.top;
+$[6] = $t0;
+} else {
+$t0 = $[6];
+}
+return $t0;
+});
+
+export function end(onEnd: (() => void) | undefined, label: string | undefined): string {
+if ((onEnd !== undefined) && (label !== undefined)) {
+onEnd();
+return label;
+}
+return "";
+}
+
+const $view0 = Text("on");
+export interface RowProps {
+  readonly title: string;
+  readonly active: boolean;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(3);
+const { title, active } = props;
+let $t1;
+if ($[0] !== title || $[1] !== active) {
+$t1 = GroupedSectionItem(title).trailing(active ? $view0 : undefined);
+$[0] = title;
+$[1] = active;
+$[2] = $t1;
+} else {
+$t1 = $[2];
+}
+return $t1;
+});
+
