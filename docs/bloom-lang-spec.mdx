@@ -498,6 +498,42 @@ pub view PostRow(post: Post, compact: Bool = false) {
   (`screen()` from `@oxy.so/bloom-language/router`); `layout Name { … }` the same for `layout()`.
 - `pub` exports; `pub default` makes it the default export.
 
+### 7.1a A view, the 2.0 way
+
+```bloom
+public struct PostRow: View, Equatable {
+  let post: Post                       // a prop
+  var dense: Bool = false              // a prop with a default
+  let onLike: () -> Void
+  @Binding var isOn: Bool              // a prop holding a `Binding<Bool>`
+  @State private var draft = ""        // a state: `useState`
+  @Environment(\.locale) private var locale
+  let title = "Compose"                // a constant, per render
+
+  func send() { draft = "" }           // a member
+
+  var body: some View {
+    HStack { Text(post.text) }
+      .onAppear { … }                  // once, after the first render
+      .onDisappear { … }               // its cleanup
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post }   // the memo comparator
+}
+```
+
+A `struct` that conforms to `View` (or `Screen`, `Layout`) compiles to the same memoised `view()`
+fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are the props; `@State`,
+`@Environment(\.key)` and `func` members are 0.x's `@state`, `@env` and `fn` members; `var body`
+is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
+`.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
+`.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+A data `struct` takes Swift's members too (`public let id: String`, `public var likes: Int`):
+they are its fields. Phase A does not compile yet: methods or computed properties of a data
+struct, computed properties of a view other than `body`, reading through a `@Binding` (it is the
+binding pair, passed on as is), and `Button`'s trailing action (its label is the trailing block,
+as in 0.x).
+
 ### 7.2 Builders, modifiers and tokens
 
 - A trailing closure passed to a parameter of type `Children` is a **builder**: each line is a

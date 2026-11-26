@@ -162,6 +162,36 @@ pub struct StructDecl {
     pub name: Ident,
     pub generics: Vec<Ident>,
     pub fields: Vec<Field>,
+    /// Written Swift's way (2.0): its conformances and members as written, for the
+    /// formatter; `fields` are its stored properties.
+    pub surface: Option<Box<TypeBody>>,
+}
+
+/// A 2.0 type's declaration as written (`struct X: View, Equatable { … }`): what the
+/// formatter prints. The checker and emitter read the declaration it was lowered to.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypeBody {
+    pub conformances: Vec<TypeExpr>,
+    pub members: Vec<TypeMember>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypeMember {
+    pub visibility: Visibility,
+    pub modifiers: Modifiers,
+    pub kind: TypeMemberKind,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TypeMemberKind {
+    /// `let name: T`, `var name: T = v`, `var name = v`.
+    Stored { mutable: bool, name: Ident, ty: Option<TypeExpr>, value: Option<Expr> },
+    /// `var body: some View { … }`: a computed property.
+    Computed { name: Ident, ty: TypeExpr, body: Block },
+    /// `func`, `static func ==`, `init(…)`.
+    Func(FnDecl),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -265,6 +295,10 @@ pub struct ViewDecl {
     pub body_keyword: Span,
     pub body: Block,
     pub span: Span,
+    /// `struct X: View { … }` (2.0): the declaration as written, which the formatter prints.
+    /// Its stored `let`s are the props, `@State` the states, `var body` the body, and
+    /// `.task`, `.onAppear`, `.onDisappear` and `.onChange` on the body its effects.
+    pub surface: Option<Box<TypeBody>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
