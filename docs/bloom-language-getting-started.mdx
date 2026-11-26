@@ -150,6 +150,27 @@ Nothing to configure: each node's type exposes only its own modifiers, and
 each modifier only its token set, so the editor completes `Button(…).size('`
 with `xs`, `sm`, `md`, `lg` and rejects `.padding(12)`.
 
+### ESLint (the React Compiler's rules)
+
+eslint-plugin-react-hooks 7 runs the React Compiler on source as written, where
+a view's constructor and its modifiers are calls it knows nothing of: it reads
+`.onPress(() => ref.current?.focus())` as a ref read while rendering
+(`react-hooks/refs`) and a memoised value handed to a constructor as mutated
+(`react-hooks/preserve-manual-memoization`). A view keeps its arguments as JSX
+keeps its props; give the plugin the language's types and it reads a chain as
+it reads JSX (a ref read while rendering, `Text(String(ref.current))`, is still
+one):
+
+```js
+// eslint.config.js
+const { withLanguageTypes } = require('@oxy.so/bloom-language-compiler/eslint');
+const reactHooks = withLanguageTypes(require('eslint-plugin-react-hooks'));
+// plugins: { 'react-hooks': reactHooks }: the same rules, the same names
+```
+
+The constructors are allowed for `react-hooks/capitalized-calls` too. Do not
+silence a rule in the app for a chain: a finding with the types is a real one.
+
 ## The root
 
 Bloom's provider goes around the app once, as for JSX. With Expo Router the
