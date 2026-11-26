@@ -259,6 +259,8 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
     Some(match ty {
         "String" => format!("{not}{operand}.isEmpty"),
         "Int" | "Float" => format!("{operand} {eq} 0"),
+        // A name is narrowed on the right of `&&`; its negation stays a default.
+        "String?" if !negated && is_name(text) => format!("{text} != none && !{text}.isEmpty"),
         "String?" => format!("({text} ?? \"\") {eq} \"\""),
         "Int?" | "Float?" => format!("({text} ?? 0) {eq} 0"),
         "Bool?" => format!("{operand} {} true", if negated { "!=" } else { "==" }),
@@ -266,6 +268,11 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
         t if t.ends_with('?') && (!t.contains('|') || foreign_object(t)) => format!("{operand} {eq} none"),
         _ => return None,
     })
+}
+
+/// Whether `text` is a plain name (bloomc narrows a name, not a member chain).
+fn is_name(text: &str) -> bool {
+    !text.is_empty() && text.chars().all(|c| c.is_alphanumeric() || c == '_')
 }
 
 /// Whether `text` is a name or a member chain (`a.b.c`, `a?.b`): no parentheses needed.

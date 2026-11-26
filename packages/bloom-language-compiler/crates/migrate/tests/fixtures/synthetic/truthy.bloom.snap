@@ -5,11 +5,13 @@ import { useSession } from "./session"
 pub view Greeting {
   let session = useSession()
   let signedIn = session.user != none
+  let nick = session.nick
 
   body {
     VStack {
       if !session.title.isEmpty { Text(session.title) }
       if signedIn && session.count == 0 { Text("Welcome") }
+      if nick != none && !nick.isEmpty { Text(nick) }
     }
   }
 }

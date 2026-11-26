@@ -5,8 +5,10 @@ import { useSession } from './session';
 export const Greeting = view(function Greeting() {
   const session = useSession();
   const signedIn = Boolean(session.user);
+  const nick = session.nick;
   return VStack(
     session.title ? Text(session.title) : null,
     signedIn && !session.count ? Text('Welcome') : null,
+    nick ? Text(nick) : null,
   );
 });

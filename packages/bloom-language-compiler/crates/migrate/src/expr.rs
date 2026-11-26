@@ -585,6 +585,7 @@ impl Tr<'_> {
                     return Test::Bind(name.clone(), Some(format!("!{name}.isEmpty")));
                 }
                 "Float?" if binds && plain => return Test::Bind(name.clone(), Some(format!("{name} != 0"))),
+                "String?" if plain => format!("{name} != none && !{name}.isEmpty"),
                 "String?" => format!("({name} ?? \"\") != \"\""),
                 "Float?" => format!("({name} ?? 0) != 0"),
                 t if t.ends_with('?') && binds && plain => return Test::Bind(name, None),
