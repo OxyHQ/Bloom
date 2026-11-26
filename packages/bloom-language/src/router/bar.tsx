@@ -13,7 +13,7 @@ import { identity } from '../glass';
 import { BottomBar, FAB, Icon, Tab } from '../primitives';
 import { toElement } from '../render';
 import { view } from '../view';
-import type { PrimaryDestination } from './primary';
+import { primaryPress, type PrimaryDestination } from './primary';
 
 const DestinationBar = view(function DestinationBar(props: { primary: PrimaryDestination | null }) {
   const pager = useTabPager();
@@ -39,7 +39,7 @@ const DestinationBar = view(function DestinationBar(props: { primary: PrimaryDes
         FAB(Icon(primary.icon))
           .label(primary.label)
           .glass(identity)
-          .onPress(() => pager.selectDestination(primary.destination)),
+          .onPress(primaryPress(primary, pager.selectDestination)),
     );
 });
 

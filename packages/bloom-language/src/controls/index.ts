@@ -17,6 +17,7 @@ import { CODES } from './code';
 import { STEPPERS } from './stepper';
 import { TOOLTIPS } from './tooltip';
 import { BREADCRUMBS } from './breadcrumb';
+import { APP_SHELL_MENU_BUTTONS } from './app-shell-menu-button';
 import { ACTIVITY_HEATMAPS } from './activity-heatmap';
 import { TAG_FIELDS } from './tag-field';
 import { FILE_UPLOADS } from './file-upload';
@@ -130,6 +131,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...STEPPERS,
   ...TOOLTIPS,
   ...BREADCRUMBS,
+  ...APP_SHELL_MENU_BUTTONS,
   ...ACTIVITY_HEATMAPS,
   ...TAG_FIELDS,
   ...FILE_UPLOADS,

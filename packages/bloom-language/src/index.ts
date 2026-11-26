@@ -562,6 +562,10 @@ export type { StepperLabels, StepperRowView, StepperView } from './controls/step
 export { Tooltip } from './controls/tooltip';
 export type { TooltipView } from './controls/tooltip';
 
+// The app shell's drawer button (controls/app-shell-menu-button.tsx)
+export { AppShellMenuButton } from './controls/app-shell-menu-button';
+export type { AppShellMenuButtonView } from './controls/app-shell-menu-button';
+
 // Breadcrumbs (controls/breadcrumb.tsx)
 export { Breadcrumb, BreadcrumbItem } from './controls/breadcrumb';
 export type { BreadcrumbItemView, BreadcrumbView } from './controls/breadcrumb';

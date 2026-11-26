@@ -237,6 +237,8 @@ export type FooterPinning = (typeof ENUMS.footerPinning)[number];
 export type SettingsView = (typeof ENUMS.settingsView)[number];
 export type ShellLayout = (typeof ENUMS.shellLayout)[number];
 export type ShellPresentation = (typeof ENUMS.shellPresentation)[number];
+export type PanelAppearance = (typeof ENUMS.panelAppearance)[number];
+export type ShellBreakpoint = (typeof ENUMS.shellBreakpoint)[number];
 export type PanelRole = (typeof ENUMS.panelRole)[number];
 /** Bloom's typography components, as a text's style: `h1` is Bloom `H1`, `lead` is `Lead`… */
 export type TextStyleName = (typeof ENUMS.textStyle)[number];
