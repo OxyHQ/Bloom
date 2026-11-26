@@ -2055,6 +2055,11 @@ fn keyword_typo(word: &str) -> Option<&'static str> {
     })
 }
 
+/// Keywords that never start an expression, so they may name a parameter, a field or a value.
+fn is_soft(kw: Kw) -> bool {
+    matches!(kw, Kw::Type | Kw::Body | Kw::View | Kw::Screen | Kw::Layout | Kw::From)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2103,9 +2108,4 @@ mod tests {
         let (_, _, diagnostics) = parse("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
         assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
     }
-}
-
-/// Keywords that never start an expression, so they may name a parameter, a field or a value.
-fn is_soft(kw: Kw) -> bool {
-    matches!(kw, Kw::Type | Kw::Body | Kw::View | Kw::Screen | Kw::Layout | Kw::From)
 }
