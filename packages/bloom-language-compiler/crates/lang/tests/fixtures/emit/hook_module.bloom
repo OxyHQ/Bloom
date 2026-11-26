@@ -1,0 +1,18 @@
+// A module of hooks: a `fn useX` may call hooks at its top level (its `let`s and its result),
+// as a view member does, and calling it is calling a hook.
+import { useInsets } from "@/hooks/useInsets"
+
+pub fn useTopInset(extra: Float) -> Float {
+  let insets = useInsets()
+  insets.top + extra
+}
+
+pub fn usePadding() -> Float { useTopInset(8) }
+
+pub view Padded(title: String) {
+  let top = usePadding()
+
+  body {
+    Text(title).padding("top", top)
+  }
+}

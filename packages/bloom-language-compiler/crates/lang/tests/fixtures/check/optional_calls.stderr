@@ -59,14 +59,14 @@ error[B0207]: a rest parameter comes last
 help: move it to the end
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
 
-error[B0207]: a rest parameter's type is a list
-  --> check/optional_calls.bloom:43:13
+error[B0202]: cannot find `xs` in scope
+  --> check/optional_calls.bloom:44:3
    |
-43 | fn listless(..xs: Int) -> Int {
-   |             ^^^^^^^^^ not a rest parameter
+44 |   xs
+   |   ^^ not declared
    |
-help: write `[T]`
-   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+help: did you mean `ts`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
 
 error[B0201]: expected `[String]`, found `[Int]`
   --> check/optional_calls.bloom:48:24

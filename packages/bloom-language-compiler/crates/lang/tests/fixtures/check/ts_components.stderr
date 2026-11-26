@@ -22,3 +22,11 @@ error[B0201]: expected `String`, found `Int`
   |                   ^ this is `Int`
   |
   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0206]: this component needs `title`
+  --> check/ts_components.bloom:18:10
+   |
+18 |   body { Card(count: 1) }
+   |          ^^^^ missing required props
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens

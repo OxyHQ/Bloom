@@ -1,0 +1,34 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { useInsets } from "@/hooks/useInsets";
+
+export function useTopInset(extra: number): number {
+const insets = useInsets();
+return (insets.top satisfies number) + extra;
+}
+
+export function usePadding(): number {
+return useTopInset(8);
+}
+
+export interface PaddedProps {
+  readonly title: string;
+}
+export const Padded = view(function Padded(props: PaddedProps) {
+"use no memo";
+const $ = $c(3);
+const { title } = props;
+const top = usePadding();
+let $t0;
+if ($[0] !== title || $[1] !== top) {
+$t0 = Text(title).padding("top", top);
+$[0] = title;
+$[1] = top;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+

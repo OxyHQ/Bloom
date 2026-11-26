@@ -33,3 +33,15 @@ pub view Feed {
     }
   }
 }
+
+// `..card: PostCardProps`: the props spread, and their whole value named (handed on as is).
+fn summary(card: PostCardProps) -> String { "${card.title} (${card.likes})" }
+
+pub view PostShell(..card: PostCardProps, pinned: Bool = false) {
+  body {
+    VStack {
+      Text(pinned ? "Pinned" : title)
+      Text(summary(card: card))
+    }
+  }
+}

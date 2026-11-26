@@ -229,6 +229,8 @@ pub struct CheckResult {
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
     pub ref_objects: HashSet<ExprId>,
+    /// `..props: Props`: the locals naming a view's whole props (emitted `props`).
+    pub whole_props: HashSet<LocalId>,
     pub awaits: HashMap<ExprId, AwaitRes>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
@@ -316,6 +318,9 @@ pub struct Checker<'o> {
     view: Option<usize>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
+    /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
+    /// may call hooks.
+    hook_body: Option<usize>,
     /// Whether the call just checked was a hook.
     was_hook: bool,
     /// The body's root chain may carry `.task`.
@@ -392,6 +397,7 @@ impl<'o> Checker<'o> {
             ts_named: HashMap::default(),
             view: None,
             hook_allowed: false,
+            hook_body: None,
             was_hook: false,
             task_allowed: false,
             reported: HashSet::default(),
@@ -1094,7 +1100,15 @@ impl<'o> Checker<'o> {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = self.expr(&c.value, declared.as_ref());
-                    let local = self.declare_unique(&c.name, ty, LocalKind::ModuleConst);
+                    let local = match self.lazy_props(&c.value) {
+                        // `let X = lazy(() => import("./X"))`: a component, with the module's props.
+                        Some(props) => self.declare_unique(
+                            &c.name,
+                            Ty::View(Some("embed")),
+                            LocalKind::Component { props },
+                        ),
+                        None => self.declare_unique(&c.name, ty, LocalKind::ModuleConst),
+                    };
                     self.out.items.insert(index, local);
                 }
                 ItemKind::Struct(s) => self.struct_defaults(s),
@@ -1246,7 +1260,10 @@ impl<'o> Checker<'o> {
         }
         self.out.fn_params.insert(f.span, params);
         let ret = fn_ty.ret.clone();
+        let hook = is_hook_name(&f.name.name).then_some(self.scopes.len() + 1);
+        let outer_hook = std::mem::replace(&mut self.hook_body, hook);
         self.block(&f.body, Some(&ret));
+        self.hook_body = outer_hook;
         self.frames.pop();
         self.pop();
         self.generics = outer_generics;
@@ -1424,6 +1441,10 @@ impl<'o> Checker<'o> {
                             let name =
                                 Ident { name: prop.name.clone().unwrap_or_default(), span: param.name.span };
                             info.props.push(self.declare(&name, prop.ty, LocalKind::Prop));
+                        }
+                        if let Some(whole) = &param.whole {
+                            let local = self.declare(whole, ty.clone(), LocalKind::Prop);
+                            self.out.whole_props.insert(local);
                         }
                         info.spreads.push((ty, start..info.props.len()));
                     }
@@ -1859,7 +1880,10 @@ impl<'o> Checker<'o> {
             let last = index + 1 == stmts.len();
             match &stmt.kind {
                 StmtKind::Expr(expr) if last && !discard => {
+                    // A hook function's result may be a hook's (`fn useX() -> T { useY() }`).
+                    self.hook_allowed = self.hook_body == Some(self.scopes.len());
                     ty = self.expr(expr, expected);
+                    self.hook_allowed = false;
                 }
                 StmtKind::Return(_) => {
                     self.stmt(stmt);
@@ -1900,7 +1924,10 @@ impl<'o> Checker<'o> {
         match &stmt.kind {
             StmtKind::Let(l) => {
                 let declared = l.ty.as_ref().map(|t| self.resolve_type(t));
+                // A hook function's top-level `let` may call a hook, as a view member does.
+                self.hook_allowed = self.hook_body == Some(self.scopes.len());
                 let ty = self.expr(&l.value, declared.as_ref());
+                self.hook_allowed = false;
                 self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
             }
             StmtKind::Var(v) => {
@@ -2511,6 +2538,39 @@ impl<'o> Checker<'o> {
             PatternKind::Or(alternatives) => alternatives.iter().flat_map(|a| self.rows(a)).collect(),
             _ => vec![self.to_pat(pattern)],
         }
+    }
+
+    /// `lazy(() => import("./X"))` with React's `lazy` imported: a component whose props TS
+    /// checks.
+    fn lazy_props(&mut self, value: &Expr) -> Option<Ty> {
+        let ExprKind::Call(call) = &value.kind else { return None };
+        let ExprKind::Name(name) = &call.callee.kind else { return None };
+        let local = self.lookup(name)?;
+        if !matches!(self.out.locals[local].kind, LocalKind::Import { .. }) || name != "lazy" {
+            return None;
+        }
+        let closure = match (call.args.as_slice(), &call.trailing) {
+            ([arg], None) => match &arg.value.kind {
+                ExprKind::Closure(c) => c,
+                _ => return None,
+            },
+            ([], Some(c)) => c,
+            _ => return None,
+        };
+        let [Stmt { kind: StmtKind::Expr(body), .. }] = closure.body.as_slice() else { return None };
+        let ExprKind::Call(import) = &body.kind else { return None };
+        if !matches!(&import.callee.kind, ExprKind::Name(n) if n == "import") {
+            return None;
+        }
+        let [arg] = import.args.as_slice() else { return None };
+        let ExprKind::Str { parts, .. } = &arg.value.kind else { return None };
+        let [StrPart::Text(specifier)] = parts.as_slice() else { return None };
+        // The module is TS's to read: the component's props are checked by the emitted
+        // `satisfies ComponentProps<typeof X>`.
+        if let Some(path) = ts::resolve(&self.path, specifier, self.options) {
+            self.out.dependencies.insert(path);
+        }
+        Some(Ty::Foreign("".into()))
     }
 
     // ---- control flow ---------------------------------------------------
