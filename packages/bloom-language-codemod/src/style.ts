@@ -195,6 +195,7 @@ const KEYWORD: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     'space-evenly': 'justify-evenly',
   },
   position: { absolute: 'absolute', relative: 'relative' },
+  textAlign: { center: 'text-center', left: 'text-left', right: 'text-right' },
   // A view draws what overflows it by default: the className table drops `overflow-visible`.
   overflow: { hidden: 'overflow-hidden', visible: 'overflow-visible' },
   // An auto margin takes the free space on its side (the language's `.margin(edge, 'auto')`).

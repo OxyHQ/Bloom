@@ -127,6 +127,40 @@ export function A({ depth, bar }) {
     expect(flat(code)).toContain("bottom: '100%'");
     expect(flat(code)).toContain(".shrink('20')");
   });
+  it('maps a safe-area class and its offset, and keeps one that replaces another padding JSX', () => {
+    const { code, unconverted } = run(`import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export function A() {
+  return (
+    <View className="px-6 pt-safe-offset-6">
+      <View className="pb-safe"><Text>a</Text></View>
+      <View className="p-6 pt-safe"><Text>b</Text></View>
+    </View>
+  );
+}
+`);
+    expect(flat(code)).toContain(".safeAreaPadding('top').padding('top', '2xl')");
+    expect(flat(code)).toContain(".safeAreaPadding('bottom')");
+    expect(flat(code)).toContain('className="p-6 pt-safe"');
+    expect(unconverted.map((u) => u.reasons[0]?.code)).toEqual(['padding-overlap']);
+  });
+  it('maps a Button’s icon, square when it has no label', () => {
+    const { code } = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
+export function A({ add }) {
+  return (
+    <>
+      <Button icon={RiAddLine} onPress={add}>Add</Button>
+      <Button icon={RiAddLine} onPress={add} accessibilityLabel="Add" />
+    </>
+  );
+}
+`);
+    expect(flat(code)).toContain("LButton(Icon(RiAddLine), Text('Add')).onPress(add)");
+    expect(flat(code)).toContain(
+      "LButton(Icon(RiAddLine)).shape('circle').onPress(add).label('Add')",
+    );
+  });
   it('maps a border width with no colour as the platform default colour, and keeps one beside a colour JSX', () => {
     const { code } = run(`import { View, Text } from 'react-native';
 export function A() {

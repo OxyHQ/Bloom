@@ -567,13 +567,21 @@ function finish(
 
   // Two paddings (or margins) of one side: the language adds paddings and keeps
   // the later margin, CSS keeps the rule Tailwind writes later. Either way, a conflict.
+  // A safe-area padding is a padding of its sides: NativeWind's `pt-safe` replaces `p-6`'s top,
+  // the language adds the two (a class's own inset and space beyond it, `pt-safe-offset-6`, are one).
+  const edgeOf = (mod: Mod): string =>
+    mod.name === 'safeAreaPadding'
+      ? ((mod.args[0] as string | undefined) ?? 'all')
+      : mod.args.length === 2
+        ? (mod.args[0] as string)
+        : 'all';
   for (const name of ['padding', 'margin']) {
     const seen: Mod[] = [];
-    for (const mod of mods.filter((m) => m.name === name)) {
-      const edge = mod.args.length === 2 ? (mod.args[0] as string) : 'all';
-      const prior = seen.find((p) =>
-        edgesMeet(p.args.length === 2 ? (p.args[0] as string) : 'all', edge),
-      );
+    const sided = (m: Mod) =>
+      m.name === name || (name === 'padding' && m.name === 'safeAreaPadding');
+    for (const mod of mods.filter(sided)) {
+      const edge = edgeOf(mod);
+      const prior = seen.find((p) => subject(p) !== subject(mod) && edgesMeet(edgeOf(p), edge));
       if (prior)
         fail(`${subject(prior)} ${subject(mod)}`, `${name}-overlap`, `two ${name}s of one side`);
       seen.push(mod);

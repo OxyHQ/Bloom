@@ -80,12 +80,12 @@ describe('on the web, styles are classes from the generated sheet', () => {
     ]);
   });
 
-  it('text paints with a class on the web; an icon’s fill from the tree’s palette, with no leaf', () => {
+  it('text paints with a class on the web; an icon’s fill is its role’s variable, with no leaf', () => {
     const r = mount(toElement(VStack(Text('a'), Icon(Glyph).foreground('primary'))));
     expect(
       r.root.findAll((i) => (i.type as { displayName?: string }).displayName === 'BloomPaint'),
     ).toHaveLength(0);
-    expect(r.root.findByType('Glyph' as never).props.fill).toBe(LIGHT.primary);
+    expect(r.root.findByType('Glyph' as never).props.fill).toBe('var(--primary)');
   });
 
   it('an image, a Bloom component, takes its style inline, roles as theme variables', () => {

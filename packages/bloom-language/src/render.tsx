@@ -93,6 +93,7 @@ import {
 } from './node';
 import type { BloomSize } from '@oxy.so/bloom/appearance';
 import {
+  COLORS,
   ENVIRONMENT,
   ENVIRONMENT_TAKERS,
   GLASS,
@@ -150,6 +151,7 @@ import {
   joinVariants,
   layerStyle,
   role,
+  webInk,
   layerVariants,
   layoutOf,
   layoutStyle,
@@ -2240,6 +2242,12 @@ function iconPaint(color: ColorToken): Paint {
   return paint;
 }
 
+/** A role's CSS variable on the web, as a glyph's fill; the surface fill has none (its leaf paints it). */
+function webFill(color: ColorToken): string | undefined {
+  const ref = role(color);
+  return COLORS[ref.role].web === null ? undefined : webInk(ref);
+}
+
 const iconVariantPaints = new Map<string, Paint>();
 
 /**
@@ -2247,7 +2255,9 @@ const iconVariantPaints = new Map<string, Paint>();
  * live variant changes is answered where every other variant is: on the web by
  * CSS (the glyph paints `currentColor`, and its colour is a class under each
  * condition), on native by a `Conditioned` leaf that fills it from the
- * environment.
+ * environment. On the web a theme role fills the glyph as its CSS variable,
+ * as a Bloom glyph paints its default (`useColorTokens`): the cascade paints
+ * it, under the theme or a colour scope.
  */
 function iconGlyph(
   palette: Palette,
@@ -2270,9 +2280,10 @@ function iconGlyph(
   // An app's own colour is the glyph's fill as it is, on every platform; so is
   // a fixed role's natively (white, black: the same in every theme).
   const own = isAppColor(color) ? color.value : fixedInk(color);
+  const web = IS_WEB && own === undefined ? webFill(color as ColorToken) : undefined;
   if (live.length === 0)
-    return own !== undefined
-      ? draw(icon, { fill: own, width: size, height: size, key, style })
+    return own !== undefined || web !== undefined
+      ? draw(icon, { fill: own ?? web, width: size, height: size, key, style })
       : draw(
           ...paintedLeaf(palette, {
             host: icon,
