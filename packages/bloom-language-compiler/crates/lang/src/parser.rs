@@ -673,6 +673,9 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Ident(word) if word == "protocol" && matches!(self.nth(1), Tok::Ident(_)) => {
                 ItemKind::Protocol(self.protocol_decl())
             }
+            Tok::Ident(word) if word == "test" && *self.nth(1) == Tok::P(P::LParen) => {
+                ItemKind::Test(self.test_decl())
+            }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
             Tok::Kw(Kw::Var) => {
@@ -1426,6 +1429,32 @@ impl<'s, 'i> Parser<'s, 'i> {
             body: Block { stmts: Vec::new(), span: end },
             span: start.to(end),
         }
+    }
+
+    /// `test("name") { … }`.
+    fn test_decl(&mut self) -> TestDecl {
+        self.bump();
+        self.expect(P::LParen, "`(` and the test's name");
+        let name = match self.tok().clone() {
+            Tok::Str { parts, .. } => {
+                let span = self.bump();
+                let name = parts
+                    .iter()
+                    .map(|p| match p {
+                        RawPart::Text(t) => t.as_str(),
+                        RawPart::Interp(_) => "",
+                    })
+                    .collect::<String>();
+                Ident { name, span }
+            }
+            _ => {
+                self.unexpected("the test's name, as a string");
+                Ident { name: String::new(), span: self.span() }
+            }
+        };
+        self.expect(P::RParen, "`)` after the test's name");
+        let body = self.block();
+        TestDecl { name, body }
     }
 
     /// `extern module "pkg" { declarations }`.

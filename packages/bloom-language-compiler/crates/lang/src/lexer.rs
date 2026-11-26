@@ -365,6 +365,15 @@ impl Lexer<'_> {
                     self.number(space);
                     space = false;
                 }
+                // `#expect(…)`: a test macro (`bloom test`), read as the name `#expect`.
+                b'#' if self.peek(1).is_ascii_alphabetic() => {
+                    self.pos += 1;
+                    while self.peek(0) == b'_' || self.peek(0).is_ascii_alphanumeric() {
+                        self.pos += 1;
+                    }
+                    self.push(Tok::Ident(self.text[start..self.pos].to_string()), start, space);
+                    space = false;
+                }
                 c if c == b'_' || c.is_ascii_alphabetic() => {
                     while self.peek(0) == b'_' || self.peek(0).is_ascii_alphanumeric() {
                         self.pos += 1;

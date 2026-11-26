@@ -85,7 +85,8 @@ impl Walker<'_> {
             | ItemKind::Alias(_)
             | ItemKind::Extension(_)
             | ItemKind::Protocol(_)
-            | ItemKind::Extern(_) => {}
+            | ItemKind::Extern(_)
+            | ItemKind::Test(_) => {}
             ItemKind::Class(c) => {
                 for member in &c.body.members {
                     if let TypeMemberKind::Stored { value: Some(v), .. } = &member.kind {

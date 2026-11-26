@@ -26,6 +26,7 @@ mod sourcemap;
 #[rustfmt::skip]
 #[path = "swift_tokens.generated.rs"]
 mod swift_tokens;
+mod testing;
 mod ts;
 mod types;
 mod ui;
@@ -268,6 +269,8 @@ fn resolved(
     if !resolution.diagnostics.is_empty() {
         errors.sort_by_key(|d| d.span.start);
     }
+    // The test runtime has no declarations to read: its names are `Foreign` on purpose.
+    warnings.retain(|w| !(w.code == "B0602" && w.message.contains(testing::RUNTIME)));
     dependencies.extend(resolution.reads.iter().cloned());
 }
 

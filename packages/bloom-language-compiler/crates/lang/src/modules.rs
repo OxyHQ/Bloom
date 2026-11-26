@@ -238,6 +238,8 @@ enum Hidden {
 pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options) -> Resolution {
     let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
     let path = absolute(Path::new(filename));
+    let tests_allowed = in_tests(&path, options);
+    out.diagnostics.extend(crate::testing::lower(file, source, tests_allowed));
     let Some(root) = options.package.clone().or_else(|| find_root(&path)) else {
         return out;
     };
@@ -279,13 +281,16 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             written.push(ModuleImport { segments: segments.clone(), span: import.span });
             continue;
         }
-        let bloom_file = import.source.ends_with(".bloom");
+        let bloom_file = import.source.ends_with(".bloom") || import.source == crate::testing::RUNTIME;
         if !bindings && !options.allow_ts_imports && !bloom_file {
             out.diagnostics.push(string_import(&import));
         }
         kept.push(import);
     }
     file.imports = kept;
+    if !bindings && !options.allow_ts_imports {
+        out.diagnostics.extend(foreign_types(source));
+    }
     for module_import in written {
         if let Some(found) = resolve_import(graph, index, &module_import, &mut out) {
             if imported.iter().any(|i| i.name == found.name) {
@@ -442,6 +447,17 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     }
     out.hidden = hidden;
     out
+}
+
+/// Whether tests may be written in the file at `path`: in a `.tests` target, or outside a package.
+fn in_tests(path: &Path, options: &Options) -> bool {
+    let Some(root) = options.package.clone().or_else(|| find_root(path)) else { return true };
+    match load(&root).as_ref() {
+        Ok(graph) => {
+            graph.target_of(path).is_none_or(|t| matches!(graph.manifest.targets[t].kind, TargetKind::Tests))
+        }
+        Err(_) => true,
+    }
 }
 
 /// Turns "cannot find `X`" into why `X` is not visible, when the module knows.
@@ -628,8 +644,31 @@ fn resolve_import(
     None
 }
 
+/// `Foreign<"…">` written in an app module: TS types cross only in binding modules.
+fn foreign_types(source: &str) -> Vec<Diagnostic> {
+    let tokens = lexer::lex(source, 0, source.len()).tokens;
+    tokens
+        .windows(2)
+        .filter(|w| matches!(&w[0].tok, Tok::Ident(n) if n == "Foreign") && w[1].tok == Tok::P(P::Lt))
+        .map(|w| {
+            Diagnostic::error("B0822", w[0].span, "an app module names no TS type")
+                .label("`Foreign` is for binding modules")
+                .help("give the value a Bloom type, and declare the crossing in a binding module (`bloom bind`)")
+                .spec(SPEC)
+        })
+        .collect()
+}
+
 fn string_import(import: &Import) -> Diagnostic {
     let source = &import.source;
+    if matches!(&import.kind, ImportKind::Namespace(ns) if ns.name.starts_with("__extern")) {
+        return Diagnostic::error("B0806", import.source_span, "an `extern module` belongs to a binding module")
+            .label("this module is an app module")
+            .help(format!(
+                "move it to Bindings/<Name>/, declared as `.bindings(\"<Name>\", npm: \"{source}@<version>\")` (`bloom bind {source}` writes both)"
+            ))
+            .spec(SPEC);
+    }
     let help = if source.starts_with('.') || source.starts_with('@') && source.contains("/src") {
         "import the module that holds it by name (`import Posts`), or, while migrating, compile with `--allow-ts-imports`".to_string()
     } else {

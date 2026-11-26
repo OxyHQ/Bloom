@@ -144,7 +144,11 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                     }
                 }
                 ItemKind::Struct(_) | ItemKind::Enum(_) | ItemKind::Alias(_) | ItemKind::Protocol(_) => {}
-                ItemKind::View(_) | ItemKind::Extern(_) | ItemKind::Extension(_) | ItemKind::Class(_) => {
+                ItemKind::View(_)
+                | ItemKind::Extern(_)
+                | ItemKind::Extension(_)
+                | ItemKind::Class(_)
+                | ItemKind::Test(_) => {
                     diagnostics.push(
                         Diagnostic::error(
                             "B0820",

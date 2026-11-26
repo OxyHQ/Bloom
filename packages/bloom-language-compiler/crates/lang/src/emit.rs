@@ -661,7 +661,7 @@ impl<'a> Emitter<'a> {
                 Frag::at(item.span, format!("{export}type {}{generics} = {text};\n", a.name.name))
             }
             // Lowered before checking (`crate::extensions::lower`, `crate::externs::lower`).
-            ItemKind::Extension(_) | ItemKind::Extern(_) => Frag::default(),
+            ItemKind::Extension(_) | ItemKind::Extern(_) | ItemKind::Test(_) => Frag::default(),
             ItemKind::Const(c) => {
                 let local = self.ck.items[&index];
                 let ty = self.ck.locals[local].ty.clone();
@@ -4760,7 +4760,7 @@ impl<'a> Emitter<'a> {
                 ItemKind::Alias(_) => out.push_str(&self.item(index, item).text),
                 ItemKind::Class(c) => out.push_str(&self.class_decl(c, "export ", true).text),
                 ItemKind::Protocol(p) => out.push_str(&self.protocol_decl(p, "export ").text),
-                ItemKind::Extension(_) | ItemKind::Extern(_) => {}
+                ItemKind::Extension(_) | ItemKind::Extern(_) | ItemKind::Test(_) => {}
                 ItemKind::Const(c) => {
                     let local = self.ck.items[&index];
                     let ty = self.ck.locals[local].ty.clone();
