@@ -137,6 +137,8 @@ pub struct Tr<'s> {
     pub loop_block: bool,
     /// Translating a hook function (`fn useX`): React's memo hooks are TS calls.
     pub hook_fn: bool,
+    /// Language exports the output calls as TS (`defineModifier` for a modifier value).
+    pub lang_values: std::collections::BTreeSet<String>,
     /// Names an `export { a, b }` list exports: `pub` where they are declared.
     pub listed_exports: HashSet<String>,
     /// `const X = memo(Named, compare)`: Named's `equal(old, new)` member.
@@ -349,6 +351,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         dynamic_import: false,
         equal_for: HashMap::new(),
         listed_exports: HashSet::new(),
+        lang_values: Default::default(),
         react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
@@ -700,6 +703,17 @@ impl<'s> Tr<'s> {
     /// The `import` lines for the names the output uses.
     fn imports_text(&self, imports: &Imports) -> String {
         let mut out = String::new();
+        if !self.lang_values.is_empty() {
+            let names: Vec<String> = self
+                .lang_values
+                .iter()
+                .map(|local| match self.lang.get(local) {
+                    Some(export) if export != local => format!("{export} as {local}"),
+                    _ => local.clone(),
+                })
+                .collect();
+            out.push_str(&format!("import {{ {} }} from \"{LANGUAGE}\"\n", names.join(", ")));
+        }
         if !self.js.is_empty() {
             let names: Vec<&str> = self.js.iter().map(String::as_str).collect();
             out.push_str(&format!("import {{ {} }} from \"js\"\n", names.join(", ")));
@@ -1334,6 +1348,14 @@ impl<'s> Tr<'s> {
                 return self.view_item(name, call, vis, body);
             }
             if self.is_lang(&callee, "defineModifier") {
+                // Used as a value too (`.modifier(look ?? card)`, a prop): the modifier itself.
+                if modifier_used_as_value(self.src, name)
+                    && let Some(chain) = self.modifiers.get(name).cloned()
+                {
+                    self.lang_values.insert(callee.clone());
+                    let name = self.bind_param(name, call.span);
+                    return format!("{vis}let {name} = {callee} {{ v: View in v{chain} }}");
+                }
                 return String::new();
             }
             // `lazy(() => import("./X"))`: React's `lazy` with a Bloom closure, a component.
@@ -1576,4 +1598,23 @@ fn export_list(export: &oxc_ast::ast::ExportNamedDeclaration) -> Option<Vec<Stri
             (s.exported.name() == local.as_str()).then_some(local)
         })
         .collect()
+}
+
+/// Whether the modifier `name` is read other than as `.modifier(name)`.
+fn modifier_used_as_value(src: &str, name: &str) -> bool {
+    src.match_indices(name).any(|(i, _)| {
+        let before = &src[..i];
+        let after = &src[i + name.len()..];
+        let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$');
+        if word(before.chars().next_back()) || word(after.chars().next()) {
+            return false;
+        }
+        let applied = before.ends_with(".modifier(") && after.starts_with(')');
+        // A value: an argument, a field, an operand (`look ?? card`), not a word in a comment.
+        let b = before.trim_end();
+        let a = after.trim_start();
+        let opens = b.ends_with(['(', ',', ':', '?', '=', '[']) && !b.ends_with("==") && !b.ends_with("=>");
+        let closes = a.starts_with([')', ',', '}', ']', ';', '?', '\n']) || a.is_empty();
+        !applied && opens && closes
+    })
 }
