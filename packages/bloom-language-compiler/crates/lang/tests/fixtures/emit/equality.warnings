@@ -1,0 +1,8 @@
+warning[B0950]: `fn` is Bloom 0.x (12 times in this file)
+  --> emit/equality.bloom:20:1
+   |
+20 | fn samePoint(a: Point, b: Point) -> Bool {
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

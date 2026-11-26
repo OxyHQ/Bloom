@@ -95,6 +95,8 @@ pub fn exposed_types(source: &str) -> Vec<String> {
 
 pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
     let (file, comments, mut diagnostics) = parser::parse(source);
+    // The syntax errors; a 0.x form's deprecation (a warning) is the checker's to report.
+    diagnostics.retain(|d| d.severity == Severity::Error);
     for diagnostic in &mut diagnostics {
         diagnostic.render(source, filename);
     }
@@ -201,8 +203,11 @@ fn rules(file: &Ast, source: &str, result: &mut check::CheckResult) {
 /// syntax error the checker's errors are left out: they would be about the
 /// parser's recovery, and one typo is one error.
 fn merge(syntax: Vec<Diagnostic>, checked: Vec<Diagnostic>) -> (Vec<Diagnostic>, Vec<Diagnostic>) {
+    let (syntax, deprecations): (Vec<_>, Vec<_>) =
+        syntax.into_iter().partition(|d| d.severity == Severity::Error);
     let has_syntax = !syntax.is_empty();
-    let (errors, warnings): (Vec<_>, Vec<_>) =
+    let (errors, mut warnings): (Vec<_>, Vec<_>) =
         checked.into_iter().partition(|d| d.severity == Severity::Error);
+    warnings.splice(0..0, deprecations);
     if has_syntax { (syntax, warnings) } else { (errors, warnings) }
 }

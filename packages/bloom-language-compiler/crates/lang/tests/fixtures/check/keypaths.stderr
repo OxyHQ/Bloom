@@ -31,3 +31,12 @@ error[B0212]: which struct is this key path into?
    |
 help: name the struct: `\Type.likes`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+warning[B0950]: `fn` is Bloom 0.x (5 times in this file)
+ --> check/keypaths.bloom:6:1
+  |
+6 | fn isOn(prefs: Prefs, key: KeyPath<Prefs, Bool>) -> Bool {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

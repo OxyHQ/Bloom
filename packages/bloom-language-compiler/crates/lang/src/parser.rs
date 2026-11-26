@@ -13,7 +13,8 @@ pub fn parse(source: &str) -> (File, Comments, Vec<Diagnostic>) {
     let mut parser = Parser::new(source, lexed.tokens, &mut next_id);
     parser.diagnostics = lexed.diagnostics;
     let file = parser.file();
-    let diagnostics = parser.diagnostics;
+    let mut diagnostics = parser.diagnostics;
+    diagnostics.extend(deprecations(&parser.deprecated));
     let mut comments = lexed.comments;
     comments.extend(parser.sub_comments);
     comments.sort_by_key(|c| c.span.start);
@@ -32,6 +33,59 @@ struct Parser<'s, 'i> {
     sub_comments: Vec<Comment>,
     /// Per closure being read, how many `$0`, `$1`… shorthand parameters it uses.
     shorthand: Vec<u32>,
+    /// The 0.x forms 2.0 retires, each with where it first appears and how often.
+    deprecated: Vec<(Deprecated, Span, u32)>,
+}
+
+/// A 0.x form that 2.0 retires; it parses, with one warning per form per file, until
+/// `bloomc migrate --from 0.x` no longer needs it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Deprecated {
+    Fn,
+    Pub,
+    Interpolation,
+    Match,
+    View,
+    Effect,
+    Ref,
+    Equal,
+    SpreadProps,
+}
+
+impl Deprecated {
+    fn texts(self) -> (&'static str, &'static str) {
+        match self {
+            Deprecated::Fn => ("`fn`", "write `func` (its parameters are labelled; `_` for none)"),
+            Deprecated::Pub => ("`pub`", "write `public`"),
+            Deprecated::Interpolation => ("`${…}` interpolation", "write `\\(…)`"),
+            Deprecated::Match => ("`match`", "write `switch x { case .a: … }`"),
+            Deprecated::View => (
+                "`view`/`screen`/`layout` declarations",
+                "write `struct X: View { … var body: some View { … } }`",
+            ),
+            Deprecated::Effect => {
+                ("the `effect` member", "use `.task(id:)`, `.onChange(of:)` or `.onAppear` on the body")
+            }
+            Deprecated::Ref => ("`@ref`", "hold a `class` in `@State`"),
+            Deprecated::Equal => ("`equal(old, new)`", "conform to `Equatable` with `static func ==`"),
+            Deprecated::SpreadProps => ("`..Props` spread props", "declare the props as stored properties"),
+        }
+    }
+}
+
+/// One warning per retired form the file uses (B0950), at its first use.
+fn deprecations(found: &[(Deprecated, Span, u32)]) -> Vec<Diagnostic> {
+    found
+        .iter()
+        .map(|&(form, span, count)| {
+            let (what, help) = form.texts();
+            let times = if count == 1 { "once".to_string() } else { format!("{count} times") };
+            Diagnostic::warning("B0950", span, format!("{what} is Bloom 0.x ({times} in this file)"))
+                .label("retired in 2.0")
+                .help(format!("{help}, or run `bloomc migrate --from 0.x` on the file"))
+                .spec("141-bloomc-migrate---from-0x-20")
+        })
+        .collect()
 }
 
 /// Where an expression is read: a head (`if x {`) never takes a trailing closure.
@@ -99,6 +153,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             panicking: false,
             sub_comments: Vec::new(),
             shorthand: Vec::new(),
+            deprecated: Vec::new(),
         }
     }
 
@@ -545,6 +600,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 Tok::Kw(Kw::Pub) => {
                     let span = self.bump();
+                    self.deprecate(Deprecated::Pub, span);
                     visibility = Visibility::Public;
                     modifiers.visibility_span = Some(span);
                     if self.at_kw(Kw::Default) {
@@ -1163,7 +1219,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         let func = matches!(self.tok(), Tok::Ident(w) if w == "func");
         if func {
             self.bump();
-        } else if !self.eat_kw(Kw::Fn) {
+        } else if self.at_kw(Kw::Fn) {
+            let span = self.bump();
+            self.deprecate(Deprecated::Fn, span);
+        } else {
             self.unexpected("`func`");
         }
         // `static func == (a: Self, b: Self)`: an operator's name.
@@ -1277,6 +1336,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 && !matches!(self.nth(1), Tok::P(P::Colon))
             {
                 // `..Props`: a type's fields as props.
+                self.deprecate(Deprecated::SpreadProps, start);
                 let ty = self.type_expr();
                 let name = match &ty.kind {
                     TypeKind::Named { name, .. } => name.clone(),
@@ -1327,6 +1387,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
             // `..props: Props`, a named type and not a list: the props spread, their whole named.
             if rest && let TypeKind::Named { name: type_name, .. } = &ty.kind {
+                self.deprecate(Deprecated::SpreadProps, start);
                 params.push(Param {
                     label: None,
                     name: type_name.clone(),
@@ -1362,6 +1423,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn view_decl(&mut self) -> ViewDecl {
         let start = self.span();
+        self.deprecate(Deprecated::View, start);
         let kind = match self.tok() {
             Tok::Kw(Kw::Screen) => ViewKind::Screen,
             Tok::Kw(Kw::Layout) => ViewKind::Layout,
@@ -1435,7 +1497,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                     "list" => StateAttr::List,
                     "record" => StateAttr::Record,
                     "env" => StateAttr::Env,
-                    "ref" => StateAttr::Ref,
+                    "ref" => {
+                        self.deprecate(Deprecated::Ref, start.to(word.span));
+                        StateAttr::Ref
+                    }
                     other => {
                         let help =
                             crate::diagnostic::closest(other, ["state", "list", "record", "env", "ref"])
@@ -1474,6 +1539,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Ident(word) if word == "func" => Some(Member::Fn(self.fn_decl())),
             Tok::Ident(word) if word == "equal" && matches!(self.nth(1), Tok::P(P::LParen)) => {
                 let keyword = self.bump();
+                self.deprecate(Deprecated::Equal, keyword);
                 let open = self.bump();
                 let old = self.ident("the old props' name");
                 self.expect(P::Comma, "`,` and the new props' name");
@@ -1484,6 +1550,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Ident(word) if word == "effect" && matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
                 let keyword = self.bump();
+                self.deprecate(Deprecated::Effect, keyword);
                 let id = if self.at(P::LParen) {
                     let open = self.bump();
                     let label = self.name_or_keyword("`id`");
@@ -2144,6 +2211,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
     }
 
+    fn deprecate(&mut self, form: Deprecated, span: Span) {
+        match self.deprecated.iter_mut().find(|(f, _, _)| *f == form) {
+            Some((_, _, count)) => *count += 1,
+            None => self.deprecated.push((form, span, 1)),
+        }
+    }
+
     /// `try` starts a throwing expression, not a value named `try`.
     fn try_ahead(&self) -> bool {
         let next = &self.tokens[self.pos + 1];
@@ -2535,6 +2609,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn match_expr(&mut self) -> Expr {
         let start = self.bump();
+        self.deprecate(Deprecated::Match, start);
         let scrutinee = self.expr(Ctx::Head);
         let mut arms = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the match's `case` arms") {
@@ -2839,6 +2914,10 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn interpolation(&mut self, span: Span) -> Expr {
+        let open = (span.start as usize).saturating_sub(2);
+        if self.source.get(open..span.start as usize) == Some("${") {
+            self.deprecate(Deprecated::Interpolation, Span::new(open as u32, span.start));
+        }
         let lexed = lex(self.source, span.start as usize, span.end as usize);
         self.sub_comments.extend(lexed.comments);
         let mut sub = Parser::new(self.source, lexed.tokens, self.next_id);
@@ -2937,8 +3016,15 @@ fn is_soft(kw: Kw) -> bool {
 mod tests {
     use super::*;
 
+    /// The syntax errors (a 0.x form's deprecation is a warning).
+    fn errors(source: &str) -> (File, Vec<Diagnostic>) {
+        let (file, _, mut diagnostics) = parse(source);
+        diagnostics.retain(|d| d.severity == crate::diagnostic::Severity::Error);
+        (file, diagnostics)
+    }
+
     fn parse_ok(source: &str) -> File {
-        let (file, _, diagnostics) = parse(source);
+        let (file, diagnostics) = errors(source);
         assert!(diagnostics.is_empty(), "{:#?}", diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
         file
     }
@@ -2978,7 +3064,21 @@ mod tests {
 
     #[test]
     fn one_typo_one_error() {
-        let (_, _, diagnostics) = parse("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
+        let (_, diagnostics) = errors("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
         assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+    }
+
+    #[test]
+    fn a_retired_form_warns_once_per_file() {
+        let (_, _, diagnostics) = parse("pub fn f() { \"${1}\" }\nfn g() { 1 }\nfunc h() -> Int { 1 }\n");
+        let messages: Vec<&str> = diagnostics.iter().map(|d| d.message.as_str()).collect();
+        assert_eq!(
+            messages,
+            [
+                "`pub` is Bloom 0.x (once in this file)",
+                "`fn` is Bloom 0.x (2 times in this file)",
+                "`${…}` interpolation is Bloom 0.x (once in this file)",
+            ]
+        );
     }
 }

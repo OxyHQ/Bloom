@@ -32,3 +32,21 @@ error[B0435]: `equal` compares a view's props, and this has none
    |
 help: a screen or layout is not memoised on props; a view without props never re-renders for them
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71-a-view
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (2 times in this file)
+ --> check/equal_member.bloom:3:1
+  |
+3 | view Row(id: String) {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `equal(old, new)` is Bloom 0.x (3 times in this file)
+ --> check/equal_member.bloom:6:3
+  |
+6 |   equal(old, new) {
+  |   ^^^^^ retired in 2.0
+  |
+help: conform to `Equatable` with `static func ==`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

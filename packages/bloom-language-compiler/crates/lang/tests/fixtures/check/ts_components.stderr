@@ -30,3 +30,21 @@ error[B0206]: this component needs `title`
    |          ^^^^ missing required props
    |
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (2 times in this file)
+ --> check/ts_components.bloom:5:1
+  |
+5 | view Uses {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+  --> check/ts_components.bloom:17:1
+   |
+17 | pub view NoTitle() {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

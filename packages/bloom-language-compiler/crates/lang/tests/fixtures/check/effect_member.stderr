@@ -24,3 +24,48 @@ error[B0430]: this async call is neither awaited nor started as a task
    |
 help: write `await` before it, or start it on its own: `task { await … }`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+warning[B0950]: `fn` is Bloom 0.x (once in this file)
+ --> check/effect_member.bloom:3:7
+  |
+3 | async fn load() -> Int {
+  |       ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+ --> check/effect_member.bloom:7:1
+  |
+7 | pub view Bad {
+  | ^^^ retired in 2.0
+  |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> check/effect_member.bloom:7:5
+  |
+7 | pub view Bad {
+  |     ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: the `effect` member is Bloom 0.x (3 times in this file)
+  --> check/effect_member.bloom:10:3
+   |
+10 |   effect {
+   |   ^^^^^^ retired in 2.0
+   |
+help: use `.task(id:)`, `.onChange(of:)` or `.onAppear` on the body, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (once in this file)
+  --> check/effect_member.bloom:27:11
+   |
+27 |     Text("${n}")
+   |           ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -39,3 +39,21 @@ error[B0201]: expected `String`, found `Int`
    |            ^^^ this is `Int`
    |
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (4 times in this file)
+  --> check/spread_props.bloom:10:1
+   |
+10 | view Bad(..Tone) {
+   | ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `..Props` spread props is Bloom 0.x (2 times in this file)
+  --> check/spread_props.bloom:10:10
+   |
+10 | view Bad(..Tone) {
+   |          ^^ retired in 2.0
+   |
+help: declare the props as stored properties, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
