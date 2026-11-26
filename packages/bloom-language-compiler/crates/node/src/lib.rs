@@ -130,7 +130,7 @@ fn paths(paths: Vec<std::path::PathBuf>) -> Vec<String> {
     paths.into_iter().map(|p| p.to_string_lossy().into_owned()).collect()
 }
 
-/// Compile one `.bloom` module to TypeScript (the embedded pass included).
+/// Compile one `.bloom` module to TypeScript (bloomc hoists its static chains itself).
 #[napi]
 pub fn compile_bloom(source: String, filename: String, options: Option<BloomOptions>) -> BloomOutput {
     let output = bloom_lang::compile(&source, &filename, &lang_options(options));
