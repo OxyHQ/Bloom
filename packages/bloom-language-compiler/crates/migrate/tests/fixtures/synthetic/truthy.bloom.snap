@@ -2,6 +2,13 @@
 
 import { useSession } from "./session"
 
+fn initial(nick: String? = none) -> String {
+  if nick == none || nick.isEmpty { return "" }
+  nick.slice(0, 1)
+}
+
+fn trimmedNick(nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
+
 pub view Greeting {
   let session = useSession()
   let signedIn = session.user != none
@@ -12,6 +19,7 @@ pub view Greeting {
       if !session.title.isEmpty { Text(session.title) }
       if signedIn && session.count == 0 { Text("Welcome") }
       if nick != none && !nick.isEmpty { Text(nick) }
+      Text(initial(nick) + trimmedNick(nick))
     }
   }
 }

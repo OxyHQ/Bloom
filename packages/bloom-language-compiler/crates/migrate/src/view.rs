@@ -932,8 +932,11 @@ impl Tr<'_> {
                     BindingPattern::BindingIdentifier(local) => {
                         let bound = self.bind(&local.name, local.span);
                         parts.push(if bound == key { key } else { format!("{key}: {bound}") });
-                        let value = self.expr(&a.right);
-                        self.pattern_defaults.push(format!("let {bound} = {bound} ?? {value}"));
+                        // A `null`/`undefined` default is the value itself.
+                        if !crate::expr::is_nothing(&a.right) {
+                            let value = self.expr(&a.right);
+                            self.pattern_defaults.push(format!("let {bound} = {bound} ?? {value}"));
+                        }
                     }
                     other => parts.push(self.refuse(
                         "destructure:default",
@@ -978,6 +981,7 @@ impl Tr<'_> {
                         .iter()
                         .all(|st| matches!(st, Statement::ReturnStatement(r) if r.argument.as_ref().is_none_or(is_nothing)));
                     let test = if empty { self.test_negated(&s.test) } else { self.test(&s.test, true) };
+                    let test = crate::expr::strip_parens(&test).to_string();
                     let then = self.view_lines(branch(&s.consequent), s.consequent.span().end);
                     let otherwise = match &s.alternate {
                         Some(alternate) => self.view_lines(branch(alternate), alternate.span().end),
@@ -1406,6 +1410,7 @@ impl Tr<'_> {
                 && is_continue(&s.consequent)
             {
                 let test = self.test_negated(&s.test);
+                let test = crate::expr::strip_parens(&test).to_string();
                 let reviews = self.take_reviews();
                 self.loop_block = true;
                 let rest = self.block_stmts(&statements[i + 1..], end, tail);
@@ -1453,6 +1458,7 @@ impl Tr<'_> {
             Statement::ExpressionStatement(s) => self.stmt_expr(&s.expression),
             Statement::IfStatement(s) => {
                 let test = self.test(&s.test, true);
+                let test = crate::expr::strip_parens(&test).to_string();
                 let then = self.block_of(&s.consequent);
                 match &s.alternate {
                     None => format!("if {test} {{\n{then}\n}}"),

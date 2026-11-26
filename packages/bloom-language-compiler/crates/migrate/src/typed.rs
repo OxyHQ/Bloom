@@ -41,13 +41,51 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     _ => Some((at, start, String::new())),
                 }
             }
+            // `typeof x === "string"` / `Array.isArray(x)` on a value bloomc types as
+            // that (or its optional): the test is whether it is present.
+            ("B0213", _) if d.message.starts_with("`is` tests a TS value, and this is `") => {
+                let ty = d.message.split('`').nth(3).unwrap_or_default();
+                let rest = &source[end..];
+                let tested = rest.strip_prefix(" is ").and_then(|r| {
+                    ["String", "Float", "Bool", "[Foreign]"].iter().find(|t| r.starts_with(**t)).copied()
+                });
+                let base = ty.strip_suffix('?').unwrap_or(ty);
+                let same = match tested {
+                    Some("[Foreign]") => base.starts_with('['),
+                    Some(t) => base == t,
+                    None => false,
+                };
+                match tested {
+                    Some(t) if same => {
+                        let close = end + " is ".len() + t.len();
+                        let test = if ty.ends_with('?') { format!("{text} != none") } else { "true".into() };
+                        Some((start, close, test))
+                    }
+                    _ => None,
+                }
+            }
+            // `s.substring(a, b)` from literal non-negative indices: Bloom's `slice`.
+            ("B0209", "substring")
+                if receiver == Some("String")
+                    && source[end..].strip_prefix('(').is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit())) =>
+            {
+                Some((start, end, "slice".to_string()))
+            }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
-                if d.message == "expected `View`, found `[View]`"
+                if (d.message == "expected `View`, found `[View]`" || d.message == "expected `View?`, found `[View]`")
                     && crate::expr::is_postfix_text(text)
-                    && line_is(source, start, end) =>
+                    && (line_is(source, start, end) || braced(source, start, end)) =>
             {
                 Some((start, end, format!("for v in {text} {{ v }}")))
+            }
+            // A `[View?]` (TS's `Child[]`, `null`s drawn as nothing) as a child.
+            ("B0201", _)
+                if (d.message == "expected `View`, found `[View?]`" || d.message == "expected `View?`, found `[View?]`")
+                    && crate::expr::is_postfix_text(text)
+                    && (line_is(source, start, end) || braced(source, start, end)) =>
+            {
+                Some((start, end, format!("for v in {text} {{ if let v = v {{ v }} }}")))
             }
             // A `for` where one view is expected (an `if` branch given as a value): a `Group`.
             ("B0201", _)
@@ -183,6 +221,11 @@ fn operand_len(source: &str) -> Option<usize> {
 }
 
 /// Whether `start..end` is all of its line.
+/// Whether `start..end` is a builder's only line written inline: `{ rows }`.
+fn braced(source: &str, start: usize, end: usize) -> bool {
+    source[..start].trim_end().ends_with('{') && source[end..].trim_start().starts_with('}')
+}
+
 fn line_is(source: &str, start: usize, end: usize) -> bool {
     let before = &source[..start];
     let line_start = before.rfind('\n').map_or(0, |i| i + 1);

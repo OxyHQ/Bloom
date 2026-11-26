@@ -55,7 +55,17 @@ pub fn spell(
             continue;
         }
         let Some(test) = test(operand, found, negated) else { continue };
-        let test = if source[..start].ends_with(['.', '!']) { format!("({test})") } else { test };
+        // An `||` test stays bare only where `||` binds as loosely as its place
+        // (bloomc narrows through a bare `||`, not through parentheses).
+        let before = source[..start].trim_end();
+        let after = source[end..].trim_start();
+        let loose = (before.ends_with("if") || before.ends_with("||") || before.ends_with('('))
+            && (after.starts_with('{') || after.starts_with("||") || after.starts_with(')'));
+        let test = if source[..start].ends_with(['.', '!']) || test.contains(" || ") && !loose {
+            format!("({test})")
+        } else {
+            test
+        };
         if edits.iter().any(|(s, e, _)| start < *e && *s < end)
             || reserved.iter().any(|(s, e)| start < *e && *s < end)
         {
@@ -259,8 +269,9 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
     Some(match ty {
         "String" => format!("{not}{operand}.isEmpty"),
         "Int" | "Float" => format!("{operand} {eq} 0"),
-        // A name is narrowed on the right of `&&`; its negation stays a default.
+        // A name is narrowed on the right of `&&` and of `||` after `== none`.
         "String?" if !negated && is_name(text) => format!("{text} != none && !{text}.isEmpty"),
+        "String?" if is_name(text) => format!("{text} == none || {text}.isEmpty"),
         "String?" => format!("({text} ?? \"\") {eq} \"\""),
         "Int?" | "Float?" => format!("({text} ?? 0) {eq} 0"),
         "Bool?" => format!("{operand} {} true", if negated { "!=" } else { "==" }),

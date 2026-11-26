@@ -17,7 +17,16 @@ impl Tr<'_> {
             TSType::TSTypeOperatorType(op) if op.operator == TSTypeOperatorOperator::Readonly => {
                 self.ty(&op.type_annotation)
             }
-            TSType::TSArrayType(array) => format!("[{}]", self.ty(&array.element_type)),
+            // `Child[]`: a list that may hold `null`/`false` (drawn as nothing), `[View?]`.
+            TSType::TSArrayType(array) => match &array.element_type {
+                TSType::TSTypeReference(r)
+                    if let TSTypeName::IdentifierReference(id) = &r.type_name
+                        && self.is_lang(&id.name, "Child") =>
+                {
+                    "[View?]".to_string()
+                }
+                element => format!("[{}]", self.ty(element)),
+            },
             TSType::TSTupleType(tuple) => {
                 let mut items = Vec::new();
                 for element in &tuple.element_types {

@@ -25,6 +25,7 @@ const GLOBALS: &[&str] = &[
     "parseInt",
     "parseFloat",
     "isNaN",
+    "Infinity",
     "setTimeout",
     "clearTimeout",
     "setInterval",
@@ -673,6 +674,8 @@ impl Tr<'_> {
                 "String" => format!("{name}.isEmpty"),
                 "Float" => format!("{name} == 0"),
                 "Bool?" => format!("{name} != true"),
+                // Parenthesised (an `if` head drops them: bloomc narrows a bare `||`).
+                "String?" if is_plain_name(&name) => format!("({name} == none || {name}.isEmpty)"),
                 "String?" => format!("({name} ?? \"\") == \"\""),
                 "Float?" => format!("({name} ?? 0) == 0"),
                 t if t.ends_with('?') => format!("{name} == none"),
@@ -1792,4 +1795,23 @@ fn relational(e: &Expression) -> bool {
         Expression::LogicalExpression(l) => relational(&l.left) || relational(&l.right),
         _ => false,
     }
+}
+
+/// `text` without one pair of parentheses around all of it (`(a || b)` → `a || b`).
+pub fn strip_parens(text: &str) -> &str {
+    let Some(inner) = text.strip_prefix('(').and_then(|t| t.strip_suffix(')')) else { return text };
+    let mut depth = 0i32;
+    for c in inner.chars() {
+        match c {
+            '(' => depth += 1,
+            ')' => {
+                depth -= 1;
+                if depth < 0 {
+                    return text;
+                }
+            }
+            _ => {}
+        }
+    }
+    if depth == 0 { inner } else { text }
 }
