@@ -3079,7 +3079,8 @@ impl<'o> Checker<'o> {
             }
             _ => {
                 let ty = self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_))));
-                if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty() {
+                if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty()
+                {
                     self.narrowed_path(expr, ty)
                 } else {
                     ty
