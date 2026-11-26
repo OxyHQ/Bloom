@@ -845,7 +845,8 @@ impl Checker<'_> {
         Ty::Binding(Box::new(value))
     }
 
-    /// A node constructor: positional arguments; a trailing closure is its children.
+    /// A node constructor: positional arguments, checked against the
+    /// constructor's signature (`spec::SIGNATURES`); a trailing closure is its children.
     fn node_call(&mut self, expr: &Expr, call: &Call, kind: &'static str) -> Ty {
         let ExprKind::Name(name) = &call.callee.kind else { unreachable!("a node is called by name") };
         let ctor = ui::node(kind)
@@ -853,7 +854,10 @@ impl Checker<'_> {
             .copied()
             .unwrap_or("Embed");
         self.out.calls.insert(expr.id, CallRes::Node(ctor));
-        for arg in &call.args {
+        let params = ui::signature(ctor);
+        self.node_arity(call, ctor, kind, params);
+        let fixed: Vec<&str> = params.iter().filter(|p| !p.starts_with("...")).copied().collect();
+        for (index, arg) in call.args.iter().enumerate() {
             if let Some(label) = &arg.label {
                 self.report(
                     Diagnostic::error(
@@ -870,7 +874,8 @@ impl Checker<'_> {
                     .docs(ui::node_docs(kind)),
                 );
             }
-            self.node_arg(&arg.value);
+            let param = fixed.get(index).map_or("...", |p| p.trim_end_matches('?'));
+            self.node_arg(&arg.value, param);
         }
         if let Some(trailing) = &call.trailing {
             self.builder_closure(trailing);
@@ -878,10 +883,53 @@ impl Checker<'_> {
         Ty::View(Some(kind))
     }
 
-    /// A node's argument: TypeScript checks it against the node's signature
-    /// (constructor signatures are not in the spec tables yet), Bloom checks the value.
-    fn node_arg(&mut self, value: &Expr) {
-        let ty = self.boundary(value, None);
+    /// A node takes as many arguments (a builder's lines among them) as its signature has.
+    fn node_arity(&mut self, call: &Call, ctor: &str, kind: &'static str, params: &[&str]) {
+        let rest = params.iter().any(|p| p.starts_with("..."));
+        let fixed = params.iter().filter(|p| !p.starts_with("...")).count();
+        let required = params.iter().filter(|p| !p.starts_with("...") && !p.ends_with('?')).count();
+        let lines = call.trailing.as_ref().map_or(0, |trailing| {
+            trailing.body.iter().filter(|stmt| !matches!(stmt.kind, StmtKind::Let(_))).count()
+        });
+        let count = call.args.len() + lines;
+        if count >= required && (rest || count <= fixed) {
+            return;
+        }
+        let expected = match (rest, required == fixed) {
+            (true, _) => format!("at least {required}"),
+            (false, true) => required.to_string(),
+            (false, false) => format!("{required} to {fixed}"),
+        };
+        // Past the signature: the first argument too many; short of it: the node's name.
+        let span =
+            call.args.get(fixed).filter(|_| count > fixed).map_or(call.callee.span, |extra| extra.span);
+        self.report(
+            Diagnostic::error("B0503", span, format!("`{ctor}` takes {expected} argument(s), not {count}"))
+                .label("wrong number of arguments")
+                .help(format!("write `{ctor}({})`: a parameter marked ? is optional", params.join(", ")))
+                .docs(ui::node_docs(kind)),
+        );
+    }
+
+    /// A node's argument: a primitive its signature names is checked here; any
+    /// other value TypeScript checks against the constructor on the emitted code.
+    fn node_arg(&mut self, value: &Expr, param: &str) {
+        let expected = match param {
+            "string" => Some(Ty::Str),
+            "number" => Some(Ty::Float),
+            "boolean" => Some(Ty::Bool),
+            _ => None,
+        };
+        let ty = self.boundary(value, expected.as_ref());
+        if param == "binding" && !matches!(self.resolve(&ty), Ty::Binding(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.report(
+                Diagnostic::error("B0201", value.span, format!("{} is not a binding", self.show(&ty)))
+                    .label("this node reads and writes the value")
+                    .help("pass a binding: `$name`, or `Binding(get: …, set: …)`")
+                    .spec("72-builders-modifiers-and-tokens"),
+            );
+            return;
+        }
         if let Ty::Option(inner) = self.resolve(&ty)
             && !matches!(self.resolve(&inner), Ty::View(_))
         {
