@@ -229,11 +229,30 @@ impl Tr<'_> {
                     );
                     return self.expr(&l.left);
                 }
+                if l.operator == LogicalOperator::Or && !is_boolean_shaped(&l.left) {
+                    // `a || b || c` is `a || (b || c)` (JS gives the first truthy one either
+                    // way): each `||`'s left is one operand, its default the rest.
+                    let mut operands = vec![&l.right];
+                    let mut first = &l.left;
+                    while let Expression::LogicalExpression(inner) = first.without_parentheses()
+                        && inner.operator == LogicalOperator::Or
+                        && !is_boolean_shaped(&inner.left)
+                    {
+                        operands.push(&inner.right);
+                        first = &inner.left;
+                    }
+                    operands.push(first);
+                    let texts: Vec<String> = operands.iter().rev().map(|e| self.expr(e)).collect();
+                    let mut acc = texts.last().cloned().unwrap_or_default();
+                    for left in texts.iter().rev().skip(1) {
+                        let right = if acc.contains("||") { format!("({acc})") } else { acc };
+                        self.defaults.insert(crate::truthiness::squeeze(left), right.clone());
+                        acc = format!("{left} || {right}");
+                    }
+                    return acc;
+                }
                 let left = self.expr(&l.left);
                 let right = self.expr(&l.right);
-                if l.operator == LogicalOperator::Or && !is_boolean_shaped(&l.left) {
-                    self.defaults.insert(crate::truthiness::squeeze(&left), right.clone());
-                }
                 format!("{left} {op} {right}")
             }
             Expression::BinaryExpression(b) => self.binary(b),
@@ -331,6 +350,11 @@ impl Tr<'_> {
     fn ident(&mut self, name: &str, span: Span) -> String {
         if let Some(renamed) = self.scope.renames.get(name) {
             return renamed.clone();
+        }
+        if let Some(renamed) = self.import_renames.get(name) {
+            let renamed = renamed.clone();
+            self.used.insert(renamed.clone());
+            return renamed;
         }
         if name == "undefined" {
             return "none".into();
@@ -486,6 +510,14 @@ impl Tr<'_> {
     /// A condition. JS truthiness is spelled out from the declared type: a `String`
     /// is `!s.isEmpty`, a `Float` `n != 0`, an optional value `x != none` (or, with
     /// `binds`, where the branch reads it unwrapped, `if let x = x`).
+    /// An expression in a statement head (`for x in …`, `while …`): see [`Tr::head`].
+    pub fn head_expr(&mut self, e: &Expression) -> String {
+        let head = std::mem::replace(&mut self.head, true);
+        let text = self.expr(e);
+        self.head = head;
+        text
+    }
+
     pub fn test(&mut self, e: &Expression, binds: bool) -> String {
         match self.test_parts(e, binds) {
             Test::Plain(text) => text,
@@ -497,6 +529,13 @@ impl Tr<'_> {
     /// A condition, keeping an optional `String`/`Float` as `if let` plus its own test,
     /// for a builder line to nest (`if let s = s { if !s.isEmpty { … } }`).
     pub fn test_parts(&mut self, e: &Expression, binds: bool) -> Test {
+        let head = std::mem::replace(&mut self.head, true);
+        let test = self.test_parts_inner(e, binds);
+        self.head = head;
+        test
+    }
+
+    fn test_parts_inner(&mut self, e: &Expression, binds: bool) -> Test {
         if let Some((name, ty)) = self.declared(e) {
             let plain = is_plain_name(&name);
             return Test::Plain(match ty.as_str() {
@@ -887,8 +926,14 @@ impl Tr<'_> {
             }
         }
         // One closure argument reads as a trailing closure (`xs.map { x in … }`).
+        // (After an optional chain bloomc reads `{` as a new statement: it stays an argument.)
         if let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice() {
-            return format!("{callee} {}", self.closure(arrow));
+            let closure = self.closure(arrow);
+            return if callee.contains("?.") || self.head {
+                format!("{callee}({closure})")
+            } else {
+                format!("{callee} {closure}")
+            };
         }
         format!("{callee}({args})")
     }
@@ -994,6 +1039,12 @@ impl Tr<'_> {
     /// A modifier on a chain.
     fn modifier(&mut self, call: &CallExpression, object: &Expression, name: &str, at: Span) -> String {
         let receiver = self.expr(object);
+        // `Embed(c ? <A/> : <B/>).m()`: the conditional is one node to modify, a `Group`.
+        let receiver = if receiver.starts_with("if ") {
+            format!("{} {{\n{receiver}\n}}", self.name("Group", at))
+        } else {
+            receiver
+        };
         let note = self.note(at.start);
         let sep = if note.is_empty() { String::new() } else { format!("\n{note}") };
         if name == "modifier"
@@ -1012,6 +1063,8 @@ impl Tr<'_> {
                 for arg in args {
                     let value = match arg {
                         Argument::SpreadElement(s) => format!("..{}", self.expr(&s.argument)),
+                        // `.presented([open, setOpen])`: the pair is a binding.
+                        Argument::ArrayExpression(array) if array.elements.len() == 2 => self.binding(array),
                         other => self.expr(other.to_expression()),
                     };
                     out.push(value);
@@ -1107,7 +1160,17 @@ impl Tr<'_> {
             return self.refuse("binding", "a binding pair whose setter is not a function", array.span);
         }
         let get = self.expr(get);
-        let set = self.expr(set);
+        let set = match set {
+            // `[open, () => setOpen(false)]`: the setter ignores the value it is given.
+            Expression::ArrowFunctionExpression(arrow) if arrow.params.items.is_empty() => {
+                let text = self.closure(arrow);
+                match text.strip_prefix('{') {
+                    Some(rest) => format!("{{ _ in{rest}"),
+                    None => text,
+                }
+            }
+            other => self.expr(other),
+        };
         format!("Binding(get: {get}, set: {set})")
     }
 
@@ -1143,7 +1206,7 @@ impl Tr<'_> {
                 };
                 let Expression::StaticMemberExpression(member) = &call.callee else { unreachable!() };
                 if let Some((_, x, i, arrow)) = indexed_callback(call, &["map"]) {
-                    let list = self.expr(&member.object);
+                    let list = self.head_expr(&member.object);
                     let (x, i) = (self.bind(x, arrow.span), self.bind(i, arrow.span));
                     let body = self.arrow_view_lines(arrow);
                     return format!("for ({i}, {x}) in {list}.enumerated() {{\n{body}\n}}");
@@ -1151,7 +1214,7 @@ impl Tr<'_> {
                 match (arrow.params.items.as_slice(), arrow.params.rest.is_none()) {
                     ([param], true) if matches!(param.pattern, BindingPattern::BindingIdentifier(_)) => {
                         let BindingPattern::BindingIdentifier(id) = &param.pattern else { unreachable!() };
-                        let list = self.expr(&member.object);
+                        let list = self.head_expr(&member.object);
                         let item = self.bind(&id.name, id.span);
                         let body = self.arrow_view_lines(arrow);
                         format!("for {item} in {list} {{\n{body}\n}}")
@@ -1175,6 +1238,17 @@ impl Tr<'_> {
                     && call.arguments.len() == 1
                     && call.arguments[0].as_expression().is_some()
                     && !is_conditional_child(call.arguments[0].to_expression()) =>
+            {
+                self.child(call.arguments[0].to_expression())
+            }
+            // `Embed(xs.map(x => …))` among children: each view of the list, a `for`.
+            Expression::CallExpression(call)
+                if matches!(&call.callee, Expression::Identifier(id) if self.is_lang(&id.name, "Embed"))
+                    && call.arguments.len() == 1
+                    && call.arguments[0].as_expression().is_some_and(|a| {
+                        matches!(a.without_parentheses(), Expression::CallExpression(m) if is_map(m))
+                            && self.is_view(a)
+                    }) =>
             {
                 self.child(call.arguments[0].to_expression())
             }
@@ -1278,9 +1352,11 @@ impl Tr<'_> {
     // ---- closures --------------------------------------------------------------
 
     pub fn closure(&mut self, arrow: &ArrowFunctionExpression) -> String {
+        let head = std::mem::replace(&mut self.head, false);
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
         let text = self.closure_inner(arrow);
+        self.head = head;
         self.propagate = propagate;
         self.try_return = returning;
         text

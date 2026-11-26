@@ -343,6 +343,19 @@ impl Tr<'_> {
             let blank = previous.is_some_and(|p| self.blank_between(p, span.start));
             previous = Some(span.end);
             let member = match statement {
+                // `if (prev !== x) { setPrev(x); setY(…) }`: state adjusted while drawing,
+                // an effect after the render here (its test re-checked there).
+                Statement::IfStatement(s) if only_state_writes(self, statement) => {
+                    let _ = s;
+                    let saved = self.scope.clone();
+                    let text = self.block_stmts(std::slice::from_ref(statement), span.end, false);
+                    self.scope = saved;
+                    self.review(
+                        "TS adjusted state while drawing; here an effect does it after the render (one render with the earlier state)"
+                            .into(),
+                    );
+                    format!("{}effect {{\n{text}\n}}", self.take_reviews())
+                }
                 Statement::VariableDeclaration(v) => {
                     if v.kind != VariableDeclarationKind::Const {
                         self.refuse(
@@ -1008,14 +1021,14 @@ impl Tr<'_> {
                         },
                     };
                     let value = self.expr(default);
-                    out.push(format!("{}: {ty} = {value}", self.bind(&id.name, id.span)));
+                    out.push(format!("{}: {ty} = {value}", self.bind_param(&id.name, id.span)));
                     continue;
                 }
                 out.push(self.refuse("param:destructure", "a destructured parameter", param.span));
                 continue;
             };
             self.scope.renames.remove(id.name.as_str());
-            let name = self.bind(&id.name, id.span);
+            let name = self.bind_param(&id.name, id.span);
             let Some(t) = &param.type_annotation else {
                 out.push(self.refuse("param:untyped", format!("`{}` has no type", id.name), param.span));
                 continue;
@@ -1121,7 +1134,7 @@ impl Tr<'_> {
                     awaited_start(statement)
                 && !self.awaits_bloom(start.value())
             {
-                let awaited = self.expr(start.value());
+                let awaited = self.head_expr(start.value());
                 let (bound, destructure) = match start {
                     AwaitStart::Let(id, _) => (self.bind(&id.name, id.span), String::new()),
                     AwaitStart::Pattern(p, _) => {
@@ -1210,7 +1223,7 @@ impl Tr<'_> {
                 let Some(item) = item else {
                     return self.refuse("statement:for-pattern", "a `for…of` over a pattern", f.span);
                 };
-                let list = self.expr(&f.right);
+                let list = self.head_expr(&f.right);
                 let body = self.block_of(&f.body);
                 format!("for {item} in {list} {{\n{body}\n}}")
             }
@@ -1227,7 +1240,7 @@ impl Tr<'_> {
             }
             Statement::ForStatement(f) => self.refuse("statement:for", "a C-style `for`", f.span),
             Statement::WhileStatement(w) => {
-                let test = self.expr(&w.test);
+                let test = self.head_expr(&w.test);
                 let body = self.block_of(&w.body);
                 format!("while {test} {{\n{body}\n}}")
             }
@@ -1288,7 +1301,7 @@ impl Tr<'_> {
                         returns.is_empty()
                     } =>
             {
-                let list = self.expr(&m.object);
+                let list = self.head_expr(&m.object);
                 let names: Vec<String> = arrow
                     .params
                     .items
@@ -1692,7 +1705,7 @@ impl Tr<'_> {
                 return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
             }
         };
-        let awaited = self.expr(awaited);
+        let awaited = self.head_expr(awaited);
         let mut ok = self.block_stmts(rest, t.block.span.end, false);
         if returns {
             ok = format!("return value\n{ok}");
@@ -2086,4 +2099,22 @@ pub fn has_jsx(source: &str, span: Span) -> bool {
     let mut finder = Finder { found: false };
     finder.visit_program(&parsed.program);
     finder.found
+}
+
+/// Whether `statement` (an `if` that does not return) only writes states: each of
+/// its branches' statements is a state setter's call.
+fn only_state_writes(tr: &Tr, statement: &Statement) -> bool {
+    match statement {
+        Statement::IfStatement(s) => {
+            only_state_writes(tr, &s.consequent)
+                && s.alternate.as_ref().is_none_or(|a| only_state_writes(tr, a))
+        }
+        Statement::BlockStatement(b) => !b.body.is_empty() && b.body.iter().all(|s| only_state_writes(tr, s)),
+        Statement::ExpressionStatement(e) => matches!(
+            e.expression.without_parentheses(),
+            Expression::CallExpression(call)
+                if matches!(&call.callee, Expression::Identifier(id) if tr.scope.setters.contains_key(id.name.as_str()))
+        ),
+        _ => false,
+    }
 }

@@ -17,7 +17,7 @@ pub fn spell(
     conditions: &HashSet<String>,
     defaults_of: &HashMap<String, String>,
 ) -> Option<String> {
-    let mut edits: Vec<(usize, usize, String)> = defaults(source, diagnostics, defaults_of);
+    let (mut edits, reserved) = defaults(source, diagnostics, defaults_of);
     for d in diagnostics {
         if d.code != "B0201" {
             continue;
@@ -56,7 +56,9 @@ pub fn spell(
         }
         let Some(test) = test(operand, found, negated) else { continue };
         let test = if source[..start].ends_with(['.', '!']) { format!("({test})") } else { test };
-        if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
+        if edits.iter().any(|(s, e, _)| start < *e && *s < end)
+            || reserved.iter().any(|(s, e)| start < *e && *s < end)
+        {
             continue;
         }
         edits.push((start, end, test));
@@ -72,13 +74,15 @@ pub fn spell(
 }
 
 /// `a || b` as a value, where bloomc found `a` not `Bool`: JS's "`b` when `a` is
-/// falsy", spelled from `a`'s type. Returns the edits, whole `a || b` spans.
+/// falsy", spelled from `a`'s type. Returns the edits, whole `a || b` spans, and
+/// the spans of the `||`s left for a later round (one holding another: the inner
+/// one is spelled first, `a || (b || c)`).
 pub fn defaults(
     source: &str,
     diagnostics: &[Diagnostic],
     defaults: &HashMap<String, String>,
-) -> Vec<(usize, usize, String)> {
-    let mut edits = Vec::new();
+) -> (Vec<(usize, usize, String)>, Vec<(usize, usize)>) {
+    let mut edits: Vec<(usize, usize, String)> = Vec::new();
     for d in diagnostics {
         if d.code != "B0201" {
             continue;
@@ -97,9 +101,14 @@ pub fn defaults(
         else {
             continue;
         };
-        let Some(len) = squeezed_prefix(&rest[op + 2..], right) else { continue };
+        // A parenthesised default (the rest of a chain) is matched as a group: an
+        // earlier round may have spelled the `||` inside it.
+        let grouped = right.starts_with('(') && right.ends_with(')');
+        let len = if grouped { group_len(&rest[op + 2..]) } else { squeezed_prefix(&rest[op + 2..], right) };
+        let Some(len) = len else { continue };
         let tail_len = op + 2 + len;
-        let right = right.as_str();
+        let right_text = squeeze_lines(rest[op + 2..op + 2 + len].trim());
+        let right = right_text.as_str();
         let left = &squeeze_lines(left);
         let a = if is_postfix(left) { left.to_string() } else { format!("({left})") };
         let text = match found {
@@ -120,7 +129,52 @@ pub fn defaults(
             if bare || text.contains("??") && !text.contains('?') { text } else { format!("({text})") };
         edits.push((start, end + tail_len, text));
     }
-    edits
+    // An `||` holding another waits: the inner one is spelled this round.
+    let held: Vec<usize> = (0..edits.len())
+        .filter(|&i| {
+            let (s, e, _) = &edits[i];
+            edits
+                .iter()
+                .enumerate()
+                .any(|(j, (s2, e2, _))| j != i && s <= s2 && e2 <= e && (s, e) != (s2, e2))
+        })
+        .collect();
+    let reserved = held.iter().map(|&i| (edits[i].0, edits[i].1)).collect();
+    let edits = edits.into_iter().enumerate().filter(|(i, _)| !held.contains(i)).map(|(_, e)| e).collect();
+    (edits, reserved)
+}
+
+/// The length of the parenthesised group at the start of `source` (after spaces).
+fn group_len(source: &str) -> Option<usize> {
+    let start = source.find(|c: char| !c.is_whitespace())?;
+    if !source[start..].starts_with('(') {
+        return None;
+    }
+    let mut depth = 0i32;
+    let mut quote = false;
+    let mut prev = ' ';
+    for (i, c) in source[start..].char_indices() {
+        if quote {
+            if c == '"' && prev != '\\' {
+                quote = false;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' => quote = true,
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(start + i + 1);
+                }
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    None
 }
 
 /// Text without its layout: no whitespace, no trailing commas.

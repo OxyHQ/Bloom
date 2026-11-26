@@ -93,14 +93,14 @@ impl Tr<'_> {
     /// `<C a={x} b>…</C>` as `C(a: x, b: true) { … }`.
     pub fn component(&mut self, el: &JSXElement) -> String {
         let name = match &el.opening_element.name {
-            JSXElementName::IdentifierReference(id) => self.name(&id.name, id.span),
+            JSXElementName::IdentifierReference(id) => self.import_name(&id.name, id.span),
             JSXElementName::MemberExpression(m) => {
                 let mut parts = vec![m.property.name.to_string()];
                 let mut object = &m.object;
                 loop {
                     match object {
                         JSXMemberExpressionObject::IdentifierReference(id) => {
-                            parts.push(self.name(&id.name, id.span));
+                            parts.push(self.import_name(&id.name, id.span));
                             break;
                         }
                         JSXMemberExpressionObject::MemberExpression(inner) => {

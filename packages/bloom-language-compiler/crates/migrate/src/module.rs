@@ -118,6 +118,13 @@ pub struct Tr<'s> {
     pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
     pub try_return: bool,
+    /// TS imports named like a Bloom node (`Button` from `@oxy.so/bloom/button`,
+    /// `ScrollView` from `react-native`): imported under another name, since in
+    /// `.bloom` the node's name is the node.
+    pub import_renames: HashMap<String, String>,
+    /// Translating an `if`/`for`/`while` head, where `{` opens the body: a closure
+    /// argument stays inside the parentheses.
+    pub head: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub defaults: HashMap<String, String>,
     pub conditions: HashSet<String>,
@@ -166,9 +173,22 @@ impl<'s> Tr<'s> {
         true
     }
 
-    /// A local binding: a Bloom keyword (`if`, `let`) is renamed `if_` in its scope;
-    /// the contextual ones (`type`, `body`, `view`, `screen`, `layout`, `from`) name values as they are.
+    /// A local binding (`let`, `@state`, a closure's or a loop's item): a Bloom keyword
+    /// (`if`, `body`) is renamed `if_` in its scope. (The contextual ones name
+    /// parameters and fields, not `let` patterns or states.)
     pub fn bind(&mut self, name: &str, span: Span) -> String {
+        if bloom_lang::KEYWORDS.contains(&name) {
+            let renamed = format!("{name}_");
+            self.scope.renames.insert(name.to_string(), renamed.clone());
+            self.used.insert(renamed.clone());
+            return renamed;
+        }
+        self.name(name, span)
+    }
+
+    /// A function's parameter, its label: the contextual keywords (`type`, `body`,
+    /// `view`, `screen`, `layout`, `from`) name it as they are.
+    pub fn bind_param(&mut self, name: &str, span: Span) -> String {
         if bloom_lang::KEYWORDS.contains(&name) && !CONTEXTUAL.contains(&name) {
             let renamed = format!("{name}_");
             self.scope.renames.insert(name.to_string(), renamed.clone());
@@ -176,6 +196,18 @@ impl<'s> Tr<'s> {
             return renamed;
         }
         self.name(name, span)
+    }
+
+    /// A name the output uses for a TS import (see [`Tr::import_renames`]).
+    pub fn import_name(&mut self, name: &str, span: Span) -> String {
+        match self.import_renames.get(name) {
+            Some(renamed) => {
+                let renamed = renamed.clone();
+                self.used.insert(renamed.clone());
+                renamed
+            }
+            None => self.name(name, span),
+        }
     }
 
     /// A name the output uses.
@@ -291,6 +323,8 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         propagate: false,
         pairs: false,
         try_return: false,
+        head: false,
+        import_renames: HashMap::new(),
         pending_equal: None,
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
@@ -305,6 +339,21 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     for statement in &program.body {
         if let Statement::ImportDeclaration(import) = statement {
             tr.import(import, &mut imports);
+        }
+    }
+    // A TS import named like a language node the file also uses (`Button` from
+    // `@oxy.so/bloom/button` beside `Button as LButton`) is imported under another name.
+    for (source, names) in imports.names.iter_mut() {
+        for (local, _, type_only) in names.iter_mut() {
+            if !*type_only
+                && bloom_lang_nodes().contains(local.as_str())
+                && tr.lang.values().any(|export| export == local)
+            {
+                let prefix = if source == "react-native" { "RN" } else { "TS" };
+                let renamed = format!("{prefix}{local}");
+                tr.import_renames.insert(local.clone(), renamed.clone());
+                *local = renamed;
+            }
         }
     }
     let header = tr.comments.before(first, false);
@@ -560,11 +609,8 @@ impl<'s> Tr<'s> {
                     if !imports.order.contains(&source) {
                         imports.order.push(source.clone());
                     }
-                    imports.names.entry(source.clone()).or_default().push((
-                        local,
-                        imported,
-                        type_only || s.import_kind.is_type(),
-                    ));
+                    let type_only = type_only || s.import_kind.is_type();
+                    imports.names.entry(source.clone()).or_default().push((local, imported, type_only));
                 }
                 ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
                     let local = s.local.name.to_string();

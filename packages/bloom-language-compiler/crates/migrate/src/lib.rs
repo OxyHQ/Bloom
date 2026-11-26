@@ -132,7 +132,7 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     let mut formatted = formatted;
     // JS members (`s.has(x)`, `m.size`) respelled from the receivers' types, the same way.
     // One kind of respelling a round: each reads the spans of the text it was compiled from.
-    for _ in 0..5 {
+    for _ in 0..12 {
         let spelled = typed::fix(&formatted, &compiled.diagnostics).or_else(|| {
             truthiness::spell(&formatted, &compiled.diagnostics, &translated.conditions, &translated.defaults)
         });
