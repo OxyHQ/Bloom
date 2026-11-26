@@ -1921,7 +1921,8 @@ impl<'a> Emitter<'a> {
                 let ty = self.ck.locals[*local].ty.clone();
                 match ty {
                     Ty::Foreign(ref path) if path.is_empty() => js_name(&p.name.name),
-                    Ty::Var(_) | Ty::Unknown => js_name(&p.name.name),
+                    // A view: where it is passed says which (TS's `V extends ViewModifiers<V>`).
+                    Ty::Var(_) | Ty::Unknown | Ty::View(None) => js_name(&p.name.name),
                     _ => format!("{}: {}", js_name(&p.name.name), self.ts_type(&ty)),
                 }
             })

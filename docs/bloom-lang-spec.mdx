@@ -453,7 +453,11 @@ pub view PostRow(post: Post, compact: Bool = false) {
   (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
 - **Tokens are string literals checked against the token set** the modifier takes:
   `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
-  A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`).
+  A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
+  with nothing expected, a conditional of string literals is their literal union (`let side =
+  card ? "96" : "48"`, as TS's `const` infers) and a literal beside a literal union joins it
+  (`c ? "md" : gutter`), so either fits a token set. `defineModifier { v in … }` reads `v` as a
+  `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
 - **Events take closures**: `.onPress { saving = true }`; an `async` closure
   (`.onPress { await save() }`) runs as a task (section 8).
 - **Inputs take bindings**: `TextField($draft)`, `Toggle($prefs.likes)`. `$x` projects
