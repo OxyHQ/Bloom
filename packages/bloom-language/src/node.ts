@@ -1447,6 +1447,7 @@ export type Modifier =
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
+  | { readonly kind: 'borderColor'; readonly key: string; readonly value: InkToken }
   | { readonly kind: 'borderStyle'; readonly key: string; readonly value: BorderStyleName }
   | {
       readonly kind: 'corner';
@@ -2239,6 +2240,9 @@ export class Node {
       width,
       edge,
     });
+  }
+  borderColor(value: InkToken): Node {
+    return this.with({ kind: 'borderColor', key: `bc:${tokenKey(value)}`, value });
   }
   borderStyle(value: BorderStyleName): Node {
     return this.with({ kind: 'borderStyle', key: `bs:${value}`, value });
@@ -4752,6 +4756,13 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `.border(subscribed ? 'border' : undefined, 'thin')`.
    */
   border(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /**
+   * Every edge's border colour, with no width: the colour a width on some
+   * edges draws in, as a style writes one `borderColor` beside
+   * `borderLeftWidth` and `borderBottomWidth`:
+   * `.borderColor('border').border(undefined, 'thin', 'left').border(undefined, 'thin', 'bottom')`.
+   */
+  borderColor(value: InkToken): Self;
   /** The border's line: `solid` (the default), `dashed` or `dotted` (React Native's `borderStyle`). */
   borderStyle(value: BorderStyleName): Self;
   /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */

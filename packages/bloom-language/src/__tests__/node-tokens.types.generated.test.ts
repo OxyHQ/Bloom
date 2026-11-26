@@ -384,6 +384,8 @@ type UniversalChecks = [
   Expect<"border(color) takes AppToken<'color'>", Takes<At<Any['border'], '0'>, AppToken<'color'>>>,
   Expect<"border(borderWidth)", Ok<At<Any['border'], '1'>, S['borderWidth']>>,
   Expect<"border(borderEdge)", Ok<At<Any['border'], '2'>, S['borderEdge']>>,
+  Expect<"borderColor(color)", Ok<At<Any['borderColor'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"borderColor(color) takes AppToken<'color'>", Takes<At<Any['borderColor'], '0'>, AppToken<'color'>>>,
   Expect<"borderStyle(borderStyle)", Ok<At<Any['borderStyle'], '0'>, S['borderStyle']>>,
   Expect<"ring(ring)", Ok<At<Any['ring'], '0'>, S['ring'] | AtOpacity>>,
   Expect<"ring(ring) takes AppToken<'color'>", Takes<At<Any['ring'], '0'>, AppToken<'color'>>>,

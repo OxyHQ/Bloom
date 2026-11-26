@@ -107,7 +107,7 @@ const ITEMS = [
 
 export const CASES = [
   {
-    name: "components/Borders.tsx:8",
+    name: "components/Borders.tsx:10",
     bloom22: false,
     before: () => { const View = I0; const Text = I1; return (<View style={{ flexDirection: 'row' }}>
       <View
@@ -129,6 +129,29 @@ export const CASES = [
       </View>
     </View>); },
     after: () => { const View = I0; const Text = I1; const { HStack, VStack, Text: LText } = L;  return (toElement(HStack(VStack(LText('Subscribe')).padding('horizontal', 'md').padding('vertical', '6').border(undefined, 'thin').corner('xl').align('center'), VStack(LText('Class')).padding('horizontal', 'md').border(undefined, 'thin').corner('infinite'), VStack(LText('Rule')).border(undefined, 'thick', 'bottom')))); },
+  },
+  {
+    name: "components/Borders.tsx:35",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; return (<View
+      style={{
+        width: 24,
+        height: 60,
+        borderLeftWidth: 2,
+        borderBottomWidth: 2,
+        borderBottomLeftRadius: 8,
+        borderColor: parityTheme.colors.border,
+      }}
+    />); } return (<Before />); },
+    after: () => { const View = I0; const { HStack, VStack, Text: LText, toElement } = L;  return (toElement(VStack().frame({ width: '2xl', height: '5xl' }).border(undefined, 'thick', 'left').border(undefined, 'thick', 'bottom').borderColor('border').corner('sm', 'bottom-left'))); },
+  },
+  {
+    name: "components/Borders.tsx:51",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const Text = I1; return (<View style={{ width: '100%', borderBottomWidth: 1, borderColor: parityTheme.colors.border }}>
+      <Text>Liked your post</Text>
+    </View>); } return (<Before />); },
+    after: () => { const View = I0; const Text = I1; const { HStack, VStack, Text: LText, toElement } = L;  return (toElement(VStack(LText('Liked your post')).frame({ width: 'full' }).border(undefined, 'thin', 'bottom').borderColor('border'))); },
   },
   {
     name: "components/ComponentProps.tsx:17",

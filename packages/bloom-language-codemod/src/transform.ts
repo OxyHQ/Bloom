@@ -2260,6 +2260,8 @@ export function transformSource(source: string, options: TransformOptions): File
           const role = roleOf(read);
           if (typeof role !== 'string' || insideOf(node, [COLOR_SCOPE])) return undefined;
           if (key === 'backgroundColor') return { name: 'background', args: [role] };
+          // Every edge's colour, which the edges' widths beside it draw in.
+          if (key === 'borderColor') return { name: 'borderColor', args: [role] };
           if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
             return { name: 'foreground', args: [role] };
           return undefined;

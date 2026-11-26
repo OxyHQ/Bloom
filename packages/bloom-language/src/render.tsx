@@ -1566,6 +1566,7 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
     safeArea: 0,
     overlays: [],
     corners: 0,
+    borders: 0,
     follows: [],
   };
   const outer: Layer = {

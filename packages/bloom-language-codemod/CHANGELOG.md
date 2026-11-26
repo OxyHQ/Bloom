@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps a style's `borderColor` read from the theme beside edge widths with no colour of their own (`borderLeftWidth`, `borderBottomWidth`) to `.borderColor(role)` and `.border(undefined, width, edge)` for each edge; the sample app's `Borders.tsx` adds Mention's reply elbow and a notification row.
+
 ## 0.5.0
 
 ### Compatibility

@@ -38,6 +38,7 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "border(color)", constructor: "HStack", call: "HStack().border(@)", sets: &["color"], tokens: &[], opacity: true },
     TokenParam { label: "border(borderWidth)", constructor: "HStack", call: "HStack().border(v, @)", sets: &["borderWidth"], tokens: &[], opacity: false },
     TokenParam { label: "border(borderEdge)", constructor: "HStack", call: "HStack().border(v, v, @)", sets: &["borderEdge"], tokens: &[], opacity: false },
+    TokenParam { label: "borderColor(color)", constructor: "HStack", call: "HStack().borderColor(@)", sets: &["color"], tokens: &[], opacity: true },
     TokenParam { label: "borderStyle(borderStyle)", constructor: "HStack", call: "HStack().borderStyle(@)", sets: &["borderStyle"], tokens: &[], opacity: false },
     TokenParam { label: "ring(ring)", constructor: "HStack", call: "HStack().ring(@)", sets: &["ring"], tokens: &[], opacity: true },
     TokenParam { label: "ring(borderWidth)", constructor: "HStack", call: "HStack().ring(v, @)", sets: &["borderWidth"], tokens: &[], opacity: false },
