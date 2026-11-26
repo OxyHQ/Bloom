@@ -980,7 +980,7 @@ function hostVariants(p: Plan): VariantStyles {
 }
 
 /** A press modifier's value as a handler in an environment, for a host that wires presses itself. */
-function pressOf(value: Press | undefined, env: Env): (() => void) | undefined {
+export function pressOf(value: Press | undefined, env: Env): (() => void) | undefined {
   if (value === undefined) return undefined;
   if (value instanceof Navigation) return navigationPress(env, value);
   // A system bar item has no gesture of its own to hand the handler.

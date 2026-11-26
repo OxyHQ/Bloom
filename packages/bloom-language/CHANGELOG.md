@@ -11,6 +11,14 @@
 - The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
 - `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
 
+### Added
+
+- `AppLayout` says more of Bloom's `AppShell`: `.primaryAction(icon, label, action)` takes a handler in the destination's place (a page's own action, chosen by the page in front; on iOS no prominent tab), `.sidebar(Sidebar(...))` is the shell's sidebar (its variant, logo, search, `.secondary()` rows and the rest), `.activeDestination(name)` its selection, `.navFrom()`, `.contentMaxWidth()` (`'none'` no cap), `.reserveBottomBarSpace()` and `.panelAppearance('joined')` the shell's own. `.panels()` takes `false`, `null` and `undefined` for a panel that is not there.
+- A `Panel`'s `.resizable([width, setWidth])` is a width the app holds (Bloom's `width` and `onWidthChange`), and `.resizeLabel()` names its divider.
+- A `Sidebar`'s `.primaryAction(icon, label, onPress)`: its main command below the rows (Bloom `Sidebar`'s `primaryAction`).
+- Tokens: the space `'520'` (a split list's widest, Allo's).
+- `AppShellMenuButton()` (`@oxy.so/bloom-language/app-shell-menu-button`): Bloom's drawer button for a page that draws its own header, named with `.label()`.
+
 ## 1.7.0
 
 ### Compatibility
@@ -27,6 +35,7 @@
 
 ### Changed
 
+- The router's `PrimaryDestination` (the layout's primary action, which the iOS tabs read) holds `action`, a destination's name or a handler, in place of `destination`.
 - A root whose tree is host views alone (stacks and spacers, the spec's new `reads.hostViews`) and reads nothing is those views, with no boundary fiber: a root over a bare `View` costs what the `View` does (Mention's splash marker, an empty sticker frame). A tree that comes to read something is drawn again under a boundary; one that holds a `view()`, an embedded element, a control or a list keeps its boundary whatever it reads.
 - A RawText reads nothing set above it (it takes no inherited trait), and the theme only when a role inks it: a lone RawText, or one in a `view()` body, costs React Native's `Text` in a component that inks it.
 - An Avatar's and an AvatarGroup's own props (size, shape, avatar colour, motion, presence, the group's layout and counts) read nothing where a tree starts, so a `view()` that hands its props to Bloom's Avatar costs what the component that renders it does (Mention's `AccountAvatar`: two context reads fewer).

@@ -95,6 +95,17 @@ describe('the tabs are the system tab bar', () => {
     expect(hosts(r, 'TabLabel').map((label) => label.props.children)).toContain('Compose');
   });
 
+  it('a primary action with a handler is no tab: the shell’s action presses it (the iPad sidebar’s row)', () => {
+    const compose = jest.fn();
+    const Handled = layout(() =>
+      AppLayout(TabView()).primaryAction(RiQuillPenLine, 'Compose', compose),
+    );
+    const r = mount(createElement(Handled));
+    expect(hosts(r, 'TabTrigger').some((t) => t.props.prominent)).toBe(false);
+    only(r, 'AppShell').props.primaryAction.onPress();
+    expect(compose).toHaveBeenCalled();
+  });
+
   it('the shell draws no bar of its own', () => {
     const r = mount(createElement(App));
     expect(only(r, 'AppShell').props.bottomBar).toBeNull();

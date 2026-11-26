@@ -61,6 +61,7 @@
       "448": 448,
       "480": 480,
       "512": 512,
+      "520": 520,
       "540": 540,
       "560": 560,
       "640": 640,
@@ -973,6 +974,8 @@
     "footerPinning": ["absolute", "document", "inline", "sticky"],
     "settingsView": ["navigation", "page"],
     "shellLayout": ["workspace", "collection-detail", "feed", "deck", "catalog", "map-browser"],
+    "panelAppearance": ["separated", "joined", "plain"],
+    "shellBreakpoint": ["sm", "md", "lg", "xl"],
     "shellPresentation": ["continuous", "framed", "floating"],
     "panelRole": ["main", "collection", "detail", "inspector", "context", "canvas"],
     "colorScopeMode": ["light", "dark"],
@@ -1876,10 +1879,16 @@
     "minWidth": ["space"],
     "maxWidth": ["space"],
     "resizable": ["value?"],
+    "resizeLabel": ["value"],
     "keepMounted": ["value?"],
     "preload": ["value?"],
     "bar": ["value?"],
     "sidebar": ["value?"],
+    "activeDestination": ["value"],
+    "panelAppearance": ["panelAppearance"],
+    "navFrom": ["shellBreakpoint"],
+    "contentMaxWidth": ["space"],
+    "reserveBottomBarSpace": ["value?"],
     "sidebarAfter": ["value"],
     "accessory": ["value"],
     "colorPreset": ["colorPreset"],
@@ -2877,8 +2886,15 @@
         "shellPresentation",
         "panels",
         "destinations",
-        "onReselect"
-      ]
+        "onReselect",
+        "sidebar",
+        "activeDestination",
+        "panelAppearance",
+        "navFrom",
+        "contentMaxWidth",
+        "reserveBottomBarSpace"
+      ],
+      "params": { "sidebar": ["value"] }
     },
     "navStack": {
       "constructors": ["Stack"],
@@ -3125,6 +3141,7 @@
         "searchable",
         "themeToggle",
         "logo",
+        "primaryAction",
         "account",
         "label",
         "testID",
@@ -3247,6 +3264,7 @@
         "minWidth",
         "maxWidth",
         "resizable",
+        "resizeLabel",
         "hidden",
         "keepMounted",
         "presented",
@@ -3790,6 +3808,10 @@
       "modifiers": ["presented", "side", "openDelay", "size"],
       "size": "tooltipSize",
       "params": { "side": ["tooltipSide"] }
+    },
+    "appShellMenuButton": {
+      "constructors": ["AppShellMenuButton"],
+      "modifiers": []
     },
     "breadcrumb": {
       "constructors": ["Breadcrumb"],

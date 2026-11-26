@@ -3458,10 +3458,8 @@
   "max-w-[520px]": {
    "count": 6,
    "apps": 4,
-   "status": "token",
-   "scale": "space",
-   "value": "520px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '520' })"
   },
   "max-w-[565px]": {
    "count": 6,
@@ -10002,10 +10000,8 @@
   "min-h-[520px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "520px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '520' })"
   },
   "min-h-[53px]": {
    "count": 1,

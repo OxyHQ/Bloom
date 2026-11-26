@@ -32,6 +32,8 @@ import {
   TabView,
 } from '../router';
 import { InPagerContext } from '../router/pager';
+import { AppShellMenuButton } from '../controls/app-shell-menu-button';
+import { toElement } from '../render';
 
 jest.mock('expo-router', () => {
   const ExperimentalStack = Object.assign(
@@ -195,6 +197,100 @@ describe('AppLayout on Android', () => {
     expect(panels[2].visible).toBe(false);
     // The navigator is the main panel's content, not the shell's child.
     expect(hosts(r, 'ExperimentalStack')).toHaveLength(0);
+  });
+
+  it('a primary action with a handler: the FAB and the shell’s action press it', () => {
+    const post = jest.fn();
+    const Root = layout(() => AppLayout(Stack()).primaryAction(Glyph, 'Add status', post));
+    const r = mount(createElement(Root));
+    const fab = only(mount(only(r, 'BottomBar').props.action), 'BloomFab');
+    expect(fab.props.accessibilityLabel).toBe('Add status');
+    act(() => fab.props.onPress());
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(pager.selectDestination).not.toHaveBeenCalled();
+    const shell = only(r, 'AppShell');
+    expect(shell.props.primaryAction).toMatchObject({
+      icon: Glyph,
+      accessibilityLabel: 'Add status',
+    });
+    shell.props.primaryAction.onPress();
+    expect(post).toHaveBeenCalledTimes(2);
+  });
+
+  it('the shell’s sidebar, the destination in front, its widths and the bar’s room', () => {
+    const settings = jest.fn();
+    const compose = jest.fn();
+    const logo = { icon: createElement('Logo'), accessibilityLabel: 'Allo' };
+    const Root = layout(() =>
+      AppLayout(Stack())
+        .sidebar(
+          Sidebar(NavItem('Settings', Glyph).id('settings').secondary().onPress(settings))
+            .variant('rail')
+            .searchable(false)
+            .logo(logo)
+            .primaryAction(OtherGlyph, 'New chat', compose),
+        )
+        .activeDestination('index')
+        .navFrom('md')
+        .contentMaxWidth('none')
+        .reserveBottomBarSpace(false),
+    );
+    const shell = only(mount(createElement(Root)), 'AppShell');
+    expect(shell.props).toMatchObject({
+      navFrom: 'md',
+      contentMaxWidth: 'none',
+      reserveBottomBarSpace: false,
+    });
+    const sidebar = shell.props.sidebar;
+    expect(sidebar).toMatchObject({ variant: 'rail', showSearch: false, logo, selected: 'index' });
+    // Its own rows are its secondary ones: the shell draws the destinations as its rows.
+    expect(sidebar.items).toBeUndefined();
+    expect(sidebar.secondaryItems.map((item: { key: string }) => item.key)).toEqual(['settings']);
+    expect(sidebar.primaryAction).toMatchObject({ icon: OtherGlyph, label: 'New chat' });
+    sidebar.primaryAction.onPress();
+    expect(compose).toHaveBeenCalled();
+    // A content width written as a token is its points.
+    const Capped = layout(() => AppLayout(Stack()).contentMaxWidth('720'));
+    expect(only(mount(createElement(Capped)), 'AppShell').props.contentMaxWidth).toBe(720);
+    // Without one, the destination in front is still the sidebar's selection.
+    const Active = layout(() => AppLayout(Stack()).activeDestination('profile'));
+    expect(only(mount(createElement(Active)), 'AppShell').props.sidebar).toEqual({
+      selected: 'profile',
+    });
+  });
+
+  it('a resizable panel’s width is the app’s state; the panels join; a missing panel is none', () => {
+    const setWidth = jest.fn();
+    const Root = layout(() =>
+      AppLayout(Stack())
+        .panelAppearance('joined')
+        .panels(
+          Panel('list', Text('list'))
+            .resizable([360, setWidth])
+            .minWidth('280')
+            .resizeLabel('Resize the list'),
+          Panel('detail'),
+          null,
+        ),
+    );
+    const panelLayout = only(mount(createElement(Root)), 'AppShell').props.panelLayout;
+    expect(panelLayout.appearance).toBe('joined');
+    expect(panelLayout.panels.map((panel: { id: string }) => panel.id)).toEqual(['list', 'detail']);
+    expect(panelLayout.panels[0]).toMatchObject({
+      width: 360,
+      onWidthChange: setWidth,
+      minWidth: 280,
+      resizable: true,
+      resizeLabel: 'Resize the list',
+    });
+  });
+
+  it('the shell’s drawer button is Bloom’s, named and tested as the chain says', () => {
+    const r = mount(toElement(AppShellMenuButton().label('Open navigation').testID('menu')));
+    expect(only(r, 'AppShellMenuButton').props).toMatchObject({
+      accessibilityLabel: 'Open navigation',
+      testID: 'menu',
+    });
   });
 
   it('destinations put Bloom’s pager above the shell', () => {

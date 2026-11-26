@@ -22,7 +22,7 @@ export function TabViewHost() {
   return (
     <NativeTabs>
       {pages.map((page) => {
-        const prominent = primary?.destination === page.name;
+        const prominent = primary?.action === page.name;
         const label = prominent ? primary.label : page.label;
         const glyph = sfSymbolOf(prominent ? primary.icon : page.icon) as SFSymbol | undefined;
         const selected = prominent
