@@ -16,6 +16,8 @@ pub mod diagnostic;
 mod emit;
 mod extensions;
 mod lexer;
+pub mod modules;
+pub mod package;
 mod parser;
 mod routes;
 mod sourcemap;
@@ -54,6 +56,11 @@ pub struct Options {
     /// The file is one of a directory module's (2.0): its `internal` names are exported for
     /// the module's other files. Off, a file is its own module.
     pub modules: bool,
+    /// The package root (the directory with `Package.bloom`). Without it, the
+    /// nearest one above the file; without one, the file is a 0.x file.
+    pub package: Option<PathBuf>,
+    /// The migration mode: app modules may import TS by path (`--allow-ts-imports`).
+    pub allow_ts_imports: bool,
 }
 
 /// A compiled `.bloom` module.
@@ -107,10 +114,12 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 /// Parses and checks `source`, without emitting.
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
-    let (file, syntax) = lowered(source);
+    let (mut file, syntax) = lowered(source);
+    let resolution = modules::prepare(&mut file, source, filename, options);
     let mut result = check::check(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
+    resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
     }
@@ -122,10 +131,12 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
 /// scopes, members and expected types, with the diagnostics of [`check`].
 pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
-    let (file, syntax) = lowered(source);
+    let (mut file, syntax) = lowered(source);
+    let resolution = modules::prepare(&mut file, source, filename, options);
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
+    resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
     }
@@ -152,16 +163,19 @@ pub fn invalidate(path: &std::path::Path) {
 pub fn clear_caches() {
     ts::clear_caches();
     routes::clear();
+    modules::clear();
     check::forget(None);
 }
 
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
-    let (file, syntax) = lowered(source);
+    let (mut file, syntax) = lowered(source);
+    let resolution = modules::prepare(&mut file, source, filename, options);
     let mut checked = check::check_for_emit(&file, source, filename, options);
     rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
+    resolved(resolution, &mut errors, &mut warnings, &mut checked.dependencies, options);
     let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
     let mut output = Output {
         code: String::new(),
@@ -205,6 +219,33 @@ fn rules(file: &Ast, source: &str, result: &mut check::CheckResult) {
         let found = chains::check(file, result);
         result.diagnostics.extend(found);
     }
+}
+
+/// The module resolution's findings beside the checker's: its errors, why a
+/// name the checker could not find is not visible, and the files it read.
+fn resolved(
+    resolution: modules::Resolution,
+    errors: &mut Vec<Diagnostic>,
+    warnings: &mut Vec<Diagnostic>,
+    dependencies: &mut std::collections::BTreeSet<PathBuf>,
+    options: &Options,
+) {
+    let root = options
+        .package
+        .clone()
+        .or_else(|| resolution.reads.first().and_then(|m| m.parent().map(PathBuf::from)));
+    modules::explain(&resolution, errors, root.as_deref());
+    for diagnostic in resolution.diagnostics.iter().cloned() {
+        if diagnostic.severity == Severity::Error {
+            errors.push(diagnostic)
+        } else {
+            warnings.push(diagnostic)
+        }
+    }
+    if !resolution.diagnostics.is_empty() {
+        errors.sort_by_key(|d| d.span.start);
+    }
+    dependencies.extend(resolution.reads.iter().cloned());
 }
 
 /// Syntax errors and the checker's findings, as errors and warnings. With a
