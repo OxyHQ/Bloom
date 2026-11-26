@@ -86,6 +86,8 @@ pub enum Origin {
     Local,
     /// Declared in another `.bloom` module: the specifier to import it from.
     Bloom { specifier: String },
+    /// A record literal's own type (`{ a: Int }`): named in TS by its fields.
+    Record,
     /// Declared in TS: how to name its type in the emitted TS (an imported
     /// name, or a path from one: `ReturnType<typeof useX>["value"]`).
     Ts { path: String },
