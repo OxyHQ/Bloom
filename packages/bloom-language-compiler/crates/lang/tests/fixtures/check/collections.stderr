@@ -1,0 +1,40 @@
+error[B0201]: expected `Int`, found `String`
+ --> check/collections.bloom:4:14
+  |
+4 |   Map([("a", "b")])
+  |              ^^^ this is `String`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0207]: `Set(values)` takes one list
+ --> check/collections.bloom:8:3
+  |
+8 |   Set([1], [2])
+  |   ^^^ one positional argument, or none
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft
+
+error[B0201]: expected `String`, found `Int`
+  --> check/collections.bloom:12:9
+   |
+12 |   m.get(1)
+   |         ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0210]: `==` cannot compare `Set<Int>`
+  --> check/collections.bloom:16:3
+   |
+16 |   a == b
+   |   ^^^^^^ functions, views, bindings, pending calls and type parameters have no equality
+   |
+help: compare what they hold (a field, an id) instead
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0209]: `Set<Int>` has no method `add`
+  --> check/collections.bloom:20:5
+   |
+20 |   s.add(1)
+   |     ^^^ no such method
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft

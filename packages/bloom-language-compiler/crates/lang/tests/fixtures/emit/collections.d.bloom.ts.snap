@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+interface Seen {
+  readonly ids: ReadonlySet<string>;
+  readonly counts: ReadonlyMap<number, string>;
+}
+export interface TagsProps {
+  readonly seen: Seen;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Tags())`), or from TSX as `toElement(Tags())`. */
+export declare const Tags: (props: TagsProps) => ComposedView;

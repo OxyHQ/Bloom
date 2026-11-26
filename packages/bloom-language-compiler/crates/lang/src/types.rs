@@ -21,6 +21,10 @@ pub enum Ty {
     List(Box<Ty>),
     /// `[String: V]`.
     Map(Box<Ty>),
+    /// `Map<K, V>`: a JS `Map`, keyed by any value.
+    JsMap(Box<Ty>, Box<Ty>),
+    /// `Set<T>`: a JS `Set`.
+    Set(Box<Ty>),
     Tuple(Vec<Ty>),
     Option(Box<Ty>),
     Result(Box<Ty>, Box<Ty>),
@@ -180,6 +184,11 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
     match ty {
         Ty::List(t) => Ty::List(go(t)),
         Ty::Map(t) => Ty::Map(go(t)),
+        Ty::Set(t) => Ty::Set(go(t)),
+        Ty::JsMap(k, v) => {
+            let k = go(k);
+            Ty::JsMap(k, go(v))
+        }
         Ty::Option(t) => Ty::Option(go(t)),
         Ty::Partial(t) => Ty::Partial(go(t)),
         Ty::Async(t) => Ty::Async(go(t)),
@@ -247,6 +256,8 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::JsError => f.write_str("Error"),
         Ty::List(t) => write!(f, "[{}]", Display { ty: t, defs }),
         Ty::Map(t) => write!(f, "[String: {}]", Display { ty: t, defs }),
+        Ty::JsMap(k, v) => write!(f, "Map<{}, {}>", Display { ty: k, defs }, Display { ty: v, defs }),
+        Ty::Set(t) => write!(f, "Set<{}>", Display { ty: t, defs }),
         Ty::Tuple(items) if items.is_empty() => f.write_str("Unit"),
         Ty::Tuple(items) => {
             f.write_str("(")?;

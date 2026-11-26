@@ -105,6 +105,7 @@ impl Checker<'_> {
                         return Ty::Async(Box::new(Ty::Unit));
                     }
                     "all" | "race" => return self.all_or_race(expr, call, name == "all"),
+                    "Map" | "Set" => return self.collection(expr, call, name == "Map", None, expected),
                     "Binding" => return self.binding_ctor(expr, call),
                     _ => {}
                 }
@@ -130,6 +131,13 @@ impl Checker<'_> {
                 self.unknown_name(call.callee.span, name);
                 self.args_unchecked(call);
                 Ty::Unknown
+            }
+            ExprKind::TypeApply { name, args } if matches!(name.name.as_str(), "Map" | "Set") => {
+                let ty = self.resolve_type(&TypeExpr {
+                    kind: TypeKind::Named { name: name.clone(), args: args.clone() },
+                    span: call.callee.span,
+                });
+                self.collection(expr, call, name.name == "Map", Some(ty), expected)
             }
             ExprKind::TypeApply { name, args } => {
                 let args: Vec<Ty> = args.iter().map(|a| self.resolve_type(a)).collect();
@@ -298,6 +306,49 @@ impl Checker<'_> {
                 None
             }
         }
+    }
+
+    /// `Map(entries)` / `Set(values)`, or empty: `Map()`, `Map<K, V>()`, typed by
+    /// what is expected when the type is not written.
+    fn collection(
+        &mut self,
+        expr: &Expr,
+        call: &Call,
+        map: bool,
+        written: Option<Ty>,
+        expected: Option<&Ty>,
+    ) -> Ty {
+        let ty = match written.or_else(|| expected.map(|e| self.resolve(e))) {
+            Some(Ty::Option(inner)) => self.resolve(&inner),
+            Some(ty @ (Ty::JsMap(..) | Ty::Set(_) | Ty::Unknown)) => ty,
+            _ if map => Ty::JsMap(Box::new(self.fresh()), Box::new(self.fresh())),
+            _ => Ty::Set(Box::new(self.fresh())),
+        };
+        let items = match &ty {
+            Ty::JsMap(k, v) => Ty::List(Box::new(Ty::Tuple(vec![(**k).clone(), (**v).clone()]))),
+            Ty::Set(t) => Ty::List(t.clone()),
+            _ => Ty::Unknown,
+        };
+        if call.args.len() > 1
+            || call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some() || a.spread)
+        {
+            let what = if map {
+                "`Map(entries)` takes one list of `(key, value)`"
+            } else {
+                "`Set(values)` takes one list"
+            };
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, what)
+                    .label("one positional argument, or none")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        if let Some(arg) = call.args.first() {
+            self.expr(&arg.value, Some(&items));
+        }
+        self.out.calls.insert(expr.id, CallRes::Collection(ty.clone()));
+        ty
     }
 
     /// Checks the arguments of a call that already failed, so their own errors show.
@@ -1820,6 +1871,25 @@ impl Checker<'_> {
                 };
                 (Recv::Map, name, params, ret)
             }
+            Ty::JsMap(key, value) => {
+                let (k, v) = ((**key).clone(), (**value).clone());
+                let map = Ty::JsMap(key.clone(), value.clone());
+                let (params, ret) = match name {
+                    "get" => (vec![k], opt(v)),
+                    "contains" => (vec![k], Ty::Bool),
+                    "setting" => (vec![k, v], map),
+                    _ => (vec![k], map),
+                };
+                (Recv::JsMap, name, params, ret)
+            }
+            Ty::Set(elem) => {
+                let t = (**elem).clone();
+                let (params, ret) = match name {
+                    "contains" => (vec![t], Ty::Bool),
+                    _ => (vec![t], Ty::Set(elem.clone())),
+                };
+                (Recv::Set, name, params, ret)
+            }
             Ty::Option(inner) => {
                 let t = (**inner).clone();
                 let u = self.fresh();
@@ -1881,6 +1951,8 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "joined",
         ],
         Ty::Map(_) => vec!["setting", "removing"],
+        Ty::JsMap(..) => vec!["get", "contains", "setting", "removing"],
+        Ty::Set(_) => vec!["contains", "inserting", "removing"],
         Ty::Option(_) => vec!["map", "unwrapOr"],
         Ty::Result(..) => vec!["map", "mapErr", "unwrapOr", "ok"],
         _ => Vec::new(),
