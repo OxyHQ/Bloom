@@ -40,6 +40,14 @@ pub const RUNTIME: &[(&str, &str)] = &[
     ("react-native-worklets", "0.13.0"),
 ];
 
+/// The native backends of the standard library's stores (`KeyValueStore` on SQLite,
+/// `SecureStore` on the keystore, `FileStore` on the app's documents), required only by
+/// its runtime file (`stdlib/Bloom/runtime.ts`) and only on native platforms. They are
+/// the app's runtime, not Bloom's: Bloom's own `package.json` does not list them (phase F
+/// replaces them with Bloom native modules). Pinned as Mention pins them.
+pub const STDLIB_NATIVE: &[(&str, &str)] =
+    &[("expo-file-system", "~58.0.13"), ("expo-secure-store", "~58.0.2"), ("expo-sqlite", "~58.0.15")];
+
 /// Build tools, not shipped in the app.
 pub const TOOLS: &[(&str, &str)] = &[
     ("typescript", "~6.0.3"),
@@ -332,10 +340,19 @@ config.watchFolders = [packageRoot];
 config.resolver.nodeModulesPaths = [path.join(projectRoot, 'node_modules')];
 config.resolver.disableHierarchicalLookup = true;
 config.resolver.blockList = [/\/\.bloom\/(cache|dist|modules)\//, /\/\.bloom\/build\/(android|ios)\//];
+// The standard library's native store backends never reach the web bundle (the web
+// keeps its stores in localStorage).
+const nativeOnly = new Set([{native_only}]);
+const upstreamResolve = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, name, platform) => {{
+  if (platform === 'web' && nativeOnly.has(name)) return {{ type: 'empty' }};
+  return (upstreamResolve ?? context.resolveRequest)(context, name, platform);
+}};
 
 module.exports = withBloomLanguage(config);
 "#,
             root = rel(&package.root),
+            native_only = STDLIB_NATIVE.iter().map(|(n, _)| format!("'{n}'")).collect::<Vec<_>>().join(", "),
         ),
     )?;
     write(
@@ -414,6 +431,41 @@ fn app_json(package: &Package) -> String {
 mod tests {
     use super::*;
 
+    /// The stores' native backends are the generated app's dependencies (not Bloom's),
+    /// and its Metro config keeps them out of the web bundle.
+    #[test]
+    fn the_generated_app_ships_the_stores_native_backends() {
+        let root = std::env::temp_dir().join(format!("bloom-native-stores-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("Sources/Shop")).unwrap();
+        let source = "let package = Package(name: \"Shop\", platforms: [.web, .android(26)], targets: [.app(\"Shop\")])".to_string();
+        std::fs::write(
+            root.join("Sources/Shop/App.bloom"),
+            "public view App {\n  var body: View {\n    Text(\"hi\")\n  }\n}\n",
+        )
+        .unwrap();
+        let package = Package {
+            root: root.clone(),
+            manifest: bloom_lang::package::parse(&source, "x").unwrap(),
+            source,
+        };
+        generate(&package).unwrap();
+        let manifest =
+            crate::json::parse(&std::fs::read_to_string(package.build_dir().join("package.json")).unwrap())
+                .unwrap();
+        let metro = std::fs::read_to_string(package.build_dir().join("metro.config.js")).unwrap();
+        for (name, version) in STDLIB_NATIVE {
+            assert_eq!(manifest.get("dependencies").get(name).as_str(), Some(*version), "{name}");
+            assert!(metro.contains(&format!("'{name}'")), "{name} reaches the web bundle:\n{metro}");
+            assert!(
+                bloom_lang::stdlib::SOURCES
+                    .iter()
+                    .any(|(f, text)| *f == "runtime.ts" && text.contains(&format!("require('{name}')")))
+            );
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
     /// The runtime table pins what Bloom's own repository pins.
     #[test]
     fn the_runtime_matches_blooms_package_json() {
@@ -422,6 +474,12 @@ mod tests {
         let root = crate::json::parse(&read("package.json")).unwrap();
         assert_eq!(root.get("version").as_str(), Some(BLOOM_VERSION));
         let dev = root.get("devDependencies");
+        for (name, _) in STDLIB_NATIVE {
+            assert!(
+                dev.get(name).as_str().is_none() && root.get("dependencies").get(name).as_str().is_none(),
+                "{name} is the app's runtime, not Bloom's"
+            );
+        }
         for (name, version) in RUNTIME.iter().chain(TOOLS) {
             if name.starts_with("@oxy.so/") {
                 let dir = name.trim_start_matches("@oxy.so/");

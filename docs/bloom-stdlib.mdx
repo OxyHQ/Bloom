@@ -602,8 +602,12 @@ tokens.set(token, for: "access")
 ```
 
 Values are strings underneath; `Codable` values are stored as JSON (`setValue`,
-`value(_:for:)`). The web keeps them in `localStorage`; native platforms install
-their backends at startup (until then, and in tests, values live in memory).
+`value(_:for:)`). Every call is synchronous, and values persist across launches:
+the web keeps them in `localStorage`; Android and iOS keep `KeyValueStore` in SQLite,
+`SecureStore` in the keystore (keychain) and `FileStore` in the app's documents
+directory, through the Expo modules the generated build lists (`expo-sqlite`,
+`expo-secure-store`, `expo-file-system`; app code never names them). Tests keep
+values in memory.
 
 ### `struct KeyValueStore: Equatable`
 

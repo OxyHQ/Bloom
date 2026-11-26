@@ -56,7 +56,12 @@ export function trimEnd(s: string): string {
   return s.trimEnd();
 }
 
-export function formatNumber(n: number, locale: string, minFraction: number, maxFraction: number): string {
+export function formatNumber(
+  n: number,
+  locale: string,
+  minFraction: number,
+  maxFraction: number,
+): string {
   return n.toLocaleString(locale || undefined, {
     minimumFractionDigits: minFraction,
     maximumFractionDigits: maxFraction,
@@ -64,7 +69,10 @@ export function formatNumber(n: number, locale: string, minFraction: number, max
 }
 
 export function formatCompact(n: number, locale: string): string {
-  return new Intl.NumberFormat(locale || undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  return new Intl.NumberFormat(locale || undefined, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(n);
 }
 
 export function stringOfNumber(n: number): string {
@@ -158,7 +166,13 @@ export function isoString(ms: number): string {
   return new Date(ms).toISOString();
 }
 
-export function formatDate(ms: number, locale: string, date: string, time: string, timeZone: string): string {
+export function formatDate(
+  ms: number,
+  locale: string,
+  date: string,
+  time: string,
+  timeZone: string,
+): string {
   const options: Intl.DateTimeFormatOptions = {};
   if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
   if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
@@ -312,7 +326,9 @@ export function jsonMember(value: JSONValue, key: string): JSONValue {
 }
 
 export function jsonKeys(value: JSONValue): readonly string[] {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? Object.keys(value) : [];
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? Object.keys(value)
+    : [];
 }
 
 export function jsonItems(value: JSONValue): readonly JSONValue[] {
@@ -411,13 +427,17 @@ export async function request(
 
 /** The status of an `HTTPError` (thrown by `HTTPClient`), or `undefined`. */
 export function errorStatus(error: unknown): number | undefined {
-  const status = error !== null && typeof error === 'object' ? (error as { status?: unknown }).status : undefined;
+  const status =
+    error !== null && typeof error === 'object'
+      ? (error as { status?: unknown }).status
+      : undefined;
   return typeof status === 'number' ? status : undefined;
 }
 
 /** The body of an `HTTPError`, or `undefined`. */
 export function errorBody(error: unknown): string | undefined {
-  const body = error !== null && typeof error === 'object' ? (error as { body?: unknown }).body : undefined;
+  const body =
+    error !== null && typeof error === 'object' ? (error as { body?: unknown }).body : undefined;
   return typeof body === 'string' ? body : undefined;
 }
 
@@ -468,12 +488,18 @@ export function awaitAll<T>(values: readonly Promise<T>[]): Promise<readonly T[]
 }
 
 export function isCancellation(error: unknown): boolean {
-  return error instanceof Error && (error.name === 'CancellationError' || error.name === 'AbortError');
+  return (
+    error instanceof Error && (error.name === 'CancellationError' || error.name === 'AbortError')
+  );
 }
 
 export function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
-  if (error !== null && typeof error === 'object' && typeof (error as { message?: unknown }).message === 'string') {
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
     return (error as { message: string }).message;
   }
   return String(error);
@@ -542,7 +568,12 @@ export function regexError(pattern: string, flags: string): string | undefined {
   }
 }
 
-export function regexMatches(pattern: string, flags: string, s: string, limit: number): readonly RegexMatch[] {
+export function regexMatches(
+  pattern: string,
+  flags: string,
+  s: string,
+  limit: number,
+): readonly RegexMatch[] {
   const re = regex(pattern, flags);
   const out: RegexMatch[] = [];
   for (const m of s.matchAll(re)) {
@@ -557,7 +588,12 @@ export function regexMatches(pattern: string, flags: string, s: string, limit: n
   return out;
 }
 
-export function regexReplace(pattern: string, flags: string, s: string, replacement: string): string {
+export function regexReplace(
+  pattern: string,
+  flags: string,
+  s: string,
+  replacement: string,
+): string {
   return s.replace(regex(pattern, flags), replacement);
 }
 
@@ -624,7 +660,10 @@ export function preferredLocale(): string {
   return preferred ?? currentLocale();
 }
 
-function lookup(key: string, locale: string): string | Readonly<Record<string, string>> | undefined {
+function lookup(
+  key: string,
+  locale: string,
+): string | Readonly<Record<string, string>> | undefined {
   const exact = catalogs.get(locale)?.[key];
   if (exact !== undefined) return exact;
   const language = locale.split('-')[0] ?? locale;
@@ -634,7 +673,11 @@ function lookup(key: string, locale: string): string | Readonly<Record<string, s
 }
 
 /** The string for `key` in the preferred locale, its `{name}`s replaced; the key itself when missing. */
-export function localize(key: string, args: Readonly<Record<string, string>>, count: number | undefined): string {
+export function localize(
+  key: string,
+  args: Readonly<Record<string, string>>,
+  count: number | undefined,
+): string {
   const locale = preferredLocale();
   const found = lookup(key, locale);
   let text: string;
@@ -644,7 +687,11 @@ export function localize(key: string, args: Readonly<Record<string, string>>, co
     const category = count === undefined ? 'other' : new Intl.PluralRules(locale).select(count);
     text = found[category] ?? found.other ?? key;
   }
-  return text.replace(/\{(\w+)\}/g, (whole, name: string) => args[name] ?? (name === 'count' && count !== undefined ? String(count) : whole));
+  return text.replace(
+    /\{(\w+)\}/g,
+    (whole, name: string) =>
+      args[name] ?? (name === 'count' && count !== undefined ? String(count) : whole),
+  );
 }
 
 export function pluralCategory(n: number, locale: string): string {
@@ -666,7 +713,8 @@ function webStorage(prefix: string): StorageBackend | undefined {
   const full = (name: string, key: string) => `${prefix}:${name}:${key}`;
   return {
     get: (name, key) => ls.getItem(full(name, key)) ?? undefined,
-    set: (name, key, value) => (value === undefined ? ls.removeItem(full(name, key)) : ls.setItem(full(name, key), value)),
+    set: (name, key, value) =>
+      value === undefined ? ls.removeItem(full(name, key)) : ls.setItem(full(name, key), value),
     keys: (name) => {
       const start = `${prefix}:${name}:`;
       const out: string[] = [];
@@ -691,16 +739,190 @@ function memoryStorage(): StorageBackend {
   };
   return {
     get: (name, key) => of(name).get(key),
-    set: (name, key, value) => (value === undefined ? of(name).delete(key) : of(name).set(key, value)),
+    set: (name, key, value) =>
+      value === undefined ? of(name).delete(key) : of(name).set(key, value),
     keys: (name) => [...of(name).keys()],
   };
+}
+
+// ---- native store backends ---------------------------------------------------
+//
+// On Android and iOS the stores persist through the Expo modules the app already ships:
+// `kv` in SQLite, `secure` in the keystore/keychain, `file` in the app's documents. This
+// file is the only place that names them (phase F swaps them for Bloom native modules);
+// the generated build lists them and resolves them to nothing on the web. Every call is
+// synchronous, as the stores' interface is.
+
+declare const require: (id: string) => unknown;
+
+type SQLiteDatabase = {
+  execSync(source: string): void;
+  runSync(source: string, params: readonly (string | null)[]): unknown;
+  getFirstSync<T>(source: string, params: readonly string[]): T | null;
+  getAllSync<T>(source: string, params: readonly string[]): T[];
+};
+type SecureStoreModule = {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  deleteItemAsync(key: string): Promise<void>;
+};
+type FsEntry = { exists: boolean; name: string; uri: string };
+type FsFile = FsEntry & {
+  textSync(): string;
+  writeSync(text: string): void;
+  create(options?: { intermediates?: boolean; overwrite?: boolean }): void;
+  delete(): void;
+};
+type FsDirectory = FsEntry & {
+  list(): FsEntry[];
+  create(options?: { intermediates?: boolean; idempotent?: boolean }): void;
+};
+type FileSystemModule = {
+  File: new (...parts: (string | FsDirectory)[]) => FsFile;
+  Directory: new (...parts: (string | FsDirectory)[]) => FsDirectory;
+  Paths: { document: FsDirectory };
+};
+
+/** The app runs on React Native (Android, iOS), not in a browser or Node. */
+function onNative(): boolean {
+  return (globalThis as { navigator?: { product?: string } }).navigator?.product === 'ReactNative';
+}
+
+/** `kv`: one SQLite table, `(name, key) → value`. */
+export function sqliteStorage(db: SQLiteDatabase): StorageBackend {
+  db.execSync(
+    'CREATE TABLE IF NOT EXISTS bloom_kv (name TEXT NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY (name, key))',
+  );
+  return {
+    get: (name, key) =>
+      db.getFirstSync<{ value: string }>('SELECT value FROM bloom_kv WHERE name = ? AND key = ?', [
+        name,
+        key,
+      ])?.value ?? undefined,
+    set: (name, key, value) => {
+      if (value === undefined)
+        db.runSync('DELETE FROM bloom_kv WHERE name = ? AND key = ?', [name, key]);
+      else
+        db.runSync('INSERT OR REPLACE INTO bloom_kv (name, key, value) VALUES (?, ?, ?)', [
+          name,
+          key,
+          value,
+        ]);
+    },
+    keys: (name) =>
+      db
+        .getAllSync<{ key: string }>('SELECT key FROM bloom_kv WHERE name = ? ORDER BY key', [name])
+        .map((r) => r.key),
+  };
+}
+
+/** A name or key as the keystore accepts it (`[A-Za-z0-9._-]`): its UTF-8 bytes in hex. */
+function hex(s: string): string {
+  let out = '';
+  for (const byte of new TextEncoder().encode(s)) out += byte.toString(16).padStart(2, '0');
+  return out;
+}
+
+/**
+ * `secure`: each secret under `bloom.<name>.<key>` (hex), and each store's key list under
+ * `bloom.<name>`. The keystore can only delete asynchronously, so a key leaves the list
+ * first (synchronously): a removed secret is gone at once, and across a restart.
+ */
+export function secureStorage(store: SecureStoreModule): StorageBackend {
+  const lists = new Map<string, string[]>();
+  const listOf = (name: string): string[] => {
+    let list = lists.get(name);
+    if (!list) {
+      const text = store.getItem(`bloom.${hex(name)}`);
+      try {
+        list = text ? (JSON.parse(text) as string[]) : [];
+      } catch {
+        list = [];
+      }
+      lists.set(name, list);
+    }
+    return list;
+  };
+  const saveList = (name: string, list: string[]) => {
+    lists.set(name, list);
+    store.setItem(`bloom.${hex(name)}`, JSON.stringify(list));
+  };
+  const slot = (name: string, key: string) => `bloom.${hex(name)}.${hex(key)}`;
+  return {
+    get: (name, key) =>
+      listOf(name).includes(key) ? (store.getItem(slot(name, key)) ?? undefined) : undefined,
+    set: (name, key, value) => {
+      const list = listOf(name);
+      if (value === undefined) {
+        if (!list.includes(key)) return;
+        saveList(
+          name,
+          list.filter((k) => k !== key),
+        );
+        void store.deleteItemAsync(slot(name, key)).catch(() => {});
+        return;
+      }
+      store.setItem(slot(name, key), value);
+      if (!list.includes(key)) saveList(name, [...list, key]);
+    },
+    keys: (name) => [...listOf(name)],
+  };
+}
+
+/** `file`: each store a directory of the app's documents, each path one file (its name percent-encoded). */
+export function fileStorage(fs: FileSystemModule): StorageBackend {
+  const dirOf = (name: string) =>
+    new fs.Directory(fs.Paths.document, 'bloom', encodeURIComponent(name));
+  const fileOf = (name: string, path: string) => new fs.File(dirOf(name), encodeURIComponent(path));
+  return {
+    get: (name, path) => {
+      const file = fileOf(name, path);
+      return file.exists ? file.textSync() : undefined;
+    },
+    set: (name, path, value) => {
+      const file = fileOf(name, path);
+      if (value === undefined) {
+        if (file.exists) file.delete();
+        return;
+      }
+      if (!file.exists) file.create({ intermediates: true });
+      file.writeSync(value);
+    },
+    keys: (name) => {
+      const dir = dirOf(name);
+      return dir.exists ? dir.list().map((entry) => decodeURIComponent(entry.name)) : [];
+    },
+  };
+}
+
+/** The native backend of `kind`, or `undefined` off native or when its module is missing. */
+function nativeStorage(kind: string): StorageBackend | undefined {
+  if (!onNative()) return undefined;
+  try {
+    switch (kind) {
+      case 'kv':
+        return sqliteStorage(
+          (
+            require('expo-sqlite') as { openDatabaseSync(name: string): SQLiteDatabase }
+          ).openDatabaseSync('bloom-kv.db'),
+        );
+      case 'secure':
+        return secureStorage(require('expo-secure-store') as SecureStoreModule);
+      case 'file':
+        return fileStorage(require('expo-file-system') as FileSystemModule);
+    }
+  } catch (error) {
+    console.warn(`Bloom: the ${kind} store keeps its values in memory only (${String(error)})`);
+  }
+  return undefined;
 }
 
 const backends: Record<string, StorageBackend> = {};
 
 /**
- * Installs the backend of `kind`. The web defaults to `localStorage`; native platforms
- * install theirs at startup (until then, and in tests, values live in memory).
+ * Installs the backend of `kind` (a test's, an app's own). By default the web keeps values
+ * in `localStorage`, Android and iOS in SQLite, the keystore and the app's documents, and
+ * tests in memory.
  */
 export function setStorageBackend(kind: string, backend: StorageBackend): void {
   backends[kind] = backend;
@@ -709,7 +931,7 @@ export function setStorageBackend(kind: string, backend: StorageBackend): void {
 function backend(kind: string): StorageBackend {
   let found = backends[kind];
   if (!found) {
-    found = webStorage(`bloom.${kind}`) ?? memoryStorage();
+    found = webStorage(`bloom.${kind}`) ?? nativeStorage(kind) ?? memoryStorage();
     backends[kind] = found;
   }
   return found;
@@ -719,7 +941,12 @@ export function storageGet(kind: string, name: string, key: string): string | un
   return backend(kind).get(name, key);
 }
 
-export function storageSet(kind: string, name: string, key: string, value: string | undefined): void {
+export function storageSet(
+  kind: string,
+  name: string,
+  key: string,
+  value: string | undefined,
+): void {
   backend(kind).set(name, key, value);
 }
 
