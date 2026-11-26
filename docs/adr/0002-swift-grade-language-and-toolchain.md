@@ -305,3 +305,26 @@ Bloom becomes one language and platform for everything. Expo leaves completely; 
 
 What already merged or is in flight, and still ships, because the internals are reused: #984
 (compiler 1.6.0), #979 and #980 (phase-1 internals and tooling), Mention #2046 (the proof).
+
+## Phase D: the codemod's corpus
+
+`bloom migrate` (embedded-language TSX to 2.0) is measured over Mention's `packages/frontend`
+on `feat/mention-on-language`, tests excluded. A file counts as migrated when it meets all
+three of these:
+
+- its 2.0 text compiles with 0 errors in the migration mode (`--allow-ts-imports`, section 4)
+  inside a package;
+- no form 2.0 retires is left in it (B0950);
+- no `// bloom: review` marker is left in it, unless the count says "with review".
+
+The gate is **more than 80%**.
+
+| Date | Codemod (PR) | Corpus | Migrated (+ review) |
+|---|---|---|---|
+| 2026-11-26 | the 0.x codemod alone, on the 2.0 stack | 324 files (fd8a4290f) | 35.5% (0.x output, not 2.0) |
+| 2026-11-26 | #1007: 2.0 forms, typed tokens, SwiftUI names, effects as `.onAppear`/`.task(id:)`, `do`/`catch`, `String(localized:)`, `private` | 324 files (fd8a4290f) | 27.8% (+4.0% review) = **31.8%** |
+
+Most refusals come from bloomc's errors on the draft: 133 of 221 refused files. The largest
+single cause is an indexed array read typing as `T?` where Swift's is `T` (repro M1). The other
+88 files hit codemod gaps, a long tail with at most 10 files per reason. The repros are in
+`~/.local/share/bloom-lang/repros/mention1.md`, and PR #1007's handoff keeps the list.
