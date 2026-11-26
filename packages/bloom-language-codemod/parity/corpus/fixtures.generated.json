@@ -1,6 +1,6 @@
 [
  {
-  "name": "components/Borders.tsx:8",
+  "name": "components/Borders.tsx:10",
   "before": "<View style={{ flexDirection: 'row' }}>\n      <View\n        style={{\n          borderWidth: 1,\n          borderRadius: 20,\n          paddingHorizontal: 12,\n          paddingVertical: 6,\n          alignItems: 'center',\n        }}\n      >\n        <Text>Subscribe</Text>\n      </View>\n      <View className=\"border rounded-full px-3\">\n        <Text>Class</Text>\n      </View>\n      <View style={{ borderBottomWidth: 2 }}>\n        <Text>Rule</Text>\n      </View>\n    </View>",
   "after": "toElement(HStack(VStack(LText('Subscribe')).padding('horizontal', 'md').padding('vertical', '6').border(undefined, 'thin').corner('xl').align('center'), VStack(LText('Class')).padding('horizontal', 'md').border(undefined, 'thin').corner('infinite'), VStack(LText('Rule')).border(undefined, 'thick', 'bottom')))",
   "bindings": {
@@ -25,6 +25,56 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Borders.tsx:35",
+  "before": "<View\n      style={{\n        width: 24,\n        height: 60,\n        borderLeftWidth: 2,\n        borderBottomWidth: 2,\n        borderBottomLeftRadius: 8,\n        borderColor: parityTheme.colors.border,\n      }}\n    />",
+  "after": "toElement(VStack().frame({ width: '2xl', height: '5xl' }).border(undefined, 'thick', 'left').border(undefined, 'thick', 'bottom').borderColor('border').corner('sm', 'bottom-left'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "Text: LText",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Borders.tsx:51",
+  "before": "<View style={{ width: '100%', borderBottomWidth: 1, borderColor: parityTheme.colors.border }}>\n      <Text>Liked your post</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Liked your post')).frame({ width: 'full' }).border(undefined, 'thin', 'bottom').borderColor('border'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "Text: LText",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
   "insets": false,
   "screen": false,
   "appColors": null

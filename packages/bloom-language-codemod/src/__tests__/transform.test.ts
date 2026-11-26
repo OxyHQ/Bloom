@@ -127,6 +127,21 @@ export function A({ depth, bar }) {
     expect(flat(code)).toContain("bottom: '100%'");
     expect(flat(code)).toContain(".shrink('20')");
   });
+  it('maps one border colour on every edge beside widths on some edges', () => {
+    const { code, unconverted } = run(`import { View } from 'react-native';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View style={{ borderLeftWidth: 2, borderBottomWidth: 2, borderBottomLeftRadius: 8, borderColor: theme.colors.border }} />
+  );
+}
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain(
+      ".border(undefined, 'thick', 'left').border(undefined, 'thick', 'bottom').borderColor('border').corner('sm', 'bottom-left')",
+    );
+  });
   it('maps a border width with no colour as the platform default colour, and keeps one beside a colour JSX', () => {
     const { code } = run(`import { View, Text } from 'react-native';
 export function A() {

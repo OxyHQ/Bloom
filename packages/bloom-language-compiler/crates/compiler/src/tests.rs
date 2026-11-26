@@ -3439,7 +3439,7 @@ fn a_token_of_another_set_names_the_modifiers_that_take_it() {
     let help = output.diagnostics[0].help.as_deref().unwrap();
     assert!(
         help.starts_with(
-            "'primary' is one of the color tokens, for .background(), .border(), .foreground() and "
+            "'primary' is one of the color tokens, for .background(), .borderColor(), .border() and "
         ),
         "{help}"
     );
@@ -3687,6 +3687,17 @@ fn a_node_takes_its_own_narrower_parameters_as_the_runtime_does() {
         let output = check(&format!("export const x = (t) => {chain};\n"));
         assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{chain}");
     }
+}
+
+#[test]
+fn a_border_colour_on_every_edge_is_checked() {
+    // Every edge's colour beside widths on some (Mention's reply elbow).
+    let ok = compiled(
+        "export const x = () => VStack().borderColor('border').border(undefined, 'thick', 'left').border(undefined, 'thick', 'bottom').corner('sm', 'bottom-left');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().borderColor('nope');\n");
+    assert!(!output.diagnostics.is_empty());
 }
 
 #[test]

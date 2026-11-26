@@ -57,9 +57,10 @@ const BORDER_WIDTH_EDGE: Readonly<Record<string, string>> = {
 };
 
 /**
- * A border width in a style that names no border colour: the language's
+ * A border width in a style that names no edge's colour: the language's
  * `.border(undefined, width, edge)`, the line in the platform's default colour
- * (React Native's black, react-native-web's own on the web), as the style draws it.
+ * (React Native's black, react-native-web's own on the web), as the style draws
+ * it, or in every edge's colour, a `borderColor` beside it (`.borderColor(role)`).
  */
 function defaultColorBorder(object: AnyNode, key: string, value: AnyNode): Mod | undefined {
   const edge = BORDER_WIDTH_EDGE[key];
@@ -68,7 +69,7 @@ function defaultColorBorder(object: AnyNode, key: string, value: AnyNode): Mod |
     (property: AnyNode) =>
       (n.ObjectProperty.check(property) || n.Property.check(property)) &&
       n.Identifier.check(property.key) &&
-      /^border\w*Color$/.test(property.key.name),
+      /^border(Top|Bottom|Left|Right|Start|End)Color$/.test(property.key.name),
   );
   if (colored) return undefined;
   const width = BORDER_WIDTH.get(value.value as number);

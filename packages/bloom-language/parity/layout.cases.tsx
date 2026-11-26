@@ -1695,6 +1695,73 @@ const hostProps: ParityCase[] = [
 ];
 
 /**
+ * One border colour on every edge, widths on some: Mention's reply-branch elbow
+ * (its left and bottom edges, rounded where they meet, one view) and a
+ * notification row's hairline below, each a style's one `borderColor` beside
+ * the edges' widths.
+ */
+const borderColorEveryEdge: ParityCase[] = [
+  {
+    name: 'a border colour on every edge, widths on the left and bottom, a corner where they meet',
+    language: () =>
+      toElement(
+        L.VStack()
+          .frame({ width: '2xl', height: '5xl' })
+          .borderColor('border')
+          .border(undefined, 'thick', 'left')
+          .border(undefined, 'thick', 'bottom')
+          .corner('sm', 'bottom-left')
+          .allowsHitTesting(false),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              width: 24,
+              height: 60,
+              borderLeftWidth: 2,
+              borderBottomWidth: 2,
+              borderBottomLeftRadius: 8,
+              borderColor: c.border,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a border colour on every edge, a width below',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('vertical', 'md')
+          .frame({ width: 'full' })
+          .border(undefined, 'thin', 'bottom')
+          .borderColor('border'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              width: '100%',
+              borderBottomWidth: 1,
+              borderColor: c.border,
+              paddingTop: 12,
+              paddingBottom: 12,
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+/**
  * A border whose colour is the platform's: a width with no colour (Mention's
  * labelers pill, `borderWidth: 1` unsubscribed and `borderColor` the theme's
  * border once subscribed), black natively and react-native-web's own on the web.
@@ -1782,6 +1849,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...accessibility,
   ...appLayout,
   ...defaultBorder,
+  ...borderColorEveryEdge,
   ...roles,
   ...options,
   ...tabs,

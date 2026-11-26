@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `.borderColor(c)`: every edge's border colour, with no width, as a style writes one `borderColor` beside widths on some edges (Mention's reply elbow, `borderLeftWidth` and `borderBottomWidth`; a notification row's hairline below). Natively one `borderColor`, the tree React Native draws.
+
+### Changed
+
+- Borders of edges that do not meet join one view (`.border(c, w, 'left').border(c, w, 'bottom')`), as paddings and corners do, so a corner between them joins too; a second border of an edge it already lines (or a reading-direction side beside a physical one) wraps the view, as before.
+
 ## 1.7.0
 
 ### Compatibility

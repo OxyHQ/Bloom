@@ -450,6 +450,8 @@ export interface Layer {
   overlays: Extract<Modifier, { kind: 'overlay' }>[];
   /** The corners the layer's `corner()`s round, a bit each (`CORNER_BITS`). */
   corners: number;
+  /** The edges the layer's `border()`s line, a bit each (`borderBits`). */
+  borders: number;
   /**
    * A shadow layer's outline: the corners of the clipped box it is drawn around.
    * A shadow never shares a view with a corner's clip (iOS clips a view's own
@@ -534,6 +536,20 @@ const EDGE_BITS: Record<Edge, number> = {
   right: 0b100000,
 };
 
+/** The edges a `border()` lines, a bit each: `all` is every edge, the physical sides included. */
+function borderBits(edge: Edge): number {
+  return edge === 'all' ? 0b111111 : EDGE_BITS[edge];
+}
+
+/** Whether two borders' edges meet: one edge, or a reading-direction side and a physical one (either, right to left). */
+function bordersMeet(a: number, b: number): boolean {
+  return (
+    (a & b) !== 0 ||
+    ((a & 0b1100) !== 0 && (b & 0b110000) !== 0) ||
+    ((a & 0b110000) !== 0 && (b & 0b1100) !== 0)
+  );
+}
+
 export function isLayerModifier(modifier: Modifier): modifier is LayerModifier {
   return modifier.kind in LAYER_RANK;
 }
@@ -550,7 +566,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       ? SAFE_AREA_BITS[modifier.edge] << (modifier.source === 'content' ? CONTENT_SHIFT : 0)
       : 0;
   const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
-  // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
+  const borders = modifier.kind === 'border' ? borderBits(modifier.edge) : 0;
+  // A second padding of an edge (or corner of a corner, border of an edge) the view has wraps it; other edges join it.
   const repeats =
     current !== undefined &&
     (modifier.kind === 'padding'
@@ -559,7 +576,9 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
         ? (sides(current.safeArea) & sides(safeArea)) !== 0 || sidesMeet(safeArea, current.edges)
         : modifier.kind === 'corner'
           ? (current.corners & corners) !== 0
-          : current.modifiers.some((existing) => existing.kind === modifier.kind));
+          : modifier.kind === 'border'
+            ? bordersMeet(current.borders, borders)
+            : current.modifiers.some((existing) => existing.kind === modifier.kind));
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
@@ -590,6 +609,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       safeArea,
       overlays: overlay ? [overlay] : [],
       corners,
+      borders,
       follows: clipped ? clip : [],
     });
     return;
@@ -600,6 +620,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   current.edges |= edges;
   current.safeArea |= safeArea;
   current.corners |= corners;
+  current.borders |= borders;
   if (glass) current.glass = glass;
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
@@ -673,6 +694,7 @@ export function addVariantToLayers(
       safeArea: 0,
       overlays: [],
       corners: 0,
+      borders: 0,
       follows: [],
     };
     layers.push(target);
@@ -778,6 +800,9 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         if (modifier.value !== undefined) style[`${prefix}Color`] = ink(modifier.value);
         break;
       }
+      case 'borderColor':
+        style.borderColor = ink(modifier.value);
+        break;
       case 'borderStyle':
         style.borderStyle = modifier.value;
         break;
