@@ -19,3 +19,9 @@ pub view SaveButton(id: String) {
     Button(Text(saving ? "Saving" : "Save")).disabled(saving).onPress { task { await onSave() } }
   }
 }
+
+/// An assertion says nothing at run time: dropped, under review.
+pub fn label(text: String) -> String {
+  // bloom: review: `as string` dropped: annotate where the value lands if tsc needs it
+  text
+}

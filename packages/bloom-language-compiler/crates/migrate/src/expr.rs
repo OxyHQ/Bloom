@@ -76,6 +76,21 @@ enum Callee {
 }
 
 impl Tr<'_> {
+    /// Notes an assisted translation; it is written above the statement holding it.
+    pub fn review(&mut self, note: String) {
+        if !self.quiet {
+            self.reviews.push(note);
+        }
+    }
+
+    /// The review markers due, as comment lines, for the statement about to be written.
+    pub fn take_reviews(&mut self) -> String {
+        std::mem::take(&mut self.reviews)
+            .into_iter()
+            .map(|note| format!("// {}: {note}\n", crate::REVIEW_MARKER))
+            .collect()
+    }
+
     /// Comments due before `pos`, at a place a `.bloom` line may start.
     pub fn note(&mut self, pos: u32) -> String {
         if self.quiet { String::new() } else { self.comments.before(pos, false) }
@@ -91,15 +106,13 @@ impl Tr<'_> {
             Expression::Identifier(id) => self.ident(&id.name, id.span),
             Expression::ParenthesizedExpression(p) => format!("({})", self.expr(&p.expression)),
             Expression::TSAsExpression(a) => {
-                if self.slice(a.type_annotation.span()) == "const" {
-                    self.expr(&a.expression)
-                } else {
-                    self.refuse(
-                        "ts:as",
-                        format!("the type assertion `as {}`", self.slice(a.type_annotation.span())),
-                        a.span,
-                    )
+                // `as const` says nothing at run time; `as T` neither, so it is dropped
+                // under review (`bloomc check --tsc` checks the value where it lands).
+                let ty = self.slice(a.type_annotation.span());
+                if ty != "const" {
+                    self.review(format!("`as {ty}` dropped: annotate where the value lands if tsc needs it"));
                 }
+                self.expr(&a.expression)
             }
             Expression::TSSatisfiesExpression(s) => self.expr(&s.expression),
             Expression::TSNonNullExpression(n) => {
@@ -517,8 +530,12 @@ impl Tr<'_> {
             }
             other => self.expr(other),
         };
-        if call.type_arguments.is_some() {
-            return self.refuse("ts:type-arguments", "explicit type arguments on a call", call.span);
+        if let Some(args) = &call.type_arguments {
+            // Type arguments steer TS inference only: dropped under review.
+            let args = self.slice(args.span);
+            self.review(format!(
+                "type arguments `{args}` dropped from `{callee}(…)`: annotate the binding if tsc needs them"
+            ));
         }
         let (last_object, rest) = match call.arguments.split_last() {
             Some((Argument::ObjectExpression(o), rest)) => (Some(o), rest),
@@ -658,9 +675,7 @@ impl Tr<'_> {
                     format!("`{ctor}`'s options object (a node takes positional values)"),
                     o.span,
                 ),
-                Argument::SpreadElement(s) => {
-                    self.refuse("children:spread", "spread children `...xs`", s.span)
-                }
+                Argument::SpreadElement(s) => self.spread_child(&s.argument),
                 Argument::ArrayExpression(array) if array.elements.len() == 2 => self.binding(array),
                 other => self.expr(other.to_expression()),
             };
@@ -676,14 +691,23 @@ impl Tr<'_> {
         for arg in children {
             let note = self.note(arg.span().start);
             let line = match arg {
-                Argument::SpreadElement(s) => {
-                    self.refuse("children:spread", "spread children `...xs`", s.span)
-                }
+                Argument::SpreadElement(s) => self.spread_child(&s.argument),
                 other => self.child(other.to_expression()),
             };
             lines.push(format!("{note}{line}"));
         }
         format!("{head} {{\n{}\n}}", lines.join("\n"))
+    }
+
+    /// `...xs` among children: the list as one `[View]` child, under review: the
+    /// runtime draws a list as one keyed slot (a `Presence`), one fiber more than
+    /// the spread siblings it replaces.
+    fn spread_child(&mut self, list: &Expression) -> String {
+        self.review("spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings".into());
+        match list.without_parentheses() {
+            Expression::CallExpression(call) if is_map(call) => self.child(list),
+            other => self.expr(other),
+        }
     }
 
     /// `[value, setter]`: `$state` when it is a state's own pair, else `Binding(get:set:)`.

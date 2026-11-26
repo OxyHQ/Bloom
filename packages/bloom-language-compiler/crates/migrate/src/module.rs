@@ -96,6 +96,8 @@ pub struct Tr<'s> {
     pub scope: Scope,
     /// Module functions a `view(F)` constant wraps: translated as that view.
     pub wrapped: HashSet<String>,
+    /// Review notes for the statement being translated (`Tr::review`).
+    pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
     pub quiet: bool,
 }
@@ -224,6 +226,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         react_types: Default::default(),
         scope: Scope::default(),
         wrapped: HashSet::new(),
+        reviews: Vec::new(),
         quiet: false,
     };
 
@@ -250,6 +253,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         }
         let comments = tr.comments.before(statement.span().start, true);
         let item = tr.item(statement, &defaults, &program.body);
+        let item = if item.is_empty() { item } else { tr.take_reviews() + &item };
         if item.is_empty() {
             pending.push_str(&undoc(&comments));
             pending.push_str(&undoc(&tr.comments.before(statement.span().end, false)));

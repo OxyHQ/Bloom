@@ -62,7 +62,9 @@ fn modules(paths: &[PathBuf], tests: bool) -> Result<Vec<PathBuf>, String> {
 const TEST_DIRS: &[&str] = &["__tests__", "__mocks__", "__fixtures__", "__perf__"];
 
 fn is_module(name: &str) -> bool {
-    (name.ends_with(".tsx") || name.ends_with(".ts")) && !name.ends_with(".d.ts") && !name.contains(".d.bloom.")
+    (name.ends_with(".tsx") || name.ends_with(".ts"))
+        && !name.ends_with(".d.ts")
+        && !name.contains(".d.bloom.")
 }
 
 fn is_test(name: &str) -> bool {
@@ -113,7 +115,9 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
     let written: Vec<PathBuf> = files
         .iter()
         .zip(&entries)
-        .filter(|(_, e)| options.write && matches!(e.migration.status, Status::Migrated | Status::NeedsReview))
+        .filter(|(_, e)| {
+            options.write && matches!(e.migration.status, Status::Migrated | Status::NeedsReview)
+        })
         .map(|(p, _)| p.clone())
         .collect();
     if !written.is_empty()
@@ -187,7 +191,9 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
             for target in drawn {
                 let name = target.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
                 if out.contains(&format!("<{name}")) {
-                    notes.push(format!("  draws <{name} …/> as JSX: a view is drawn as toElement({name}({{ … }}))"));
+                    notes.push(format!(
+                        "  draws <{name} …/> as JSX: a view is drawn as toElement({name}({{ … }}))"
+                    ));
                 }
             }
         }

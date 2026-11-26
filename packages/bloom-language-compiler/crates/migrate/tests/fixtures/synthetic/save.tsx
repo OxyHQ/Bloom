@@ -21,3 +21,8 @@ export const SaveButton = view(function SaveButton(props: { id: string }) {
     .disabled(saving)
     .onPress(() => void onSave());
 });
+
+/** An assertion says nothing at run time: dropped, under review. */
+export function label(text: string): string {
+  return text as string;
+}

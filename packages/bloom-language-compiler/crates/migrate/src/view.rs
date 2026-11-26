@@ -341,7 +341,8 @@ impl Tr<'_> {
             if blank {
                 members.push(String::new());
             }
-            members.push(format!("{note}{member}"));
+            let reviews = self.take_reviews();
+            members.push(format!("{note}{reviews}{member}"));
         }
         let body = self.refuse("view:no-return", "a view that does not return", Span::new(end, end));
         (members.join("\n"), body)
@@ -589,7 +590,8 @@ impl Tr<'_> {
             match statement {
                 Statement::ReturnStatement(r) => {
                     if let Some(value) = &r.argument {
-                        lines.push(self.view_value(value));
+                        let value = self.view_value(value);
+                        lines.push(self.take_reviews() + &value);
                     }
                     return lines.join("\n");
                 }
@@ -633,7 +635,8 @@ impl Tr<'_> {
                             ));
                             continue;
                         }
-                        lines.push(self.let_decl(d, init, true));
+                        let line = self.let_decl(d, init, true);
+                        lines.push(self.take_reviews() + &line);
                     }
                 }
                 other => lines.push(self.refuse(
@@ -968,7 +971,8 @@ impl Tr<'_> {
                 Statement::TryStatement(t) => self.try_stmt(t, last),
                 other => self.stmt(other),
             };
-            lines.push(format!("{note}{text}"));
+            let reviews = self.take_reviews();
+            lines.push(format!("{note}{reviews}{text}"));
         }
         let note = self.note(end);
         if !note.is_empty() {
