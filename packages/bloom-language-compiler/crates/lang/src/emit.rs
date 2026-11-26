@@ -1769,6 +1769,8 @@ impl<'a> Emitter<'a> {
                 }
             })
             .collect();
+        // A parameter without a TS type takes its type from where the closure is passed.
+        let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
         let tail = if info.ret == Ty::Unit || matches!(info.ret, Ty::Var(_) | Ty::Unknown) {
             Tail::Discard
         } else {
@@ -1808,7 +1810,7 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::at(c.span, if info.is_async { "async " } else { "" });
         out.s(&format!("({}) => ", params.join(", "))).f(body);
         // A closure that reads no local of its surroundings is built once, at module scope.
-        if self.view.is_some() && self.reads_only_module(c) {
+        if self.view.is_some() && !contextual && self.reads_only_module(c) {
             let name = format!("$fn{}", self.hoisted.len() + self.hoisted_names.len());
             let mut decl = Frag::of(format!("const {name} = "));
             decl.f(out).s(";");

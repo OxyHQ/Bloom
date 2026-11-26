@@ -385,6 +385,10 @@ pub view PostRow(post: Post, compact: Bool = false) {
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
   trailing builder as `children`.
 
+- A token parameter whose TypeScript type also takes a boolean takes a `Bool` (or an optional
+  one): `.allowsHitTesting(false)` (`HitTesting`), `.when(on) { … }` (`Condition | boolean`),
+  `.accessibilityState(checked: on)` (`boolean | "mixed"`). A modifier's closure whose
+  parameter has no Bloom type stays where it is passed, so TS types it from there.
 - A modifier's parameter that TypeScript lets be `undefined` takes `none` and any optional
   (`.onEndReached(more ? load : none, 0.5)`, `.footerContent(none)`); a parameter marked `?`
   in its signature may be left out. `c ? a : none` is `A?` wherever it is written, so the
