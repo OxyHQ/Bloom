@@ -659,6 +659,9 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Kw(Kw::Type) => ItemKind::Alias(self.alias_decl()),
             Tok::Kw(Kw::Fn | Kw::Async) => ItemKind::Fn(self.fn_decl()),
             Tok::Ident(word) if word == "func" => ItemKind::Fn(self.fn_decl()),
+            Tok::Ident(word) if word == "extension" && matches!(self.nth(1), Tok::Ident(_)) => {
+                ItemKind::Extension(self.extension_decl())
+            }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
             Tok::Kw(Kw::Var) => {
@@ -789,22 +792,9 @@ impl<'s, 'i> Parser<'s, 'i> {
                     .help(format!("write `let {}: String`", name.name))
                     .spec("44-structs"),
                 ),
-                TypeMemberKind::Func(f) if member.modifiers.is_static && f.name.name == "==" => {}
-                TypeMemberKind::Func(f) => self.error(
-                    Diagnostic::error("B0106", f.name.span, "a struct's methods are not supported yet")
-                        .label("phase A compiles a data struct's stored properties")
-                        .help("write a free `func` taking the struct, or an `extension` (phase A follow-up)")
-                        .spec("44-structs"),
-                ),
-                TypeMemberKind::Computed { name, .. } => self.error(
-                    Diagnostic::error(
-                        "B0106",
-                        name.span,
-                        "a struct's computed properties are not supported yet",
-                    )
-                    .label("phase A compiles a data struct's stored properties")
-                    .spec("44-structs"),
-                ),
+                // Methods and computed properties are lowered to functions with the
+                // struct's own (`crate::extensions`).
+                TypeMemberKind::Func(_) | TypeMemberKind::Computed { .. } => {}
                 TypeMemberKind::Let(l) => self.error(
                     Diagnostic::error("B0106", l.span, "a struct's stored properties are named")
                         .label("a destructuring `let` is a view's, computed each render")
@@ -1211,6 +1201,48 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
         ConstDecl { name, ty, span: start.to(value.span), value }
+    }
+
+    /// `extension Name[<T>][: P] { members }`.
+    fn extension_decl(&mut self) -> ExtensionDecl {
+        self.bump();
+        let name = self.ident("the extended type's name");
+        let generics = self.generics();
+        let conformances = self.conformances();
+        let mut members = Vec::new();
+        let body_start = self.span();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the extension's members") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(member) = self.type_member() {
+                    match &member.kind {
+                        TypeMemberKind::Stored { name, .. } if !member.modifiers.is_static => self.error(
+                            Diagnostic::error("B0106", name.span, "an extension adds no stored properties")
+                                .label("a value's stored properties are its type's")
+                                .help("make it a computed property (`var x: T { … }`), or `static let`")
+                                .spec("44-structs"),
+                        ),
+                        TypeMemberKind::Let(l) => self.error(
+                            Diagnostic::error("B0106", l.span, "an extension's properties are named")
+                                .label("a destructuring `let` is a view's")
+                                .spec("44-structs"),
+                        ),
+                        _ => {}
+                    }
+                    members.push(member);
+                }
+                self.eat(P::Comma);
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let body = TypeBody {
+            conformances,
+            members,
+            span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
+        };
+        ExtensionDecl { name, generics, body }
     }
 
     fn fn_decl(&mut self) -> FnDecl {

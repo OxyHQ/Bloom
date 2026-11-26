@@ -142,6 +142,19 @@ pub enum ItemKind {
     Fn(FnDecl),
     View(ViewDecl),
     Const(ConstDecl),
+    /// `extension String { func … }`: methods, computed properties and static members of
+    /// a type declared elsewhere (a built-in, or a struct or enum). Lowered before checking
+    /// (`crate::extensions::lower`) to free functions the checker finds by the receiver's type.
+    Extension(ExtensionDecl),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExtensionDecl {
+    /// The extended type, as written (`String`, `Array`, `Post`).
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    /// Its conformances and members as written.
+    pub body: TypeBody,
 }
 
 impl ItemKind {
@@ -153,6 +166,7 @@ impl ItemKind {
             ItemKind::Fn(f) => &f.name,
             ItemKind::View(v) => &v.name,
             ItemKind::Const(c) => &c.name,
+            ItemKind::Extension(e) => &e.name,
         }
     }
 }

@@ -369,6 +369,7 @@ impl<'a> Formatter<'a> {
             ItemKind::Const(c) => {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
+            ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
         };
         concat(vec![modifiers, kind])
     }

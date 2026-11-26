@@ -367,7 +367,7 @@ impl Builder<'_> {
                         }
                     }
                 }
-                ItemKind::Alias(_) | ItemKind::Const(_) => {}
+                ItemKind::Alias(_) | ItemKind::Const(_) | ItemKind::Extension(_) => {}
             }
         }
         // Every block, closure, arm and `for` is a scope.
@@ -809,6 +809,26 @@ pub fn walk_item<'a>(item: &'a Item, f: &mut dyn FnMut(Node<'a>)) {
                 walk_type(t, f);
             }
             walk_expr(&c.value, f);
+        }
+        ItemKind::Extension(e) => {
+            for member in &e.body.members {
+                match &member.kind {
+                    TypeMemberKind::Func(func) => walk_fn(func, f),
+                    TypeMemberKind::Computed { ty, body, .. } => {
+                        walk_type(ty, f);
+                        walk_block(body, f);
+                    }
+                    TypeMemberKind::Stored { ty, value, .. } => {
+                        if let Some(t) = ty {
+                            walk_type(t, f);
+                        }
+                        if let Some(v) = value {
+                            walk_expr(v, f);
+                        }
+                    }
+                    TypeMemberKind::Let(l) => walk_let(l, f),
+                }
+            }
         }
     }
 }
