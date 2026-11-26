@@ -1,0 +1,14 @@
+// A .bloom module imported through the `paths` map, and through a TS module
+// that re-exports it.
+
+import { Row } from "@/rows/row.bloom"
+import { Row as Again } from "@/rows"
+
+pub view Rows {
+  body {
+    VStack {
+      Row(title: "One")
+      Again(title: "Two")
+    }
+  }
+}

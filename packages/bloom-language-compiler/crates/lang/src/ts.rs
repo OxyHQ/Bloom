@@ -173,8 +173,12 @@ fn cached<T: Clone>(
     Some(value)
 }
 
-/// Reads and summarises a TS file (cached while it is unchanged on disk).
+/// Reads and summarises a TS file (cached while it is unchanged on disk); a
+/// `.bloom` module is not one (see [`bloom_export`]).
 pub fn read(path: &Path) -> Option<Rc<TsFile>> {
+    if path.extension().is_some_and(|e| e == "bloom") {
+        return None;
+    }
     cached(&FILES, path, path, || {
         let text = std::fs::read_to_string(path).ok()?;
         Some(Rc::new(summarise(path, &text)))
@@ -674,7 +678,7 @@ fn json_field<'j>(json: &'j str, field: &str) -> Option<&'j str> {
 fn with_extensions(base: &Path) -> Option<PathBuf> {
     let text = base.to_string_lossy();
     let is_file = |p: &Path| p.is_file();
-    if (text.ends_with(".ts") || text.ends_with(".tsx")) && is_file(base) {
+    if (text.ends_with(".ts") || text.ends_with(".tsx") || text.ends_with(".bloom")) && is_file(base) {
         return Some(base.to_path_buf());
     }
     let stem = text.strip_suffix(".js").or_else(|| text.strip_suffix(".mjs")).unwrap_or(&text).to_string();
@@ -1093,6 +1097,35 @@ impl Mapper<'_> {
                 FieldDef { name: member.name.clone(), ty, default }
             })
             .collect()
+    }
+}
+
+/// The `.bloom` module and name a TS module's export `name` comes from, when
+/// it re-exports one (`export { List } from "./list.bloom"`, through
+/// `import`/`export` pairs and `export *`).
+pub fn bloom_export(
+    file: &Rc<TsFile>,
+    name: &str,
+    options: &Options,
+    depth: usize,
+) -> Option<(PathBuf, String)> {
+    if depth > 8 {
+        return None;
+    }
+    let follow = |specifier: &str, imported: &str| -> Option<(PathBuf, String)> {
+        let path = resolve(&file.path, specifier, options)?;
+        if specifier.ends_with(".bloom") {
+            return Some((path, imported.to_string()));
+        }
+        bloom_export(&read(&path)?, imported, options, depth + 1)
+    };
+    match file.exports.get(name) {
+        Some(Export::From(specifier, imported)) => follow(specifier, imported),
+        Some(Export::Local(local)) => {
+            let (specifier, imported) = file.imports.get(local)?;
+            follow(specifier, imported)
+        }
+        None => file.stars.iter().find_map(|star| follow(star, name)),
     }
 }
 

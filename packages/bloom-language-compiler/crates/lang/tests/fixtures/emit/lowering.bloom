@@ -2,7 +2,7 @@
 // the await (matched, propagated with `?`, or kept as a `Result`), and a
 // branch that needs statements is an `if` into a temp, never an IIFE.
 
-import { fetchCount, ping } from "../stubs/api"
+import { fetchCount, ping } from "@/api"
 
 enum Load {
   idle

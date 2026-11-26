@@ -1170,7 +1170,10 @@ impl<'o> Checker<'o> {
             other => other,
         };
         if specifier.ends_with(".bloom") {
-            self.import_bloom(import, specifier);
+            // Relative to this file, or through the `paths` map (`@/rows/row.bloom`).
+            let path = ts::resolve(&self.path, specifier, self.options)
+                .unwrap_or_else(|| self.path.parent().unwrap_or(Path::new(".")).join(specifier));
+            self.import_bloom(import, &path);
             return;
         }
         // `import { Row } from "./Row"`: a `.bloom` module when one is there, never both.
@@ -1187,7 +1190,8 @@ impl<'o> Checker<'o> {
                     );
                     return;
                 }
-                self.import_bloom(import, &with_extension);
+                let path = self.path.parent().unwrap_or(Path::new(".")).join(&with_extension);
+                self.import_bloom(import, &path);
                 return;
             }
         }
@@ -1239,6 +1243,20 @@ impl<'o> Checker<'o> {
                                 reads: &mut self.out.dependencies,
                             };
                             let mapped = mapper.export(file, &spec.name.name, &local.name, 0);
+                            if mapped.is_none()
+                                && let Some((path, name)) =
+                                    ts::bloom_export(file, &spec.name.name, self.options, 0)
+                            {
+                                // A TS module that re-exports a `.bloom` module's item.
+                                let exported = Ident { name, span: spec.name.span };
+                                self.bloom_names(
+                                    &path,
+                                    &import.source,
+                                    import.source_span,
+                                    &[(exported, local, spec.span)],
+                                );
+                                continue;
+                            }
                             if mapped.is_none() {
                                 let exports: Vec<&str> = file.exports.keys().map(String::as_str).collect();
                                 let help = closest(&spec.name.name, exports.iter().copied())
@@ -1283,13 +1301,29 @@ impl<'o> Checker<'o> {
         }
     }
 
-    fn import_bloom(&mut self, import: &Import, specifier: &str) {
-        let path = self.path.parent().unwrap_or(Path::new(".")).join(specifier);
-        let Ok(source) = std::fs::read_to_string(&path) else {
+    fn import_bloom(&mut self, import: &Import, path: &Path) {
+        let ImportKind::Named(specs) = &import.kind else {
             self.report(
-                Diagnostic::error("B0602", import.source_span, format!("cannot read \"{}\"", import.source))
+                Diagnostic::error("B0603", import.span, "a .bloom module is imported by name")
+                    .label("`* as` is for TS modules")
+                    .help("import the names: `import { Row } from \"./Row.bloom\"`")
+                    .spec("10-modules-and-interop"),
+            );
+            return;
+        };
+        let names: Vec<(Ident, Ident, Span)> =
+            specs.iter().map(|spec| (spec.name.clone(), spec.local().clone(), spec.span)).collect();
+        self.bloom_names(path, &import.source, import.source_span, &names);
+    }
+
+    /// Declares `names` (exported name, local name, the import spec's span) of
+    /// the `.bloom` module at `path`, imported as `specifier`.
+    fn bloom_names(&mut self, path: &Path, specifier: &str, at: Span, names: &[(Ident, Ident, Span)]) {
+        let Ok(source) = std::fs::read_to_string(path) else {
+            self.report(
+                Diagnostic::error("B0602", at, format!("cannot read \"{specifier}\""))
                     .label("no such .bloom file")
-                    .help("check the path: it is relative to this file")
+                    .help("check the path: it is relative to this file, or mapped by `paths`")
                     .spec("10-modules-and-interop"),
             );
             return;
@@ -1301,35 +1335,25 @@ impl<'o> Checker<'o> {
         sub.declare_signatures(&file, specifier);
         self.out.defs = std::mem::take(&mut sub.out.defs);
         self.out.dependencies.append(&mut sub.out.dependencies);
-        self.out.dependencies.insert(path.clone());
-        let ImportKind::Named(specs) = &import.kind else {
-            self.report(
-                Diagnostic::error("B0603", import.span, "a .bloom module is imported by name")
-                    .label("`* as` is for TS modules")
-                    .help("import the names: `import { Row } from \"./Row.bloom\"`")
-                    .spec("10-modules-and-interop"),
-            );
-            return;
-        };
-        for spec in specs {
-            let local = spec.local().clone();
-            if let Some(TypeName::Def(def)) = sub.type_names.get(&spec.name.name).cloned() {
+        self.out.dependencies.insert(path.to_path_buf());
+        for (name, local, spec_span) in names {
+            if let Some(TypeName::Def(def)) = sub.type_names.get(&name.name).cloned() {
                 self.type_names.insert(local.name.clone(), TypeName::Def(def));
                 self.out.type_imports.push(local.name.clone());
-                self.out.type_only_imports.insert(spec.span);
+                self.out.type_only_imports.insert(*spec_span);
                 continue;
             }
-            match sub.lookup(&spec.name.name).map(|id| sub.out.locals[id].clone()) {
+            match sub.lookup(&name.name).map(|id| sub.out.locals[id].clone()) {
                 Some(found) => {
                     let ty = sub.zonk(&found.ty);
-                    self.declare_unique(&local, ty, found.kind);
+                    self.declare_unique(local, ty, found.kind);
                 }
                 None => {
                     self.report(
                         Diagnostic::error(
                             "B0603",
-                            spec.name.span,
-                            format!("\"{}\" has no `pub` item `{}`", import.source, spec.name.name),
+                            name.span,
+                            format!("\"{specifier}\" has no `pub` item `{}`", name.name),
                         )
                         .label("not exported there")
                         .help("mark it `pub` in its module")
