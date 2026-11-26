@@ -1441,6 +1441,20 @@ impl<'a> Emitter<'a> {
                 Frag::join(items, ", ").wrap("[", "] as const")
             }
             ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
+            ExprKind::Is(subject, _) => {
+                let value = self.operand(subject);
+                if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
+                    self.aliases.insert(*narrowed, value.text.clone());
+                }
+                let test = match self.ck.is_tests.get(&expr.id) {
+                    Some(Ty::Str) => "typeof {} === \"string\"",
+                    Some(Ty::Bool) => "typeof {} === \"boolean\"",
+                    Some(Ty::Int) => "typeof {} === \"number\" && Number.isInteger({})",
+                    Some(Ty::List(_)) => "Array.isArray({})",
+                    _ => "typeof {} === \"number\"",
+                };
+                Frag::of(format!("({})", test.replace("{}", &value.text)))
+            }
             ExprKind::List(items) => {
                 let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
                 let list = Frag::join(items, ", ").wrap("[", "]");
@@ -2956,6 +2970,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Closure(_) => false,
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
+        | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Field(e, _)
@@ -3100,6 +3115,7 @@ impl<'a> Emitter<'a> {
             }),
             ExprKind::Paren(e)
             | ExprKind::Spread(e)
+            | ExprKind::Is(e, _)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)

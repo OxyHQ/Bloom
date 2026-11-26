@@ -221,6 +221,10 @@ pub struct CheckResult {
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
     pub assigns: HashMap<Span, AssignRes>,
+    /// `x is T`: the type tested.
+    pub is_tests: HashMap<ExprId, Ty>,
+    /// `if x is T`: the narrowed local and the one it narrows.
+    pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
     pub ref_objects: HashSet<ExprId>,
     pub awaits: HashMap<ExprId, AwaitRes>,
@@ -2478,6 +2482,16 @@ impl<'o> Checker<'o> {
         match cond {
             Cond::Expr(expr) => {
                 self.expr(expr, Some(&Ty::Bool));
+                // `if x is T { … }`: `x` is a `T` in the block.
+                if let ExprKind::Is(subject, _) = &expr.kind
+                    && let ExprKind::Name(name) = &subject.kind
+                    && let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned()
+                    && let Some(ty) = self.out.is_tests.get(&expr.id).cloned()
+                {
+                    let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+                    let narrowed = self.declare(&ident, ty, LocalKind::Let);
+                    self.out.narrowed.insert(expr.id, (narrowed, original));
+                }
             }
             Cond::Let(pattern, value) => {
                 let ty = self.expr(value, None);
@@ -2829,6 +2843,39 @@ impl<'o> Checker<'o> {
                 Ty::List(Box::new(elem))
             }
             ExprKind::Record(entries) => self.record_literal(expr, entries, expected),
+            ExprKind::Is(subject, te) => {
+                let ty = self.resolve_type(te);
+                let value = self.expr(subject, None);
+                let tested = matches!(ty, Ty::Str | Ty::Int | Ty::Float | Ty::Bool | Ty::List(_));
+                if !tested {
+                    self.report(
+                        Diagnostic::error(
+                            "B0213",
+                            te.span,
+                            format!(
+                                "`is` tests for a string, a number, a bool or a list, not {}",
+                                self.show(&ty)
+                            ),
+                        )
+                        .label("not a type JS can test")
+                        .help("a Bloom type's cases are an enum's: `match` on it")
+                        .spec("47-the-foreign-boundary"),
+                    );
+                } else if !matches!(self.resolve(&value), Ty::Foreign(_) | Ty::Unknown | Ty::Var(_)) {
+                    self.report(
+                        Diagnostic::error(
+                            "B0213",
+                            subject.span,
+                            format!("`is` tests a TS value, and this is {}", self.show(&value)),
+                        )
+                        .label("its type is already known")
+                        .help("a Bloom value's cases are an enum's: `match` on it")
+                        .spec("47-the-foreign-boundary"),
+                    );
+                }
+                self.out.is_tests.insert(expr.id, ty);
+                Ty::Bool
+            }
             ExprKind::Spread(inner) => {
                 self.report(
                     Diagnostic::error("B0207", expr.span, "`..` spreads a list into a list literal")
@@ -4165,6 +4212,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         }
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
+        | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
