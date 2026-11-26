@@ -2022,6 +2022,10 @@ impl<'a> Emitter<'a> {
                     values.push(self.closure(trailing));
                 }
                 let mut out = self.operand(&call.callee);
+                if matches!(self.ck.names.get(&call.callee.id), Some(NameRes::Local(l)) if self.ck.constructors.contains(l))
+                {
+                    out = out.wrap("new ", "");
+                }
                 out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out
             }

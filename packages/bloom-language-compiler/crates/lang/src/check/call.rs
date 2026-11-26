@@ -73,7 +73,8 @@ impl Checker<'_> {
                         // An UpperCamel TS value Bloom could not type, used as a node, is a component.
                         LocalKind::Import { hook: false }
                             if matches!(self.resolve(&info.ty), Ty::Foreign(_))
-                                && name.starts_with(|c: char| c.is_ascii_uppercase()) =>
+                                && name.starts_with(|c: char| c.is_ascii_uppercase())
+                                && !self.out.constructors.contains(&local) =>
                         {
                             self.component_call(expr, call, &Ty::Foreign("".into()))
                         }

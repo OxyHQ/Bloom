@@ -26,3 +26,13 @@ const payload: string = (JSON.stringify(text) satisfies string);
 return `q=${encoded}&b=${payload}`;
 }
 
+function stamp(at: number): string {
+const date: Date = new Date(at);
+const text: string = (date.toISOString() satisfies string);
+return text;
+}
+
+function delay(timer: ReturnType<typeof setTimeout> | undefined): boolean {
+return timer !== undefined;
+}
+
