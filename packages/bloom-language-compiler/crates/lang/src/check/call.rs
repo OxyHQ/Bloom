@@ -64,6 +64,9 @@ impl Checker<'_> {
                             let hint = (index == 0 && arg.label.is_none()).then_some(Ty::Str);
                             self.boundary(&arg.value, hint.as_ref());
                         }
+                        if name == "navigate" {
+                            self.route(call);
+                        }
                         return if name == "toast" { Ty::Unit } else { Ty::Foreign("Navigation".into()) };
                     }
                     "sleep" => {
@@ -843,6 +846,94 @@ impl Checker<'_> {
         self.expr(&call.args[1].value, Some(&setter));
         self.out.calls.insert(expr.id, CallRes::Binding);
         Ty::Binding(Box::new(value))
+    }
+
+    /// `navigate("/path", param: v)`: a path written out names a route of the app's
+    /// `app/` tree, and a route's parameters are given by name, each a string or a number.
+    fn route(&mut self, call: &Call) {
+        let Some(first) = call.args.first().filter(|arg| arg.label.is_none()) else { return };
+        let ExprKind::Str { parts, .. } = &first.value.kind else { return };
+        if parts.iter().any(|part| matches!(part, StrPart::Interp(_))) {
+            return;
+        }
+        let path = super::plain_text(parts);
+        if !path.starts_with('/') {
+            return;
+        }
+        let Some(routes) = crate::routes::routes(self.options) else { return };
+        self.out.dependencies.extend(routes.folders.iter().map(|(folder, _)| folder.clone()));
+        let Some(pattern) = crate::routes::find(&routes, &path) else {
+            let help = match closest(&path, routes.patterns.iter().map(String::as_str)) {
+                Some(near) => format!("did you mean `{near}`?"),
+                None => format!("the app's routes: {}", routes.patterns.join(", ")),
+            };
+            self.report(
+                Diagnostic::error("B0701", first.value.span, format!("no route `{path}` in the app"))
+                    .label("not a file of `app/`")
+                    .help(help)
+                    .spec("9-navigation"),
+            );
+            return;
+        };
+        // A pattern written out (`/posts/[id]`) takes its parameters by name.
+        let wanted: Vec<&str> = if path.split(['?', '#']).next().unwrap_or_default().contains('[') {
+            crate::routes::params(pattern)
+        } else {
+            Vec::new()
+        };
+        for arg in call.args.iter().skip(1) {
+            let Some(label) = &arg.label else { continue };
+            if !wanted.contains(&label.name.as_str()) {
+                let help = if wanted.is_empty() {
+                    format!("`{pattern}` takes no parameters here")
+                } else {
+                    format!("its parameters: {}", wanted.join(", "))
+                };
+                self.report(
+                    Diagnostic::error(
+                        "B0702",
+                        label.span,
+                        format!("`{pattern}` has no parameter `{}`", label.name),
+                    )
+                    .label("not a parameter of this route")
+                    .help(help)
+                    .spec("9-navigation"),
+                );
+                continue;
+            }
+            let ty = self.out.types.get(&arg.value.id).cloned().unwrap_or(Ty::Unknown);
+            if !matches!(
+                self.resolve(&ty),
+                Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Float | Ty::Foreign(_) | Ty::Unknown
+            ) {
+                self.report(
+                    Diagnostic::error(
+                        "B0702",
+                        arg.value.span,
+                        format!("a route parameter is a string or a number, not {}", self.show(&ty)),
+                    )
+                    .label("in the path")
+                    .help("pass the field the route names (`id: post.id`)")
+                    .spec("9-navigation"),
+                );
+            }
+        }
+        let given: Vec<&str> =
+            call.args.iter().filter_map(|a| a.label.as_ref()).map(|l| l.name.as_str()).collect();
+        let missing: Vec<String> =
+            wanted.iter().filter(|p| !given.contains(p)).map(|p| format!("`{p}`")).collect();
+        if !missing.is_empty() {
+            self.report(
+                Diagnostic::error(
+                    "B0702",
+                    first.value.span,
+                    format!("`{pattern}` needs {}", missing.join(", ")),
+                )
+                .label("a parameter of the route is not given")
+                .help(format!("navigate(\"{pattern}\", {}: …)", wanted[0]))
+                .spec("9-navigation"),
+            );
+        }
     }
 
     /// A node constructor: positional arguments, checked against the
