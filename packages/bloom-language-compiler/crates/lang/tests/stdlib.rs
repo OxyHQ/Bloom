@@ -231,7 +231,8 @@ const ROW: &str = r#"public struct Row: View {
         Text(name).foregroundStyle(.muted).lineLimit(1)
       }
       HStack(alignment: .center, spacing: .xs) {
-        Button(action: { on = !on }) { Label("\(likes)", icon: .heart) }
+        Button(action: { on = !on }) { Label("\(likes)", icon: .like) }
+        Label("Saved", icon: .bookmark)
         Text(createdAt, format: .relative)
         Toggle("Likes", isOn: $on)
       }

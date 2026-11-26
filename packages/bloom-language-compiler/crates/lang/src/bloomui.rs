@@ -102,11 +102,7 @@ fn label_parts(e: &Expr) -> Option<(Expr, Expr)> {
         return None;
     }
     let mut args = c.args.clone();
-    let mut icon = take_label(&mut args, &["icon", "systemImage"])?;
-    // `.heart`: the icon's name.
-    if let ExprKind::ImplicitMember(name) = &icon.kind {
-        icon = str_lit(&name.name, icon.span);
-    }
+    let icon = take_label(&mut args, &["icon", "systemImage"])?;
     let [text] = args.as_slice() else { return None };
     if text.label.is_some() {
         return None;
@@ -115,8 +111,38 @@ fn label_parts(e: &Expr) -> Option<(Expr, Expr)> {
 }
 
 fn icon_and_text(text: Expr, icon: Expr) -> Vec<Stmt> {
+    // (an `Icon(.name)` made here is lowered when the walk reaches it, or by `Label`'s rewrite)
     let span = text.span;
     vec![stmt(node("Icon", vec![arg(icon)], None, span)), stmt(node("Text", vec![arg(text)], None, span))]
+}
+
+/// Mention's own glyphs in Bloom's icon set; every other name is a Remix icon.
+const OWN_ICONS: &[&str] = &["Like", "LikeFill", "Reply", "Repost", "MediaAttachment", "GifAttachment"];
+
+/// `.heart` → `RiHeartLine`, `.heartFill` → `RiHeartFill`, `.like` → `LikeIcon`: the
+/// glyph component of Bloom's icon set (`@oxy.so/bloom/icons/<Name>`).
+pub fn icon_component(name: &str) -> String {
+    let mut pascal = String::new();
+    let mut upper = true;
+    for ch in name.chars() {
+        if ch == '-' || ch == '_' {
+            upper = true;
+            continue;
+        }
+        if upper {
+            pascal.extend(ch.to_uppercase());
+            upper = false;
+        } else {
+            pascal.push(ch);
+        }
+    }
+    if OWN_ICONS.contains(&pascal.as_str()) {
+        return format!("{pascal}Icon");
+    }
+    if pascal.ends_with("Fill") || pascal.ends_with("Line") {
+        return format!("Ri{pascal}");
+    }
+    format!("Ri{pascal}Line")
 }
 
 /// A closure value as a modifier's trailing closure, else its argument.
@@ -133,6 +159,8 @@ struct Lowering<'a> {
     names: BTreeSet<String>,
     /// The buttons whose content is a `Label`: an icon and a count, drawn quiet.
     quiet: BTreeSet<ExprId>,
+    /// The glyph components `Icon(.name)` named (imported from Bloom's icon set).
+    icons: BTreeSet<String>,
 }
 
 impl Lowering<'_> {
@@ -143,6 +171,17 @@ impl Lowering<'_> {
     fn rewrite(&mut self, e: &mut Expr) {
         let span = e.span;
         let ExprKind::Call(c) = &mut e.kind else { return };
+        // `Icon(.heart)`: the icon set's glyph.
+        if name_of(&c.callee) == Some("Icon")
+            && self.ours("Icon")
+            && let [only] = c.args.as_mut_slice()
+            && let ExprKind::ImplicitMember(name) = &only.value.kind
+        {
+            let component = icon_component(&name.name);
+            only.value = expr(ExprKind::Name(component.clone()), only.value.span);
+            self.icons.insert(component);
+            return;
+        }
         // `.foregroundStyle(x)` / `.lineLimit(n)`: renamed modifiers.
         if let ExprKind::Field(_, member) = &mut c.callee.kind {
             match member.name.as_str() {
@@ -171,7 +210,11 @@ impl Lowering<'_> {
             "ProgressView" if c.args.is_empty() => *c.callee = expr(ExprKind::Name("Loading".into()), span),
             "Label" => {
                 if let Some((text, icon)) = label_parts(e) {
-                    let hstack = node("HStack", Vec::new(), Some(icon_and_text(text, icon)), span);
+                    let mut stmts = icon_and_text(text, icon);
+                    if let StmtKind::Expr(glyph) = &mut stmts[0].kind {
+                        self.rewrite(glyph);
+                    }
+                    let hstack = node("HStack", Vec::new(), Some(stmts), span);
                     *e = modifier(
                         hstack,
                         "spacing",
@@ -395,7 +438,8 @@ fn for_each(items: Expr, closure: Closure, span: Span) -> Stmt {
 /// Lowers `file`'s BloomUI names in place; returns the standard library names it introduced.
 pub fn lower(file: &mut File) -> BTreeSet<String> {
     let own: BTreeSet<String> = file.items.iter().map(|i| i.kind.name().name.clone()).collect();
-    let mut lowering = Lowering { own: &own, names: BTreeSet::new(), quiet: BTreeSet::new() };
+    let mut lowering =
+        Lowering { own: &own, names: BTreeSet::new(), quiet: BTreeSet::new(), icons: BTreeSet::new() };
     for item in &mut file.items {
         match &mut item.kind {
             ItemKind::Fn(f) => lowering.stmts(&mut f.body.stmts),
@@ -414,6 +458,20 @@ pub fn lower(file: &mut File) -> BTreeSet<String> {
             }
             _ => {}
         }
+    }
+    for icon in &lowering.icons {
+        let span = fresh(Span::new(0, 0));
+        file.imports.push(Import {
+            kind: ImportKind::Named(vec![ImportSpec {
+                type_only: false,
+                name: ident(icon, span),
+                alias: None,
+                span,
+            }]),
+            source: format!("@oxy.so/bloom/icons/{icon}"),
+            source_span: span,
+            span,
+        });
     }
     lowering.names
 }

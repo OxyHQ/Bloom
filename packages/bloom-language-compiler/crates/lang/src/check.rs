@@ -2129,7 +2129,8 @@ impl<'o> Checker<'o> {
                 self.out.dependencies.insert(config);
             }
         }
-        if file.is_none() {
+        // An import the compiler wrote (an icon BloomUI names) is the platform's to resolve.
+        if file.is_none() && !crate::codable::is_synthetic(import.source_span) {
             self.out.diagnostics.push(
                 Diagnostic::warning(
                     "B0602",

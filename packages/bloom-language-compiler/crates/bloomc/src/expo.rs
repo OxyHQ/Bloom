@@ -292,10 +292,27 @@ pub fn generate(package: &Package) -> Result<(), String> {
         write(&build.join("index.js"), &format!("{header}// No `.app` target: nothing to start.\n"))?;
     } else {
         let (entry_file, entry_name) = entry(package)?;
+        // The standard library, before Metro resolves the entry's imports of it.
+        let std_dir = bloom_lang::stdlib::dir(&package.root);
+        bloom_lang::stdlib::ensure(&package.root);
+        // The package's string catalogs (`Resources/Localizable/<locale>.json`), registered at startup.
+        let mut catalogs = String::new();
+        if let Ok(entries) = std::fs::read_dir(package.root.join(bloom_lang::i18n::DIR)) {
+            let mut files: Vec<std::path::PathBuf> = entries
+                .filter_map(|e| e.ok().map(|e| e.path()))
+                .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                .collect();
+            files.sort();
+            for file in files {
+                let locale = file.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+                catalogs.push_str(&format!("registerCatalog('{locale}', require('{}'));\n", rel(&file)));
+            }
+        }
         write(
             &build.join("index.js"),
             &format!(
-                "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ {entry_name} }} from '{}';\n\n// The app's root view: a screen under Bloom's provider.\nfunction Root() {{\n  return createElement(BloomProvider, null, createElement(Screen, null, toElement({entry_name}())));\n}}\n\nregisterRootComponent(Root);\n",
+                "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{}';\nimport {{ {entry_name} }} from '{}';\n\n{catalogs}\n// The app's root view: a screen under Bloom's provider, inside the window's safe area\n// (the status bar, the notch and the navigation bar's edges), once for every screen.\nfunction Root() {{\n  return createElement(\n    SafeAreaProvider,\n    null,\n    createElement(\n      BloomProvider,\n      null,\n      createElement(\n        SafeAreaView,\n        {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }},\n        createElement(Screen, null, toElement({entry_name}())),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n",
+                rel(&std_dir.join("runtime")),
                 rel(&entry_file)
             ),
         )?;

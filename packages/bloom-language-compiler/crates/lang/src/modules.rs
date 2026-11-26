@@ -311,7 +311,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             continue;
         }
         let bloom_file = import.source.ends_with(".bloom") || import.source == crate::testing::RUNTIME;
-        if !bindings && !options.allow_ts_imports && !bloom_file {
+        if !bindings
+            && !options.allow_ts_imports
+            && !bloom_file
+            && !crate::codable::is_synthetic(import.source_span)
+        {
             out.diagnostics.push(string_import(&import));
         }
         kept.push(import);
