@@ -10,7 +10,7 @@ import { compile } from 'react-native-css/compiler';
 import { nativeTree } from '../../bloom-language/parity/support/native';
 import { appNative, bloom22Native } from './support/native-frames';
 import { bloom23Labels, withBloom23Changes } from './support/bloom-23-changes';
-import { CORPUS, loadCorpus } from './support/corpus';
+import { CORPUS, expectSame, loadCorpus } from './support/corpus';
 import { normalizeNative } from './support/normalize';
 
 // NativeWind's style collection, required (its source is typed for its own build, not this one).
@@ -41,8 +41,7 @@ describe.each(['light', 'dark'] as const)('%s', (scheme) => {
     const after = normalizeNative(nativeTree(c.after(), scheme));
     // Bloom 22 drawn, Bloom 23's own changes taken where the after side has them.
     const before = c.bloom22 ? withBloom23Changes(drawn, after, 'native', met) : drawn;
-    results[`${scheme} ${name}`] = JSON.stringify(before) === JSON.stringify(after);
-    expect(after).toEqual(before);
+    expectSame(results, `${scheme} ${name}`, after, before);
   });
 });
 

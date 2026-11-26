@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- The corpus parity record (`parity-web.json`, `parity-native.json`) holds what each test reports: a region is `true` exactly when its `toEqual` passes. It compared the two trees' JSON, which a key order or an undefined value made `false` where the test passed (Inbox's compose form, alias panel, message detail and six more).
+
 ## 0.5.0
 
 ### Compatibility

@@ -21,3 +21,19 @@ export function loadCorpus(): { cases: CorpusCase[]; css: string } {
   const { CASES } = require(join(CORPUS, 'corpus.generated.tsx')) as { CASES: CorpusCase[] };
   return { cases: CASES, css: readFileSync(join(CORPUS, 'app.generated.css'), 'utf8') };
 }
+
+/**
+ * `expect(after).toEqual(before)`, its outcome recorded under `key` as the
+ * test reports it: a result is `true` exactly when the test passes (no
+ * stricter comparison, which a key order or an undefined value would fail).
+ */
+export function expectSame(
+  results: Record<string, boolean>,
+  key: string,
+  after: unknown,
+  before: unknown,
+): void {
+  results[key] = false;
+  expect(after).toEqual(before);
+  results[key] = true;
+}
