@@ -445,6 +445,8 @@ public struct App: View {
         assert!(root.contains("import { RiHomeLine } from '@oxy.so/bloom/icons/RiHomeLine'"), "{root}");
         assert!(root.contains("name: \"settings\", href: \"/settings\", label: \"Settings\", icon: RiSettingsLine, page: true"), "{root}");
         assert!(root.contains("TabPagerProvider"), "{root}");
+        // The tab bar's taps reach it through the gesture handler's root (Android drops them without).
+        assert!(root.contains("createElement(\n    GestureHandlerRootView,"), "{root}");
         let index = std::fs::read_to_string(package.build_dir().join("index.js")).unwrap();
         assert_eq!(index.lines().last(), Some("import 'expo-router/entry';"));
         let app_json = std::fs::read_to_string(package.build_dir().join("app.json")).unwrap();

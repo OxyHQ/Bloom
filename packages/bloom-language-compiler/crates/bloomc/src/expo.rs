@@ -438,7 +438,7 @@ fn bunfig() -> String {
 /// content inside the window's safe area.
 fn single_root(header: &str, runtime: &str, entry_name: &str, entry: &str, catalogs: &str) -> String {
     format!(
-        "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{runtime}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The app's root view on a screen under Bloom's provider. The screen draws edge to edge\n// (its background under the status bar and the navigation bar); the view sits inside the\n// window's safe area (the status bar, the notch, the navigation bar's edges).\nfunction Root() {{\n  return createElement(\n    SafeAreaProvider,\n    null,\n    createElement(\n      BloomProvider,\n      null,\n      createElement(\n        Screen,\n        null,\n        createElement(SafeAreaView, {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }}, toElement({entry_name}())),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n"
+        "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{runtime}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The app's root view on a screen under Bloom's provider. The screen draws edge to edge\n// (its background under the status bar and the navigation bar); the view sits inside the\n// window's safe area (the status bar, the notch, the navigation bar's edges). Bloom's bars\n// and sheets take their taps and drags through the gesture handler's root.\nfunction Root() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(\n      SafeAreaProvider,\n      null,\n      createElement(\n        BloomProvider,\n        null,\n        createElement(\n          Screen,\n          null,\n          createElement(SafeAreaView, {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }}, toElement({entry_name}())),\n        ),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n"
     )
 }
 
@@ -474,7 +474,7 @@ fn routed_root(header: &str, r: &RoutedRoot) -> String {
         ),
     };
     format!(
-        "{header}import {{ createElement }} from 'react';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge.\n{root}\nexport default function RootLayout() {{\n  return createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation)));\n}}\n",
+        "{header}import {{ createElement }} from 'react';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge. Bloom's tab bar takes its taps through the gesture handler's\n// root (without it, Android delivers none).\n{root}\nexport default function RootLayout() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation))),\n  );\n}}\n",
         runtime = r.runtime,
         routing = r.routing,
         entry_name = r.entry_name,
@@ -568,9 +568,12 @@ mod tests {
         // Edge to edge: the screen (its background) is outermost, under the status bar; the
         // safe area is inside it, so no band of the window's own colour shows above the app.
         let index = std::fs::read_to_string(package.build_dir().join("index.js")).unwrap();
-        let screen = index.find("Screen,\n        null,").expect(&index);
+        let screen = index.find("Screen,\n          null,").expect(&index);
         let safe_area = index.find("createElement(SafeAreaView").expect(&index);
         assert!(screen < safe_area, "{index}");
+        // Bloom's bars and sheets take their taps through the gesture handler's root, outermost.
+        let gestures = index.find("GestureHandlerRootView,\n").expect(&index);
+        assert!(gestures < index.find("SafeAreaProvider,\n").expect(&index), "{index}");
         let _ = std::fs::remove_dir_all(&root);
     }
 
