@@ -51,6 +51,15 @@ thread_local! {
 }
 
 /// The token set `name` as a type, one shared value per set.
+/// The token sets whose TS parameter also takes a boolean: `HitTesting` is
+/// `boolean | …`, `.when(condition: Condition | boolean)`, and an
+/// accessibility state's `checked` is `boolean | 'mixed'`.
+pub const BOOL_SETS: &[&str] = &["hitTesting", "condition", "accessibilityChecked"];
+
+pub fn takes_bool(set: &str) -> bool {
+    BOOL_SETS.contains(&set)
+}
+
 pub fn str_set(name: &str) -> Rc<StrSet> {
     SETS.with(|sets| {
         sets.borrow_mut()
@@ -222,4 +231,19 @@ pub fn takers(modifier: &str) -> Vec<&'static str> {
         .filter(|node| node.modifiers.contains(&modifier))
         .flat_map(|node| node.constructors.iter().copied())
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    /// Every token set the language's TS unions with `boolean` is one bloomc takes a `Bool` for.
+    #[test]
+    fn bool_sets_follow_the_tokens() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../../bloom-language/src/tokens.ts");
+        let source = std::fs::read_to_string(path).expect("the language's tokens.ts");
+        for line in source.lines() {
+            let Some(rest) = line.split(" = boolean | (typeof ENUMS.").nth(1) else { continue };
+            let set = rest.split(')').next().expect("a set name");
+            assert!(super::takes_bool(set), "`{set}` takes a boolean in tokens.ts: add it to BOOL_SETS");
+        }
+    }
 }

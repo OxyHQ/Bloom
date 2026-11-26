@@ -1494,6 +1494,18 @@ impl Checker<'_> {
             return;
         }
         let expected = Ty::Strings(set.clone());
+        // A set whose TS type also takes a boolean (`HitTesting`, `Condition | boolean`).
+        if ui::takes_bool(&set.name) && !matches!(value.kind, ExprKind::Str { .. }) {
+            let ty = self.boundary(value, None);
+            let ty = match self.resolve(&ty) {
+                Ty::Option(inner) => self.resolve(&inner),
+                other => other,
+            };
+            if matches!(ty, Ty::Bool | Ty::Foreign(_) | Ty::Unknown) {
+                return;
+            }
+            self.out.types.remove(&value.id);
+        }
         if let ExprKind::Str { parts, .. } = &value.kind
             && parts.iter().all(|p| matches!(p, StrPart::Text(_)))
         {
