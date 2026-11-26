@@ -4,8 +4,10 @@
 
 import { Card } from "./card"
 
-pub view NameList(names: [String], footer: View? = none) {
-  body {
+public struct NameList: View {
+  let names: [String]
+  var footer: View? = none
+  var body: some View {
     if names.count == 0 {
       Card(title: "Nobody")
     } else {

@@ -5,26 +5,26 @@ import { load } from "./api"
 import { usePlayer, useTask } from "./player"
 import { Error } from "js"
 
-struct Track {
-  id: String
-  title: String
+public struct Track {
+  let id: String
+  let title: String
 }
 
-fn labelOf(track: Track) -> String {
+func labelOf(_ track: Track) -> String {
   let id = track.id
   id + track.title
 }
 
-pub view Deck(track: Track) {
+public struct Deck: View {
+  let track: Track
   let player = usePlayer()
   let _ = useTask {
     if track.id.isEmpty { fail(Error("No track")) }
     let loaded = await load(track.id)?
     return loaded.data.url
   }
-  effect(id: player) { player.loop = true }
 
-  body {
+  var body: some View {
     VStack {
       Text(labelOf(track))
       Button("Skip")
@@ -33,5 +33,6 @@ pub view Deck(track: Track) {
         player.time += 1
       }
     }
+    .task(id: player) { player.loop = true }
   }
 }
