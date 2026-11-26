@@ -470,6 +470,15 @@ impl Tr<'_> {
     }
 
     fn binary(&mut self, b: &oxc_ast::ast::BinaryExpression) -> String {
+        // `e instanceof C`: `e is C`, Swift's type test.
+        if b.operator == BinaryOperator::Instanceof
+            && let Expression::Identifier(class) = b.right.without_parentheses()
+        {
+            let value = self.expr(&b.left);
+            let value = if is_postfix_text(&value) { value } else { format!("({value})") };
+            let class = self.name(&class.name, class.span);
+            return format!("{value} is {class}");
+        }
         let op = match b.operator {
             BinaryOperator::StrictEquality | BinaryOperator::Equality => "==",
             BinaryOperator::StrictInequality | BinaryOperator::Inequality => "!=",
