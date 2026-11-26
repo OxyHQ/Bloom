@@ -163,7 +163,7 @@ impl Tr<'_> {
         module: &[Statement],
         span: Span,
     ) -> String {
-        let equal = self.pending_equal.take();
+        let equal = self.pending_equal.take().or_else(|| self.equal_for.remove(name));
         self.scope = Default::default();
         let params = self.view_params(params, props_ty, module, span);
         let (members, body) = match fn_body {
@@ -2509,7 +2509,7 @@ fn is_hook_call(call: &CallExpression) -> bool {
     matches!(&call.callee, Expression::Identifier(id) if is_hook_name(&id.name))
 }
 
-fn is_hook_name(name: &str) -> bool {
+pub fn is_hook_name(name: &str) -> bool {
     name.starts_with("use") && name.chars().nth(3).is_some_and(|c| c.is_ascii_uppercase())
 }
 

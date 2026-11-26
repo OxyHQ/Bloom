@@ -137,6 +137,8 @@ pub struct Tr<'s> {
     pub loop_block: bool,
     /// Translating a hook function (`fn useX`): React's memo hooks are TS calls.
     pub hook_fn: bool,
+    /// `const X = memo(Named, compare)`: Named's `equal(old, new)` member.
+    pub equal_for: HashMap<String, String>,
     /// Translating `lazy`'s closure: `import("./X")` is written as is.
     pub dynamic_import: bool,
     /// React's hooks the output calls (from a hook function).
@@ -343,6 +345,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         loop_block: false,
         hook_fn: false,
         dynamic_import: false,
+        equal_for: HashMap::new(),
         react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
@@ -378,6 +381,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     }
     let header = tr.comments.before(first, false);
     tr.scan(&program.body);
+    tr.scan_memo_aliases(&program.body);
 
     let defaults = default_exports(&program.body);
     let mut items = Vec::new();
@@ -526,6 +530,27 @@ pub fn memo_call<'b, 'a>(e: &'b Expression<'a>, react: &HashMap<String, String>)
         props: call.type_arguments.as_ref().and_then(|a| a.params.first()),
         comparator: call.arguments.get(1).and_then(|a| a.as_expression()),
     })
+}
+
+/// `memo(Named)` / `React.memo(Named, compare)`: the component's name and the comparator.
+fn memo_alias<'b, 'a>(
+    e: &'b Expression<'a>,
+    react: &HashMap<String, String>,
+) -> Option<(String, Option<&'b Expression<'a>>)> {
+    let Expression::CallExpression(call) = e.without_parentheses() else { return None };
+    let namespace = |n: &str| react.get(n).is_some_and(|e| e == "default" || e == "*");
+    let is_memo = match &call.callee {
+        Expression::Identifier(id) => react.get(id.name.as_str()).is_some_and(|e| e == "memo"),
+        Expression::StaticMemberExpression(m) => {
+            m.property.name == "memo" && matches!(&m.object, Expression::Identifier(o) if namespace(&o.name))
+        }
+        _ => false,
+    };
+    match (is_memo, call.arguments.as_slice()) {
+        (true, [Argument::Identifier(id)]) => Some((id.name.to_string(), None)),
+        (true, [Argument::Identifier(id), compare]) => Some((id.name.to_string(), compare.as_expression())),
+        _ => None,
+    }
 }
 
 /// `memo(X)` / `React.memo(X)` without a comparator: `X`.
@@ -719,6 +744,29 @@ impl<'s> Tr<'s> {
     }
 
     /// What the translation needs to know about the module's own names.
+    /// `const X = memo(Named, compare)` of a component of this module: Named takes
+    /// the comparator as its `equal` member (X is then Named itself).
+    fn scan_memo_aliases(&mut self, body: &[Statement]) {
+        for statement in body {
+            let declaration = match statement {
+                Statement::ExportDeclaration(export) => Some(&export.declaration),
+                other => other.as_declaration(),
+            };
+            let Some(Declaration::VariableDeclaration(v)) = declaration else { continue };
+            for d in &v.declarations {
+                if let Some(init) = &d.init
+                    && let Some((named, Some(compare))) = memo_alias(init, &self.react)
+                    && self.views.contains(named.as_str())
+                {
+                    self.quiet = true;
+                    let member = self.equal_member(compare);
+                    self.quiet = false;
+                    self.equal_for.insert(named, member);
+                }
+            }
+        }
+    }
+
     fn scan(&mut self, body: &[Statement]) {
         let mut wrapped = Vec::new();
         for statement in body {
@@ -1247,6 +1295,16 @@ impl<'s> Tr<'s> {
         body: &[Statement],
     ) -> String {
         let init = init.without_parentheses();
+        // `const X = memo(Named[, compare])` of a view here: X is Named (a view is memoised;
+        // the comparator is Named's `equal` member).
+        if let Some((named, _)) = memo_alias(init, &self.react)
+            && self.views.contains(named.as_str())
+        {
+            let target = self.name(&named, init.span());
+            let name = self.bind_param(name, init.span());
+            self.views.insert(name.clone());
+            return format!("{vis}let {name} = {target}");
+        }
         if let Expression::CallExpression(call) = init
             && let Expression::Identifier(callee) = &call.callee
         {
@@ -1319,6 +1377,24 @@ impl<'s> Tr<'s> {
                     TSType::TSTypeReference(r) => r.type_arguments.as_ref().and_then(|a| a.params.first()),
                     _ => None,
                 });
+                // `const f: Renderer = (a, b) => …` (parameters typed by the annotation, a
+                // function type): a closure `let` of that type, its parameters inferred.
+                if props_ty.is_none()
+                    && !self.components.contains(name)
+                    && !crate::view::is_hook_name(name)
+                    && let Some(t) = annotation
+                    && matches!(t.type_annotation, TSType::TSTypeReference(_))
+                    && !arrow.params.items.is_empty()
+                    && arrow.params.items.iter().all(|p| {
+                        p.type_annotation.is_none()
+                            && matches!(p.pattern, BindingPattern::BindingIdentifier(_))
+                    })
+                {
+                    let ty = self.ty(&t.type_annotation);
+                    let closure = self.closure(arrow);
+                    let name = self.bind_param(name, arrow.span);
+                    return format!("{vis}let {name}: {ty} = {closure}");
+                }
                 self.arrow_item(name, arrow, vis, props_ty, body)
             }
             Expression::FunctionExpression(f) => self.function_item(name, f, vis, body),
