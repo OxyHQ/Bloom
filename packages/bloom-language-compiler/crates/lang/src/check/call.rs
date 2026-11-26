@@ -154,6 +154,14 @@ impl Checker<'_> {
                 if let Some((def, targs)) = case_def {
                     // `S.patch(field: v)` builds a `Partial<S>`.
                     if member.name == "patch" && matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
+                        if keyed(call) {
+                            let targs = if targs.is_empty() {
+                                (0..self.out.defs[def].generics.len()).map(|_| self.fresh()).collect()
+                            } else {
+                                targs
+                            };
+                            return self.keyed(expr, call, def, targs, true);
+                        }
                         return self.construct(expr, call, def, targs, expected, true);
                     }
                     return self.case_call(expr, call, def, member, targs, expected);
@@ -673,7 +681,20 @@ impl Checker<'_> {
         if partial { Ty::Partial(Box::new(ty)) } else { ty }
     }
 
+    /// `S.patch(key, value)` and `s.with(key, value)`: one field, named by a key path.
+    fn keyed(&mut self, expr: &Expr, call: &Call, def: DefId, targs: Vec<Ty>, partial: bool) -> Ty {
+        let ty = Ty::Adt(def, targs);
+        let value = self.fresh();
+        self.expr(&call.args[0].value, Some(&Ty::KeyPath(Box::new(ty.clone()), Box::new(value.clone()))));
+        self.expr(&call.args[1].value, Some(&value));
+        self.out.calls.insert(expr.id, CallRes::Keyed { partial });
+        if partial { Ty::Partial(Box::new(ty)) } else { ty }
+    }
+
     fn with_update(&mut self, expr: &Expr, call: &Call, def: DefId, targs: Vec<Ty>) -> Ty {
+        if keyed(call) {
+            return self.keyed(expr, call, def, targs, false);
+        }
         let fields = self.out.defs[def].fields().to_vec();
         let ty = Ty::Adt(def, targs.clone());
         for arg in &call.args {
@@ -1363,6 +1384,14 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
         Ty::Result(..) => vec!["map", "mapErr", "unwrapOr", "ok"],
         _ => Vec::new(),
     }
+}
+
+/// `(key, value)`: two arguments without labels, the first of them a key path
+/// or not a field's value (a struct's fields are otherwise named).
+fn keyed(call: &Call) -> bool {
+    call.trailing.is_none()
+        && call.args.len() == 2
+        && call.args.iter().all(|a| a.label.is_none() && !a.spread)
 }
 
 /// A number written out (`16`, `-8`) where a token goes.

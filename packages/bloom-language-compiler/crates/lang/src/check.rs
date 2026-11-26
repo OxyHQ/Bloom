@@ -75,6 +75,10 @@ pub enum CallRes {
     Partial(DefId),
     /// `s.with(field: v)`.
     With(DefId),
+    /// `S.patch(key, v)` (`partial`) or `s.with(key, v)`: the field a key path names.
+    Keyed {
+        partial: bool,
+    },
     EnumCase(DefId, usize),
     Node(&'static str),
     /// `.name(…)` on a view; `object`: the named arguments form one object (`.frame(width: …)`).
@@ -496,7 +500,9 @@ impl<'o> Checker<'o> {
             | (Ty::Async(x), Ty::Async(y))
             | (Ty::Promise(x), Ty::Promise(y))
             | (Ty::Binding(x), Ty::Binding(y)) => self.unify(x, y),
-            (Ty::Result(a1, b1), Ty::Result(a2, b2)) => self.unify(a1, a2) && self.unify(b1, b2),
+            (Ty::Result(a1, b1), Ty::Result(a2, b2)) | (Ty::KeyPath(a1, b1), Ty::KeyPath(a2, b2)) => {
+                self.unify(a1, a2) && self.unify(b1, b2)
+            }
             (Ty::Tuple(x), Ty::Tuple(y)) => {
                 x.len() == y.len() && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
             }
@@ -713,6 +719,31 @@ impl<'o> Checker<'o> {
                     Ty::Unknown
                 };
             }
+            "KeyPath" => {
+                if !arity(self, 2) {
+                    return Ty::Unknown;
+                }
+                let root = self.resolve_type(&args[0]);
+                let value = self.resolve_type(&args[1]);
+                return match &root {
+                    Ty::Adt(def, _) if matches!(self.out.defs[*def].kind, DefKind::Struct(_)) => {
+                        Ty::KeyPath(Box::new(root), Box::new(value))
+                    }
+                    Ty::Unknown => Ty::Unknown,
+                    _ => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0204",
+                                args[0].span,
+                                format!("a key path is into a struct, not {}", self.show(&root)),
+                            )
+                            .label("not a struct")
+                            .spec("44-structs"),
+                        );
+                        Ty::Unknown
+                    }
+                };
+            }
             "Partial" => {
                 if !arity(self, 1) {
                     return Ty::Unknown;
@@ -765,8 +796,11 @@ impl<'o> Checker<'o> {
         }
         let mut candidates: Vec<String> = self.type_names.keys().cloned().collect();
         candidates.extend(
-            ["Int", "Float", "Bool", "String", "Unit", "View", "Result", "Binding", "Partial", "Error"]
-                .map(String::from),
+            [
+                "Int", "Float", "Bool", "String", "Unit", "View", "Result", "Binding", "Partial", "KeyPath",
+                "Error",
+            ]
+            .map(String::from),
         );
         let help = closest(&name.name, candidates.iter().map(String::as_str))
             .map(|near| format!("did you mean `{near}`?"));
@@ -2330,6 +2364,9 @@ impl<'o> Checker<'o> {
             ExprKind::Name(name) => self.name(expr, name),
             ExprKind::ImplicitMember(name) => self.implicit_member(expr, name, expected_resolved.as_ref()),
             ExprKind::Binding(path) => self.binding(expr, path),
+            ExprKind::KeyPath { root, path } => {
+                self.key_path(expr, root.as_ref(), path, expected_resolved.as_ref())
+            }
             ExprKind::TypeApply { name, .. } => {
                 self.report(
                     Diagnostic::error(
@@ -2443,6 +2480,22 @@ impl<'o> Checker<'o> {
                     Ty::Map(value) => {
                         self.expr(index, Some(&Ty::Str));
                         Ty::Option(value)
+                    }
+                    // `prefs[key]`: a key path's field.
+                    ref root @ (Ty::Adt(..) | Ty::Partial(_)) if self.is_struct(root) => {
+                        let (base, partial) = match root {
+                            Ty::Partial(inner) => (self.resolve(inner), true),
+                            other => (other.clone(), false),
+                        };
+                        let value = self.fresh();
+                        let key = Ty::KeyPath(Box::new(base), Box::new(value.clone()));
+                        self.expr(index, Some(&key));
+                        let value = self.resolve(&value);
+                        match value {
+                            Ty::Option(_) => value,
+                            other if partial => Ty::Option(Box::new(other)),
+                            other => other,
+                        }
                     }
                     Ty::Foreign(text) => {
                         self.boundary(index, None);
@@ -2690,6 +2743,76 @@ impl<'o> Checker<'o> {
         }
     }
 
+    fn is_struct(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::Adt(def, _) => matches!(self.out.defs[def].kind, DefKind::Struct(_)),
+            Ty::Partial(inner) => self.is_struct(&inner),
+            _ => false,
+        }
+    }
+
+    /// `\.field` (its struct from the expected `KeyPath<S, V>`) or `\S.field`.
+    fn key_path(&mut self, expr: &Expr, root: Option<&Ident>, path: &[Ident], expected: Option<&Ty>) -> Ty {
+        let expected_root = match expected {
+            Some(Ty::KeyPath(root, _)) => Some(self.resolve(root)),
+            Some(Ty::Option(inner)) => match self.resolve(inner) {
+                Ty::KeyPath(root, _) => Some(self.resolve(&root)),
+                _ => None,
+            },
+            _ => None,
+        };
+        let root_ty = match root {
+            Some(name) => match self.type_names.get(&name.name).cloned() {
+                Some(TypeName::Def(def)) if matches!(self.out.defs[def].kind, DefKind::Struct(_)) => {
+                    let args = match &expected_root {
+                        Some(Ty::Adt(d, args)) if *d == def => args.clone(),
+                        _ => (0..self.out.defs[def].generics.len()).map(|_| self.fresh()).collect(),
+                    };
+                    Ty::Adt(def, args)
+                }
+                _ => {
+                    self.report(
+                        Diagnostic::error("B0204", name.span, format!("`{}` is not a struct", name.name))
+                            .label("a key path starts at a struct")
+                            .spec("44-structs"),
+                    );
+                    return Ty::Unknown;
+                }
+            },
+            None => match expected_root {
+                Some(ty @ Ty::Adt(..)) => ty,
+                _ => {
+                    self.report(
+                        Diagnostic::error("B0212", expr.span, "which struct is this key path into?")
+                            .label("no `KeyPath<S, V>` is expected here")
+                            .help(format!(
+                                "name the struct: `\\Type.{}`",
+                                path.first().map_or("field", |f| f.name.as_str())
+                            ))
+                            .spec("44-structs"),
+                    );
+                    return Ty::Unknown;
+                }
+            },
+        };
+        let Some(field) = path.first() else { return Ty::Unknown };
+        if let Some(extra) = path.get(1) {
+            self.report(
+                Diagnostic::error("B0221", extra.span, "a key path names one field")
+                    .label("a nested field")
+                    .help("take the key path of the inner struct, and read it from the field")
+                    .spec("44-structs"),
+            );
+        }
+        let Ty::Adt(def, args) = &root_ty else { return Ty::Unknown };
+        let Some(f) = self.out.defs[*def].fields().iter().find(|f| f.name == field.name).cloned() else {
+            self.unknown_field(field, &root_ty);
+            return Ty::Unknown;
+        };
+        self.out.fields.insert(expr.id, FieldRes::Field);
+        Ty::KeyPath(Box::new(root_ty.clone()), Box::new(substitute(&f.ty, args)))
+    }
+
     fn binding(&mut self, expr: &Expr, path: &[Ident]) -> Ty {
         let root = &path[0];
         let Some(local) = self.lookup(&root.name) else {
@@ -2812,6 +2935,7 @@ impl<'o> Checker<'o> {
                         | Ty::Strings(_)
                         | Ty::Unknown
                         | Ty::Var(_)
+                        | Ty::KeyPath(..)
                         | Ty::Foreign(_) => true,
                         Ty::Adt(def, _) => defs[*def].is_fieldless(),
                         _ => false,
@@ -3347,6 +3471,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::None
         | ExprKind::ImplicitMember(_)
         | ExprKind::TypeApply { .. }
+        | ExprKind::KeyPath { .. }
         | ExprKind::Error => {}
     }
 }

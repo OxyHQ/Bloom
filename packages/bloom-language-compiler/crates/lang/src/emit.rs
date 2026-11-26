@@ -23,6 +23,9 @@ pub const LANGUAGE: &str = "@oxy.so/bloom-language";
 pub const ROUTER: &str = "@oxy.so/bloom-language/router";
 pub const DATA: &str = "@oxy.so/bloom-data";
 
+/// `KeyPath<S, V>` in TS: the names of `S`'s fields whose type is `V`.
+const KEY_PATH: &str = "type $KeyPath<S, V> = { [K in keyof S]-?: S[K] extends V ? K : never }[keyof S];\n";
+
 pub struct Emitted {
     pub code: String,
     pub dts: String,
@@ -120,6 +123,7 @@ struct Emitter<'a> {
     /// Inside a conditional operand: `?` cannot return early from here.
     conditional: usize,
     uses_result: bool,
+    uses_key_path: bool,
     names: HashSet<String>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
@@ -157,6 +161,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         signal: None,
         conditional: 0,
         uses_result: false,
+        uses_key_path: false,
         names,
         scope: None,
         body_span: None,
@@ -178,6 +183,9 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     let mut code = Frag::default();
     code.f(emitter.header());
     code.f(body);
+    if emitter.uses_key_path {
+        code.s(KEY_PATH);
+    }
     if emitter.uses_result {
         code.s("type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };\n");
     }
@@ -467,6 +475,10 @@ impl<'a> Emitter<'a> {
                 }
             }
             Ty::Partial(inner) => format!("Partial<{}>", self.ts_type(inner)),
+            Ty::KeyPath(root, value) => {
+                self.uses_key_path = true;
+                format!("$KeyPath<{}, {}>", self.ts_type(root), self.ts_type(value))
+            }
             Ty::Fn(f) => {
                 let params: Vec<String> = f
                     .params
@@ -1238,6 +1250,9 @@ impl<'a> Emitter<'a> {
                 out
             }
             ExprKind::TypeApply { .. } => Frag::of("undefined"),
+            ExprKind::KeyPath { path, .. } => {
+                Frag::of(path.first().map_or_else(|| "undefined".into(), |f| string_literal(&f.name)))
+            }
             ExprKind::Paren(inner) => self.expr(inner).wrap("(", ")"),
             ExprKind::Tuple(items) if items.is_empty() => Frag::of("undefined"),
             ExprKind::Tuple(items) => {
@@ -1636,6 +1651,19 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Struct(def) => self.construct(call, def, false),
             CallRes::Partial(def) => self.construct(call, def, true),
+            CallRes::Keyed { partial } => {
+                let mut out = Frag::of("{ ");
+                if !partial {
+                    let ExprKind::Field(object, _) = &call.callee.kind else { unreachable!() };
+                    out.s("...").f(self.operand(object)).s(", ");
+                }
+                out.s("[")
+                    .f(self.expr(&call.args[0].value))
+                    .s("]: ")
+                    .f(self.expr(&call.args[1].value))
+                    .s(" }");
+                out
+            }
             CallRes::With(_) => {
                 let ExprKind::Field(object, _) = &call.callee.kind else { unreachable!() };
                 let mut out = Frag::of("{ ...");
@@ -3147,6 +3175,9 @@ impl<'a> Emitter<'a> {
         }
         if mentions(&out, "$Result") {
             header.push_str("type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };\n");
+        }
+        if mentions(&out, "$KeyPath") {
+            header.push_str(KEY_PATH);
         }
         header + &out
     }

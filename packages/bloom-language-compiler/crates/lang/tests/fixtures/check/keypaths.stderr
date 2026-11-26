@@ -1,0 +1,33 @@
+error[B0204]: a key path is into a struct, not `Int`
+  --> check/keypaths.bloom:23:28
+   |
+23 | fn notAStruct(key: KeyPath<Int, Bool>) -> Int {
+   |                            ^^^ not a struct
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `KeyPath<Prefs, Bool>`, found `KeyPath<Prefs, String>`
+  --> check/keypaths.bloom:11:15
+   |
+11 |   isOn(prefs, \.name)
+   |               ^^^^^^ this is `KeyPath<Prefs, String>`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0205]: `Prefs` has no field `lieks`
+  --> check/keypaths.bloom:15:17
+   |
+15 |   isOn(prefs, \.lieks)
+   |                 ^^^^^ no such field
+   |
+help: its fields are `likes`, `name`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0212]: which struct is this key path into?
+  --> check/keypaths.bloom:19:13
+   |
+19 |   let key = \.likes
+   |             ^^^^^^^ no `KeyPath<S, V>` is expected here
+   |
+help: name the struct: `\Type.likes`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
