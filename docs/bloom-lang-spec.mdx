@@ -809,6 +809,11 @@ so a wrong path is a compile error.
   node of `spec/language.json` (`VStack`, `Text`, `Button`, …) with its modifiers, `Embed`,
   `toast`, `navigate`.
 - **Bloom modules:** `import { PostRow } from "./PostRow.bloom"`.
+- **Platform files (2.0):** in a directory module, `X.native.bloom`, `X.ios.bloom`,
+  `X.android.bloom` and `X.web.bloom` (and `X.bloom` beside them) are alternatives, one compiled
+  per platform as Metro picks them, not siblings: they declare the same names without B0807. The
+  module's other files import them by the base name (`./X`), which the checker reads from the
+  first of `native`, `ios`, `android`, `web` that exists.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its

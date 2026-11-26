@@ -314,7 +314,8 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     let mut offered: BTreeMap<String, Vec<Offer>> = BTreeMap::new();
     let mut hidden = HashMap::new();
     for sibling in graph.files(index) {
-        if sibling == path {
+        // `X.native.bloom` and `X.web.bloom` are alternatives (one per platform), not siblings.
+        if sibling == path || alternatives(&sibling, &path) {
             continue;
         }
         out.reads.push(sibling.clone());
@@ -322,11 +323,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             if *access == Access::Private {
                 hidden.insert(name.clone(), Hidden::Private { file: sibling.clone() });
             } else {
-                offered.entry(name.clone()).or_default().push(Offer::Bloom {
-                    file: sibling.clone(),
-                    module: target.name.clone(),
-                    own: true,
-                });
+                offer(
+                    &mut offered,
+                    name,
+                    Offer::Bloom { file: sibling.clone(), module: target.name.clone(), own: true },
+                );
             }
         }
     }
@@ -337,11 +338,15 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                     out.reads.push(file_path.clone());
                     for (name, access, _) in &summary(&file_path).items {
                         if *access == Access::Public {
-                            offered.entry(name.clone()).or_default().push(Offer::Bloom {
-                                file: file_path.clone(),
-                                module: import.name.clone(),
-                                own: false,
-                            });
+                            offer(
+                                &mut offered,
+                                name,
+                                Offer::Bloom {
+                                    file: file_path.clone(),
+                                    module: import.name.clone(),
+                                    own: false,
+                                },
+                            );
                         } else {
                             hidden.entry(name.clone()).or_insert(Hidden::Internal {
                                 module: import.name.clone(),
@@ -408,9 +413,12 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             continue;
         }
         let (key, specifier) = match chosen[0] {
-            Offer::Bloom { file: target_file, .. } => {
-                (target_file.to_string_lossy().into_owned(), relative_specifier(&dir, target_file))
-            }
+            // A platform alternative is imported by its base name (`./X`): Metro picks the
+            // platform's file, and the checker reads one of them.
+            Offer::Bloom { file: target_file, .. } => match platform_base(target_file) {
+                Some(base) => (base.to_string_lossy().into_owned(), relative_specifier(&dir, &base)),
+                None => (target_file.to_string_lossy().into_owned(), relative_specifier(&dir, target_file)),
+            },
             Offer::Runtime { specifier, .. } => (specifier.to_string(), specifier.to_string()),
         };
         let spec =
@@ -756,6 +764,34 @@ pub(crate) fn exports_of(from: &Path, specifier: &str, options: &Options) -> Vec
 }
 
 /// `./Row.bloom` or `../Posts/Row.bloom`: `to` from the directory `from`.
+/// The platforms a file may be written for (`X.native.bloom`, Metro's platform extensions).
+pub const PLATFORMS: &[&str] = &["native", "ios", "android", "web"];
+
+/// `dir/X` for a platform file `dir/X.<platform>.bloom`.
+pub fn platform_base(path: &Path) -> Option<PathBuf> {
+    let stem = path.file_name()?.to_str()?.strip_suffix(".bloom")?;
+    let (base, platform) = stem.rsplit_once('.')?;
+    (PLATFORMS.contains(&platform) && !base.is_empty()).then(|| path.with_file_name(base))
+}
+
+/// Whether `a` and `b` are one module's alternatives for different platforms
+/// (`X.native.bloom` and `X.web.bloom`, or either beside the default `X.bloom`).
+fn alternatives(a: &Path, b: &Path) -> bool {
+    let key = |p: &Path| platform_base(p).or_else(|| p.to_str()?.strip_suffix(".bloom").map(PathBuf::from));
+    (platform_base(a).is_some() || platform_base(b).is_some()) && key(a).is_some() && key(a) == key(b)
+}
+
+/// Adds `offer` for `name`, once for a set of platform alternatives.
+fn offer(offered: &mut BTreeMap<String, Vec<Offer>>, name: &str, offer: Offer) {
+    let offers = offered.entry(name.to_string()).or_default();
+    if let Offer::Bloom { file, .. } = &offer
+        && offers.iter().any(|o| matches!(o, Offer::Bloom { file: other, .. } if alternatives(file, other)))
+    {
+        return;
+    }
+    offers.push(offer);
+}
+
 fn relative_specifier(from: &Path, to: &Path) -> String {
     let from: Vec<Component> = from.components().collect();
     let to_parts: Vec<Component> = to.components().collect();

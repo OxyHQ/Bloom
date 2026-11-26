@@ -2084,6 +2084,17 @@ impl<'o> Checker<'o> {
                 self.import_bloom(import, &path);
                 return;
             }
+            // `./X` with only platform files (`X.native.bloom`, `X.web.bloom`): Metro picks
+            // one per platform; the first is checked against.
+            let dir = self.path.parent().unwrap_or(Path::new("."));
+            if let Some(path) = crate::modules::PLATFORMS
+                .iter()
+                .map(|p| dir.join(format!("{specifier}.{p}.bloom")))
+                .find(|p| p.is_file())
+            {
+                self.import_bloom(import, &path);
+                return;
+            }
         }
         if specifier == "js" {
             // `import { encodeURIComponent, Math } from "js"`: JS's globals, named before use.

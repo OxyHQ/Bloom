@@ -111,6 +111,36 @@ const INTERNAL_ROW: &str = "view Line(title: String) {\n  body {\n    Text(title
 const USES_ROW: &str =
     "public view Lines {\n  body {\n    VStack {\n      Line(title: \"One\")\n    }\n  }\n}\n";
 
+#[test]
+fn platform_files_are_alternatives_not_siblings() {
+    let list = |text: &str| {
+        format!(
+            "public struct NotificationsList: View {{\n  let count: Int\n  var body: some View {{ Text(\"{text}\") }}\n}}\nprivate func helper() -> Int {{ 1 }}\n"
+        )
+    };
+    let root = package(
+        "platforms",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/NotificationsList.native.bloom", &list("native")),
+            ("Sources/Feed/NotificationsList.web.bloom", &list("web")),
+            (
+                "Sources/Feed/Inbox.bloom",
+                "public struct Inbox: View {\n  var body: some View { NotificationsList(count: 3) }\n}\n",
+            ),
+        ],
+    );
+    // One is compiled per platform (Metro's `.native`/`.web`), so they declare the same names.
+    for file in ["Sources/Feed/NotificationsList.native.bloom", "Sources/Feed/NotificationsList.web.bloom"] {
+        let out = build(&root, file, &Options::default());
+        assert!(out.diagnostics.is_empty(), "{file}: {:?}", out.diagnostics);
+    }
+    // The module's other files import it by its base name, and Metro picks the platform's.
+    let out = build(&root, "Sources/Feed/Inbox.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { NotificationsList } from \"./NotificationsList\";"), "{}", out.code);
+}
+
 fn app(imports: &str) -> String {
     format!("{imports}\n\npublic view Home {{\n  body {{\n    Lines()\n  }}\n}}\n")
 }
