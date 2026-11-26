@@ -15,8 +15,10 @@ const BLOOMC = process.env.BLOOMC ?? (existsSync(LOCAL) ? LOCAL : undefined);
 
 test('bloomc lsp publishes diagnostics, hovers and formats', {
   skip: !BLOOMC && 'BLOOMC is not set',
-}, async () => {
+}, async (t) => {
   const child = spawn(BLOOMC, ['lsp'], { stdio: ['pipe', 'pipe', 'inherit'] });
+  // A failed assertion must not leave the server running: the run would never end.
+  t.after(() => child.kill());
   const published = [];
   let onPublish;
   const connection = new Connection(child, (method, params) => {
@@ -66,8 +68,10 @@ test('bloomc lsp publishes diagnostics, hovers and formats', {
 
 test('bloomc lsp takes incremental changes and answers definition, references and completion', {
   skip: !BLOOMC && 'BLOOMC is not set',
-}, async () => {
+}, async (t) => {
   const child = spawn(BLOOMC, ['lsp'], { stdio: ['pipe', 'pipe', 'inherit'] });
+  // A failed assertion must not leave the server running: the run would never end.
+  t.after(() => child.kill());
   let onPublish;
   const connection = new Connection(child, (method) => {
     if (method === 'textDocument/publishDiagnostics') onPublish?.();
