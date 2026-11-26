@@ -100,14 +100,17 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
             // The embedded pass checks every chain again; anything it finds is
             // reported at the `.bloom` span that wrote the chain.
             for problem in embedded.diagnostics {
-                errors.push(emitted.map.lift(&problem, &emitted.code, Severity::Error));
+                errors.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Error));
             }
             for problem in embedded.warnings {
-                warnings.push(emitted.map.lift(&problem, &emitted.code, Severity::Warning));
+                warnings.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Warning));
             }
             if errors.is_empty() {
                 let (code, map) = if embedded.changed {
-                    let map = embedded.map.as_deref().map(|map| emitted.map.compose(map, filename, source));
+                    let map = embedded
+                        .map
+                        .as_deref()
+                        .map(|map| emitted.map.compose(map, &emitted.code, filename, source));
                     (embedded.code, map)
                 } else {
                     let map = emitted.map.to_json(filename, source, &emitted.code);

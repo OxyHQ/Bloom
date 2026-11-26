@@ -1,0 +1,114 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Embed, GroupedSection, GroupedSectionItem, Loading, SettingsSection, Text, Toggle, VStack, toast } from "@oxy.so/bloom-language";
+import { screen } from "@oxy.so/bloom-language/router";
+import { useState } from "react";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
+import { OxyAuthPrompt, useAuth } from "@oxy.so/services/ui/client";
+import { logger } from "@oxy.so/core/logger";
+import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
+import { useSettingsRouter } from "@/context/MentionSettingsContext";
+import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
+const _bloomStatic0 = Loading().style("inline").size("sm");
+type $Result<
+	T,
+	E
+> = {
+	readonly ok: true;
+	readonly value: T;
+} | {
+	readonly ok: false;
+	readonly error: E;
+};
+async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {
+	try {
+		return {
+			ok: true,
+			value: await value
+		};
+	} catch (error) {
+		return {
+			ok: false,
+			error: error instanceof Error ? error : new Error(String(error))
+		};
+	}
+}
+interface NotificationPreferences {
+	readonly pushEnabled: boolean;
+	readonly likes: boolean;
+	readonly boosts: boolean;
+	readonly follows: boolean;
+	readonly mentions: boolean;
+	readonly replies: boolean;
+	readonly quotes: boolean;
+}
+function toggleRow(title: string, detail: string, isOn: boolean, onChange: (p0: boolean) => void): Child {
+	return GroupedSectionItem(title).wrapControl().description(detail).trailing(Toggle([isOn, onChange] as const).label(title));
+}
+export default screen(function NotificationSettings() {
+	"use no memo";
+	const $ = $c(13);
+	const { t } = useTranslation();
+	const router = useSettingsRouter();
+	const auth = useAuth();
+	const section = useViewerSettingsSection("notificationPreferences");
+	const [saving, setSaving] = useState<boolean>(false);
+	const stored: Partial<NotificationPreferences> | undefined = section.value;
+	const loading: boolean = section.isLoading;
+	let prefs: NotificationPreferences;
+	if ($[0] !== stored) {
+		prefs = {
+			pushEnabled: true,
+			likes: true,
+			boosts: true,
+			follows: true,
+			mentions: true,
+			replies: true,
+			quotes: true,
+			...stored
+		};
+		$[0] = stored;
+		$[1] = prefs;
+	} else {
+		prefs = $[1];
+	}
+	let save: (patch: Partial<NotificationPreferences>) => Promise<void>;
+	if ($[2] !== section || $[3] !== t) {
+		save = async (patch: Partial<NotificationPreferences>): Promise<void> => {
+			setSaving(true);
+			const $t0 = await $settle(section.update(patch));
+			if (!$t0.ok) {
+				const error = $t0.error;
+				logger.error("Error updating notification preferences", error);
+				toast(t("settings.notifications.saveError", { defaultValue: "Failed to save notification preference" }), { type: "error" });
+			}
+			setSaving(false);
+		};
+		$[2] = section;
+		$[3] = t;
+		$[4] = save;
+	} else {
+		save = $[4];
+	}
+	let $t1;
+	if ($[5] !== auth || $[6] !== loading || $[7] !== t || $[8] !== saving || $[9] !== prefs || $[10] !== save || $[11] !== router) {
+		$t1 = auth.isPrivateApiPending || loading ? VStack(Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>))).spacing("lg") : !auth.canUsePrivateApi ? VStack(Embed($jsx(OxyAuthPrompt, {
+			label: t("settings.notifications.signInRequired", { defaultValue: "Sign in to manage notifications" }),
+			description: t("settings.notifications.signInRequiredDesc", { defaultValue: "Choose what alerts you receive and how." })
+		} satisfies ComponentProps<typeof OxyAuthPrompt>))).spacing("lg") : VStack(saving ? _bloomStatic0 : null, VStack(SettingsSection(t("settings.notifications.sections.general", { defaultValue: "General" }), GroupedSection(toggleRow(t("settings.notifications.push", { defaultValue: "Push notifications" }), t("settings.notifications.pushDesc", { defaultValue: "Receive push notifications on your device" }), prefs.pushEnabled, (v: boolean) => save({ pushEnabled: v })))), SettingsSection(t("settings.notifications.sections.activity", { defaultValue: "Activity from others" }), GroupedSection(GroupedSectionItem(t("subscription.list.title", { defaultValue: "Activity notifications" })).wrapControl().description(t("subscription.list.entryDesc", { defaultValue: "Accounts that notify you when they post" })).trailing(Button(Text(t("common.open", { defaultValue: "Open" }))).size("sm").style("subtle").tint("neutral").onPress(() => router.push("/settings/notifications/subscriptions")).label(t("subscription.list.title", { defaultValue: "Activity notifications" }))))), SettingsSection(t("settings.notifications.sections.types", { defaultValue: "Notification types" }), GroupedSection(toggleRow(t("settings.notifications.likes", { defaultValue: "Likes" }), t("settings.notifications.likesDesc", { defaultValue: "When someone likes your post" }), prefs.likes, (v: boolean) => save({ likes: v })), toggleRow(t("settings.notifications.boosts", { defaultValue: "Boosts" }), t("settings.notifications.boostsDesc", { defaultValue: "When someone boosts your post" }), prefs.boosts, (v: boolean) => save({ boosts: v })), toggleRow(t("settings.notifications.follows", { defaultValue: "New followers" }), t("settings.notifications.followsDesc", { defaultValue: "When someone follows you" }), prefs.follows, (v: boolean) => save({ follows: v })), toggleRow(t("settings.notifications.mentions", { defaultValue: "Mentions" }), t("settings.notifications.mentionsDesc", { defaultValue: "When someone mentions you in a post" }), prefs.mentions, (v: boolean) => save({ mentions: v })), toggleRow(t("settings.notifications.replies", { defaultValue: "Replies" }), t("settings.notifications.repliesDesc", { defaultValue: "When someone replies to your post" }), prefs.replies, (v: boolean) => save({ replies: v })), toggleRow(t("settings.notifications.quotes", { defaultValue: "Quote posts" }), t("settings.notifications.quotesDesc", { defaultValue: "When someone quotes your post" }), prefs.quotes, (v: boolean) => save({ quotes: v }))))).spacing("lg")).spacing("lg");
+		$[5] = auth;
+		$[6] = loading;
+		$[7] = t;
+		$[8] = saving;
+		$[9] = prefs;
+		$[10] = save;
+		$[11] = router;
+		$[12] = $t1;
+	} else {
+		$t1 = $[12];
+	}
+	return $t1;
+});

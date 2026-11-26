@@ -1,0 +1,117 @@
+// Settings → Notifications, ported from Mention's TSX screen (a test fixture).
+import { useTranslation } from "react-i18next"
+import { OxyAuthPrompt, useAuth } from "@oxy.so/services/ui/client"
+import { logger } from "@oxy.so/core/logger"
+import { SettingsSkeleton } from "@/components/loading/ContentSkeleton"
+import { useSettingsRouter } from "@/context/MentionSettingsContext"
+import { useViewerSettingsSection } from "@/hooks/useViewerSettings"
+
+/// What a viewer is notified about; every switch starts on.
+struct NotificationPreferences {
+  pushEnabled: Bool = true
+  likes: Bool = true
+  boosts: Bool = true
+  follows: Bool = true
+  mentions: Bool = true
+  replies: Bool = true
+  quotes: Bool = true
+}
+
+/// One switch of a section: no fiber of its own.
+fn toggleRow(title: String, detail: String, isOn: Bool, onChange: (Bool) -> Unit) -> View {
+  GroupedSectionItem(title)
+    .wrapControl()
+    .description(detail)
+    .trailing(Toggle(Binding(get: isOn, set: onChange)).label(title))
+}
+
+screen NotificationSettings {
+  let { t } = useTranslation()
+  let router = useSettingsRouter()
+  let auth = useAuth()
+  let section = useViewerSettingsSection("notificationPreferences")
+  @state saving = false
+
+  let stored: Partial<NotificationPreferences>? = section.value
+  let loading: Bool = section.isLoading
+  let prefs = NotificationPreferences(..stored)
+
+  async fn save(patch: Partial<NotificationPreferences>) {
+    saving = true
+    if let .err(error) = await section.update(patch) {
+      logger.error("Error updating notification preferences", error)
+      toast(t("settings.notifications.saveError", defaultValue: "Failed to save notification preference"), type: "error")
+    }
+    saving = false
+  }
+
+  body {
+    if auth.isPrivateApiPending || loading {
+      VStack { SettingsSkeleton() }.spacing("lg")
+    } else if !auth.canUsePrivateApi {
+      VStack {
+        OxyAuthPrompt(
+          label: t("settings.notifications.signInRequired", defaultValue: "Sign in to manage notifications"),
+          description: t("settings.notifications.signInRequiredDesc", defaultValue: "Choose what alerts you receive and how."),
+        )
+      }
+      .spacing("lg")
+    } else {
+      VStack {
+        if saving {
+          Loading().style("inline").size("sm")
+        }
+        VStack {
+          SettingsSection(t("settings.notifications.sections.general", defaultValue: "General")) {
+            GroupedSection {
+              toggleRow(
+                t("settings.notifications.push", defaultValue: "Push notifications"),
+                t("settings.notifications.pushDesc", defaultValue: "Receive push notifications on your device"),
+                isOn: prefs.pushEnabled,
+              ) { v in save(Partial<NotificationPreferences>(pushEnabled: v)) }
+            }
+          }
+          SettingsSection(t("settings.notifications.sections.activity", defaultValue: "Activity from others")) {
+            GroupedSection {
+              GroupedSectionItem(t("subscription.list.title", defaultValue: "Activity notifications"))
+                .wrapControl()
+                .description(t("subscription.list.entryDesc", defaultValue: "Accounts that notify you when they post"))
+                .trailing(
+                  Button(Text(t("common.open", defaultValue: "Open")))
+                    .size("sm")
+                    .style("subtle")
+                    .tint("neutral")
+                    .onPress { router.push("/settings/notifications/subscriptions") }
+                    .label(t("subscription.list.title", defaultValue: "Activity notifications"))
+                )
+            }
+          }
+          SettingsSection(t("settings.notifications.sections.types", defaultValue: "Notification types")) {
+            GroupedSection {
+              toggleRow(t("settings.notifications.likes", defaultValue: "Likes"), t("settings.notifications.likesDesc", defaultValue: "When someone likes your post"), isOn: prefs.likes) { v in
+                save(Partial<NotificationPreferences>(likes: v))
+              }
+              toggleRow(t("settings.notifications.boosts", defaultValue: "Boosts"), t("settings.notifications.boostsDesc", defaultValue: "When someone boosts your post"), isOn: prefs.boosts) { v in
+                save(Partial<NotificationPreferences>(boosts: v))
+              }
+              toggleRow(t("settings.notifications.follows", defaultValue: "New followers"), t("settings.notifications.followsDesc", defaultValue: "When someone follows you"), isOn: prefs.follows) { v in
+                save(Partial<NotificationPreferences>(follows: v))
+              }
+              toggleRow(t("settings.notifications.mentions", defaultValue: "Mentions"), t("settings.notifications.mentionsDesc", defaultValue: "When someone mentions you in a post"), isOn: prefs.mentions) { v in
+                save(Partial<NotificationPreferences>(mentions: v))
+              }
+              toggleRow(t("settings.notifications.replies", defaultValue: "Replies"), t("settings.notifications.repliesDesc", defaultValue: "When someone replies to your post"), isOn: prefs.replies) { v in
+                save(Partial<NotificationPreferences>(replies: v))
+              }
+              toggleRow(t("settings.notifications.quotes", defaultValue: "Quote posts"), t("settings.notifications.quotesDesc", defaultValue: "When someone quotes your post"), isOn: prefs.quotes) { v in
+                save(Partial<NotificationPreferences>(quotes: v))
+              }
+            }
+          }
+        }
+        .spacing("lg")
+      }
+      .spacing("lg")
+    }
+  }
+}
