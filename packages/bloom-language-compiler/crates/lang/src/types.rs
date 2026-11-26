@@ -152,9 +152,9 @@ impl Def {
         }
     }
 
-    /// An enum whose every case has no payload: it is a string.
+    /// An enum whose every case has no payload: it is a string. A struct is not one.
     pub fn is_fieldless(&self) -> bool {
-        self.variants().iter().all(|v| v.payload.is_empty())
+        matches!(&self.kind, DefKind::Enum(variants) if variants.iter().all(|v| v.payload.is_empty()))
     }
 }
 
