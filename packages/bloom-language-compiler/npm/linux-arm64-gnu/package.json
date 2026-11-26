@@ -6,7 +6,8 @@
   ],
   "main": "bloom-language-compiler.linux-arm64-gnu.node",
   "files": [
-    "bloom-language-compiler.linux-arm64-gnu.node"
+    "bloom-language-compiler.linux-arm64-gnu.node",
+    "bloomc.linux-arm64-gnu"
   ],
   "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",

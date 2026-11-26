@@ -11,7 +11,8 @@
     "bloom-language-compiler.wasi.d.cts",
     "bloom-language-compiler.wasi-browser.js",
     "wasi-worker.mjs",
-    "wasi-worker-browser.mjs"
+    "wasi-worker-browser.mjs",
+    "bloomc.wasm32-wasi.wasm"
   ],
   "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",

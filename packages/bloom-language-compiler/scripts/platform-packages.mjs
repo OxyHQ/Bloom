@@ -1,12 +1,23 @@
 /**
  * The compiler's platform packages: one committed directory per target under
- * `npm/` (napi's own layout, written by `bun run generate:platforms`), each
- * a workspace the release publishes before the compiler, which lists every one
- * as an optional dependency. CI builds the addons they carry
+ * `npm/` (napi's own layout, written by `bun run generate:platforms`, with the
+ * bloomc binary added to each package's files), each a workspace the release
+ * publishes before the compiler, which lists every one as an optional
+ * dependency. CI builds the addons and bloomc binaries they carry
  * (.github/workflows/language-compiler-binaries.yml); the tree never holds them.
  */
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+
+import platforms from '../js/platform.js';
+
+const { cliFile } = platforms;
+
+/** A platform package's manifest as napi writes it, with its bloomc binary among its files. */
+export function withCli(manifest, name) {
+  const cli = cliFile(name);
+  return manifest.files.includes(cli) ? manifest : { ...manifest, files: [...manifest.files, cli] };
+}
 
 export const ROOT = resolve(import.meta.dirname, '..');
 export const NPM_DIR = join(ROOT, 'npm');
@@ -43,6 +54,9 @@ export function copyBuilt(artifacts, destination) {
     const dir = destination(platform);
     mkdirSync(dir, { recursive: true });
     for (const file of manifest.files) copyFileSync(join(artifacts, file), join(dir, file));
+    // An artifact download loses the mode `npm pack` keeps.
+    const cli = join(dir, cliFile(platform));
+    if (existsSync(cli) && !platform.startsWith('win32-')) chmodSync(cli, 0o755);
     copied.push(platform);
   }
   return copied;

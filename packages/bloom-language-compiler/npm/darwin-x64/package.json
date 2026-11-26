@@ -6,7 +6,8 @@
   ],
   "main": "bloom-language-compiler.darwin-x64.node",
   "files": [
-    "bloom-language-compiler.darwin-x64.node"
+    "bloom-language-compiler.darwin-x64.node",
+    "bloomc.darwin-x64"
   ],
   "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",
