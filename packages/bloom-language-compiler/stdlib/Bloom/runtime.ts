@@ -953,3 +953,27 @@ export function storageSet(
 export function storageKeys(kind: string, name: string): readonly string[] {
   return backend(kind).keys(name);
 }
+
+// ---- refresh ------------------------------------------------------------------
+
+/**
+ * `.refreshable { … }`'s binding: a pull writes `true`, which sets the view's refreshing
+ * state and runs the action; its end (or failure) clears the state, ending the spinner.
+ */
+export function refreshRun(
+  state: readonly [boolean, (value: boolean) => void],
+  action: () => Promise<void> | void,
+): readonly [boolean, (value: boolean) => void] {
+  const [refreshing, set] = state;
+  return [
+    refreshing,
+    (next) => {
+      if (!next || refreshing) return;
+      set(true);
+      Promise.resolve()
+        .then(action)
+        .catch(() => {})
+        .finally(() => set(false));
+    },
+  ];
+}

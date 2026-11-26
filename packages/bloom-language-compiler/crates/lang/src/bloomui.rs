@@ -7,7 +7,7 @@
 //! | `List(xs) { x in … }` | `ScrollView { VStack { for x in xs { … } } }` |
 //! | `Button(action: f) { Label("12", icon: .heart) }` | `Button { Icon(.heart); Text("12") }.style("plain").size("sm").onPress(f)` |
 //! | `Button { f() } label: { Label(…) }` | the same |
-//! | `Button("Save", action: f)` | `Button(Text("Save")).onPress(f)` |
+//! | `Button("Save", action: f)`, `Button("Save") { f() }` | `Button(Text("Save")).onPress(f)` |
 //! | `Label("Likes", icon: .heart)` | `HStack { Icon(.heart); Text("Likes") }.spacing(.xs)` |
 //! | `Toggle("Likes", isOn: $on)` | `HStack { Text("Likes"); Spacer(); Toggle($on).label("Likes") }` |
 //! | `Toggle("Likes", isOn: $on).description(d)` | the same, its title `VStack { Text("Likes"); Text(d).foreground(.muted).font(.body2) }.align(.leading)` |
@@ -16,6 +16,7 @@
 //! | `VStack(spacing: .sm) { … }`, `HStack(alignment: .center, spacing: .xs) { … }` | `VStack { … }.spacing(.sm)`, `HStack { … }.align(.center).spacing(.xs)` |
 //! | `.foregroundStyle(x)`, `.lineLimit(n)` | `.foreground(x)`, `.lines(n)` |
 //! | `Toast.show("Saved")` | `toast("Saved")` |
+//! | `.refreshable { await f() }` | `.refreshable(refreshAction($__refreshing0) { await f() })`, with `@State private var __refreshing0 = false` |
 //!
 //! Only package files (2.0) are lowered; a name the file declares itself is left alone.
 
@@ -23,6 +24,7 @@ use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 use crate::ast::*;
+use crate::diagnostic::Diagnostic;
 
 static NEXT_ID: AtomicU32 = AtomicU32::new(3_900_000_000);
 
@@ -120,9 +122,19 @@ fn icon_and_text(text: Expr, icon: Expr) -> Vec<Stmt> {
 /// Mention's own glyphs in Bloom's icon set; every other name is a Remix icon.
 const OWN_ICONS: &[&str] = &["Like", "LikeFill", "Reply", "Repost", "MediaAttachment", "GifAttachment"];
 
+/// Names written for a glyph of another name in Bloom's set (SwiftUI's, or the obvious one).
+const ICON_ALIASES: &[(&str, &str)] = &[("verified", "verifiedBadge"), ("verifiedFill", "verifiedBadgeFill")];
+
+/// Whether `component` (`RiHeartLine`) is a glyph of Bloom's icon set.
+pub fn icon_exists(component: &str) -> bool {
+    crate::icons::ICONS.binary_search(&component).is_ok()
+}
+
 /// `.heart` → `RiHeartLine`, `.heartFill` → `RiHeartFill`, `.like` → `LikeIcon`: the
-/// glyph component of Bloom's icon set (`@oxy.so/bloom/icons/<Name>`).
+/// glyph component of Bloom's icon set (`@oxy.so/bloom/icons/<Name>`). Whether it is in
+/// the set is `icon_exists`.
 pub fn icon_component(name: &str) -> String {
+    let name = ICON_ALIASES.iter().find(|(from, _)| *from == name).map_or(name, |(_, to)| to);
     let mut pascal = String::new();
     let mut upper = true;
     for ch in name.chars() {
@@ -154,6 +166,9 @@ fn closure_or_arg(value: Expr) -> (Vec<Arg>, Option<Closure>) {
     }
 }
 
+/// What `.refreshable { … }` lowers onto (the standard library's).
+const REFRESH_ACTION: &str = "refreshAction";
+
 /// The label `Toggle(_:isOn:)` takes its `.description(…)` under while it is lowered.
 const DESCRIPTION: &str = "description";
 
@@ -165,6 +180,9 @@ struct Lowering<'a> {
     quiet: BTreeSet<ExprId>,
     /// The glyph components `Icon(.name)` named (imported from Bloom's icon set).
     icons: BTreeSet<String>,
+    diagnostics: Vec<Diagnostic>,
+    /// The states the lowering added to the view being lowered (`.refreshable { … }`'s).
+    states: Vec<StateDecl>,
 }
 
 impl Lowering<'_> {
@@ -177,6 +195,14 @@ impl Lowering<'_> {
         match &value.kind {
             ExprKind::ImplicitMember(name) => {
                 let component = icon_component(&name.name);
+                if !icon_exists(&component) {
+                    self.diagnostics.push(Diagnostic::error(
+                        "B0502",
+                        name.span,
+                        format!("`.{}` is not an icon of Bloom's set (no `{component}`)", name.name),
+                    ));
+                    return None;
+                }
                 self.icons.insert(component.clone());
                 Some(expr(ExprKind::Name(component), value.span))
             }
@@ -207,6 +233,48 @@ impl Lowering<'_> {
                 "foregroundStyle" => member.name = "foreground".into(),
                 "lineLimit" => member.name = "lines".into(),
                 _ => {}
+            }
+            // `.refreshable { await model.refresh() }`: a refreshing state the pull sets, and the
+            // action, which clears it when it ends (`refreshAction`).
+            if member.name == "refreshable" {
+                let action = match (c.trailing.take(), c.args.as_slice()) {
+                    (Some(closure), []) => Some(*closure),
+                    (None, [only])
+                        if only.label.is_none() && matches!(only.value.kind, ExprKind::Closure(_)) =>
+                    {
+                        match c.args.remove(0).value.kind {
+                            ExprKind::Closure(closure) => Some(closure),
+                            _ => None,
+                        }
+                    }
+                    (trailing, _) => {
+                        c.trailing = trailing;
+                        None
+                    }
+                };
+                if let Some(action) = action {
+                    let name = format!("refreshing{}", self.states.len());
+                    let name = format!("__{name}");
+                    self.states.push(StateDecl {
+                        attr: StateAttr::State,
+                        attr_span: fresh(span),
+                        name: ident(&name, span),
+                        ty: None,
+                        value: expr(ExprKind::Bool(false), span),
+                        span: fresh(span),
+                    });
+                    let state = expr(ExprKind::Binding(vec![ident(&name, span)]), span);
+                    let run = call(
+                        expr(ExprKind::Name(REFRESH_ACTION.into()), span),
+                        vec![arg(state), arg(expr(ExprKind::Closure(action), span))],
+                        None,
+                        span,
+                    );
+                    c.args = vec![arg(run)];
+                    c.parens = true;
+                    self.names.insert(REFRESH_ACTION.into());
+                }
+                return;
             }
             // `Toast.show("Saved")`.
             if member.name == "show"
@@ -313,6 +381,20 @@ impl Lowering<'_> {
                         value: expr(ExprKind::Closure(*action), span),
                     });
                     c.parens = true;
+                }
+                // `Button("Save") { save() }`: a text label, the trailing closure its action.
+                if c.trailing.is_some()
+                    && let [title] = c.args.as_slice()
+                    && title.label.is_none()
+                    && matches!(title.value.kind, ExprKind::Str { .. })
+                    && let Some(action) = c.trailing.take()
+                {
+                    c.args.push(Arg {
+                        label: Some(ident("action", span)),
+                        spread: false,
+                        span,
+                        value: expr(ExprKind::Closure(*action), span),
+                    });
                 }
                 let Some(action) = take_label(&mut c.args, &["action"]) else { return };
                 let quiet = self.quiet.contains(&e.id);
@@ -507,10 +589,17 @@ fn for_each(items: Expr, closure: Closure, span: Span) -> Stmt {
 }
 
 /// Lowers `file`'s BloomUI names in place; returns the standard library names it introduced.
-pub fn lower(file: &mut File) -> BTreeSet<String> {
+/// An icon not in Bloom's set is reported in `diagnostics`.
+pub fn lower(file: &mut File, diagnostics: &mut Vec<Diagnostic>) -> BTreeSet<String> {
     let own: BTreeSet<String> = file.items.iter().map(|i| i.kind.name().name.clone()).collect();
-    let mut lowering =
-        Lowering { own: &own, names: BTreeSet::new(), quiet: BTreeSet::new(), icons: BTreeSet::new() };
+    let mut lowering = Lowering {
+        own: &own,
+        names: BTreeSet::new(),
+        quiet: BTreeSet::new(),
+        icons: BTreeSet::new(),
+        diagnostics: Vec::new(),
+        states: Vec::new(),
+    };
     for item in &mut file.items {
         match &mut item.kind {
             ItemKind::Fn(f) => lowering.stmts(&mut f.body.stmts),
@@ -526,6 +615,7 @@ pub fn lower(file: &mut File) -> BTreeSet<String> {
                     }
                 }
                 lowering.stmts(&mut v.body.stmts);
+                v.members.extend(lowering.states.drain(..).map(Member::State));
             }
             _ => {}
         }
@@ -544,5 +634,6 @@ pub fn lower(file: &mut File) -> BTreeSet<String> {
             span,
         });
     }
+    diagnostics.append(&mut lowering.diagnostics);
     lowering.names
 }

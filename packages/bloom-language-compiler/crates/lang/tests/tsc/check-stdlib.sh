@@ -12,10 +12,18 @@ if [ ! -f "$std/Core.ts" ]; then
 fi
 out="$here/out-stdlib"
 rm -rf "$out" && mkdir -p "$out"
-cp "$compiler/stdlib/Bloom/runtime.ts" "$out/"
+# The runtime files (runtime.ts, routing.ts) as written, the emitted files beside them.
+cp "$compiler"/stdlib/Bloom/*.ts "$out/"
+# The language's runtime, as far as the standard library names it.
+cat > "$out/bloom-language.d.ts" <<'TS'
+declare module '@oxy.so/bloom-language' {
+  export type Child = { readonly kind: string } | string | number | null | undefined;
+  export type Binding<T> = readonly [value: T, set: (value: T) => void];
+}
+TS
 for ts in "$std"/*.ts; do
   name="$(basename "$ts")"
-  [ "$name" = "runtime.ts" ] && continue
+  [ -f "$compiler/stdlib/Bloom/$name" ] && continue
   # tsc reads `./Core.bloom` as the module `./Core`, which the copy is.
   sed -E 's/from "\.\/([A-Za-z]+)\.bloom"/from ".\/\1"/' "$ts" > "$out/$name"
 done

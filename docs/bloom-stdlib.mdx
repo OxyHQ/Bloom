@@ -731,6 +731,10 @@ Values over time, to every subscriber: what a socket or a sensor sends.
 - `func finish()`: Ends the stream: subscribers get `onFinish`, and later ones get it at once.
 - `func subscribe(_ each: (Element) -> Void, onFinish: () -> Void = {}) -> () -> Void`: Calls `each` with every value sent from now on; returns the unsubscribe.
 
+### `func refreshAction(_ state: Binding<Bool>, _ action: () async -> Unit) -> Binding<Bool>`
+
+What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`, which runs `action` and clears it when the action ends (the spinner shows until then).
+
 ## Regex
 
 Bloom: `Regex`, regular expressions (JS's syntax).
@@ -865,3 +869,65 @@ A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
 ### `func registerLocalizations(_ locale: String, _ catalog: JSONValue)`
 
 Registers a catalog (`bloom build` registers the package's own at startup).
+
+## Navigation
+
+BloomUI (navigation): `NavigationStack` with typed routes, tabs, sheets and deep links.
+
+```swift
+public enum Route: Routable {
+  case feed                 // the first case is the root: "/"
+  case post(id: String)     // "/post/[id]"; demo://post/42 opens it
+  case settings
+}
+
+NavigationStack(root: Route.feed, sheets: [Route.settings]) { route in
+  switch route {
+  case .feed: FeedScreen()
+  case .post(let id): PostScreen(id: id)
+  case .settings: SettingsScreen()
+  }
+}
+
+NavigationLink(Route.post(id: post.id)) { PostRow(post: post) }
+Button("Settings") { push(Route.settings) }
+
+```
+
+The routes are the enum's cases: `bloom build` reads the enum from the module graph and
+writes the router's route table from it (each case a route, its associated values the
+route's typed parameters, `sheets:` presented over the stack, `tabs:` the tab bar's
+pages), so a deep link (`<app>://post/42`, a web URL) opens the screen the
+`destination` draws for `Route.post(id: "42")`.
+
+### `protocol Routable`
+
+An enum whose cases are the app's screens: `NavigationStack`'s routes.
+
+### `struct Tab<R>`
+
+A page of the tab bar: its route (a case without associated values), its title and its icon (a Bloom icon name, `"home"`, `"settings"`).
+
+- `let route: R`
+- `let title: String`
+- `let icon: String`
+
+### `func NavigationStack<R>(root: R, tabs: [Tab<R>] = [], sheets: [R] = [], destination: (R) -> View) -> View`
+
+The app's navigation: `root` first, every other route pushed over it (`sheets:` presented as sheets), each drawn by `destination`. With `tabs:`, the root is the tab bar's pages.
+
+### `func push<R>(_ route: R)`
+
+Goes to `route`: pushed, or presented when it is one of the stack's `sheets:`.
+
+### `func replace<R>(_ route: R)`
+
+Goes to `route` in place of the screen in front.
+
+### `func dismiss()`
+
+Back to the screen under this one (or closes the sheet in front).
+
+### `func href<R>(_ route: R) -> String`
+
+The address of `route` (`"/post/42"`): what a deep link or a web URL to it reads.

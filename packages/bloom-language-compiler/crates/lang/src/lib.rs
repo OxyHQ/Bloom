@@ -20,6 +20,8 @@ mod emit;
 mod extensions;
 mod externs;
 pub mod i18n;
+#[path = "icons.generated.rs"]
+pub mod icons;
 mod lexer;
 pub mod modules;
 pub mod package;

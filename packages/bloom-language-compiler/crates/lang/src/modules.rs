@@ -293,7 +293,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         return out;
     };
     out.in_module = true;
-    derived.extend(crate::bloomui::lower(file));
+    derived.extend(crate::bloomui::lower(file, &mut out.diagnostics));
     if crate::i18n::lower(file, &absolute(&root), &mut out.diagnostics) {
         derived.insert(crate::i18n::LOOKUP.to_string());
     }
