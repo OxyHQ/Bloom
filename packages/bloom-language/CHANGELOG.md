@@ -6,6 +6,8 @@
 
 - Colour roles `overlay` (Bloom's scrim, `theme.colors.overlay`: `rgba(0, 0, 0, 0.5)` in every theme, that colour itself on the web) and `primarySubtle` (Bloom's brand container, `--primary-subtle`), whose ink is `primaryText`. Both are translucent, so a role at an opacity is now its colour's own alpha times the opacity on every platform (`overlay/70` is black at 0.35), as the web's `color-mix()` and an app colour at an opacity already were; every other role is opaque, where this is the opacity itself, as before.
 - App line heights in points: `defineTokens({ leadingPx: { name: 26 } })`, which `.leading()` takes as it takes Bloom's `'24px'` (an app's `leading` stays a ratio of the font's size).
+- `.onPressIn()` and `.onPressOut()` on every view: React Native's `onPressIn` and `onPressOut` on the Pressable the view already is (a hold that pauses a story and plays it again as the touch lifts). Each makes the view pressable, as `.onPress()` does; neither puts it in the focus order. Beside `.pressScale()` each runs after the scale's own phase; an `Action` hands both to Bloom's `EngagementAction`.
+- Text inputs (`TextField`, `TextEditor`, `Search`): `.onBlur(action)` (React Native's `onBlur`: a name saved as its field is left; beside `.focused()`, the binding is written first) and `.spellCheck(false)`. `TextEditor` takes `.contentType()` and `.textContentType()` as `TextField` does, and `Search` `.contentType()`: the codemod wrote both on a `Textarea` and a `Search` already, which the compiler rejected.
 
 ### Documentation
 
@@ -23,8 +25,6 @@
 
 ### Added
 
-- `.onPressIn()` and `.onPressOut()` on every view: React Native's `onPressIn` and `onPressOut` on the Pressable the view already is (a hold that pauses a story and plays it again as the touch lifts). Each makes the view pressable, as `.onPress()` does; neither puts it in the focus order. Beside `.pressScale()` each runs after the scale's own phase; an `Action` hands both to Bloom's `EngagementAction`.
-- Text inputs (`TextField`, `TextEditor`, `Search`): `.onBlur(action)` (React Native's `onBlur`: a name saved as its field is left; beside `.focused()`, the binding is written first) and `.spellCheck(false)`. `TextEditor` takes `.contentType()` and `.textContentType()` as `TextField` does, and `Search` `.contentType()`: the codemod wrote both on a `Textarea` and a `Search` already, which the compiler rejected.
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
 - `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).
