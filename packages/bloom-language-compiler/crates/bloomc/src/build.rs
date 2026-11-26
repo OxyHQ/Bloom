@@ -102,7 +102,7 @@ pub struct BuildOptions {
 }
 
 const CACHE_FILE: &str = ".bloomc-cache";
-const CACHE_HEADER: &str = "bloomc-cache 1";
+const CACHE_HEADER: &str = "bloomc-cache 2";
 
 /// 128 bits of SipHash over `parts` (two keyed passes): a cache key, not a signature.
 fn hash(parts: &[&[u8]]) -> u128 {
@@ -118,11 +118,14 @@ fn hash(parts: &[&[u8]]) -> u128 {
     (u128::from(pass(1)) << 64) | u128::from(pass(2))
 }
 
-/// A file's last successful build: its content, its key (content, compiler
-/// and dependencies) and its relative imports, so an unchanged file is not parsed.
+/// A file's last successful build: its content, what it was built from (`key`), its relative
+/// imports (so an unchanged file is not parsed), what it shows its importers (`interface`) and
+/// the content of the files outside the tree it imports (`own`, with its content).
 struct Entry {
     content: u128,
+    own: u128,
     key: u128,
+    interface: u128,
     deps: Vec<PathBuf>,
 }
 
@@ -136,18 +139,25 @@ fn load_cache(path: &Path) -> HashMap<PathBuf, Entry> {
         .filter_map(|line| {
             let mut fields = line.split('\t');
             let file = PathBuf::from(fields.next()?);
-            let content = u128::from_str_radix(fields.next()?, 16).ok()?;
-            let key = u128::from_str_radix(fields.next()?, 16).ok()?;
-            Some((file, Entry { content, key, deps: fields.map(PathBuf::from).collect() }))
+            let mut number = || u128::from_str_radix(fields.next()?, 16).ok();
+            let (content, own, key, interface) = (number()?, number()?, number()?, number()?);
+            Some((file, Entry { content, own, key, interface, deps: fields.map(PathBuf::from).collect() }))
         })
         .collect()
 }
 
 fn save_cache(path: &Path, entries: &BTreeMap<PathBuf, Entry>) -> Result<(), String> {
     let mut text = format!("{CACHE_HEADER}\n");
-    for (file, entry) in entries {
-        text.push_str(&format!("{}\t{:032x}\t{:032x}", file.display(), entry.content, entry.key));
-        for dep in &entry.deps {
+    for (file, e) in entries {
+        text.push_str(&format!(
+            "{}\t{:032x}\t{:032x}\t{:032x}\t{:032x}",
+            file.display(),
+            e.content,
+            e.own,
+            e.key,
+            e.interface
+        ));
+        for dep in &e.deps {
             text.push('\t');
             text.push_str(&dep.to_string_lossy());
         }
@@ -207,8 +217,10 @@ struct Compiled {
 
 /// Compiles every `.bloom` file under `dir` into `out` at the same relative
 /// path, as `Name.ts`, `Name.ts.map` and `Name.d.bloom.ts`. With the cache, a
-/// file whose content, imports (transitively) and compiler are unchanged,
-/// and whose outputs exist, is not compiled again.
+/// file is compiled again only when its content, the content of the files outside
+/// the tree it imports, the interface of a `.bloom` module it imports
+/// ([`bloom_lang::interface`]) or the compiler changed, or its outputs are missing:
+/// an edit that leaves a module's interface alone rebuilds that module only.
 pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, String> {
     let started = Instant::now();
     let dir = std::path::absolute(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
@@ -230,35 +242,62 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
                 _ => relative_imports(source, path),
             }
         });
-    let deps_of: HashMap<&Path, &[PathBuf]> =
-        files.iter().map(PathBuf::as_path).zip(deps.iter().map(Vec::as_slice)).collect();
+    let index: HashMap<&Path, usize> = files.iter().enumerate().map(|(i, p)| (p.as_path(), i)).collect();
     let digest = compiler_digest(options.dev);
-    let mut foreign: HashMap<PathBuf, u128> = HashMap::new();
-    let keys: Vec<u128> = files
-        .iter()
-        .map(|file| {
-            // The content of the file and of everything it imports, transitively, by path.
-            let mut closure: BTreeMap<&Path, u128> = BTreeMap::new();
-            let mut stack = vec![file.as_path()];
-            while let Some(current) = stack.pop() {
-                if closure.contains_key(current) {
-                    continue;
-                }
-                let content = match contents.get(current) {
-                    Some(&content) => {
-                        stack.extend(deps_of[current].iter().map(PathBuf::as_path));
-                        content
-                    }
-                    None => *foreign
-                        .entry(current.to_path_buf())
-                        .or_insert_with(|| hash(&[&std::fs::read(current).unwrap_or_default()])),
-                };
-                closure.insert(current, content);
-            }
-            let mut bytes = digest.to_le_bytes().to_vec();
-            for (path, content) in &closure {
-                bytes.extend(path.as_os_str().as_encoded_bytes());
+
+    // `own`: a file's content with that of the files outside the tree it imports (TS).
+    let mut foreign: HashMap<&Path, u128> = HashMap::new();
+    let own: Vec<u128> = (0..files.len())
+        .map(|i| {
+            let mut bytes = contents[files[i].as_path()].to_le_bytes().to_vec();
+            for dep in deps[i].iter().filter(|d| !index.contains_key(d.as_path())) {
+                let content = *foreign
+                    .entry(dep.as_path())
+                    .or_insert_with(|| hash(&[&std::fs::read(dep).unwrap_or_default()]));
+                bytes.extend(dep.as_os_str().as_encoded_bytes());
                 bytes.extend(content.to_le_bytes());
+            }
+            hash(&[&bytes])
+        })
+        .collect();
+    // A file whose own text changed, and every file that imports it, directly or not, may show
+    // its importers something new: their interfaces are read again, the others' kept.
+    let mut importers: Vec<Vec<usize>> = vec![Vec::new(); files.len()];
+    for (i, list) in deps.iter().enumerate() {
+        for dep in list {
+            if let Some(&j) = index.get(dep.as_path()) {
+                importers[j].push(i);
+            }
+        }
+    }
+    let mut affected = vec![false; files.len()];
+    let mut stack: Vec<usize> =
+        (0..files.len()).filter(|&i| cache.get(&files[i]).is_none_or(|e| e.own != own[i])).collect();
+    while let Some(i) = stack.pop() {
+        if !std::mem::replace(&mut affected[i], true) {
+            stack.extend(importers[i].iter().copied());
+        }
+    }
+    let compile_options = self::options(options.dev);
+    // Without the cache nothing is kept, so no interface is needed.
+    let reread: Vec<usize> = (0..files.len()).filter(|&i| options.cache && affected[i]).collect();
+    let fresh_interfaces = parallel::map(&reread, options.jobs, |&i| {
+        hash(&[bloom_lang::interface(&sources[i], &shown(&files[i]), &compile_options).as_bytes()])
+    });
+    let mut interfaces: Vec<u128> = files.iter().map(|f| cache.get(f).map_or(0, |e| e.interface)).collect();
+    for (&i, interface) in reread.iter().zip(fresh_interfaces) {
+        interfaces[i] = interface;
+    }
+    // A file's key: the compiler, its own text, and the interface of each module it imports.
+    let keys: Vec<u128> = (0..files.len())
+        .map(|i| {
+            let mut bytes = digest.to_le_bytes().to_vec();
+            bytes.extend(own[i].to_le_bytes());
+            for dep in &deps[i] {
+                if let Some(&j) = index.get(dep.as_path()) {
+                    bytes.extend(dep.as_os_str().as_encoded_bytes());
+                    bytes.extend(interfaces[j].to_le_bytes());
+                }
             }
             hash(&[&bytes])
         })
@@ -285,7 +324,6 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
         })
         .collect();
 
-    let compile_options = self::options(options.dev);
     let results: Vec<Result<Compiled, String>> = parallel::map(&stale, options.jobs, |&i| {
         let file = &files[i];
         let output = bloom_lang::compile(&sources[i], &shown(file), &compile_options);
@@ -326,7 +364,13 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
         if !failed.contains(&i) {
             entries.insert(
                 file.clone(),
-                Entry { content: contents[file.as_path()], key: keys[i], deps: deps[i].clone() },
+                Entry {
+                    content: contents[file.as_path()],
+                    own: own[i],
+                    key: keys[i],
+                    interface: interfaces[i],
+                    deps: deps[i].clone(),
+                },
             );
         }
     }
@@ -373,15 +417,47 @@ mod tests {
         let mut entries = BTreeMap::new();
         entries.insert(
             PathBuf::from("/x/a.bloom"),
-            Entry { content: 1, key: u128::MAX, deps: vec!["/x/b.bloom".into()] },
+            Entry { content: 1, own: 2, key: u128::MAX, interface: 3, deps: vec!["/x/b.bloom".into()] },
         );
         save_cache(&path, &entries).unwrap();
         let loaded = load_cache(&path);
         let entry = &loaded[Path::new("/x/a.bloom")];
         assert_eq!(
-            (entry.content, entry.key, entry.deps.clone()),
-            (1, u128::MAX, vec![PathBuf::from("/x/b.bloom")])
+            (entry.content, entry.own, entry.key, entry.interface, entry.deps.clone()),
+            (1, 2, u128::MAX, 3, vec![PathBuf::from("/x/b.bloom")])
         );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn an_importer_is_rebuilt_only_when_the_interface_changes() {
+        let dir = std::env::temp_dir().join(format!("bloomc-interface-test-{}", std::process::id()));
+        let (src, out) = (dir.join("src"), dir.join("out"));
+        std::fs::create_dir_all(&src).unwrap();
+        let model = |body: &str, params: &str| format!("pub fn score({params}) -> Int {{\n  {body}\n}}\n");
+        std::fs::write(src.join("model.bloom"), model("n * 2", "n: Int")).unwrap();
+        std::fs::write(
+            src.join("row.bloom"),
+            "import { score } from \"./model.bloom\"\n\npub fn twice(n: Int) -> Int {\n  score(n) + score(n)\n}\n",
+        )
+        .unwrap();
+        let options = BuildOptions { jobs: 1, cache: true, dev: false };
+        let built = || {
+            assert!(build(&src, &out, &options).unwrap());
+            let stamp = |name: &str| std::fs::read_to_string(out.join(name)).unwrap();
+            (stamp("model.ts"), std::fs::metadata(out.join("row.ts")).unwrap().modified().unwrap())
+        };
+        let (_, first) = built();
+        // A new body, the same signature: the model is rebuilt, its importer is not.
+        std::fs::write(src.join("model.bloom"), model("n * 3", "n: Int")).unwrap();
+        let (code, second) = built();
+        assert!(code.contains("n * 3"));
+        assert_eq!(first, second);
+        // A new signature: the importer is rebuilt too.
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(src.join("model.bloom"), model("n * 3", "n: Int, bonus: Int = 0")).unwrap();
+        let (_, third) = built();
+        assert_ne!(second, third);
         std::fs::remove_dir_all(dir).unwrap();
     }
 

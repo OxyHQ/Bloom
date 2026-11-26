@@ -4550,6 +4550,40 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
     Some(sig)
 }
 
+/// What importers see of the `.bloom` module `source` (at `path`): its `pub` types and
+/// signatures, as [`signatures`] reads them for an import, written out in a fixed order. An
+/// importer's output can change only when this text does, so a build keys importers on it
+/// instead of on the module's whole text.
+pub fn interface(source: &str, path: &Path, options: &Options) -> String {
+    let (file, _, _) = crate::parser::parse(source);
+    let mut sub = Checker::new(source, &path.to_string_lossy(), options);
+    sub.declare_signatures(&file, "");
+    let mut types: Vec<(&String, DefId)> = sub
+        .type_names
+        .iter()
+        .filter_map(|(name, t)| match t {
+            TypeName::Def(def) => Some((name, *def)),
+            _ => None,
+        })
+        .collect();
+    types.sort();
+    let mut values: Vec<(String, String)> = sub.scopes[0]
+        .iter()
+        .map(|(name, id)| {
+            let local = &sub.out.locals[*id];
+            (name.clone(), format!("{:?} {:?}", sub.zonk(&local.ty), local.kind))
+        })
+        .collect();
+    values.sort();
+    let defs: Vec<String> = sub
+        .out
+        .defs
+        .iter()
+        .map(|d| format!("{} {:?} {:?} {:?}", d.name, d.generics, zonk_kind(&sub, &d.kind), d.origin))
+        .collect();
+    format!("{defs:?}\n{types:?}\n{values:?}")
+}
+
 fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
     match kind {
         DefKind::Struct(fields) => DefKind::Struct(

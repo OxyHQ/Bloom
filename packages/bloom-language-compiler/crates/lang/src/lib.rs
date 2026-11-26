@@ -125,6 +125,13 @@ pub fn dependencies(source: &str, filename: &str, options: &Options) -> Vec<Path
     check(source, filename, options).dependencies
 }
 
+/// What importers of the `.bloom` module `source` see of it, as text (see
+/// [`check::interface`]): a build that keys importers on it rebuilds them only when it changes.
+pub fn interface(source: &str, filename: &str, options: &Options) -> String {
+    ts::next_epoch();
+    check::interface(source, std::path::Path::new(filename), options)
+}
+
 /// Forgets what was read from `path` (a TS file or `tsconfig.json` an editor changed).
 /// Files are also checked against the disk (modified time and length) once per compile.
 pub fn invalidate(path: &std::path::Path) {
