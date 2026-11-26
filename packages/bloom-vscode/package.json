@@ -3,7 +3,7 @@
   "displayName": "Bloom",
   "version": "0.1.0",
   "private": true,
-  "description": "Bloom language (.bloom) support for VS Code: syntax highlighting, and diagnostics and hover from bloomc lsp.",
+  "description": "Bloom language (.bloom) support for VS Code: syntax highlighting, and diagnostics, hover, go-to-definition, references, completion and formatting from bloomc lsp.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
@@ -19,6 +19,12 @@
   ],
   "main": "./src/extension.js",
   "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In an untrusted workspace the language server is bloom.bloomcPath or bloomc on the PATH, never the workspace's own bloomc."
+    }
+  },
   "contributes": {
     "languages": [
       {
@@ -46,7 +52,7 @@
         "bloom.bloomcPath": {
           "type": "string",
           "default": "bloomc",
-          "description": "The bloomc binary the language server runs as `bloomc lsp`."
+          "description": "The bloomc binary the language server runs as `bloomc lsp`. With the default, a trusted workspace's own compiler (@oxy.so/bloom-language-compiler in its node_modules) is used first, then bloomc on the PATH."
         }
       }
     }
