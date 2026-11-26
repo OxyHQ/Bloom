@@ -235,6 +235,7 @@ const ROW: &str = r#"public struct Row: View {
         Label("Saved", icon: .bookmark)
         Text(createdAt, format: .relative)
         Toggle("Likes", isOn: $on)
+        Toggle("Reposts", isOn: $on).description("When someone reposts you")
       }
       List(names) { name in Text(name) }
       ProgressView()

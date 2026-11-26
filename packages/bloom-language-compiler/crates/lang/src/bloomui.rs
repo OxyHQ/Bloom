@@ -10,6 +10,7 @@
 //! | `Button("Save", action: f)` | `Button(Text("Save")).onPress(f)` |
 //! | `Label("Likes", icon: .heart)` | `HStack { Icon(.heart); Text("Likes") }.spacing(.xs)` |
 //! | `Toggle("Likes", isOn: $on)` | `HStack { Text("Likes"); Spacer(); Toggle($on).label("Likes") }` |
+//! | `Toggle("Likes", isOn: $on).description(d)` | the same, its title `VStack { Text("Likes"); Text(d).foreground(.muted).font(.body2) }.align(.leading)` |
 //! | `Text(date, format: .relative)` | `Text(date.formatted(.relative))` |
 //! | `ProgressView()` | `Loading()` |
 //! | `VStack(spacing: .sm) { … }`, `HStack(alignment: .center, spacing: .xs) { … }` | `VStack { … }.spacing(.sm)`, `HStack { … }.align(.center).spacing(.xs)` |
@@ -153,6 +154,9 @@ fn closure_or_arg(value: Expr) -> (Vec<Arg>, Option<Closure>) {
     }
 }
 
+/// The label `Toggle(_:isOn:)` takes its `.description(…)` under while it is lowered.
+const DESCRIPTION: &str = "description";
+
 struct Lowering<'a> {
     own: &'a BTreeSet<String>,
     /// Standard library names the lowering introduced (to import).
@@ -239,16 +243,38 @@ impl Lowering<'_> {
                 }
             }
             "Toggle" => {
-                if let Some(binding) = take_label(&mut c.args, &["isOn"])
-                    && let [title] = c.args.as_slice()
-                {
-                    // A settings row: the title, then the switch (labelled with it for assistive tech).
-                    let title = title.value.clone();
-                    let toggle = modifier(node("Toggle", vec![arg(binding)], None, span), "label", vec![arg(title.clone())], None);
-                    let text = node("Text", vec![arg(title)], None, span);
-                    let spacer = node("Spacer", Vec::new(), None, span);
-                    *e = node("HStack", Vec::new(), Some(vec![stmt(text), stmt(spacer), stmt(toggle)]), span);
+                // `Toggle(title, isOn: b)` (and its `description:`, from `.description(d)`).
+                let labelled = |a: &Arg, name: &str| a.label.as_ref().is_some_and(|l| l.name == name);
+                let rest: Vec<&Arg> =
+                    c.args.iter().filter(|a| !labelled(a, "isOn") && !labelled(a, DESCRIPTION)).collect();
+                if !c.args.iter().any(|a| labelled(a, "isOn")) || rest.len() != 1 || rest[0].label.is_some() {
+                    return;
                 }
+                let (Some(binding), description) =
+                    (take_label(&mut c.args, &["isOn"]), take_label(&mut c.args, &[DESCRIPTION]))
+                else {
+                    return;
+                };
+                // A settings row: the title, then the switch (labelled with it for assistive tech).
+                let title = c.args[0].value.clone();
+                let toggle = modifier(
+                    node("Toggle", vec![arg(binding)], None, span),
+                    "label",
+                    vec![arg(title.clone())],
+                    None,
+                );
+                let mut text = node("Text", vec![arg(title)], None, span);
+                // `.description(d)`: a quieter line under the title.
+                if let Some(detail) = description {
+                    let token = |name: &str| arg(expr(ExprKind::ImplicitMember(ident(name, span)), span));
+                    let detail = node("Text", vec![arg(detail)], None, span);
+                    let detail = modifier(detail, "foreground", vec![token("muted")], None);
+                    let detail = modifier(detail, "font", vec![token("body2")], None);
+                    let column = node("VStack", Vec::new(), Some(vec![stmt(text), stmt(detail)]), span);
+                    text = modifier(column, "align", vec![token("start")], None);
+                }
+                let spacer = node("Spacer", Vec::new(), None, span);
+                *e = node("HStack", Vec::new(), Some(vec![stmt(text), stmt(spacer), stmt(toggle)]), span);
             }
             "Text" => {
                 if let Some(format) = take_label(&mut c.args, &["format"])
@@ -346,7 +372,34 @@ impl Lowering<'_> {
         }
     }
 
+    /// `Toggle(title, isOn: b).description(d)`: the description joins the `Toggle` call (as
+    /// `description:`), before the walk lowers the `Toggle` into its row.
+    fn toggle_description(&mut self, e: &mut Expr) {
+        let ExprKind::Call(outer) = &mut e.kind else { return };
+        let ExprKind::Field(object, member) = &mut outer.callee.kind else { return };
+        if member.name != DESCRIPTION
+            || outer.trailing.is_some()
+            || outer.args.len() != 1
+            || outer.args[0].label.is_some()
+        {
+            return;
+        }
+        let ExprKind::Call(toggle) = &mut object.kind else { return };
+        if name_of(&toggle.callee) != Some("Toggle")
+            || !self.ours("Toggle")
+            || !toggle.args.iter().any(|a| a.label.as_ref().is_some_and(|l| l.name == "isOn"))
+        {
+            return;
+        }
+        let mut detail = outer.args.remove(0);
+        detail.label = Some(ident(DESCRIPTION, detail.span));
+        toggle.args.push(detail);
+        let inner = std::mem::replace(object.as_mut(), expr(ExprKind::Unit, e.span));
+        *e = inner;
+    }
+
     fn expr(&mut self, e: &mut Expr) {
+        self.toggle_description(e);
         self.button_content(e);
         match &mut e.kind {
             ExprKind::Call(c) => {
