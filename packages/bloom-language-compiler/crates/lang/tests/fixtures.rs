@@ -18,7 +18,7 @@ pub fn options() -> Options {
     paths.insert("react-i18next".to_string(), vec!["stubs/react-i18next.d.ts".to_string()]);
     paths.insert("@oxy.so/services/ui/client".to_string(), vec!["stubs/oxy-services.d.ts".to_string()]);
     paths.insert("@oxy.so/core/logger".to_string(), vec!["stubs/oxy-logger.d.ts".to_string()]);
-    Options { root: Some(fixtures()), paths, dev: false }
+    Options { root: Some(fixtures()), paths, dev: false, ..Default::default() }
 }
 
 fn bless() -> bool {
@@ -118,7 +118,8 @@ fn compile_one() {
     let source = std::fs::read_to_string(&file).expect("the file");
     let relative =
         Path::new(&file).strip_prefix(&root).map(Path::to_path_buf).unwrap_or_else(|_| file.clone().into());
-    let options = Options { root: Some(root.into()), paths: BTreeMap::new(), dev: false };
+    let options =
+        Options { root: Some(root.into()), paths: BTreeMap::new(), dev: false, ..Default::default() };
     let output = compile(&source, &relative.to_string_lossy(), &options);
     for diagnostic in output.diagnostics.iter().chain(&output.warnings) {
         eprintln!("{}\n", diagnostic.rendered);
@@ -188,4 +189,25 @@ fn timing() {
             embedded
         );
     }
+}
+
+/// Routes are read from the app's `app/` tree, its folders are the compile's
+/// dependencies, and a route added to the tree is seen by the next compile.
+#[test]
+fn routes_follow_the_app_tree() {
+    let root = std::env::temp_dir().join(format!("bloom-routes-{}", std::process::id()));
+    let app = root.join("app");
+    std::fs::create_dir_all(&app).expect("a temporary app");
+    std::fs::write(app.join("index.tsx"), "export default function Home() { return null; }\n")
+        .expect("a route");
+    let source = "view Link {\n  body { Button(Text(\"New\")).onPress(navigate(\"/new\")) }\n}\n";
+    let options = Options { root: Some(root.clone()), ..Default::default() };
+    let before = compile(source, "Link.bloom", &options);
+    assert!(before.diagnostics.iter().any(|d| d.code == "B0701"), "an unknown route is an error");
+    assert!(before.dependencies.contains(&app), "the app folder is a dependency");
+    std::fs::write(app.join("new.tsx"), "export default function New() { return null; }\n")
+        .expect("a new route");
+    let after = compile(source, "Link.bloom", &options);
+    let _ = std::fs::remove_dir_all(&root);
+    assert!(after.diagnostics.is_empty(), "the new route is seen: {:?}", after.diagnostics);
 }

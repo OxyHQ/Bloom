@@ -13,7 +13,12 @@ fn options() -> Options {
     paths.insert("react-i18next".to_string(), vec!["stubs/react-i18next.d.ts".to_string()]);
     paths.insert("@oxy.so/services/ui/client".to_string(), vec!["stubs/oxy-services.d.ts".to_string()]);
     paths.insert("@oxy.so/core/logger".to_string(), vec!["stubs/oxy-logger.d.ts".to_string()]);
-    Options { root: Some(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")), paths, dev: false }
+    Options {
+        root: Some(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")),
+        paths,
+        dev: false,
+        ..Default::default()
+    }
 }
 
 fn port() -> (String, bloom_lang::Analysis) {
@@ -85,7 +90,8 @@ fn edited_declarations_are_read_again() {
     std::fs::create_dir_all(&dir).expect("a temp dir");
     std::fs::write(dir.join("count.ts"), "export const count: number = 1\n").expect("write");
     let source = "import { count } from \"./count\"\nlet n: Float = count\n";
-    let options = Options { root: Some(dir.clone()), paths: BTreeMap::new(), dev: false };
+    let options =
+        Options { root: Some(dir.clone()), paths: BTreeMap::new(), dev: false, ..Default::default() };
     let first = bloom_lang::compile(source, "a.bloom", &options);
     assert!(first.diagnostics.is_empty(), "{:?}", first.diagnostics);
     assert!(first.dependencies.iter().any(|d| d.ends_with("count.ts")), "{:?}", first.dependencies);
