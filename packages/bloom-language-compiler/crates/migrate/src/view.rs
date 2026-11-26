@@ -212,6 +212,14 @@ impl Tr<'_> {
                 };
                 match local_object(module, &id.name) {
                     Some(members) => members,
+                    // `interface P extends Q { … }` with `Q` imported: `..Q`, then P's own fields.
+                    None if let Some((members, base)) = local_extends(module, &id.name)
+                        && self.imported.contains(base.as_str())
+                        && reference.type_arguments.is_none() =>
+                    {
+                        spread = Some(self.name(&base, id.span));
+                        members
+                    }
                     // Props typed elsewhere (`X.types.ts`): their fields spread in (`..XProps`).
                     None if self.imported.contains(id.name.as_str())
                         && reference.type_arguments.is_none() =>
@@ -288,7 +296,10 @@ impl Tr<'_> {
         }
         let mut out = Vec::new();
         if let Some(spread) = spread {
-            if let Some((key, value)) = defaults.first() {
+            let own = |key: &str| {
+                members.iter().any(|m| matches!(m, TSSignature::TSPropertySignature(p) if key_name(&p.key).as_deref() == Some(key)))
+            };
+            if let Some((key, value)) = defaults.iter().find(|(key, _)| !own(key)) {
                 return Some(self.refuse(
                     "view:spread-default",
                     format!("a default for `{key}`, a prop of an imported props type"),
@@ -2268,6 +2279,17 @@ fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&
             Some(Declaration::TSInterfaceDeclaration(i)) if i.id.name == name && i.extends.is_empty() => {
                 return Some(i.body.body.iter().collect());
             }
+            // `interface P extends Q { … }` with `Q` an object type here: Q's members, then P's.
+            Some(Declaration::TSInterfaceDeclaration(i)) if i.id.name == name => {
+                let [heritage] = i.extends.as_slice() else { return None };
+                let TSTypeName::IdentifierReference(base) = &heritage.type_name else { return None };
+                if heritage.type_arguments.is_some() || base.name == name {
+                    return None;
+                }
+                let mut members = local_object(module, &base.name)?;
+                members.extend(i.body.body.iter());
+                return Some(members);
+            }
             Some(Declaration::TSTypeAliasDeclaration(a)) if a.id.name == name => {
                 if let TSType::TSTypeLiteral(literal) = &a.type_annotation {
                     return Some(literal.members.iter().collect());
@@ -2275,6 +2297,29 @@ fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&
                 return None;
             }
             _ => {}
+        }
+    }
+    None
+}
+
+/// A local `interface name extends Base { … }` (one base, a plain name): its own
+/// members and the base's name.
+fn local_extends<'b, 'a>(
+    module: &'b [Statement<'a>],
+    name: &str,
+) -> Option<(Vec<&'b TSSignature<'a>>, String)> {
+    for statement in module {
+        let declaration = match statement {
+            Statement::ExportDeclaration(e) => Some(&e.declaration),
+            other => other.as_declaration(),
+        };
+        if let Some(Declaration::TSInterfaceDeclaration(i)) = declaration
+            && i.id.name == name
+            && let [heritage] = i.extends.as_slice()
+            && heritage.type_arguments.is_none()
+            && let TSTypeName::IdentifierReference(base) = &heritage.type_name
+        {
+            return Some((i.body.body.iter().collect(), base.name.to_string()));
         }
     }
     None
