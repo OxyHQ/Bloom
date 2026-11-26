@@ -16,7 +16,14 @@ import {
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { resolveSpace, type ColumnWidthToken, type SpaceToken, type TableAlign } from '../tokens';
-import { type ControlDraw, type ControlRenderer, lastOf, nodesOf, slot } from './draw';
+import {
+  type ControlDraw,
+  type ControlRenderer,
+  defineControls,
+  lastOf,
+  nodesOf,
+  slot,
+} from './draw';
 import type { TableContent } from './table';
 
 /** The advanced data table: toolbar, sortable columns, row selection, pages and density (Bloom `data-table`). */
@@ -189,7 +196,7 @@ const NOT_DRAWN = () => {
   throw new Error('bloom-language: a DataColumn is drawn by its DataTable');
 };
 
-export const DATA_TABLES: Record<DataTableKind, ControlRenderer> = {
+const DATA_TABLES: Record<DataTableKind, ControlRenderer> = {
   dataTable: (d) => {
     const { rows, rowId } = d.node.props as {
       rows: readonly unknown[];
@@ -286,3 +293,4 @@ export const DATA_TABLES: Record<DataTableKind, ControlRenderer> = {
     );
   },
 };
+defineControls(DATA_TABLES);

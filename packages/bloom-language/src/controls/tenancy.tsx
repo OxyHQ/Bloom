@@ -16,7 +16,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density, RentOutstandingTone, TenancyLayout } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A tenancy: its lease, its rent, its repairs, its papers and its history. */
@@ -97,7 +97,7 @@ export function DocumentList(
   return new Node('documentList', { documents, options }, []);
 }
 
-export const TENANCY: Record<TenancyKind, ControlRenderer> = {
+const TENANCY: Record<TenancyKind, ControlRenderer> = {
   tenancyTimeline: product(BloomTenancyTimeline, {
     own: (d) => ({ density: d.own('density')?.value }),
   }),
@@ -111,3 +111,4 @@ export const TENANCY: Record<TenancyKind, ControlRenderer> = {
   maintenanceRequestCard: product(BloomMaintenanceRequestCard, { slots: ['actions'] }),
   documentList: product(BloomDocumentList, { own: (d) => ({ layout: d.own('style')?.value }) }),
 };
+defineControls(TENANCY);

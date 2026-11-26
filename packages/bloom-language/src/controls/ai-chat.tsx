@@ -30,7 +30,7 @@ import {
   type SidebarSurface,
   type SpaceToken,
 } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The AI chat workspace: its shell and container, the thread, its turns and panels. */
@@ -204,7 +204,7 @@ export function AiChatGalleryPanel(
 const width = (token: LengthToken | undefined) =>
   token === undefined ? undefined : resolveLength(token);
 
-export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
+const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
   aiChatShell: product(BloomAiChatShell, {
     bindings: {
       navOpen: ['navOpen', 'onNavOpenChange'],
@@ -272,3 +272,4 @@ export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
     }),
   }),
 };
+defineControls(AI_CHATS);

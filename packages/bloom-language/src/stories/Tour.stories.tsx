@@ -8,23 +8,14 @@ import { RiMarkPenLine } from '@oxy.so/bloom/icons/RiMarkPenLine';
 import { RiPencilLine } from '@oxy.so/bloom/icons/RiPencilLine';
 
 import {
-  Alert,
   Avatar,
   Badge,
   Button,
-  Field,
   Fill,
-  GlassGroup,
   HStack,
   Icon,
-  ListItem,
-  Option,
-  Picker,
-  Segmented,
   Spacer,
   Text,
-  TextField,
-  Toggle,
   VStack,
   ZStack,
   defineModifier,
@@ -35,6 +26,10 @@ import {
   useNamespace,
   view,
 } from '../index';
+import { GlassGroup } from '../entries/glass-group';
+import { Field, Option, Picker, Segmented, TextField, Toggle } from '../entries/inputs';
+import { ListItem } from '../entries/list';
+import { Alert } from '../entries/overlays';
 
 /**
  * The tour (docs/bloom-language-tour.mdx), live: each story is one topic's

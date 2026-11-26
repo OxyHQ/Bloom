@@ -55,7 +55,14 @@ import {
   type ViewNode,
 } from '../node';
 import type { ColorName, TextContentType } from '../tokens';
-import { boxAs, type ControlDraw, type ControlRenderer, lastOf, slot } from './draw';
+import {
+  boxAs,
+  type ControlDraw,
+  type ControlRenderer,
+  defineControls,
+  lastOf,
+  slot,
+} from './draw';
 
 /** Inputs: text fields, toggles, pickers and search. */
 export type InputKind =
@@ -887,7 +894,7 @@ function triggerProps(button: ViewNode): Record<string, unknown> {
 }
 
 /** The renderer of each kind in this family. */
-export const INPUTS: Partial<Record<InputKind, ControlRenderer>> = {
+const INPUTS: Partial<Record<InputKind, ControlRenderer>> = {
   textField,
   textEditor,
   field,
@@ -899,3 +906,4 @@ export const INPUTS: Partial<Record<InputKind, ControlRenderer>> = {
   picker,
   search,
 };
+defineControls(INPUTS);

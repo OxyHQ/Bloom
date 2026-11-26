@@ -1,7 +1,7 @@
 import { VideoView as BloomVideoView, type VideoViewProps } from '@oxy.so/bloom/video-view';
 
 import { Node, type ContentFit, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** expo-video's view, inline by default: the one way an Oxy app paints a video (Bloom `video-view`). */
 export type VideoViewKind = 'video';
@@ -21,7 +21,7 @@ export function Video(player: VideoViewProps['player']): VideoView {
   return new Node('video', { player }, []);
 }
 
-export const VIDEOS: Record<VideoViewKind, ControlRenderer> = {
+const VIDEOS: Record<VideoViewKind, ControlRenderer> = {
   video: (d) => {
     const props = d.props();
     Object.assign(props, {
@@ -33,3 +33,4 @@ export const VIDEOS: Record<VideoViewKind, ControlRenderer> = {
     return d.component(BloomVideoView, props);
   },
 };
+defineControls(VIDEOS);

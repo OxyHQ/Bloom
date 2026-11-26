@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { DurationName } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The web search: an agent's search trail and the sources it found. */
@@ -29,6 +29,7 @@ export function WebSearch(
   return new Node('webSearch', { steps, options }, []);
 }
 
-export const WEB_SEARCHES: Record<WebSearchKind, ControlRenderer> = {
+const WEB_SEARCHES: Record<WebSearchKind, ControlRenderer> = {
   webSearch: product(BloomWebSearch, { durations: ['stepInterval', 'startDelay'] }),
 };
+defineControls(WEB_SEARCHES);

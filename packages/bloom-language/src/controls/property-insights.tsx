@@ -8,7 +8,7 @@ import {
 
 import type { Bound } from '../binding';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A property's price insights: the estimate, and the price per area against its area's. */
@@ -41,9 +41,10 @@ export function PricePerAreaComparison(rows: readonly AreaPriceRow[]): PricePerA
   return new Node('pricePerAreaComparison', { rows }, []);
 }
 
-export const PROPERTY_INSIGHTS: Record<PropertyInsightKind, ControlRenderer> = {
+const PROPERTY_INSIGHTS: Record<PropertyInsightKind, ControlRenderer> = {
   priceEstimate: product(BloomPriceEstimate, {
     bindings: { expanded: ['expanded', 'onExpandedChange'] },
   }),
   pricePerAreaComparison: product(BloomPricePerAreaComparison),
 };
+defineControls(PROPERTY_INSIGHTS);

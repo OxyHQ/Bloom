@@ -70,6 +70,7 @@ writeFileSync(
         paths: {
           '@oxy.so/bloom-language': ['../src/index.ts'],
           '@oxy.so/bloom-language/router': ['../src/router/index.ts'],
+          '@oxy.so/bloom-language/*': ['../src/entries/*.ts'],
           '@oxy.so/bloom-data': ['../../bloom-data/src/index.ts'],
         },
       },

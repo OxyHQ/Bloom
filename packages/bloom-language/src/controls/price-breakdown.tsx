@@ -9,7 +9,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { PriceLineTone } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** What a price is made of: its lines and the total that answers them. */
@@ -52,7 +52,7 @@ export function PriceSummaryLine(
   return new Node('priceSummaryLine', { label, options }, []);
 }
 
-export const PRICE_BREAKDOWNS: Record<PriceBreakdownKind, ControlRenderer> = {
+const PRICE_BREAKDOWNS: Record<PriceBreakdownKind, ControlRenderer> = {
   priceSummary: product(BloomPriceSummary, {
     bindings: { expanded: ['expanded', 'onExpandedChange'] },
   }),
@@ -61,3 +61,4 @@ export const PRICE_BREAKDOWNS: Record<PriceBreakdownKind, ControlRenderer> = {
     own: (d) => ({ tone: d.own('tint')?.value }),
   }),
 };
+defineControls(PRICE_BREAKDOWNS);

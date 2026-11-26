@@ -2,7 +2,7 @@ import { RiLineChartLine, RiUserLine } from '@oxy.so/bloom/icons';
 import { StatCard, StatCards } from '@oxy.so/bloom/stat-cards';
 
 import { ENUMS } from '../src/generated/spec.generated';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

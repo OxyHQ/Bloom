@@ -7,7 +7,7 @@ import {
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { type DurationName, resolveDuration, type TooltipSide, type TooltipSize } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A hint about an already-labelled control, controlled (Bloom `tooltip`). */
 export type TooltipKind = 'tooltip';
@@ -38,7 +38,7 @@ export function Tooltip(trigger: Child, content: string | Child): TooltipView {
 
 const NOOP = () => {};
 
-export const TOOLTIPS: Record<TooltipKind, ControlRenderer> = {
+const TOOLTIPS: Record<TooltipKind, ControlRenderer> = {
   tooltip: (d) => {
     const { trigger, content } = d.node.props as { trigger: Child; content: string | Child };
     const presented = d.own('presented')?.value ?? [false, NOOP];
@@ -62,3 +62,4 @@ export const TOOLTIPS: Record<TooltipKind, ControlRenderer> = {
     );
   },
 };
+defineControls(TOOLTIPS);

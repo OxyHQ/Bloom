@@ -9,444 +9,446 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 Every node kind the language has (432), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
+The root, `@oxy.so/bloom-language`, holds the language's views, modifiers and values; each family of nodes is an entry of its own (`@oxy.so/bloom-language/<family>`), so an app's bundle carries only the families it imports. Each node names the module it is imported from.
+
 This page is generated from `packages/bloom-language/spec/language.json` and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).
 
 ## Index
 
-| Node | Constructors |
-| --- | --- |
-| [stack](#stack) | `HStack`, `VStack` |
-| [zstack](#zstack) | `ZStack` |
-| [spacer](#spacer) | `Spacer` |
-| [text](#text) | `Text`, `RawText` |
-| [icon](#icon) | `Icon` |
-| [avatar](#avatar) | `Avatar` |
-| [avatarGroup](#avatargroup) | `AvatarGroup` |
-| [badge](#badge) | `Badge` |
-| [iconCircle](#iconcircle) | `IconCircle` |
-| [loading](#loading) | `Loading` |
-| [skeleton](#skeleton) | `Skeleton` |
-| [skeletonGroup](#skeletongroup) | `SkeletonGroup` |
-| [image](#image) | `Image` |
-| [fill](#fill) | `Fill` |
-| [ratio](#ratio) | `AspectRatio` |
-| [grid](#grid) | `Grid` |
-| [button](#button) | `Button` |
-| [shape](#shape) | `Shape` |
-| [buttonGroup](#buttongroup) | `ButtonGroup` |
-| [fab](#fab) | `FAB` |
-| [menu](#menu) | `Menu` |
-| [menuItem](#menuitem) | `Item` |
-| [menuSubmenu](#menusubmenu) | `Submenu` |
-| [menuSection](#menusection) | `Section` |
-| [divider](#divider) | `Divider` |
-| [alert](#alert) | `Alert` |
-| [dialog](#dialog) | `Dialog` |
-| [popover](#popover) | `Popover` |
-| [connectionStatus](#connectionstatus) | `ConnectionStatus` |
-| [menuContent](#menucontent) |  |
-| [menuActions](#menuactions) |  |
-| [header](#header) | `Header` |
-| [bottomBar](#bottombar) | `BottomBar` |
-| [tab](#tab) | `Tab` |
-| [action](#action) | `Action` |
-| [actionBar](#actionbar) | `ActionBar` |
-| [actionGroup](#actiongroup) | `ActionGroup` |
-| [lottie](#lottie) | `Lottie` |
-| [card](#card) | `Card` |
-| [cardHeader](#cardheader) | `CardHeader` |
-| [cardBody](#cardbody) | `CardBody` |
-| [cardFooter](#cardfooter) | `CardFooter` |
-| [cardTitle](#cardtitle) | `CardTitle` |
-| [cardDescription](#carddescription) | `CardDescription` |
-| [row](#row) | `Row` |
-| [groupedSection](#groupedsection) | `GroupedSection` |
-| [groupedSectionItem](#groupedsectionitem) | `GroupedSectionItem` |
-| [chip](#chip) | `Chip` |
-| [emptyState](#emptystate) | `EmptyState` |
-| [admonition](#admonition) | `Admonition` |
-| [tabs](#tabs) | `Tabs` |
-| [tabItem](#tabitem) | `TabItem` |
-| [kbd](#kbd) | `Kbd` |
-| [errorBoundary](#errorboundary) | `ErrorBoundary` |
-| [embed](#embed) | `Embed` |
-| [group](#group) | `Group` |
-| [view](#view) |  |
-| [appLayout](#applayout) | `AppLayout` |
-| [navStack](#navstack) | `Stack` |
-| [route](#route) | `Sheet` |
-| [tabView](#tabview) | `TabView` |
-| [textField](#textfield) | `TextField`, `SecureField` |
-| [textEditor](#texteditor) | `TextEditor` |
-| [field](#field) | `Field` |
-| [label](#label) | `Label` |
-| [toggle](#toggle) | `Toggle` |
-| [checkbox](#checkbox) | `Checkbox` |
-| [radioGroup](#radiogroup) | `RadioGroup` |
-| [segmented](#segmented) | `Segmented` |
-| [picker](#picker) | `Picker` |
-| [option](#option) | `Option` |
-| [search](#search) | `Search` |
-| [optionGroup](#optiongroup) | `OptionGroup` |
-| [chipRow](#chiprow) | `ChipRow` |
-| [cappedChipRow](#cappedchiprow) | `CappedChipRow` |
-| [groupedSectionIcon](#groupedsectionicon) | `GroupedSectionIcon` |
-| [groupedSectionDivider](#groupedsectiondivider) | `GroupedSectionDivider` |
-| [groupedSectionCollapse](#groupedsectioncollapse) | `GroupedSectionCollapse` |
-| [tabContent](#tabcontent) | `TabContent` |
-| [selectionCard](#selectioncard) | `SelectionCard` |
-| [scrollView](#scrollview) | `ScrollView` |
-| [bottomSheet](#bottomsheet) | `BottomSheet` |
-| [sidebar](#sidebar) | `Sidebar` |
-| [navItem](#navitem) | `NavItem` |
-| [treeSection](#treesection) | `TreeSection` |
-| [treeFolder](#treefolder) | `TreeFolder` |
-| [treeItem](#treeitem) | `TreeItem` |
-| [rail](#rail) | `Rail` |
-| [railItem](#railitem) | `RailItem` |
-| [command](#command) | `Command` |
-| [commandItem](#commanditem) | `CommandItem` |
-| [commandGroup](#commandgroup) | `CommandGroup` |
-| [settings](#settings) | `SettingsModal` |
-| [settingsGroup](#settingsgroup) | `SettingsGroup` |
-| [settingsItem](#settingsitem) | `SettingsItem` |
-| [panel](#panel) | `Panel` |
-| [destination](#destination) | `Destination` |
-| [toolbarView](#toolbarview) | `Toolbar` |
-| [stickySection](#stickysection) | `StickySection` |
-| [pageFooter](#pagefooter) | `PageFooter` |
-| [scrollArea](#scrollarea) | `ScrollArea` |
-| [scrollSurface](#scrollsurface) | `ScrollSurface` |
-| [autoHideBar](#autohidebar) | `AutoHideBar` |
-| [resizeHandle](#resizehandle) | `ResizeHandle` |
-| [sidebarMode](#sidebarmode) | `SidebarMode` |
-| [settingsSection](#settingssection) | `SettingsSection` |
-| [settingsValue](#settingsvalue) | `SettingsValue` |
-| [settingsSelect](#settingsselect) | `SettingsSelect` |
-| [settingsTextField](#settingstextfield) | `SettingsTextField` |
-| [settingsDateField](#settingsdatefield) | `SettingsDateField` |
-| [datePicker](#datepicker) | `DatePicker` |
-| [dateRangePicker](#daterangepicker) | `DateRangePicker` |
-| [calendar](#calendar) | `Calendar` |
-| [rangeCalendar](#rangecalendar) | `RangeCalendar` |
-| [timeField](#timefield) | `TimeField` |
-| [rating](#rating) | `Rating` |
-| [ratingInput](#ratinginput) | `RatingInput` |
-| [ratingBar](#ratingbar) | `RatingBar` |
-| [ratingSummary](#ratingsummary) | `RatingSummary` |
-| [meter](#meter) | `Meter`, `ProgressBar` |
-| [meterRing](#meterring) | `MeterRing`, `ProgressRing` |
-| [statBar](#statbar) | `StatBar`, `SplitBar` |
-| [table](#table) | `Table` |
-| [tableHeader](#tableheader) | `TableHeader` |
-| [tableColumn](#tablecolumn) | `TableColumn` |
-| [tableBody](#tablebody) | `TableBody` |
-| [tableRow](#tablerow) | `TableRow` |
-| [tableCell](#tablecell) | `TableCell` |
-| [listItem](#listitem) | `ListItem`, `PersonRow`, `CallRow`, `ConversationRow` |
-| [mailRow](#mailrow) | `MailRow` |
-| [list](#list) | `List`, `SectionedList` |
-| [virtualList](#virtuallist) | `VirtualList` |
-| [listSelectionBar](#listselectionbar) | `ListSelectionBar` |
-| [carousel](#carousel) | `Carousel` |
-| [carouselItem](#carouselitem) | `CarouselItem` |
-| [carouselDots](#carouseldots) | `CarouselDots` |
-| [markdown](#markdown) | `Markdown` |
-| [slider](#slider) | `Slider` |
-| [rangeSlider](#rangeslider) | `RangeSlider` |
-| [accordion](#accordion) | `Accordion` |
-| [accordionItem](#accordionitem) | `AccordionItem` |
-| [accordionTrigger](#accordiontrigger) | `AccordionTrigger` |
-| [accordionContent](#accordioncontent) | `AccordionContent` |
-| [code](#code) | `Code` |
-| [pre](#pre) | `Pre` |
-| [codeLines](#codelines) | `CodeLines` |
-| [codeBlock](#codeblock) | `CodeBlock` |
-| [stepper](#stepper) | `Stepper` |
-| [stepperRow](#stepperrow) | `StepperRow` |
-| [tooltip](#tooltip) | `Tooltip` |
-| [breadcrumb](#breadcrumb) | `Breadcrumb` |
-| [breadcrumbItem](#breadcrumbitem) | `BreadcrumbItem` |
-| [activityHeatmap](#activityheatmap) | `ActivityHeatmap` |
-| [tagField](#tagfield) | `TagField` |
-| [fileUpload](#fileupload) | `FileUpload` |
-| [video](#video) | `Video` |
-| [inputOtp](#inputotp) | `InputOtp` |
-| [colorSwatchPicker](#colorswatchpicker) | `ColorSwatchPicker` |
-| [animatedCheck](#animatedcheck) | `AnimatedCheck` |
-| [spinnerIcon](#spinnericon) | `SpinnerIcon` |
-| [contextMenu](#contextmenu) | `ContextMenu` |
-| [collapsible](#collapsible) | `Collapsible` |
-| [dropZone](#dropzone) | `DropZone` |
-| [mediaInsetBorder](#mediainsetborder) | `MediaInsetBorder` |
-| [factStrip](#factstrip) | `FactStrip` |
-| [fact](#fact) | `Fact` |
-| [sortablePhotoGrid](#sortablephotogrid) | `SortablePhotoGrid` |
-| [choiceList](#choicelist) | `ChoiceList` |
-| [videoPlayback](#videoplayback) | `VideoPlayback` |
-| [videoViewability](#videoviewability) | `VideoViewability` |
-| [videoViewabilityScope](#videoviewabilityscope) | `VideoViewabilityScope` |
-| [hoverCard](#hovercard) | `HoverCard` |
-| [expandableText](#expandabletext) | `ExpandableText` |
-| [categoryBar](#categorybar) | `CategoryBar` |
-| [menubar](#menubar) | `Menubar` |
-| [menubarMenu](#menubarmenu) | `MenubarMenu` |
-| [compositionBar](#compositionbar) | `CompositionBar` |
-| [phoneInput](#phoneinput) | `PhoneInput` |
-| [mediaFlightLayer](#mediaflightlayer) | `MediaFlightLayer` |
-| [mediaFlightHost](#mediaflighthost) | `MediaFlightHost` |
-| [mediaSurface](#mediasurface) | `MediaSurface` |
-| [mediaPoster](#mediaposter) | `MediaPoster` |
-| [emptyMediaSurface](#emptymediasurface) | `EmptyMediaSurface` |
-| [avatarAnchor](#avataranchor) | `AvatarAnchor` |
-| [avatarFlightLayer](#avatarflightlayer) | `AvatarFlightLayer` |
-| [inputGroup](#inputgroup) | `InputGroup` |
-| [inputGroupAddon](#inputgroupaddon) | `InputGroupAddon` |
-| [notification](#notification) | `Notification` |
-| [linkPreview](#linkpreview) | `LinkPreview` |
-| [socialButton](#socialbutton) | `SocialButton` |
-| [gallery](#gallery) | `Gallery` |
-| [meetingScheduler](#meetingscheduler) | `MeetingScheduler` |
-| [inlineMarkdown](#inlinemarkdown) | `InlineMarkdown` |
-| [dataTable](#datatable) | `DataTable` |
-| [dataColumn](#datacolumn) | `DataColumn` |
-| [dataTableFilter](#datatablefilter) | `DataTableFilter` |
-| [dataTableSearch](#datatablesearch) | `DataTableSearch` |
-| [dataTableSelect](#datatableselect) | `DataTableSelect` |
-| [sortableChipRow](#sortablechiprow) | `SortableChipRow` |
-| [sortableChip](#sortablechip) | `SortableChip` |
-| [viewport](#viewport) | `Viewport` |
-| [glassGroup](#glassgroup) | `GlassGroup` |
-| [viewThatFits](#viewthatfits) | `ViewThatFits` |
-| [toolbarGroup](#toolbargroup) | `ToolbarGroup` |
-| [toolbarSpacer](#toolbarspacer) | `ToolbarSpacer` |
-| [confirmationDialog](#confirmationdialog) | `ConfirmationDialog` |
-| [agentAvatar](#agentavatar) | `AgentAvatar` |
-| [chatComposer](#chatcomposer) | `ChatComposer` |
-| [compactComposer](#compactcomposer) | `CompactComposer` |
-| [composerBanner](#composerbanner) | `ComposerBanner` |
-| [composerIconButton](#composericonbutton) | `ComposerIconButton` |
-| [suggestionList](#suggestionlist) | `SuggestionList` |
-| [voiceRecorder](#voicerecorder) | `VoiceRecorder` |
-| [attachmentMenu](#attachmentmenu) | `AttachmentMenu` |
-| [emojiPicker](#emojipicker) | `EmojiPicker` |
-| [reactionPicker](#reactionpicker) | `ReactionPicker` |
-| [messageContextMenu](#messagecontextmenu) | `MessageContextMenu` |
-| [areaChartCard](#areachartcard) | `AreaChartCard` |
-| [barListCard](#barlistcard) | `BarListCard` |
-| [chartCardSurface](#chartcardsurface) | `ChartCardSurface` |
-| [chartHeadline](#chartheadline) | `ChartHeadline` |
-| [chartStatTiles](#chartstattiles) | `ChartStatTiles` |
-| [contributionsCard](#contributionscard) | `ContributionsCard` |
-| [heatmapChartCard](#heatmapchartcard) | `HeatmapChartCard` |
-| [lineChartCard](#linechartcard) | `LineChartCard` |
-| [radarChartCard](#radarchartcard) | `RadarChartCard` |
-| [sleepScoreCard](#sleepscorecard) | `SleepScoreCard` |
-| [sparkline](#sparkline) | `Sparkline` |
-| [stageBarsCard](#stagebarscard) | `StageBarsCard` |
-| [stepsCard](#stepscard) | `StepsCard` |
-| [tokensChartCard](#tokenschartcard) | `TokensChartCard` |
-| [composerPanel](#composerpanel) | `ComposerPanel` |
-| [composerPill](#composerpill) | `ComposerPill` |
-| [composerPanelStatusTab](#composerpanelstatustab) | `ComposerPanelStatusTab` |
-| [aiChatShell](#aichatshell) | `AiChatShell` |
-| [aiChatContainer](#aichatcontainer) | `AiChatContainer` |
-| [aiChatThread](#aichatthread) | `AiChatThread` |
-| [aiChatUserMessage](#aichatusermessage) | `AiChatUserMessage` |
-| [aiChatAssistantMessage](#aichatassistantmessage) | `AiChatAssistantMessage` |
-| [aiChatMessageLine](#aichatmessageline) | `AiChatMessageLine` |
-| [aiChatHeader](#aichatheader) | `AiChatHeader` |
-| [aiChatMobileHeader](#aichatmobileheader) | `AiChatMobileHeader` |
-| [aiChatCodePanel](#aichatcodepanel) | `AiChatCodePanel` |
-| [aiChatGalleryPanel](#aichatgallerypanel) | `AiChatGalleryPanel` |
-| [statCard](#statcard) | `StatCard` |
-| [statCards](#statcards) | `StatCards` |
-| [playButton](#playbutton) | `PlayButton` |
-| [playbackProgress](#playbackprogress) | `PlaybackProgress` |
-| [agentLimitsCard](#agentlimitscard) | `AgentLimitsCard` |
-| [usageCard](#usagecard) | `UsageCard` |
-| [agentThinking](#agentthinking) | `AgentThinking` |
-| [agentProgress](#agentprogress) | `AgentProgress` |
-| [agentProgressLoadingText](#agentprogressloadingtext) | `AgentProgressLoadingText` |
-| [agentLogRow](#agentlogrow) | `AgentLogRow` |
-| [agentLogShimmerText](#agentlogshimmertext) | `AgentLogShimmerText` |
-| [agentLogToolCall](#agentlogtoolcall) | `AgentLogToolCall` |
-| [agentLogToolCalls](#agentlogtoolcalls) | `AgentLogToolCalls` |
-| [agentLogWorkingRow](#agentlogworkingrow) | `AgentLogWorkingRow` |
-| [composerLoader](#composerloader) | `ComposerLoader` |
-| [conversationSidebar](#conversationsidebar) | `ConversationSidebar` |
-| [questionnaire](#questionnaire) | `Questionnaire` |
-| [chatBackground](#chatbackground) | `ChatBackground` |
-| [chatDateHeader](#chatdateheader) | `ChatDateHeader` |
-| [chatEmptyState](#chatemptystate) | `ChatEmptyState` |
-| [chatHeader](#chatheader) | `ChatHeader` |
-| [chatInfoPanel](#chatinfopanel) | `ChatInfoPanel` |
-| [pinnedMessageBar](#pinnedmessagebar) | `PinnedMessageBar` |
-| [scrollToBottomButton](#scrolltobottombutton) | `ScrollToBottomButton` |
-| [chatFolderTabs](#chatfoldertabs) | `ChatFolderTabs` |
-| [chatSearchField](#chatsearchfield) | `ChatSearchField` |
-| [chatSearchResults](#chatsearchresults) | `ChatSearchResults` |
-| [storiesRow](#storiesrow) | `StoriesRow` |
-| [storyRing](#storyring) | `StoryRing` |
-| [typingDots](#typingdots) | `TypingDots` |
-| [contactMessage](#contactmessage) | `ContactMessage` |
-| [documentGrid](#documentgrid) | `DocumentGrid` |
-| [fileMessage](#filemessage) | `FileMessage` |
-| [gifMessage](#gifmessage) | `GifMessage` |
-| [imageMessage](#imagemessage) | `ImageMessage` |
-| [locationMessage](#locationmessage) | `LocationMessage` |
-| [pollMessage](#pollmessage) | `PollMessage` |
-| [sharedMediaGrid](#sharedmediagrid) | `SharedMediaGrid` |
-| [stickerMessage](#stickermessage) | `StickerMessage` |
-| [videoMessage](#videomessage) | `VideoMessage` |
-| [voiceMessage](#voicemessage) | `VoiceMessage` |
-| [amenityList](#amenitylist) | `AmenityList` |
-| [hostCard](#hostcard) | `HostCard` |
-| [listingHeader](#listingheader) | `ListingHeader` |
-| [listingHeaderAction](#listingheaderaction) | `ListingHeaderAction` |
-| [listingPhotoGrid](#listingphotogrid) | `ListingPhotoGrid` |
-| [reviewCard](#reviewcard) | `ReviewCard` |
-| [mapClusterMarker](#mapclustermarker) | `MapClusterMarker` |
-| [mapPriceMarker](#mappricemarker) | `MapPriceMarker` |
-| [mapSearchAreaButton](#mapsearchareabutton) | `MapSearchAreaButton` |
-| [followButton](#followbutton) | `FollowButton` |
-| [shelf](#shelf) | `Shelf` |
-| [shelfSkeleton](#shelfskeleton) | `ShelfSkeleton` |
-| [subscriptionPlans](#subscriptionplans) | `SubscriptionPlans` |
-| [subscriptionPrice](#subscriptionprice) | `SubscriptionPrice` |
-| [userHoverCard](#userhovercard) | `UserHoverCard` |
-| [cardForm](#cardform) | `CardForm` |
-| [cardFormCountry](#cardformcountry) | `CardFormCountry` |
-| [cardFormPostcode](#cardformpostcode) | `CardFormPostcode` |
-| [cardFormHostedField](#cardformhostedfield) | `CardFormHostedField` |
-| [checkoutSheet](#checkoutsheet) | `CheckoutSheet` |
-| [filterSection](#filtersection) | `FilterSection` |
-| [priceRangeFilter](#pricerangefilter) | `PriceRangeFilter` |
-| [countFilter](#countfilter) | `CountFilter` |
-| [toggleChipGroup](#togglechipgroup) | `ToggleChipGroup` |
-| [amenityFilter](#amenityfilter) | `AmenityFilter` |
-| [switchFilterRow](#switchfilterrow) | `SwitchFilterRow` |
-| [filterFooter](#filterfooter) | `FilterFooter` |
-| [filterTriggerButton](#filtertriggerbutton) | `FilterTriggerButton` |
-| [areaRangeFilter](#arearangefilter) | `AreaRangeFilter` |
-| [availabilityFilter](#availabilityfilter) | `AvailabilityFilter` |
-| [featureFilter](#featurefilter) | `FeatureFilter` |
-| [floorFilter](#floorfilter) | `FloorFilter` |
-| [staySearchCompact](#staysearchcompact) | `StaySearchCompact` |
-| [staySearchPanel](#staysearchpanel) | `StaySearchPanel` |
-| [staySearchStep](#staysearchstep) | `StaySearchStep` |
-| [destinationSuggestions](#destinationsuggestions) | `DestinationSuggestions` |
-| [guestPicker](#guestpicker) | `GuestPicker` |
-| [tenancyTimeline](#tenancytimeline) | `TenancyTimeline` |
-| [leaseSummaryCard](#leasesummarycard) | `LeaseSummaryCard` |
-| [rentPaymentList](#rentpaymentlist) | `RentPaymentList` |
-| [maintenanceRequestCard](#maintenancerequestcard) | `MaintenanceRequestCard` |
-| [documentList](#documentlist) | `DocumentList` |
-| [evictionReportCard](#evictionreportcard) | `EvictionReportCard` |
-| [evictionTimeline](#evictiontimeline) | `EvictionTimeline` |
-| [placeReviewSummary](#placereviewsummary) | `PlaceReviewSummary` |
-| [writeReviewPrompt](#writereviewprompt) | `WriteReviewPrompt` |
-| [callScreen](#callscreen) | `CallScreen` |
-| [callMinimisedPill](#callminimisedpill) | `CallMinimisedPill` |
-| [groupCallGrid](#groupcallgrid) | `GroupCallGrid` |
-| [incomingCallScreen](#incomingcallscreen) | `IncomingCallScreen` |
-| [incomingCallBanner](#incomingcallbanner) | `IncomingCallBanner` |
-| [storyViewer](#storyviewer) | `StoryViewer` |
-| [selectedChipsRow](#selectedchipsrow) | `SelectedChipsRow` |
-| [newGroupForm](#newgroupform) | `NewGroupForm` |
-| [messageBubble](#messagebubble) | `MessageBubble` |
-| [typingBubble](#typingbubble) | `TypingBubble` |
-| [messageList](#messagelist) | `MessageList` |
-| [mapScaleBar](#mapscalebar) | `MapScaleBar` |
-| [mapControls](#mapcontrols) | `MapControls` |
-| [locationPuck](#locationpuck) | `LocationPuck` |
-| [navigationBanner](#navigationbanner) | `NavigationBanner` |
-| [placeCard](#placecard) | `PlaceCard` |
-| [placeHours](#placehours) | `PlaceHours` |
-| [placeInfoList](#placeinfolist) | `PlaceInfoList` |
-| [placeTransit](#placetransit) | `PlaceTransit` |
-| [placeListCard](#placelistcard) | `PlaceListCard` |
-| [placeList](#placelist) | `PlaceList` |
-| [directionsSteps](#directionssteps) | `DirectionsSteps` |
-| [placePicker](#placepicker) | `PlacePicker` |
-| [mailComposeSurface](#mailcomposesurface) | `MailComposeSurface` |
-| [mailRecipientField](#mailrecipientfield) | `MailRecipientField` |
-| [mailMessage](#mailmessage) | `MailMessage` |
-| [mailThread](#mailthread) | `MailThread` |
-| [mailQuoteToggle](#mailquotetoggle) | `MailQuoteToggle` |
-| [noteEditorToolbar](#noteeditortoolbar) | `NoteEditorToolbar` |
-| [tripCard](#tripcard) | `TripCard` |
-| [bookingCard](#bookingcard) | `BookingCard` |
-| [bookingBar](#bookingbar) | `BookingBar` |
-| [priceBreakdown](#pricebreakdown) | `PriceBreakdown` |
-| [homeSearchBar](#homesearchbar) | `HomeSearchBar` |
-| [searchModeTabs](#searchmodetabs) | `SearchModeTabs` |
-| [propertyTypePicker](#propertytypepicker) | `PropertyTypePicker` |
-| [savedSearchCard](#savedsearchcard) | `SavedSearchCard` |
-| [listingActionBar](#listingactionbar) | `ListingActionBar` |
-| [mortgageCalculator](#mortgagecalculator) | `MortgageCalculator` |
-| [rentalActionCard](#rentalactioncard) | `RentalActionCard` |
-| [saleActionCard](#saleactioncard) | `SaleActionCard` |
-| [listingCard](#listingcard) | `ListingCard` |
-| [listingCardGrid](#listingcardgrid) | `ListingCardGrid` |
-| [wishlistCard](#wishlistcard) | `WishlistCard` |
-| [listingPreviewPane](#listingpreviewpane) | `ListingPreviewPane` |
-| [listingQualityMeter](#listingqualitymeter) | `ListingQualityMeter` |
-| [propertyTypeSelector](#propertytypeselector) | `PropertyTypeSelector` |
-| [offeringBadge](#offeringbadge) | `OfferingBadge` |
-| [priceEstimate](#priceestimate) | `PriceEstimate` |
-| [pricePerAreaComparison](#priceperareacomparison) | `PricePerAreaComparison` |
-| [projectBoard](#projectboard) | `ProjectBoard`, `GroupedProjectBoard`, `ProjectBoardTemplate` |
-| [projectBoardCardContent](#projectboardcardcontent) | `ProjectBoardCardContent` |
-| [boardDragHandle](#boarddraghandle) | `BoardDragHandle` |
-| [activityFeed](#activityfeed) | `ActivityFeed` |
-| [orderStatusBar](#orderstatusbar) | `OrderStatusBar` |
-| [orderStatusTimeline](#orderstatustimeline) | `OrderStatusTimeline` |
-| [lockup](#lockup) | `Lockup` |
-| [lockupSkeleton](#lockupskeleton) | `LockupSkeleton` |
-| [ambientPhoto](#ambientphoto) | `AmbientPhoto` |
-| [calendarView](#calendarview) | `CalendarView` |
-| [calendarViewHeader](#calendarviewheader) | `CalendarViewHeader` |
-| [calendarViewMonthGrid](#calendarviewmonthgrid) | `CalendarViewMonthGrid` |
-| [taskList](#tasklist) | `TaskList` |
-| [webSearch](#websearch) | `WebSearch` |
-| [voiceControls](#voicecontrols) | `VoiceControls` |
-| [agentCreator](#agentcreator) | `AgentCreator` |
-| [agentCreatorField](#agentcreatorfield) | `AgentCreatorField` |
-| [agentCreatorSection](#agentcreatorsection) | `AgentCreatorSection` |
-| [agentProfile](#agentprofile) | `AgentProfile` |
-| [agentReplyIdentity](#agentreplyidentity) | `AgentReplyIdentity` |
-| [aiProfileCard](#aiprofilecard) | `AiProfileCard` |
-| [selectedAgentPreview](#selectedagentpreview) | `SelectedAgentPreview` |
-| [multiAgentChat](#multiagentchat) | `MultiAgentChat` |
-| [agentChatHistory](#agentchathistory) | `AgentChatHistory` |
-| [agentChat](#agentchat) | `AgentChat` |
-| [routeStops](#routestops) | `RouteStops` |
-| [connectionDots](#connectiondots) | `ConnectionDots` |
-| [outlineNav](#outlinenav) | `OutlineNav` |
-| [pagination](#pagination) | `Pagination` |
-| [progressiveBlur](#progressiveblur) | `ProgressiveBlur` |
-| [addressRow](#addressrow) | `AddressRow` |
-| [addressList](#addresslist) | `AddressList` |
-| [paymentMethodMark](#paymentmethodmark) | `PaymentMethodMark` |
-| [paymentMethodRow](#paymentmethodrow) | `PaymentMethodRow` |
-| [paymentMethodList](#paymentmethodlist) | `PaymentMethodList` |
-| [priceSummary](#pricesummary) | `PriceSummary` |
-| [priceSummaryLine](#pricesummaryline) | `PriceSummaryLine` |
-| [paymentStatusBar](#paymentstatusbar) | `PaymentStatusBar` |
-| [paymentStatusBlock](#paymentstatusblock) | `PaymentStatusBlock` |
-| [importantAlertsCard](#importantalertscard) | `ImportantAlertsCard` |
-| [patientInfoCard](#patientinfocard) | `PatientInfoCard` |
-| [cartLine](#cartline) | `CartLine` |
-| [cartPanel](#cartpanel) | `CartPanel` |
-| [cartPromoField](#cartpromofield) | `CartPromoField` |
-| [cartTipPicker](#carttippicker) | `CartTipPicker` |
-| [menuItemRow](#menuitemrow) | `MenuItemRow` |
-| [menuItemOptions](#menuitemoptions) | `MenuItemOptions` |
-| [rowActions](#rowactions) | `RowActions` |
-| [rowActionButton](#rowactionbutton) | `RowActionButton` |
-| [swipeRow](#swiperow) | `SwipeRow` |
-| [themeToggle](#themetoggle) | `ThemeToggle` |
+| Node | Constructors | Imported from |
+| --- | --- | --- |
+| [stack](#stack) | `HStack`, `VStack` | `@oxy.so/bloom-language` |
+| [zstack](#zstack) | `ZStack` | `@oxy.so/bloom-language` |
+| [spacer](#spacer) | `Spacer` | `@oxy.so/bloom-language` |
+| [text](#text) | `Text`, `RawText` | `@oxy.so/bloom-language` |
+| [icon](#icon) | `Icon` | `@oxy.so/bloom-language` |
+| [avatar](#avatar) | `Avatar` | `@oxy.so/bloom-language` |
+| [avatarGroup](#avatargroup) | `AvatarGroup` | `@oxy.so/bloom-language` |
+| [badge](#badge) | `Badge` | `@oxy.so/bloom-language` |
+| [iconCircle](#iconcircle) | `IconCircle` | `@oxy.so/bloom-language` |
+| [loading](#loading) | `Loading` | `@oxy.so/bloom-language` |
+| [skeleton](#skeleton) | `Skeleton` | `@oxy.so/bloom-language` |
+| [skeletonGroup](#skeletongroup) | `SkeletonGroup` | `@oxy.so/bloom-language` |
+| [image](#image) | `Image` | `@oxy.so/bloom-language` |
+| [fill](#fill) | `Fill` | `@oxy.so/bloom-language` |
+| [ratio](#ratio) | `AspectRatio` | `@oxy.so/bloom-language` |
+| [grid](#grid) | `Grid` | `@oxy.so/bloom-language` |
+| [button](#button) | `Button` | `@oxy.so/bloom-language` |
+| [shape](#shape) | `Shape` | `@oxy.so/bloom-language` |
+| [buttonGroup](#buttongroup) | `ButtonGroup` | `@oxy.so/bloom-language` |
+| [fab](#fab) | `FAB` | `@oxy.so/bloom-language` |
+| [menu](#menu) | `Menu` | `@oxy.so/bloom-language` |
+| [menuItem](#menuitem) | `Item` | `@oxy.so/bloom-language` |
+| [menuSubmenu](#menusubmenu) | `Submenu` | `@oxy.so/bloom-language` |
+| [menuSection](#menusection) | `Section` | `@oxy.so/bloom-language` |
+| [divider](#divider) | `Divider` | `@oxy.so/bloom-language` |
+| [alert](#alert) | `Alert` | `@oxy.so/bloom-language/overlays` |
+| [dialog](#dialog) | `Dialog` | `@oxy.so/bloom-language/overlays` |
+| [popover](#popover) | `Popover` | `@oxy.so/bloom-language/overlays` |
+| [connectionStatus](#connectionstatus) | `ConnectionStatus` | `@oxy.so/bloom-language/overlays` |
+| [menuContent](#menucontent) |  |  |
+| [menuActions](#menuactions) |  |  |
+| [header](#header) | `Header` | `@oxy.so/bloom-language` |
+| [bottomBar](#bottombar) | `BottomBar` | `@oxy.so/bloom-language` |
+| [tab](#tab) | `Tab` | `@oxy.so/bloom-language` |
+| [action](#action) | `Action` | `@oxy.so/bloom-language` |
+| [actionBar](#actionbar) | `ActionBar` | `@oxy.so/bloom-language` |
+| [actionGroup](#actiongroup) | `ActionGroup` | `@oxy.so/bloom-language` |
+| [lottie](#lottie) | `Lottie` | `@oxy.so/bloom-language` |
+| [card](#card) | `Card` | `@oxy.so/bloom-language/containers` |
+| [cardHeader](#cardheader) | `CardHeader` | `@oxy.so/bloom-language/containers` |
+| [cardBody](#cardbody) | `CardBody` | `@oxy.so/bloom-language/containers` |
+| [cardFooter](#cardfooter) | `CardFooter` | `@oxy.so/bloom-language/containers` |
+| [cardTitle](#cardtitle) | `CardTitle` | `@oxy.so/bloom-language/containers` |
+| [cardDescription](#carddescription) | `CardDescription` | `@oxy.so/bloom-language/containers` |
+| [row](#row) | `Row` | `@oxy.so/bloom-language/containers` |
+| [groupedSection](#groupedsection) | `GroupedSection` | `@oxy.so/bloom-language/containers` |
+| [groupedSectionItem](#groupedsectionitem) | `GroupedSectionItem` | `@oxy.so/bloom-language/containers` |
+| [chip](#chip) | `Chip` | `@oxy.so/bloom-language/containers` |
+| [emptyState](#emptystate) | `EmptyState` | `@oxy.so/bloom-language/containers` |
+| [admonition](#admonition) | `Admonition` | `@oxy.so/bloom-language/containers` |
+| [tabs](#tabs) | `Tabs` | `@oxy.so/bloom-language/containers` |
+| [tabItem](#tabitem) | `TabItem` | `@oxy.so/bloom-language/containers` |
+| [kbd](#kbd) | `Kbd` | `@oxy.so/bloom-language/containers` |
+| [errorBoundary](#errorboundary) | `ErrorBoundary` | `@oxy.so/bloom-language/containers` |
+| [embed](#embed) | `Embed` | `@oxy.so/bloom-language` |
+| [group](#group) | `Group` | `@oxy.so/bloom-language` |
+| [view](#view) |  |  |
+| [appLayout](#applayout) | `AppLayout` | `@oxy.so/bloom-language/router` |
+| [navStack](#navstack) | `Stack` | `@oxy.so/bloom-language/router` |
+| [route](#route) | `Sheet` | `@oxy.so/bloom-language/router` |
+| [tabView](#tabview) | `TabView` | `@oxy.so/bloom-language/router` |
+| [textField](#textfield) | `TextField`, `SecureField` | `@oxy.so/bloom-language/inputs` |
+| [textEditor](#texteditor) | `TextEditor` | `@oxy.so/bloom-language/inputs` |
+| [field](#field) | `Field` | `@oxy.so/bloom-language/inputs` |
+| [label](#label) | `Label` | `@oxy.so/bloom-language/inputs` |
+| [toggle](#toggle) | `Toggle` | `@oxy.so/bloom-language/inputs` |
+| [checkbox](#checkbox) | `Checkbox` | `@oxy.so/bloom-language/inputs` |
+| [radioGroup](#radiogroup) | `RadioGroup` | `@oxy.so/bloom-language/inputs` |
+| [segmented](#segmented) | `Segmented` | `@oxy.so/bloom-language/inputs` |
+| [picker](#picker) | `Picker` | `@oxy.so/bloom-language/inputs` |
+| [option](#option) | `Option` | `@oxy.so/bloom-language/inputs` |
+| [search](#search) | `Search` | `@oxy.so/bloom-language/inputs` |
+| [optionGroup](#optiongroup) | `OptionGroup` | `@oxy.so/bloom-language/inputs` |
+| [chipRow](#chiprow) | `ChipRow` | `@oxy.so/bloom-language/containers` |
+| [cappedChipRow](#cappedchiprow) | `CappedChipRow` | `@oxy.so/bloom-language/containers` |
+| [groupedSectionIcon](#groupedsectionicon) | `GroupedSectionIcon` | `@oxy.so/bloom-language/containers` |
+| [groupedSectionDivider](#groupedsectiondivider) | `GroupedSectionDivider` | `@oxy.so/bloom-language/containers` |
+| [groupedSectionCollapse](#groupedsectioncollapse) | `GroupedSectionCollapse` | `@oxy.so/bloom-language/containers` |
+| [tabContent](#tabcontent) | `TabContent` | `@oxy.so/bloom-language/containers` |
+| [selectionCard](#selectioncard) | `SelectionCard` | `@oxy.so/bloom-language/containers` |
+| [scrollView](#scrollview) | `ScrollView` | `@oxy.so/bloom-language` |
+| [bottomSheet](#bottomsheet) | `BottomSheet` | `@oxy.so/bloom-language` |
+| [sidebar](#sidebar) | `Sidebar` | `@oxy.so/bloom-language` |
+| [navItem](#navitem) | `NavItem` | `@oxy.so/bloom-language` |
+| [treeSection](#treesection) | `TreeSection` | `@oxy.so/bloom-language` |
+| [treeFolder](#treefolder) | `TreeFolder` | `@oxy.so/bloom-language` |
+| [treeItem](#treeitem) | `TreeItem` | `@oxy.so/bloom-language` |
+| [rail](#rail) | `Rail` | `@oxy.so/bloom-language` |
+| [railItem](#railitem) | `RailItem` | `@oxy.so/bloom-language` |
+| [command](#command) | `Command` | `@oxy.so/bloom-language` |
+| [commandItem](#commanditem) | `CommandItem` | `@oxy.so/bloom-language` |
+| [commandGroup](#commandgroup) | `CommandGroup` | `@oxy.so/bloom-language` |
+| [settings](#settings) | `SettingsModal` | `@oxy.so/bloom-language` |
+| [settingsGroup](#settingsgroup) | `SettingsGroup` | `@oxy.so/bloom-language` |
+| [settingsItem](#settingsitem) | `SettingsItem` | `@oxy.so/bloom-language` |
+| [panel](#panel) | `Panel` | `@oxy.so/bloom-language/router` |
+| [destination](#destination) | `Destination` | `@oxy.so/bloom-language/router` |
+| [toolbarView](#toolbarview) | `Toolbar` | `@oxy.so/bloom-language` |
+| [stickySection](#stickysection) | `StickySection` | `@oxy.so/bloom-language` |
+| [pageFooter](#pagefooter) | `PageFooter` | `@oxy.so/bloom-language` |
+| [scrollArea](#scrollarea) | `ScrollArea` | `@oxy.so/bloom-language` |
+| [scrollSurface](#scrollsurface) | `ScrollSurface` | `@oxy.so/bloom-language` |
+| [autoHideBar](#autohidebar) | `AutoHideBar` | `@oxy.so/bloom-language` |
+| [resizeHandle](#resizehandle) | `ResizeHandle` | `@oxy.so/bloom-language` |
+| [sidebarMode](#sidebarmode) | `SidebarMode` | `@oxy.so/bloom-language` |
+| [settingsSection](#settingssection) | `SettingsSection` | `@oxy.so/bloom-language/settings` |
+| [settingsValue](#settingsvalue) | `SettingsValue` | `@oxy.so/bloom-language/settings` |
+| [settingsSelect](#settingsselect) | `SettingsSelect` | `@oxy.so/bloom-language/settings` |
+| [settingsTextField](#settingstextfield) | `SettingsTextField` | `@oxy.so/bloom-language/settings` |
+| [settingsDateField](#settingsdatefield) | `SettingsDateField` | `@oxy.so/bloom-language/settings` |
+| [datePicker](#datepicker) | `DatePicker` | `@oxy.so/bloom-language/date-picker` |
+| [dateRangePicker](#daterangepicker) | `DateRangePicker` | `@oxy.so/bloom-language/date-picker` |
+| [calendar](#calendar) | `Calendar` | `@oxy.so/bloom-language/date-picker` |
+| [rangeCalendar](#rangecalendar) | `RangeCalendar` | `@oxy.so/bloom-language/date-picker` |
+| [timeField](#timefield) | `TimeField` | `@oxy.so/bloom-language/date-picker` |
+| [rating](#rating) | `Rating` | `@oxy.so/bloom-language/rating` |
+| [ratingInput](#ratinginput) | `RatingInput` | `@oxy.so/bloom-language/rating` |
+| [ratingBar](#ratingbar) | `RatingBar` | `@oxy.so/bloom-language/rating` |
+| [ratingSummary](#ratingsummary) | `RatingSummary` | `@oxy.so/bloom-language/rating` |
+| [meter](#meter) | `Meter`, `ProgressBar` | `@oxy.so/bloom-language/stat-bar` |
+| [meterRing](#meterring) | `MeterRing`, `ProgressRing` | `@oxy.so/bloom-language/stat-bar` |
+| [statBar](#statbar) | `StatBar`, `SplitBar` | `@oxy.so/bloom-language/stat-bar` |
+| [table](#table) | `Table` | `@oxy.so/bloom-language/table` |
+| [tableHeader](#tableheader) | `TableHeader` | `@oxy.so/bloom-language/table` |
+| [tableColumn](#tablecolumn) | `TableColumn` | `@oxy.so/bloom-language/table` |
+| [tableBody](#tablebody) | `TableBody` | `@oxy.so/bloom-language/table` |
+| [tableRow](#tablerow) | `TableRow` | `@oxy.so/bloom-language/table` |
+| [tableCell](#tablecell) | `TableCell` | `@oxy.so/bloom-language/table` |
+| [listItem](#listitem) | `ListItem`, `PersonRow`, `CallRow`, `ConversationRow` | `@oxy.so/bloom-language/list` |
+| [mailRow](#mailrow) | `MailRow` | `@oxy.so/bloom-language/list` |
+| [list](#list) | `List`, `SectionedList` | `@oxy.so/bloom-language/list` |
+| [virtualList](#virtuallist) | `VirtualList` | `@oxy.so/bloom-language/list` |
+| [listSelectionBar](#listselectionbar) | `ListSelectionBar` | `@oxy.so/bloom-language/list` |
+| [carousel](#carousel) | `Carousel` | `@oxy.so/bloom-language/carousel` |
+| [carouselItem](#carouselitem) | `CarouselItem` | `@oxy.so/bloom-language/carousel` |
+| [carouselDots](#carouseldots) | `CarouselDots` | `@oxy.so/bloom-language/carousel` |
+| [markdown](#markdown) | `Markdown` | `@oxy.so/bloom-language/markdown` |
+| [slider](#slider) | `Slider` | `@oxy.so/bloom-language/slider` |
+| [rangeSlider](#rangeslider) | `RangeSlider` | `@oxy.so/bloom-language/slider` |
+| [accordion](#accordion) | `Accordion` | `@oxy.so/bloom-language/accordion` |
+| [accordionItem](#accordionitem) | `AccordionItem` | `@oxy.so/bloom-language/accordion` |
+| [accordionTrigger](#accordiontrigger) | `AccordionTrigger` | `@oxy.so/bloom-language/accordion` |
+| [accordionContent](#accordioncontent) | `AccordionContent` | `@oxy.so/bloom-language/accordion` |
+| [code](#code) | `Code` | `@oxy.so/bloom-language/code` |
+| [pre](#pre) | `Pre` | `@oxy.so/bloom-language/code` |
+| [codeLines](#codelines) | `CodeLines` | `@oxy.so/bloom-language/code` |
+| [codeBlock](#codeblock) | `CodeBlock` | `@oxy.so/bloom-language/code` |
+| [stepper](#stepper) | `Stepper` | `@oxy.so/bloom-language/stepper` |
+| [stepperRow](#stepperrow) | `StepperRow` | `@oxy.so/bloom-language/stepper` |
+| [tooltip](#tooltip) | `Tooltip` | `@oxy.so/bloom-language/tooltip` |
+| [breadcrumb](#breadcrumb) | `Breadcrumb` | `@oxy.so/bloom-language/breadcrumb` |
+| [breadcrumbItem](#breadcrumbitem) | `BreadcrumbItem` | `@oxy.so/bloom-language/breadcrumb` |
+| [activityHeatmap](#activityheatmap) | `ActivityHeatmap` | `@oxy.so/bloom-language/activity-heatmap` |
+| [tagField](#tagfield) | `TagField` | `@oxy.so/bloom-language/tag-field` |
+| [fileUpload](#fileupload) | `FileUpload` | `@oxy.so/bloom-language/file-upload` |
+| [video](#video) | `Video` | `@oxy.so/bloom-language/video-view` |
+| [inputOtp](#inputotp) | `InputOtp` | `@oxy.so/bloom-language/input-otp` |
+| [colorSwatchPicker](#colorswatchpicker) | `ColorSwatchPicker` | `@oxy.so/bloom-language/color-swatch-picker` |
+| [animatedCheck](#animatedcheck) | `AnimatedCheck` | `@oxy.so/bloom-language/animated-check` |
+| [spinnerIcon](#spinnericon) | `SpinnerIcon` | `@oxy.so/bloom-language/spinner-icon` |
+| [contextMenu](#contextmenu) | `ContextMenu` | `@oxy.so/bloom-language/context-menu` |
+| [collapsible](#collapsible) | `Collapsible` | `@oxy.so/bloom-language/collapsible` |
+| [dropZone](#dropzone) | `DropZone` | `@oxy.so/bloom-language/drop-zone` |
+| [mediaInsetBorder](#mediainsetborder) | `MediaInsetBorder` | `@oxy.so/bloom-language/media-inset-border` |
+| [factStrip](#factstrip) | `FactStrip` | `@oxy.so/bloom-language/fact-strip` |
+| [fact](#fact) | `Fact` | `@oxy.so/bloom-language/fact-strip` |
+| [sortablePhotoGrid](#sortablephotogrid) | `SortablePhotoGrid` | `@oxy.so/bloom-language/sortable-media` |
+| [choiceList](#choicelist) | `ChoiceList` | `@oxy.so/bloom-language/choice-list` |
+| [videoPlayback](#videoplayback) | `VideoPlayback` | `@oxy.so/bloom-language/video-playback` |
+| [videoViewability](#videoviewability) | `VideoViewability` | `@oxy.so/bloom-language/video-playback` |
+| [videoViewabilityScope](#videoviewabilityscope) | `VideoViewabilityScope` | `@oxy.so/bloom-language/video-playback` |
+| [hoverCard](#hovercard) | `HoverCard` | `@oxy.so/bloom-language/hover-card` |
+| [expandableText](#expandabletext) | `ExpandableText` | `@oxy.so/bloom-language/expandable-text` |
+| [categoryBar](#categorybar) | `CategoryBar` | `@oxy.so/bloom-language/category-bar` |
+| [menubar](#menubar) | `Menubar` | `@oxy.so/bloom-language/menubar` |
+| [menubarMenu](#menubarmenu) | `MenubarMenu` | `@oxy.so/bloom-language/menubar` |
+| [compositionBar](#compositionbar) | `CompositionBar` | `@oxy.so/bloom-language/composition-bar` |
+| [phoneInput](#phoneinput) | `PhoneInput` | `@oxy.so/bloom-language/phone-input` |
+| [mediaFlightLayer](#mediaflightlayer) | `MediaFlightLayer` | `@oxy.so/bloom-language/media-flight` |
+| [mediaFlightHost](#mediaflighthost) | `MediaFlightHost` | `@oxy.so/bloom-language/media-flight` |
+| [mediaSurface](#mediasurface) | `MediaSurface` | `@oxy.so/bloom-language/media-flight` |
+| [mediaPoster](#mediaposter) | `MediaPoster` | `@oxy.so/bloom-language/media-flight` |
+| [emptyMediaSurface](#emptymediasurface) | `EmptyMediaSurface` | `@oxy.so/bloom-language/media-flight` |
+| [avatarAnchor](#avataranchor) | `AvatarAnchor` | `@oxy.so/bloom-language/avatar-flight` |
+| [avatarFlightLayer](#avatarflightlayer) | `AvatarFlightLayer` | `@oxy.so/bloom-language/avatar-flight` |
+| [inputGroup](#inputgroup) | `InputGroup` | `@oxy.so/bloom-language/input-group` |
+| [inputGroupAddon](#inputgroupaddon) | `InputGroupAddon` | `@oxy.so/bloom-language/input-group` |
+| [notification](#notification) | `Notification` | `@oxy.so/bloom-language/notification` |
+| [linkPreview](#linkpreview) | `LinkPreview` | `@oxy.so/bloom-language/link-preview` |
+| [socialButton](#socialbutton) | `SocialButton` | `@oxy.so/bloom-language/social-button` |
+| [gallery](#gallery) | `Gallery` | `@oxy.so/bloom-language/zoomable-media-gallery` |
+| [meetingScheduler](#meetingscheduler) | `MeetingScheduler` | `@oxy.so/bloom-language/date-picker` |
+| [inlineMarkdown](#inlinemarkdown) | `InlineMarkdown` | `@oxy.so/bloom-language/markdown` |
+| [dataTable](#datatable) | `DataTable` | `@oxy.so/bloom-language/data-table` |
+| [dataColumn](#datacolumn) | `DataColumn` | `@oxy.so/bloom-language/data-table` |
+| [dataTableFilter](#datatablefilter) | `DataTableFilter` | `@oxy.so/bloom-language/data-table` |
+| [dataTableSearch](#datatablesearch) | `DataTableSearch` | `@oxy.so/bloom-language/data-table` |
+| [dataTableSelect](#datatableselect) | `DataTableSelect` | `@oxy.so/bloom-language/data-table` |
+| [sortableChipRow](#sortablechiprow) | `SortableChipRow` | `@oxy.so/bloom-language/sortable-chip-row` |
+| [sortableChip](#sortablechip) | `SortableChip` | `@oxy.so/bloom-language/sortable-chip-row` |
+| [viewport](#viewport) | `Viewport` | `@oxy.so/bloom-language/viewport` |
+| [glassGroup](#glassgroup) | `GlassGroup` | `@oxy.so/bloom-language/glass-group` |
+| [viewThatFits](#viewthatfits) | `ViewThatFits` | `@oxy.so/bloom-language/view-that-fits` |
+| [toolbarGroup](#toolbargroup) | `ToolbarGroup` | `@oxy.so/bloom-language/toolbar-group` |
+| [toolbarSpacer](#toolbarspacer) | `ToolbarSpacer` | `@oxy.so/bloom-language/toolbar-group` |
+| [confirmationDialog](#confirmationdialog) | `ConfirmationDialog` | `@oxy.so/bloom-language/confirmation-dialog` |
+| [agentAvatar](#agentavatar) | `AgentAvatar` | `@oxy.so/bloom-language/agent-avatar` |
+| [chatComposer](#chatcomposer) | `ChatComposer` | `@oxy.so/bloom-language/chat-composer` |
+| [compactComposer](#compactcomposer) | `CompactComposer` | `@oxy.so/bloom-language/chat-composer` |
+| [composerBanner](#composerbanner) | `ComposerBanner` | `@oxy.so/bloom-language/chat-composer` |
+| [composerIconButton](#composericonbutton) | `ComposerIconButton` | `@oxy.so/bloom-language/chat-composer` |
+| [suggestionList](#suggestionlist) | `SuggestionList` | `@oxy.so/bloom-language/chat-composer` |
+| [voiceRecorder](#voicerecorder) | `VoiceRecorder` | `@oxy.so/bloom-language/chat-composer` |
+| [attachmentMenu](#attachmentmenu) | `AttachmentMenu` | `@oxy.so/bloom-language/chat-composer` |
+| [emojiPicker](#emojipicker) | `EmojiPicker` | `@oxy.so/bloom-language/chat-composer` |
+| [reactionPicker](#reactionpicker) | `ReactionPicker` | `@oxy.so/bloom-language/chat-composer` |
+| [messageContextMenu](#messagecontextmenu) | `MessageContextMenu` | `@oxy.so/bloom-language/chat-composer` |
+| [areaChartCard](#areachartcard) | `AreaChartCard` | `@oxy.so/bloom-language/chart-cards` |
+| [barListCard](#barlistcard) | `BarListCard` | `@oxy.so/bloom-language/chart-cards` |
+| [chartCardSurface](#chartcardsurface) | `ChartCardSurface` | `@oxy.so/bloom-language/chart-cards` |
+| [chartHeadline](#chartheadline) | `ChartHeadline` | `@oxy.so/bloom-language/chart-cards` |
+| [chartStatTiles](#chartstattiles) | `ChartStatTiles` | `@oxy.so/bloom-language/chart-cards` |
+| [contributionsCard](#contributionscard) | `ContributionsCard` | `@oxy.so/bloom-language/chart-cards` |
+| [heatmapChartCard](#heatmapchartcard) | `HeatmapChartCard` | `@oxy.so/bloom-language/chart-cards` |
+| [lineChartCard](#linechartcard) | `LineChartCard` | `@oxy.so/bloom-language/chart-cards` |
+| [radarChartCard](#radarchartcard) | `RadarChartCard` | `@oxy.so/bloom-language/chart-cards` |
+| [sleepScoreCard](#sleepscorecard) | `SleepScoreCard` | `@oxy.so/bloom-language/chart-cards` |
+| [sparkline](#sparkline) | `Sparkline` | `@oxy.so/bloom-language/chart-cards` |
+| [stageBarsCard](#stagebarscard) | `StageBarsCard` | `@oxy.so/bloom-language/chart-cards` |
+| [stepsCard](#stepscard) | `StepsCard` | `@oxy.so/bloom-language/chart-cards` |
+| [tokensChartCard](#tokenschartcard) | `TokensChartCard` | `@oxy.so/bloom-language/chart-cards` |
+| [composerPanel](#composerpanel) | `ComposerPanel` | `@oxy.so/bloom-language/composer-panel` |
+| [composerPill](#composerpill) | `ComposerPill` | `@oxy.so/bloom-language/composer-panel` |
+| [composerPanelStatusTab](#composerpanelstatustab) | `ComposerPanelStatusTab` | `@oxy.so/bloom-language/composer-panel` |
+| [aiChatShell](#aichatshell) | `AiChatShell` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatContainer](#aichatcontainer) | `AiChatContainer` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatThread](#aichatthread) | `AiChatThread` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatUserMessage](#aichatusermessage) | `AiChatUserMessage` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatAssistantMessage](#aichatassistantmessage) | `AiChatAssistantMessage` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatMessageLine](#aichatmessageline) | `AiChatMessageLine` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatHeader](#aichatheader) | `AiChatHeader` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatMobileHeader](#aichatmobileheader) | `AiChatMobileHeader` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatCodePanel](#aichatcodepanel) | `AiChatCodePanel` | `@oxy.so/bloom-language/ai-chat` |
+| [aiChatGalleryPanel](#aichatgallerypanel) | `AiChatGalleryPanel` | `@oxy.so/bloom-language/ai-chat` |
+| [statCard](#statcard) | `StatCard` | `@oxy.so/bloom-language/stat-cards` |
+| [statCards](#statcards) | `StatCards` | `@oxy.so/bloom-language/stat-cards` |
+| [playButton](#playbutton) | `PlayButton` | `@oxy.so/bloom-language/media-controls` |
+| [playbackProgress](#playbackprogress) | `PlaybackProgress` | `@oxy.so/bloom-language/media-controls` |
+| [agentLimitsCard](#agentlimitscard) | `AgentLimitsCard` | `@oxy.so/bloom-language/agents` |
+| [usageCard](#usagecard) | `UsageCard` | `@oxy.so/bloom-language/agents` |
+| [agentThinking](#agentthinking) | `AgentThinking` | `@oxy.so/bloom-language/agents` |
+| [agentProgress](#agentprogress) | `AgentProgress` | `@oxy.so/bloom-language/agents` |
+| [agentProgressLoadingText](#agentprogressloadingtext) | `AgentProgressLoadingText` | `@oxy.so/bloom-language/agents` |
+| [agentLogRow](#agentlogrow) | `AgentLogRow` | `@oxy.so/bloom-language/agents` |
+| [agentLogShimmerText](#agentlogshimmertext) | `AgentLogShimmerText` | `@oxy.so/bloom-language/agents` |
+| [agentLogToolCall](#agentlogtoolcall) | `AgentLogToolCall` | `@oxy.so/bloom-language/agents` |
+| [agentLogToolCalls](#agentlogtoolcalls) | `AgentLogToolCalls` | `@oxy.so/bloom-language/agents` |
+| [agentLogWorkingRow](#agentlogworkingrow) | `AgentLogWorkingRow` | `@oxy.so/bloom-language/agents` |
+| [composerLoader](#composerloader) | `ComposerLoader` | `@oxy.so/bloom-language/agents` |
+| [conversationSidebar](#conversationsidebar) | `ConversationSidebar` | `@oxy.so/bloom-language/agents` |
+| [questionnaire](#questionnaire) | `Questionnaire` | `@oxy.so/bloom-language/agents` |
+| [chatBackground](#chatbackground) | `ChatBackground` | `@oxy.so/bloom-language/chat` |
+| [chatDateHeader](#chatdateheader) | `ChatDateHeader` | `@oxy.so/bloom-language/chat` |
+| [chatEmptyState](#chatemptystate) | `ChatEmptyState` | `@oxy.so/bloom-language/chat` |
+| [chatHeader](#chatheader) | `ChatHeader` | `@oxy.so/bloom-language/chat` |
+| [chatInfoPanel](#chatinfopanel) | `ChatInfoPanel` | `@oxy.so/bloom-language/chat` |
+| [pinnedMessageBar](#pinnedmessagebar) | `PinnedMessageBar` | `@oxy.so/bloom-language/chat` |
+| [scrollToBottomButton](#scrolltobottombutton) | `ScrollToBottomButton` | `@oxy.so/bloom-language/chat` |
+| [chatFolderTabs](#chatfoldertabs) | `ChatFolderTabs` | `@oxy.so/bloom-language/chat` |
+| [chatSearchField](#chatsearchfield) | `ChatSearchField` | `@oxy.so/bloom-language/chat` |
+| [chatSearchResults](#chatsearchresults) | `ChatSearchResults` | `@oxy.so/bloom-language/chat` |
+| [storiesRow](#storiesrow) | `StoriesRow` | `@oxy.so/bloom-language/chat` |
+| [storyRing](#storyring) | `StoryRing` | `@oxy.so/bloom-language/chat` |
+| [typingDots](#typingdots) | `TypingDots` | `@oxy.so/bloom-language/chat` |
+| [contactMessage](#contactmessage) | `ContactMessage` | `@oxy.so/bloom-language/chat` |
+| [documentGrid](#documentgrid) | `DocumentGrid` | `@oxy.so/bloom-language/chat` |
+| [fileMessage](#filemessage) | `FileMessage` | `@oxy.so/bloom-language/chat` |
+| [gifMessage](#gifmessage) | `GifMessage` | `@oxy.so/bloom-language/chat` |
+| [imageMessage](#imagemessage) | `ImageMessage` | `@oxy.so/bloom-language/chat` |
+| [locationMessage](#locationmessage) | `LocationMessage` | `@oxy.so/bloom-language/chat` |
+| [pollMessage](#pollmessage) | `PollMessage` | `@oxy.so/bloom-language/chat` |
+| [sharedMediaGrid](#sharedmediagrid) | `SharedMediaGrid` | `@oxy.so/bloom-language/chat` |
+| [stickerMessage](#stickermessage) | `StickerMessage` | `@oxy.so/bloom-language/chat` |
+| [videoMessage](#videomessage) | `VideoMessage` | `@oxy.so/bloom-language/chat` |
+| [voiceMessage](#voicemessage) | `VoiceMessage` | `@oxy.so/bloom-language/chat` |
+| [amenityList](#amenitylist) | `AmenityList` | `@oxy.so/bloom-language/listings` |
+| [hostCard](#hostcard) | `HostCard` | `@oxy.so/bloom-language/listings` |
+| [listingHeader](#listingheader) | `ListingHeader` | `@oxy.so/bloom-language/listings` |
+| [listingHeaderAction](#listingheaderaction) | `ListingHeaderAction` | `@oxy.so/bloom-language/listings` |
+| [listingPhotoGrid](#listingphotogrid) | `ListingPhotoGrid` | `@oxy.so/bloom-language/listings` |
+| [reviewCard](#reviewcard) | `ReviewCard` | `@oxy.so/bloom-language/listings` |
+| [mapClusterMarker](#mapclustermarker) | `MapClusterMarker` | `@oxy.so/bloom-language/listings` |
+| [mapPriceMarker](#mappricemarker) | `MapPriceMarker` | `@oxy.so/bloom-language/listings` |
+| [mapSearchAreaButton](#mapsearchareabutton) | `MapSearchAreaButton` | `@oxy.so/bloom-language/listings` |
+| [followButton](#followbutton) | `FollowButton` | `@oxy.so/bloom-language/media` |
+| [shelf](#shelf) | `Shelf` | `@oxy.so/bloom-language/media` |
+| [shelfSkeleton](#shelfskeleton) | `ShelfSkeleton` | `@oxy.so/bloom-language/media` |
+| [subscriptionPlans](#subscriptionplans) | `SubscriptionPlans` | `@oxy.so/bloom-language/media` |
+| [subscriptionPrice](#subscriptionprice) | `SubscriptionPrice` | `@oxy.so/bloom-language/media` |
+| [userHoverCard](#userhovercard) | `UserHoverCard` | `@oxy.so/bloom-language/media` |
+| [cardForm](#cardform) | `CardForm` | `@oxy.so/bloom-language/card-form` |
+| [cardFormCountry](#cardformcountry) | `CardFormCountry` | `@oxy.so/bloom-language/card-form` |
+| [cardFormPostcode](#cardformpostcode) | `CardFormPostcode` | `@oxy.so/bloom-language/card-form` |
+| [cardFormHostedField](#cardformhostedfield) | `CardFormHostedField` | `@oxy.so/bloom-language/card-form` |
+| [checkoutSheet](#checkoutsheet) | `CheckoutSheet` | `@oxy.so/bloom-language/checkout-sheet` |
+| [filterSection](#filtersection) | `FilterSection` | `@oxy.so/bloom-language/stay-filters` |
+| [priceRangeFilter](#pricerangefilter) | `PriceRangeFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [countFilter](#countfilter) | `CountFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [toggleChipGroup](#togglechipgroup) | `ToggleChipGroup` | `@oxy.so/bloom-language/stay-filters` |
+| [amenityFilter](#amenityfilter) | `AmenityFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [switchFilterRow](#switchfilterrow) | `SwitchFilterRow` | `@oxy.so/bloom-language/stay-filters` |
+| [filterFooter](#filterfooter) | `FilterFooter` | `@oxy.so/bloom-language/stay-filters` |
+| [filterTriggerButton](#filtertriggerbutton) | `FilterTriggerButton` | `@oxy.so/bloom-language/stay-filters` |
+| [areaRangeFilter](#arearangefilter) | `AreaRangeFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [availabilityFilter](#availabilityfilter) | `AvailabilityFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [featureFilter](#featurefilter) | `FeatureFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [floorFilter](#floorfilter) | `FloorFilter` | `@oxy.so/bloom-language/stay-filters` |
+| [staySearchCompact](#staysearchcompact) | `StaySearchCompact` | `@oxy.so/bloom-language/stay-search` |
+| [staySearchPanel](#staysearchpanel) | `StaySearchPanel` | `@oxy.so/bloom-language/stay-search` |
+| [staySearchStep](#staysearchstep) | `StaySearchStep` | `@oxy.so/bloom-language/stay-search` |
+| [destinationSuggestions](#destinationsuggestions) | `DestinationSuggestions` | `@oxy.so/bloom-language/stay-search` |
+| [guestPicker](#guestpicker) | `GuestPicker` | `@oxy.so/bloom-language/stay-search` |
+| [tenancyTimeline](#tenancytimeline) | `TenancyTimeline` | `@oxy.so/bloom-language/tenancy` |
+| [leaseSummaryCard](#leasesummarycard) | `LeaseSummaryCard` | `@oxy.so/bloom-language/tenancy` |
+| [rentPaymentList](#rentpaymentlist) | `RentPaymentList` | `@oxy.so/bloom-language/tenancy` |
+| [maintenanceRequestCard](#maintenancerequestcard) | `MaintenanceRequestCard` | `@oxy.so/bloom-language/tenancy` |
+| [documentList](#documentlist) | `DocumentList` | `@oxy.so/bloom-language/tenancy` |
+| [evictionReportCard](#evictionreportcard) | `EvictionReportCard` | `@oxy.so/bloom-language/eviction` |
+| [evictionTimeline](#evictiontimeline) | `EvictionTimeline` | `@oxy.so/bloom-language/eviction` |
+| [placeReviewSummary](#placereviewsummary) | `PlaceReviewSummary` | `@oxy.so/bloom-language/place-reviews` |
+| [writeReviewPrompt](#writereviewprompt) | `WriteReviewPrompt` | `@oxy.so/bloom-language/place-reviews` |
+| [callScreen](#callscreen) | `CallScreen` | `@oxy.so/bloom-language/call-ui` |
+| [callMinimisedPill](#callminimisedpill) | `CallMinimisedPill` | `@oxy.so/bloom-language/call-ui` |
+| [groupCallGrid](#groupcallgrid) | `GroupCallGrid` | `@oxy.so/bloom-language/call-ui` |
+| [incomingCallScreen](#incomingcallscreen) | `IncomingCallScreen` | `@oxy.so/bloom-language/call-ui` |
+| [incomingCallBanner](#incomingcallbanner) | `IncomingCallBanner` | `@oxy.so/bloom-language/call-ui` |
+| [storyViewer](#storyviewer) | `StoryViewer` | `@oxy.so/bloom-language/chat-people` |
+| [selectedChipsRow](#selectedchipsrow) | `SelectedChipsRow` | `@oxy.so/bloom-language/chat-people` |
+| [newGroupForm](#newgroupform) | `NewGroupForm` | `@oxy.so/bloom-language/chat-people` |
+| [messageBubble](#messagebubble) | `MessageBubble` | `@oxy.so/bloom-language/message-bubble` |
+| [typingBubble](#typingbubble) | `TypingBubble` | `@oxy.so/bloom-language/message-bubble` |
+| [messageList](#messagelist) | `MessageList` | `@oxy.so/bloom-language/message-bubble` |
+| [mapScaleBar](#mapscalebar) | `MapScaleBar` | `@oxy.so/bloom-language/map-chrome` |
+| [mapControls](#mapcontrols) | `MapControls` | `@oxy.so/bloom-language/map-chrome` |
+| [locationPuck](#locationpuck) | `LocationPuck` | `@oxy.so/bloom-language/map-chrome` |
+| [navigationBanner](#navigationbanner) | `NavigationBanner` | `@oxy.so/bloom-language/map-chrome` |
+| [placeCard](#placecard) | `PlaceCard` | `@oxy.so/bloom-language/places` |
+| [placeHours](#placehours) | `PlaceHours` | `@oxy.so/bloom-language/places` |
+| [placeInfoList](#placeinfolist) | `PlaceInfoList` | `@oxy.so/bloom-language/places` |
+| [placeTransit](#placetransit) | `PlaceTransit` | `@oxy.so/bloom-language/places` |
+| [placeListCard](#placelistcard) | `PlaceListCard` | `@oxy.so/bloom-language/places` |
+| [placeList](#placelist) | `PlaceList` | `@oxy.so/bloom-language/places` |
+| [directionsSteps](#directionssteps) | `DirectionsSteps` | `@oxy.so/bloom-language/places` |
+| [placePicker](#placepicker) | `PlacePicker` | `@oxy.so/bloom-language/places` |
+| [mailComposeSurface](#mailcomposesurface) | `MailComposeSurface` | `@oxy.so/bloom-language/mail` |
+| [mailRecipientField](#mailrecipientfield) | `MailRecipientField` | `@oxy.so/bloom-language/mail` |
+| [mailMessage](#mailmessage) | `MailMessage` | `@oxy.so/bloom-language/mail` |
+| [mailThread](#mailthread) | `MailThread` | `@oxy.so/bloom-language/mail` |
+| [mailQuoteToggle](#mailquotetoggle) | `MailQuoteToggle` | `@oxy.so/bloom-language/mail` |
+| [noteEditorToolbar](#noteeditortoolbar) | `NoteEditorToolbar` | `@oxy.so/bloom-language/mail` |
+| [tripCard](#tripcard) | `TripCard` | `@oxy.so/bloom-language/booking` |
+| [bookingCard](#bookingcard) | `BookingCard` | `@oxy.so/bloom-language/booking` |
+| [bookingBar](#bookingbar) | `BookingBar` | `@oxy.so/bloom-language/booking` |
+| [priceBreakdown](#pricebreakdown) | `PriceBreakdown` | `@oxy.so/bloom-language/booking` |
+| [homeSearchBar](#homesearchbar) | `HomeSearchBar` | `@oxy.so/bloom-language/home-search` |
+| [searchModeTabs](#searchmodetabs) | `SearchModeTabs` | `@oxy.so/bloom-language/home-search` |
+| [propertyTypePicker](#propertytypepicker) | `PropertyTypePicker` | `@oxy.so/bloom-language/home-search` |
+| [savedSearchCard](#savedsearchcard) | `SavedSearchCard` | `@oxy.so/bloom-language/home-search` |
+| [listingActionBar](#listingactionbar) | `ListingActionBar` | `@oxy.so/bloom-language/listing-actions` |
+| [mortgageCalculator](#mortgagecalculator) | `MortgageCalculator` | `@oxy.so/bloom-language/listing-actions` |
+| [rentalActionCard](#rentalactioncard) | `RentalActionCard` | `@oxy.so/bloom-language/listing-actions` |
+| [saleActionCard](#saleactioncard) | `SaleActionCard` | `@oxy.so/bloom-language/listing-actions` |
+| [listingCard](#listingcard) | `ListingCard` | `@oxy.so/bloom-language/listing-card` |
+| [listingCardGrid](#listingcardgrid) | `ListingCardGrid` | `@oxy.so/bloom-language/listing-card` |
+| [wishlistCard](#wishlistcard) | `WishlistCard` | `@oxy.so/bloom-language/listing-card` |
+| [listingPreviewPane](#listingpreviewpane) | `ListingPreviewPane` | `@oxy.so/bloom-language/listing-editor` |
+| [listingQualityMeter](#listingqualitymeter) | `ListingQualityMeter` | `@oxy.so/bloom-language/listing-editor` |
+| [propertyTypeSelector](#propertytypeselector) | `PropertyTypeSelector` | `@oxy.so/bloom-language/listing-editor` |
+| [offeringBadge](#offeringbadge) | `OfferingBadge` | `@oxy.so/bloom-language/offering-badge` |
+| [priceEstimate](#priceestimate) | `PriceEstimate` | `@oxy.so/bloom-language/property-insights` |
+| [pricePerAreaComparison](#priceperareacomparison) | `PricePerAreaComparison` | `@oxy.so/bloom-language/property-insights` |
+| [projectBoard](#projectboard) | `ProjectBoard`, `GroupedProjectBoard`, `ProjectBoardTemplate` | `@oxy.so/bloom-language/project-board` |
+| [projectBoardCardContent](#projectboardcardcontent) | `ProjectBoardCardContent` | `@oxy.so/bloom-language/project-board` |
+| [boardDragHandle](#boarddraghandle) | `BoardDragHandle` | `@oxy.so/bloom-language/project-board` |
+| [activityFeed](#activityfeed) | `ActivityFeed` | `@oxy.so/bloom-language/activity-feed` |
+| [orderStatusBar](#orderstatusbar) | `OrderStatusBar` | `@oxy.so/bloom-language/order-status` |
+| [orderStatusTimeline](#orderstatustimeline) | `OrderStatusTimeline` | `@oxy.so/bloom-language/order-status` |
+| [lockup](#lockup) | `Lockup` | `@oxy.so/bloom-language/lockup` |
+| [lockupSkeleton](#lockupskeleton) | `LockupSkeleton` | `@oxy.so/bloom-language/lockup` |
+| [ambientPhoto](#ambientphoto) | `AmbientPhoto` | `@oxy.so/bloom-language/ambient-photo` |
+| [calendarView](#calendarview) | `CalendarView` | `@oxy.so/bloom-language/calendar` |
+| [calendarViewHeader](#calendarviewheader) | `CalendarViewHeader` | `@oxy.so/bloom-language/calendar` |
+| [calendarViewMonthGrid](#calendarviewmonthgrid) | `CalendarViewMonthGrid` | `@oxy.so/bloom-language/calendar` |
+| [taskList](#tasklist) | `TaskList` | `@oxy.so/bloom-language/task-list` |
+| [webSearch](#websearch) | `WebSearch` | `@oxy.so/bloom-language/web-search` |
+| [voiceControls](#voicecontrols) | `VoiceControls` | `@oxy.so/bloom-language/voice` |
+| [agentCreator](#agentcreator) | `AgentCreator` | `@oxy.so/bloom-language/agent-creator` |
+| [agentCreatorField](#agentcreatorfield) | `AgentCreatorField` | `@oxy.so/bloom-language/agent-creator` |
+| [agentCreatorSection](#agentcreatorsection) | `AgentCreatorSection` | `@oxy.so/bloom-language/agent-creator` |
+| [agentProfile](#agentprofile) | `AgentProfile` | `@oxy.so/bloom-language/agent-reply` |
+| [agentReplyIdentity](#agentreplyidentity) | `AgentReplyIdentity` | `@oxy.so/bloom-language/agent-reply` |
+| [aiProfileCard](#aiprofilecard) | `AiProfileCard` | `@oxy.so/bloom-language/ai-profile-card` |
+| [selectedAgentPreview](#selectedagentpreview) | `SelectedAgentPreview` | `@oxy.so/bloom-language/multi-agent-chat` |
+| [multiAgentChat](#multiagentchat) | `MultiAgentChat` | `@oxy.so/bloom-language/multi-agent-chat` |
+| [agentChatHistory](#agentchathistory) | `AgentChatHistory` | `@oxy.so/bloom-language/agent-chat` |
+| [agentChat](#agentchat) | `AgentChat` | `@oxy.so/bloom-language/agent-chat` |
+| [routeStops](#routestops) | `RouteStops` | `@oxy.so/bloom-language/route-stops` |
+| [connectionDots](#connectiondots) | `ConnectionDots` | `@oxy.so/bloom-language/generic` |
+| [outlineNav](#outlinenav) | `OutlineNav` | `@oxy.so/bloom-language/generic` |
+| [pagination](#pagination) | `Pagination` | `@oxy.so/bloom-language/generic` |
+| [progressiveBlur](#progressiveblur) | `ProgressiveBlur` | `@oxy.so/bloom-language/generic` |
+| [addressRow](#addressrow) | `AddressRow` | `@oxy.so/bloom-language/address` |
+| [addressList](#addresslist) | `AddressList` | `@oxy.so/bloom-language/address` |
+| [paymentMethodMark](#paymentmethodmark) | `PaymentMethodMark` | `@oxy.so/bloom-language/payment-method` |
+| [paymentMethodRow](#paymentmethodrow) | `PaymentMethodRow` | `@oxy.so/bloom-language/payment-method` |
+| [paymentMethodList](#paymentmethodlist) | `PaymentMethodList` | `@oxy.so/bloom-language/payment-method` |
+| [priceSummary](#pricesummary) | `PriceSummary` | `@oxy.so/bloom-language/price-breakdown` |
+| [priceSummaryLine](#pricesummaryline) | `PriceSummaryLine` | `@oxy.so/bloom-language/price-breakdown` |
+| [paymentStatusBar](#paymentstatusbar) | `PaymentStatusBar` | `@oxy.so/bloom-language/payment-status` |
+| [paymentStatusBlock](#paymentstatusblock) | `PaymentStatusBlock` | `@oxy.so/bloom-language/payment-status` |
+| [importantAlertsCard](#importantalertscard) | `ImportantAlertsCard` | `@oxy.so/bloom-language/dashboard-cards` |
+| [patientInfoCard](#patientinfocard) | `PatientInfoCard` | `@oxy.so/bloom-language/dashboard-cards` |
+| [cartLine](#cartline) | `CartLine` | `@oxy.so/bloom-language/cart-panel` |
+| [cartPanel](#cartpanel) | `CartPanel` | `@oxy.so/bloom-language/cart-panel` |
+| [cartPromoField](#cartpromofield) | `CartPromoField` | `@oxy.so/bloom-language/cart-panel` |
+| [cartTipPicker](#carttippicker) | `CartTipPicker` | `@oxy.so/bloom-language/cart-panel` |
+| [menuItemRow](#menuitemrow) | `MenuItemRow` | `@oxy.so/bloom-language/menu-item` |
+| [menuItemOptions](#menuitemoptions) | `MenuItemOptions` | `@oxy.so/bloom-language/menu-item` |
+| [rowActions](#rowactions) | `RowActions` | `@oxy.so/bloom-language/generic` |
+| [rowActionButton](#rowactionbutton) | `RowActionButton` | `@oxy.so/bloom-language/generic` |
+| [swipeRow](#swiperow) | `SwipeRow` | `@oxy.so/bloom-language/generic` |
+| [themeToggle](#themetoggle) | `ThemeToggle` | `@oxy.so/bloom-language/generic` |
 
 ## Nodes
 
@@ -454,6 +456,8 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 
 - `HStack(...children: Child[])`: Children side by side, in reading order.
 - `VStack(...children: Child[])`: Children top to bottom.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -474,6 +478,8 @@ And every universal modifier.
 
 - `ZStack(...children: Child[])`: Children over one another, later ones on top: the stack is as big as its largest child, and each child sits at its `.alignment()` (`center`).
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.alignment()`](bloom-language-modifiers.mdx#alignment) `(value: OverlayAlignment)`: Where each child sits in the stack (`ZStack(alignment:)`): `center` by default.
@@ -485,12 +491,16 @@ And every universal modifier.
 
 - `Spacer()`: Takes the free space along its stack's axis.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `text`
 
 - `Text(...runs: TextRun[])`: Text. Runs are joined in order; a nested `Text` is an inline span with its own modifiers.
 - `RawText(...runs: TextRun[])`: React Native's own `Text`: what its chain names and nothing else, no Bloom family, size or ink, as a span is. It is what a screen moved from React Native's `Text` draws, so the move changes no pixel; new screens use `Text`.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -516,6 +526,8 @@ And every universal modifier.
 
 - `Icon(icon: IconComponent)`: A Bloom icon component (`RiHeartLine`, `ReplyIcon`…), drawn at a size token in the current foreground.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [iconSize](bloom-language-tokens.mdx#iconsize), `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'10'`, `'11'`, `'13'`, `'14'`, `'15'`, `'17'`, `'18'`, `'21'`, `'22'`, `'40'`, `'44'`, `'64'`, `'96'`
@@ -529,6 +541,8 @@ And every universal modifier.
 ### `avatar`
 
 - `Avatar(source: string | null | undefined, options: AvatarOptions = {})`: Bloom `Avatar`. `source` is a URL or a file id the app's `ImageResolver` resolves.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -553,6 +567,8 @@ And every universal modifier.
 ### `avatarGroup`
 
 - `AvatarGroup(items: readonly AvatarGroupItem[])`: Bloom `AvatarGroup`: its members (Bloom's `AvatarGroupItem`: `uri`, `name`, `initials`…), first on top.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -582,6 +598,8 @@ And every universal modifier.
 
 - `Badge(content?: string | number)`: Bloom `Badge`: a count or a label (a dot with none, `.dot()`). Attach it with `.badge(Badge(…))`.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [badgeSize](bloom-language-tokens.mdx#badgesize), `'xs'`, `'sm'`, `'md'`, `'lg'`, `'label-small'`, `'label-medium'`
@@ -605,6 +623,8 @@ And every universal modifier.
 
 - `IconCircle(icon: IconComponent)`: Bloom `IconCircle`: an icon on a tinted disc.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [iconCircleSize](bloom-language-tokens.mdx#iconcirclesize), `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`
@@ -618,6 +638,8 @@ And every universal modifier.
 ### `loading`
 
 - `Loading(text?: TextView)`: Bloom `Loading`: a spinner; a `Text` is what it says beside or below it.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -637,17 +659,23 @@ And every universal modifier.
 
 - `Skeleton(shape: SkeletonShape)`: A Bloom skeleton shape, sized by its frame (a `text` line by its font).
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `skeletonGroup`
 
 - `SkeletonGroup(...children: Child[])`: Bloom `Skeleton.Region`: the shapes of what is loading, announced once.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `image`
 
 - `Image(source: BloomImageSource | null | undefined, alt?: string)`: A raster image, drawn by Bloom's `BloomImage`. `source` is a URL, a bundled asset (`require()`) or a URI descriptor; `alt` names it for assistive technology.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -667,17 +695,23 @@ And every universal modifier.
 
 - `Fill(...children: Child[])`: Bloom `Fill`: its children cover the whole of the view it is in.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `ratio`
 
 - `AspectRatio(ratio: number, ...children: Child[])`: Bloom `AspectRatio`: the width of its parent and the height `ratio` (width over height) gives it, so a media well keeps its size before it loads.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `grid`
 
 - `Grid(...cells: Child[])`: Bloom `ResponsiveGrid`: its cells in as many equal columns as fit.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -692,6 +726,8 @@ And every universal modifier.
 ### `button`
 
 - `Button(...children: Child[])`: Bloom `Button`. An `Icon` child is its glyph; `Text` children are its label.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -727,6 +763,8 @@ And every universal modifier.
 
 - `Shape(name: ShapeName)`: One of Bloom's silhouettes (`circle`, `squircle`, `heart`…), filled, stroked or holding an image.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
@@ -744,6 +782,8 @@ And every universal modifier.
 
 - `ButtonGroup(...buttons: Child[])`: Bloom `Button.Group`: its `Button`s joined on one material.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -760,6 +800,8 @@ And every universal modifier.
 ### `fab`
 
 - `FAB(...children: Child[])`: Bloom `Fab`, on the platform's glass: the lens on Android and OxyOS, `glassEffect` on iOS 26 (blur before it), Bloom's frosted material on the web. An `Icon` child is its glyph; a `Text` child is its extended label. `.glass(...)` sets the material; without it, the FAB is tinted with its own solid fill.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -782,6 +824,8 @@ And every universal modifier.
 
 - `Menu(trigger: Child, ...rows: MenuChild[])`: A menu: `trigger` opens it, and `rows` are what it presents. Each platform presents it natively: the lens menu on Android and OxyOS, the system menu on iOS, Bloom's menu on the web.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.actions()`](bloom-language-modifiers.mdx#actions) `(value: MenuActionsView)`: What its tagged rows do: an `actions()` view, whose body (it may call hooks) runs only when a row is chosen. The rows stay plain data, which every platform can present before the menu opens.
@@ -793,6 +837,8 @@ And every universal modifier.
 ### `menuItem`
 
 - `Item(title: string)`: A menu row: a title, and what choosing it does (`.onPress`).
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -815,6 +861,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Submenu(title: string, ...rows: MenuChild[])`: A row that opens its own rows beside (or, on a phone, in place of) the menu. One level deep.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: IconComponent)`
@@ -829,6 +877,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Section(...rows: MenuChild[])`: Rows that belong together, set apart from the rows around them.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.title()`](bloom-language-modifiers.mdx#title) `(value: string)`: A quiet heading above the section's rows.
@@ -839,6 +889,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `divider`
 
 - `Divider(label?: Child)`: Bloom `Divider`: a line across its stack (vertical in an `HStack`), with an optional label on it. In a menu, the line between rows.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -857,6 +909,8 @@ And every universal modifier.
 ### `alert`
 
 - `Alert(title: string)`: An alert, presented with `.alert(isPresented, Alert(title))`: Bloom's `AlertDialog`, its confirm and cancel actions closing it.
+
+Imported from `@oxy.so/bloom-language/overlays`.
 
 Modifiers:
 
@@ -877,6 +931,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `dialog`
 
 - `Dialog(...content: Child[])`: A dialog of `content`, presented with `.dialog(isPresented, Dialog(...))`, or a view of its own with `.presented(isPresented)`: Bloom's `Dialog`, from the bottom and centred from `md` as it places itself, or where `.presentAt()` says.
+
+Imported from `@oxy.so/bloom-language/overlays`.
 
 Modifiers:
 
@@ -907,6 +963,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Popover(...content: Child[])`: A popover of `content`, presented with `.popover(isPresented, Popover(...))` on the view it is anchored on: Bloom's `Popover`, that view its trigger.
 
+Imported from `@oxy.so/bloom-language/overlays`.
+
 Modifiers:
 
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: The popover's accessible name.
@@ -921,6 +979,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `connectionStatus`
 
 - `ConnectionStatus()`: Bloom's connection toasts: an outage, the reconnection, the network back. It draws nothing in place; place it once, near the app's root.
+
+Imported from `@oxy.so/bloom-language/overlays`.
 
 Modifiers:
 
@@ -943,6 +1003,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `header`
 
 - `Header(title?: string | ViewNode)`: The page header, or the navigation bar (`.presentation('navigation')`), titled `title`: a text, or a view drawn in the title's place as it is.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -972,6 +1034,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `BottomBar(...tabs: (TabView | false | null | undefined | readonly TabView[])[])`: The bottom bar: its tabs, in order.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: Binding<string>)`: The `id` of the selected tab: a binding, a tab's press writing it.
@@ -987,6 +1051,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Tab(label: string, icon: IconComponent)`: A tab of a `BottomBar`: its label and glyph. Its `.id()` is what the bar selects.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.activeIcon()`](bloom-language-modifiers.mdx#activeicon) `(value: IconComponent)`: The selected glyph, when the set draws selection by shape (an outline that fills).
@@ -999,6 +1065,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `action`
 
 - `Action(icon: IconComponent, label: string, options: ActionOptions = {})`: Bloom `EngagementAction`: one glyph (and count) in an action bar. `label` names it for assistive technology.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -1015,6 +1083,8 @@ And every universal modifier.
 ### `actionBar`
 
 - `ActionBar(...children: Child[])`: Bloom `EngagementBar`: leading actions in reading order; `.trailing(...)` pushes the rest to the far edge.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -1036,11 +1106,15 @@ And every universal modifier.
 
 - `ActionGroup(...children: Child[])`: Bloom `EngagementGroup`: adjacent actions that read as one control.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `lottie`
 
 - `Lottie(source: string)`: A Lottie animation (a URL), drawn by Bloom's `Sticker`: the one Lottie path, paused while its screen is not in front. `.fallback(Image(still, label))` is the still it shows while loading, where it cannot play, and under reduced motion; `.frame({ width })` its square edge.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1054,6 +1128,8 @@ And every universal modifier.
 ### `card`
 
 - `Card(...children: Child[])`: Bloom `Card`, holding its parts or any view.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1078,11 +1154,15 @@ And every universal modifier.
 
 - `CardHeader(...children: Child[])`
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Takes the universal modifiers.
 
 ### `cardBody`
 
 - `CardBody(...children: Child[])`
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Takes the universal modifiers.
 
@@ -1090,11 +1170,15 @@ Takes the universal modifiers.
 
 - `CardFooter(...children: Child[])`
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Takes the universal modifiers.
 
 ### `cardTitle`
 
 - `CardTitle(text: string)`
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1106,6 +1190,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `CardDescription(text: string)`
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Modifiers:
 
 - [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: Truncates it to `n` lines.
@@ -1115,6 +1201,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `row`
 
 - `Row(title?: string)`: Bloom `Item`, a list row titled `title`.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1139,6 +1227,8 @@ And every universal modifier.
 
 - `GroupedSection(...items: Child[])`: Bloom `GroupedSection`: its rows, in order.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Token sets:
 
 - `.style()`: [groupedSectionStyle](bloom-language-tokens.mdx#groupedsectionstyle), `'plain'`, `'filled'`
@@ -1157,6 +1247,8 @@ And every universal modifier.
 ### `groupedSectionItem`
 
 - `GroupedSectionItem(title: string)`: A row of a `GroupedSection`, titled `title`.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1190,6 +1282,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Chip(...content: Child[])`: Bloom `Chip`: its `Text` the label, an `Icon` before or after it the glyphs.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Token sets:
 
 - `.size()`: [chipSize](bloom-language-tokens.mdx#chipsize), `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`
@@ -1211,6 +1305,8 @@ And every universal modifier.
 ### `emptyState`
 
 - `EmptyState(title?: string, ...content: Child[])`: Bloom `EmptyState`, titled `title`; its content sits between the explanation and the actions.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1235,6 +1331,8 @@ And every universal modifier.
 
 - `Admonition(...content: Child[])`: Bloom `Admonition`: its `Text` runs are what it says; a `Button` is an action under them.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1250,6 +1348,8 @@ And every universal modifier.
 ### `tabs`
 
 - `Tabs(selection: Binding<V>, ...items: TabItemChild<V>[])`: Bloom `Tabs`: the chosen tab through `selection`, and its tabs in order.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1268,6 +1368,8 @@ And every universal modifier.
 ### `tabItem`
 
 - `TabItem(value: V, label: string)`: A tab: the `value` it selects, and its label.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1291,6 +1393,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Kbd(keys: string)`: Bloom `Kbd`: a key cap reading `keys`.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Token sets:
 
 - `.size()`: [kbdSize](bloom-language-tokens.mdx#kbdsize), `'sm'`, `'md'`
@@ -1304,6 +1408,8 @@ And every universal modifier.
 ### `errorBoundary`
 
 - `ErrorBoundary(...children: Child[])`: Bloom `ErrorBoundary` around its content.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1330,11 +1436,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Embed(content: ReactNode | ((render: (child: Child) => ReactNode) => ReactNode))`: A React element inside a tree: a third-party component, or a Bloom/app component the language has no node for yet. Pass a function to receive a `render` that draws language nodes in the current environment, for an element that takes them as children or props.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes the universal modifiers.
 
 ### `group`
 
 - `Group(...children: Child[])`: Several views as one, with no view of its own: React's fragment, SwiftUI's `Group`. Each child is drawn where the group is, as if it were there. As a `screen()` body's root it holds the screen's views, its screen modifiers the screen's chrome.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1384,6 +1494,8 @@ Takes the universal modifiers.
 
 - `AppLayout(navigator: NavStackView | TabNavigatorView)`: The app's root layout: Bloom's `AppShell` with the navigator in it, the navigation the shell draws from the `TabPagerProvider` above it (the sidebar's rows, the bottom bar), and the primary action.
 
+Imported from `@oxy.so/bloom-language/router`.
+
 Modifiers:
 
 - [`.primaryAction()`](bloom-language-modifiers.mdx#primaryaction) `(icon: IconComponent, label: string, destination: string)`: The prominent action: the bar's FAB and the sidebar's first row on Android, OxyOS and the web; on iOS, `destination`'s tab, drawn on its own surface. `destination` is a destination's name (a page of the pager).
@@ -1402,11 +1514,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Stack(...routes: (string | RouteView)[])`: A stack of routes. Each name is a route of the layout's directory, pushed over the ones before it; `Sheet(name)` presents one as a sheet. With no names, the directory's routes as expo-router finds them.
 
+Imported from `@oxy.so/bloom-language/router`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `route`
 
 - `Sheet(name: string)`: A stack's route presented as a sheet over the one under it (iOS); pushed elsewhere.
+
+Imported from `@oxy.so/bloom-language/router`.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1414,12 +1530,16 @@ Takes only the modifiers above (no universal modifiers).
 
 - `TabView()`: The tabs group's navigator over the `TabPagerProvider`'s pages: the system tab bar on iOS (expo-router's `NativeTabs`), Bloom's swipe pager under the shell's bottom bar on Android and OxyOS, the routed page on the web.
 
+Imported from `@oxy.so/bloom-language/router`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `textField`
 
 - `TextField(text: Binding<string>, label: string)`: A one-line text input: Bloom's `TextFieldInput` in its `TextField` shell. `label` names it.
 - `SecureField(text: Binding<string>, label: string)`: A text input whose text is hidden (`secureTextEntry`); `.revealable()` lets the reader show it.
+
+Imported from `@oxy.so/bloom-language/inputs`.
 
 Token sets:
 
@@ -1459,6 +1579,8 @@ And every universal modifier.
 
 - `TextEditor(text: Binding<string>, label?: string)`: Text over several lines: Bloom's `Textarea`, with its label above when given.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1490,6 +1612,8 @@ And every universal modifier.
 
 - `Field(label: string | undefined, ...content: Child[])`: Bloom `Field`: `label` above its control, a description and an error below.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Modifiers:
 
 - [`.description()`](bloom-language-modifiers.mdx#description) `(value: string)`
@@ -1502,6 +1626,8 @@ And every universal modifier.
 ### `label`
 
 - `Label(text: string)`: Bloom `Label`: a form label.
+
+Imported from `@oxy.so/bloom-language/inputs`.
 
 Token sets:
 
@@ -1518,6 +1644,8 @@ And every universal modifier.
 
 - `Toggle(isOn: Binding<boolean>)`: An on/off switch: Bloom's `Switch`.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1533,6 +1661,8 @@ And every universal modifier.
 ### `checkbox`
 
 - `Checkbox(isOn: Binding<boolean>, label?: string)`: Bloom `Checkbox`, with its label beside the box when given.
+
+Imported from `@oxy.so/bloom-language/inputs`.
 
 Token sets:
 
@@ -1553,6 +1683,8 @@ And every universal modifier.
 
 - `RadioGroup(selection: Binding<V> | Selection<V>, ...options: OptionChild<V>[])`: Bloom `RadioGroup`: the selection is one of its options' values.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1571,6 +1703,8 @@ And every universal modifier.
 
 - `Segmented(selection: Binding<V>, ...options: OptionChild<V>[])`: Bloom `SegmentedControl`: the selection is one of its options' values.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1588,6 +1722,8 @@ And every universal modifier.
 
 - `Picker(selection: Selection<V>, ...options: OptionChild<V>[])`: Bloom `Select`: the selection is one of its options' values, or none yet.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -1603,6 +1739,8 @@ And every universal modifier.
 ### `option`
 
 - `Option(value: V, label: string)`: One choice of a picker: its value and what it says.
+
+Imported from `@oxy.so/bloom-language/inputs`.
 
 Token sets:
 
@@ -1622,6 +1760,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `search`
 
 - `Search(text: Binding<string>)`: Bloom `Search`: a search field over `text`.
+
+Imported from `@oxy.so/bloom-language/inputs`.
 
 Token sets:
 
@@ -1656,11 +1796,15 @@ And every universal modifier.
 
 - `OptionGroup(label: string, ...options: OptionChild<V>[])`: Options under `label` in a picker's list.
 
+Imported from `@oxy.so/bloom-language/inputs`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `chipRow`
 
 - `ChipRow(...chips: Child[])`: Bloom `ChipRow`: its chips, in a row that scrolls sideways.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1676,6 +1820,8 @@ And every universal modifier.
 
 - `CappedChipRow(...chips: Child[])`: Bloom `CappedChipRow`: its chips, wrapping, up to its lines.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Modifiers:
 
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`
@@ -1686,6 +1832,8 @@ And every universal modifier.
 ### `groupedSectionIcon`
 
 - `GroupedSectionIcon(icon: IconComponent)`: A grouped-section row's icon: `icon` on a disc.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1702,6 +1850,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `GroupedSectionDivider()`: A line between a grouped section's rows.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Modifiers:
 
 - [`.inset()`](bloom-language-modifiers.mdx#inset) `(value: SpaceToken)`
@@ -1711,6 +1861,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `groupedSectionCollapse`
 
 - `GroupedSectionCollapse(open: boolean, ...rows: Child[])`: A grouped section's rows shown while `open`, revealed and hidden in place.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Modifiers:
 
@@ -1722,11 +1874,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `TabContent(value: V, ...content: Child[])`: What the tab `value` shows, inside its `Tabs`.
 
+Imported from `@oxy.so/bloom-language/containers`.
+
 Takes the universal modifiers.
 
 ### `selectionCard`
 
 - `SelectionCard(title: string, ...content: Child[])`: Bloom `SelectionCard`, titled `title`; its content is the body under its head.
+
+Imported from `@oxy.so/bloom-language/containers`.
 
 Token sets:
 
@@ -1751,6 +1907,8 @@ And every universal modifier.
 
 - `ScrollView(...children: Child[])`: The screen's scroller (Bloom `ScreenScrollView`): its children are the content, in a column, bound to the screen's header fade, bottom bar fold, reselect and keyboard.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the content, inside the scroll (the content container's padding).
@@ -1772,6 +1930,8 @@ And every universal modifier.
 
 - `BottomSheet(...children: Child[])`: A sheet from the bottom (Bloom `BottomSheet`), as a `.sheet()`'s content: its children are its body. Placed anywhere else it draws nothing.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.detached()`](bloom-language-modifiers.mdx#detached) `(value?: boolean)`: Inset from the screen's edges with every corner rounded; full width with a rounded top by default.
@@ -1791,6 +1951,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `sidebar`
 
 - `Sidebar(...rows: SidebarRow[])`: The app's navigation column (Bloom `Sidebar`): its destinations and its tree, in order.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -1828,6 +1990,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `NavItem(label: string, icon: IconComponent)`: A sidebar destination: its label and glyph.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.id()`](bloom-language-modifiers.mdx#id) `(value: string)`: Its identity: what `selection` speaks; its label by default.
@@ -1844,6 +2008,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `treeSection`
 
 - `TreeSection(label: string, ...rows: TreeRow[])`: A section of the sidebar's tree, under its heading.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1862,6 +2028,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `TreeFolder(label: string, ...items: (TreeItemView | false | null | undefined | readonly TreeItemView[])[])`: A folder of a tree section: rows under a disclosure.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.id()`](bloom-language-modifiers.mdx#id) `(value: string)`
@@ -1873,6 +2041,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `treeItem`
 
 - `TreeItem(label: string, ...items: (TreeItemView | false | null | undefined | readonly TreeItemView[])[])`: A row of the tree; its children are rows nested under it.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1897,6 +2067,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Rail(...items: (RailItemView | false | null | undefined | readonly RailItemView[])[])`: A narrow column of destinations (Bloom `Rail`).
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: Binding<string>)`: The id of the active item: a binding, an item's press writing it.
@@ -1911,6 +2083,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `RailItem(label: string, icon: ViewNode)`: A destination of a rail: its label and its glyph, a view the app draws (an `Icon` in its ink).
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.id()`](bloom-language-modifiers.mdx#id) `(value: string)`
@@ -1921,6 +2095,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `command`
 
 - `Command(...rows: Rows<CommandItemView | CommandGroupView>)`: The command palette (Bloom `Command`), over the app while `presented`.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1936,6 +2112,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `commandItem`
 
 - `CommandItem(label: string)`: A command of the palette.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1953,11 +2131,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `CommandGroup(title: string, ...items: Rows<CommandItemView>)`: Commands under a title.
 
+Imported from `@oxy.so/bloom-language`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `settings`
 
 - `SettingsModal(...groups: Rows<SettingsGroupView>)`: The settings (Bloom `SettingsModal`), over the app while `presented`.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1973,6 +2155,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `SettingsGroup(label: string, ...items: Rows<SettingsItemView>)`: A group of the settings' navigation.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.id()`](bloom-language-modifiers.mdx#id) `(value: string)`
@@ -1982,6 +2166,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `settingsItem`
 
 - `SettingsItem(label: string, icon: IconComponent)`: A row of the settings' navigation: its label and glyph.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -1997,6 +2183,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `panel`
 
 - `Panel(id: string, content?: Child)`: A panel of the app's shell. Without content it holds the layout's navigator; with it, that view beside the navigator (a detail, an inspector).
+
+Imported from `@oxy.so/bloom-language/router`.
 
 Modifiers:
 
@@ -2016,6 +2204,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `destination`
 
 - `Destination(name: string, href: Href)`: One of the app's destinations, by its route's name and its address: what the pager, the bottom bar and the sidebar read (Bloom's `AppDestination`).
+
+Imported from `@oxy.so/bloom-language/router`.
 
 Modifiers:
 
@@ -2037,6 +2227,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Toolbar(...tools: Child[])`: A row of tools (Bloom `Toolbar`); `.trailing(...)` keeps actions in reach at its end.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -2054,6 +2246,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `StickySection(...children: Child[])`: A section that docks under the header as the page scrolls past it (Bloom `StickySection`).
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
@@ -2063,6 +2257,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `pageFooter`
 
 - `PageFooter(...children: Child[])`: A page's foot (Bloom `PageFooter`): its content, then its actions (`.toolbar`), on a scrim.
+
+Imported from `@oxy.so/bloom-language`.
 
 Modifiers:
 
@@ -2077,6 +2273,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `scrollArea`
 
 - `ScrollArea(...children: Child[])`: A scroll of its own with Bloom's bar (Bloom `ScrollArea`); its children are its content.
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -2101,6 +2299,8 @@ And every universal modifier.
 ### `scrollSurface`
 
 - `ScrollSurface(...children: Child[])`: A scroll on a surface, its ends fading into it (Bloom `ScrollSurface`).
+
+Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
@@ -2134,6 +2334,8 @@ And every universal modifier.
 
 - `AutoHideBar(bar: Child, ...body: Child[])`: A bar that steps aside to a strip while collapsed (Bloom `AutoHideBar`): `bar`, then its body.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.summary()`](bloom-language-modifiers.mdx#summary) `(value: Child | string)`: What the collapsed strip shows; a string is drawn muted.
@@ -2156,6 +2358,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `ResizeHandle(onResize: (distance: number) => void)`: The separator between two panes that resizes them (Bloom `ResizeHandle`): `onResize` is told the distance along the resize axis from where the drag started.
 
+Imported from `@oxy.so/bloom-language`.
+
 Token sets:
 
 - `.style()`: [resizeHandleStyle](bloom-language-tokens.mdx#resizehandlestyle), `'grip'`, `'pill'`
@@ -2177,6 +2381,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `SidebarMode(label: string, icon: IconComponent)`: A mode of the sidebar's switcher under its header: its label and glyph.
 
+Imported from `@oxy.so/bloom-language`.
+
 Modifiers:
 
 - [`.id()`](bloom-language-modifiers.mdx#id) `(value: string)`: Its key: what `.mode()` speaks; its label by default.
@@ -2187,6 +2393,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `settingsSection`
 
 - `SettingsSection(label: string | undefined, ...rows: Child[])`: A settings section: its label (none for an unlabelled card) and its rows.
+
+Imported from `@oxy.so/bloom-language/settings`.
 
 Modifiers:
 
@@ -2200,6 +2408,8 @@ And every universal modifier.
 
 - `SettingsValue(text: string)`: A value shown in a settings row's field.
 
+Imported from `@oxy.so/bloom-language/settings`.
+
 Modifiers:
 
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: IconComponent)`
@@ -2210,6 +2420,8 @@ And every universal modifier.
 ### `settingsSelect`
 
 - `SettingsSelect(label: string, selection: Binding<T>, items: ReadonlyArray<SettingsChoice<T>>)`: A settings row's compact select: its name, the selection and its choices.
+
+Imported from `@oxy.so/bloom-language/settings`.
 
 Token sets:
 
@@ -2227,6 +2439,8 @@ And every universal modifier.
 
 - `SettingsTextField(label: string, text: Binding<string>)`: A settings text field: its name and the committed text (a commit writes the binding).
 
+Imported from `@oxy.so/bloom-language/settings`.
+
 Modifiers:
 
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: IconComponent)`
@@ -2243,6 +2457,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `SettingsDateField(label: string, date: Binding<Date>)`: A settings date field: its name and the date.
 
+Imported from `@oxy.so/bloom-language/settings`.
+
 Modifiers:
 
 - [`.minDate()`](bloom-language-modifiers.mdx#mindate) `(value: Date)`
@@ -2256,6 +2472,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `datePicker`
 
 - `DatePicker(selection: Binding<Date | null>)`: Bloom `DatePicker`: the day the binding holds (`null` for none), set on Apply.
+
+Imported from `@oxy.so/bloom-language/date-picker`.
 
 Modifiers:
 
@@ -2272,6 +2490,8 @@ And every universal modifier.
 ### `dateRangePicker`
 
 - `DateRangePicker(selection: Binding<DateRange | null>)`: Bloom `DateRangePicker`: the range the binding holds (`null` for none), set on Apply.
+
+Imported from `@oxy.so/bloom-language/date-picker`.
 
 Modifiers:
 
@@ -2290,6 +2510,8 @@ And every universal modifier.
 
 - `Calendar(selection: Binding<Date | null>)`: Bloom `Calendar`: the day the binding holds, set when a day is pressed.
 
+Imported from `@oxy.so/bloom-language/date-picker`.
+
 Modifiers:
 
 - [`.bounds()`](bloom-language-modifiers.mdx#bounds) `(min: Date | null, max?: Date | null)`: Days before `min` and after `max` cannot be chosen; `null` leaves that end open.
@@ -2304,6 +2526,8 @@ And every universal modifier.
 ### `rangeCalendar`
 
 - `RangeCalendar(selection: Binding<DateRange | null>)`: Bloom `RangeCalendar`: the range the binding holds, set when a range is completed.
+
+Imported from `@oxy.so/bloom-language/date-picker`.
 
 Modifiers:
 
@@ -2320,6 +2544,8 @@ And every universal modifier.
 ### `timeField`
 
 - `TimeField(selection: Binding<string | null>)`: Bloom `TimeField`: the `"HH:mm"` time the binding holds (`null` while empty), set when committed.
+
+Imported from `@oxy.so/bloom-language/date-picker`.
 
 Token sets:
 
@@ -2338,6 +2564,8 @@ And every universal modifier.
 ### `rating`
 
 - `Rating(value: number | string | null | undefined)`: Bloom `Rating`: a rating on a 5 scale (a string is drawn as given; none draws `New`).
+
+Imported from `@oxy.so/bloom-language/rating`.
 
 Token sets:
 
@@ -2366,6 +2594,8 @@ And every universal modifier.
 
 - `RatingInput(selection: Binding<number | null>)`: Bloom `RatingInput`: the chosen rating the binding holds (`null` while none).
 
+Imported from `@oxy.so/bloom-language/rating`.
+
 Token sets:
 
 - `.size()`: [ratingInputSize](bloom-language-tokens.mdx#ratinginputsize), `'sm'`, `'md'`, `'lg'`
@@ -2382,6 +2612,8 @@ And every universal modifier.
 
 - `RatingBar(label: string, value: number)`: Bloom `RatingBar`: what the row measures and its position on the scale.
 
+Imported from `@oxy.so/bloom-language/rating`.
+
 Modifiers:
 
 - [`.max()`](bloom-language-modifiers.mdx#max) `(value: number)`: The scale (5 by default; `1` for a fraction).
@@ -2396,6 +2628,8 @@ And every universal modifier.
 
 - `RatingSummary(average: number | null, count: number, distribution: Readonly<Partial<Record<number, number>>>)`: Bloom `RatingSummary`: the average (`null` when nobody rated), the count and each star's count.
 
+Imported from `@oxy.so/bloom-language/rating`.
+
 Modifiers:
 
 - [`.labels()`](bloom-language-modifiers.mdx#labels) `(value: RatingSummaryLabels)`
@@ -2406,6 +2640,8 @@ And every universal modifier.
 
 - `Meter(value: number, total?: number)`: Bloom `Meter`: a measurement within a known range (a score, a charge): `value` of `total` (1 by default).
 - `ProgressBar(value: number, total?: number)`: Bloom `Meter` as a progress bar: how far a task has got (an upload, steps done).
+
+Imported from `@oxy.so/bloom-language/stat-bar`.
 
 Token sets:
 
@@ -2430,6 +2666,8 @@ And every universal modifier.
 
 - `MeterRing(value: number, total?: number)`: Bloom `MeterRing`: a measurement as a ring.
 - `ProgressRing(value: number, total?: number)`: Bloom `MeterRing` as a progress ring (a download).
+
+Imported from `@oxy.so/bloom-language/stat-bar`.
 
 Token sets:
 
@@ -2459,6 +2697,8 @@ And every universal modifier.
 - `StatBar(label: string, value: number, max: number)`: Bloom `StatBar`: `label` over a bar filled `value` of `max`.
 - `SplitBar(label: string, percent: number, leftValue: string, rightValue: string)`: Bloom `StatBar`'s split: `percent` (0 to 100) filled from the leading side, its two values under the ends.
 
+Imported from `@oxy.so/bloom-language/stat-bar`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -2477,6 +2717,8 @@ And every universal modifier.
 
 - `Table(...children: Child[])`: Bloom `Table`: a `TableHeader` and a `TableBody`.
 
+Imported from `@oxy.so/bloom-language/table`.
+
 Token sets:
 
 - `.size()`: [tableSize](bloom-language-tokens.mdx#tablesize), `'sm'`, `'md'`
@@ -2492,11 +2734,15 @@ And every universal modifier.
 
 - `TableHeader(...columns: Child[])`: Bloom `TableHeader`: its `TableColumn`s.
 
+Imported from `@oxy.so/bloom-language/table`.
+
 Takes the universal modifiers.
 
 ### `tableColumn`
 
 - `TableColumn(label: TableContent)`: Bloom `TableColumn`: its header label.
+
+Imported from `@oxy.so/bloom-language/table`.
 
 Modifiers:
 
@@ -2513,6 +2759,8 @@ And every universal modifier.
 
 - `TableBody(...rows: Child[])`: Bloom `TableBody`: its `TableRow`s.
 
+Imported from `@oxy.so/bloom-language/table`.
+
 Modifiers:
 
 - [`.emptyState()`](bloom-language-modifiers.mdx#emptystate) `(value: TableContent)`: What fills a 160 band with no rows (a string in the muted body type).
@@ -2523,6 +2771,8 @@ And every universal modifier.
 
 - `TableRow(...cells: Child[])`: Bloom `TableRow`: its `TableCell`s.
 
+Imported from `@oxy.so/bloom-language/table`.
+
 Modifiers:
 
 - [`.selected()`](bloom-language-modifiers.mdx#selected) `(value: boolean)`: `true` paints the row selected; either value announces the selection.
@@ -2532,6 +2782,8 @@ And every universal modifier.
 ### `tableCell`
 
 - `TableCell(content: TableContent)`: Bloom `TableCell`: a string or number in the table's body type, or a view.
+
+Imported from `@oxy.so/bloom-language/table`.
 
 Modifiers:
 
@@ -2548,6 +2800,8 @@ And every universal modifier.
 - `PersonRow(data: ListPersonData)`: Bloom `ListItem`'s person recipe: avatar, name, handle and its action.
 - `CallRow(data: ListCallData)`: Bloom `ListItem`'s call recipe: the call log's row.
 - `ConversationRow(data: ListConversationData)`: Bloom `ListItem`'s conversation recipe: the chat list's row.
+
+Imported from `@oxy.so/bloom-language/list`.
 
 Token sets:
 
@@ -2580,6 +2834,8 @@ And every universal modifier.
 ### `mailRow`
 
 - `MailRow(data: MailRowData)`: Bloom `ListItem`'s mail recipe: the inbox's row; its star is its `.starred()`.
+
+Imported from `@oxy.so/bloom-language/list`.
 
 Token sets:
 
@@ -2615,6 +2871,8 @@ And every universal modifier.
 - `List(items: readonly ListEntry[])`: Bloom `List`: its rows (Bloom's `ListEntry` data, an `id` each), or `sections` of them.
 - `SectionedList(sections: readonly ListSection[])`: Bloom `List` in sections.
 
+Imported from `@oxy.so/bloom-language/list`.
+
 Modifiers:
 
 - [`.separator()`](bloom-language-modifiers.mdx#separator) `(value: ListSeparator)` (here: [listSeparator](bloom-language-tokens.mdx#listseparator)): Between rows: `none`, a full `line`, or an `inset` line (default).
@@ -2635,6 +2893,8 @@ And every universal modifier.
 ### `virtualList`
 
 - `VirtualList(data: readonly T[] | null | undefined, row: VirtualListRowFn<T>)`: Bloom `VirtualList`: `row` draws each item from FlashList's `renderItem` argument (`{ item, index }`), as a view or as the element FlashList's own `renderItem` returns; keep it stable (module scope, or a `useCallback`): the list's `renderItem` keeps its identity while `row` does.
+
+Imported from `@oxy.so/bloom-language/list`.
 
 Modifiers:
 
@@ -2668,6 +2928,8 @@ And every universal modifier.
 
 - `ListSelectionBar(count: number, total: number)`: Bloom `ListSelectionBar`: `count` of `total` selected.
 
+Imported from `@oxy.so/bloom-language/list`.
+
 Modifiers:
 
 - [`.selecting()`](bloom-language-modifiers.mdx#selecting) `(value: boolean)`
@@ -2681,6 +2943,8 @@ And every universal modifier.
 ### `carousel`
 
 - `Carousel(...slides: Child[])`: Bloom `Carousel`: its `CarouselItem`s.
+
+Imported from `@oxy.so/bloom-language/carousel`.
 
 Modifiers:
 
@@ -2705,6 +2969,8 @@ And every universal modifier.
 
 - `CarouselItem(...children: Child[])`: Bloom `CarouselItem`: a slide's content.
 
+Imported from `@oxy.so/bloom-language/carousel`.
+
 Modifiers:
 
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space))
@@ -2714,6 +2980,8 @@ And every universal modifier.
 ### `carouselDots`
 
 - `CarouselDots(count: number, page: Binding<number>)`: Bloom `CarouselDots`: `count` dots, the binding's index the current one.
+
+Imported from `@oxy.so/bloom-language/carousel`.
 
 Token sets:
 
@@ -2733,6 +3001,8 @@ And every universal modifier.
 
 - `Markdown(source: string)`: Bloom `Markdown`: `source` as blocks.
 
+Imported from `@oxy.so/bloom-language/markdown`.
+
 Token sets:
 
 - `.size()`: [markdownSize](bloom-language-tokens.mdx#markdownsize), `'sm'`, `'md'`, `'lg'`
@@ -2749,6 +3019,8 @@ And every universal modifier.
 ### `slider`
 
 - `Slider(value: Binding<number>, title?: string)`: Bloom `Slider`: the binding's value; `title` is its visible label (and name).
+
+Imported from `@oxy.so/bloom-language/slider`.
 
 Token sets:
 
@@ -2776,6 +3048,8 @@ And every universal modifier.
 ### `rangeSlider`
 
 - `RangeSlider(value: Binding<[number, number]>, title?: string)`: Bloom `RangeSlider`: the binding's `[lower, upper]`; `title` is its visible label.
+
+Imported from `@oxy.so/bloom-language/slider`.
 
 Token sets:
 
@@ -2805,6 +3079,8 @@ And every universal modifier.
 
 - `Accordion(open: Binding<AccordionSelection>, ...items: Child[])`: Bloom `Accordion`: the binding holds what is open.
 
+Imported from `@oxy.so/bloom-language/accordion`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -2821,11 +3097,15 @@ And every universal modifier.
 
 - `AccordionItem(value: string, ...children: Child[])`: Bloom `AccordionItem`: `value` names it in the binding.
 
+Imported from `@oxy.so/bloom-language/accordion`.
+
 Takes the universal modifiers.
 
 ### `accordionTrigger`
 
 - `AccordionTrigger(title: string | Child)`: Bloom `AccordionTrigger`: a title (a string in the trigger's type) or a view.
+
+Imported from `@oxy.so/bloom-language/accordion`.
 
 Modifiers:
 
@@ -2837,17 +3117,23 @@ And every universal modifier.
 
 - `AccordionContent(...children: Child[])`: Bloom `AccordionContent`: its views.
 
+Imported from `@oxy.so/bloom-language/accordion`.
+
 Takes the universal modifiers.
 
 ### `code`
 
 - `Code(text: string)`: Bloom `Code`: `text` in monospace.
 
+Imported from `@oxy.so/bloom-language/code`.
+
 Takes the universal modifiers.
 
 ### `pre`
 
 - `Pre(code: string)`: Bloom `Pre`: `code` as it is written.
+
+Imported from `@oxy.so/bloom-language/code`.
 
 Modifiers:
 
@@ -2859,6 +3145,8 @@ And every universal modifier.
 ### `codeLines`
 
 - `CodeLines(code: string)`: Bloom `CodeLines`: `code`, a line each.
+
+Imported from `@oxy.so/bloom-language/code`.
 
 Token sets:
 
@@ -2877,6 +3165,8 @@ And every universal modifier.
 ### `codeBlock`
 
 - `CodeBlock(code: string)`: Bloom `CodeBlock`: `code` in a card.
+
+Imported from `@oxy.so/bloom-language/code`.
 
 Modifiers:
 
@@ -2898,6 +3188,8 @@ And every universal modifier.
 
 - `Stepper(value: Binding<number>)`: Bloom `Stepper`: the binding's count.
 
+Imported from `@oxy.so/bloom-language/stepper`.
+
 Token sets:
 
 - `.size()`: [stepperSize](bloom-language-tokens.mdx#steppersize), `'sm'`, `'md'`
@@ -2918,6 +3210,8 @@ And every universal modifier.
 ### `stepperRow`
 
 - `StepperRow(value: Binding<number>, title: string | Child)`: Bloom `StepperRow`: `title` (a string in the row's type, or a view) beside the binding's count.
+
+Imported from `@oxy.so/bloom-language/stepper`.
 
 Token sets:
 
@@ -2942,6 +3236,8 @@ And every universal modifier.
 
 - `Tooltip(trigger: Child, content: string | Child)`: Bloom `Tooltip` around `trigger`; `content` is its bubble (a string, also its accessible text, or a view named with `.label()`).
 
+Imported from `@oxy.so/bloom-language/tooltip`.
+
 Token sets:
 
 - `.size()`: [tooltipSize](bloom-language-tokens.mdx#tooltipsize), `'sm'`, `'md'`
@@ -2959,6 +3255,8 @@ And every universal modifier.
 
 - `Breadcrumb(...items: Child[])`: Bloom `Breadcrumb`: its `BreadcrumbItem`s, the current page last.
 
+Imported from `@oxy.so/bloom-language/breadcrumb`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -2975,6 +3273,8 @@ And every universal modifier.
 ### `breadcrumbItem`
 
 - `BreadcrumbItem(title: string | Child)`: Bloom `BreadcrumbItem`: a title (a string in its type) or a view.
+
+Imported from `@oxy.so/bloom-language/breadcrumb`.
 
 Token sets:
 
@@ -2995,6 +3295,8 @@ And every universal modifier.
 
 - `ActivityHeatmap(data: ActivityHeatmapDay[])`: Bloom `ActivityHeatmap`: its days (`{ date, count }`).
 
+Imported from `@oxy.so/bloom-language/activity-heatmap`.
+
 Modifiers:
 
 - [`.days()`](bloom-language-modifiers.mdx#days) `(value: number)`: How many days back from the end (a year by default).
@@ -3013,6 +3315,8 @@ And every universal modifier.
 ### `tagField`
 
 - `TagField(tags: Binding<ReadonlyArray<string>>, title?: string)`: Bloom `TagField`: the binding's tags; `title` is its visible label (and name).
+
+Imported from `@oxy.so/bloom-language/tag-field`.
 
 Token sets:
 
@@ -3039,6 +3343,8 @@ And every universal modifier.
 
 - `FileUpload()`: Bloom `FileUpload`.
 
+Imported from `@oxy.so/bloom-language/file-upload`.
+
 Modifiers:
 
 - [`.file()`](bloom-language-modifiers.mdx#file) `(value: FileUploadFile | null)`: The file being uploaded (or uploaded), when the screen owns it.
@@ -3058,6 +3364,8 @@ And every universal modifier.
 
 - `Video(player: VideoViewProps['player'])`: Bloom `VideoView`: the picture of `player` (the app's own expo-video player).
 
+Imported from `@oxy.so/bloom-language/video-view`.
+
 Modifiers:
 
 - [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: ContentFit)`: How the picture fills its box: `contain` by default.
@@ -3069,6 +3377,8 @@ And every universal modifier.
 ### `inputOtp`
 
 - `InputOtp(code: Binding<string>)`: Bloom `InputOtp`: the binding holds the code, cleaned of what its boxes do not take.
+
+Imported from `@oxy.so/bloom-language/input-otp`.
 
 Modifiers:
 
@@ -3085,6 +3395,8 @@ And every universal modifier.
 
 - `ColorSwatchPicker(label: string, color: Binding<string>, colors: readonly string[])`: Bloom `ColorSwatchPicker`: `label` names the whole, the binding holds the chosen colour, `colors` are the swatches (CSS colours, each its own value).
 
+Imported from `@oxy.so/bloom-language/color-swatch-picker`.
+
 Token sets:
 
 - `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
@@ -3099,6 +3411,8 @@ And every universal modifier.
 ### `animatedCheck`
 
 - `AnimatedCheck(trigger?: unknown)`: Bloom `AnimatedCheck`: it draws itself as it appears, and again whenever `trigger` changes (SwiftUI's effect `value:`).
+
+Imported from `@oxy.so/bloom-language/animated-check`.
 
 Token sets:
 
@@ -3116,6 +3430,8 @@ And every universal modifier.
 
 - `SpinnerIcon()`: Bloom `SpinnerIcon`: the loader's glyph without its label or its track.
 
+Imported from `@oxy.so/bloom-language/spinner-icon`.
+
 Token sets:
 
 - `.size()`: [iconSize](bloom-language-tokens.mdx#iconsize), `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'10'`, `'11'`, `'13'`, `'14'`, `'15'`, `'17'`, `'18'`, `'21'`, `'22'`, `'40'`, `'44'`, `'64'`, `'96'`
@@ -3132,6 +3448,8 @@ And every universal modifier.
 
 - `ContextMenu(content: Child, ...rows: MenuChild[])`: Bloom `ContextMenu` on `content`: `rows` are what it presents (`Item`, `Submenu`, `Section`, `Divider`, or one `menu()` content). Its box and its `.label()` are the view's: the area that opens it.
 
+Imported from `@oxy.so/bloom-language/context-menu`.
+
 Modifiers:
 
 - [`.actions()`](bloom-language-modifiers.mdx#actions) `(value: MenuActionsView)`: What its tagged rows do: an `actions()` view, as a `Menu`'s.
@@ -3142,6 +3460,8 @@ And every universal modifier.
 ### `collapsible`
 
 - `Collapsible(open: boolean, ...children: Child[])`: Bloom `Collapsible`: `children`, shown while `open` is true. What opens it is the screen's (a row, a button): the collapsible draws no trigger.
+
+Imported from `@oxy.so/bloom-language/collapsible`.
 
 Modifiers:
 
@@ -3154,6 +3474,8 @@ And every universal modifier.
 ### `dropZone`
 
 - `DropZone(accept: readonly DropKind[], onDrop: (event: DropTargetDropEvent) => void, ...children: Child[])`: Bloom `DropZone`: `children`, taking drops of the `accept` kinds (`files`, `text`, `url`, `html` or a media type); `onDrop` receives what was dropped.
+
+Imported from `@oxy.so/bloom-language/drop-zone`.
 
 Modifiers:
 
@@ -3170,6 +3492,8 @@ And every universal modifier.
 
 - `MediaInsetBorder(...children: Child[])`: Bloom `MediaInsetBorder`, over the views it holds (usually none).
 
+Imported from `@oxy.so/bloom-language/media-inset-border`.
+
 Modifiers:
 
 - [`.opaque()`](bloom-language-modifiers.mdx#opaque) `(value?: boolean)`: The full-contrast border, to line up with opaque borders beside it (softened by default).
@@ -3181,6 +3505,8 @@ And every universal modifier.
 
 - `FactStrip(...facts: Child[])`: Bloom `FactStrip`: its `Fact`s, in order.
 
+Imported from `@oxy.so/bloom-language/fact-strip`.
+
 Modifiers:
 
 - [`.minItemWidth()`](bloom-language-modifiers.mdx#minitemwidth) `(value: SpaceToken)`: The narrowest a fact gets before the strip scrolls (`96` by default).
@@ -3191,6 +3517,8 @@ And every universal modifier.
 ### `fact`
 
 - `Fact(label: string, value: FactText)`: A fact: what it is (`label`) and the fact itself (`value`: a string is drawn large).
+
+Imported from `@oxy.so/bloom-language/fact-strip`.
 
 Modifiers:
 
@@ -3204,6 +3532,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `sortablePhotoGrid`
 
 - `SortablePhotoGrid(photos: Binding<ReadonlyArray<SortablePhoto>>)`: Bloom `SortablePhotoGrid`: the binding's photos, in order; a move writes the new order.
+
+Imported from `@oxy.so/bloom-language/sortable-media`.
 
 Modifiers:
 
@@ -3222,6 +3552,8 @@ And every universal modifier.
 
 - `ChoiceList(label: string, choice: Binding<Value>, options: readonly ChoiceListOption<Value>[], content: (option: Readonly<ChoiceListOption<Value>>, state: Readonly<ChoiceListOptionState>) => Child)`: Bloom `ChoiceList`: `label` names the whole, the binding holds the chosen option's value, and `content` draws each option (decorative: the option is the control, named by its `label`).
 
+Imported from `@oxy.so/bloom-language/choice-list`.
+
 Modifiers:
 
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: The options' arrangement and the arrows that move through it: `horizontal` (default) or `vertical`.
@@ -3234,6 +3566,8 @@ And every universal modifier.
 
 - `VideoPlayback(...children: Child[])`: Bloom `VideoPlaybackProvider` around `children` (once, at the app's root).
 
+Imported from `@oxy.so/bloom-language/video-playback`.
+
 Modifiers:
 
 - [`.autoplay()`](bloom-language-modifiers.mdx#autoplay) `(value: boolean)`: Whether a visible video starts on its own (the viewer's preference by default).
@@ -3244,17 +3578,23 @@ Takes only the modifiers above (no universal modifiers).
 
 - `VideoViewability(viewable: ReadonlySet<string> | ViewableKeysStore, ...children: Child[])`: Bloom `VideoViewabilityProvider` around `children`: `viewable` is the keys on screen (a set derived while rendering) or the store a list publishes them to.
 
+Imported from `@oxy.so/bloom-language/video-playback`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `videoViewabilityScope`
 
 - `VideoViewabilityScope(key: string, ...children: Child[])`: Bloom `VideoViewabilityScope` around `children`: visible as the item `key` is.
 
+Imported from `@oxy.so/bloom-language/video-playback`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `hoverCard`
 
 - `HoverCard(trigger: Child, content: Child)`: Bloom `HoverCard` on `trigger`; `content` is the card (named with `.label()`).
+
+Imported from `@oxy.so/bloom-language/hover-card`.
 
 Modifiers:
 
@@ -3270,6 +3610,8 @@ And every universal modifier.
 ### `expandableText`
 
 - `ExpandableText(text: string, expanded?: Binding<boolean>)`: Bloom `ExpandableText`: `text`, clamped; `expanded` holds whether it is open when the screen owns it. Its type and colour are the text environment's (`.font()`, `.weight()`, `.foreground()`), as a `Text`'s are.
+
+Imported from `@oxy.so/bloom-language/expandable-text`.
 
 Token sets:
 
@@ -3287,6 +3629,8 @@ And every universal modifier.
 
 - `CategoryBar(label: string, items: readonly CategoryBarItem[], selection: Binding<string | undefined>)`: Bloom `CategoryBar`: `label` names the tablist, `items` are its categories (`{ key, label, icon }`), the binding holds the selected key (`undefined` selects none). A press sets it, the selected one's included.
 
+Imported from `@oxy.so/bloom-language/category-bar`.
+
 Modifiers:
 
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: Content pinned after the strip (a Filters button); it never scrolls.
@@ -3300,6 +3644,8 @@ And every universal modifier.
 
 - `Menubar(...menus: (MenubarMenuView | false | null | undefined)[])`: Bloom `Menubar`: `menus` in a row; one opens at a time. `.label()` names the bar.
 
+Imported from `@oxy.so/bloom-language/menubar`.
+
 Modifiers:
 
 - [`.openMenu()`](bloom-language-modifiers.mdx#openmenu) `(value: Binding<string | undefined>)`: The open menu's id (its title unless `.id()` says otherwise), `undefined` while none is.
@@ -3310,6 +3656,8 @@ And every universal modifier.
 ### `menubarMenu`
 
 - `MenubarMenu(title: string, ...rows: MenuChild[])`: Bloom `MenubarMenu`: `title` in the bar; `rows` are a `Menu`'s (or one `menu()` content).
+
+Imported from `@oxy.so/bloom-language/menubar`.
 
 Modifiers:
 
@@ -3323,6 +3671,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `CompositionBar(segments: readonly CompositionSegment[], selection: Binding<string | null>, hint: string)`: Bloom `CompositionBar`: `segments` left to right; `selection` holds the chosen segment's key (a press sets it); `hint` shows under the bar while none is chosen.
 
+Imported from `@oxy.so/bloom-language/composition-bar`.
+
 Modifiers:
 
 - [`.readoutFormat()`](bloom-language-modifiers.mdx#readoutformat) `(value: (amount: number, percent: number) => string)`: The readout of the chosen segment, from its amount and its share (0 to 100).
@@ -3332,6 +3682,8 @@ And every universal modifier.
 ### `phoneInput`
 
 - `PhoneInput(number: Binding<string>, title?: string)`: Bloom `PhoneInput`: the binding holds the number; `title` is its visible label (and name).
+
+Imported from `@oxy.so/bloom-language/phone-input`.
 
 Token sets:
 
@@ -3356,11 +3708,15 @@ And every universal modifier.
 
 - `MediaFlightLayer()`: Bloom `MediaFlightLayer`.
 
+Imported from `@oxy.so/bloom-language/media-flight`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `mediaFlightHost`
 
 - `MediaFlightHost(id: string, content: MediaSurfaceContent)`: Bloom `MediaFlightHost`: `content` (an image `{ uri }` or a video `{ kind: 'video', player }`) as anchor `id`.
+
+Imported from `@oxy.so/bloom-language/media-flight`.
 
 Modifiers:
 
@@ -3376,6 +3732,8 @@ And every universal modifier.
 
 - `MediaSurface(content: MediaSurfaceContent)`: Bloom `MediaSurface`: `content` in the view's box.
 
+Imported from `@oxy.so/bloom-language/media-flight`.
+
 Modifiers:
 
 - [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)` (here: [mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
@@ -3390,6 +3748,8 @@ And every universal modifier.
 
 - `MediaPoster(content: MediaSurfaceContent)`: Bloom `MediaPoster`: `content`'s still.
 
+Imported from `@oxy.so/bloom-language/media-flight`.
+
 Modifiers:
 
 - [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)` (here: [mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
@@ -3400,11 +3760,15 @@ And every universal modifier.
 
 - `EmptyMediaSurface()`: Bloom `EmptyMediaSurface`.
 
+Imported from `@oxy.so/bloom-language/media-flight`.
+
 Takes the universal modifiers.
 
 ### `avatarAnchor`
 
 - `AvatarAnchor(flights: AvatarFlights, key: string, ...children: Child[])`: Bloom `AvatarAnchor` around `children`: anchor `key` of `flights` (from `useAvatarFlights()`).
+
+Imported from `@oxy.so/bloom-language/avatar-flight`.
 
 Takes the universal modifiers.
 
@@ -3412,11 +3776,15 @@ Takes the universal modifiers.
 
 - `AvatarFlightLayer(flights: AvatarFlights)`: Bloom `AvatarFlightLayer`: draws `flights` while any is in the air.
 
+Imported from `@oxy.so/bloom-language/avatar-flight`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `inputGroup`
 
 - `InputGroup(...children: Child[])`: Bloom `InputGroup`: its children in order, the addons before the control leading and the rest trailing; the control (a `TextField`, a `Search`) draws bare in the group's shell.
+
+Imported from `@oxy.so/bloom-language/input-group`.
 
 Token sets:
 
@@ -3433,6 +3801,8 @@ And every universal modifier.
 
 - `InputGroupAddon(...content: InputGroupContent[])`: Bloom `InputGroupAddon`: a string (drawn as Bloom's subdued label) or views.
 
+Imported from `@oxy.so/bloom-language/input-group`.
+
 Modifiers:
 
 - [`.divider()`](bloom-language-modifiers.mdx#divider) `(value?: boolean)`: A hairline on its inner edge (for a button).
@@ -3443,6 +3813,8 @@ And every universal modifier.
 ### `notification`
 
 - `Notification(title: string | Child)`: Bloom `Notification`: its title, a string or a view.
+
+Imported from `@oxy.so/bloom-language/notification`.
 
 Modifiers:
 
@@ -3465,6 +3837,8 @@ And every universal modifier.
 
 - `LinkPreview(preview: LinkPreviewData)`: Bloom `LinkPreviewCard` of `preview`; `.onPress()` replaces opening its url.
 
+Imported from `@oxy.so/bloom-language/link-preview`.
+
 Modifiers:
 
 - [`.coverFill()`](bloom-language-modifiers.mdx#coverfill) `(value?: boolean)`: The cover fills the height the card is given, the text a footer under it (a fixed-height row).
@@ -3474,6 +3848,8 @@ And every universal modifier.
 ### `socialButton`
 
 - `SocialButton(brand: Exclude<SocialBrand, 'custom'> | SocialBrandConfig, title?: string)`: Bloom `SocialButton`: a built-in provider (`'google'`, `'apple'`…), or a brand of your own (its icon, name and colour); `title` replaces the default ("Continue with Google", in the app's language).
+
+Imported from `@oxy.so/bloom-language/social-button`.
 
 Token sets:
 
@@ -3494,6 +3870,8 @@ And every universal modifier.
 ### `gallery`
 
 - `Gallery(items: readonly GalleryMedia[])`: Bloom `ZoomableMediaGallery` of `items`, presented with `.fullScreenCover(isPresented, Gallery(items))`.
+
+Imported from `@oxy.so/bloom-language/zoomable-media-gallery`.
 
 Token sets:
 
@@ -3516,6 +3894,8 @@ Takes only the modifiers above (no universal modifiers).
 
 - `MeetingScheduler(booking: Binding<MeetingSchedulerValue | null>, host: MeetingSchedulerHost, meeting: MeetingSchedulerDetails, timezone: string)`: Bloom `MeetingScheduler`: the booking the binding holds (a day and a time, or `null`), set by its "Send meeting"; `host` and `meeting` are its card, `timezone` its timezone row.
 
+Imported from `@oxy.so/bloom-language/date-picker`.
+
 Modifiers:
 
 - [`.bounds()`](bloom-language-modifiers.mdx#bounds) `(min: Date | null, max?: Date | null)`: Days before `min` and after `max` cannot be chosen; `null` leaves that end open.
@@ -3535,6 +3915,8 @@ And every universal modifier.
 
 - `InlineMarkdown(source: string | readonly MarkdownInline[])`: Bloom `InlineMarkdown`: `source` (or Bloom's parsed runs) as spans, inside a `Text`: `Text(InlineMarkdown(reply.summary))`.
 
+Imported from `@oxy.so/bloom-language/markdown`.
+
 Modifiers:
 
 - [`.streaming()`](bloom-language-modifiers.mdx#streaming) `(value?: boolean)`: The text is still arriving: an unclosed span is drawn as it will close.
@@ -3548,6 +3930,8 @@ And every universal modifier.
 ### `dataTable`
 
 - `DataTable(rows: readonly T[], rowId: (row: T, index: number) => string, ...columns: DataColumnView<T>[])`: Bloom `DataTable`: every row (already filtered), each named by `rowId`, in its `DataColumn`s. `.label()` names the table.
+
+Imported from `@oxy.so/bloom-language/data-table`.
 
 Token sets:
 
@@ -3575,6 +3959,8 @@ And every universal modifier.
 
 - `DataColumn(id: string, header: TableContent, value?: (row: T) => DataTableSortValue)`: A column: its `id` (its sort key), its header, and the row's value (what it sorts by and shows).
 
+Imported from `@oxy.so/bloom-language/data-table`.
+
 Modifiers:
 
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string)`: The header's name, when the header is not a string.
@@ -3593,11 +3979,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `DataTableFilter(value: Binding<string>, label: string, options: readonly DataTableOption[])`: Bloom `DataTableFilter`: the binding's value among `options`; `label` names it.
 
+Imported from `@oxy.so/bloom-language/data-table`.
+
 Takes the universal modifiers.
 
 ### `dataTableSearch`
 
 - `DataTableSearch(text: Binding<string>, label: string)`: Bloom `DataTableSearch`: the binding's text; `label` names it.
+
+Imported from `@oxy.so/bloom-language/data-table`.
 
 Modifiers:
 
@@ -3608,6 +3998,8 @@ And every universal modifier.
 ### `dataTableSelect`
 
 - `DataTableSelect(value: Binding<string>, label: string, options: readonly DataTableSelectOption[], width: SpaceToken)`: Bloom `DataTableSelect`: the binding's value among `options`, its trigger `width` wide; `label` names it.
+
+Imported from `@oxy.so/bloom-language/data-table`.
 
 Token sets:
 
@@ -3623,6 +4015,8 @@ And every universal modifier.
 
 - `SortableChipRow(...chips: SortableChipView[])`: Bloom `SortableChipRow`: `chips` in the screen's order; `.label()` names the row.
 
+Imported from `@oxy.so/bloom-language/sortable-chip-row`.
+
 Modifiers:
 
 - [`.onReorder()`](bloom-language-modifiers.mdx#onreorder) `(value: (keys: string[]) => void)`: The new order of the chips' keys, after one has been moved.
@@ -3635,11 +4029,15 @@ And every universal modifier.
 
 - `SortableChip(key: string, label: string, content: Child)`: A chip: `key` is its identity across moves, `label` what a screen reader says of it when moved.
 
+Imported from `@oxy.so/bloom-language/sortable-chip-row`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `viewport`
 
 - `Viewport(...children: Child[])`: Bloom `ViewportProvider` around `children`.
+
+Imported from `@oxy.so/bloom-language/viewport`.
 
 Modifiers:
 
@@ -3650,6 +4048,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `glassGroup`
 
 - `GlassGroup(...children: Child[])`: A glass group around `children`: their glasses render, blend and morph together.
+
+Imported from `@oxy.so/bloom-language/glass-group`.
 
 Token sets:
 
@@ -3665,11 +4065,15 @@ And every universal modifier.
 
 - `ViewThatFits(axis: Axis, ...candidates: Child[])`: The first candidate whose ideal size along `axis` fits the room it is given, else the last (SwiftUI's `ViewThatFits(in:)`): adaptation to content (a long translation, a count, a toolbar label) that a breakpoint `when()` cannot express. Each candidate is measured once more, out of sight, so keep them small and few.
 
+Imported from `@oxy.so/bloom-language/view-that-fits`.
+
 Takes the universal modifiers.
 
 ### `toolbarGroup`
 
 - `ToolbarGroup(...items: Child[])`: Toolbar items that share one background (Apple: group items that perform similar actions).
+
+Imported from `@oxy.so/bloom-language/toolbar-group`.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3677,11 +4081,15 @@ Takes only the modifiers above (no universal modifiers).
 
 - `ToolbarSpacer(kind: ToolbarSpacerKind = 'fixed')`: A gap between toolbar groups: `fixed` (the default, a small gap) or `flexible` (the free space).
 
+Imported from `@oxy.so/bloom-language/toolbar-group`.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `confirmationDialog`
 
 - `ConfirmationDialog(title: string, ...rows: MenuChild[])`: A confirmation dialog's title and its rows (`Item`s).
+
+Imported from `@oxy.so/bloom-language/confirmation-dialog`.
 
 Modifiers:
 
@@ -3696,6 +4104,8 @@ Takes only the modifiers above (no universal modifiers).
 ### `agentAvatar`
 
 - `AgentAvatar(character: AvatarCharacter, options: AgentAvatarOptions = {})`: Bloom `AgentAvatar`: `character` is what it is (`{ preset: 'blue_beret' }` is a complete one). `.label()` names it.
+
+Imported from `@oxy.so/bloom-language/agent-avatar`.
 
 Token sets:
 
@@ -3715,6 +4125,8 @@ And every universal modifier.
 
 - `ChatComposer(text: Binding<string>, options: ChatComposerOptions = {})`: Bloom `ChatComposer`, writing the text the binding holds.
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Modifiers:
 
 - [`.activeIndex()`](bloom-language-modifiers.mdx#activeindex) `(value: Bound<ChatComposerProps, 'activeIndex'>)`
@@ -3725,11 +4137,15 @@ And every universal modifier.
 
 - `CompactComposer(text: Binding<string>, options: CompactComposerOptions)`
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Takes the universal modifiers.
 
 ### `composerBanner`
 
 - `ComposerBanner(kind: ComposerBannerKind, title: string, options: ComposerBannerOptions = {})`: Bloom `ComposerBanner`: a `reply`, `edit`, `forward` or `note`, and its title.
+
+Imported from `@oxy.so/bloom-language/chat-composer`.
 
 Token sets:
 
@@ -3744,6 +4160,8 @@ And every universal modifier.
 ### `composerIconButton`
 
 - `ComposerIconButton(icon: ChatComposerIcon, label: string, options: ComposerIconButtonOptions = {})`: Bloom `ComposerIconButton`: its glyph and its name. `.onPress()` is what it does.
+
+Imported from `@oxy.so/bloom-language/chat-composer`.
 
 Token sets:
 
@@ -3762,6 +4180,8 @@ And every universal modifier.
 
 - `SuggestionList(kind: SuggestionKind, suggestions: readonly ChatComposerSuggestion[], options: SuggestionListOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -3779,11 +4199,15 @@ And every universal modifier.
 
 - `VoiceRecorder(state: VoiceRecorderState, seconds: number, options: VoiceRecorderOptions = {})`: Bloom `VoiceRecorder`: `recording`, `locked` or `preview`, and the seconds recorded.
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Takes the universal modifiers.
 
 ### `attachmentMenu`
 
 - `AttachmentMenu(trigger: Child, options: AttachmentMenuOptions = {})`: Bloom `AttachmentMenu`, opened by `trigger`.
+
+Imported from `@oxy.so/bloom-language/chat-composer`.
 
 Token sets:
 
@@ -3800,6 +4224,8 @@ And every universal modifier.
 ### `emojiPicker`
 
 - `EmojiPicker(groups: readonly EmojiGroup[], options: EmojiPickerOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat-composer`.
 
 Token sets:
 
@@ -3819,6 +4245,8 @@ And every universal modifier.
 
 - `ReactionPicker(emojis?: readonly string[], options: ReactionPickerOptions = {})`: Bloom `ReactionPicker`: these emoji (Bloom's six by default).
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Token sets:
 
 - `.size()`: [reactionPickerSize](bloom-language-tokens.mdx#reactionpickersize), `'sm'`, `'md'`
@@ -3834,6 +4262,8 @@ And every universal modifier.
 
 - `MessageContextMenu(message: Child, items: readonly MessageMenuItem[], options: MessageContextMenuOptions = {})`: Bloom `MessageContextMenu` on `message`, with these items.
 
+Imported from `@oxy.so/bloom-language/chat-composer`.
+
 Modifiers:
 
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Bound<MessageContextMenuProps, 'open'>)`
@@ -3843,6 +4273,8 @@ And every universal modifier.
 ### `areaChartCard`
 
 - `AreaChartCard(options: AreaChartCardOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -3862,6 +4294,8 @@ And every universal modifier.
 
 - `BarListCard(options: BarListCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -3877,6 +4311,8 @@ And every universal modifier.
 
 - `ChartCardSurface(content: Child, options: ChartCardSurfaceOptions = {})`: Bloom `ChartCardSurface` around `content` (a list of views, keyed by `.id()`, is its children).
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Modifiers:
 
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The space between its children (Bloom's 16 by default).
@@ -3887,11 +4323,15 @@ And every universal modifier.
 
 - `ChartHeadline(label: string, options: ChartHeadlineOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Takes the universal modifiers.
 
 ### `chartStatTiles`
 
 - `ChartStatTiles(items: readonly ChartStatTile[], options: ChartStatTilesOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Modifiers:
 
@@ -3902,6 +4342,8 @@ And every universal modifier.
 ### `contributionsCard`
 
 - `ContributionsCard(options: ContributionsCardOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -3917,6 +4359,8 @@ And every universal modifier.
 ### `heatmapChartCard`
 
 - `HeatmapChartCard(options: HeatmapChartCardOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -3934,6 +4378,8 @@ And every universal modifier.
 ### `lineChartCard`
 
 - `LineChartCard(options: LineChartCardOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -3953,6 +4399,8 @@ And every universal modifier.
 
 - `RadarChartCard(options: RadarChartCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Token sets:
 
 - `.style()`: [radarVariant](bloom-language-tokens.mdx#radarvariant), `'filled'`, `'dots'`, `'lines'`, `'score'`
@@ -3970,6 +4418,8 @@ And every universal modifier.
 
 - `SleepScoreCard(metrics: readonly SleepMetric[], options: SleepScoreCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Modifiers:
 
 - [`.activeIndex()`](bloom-language-modifiers.mdx#activeindex) `(value: Bound<SleepScoreCardProps, 'activeIndex'>)`
@@ -3979,6 +4429,8 @@ And every universal modifier.
 ### `sparkline`
 
 - `Sparkline(data: readonly number[], options: SparklineOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -3997,6 +4449,8 @@ And every universal modifier.
 
 - `StageBarsCard(options: StageBarsCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Modifiers:
 
 - [`.mono()`](bloom-language-modifiers.mdx#mono) `(value?: boolean)`: One ink for every stage.
@@ -4008,6 +4462,8 @@ And every universal modifier.
 ### `stepsCard`
 
 - `StepsCard(data: readonly StepsPoint[], options: StepsCardOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chart-cards`.
 
 Token sets:
 
@@ -4025,6 +4481,8 @@ And every universal modifier.
 
 - `TokensChartCard(data: readonly TokensPoint[], options: TokensChartCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chart-cards`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -4041,6 +4499,8 @@ And every universal modifier.
 
 - `ComposerPanel(prompt: Binding<string>, options: ComposerPanelOptions = {})`: Bloom `ComposerPanel`, writing the prompt the binding holds.
 
+Imported from `@oxy.so/bloom-language/composer-panel`.
+
 Modifiers:
 
 - [`.model()`](bloom-language-modifiers.mdx#model) `(value: Bound<ComposerPanelProps, 'model'>)`
@@ -4053,6 +4513,8 @@ And every universal modifier.
 ### `composerPill`
 
 - `ComposerPill(prompt: Binding<string>, options: ComposerPillOptions = {})`: Bloom `ComposerPill`, writing the prompt the binding holds.
+
+Imported from `@oxy.so/bloom-language/composer-panel`.
 
 Modifiers:
 
@@ -4069,11 +4531,15 @@ And every universal modifier.
 
 - `ComposerPanelStatusTab(options: ComposerPanelStatusTabOptions = {})`
 
+Imported from `@oxy.so/bloom-language/composer-panel`.
+
 Takes the universal modifiers.
 
 ### `aiChatShell`
 
 - `AiChatShell(content: Child, options: AiChatShellOptions)`: Bloom `AiChatShell` around the chat (`content`).
+
+Imported from `@oxy.so/bloom-language/ai-chat`.
 
 Modifiers:
 
@@ -4089,6 +4555,8 @@ And every universal modifier.
 
 - `AiChatContainer(content: Child, options: AiChatContainerOptions = {})`: Bloom `AiChatContainer` around the chat's content (its thread).
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Modifiers:
 
 - [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `false` draws the chat without its own surface.
@@ -4100,11 +4568,15 @@ And every universal modifier.
 
 - `AiChatThread(turns: Child, options: AiChatThreadOptions = {})`: Bloom `AiChatThread` of these turns (a list, keyed by `.id()`).
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Takes the universal modifiers.
 
 ### `aiChatUserMessage`
 
 - `AiChatUserMessage(content: Child, options: AiChatUserMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/ai-chat`.
 
 Takes the universal modifiers.
 
@@ -4112,11 +4584,15 @@ Takes the universal modifiers.
 
 - `AiChatAssistantMessage(content: Child, options: AiChatAssistantMessageOptions = {})`
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Takes the universal modifiers.
 
 ### `aiChatMessageLine`
 
 - `AiChatMessageLine(content: string | Child)`: Bloom `AiChatMessageLine`: a string is the line's text; a view is drawn as a block of the reply (Bloom's `block`), a code block or a quote.
+
+Imported from `@oxy.so/bloom-language/ai-chat`.
 
 Token sets:
 
@@ -4133,17 +4609,23 @@ And every universal modifier.
 
 - `AiChatHeader(content: Child)`
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Takes the universal modifiers.
 
 ### `aiChatMobileHeader`
 
 - `AiChatMobileHeader(title: string)`
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Takes the universal modifiers.
 
 ### `aiChatCodePanel`
 
 - `AiChatCodePanel(code: string, options: AiChatCodePanelOptions = {})`
+
+Imported from `@oxy.so/bloom-language/ai-chat`.
 
 Modifiers:
 
@@ -4155,6 +4637,8 @@ And every universal modifier.
 
 - `AiChatGalleryPanel(generations: readonly AiChatGeneration[], options: AiChatGalleryPanelOptions = {})`
 
+Imported from `@oxy.so/bloom-language/ai-chat`.
+
 Modifiers:
 
 - [`.tab()`](bloom-language-modifiers.mdx#tab) `(value: Bound<AiChatGalleryPanelProps, 'tab'>)`
@@ -4164,6 +4648,8 @@ And every universal modifier.
 ### `statCard`
 
 - `StatCard(stat: StatCardsItem)`: Bloom `StatCard` of `stat` (a `StatCardsItem`, as Bloom takes it).
+
+Imported from `@oxy.so/bloom-language/stat-cards`.
 
 Token sets:
 
@@ -4179,6 +4665,8 @@ And every universal modifier.
 
 - `StatCards(stats: readonly StatCardsItem[])`: Bloom `StatCards` of `stats`, in order (`stats.slice(0, n)` for the first n).
 
+Imported from `@oxy.so/bloom-language/stat-cards`.
+
 Token sets:
 
 - `.style()`: [statCardsVariant](bloom-language-tokens.mdx#statcardsvariant), `'plain'`, `'footer'`
@@ -4193,6 +4681,8 @@ And every universal modifier.
 ### `playButton`
 
 - `PlayButton(playing: boolean, options: PlayButtonOptions = {})`: Bloom `PlayButton`: `playing` draws the pause glyph and names it Pause.
+
+Imported from `@oxy.so/bloom-language/media-controls`.
 
 Token sets:
 
@@ -4211,6 +4701,8 @@ And every universal modifier.
 
 - `PlaybackProgress(value: number, duration: number, options: PlaybackProgressOptions = {})`: Bloom `PlaybackProgress` at `value` of `duration`, in seconds.
 
+Imported from `@oxy.so/bloom-language/media-controls`.
+
 Token sets:
 
 - `.style()`: [playbackTimes](bloom-language-tokens.mdx#playbacktimes), `'inline'`, `'below'`
@@ -4225,6 +4717,8 @@ And every universal modifier.
 
 - `AgentLimitsCard(options: AgentLimitsCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<AgentLimitsCardProps, 'expanded'>)`
@@ -4235,6 +4729,8 @@ And every universal modifier.
 
 - `UsageCard(options: UsageCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<UsageCardProps, 'expanded'>)`
@@ -4244,6 +4740,8 @@ And every universal modifier.
 ### `agentThinking`
 
 - `AgentThinking(reasoning?: Child, options: AgentThinkingOptions = {})`: Bloom `AgentThinking`, its reasoning (`reasoning`) shown when it is opened.
+
+Imported from `@oxy.so/bloom-language/agents`.
 
 Token sets:
 
@@ -4262,6 +4760,8 @@ And every universal modifier.
 
 - `AgentProgress(options: AgentProgressOptions = {})`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Modifiers:
 
 - [`.minimized()`](bloom-language-modifiers.mdx#minimized) `(value: Bound<AgentProgressProps, 'minimized'>)`
@@ -4271,6 +4771,8 @@ And every universal modifier.
 ### `agentProgressLoadingText`
 
 - `AgentProgressLoadingText(text: string)`
+
+Imported from `@oxy.so/bloom-language/agents`.
 
 Modifiers:
 
@@ -4283,17 +4785,23 @@ And every universal modifier.
 
 - `AgentLogRow(content: Child, options: AgentLogRowOptions)`: Bloom `AgentLogRow` around `content`; `first` and `last` place it on the timeline.
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Takes the universal modifiers.
 
 ### `agentLogShimmerText`
 
 - `AgentLogShimmerText(text: string)`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Takes the universal modifiers.
 
 ### `agentLogToolCall`
 
 - `AgentLogToolCall(name: string, status: AgentLogToolCallStatus, options: AgentLogToolCallOptions = {})`: Bloom `AgentLogToolCall`: the tool's name and `running`, `done` or `error`.
+
+Imported from `@oxy.so/bloom-language/agents`.
 
 Modifiers:
 
@@ -4305,17 +4813,23 @@ And every universal modifier.
 
 - `AgentLogToolCalls(calls: Child, options: AgentLogToolCallsOptions = {})`: Bloom `AgentLogToolCalls` of these calls (a list, keyed by `.id()`).
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Takes the universal modifiers.
 
 ### `agentLogWorkingRow`
 
 - `AgentLogWorkingRow(label: string, options: AgentLogWorkingRowOptions = {})`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Takes the universal modifiers.
 
 ### `composerLoader`
 
 - `ComposerLoader(content: Child, options: ComposerLoaderOptions = {})`: Bloom `ComposerLoader` round `content` (the composer).
+
+Imported from `@oxy.so/bloom-language/agents`.
 
 Modifiers:
 
@@ -4329,6 +4843,8 @@ And every universal modifier.
 ### `conversationSidebar`
 
 - `ConversationSidebar(conversations: readonly ConversationSidebarItem[], active: Bound<ConversationSidebarProps, 'activeId'>, options: ConversationSidebarOptions = {})`: Bloom `ConversationSidebar` of `conversations`; `active` holds the open one's id, a press writing it.
+
+Imported from `@oxy.so/bloom-language/agents`.
 
 Token sets:
 
@@ -4360,6 +4876,8 @@ And every universal modifier.
 
 - `Questionnaire(questions: readonly QuestionnaireQuestion[], options: QuestionnaireOptions = {})`
 
+Imported from `@oxy.so/bloom-language/agents`.
+
 Modifiers:
 
 - [`.step()`](bloom-language-modifiers.mdx#step) `(value: Bound<QuestionnaireProps, 'step'>)`
@@ -4370,6 +4888,8 @@ And every universal modifier.
 ### `chatBackground`
 
 - `ChatBackground(content?: Child, options: ChatBackgroundOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4388,6 +4908,8 @@ And every universal modifier.
 
 - `ChatDateHeader(label: string, options: ChatDateHeaderOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Token sets:
 
 - `.style()`: [chatDateHeaderStyle](bloom-language-tokens.mdx#chatdateheaderstyle), `'floating'`, `'inline'`
@@ -4402,11 +4924,15 @@ And every universal modifier.
 
 - `ChatEmptyState(options: ChatEmptyStateOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Takes the universal modifiers.
 
 ### `chatHeader`
 
 - `ChatHeader(title: string, options: ChatHeaderOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4429,6 +4955,8 @@ And every universal modifier.
 
 - `ChatInfoPanel(options: ChatInfoPanelOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Token sets:
 
 - `.style()`: [chatInfoPanelStyle](bloom-language-tokens.mdx#chatinfopanelstyle), `'pane'`, `'screen'`
@@ -4445,6 +4973,8 @@ And every universal modifier.
 
 - `PinnedMessageBar(pins: readonly ChatPinnedMessage[], options: PinnedMessageBarOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Modifiers:
 
 - [`.dismissIcon()`](bloom-language-modifiers.mdx#dismissicon) `(value: DismissIcon)`: Its dismiss button's glyph: `close` the bar or `unpin`.
@@ -4455,11 +4985,15 @@ And every universal modifier.
 
 - `ScrollToBottomButton(options: ScrollToBottomButtonOptions = {})`: Bloom `ScrollToBottomButton`; `.onPress()` scrolls.
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Takes the universal modifiers.
 
 ### `chatFolderTabs`
 
 - `ChatFolderTabs(folders: readonly ChatFolder[], options: ChatFolderTabsOptions = {})`: Bloom `ChatFolderTabs`; `.label()` names the tab list (Bloom requires it).
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Modifiers:
 
@@ -4473,17 +5007,23 @@ And every universal modifier.
 
 - `ChatSearchField(query: Binding<string>, options: ChatSearchFieldOptions = {})`: Bloom `ChatSearchField`, writing the query the binding holds.
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Takes the universal modifiers.
 
 ### `chatSearchResults`
 
 - `ChatSearchResults(query: string, results: readonly ChatSearchResult[], options: ChatSearchResultsOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Takes the universal modifiers.
 
 ### `storiesRow`
 
 - `StoriesRow(stories: readonly StoryEntry[], options: StoriesRowOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Modifiers:
 
@@ -4495,6 +5035,8 @@ And every universal modifier.
 
 - `StoryRing(content: Child, options: StoryRingOptions)`: Bloom `StoryRing` round `content` (an avatar); `.onPress()` opens the story.
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Modifiers:
 
 - [`.gradient()`](bloom-language-modifiers.mdx#gradient) `(colors: readonly [InkToken, ...InkToken[]])`: The ring's colours: one for a solid ring, two or more for a gradient (roles or an app's own colours).
@@ -4504,6 +5046,8 @@ And every universal modifier.
 ### `typingDots`
 
 - `TypingDots(options: TypingDotsOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4518,6 +5062,8 @@ And every universal modifier.
 ### `contactMessage`
 
 - `ContactMessage(name: string, options: ContactMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4535,6 +5081,8 @@ And every universal modifier.
 
 - `DocumentGrid(items: readonly DocumentGridItem[], options: DocumentGridOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Modifiers:
 
 - [`.dividers()`](bloom-language-modifiers.mdx#dividers) `(value?: boolean)`: The hairlines between its rows.
@@ -4544,6 +5092,8 @@ And every universal modifier.
 ### `fileMessage`
 
 - `FileMessage(name: string, options: FileMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4563,6 +5113,8 @@ And every universal modifier.
 
 - `GifMessage(source: MessageMediaSource, options: GifMessageOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Token sets:
 
 - `.tint()`: [messageTone](bloom-language-tokens.mdx#messagetone), `'incoming'`, `'outgoing'`
@@ -4579,6 +5131,8 @@ And every universal modifier.
 ### `imageMessage`
 
 - `ImageMessage(source: MessageMediaSource, options: ImageMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4597,6 +5151,8 @@ And every universal modifier.
 
 - `LocationMessage(options: LocationMessageOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Token sets:
 
 - `.tint()`: [messageTone](bloom-language-tokens.mdx#messagetone), `'incoming'`, `'outgoing'`
@@ -4612,6 +5168,8 @@ And every universal modifier.
 ### `pollMessage`
 
 - `PollMessage(question: string, choices: readonly PollOption[], options: PollMessageOptions = {})`: Bloom `PollMessage`: its question and its options (Bloom's `options`).
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4629,6 +5187,8 @@ And every universal modifier.
 
 - `SharedMediaGrid(items: readonly SharedMediaItem[], options: SharedMediaGridOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Modifiers:
 
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`
@@ -4639,6 +5199,8 @@ And every universal modifier.
 ### `stickerMessage`
 
 - `StickerMessage(source: MessageMediaSource, options: StickerMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4655,6 +5217,8 @@ And every universal modifier.
 ### `videoMessage`
 
 - `VideoMessage(source: MessageMediaSource, options: VideoMessageOptions = {})`
+
+Imported from `@oxy.so/bloom-language/chat`.
 
 Token sets:
 
@@ -4675,6 +5239,8 @@ And every universal modifier.
 
 - `VoiceMessage(samples: readonly number[], duration: number, options: VoiceMessageOptions = {})`
 
+Imported from `@oxy.so/bloom-language/chat`.
+
 Token sets:
 
 - `.tint()`: [messageTone](bloom-language-tokens.mdx#messagetone), `'incoming'`, `'outgoing'`
@@ -4693,17 +5259,23 @@ And every universal modifier.
 
 - `AmenityList(items: readonly Amenity[], options: AmenityListOptions = {})`
 
+Imported from `@oxy.so/bloom-language/listings`.
+
 Takes the universal modifiers.
 
 ### `hostCard`
 
 - `HostCard(name: string, options: HostCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/listings`.
+
 Takes the universal modifiers.
 
 ### `listingHeader`
 
 - `ListingHeader(title: string, options: ListingHeaderOptions = {})`
+
+Imported from `@oxy.so/bloom-language/listings`.
 
 Token sets:
 
@@ -4719,6 +5291,8 @@ And every universal modifier.
 
 - `ListingHeaderAction(label: string, options: ListingHeaderActionOptions = {})`
 
+Imported from `@oxy.so/bloom-language/listings`.
+
 Modifiers:
 
 - [`.iconOnly()`](bloom-language-modifiers.mdx#icononly) `(value?: boolean)`: The icon alone (a narrow header); its label still names it.
@@ -4728,6 +5302,8 @@ And every universal modifier.
 ### `listingPhotoGrid`
 
 - `ListingPhotoGrid(photos: readonly ListingPhoto[], options: ListingPhotoGridOptions = {})`
+
+Imported from `@oxy.so/bloom-language/listings`.
 
 Token sets:
 
@@ -4743,6 +5319,8 @@ And every universal modifier.
 
 - `ReviewCard(name: string, text: string, options: ReviewCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/listings`.
+
 Modifiers:
 
 - [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: The review's text folds after this many lines.
@@ -4753,6 +5331,8 @@ And every universal modifier.
 ### `mapClusterMarker`
 
 - `MapClusterMarker(count: number | string, options: MapClusterMarkerOptions = {})`
+
+Imported from `@oxy.so/bloom-language/listings`.
 
 Token sets:
 
@@ -4767,6 +5347,8 @@ And every universal modifier.
 ### `mapPriceMarker`
 
 - `MapPriceMarker(price: string, options: MapPriceMarkerOptions = {})`
+
+Imported from `@oxy.so/bloom-language/listings`.
 
 Token sets:
 
@@ -4784,11 +5366,15 @@ And every universal modifier.
 
 - `MapSearchAreaButton(options: MapSearchAreaButtonOptions = {})`
 
+Imported from `@oxy.so/bloom-language/listings`.
+
 Takes the universal modifiers.
 
 ### `followButton`
 
 - `FollowButton(following: Binding<boolean>, options: FollowButtonOptions = {})`
+
+Imported from `@oxy.so/bloom-language/media`.
 
 Token sets:
 
@@ -4811,6 +5397,8 @@ And every universal modifier.
 
 - `Shelf(title: string, items: Child, options: ShelfOptions = {})`: Bloom `Shelf` titled `title`, of `items` (a list of views, keyed by `.id()`).
 
+Imported from `@oxy.so/bloom-language/media`.
+
 Token sets:
 
 - `.style()`: [shelfLayout](bloom-language-tokens.mdx#shelflayout), `'row'`, `'grid'`, `'paged'`
@@ -4825,6 +5413,8 @@ And every universal modifier.
 ### `shelfSkeleton`
 
 - `ShelfSkeleton(options: ShelfSkeletonOptions = {})`
+
+Imported from `@oxy.so/bloom-language/media`.
 
 Token sets:
 
@@ -4843,11 +5433,15 @@ And every universal modifier.
 
 - `SubscriptionPlans(plan: Binding<string>, options: SubscriptionPlansOptions)`
 
+Imported from `@oxy.so/bloom-language/media`.
+
 Takes the universal modifiers.
 
 ### `subscriptionPrice`
 
 - `SubscriptionPrice(price: SubscriptionPriceValue)`: Bloom `SubscriptionPrice` of `price` (its amount, currency and words).
+
+Imported from `@oxy.so/bloom-language/media`.
 
 Takes the universal modifiers.
 
@@ -4855,11 +5449,15 @@ Takes the universal modifiers.
 
 - `UserHoverCard(displayName: string, options: UserHoverCardOptions = {})`
 
+Imported from `@oxy.so/bloom-language/media`.
+
 Takes the universal modifiers.
 
 ### `cardForm`
 
 - `CardForm(card: Binding<Partial<CardFormValue>>, options: CardFormOptions = {})`: Bloom `CardForm`, editing the card the binding holds.
+
+Imported from `@oxy.so/bloom-language/card-form`.
 
 Takes the universal modifiers.
 
@@ -4867,11 +5465,15 @@ Takes the universal modifiers.
 
 - `CardFormCountry(country: Binding<string>, countries: readonly CardFormCountryOption[], options: CardFormCountryOptions = {})`
 
+Imported from `@oxy.so/bloom-language/card-form`.
+
 Takes the universal modifiers.
 
 ### `cardFormPostcode`
 
 - `CardFormPostcode(postcode: Binding<string>, options: CardFormPostcodeOptions = {})`
+
+Imported from `@oxy.so/bloom-language/card-form`.
 
 Takes the universal modifiers.
 
@@ -4879,11 +5481,15 @@ Takes the universal modifiers.
 
 - `CardFormHostedField(label: string, focused: boolean, options: CardFormHostedFieldOptions)`: Bloom `CardFormHostedField`: a provider's field framed as the form's, labelled `label`.
 
+Imported from `@oxy.so/bloom-language/card-form`.
+
 Takes the universal modifiers.
 
 ### `checkoutSheet`
 
 - `CheckoutSheet(options: CheckoutSheetOptions)`
+
+Imported from `@oxy.so/bloom-language/checkout-sheet`.
 
 Modifiers:
 
@@ -4896,6 +5502,8 @@ And every universal modifier.
 
 - `FilterSection(title: string, content: Child, options: FilterSectionOptions = {})`: Bloom `FilterSection` titled `title`, its controls the content.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Modifiers:
 
 - [`.dividers()`](bloom-language-modifiers.mdx#dividers) `(value?: boolean)`: `false` draws no hairline under the section (the last one).
@@ -4905,6 +5513,8 @@ And every universal modifier.
 ### `priceRangeFilter`
 
 - `PriceRangeFilter(range: Binding<[number, number]>, options: PriceRangeFilterOptions)`: Bloom `PriceRangeFilter`, its range the binding holds.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Token sets:
 
@@ -4920,11 +5530,15 @@ And every universal modifier.
 
 - `CountFilter(title: string, count: Binding<number | null>, options: CountFilterOptions = {})`: Bloom `CountFilter` titled `title`, its count (`null` for any) the binding holds.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Takes the universal modifiers.
 
 ### `toggleChipGroup`
 
 - `ToggleChipGroup(choices: readonly ToggleChipOption[], selection: Binding<string[]>, options: ToggleChipGroupOptions = {})`: Bloom `ToggleChipGroup` of `choices`, the chosen values the binding holds.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Takes the universal modifiers.
 
@@ -4932,17 +5546,23 @@ Takes the universal modifiers.
 
 - `AmenityFilter(choices: readonly ToggleChipOption[], selection: Binding<string[]>, options: AmenityFilterOptions = {})`: Bloom `AmenityFilter` of `choices`, folded after its first few.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Takes the universal modifiers.
 
 ### `switchFilterRow`
 
 - `SwitchFilterRow(title: string, on: Binding<boolean>, options: SwitchFilterRowOptions = {})`: Bloom `SwitchFilterRow` titled `title`, on as the binding holds.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Takes the universal modifiers.
 
 ### `filterFooter`
 
 - `FilterFooter(resultsLabel: string, options: FilterFooterOptions)`: Bloom `FilterFooter`: clear all, and apply with the results' label.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Modifiers:
 
@@ -4953,6 +5573,8 @@ And every universal modifier.
 ### `filterTriggerButton`
 
 - `FilterTriggerButton(count?: number, options: FilterTriggerButtonOptions = {})`: Bloom `FilterTriggerButton`, a badge with `count` while filters apply.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Token sets:
 
@@ -4968,11 +5590,15 @@ And every universal modifier.
 
 - `AreaRangeFilter(range: Binding<[number | null, number | null]>, options: AreaRangeFilterOptions = {})`: Bloom `AreaRangeFilter`, its range (`null` open-ended) the binding holds.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Takes the universal modifiers.
 
 ### `availabilityFilter`
 
 - `AvailabilityFilter(availableNow: Binding<boolean>, options: AvailabilityFilterOptions = {})`: Bloom `AvailabilityFilter`: available now as its binding holds, else from its `.date()`.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Modifiers:
 
@@ -4983,6 +5609,8 @@ And every universal modifier.
 ### `featureFilter`
 
 - `FeatureFilter(selection: Binding<string[]>, options: FeatureFilterOptions = {})`: Bloom `FeatureFilter`, the chosen features the binding holds.
+
+Imported from `@oxy.so/bloom-language/stay-filters`.
 
 Token sets:
 
@@ -4998,11 +5626,15 @@ And every universal modifier.
 
 - `FloorFilter(selection: Binding<string[]>, options: FloorFilterOptions = {})`: Bloom `FloorFilter`, the chosen floors the binding holds.
 
+Imported from `@oxy.so/bloom-language/stay-filters`.
+
 Takes the universal modifiers.
 
 ### `staySearchCompact`
 
 - `StaySearchCompact(options: StaySearchCompactOptions = {})`: Bloom `StaySearchCompact`, its words and filter button as options.
+
+Imported from `@oxy.so/bloom-language/stay-search`.
 
 Takes the universal modifiers.
 
@@ -5010,17 +5642,23 @@ Takes the universal modifiers.
 
 - `StaySearchPanel(content: Child, options: StaySearchPanelOptions = {})`: Bloom `StaySearchPanel` around `content`.
 
+Imported from `@oxy.so/bloom-language/stay-search`.
+
 Takes the universal modifiers.
 
 ### `staySearchStep`
 
 - `StaySearchStep(label: string, content: Child, options: StaySearchStepOptions)`: Bloom `StaySearchStep` named `label`: a row while collapsed, `content` in a card while expanded.
 
+Imported from `@oxy.so/bloom-language/stay-search`.
+
 Takes the universal modifiers.
 
 ### `destinationSuggestions`
 
 - `DestinationSuggestions(items: readonly DestinationSuggestion[], options: DestinationSuggestionsOptions)`: Bloom `DestinationSuggestions` of `items`; its `onSelect` takes the one chosen.
+
+Imported from `@oxy.so/bloom-language/stay-search`.
 
 Modifiers:
 
@@ -5031,6 +5669,8 @@ And every universal modifier.
 ### `guestPicker`
 
 - `GuestPicker(guests: Binding<GuestCounts>, options: GuestPickerOptions = {})`: Bloom `GuestPicker`, the guests the binding holds (the one-adult rule applied).
+
+Imported from `@oxy.so/bloom-language/stay-search`.
 
 Token sets:
 
@@ -5046,6 +5686,8 @@ And every universal modifier.
 
 - `TenancyTimeline(events: readonly TenancyTimelineEvent[], options: TenancyTimelineOptions = {})`: Bloom `TenancyTimeline` of `events`, in order.
 
+Imported from `@oxy.so/bloom-language/tenancy`.
+
 Token sets:
 
 - `.density()`: `'comfortable'`, `'compact'`
@@ -5060,6 +5702,8 @@ And every universal modifier.
 
 - `LeaseSummaryCard(options: LeaseSummaryCardOptions)`: Bloom `LeaseSummaryCard` of the lease its options describe; `actions` is a language child.
 
+Imported from `@oxy.so/bloom-language/tenancy`.
+
 Token sets:
 
 - `.style()`: [tenancyLayout](bloom-language-tokens.mdx#tenancylayout), `'auto'`, `'wide'`, `'narrow'`
@@ -5073,6 +5717,8 @@ And every universal modifier.
 ### `rentPaymentList`
 
 - `RentPaymentList(payments: readonly RentPayment[], options: RentPaymentListOptions = {})`: Bloom `RentPaymentList` of `payments`, newest first as given.
+
+Imported from `@oxy.so/bloom-language/tenancy`.
 
 Token sets:
 
@@ -5090,11 +5736,15 @@ And every universal modifier.
 
 - `MaintenanceRequestCard(options: MaintenanceRequestCardOptions)`: Bloom `MaintenanceRequestCard` of the request its options describe; `actions` is a language child.
 
+Imported from `@oxy.so/bloom-language/tenancy`.
+
 Takes the universal modifiers.
 
 ### `documentList`
 
 - `DocumentList(documents: readonly TenancyDocument[], options: DocumentListOptions = {})`: Bloom `DocumentList` of `documents`.
+
+Imported from `@oxy.so/bloom-language/tenancy`.
 
 Token sets:
 
@@ -5110,6 +5760,8 @@ And every universal modifier.
 
 - `EvictionReportCard(options: EvictionReportCardOptions)`: Bloom `EvictionReportCard` of the report its options describe.
 
+Imported from `@oxy.so/bloom-language/eviction`.
+
 Modifiers:
 
 - [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: The description's lines before it is cut.
@@ -5120,11 +5772,15 @@ And every universal modifier.
 
 - `EvictionTimeline(events: readonly EvictionEvent[], options: EvictionTimelineOptions = {})`: Bloom `EvictionTimeline` of `events`.
 
+Imported from `@oxy.so/bloom-language/eviction`.
+
 Takes the universal modifiers.
 
 ### `placeReviewSummary`
 
 - `PlaceReviewSummary(rating: number | string, options: PlaceReviewSummaryOptions = {})`: Bloom `PlaceReviewSummary` of `rating`.
+
+Imported from `@oxy.so/bloom-language/place-reviews`.
 
 Takes the universal modifiers.
 
@@ -5132,11 +5788,15 @@ Takes the universal modifiers.
 
 - `WriteReviewPrompt(buildingTitle: string, options: WriteReviewPromptOptions)`: Bloom `WriteReviewPrompt` for `buildingTitle`; its `onStart` begins the review, its `media` a language child.
 
+Imported from `@oxy.so/bloom-language/place-reviews`.
+
 Takes the universal modifiers.
 
 ### `callScreen`
 
 - `CallScreen(name: string, status: CallStatus, options: CallScreenOptions = {})`: Bloom `CallScreen`: the call with `name`, at `status`.
+
+Imported from `@oxy.so/bloom-language/call-ui`.
 
 Token sets:
 
@@ -5161,6 +5821,8 @@ And every universal modifier.
 
 - `CallMinimisedPill(name?: string, options: CallMinimisedPillOptions = {})`: Bloom `CallMinimisedPill`: the call with `name`, folded into a pill.
 
+Imported from `@oxy.so/bloom-language/call-ui`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -5178,6 +5840,8 @@ And every universal modifier.
 
 - `GroupCallGrid(participants: readonly GroupCallParticipant[], options: GroupCallGridOptions = {})`: Bloom `GroupCallGrid` of `participants`.
 
+Imported from `@oxy.so/bloom-language/call-ui`.
+
 Token sets:
 
 - `.style()`: [groupCallLayout](bloom-language-tokens.mdx#groupcalllayout), `'grid'`, `'spotlight'`
@@ -5193,6 +5857,8 @@ And every universal modifier.
 ### `incomingCallScreen`
 
 - `IncomingCallScreen(name: string, options: IncomingCallScreenOptions = {})`: Bloom `IncomingCallScreen`: `name` is calling.
+
+Imported from `@oxy.so/bloom-language/call-ui`.
 
 Token sets:
 
@@ -5211,6 +5877,8 @@ And every universal modifier.
 
 - `IncomingCallBanner(name: string, options: IncomingCallBannerOptions = {})`: Bloom `IncomingCallBanner`: `name` is calling; `.onPress()` opens the call.
 
+Imported from `@oxy.so/bloom-language/call-ui`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -5227,6 +5895,8 @@ And every universal modifier.
 
 - `StoryViewer(stories: readonly StoryItem[], index: number, options: StoryViewerOptions)`: Bloom `StoryViewer` of `stories`, showing the one at `index` (zero-based).
 
+Imported from `@oxy.so/bloom-language/chat-people`.
+
 Modifiers:
 
 - [`.muted()`](bloom-language-modifiers.mdx#muted) `(value: Bound<StoryViewerProps, 'muted'>)`
@@ -5236,6 +5906,8 @@ And every universal modifier.
 ### `selectedChipsRow`
 
 - `SelectedChipsRow(people: readonly PersonSummary[], options: SelectedChipsRowOptions = {})`: Bloom `SelectedChipsRow` of the `people` picked.
+
+Imported from `@oxy.so/bloom-language/chat-people`.
 
 Token sets:
 
@@ -5251,6 +5923,8 @@ And every universal modifier.
 
 - `NewGroupForm(name: Binding<string>, options: NewGroupFormOptions = {})`: Bloom `NewGroupForm`, writing the group's name its binding holds.
 
+Imported from `@oxy.so/bloom-language/chat-people`.
+
 Modifiers:
 
 - [`.description()`](bloom-language-modifiers.mdx#description) `(value: Bound<NewGroupFormProps, 'description'>)`
@@ -5260,6 +5934,8 @@ And every universal modifier.
 ### `messageBubble`
 
 - `MessageBubble(direction: MessageTone, content?: string | Child, options: MessageBubbleOptions = {})`: Bloom `MessageBubble` from `direction`'s side: `content` is its text (a string, which Bloom links and wraps) or a view of rich content.
+
+Imported from `@oxy.so/bloom-language/message-bubble`.
 
 Modifiers:
 
@@ -5275,17 +5951,23 @@ And every universal modifier.
 
 - `TypingBubble(options: TypingBubbleOptions = {})`: Bloom `TypingBubble`: someone is typing; `.label()` names it ("typing" by default).
 
+Imported from `@oxy.so/bloom-language/message-bubble`.
+
 Takes the universal modifiers.
 
 ### `messageList`
 
 - `MessageList(items: readonly MessageListItem[], options: MessageListOptions = {})`: Bloom `MessageList` of `items`, grouped by sender and day.
 
+Imported from `@oxy.so/bloom-language/message-bubble`.
+
 Takes the universal modifiers.
 
 ### `mapScaleBar`
 
 - `MapScaleBar(scales: readonly MapScale[], options: MapScaleBarOptions = {})`: Bloom `MapScaleBar`: one bar, or a metric and an imperial one.
+
+Imported from `@oxy.so/bloom-language/map-chrome`.
 
 Token sets:
 
@@ -5301,6 +5983,8 @@ And every universal modifier.
 
 - `MapControls({ islands, ...options }: MapControlsOptions = {})`: Bloom `MapControls`: locate, compass, zoom and tilt, each drawn when its handler is given.
 
+Imported from `@oxy.so/bloom-language/map-chrome`.
+
 Modifiers:
 
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: The groups in a column (`vertical`, default) or a row.
@@ -5312,6 +5996,8 @@ And every universal modifier.
 ### `locationPuck`
 
 - `LocationPuck(options: LocationPuckOptions = {})`: Bloom `LocationPuck`: where the reader is, and which way they face.
+
+Imported from `@oxy.so/bloom-language/map-chrome`.
 
 Token sets:
 
@@ -5327,11 +6013,15 @@ And every universal modifier.
 
 - `NavigationBanner(maneuver: DirectionsManeuver, instruction: string, { extras, ...options }: NavigationBannerOptions = {})`: Bloom `NavigationBanner`: the next `maneuver`, and the street it goes onto.
 
+Imported from `@oxy.so/bloom-language/map-chrome`.
+
 Takes the universal modifiers.
 
 ### `placeCard`
 
 - `PlaceCard(name: string, options: PlaceCardOptions = {})`: Bloom `PlaceCard` of the place `name`.
+
+Imported from `@oxy.so/bloom-language/places`.
 
 Token sets:
 
@@ -5349,6 +6039,8 @@ And every universal modifier.
 
 - `PlaceHours(days: readonly PlaceHoursDay[], options: PlaceHoursOptions = {})`: Bloom `PlaceHours`: the week's hours, folded under today's line.
 
+Imported from `@oxy.so/bloom-language/places`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<PlaceHoursProps, 'expanded'>)`
@@ -5359,17 +6051,23 @@ And every universal modifier.
 
 - `PlaceInfoList(items: readonly PlaceInfoItem[], options: PlaceInfoListOptions = {})`: Bloom `PlaceInfoList`: the rows a reader acts on (address, phone, site).
 
+Imported from `@oxy.so/bloom-language/places`.
+
 Takes the universal modifiers.
 
 ### `placeTransit`
 
 - `PlaceTransit(stops: readonly PlaceTransitStop[], options: PlaceTransitOptions = {})`: Bloom `PlaceTransit`: the stops near a place and what leaves them.
 
+Imported from `@oxy.so/bloom-language/places`.
+
 Takes the universal modifiers.
 
 ### `placeListCard`
 
 - `PlaceListCard(name: string, options: PlaceListCardOptions = {})`: Bloom `PlaceListCard` of the saved list `name`.
+
+Imported from `@oxy.so/bloom-language/places`.
 
 Token sets:
 
@@ -5385,11 +6083,15 @@ And every universal modifier.
 
 - `PlaceList(places: readonly PlaceListPlace[], options: PlaceListOptions = {})`: Bloom `PlaceList`: the places of a saved list, reorderable and removable by its handlers.
 
+Imported from `@oxy.so/bloom-language/places`.
+
 Takes the universal modifiers.
 
 ### `directionsSteps`
 
 - `DirectionsSteps(legs: readonly DirectionsLeg[], options: DirectionsStepsOptions = {})`: Bloom `DirectionsSteps`: a route's legs, step by step.
+
+Imported from `@oxy.so/bloom-language/places`.
 
 Token sets:
 
@@ -5405,6 +6107,8 @@ And every universal modifier.
 
 - `PlacePicker(label: string, place: Binding<Option | null>, options: PlacePickerOptions<Option>)`: Bloom `PlacePicker` named `label`: it holds the chosen place in `place`, and searches as its `.query()` holds the text.
 
+Imported from `@oxy.so/bloom-language/places`.
+
 Token sets:
 
 - `.size()`: [controlSize](bloom-language-tokens.mdx#controlsize), `'xs'`, `'sm'`, `'md'`, `'lg'`
@@ -5419,6 +6123,8 @@ And every universal modifier.
 ### `mailComposeSurface`
 
 - `MailComposeSurface(body?: Child, options: MailComposeSurfaceOptions = {})`: Bloom `MailComposeSurface` round `body` (the message's editor).
+
+Imported from `@oxy.so/bloom-language/mail`.
 
 Token sets:
 
@@ -5436,6 +6142,8 @@ And every universal modifier.
 
 - `MailRecipientField(recipients: Binding<MailRecipient[]>, options: MailRecipientFieldOptions = {})`: Bloom `MailRecipientField`: it edits the recipients `recipients` holds.
 
+Imported from `@oxy.so/bloom-language/mail`.
+
 Modifiers:
 
 - [`.query()`](bloom-language-modifiers.mdx#query) `(value: Binding<string>)`: The text typed before it becomes a recipient (Bloom's `value`).
@@ -5445,6 +6153,8 @@ And every universal modifier.
 ### `mailMessage`
 
 - `MailMessage(sender: MailAddress, body?: Child, options: MailMessageOptions = {})`: Bloom `MailMessage` from `sender`; `body` is what it shows expanded.
+
+Imported from `@oxy.so/bloom-language/mail`.
 
 Modifiers:
 
@@ -5457,6 +6167,8 @@ And every universal modifier.
 
 - `MailThread(messages: readonly MailThreadMessage[], options: MailThreadOptions = {})`: Bloom `MailThread` of `messages`, collapsed as Bloom collapses them.
 
+Imported from `@oxy.so/bloom-language/mail`.
+
 Modifiers:
 
 - [`.starred()`](bloom-language-modifiers.mdx#starred) `(value: Bound<MailThreadProps, 'starred'>)`
@@ -5468,6 +6180,8 @@ And every universal modifier.
 
 - `MailQuoteToggle(quote?: Child, options: MailQuoteToggleOptions = {})`: Bloom `MailQuoteToggle`: the trimmed `quote`, folded behind its toggle.
 
+Imported from `@oxy.so/bloom-language/mail`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<MailQuoteToggleProps, 'expanded'>)`
@@ -5477,6 +6191,8 @@ And every universal modifier.
 ### `noteEditorToolbar`
 
 - `NoteEditorToolbar(label: string, actions: readonly NoteEditorAction[], options: NoteEditorToolbarOptions = {})`: Bloom `NoteEditorToolbar` named `label` (Bloom requires a name), of `actions`.
+
+Imported from `@oxy.so/bloom-language/mail`.
 
 Token sets:
 
@@ -5492,6 +6208,8 @@ And every universal modifier.
 
 - `TripCard(title: string, options: TripCardOptions = {})`: Bloom `TripCard` of the stay titled `title`.
 
+Imported from `@oxy.so/bloom-language/booking`.
+
 Token sets:
 
 - `.style()`: [tripCardOrientation](bloom-language-tokens.mdx#tripcardorientation), `'auto'`, `'horizontal'`, `'vertical'`
@@ -5506,6 +6224,8 @@ And every universal modifier.
 
 - `BookingCard(price: string, guests: string, options: BookingCardOptions = {})`: Bloom `BookingCard` at `price` (pre-formatted) for `guests` (its summary).
 
+Imported from `@oxy.so/bloom-language/booking`.
+
 Modifiers:
 
 - [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: A spinner in the reserve button; presses are ignored.
@@ -5517,6 +6237,8 @@ And every universal modifier.
 
 - `BookingBar(price: string, options: BookingBarOptions = {})`: Bloom `BookingBar` at `price` (pre-formatted).
 
+Imported from `@oxy.so/bloom-language/booking`.
+
 Modifiers:
 
 - [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`
@@ -5527,11 +6249,15 @@ And every universal modifier.
 
 - `PriceBreakdown(rows: readonly PriceBreakdownRow[], options: PriceBreakdownOptions = {})`: Bloom `PriceBreakdown` of `rows`, with its total when the options give one.
 
+Imported from `@oxy.so/bloom-language/booking`.
+
 Takes the universal modifiers.
 
 ### `homeSearchBar`
 
 - `HomeSearchBar(segments: readonly HomeSearchSegment<K>[], active: Binding<K | null>, options: HomeSearchBarOptions<K> = {})`: Bloom `HomeSearchBar` of `segments`; `active` is the open segment, `null` at rest.
+
+Imported from `@oxy.so/bloom-language/home-search`.
 
 Modifiers:
 
@@ -5542,6 +6268,8 @@ And every universal modifier.
 ### `searchModeTabs`
 
 - `SearchModeTabs(mode: Binding<K>, options: SearchModeTabsOptions<K> = {})`: Bloom `SearchModeTabs`: `mode` is the selected one.
+
+Imported from `@oxy.so/bloom-language/home-search`.
 
 Token sets:
 
@@ -5557,6 +6285,8 @@ And every universal modifier.
 
 - `PropertyTypePicker(types: Binding<T[]>, options: PropertyTypePickerOptions<T> = {})`: Bloom `PropertyTypePicker`: `types` are the selected ones (none is any type).
 
+Imported from `@oxy.so/bloom-language/home-search`.
+
 Modifiers:
 
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`: Tiles per row; by default as many as fit.
@@ -5567,11 +6297,15 @@ And every universal modifier.
 
 - `SavedSearchCard(title: string, options: SavedSearchCardOptions = {})`: Bloom `SavedSearchCard` of the search named `title`.
 
+Imported from `@oxy.so/bloom-language/home-search`.
+
 Takes the universal modifiers.
 
 ### `listingActionBar`
 
 - `ListingActionBar(price: string, primaryLabel: string, options: ListingActionBarOptions = {})`: Bloom's listing `ActionBar` at `price` (pre-formatted), its primary action `primaryLabel`.
+
+Imported from `@oxy.so/bloom-language/listing-actions`.
 
 Modifiers:
 
@@ -5582,6 +6316,8 @@ And every universal modifier.
 ### `mortgageCalculator`
 
 - `MortgageCalculator(options: MortgageCalculatorOptions = {})`: Bloom `MortgageCalculator`; its values are controlled or start from their defaults, as Bloom's are.
+
+Imported from `@oxy.so/bloom-language/listing-actions`.
 
 Token sets:
 
@@ -5601,6 +6337,8 @@ And every universal modifier.
 
 - `RentalActionCard(price: string, options: RentalActionCardOptions = {})`: Bloom `RentalActionCard` at `price` (pre-formatted).
 
+Imported from `@oxy.so/bloom-language/listing-actions`.
+
 Modifiers:
 
 - [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: A spinner in the primary action; presses are ignored.
@@ -5611,6 +6349,8 @@ And every universal modifier.
 
 - `SaleActionCard(price: string, options: SaleActionCardOptions = {})`: Bloom `SaleActionCard` at `price` (pre-formatted).
 
+Imported from `@oxy.so/bloom-language/listing-actions`.
+
 Modifiers:
 
 - [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`
@@ -5620,6 +6360,8 @@ And every universal modifier.
 ### `listingCard`
 
 - `ListingCard(title: string, photos: readonly string[], options: ListingCardOptions = {})`: Bloom `ListingCard` of the listing titled `title`, its `photos` first to last.
+
+Imported from `@oxy.so/bloom-language/listing-card`.
 
 Token sets:
 
@@ -5639,6 +6381,8 @@ And every universal modifier.
 
 - `ListingCardGrid(cards: Child)`: Bloom `ListingCardGrid` of `cards` (a list of `ListingCard`s, keyed by `.id()`).
 
+Imported from `@oxy.so/bloom-language/listing-card`.
+
 Token sets:
 
 - `.density()`: `'results'`, `'compact'`
@@ -5652,6 +6396,8 @@ And every universal modifier.
 ### `wishlistCard`
 
 - `WishlistCard(name: string, photos: readonly string[], options: WishlistCardOptions = {})`: Bloom `WishlistCard` of the list named `name`, its cover from `photos`.
+
+Imported from `@oxy.so/bloom-language/listing-card`.
 
 Token sets:
 
@@ -5667,6 +6413,8 @@ And every universal modifier.
 
 - `ListingPreviewPane(listing: ListingPreviewData, options: ListingPreviewPaneOptions = {})`: Bloom `ListingPreviewPane` of `listing` (Bloom's `ListingPreviewData`).
 
+Imported from `@oxy.so/bloom-language/listing-editor`.
+
 Modifiers:
 
 - [`.mode()`](bloom-language-modifiers.mdx#mode) `(value: Bound<ListingPreviewPaneProps, 'mode'>)`
@@ -5677,11 +6425,15 @@ And every universal modifier.
 
 - `ListingQualityMeter(items: readonly ListingQualityItem[], options: ListingQualityMeterOptions = {})`: Bloom `ListingQualityMeter` of `items`; its score is theirs unless the options give one.
 
+Imported from `@oxy.so/bloom-language/listing-editor`.
+
 Takes the universal modifiers.
 
 ### `propertyTypeSelector`
 
 - `PropertyTypeSelector(type: Binding<T | null>, options: PropertyTypeSelectorOptions<T> = {})`: Bloom `PropertyTypeSelector`: `type` is the selected one (`null` before one is chosen).
+
+Imported from `@oxy.so/bloom-language/listing-editor`.
 
 Modifiers:
 
@@ -5692,6 +6444,8 @@ And every universal modifier.
 ### `offeringBadge`
 
 - `OfferingBadge(offering: Offering, options: OfferingBadgeOptions = {})`: Bloom `OfferingBadge` of `offering`.
+
+Imported from `@oxy.so/bloom-language/offering-badge`.
 
 Token sets:
 
@@ -5709,6 +6463,8 @@ And every universal modifier.
 
 - `PriceEstimate(low: number, high: number, confidence: EstimateConfidence, options: PriceEstimateOptions = {})`: Bloom `PriceEstimate` from `low` to `high`, as sure as `confidence`.
 
+Imported from `@oxy.so/bloom-language/property-insights`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<PriceEstimateProps, 'expanded'>)`
@@ -5719,6 +6475,8 @@ And every universal modifier.
 
 - `PricePerAreaComparison(rows: readonly AreaPriceRow[])`: Bloom `PricePerAreaComparison` of `rows`.
 
+Imported from `@oxy.so/bloom-language/property-insights`.
+
 Takes the universal modifiers.
 
 ### `projectBoard`
@@ -5727,11 +6485,15 @@ Takes the universal modifiers.
 - `GroupedProjectBoard(lanes: readonly ProjectBoardLane<Item>[], options: GroupedProjectBoardOptions<Item>)`: Bloom `ProjectBoard` of `lanes` (its `grouped` variant): boards stacked in collapsible lanes.
 - `ProjectBoardTemplate(options: ProjectBoardTemplateOptions = {})`: Bloom `ProjectBoard`'s ticket board: its header, columns of tickets and their dialogs.
 
+Imported from `@oxy.so/bloom-language/project-board`.
+
 Takes the universal modifiers.
 
 ### `projectBoardCardContent`
 
 - `ProjectBoardCardContent(content: Child, options: ProjectBoardCardContentOptions = {})`: Bloom `ProjectBoardCardContent` around `content` (the card's body), with its slots.
+
+Imported from `@oxy.so/bloom-language/project-board`.
 
 Takes the universal modifiers.
 
@@ -5739,11 +6501,15 @@ Takes the universal modifiers.
 
 - `BoardDragHandle(content: Child)`: Bloom `BoardDragHandle` around `content`.
 
+Imported from `@oxy.so/bloom-language/project-board`.
+
 Takes the universal modifiers.
 
 ### `activityFeed`
 
 - `ActivityFeed(entries: readonly ActivityFeedEntry[], options: ActivityFeedOptions = {})`: Bloom `ActivityFeed` of `entries` (Bloom's `ActivityFeedEntry`s, in the order they arrived).
+
+Imported from `@oxy.so/bloom-language/activity-feed`.
 
 Token sets:
 
@@ -5762,6 +6528,8 @@ And every universal modifier.
 
 - `OrderStatusBar(status: string, options: OrderStatusBarOptions = {})`: Bloom `OrderStatusBar` of `status`, the live line ("Out for delivery").
 
+Imported from `@oxy.so/bloom-language/order-status`.
+
 Token sets:
 
 - `.tint()`: [accentTone](bloom-language-tokens.mdx#accenttone), `'default'`, `'primary'`, `'vivid'`, `'secondary'`, `'tertiary'`, `'success'`, `'warning'`, `'error'`, `'info'`
@@ -5778,6 +6546,8 @@ And every universal modifier.
 
 - `OrderStatusTimeline(steps: readonly OrderStatusStep[], options: OrderStatusTimelineOptions = {})`: Bloom `OrderStatusTimeline` of `steps` (Bloom's `OrderStatusStep`s, in the order they happen).
 
+Imported from `@oxy.so/bloom-language/order-status`.
+
 Token sets:
 
 - `.density()`: `'comfortable'`, `'compact'`
@@ -5792,6 +6562,8 @@ And every universal modifier.
 ### `lockup`
 
 - `Lockup(title: string, options: LockupOptions = {})`: Bloom `Lockup` of the product `title`.
+
+Imported from `@oxy.so/bloom-language/lockup`.
 
 Token sets:
 
@@ -5811,6 +6583,8 @@ And every universal modifier.
 
 - `LockupSkeleton(options: LockupSkeletonOptions = {})`: Bloom `LockupSkeleton`: a lockup's placeholder while it loads.
 
+Imported from `@oxy.so/bloom-language/lockup`.
+
 Token sets:
 
 - `.size()`: [lockupSize](bloom-language-tokens.mdx#lockupsize), `'sm'`, `'md'`, `'lg'`
@@ -5826,11 +6600,15 @@ And every universal modifier.
 
 - `AmbientPhoto(source: string | null | undefined, options: AmbientPhotoOptions = {})`: Bloom `AmbientPhoto` of `source` (a URI): a new one cross-fades in over the one on screen, `null` keeps it.
 
+Imported from `@oxy.so/bloom-language/ambient-photo`.
+
 Takes the universal modifiers.
 
 ### `calendarView`
 
 - `CalendarView(events: readonly CalendarViewEvent[], options: CalendarViewOptions = {})`: Bloom `CalendarView` of `events` (Bloom's `CalendarViewEvent`s).
+
+Imported from `@oxy.so/bloom-language/calendar`.
 
 Token sets:
 
@@ -5847,11 +6625,15 @@ And every universal modifier.
 
 - `CalendarViewHeader(month: Date, options: CalendarViewHeaderOptions)`: Bloom `CalendarViewHeader` of `month` (any day of it).
 
+Imported from `@oxy.so/bloom-language/calendar`.
+
 Takes the universal modifiers.
 
 ### `calendarViewMonthGrid`
 
 - `CalendarViewMonthGrid(month: Date, events: readonly CalendarViewEvent[], options: CalendarViewMonthGridOptions = {})`: Bloom `CalendarViewMonthGrid` of `month` (any day of it) and its `events`.
+
+Imported from `@oxy.so/bloom-language/calendar`.
 
 Token sets:
 
@@ -5867,17 +6649,23 @@ And every universal modifier.
 
 - `TaskList(tasks: readonly TaskListTask[], options: TaskListOptions = {})`: Bloom `TaskList` of `tasks`, in order (a chip's `icon` is a React element: `toElement(view)`).
 
+Imported from `@oxy.so/bloom-language/task-list`.
+
 Takes the universal modifiers.
 
 ### `webSearch`
 
 - `WebSearch(steps: readonly WebSearchStep[], options: WebSearchOptions = {})`: Bloom `WebSearch` of `steps`, in order (a source's `icon` is a React element: `toElement(view)`).
 
+Imported from `@oxy.so/bloom-language/web-search`.
+
 Takes the universal modifiers.
 
 ### `voiceControls`
 
 - `VoiceControls(state?: VoiceState, options: VoiceControlsOptions = {})`: Bloom `VoiceControls` of a session in `state` (`listening` by default, as Bloom's).
+
+Imported from `@oxy.so/bloom-language/voice`.
 
 Token sets:
 
@@ -5895,11 +6683,15 @@ And every universal modifier.
 
 - `AgentCreator(agent: Binding<AgentCreatorAgent>, options: AgentCreatorOptions = {})`: Bloom `AgentCreator`, editing the agent its binding holds.
 
+Imported from `@oxy.so/bloom-language/agent-creator`.
+
 Takes the universal modifiers.
 
 ### `agentCreatorField`
 
 - `AgentCreatorField(label: string, content: Child)`: Bloom `AgentCreatorField` named `label`, its control `content`.
+
+Imported from `@oxy.so/bloom-language/agent-creator`.
 
 Modifiers:
 
@@ -5912,11 +6704,15 @@ And every universal modifier.
 
 - `AgentCreatorSection(title: string, content: Child)`: Bloom `AgentCreatorSection` titled `title`, its rows `content` (a list keyed by `.id()`).
 
+Imported from `@oxy.so/bloom-language/agent-creator`.
+
 Takes the universal modifiers.
 
 ### `agentProfile`
 
 - `AgentProfile(agents: AgentProfileProps['agents'], options: AgentProfileOptions = {})`: Bloom `AgentProfile` of `agents`.
+
+Imported from `@oxy.so/bloom-language/agent-reply`.
 
 Takes the universal modifiers.
 
@@ -5924,11 +6720,15 @@ Takes the universal modifiers.
 
 - `AgentReplyIdentity(character: AvatarCharacter, name: string, options: AgentReplyIdentityOptions = {})`: Bloom `AgentReplyIdentity` of the agent named `name`, drawn as `character`.
 
+Imported from `@oxy.so/bloom-language/agent-reply`.
+
 Takes the universal modifiers.
 
 ### `aiProfileCard`
 
 - `AiProfileCard(name: string, options: AiProfileCardOptions = {})`: Bloom `AiProfileCard` of the agent named `name`.
+
+Imported from `@oxy.so/bloom-language/ai-profile-card`.
 
 Token sets:
 
@@ -5946,17 +6746,23 @@ And every universal modifier.
 
 - `SelectedAgentPreview(agents: readonly MultiAgentChatAgent[], options: SelectedAgentPreviewOptions)`: Bloom `SelectedAgentPreview` of the chosen `agents`.
 
+Imported from `@oxy.so/bloom-language/multi-agent-chat`.
+
 Takes the universal modifiers.
 
 ### `multiAgentChat`
 
 - `MultiAgentChat(options: MultiAgentChatOptions = {})`: Bloom `MultiAgentChat`.
 
+Imported from `@oxy.so/bloom-language/multi-agent-chat`.
+
 Takes the universal modifiers.
 
 ### `agentChatHistory`
 
 - `AgentChatHistory(threads: readonly AgentChatThread[], options: AgentChatHistoryOptions = {})`: Bloom `AgentChatHistory` of `threads`.
+
+Imported from `@oxy.so/bloom-language/agent-chat`.
 
 Modifiers:
 
@@ -5970,6 +6776,8 @@ And every universal modifier.
 
 - `AgentChat(messages: readonly AgentChatMessageData[], options: AgentChatOptions = {})`: Bloom `AgentChat` of `messages`.
 
+Imported from `@oxy.so/bloom-language/agent-chat`.
+
 Modifiers:
 
 - [`.titleAlign()`](bloom-language-modifiers.mdx#titlealign) `(value: TitleAlign)`: The header's title: `start` or `center`.
@@ -5981,6 +6789,8 @@ And every universal modifier.
 ### `routeStops`
 
 - `RouteStops(stops: readonly RouteStop[], options: RouteStopsOptions = {})`
+
+Imported from `@oxy.so/bloom-language/route-stops`.
 
 Token sets:
 
@@ -5996,11 +6806,15 @@ And every universal modifier.
 
 - `ConnectionDots(left: Child, right: Child, options: ConnectionDotsOptions = {})`: Bloom `ConnectionDots` between `left` and `right`.
 
+Imported from `@oxy.so/bloom-language/generic`.
+
 Takes the universal modifiers.
 
 ### `outlineNav`
 
 - `OutlineNav(headings: OutlineNavProps['headings'], options: OutlineNavOptions = {})`
+
+Imported from `@oxy.so/bloom-language/generic`.
 
 Token sets:
 
@@ -6016,17 +6830,23 @@ And every universal modifier.
 
 - `Pagination(page: Binding<number>, totalPages: number, options: PaginationOptions = {})`: Bloom `Pagination` of `totalPages`, its binding the page shown (from 1).
 
+Imported from `@oxy.so/bloom-language/generic`.
+
 Takes the universal modifiers.
 
 ### `progressiveBlur`
 
 - `ProgressiveBlur(options: ProgressiveBlurOptions = {})`
 
+Imported from `@oxy.so/bloom-language/generic`.
+
 Takes the universal modifiers.
 
 ### `addressRow`
 
 - `AddressRow(title: string, options: AddressRowOptions = {})`
+
+Imported from `@oxy.so/bloom-language/address`.
 
 Token sets:
 
@@ -6043,6 +6863,8 @@ And every universal modifier.
 ### `addressList`
 
 - `AddressList(sections: readonly AddressListSection[], options: AddressListOptions = {})`
+
+Imported from `@oxy.so/bloom-language/address`.
 
 Token sets:
 
@@ -6063,6 +6885,8 @@ And every universal modifier.
 
 - `PaymentMethodMark(options: PaymentMethodMarkOptions = {})`
 
+Imported from `@oxy.so/bloom-language/payment-method`.
+
 Token sets:
 
 - `.density()`: `'comfortable'`, `'compact'`
@@ -6077,6 +6901,8 @@ And every universal modifier.
 
 - `PaymentMethodRow(options: PaymentMethodRowOptions = {})`
 
+Imported from `@oxy.so/bloom-language/payment-method`.
+
 Token sets:
 
 - `.density()`: `'comfortable'`, `'compact'`
@@ -6090,6 +6916,8 @@ And every universal modifier.
 ### `paymentMethodList`
 
 - `PaymentMethodList(methods: readonly PaymentMethodEntry[], options: PaymentMethodListOptions = {})`
+
+Imported from `@oxy.so/bloom-language/payment-method`.
 
 Token sets:
 
@@ -6108,6 +6936,8 @@ And every universal modifier.
 
 - `PriceSummary(lines: readonly PriceLine[], options: PriceSummaryOptions = {})`
 
+Imported from `@oxy.so/bloom-language/price-breakdown`.
+
 Modifiers:
 
 - [`.expanded()`](bloom-language-modifiers.mdx#expanded) `(value: Bound<PriceSummaryProps, 'expanded'>)`
@@ -6117,6 +6947,8 @@ And every universal modifier.
 ### `priceSummaryLine`
 
 - `PriceSummaryLine(label: string, options: PriceSummaryLineOptions = {})`
+
+Imported from `@oxy.so/bloom-language/price-breakdown`.
 
 Token sets:
 
@@ -6132,6 +6964,8 @@ And every universal modifier.
 
 - `PaymentStatusBar(state: PaymentStatusState, options: PaymentStatusBarOptions = {})`
 
+Imported from `@oxy.so/bloom-language/payment-status`.
+
 Token sets:
 
 - `.style()`: [paymentStatusStyle](bloom-language-tokens.mdx#paymentstatusstyle), `'surface'`, `'plain'`
@@ -6145,6 +6979,8 @@ And every universal modifier.
 ### `paymentStatusBlock`
 
 - `PaymentStatusBlock(state: PaymentStatusState, options: PaymentStatusBlockOptions = {})`
+
+Imported from `@oxy.so/bloom-language/payment-status`.
 
 Token sets:
 
@@ -6160,17 +6996,23 @@ And every universal modifier.
 
 - `ImportantAlertsCard(alerts: readonly ImportantAlertsCardAlert[], count: number | string, options: ImportantAlertsCardOptions = {})`: Bloom `ImportantAlertsCard`: `count` alerts, the feed `alerts`.
 
+Imported from `@oxy.so/bloom-language/dashboard-cards`.
+
 Takes the universal modifiers.
 
 ### `patientInfoCard`
 
 - `PatientInfoCard(name: string, details: readonly PatientInfoCardDetail[], options: PatientInfoCardOptions = {})`: Bloom `PatientInfoCard`: `name` and its detail rows.
 
+Imported from `@oxy.so/bloom-language/dashboard-cards`.
+
 Takes the universal modifiers.
 
 ### `cartLine`
 
 - `CartLine(name: string, options: CartLineOptions)`
+
+Imported from `@oxy.so/bloom-language/cart-panel`.
 
 Token sets:
 
@@ -6186,6 +7028,8 @@ And every universal modifier.
 ### `cartPanel`
 
 - `CartPanel(vendorName: string, lines: readonly CartLineEntry[], options: CartPanelOptions = {})`
+
+Imported from `@oxy.so/bloom-language/cart-panel`.
 
 Token sets:
 
@@ -6203,17 +7047,23 @@ And every universal modifier.
 
 - `CartPromoField(code: Binding<string>, options: CartPromoFieldOptions)`: Bloom `CartPromoField`, writing the code its binding holds.
 
+Imported from `@oxy.so/bloom-language/cart-panel`.
+
 Takes the universal modifiers.
 
 ### `cartTipPicker`
 
 - `CartTipPicker(tip: Binding<string>, choices: readonly CartTipOption[], options: CartTipPickerOptions = {})`: Bloom `CartTipPicker`: the tip its binding holds, one of `choices` (Bloom's `options`).
 
+Imported from `@oxy.so/bloom-language/cart-panel`.
+
 Takes the universal modifiers.
 
 ### `menuItemRow`
 
 - `MenuItemRow(name: string, options: MenuItemRowOptions)`
+
+Imported from `@oxy.so/bloom-language/menu-item`.
 
 Token sets:
 
@@ -6230,6 +7080,8 @@ And every universal modifier.
 
 - `MenuItemOptions(groups: readonly MenuItemOptionGroup[], options: MenuItemOptionsOptions)`
 
+Imported from `@oxy.so/bloom-language/menu-item`.
+
 Modifiers:
 
 - [`.value()`](bloom-language-modifiers.mdx#value) `(value: Bound<MenuItemOptionsProps, 'value'>)`
@@ -6240,6 +7092,8 @@ And every universal modifier.
 ### `rowActions`
 
 - `RowActions(name: string, options: RowActionsOptions = {})`: Bloom `RowActions` of the row `name` names.
+
+Imported from `@oxy.so/bloom-language/generic`.
 
 Token sets:
 
@@ -6254,6 +7108,8 @@ And every universal modifier.
 ### `rowActionButton`
 
 - `RowActionButton(icon: RowActionButtonProps['icon'], label: string, options: RowActionButtonOptions = {})`
+
+Imported from `@oxy.so/bloom-language/generic`.
 
 Token sets:
 
@@ -6271,6 +7127,8 @@ And every universal modifier.
 
 - `SwipeRow(content: Child, actions: SwipeRowActions, options: SwipeRowOptions = {})`: Bloom `SwipeRow` around `content`, the actions behind it on each side.
 
+Imported from `@oxy.so/bloom-language/generic`.
+
 Token sets:
 
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
@@ -6284,6 +7142,8 @@ And every universal modifier.
 ### `themeToggle`
 
 - `ThemeToggle(options: ThemeToggleOptions = {})`
+
+Imported from `@oxy.so/bloom-language/generic`.
 
 Token sets:
 

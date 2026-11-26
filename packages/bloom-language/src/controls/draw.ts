@@ -6,7 +6,16 @@ import {
   type ReactNode,
 } from 'react';
 
-import { type Child, isNode, type Modifier, type Node, type Press, type TextRuns } from '../node';
+import {
+  type Child,
+  isNode,
+  type Modifier,
+  type Node,
+  type NodeKind,
+  type Press,
+  type TextRuns,
+} from '../node';
+import type { Binding } from '../binding';
 import type { TextTraits } from '../style';
 import type { ColorToken, InkToken, Role } from '../tokens';
 import type { InsetRoom } from '../chrome/safe-area-inset';
@@ -110,6 +119,44 @@ export interface ControlDraw {
 
 /** A control's renderer: its node, drawn as the Bloom component it stands for. */
 export type ControlRenderer = (draw: ControlDraw) => ReactElement;
+
+/** Each control kind's renderer, from the family module that defines it (`defineControls`). */
+const renderers = new Map<NodeKind, ControlRenderer>();
+
+/**
+ * Declares a family's renderers. A family's module calls it once, beside the
+ * constructors of its nodes, so a node's renderer is loaded by the import that
+ * makes the node: an app's bundle carries the families it imports and no other
+ * (each family is an entry of its own, `@oxy.so/bloom-language/<family>`).
+ */
+export function defineControls(table: Partial<Record<NodeKind, ControlRenderer>>): void {
+  for (const [kind, renderer] of Object.entries(table))
+    if (renderer !== undefined) renderers.set(kind as NodeKind, renderer);
+}
+
+/** The renderer of a control kind, once its family's module has loaded. */
+export function controlOf(kind: NodeKind): ControlRenderer | undefined {
+  return renderers.get(kind);
+}
+
+/** How a family draws a view a modifier presents over the screen (`.fullScreenCover(…, Gallery(…))`). */
+export type CoverRenderer = (
+  isPresented: Binding<boolean>,
+  content: Node,
+  render: (child: Child) => ReactNode,
+) => ReactElement;
+
+const covers = new Map<NodeKind, CoverRenderer>();
+
+/** Declares how a family draws its node as a cover, beside its renderers (`defineControls`). */
+export function defineCover(kind: NodeKind, renderer: CoverRenderer): void {
+  covers.set(kind, renderer);
+}
+
+/** How a kind is drawn as a cover, once its family's module has loaded. */
+export function coverOf(kind: NodeKind): CoverRenderer | undefined {
+  return covers.get(kind);
+}
 
 /** The value of `node`'s last modifier of this kind (another node's, read as data). */
 export function lastOf<K extends Modifier['kind']>(

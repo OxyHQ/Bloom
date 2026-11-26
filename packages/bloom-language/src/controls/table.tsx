@@ -17,7 +17,7 @@ import {
   type TableSize,
   type TableSort,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** A data table: a header of columns, a body of rows, two densities and sortable columns (Bloom `table`). */
 export type TableKind =
@@ -129,7 +129,7 @@ function container(
   };
 }
 
-export const TABLES: Record<TableKind, ControlRenderer> = {
+const TABLES: Record<TableKind, ControlRenderer> = {
   table: container(BloomTable, (d, props) => {
     const minWidth = d.own('minWidth')?.value;
     props.size = d.own('size')?.value;
@@ -162,3 +162,4 @@ export const TABLES: Record<TableKind, ControlRenderer> = {
       content(d, (d.node.props as TableContentProps).content),
     ),
 };
+defineControls(TABLES);

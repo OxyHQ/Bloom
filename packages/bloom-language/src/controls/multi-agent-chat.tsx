@@ -4,7 +4,7 @@ import { SelectedAgentPreview as BloomSelectedAgentPreview } from '@oxy.so/bloom
 import type { AvatarFlights } from '@oxy.so/bloom/avatar-flight';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The multi-agent chat: a workspace of agents, and the preview of a chosen team. */
@@ -40,7 +40,8 @@ export function MultiAgentChat(options: MultiAgentChatOptions = {}): MultiAgentC
   return new Node('multiAgentChat', { options }, []);
 }
 
-export const MULTI_AGENT_CHATS: Record<MultiAgentChatKind, ControlRenderer> = {
+const MULTI_AGENT_CHATS: Record<MultiAgentChatKind, ControlRenderer> = {
   selectedAgentPreview: product(BloomSelectedAgentPreview),
   multiAgentChat: product(BloomMultiAgentChat),
 };
+defineControls(MULTI_AGENT_CHATS);

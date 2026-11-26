@@ -12,7 +12,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product, type TextSlot } from './product';
 
 /** The project board: a board of columns (or of lanes of columns), its cards and their handles. */
@@ -109,7 +109,7 @@ export function BoardDragHandle(content: Child): BoardDragHandleView {
   return new Node('boardDragHandle', {}, [content]);
 }
 
-export const PROJECT_BOARDS: Record<ProjectBoardKind, ControlRenderer> = {
+const PROJECT_BOARDS: Record<ProjectBoardKind, ControlRenderer> = {
   projectBoard: product(BloomProjectBoard, {
     slots: ['headerActions'],
     lengths: ['columnWidth'],
@@ -128,3 +128,4 @@ export const PROJECT_BOARDS: Record<ProjectBoardKind, ControlRenderer> = {
   }),
   boardDragHandle: product(BloomBoardDragHandle, { press: true }),
 };
+defineControls(PROJECT_BOARDS);

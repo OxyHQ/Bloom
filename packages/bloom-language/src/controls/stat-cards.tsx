@@ -7,7 +7,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { StatCardsVariant } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** KPI stat cards: one, or a responsive grid of them. */
@@ -36,9 +36,10 @@ export function StatCards(stats: readonly StatCardsItem[]): StatCardsView {
   return new Node('statCards', { stats }, []);
 }
 
-export const STAT_CARDS: Record<StatCardKind, ControlRenderer> = {
+const STAT_CARDS: Record<StatCardKind, ControlRenderer> = {
   statCard: product(BloomStatCard, { own: (d) => ({ variant: d.own('style')?.value }) }),
   statCards: product(BloomStatCards, {
     own: (d) => ({ variant: d.own('style')?.value, columns: d.own('columns')?.value }),
   }),
 };
+defineControls(STAT_CARDS);

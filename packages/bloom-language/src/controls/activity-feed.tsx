@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { ActivityFeedGrouping, Density } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The activity feed: who did what, by day. */
@@ -36,7 +36,7 @@ export function ActivityFeed(
   return new Node('activityFeed', { entries, options }, []);
 }
 
-export const ACTIVITY_FEEDS: Record<ActivityFeedKind, ControlRenderer> = {
+const ACTIVITY_FEEDS: Record<ActivityFeedKind, ControlRenderer> = {
   activityFeed: product(BloomActivityFeed, {
     own: (d) => ({
       grouping: d.own('style')?.value,
@@ -45,3 +45,4 @@ export const ACTIVITY_FEEDS: Record<ActivityFeedKind, ControlRenderer> = {
     }),
   }),
 };
+defineControls(ACTIVITY_FEEDS);

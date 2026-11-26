@@ -186,7 +186,8 @@ tree. Inside JSX, `toElement(node)` draws a language node.
 ```tsx check
 // app/(app)/index.tsx
 import { useState } from 'react';
-import { Button, Field, Text, TextField, Toggle, HStack, Spacer, VStack } from '@oxy.so/bloom-language';
+import { Button, Text, HStack, Spacer, VStack } from '@oxy.so/bloom-language';
+import { Field, TextField, Toggle } from '@oxy.so/bloom-language/inputs';
 import { screen } from '@oxy.so/bloom-language/router';
 
 export default screen(function Welcome() {

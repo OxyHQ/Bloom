@@ -1,4 +1,4 @@
-import type { NODE_MODIFIERS } from '../generated/spec.generated';
+import type { NodeModifiers } from '../generated/spec.generated';
 import type {
   AlertView,
   ConnectionStatusView,
@@ -12,7 +12,7 @@ describe('overlays and feedback', () => {
       [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never;
     }[keyof T];
     type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-    type Of<K extends keyof typeof NODE_MODIFIERS> = (typeof NODE_MODIFIERS)[K][number];
+    type Of<K extends keyof NodeModifiers> = NodeModifiers[K][number];
     // A type error here means a node interface and spec/language.json disagree.
     const checks: [
       Same<MethodsOf<AlertView>, Of<'alert'>>,

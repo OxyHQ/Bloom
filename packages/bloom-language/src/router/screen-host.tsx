@@ -29,7 +29,7 @@ import {
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
-import { NODE_MODIFIERS } from '../generated/spec.generated';
+import { GROUP_MODIFIERS } from '../generated/spec.generated';
 import { ink, flexStyle, type RoleRef } from '../style';
 import { isSurfaceFill, surfaced, themeColor, withSurface } from '../paint';
 import { useTheme } from '@oxy.so/bloom/theme';
@@ -156,7 +156,7 @@ export function drawScreen(root: Child): ReactNode {
  * the view's.
  */
 const AROUND_A_SCREEN: ReadonlySet<string> = new Set(
-  NODE_MODIFIERS.group.filter((name) => name !== 'id' && name !== 'testID'),
+  GROUP_MODIFIERS.filter((name) => name !== 'id' && name !== 'testID'),
 );
 
 export function ScreenHost({ root }: { root: Child }) {

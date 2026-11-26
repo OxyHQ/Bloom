@@ -7,7 +7,7 @@ import {
 } from '@oxy.so/bloom/drop-zone';
 
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A view that takes what is dropped on it, from another application or this one (Bloom `drop-zone`). */
 export type DropZoneKind = 'dropZone';
@@ -41,7 +41,7 @@ export function DropZone(
   return new Node('dropZone', { accept, onDrop }, children);
 }
 
-export const DROP_ZONES: Record<DropZoneKind, ControlRenderer> = {
+const DROP_ZONES: Record<DropZoneKind, ControlRenderer> = {
   dropZone: (d) => {
     const { accept, onDrop } = d.node.props as {
       accept: readonly DropKind[];
@@ -63,3 +63,4 @@ export const DROP_ZONES: Record<DropZoneKind, ControlRenderer> = {
     return d.component(BloomDropZone, props, ...d.children(d.node.children));
   },
 };
+defineControls(DROP_ZONES);

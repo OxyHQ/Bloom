@@ -7,7 +7,7 @@ import {
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { type DurationName, resolveDuration, type TooltipSide } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A preview card a resting pointer, focus or a long press opens on a view (Bloom `hover-card`). */
 export type HoverCardKind = 'hoverCard';
@@ -39,7 +39,7 @@ export function HoverCard(trigger: Child, content: Child): HoverCardView {
   return new Node('hoverCard', { trigger, content }, []);
 }
 
-export const HOVER_CARDS: Record<HoverCardKind, ControlRenderer> = {
+const HOVER_CARDS: Record<HoverCardKind, ControlRenderer> = {
   hoverCard: (d) => {
     const { trigger, content } = d.node.props as { trigger: Child; content: Child };
     const presented = d.own('presented')?.value;
@@ -68,3 +68,4 @@ export const HOVER_CARDS: Record<HoverCardKind, ControlRenderer> = {
     );
   },
 };
+defineControls(HOVER_CARDS);

@@ -7,7 +7,7 @@ import {
 
 import { Node, type Child, type TextRuns, type ViewModifiers } from '../node';
 import type { MarkdownSize } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** Markdown in Bloom's type ramp, built for text that arrives token by token (Bloom `markdown`). */
 export type MarkdownKind = 'markdown' | 'inlineMarkdown';
@@ -58,7 +58,7 @@ export function Markdown(source: string): MarkdownView {
   return new Node('markdown', { source }, []);
 }
 
-export const MARKDOWN: Record<MarkdownKind, ControlRenderer> = {
+const MARKDOWN: Record<MarkdownKind, ControlRenderer> = {
   markdown: (d) => {
     const props = d.props();
     const codeBlock = d.own('codeBlock')?.value;
@@ -95,3 +95,4 @@ export const MARKDOWN: Record<MarkdownKind, ControlRenderer> = {
     return d.component(BloomInlineMarkdown, props);
   },
 };
+defineControls(MARKDOWN);

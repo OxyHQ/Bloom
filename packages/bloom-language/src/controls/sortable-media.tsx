@@ -6,7 +6,7 @@ import {
 
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** An editable grid of uploaded photos, reordered by a drag or by its move buttons (Bloom `sortable-media`). */
 export type SortableMediaKind = 'sortablePhotoGrid';
@@ -38,7 +38,7 @@ export function SortablePhotoGrid(
   return new Node('sortablePhotoGrid', { photos }, []);
 }
 
-export const SORTABLE_MEDIA: Record<SortableMediaKind, ControlRenderer> = {
+const SORTABLE_MEDIA: Record<SortableMediaKind, ControlRenderer> = {
   sortablePhotoGrid: (d) => {
     const [photos, onReorder] = (d.node.props as { photos: Binding<ReadonlyArray<SortablePhoto>> })
       .photos;
@@ -59,3 +59,4 @@ export const SORTABLE_MEDIA: Record<SortableMediaKind, ControlRenderer> = {
     return d.component(BloomSortablePhotoGrid, props);
   },
 };
+defineControls(SORTABLE_MEDIA);

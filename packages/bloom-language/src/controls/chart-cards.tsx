@@ -45,7 +45,7 @@ import type {
   SparklineTone,
   SpaceToken,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { length, product } from './product';
 
 /** Dashboard chart cards and the pieces they share. */
@@ -285,7 +285,7 @@ const inks = (d: ControlDraw) => ({
   activeColor: d.own('activeTint')?.value,
 });
 
-export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
+const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
   areaChartCard: product(BloomAreaChartCard, {
     bindings: {
       activeIndex: ['activeIndex', 'onActiveIndexChange'],
@@ -363,3 +363,4 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
     colors: inks,
   }),
 };
+defineControls(CHART_CARDS);

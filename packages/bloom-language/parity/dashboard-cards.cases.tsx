@@ -2,7 +2,7 @@ import { RiHeart3Line, RiWifiLine } from '@oxy.so/bloom/icons';
 import { ImportantAlertsCard } from '@oxy.so/bloom/important-alerts-card';
 import { PatientInfoCard } from '@oxy.so/bloom/patient-info-card';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

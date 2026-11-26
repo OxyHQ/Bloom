@@ -90,6 +90,18 @@ function docOf(node) {
 const oneLine = (text) =>
   text.replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/,\s\)/g, ')').trim();
 
+/** Each export's module: the root, `/router` or its family's entry (`generate-entries.mjs`). */
+const MODULE_OF = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(packageRoot, 'spec/entries.generated.json'), 'utf8')).entries,
+  ).flatMap(([entry, names]) =>
+    names.map((name) => [
+      name,
+      entry === '.' ? '@oxy.so/bloom-language' : `@oxy.so/bloom-language/${entry}`,
+    ]),
+  ),
+);
+
 /** interface name → { members: name → [{ params, doc }], bases: [type names] } */
 const interfaces = new Map();
 /** constructor name → { params, returns, doc } */
@@ -264,15 +276,17 @@ function nodesPage() {
     '',
     `Every node kind the language has (${Object.keys(nodes).length}), in the spec's order: the constructors that make it, the token sets its ${code('.size()')}, ${code('.tint()')}, ${code('.style()')}, ${code('.shape()')} and ${code('.density()')} read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier (${modifierLink('padding', NODES_DOC)}, ${modifierLink('background', NODES_DOC)}, ${modifierLink('onPress', NODES_DOC)}…; the list is in [the modifiers reference](${MODIFIERS_DOC}#universal-modifiers)).`,
     '',
+    `The root, ${code('@oxy.so/bloom-language')}, holds the language's views, modifiers and values; each family of nodes is an entry of its own (${code('@oxy.so/bloom-language/<family>')}), so an app's bundle carries only the families it imports. Each node names the module it is imported from.`,
+    '',
     `This page is generated from ${code('packages/bloom-language/spec/language.json')} and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).`,
     '',
     '## Index',
     '',
-    '| Node | Constructors |',
-    '| --- | --- |',
+    '| Node | Constructors | Imported from |',
+    '| --- | --- | --- |',
     ...Object.entries(nodes).map(
       ([kind, node]) =>
-        `| ${nodeLink(kind, NODES_DOC)} | ${node.constructors.map((c) => code(c)).join(', ')} |`,
+        `| ${nodeLink(kind, NODES_DOC)} | ${node.constructors.map((c) => code(c)).join(', ')} | ${MODULE_OF.has(node.constructors[0]) ? code(MODULE_OF.get(node.constructors[0])) : ''} |`,
     ),
     '',
     '## Nodes',
@@ -286,6 +300,8 @@ function nodesPage() {
         `- ${code(`${name}(${made?.params ?? '…'})`)}${made?.doc ? `: ${prose(made.doc)}` : ''}`,
       );
     }
+    const module = MODULE_OF.get(node.constructors[0]);
+    if (module) lines.push('', `Imported from ${code(module)}.`);
     lines.push('');
     const sets = ['size', 'tint', 'style', 'shape', 'blend']
       .filter((slot) => node[slot])

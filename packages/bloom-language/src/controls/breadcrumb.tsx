@@ -6,7 +6,7 @@ import {
 } from '@oxy.so/bloom/breadcrumb';
 
 import { Node, type Child, type IconComponent, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** The trail of ancestor pages, separated by chevrons (Bloom `breadcrumb`). */
 export type BreadcrumbKind = 'breadcrumb' | 'breadcrumbItem';
@@ -45,7 +45,7 @@ export function BreadcrumbItem(title: string | Child): BreadcrumbItemView {
   return new Node('breadcrumbItem', { title }, []);
 }
 
-export const BREADCRUMBS: Record<BreadcrumbKind, ControlRenderer> = {
+const BREADCRUMBS: Record<BreadcrumbKind, ControlRenderer> = {
   breadcrumb: (d) => {
     const props = d.props();
     const separator = d.own('separatorView')?.value;
@@ -77,3 +77,4 @@ export const BREADCRUMBS: Record<BreadcrumbKind, ControlRenderer> = {
     );
   },
 };
+defineControls(BREADCRUMBS);

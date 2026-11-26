@@ -5126,8 +5126,8 @@ export const MODIFIERS = {
   ]
 } as const;
 
-/** The modifiers each node kind takes. */
-export const NODE_MODIFIERS = {
+/** The modifiers each node kind takes: a type, read by the type checks only, so no bundle carries it. */
+export type NodeModifiers = {
   "stack": [
     "padding",
     "safeAreaPadding",
@@ -51529,7 +51529,46 @@ export const NODE_MODIFIERS = {
     "style",
     "collapsed"
   ]
-} as const;
+};
+
+/** The modifiers a `Group` takes, the one row the runtime reads (what draws around a screen: `screen()`). */
+export const GROUP_MODIFIERS: readonly string[] = [
+  "id",
+  "testID",
+  "title",
+  "titleDisplay",
+  "subtitle",
+  "header",
+  "toolbar",
+  "toolbarLeading",
+  "onBack",
+  "backLabel",
+  "headingLevel",
+  "footer",
+  "sheet",
+  "onReselect",
+  "screenKind",
+  "screenScroll",
+  "documentScroll",
+  "headerPlacement",
+  "scrollEdge",
+  "underlay",
+  "floatingAction",
+  "contentClearance",
+  "navigationScope",
+  "colorPreset",
+  "seed",
+  "screenActive",
+  "replacesBottomBar",
+  "screenBackground",
+  "reselectTop",
+  "initialHeaderHeight",
+  "initialFooterHeight",
+  "colorScope",
+  "keyboardAvoiding",
+  "provider",
+  "ownScreen"
+];
 
 /** The densities each node kind's `.density()` takes: its Bloom component's own names. */
 export const NODE_DENSITIES = {

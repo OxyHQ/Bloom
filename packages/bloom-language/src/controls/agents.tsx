@@ -62,7 +62,7 @@ import type {
   TeamPlacement,
   TypeRampStep,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { bound, type CornerToken, product } from './product';
 
 /** The agent families apps share: limits and usage, thinking, progress, the log, the loader, the sidebar, the questionnaire. */
@@ -330,7 +330,7 @@ function text(host: unknown, own: (d: ControlDraw) => Record<string, unknown> = 
   };
 }
 
-export const AGENTS: Record<AgentKind, ControlRenderer> = {
+const AGENTS: Record<AgentKind, ControlRenderer> = {
   agentLimitsCard: product(BloomAgentLimitsCard, {
     bindings: { expanded: ['expanded', 'onExpandedChange'] },
   }),
@@ -413,3 +413,4 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
     durations: ['advanceDelay'],
   }),
 };
+defineControls(AGENTS);

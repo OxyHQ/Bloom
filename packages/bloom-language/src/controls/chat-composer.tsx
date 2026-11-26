@@ -41,7 +41,7 @@ import type {
   SpaceToken,
 } from '../tokens';
 import { resolveIconSize } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { length, product, slot } from './product';
 
 /** The chat composer's family: the message bar, its banners and buttons, and the pickers and menus around it. */
@@ -279,7 +279,7 @@ interface Props<O> {
 }
 const propsOf = <O,>(d: ControlDraw) => d.node.props as Props<O>;
 
-export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
+const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
   chatComposer: product(BloomChatComposer, {
     bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
     binding: ['value', 'onValueChange'],
@@ -340,3 +340,4 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
     bindings: { presented: ['open', 'onOpenChange'] },
   }),
 };
+defineControls(CHAT_COMPOSERS);

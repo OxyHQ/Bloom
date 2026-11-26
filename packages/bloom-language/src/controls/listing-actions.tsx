@@ -12,7 +12,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MortgageLayout, SpaceToken } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A listing's actions: the pinned bar, the rental and sale cards, the mortgage calculator. */
@@ -111,7 +111,7 @@ export function SaleActionCard(
 /** A card's `.loading()`: Bloom's `loading`. */
 const loading = { own: (d: ControlDraw) => ({ loading: d.own('loading')?.value }) };
 
-export const LISTING_ACTIONS: Record<ListingActionKind, ControlRenderer> = {
+const LISTING_ACTIONS: Record<ListingActionKind, ControlRenderer> = {
   listingActionBar: product(BloomActionBar, {
     lengths: ['bottomInset'],
     own: (d) => ({
@@ -133,3 +133,4 @@ export const LISTING_ACTIONS: Record<ListingActionKind, ControlRenderer> = {
   rentalActionCard: product(BloomRentalActionCard, { slots: ['note', 'footer'], ...loading }),
   saleActionCard: product(BloomSaleActionCard, { slots: ['note', 'footer'], ...loading }),
 };
+defineControls(LISTING_ACTIONS);

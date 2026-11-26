@@ -1,0 +1,32 @@
+/** `@oxy.so/bloom-language/ai-chat`: AI chat. */
+export {
+  AiChatAssistantMessage,
+  AiChatCodePanel,
+  AiChatContainer,
+  AiChatGalleryPanel,
+  AiChatHeader,
+  AiChatMessageLine,
+  AiChatMobileHeader,
+  AiChatShell,
+  AiChatThread,
+  AiChatUserMessage,
+} from '../controls/ai-chat';
+export type {
+  AiChatAssistantMessageOptions,
+  AiChatAssistantMessageView,
+  AiChatCodePanelOptions,
+  AiChatCodePanelView,
+  AiChatContainerOptions,
+  AiChatContainerView,
+  AiChatGalleryPanelOptions,
+  AiChatGalleryPanelView,
+  AiChatHeaderView,
+  AiChatMessageLineView,
+  AiChatMobileHeaderView,
+  AiChatShellOptions,
+  AiChatShellView,
+  AiChatThreadOptions,
+  AiChatThreadView,
+  AiChatUserMessageOptions,
+  AiChatUserMessageView,
+} from '../controls/ai-chat';

@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import { SpinnerIcon } from '@oxy.so/bloom/loading';
 import { withAlpha } from '@oxy.so/bloom/theme';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { defineTokens } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
