@@ -124,6 +124,10 @@ struct Emitter<'a> {
     conditional: usize,
     uses_result: bool,
     uses_key_path: bool,
+    /// A pattern's bindings: each name is the path it binds (`post`, `$t0.value`), never a copy.
+    aliases: HashMap<LocalId, String>,
+    /// An awaited TS promise matched as a `Result`: its error temp → its value temp (none for `Unit`).
+    splits: HashMap<String, Option<String>>,
     names: HashSet<String>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
@@ -162,6 +166,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         conditional: 0,
         uses_result: false,
         uses_key_path: false,
+        aliases: HashMap::new(),
+        splits: HashMap::new(),
         names,
         scope: None,
         body_span: None,
@@ -325,9 +331,6 @@ fn is_atom(expr: &Expr) -> bool {
 
 fn helper_text(name: &str) -> &'static str {
     match name {
-        "settle" => {
-            "async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {\n  try {\n    return { ok: true, value: await value };\n  } catch (error) {\n    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };\n  }\n}"
-        }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
         }
@@ -533,8 +536,8 @@ impl<'a> Emitter<'a> {
     // ---- names ------------------------------------------------------------
 
     fn local_name(&self, local: LocalId) -> String {
-        if let Some(view) = &self.view {
-            let _ = view;
+        if let Some(alias) = self.aliases.get(&local) {
+            return alias.clone();
         }
         let info = &self.ck.locals[local];
         if let Some(hoisted) = self.hoisted_names.get(&info.span) {
@@ -751,6 +754,10 @@ impl<'a> Emitter<'a> {
             }
             (_, Tail::Discard) => {
                 let value = self.expr(expr);
+                // `await ping()?` as a statement: the work is in the statements it pushed.
+                if value.text == "undefined" {
+                    return;
+                }
                 let mut line = value;
                 line.s(";");
                 self.push_stmt(line);
@@ -918,12 +925,9 @@ impl<'a> Emitter<'a> {
     }
 
     fn if_stmt(&mut self, if_expr: &IfExpr, tail: &Tail) {
-        let (cond, bindings) = self.condition(&if_expr.cond);
+        let cond = self.condition(&if_expr.cond);
         let signal = self.signal.clone();
         self.bufs.push(Vec::new());
-        for (name, value) in bindings {
-            self.push_stmt(Frag::of(format!("const {name} = {value};")));
-        }
         self.stmts(&if_expr.then.stmts, tail.clone(), signal.as_deref());
         if if_expr.then.stmts.is_empty() {
             self.bind_unit(tail);
@@ -972,30 +976,64 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// A condition's test and the names an `if let` binds.
-    fn condition(&mut self, cond: &Cond) -> (Frag, Vec<(String, String)>) {
+    /// A condition's test; the names an `if let` binds become aliases of their paths.
+    fn condition(&mut self, cond: &Cond) -> Frag {
         match cond {
-            Cond::Expr(expr) => (self.expr(expr), Vec::new()),
+            Cond::Expr(expr) => self.expr(expr),
             Cond::Let(pattern, value) => {
-                let subject = self.subject(value);
+                let subject = self.subject(value, &[pattern]);
                 let value_ty = self.ck.pattern_tys.get(&value.span).cloned().unwrap_or(Ty::Unknown);
                 // `if let v = optional` unwraps; any other pattern matches.
                 if let (PatternKind::Bind(name), Ty::Option(_)) = (&pattern.kind, &value_ty) {
-                    return (
-                        Frag::of(format!("{subject} !== undefined")),
-                        vec![(js_name(&name.name), subject)],
-                    );
+                    self.alias(name, &subject);
+                    return Frag::of(format!("{subject} !== undefined"));
                 }
-                let (tests, bindings) = self.pattern_test(pattern, &subject);
-                let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                (Frag::of(test), bindings)
+                let tests = self.pattern_test(pattern, &subject);
+                Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") })
             }
         }
     }
 
-    /// A value matched more than once: a path as is, anything else in a temp.
-    fn subject(&mut self, value: &Expr) -> String {
-        if is_path(value) && !matches!(value.kind, ExprKind::Call(_)) {
+    /// The type of what `expr` evaluates to.
+    fn expr_ty(&self, expr: &Expr) -> Ty {
+        self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown)
+    }
+
+    /// Whether `path` starts at a `var` (a value that can change while its bindings are read).
+    fn var_rooted(&self, path: &Expr) -> bool {
+        let mut root = path;
+        while let ExprKind::Field(inner, _) | ExprKind::Paren(inner) = &root.kind {
+            root = inner;
+        }
+        matches!(self.ck.names.get(&root.id), Some(NameRes::Local(l)) if self.ck.locals[*l].kind == LocalKind::Var)
+    }
+
+    /// `name` (a pattern's binding) reads `path`.
+    fn alias(&mut self, name: &Ident, path: &str) {
+        if let Some(local) = self.ck.pattern_locals.get(&name.span) {
+            self.aliases.insert(*local, path.to_string());
+        }
+    }
+
+    /// A value matched more than once: a path as is (one no `var` roots, so it
+    /// cannot change under its bindings), anything else in a temp; an awaited
+    /// TS promise is settled in place (`await_settled`), its value kept when
+    /// one of `patterns` binds it.
+    fn subject(&mut self, value: &Expr, patterns: &[&Pattern]) -> String {
+        // Settled in place when every pattern is `.ok(…)`, `.err(…)` or `_`; a
+        // pattern that binds the `Result` itself reads it whole.
+        if let ExprKind::Await(inner) = &value.kind
+            && self.ck.awaits.get(&value.id) == Some(&AwaitRes::Ts)
+            && patterns.iter().all(|p| matches!(p.kind, PatternKind::Case { .. } | PatternKind::Wildcard))
+        {
+            let keep = patterns.iter().any(|p| {
+                matches!(&p.kind, PatternKind::Case { name, args: Some(args), .. } if name.name == "ok" && args.iter().any(binds))
+            });
+            let (ok, error) = self.await_settled(value, inner, keep);
+            self.splits.insert(error.clone(), ok);
+            return error;
+        }
+        if is_path(value) && !matches!(value.kind, ExprKind::Call(_)) && !self.var_rooted(value) {
             return self.expr(value).text;
         }
         let name = self.temp();
@@ -1007,17 +1045,15 @@ impl<'a> Emitter<'a> {
     }
 
     fn match_stmt(&mut self, m: &MatchExpr, tail: &Tail) {
-        let subject = self.subject(&m.scrutinee);
+        let patterns: Vec<&Pattern> = m.arms.iter().map(|a| &a.pattern).collect();
+        let subject = self.subject(&m.scrutinee, &patterns);
         let signal = self.signal.clone();
         let mut line = Frag::default();
         let count = m.arms.len();
         for (index, arm) in m.arms.iter().enumerate() {
-            let (mut tests, bindings) = self.pattern_test(&arm.pattern, &subject);
+            let mut tests = self.pattern_test(&arm.pattern, &subject);
             let last = index + 1 == count && arm.guard.is_none();
             self.bufs.push(Vec::new());
-            for (name, value) in &bindings {
-                self.push_stmt(Frag::of(format!("const {name} = {value};")));
-            }
             let guard = arm.guard.as_ref().map(|g| self.expr(g));
             match &arm.body {
                 ArmBody::Expr(e) => self.tail_expr(e, tail),
@@ -1040,12 +1076,7 @@ impl<'a> Emitter<'a> {
                 }
                 line.s("if (").s(&tests.join(" && "));
                 if let Some(guard) = guard {
-                    // Bindings a guard reads are inlined into it.
-                    let mut text = guard.text;
-                    for (name, value) in &bindings {
-                        text = replace_word(&text, name, value);
-                    }
-                    line.s(" && (").s(&text).s(")");
+                    line.s(" && (").f(guard).s(")");
                 }
                 line.s(") {\n");
             }
@@ -1057,14 +1088,13 @@ impl<'a> Emitter<'a> {
         self.push_stmt(line);
     }
 
-    /// A pattern's tests on `subject`, and the names it binds to what.
-    fn pattern_test(&mut self, pattern: &Pattern, subject: &str) -> (Vec<String>, Vec<(String, String)>) {
+    /// A pattern's tests on `subject`; the names it binds become aliases of their paths.
+    fn pattern_test(&mut self, pattern: &Pattern, subject: &str) -> Vec<String> {
         let ty = self.ck.pattern_tys.get(&pattern.span).cloned().unwrap_or(Ty::Unknown);
         let mut tests = Vec::new();
-        let mut bindings = Vec::new();
         match &pattern.kind {
             PatternKind::Wildcard => {}
-            PatternKind::Bind(name) => bindings.push((js_name(&name.name), subject.to_string())),
+            PatternKind::Bind(name) => self.alias(name, subject),
             PatternKind::Literal(expr) => {
                 let value = self.expr(expr).text;
                 tests.push(format!("{subject} === {value}"));
@@ -1072,21 +1102,15 @@ impl<'a> Emitter<'a> {
             PatternKind::None => tests.push(format!("{subject} === undefined")),
             PatternKind::Tuple(items) => {
                 for (i, item) in items.iter().enumerate() {
-                    let (t, b) = self.pattern_test(item, &format!("{subject}[{i}]"));
-                    tests.extend(t);
-                    bindings.extend(b);
+                    tests.extend(self.pattern_test(item, &format!("{subject}[{i}]")));
                 }
             }
             PatternKind::Record(fields) => {
                 for (name, sub) in fields {
                     let path = format!("{subject}.{}", name.name);
                     match sub {
-                        Some(sub) => {
-                            let (t, b) = self.pattern_test(sub, &path);
-                            tests.extend(t);
-                            bindings.extend(b);
-                        }
-                        None => bindings.push((js_name(&name.name), path)),
+                        Some(sub) => tests.extend(self.pattern_test(sub, &path)),
+                        None => self.alias(name, &path),
                     }
                 }
             }
@@ -1094,7 +1118,7 @@ impl<'a> Emitter<'a> {
                 let alts: Vec<String> = alternatives
                     .iter()
                     .map(|a| {
-                        let (t, _) = self.pattern_test(a, subject);
+                        let t = self.pattern_test(a, subject);
                         if t.is_empty() { "true".into() } else { format!("({})", t.join(" && ")) }
                     })
                     .collect();
@@ -1102,35 +1126,43 @@ impl<'a> Emitter<'a> {
             }
             PatternKind::Case { name, args, .. } => {
                 let args = args.clone().unwrap_or_default();
-                let sub = |this: &mut Self,
-                           index: usize,
-                           path: String,
-                           tests: &mut Vec<String>,
-                           bindings: &mut Vec<(String, String)>| {
+                let sub = |this: &mut Self, index: usize, path: String, tests: &mut Vec<String>| {
                     if let Some(p) = args.get(index) {
-                        let (t, b) = this.pattern_test(p, &path);
-                        tests.extend(t);
-                        bindings.extend(b);
+                        tests.extend(this.pattern_test(p, &path));
                     }
                 };
+                // An awaited promise settled in place: no error is `ok`, its value the value temp.
+                let split = self.splits.get(subject).cloned();
                 match (&ty, name.name.as_str()) {
                     (Ty::Option(_), "none") => tests.push(format!("{subject} === undefined")),
                     (Ty::Option(_), _) => {
                         tests.push(format!("{subject} !== undefined"));
-                        sub(self, 0, subject.to_string(), &mut tests, &mut bindings);
+                        sub(self, 0, subject.to_string(), &mut tests);
                     }
-                    (Ty::Result(..), "ok") => {
-                        tests.push(format!("{subject}.ok"));
-                        sub(self, 0, format!("{subject}.value"), &mut tests, &mut bindings);
-                    }
-                    (Ty::Result(..), _) => {
-                        tests.push(format!("!{subject}.ok"));
-                        sub(self, 0, format!("{subject}.error"), &mut tests, &mut bindings);
-                    }
+                    (Ty::Result(..), "ok") => match split {
+                        Some(value) => {
+                            tests.push(format!("{subject} === undefined"));
+                            sub(self, 0, value.unwrap_or_else(|| "undefined".into()), &mut tests);
+                        }
+                        None => {
+                            tests.push(format!("{subject}.ok"));
+                            sub(self, 0, format!("{subject}.value"), &mut tests);
+                        }
+                    },
+                    (Ty::Result(..), _) => match split {
+                        Some(_) => {
+                            tests.push(format!("{subject} !== undefined"));
+                            sub(self, 0, subject.to_string(), &mut tests);
+                        }
+                        None => {
+                            tests.push(format!("!{subject}.ok"));
+                            sub(self, 0, format!("{subject}.error"), &mut tests);
+                        }
+                    },
                     (Ty::Adt(def, _), case) => {
                         let d = &self.ck.defs[*def];
                         let Some(variant) = d.variants().iter().find(|v| v.name == case).cloned() else {
-                            return (tests, bindings);
+                            return tests;
                         };
                         if variant.payload.is_empty() {
                             tests.push(format!("{subject} === {}", string_literal(case)));
@@ -1140,13 +1172,7 @@ impl<'a> Emitter<'a> {
                             }
                             tests.push(format!("{subject}.tag === {}", string_literal(case)));
                             for index in 0..variant.payload.len() {
-                                sub(
-                                    self,
-                                    index,
-                                    format!("{subject}.{}", variant.key(index)),
-                                    &mut tests,
-                                    &mut bindings,
-                                );
+                                sub(self, index, format!("{subject}.{}", variant.key(index)), &mut tests);
                             }
                         }
                     }
@@ -1154,7 +1180,7 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
-        (tests, bindings)
+        tests
     }
 
     // ---- expressions --------------------------------------------------------
@@ -1172,24 +1198,92 @@ impl<'a> Emitter<'a> {
     }
 
     /// An expression evaluated only sometimes (a branch, the right of `&&`):
-    /// statements it needs stay inside it.
-    fn conditional_expr(&mut self, expr: &Expr) -> Frag {
+    /// its value, and the statements it needs (they stay inside its branch).
+    fn conditional(&mut self, f: impl FnOnce(&mut Self) -> Frag) -> (Vec<Frag>, Frag) {
         self.conditional += 1;
         self.bufs.push(Vec::new());
-        let value = self.operand(expr);
+        let value = f(self);
         let stmts = self.bufs.pop().expect("the branch");
         self.conditional -= 1;
-        if stmts.is_empty() {
-            return value;
+        (stmts, value)
+    }
+
+    /// Choices tried in order, the first whose test holds giving the value (the
+    /// last has no test): a conditional expression when no choice needs
+    /// statements, else an `if` chain into a temp of type `ty`.
+    fn select(&mut self, choices: Vec<Choice>, ty: &Ty, paren: bool) -> Frag {
+        let needs_statements = choices.iter().enumerate().any(|(i, c)| {
+            !c.value.0.is_empty() || i > 0 && c.test.as_ref().is_some_and(|(stmts, _)| !stmts.is_empty())
+        });
+        if !needs_statements {
+            let mut out = Frag::default();
+            for choice in choices {
+                if let Some((_, test)) = choice.test {
+                    out.f(if paren { test.wrap("(", ")") } else { test }).s(" ? ").f(choice.value.1).s(" : ");
+                } else {
+                    out.f(choice.value.1);
+                }
+            }
+            return out;
         }
-        let awaits = stmts.iter().any(|s| s.text.contains("await ")) || value.text.contains("await ");
-        let mut out = Frag::of(if awaits { "(await (async () => {\n" } else { "(() => {\n" });
-        for s in stmts {
-            out.f(s).s("\n");
+        let name = self.temp();
+        let ty = self.ts_type(ty);
+        self.push_stmt(Frag::of(format!("let {name}: {ty};")));
+        let mut chain = Frag::default();
+        for (index, choice) in choices.into_iter().rev().enumerate() {
+            let mut body = Frag::default();
+            for line in choice.value.0 {
+                body.f(line).s("\n");
+            }
+            body.s(&format!("{name} = ")).f(choice.value.1).s(";\n");
+            chain = match choice.test {
+                None => body,
+                Some((stmts, test)) => {
+                    let mut out = Frag::default();
+                    for line in stmts {
+                        out.f(line).s("\n");
+                    }
+                    out.s("if (").f(test).s(") {\n").f(body).s("}");
+                    if index > 0 {
+                        out.s(" else {\n").f(chain).s("}");
+                    }
+                    out.s("\n");
+                    out
+                }
+            };
         }
-        out.s("return ").f(value).s(";\n");
-        out.s(if awaits { "})())" } else { "})()" });
-        out
+        let text = chain.text.trim_end().to_string();
+        chain.text = text;
+        self.push_stmt(chain);
+        Frag::of(name)
+    }
+
+    /// `await promise` of a TS promise, settled in place with a `try` around
+    /// only the await: the value in one temp (none for `Unit`), the error (a
+    /// JS `Error`) in another, `undefined` when the promise resolved.
+    fn await_settled(&mut self, expr: &Expr, inner: &Expr, keep: bool) -> (Option<String>, String) {
+        let value_ty = match self.ck.types.get(&expr.id) {
+            Some(Ty::Result(ok, _)) => (**ok).clone(),
+            _ => Ty::Unknown,
+        };
+        let promise = self.expr(inner);
+        let value = (keep && value_ty != Ty::Unit).then(|| self.temp());
+        let error = self.temp();
+        if let Some(value) = &value {
+            let ts = self.ts_type(&value_ty);
+            self.push_stmt(Frag::of(format!("let {value}!: {ts};")));
+        }
+        self.push_stmt(Frag::of(format!("let {error}: Error | undefined;")));
+        let assign = value.as_ref().map_or_else(String::new, |v| format!("{v} = "));
+        self.try_await(expr.span, promise, &assign, ";", &format!("{error} = {TO_ERROR};"));
+        (value, error)
+    }
+
+    /// `try { <before>await promise<after> } catch ($error) { <caught> }`.
+    fn try_await(&mut self, span: Span, promise: Frag, before: &str, after: &str, caught: &str) {
+        let mut line = Frag::at(span, "try {\n");
+        line.s(before).s("await ").f(promise).s(after).s(&format!("\n}} catch ($error) {{\n{caught}\n}}"));
+        self.push_stmt(line);
     }
 
     fn expr(&mut self, expr: &Expr) -> Frag {
@@ -1290,21 +1384,38 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Binary(op, lhs, rhs) => self.binary(*op, lhs, rhs, expr),
             ExprKind::Ternary(cond, then, otherwise) => {
-                let mut out = self.operand(cond);
-                out.s(" ? ").f(self.conditional_expr(then)).s(" : ").f(self.conditional_expr(otherwise));
-                out
+                let test = self.operand(cond);
+                let then = self.conditional(|this| this.operand(then));
+                let otherwise = self.conditional(|this| this.operand(otherwise));
+                let ty = self.expr_ty(expr);
+                self.select(
+                    vec![
+                        Choice { test: Some((Vec::new(), test)), value: then },
+                        Choice { test: None, value: otherwise },
+                    ],
+                    &ty,
+                    false,
+                )
             }
-            ExprKind::Await(inner) => {
-                let value = self.expr(inner);
-                match self.ck.awaits.get(&expr.id) {
-                    Some(AwaitRes::Ts) => {
-                        self.helpers.insert("settle");
-                        self.uses_result = true;
-                        value.wrap("await $settle(", ")")
-                    }
-                    _ => value.wrap("await (", ")"),
+            ExprKind::Await(inner) => match self.ck.awaits.get(&expr.id) {
+                // A `Result` that escapes (bound, passed, returned): built in place.
+                Some(AwaitRes::Ts) => {
+                    let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+                    let ts = self.ts_type(&ty);
+                    let promise = self.expr(inner);
+                    let name = self.temp();
+                    self.push_stmt(Frag::of(format!("let {name}: {ts};")));
+                    self.try_await(
+                        expr.span,
+                        promise,
+                        &format!("{name} = {{ ok: true, value: "),
+                        " };",
+                        &format!("{name} = {{ ok: false, error: {TO_ERROR} }};"),
+                    );
+                    Frag::of(name)
                 }
-            }
+                _ => self.expr(inner).wrap("await (", ")"),
+            },
             ExprKind::Try(inner) => self.try_expr(expr, inner),
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
@@ -1346,7 +1457,34 @@ impl<'a> Emitter<'a> {
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
         let left = self.operand(lhs);
         let right = if matches!(op, BinaryOp::And | BinaryOp::Or | BinaryOp::Default) {
-            self.conditional_expr(rhs)
+            let (stmts, right) = self.conditional(|this| this.operand(rhs));
+            if !stmts.is_empty() {
+                // `a && b` where `b` needs statements: `a`, then `b` only when it is needed.
+                let name = self.temp();
+                let ty = match op {
+                    BinaryOp::Default => {
+                        let ty = self.expr_ty(lhs);
+                        self.ts_type(&ty)
+                    }
+                    _ => "boolean".into(),
+                };
+                let mut line = Frag::of(format!("let {name}: {ty} = "));
+                line.f(left).s(";");
+                self.push_stmt(line);
+                let test = match op {
+                    BinaryOp::And => name.clone(),
+                    BinaryOp::Or => format!("!{name}"),
+                    _ => format!("{name} === undefined"),
+                };
+                let mut line = Frag::of(format!("if ({test}) {{\n"));
+                for s in stmts {
+                    line.f(s).s("\n");
+                }
+                line.s(&format!("{name} = ")).f(right).s(";\n}");
+                self.push_stmt(line);
+                return Frag::of(name);
+            }
+            right
         } else {
             self.operand(rhs)
         };
@@ -1373,6 +1511,23 @@ impl<'a> Emitter<'a> {
                     .spec("45-enums-option-and-result"),
             );
             return Frag::of("undefined");
+        }
+        // `await promise?`: the error returns from inside the `catch`.
+        if let ExprKind::Await(awaited) = &inner.kind
+            && self.ck.awaits.get(&inner.id) == Some(&AwaitRes::Ts)
+        {
+            let value_ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+            let promise = self.expr(awaited);
+            let caught = format!("return {{ ok: false, error: {TO_ERROR} }};");
+            if value_ty == Ty::Unit {
+                self.try_await(expr.span, promise, "", ";", &caught);
+                return Frag::of("undefined");
+            }
+            let name = self.temp();
+            let ts = self.ts_type(&value_ty);
+            self.push_stmt(Frag::of(format!("let {name}: {ts};")));
+            self.try_await(expr.span, promise, &format!("{name} = "), ";", &caught);
+            return Frag::of(name);
         }
         let name = self.temp();
         let value = self.expr(inner);
@@ -1439,21 +1594,25 @@ impl<'a> Emitter<'a> {
             let [Stmt { kind: StmtKind::Expr(then), .. }] = if_expr.then.stmts.as_slice() else {
                 unreachable!()
             };
-            let mut out = self.operand(cond);
-            out.s(" ? ").f(self.conditional_expr(then)).s(" : ");
-            match if_expr.otherwise.as_deref() {
+            let test = self.operand(cond);
+            let then = self.conditional(|this| this.operand(then));
+            let otherwise = match if_expr.otherwise.as_deref() {
                 Some(Else::Block(b)) => {
                     let [Stmt { kind: StmtKind::Expr(e), .. }] = b.stmts.as_slice() else { unreachable!() };
-                    out.f(self.conditional_expr(e));
+                    self.conditional(|this| this.operand(e))
                 }
-                Some(Else::If(e)) => {
-                    out.f(self.expr(e));
-                }
-                None => {
-                    out.s("undefined");
-                }
-            }
-            return out;
+                Some(Else::If(e)) => self.conditional(|this| this.expr(e)),
+                None => (Vec::new(), Frag::of("undefined")),
+            };
+            let ty = self.expr_ty(expr);
+            return self.select(
+                vec![
+                    Choice { test: Some((Vec::new(), test)), value: then },
+                    Choice { test: None, value: otherwise },
+                ],
+                &ty,
+                false,
+            );
         }
         let name = self.temp();
         let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
@@ -1466,26 +1625,29 @@ impl<'a> Emitter<'a> {
     fn match_value(&mut self, expr: &Expr, m: &MatchExpr) -> Frag {
         if self.simple_match(m) {
             let subject = self.expr(&m.scrutinee).text;
-            let mut out = Frag::default();
+            let mut choices = Vec::new();
             let count = m.arms.len();
             for (index, arm) in m.arms.iter().enumerate() {
                 let ArmBody::Expr(body) = &arm.body else { unreachable!() };
-                let (tests, _) = self.pattern_test(&arm.pattern, &subject);
-                let mut tests = tests;
+                let mut tests = self.pattern_test(&arm.pattern, &subject);
                 if let Some(guard) = &arm.guard {
                     tests.push(self.operand(guard).text);
                 }
-                if index + 1 == count && arm.guard.is_none() {
-                    out.f(self.conditional_expr(body));
-                } else {
-                    let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                    out.s(&format!("({test}) ? ")).f(self.conditional_expr(body)).s(" : ");
-                }
+                let value = self.conditional(|this| this.operand(body));
+                let test = (index + 1 < count || arm.guard.is_some()).then(|| {
+                    (
+                        Vec::new(),
+                        Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") }),
+                    )
+                });
+                choices.push(Choice { test, value });
             }
             if m.arms.last().is_some_and(|a| a.guard.is_some()) {
-                out.s("undefined");
+                choices.push(Choice { test: None, value: (Vec::new(), Frag::of("undefined")) });
             }
-            return out.wrap("(", ")");
+            let ty = self.expr_ty(expr);
+            let out = self.select(choices, &ty, true);
+            return if out.text.starts_with('$') { out } else { out.wrap("(", ")") };
         }
         let name = self.temp();
         let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
@@ -1899,7 +2061,7 @@ impl<'a> Emitter<'a> {
                     Ty::Option(inner) if matches!(**inner, Ty::Partial(_)) => (true, true),
                     _ => (false, false),
                 };
-                let subject = self.subject(&arg.value);
+                let subject = self.subject(&arg.value, &[]);
                 spreads.push((subject, patch, optional));
             }
             for field in &fields {
@@ -2138,81 +2300,82 @@ impl<'a> Emitter<'a> {
 
     /// One child: `if` and `match` keep their slot (`null` when they draw nothing).
     fn child(&mut self, expr: &Expr) -> Frag {
+        let child = Ty::View(None);
         match &expr.kind {
             ExprKind::If(if_expr) => {
-                let (cond, bindings) = self.condition(&if_expr.cond);
-                let then = self.branch(&if_expr.then.stmts, &bindings);
+                let test = self.condition(&if_expr.cond);
+                let then = self.branch(&if_expr.then.stmts);
                 let otherwise = match if_expr.otherwise.as_deref() {
-                    Some(Else::If(next)) => self.child(next),
-                    Some(Else::Block(block)) => self.branch(&block.stmts, &[]),
-                    None => Frag::of("null"),
+                    Some(Else::If(next)) => self.conditional(|this| this.child(next)),
+                    Some(Else::Block(block)) => self.branch(&block.stmts),
+                    None => (Vec::new(), Frag::of("null")),
                 };
+                let choices = vec![
+                    Choice { test: Some((Vec::new(), test)), value: then },
+                    Choice { test: None, value: otherwise },
+                ];
                 let mut out = Frag::at(expr.span, "");
-                out.f(cond.wrap("(", ")")).s(" ? ").f(then).s(" : ").f(otherwise);
+                out.f(self.select(choices, &child, true));
                 out
             }
             ExprKind::Match(m) => {
-                let subject = self.subject(&m.scrutinee);
-                let mut out = Frag::at(expr.span, "");
+                let patterns: Vec<&Pattern> = m.arms.iter().map(|a| &a.pattern).collect();
+                let subject = self.subject(&m.scrutinee, &patterns);
+                let mut choices = Vec::new();
                 let count = m.arms.len();
                 for (index, arm) in m.arms.iter().enumerate() {
-                    let (mut tests, bindings) = self.pattern_test(&arm.pattern, &subject);
+                    let mut tests = self.pattern_test(&arm.pattern, &subject);
                     if let Some(guard) = &arm.guard {
-                        let mut text = self.operand(guard).text;
-                        for (name, value) in &bindings {
-                            text = replace_word(&text, name, value);
-                        }
-                        tests.push(text);
+                        tests.push(self.operand(guard).text);
                     }
-                    let body = match &arm.body {
-                        ArmBody::Expr(e) => self.branch(
-                            std::slice::from_ref(&Stmt { kind: StmtKind::Expr(e.clone()), span: e.span }),
-                            &bindings,
-                        ),
-                        ArmBody::Block(b) => self.branch(&b.stmts, &bindings),
+                    let value = match &arm.body {
+                        ArmBody::Expr(e) => self.branch(std::slice::from_ref(&Stmt {
+                            kind: StmtKind::Expr(e.clone()),
+                            span: e.span,
+                        })),
+                        ArmBody::Block(b) => self.branch(&b.stmts),
                     };
-                    if index + 1 == count && arm.guard.is_none() {
-                        out.f(body);
-                    } else {
-                        let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                        out.s(&format!("({test}) ? ")).f(body).s(" : ");
-                    }
+                    let test = (index + 1 < count || arm.guard.is_some()).then(|| {
+                        (
+                            Vec::new(),
+                            Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") }),
+                        )
+                    });
+                    choices.push(Choice { test, value });
                 }
                 if m.arms.last().is_some_and(|a| a.guard.is_some()) {
-                    out.s("null");
+                    choices.push(Choice { test: None, value: (Vec::new(), Frag::of("null")) });
                 }
-                out.wrap("(", ")")
+                let out = self.select(choices, &child, true);
+                let mut marked = Frag::at(expr.span, "");
+                marked.f(if out.text.starts_with('$') { out } else { out.wrap("(", ")") });
+                marked
             }
             _ => self.expr(expr),
         }
     }
 
-    /// A conditional builder branch: its children (one, or a list), with the names it binds.
-    fn branch(&mut self, stmts: &[Stmt], bindings: &[(String, String)]) -> Frag {
-        self.conditional += 1;
-        self.bufs.push(Vec::new());
-        for (name, value) in bindings {
-            self.push_stmt(Frag::of(format!("const {name} = {value};")));
-        }
-        let children = self.children(stmts);
-        let stmts = self.bufs.pop().expect("the branch");
-        self.conditional -= 1;
-        let value = match children.len() {
-            0 => Frag::of("null"),
-            1 => children.into_iter().next().expect("one"),
-            _ => Frag::join(children, ", ").wrap("[", "]"),
-        };
-        if stmts.is_empty() {
-            return value;
-        }
-        let mut out = Frag::of("(() => {\n");
-        for s in stmts {
-            out.f(s).s("\n");
-        }
-        out.s("return ").f(value).s(";\n})()");
-        out
+    /// A conditional builder branch: its children (one, or a list), and the statements they need.
+    fn branch(&mut self, stmts: &[Stmt]) -> (Vec<Frag>, Frag) {
+        self.conditional(|this| {
+            let children = this.children(stmts);
+            match children.len() {
+                0 => Frag::of("null"),
+                1 => children.into_iter().next().expect("one"),
+                _ => Frag::join(children, ", ").wrap("[", "]"),
+            }
+        })
     }
 }
+
+/// One choice of [`Emitter::select`]: its test (with the statements it needs) and its value.
+struct Choice {
+    test: Option<(Vec<Frag>, Frag)>,
+    value: (Vec<Frag>, Frag),
+}
+
+/// A caught value as a JS `Error` (a TS promise may reject with anything).
+const TO_ERROR: &str = "$error instanceof Error ? $error : new Error(String($error))";
 
 /// `{ ...x, a: { ...x.a, b: value } }` for `x.a.b = value`.
 fn updated(name: &str, fields: &[String], value: Frag) -> Frag {
@@ -2278,27 +2441,6 @@ fn mentions(text: &str, name: &str) -> bool {
 fn covers(outer: &str, inner: &str) -> bool {
     outer == inner
         || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
-}
-
-/// Replaces whole-word occurrences of `name` in emitted `text`.
-fn replace_word(text: &str, name: &str, value: &str) -> String {
-    let mut out = String::new();
-    let mut rest = text;
-    while let Some(at) = rest.find(name) {
-        let before = rest[..at].chars().last();
-        let after = rest[at + name.len()..].chars().next();
-        let word =
-            |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$' || c == '.');
-        out.push_str(&rest[..at]);
-        if word(before) || after.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$') {
-            out.push_str(name);
-        } else {
-            out.push_str(value);
-        }
-        rest = &rest[at + name.len()..];
-    }
-    out.push_str(rest);
-    out
 }
 
 fn is_path(expr: &Expr) -> bool {
