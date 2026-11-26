@@ -1,12 +1,13 @@
 /**
  * What a tree costs React: fibers, hook slots and context reads below a
  * marker host, by the same walk as the runtime's cost gate
- * (`packages/bloom-language/parity/cost.parity.test.tsx`).
+ * (`packages/bloom-language/parity/cost.parity.test.tsx`). This suite runs on
+ * the runtime's stand-ins, whose theme has no provider (its contexts read
+ * their defaults), so both sides of a comparison render with none.
  */
 import type { ReactElement } from 'react';
 import * as RN from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
-import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -30,18 +31,14 @@ export interface Cost {
 /** React's function-component tags (Function, ForwardRef, Memo, SimpleMemo): the fibers that hold hooks. */
 const HOOK_TAGS = new Set([0, 11, 14, 15]);
 
-/** Renders `element` under Bloom's provider and counts what is below the marker; `inspect` sees the live tree. */
+/** Renders `element` and counts what is below the marker; `inspect` sees the live tree. */
 export function measured(
   element: ReactElement,
   inspect?: (renderer: TestRenderer.ReactTestRenderer) => void,
 ): Cost {
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
-    renderer = TestRenderer.create(
-      <BloomThemeProvider fonts={false} mode="light">
-        <RN.View testID="measured">{element}</RN.View>
-      </BloomThemeProvider>,
-    );
+    renderer = TestRenderer.create(<RN.View testID="measured">{element}</RN.View>);
   });
   let top = (renderer.root as unknown as { _fiber: Fiber })._fiber;
   while (top.return) top = top.return;

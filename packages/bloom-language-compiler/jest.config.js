@@ -25,6 +25,8 @@ const BLOOM_BABEL = {
 module.exports = {
   ...runtime,
   rootDir: __dirname,
+  // The crates hold the core's own snapshots (`*.snap`), which are not Jest's.
+  roots: ['<rootDir>/test'],
   testMatch: ['<rootDir>/test/**/*.test.ts?(x)'],
   moduleFileExtensions: [...runtime.moduleFileExtensions, 'bloom'],
   transform: {

@@ -1,3 +1,5 @@
+const path = require('node:path');
+
 const { compileBloomModule, compileModule, hostFilename, isBloomFile } = require('./compile');
 const { digest } = require('./native');
 const { remapMetroMap } = require('./remap');
@@ -21,10 +23,19 @@ function upstream(config) {
   return require(config.bloomLanguage.upstreamTransformerPath);
 }
 
-/** The module the wrapped worker gets: its name, code and the compiler's map, or `null` to pass it through. */
-function compiled(filename, data) {
+/**
+ * The module the wrapped worker gets: its name, code and the compiler's map,
+ * or `null` to pass it through. A `.bloom` module compiles by its absolute
+ * path with the project as its root, where its TS imports resolve (the
+ * tsconfig's `paths`, `node_modules`).
+ */
+function compiled(projectRoot, filename, data) {
   if (isBloomFile(filename)) {
-    const { code, map } = compileBloomModule(data.toString('utf8'), filename);
+    const { code, map } = compileBloomModule(
+      data.toString('utf8'),
+      path.resolve(projectRoot, filename),
+      { root: projectRoot },
+    );
     return { filename: hostFilename(filename), code, map };
   }
   // The output is the same on every platform: the runtime resolves tokens.
@@ -35,7 +46,7 @@ function compiled(filename, data) {
 }
 
 async function transform(config, projectRoot, filename, data, options) {
-  const module = compiled(filename, data);
+  const module = compiled(projectRoot, filename, data);
   if (!module) return upstream(config).transform(config, projectRoot, filename, data, options);
 
   const result = await upstream(config).transform(
