@@ -31,6 +31,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
 
 [[package]]
+name = "bloom_lang"
+version = "0.0.0"
+dependencies = [
+ "bloom_language_compiler",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_parser",
+ "oxc_sourcemap",
+ "oxc_span",
+]
+
+[[package]]
 name = "bloom_language_compiler"
 version = "0.0.0"
 dependencies = [
