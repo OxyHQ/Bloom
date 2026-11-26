@@ -5,7 +5,7 @@ description: The grammar, type system, reactivity model, effects, modules, inter
 
 # Bloom (`.bloom`) language specification: draft 0
 
-Status: **draft 0, phase 0** (2026-11-26). Nothing here is released. The
+Status: **draft 0.1, phase 0** (2026-11-26; 0.1 folds in the friction found porting Mention's Settings → Notifications). Nothing here is released. The
 decision record is [ADR 0001](https://github.com/OxyHQ/Bloom/blob/main/docs/adr/0001-bloom-own-language.md). The
 TS-embedded language (`@oxy.so/bloom-language` chains in `.tsx`) is called
 **the embedded language** below; `.bloom` compiles *to* it, so everything the
@@ -75,8 +75,8 @@ pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, St
   operator, after `,`, `=`, `->`, `=>` or `in`. `;` may separate items on one line.
 - **Identifiers:** `[a-zA-Z_][a-zA-Z0-9_]*`. Types, views and enum names are `UpperCamel`;
   values, functions, fields and enum cases are `lowerCamel` (a warning otherwise, B0901).
-- **Keywords:** `as async await body case else enum false fn for from if import in let match
-  none pub return screen layout struct true type var view while`. Attribute words after `@`:
+- **Keywords:** `as async await body case default defer else enum false fn for from if import in
+  let match none pub return screen layout struct task true type var view while`. Attribute words after `@`:
   `state list record env`.
 - **Literals:** `42`, `1_000`, `0xff` (Int); `1.5`, `2e3` (Float); `true`/`false`; `none`;
   strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `${expr}`;
@@ -118,7 +118,7 @@ member        = state | let_stmt | fn ;
 state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
 
 block         = "{" { stmt ( NL | ";" ) } "}" ;
-stmt          = let_stmt | var_stmt | assign | "return" [ expr ] | while | for | expr ;
+stmt          = let_stmt | var_stmt | assign | "return" [ expr ] | "defer" block | while | for | expr ;
 let_stmt      = "let" pattern [ ":" type ] "=" expr ;
 var_stmt      = "var" IDENT [ ":" type ] "=" expr ;
 assign        = place ( "=" | "+=" | "-=" | "*=" ) expr ;
@@ -136,7 +136,9 @@ base_type     = TYPE_NAME [ "<" type { "," type } ">" ]
 expr          = if_expr | match_expr | closure | binary ;
 if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
 cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
-match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( expr | block ) NL } "}" ;
+match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
+                (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit *)
+task_expr     = "task" block ;                     (* spawns; the expression is Unit *)
 closure       = "{" [ closure_params "in" ] { stmt ( NL | ";" ) } "}" ;
 closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
 
@@ -147,7 +149,7 @@ call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
 arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; struct spread *)
-primary       = literal | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
+primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
               | "(" expr ")" | "(" expr "," expr { "," expr } ")"
               | "[" [ expr { "," expr } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
 
@@ -183,7 +185,9 @@ Three grammar rules keep it unambiguous, as in Swift:
 | `struct S { … }` | nominal record | plain object | `interface S { readonly … }` |
 | `enum E { a, b }` (no payloads) | | string literal | `"a" \| "b"` |
 | `enum E { a, b(T) }` | tagged union | `"a"` or `{ tag: "b", _0: T }` (named payloads keep their names) | the union |
-| `(A) -> R`, `async (A) -> R` | function | JS function (async → returns a Promise) | `(a: A) => R` / `Promise<R>` |
+| `(A) -> R`, `async (A) -> R` | a Bloom function (async: one that awaits) | JS function (async → returns a Promise) | `(a: A) => R` / `Promise<R>` |
+| `Promise<T>` | a TS promise (it may reject) | the promise | `Promise<T>` |
+| `Error` | a JS error: `message: String`, `name: String` | the `Error` object | `Error` |
 | `View` | a UI value | an embedded-language node (`Child`) | `Child` |
 | `Binding<T>` | read and write of a state | `[value, set]` (the embedded language's binding) | `Binding<T>` |
 | token sets (`Space`, `Color`, `Font`, …) | closed string sets from `spec/language.json` | string | the literal union |
@@ -226,7 +230,11 @@ let r = Prefs(..patch, likes: true)  // spread a Prefs or a Partial<Prefs>, then
 ```
 
 A field without a default is required at construction. `Partial<S>` is the struct with every
-field optional (a patch). Construction compiles to an object literal (no function call).
+field optional (a patch), built with `S.patch(field: v, …)`. Construction compiles to an object
+literal (no function call). A spread `..p` of a `Partial<S>` fills only the fields `p` has: an
+absent or `undefined` field keeps the default (compiled per field, `p?.likes ?? true`), unlike a
+JS object spread. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+exhaustive `match` on a fieldless enum maps a key to a field.
 
 ### 4.5 Enums, Option and Result
 
@@ -257,11 +265,14 @@ A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map 
 arrays, `T | undefined | null`, object types, interfaces, string-literal unions, function
 types, `Promise<T>`, generic functions and interfaces without conditional or mapped types)
 get Bloom types. Anything else is `Foreign`: a value you may pass back to TS, call, or read
-members from (each read is `Foreign` again), and that **must be annotated before Bloom logic
-uses it** (`let open: Bool = auth.isOpen`). The annotation is emitted as a TS annotation, so
-the TypeScript checker verifies the boundary on the emitted code and its diagnostics map
-back to the `.bloom` span. `Foreign` never flows into a Bloom-typed position unannotated
-(B0601), so Bloom code itself stays sound.
+members from (each read is `Foreign` again). **A `Foreign` value is accepted wherever a Bloom
+type is expected** (an argument, a modifier, a condition, an annotated `let`, a field, a
+return), and there the emitter writes a checked boundary, `(expr satisfies T)`, so the
+TypeScript checker verifies it against the real `.d.ts` and its diagnostic maps back to the
+`.bloom` span. Where nothing is expected (`let x = foreignCall()`) the value stays `Foreign`,
+and using it as a Bloom value with no expected type (an operator, a `match`, a member of a Bloom
+type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
+is checked by bloomc, and every crossing by `tsc`.
 
 ## 5. Values, functions and closures
 
@@ -312,8 +323,8 @@ pub view PostRow(post: Post, compact: Bool = false) {
 - A `view` is a component: it compiles to `view(function PostRow(props) { … })` in the
   embedded language, one memoised fiber, the same as a hand-written `view()`. Parameters are its
   props.
-- A `fn … -> View` is **inlined UI**: no fiber, no state; prefer it for repeated rows inside one
-  view.
+- A `fn … -> View`, at module level or as a view member, is **inlined UI**: a plain call, no
+  fiber, no state; prefer it for repeated rows inside one view.
 - `screen Name { … }` is a view that is the file's default export and an Expo Router route
   (`screen()` from `@oxy.so/bloom-language/router`); `layout Name { … }` the same for `layout()`.
 - `pub` exports; `pub default` makes it the default export.
@@ -373,9 +384,16 @@ inherit as in the embedded language.
 
 ## 8. Effects, tasks and concurrency
 
-- `async fn` / `await`. Awaiting a Bloom async function yields its result. **Awaiting a TS
-  promise yields `Result<T, Error>`**, because a JS promise can reject; `await f()?` propagates.
-  A synchronous TS throw is a panic (a bug), as in Rust.
+- `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
+  returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
+  `Result<T, Error>`**, because a JS promise can reject; `(await f())?` propagates. A synchronous
+  TS throw is a panic (a bug), as in Rust.
+- **An async call is awaited or spawned, never dropped**: calling an async function or a
+  promise-returning TS function without `await` is B0430, except as `task { await save(v) }`,
+  which spawns it (fire and forget, completing like a handler) and is `Unit`. A binding setter
+  that saves is `Binding(get: prefs.likes, set: { v in task { await save(.likes, v) } })`.
+- `defer { … }` runs when the enclosing block exits, after an early `return` too (compiled to
+  `try`/`finally`); the place for "`saving = false` whatever happened".
 - **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
   disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
   `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
@@ -406,8 +424,14 @@ so a wrong path is a compile error.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
-  `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3); a value typed as a React component is a
-  node (7.2).
+  `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
+  7.2) when its type is a React component type (`ComponentType`, `FC`, a function of one props
+  object returning an element), or, when it is `Foreign`, when its name is `UpperCamel` and it is
+  used as a node.
+- **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
+  packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).
+  An explicit import shadows a prelude name. A module is never both `X.tsx` and `X.bloom`
+  (B0610): an extensionless import must mean one file.
 - **TS importing Bloom:** bloomc writes `Name.d.bloom.ts` beside `Name.bloom` (TS's
   `allowArbitraryExtensions`), so `import { Composer } from "./Composer.bloom"` type-checks in TS.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
@@ -498,5 +522,9 @@ is idempotent and preserves comments.
 7. `match` arms start with `case`; an enum case at the start of a line is `Type.case`.
 8. Awaiting a TS promise gives `Result<T, Error>`.
 9. TS: `import { x } from "pkg"`; hooks (`useX`) only as view members; TS components are nodes
-   with named-argument props; named arguments to a TS function become one options object.
-10. Run `bloomc check` and `bloomc fmt`; every error says what to write instead.
+   with named-argument props; named arguments to a TS function become one options object; a TS
+   value goes straight into any typed position (tsc checks it there).
+10. An async call is `await`ed or spawned with `task { … }`; `defer { … }` for cleanup.
+11. Navigation: `navigate("/path")` in screens; inside a surface with its own router (a settings
+   modal), use that surface's router hook.
+12. Run `bloomc check` and `bloomc fmt`; every error says what to write instead.
