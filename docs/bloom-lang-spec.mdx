@@ -299,7 +299,9 @@ can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array
 items are taken as `T`). `if x is T { … }` narrows a name to `T` in the block. It sits at the
 comparisons' precedence. `is` on a Bloom value, or for another type, is B0213: a Bloom type's
 cases are an enum's, matched with `match`. A Bloom file reads no JS global implicitly: numbers
-come from the prelude (section 12) and timers are `task { await sleep(ms) … }`.
+come from the prelude (section 12), timers are `task { await sleep(ms) … }`, and any other global
+is imported by name, `import { encodeURIComponent, JSON } from "js"`: nothing is emitted for
+the import, and its names are `Foreign`, typed by TypeScript (lib.es, lib.dom) where they cross.
 
 ## 5. Values, functions and closures
 
