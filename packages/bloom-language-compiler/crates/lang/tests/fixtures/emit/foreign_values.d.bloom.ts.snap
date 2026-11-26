@@ -11,3 +11,4 @@ export interface RowProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Row())`), or from TSX as `toElement(Row())`. */
 export declare const Row: (props: RowProps) => ComposedView;
+export declare function shown(name: string | undefined, bio: string | undefined): string;

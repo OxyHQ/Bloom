@@ -6,3 +6,9 @@ export interface PaddedProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Padded())`), or from TSX as `toElement(Padded())`. */
 export declare const Padded: (props: PaddedProps) => ComposedView;
+export declare function useHeader(title: string): { title: string; top: number };
+export interface HeaderProps {
+  readonly title: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Header())`), or from TSX as `toElement(Header())`. */
+export declare const Header: (props: HeaderProps) => ComposedView;

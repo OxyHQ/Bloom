@@ -1,0 +1,59 @@
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+
+export function host(link: string): string {
+let $t0: $Result<InstanceType<typeof globalThis.URL>, Error>;
+try {
+let $t1: InstanceType<typeof globalThis.URL>;
+{
+$t1 = new URL(link);
+}
+$t0 = { ok: true, value: $t1 };
+} catch ($error) {
+$t0 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const parsed = $t0;
+if (parsed.ok) {
+return (parsed.value.hostname satisfies string);
+} else {
+return "";
+}
+}
+
+export function count(text: string): number {
+let $t2: $Result<number, Error>;
+try {
+let $t3: number;
+{
+const value: number = (JSON.parse(text) satisfies number);
+$t3 = value + 1;
+}
+$t2 = { ok: true, value: $t3 };
+} catch ($error) {
+$t2 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const read = $t2;
+if (read.ok) {
+return read.value;
+} else {
+return read.error.message.length;
+}
+}
+
+const WWW = new RegExp("^www\\.", "i");
+
+export function bare(host: string): string {
+return host.replace(WWW, "");
+}
+
+export function spaced(text: string): string {
+return text.replaceAll(" ", "_");
+}
+
+export function isWww(host: string): boolean {
+return (WWW.test(host) satisfies boolean);
+}
+
+export function digits(text: string): boolean {
+return text.match(new RegExp("[0-9]+")) != null;
+}
+

@@ -72,3 +72,11 @@ $t1 = $[2];
 return $t1;
 });
 
+export function shown(name: string | undefined, bio: string | undefined): string {
+if ((name === undefined) || (bio === undefined)) {
+return "";
+}
+const full = ((name !== undefined) && (!(name.length === 0))) ? name : "?";
+return `${full}: ${bio}`;
+}
+

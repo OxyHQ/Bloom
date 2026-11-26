@@ -80,6 +80,10 @@ pub enum CallRes {
     Collection(Ty),
     /// `min`, `max`, `abs`, `round`, `floor`, `ceil`: `Math.…`.
     Math(&'static str),
+    /// `Regex(pattern, flags)`: a JS `RegExp`.
+    Regex,
+    /// `catching { … }`: the block's value, or what it threw, as a `Result`.
+    Catching,
     /// `Int(s)` / `Float(s)`.
     Parse {
         int: bool,
@@ -231,6 +235,9 @@ pub struct CheckResult {
     pub ref_objects: HashSet<ExprId>,
     /// `..props: Props`: the locals naming a view's whole props (emitted `props`).
     pub whole_props: HashSet<LocalId>,
+    /// A hook function written without `->`: its result, inferred from its body (by the
+    /// fn's span).
+    pub fn_rets: HashMap<Span, Ty>,
     pub awaits: HashMap<ExprId, AwaitRes>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
@@ -409,6 +416,15 @@ impl<'o> Checker<'o> {
     }
 
     fn finish(mut self) -> CheckResult {
+        let rets = std::mem::take(&mut self.out.fn_rets);
+        self.out.fn_rets = rets
+            .into_iter()
+            .map(|(span, ty)| {
+                // Nothing at the end of the body: it gives nothing.
+                let ty = self.zonk(&ty);
+                (span, if matches!(ty, Ty::Var(_)) { Ty::Unit } else { ty })
+            })
+            .collect();
         let types = std::mem::take(&mut self.out.types);
         self.out.types = types.into_iter().map(|(id, ty)| (id, self.zonk(&ty))).collect();
         let spans = std::mem::take(&mut self.out.spans);
@@ -1219,7 +1235,19 @@ impl<'o> Checker<'o> {
                 ParamTy { name: Some(p.name.name.clone()), ty, optional: p.default.is_some(), rest }
             })
             .collect();
-        let ret = f.ret.as_ref().map_or(Ty::Unit, |r| self.resolve_type(r));
+        let ret = match &f.ret {
+            Some(r) => self.resolve_type(r),
+            // A hook function's result is inferred (a TS hook rarely writes its type).
+            None if is_hook_name(&f.name.name) => match self.out.fn_rets.get(&f.span) {
+                Some(ret) => ret.clone(),
+                None => {
+                    let ret = self.fresh();
+                    self.out.fn_rets.insert(f.span, ret.clone());
+                    ret
+                }
+            },
+            None => Ty::Unit,
+        };
         self.generics.clear();
         Ty::Fn(Rc::new(FnTy {
             params,
@@ -1891,6 +1919,15 @@ impl<'o> Checker<'o> {
                 }
                 _ => {
                     self.stmt(stmt);
+                    // `if x == none { return … }`: `x` is present in the rest of the block.
+                    if let StmtKind::Expr(e) = &stmt.kind
+                        && let ExprKind::If(guard) = &e.kind
+                        && guard.otherwise.is_none()
+                        && guard.then.stmts.last().is_some_and(|s| matches!(s.kind, StmtKind::Return(_)))
+                        && let Cond::Expr(test) = &guard.cond
+                    {
+                        self.narrow(test, BinaryOp::Eq, BinaryOp::Or);
+                    }
                     if last {
                         ty = Ty::Unit;
                     }
@@ -2578,13 +2615,19 @@ impl<'o> Checker<'o> {
     /// `if x != none { … }` (also `none != x`, and each side of `&&`): `x` is present in
     /// the block, as TS narrows it. Locals read as themselves only (not `@ref`/`@state`).
     fn narrow_present(&mut self, expr: &Expr) {
+        self.narrow(expr, BinaryOp::Ne, BinaryOp::And);
+    }
+
+    /// `test` (`!=` joined by `&&`, or `==` joined by `||` for a guard that exits) holding
+    /// for `name … none`: the name is present after it.
+    fn narrow(&mut self, expr: &Expr, test: BinaryOp, join: BinaryOp) {
         let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
         match op {
-            BinaryOp::And => {
-                self.narrow_present(lhs);
-                self.narrow_present(rhs);
+            op if *op == join => {
+                self.narrow(lhs, test, join);
+                self.narrow(rhs, test, join);
             }
-            BinaryOp::Ne => {
+            op if *op == test => {
                 let subject = match (&lhs.kind, &rhs.kind) {
                     (ExprKind::Name(_), ExprKind::None) => lhs,
                     (ExprKind::None, ExprKind::Name(_)) => rhs,
@@ -3295,8 +3338,8 @@ impl<'o> Checker<'o> {
             return self.instantiate(&info.ty);
         }
         match name {
-            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" | "min" | "max"
-            | "abs" | "round" | "floor" | "ceil" => {
+            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" | "Regex"
+            | "catching" | "min" | "max" | "abs" | "round" | "floor" | "ceil" => {
                 self.report(
                     Diagnostic::error("B0208", expr.span, format!("`{name}` is called, not passed"))
                         .label("call it")
@@ -3531,7 +3574,13 @@ impl<'o> Checker<'o> {
         match op {
             BinaryOp::And | BinaryOp::Or => {
                 self.expr(lhs, Some(&Ty::Bool));
+                // `x != none && x.isEmpty`: `x` is present on the right of `&&`.
+                self.push();
+                if op == BinaryOp::And {
+                    self.narrow_present(lhs);
+                }
                 self.expr(rhs, Some(&Ty::Bool));
+                self.pop();
                 Ty::Bool
             }
             BinaryOp::Default => {

@@ -84,7 +84,15 @@ impl Checker<'_> {
                         }
                         _ => {
                             let ty = self.instantiate(&info.ty);
-                            self.value_call(expr, call, &ty)
+                            let ret = self.value_call(expr, call, &ty);
+                            // `URL(x)` is `new URL(x)`: an instance, not what a call returns.
+                            match (&ret, self.out.constructors.contains(&local)) {
+                                (Ty::Foreign(text), true) => match text.strip_prefix("ReturnType<") {
+                                    Some(inner) => Ty::Foreign(format!("InstanceType<{inner}").into()),
+                                    None => ret,
+                                },
+                                _ => ret,
+                            }
                         }
                     };
                 }
@@ -120,6 +128,26 @@ impl Checker<'_> {
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }
                     "Binding" => return self.binding_ctor(expr, call),
+                    "Regex" => {
+                        // `Regex("^www\\.", "g")`: a JS `RegExp`, for `replace`/`match` and its `test`.
+                        if call.args.is_empty() || call.args.len() > 2 || call.trailing.is_some() {
+                            self.report(
+                                Diagnostic::error(
+                                    "B0207",
+                                    call.callee.span,
+                                    "`Regex` takes a pattern and its flags",
+                                )
+                                .label("`Regex(\"…\")` or `Regex(\"…\", \"g\")`")
+                                .spec("12-standard-library-surface-draft"),
+                            );
+                        }
+                        for arg in &call.args {
+                            self.expr(&arg.value, Some(&Ty::Str));
+                        }
+                        self.out.calls.insert(expr.id, CallRes::Regex);
+                        return Ty::Foreign("RegExp".into());
+                    }
+                    "catching" => return self.catching(expr, call),
                     // `import("./X")`: the module's promise, TS's to type.
                     "import" if self.lookup("import").is_none() => {
                         self.out.calls.insert(expr.id, CallRes::Ts);
@@ -394,6 +422,35 @@ impl Checker<'_> {
         }
         self.out.calls.insert(expr.id, CallRes::Collection(ty.clone()));
         ty
+    }
+
+    /// `catching { … }`: runs the block; its value is `ok`, and what TS code in it threw is
+    /// `err` (an `Error`). The block is inlined, so it cannot `return`.
+    fn catching(&mut self, expr: &Expr, call: &Call) -> Ty {
+        let Some(block) = call.trailing.as_deref().filter(|c| c.params.is_empty() && call.args.is_empty())
+        else {
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, "`catching` takes a block: `catching { … }`")
+                    .label("a trailing block, no arguments")
+                    .spec("12-standard-library-surface-draft"),
+            );
+            self.args_unchecked(call);
+            return Ty::Unknown;
+        };
+        if let Some(ret) = block.body.iter().find(|s| matches!(s.kind, StmtKind::Return(_))) {
+            self.report(
+                Diagnostic::error("B0207", ret.span, "`return` inside `catching { … }`")
+                    .label("the block's last line is its value")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        let ty = self.closure(block, None, false);
+        self.out.calls.insert(expr.id, CallRes::Catching);
+        let value = match self.resolve(&ty) {
+            Ty::Fn(f) => f.ret.clone(),
+            _ => Ty::Unknown,
+        };
+        Ty::Result(Box::new(value), Box::new(Ty::JsError))
     }
 
     /// `min(a, b, …)`, `max`, `abs(x)`, `round`, `floor`, `ceil`: the prelude's numbers.
@@ -1960,7 +2017,12 @@ impl Checker<'_> {
                     "contains" | "startsWith" | "endsWith" => (vec![Ty::Str], Ty::Bool),
                     "lowercased" | "uppercased" | "trimmed" => (vec![], Ty::Str),
                     "split" => (vec![Ty::Str], list(Ty::Str)),
-                    "replace" => (vec![Ty::Str, Ty::Str], Ty::Str),
+                    // A pattern is a string (every match) or a JS `RegExp` (as JS's `replace`).
+                    "replace" => (vec![Ty::Foreign("string | RegExp".into()), Ty::Str], Ty::Str),
+                    "match" => (
+                        vec![Ty::Foreign("string | RegExp".into())],
+                        Ty::Foreign("RegExpMatchArray | null".into()),
+                    ),
                     "toInt" => (vec![], opt(Ty::Int)),
                     _ => (vec![], opt(Ty::Float)),
                 };
@@ -2068,6 +2130,7 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "trimmed",
             "split",
             "replace",
+            "match",
             "toInt",
             "toFloat",
         ],
