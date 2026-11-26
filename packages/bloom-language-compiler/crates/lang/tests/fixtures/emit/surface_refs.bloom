@@ -1,0 +1,32 @@
+// References (2.0, ADR 0002 section 5): `@ref` is retired for a `class` held in `@State`.
+// Writing its fields draws nothing (it is one object across renders), so it costs what
+// `useRef` costs: one hook, no render. A host view's instance is a `ViewRef<T>()`, filled
+// by `.ref(field)` and read as `T?`.
+
+import { type ViewInstance } from "@/types/views"
+
+final class Ticks {
+  var count = 0
+  var last: String? = none
+}
+
+public struct Search: View {
+  let onDone: () -> Void
+  @State private var ticks = Ticks()
+  @State private var field = ViewRef<ViewInstance>()
+  @State private var query = ""
+
+  func submit() {
+    ticks.count += 1
+    ticks.last = query
+    if field != none { onDone() }
+  }
+
+  var body: some View {
+    VStack {
+      TextField($query, "Search")
+        .ref(field)
+      Button(Text("Go")).onPress { submit() }
+    }
+  }
+}
