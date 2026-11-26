@@ -197,8 +197,20 @@ impl Tr<'_> {
                     LogicalOperator::Or => "||",
                     LogicalOperator::Coalesce => "??",
                 };
+                // `x ?? undefined` is `x`.
+                if l.operator == LogicalOperator::Coalesce && is_nothing(&l.right) {
+                    return self.expr(&l.left);
+                }
+                // `x || undefined`: `x`, an empty one kept (JS gave `undefined`).
+                if l.operator == LogicalOperator::Or && is_nothing(&l.right) {
+                    self.review("`|| undefined` dropped: a falsy value (`\"\"`, `0`) is kept, not `none`".into());
+                    return self.expr(&l.left);
+                }
                 let left = self.expr(&l.left);
                 let right = self.expr(&l.right);
+                if l.operator == LogicalOperator::Or && !is_boolean_shaped(&l.left) {
+                    self.defaults.insert(crate::truthiness::squeeze(&left), right.clone());
+                }
                 format!("{left} {op} {right}")
             }
             Expression::BinaryExpression(b) => self.binary(b),
@@ -462,6 +474,12 @@ impl Tr<'_> {
             && u.operator == UnaryOperator::LogicalNot
         {
             return self.test(&u.argument, false);
+        }
+        // `!(a || b)`: each operand's truthiness is spelled, so it is tested as a whole.
+        if let Expression::LogicalExpression(l) = e.without_parentheses()
+            && l.operator != LogicalOperator::Coalesce
+        {
+            return format!("!({})", self.test(e, false));
         }
         let text = self.condition(e);
         crate::view::negate(e, &text)
@@ -876,6 +894,26 @@ impl Tr<'_> {
     /// runtime draws a list as one keyed slot (a `Presence`), one fiber more than
     /// the spread siblings it replaces.
     fn spread_child(&mut self, list: &Expression) -> String {
+        // `...(c ? [a, b] : [d])`, `...[a, b]`: the items are siblings, so they splice.
+        let literal = |e: &Expression| matches!(e.without_parentheses(), Expression::ArrayExpression(a) if a.elements.iter().all(|x| x.as_expression().is_some()));
+        match list.without_parentheses() {
+            Expression::ConditionalExpression(c) if literal(&c.consequent) && literal(&c.alternate) => {
+                let empty = |e: &Expression| matches!(e.without_parentheses(), Expression::ArrayExpression(a) if a.elements.is_empty());
+                let then = |tr: &mut Self| tr.splice(&c.consequent);
+                let otherwise = |tr: &mut Self| tr.splice(&c.alternate);
+                return if empty(&c.alternate) {
+                    self.child_if(&c.test, then, None::<fn(&mut Self) -> String>)
+                } else {
+                    self.child_if(&c.test, then, Some(otherwise))
+                };
+            }
+            Expression::LogicalExpression(l) if l.operator == LogicalOperator::And && literal(&l.right) => {
+                let then = |tr: &mut Self| tr.splice(&l.right);
+                return self.child_if(&l.left, then, None::<fn(&mut Self) -> String>);
+            }
+            e if literal(e) => return self.splice(e),
+            _ => {}
+        }
         self.review("spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings".into());
         match list.without_parentheses() {
             Expression::CallExpression(call) if is_map(call) => self.child(list),
@@ -965,6 +1003,13 @@ impl Tr<'_> {
             }
             _ => self.expr(e),
         }
+    }
+
+    /// A list literal's items as sibling builder lines.
+    fn splice(&mut self, e: &Expression) -> String {
+        let Expression::ArrayExpression(a) = e.without_parentheses() else { return self.child(e) };
+        let lines: Vec<String> = a.elements.iter().filter_map(|x| x.as_expression()).map(|x| self.child(x)).collect();
+        lines.join("\n")
     }
 
     /// A conditional builder line. An optional `String` read in the branch is

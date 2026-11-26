@@ -25,6 +25,9 @@ pub struct Translated {
     /// Condition operands of a type the codemod does not know, as written: JS
     /// truthiness that bloomc's own types spell out (`crate::truthiness`).
     pub conditions: HashSet<String>,
+    /// `a || b` as a value, left → right: JS's default for a falsy `a`, spelled
+    /// from bloomc's type of `a` (`crate::truthiness::defaults`).
+    pub defaults: HashMap<String, String>,
 }
 
 /// One kept TS import, by module, in source order.
@@ -112,6 +115,7 @@ pub struct Tr<'s> {
     /// Inside that closure: a bare `return` is `return ok(())`.
     pub try_return: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
+    pub defaults: HashMap<String, String>,
     pub conditions: HashSet<String>,
     /// Calls whose one type argument types the binding they initialise.
     pub typed_calls: HashSet<u32>,
@@ -243,6 +247,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     if parsed.diagnostics.has_errors() {
         return Translated {
             conditions: HashSet::new(),
+            defaults: HashMap::new(),
             text: String::new(),
             reasons: vec![Reason {
                 code: "parse".into(),
@@ -284,6 +289,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
+        defaults: HashMap::new(),
     };
 
     // The imports first: every later decision depends on where a name comes from.
@@ -336,7 +342,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         .collect::<Vec<_>>()
         .join("\n\n")
         + "\n";
-    Translated { text: out, reasons: tr.reasons, conditions: tr.conditions }
+    Translated { text: out, reasons: tr.reasons, conditions: tr.conditions, defaults: tr.defaults }
 }
 
 /// Doc comments as plain comments: what they documented is not in the output.
