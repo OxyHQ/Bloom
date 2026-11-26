@@ -1,8 +1,9 @@
 //! Nodes, modifiers and tokens, read from the embedded language's generated
 //! spec tables (`bloom_language_compiler::spec`), never a copy of them.
 
+use rustc_hash::FxHashMap as HashMap;
 use std::cell::RefCell;
-use std::collections::HashMap;
+
 use std::rc::Rc;
 
 use bloom_language_compiler::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, TOKEN_SETS};
@@ -39,7 +40,7 @@ pub fn token_set_by_type(name: &str) -> Option<Rc<StrSet>> {
 }
 
 thread_local! {
-    static SETS: RefCell<HashMap<String, Rc<StrSet>>> = RefCell::new(HashMap::new());
+    static SETS: RefCell<HashMap<String, Rc<StrSet>>> = RefCell::new(HashMap::default());
 }
 
 /// The token set `name` as a type, one shared value per set.
