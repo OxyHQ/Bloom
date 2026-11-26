@@ -9,6 +9,7 @@
 //! bloom test [filter]
 //! bloom add <package> [--from <version>] [--npm <npm-package>]
 //! bloom bind <npm-package>[@version] [--name <Name>]
+//! bloom migrate [--write] [--report] [--print] [--jobs N] <paths…>
 //! bloom migrate --from 0.x [--check] [--jobs N] <paths…>
 //! bloom lsp
 //! bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
@@ -31,6 +32,7 @@ mod expo;
 mod files;
 mod json;
 mod lsp;
+mod migrate;
 mod navigation;
 mod parallel;
 mod project;
@@ -51,6 +53,7 @@ const USAGE: &str = "usage:
   bloom test [filter]
   bloom add <package> [--from <version>] [--npm <npm-package>]
   bloom bind <npm-package>[@version] [--name <Name>]
+  bloom migrate [--write] [--report] [--print] [--jobs N] <paths…>
   bloom migrate --from 0.x [--check] [--jobs N] <paths…>
   bloom lsp
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]";
@@ -80,6 +83,9 @@ struct Args {
     from: Option<String>,
     npm: Option<String>,
     name: Option<String>,
+    write: bool,
+    report: bool,
+    print: bool,
 }
 
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
@@ -91,6 +97,9 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
     while let Some(arg) = raw.next() {
         match arg.as_str() {
             "--check" => args.check = true,
+            "--write" => args.write = true,
+            "--report" => args.report = true,
+            "--print" => args.print = true,
             "--no-cache" => args.no_cache = true,
             "--dev" => args.dev = true,
             "--release" => args.release = true,
@@ -212,7 +221,11 @@ fn run(args: &Args, jobs: usize) -> Result<bool, String> {
         "migrate" => match args.from.as_deref() {
             Some("0.x") => build::migrate(&args.paths, args.check, jobs),
             Some(other) => Err(format!("migrate --from {other}: only 0.x is known")),
-            None => Err("migrate needs --from 0.x".to_string()),
+            // Embedded-language `.tsx` modules to Bloom 2.0 (ADR 0002, phase D).
+            None => migrate::migrate(
+                &args.paths,
+                &migrate::MigrateOptions { jobs, write: args.write, report: args.report, print: args.print },
+            ),
         },
         "lsp" => lsp::serve(std::io::stdin().lock(), std::io::stdout().lock()),
         "help" | "--help" | "-h" => {
@@ -249,7 +262,7 @@ mod tests {
 
     #[test]
     fn rejects_unknown_flags_and_bad_counts() {
-        assert!(args("fmt --write x").is_err());
+        assert!(args("fmt --overwrite x").is_err());
         assert!(args("check -j 0 x").is_err());
         assert!(args("new --template").is_err());
         assert!(args("").is_err());

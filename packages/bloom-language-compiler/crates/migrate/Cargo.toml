@@ -1,0 +1,17 @@
+[package]
+name = "bloom_migrate"
+version = "0.0.0"
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+bloom_fmt = { path = "../fmt" }
+bloom_lang = { path = "../lang" }
+bloom_language_compiler = { path = "../compiler" }
+oxc_allocator.workspace = true
+oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
+oxc_parser.workspace = true
+oxc_span.workspace = true
+oxc_syntax.workspace = true

@@ -1,0 +1,19 @@
+// A React component that only returns `toElement(tree)` is a view; the
+// `Embed` render prop is the TS component with its builder.
+
+import { Link } from "expo-router"
+
+pub default view LinkRow(label: String, href: String? = none) {
+  let text = Text(label).lines(1)
+
+  body {
+    HStack {
+      if let href = href {
+        if !href.isEmpty { Link(href: href, push: true, asChild: true) { text } } else { text }
+      } else {
+        text
+      }
+    }
+    .align("center")
+  }
+}
