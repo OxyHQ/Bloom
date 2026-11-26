@@ -10,6 +10,7 @@
 
 - The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
 - `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
+- An `InlineMarkdown` reads only what it takes where its tree starts, as a RawText does: Bloom's InlineMarkdown paints its own runs, a `.suffix()` reads what its runs take, and the runs its functions make (`.plainRun()`, `.linkView()`, which Bloom calls as it renders) read the environment or the theme where they are drawn when they take one the tree did not read (`lateRuns`). Mention's post body as one RawText root reads the theme alone, as its JSX does (it read the environment too: one context read more on every post).
 
 ## 1.7.0
 

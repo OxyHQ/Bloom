@@ -553,6 +553,22 @@ describe('a language node costs React what the JSX it stands for costs', () => {
         <Themed>{(c) => <RN.Text style={{ color: c.textSecondary }}>a</RN.Text>}</Themed>,
       ),
     ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // Mention's post body: inline markdown in a RawText, its text drawn by the app's function.
+    // Bloom's InlineMarkdown paints its own runs; the function's runs read what they take where
+    // they are drawn, so the root reads the theme alone, as the JSX's ink does.
+    const plain = (text: string) => text;
+    expect(
+      boundary(
+        L.RawText(LInlineMarkdown('a *b*').plainRun(plain)).foreground('foreground'),
+        <Themed>
+          {(c) => (
+            <RN.Text style={{ color: c.text }}>
+              <InlineMarkdown source="a *b*" renderText={plain} />
+            </RN.Text>
+          )}
+        </Themed>,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
   });
 
   it('the compiler’s root (a chain it builds as it renders) reads what its tree takes, as toElement’s does', () => {

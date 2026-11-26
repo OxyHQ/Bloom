@@ -90,6 +90,14 @@ export interface ControlDraw {
   /** Runs of a text (strings and spans), drawn as runs of the text the control is in. */
   runs(runs: TextRuns): ReactNode;
   /**
+   * Runs a function of the control makes as it draws (a markdown's text and
+   * links, Bloom calling the function as it renders), drawn as `runs` draws
+   * them: they did not exist when the tree was read, so where they take the
+   * environment or the theme and the tree did not read it, they read it
+   * where they are drawn.
+   */
+  lateRuns(runs: TextRuns): ReactNode;
+  /**
    * A React element drawn where the control is: a language root
    * (`toElement(chain)`) as part of this tree, with no boundary of its own;
    * any other element as it is.
