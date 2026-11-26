@@ -104,19 +104,81 @@ pub struct TsFile {
     pub imports: HashMap<String, (String, String)>,
 }
 
-thread_local! {
-    static FILES: RefCell<HashMap<PathBuf, Rc<TsFile>>> = RefCell::new(HashMap::new());
+/// A file's identity on disk: a cached summary is reused while it holds.
+type Stamp = (Option<std::time::SystemTime>, u64);
+
+fn stamp(path: &Path) -> Option<Stamp> {
+    let meta = std::fs::metadata(path).ok()?;
+    Some((meta.modified().ok(), meta.len()))
 }
 
-/// Reads (once per process) and summarises a TS file.
-pub fn read(path: &Path) -> Option<Rc<TsFile>> {
-    if let Some(file) = FILES.with(|files| files.borrow().get(path).cloned()) {
-        return Some(file);
+/// A summary with the stamp it was read at and the compile that last checked it.
+struct Cached<T> {
+    value: T,
+    stamp: Stamp,
+    checked: u64,
+}
+
+thread_local! {
+    static FILES: RefCell<HashMap<PathBuf, Cached<Rc<TsFile>>>> = RefCell::new(HashMap::new());
+    static TSCONFIG: RefCell<HashMap<PathBuf, Cached<Paths>>> = RefCell::new(HashMap::new());
+    /// Bumped by each compile: a cached file is checked against the disk once per compile.
+    static EPOCH: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// Starts a compile: cached files are checked against the disk again (once each).
+pub fn next_epoch() {
+    EPOCH.with(|e| e.set(e.get() + 1));
+}
+
+/// Forgets `path`'s summary (an editor changed it).
+pub fn invalidate(path: &Path) {
+    FILES.with(|files| files.borrow_mut().remove(path));
+    TSCONFIG.with(|c| c.borrow_mut().retain(|root, _| root.join("tsconfig.json") != path));
+}
+
+/// Forgets every summary.
+pub fn clear_caches() {
+    FILES.with(|files| files.borrow_mut().clear());
+    TSCONFIG.with(|c| c.borrow_mut().clear());
+}
+
+/// `cache[path]` while the file on disk is unchanged (checked once per compile), else `load()`.
+fn cached<T: Clone>(
+    cache: &'static std::thread::LocalKey<RefCell<HashMap<PathBuf, Cached<T>>>>,
+    path: &Path,
+    key: &Path,
+    load: impl FnOnce() -> Option<T>,
+) -> Option<T> {
+    let epoch = EPOCH.with(std::cell::Cell::get);
+    let hit = cache.with(|c| {
+        let mut c = c.borrow_mut();
+        let entry = c.get_mut(key)?;
+        if entry.checked != epoch {
+            if stamp(path).unwrap_or((None, 0)) != entry.stamp {
+                return None;
+            }
+            entry.checked = epoch;
+        }
+        Some(entry.value.clone())
+    });
+    if hit.is_some() {
+        return hit;
     }
-    let text = std::fs::read_to_string(path).ok()?;
-    let file = Rc::new(summarise(path, &text));
-    FILES.with(|files| files.borrow_mut().insert(path.to_path_buf(), file.clone()));
-    Some(file)
+    let stamp = stamp(path).unwrap_or((None, 0));
+    let value = load()?;
+    cache.with(|c| {
+        c.borrow_mut().insert(key.to_path_buf(), Cached { value: value.clone(), stamp, checked: epoch })
+    });
+    Some(value)
+}
+
+/// Reads and summarises a TS file (cached while it is unchanged on disk).
+pub fn read(path: &Path) -> Option<Rc<TsFile>> {
+    cached(&FILES, path, path, || {
+        let text = std::fs::read_to_string(path).ok()?;
+        Some(Rc::new(summarise(path, &text)))
+    })
 }
 
 fn summarise(path: &Path, text: &str) -> TsFile {
@@ -532,17 +594,15 @@ pub fn resolve(from: &Path, specifier: &str, options: &Options) -> Option<PathBu
 /// A `paths` map: each pattern with its targets.
 type Paths = Rc<Vec<(String, Vec<String>)>>;
 
-thread_local! {
-    static TSCONFIG: RefCell<HashMap<PathBuf, Paths>> = RefCell::new(HashMap::new());
-}
-
 /// `compilerOptions.paths` of the root's `tsconfig.json`, targets joined to its `baseUrl`;
 /// read without a JSON parser (keys and string arrays only).
 fn tsconfig_paths(root: &Path) -> Paths {
-    if let Some(found) = TSCONFIG.with(|c| c.borrow().get(root).cloned()) {
-        return found;
-    }
-    let text = std::fs::read_to_string(root.join("tsconfig.json")).unwrap_or_default();
+    let config = root.join("tsconfig.json");
+    cached(&TSCONFIG, &config, root, || Some(read_tsconfig_paths(&config))).unwrap_or_default()
+}
+
+fn read_tsconfig_paths(config: &Path) -> Paths {
+    let text = std::fs::read_to_string(config).unwrap_or_default();
     let base = json_field(&text, "baseUrl").unwrap_or(".").to_string();
     let mut out = Vec::new();
     if let Some(at) = text.find("\"paths\"") {
@@ -560,9 +620,7 @@ fn tsconfig_paths(root: &Path) -> Paths {
             }
         }
     }
-    let out = Rc::new(out);
-    TSCONFIG.with(|c| c.borrow_mut().insert(root.to_path_buf(), out.clone()));
-    out
+    Rc::new(out)
 }
 
 fn split_package(specifier: &str) -> (&str, &str) {
@@ -651,6 +709,8 @@ pub struct Mapper<'m> {
     pub options: &'m Options,
     /// (file, declaration name) → its mapped type, so a recursive interface maps once.
     pub named: &'m mut HashMap<(PathBuf, String), Ty>,
+    /// Every file the mapping reads (a compile's dependencies).
+    pub reads: &'m mut std::collections::BTreeSet<PathBuf>,
 }
 
 /// The type parameters in scope while mapping a generic declaration.
@@ -679,6 +739,14 @@ const COMPONENT_TYPES: &[&str] = &[
 ];
 
 impl Mapper<'_> {
+    /// The TS module `specifier` names from `from`, recorded as a dependency.
+    fn open(&mut self, from: &Path, specifier: &str) -> Option<Rc<TsFile>> {
+        let path = resolve(from, specifier, self.options)?;
+        let file = read(&path)?;
+        self.reads.insert(path);
+        Some(file)
+    }
+
     /// `name` as `file` exports it; `path` is how emitted TS names its value (`useAuth`).
     pub fn export(&mut self, file: &Rc<TsFile>, name: &str, path: &str, depth: usize) -> Option<Mapped> {
         if depth > 8 {
@@ -687,7 +755,7 @@ impl Mapper<'_> {
         let local = match file.exports.get(name) {
             Some(Export::Local(local)) => local.clone(),
             Some(Export::From(specifier, imported)) => {
-                let target = read(&resolve(&file.path, specifier, self.options)?)?;
+                let target = self.open(&file.path, specifier)?;
                 return self.export(&target, imported, path, depth + 1);
             }
             None => {
@@ -698,7 +766,7 @@ impl Mapper<'_> {
                     name.to_string()
                 } else {
                     for star in file.stars.clone() {
-                        if let Some(target) = resolve(&file.path, &star, self.options).and_then(|p| read(&p))
+                        if let Some(target) = self.open(&file.path, &star)
                             && let Some(found) = self.export(&target, name, path, depth + 1)
                         {
                             return Some(found);
@@ -715,7 +783,7 @@ impl Mapper<'_> {
         let Some(decl) = file.decls.get(name).cloned() else {
             // A re-export of an import (`import { x } from "y"; export { x }`).
             let (specifier, imported) = file.imports.get(name)?.clone();
-            let target = read(&resolve(&file.path, &specifier, self.options)?)?;
+            let target = self.open(&file.path, &specifier)?;
             return self.export(&target, &imported, path, depth + 1);
         };
         let mut mapped = Mapped::default();
@@ -904,7 +972,7 @@ impl Mapper<'_> {
             return self.named(file, name, &mapped, path, depth + 1);
         }
         if let Some((specifier, imported)) = file.imports.get(name).cloned()
-            && let Some(target) = resolve(&file.path, &specifier, self.options).and_then(|p| read(&p))
+            && let Some(target) = self.open(&file.path, &specifier)
             && let Some(local) = exported_local(&target, &imported)
         {
             let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();

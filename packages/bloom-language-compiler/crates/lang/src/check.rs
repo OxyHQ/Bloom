@@ -3,10 +3,10 @@
 //! level. The checker leaves side tables the emitter reads: what each name,
 //! call, member, assignment, await and pattern resolved to, and every type.
 
-mod call;
+pub(crate) mod call;
 mod exhaust;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -214,6 +214,9 @@ pub struct CheckResult {
     pub type_exprs: HashMap<Span, Ty>,
     /// `Foreign` values accepted as a Bloom type: emitted `(value satisfies T)`.
     pub foreign_checks: HashMap<ExprId, Ty>,
+    /// Every file the check read: imported `.bloom` modules, TS declarations
+    /// (through re-exports), the `tsconfig.json` whose `paths` resolved them.
+    pub dependencies: BTreeSet<PathBuf>,
 }
 
 impl CheckResult {
@@ -274,12 +277,30 @@ pub struct Checker<'o> {
     task_allowed: bool,
     /// Spans already reported: one error per place.
     reported: HashSet<Span>,
+    /// When analysing for an editor: each checked expression's expected type.
+    pub expected: Option<Vec<(Span, Ty)>>,
 }
 
 pub fn check(file: &File, source: &str, filename: &str, options: &Options) -> CheckResult {
     let mut checker = Checker::new(source, filename, options);
     checker.module(file);
     checker.finish()
+}
+
+/// Checks `file` and records each expression's expected type (for an editor).
+pub fn check_recording(
+    file: &File,
+    source: &str,
+    filename: &str,
+    options: &Options,
+) -> (CheckResult, Vec<(Span, Ty)>, PathBuf) {
+    let mut checker = Checker::new(source, filename, options);
+    checker.expected = Some(Vec::new());
+    checker.module(file);
+    let path = checker.path.clone();
+    let expected = checker.expected.take().unwrap_or_default();
+    let expected = expected.into_iter().map(|(span, ty)| (span, checker.zonk(&ty))).collect();
+    (checker.finish(), expected, path)
 }
 
 impl<'o> Checker<'o> {
@@ -312,6 +333,7 @@ impl<'o> Checker<'o> {
             was_hook: false,
             task_allowed: false,
             reported: HashSet::new(),
+            expected: None,
         }
     }
 
@@ -1135,7 +1157,22 @@ impl<'o> Checker<'o> {
                 return;
             }
         }
-        let file = ts::resolve(&self.path, specifier, self.options).and_then(|path| ts::read(&path));
+        let resolved = ts::resolve(&self.path, specifier, self.options);
+        let file = resolved.as_deref().and_then(ts::read);
+        if let Some(path) = resolved {
+            self.out.dependencies.insert(path);
+        }
+        if self.options.paths.is_empty() && !relative {
+            let root = self
+                .options
+                .root
+                .clone()
+                .unwrap_or_else(|| self.path.parent().unwrap_or(Path::new(".")).to_path_buf());
+            let config = root.join("tsconfig.json");
+            if config.is_file() {
+                self.out.dependencies.insert(config);
+            }
+        }
         if file.is_none() {
             self.out.diagnostics.push(
                 Diagnostic::warning(
@@ -1165,6 +1202,7 @@ impl<'o> Checker<'o> {
                                 defs: &mut self.out.defs,
                                 options: self.options,
                                 named: &mut self.ts_named,
+                                reads: &mut self.out.dependencies,
                             };
                             let mapped = mapper.export(file, &spec.name.name, &local.name, 0);
                             if mapped.is_none() {
@@ -1228,6 +1266,8 @@ impl<'o> Checker<'o> {
         sub.out.defs = std::mem::take(&mut self.out.defs);
         sub.declare_signatures(&file, specifier);
         self.out.defs = std::mem::take(&mut sub.out.defs);
+        self.out.dependencies.append(&mut sub.out.dependencies);
+        self.out.dependencies.insert(path.clone());
         let ImportKind::Named(specs) = &import.kind else {
             self.report(
                 Diagnostic::error("B0603", import.span, "a .bloom module is imported by name")
@@ -2172,6 +2212,9 @@ impl<'o> Checker<'o> {
 
     /// Checks `expr` against `expected` (when there is one) and records its type.
     pub fn expr(&mut self, expr: &Expr, expected: Option<&Ty>) -> Ty {
+        if let (Some(recorded), Some(expected)) = (&mut self.expected, expected) {
+            recorded.push((expr.span, expected.clone()));
+        }
         let ty = self.infer(expr, expected);
         self.out.types.insert(expr.id, ty.clone());
         self.out.spans.push((expr.span, ty.clone()));
