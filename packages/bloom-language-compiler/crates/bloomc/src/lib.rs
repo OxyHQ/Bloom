@@ -126,6 +126,11 @@ fn one(args: &Args, what: &str) -> Result<String, String> {
 }
 
 pub fn main() -> ExitCode {
+    // WASI has no working directory of its own: js/bloomc.js passes it as PWD.
+    #[cfg(target_os = "wasi")]
+    if let Ok(dir) = std::env::var("PWD") {
+        let _ = std::env::set_current_dir(dir);
+    }
     let name = program();
     let args = match parse_args(std::env::args().skip(1)) {
         Ok(args) => args,
