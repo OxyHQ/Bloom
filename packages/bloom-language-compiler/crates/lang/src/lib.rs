@@ -23,6 +23,7 @@ pub mod package;
 mod parser;
 mod routes;
 mod sourcemap;
+pub mod stdlib;
 #[rustfmt::skip]
 #[path = "swift_tokens.generated.rs"]
 mod swift_tokens;

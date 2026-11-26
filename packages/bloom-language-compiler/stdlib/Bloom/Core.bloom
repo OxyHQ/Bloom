@@ -1,0 +1,355 @@
+// Bloom (core): String and Character, Array, Dictionary, Set, Optional, Result and Error.
+//
+// Implicit in every package file: nothing is imported to use them. The built-in
+// members (`count`, `isEmpty`, `map`, `filter`, `contains`, `sorted`, `split`, …) are the
+// compiler's; these extend them, statically dispatched (`crate::extensions`).
+
+extern module "./runtime" {
+  private func characters(_ s: String) -> [String]
+  private func indexOf(_ s: String, _ sub: String, _ from: Int) -> Int
+  private func lastIndexOf(_ s: String, _ sub: String) -> Int
+  private func replaceAll(_ s: String, _ target: String, _ replacement: String) -> String
+  private func padStart(_ s: String, _ length: Int, _ pad: String) -> String
+  private func padEnd(_ s: String, _ length: Int, _ pad: String) -> String
+  private func repeatString(_ s: String, _ count: Int) -> String
+  private func compareStrings(_ a: String, _ b: String, _ locale: String) -> Int
+  private func trimStart(_ s: String) -> String
+  private func trimEnd(_ s: String) -> String
+  private func sortedBy<T>(_ xs: [T], _ before: (T, T) -> Bool) -> [T]
+  private func uniqueStrings(_ xs: [String]) -> [String]
+  private func arrayOfRange(_ from: Int, _ to: Int, _ step: Int) -> [Int]
+  private func setOf<T>(_ xs: [T]) -> Set<T>
+  private func setValues<T>(_ s: Set<T>) -> [T]
+  private func union<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  private func intersection<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  private func subtracting<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
+  private func errorMessage(_ error: Error) -> String
+}
+
+/// One user-perceived character: an extended grapheme cluster, as a string.
+public type Character = String
+
+// ---- String ---------------------------------------------------------------------
+
+extension String {
+  /// The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1`
+  /// where `count` (UTF-16 units) is 4.
+  public var characters: [Character] { characters(self) }
+
+  /// How many user-perceived characters the string has.
+  public var characterCount: Int { characters(self).count }
+
+  /// Whether the string is empty or only whitespace.
+  public var isBlank: Bool { self.trimmed().isEmpty }
+
+  /// Whether the string starts with `prefix` (Swift's name for `startsWith`).
+  public func hasPrefix(_ prefix: String) -> Bool { self.startsWith(prefix) }
+
+  /// Whether the string ends with `suffix`.
+  public func hasSuffix(_ suffix: String) -> Bool { self.endsWith(suffix) }
+
+  /// The UTF-16 offset of the first `sub` at or after `from`, or `none`.
+  public func firstIndex(of sub: String, from: Int = 0) -> Int? {
+    let at = indexOf(self, sub, from)
+    return at < 0 ? none : at
+  }
+
+  /// The UTF-16 offset of the last `sub`, or `none`.
+  public func lastIndex(of sub: String) -> Int? {
+    let at = lastIndexOf(self, sub)
+    return at < 0 ? none : at
+  }
+
+  /// Every `target` replaced with `replacement`.
+  public func replacingOccurrences(of target: String, with replacement: String) -> String {
+    replaceAll(self, target, replacement)
+  }
+
+  /// The parts between each `separator`.
+  public func components(separatedBy separator: String) -> [String] { self.split(separator) }
+
+  /// The string without `prefix`, when it starts with it.
+  public func droppingPrefix(_ prefix: String) -> String {
+    self.startsWith(prefix) ? self.slice(prefix.count, self.count) : self
+  }
+
+  /// The string without `suffix`, when it ends with it.
+  public func droppingSuffix(_ suffix: String) -> String {
+    self.endsWith(suffix) ? self.slice(0, self.count - suffix.count) : self
+  }
+
+  /// The first `n` characters (user-perceived).
+  public func prefix(_ n: Int) -> String { characters(self).prefix(n).joined("") }
+
+  /// The last `n` characters (user-perceived).
+  public func suffix(_ n: Int) -> String {
+    let all = characters(self)
+    return all.dropFirst(all.count > n ? all.count - n : 0).joined("")
+  }
+
+  /// At most `length` characters, with `ellipsis` in place of the rest.
+  public func truncated(to length: Int, ellipsis: String = "…") -> String {
+    let all = characters(self)
+    if all.count <= length { return self }
+    return all.prefix(length).joined("") + ellipsis
+  }
+
+  /// Leading whitespace removed.
+  public func trimmingStart() -> String { trimStart(self) }
+
+  /// Trailing whitespace removed.
+  public func trimmingEnd() -> String { trimEnd(self) }
+
+  /// Padded at the start with `pad` to `length` UTF-16 units.
+  public func paddingStart(to length: Int, with pad: String = " ") -> String { padStart(self, length, pad) }
+
+  /// Padded at the end with `pad` to `length` UTF-16 units.
+  public func paddingEnd(to length: Int, with pad: String = " ") -> String { padEnd(self, length, pad) }
+
+  /// The first character upper-cased.
+  public var capitalized: String {
+    let all = characters(self)
+    guard let first = all.first else { return self }
+    return first.uppercased() + all.dropFirst(1).joined("")
+  }
+
+  /// The string's lines.
+  public var lines: [String] { self.replacingOccurrences(of: "\u{D}\n", with: "\n").split("\n") }
+
+  /// Ordered as a person reading `locale` expects (`""`: the device's locale): `-1`, `0` or `1`.
+  public func compare(_ other: String, locale: String = "") -> Int { compareStrings(self, other, locale) }
+
+  /// `s` repeated `count` times.
+  public static func repeating(_ s: String, count: Int) -> String { repeatString(s, count) }
+}
+
+// ---- Array ------------------------------------------------------------------------
+
+extension Array {
+  /// The index of the first element `predicate` accepts, or `none`.
+  public func firstIndex(where predicate: (Element) -> Bool) -> Int? { self.findIndex(predicate) }
+
+  /// The index of the last element `predicate` accepts, or `none`.
+  public func lastIndex(where predicate: (Element) -> Bool) -> Int? {
+    var i = self.count - 1
+    while i >= 0 {
+      if let x = self[i] {
+        if predicate(x) { return i }
+      }
+      i = i - 1
+    }
+    return none
+  }
+
+  /// The first element `predicate` accepts, or `none`.
+  public func first(where predicate: (Element) -> Bool) -> Element? { self.find(predicate) }
+
+  /// The last element `predicate` accepts, or `none`.
+  public func last(where predicate: (Element) -> Bool) -> Element? {
+    guard let i = self.lastIndex(where: predicate) else { return none }
+    return self[i]
+  }
+
+  /// Whether `predicate` accepts some element.
+  public func contains(where predicate: (Element) -> Bool) -> Bool { self.any(predicate) }
+
+  /// Whether `predicate` accepts every element.
+  public func allSatisfy(_ predicate: (Element) -> Bool) -> Bool { self.all(predicate) }
+
+  /// How many elements `predicate` accepts.
+  public func count(where predicate: (Element) -> Bool) -> Int { self.filter(predicate).count }
+
+  /// The indices, `0..<count`.
+  public var indices: [Int] { arrayOfRange(0, self.count, 1) }
+
+  /// Sorted by `before` (a stable sort: equal elements keep their order).
+  public func sorted(by before: (Element, Element) -> Bool) -> [Element] { sortedBy(self, before) }
+
+  /// The smallest element by `before`, or `none` when empty.
+  public func min(by before: (Element, Element) -> Bool) -> Element? {
+    guard let first = self.first else { return none }
+    return self.reduce(first) { best, x in before(x, best) ? x : best }
+  }
+
+  /// The largest element by `before`, or `none` when empty.
+  public func max(by before: (Element, Element) -> Bool) -> Element? {
+    guard let first = self.first else { return none }
+    return self.reduce(first) { best, x in before(best, x) ? x : best }
+  }
+
+  /// Consecutive slices of `size` elements (the last may be shorter).
+  public func chunked(into size: Int) -> [[Element]] {
+    arrayOfRange(0, self.count, size < 1 ? 1 : size).map { self.slice($0, $0 + size) }
+  }
+
+  /// The elements grouped by `key`, each group in order.
+  public func grouped(by key: (Element) -> String) -> [String: [Element]] {
+    self.reduce([:]) { groups, x in
+      let k = key(x)
+      groups.setting(k, (groups[k] ?? []).appending(x))
+    }
+  }
+
+  /// The elements by their `key`, the last one winning (`Dictionary(uniqueKeysWithValues:)`).
+  public func keyed(by key: (Element) -> String) -> [String: Element] {
+    self.reduce([:]) { out, x in out.setting(key(x), x) }
+  }
+
+  /// The elements with the first of each `key` kept.
+  public func uniqued(by key: (Element) -> String) -> [Element] {
+    let firsts = self.enumerated().reduce([:]) { seen, pair in
+      seen[key(pair.1)] == none ? seen.setting(key(pair.1), pair.0) : seen
+    }
+    return self.enumerated().filter { pair in firsts[key(pair.1)] == pair.0 }.map { pair in pair.1 }
+  }
+
+  /// The elements `predicate` accepts, and the others.
+  public func partitioned(by predicate: (Element) -> Bool) -> ([Element], [Element]) {
+    (self.filter(predicate), self.filter { !predicate($0) })
+  }
+
+  /// The element at `index`, or `none` past the ends (Swift's `self[safe:]`).
+  public func element(at index: Int) -> Element? { index >= 0 && index < self.count ? self[index] : none }
+
+  /// The array with the element at `index` replaced.
+  public func replacing(at index: Int, with value: Element) -> [Element] {
+    self.enumerated().map { pair in pair.0 == index ? value : pair.1 }
+  }
+
+  /// The array with every element `predicate` accepts replaced by `update` of it.
+  public func updating(where predicate: (Element) -> Bool, _ update: (Element) -> Element) -> [Element] {
+    self.map { predicate($0) ? update($0) : $0 }
+  }
+
+  /// The array without the elements `predicate` accepts.
+  public func removingAll(where predicate: (Element) -> Bool) -> [Element] { self.filter { !predicate($0) } }
+
+  /// The array with `other`'s elements after its own.
+  public func appending(contentsOf other: [Element]) -> [Element] { concat(self, other) }
+
+  /// The elements in `n`-element windows, overlapping.
+  public func windows(of n: Int) -> [[Element]] {
+    n < 1 || n > self.count ? [] : arrayOfRange(0, self.count - n + 1, 1).map { self.slice($0, $0 + n) }
+  }
+}
+
+/// The strings deduplicated, in first-seen order.
+public func uniqued(_ xs: [String]) -> [String] { uniqueStrings(xs) }
+
+/// `a` then `b`.
+public func concat<T>(_ a: [T], _ b: [T]) -> [T] { [..a, ..b] }
+
+/// `from`, `from + by`, … up to and not including `to` (`by` may be negative).
+public func stride(from: Int, to: Int, by: Int = 1) -> [Int] { arrayOfRange(from, to, by) }
+
+/// `0..<n`.
+public func range(_ n: Int) -> [Int] { arrayOfRange(0, n, 1) }
+
+/// Pairs of the elements of `a` and `b`, as long as the shorter.
+public func zip<A, B>(_ a: [A], _ b: [B]) -> [(A, B)] {
+  a.prefix(b.count).enumerated().compactMap { pair in b[pair.0].map { (pair.1, $0) } }
+}
+
+// ---- Dictionary ---------------------------------------------------------------------
+
+extension Dictionary {
+  /// The dictionary with each value transformed.
+  public func mapValues<T>(_ transform: (Value) -> T) -> [String: T] {
+    self.entries.reduce([:]) { out, e in out.setting(e.0, transform(e.1)) }
+  }
+
+  /// The dictionary with the entries `predicate` accepts.
+  public func filter(_ predicate: (String, Value) -> Bool) -> [String: Value] {
+    self.entries.reduce([:]) { out, e in predicate(e.0, e.1) ? out.setting(e.0, e.1) : out }
+  }
+
+  /// The dictionary with `other`'s entries, `other` winning on a shared key.
+  public func merging(_ other: [String: Value]) -> [String: Value] {
+    other.entries.reduce(self) { out, e in out.setting(e.0, e.1) }
+  }
+
+  /// The value for `key`, or `fallback`.
+  public func value(for key: String, default fallback: Value) -> Value { self[key] ?? fallback }
+
+  /// The entries sorted by key.
+  public var sortedEntries: [(String, Value)] { self.entries.sorted(by: { a, b in a.0 < b.0 }) }
+}
+
+// ---- Set ------------------------------------------------------------------------------
+
+extension Set {
+  /// The elements, in insertion order.
+  public var elements: [Element] { setValues(self) }
+
+  /// The elements of either set.
+  public func union(_ other: Set<Element>) -> Set<Element> { union(self, other) }
+
+  /// The elements of both sets.
+  public func intersection(_ other: Set<Element>) -> Set<Element> { intersection(self, other) }
+
+  /// The elements not in `other`.
+  public func subtracting(_ other: Set<Element>) -> Set<Element> { subtracting(self, other) }
+
+  /// Whether every element is in `other`.
+  public func isSubset(of other: Set<Element>) -> Bool { setValues(self).all { other.contains($0) } }
+
+  /// The set with `x` added, or removed when it was there.
+  public func toggling(_ x: Element) -> Set<Element> { self.contains(x) ? self.removing(x) : self.inserting(x) }
+
+  /// A set of `xs`.
+  public static func of(_ xs: [Element]) -> Set<Element> { setOf(xs) }
+}
+
+// ---- Optional ---------------------------------------------------------------------------
+
+extension Optional {
+  /// Whether there is a value.
+  public var isSome: Bool { self != none }
+
+  /// Whether there is none.
+  public var isNone: Bool { self == none }
+
+  /// `transform` of the value, which may itself be `none`.
+  public func flatMap<U>(_ transform: (Wrapped) -> U?) -> U? {
+    guard let value = self else { return none }
+    return transform(value)
+  }
+
+  /// The value, or what `error` makes thrown.
+  public func orThrow(_ error: Error) throws -> Wrapped {
+    guard let value = self else { throw error }
+    return value
+  }
+}
+
+// ---- Result ---------------------------------------------------------------------------
+
+extension Result<Success, Failure> {
+  /// The success value, or its error thrown (Swift's `get()`).
+  public func get() throws -> Success {
+    if let value = self.ok() { return value }
+    switch self {
+    case .err(let error):
+      throw error
+    default:
+      break
+    }
+    return fatal()
+  }
+
+}
+
+// ---- Error ------------------------------------------------------------------------------
+
+/// An error with a message: what `throw` takes when no domain error type fits.
+public struct RuntimeError: Equatable {
+  public let message: String
+}
+
+extension Error {
+  /// What the error says (JS's `message`, or the thrown value as text).
+  public var localizedDescription: String { errorMessage(self) }
+}
+
+/// Stops the program: a state the code holds impossible was reached.
+public func fatal<T>(_ message: String = "unreachable") -> T { throw RuntimeError(message: message) }

@@ -31,7 +31,6 @@ pub fn key(name: &str) -> &str {
     }
 }
 
-#[allow(dead_code)]
 /// The member an extension function was lowered from (`String$padded` → `("String", "padded", false)`).
 pub fn demangle(name: &str) -> Option<(&str, &str, bool)> {
     if let Some((owner, member)) = name.split_once("$$") {

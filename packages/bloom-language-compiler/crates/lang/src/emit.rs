@@ -456,6 +456,28 @@ impl<'a> Emitter<'a> {
                 out.s(&format!("* as {}", js_name(&name.name)));
             }
             ImportKind::Named(specs) => {
+                // An extension member (`T$m`) is imported where `.m` is written; only the
+                // ones the checker resolved are kept.
+                let used: HashSet<&str> = self
+                    .ck
+                    .calls
+                    .values()
+                    .filter_map(|c| match c {
+                        CallRes::Extension { func, .. } => Some(&**func),
+                        _ => None,
+                    })
+                    .chain(self.ck.fields.values().filter_map(|f| match f {
+                        FieldRes::Extension(func) | FieldRes::Static(func) => Some(&**func),
+                        _ => None,
+                    }))
+                    .collect();
+                let specs: Vec<&ImportSpec> = specs
+                    .iter()
+                    .filter(|spec| !spec.name.name.contains('$') || used.contains(spec.name.name.as_str()))
+                    .collect();
+                if specs.is_empty() {
+                    return Frag::default();
+                }
                 let parts: Vec<String> = specs
                     .iter()
                     .map(|spec| {
