@@ -2849,7 +2849,13 @@ impl<'o> Checker<'o> {
                     Ty::Bool
                 }
                 UnaryOp::Neg => {
-                    let ty = self.expr(operand, expected);
+                    // A number, whatever optional is expected of the negation (`x ?? -1`).
+                    let hint = match &expected_resolved {
+                        Some(Ty::Option(inner)) => Some((**inner).clone()),
+                        Some(Ty::Int | Ty::Float) => expected_resolved.clone(),
+                        _ => None,
+                    };
+                    let ty = self.expr(operand, hint.as_ref());
                     let ty = self.resolve(&ty);
                     if !matches!(ty, Ty::Int | Ty::Float | Ty::Unknown) {
                         self.operand_error(operand.span, "`-`", &ty);
@@ -3833,8 +3839,36 @@ impl<'o> Checker<'o> {
         self.push();
         let mut params = Vec::new();
         let mut param_tys = Vec::new();
+        // `{ (a, b) in … }`: the one parameter is a tuple, its items named.
+        let items = match (c.tuple, expected_fn.as_ref().and_then(|f| f.params.first())) {
+            (true, Some(p)) => match self.resolve(&p.ty) {
+                Ty::Tuple(items) if items.len() == c.params.len() => Some(items),
+                Ty::Var(_) => None,
+                other => {
+                    self.report(
+                        Diagnostic::error(
+                            "B0201",
+                            c.span,
+                            format!(
+                                "`({{ … }}) in` takes a tuple of {}, and this is {}",
+                                c.params.len(),
+                                self.show(&other)
+                            ),
+                        )
+                        .label("not a tuple of that many items")
+                        .spec("5-values-functions-and-closures"),
+                    );
+                    None
+                }
+            },
+            _ => None,
+        };
         for (index, param) in c.params.iter().enumerate() {
-            let expected_param = expected_fn.as_ref().and_then(|f| f.params.get(index)).map(|p| p.ty.clone());
+            let expected_param = match (&items, c.tuple) {
+                (Some(items), _) => Some(items[index].clone()),
+                (None, true) => None,
+                (None, false) => expected_fn.as_ref().and_then(|f| f.params.get(index)).map(|p| p.ty.clone()),
+            };
             let ty = match (&param.ty, expected_param) {
                 (Some(te), Some(want)) => {
                     let ty = self.resolve_type(te);
@@ -3855,6 +3889,10 @@ impl<'o> Checker<'o> {
                 rest: false,
             });
             params.push((param, ty));
+        }
+        if c.tuple {
+            let tuple = Ty::Tuple(param_tys.iter().map(|p| p.ty.clone()).collect());
+            param_tys = vec![ParamTy { name: None, ty: tuple, optional: false, rest: false }];
         }
         let ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
         let task = self.frames.last().is_some_and(|f| f.task);

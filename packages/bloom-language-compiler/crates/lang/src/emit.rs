@@ -138,6 +138,8 @@ struct Emitter<'a> {
     /// Names for the element variables of list and map comparisons.
     eq_vars: usize,
     names: HashSet<String>,
+    /// The next closure maps an `.enumerated()` list: its `(i, x)` is `(x, i)`.
+    enumerated: bool,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -182,6 +184,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         eq_helpers: Vec::new(),
         eq_vars: 0,
         names,
+        enumerated: false,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -553,6 +556,7 @@ impl<'a> Emitter<'a> {
         let text = self.ts_type(ty);
         if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_))
             || text.contains(" | ") && !text.starts_with('(')
+            || text.starts_with("readonly ")
         {
             format!("({text})")
         } else {
@@ -868,7 +872,15 @@ impl<'a> Emitter<'a> {
             }
             StmtKind::For(f) => {
                 let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                let mut iter = self.expr(&f.iter);
+                let mut iter = match self.enumerated_list(&f.iter) {
+                    // `for (i, x) in xs.enumerated()`: the array's own `[i, x]` entries.
+                    Some(list) => {
+                        let mut out = self.operand(list);
+                        out.s(".entries()");
+                        out
+                    }
+                    None => self.expr(&f.iter),
+                };
                 if matches!(iter_ty, Ty::Map(_)) {
                     iter = iter.wrap("Object.entries(", ")");
                 }
@@ -1804,6 +1816,27 @@ impl<'a> Emitter<'a> {
             .collect();
         // A parameter without a TS type takes its type from where the closure is passed.
         let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
+        let params: Vec<String> = if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
+            // `xs.enumerated().map { (i, x) in … }` is `xs.map((x, i) => …)`.
+            vec![params[1].clone(), params[0].clone()]
+        } else if c.tuple {
+            let names: Vec<String> = c.params.iter().map(|p| js_name(&p.name.name)).collect();
+            let types: Vec<String> =
+                info.params
+                    .iter()
+                    .map(|l| self.ck.locals[*l].ty.clone())
+                    .map(|t| {
+                        if matches!(t, Ty::Var(_) | Ty::Unknown) {
+                            "unknown".into()
+                        } else {
+                            self.ts_type(&t)
+                        }
+                    })
+                    .collect();
+            vec![format!("[{}]: readonly [{}]", names.join(", "), types.join(", "))]
+        } else {
+            params
+        };
         let tail = if info.ret == Ty::Unit || matches!(info.ret, Ty::Var(_) | Ty::Unknown) {
             Tail::Discard
         } else {
@@ -1887,6 +1920,21 @@ impl<'a> Emitter<'a> {
 
     fn args(&mut self, call: &Call) -> Vec<Frag> {
         call.args.iter().map(|a| self.expr(&a.value)).collect()
+    }
+
+    /// `xs` when `expr` is `xs.enumerated()`.
+    fn enumerated_list<'e>(&self, expr: &'e Expr) -> Option<&'e Expr> {
+        let ExprKind::Call(call) = &expr.kind else { return None };
+        if !matches!(
+            self.ck.calls.get(&expr.id),
+            Some(CallRes::Method { recv: Recv::List, name: "enumerated" })
+        ) {
+            return None;
+        }
+        match &call.callee.kind {
+            ExprKind::Field(list, _) => Some(list),
+            _ => None,
+        }
     }
 
     /// A positional argument; `..xs` into a rest parameter is `...xs`.
@@ -2287,11 +2335,39 @@ impl<'a> Emitter<'a> {
             Recv::List => {
                 matches!(
                     name,
-                    "map" | "filter" | "find" | "reduce" | "contains" | "prefix" | "dropFirst" | "joined"
+                    "map"
+                        | "filter"
+                        | "find"
+                        | "reduce"
+                        | "contains"
+                        | "prefix"
+                        | "dropFirst"
+                        | "joined"
+                        | "flatMap"
+                        | "any"
+                        | "all"
+                        | "slice"
+                        | "enumerated"
                 )
             }
             _ => false,
         };
+        // `xs.enumerated().map { (i, x) in … }`: `xs.map((x, i) => …)`, no pairs built.
+        let mut receiver = receiver;
+        if recv == Recv::List
+            && name == "map"
+            && !optional
+            && call.trailing.as_ref().is_some_and(|c| c.tuple && c.params.len() == 2)
+            && let ExprKind::Call(inner) = &receiver.kind
+            && matches!(
+                self.ck.calls.get(&receiver.id),
+                Some(CallRes::Method { recv: Recv::List, name: "enumerated" })
+            )
+            && let ExprKind::Field(list, _) = &inner.callee.kind
+        {
+            receiver = list;
+            self.enumerated = true;
+        }
         let guard = (optional && !direct).then(|| self.path_or_temp(receiver));
         let object = match &guard {
             Some(name) => Frag::of(name.clone()),
@@ -2371,10 +2447,17 @@ impl<'a> Emitter<'a> {
                     .s(")");
                 out
             }
-            (Recv::List, "map" | "filter" | "find") => {
+            (Recv::List, "map" | "filter" | "find" | "flatMap") => {
                 let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
                 call_on(object, name, vec![f])
             }
+            (Recv::List, "any" | "all") => {
+                let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
+                call_on(object, if name == "any" { "some" } else { "every" }, vec![f])
+            }
+            (Recv::List, "slice") => call_on(object, "slice", args),
+            (Recv::List, "indexOf") => helper(self, "index", vec![call_on(object, "indexOf", args)]),
+            (Recv::List, "enumerated") => call_on(object, "map", vec![Frag::of("(x, i) => [i, x] as const")]),
             (Recv::List, "compactMap") => {
                 let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
                 helper(self, "compact", vec![call_on(object, "map", vec![f])])
@@ -2482,14 +2565,27 @@ impl<'a> Emitter<'a> {
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                    let mut iter = self.operand(&f.iter);
+                    // `for (i, x) in xs.enumerated()`: `xs.map((x, i) => …)`.
+                    let swapped = match (self.enumerated_list(&f.iter), &f.pattern.kind) {
+                        (Some(list), PatternKind::Tuple(items)) if items.len() == 2 => {
+                            Some((list, [self.binding_target(&items[1]), self.binding_target(&items[0])]))
+                        }
+                        _ => None,
+                    };
+                    let mut iter = match &swapped {
+                        Some((list, _)) => self.operand(list),
+                        None => self.operand(&f.iter),
+                    };
                     if matches!(iter_ty, Ty::Map(_)) {
                         iter = iter.wrap("Object.entries(", ")");
                     } else if matches!(iter_ty, Ty::JsMap(..) | Ty::Set(_)) {
                         // A builder `for` maps over an array.
                         iter = iter.wrap("[...", "]");
                     }
-                    let target = self.binding_target(&f.pattern);
+                    let target = match swapped {
+                        Some((_, [x, i])) => format!("{x}, {i}"),
+                        None => self.binding_target(&f.pattern),
+                    };
                     self.bufs.push(Vec::new());
                     let children = self.children(&f.body.stmts);
                     let stmts = self.bufs.pop().expect("the loop");

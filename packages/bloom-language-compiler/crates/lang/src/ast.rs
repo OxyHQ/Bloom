@@ -567,6 +567,8 @@ pub struct Closure {
     pub params: Vec<ClosureParam>,
     /// Whether `in` was written.
     pub has_in: bool,
+    /// `{ (i, x) in … }`: one tuple parameter, its items named.
+    pub tuple: bool,
     pub body: Vec<Stmt>,
     pub span: Span,
 }
