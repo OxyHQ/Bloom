@@ -326,6 +326,9 @@ pub struct CheckResult {
     pub widened: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
+    /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
+    /// release. The value says whether the element type is itself optional.
+    pub list_reads: HashMap<ExprId, bool>,
     /// A view's `let`s whose value calls a hook (drawn every render, never in a memo scope).
     pub hook_lets: HashSet<Span>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
@@ -4001,9 +4004,13 @@ impl<'o> Checker<'o> {
             ExprKind::Index(object, index) => {
                 let ty = self.expr(object, None);
                 match self.resolve(&ty) {
+                    // `xs[i]` is the element, as in Swift: out of range is a trap (dev
+                    // builds check it), and `xs.at(i)` is the optional read.
                     Ty::List(elem) => {
                         self.expr(index, Some(&Ty::Int));
-                        Ty::Option(elem)
+                        let optional = matches!(self.resolve(&elem), Ty::Option(_));
+                        self.out.list_reads.insert(expr.id, optional);
+                        *elem
                     }
                     Ty::Map(value) => {
                         self.expr(index, Some(&Ty::Str));

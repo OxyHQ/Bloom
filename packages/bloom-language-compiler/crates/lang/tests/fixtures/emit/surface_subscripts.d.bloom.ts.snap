@@ -1,0 +1,15 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface User {
+  readonly name: string;
+}
+export declare function first(xs: readonly string[]): string;
+export declare function lastName(users: readonly User[]): string;
+export declare function maybe(xs: readonly string[], i: number): string;
+export declare function nested(grid: readonly (readonly number[])[]): number;
+export declare function holes(xs: readonly (number | undefined)[]): number;
+export declare function lookup(d: Readonly<Record<string, number>>, key: string): number;
+export interface RowProps {
+  readonly users: readonly User[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Row())`), or from TSX as `toElement(Row())`. */
+export declare const Row: (props: RowProps) => ComposedView;

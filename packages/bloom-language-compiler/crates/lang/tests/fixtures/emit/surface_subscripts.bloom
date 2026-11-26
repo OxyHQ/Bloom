@@ -1,0 +1,28 @@
+// Subscripts (2.0): `xs[i]` on an array is the element, as in Swift. Out of range is a trap,
+// checked in a dev build (`dev_subscripts`); `xs.at(i)` is the optional read, and a
+// dictionary's `d[k]` stays `V?`.
+public struct User {
+  let name: String
+}
+
+public func first(_ xs: [String]) -> String { xs[0] }
+
+public func lastName(_ users: [User]) -> String {
+  if users.isEmpty { return "" }
+  users[users.count - 1].name
+}
+
+public func maybe(_ xs: [String], _ i: Int) -> String { xs.at(i) ?? "none" }
+
+public func nested(_ grid: [[Int]]) -> Int { grid[0][1] }
+
+public func holes(_ xs: [Int?]) -> Int { xs[0] ?? -1 }
+
+public func lookup(_ d: [String: Int], _ key: String) -> Int { d[key] ?? 0 }
+
+public struct Row: View {
+  let users: [User]
+  var body: some View {
+    if users.count > 0 { Text(users[0].name) }
+  }
+}
