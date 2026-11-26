@@ -5322,6 +5322,8 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
     let source = std::fs::read_to_string(path).ok()?;
     let (mut file, _, _) = crate::parser::parse(&source);
     crate::extensions::lower(&mut file);
+    // Its module imports, as the names its signatures use (`crate::modules`).
+    crate::modules::prepare(&mut file, &source, &path.to_string_lossy(), options);
     let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
     sub.declare_signatures(&file, specifier);
     let types = sub
