@@ -8,6 +8,7 @@
 //! same process, hoisting static chains, and the two source maps are composed
 //! back to the `.bloom` file ([`compile`]).
 
+pub mod analysis;
 pub mod ast;
 mod check;
 pub mod diagnostic;
@@ -22,6 +23,7 @@ mod ui;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+pub use analysis::{Analysis, Definition, DefinitionKind, DefinitionOrigin, MemberInfo, MemberKind};
 pub use ast::{Comments, File as Ast, Span};
 pub use diagnostic::{Diagnostic, Label, Severity};
 
@@ -50,6 +52,9 @@ pub struct Output {
     pub diagnostics: Vec<Diagnostic>,
     /// Warnings: reported, and the module compiles.
     pub warnings: Vec<Diagnostic>,
+    /// Every file the compile read (imported `.bloom` modules, TS declarations
+    /// through re-exports, the `tsconfig.json` that resolved them): a cache key.
+    pub dependencies: Vec<PathBuf>,
 }
 
 /// The types the checker found, by span (for hover), and its diagnostics.
@@ -59,6 +64,8 @@ pub struct Checked {
     pub types: Vec<(Span, String)>,
     pub diagnostics: Vec<Diagnostic>,
     pub warnings: Vec<Diagnostic>,
+    /// Every file the check read (see [`Output::dependencies`]).
+    pub dependencies: Vec<PathBuf>,
 }
 
 /// Parses `source`: the tree, the comments and the syntax errors (rendered).
@@ -74,22 +81,65 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 
 /// Parses and checks `source`, without emitting.
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
+    ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut result = check::check(&file, source, filename, options);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
     }
-    Checked { types: result.types(source), diagnostics: errors, warnings }
+    let dependencies = std::mem::take(&mut result.dependencies).into_iter().collect();
+    Checked { types: result.types(source), diagnostics: errors, warnings, dependencies }
+}
+
+/// Parses and checks `source` for an editor: its definitions and references,
+/// scopes, members and expected types, with the diagnostics of [`check`].
+pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
+    ts::next_epoch();
+    let (file, _, syntax) = parser::parse(source);
+    let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
+    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
+    for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
+        diagnostic.render(source, filename);
+    }
+    let mut analysis = analysis::build(&file, source, &result, expected, &path, options);
+    analysis.diagnostics = errors;
+    analysis.warnings = warnings;
+    analysis.dependencies = std::mem::take(&mut result.dependencies).into_iter().collect();
+    analysis
+}
+
+/// The files compiling `source` reads (see [`Output::dependencies`]), without emitting.
+pub fn dependencies(source: &str, filename: &str, options: &Options) -> Vec<PathBuf> {
+    check(source, filename, options).dependencies
+}
+
+/// Forgets what was read from `path` (a TS file or `tsconfig.json` an editor changed).
+/// Files are also checked against the disk (modified time and length) once per compile.
+pub fn invalidate(path: &std::path::Path) {
+    ts::invalidate(path);
+}
+
+/// Forgets every TS summary this thread has read.
+pub fn clear_caches() {
+    ts::clear_caches();
 }
 
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
+    ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut checked = check::check(&file, source, filename, options);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
-    let mut output =
-        Output { code: String::new(), map: None, dts: None, diagnostics: Vec::new(), warnings: Vec::new() };
+    let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
+    let mut output = Output {
+        code: String::new(),
+        map: None,
+        dts: None,
+        diagnostics: Vec::new(),
+        warnings: Vec::new(),
+        dependencies,
+    };
     if errors.is_empty() {
         let emitted = emit::emit(&file, &checked, source, filename, options);
         errors.extend(emitted.diagnostics);
