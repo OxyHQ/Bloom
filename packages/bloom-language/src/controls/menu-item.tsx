@@ -9,7 +9,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A dish in a menu, and the choices made before it goes in the basket. */
@@ -60,7 +60,7 @@ export function MenuItemOptions(
   return new Node('menuItemOptions', { groups, options }, []);
 }
 
-export const MENU_ITEMS: Record<MenuItemKind, ControlRenderer> = {
+const MENU_ITEMS: Record<MenuItemKind, ControlRenderer> = {
   menuItemRow: product(BloomMenuItemRow, {
     bindings: { quantity: ['quantity', 'onQuantityChange'] },
     press: true,
@@ -85,3 +85,4 @@ export const MENU_ITEMS: Record<MenuItemKind, ControlRenderer> = {
     },
   }),
 };
+defineControls(MENU_ITEMS);

@@ -18,7 +18,7 @@ import {
   type MeterCap,
   type SpaceToken,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Meters and progress bars: Bloom's one determinate bar and ring, and the labelled bar built on it. */
 export type StatBarKind = 'meter' | 'meterRing' | 'statBar';
@@ -193,7 +193,7 @@ function colors(d: ControlDraw): Record<string, ColorToken | undefined> {
   return { fill: d.own('tint')?.value as ColorToken | undefined, track: d.own('trackTint')?.value };
 }
 
-export const STAT_BARS: Record<StatBarKind, ControlRenderer> = {
+const STAT_BARS: Record<StatBarKind, ControlRenderer> = {
   meter: (d) => {
     const props = measured(d);
     props.height = space(d.own('thickness')?.value);
@@ -240,3 +240,4 @@ export const STAT_BARS: Record<StatBarKind, ControlRenderer> = {
     });
   },
 };
+defineControls(STAT_BARS);

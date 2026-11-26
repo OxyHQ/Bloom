@@ -6,6 +6,10 @@
 
 - Requires `@oxy.so/bloom` 23.9.1 or newer (its `BloomImage` names an image by its `alt` on the web, which `Image(source, alt)` draws through); the peer is `>=23.9.1`.
 
+### Breaking
+
+- Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved.
+
 ### Added
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
@@ -16,6 +20,8 @@
 
 ### Changed
 
+- The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
+- `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
 - A root whose tree is host views alone (stacks and spacers, the spec's new `reads.hostViews`) and reads nothing is those views, with no boundary fiber: a root over a bare `View` costs what the `View` does (Mention's splash marker, an empty sticker frame). A tree that comes to read something is drawn again under a boundary; one that holds a `view()`, an embedded element, a control or a list keeps its boundary whatever it reads.
 - A RawText reads nothing set above it (it takes no inherited trait), and the theme only when a role inks it: a lone RawText, or one in a `view()` body, costs React Native's `Text` in a component that inks it.
 - An Avatar's and an AvatarGroup's own props (size, shape, avatar colour, motion, presence, the group's layout and counts) read nothing where a tree starts, so a `view()` that hands its props to Bloom's Avatar costs what the component that renders it does (Mention's `AccountAvatar`: two context reads fewer).

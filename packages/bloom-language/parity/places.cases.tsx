@@ -14,7 +14,7 @@ import {
 } from '@oxy.so/bloom/icons';
 
 import { ENUMS } from '../src/generated/spec.generated';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { Themed, type ParityCase } from './support/cases';
 

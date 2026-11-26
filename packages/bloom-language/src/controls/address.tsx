@@ -9,7 +9,7 @@ import type { BloomSize } from '@oxy.so/bloom/appearance';
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ChoiceListStyle, Density } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An address as a row, and a list of them to read or to choose one from. */
@@ -64,7 +64,7 @@ const sized = (d: ControlDraw) => ({
   density: d.own('density')?.value,
 });
 
-export const ADDRESSES: Record<AddressesKind, ControlRenderer> = {
+const ADDRESSES: Record<AddressesKind, ControlRenderer> = {
   addressRow: product(BloomAddressRow, {
     press: true,
     slots: ['leading', 'badge', 'action'],
@@ -79,3 +79,4 @@ export const ADDRESSES: Record<AddressesKind, ControlRenderer> = {
     }),
   }),
 };
+defineControls(ADDRESSES);

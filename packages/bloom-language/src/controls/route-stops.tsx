@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { Density } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An origin, a destination and the stops between them. */
@@ -35,6 +35,7 @@ export function RouteStops(
   return new Node('routeStops', { stops, options }, []);
 }
 
-export const ROUTE_STOPS: Record<RouteStopsKind, ControlRenderer> = {
+const ROUTE_STOPS: Record<RouteStopsKind, ControlRenderer> = {
   routeStops: product(BloomRouteStops, { own: (d) => ({ density: d.own('density')?.value }) }),
 };
+defineControls(ROUTE_STOPS);

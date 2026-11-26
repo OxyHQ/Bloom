@@ -11,7 +11,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The dashboard's fixed-height cards: alerts and a profile. */
@@ -50,7 +50,8 @@ export function PatientInfoCard(
   return new Node('patientInfoCard', { name, details, options }, []);
 }
 
-export const DASHBOARD_CARDS: Record<DashboardCardKind, ControlRenderer> = {
+const DASHBOARD_CARDS: Record<DashboardCardKind, ControlRenderer> = {
   importantAlertsCard: product(BloomImportantAlertsCard, { lengths: ['height'] }),
   patientInfoCard: product(BloomPatientInfoCard, { lengths: ['height'] }),
 };
+defineControls(DASHBOARD_CARDS);

@@ -17,7 +17,7 @@ import type { Binding } from '../binding';
 import { Node, type Child, type IconComponent, type ViewModifiers, type ViewNode } from '../node';
 import { resolveSpace, type SpaceToken } from '../tokens';
 import { defined } from '../chrome/defined';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import type { ContentType, Keyboard } from './inputs';
 
 /** Settings rows: a section, a value, a select, a text field and a date field. */
@@ -116,7 +116,7 @@ function space(value: SpaceToken | undefined): number | undefined {
 }
 
 /** The renderer of each kind in this family. */
-export const SETTINGS: Partial<Record<SettingsKind, ControlRenderer>> = {
+const SETTINGS: Partial<Record<SettingsKind, ControlRenderer>> = {
   settingsSection: (draw) => {
     const { label } = draw.node.props as { label: string | undefined };
     const trailing = draw.own('trailing')?.value as readonly Child[] | undefined;
@@ -204,3 +204,4 @@ export const SETTINGS: Partial<Record<SettingsKind, ControlRenderer>> = {
     });
   },
 };
+defineControls(SETTINGS);

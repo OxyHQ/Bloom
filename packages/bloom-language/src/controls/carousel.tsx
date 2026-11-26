@@ -15,7 +15,7 @@ import {
   type DotsStyle,
   type SpaceToken,
 } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Slides that snap into place, with arrows and dots (Bloom `carousel`). */
 export type CarouselKind = 'carousel' | 'carouselItem' | 'carouselDots';
@@ -90,7 +90,7 @@ const space = (token: SpaceToken | undefined) =>
 const slot = (d: ControlDraw, value: Child | undefined) =>
   value === undefined ? undefined : d.render(value);
 
-export const CAROUSELS: Record<CarouselKind, ControlRenderer> = {
+const CAROUSELS: Record<CarouselKind, ControlRenderer> = {
   carousel: (d) => {
     const props = d.props();
     const arrows = d.own('arrows')?.value;
@@ -137,3 +137,4 @@ export const CAROUSELS: Record<CarouselKind, ControlRenderer> = {
     return d.component(BloomCarouselDots, props);
   },
 };
+defineControls(CAROUSELS);

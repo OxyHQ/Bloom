@@ -2,7 +2,7 @@ import { RiGlobalLine, RiSearchLine } from '@oxy.so/bloom/icons';
 import { WebSearch } from '@oxy.so/bloom/web-search';
 import type { WebSearchStep } from '@oxy.so/bloom/web-search';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

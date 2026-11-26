@@ -9,7 +9,7 @@ import {
 
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The agent composer: the two-row panel, the pill and the status tab above it. */
@@ -112,7 +112,7 @@ const composer = {
   slots: ['question', 'status', 'emptyAction'],
 } as const;
 
-export const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
+const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
   composerPanel: product(BloomComposerPanel, {
     bindings: {
       model: ['model', 'onModelChange'],
@@ -139,3 +139,4 @@ export const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
   }),
   composerPanelStatusTab: product(BloomComposerPanelStatusTab),
 };
+defineControls(COMPOSER_PANELS);

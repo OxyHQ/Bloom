@@ -14,7 +14,7 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The card form and the parts an app lays out itself. */
@@ -89,7 +89,7 @@ export function CardFormHostedField(
 const edited = ['value', 'onValueChange'] as const;
 const disabled = (d: Parameters<ControlRenderer>[0]) => ({ disabled: d.own('disabled')?.value });
 
-export const CARD_FORMS: Record<CardFormKind, ControlRenderer> = {
+const CARD_FORMS: Record<CardFormKind, ControlRenderer> = {
   cardForm: product(BloomCardForm, {
     binding: edited,
     own: (d) => {
@@ -128,3 +128,4 @@ export const CARD_FORMS: Record<CardFormKind, ControlRenderer> = {
     );
   },
 };
+defineControls(CARD_FORMS);

@@ -6,7 +6,7 @@ import {
   setAspectRatio,
 } from '@oxy.so/bloom/image-aspect-ratio-cache';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

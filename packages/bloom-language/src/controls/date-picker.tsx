@@ -19,7 +19,7 @@ import {
 
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Date and time pickers, and the month calendars they are built from (Bloom `date-picker`). */
 export type DatePickerKind =
@@ -199,7 +199,7 @@ function calendar(d: ControlDraw): Record<string, unknown> {
   return props;
 }
 
-export const DATE_PICKERS: Record<DatePickerKind, ControlRenderer> = {
+const DATE_PICKERS: Record<DatePickerKind, ControlRenderer> = {
   datePicker: (d) => d.component(BloomDatePicker, picker(d)),
   dateRangePicker: (d) => {
     const props = picker(d);
@@ -249,3 +249,4 @@ export const DATE_PICKERS: Record<DatePickerKind, ControlRenderer> = {
     return d.component(BloomMeetingScheduler, props);
   },
 };
+defineControls(DATE_PICKERS);

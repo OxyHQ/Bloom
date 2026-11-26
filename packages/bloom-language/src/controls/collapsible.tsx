@@ -1,7 +1,7 @@
 import { Collapsible as BloomCollapsible } from '@oxy.so/bloom/collapsible';
 import { resolveTimedMotion, type TimedMotionToken } from '../motion/tokens';
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A measured reveal with no trigger of its own (Bloom `collapsible`). */
 export type CollapsibleKind = 'collapsible';
@@ -24,7 +24,7 @@ export function Collapsible(open: boolean, ...children: Child[]): CollapsibleVie
   return new Node('collapsible', { open }, children);
 }
 
-export const COLLAPSIBLES: Record<CollapsibleKind, ControlRenderer> = {
+const COLLAPSIBLES: Record<CollapsibleKind, ControlRenderer> = {
   collapsible: (d) => {
     const props = d.props();
     const motion = d.own('revealMotion')?.value;
@@ -37,3 +37,4 @@ export const COLLAPSIBLES: Record<CollapsibleKind, ControlRenderer> = {
     return d.component(BloomCollapsible, props, ...d.children(d.node.children));
   },
 };
+defineControls(COLLAPSIBLES);

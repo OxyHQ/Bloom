@@ -205,6 +205,10 @@ jobs:
           name: bloom-vscode-vsix
           path: packages/bloom-vscode/bloom-vscode.vsix
           if-no-files-found: error
+      # The language's web weight: the root reaches no family of nodes, and stays
+      # within its budget; each family is an entry an app pays for by importing it.
+      - name: Language bundle weight
+        run: cd packages/bloom-language && bun run verify:bundle
       # The codemod as an app installs it: packed as the release packs it, with
       # the language, installed outside the repository, run on Node.
       - name: Codemod CLI runs from its packed tarball

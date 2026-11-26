@@ -31,7 +31,7 @@ import type {
   SpaceToken,
   ThemeToggleStyle,
 } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { type CornerToken, product } from './product';
 
 /** Bloom's generic pieces no product family owns. */
@@ -181,7 +181,7 @@ export function ThemeToggle(options: ThemeToggleOptions = {}): ThemeToggleView {
   return new Node('themeToggle', { options }, []);
 }
 
-export const GENERIC: Record<GenericKind, ControlRenderer> = {
+const GENERIC: Record<GenericKind, ControlRenderer> = {
   connectionDots: product(BloomConnectionDots, {
     slots: ['left', 'right'],
     lengths: ['dotSize'],
@@ -212,3 +212,4 @@ export const GENERIC: Record<GenericKind, ControlRenderer> = {
     own: (d) => ({ variant: d.own('style')?.value, collapsed: d.own('collapsed')?.value }),
   }),
 };
+defineControls(GENERIC);

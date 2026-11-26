@@ -4,7 +4,7 @@ import {
 } from '@oxy.so/bloom/sortable-chip-row';
 
 import { Node, type Child, type ViewModifiers } from '../node';
-import { type ControlRenderer, nodesOf, slot } from './draw';
+import { type ControlRenderer, defineControls, nodesOf, slot } from './draw';
 
 /** A row of chips reordered by a drag on the gesture layer, or by the keyboard (Bloom `sortable-chip-row`). */
 export type SortableChipRowKind = 'sortableChipRow' | 'sortableChip';
@@ -35,7 +35,7 @@ const NOT_DRAWN = () => {
   throw new Error('bloom-language: a SortableChip is drawn by its SortableChipRow');
 };
 
-export const SORTABLE_CHIP_ROWS: Record<SortableChipRowKind, ControlRenderer> = {
+const SORTABLE_CHIP_ROWS: Record<SortableChipRowKind, ControlRenderer> = {
   sortableChipRow: (d) => {
     const props = d.props();
     Object.assign(props, {
@@ -56,3 +56,4 @@ export const SORTABLE_CHIP_ROWS: Record<SortableChipRowKind, ControlRenderer> = 
   },
   sortableChip: NOT_DRAWN,
 };
+defineControls(SORTABLE_CHIP_ROWS);

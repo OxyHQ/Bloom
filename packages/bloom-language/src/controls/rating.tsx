@@ -17,7 +17,7 @@ import type {
   SpaceToken,
 } from '../tokens';
 import { resolveSpace } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { type MeterReveal, meterReveal } from './stat-bar';
 
 /** Ratings: the compact star and value, the stars a review form is written with, a breakdown's bar and summary. */
@@ -134,7 +134,7 @@ export function RatingSummary(
 const space = (token: SpaceToken | undefined) =>
   token === undefined ? undefined : resolveSpace(token);
 
-export const RATINGS: Record<RatingKind, ControlRenderer> = {
+const RATINGS: Record<RatingKind, ControlRenderer> = {
   rating: (d) => {
     const labels = d.own('labels')?.value as RatingLabels | undefined;
     const props = d.props();
@@ -198,3 +198,4 @@ export const RATINGS: Record<RatingKind, ControlRenderer> = {
     return d.component(BloomRatingSummary, props);
   },
 };
+defineControls(RATINGS);

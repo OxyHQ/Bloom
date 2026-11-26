@@ -2,7 +2,7 @@ import { RiFileCodeLine, RiFolder3Line } from '@oxy.so/bloom/icons';
 import { TaskList } from '@oxy.so/bloom/task-list';
 import type { TaskListTask } from '@oxy.so/bloom/task-list';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

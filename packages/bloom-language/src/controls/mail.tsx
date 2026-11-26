@@ -24,7 +24,7 @@ import {
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MailComposeStyle, NoteToolbarSize, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** Mail: the compose surface and its recipients, a thread and its messages; a note's toolbar. */
@@ -177,7 +177,7 @@ export function NoteEditorToolbar(
   return new Node('noteEditorToolbar', { accessibilityLabel: label, actions, options }, []);
 }
 
-export const MAILS: Record<MailKind, ControlRenderer> = {
+const MAILS: Record<MailKind, ControlRenderer> = {
   mailComposeSurface: product(BloomMailComposeSurface, {
     bindings: { minimized: ['minimized', 'onMinimizedChange'] },
     slots: ['header', 'toolbar', 'footer'],
@@ -211,3 +211,4 @@ export const MAILS: Record<MailKind, ControlRenderer> = {
     own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(MAILS);

@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import type { MotionSpec, SurfaceTransition } from '@oxy.so/bloom/motion';
 
 import type { GlassValue } from '../glass';
-import type * as Language from '../index';
+import type * as Language from './support/language.generated';
 import type { ViewModifiers, ViewNode } from '../node';
 import type * as Router from '../router';
 import type { AppToken } from '../tokens';

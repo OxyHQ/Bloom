@@ -10,7 +10,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ChoiceListStyle, Density } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A way to pay: its mark, a row, and a list to read or to choose one from. */
@@ -69,7 +69,7 @@ export function PaymentMethodList(
   return new Node('paymentMethodList', { methods, options }, []);
 }
 
-export const PAYMENT_METHODS: Record<PaymentMethodsKind, ControlRenderer> = {
+const PAYMENT_METHODS: Record<PaymentMethodsKind, ControlRenderer> = {
   paymentMethodMark: product(BloomPaymentMethodMark, {
     slots: ['image'],
     own: (d) => ({ density: d.own('density')?.value }),
@@ -89,3 +89,4 @@ export const PAYMENT_METHODS: Record<PaymentMethodsKind, ControlRenderer> = {
     }),
   }),
 };
+defineControls(PAYMENT_METHODS);

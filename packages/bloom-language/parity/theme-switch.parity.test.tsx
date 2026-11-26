@@ -12,7 +12,7 @@ import { RiHeart3Line } from '@oxy.so/bloom/icons';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 import type { Child } from '../src/node';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { view } from '../src/view';
 

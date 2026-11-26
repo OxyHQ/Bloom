@@ -7,7 +7,7 @@ import {
 import type { AvatarCharacter } from '@oxy.so/bloom/agent-avatar';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An agent's reply: who answered, and the agents in the conversation. */
@@ -49,7 +49,7 @@ export function AgentReplyIdentity(
   return new Node('agentReplyIdentity', { character, name, options }, []);
 }
 
-export const AGENT_REPLIES: Record<AgentReplyKind, ControlRenderer> = {
+const AGENT_REPLIES: Record<AgentReplyKind, ControlRenderer> = {
   agentProfile: product(BloomAgentProfile, { press: true }),
   agentReplyIdentity: (d) => {
     const { character, name, options } = d.node.props as {
@@ -70,3 +70,4 @@ export const AGENT_REPLIES: Record<AgentReplyKind, ControlRenderer> = {
     });
   },
 };
+defineControls(AGENT_REPLIES);

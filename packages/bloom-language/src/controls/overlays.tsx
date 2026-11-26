@@ -32,9 +32,9 @@ import {
   resolveSpace,
   type SpaceToken,
 } from '../tokens';
-import { lastOf } from './draw';
+import { coverOf, defineControls, lastOf } from './draw';
 import type { ControlRenderer } from './draw';
-import { type Cover, drawCover } from './zoomable-media-gallery';
+import type { Cover } from './zoomable-media-gallery';
 
 /** Overlays and feedback: dialogs, alerts, popovers, toasts. */
 export type OverlayKind = 'alert' | 'dialog' | 'popover' | 'connectionStatus';
@@ -228,7 +228,7 @@ export function ConnectionStatus(): ConnectionStatusView {
 }
 
 /** The renderer of each kind in this family. */
-export const OVERLAYS: Partial<Record<OverlayKind, ControlRenderer>> = {
+const OVERLAYS: Partial<Record<OverlayKind, ControlRenderer>> = {
   connectionStatus: (d) =>
     d.component(ConnectionStatusToasts, {
       key: d.key,
@@ -239,6 +239,7 @@ export const OVERLAYS: Partial<Record<OverlayKind, ControlRenderer>> = {
       restoredDurationMs: resolveDuration(d.own('restoredDuration')?.value),
     }),
 };
+defineControls(OVERLAYS);
 
 /** A presented node's own values: the last of each of its modifiers. */
 type Own = Partial<
@@ -300,6 +301,17 @@ export function presentAround(
     dialog === undefined ? null : drawDialog(dialog, render, tree, undefined),
     cover === undefined ? null : drawCover(cover, (child) => render([child])),
   );
+}
+
+/** A cover, drawn by the family of the view it presents (a `Gallery`'s, which the app imported to make it). */
+function drawCover(
+  [isPresented, content]: Cover,
+  render: (child: Child) => ReactNode,
+): ReactElement {
+  const node = content as Node;
+  const draw = coverOf(node.kind);
+  if (draw === undefined) throw new Error(`bloom-language: no cover renderer for ${node.kind}`);
+  return draw(isPresented, node, render);
 }
 
 function drawAlert(

@@ -12,7 +12,7 @@ import type { PropertyType } from '@oxy.so/bloom/stay-filters';
 
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A host's listing editor: the preview, the quality meter, the property type. */
@@ -69,7 +69,7 @@ export function PropertyTypeSelector<T extends string = PropertyType>(
   return new Node('propertyTypeSelector', { binding: type, options }, []);
 }
 
-export const LISTING_EDITORS: Record<ListingEditorKind, ControlRenderer> = {
+const LISTING_EDITORS: Record<ListingEditorKind, ControlRenderer> = {
   listingPreviewPane: product(BloomListingPreviewPane, {
     bindings: { mode: ['mode', 'onModeChange'] },
     own: (d) => {
@@ -88,3 +88,4 @@ export const LISTING_EDITORS: Record<ListingEditorKind, ControlRenderer> = {
     own: (d) => ({ columns: d.own('columns')?.value, disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(LISTING_EDITORS);

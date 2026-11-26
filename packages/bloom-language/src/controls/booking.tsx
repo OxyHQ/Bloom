@@ -13,7 +13,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { SpaceToken, TripCardOrientation } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A stay's booking: the reserve card and bar, the price breakdown, a trip. */
@@ -88,7 +88,7 @@ export function PriceBreakdown(
   return new Node('priceBreakdown', { rows, options }, []);
 }
 
-export const BOOKINGS: Record<BookingKind, ControlRenderer> = {
+const BOOKINGS: Record<BookingKind, ControlRenderer> = {
   tripCard: product(BloomTripCard, {
     slots: ['actions'],
     press: true,
@@ -111,3 +111,4 @@ export const BOOKINGS: Record<BookingKind, ControlRenderer> = {
   }),
   priceBreakdown: product(BloomPriceBreakdown),
 };
+defineControls(BOOKINGS);

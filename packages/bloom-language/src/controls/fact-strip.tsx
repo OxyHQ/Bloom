@@ -2,7 +2,7 @@ import { FactStrip as BloomFactStrip, type FactStripItem } from '@oxy.so/bloom/f
 
 import { isNode, Node, type Child, type Press, type ViewModifiers, type ViewNode } from '../node';
 import { resolveSpace, type SpaceToken } from '../tokens';
-import { type ControlDraw, type ControlRenderer, lastOf, nodesOf } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls, lastOf, nodesOf } from './draw';
 
 /** A row of facts under a product's header (Bloom `fact-strip`). */
 export type FactStripKind = 'factStrip' | 'fact';
@@ -54,7 +54,7 @@ function item(d: ControlDraw, fact: Node): FactStripItem {
   };
 }
 
-export const FACT_STRIPS: Partial<Record<FactStripKind, ControlRenderer>> = {
+const FACT_STRIPS: Partial<Record<FactStripKind, ControlRenderer>> = {
   factStrip: (d) => {
     const props = d.props();
     const minItemWidth = d.own('minItemWidth')?.value;
@@ -69,3 +69,4 @@ export const FACT_STRIPS: Partial<Record<FactStripKind, ControlRenderer>> = {
     return d.component(BloomFactStrip, props);
   },
 };
+defineControls(FACT_STRIPS);

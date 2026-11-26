@@ -30,7 +30,7 @@ import { useMenuChoice } from '../platform/menu-actions';
 import { drawMenuRows, glyph, type Leading, type MenuParts } from '../platform/menu-dropdown';
 import { readMenuRows } from '../platform/menu-rows';
 import { nodesOf, valuesOf } from '../platform/values';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A horizontal bar of menus, at most one open at a time (Bloom `menubar`). */
 export type MenubarKind = 'menubar' | 'menubarMenu';
@@ -120,7 +120,7 @@ function MenubarHost({ menus, actions, openMenu, render, ...props }: MenubarHost
   );
 }
 
-export const MENUBARS: Record<MenubarKind, ControlRenderer> = {
+const MENUBARS: Record<MenubarKind, ControlRenderer> = {
   menubar: (d) =>
     d.component(MenubarHost, {
       key: d.key,
@@ -134,3 +134,4 @@ export const MENUBARS: Record<MenubarKind, ControlRenderer> = {
   // A menu is read by the bar that holds it; on its own it draws nothing.
   menubarMenu: () => null as unknown as ReturnType<ControlRenderer>,
 };
+defineControls(MENUBARS);

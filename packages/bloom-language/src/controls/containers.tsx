@@ -76,7 +76,14 @@ import {
   resolveSpace,
   type SpaceToken,
 } from '../tokens';
-import { type ControlDraw, type ControlRenderer, lastOf, nodesOf, slot } from './draw';
+import {
+  type ControlDraw,
+  type ControlRenderer,
+  defineControls,
+  lastOf,
+  nodesOf,
+  slot,
+} from './draw';
 
 /** Containers: cards, rows, grouped sections, chips and notices. */
 export type ContainerKind =
@@ -970,7 +977,7 @@ function errorBoundary(d: ControlDraw): ReactElement {
 }
 
 /** The renderer of each kind in this family. */
-export const CONTAINERS: Partial<Record<ContainerKind, ControlRenderer>> = {
+const CONTAINERS: Partial<Record<ContainerKind, ControlRenderer>> = {
   card,
   cardHeader: cardPart(BloomCardHeader),
   cardBody: cardPart(BloomCardBody),
@@ -1000,3 +1007,4 @@ export const CONTAINERS: Partial<Record<ContainerKind, ControlRenderer>> = {
   tabContent,
   selectionCard,
 };
+defineControls(CONTAINERS);

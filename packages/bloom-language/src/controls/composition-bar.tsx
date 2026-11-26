@@ -8,7 +8,7 @@ import {
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { ColorToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** What a total is made of: a segmented bar with a readout (Bloom `composition-bar`). */
 export type CompositionBarKind = 'compositionBar';
@@ -62,7 +62,7 @@ function TintedCompositionBar({ segments, tints, ...props }: TintedProps): React
   return <BloomCompositionBar {...props} categories={categories} />;
 }
 
-export const COMPOSITION_BARS: Record<CompositionBarKind, ControlRenderer> = {
+const COMPOSITION_BARS: Record<CompositionBarKind, ControlRenderer> = {
   compositionBar: (d) => {
     const { segments, selection, hint } = d.node.props as {
       segments: readonly CompositionSegment[];
@@ -83,3 +83,4 @@ export const COMPOSITION_BARS: Record<CompositionBarKind, ControlRenderer> = {
     });
   },
 };
+defineControls(COMPOSITION_BARS);

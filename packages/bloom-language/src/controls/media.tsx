@@ -23,7 +23,7 @@ import type { BloomAppearance, BloomTone } from '@oxy.so/bloom/appearance';
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ButtonMaterial, FollowButtonSize, ShelfLayout, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { length, product } from './product';
 
 /** Media and account pieces apps share: the follow button, shelves, subscription plans, a person's hover card. */
@@ -136,7 +136,7 @@ export function UserHoverCard(
 const gap = (d: Parameters<ControlRenderer>[0]) =>
   length(d.own('spacing')?.value as SpaceToken | undefined);
 
-export const MEDIA: Record<MediaKind, ControlRenderer> = {
+const MEDIA: Record<MediaKind, ControlRenderer> = {
   followButton: product(BloomFollowButton, {
     binding: ['following', 'onFollowChange'],
     press: true,
@@ -170,3 +170,4 @@ export const MEDIA: Record<MediaKind, ControlRenderer> = {
   subscriptionPrice: product(BloomSubscriptionPrice),
   userHoverCard: product(BloomUserHoverCard, { slots: ['action', 'badge', 'footer'] }),
 };
+defineControls(MEDIA);

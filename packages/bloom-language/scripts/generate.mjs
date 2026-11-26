@@ -251,8 +251,8 @@ export const OBJECTS = ${ts(objects)} as const;
 /** Each modifier's parameter types, in order. */
 export const MODIFIERS = ${ts(modifiers)} as const;
 
-/** The modifiers each node kind takes. */
-export const NODE_MODIFIERS = ${ts(nodeModifiers)} as const;
+/** The modifiers each node kind takes: a type, read by the type checks only, so no bundle carries it. */
+export type NodeModifiers = ${ts(nodeModifiers)};
 
 /** The densities each node kind's \`.density()\` takes: its Bloom component's own names. */
 export const NODE_DENSITIES = ${ts(nodeDensities)} as const;

@@ -8,7 +8,7 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** Tags as an input: removable chips, a caret after them and suggestions (Bloom `tag-field`). */
 export type TagFieldKind = 'tagField';
@@ -40,7 +40,7 @@ export function TagField(tags: Binding<ReadonlyArray<string>>, title?: string): 
   return new Node('tagField', { tags, title }, []);
 }
 
-export const TAG_FIELDS: Record<TagFieldKind, ControlRenderer> = {
+const TAG_FIELDS: Record<TagFieldKind, ControlRenderer> = {
   tagField: (d) => {
     const { tags, title } = d.node.props as {
       tags: Binding<ReadonlyArray<string>>;
@@ -69,3 +69,4 @@ export const TAG_FIELDS: Record<TagFieldKind, ControlRenderer> = {
     return d.component(BloomTagField, props);
   },
 };
+defineControls(TAG_FIELDS);

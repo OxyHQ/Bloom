@@ -21,7 +21,7 @@ import {
   type PaddingToken,
   type SpaceToken,
 } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A few choices, one chosen, one keyboard stop (Bloom `choice-list`). */
 export type ChoiceListKind = 'choiceList';
@@ -89,7 +89,7 @@ function SpacedChoiceList({
   return createElement(BloomChoiceList, { ...props, style: [{ gap }, style] });
 }
 
-export const CHOICE_LISTS: Record<ChoiceListKind, ControlRenderer> = {
+const CHOICE_LISTS: Record<ChoiceListKind, ControlRenderer> = {
   choiceList: (d) => {
     const { label, choice, options, content } = d.node.props as {
       label: string;
@@ -119,3 +119,4 @@ export const CHOICE_LISTS: Record<ChoiceListKind, ControlRenderer> = {
     return d.component(SpacedChoiceList, props);
   },
 };
+defineControls(CHOICE_LISTS);

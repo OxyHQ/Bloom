@@ -3,7 +3,7 @@ import { Stepper as BloomStepper, StepperRow as BloomStepperRow } from '@oxy.so/
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import type { StepperSize, StepperStyle } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** A − value + counter for small whole quantities, and the row that labels it (Bloom `stepper`). */
 export type StepperKind = 'stepper' | 'stepperRow';
@@ -77,7 +77,7 @@ function stepperProps(d: ControlDraw): Record<string, unknown> {
   return props;
 }
 
-export const STEPPERS: Record<StepperKind, ControlRenderer> = {
+const STEPPERS: Record<StepperKind, ControlRenderer> = {
   stepper: (d) => d.component(BloomStepper, stepperProps(d)),
   stepperRow: (d) => {
     const props = stepperProps(d);
@@ -87,3 +87,4 @@ export const STEPPERS: Record<StepperKind, ControlRenderer> = {
     return d.component(BloomStepperRow, props);
   },
 };
+defineControls(STEPPERS);

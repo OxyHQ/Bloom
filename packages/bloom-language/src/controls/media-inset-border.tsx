@@ -6,7 +6,7 @@ import {
 
 import { Node, type Child, type ViewModifiers } from '../node';
 import { type CornerName, resolveCorner } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A hairline drawn inside a media edge, so a white photo still has a boundary (Bloom `media-inset-border`). */
 export type MediaInsetBorderKind = 'mediaInsetBorder';
@@ -36,7 +36,7 @@ function MediaInsetBorderAt({
   return <BloomMediaInsetBorder {...props} style={[{ borderRadius: radius }, style]} />;
 }
 
-export const MEDIA_INSET_BORDERS: Record<MediaInsetBorderKind, ControlRenderer> = {
+const MEDIA_INSET_BORDERS: Record<MediaInsetBorderKind, ControlRenderer> = {
   mediaInsetBorder: (d) => {
     const props = d.props();
     props.opaque = d.own('opaque')?.value;
@@ -47,3 +47,4 @@ export const MEDIA_INSET_BORDERS: Record<MediaInsetBorderKind, ControlRenderer> 
     return d.component(MediaInsetBorderAt, props, ...d.children(d.node.children));
   },
 };
+defineControls(MEDIA_INSET_BORDERS);

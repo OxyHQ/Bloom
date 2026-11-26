@@ -8,7 +8,7 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The agent editor: its character, details and the host's own sections. */
@@ -53,7 +53,7 @@ export function AgentCreatorSection(title: string, content: Child): AgentCreator
   return new Node('agentCreatorSection', { title }, [content]);
 }
 
-export const AGENT_CREATORS: Record<AgentCreatorKind, ControlRenderer> = {
+const AGENT_CREATORS: Record<AgentCreatorKind, ControlRenderer> = {
   agentCreator: product(BloomAgentCreator, {
     binding: ['agent', 'onChange'],
     slots: ['children', 'sections'],
@@ -63,3 +63,4 @@ export const AGENT_CREATORS: Record<AgentCreatorKind, ControlRenderer> = {
   }),
   agentCreatorSection: product(BloomAgentCreatorSection),
 };
+defineControls(AGENT_CREATORS);

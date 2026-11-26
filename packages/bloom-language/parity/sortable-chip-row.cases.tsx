@@ -2,7 +2,7 @@ import { Button } from '@oxy.so/bloom/button';
 import { SortableChipRow } from '@oxy.so/bloom/sortable-chip-row';
 import { Text } from '@oxy.so/bloom/typography';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 
