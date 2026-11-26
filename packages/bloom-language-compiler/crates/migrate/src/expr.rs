@@ -299,7 +299,9 @@ impl Tr<'_> {
             },
             Expression::AwaitExpression(a) => {
                 let value = self.expr(&a.argument);
-                if self.propagate && !self.awaits_bloom(&a.argument) {
+                if self.in_do && !self.awaits_bloom(&a.argument) {
+                    format!("try await {value}")
+                } else if self.propagate && !self.awaits_bloom(&a.argument) {
                     format!("await {value}?")
                 } else {
                     format!("await {value}")
@@ -1519,9 +1521,11 @@ impl Tr<'_> {
         let ts = std::mem::replace(&mut self.ts_args, false);
         let propagate = std::mem::replace(&mut self.propagate, ts && arrow.r#async);
         let returning = std::mem::replace(&mut self.try_return, false);
+        let in_do = std::mem::replace(&mut self.in_do, false);
         self.closures += 1;
         let text = self.closure_inner(arrow);
         self.closures -= 1;
+        self.in_do = in_do;
         self.ts_args = ts;
         self.head = head;
         self.propagate = propagate;
@@ -1534,6 +1538,7 @@ impl Tr<'_> {
         let saved = self.scope.clone();
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
+        let in_do = std::mem::replace(&mut self.in_do, false);
         self.closures += 1;
         let body = match arrow.get_expression() {
             Some(e) => self.stmt_expr(e),
@@ -1542,6 +1547,7 @@ impl Tr<'_> {
             }
         };
         self.closures -= 1;
+        self.in_do = in_do;
         self.propagate = propagate;
         self.try_return = returning;
         self.scope = saved;
