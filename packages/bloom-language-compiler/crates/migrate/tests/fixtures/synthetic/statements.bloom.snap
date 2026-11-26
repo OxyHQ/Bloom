@@ -26,7 +26,7 @@ fn count(tags: [String]) -> [String: Float] {
       seen = [..seen, tag]
     }
   }
-  counts.setting(seen.count > 0 ? "last" : "none", seen.count)
+  counts.setting((seen.count > 0) ? "last" : "none", seen.count)
 }
 
 pub view Header(profile: Profile? = none, title: String) {

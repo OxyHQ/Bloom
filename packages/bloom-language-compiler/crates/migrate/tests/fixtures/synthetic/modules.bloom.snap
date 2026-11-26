@@ -1,8 +1,11 @@
 // Module forms: a TS hook is a hook function, `lazy(() => import(…))` a lazy
 // component, `memo(Named, compare)` the view with its `equal`, an `export { … }`
-// list `pub`, a rest parameter `..xs`, and JSX children of a local view its prop.
+// list `pub`, a rest parameter `..xs`, and JSX children of a local view its prop;
+// React's `useState` in a hook function, a sync `try` (`catching`), rest props.
 
-import { lazy, useMemo } from "react"
+import { type CardProps } from "./card"
+import { URL } from "js"
+import { lazy, useMemo, useState } from "react"
 
 pub let Panel = lazy { import("./card") }
 
@@ -12,6 +15,30 @@ struct Row {
 }
 
 fn useTitles(rows: [Row]) -> [String] { useMemo({ rows.map { r in r.title ?? r.id } }, [rows]) }
+
+fn useOpenFor(id: String) {
+  let (openFor, setOpenFor): (String?, Foreign) = useState(none)
+  { open: openFor == id, show: { setOpenFor(id) } }
+}
+
+fn hostOf(link: String) -> String {
+  match (catching {
+    {
+      let url = URL(link)
+      if url.hostname == "" { return link }
+      return url.hostname
+    }()
+  }) {
+    case .ok(value) => return value
+    case .err(_) => return link
+  }
+}
+
+pub view Badge(..card: CardProps, label: String) {
+  body {
+    Text("${label} ${card.title}")
+  }
+}
 
 pub fn joinAll(..parts: [String]) -> String {
   var out = ""

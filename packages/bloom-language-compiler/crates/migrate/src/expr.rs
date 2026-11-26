@@ -210,7 +210,16 @@ impl Tr<'_> {
             }
             Expression::ConditionalExpression(c) => {
                 let test = self.test(&c.test, false);
+                // `(n < 3) ? …`: bloom_fmt may break a long line after `<`/`>`, which
+                // bloomc reads as the end of the line unless it is in parentheses.
+                let test = if relational(&c.test) && !test.starts_with('(') { format!("({test})") } else { test };
                 let a = self.expr(&c.consequent);
+                // A conditional in the first branch keeps its parentheses (`a ? (b ? c : d) : e`).
+                let a = if matches!(c.consequent.without_parentheses(), Expression::ConditionalExpression(_)) {
+                    format!("({a})")
+                } else {
+                    a
+                };
                 let b = self.expr(&c.alternate);
                 format!("{test} ? {a} : {b}")
             }
@@ -1768,4 +1777,19 @@ fn matches_once(pattern: &str) -> bool {
     }
     let Some(body) = pattern.strip_suffix('$') else { return false };
     !body.is_empty() && !body.ends_with('\\') && !body.contains('|') && !body.ends_with(['*', '?', ')', '}'])
+}
+
+/// A `<`/`>` comparison, or a logical chain holding one.
+fn relational(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::BinaryExpression(b) => matches!(
+            b.operator,
+            BinaryOperator::LessThan
+                | BinaryOperator::GreaterThan
+                | BinaryOperator::LessEqualThan
+                | BinaryOperator::GreaterEqualThan
+        ),
+        Expression::LogicalExpression(l) => relational(&l.left) || relational(&l.right),
+        _ => false,
+    }
 }

@@ -266,6 +266,9 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
         "Bool?" => format!("{operand} {} true", if negated { "!=" } else { "==" }),
         // Any other optional is truthy when present: an object, a list, a view, a function.
         t if t.ends_with('?') && (!t.contains('|') || foreign_object(t)) => format!("{operand} {eq} none"),
+        // A value that is never `none` (a struct, a record, a list, a function): JS's
+        // object is always truthy.
+        t if always_object(t) => (if negated { "false" } else { "true" }).to_string(),
         _ => return None,
     })
 }
@@ -287,4 +290,18 @@ fn foreign_object(ty: &str) -> bool {
     let Some(inner) = ty.strip_prefix("Foreign(").and_then(|t| t.strip_suffix(")?")) else { return false };
     let words: Vec<&str> = inner.split(|c: char| !c.is_alphanumeric()).collect();
     !["string", "number", "boolean", "bigint", "any", "unknown"].iter().any(|p| words.contains(p))
+}
+
+/// A Bloom type whose values are JS objects, never `none`: a struct name, a record,
+/// a list or dictionary, a function.
+fn always_object(ty: &str) -> bool {
+    if ty.ends_with('?') || ty.contains('|') || ty.starts_with("Foreign") || ty.starts_with('_') {
+        return false;
+    }
+    if ty.starts_with(['{', '[']) || ty.starts_with('(') && ty.contains("->") {
+        return true;
+    }
+    ty.starts_with(|c: char| c.is_ascii_uppercase())
+        && ty.chars().all(|c| c.is_alphanumeric() || c == '_')
+        && !matches!(ty, "String" | "Int" | "Float" | "Bool" | "Unit" | "View")
 }

@@ -300,8 +300,36 @@ impl Tr<'_> {
         match &param.pattern {
             BindingPattern::BindingIdentifier(id) => self.scope.props = Some(id.name.to_string()),
             BindingPattern::ObjectPattern(pattern) => {
-                if pattern.rest.is_some() {
-                    return Some(self.refuse("view:rest-props", "rest props `{ a, ...rest }`", pattern.span));
+                // `{ label, ...menu }: P & { label }`: the rest is exactly the imported
+                // type's fields when the pattern takes exactly the local ones: `..menu: P`.
+                if let Some(rest) = &pattern.rest {
+                    let own: Vec<String> = members
+                        .iter()
+                        .filter_map(|m| match m {
+                            TSSignature::TSPropertySignature(p) => key_name(&p.key),
+                            _ => None,
+                        })
+                        .collect();
+                    let mut taken: Vec<String> =
+                        pattern.properties.iter().filter_map(|p| key_name(&p.key)).collect();
+                    let mut own_sorted = own.clone();
+                    taken.sort();
+                    own_sorted.sort();
+                    match (&rest.argument, &spread) {
+                        (BindingPattern::BindingIdentifier(id), Some(base))
+                            if taken == own_sorted && taken.len() == pattern.properties.len() =>
+                        {
+                            let name = self.bind_param(&id.name, id.span);
+                            spread = Some(format!("{name}: {base}"));
+                        }
+                        _ => {
+                            return Some(self.refuse(
+                                "view:rest-props",
+                                "rest props `{ a, ...rest }` that are not exactly an imported props type",
+                                pattern.span,
+                            ));
+                        }
+                    }
                 }
                 for property in &pattern.properties {
                     let Some(key) = key_name(&property.key) else {
@@ -608,6 +636,42 @@ impl Tr<'_> {
         }
     }
 
+    /// `const [v, setV] = useState<T>(init)` in a hook function (which has no `@state`):
+    /// React's hook called as TS, `let (v, setV): (T, Foreign) = useState(init)`; the
+    /// setter is TS's (`Dispatch<SetStateAction<T>>`, tsc checks its calls).
+    fn hook_state(&mut self, pattern: &oxc_ast::ast::ArrayPattern, call: &CallExpression) -> String {
+        if pattern.rest.is_some() || pattern.elements.len() > 2 {
+            return self.refuse("react:useState", "`useState` destructured beyond `[value, setValue]`", pattern.span);
+        }
+        let mut names = Vec::new();
+        for i in 0..2 {
+            names.push(match pattern.elements.get(i) {
+                Some(Some(BindingPattern::BindingIdentifier(id))) => self.bind(&id.name, id.span),
+                None | Some(None) => "_".to_string(),
+                Some(Some(other)) => {
+                    return self.refuse("react:useState", "a nested `useState` pattern", other.span());
+                }
+            });
+        }
+        let arg = call.arguments.first().and_then(|a| a.as_expression());
+        let ty = match call.type_arguments.as_ref().and_then(|a| a.params.first()) {
+            Some(t) if arg.is_none() => optional_ty(&self.ty(t)),
+            Some(t) => self.ty(t),
+            None => match arg.map(|a| a.without_parentheses()) {
+                Some(Expression::BooleanLiteral(_)) => "Bool".into(),
+                Some(Expression::StringLiteral(_)) => "String".into(),
+                Some(Expression::NumericLiteral(_)) => "Float".into(),
+                _ => "Foreign".into(),
+            },
+        };
+        let init = arg.map(|a| self.expr(a)).unwrap_or_default();
+        let name = self.name(&names[0], pattern.span);
+        let Expression::Identifier(callee) = &call.callee else { unreachable!() };
+        let state = callee.name.to_string();
+        self.react_values.insert(if state == "useState" { state.clone() } else { format!("useState as {state}") });
+        format!("let ({name}, {}): ({ty}, Foreign) = {state}({init})", names[1])
+    }
+
     fn react_member(&mut self, d: &VariableDeclarator, call: &CallExpression, hook: &str) -> String {
         match hook {
             "useState" => {
@@ -746,6 +810,14 @@ impl Tr<'_> {
 
     /// `const pattern = value` as `let`: a name, or a record pattern.
     fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
+        if self.hook_fn
+            && let Expression::CallExpression(call) = init.without_parentheses()
+            && let Expression::Identifier(callee) = &call.callee
+            && self.react.get(callee.name.as_str()).is_some_and(|e| e == "useState")
+            && let BindingPattern::ArrayPattern(pattern) = &d.id
+        {
+            return self.hook_state(pattern, call);
+        }
         // A `Map`/`Set` changed in place (`s.add(x)`) is a `var` its changes reassign.
         let mut immutable = immutable;
         if let (BindingPattern::BindingIdentifier(id), Expression::NewExpression(n)) =
@@ -1113,17 +1185,9 @@ impl Tr<'_> {
         };
         // A result type bloomc infers: a closure `let` (a `fn` signature is required).
         let closure = ret.as_deref() == Some(INFERRED);
-        if closure && self.hook_fn {
-            self.scope = saved;
-            return self.refuse(
-                "hook:return-type",
-                format!("`{name}` returns a value without a return type (a hook function needs one)"),
-                match body {
-                    Body::Expr(e) => e.span(),
-                    Body::Block(_, end) => Span::new(end, end),
-                },
-            );
-        }
+        // A hook function without `->` has its last line's type (bloomc infers it).
+        let inferred_hook = closure && self.hook_fn;
+        let closure = closure && !inferred_hook;
         if closure && (is_async || params.contains(" = ")) {
             self.scope = saved;
             return self.refuse(
@@ -1155,6 +1219,7 @@ impl Tr<'_> {
                 }
             }
         };
+        let ret = if inferred_hook { None } else { ret };
         self.scope = saved;
         let text = if prelude.is_empty() { text } else { format!("{}\n{text}", prelude.join("\n")) };
         let name = self.name(name, Span::default());
@@ -2038,6 +2103,64 @@ impl Tr<'_> {
         )
     }
 
+    /// A `try` around synchronous code: `match (catching { … })`, the prelude's
+    /// inline try/catch. A `return` in the block returns from the function, as TS's
+    /// did, so the block is written as it is.
+    fn try_catching(
+        &mut self,
+        t: &oxc_ast::ast::TryStatement,
+        handler: &oxc_ast::ast::CatchClause,
+        finalizer: Option<String>,
+        last: bool,
+    ) -> String {
+        let error = match handler.param.as_ref().map(|p| &p.pattern) {
+            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
+            None => "_".into(),
+            Some(other) => {
+                return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
+            }
+        };
+        // A `return` may only end the block: its value is the block's, returned
+        // from the `.ok` arm (`catching` cannot return from the function).
+        let body = &t.block.body;
+        let mut returns = Vec::new();
+        collect_returns(body, &mut returns);
+        let tail = match body.last() {
+            Some(Statement::ReturnStatement(r)) if returns.len() == 1 => Some(r),
+            _ => None,
+        };
+        // Returns elsewhere (guards): the block is a closure called in place, its
+        // value returned from the `.ok` arm; only where the `try` ends its block.
+        let called = tail.is_none() && !returns.is_empty();
+        if called && (!last || returns.iter().any(|r| r.argument.is_none())) {
+            return self.refuse("try:return", "a `return` inside a `try` that does not end its block", returns[0].span);
+        }
+        let propagate = std::mem::replace(&mut self.propagate, false);
+        let returning = std::mem::replace(&mut self.try_return, false);
+        let (block, ok) = match tail {
+            Some(r) => {
+                let head = self.block_stmts(&body[..body.len() - 1], r.span.start, false);
+                match &r.argument {
+                    Some(value) => {
+                        let value = self.expr(value);
+                        (format!("{head}\n{value}"), "case .ok(value) => { return value }")
+                    }
+                    None => (head, "case .ok(_) => { return }"),
+                }
+            }
+            None if called => {
+                let inner = self.block_stmts(body, t.block.span.end, false);
+                (format!("{{\n{inner}\n}}()"), "case .ok(value) => { return value }")
+            }
+            None => (self.block_stmts(body, t.block.span.end, false), "case .ok(_) => { }"),
+        };
+        let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
+        self.propagate = propagate;
+        self.try_return = returning;
+        let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
+        format!("{defer}match (catching {{\n{block}\n}}) {{\n{ok}\ncase .err({error}) => {{\n{err}\n}}\n}}")
+    }
+
     /// A statement before a `try`'s first `await` that cannot throw, so it may be
     /// written before the `match`: a state write of a pure value, a logger call,
     /// a `const` of a pure value.
@@ -2110,11 +2233,7 @@ impl Tr<'_> {
         });
         let Some(k) = fast else {
             if !self.slice(t.block.span).contains("await") {
-                return self.refuse(
-                    "try:sync",
-                    "a `try` around code with no `await` (`.bloom` has no exceptions: the throwing TS call needs a `Result` wrapper)",
-                    t.span,
-                );
+                return self.try_catching(t, handler, finalizer, last);
             }
             return self.try_closure(t, handler, finalizer, last);
         };
