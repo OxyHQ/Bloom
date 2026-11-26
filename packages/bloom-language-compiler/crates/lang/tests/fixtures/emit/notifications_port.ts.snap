@@ -11,14 +11,6 @@ import { OxyAuthPrompt, useAuth } from "@oxy.so/services/ui/client";
 import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
 import { useSettingsRouter } from "@/context/MentionSettingsContext";
 import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
-type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
-async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {
-  try {
-    return { ok: true, value: await value };
-  } catch (error) {
-    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };
-  }
-}
 
 interface Prefs {
   readonly pushEnabled: boolean;
@@ -66,11 +58,15 @@ let updatePreference: (key: PrefKey, value: boolean) => Promise<void>;
 if ($[2] !== update || $[3] !== t) {
 updatePreference = async (key: PrefKey, value: boolean): Promise<void> => {
 setSaving(true);
-const $t0 = await $settle(update(patch(key, value)));
-if ($t0.ok) {
+let $t0: Error | undefined;
+try {
+await update(patch(key, value));
+} catch ($error) {
+$t0 = $error instanceof Error ? $error : new Error(String($error));
+}
+if ($t0 === undefined) {
 } else {
-const error = $t0.error;
-logger.error("Error updating notification preferences", error);
+logger.error("Error updating notification preferences", $t0);
 toast(t("settings.notifications.saveError", { defaultValue: "Failed to save notification preference" }), { type: "error" });
 }
 setSaving(false);
