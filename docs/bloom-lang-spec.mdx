@@ -5,7 +5,7 @@ description: The grammar, type system, reactivity model, effects, modules, inter
 
 # Bloom (`.bloom`) language specification: draft 0
 
-Status: **draft 0.1, phase 0** (2026-11-26; 0.1 folds in the friction found porting Mention's Settings → Notifications). Nothing here is released. The
+Status: **draft 0.2, phase 0** (2026-11-26; 0.1 and 0.2 fold in what porting Mention's Settings → Notifications and building the prototype found). Nothing here is released. The
 decision record is [ADR 0001](https://github.com/OxyHQ/Bloom/blob/main/docs/adr/0001-bloom-own-language.md). The
 TS-embedded language (`@oxy.so/bloom-language` chains in `.tsx`) is called
 **the embedded language** below; `.bloom` compiles *to* it, so everything the
@@ -137,13 +137,15 @@ expr          = if_expr | match_expr | closure | binary ;
 if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
 cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
 match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
-                (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit *)
+                (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit;
+                   an arm may also be one statement: case .ok(_) => draft = Draft() *)
 task_expr     = "task" block ;                     (* spawns; the expression is Unit *)
 closure       = "{" [ closure_params "in" ] { stmt ( NL | ";" ) } "}" ;
 closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
 
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
-unary         = [ "!" | "-" | "await" ] postfix ;
+unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
+                                                      await f()? is (await f())? *)
 postfix       = primary { call | "." NAME | "?." NAME | "[" expr "]" | "?" } ;
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
@@ -233,7 +235,7 @@ A field without a default is required at construction. `Partial<S>` is the struc
 field optional (a patch), built with `S.patch(field: v, …)`. Construction compiles to an object
 literal (no function call). A spread `..p` of a `Partial<S>` fills only the fields `p` has: an
 absent or `undefined` field keeps the default (compiled per field, `p?.likes ?? true`), unlike a
-JS object spread. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+JS object spread; an optional patch (`Partial<S>?`) spreads the same way. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
 exhaustive `match` on a fieldless enum maps a key to a field.
 
 ### 4.5 Enums, Option and Result
@@ -386,7 +388,7 @@ inherit as in the embedded language.
 
 - `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
   returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
-  `Result<T, Error>`**, because a JS promise can reject; `(await f())?` propagates. A synchronous
+  `Result<T, Error>`**, because a JS promise can reject; `await f()?` propagates (`await` binds tighter than `?`, as Rust's `.await?`). A synchronous
   TS throw is a panic (a bug), as in Rust.
 - **An async call is awaited or spawned, never dropped**: calling an async function or a
   promise-returning TS function without `await` is B0430, except as `task { await save(v) }`,
@@ -434,6 +436,9 @@ so a wrong path is a compile error.
   (B0610): an extensionless import must mean one file.
 - **TS importing Bloom:** bloomc writes `Name.d.bloom.ts` beside `Name.bloom` (TS's
   `allowArbitraryExtensions`), so `import { Composer } from "./Composer.bloom"` type-checks in TS.
+  A `view` is a node factory, as in the embedded language: TSX draws it with
+  `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
+  is a node like any other.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
@@ -500,7 +505,13 @@ help: did you mean `"md"`?
 ```
 
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
-(nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Parsing recovers at item,
+(nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
+(mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
+`==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
+(captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
+call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
+outside a task), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 
 ## 14. Formatting
