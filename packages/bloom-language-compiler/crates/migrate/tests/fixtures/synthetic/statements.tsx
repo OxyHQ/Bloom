@@ -30,7 +30,13 @@ function count(tags: string[]): Record<string, number> {
   return { ...counts, [seen.length > 0 ? 'last' : 'none']: seen.length };
 }
 
-export const Header = view(function Header({ profile, title }: { profile?: Profile; title: string }) {
+export const Header = view(function Header({
+  profile,
+  title,
+}: {
+  profile?: Profile;
+  title: string;
+}) {
   const [shown, setShown] = useState(title);
   const [synced, setSynced] = useState(title);
   if (synced !== title) {

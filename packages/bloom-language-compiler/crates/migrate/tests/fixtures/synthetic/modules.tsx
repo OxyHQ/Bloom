@@ -51,11 +51,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ListBody({ rows }: { rows: Row[] }) {
   const titles = useTitles(rows);
-  return (
-    <Section title={joinAll('Rows', ':')}>
-      {toElement(Text(titles.join(', ')))}
-    </Section>
-  );
+  return <Section title={joinAll('Rows', ':')}>{toElement(Text(titles.join(', ')))}</Section>;
 }
 
 function sameRows(a: { rows: Row[] }, b: { rows: Row[] }) {

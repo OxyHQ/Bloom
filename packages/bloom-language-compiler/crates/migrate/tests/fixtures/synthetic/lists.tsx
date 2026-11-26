@@ -3,7 +3,11 @@
 import { useRef, useState } from 'react';
 import { Button, Text, VStack, view } from '@oxy.so/bloom-language';
 
-export const Picker = view(function Picker(props: { ids: string[]; extra: string; title?: string }) {
+export const Picker = view(function Picker(props: {
+  ids: string[];
+  extra: string;
+  title?: string;
+}) {
   const [picked, setPicked] = useState(new Set<string>());
   const taps = useRef(0);
   const byId = new Map(props.ids.map((id) => [id, id.length]));
