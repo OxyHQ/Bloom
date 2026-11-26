@@ -74,6 +74,8 @@ pub enum CallRes {
     },
     /// A TS function: positional arguments, then the named ones as one object.
     Ts,
+    /// `Map(entries)` / `Set(values)`: `new Map<K, V>(…)`, `new Set<T>(…)`.
+    Collection(Ty),
     Struct(DefId),
     Partial(DefId),
     /// `s.with(field: v)`.
@@ -122,6 +124,8 @@ pub enum Recv {
     Float,
     List,
     Map,
+    JsMap,
+    Set,
     Option,
     Result,
 }
@@ -391,6 +395,7 @@ impl<'o> Checker<'o> {
             .into_iter()
             .map(|(id, call)| match call {
                 CallRes::OnChange(ty) => (id, CallRes::OnChange(self.zonk(&ty))),
+                CallRes::Collection(ty) => (id, CallRes::Collection(self.zonk(&ty))),
                 other => (id, other),
             })
             .collect();
@@ -550,14 +555,15 @@ impl<'o> Checker<'o> {
             (Ty::Foreign(_), Ty::Foreign(_)) | (Ty::View(_), Ty::View(_)) => true,
             (Ty::List(x), Ty::List(y))
             | (Ty::Map(x), Ty::Map(y))
+            | (Ty::Set(x), Ty::Set(y))
             | (Ty::Option(x), Ty::Option(y))
             | (Ty::Partial(x), Ty::Partial(y))
             | (Ty::Async(x), Ty::Async(y))
             | (Ty::Promise(x), Ty::Promise(y))
             | (Ty::Binding(x), Ty::Binding(y)) => self.unify(x, y),
-            (Ty::Result(a1, b1), Ty::Result(a2, b2)) | (Ty::KeyPath(a1, b1), Ty::KeyPath(a2, b2)) => {
-                self.unify(a1, a2) && self.unify(b1, b2)
-            }
+            (Ty::Result(a1, b1), Ty::Result(a2, b2))
+            | (Ty::KeyPath(a1, b1), Ty::KeyPath(a2, b2))
+            | (Ty::JsMap(a1, b1), Ty::JsMap(a2, b2)) => self.unify(a1, a2) && self.unify(b1, b2),
             (Ty::Tuple(x), Ty::Tuple(y)) => {
                 x.len() == y.len() && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
             }
@@ -836,6 +842,21 @@ impl<'o> Checker<'o> {
             return ty;
         }
         match name.name.as_str() {
+            "Map" => {
+                return if arity(self, 2) {
+                    let key = self.resolve_type(&args[0]);
+                    Ty::JsMap(Box::new(key), Box::new(self.resolve_type(&args[1])))
+                } else {
+                    Ty::Unknown
+                };
+            }
+            "Set" => {
+                return if arity(self, 1) {
+                    Ty::Set(Box::new(self.resolve_type(&args[0])))
+                } else {
+                    Ty::Unknown
+                };
+            }
             "Result" => {
                 return if arity(self, 2) {
                     let ok = self.resolve_type(&args[0]);
@@ -1906,6 +1927,8 @@ impl<'o> Checker<'o> {
         match self.resolve(&ty) {
             Ty::List(elem) => *elem,
             Ty::Map(value) => Ty::Tuple(vec![Ty::Str, *value]),
+            Ty::JsMap(key, value) => Ty::Tuple(vec![*key, *value]),
+            Ty::Set(elem) => *elem,
             Ty::Unknown => Ty::Unknown,
             Ty::Var(_) => {
                 let elem = self.fresh();
@@ -3677,6 +3700,19 @@ impl<'o> Checker<'o> {
                 "entries",
                 Ty::List(Box::new(Ty::Tuple(vec![Ty::Str, (**value).clone()]))),
             ),
+            (Ty::JsMap(..), "count") => prop(self, Recv::JsMap, "count", Ty::Int),
+            (Ty::JsMap(..), "isEmpty") => prop(self, Recv::JsMap, "isEmpty", Ty::Bool),
+            (Ty::JsMap(key, _), "keys") => prop(self, Recv::JsMap, "keys", Ty::List(key.clone())),
+            (Ty::JsMap(_, value), "values") => prop(self, Recv::JsMap, "values", Ty::List(value.clone())),
+            (Ty::JsMap(key, value), "entries") => prop(
+                self,
+                Recv::JsMap,
+                "entries",
+                Ty::List(Box::new(Ty::Tuple(vec![(**key).clone(), (**value).clone()]))),
+            ),
+            (Ty::Set(_), "count") => prop(self, Recv::Set, "count", Ty::Int),
+            (Ty::Set(_), "isEmpty") => prop(self, Recv::Set, "isEmpty", Ty::Bool),
+            (Ty::Set(elem), "values") => prop(self, Recv::Set, "values", Ty::List(elem.clone())),
             (Ty::Result(..), "isOk") => prop(self, Recv::Result, "isOk", Ty::Bool),
             (Ty::JsError, "message" | "name") => {
                 self.out.fields.insert(expr.id, FieldRes::ErrorField);
@@ -3990,9 +4026,14 @@ fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
         Ty::Tuple(items) => all(&mut items.iter().cloned(), seen),
         Ty::List(t) | Ty::Map(t) => all(&mut std::iter::once((**t).clone()), seen),
         Ty::Result(a, b) => all(&mut [(**a).clone(), (**b).clone()].into_iter(), seen),
-        Ty::Fn(_) | Ty::View(_) | Ty::Binding(_) | Ty::Async(_) | Ty::Promise(_) | Ty::Param(..) => {
-            Equality::None(ty.clone())
-        }
+        Ty::Fn(_)
+        | Ty::View(_)
+        | Ty::Binding(_)
+        | Ty::Async(_)
+        | Ty::Promise(_)
+        | Ty::Param(..)
+        | Ty::JsMap(..)
+        | Ty::Set(_) => Equality::None(ty.clone()),
     }
 }
 

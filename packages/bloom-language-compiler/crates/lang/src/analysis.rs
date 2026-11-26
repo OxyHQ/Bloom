@@ -208,10 +208,11 @@ impl Analysis {
                     ty: None,
                 }));
             }
-            Ty::Str | Ty::Strings(_) | Ty::List(_) | Ty::Map(_) => {
+            Ty::Str | Ty::Strings(_) | Ty::List(_) | Ty::Map(_) | Ty::JsMap(..) | Ty::Set(_) => {
                 let props: &[&str] = match ty {
                     Ty::List(_) => &["count", "isEmpty", "first", "last"],
-                    Ty::Map(_) => &["count", "isEmpty", "keys", "values", "entries"],
+                    Ty::Map(_) | Ty::JsMap(..) => &["count", "isEmpty", "keys", "values", "entries"],
+                    Ty::Set(_) => &["count", "isEmpty", "values"],
                     _ => &["count", "isEmpty"],
                 };
                 out.extend(props.iter().map(|n| MemberInfo {

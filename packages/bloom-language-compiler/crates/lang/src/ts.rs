@@ -959,6 +959,16 @@ impl Mapper<'_> {
             "Array" | "ReadonlyArray" if args.len() == 1 => {
                 return Ty::List(Box::new(arg(self, 0, &format!("{path}[number]")).unwrap_or(Ty::Unknown)));
             }
+            "Map" | "ReadonlyMap" if args.len() == 2 => {
+                let key = arg(self, 0, &format!("Parameters<{path}[\"get\"]>[0]")).unwrap_or(Ty::Unknown);
+                let value =
+                    arg(self, 1, &format!("NonNullable<ReturnType<{path}[\"get\"]>>")).unwrap_or(Ty::Unknown);
+                return Ty::JsMap(Box::new(key), Box::new(value));
+            }
+            "Set" | "ReadonlySet" if args.len() == 1 => {
+                let elem = arg(self, 0, &format!("Parameters<{path}[\"has\"]>[0]")).unwrap_or(Ty::Unknown);
+                return Ty::Set(Box::new(elem));
+            }
             "Record" if args.len() == 2 && matches!(args[0], TsType::String) => {
                 return Ty::Map(Box::new(arg(self, 1, &format!("{path}[string]")).unwrap_or(Ty::Unknown)));
             }
