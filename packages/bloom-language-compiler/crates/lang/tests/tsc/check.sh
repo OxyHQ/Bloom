@@ -5,8 +5,11 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 rm -rf "$here/out" && mkdir -p "$here/out"
 for snap in "$here"/../fixtures/emit/*.ts.snap; do
-  case "$snap" in *.d.bloom.ts.snap) continue ;; esac
-  cp "$snap" "$here/out/$(basename "$snap" .ts.snap).ts"
+  case "$snap" in
+    # The declarations a TS importer sees must type-check on their own too.
+    *.d.bloom.ts.snap) cp "$snap" "$here/out/$(basename "$snap" .d.bloom.ts.snap).decl.d.ts" ;;
+    *) cp "$snap" "$here/out/$(basename "$snap" .ts.snap).ts" ;;
+  esac
 done
 tsc="$(cd "$here/../../../../../.." && pwd)/node_modules/.bin/tsc"
 # The runtime's own sources are checked by its package; only the emitted

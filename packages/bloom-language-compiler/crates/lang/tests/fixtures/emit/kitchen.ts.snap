@@ -89,6 +89,7 @@ function tagged(draft: Draft, tag: string): Draft {
 const $view0 = Spacer();
 const $view1 = Text("Send");
 const _bloomStatic0 = Button($view1);
+const _bloomStatic1 = Text("a");
 export interface ComposerProps {
 	readonly maxLength?: number;
 	readonly onSend: (p0: Draft) => Promise<$Result<undefined, string>>;
@@ -180,3 +181,16 @@ export const Composer = view(function Composer(props: ComposerProps) {
 	}
 	return $t4;
 });
+export const Badge = view(function Badge() {
+	"use no memo";
+	const $ = $c(1);
+	let $t5;
+	if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+		$t5 = _bloomStatic1;
+		$[0] = $t5;
+	} else {
+		$t5 = $[0];
+	}
+	return $t5;
+});
+export default Badge;

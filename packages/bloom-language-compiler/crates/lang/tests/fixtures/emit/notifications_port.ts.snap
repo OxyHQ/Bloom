@@ -110,4 +110,5 @@ $t1 = $[37];
 }
 return $t1;
 });
+export default NotificationSettingsScreen;
 

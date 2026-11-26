@@ -102,3 +102,8 @@ pub view Composer(maxLength: Int = 280, onSend: async (Draft) -> Result<Unit, St
     }
   }
 }
+
+/// The module's default export.
+pub default view Badge {
+  body { Text("a") }
+}

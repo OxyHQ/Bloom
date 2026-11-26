@@ -1,10 +1,4 @@
-import { useTranslation } from "react-i18next";
-import { logger } from "@oxy.so/core/logger";
-import { OxyAuthPrompt, useAuth } from "@oxy.so/services/ui/client";
-import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
-import { useSettingsRouter } from "@/context/MentionSettingsContext";
-import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
-import type { Child, ComposedView } from "@oxy.so/bloom-language";
-import type { ComponentProps } from "react";
-type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(NotificationSettingsScreen())`), or from TSX as `toElement(NotificationSettingsScreen())`. */
 export declare const NotificationSettingsScreen: () => ComposedView;
+export default NotificationSettingsScreen;
