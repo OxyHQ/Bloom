@@ -172,6 +172,9 @@
     "animated-check": [
       "AnimatedCheck"
     ],
+    "app-shell-menu-button": [
+      "AppShellMenuButton"
+    ],
     "avatar-flight": [
       "AvatarAnchor",
       "AvatarFlightLayer"

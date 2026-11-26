@@ -224,6 +224,20 @@
         "default": "./lib/commonjs/entries/animated-check.js"
       }
     },
+    "./app-shell-menu-button": {
+      "react-native": {
+        "types": "./lib/typescript/module/entries/app-shell-menu-button.d.ts",
+        "default": "./src/entries/app-shell-menu-button.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/entries/app-shell-menu-button.d.ts",
+        "default": "./lib/module/entries/app-shell-menu-button.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/entries/app-shell-menu-button.d.ts",
+        "default": "./lib/commonjs/entries/app-shell-menu-button.js"
+      }
+    },
     "./avatar-flight": {
       "react-native": {
         "types": "./lib/typescript/module/entries/avatar-flight.d.ts",

@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (432), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (433), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 The root, `@oxy.so/bloom-language`, holds the language's views, modifiers and values; each family of nodes is an entry of its own (`@oxy.so/bloom-language/<family>`), so an app's bundle carries only the families it imports. Each node names the module it is imported from.
 
@@ -167,6 +167,7 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [stepper](#stepper) | `Stepper` | `@oxy.so/bloom-language/stepper` |
 | [stepperRow](#stepperrow) | `StepperRow` | `@oxy.so/bloom-language/stepper` |
 | [tooltip](#tooltip) | `Tooltip` | `@oxy.so/bloom-language/tooltip` |
+| [appShellMenuButton](#appshellmenubutton) | `AppShellMenuButton` | `@oxy.so/bloom-language/app-shell-menu-button` |
 | [breadcrumb](#breadcrumb) | `Breadcrumb` | `@oxy.so/bloom-language/breadcrumb` |
 | [breadcrumbItem](#breadcrumbitem) | `BreadcrumbItem` | `@oxy.so/bloom-language/breadcrumb` |
 | [activityHeatmap](#activityheatmap) | `ActivityHeatmap` | `@oxy.so/bloom-language/activity-heatmap` |
@@ -767,7 +768,7 @@ Imported from `@oxy.so/bloom-language`.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -1498,15 +1499,21 @@ Imported from `@oxy.so/bloom-language/router`.
 
 Modifiers:
 
-- [`.primaryAction()`](bloom-language-modifiers.mdx#primaryaction) `(icon: IconComponent, label: string, destination: string)`: The prominent action: the bar's FAB and the sidebar's first row on Android, OxyOS and the web; on iOS, `destination`'s tab, drawn on its own surface. `destination` is a destination's name (a page of the pager).
+- [`.primaryAction()`](bloom-language-modifiers.mdx#primaryaction) `(icon: IconComponent, label: string, action: string | (() => void))`: The prominent action (Bloom `AppShell`'s `primaryAction`): the bar's FAB and the sidebar's first row on Android, OxyOS and the web. `action` is a destination's name (a page of the pager; on iOS that destination's tab, drawn on its own surface) or what a press does, which the layout's body may choose by the page in front (a chats page's new chat, an updates page's new status); on iOS a handler is the sidebar's first row on iPad, and the system tab bar has no place for it.
 - [`.bottomBar()`](bloom-language-modifiers.mdx#bottombar) `(value: boolean)`: Whether the bottom bar shows on this route (the system tab bar on iOS draws itself).
 - [`.shell()`](bloom-language-modifiers.mdx#shell) `(value: ShellOptions)`: The shell's own options (panels, layout mode, error boundaries); `navigator` is where the stack goes.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 - [`.shellLayout()`](bloom-language-modifiers.mdx#shelllayout) `(value: ShellLayout)`: The shell's semantic layout: `workspace`, `collection-detail`, `feed`, `deck`, `catalog` or `map-browser`.
 - [`.shellPresentation()`](bloom-language-modifiers.mdx#shellpresentation) `(value: ShellPresentation)`: How the shell frames its content: `continuous`, `framed` or `floating`.
-- [`.panels()`](bloom-language-modifiers.mdx#panels) `(...value: PanelView[])`: The shell's panels, in order; a `Panel` without content holds the navigator.
+- [`.panels()`](bloom-language-modifiers.mdx#panels) `(...value: (PanelView | false | null | undefined)[])`: The shell's panels, in order; a `Panel` without content holds the navigator. A panel that is `false`, `null` or `undefined` is none.
 - [`.destinations()`](bloom-language-modifiers.mdx#destinations) `(...value: DestinationView[])`: The app's destinations (Bloom's `TabPagerProvider`): the pager's pages, the bar's tabs, the sidebar's rows.
 - [`.onReselect()`](bloom-language-modifiers.mdx#onreselect) `(value: ((name: string) => void) | undefined)`: Pressing the destination in front again, by its name (Bloom's scroll to the top, then reload, by default).
+- [`.sidebar()`](bloom-language-modifiers.mdx#sidebar) `(value: SidebarView)` (here: a value): The shell's sidebar (Bloom `AppShell`'s `sidebar`), a `Sidebar` without rows of its own: the shell draws the destinations as its rows, and the Sidebar's `.secondary()` rows, `.variant()` (`rail`), `.logo()`, `.searchable()`, `.primaryAction()` and the rest are the sidebar's own.
+- [`.activeDestination()`](bloom-language-modifiers.mdx#activedestination) `(name: string | undefined)`: The destination the route in front belongs to, selected in the sidebar (Bloom `AppShell`'s `sidebar.selected`): a conversation is the chats destination's. `undefined` is the page in front, as Bloom selects it.
+- [`.panelAppearance()`](bloom-language-modifiers.mdx#panelappearance) `(value: PanelAppearance)`: How the panels draw (Bloom's `panelLayout.appearance`): `separated` surfaces, one `joined` surface, or `plain`.
+- [`.navFrom()`](bloom-language-modifiers.mdx#navfrom) `(value: ShellBreakpoint)`: The width from which the navigation is in flow, a sidebar or a rail (Bloom `AppShell`'s `navFrom`); a drawer below it.
+- [`.contentMaxWidth()`](bloom-language-modifiers.mdx#contentmaxwidth) `(value: SpaceToken)`: The content column's widest (Bloom `AppShell`'s `contentMaxWidth`); `'none'` is no cap, the window's width.
+- [`.reserveBottomBarSpace()`](bloom-language-modifiers.mdx#reservebottombarspace) `(value?: boolean)`: Whether the content keeps the bottom bar's height under it (Bloom `AppShell`'s `reserveBottomBarSpace`, `true` by default): `false` floats the bar over the content, and Bloom's scrollers clear it themselves.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1971,6 +1978,7 @@ Modifiers:
 - [`.searchable()`](bloom-language-modifiers.mdx#searchable) `(value?: boolean)`: Its search field (shown by default).
 - [`.themeToggle()`](bloom-language-modifiers.mdx#themetoggle) `(value?: boolean)`: Its theme toggle (shown by default).
 - [`.logo()`](bloom-language-modifiers.mdx#logo) `(value: SidebarLogo)`
+- [`.primaryAction()`](bloom-language-modifiers.mdx#primaryaction) `(icon: IconComponent, label: string, onPress: Press)`: Its main command, below the rows (Bloom `Sidebar`'s `primaryAction`): a named icon button in a rail. In an app layout's sidebar it stays this action whatever page is in front (a new chat), where the layout's `.primaryAction()` is the bar's FAB.
 - [`.account()`](bloom-language-modifiers.mdx#account) `(value: SidebarAccount)`
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: Its accessible name.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
@@ -2193,7 +2201,8 @@ Modifiers:
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space))
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`
 - [`.maxWidth()`](bloom-language-modifiers.mdx#maxwidth) `(value: SpaceToken)`
-- [`.resizable()`](bloom-language-modifiers.mdx#resizable) `(value?: boolean)`: The reader can drag its edge.
+- [`.resizable()`](bloom-language-modifiers.mdx#resizable) `(value?: boolean | Binding<number>)`: The reader can drag its edge. A binding is its width as the app's state (Bloom's `width` and `onWidthChange`): the width it rests at, and the one a drag or an arrow key settles on, written back.
+- [`.resizeLabel()`](bloom-language-modifiers.mdx#resizelabel) `(value: string)`: Names its divider (Bloom's `resizeLabel`, `"Resize panes"` in English).
 - [`.hidden()`](bloom-language-modifiers.mdx#hidden) `(value?: boolean)`: Not shown (Bloom's `visible={false}`).
 - [`.keepMounted()`](bloom-language-modifiers.mdx#keepmounted) `(value?: boolean)`: Kept mounted while hidden.
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: An inspector's open state: a column from `lg`, a sheet from the end below it.
@@ -2671,7 +2680,7 @@ Imported from `@oxy.so/bloom-language/stat-bar`.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
@@ -3251,6 +3260,14 @@ Modifiers:
 
 And every universal modifier.
 
+### `appShellMenuButton`
+
+- `AppShellMenuButton()`: Bloom `AppShellMenuButton`: the button that opens the app shell's drawer, for a page that draws its own header (a header's `.toolbarLeading()`). It hides while the sidebar is in flow, and shows a close glyph while the drawer is open.
+
+Imported from `@oxy.so/bloom-language/app-shell-menu-button`.
+
+Takes the universal modifiers.
+
 ### `breadcrumb`
 
 - `Breadcrumb(...items: Child[])`: Bloom `Breadcrumb`: its `BreadcrumbItem`s, the current page last.
@@ -3399,7 +3416,7 @@ Imported from `@oxy.so/bloom-language/color-swatch-picker`.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -3416,7 +3433,7 @@ Imported from `@oxy.so/bloom-language/animated-check`.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
@@ -4053,7 +4070,7 @@ Imported from `@oxy.so/bloom-language/glass-group`.
 
 Token sets:
 
-- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -4165,7 +4182,7 @@ Imported from `@oxy.so/bloom-language/chat-composer`.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'520'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [composerButtonTone](bloom-language-tokens.mdx#composerbuttontone), `'plain'`, `'accent'`
 
 Modifiers:

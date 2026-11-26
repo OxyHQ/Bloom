@@ -14,6 +14,7 @@ export * from '../../entries/ai-chat';
 export * from '../../entries/ai-profile-card';
 export * from '../../entries/ambient-photo';
 export * from '../../entries/animated-check';
+export * from '../../entries/app-shell-menu-button';
 export * from '../../entries/avatar-flight';
 export * from '../../entries/booking';
 export * from '../../entries/breadcrumb';
