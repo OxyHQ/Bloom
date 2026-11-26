@@ -71,6 +71,7 @@ impl Checker<'_> {
                         self.positional(call, &[Ty::Int]);
                         return Ty::Async(Box::new(Ty::Unit));
                     }
+                    "all" | "race" => return self.all_or_race(expr, call, name == "all"),
                     "Binding" => return self.binding_ctor(expr, call),
                     _ => {}
                 }
@@ -987,6 +988,9 @@ impl Checker<'_> {
         if name.name == "task" {
             return self.task(expr, call, name, recv, task_allowed);
         }
+        if name.name == "onChange" {
+            return self.on_change(expr, call, name, recv, task_allowed);
+        }
         let kind = kind.unwrap_or("view");
         let Some(spec) = ui::node(kind) else { return recv.clone() };
         let ctor = spec.constructors.first().copied().unwrap_or("A view");
@@ -1224,6 +1228,142 @@ impl Checker<'_> {
         }
         self.out.calls.insert(expr.id, CallRes::Task);
         recv.clone()
+    }
+
+    /// `.onChange(of: value) { old, new in … }` on the body's root: runs after
+    /// `value` changes (compared as `==` does), not on the first render.
+    fn on_change(&mut self, expr: &Expr, call: &Call, name: &Ident, recv: &Ty, allowed: bool) -> Ty {
+        if !allowed {
+            self.report(
+                Diagnostic::error("B0431", name.span, "`.onChange` goes on the body's root view")
+                    .label("an effect belongs to the view that runs it")
+                    .help("move it to the end of the body's outermost chain")
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        let value = match call.args.as_slice() {
+            [arg] if arg.label.as_ref().is_some_and(|l| l.name == "of") => self.expr(&arg.value, None),
+            _ => {
+                let at = call.args.first().map_or(name.span, |a| a.span);
+                self.report(
+                    Diagnostic::error("B0207", at, "`.onChange` takes the value it watches as `of:`")
+                        .label("not `of: value`")
+                        .help("write `.onChange(of: value) { old, new in … }`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                );
+                self.args_unchecked(call);
+                Ty::Unknown
+            }
+        };
+        let value = self.zonk(&value);
+        if let super::Equality::None(part) = super::equality(&self.out.defs, &value) {
+            self.report(
+                Diagnostic::error(
+                    "B0210",
+                    call.args[0].value.span,
+                    format!("`.onChange` compares values, and {} has no equality", self.show(&part)),
+                )
+                .label("cannot tell whether it changed")
+                .help("watch what it holds (a field, an id) instead")
+                .spec("43-soundness-rules"),
+            );
+        }
+        match &call.trailing {
+            Some(trailing) => {
+                let params = match trailing.params.len() {
+                    0 => Vec::new(),
+                    2 => vec![value.clone(), value.clone()],
+                    _ => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0207",
+                                trailing.span,
+                                "`.onChange` gives the old and the new value",
+                            )
+                            .label("one parameter")
+                            .help("write `{ old, new in … }`, or `{ … }` without parameters")
+                            .spec("8-effects-tasks-and-concurrency"),
+                        );
+                        vec![value.clone(); trailing.params.len()]
+                    }
+                };
+                let params = params
+                    .into_iter()
+                    .map(|ty| ParamTy { name: None, ty, optional: false, rest: false })
+                    .collect();
+                let handler =
+                    Ty::Fn(Rc::new(FnTy { params, ret: Ty::Unit, is_async: false, generics: 0, ts: false }));
+                self.closure(trailing, Some(&handler), false);
+            }
+            None => self.report(
+                Diagnostic::error("B0207", name.span, "`.onChange` needs the work to run")
+                    .label("no closure")
+                    .help("write `.onChange(of: value) { old, new in … }`")
+                    .spec("8-effects-tasks-and-concurrency"),
+            ),
+        }
+        self.out.calls.insert(expr.id, CallRes::OnChange(value));
+        recv.clone()
+    }
+
+    /// `all(a(), b())`: both results, as a tuple; `race(a(), b())`: the first.
+    /// Each is a pending Bloom call or a TS promise; with a promise among them
+    /// the whole is a promise (awaiting it gives a `Result`).
+    fn all_or_race(&mut self, expr: &Expr, call: &Call, all: bool) -> Ty {
+        let word = if all { "all" } else { "race" };
+        if call.args.len() < 2
+            || call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some() || a.spread)
+        {
+            self.report(
+                Diagnostic::error(
+                    "B0207",
+                    call.callee.span,
+                    format!("`{word}` takes two or more pending calls"),
+                )
+                .label("in order, without labels")
+                .help(format!("write `await {word}(loadA(), loadB())`"))
+                .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        let mut promise = false;
+        let mut results = Vec::new();
+        let raced = self.fresh();
+        for arg in &call.args {
+            let ty = self.expr(&arg.value, None);
+            let result = match self.resolve(&ty) {
+                Ty::Async(t) => *t,
+                Ty::Promise(t) => {
+                    promise = true;
+                    *t
+                }
+                Ty::Foreign(text) => {
+                    promise = true;
+                    Ty::Foreign(format!("Awaited<{text}>").into())
+                }
+                Ty::Unknown => Ty::Unknown,
+                other => {
+                    self.report(
+                        Diagnostic::error(
+                            "B0215",
+                            arg.value.span,
+                            format!("`{word}` waits for pending calls, and this is {}", self.show(&other)),
+                        )
+                        .label("nothing to wait for")
+                        .help("pass the call itself, without `await`: `all(loadA(), loadB())`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                    );
+                    Ty::Unknown
+                }
+            };
+            if !all && !self.unify(&raced, &result) {
+                self.mismatch(arg.value.span, &result, &raced);
+            }
+            results.push(result);
+        }
+        self.out.calls.insert(expr.id, if all { CallRes::All } else { CallRes::Race });
+        let value = if all { Ty::Tuple(results) } else { raced };
+        if promise { Ty::Promise(Box::new(value)) } else { Ty::Async(Box::new(value)) }
     }
 
     fn method_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, name: &Ident) -> Ty {

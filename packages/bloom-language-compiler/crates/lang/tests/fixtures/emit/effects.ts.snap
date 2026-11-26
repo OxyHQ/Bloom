@@ -1,0 +1,87 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, TextField, VStack, view } from "@oxy.so/bloom-language";
+import { useEffect, useRef, useState } from "react";
+import { fetchCount } from "@/api";
+
+interface Draft {
+  readonly text: string;
+  readonly tags: readonly string[];
+}
+
+async function loadA(): Promise<number> {
+await (new Promise<void>((resolve) => setTimeout(resolve, 10)));
+return 1;
+}
+
+async function loadB(): Promise<number> {
+await (new Promise<void>((resolve) => setTimeout(resolve, 20)));
+return 2;
+}
+
+export const Search = view(function Search() {
+"use no memo";
+const $ = $c(7);
+const [query, setQuery] = useState<string>("");
+const [draft, setDraft] = useState<Draft>(() => ({ text: "", tags: [] }));
+const [saved, setSaved] = useState<boolean>(true);
+const [total, setTotal] = useState<number>(0.0);
+const [first, setFirst] = useState<number>(0);
+const $t0 = useRef<string>(query);
+useEffect(() => {
+const old = $t0.current;
+if (old === query) return;
+$t0.current = query;
+{
+if ((old.length === 0) && (!(query.length === 0))) {
+setSaved(false);
+}
+}
+}, [query]);
+const $t1 = useRef<Draft>(draft);
+useEffect(() => {
+const $t2 = $t1.current;
+if ($t2.text === draft.text && $t2.tags.length === draft.tags.length && $t2.tags.every(($x0, $i0) => $x0 === draft.tags[$i0]!)) return;
+$t1.current = draft;
+{
+setSaved(false);
+}
+}, [draft]);
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+const [a, b] = await (Promise.all([loadA(), loadB()]));
+if ($signal.aborted) return;
+if ($signal.aborted) {
+return;
+}
+setFirst(await (Promise.race([loadA(), loadB()])));
+if ($signal.aborted) return;
+let $t3!: readonly [number, number];
+let $t4: Error | undefined;
+try {
+$t3 = await Promise.all([fetchCount(query), fetchCount("all")]);
+} catch ($error) {
+$t4 = $error instanceof Error ? $error : new Error(String($error));
+}
+if ($t4 === undefined) {
+setTotal(($t3[0] / $t3[1]) + (a + b));
+} else {
+setTotal(0.0);
+}
+})();
+return () => $controller.abort();
+}, [query]);
+let $t5;
+if ($[4] !== query || $[5] !== total) {
+$t5 = VStack(($[0] !== query ? ($[0] = query, $[1] = TextField([query, setQuery] as const, "Search")) : $[1]), ($[2] !== total ? ($[2] = total, $[3] = Text(`${total}`)) : $[3]));
+$[4] = query;
+$[5] = total;
+$[6] = $t5;
+} else {
+$t5 = $[6];
+}
+return $t5;
+});
+
