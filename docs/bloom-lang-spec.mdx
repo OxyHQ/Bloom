@@ -219,10 +219,19 @@ function type), generic arguments at call sites, empty collections from use. A l
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`).
 
+Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
+TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
+fields too (`[Int]` fits `[Float]`). It costs nothing and loses nothing: both are JS numbers
+and an `Int` stays within 2^53, so no conversion is emitted. An integer literal is a `Float`
+where one is expected (`let x: Float = 0`). Arithmetic with an `Int` and a `Float` operand
+is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even where a `Float`
+is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
+`Int` and a `Float` branch is `Float`. A `Float` never narrows implicitly.
+
 ### 4.3 Soundness rules
 
-- No `any`, no implicit null, no implicit numeric conversion (`Int` → `Float` is `.toFloat()`;
-  `Float` → `Int` is `.rounded()`, `.floor()`, `.ceil()`, `.truncated()`).
+- No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
+  `.floor()`, `.ceil()` or `.truncated()` (B0201). `Int` → `Float` widens implicitly (4.2).
 - Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
 - Values are immutable. `var` exists only as a function-local; it cannot be captured by a
   closure (B0402), so no closure observes a mutation.
@@ -319,6 +328,19 @@ built by a call: `Date(at)` is `new Date(at)`; Bloom has no `new`. `Foreign<"T">
 TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
 `Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
 and the emitted TS names the type as written, so TS checks every use.
+
+A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
+is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it
+(`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,
+fits a dictionary when each of its fields fits `V` (`let GAPS: [String: Float] = SPACING`).
+
+TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
+namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
+Platform: PlatformType; declare type Platform = typeof Platform`) are both read, the value
+typed, the type `Foreign`; a const whose type is, through aliases and `&`, a function from props
+to a node is a component (`TextInput(value: v)`). As a type, such a component is its instance,
+as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
+`ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
 
 ## 5. Values, functions and closures
 

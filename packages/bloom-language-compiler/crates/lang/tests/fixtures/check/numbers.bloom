@@ -1,0 +1,8 @@
+// A `Float` never narrows to `Int` implicitly.
+fn count(n: Int) -> Int { n }
+
+pub fn a(x: Float) -> Int { count(n: x) }
+
+pub fn b(i: Int, x: Float) -> Int { i + x }
+
+pub fn c(xs: [Float]) -> [Int] { xs }

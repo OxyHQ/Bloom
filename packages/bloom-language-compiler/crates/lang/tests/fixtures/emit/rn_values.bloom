@@ -1,0 +1,23 @@
+// react-native's values as its declarations give them: a namespace (`StyleSheet`), a
+// const with a type of the same name (`Platform`), and a component typed as a function
+// from props to a node with statics beside it (`TextInput`), also a ref's type.
+import { Platform, StyleSheet, TextInput } from "react-native"
+
+let styles = StyleSheet.create({ root: { flex: 1 } })
+
+pub fn web() -> Bool { Platform.OS == "web" }
+
+pub view Field(value: String) {
+  @ref input: TextInput? = none
+
+  fn focus() {
+    input?.focus()
+  }
+
+  body {
+    VStack {
+      TextInput(value: value, ref: input)
+      Button(Text("Edit")).onPress { focus() }
+    }
+  }
+}
