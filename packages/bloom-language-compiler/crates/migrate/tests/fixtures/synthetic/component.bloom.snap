@@ -3,10 +3,12 @@
 
 import { Link } from "expo-router"
 
-pub default view LinkRow(label: String, href: String? = none) {
+public struct LinkRow: View {
+  let label: String
+  var href: String? = none
   let text = Text(label).lines(1)
 
-  body {
+  var body: some View {
     HStack {
       if let href = href {
         if !href.isEmpty { Link(href: href, push: true, asChild: true) { text } } else { text }
@@ -14,6 +16,6 @@ pub default view LinkRow(label: String, href: String? = none) {
         text
       }
     }
-    .align("center")
+    .align(.center)
   }
 }

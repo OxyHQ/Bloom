@@ -74,3 +74,46 @@ fn migrated_fixtures_compile_to_the_same_typescript() {
     }
     assert!(failures.is_empty(), "{} of the fixtures:\n\n{}", failures.len(), failures.join("\n\n"));
 }
+
+/// A view's `effect` members become modifiers of its body: once is `.onAppear` (its `defer`
+/// the `.onDisappear`), an `id:` is `.task(id:)`; the view is then a `struct`.
+#[test]
+fn effects_become_body_modifiers() {
+    let source = r#"pub view Search(id: String) {
+  @state query = ""
+
+  effect(id: 0) {
+    query = id
+    defer { query = "" }
+  }
+
+  effect(id: (id, query)) {
+    query = query + id
+  }
+
+  body {
+    Text(query)
+  }
+}
+"#;
+    let (migrated, notes) = bloom_fmt::migrate(source, "search.bloom").expect("it migrates");
+    assert!(notes.is_empty(), "{notes:?}");
+    assert_eq!(
+        migrated,
+        r#"public struct Search: View {
+  let id: String
+  @State private var query = ""
+
+  var body: some View {
+    Text(query)
+    .task(id: (id, query)) { query = query + id }
+    .onAppear { query = id }
+    .onDisappear { query = "" }
+  }
+}
+"#
+    );
+    let compiled = bloom_lang::compile(&migrated, "search.bloom", &options());
+    assert!(compiled.diagnostics.is_empty(), "{:?}", compiled.diagnostics);
+    assert!(compiled.warnings.iter().all(|w| w.code != "B0950"), "{:?}", compiled.warnings);
+}

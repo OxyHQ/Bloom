@@ -3,24 +3,24 @@
 import { useSession } from "./session"
 import { JSON } from "js"
 
-fn initial(nick: String? = none) -> String {
+func initial(_ nick: String? = none) -> String {
   if nick == none || nick.isEmpty { return "" }
   nick.slice(0, 1)
 }
 
-fn trimmedNick(nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
+func trimmedNick(_ nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
 
-fn titleOf(raw: String) -> String {
+func titleOf(_ raw: String) -> String {
   let parsed = JSON.parse(raw)
   parsed.title || "Untitled"
 }
 
-pub view Greeting {
+public struct Greeting: View {
   let session = useSession()
   let signedIn = session.user != none
   let nick = session.nick
 
-  body {
+  var body: some View {
     VStack {
       if !session.title.isEmpty { Text(session.title) }
       if signedIn && session.count == 0 { Text("Welcome") }

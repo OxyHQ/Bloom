@@ -105,12 +105,22 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
         if effects.is_empty() || effects.iter().any(|e| e.id.is_none()) {
             continue;
         }
+        // A view that stays 0.x for another reason keeps its effects as written.
+        let stays = v.params.iter().flatten().any(|p| p.spread || p.rest)
+            || v.members.iter().any(|m| {
+                matches!(m, Member::State(s) if matches!(s.attr, StateAttr::Ref | StateAttr::List | StateAttr::Record))
+            });
+        if stays {
+            continue;
+        }
+        // `.task(id:)` first: the parser reads `.onAppear`/`.onDisappear` only at the chain's end.
         let mut modifiers = String::new();
+        let mut once = String::new();
         for effect in &effects {
             let id = effect.id.as_ref().expect("an id");
-            let once = matches!(id.kind, ExprKind::Unit | ExprKind::Int(_))
+            let runs_once = matches!(id.kind, ExprKind::Unit | ExprKind::Int(_))
                 || matches!(&id.kind, ExprKind::Tuple(values) if values.is_empty());
-            if !once {
+            if !runs_once {
                 modifiers.push_str(&format!("\n.task(id: {}) {}", slice(id.span), slice(effect.body.span)));
                 continue;
             }
@@ -118,13 +128,14 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
                 effect.body.stmts.iter().partition(|s| matches!(s.kind, StmtKind::Defer(_)));
             if !rest.is_empty() {
                 let lines: Vec<&str> = rest.iter().map(|s| slice(s.span)).collect();
-                modifiers.push_str(&format!("\n.onAppear {{\n{}\n}}", lines.join("\n")));
+                once.push_str(&format!("\n.onAppear {{\n{}\n}}", lines.join("\n")));
             }
             for defer in defers {
                 let StmtKind::Defer(block) = &defer.kind else { continue };
-                modifiers.push_str(&format!("\n.onDisappear {}", slice(block.span)));
+                once.push_str(&format!("\n.onDisappear {}", slice(block.span)));
             }
         }
+        modifiers.push_str(&once);
         for effect in &effects {
             // The member and the rest of its line.
             let end = source[effect.span.end as usize..]

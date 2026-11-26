@@ -166,7 +166,14 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             .iter()
             .map(|d| Reason { code: format!("bloomc:{}", d.code), detail: d.message.clone(), line: 0 })
             .collect();
-        return Migration { status: Status::Refused, bloom: Some(formatted), reasons, reviews, dts: None, default_export: None };
+        return Migration {
+            status: Status::Refused,
+            bloom: Some(formatted),
+            reasons,
+            reviews,
+            dts: None,
+            default_export: None,
+        };
     }
     // Bloom 2.0 (ADR 0002): the checked draft printed in 2.0's forms, then compiled again. A
     // form 2.0 retires that is left (B0950) or an error of the 2.0 text is a reason: the file
@@ -178,7 +185,14 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
                 .iter()
                 .map(|d| Reason { code: "codemod:2.0-unparsable".into(), detail: d.message.clone(), line: 0 })
                 .collect();
-            return Migration { status: Status::Refused, bloom: Some(formatted), reasons, reviews, dts: None, default_export: None };
+            return Migration {
+                status: Status::Refused,
+                bloom: Some(formatted),
+                reasons,
+                reviews,
+                dts: None,
+                default_export: None,
+            };
         }
     };
     let _ = notes;
@@ -194,13 +208,20 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
         line: 0,
     }));
     if !reasons.is_empty() {
-        return Migration { status: Status::Refused, bloom: Some(bloom), reasons, reviews, dts: None, default_export: None };
+        return Migration {
+            status: Status::Refused,
+            bloom: Some(bloom),
+            reasons,
+            reviews,
+            dts: None,
+            default_export: None,
+        };
     }
     // String tokens as typed ones (`.padding("md")` → `.padding(.md)`), then SwiftUI's names
     // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
     let mut bloom = bloom;
     let mut compiled = compiled;
-    let passes: [&dyn Fn(&str) -> Option<String>; 2] =
+    let passes: [Pass; 2] =
         [&|text| tokens::typed(text, &target, options), &|text| swiftui::names(text, &target)];
     for pass in passes {
         let Some(next) = pass(&bloom) else { continue };
@@ -232,6 +253,9 @@ fn named_default(text: &mut String) -> Option<String> {
     }
     None
 }
+
+/// A rewrite of the 2.0 text, kept when the file still checks.
+type Pass<'a> = &'a dyn Fn(&str) -> Option<String>;
 
 /// The retired form a B0950 warning names (its first backquoted word): `effect`, `@ref`, ….
 fn retired_form(message: &str) -> String {

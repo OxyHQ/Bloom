@@ -2,23 +2,25 @@
 
 // Where the count starts.
 
-pub view Counter(start: Float, label: String? = none) {
-  @state count = start
-  @state loud = false
-  let shown = "${label ?? "Count"}: ${count}"
+public struct Counter: View {
+  let start: Float
+  var label: String? = none
+  @State private var count = start
+  @State private var loud = false
+  let shown = "\(label ?? "Count"): \(count)"
 
-  fn increment() { count = count + 1 }
+  func increment() { count = count + 1 }
 
-  body {
+  var body: some View {
     VStack {
-      Text(shown).foreground(loud ? "primary" : "muted")
+      Text(shown).foreground(loud ? .primary : .muted)
       HStack {
         Button(Text("+")).onPress(increment)
         Button(Text("reset")).onPress { count = start }
       }
-      .spacing("sm")
+      .spacing(.sm)
       Toggle($loud).label("Loud")
     }
-    .spacing("md")
+    .spacing(.md)
   }
 }

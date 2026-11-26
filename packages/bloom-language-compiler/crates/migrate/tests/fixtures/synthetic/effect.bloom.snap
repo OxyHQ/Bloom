@@ -3,15 +3,16 @@
 
 import { subscribe } from "./feed"
 
-pub view Live(topic: String) {
-  @state count = 0
-  effect(id: topic) {
-    let stop = subscribe(topic, { count = count + 1 })
-    defer { stop() }
-  }
-  effect(id: 0) { count = 0 }
+public struct Live: View {
+  let topic: String
+  @State private var count = 0
 
-  body {
-    Text("${count}")
+  var body: some View {
+    Text("\(count)")
+    .task(id: topic) {
+      let stop = subscribe(topic, { count = count + 1 })
+      defer { stop() }
+    }
+    .onAppear { count = 0 }
   }
 }

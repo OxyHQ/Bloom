@@ -1,30 +1,3 @@
-// Collections: Map/Set values, list spread, enumerated maps, forEach, indexOf,
-// some/every, a ref, and a value's `||` spelled from its type.
-
-pub view Picker(ids: [String], extra: String, title: String? = none) {
-  @state picked = Set<String>()
-  @ref taps = 0
-  let byId = Map(ids.map { id in (id, id.count) })
-  let all = [..ids, extra]
-  let missing = all.indexOf("x") == none
-  let long = all.any { id in id.count > 3 }
-
-  fn toggle(id: String) {
-    taps = taps + 1
-    var next = picked
-    if next.contains(id) { next = next.removing(id) } else { next = next.inserting(id) }
-    picked = next
-  }
-
-  fn logAll() { for (index, id) in all.enumerated() { toggle("${index}:${id}") } }
-
-  body {
-    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
-    VStack {
-      Text((title ?? "") == "" ? "Pick" : title ?? "")
-      Text("${byId.count} ${picked.count} ${missing} ${long}")
-      for (index, id) in all.enumerated() { Text("${index}. ${id}") }
-      Button(Text("All")).onPress { logAll() }
-    }
-  }
-}
+refused
+0: 0.x:view: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+0: 0.x:@ref: `@ref` is Bloom 0.x (once in this file)

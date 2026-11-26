@@ -96,7 +96,9 @@ fn stack_arguments(
                 }
                 let callee = call.callee.span;
                 // Only the outermost modifier makes the edit: an inner one is inside it.
-                edits.retain(|&start, _| !(start >= at.span.start as usize && start < outer.span.end as usize));
+                edits.retain(|&start, _| {
+                    !(start >= at.span.start as usize && start < outer.span.end as usize)
+                });
                 let stack = &source[callee.end as usize..at.span.end as usize];
                 edits.insert(
                     callee.start as usize,
