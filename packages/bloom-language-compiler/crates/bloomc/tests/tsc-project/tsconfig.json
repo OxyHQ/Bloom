@@ -11,7 +11,7 @@
     "types": [],
     "paths": {
       "@/*": ["./src/*"],
-      "@oxy.so/bloom-language": ["./stubs/bloom-language.d.ts"],
-    },
-  },
+      "@oxy.so/bloom-language": ["./stubs/bloom-language.d.ts"]
+    }
+  }
 }
