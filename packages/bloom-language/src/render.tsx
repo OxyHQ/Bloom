@@ -369,7 +369,8 @@ interface Plan {
   hoverGroup: boolean;
   label: string | undefined;
   hint: string | undefined;
-  role: Role | undefined;
+  /** `null`: none, as `.role(undefined)` says (no button for a press host either). */
+  role: Role | null | undefined;
   /** How far a press reaches: one slop on every side, or each side's (React Native's `Insets`). */
   hitSlop: number | HitSlopInsets | undefined;
   testID: string | undefined;
@@ -812,7 +813,7 @@ function plan(node: Node, env: Env): Plan {
         result.hint = modifier.value;
         break;
       case 'role':
-        result.role = modifier.value;
+        result.role = modifier.value ?? null;
         break;
       case 'hitSlop':
         result.hitSlop = withHitSlop(result.hitSlop, modifier.edge, HIT_SLOP[modifier.value]);
@@ -1044,7 +1045,9 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.hint !== undefined) props.accessibilityHint = p.hint;
   // A role React Native has as an `accessibilityRole` is one; a web role (an
   // `option`, a `listbox`) is React Native's `role`, as Bloom's Item takes it.
-  if (p.role !== undefined) {
+  // None, as a JSX host handed `accessibilityRole={undefined}` has (over PressableScale's own button).
+  if (p.role === null) props.accessibilityRole = undefined;
+  else if (p.role !== undefined) {
     const role = ROLE[p.role];
     if (role === undefined) props.role = p.role;
     else props.accessibilityRole = role;
@@ -3262,7 +3265,7 @@ function renderHost(
         children: (children) => renderChildren(children, ctx),
         press: (value) => pressOf(value, ctx.env),
         palette,
-        role: p.role,
+        role: p.role ?? undefined,
       };
       // Views pinned at a list's edges: the list makes room for them (SwiftUI's safe area insets).
       const insets = INSET_LISTS.has(node.kind) ? insetsOf(node) : NO_INSETS;

@@ -891,8 +891,10 @@ The pointer's shape over the view, on the web (CSS's `cursor`: `grab` over a row
 
 ### `role`
 
+What the view is to assistive technology (`accessibilityRole`, or a web role as React Native's `role`). `undefined` is none, a role chosen at render that may be none (`.role(href ? 'link' : undefined)`): a pressable with `.pressScale()`, a button by default, then names itself nothing, as Bloom's `PressableScale` with `accessibilityRole={undefined}` does.
+
 - Parameters: [role](bloom-language-tokens.mdx#role)
-- Signature: `.role(value: Role)`
+- Signature: `.role(value: Role | undefined)`
 - Taken by: every node (universal)
 - `role` tokens: `'button'`, `'link'`, `'header'`, `'image'`, `'text'`, `'none'`, `'checkbox'`, `'radio'`, `'tab'`, `'radiogroup'`, `'tablist'`, `'list'`, `'alert'`, `'progressbar'`, `'imagebutton'`, `'summary'`, `'option'`, `'listbox'`
 

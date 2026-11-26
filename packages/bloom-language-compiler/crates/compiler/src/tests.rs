@@ -2231,6 +2231,20 @@ fn own_screens_and_providers_with_props_compile() {
 }
 
 #[test]
+fn a_role_may_be_none() {
+    // A role chosen at render that may be none (Mention's suggested profile tile).
+    let imports = "import { Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "tile.tsx");
+    let valid = check(concat!(
+        "export const x = (go) => VStack(Text('a')).onPress(go).pressScale().role(go ? 'link' : undefined);\n",
+        "export const y = () => VStack(Text('a')).role(undefined);\n",
+    ));
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = () => VStack(Text('a')).role('linky');\n");
+    assert!(!output.diagnostics.is_empty());
+}
+
+#[test]
 fn data_tables_are_checked() {
     let imports = "import { DataTable, DataColumn, DataTableFilter, DataTableSearch, DataTableSelect, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
