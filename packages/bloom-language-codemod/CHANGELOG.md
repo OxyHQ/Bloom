@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
+
+### Compatibility
+
+- Its peer is `@oxy.so/bloom-language` 2.0.0 or newer, the language it writes (each family's names from its own entry).
 
 ### Changed
 

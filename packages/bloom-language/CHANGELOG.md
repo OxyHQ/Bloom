@@ -1,10 +1,19 @@
 # Changelog
 
-## Unreleased
+## 2.0.0
+
+### Compatibility
+
+- The published compiler 1.6.0 reads a language view only from the root, and writes a `.bloom` module's imports there. With 2.0.0, a family's nodes imported from their entry are drawn at run time, not compiled, and a `.bloom` module does not build. The next compiler release reads and writes each family's entry; until then, an app with `.bloom` modules stays on 1.x (no app has one yet).
 
 ### Breaking
 
-- Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved.
+- Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved. A major: an app on `^1` keeps 1.7.0 until it moves its imports (`create-oxy-app`'s language template imports `TextField`, `Toggle`, `Picker`, `Field`, `ListItem` and `GlassGroup` from the root).
+
+### Added
+
+- `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).
+- `.provider(Component, props)`: a screen's provider takes the props it needs besides its children (Allo's ask provider with its context), and `.provider(undefined)` draws none, for a provider only some people get.
 
 ### Changed
 
@@ -25,8 +34,6 @@
 
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
-- `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).
-- `.provider(Component, props)`: a screen's provider takes the props it needs besides its children (Allo's ask provider with its context), and `.provider(undefined)` draws none, for a provider only some people get.
 - `.border(undefined, width, edge?)`: a border width in the platform's default colour (React Native's black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` draws it; a colour chosen at render may be none (`.border(subscribed ? 'border' : undefined, 'thin')`). It paints nothing from the theme, so a root or `view()` body around it reads none.
 
 ### Changed
