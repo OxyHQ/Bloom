@@ -167,6 +167,7 @@ impl Walker<'_> {
             }
             ExprKind::Paren(a)
             | ExprKind::Spread(a)
+            | ExprKind::Is(a, _)
             | ExprKind::Unary(_, a)
             | ExprKind::Await(a)
             | ExprKind::Try(a)
