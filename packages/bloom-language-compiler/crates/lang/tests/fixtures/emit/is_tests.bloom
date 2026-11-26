@@ -1,6 +1,6 @@
 // `x is T` tests a TS value of no Bloom type; `if x is T { … }` narrows `x` there.
 
-import { readSetting } from "@/api"
+import { MODES, PRESETS, readSetting } from "@/api"
 
 fn label(key: String) -> String {
   let value = readSetting(key)
@@ -19,4 +19,22 @@ fn label(key: String) -> String {
 // `foreign ?? e` takes `e`'s type; the left side is checked by TS against it.
 fn named(handle: Foreign<"string | null | undefined">) -> String {
   handle ?? "anonymous"
+}
+
+// A TS `as const` list of strings is a list of that union.
+fn modes() -> [String] {
+  MODES.map { m in m.uppercased() }
+}
+
+// A TS value beside `none`, and walked by `for`: TS checks it where it lands.
+fn ids() -> Int {
+  var n = 0
+  for preset in PRESETS {
+    n += 1
+  }
+  n
+}
+
+fn firstPreset(on: Bool) -> Foreign<"{ id: string } | undefined"> {
+  on ? none : PRESETS.find { p in true }
 }

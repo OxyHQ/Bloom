@@ -5,3 +5,7 @@ export declare function ping(): Promise<void>;
 export declare function joinClasses(base: string, ...names: string[]): string;
 /** A TS value of no known type. */
 export declare function readSetting(key: string): unknown;
+/** A TS `as const` list of strings. */
+export declare const MODES: readonly ["mixed", "tab", "hidden"];
+/** A TS value Bloom does not type. */
+export declare const PRESETS: Array<{ id: string }> & { extra?: true };
