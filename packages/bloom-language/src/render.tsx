@@ -1206,7 +1206,8 @@ function drawOutermost(
     return drawHost(palette, host, out, props, ...children);
   box.used = true;
   const { outer } = box;
-  if (!outer.active) return drawHost(palette, host, out, { ...props, ...outer.props }, ...children);
+  if (!outer.active)
+    return drawHost(palette, host, out, underMotion(props, outer.props), ...children);
   // The animated twin takes the motion's style after its own, through the
   // leaf that paints it and the `StateHost` whose state its variants answer,
   // so a variant's change (a press's scale, a hover's fill) plays on it.
@@ -1214,9 +1215,33 @@ function drawOutermost(
     palette,
     animated,
     out,
-    { ...props, ...outer.props, style: outer.style },
+    { ...underMotion(props, outer.props), style: outer.style },
     ...children,
   );
+}
+
+const PRESS_PHASES = ['onPressIn', 'onPressOut'] as const;
+
+/**
+ * The host's props under its motion's (a `.pressScale()` takes the press's
+ * phases to drive its scale): a phase both take runs the motion's, then the
+ * view's own `.onPressIn()` / `.onPressOut()`.
+ */
+function underMotion(
+  props: Record<string, unknown>,
+  motion: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const out = { ...props, ...motion };
+  for (const phase of PRESS_PHASES) {
+    const own = props[phase] as ((event: unknown) => void) | undefined;
+    const moving = motion[phase] as ((event: unknown) => void) | undefined;
+    if (own !== undefined && moving !== undefined)
+      out[phase] = (event: unknown) => {
+        moving(event);
+        own(event);
+      };
+  }
+  return out;
 }
 
 /** `element` in a box of its own that carries `outer` (`style` first): how what cannot take it moves. */
@@ -3111,6 +3136,8 @@ function renderHost(
         tone: ownValue(p, 'tint')?.value,
         onPress: p.onPress,
         onLongPress: p.onLongPress,
+        onPressIn: p.onPressIn,
+        onPressOut: p.onPressOut,
         popOnActivate: options.pop,
         rollCount: options.rollCount,
         busy: options.busy,
