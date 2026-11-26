@@ -116,6 +116,20 @@ module.exports = {
 (`babel-jest` by default) and its options. A test then fails on the same
 chain the build would.
 
+A suite that stubs React Native (jsdom, no Bloom families) maps the language
+to its test double, `@oxy.so/bloom-language/testing`: every node of the root
+and of every family by the same name, drawn as plain DOM a test reads (its
+text, press as `onClick`, accessible name, role, test id, disabled and busy
+states, a field's value and a toggle's state; a node is
+`data-node="<Constructor>"`). What a chain draws on a platform is the parity
+suite's claim, not the double's:
+
+```js
+moduleNameMapper: {
+  '^@oxy\\.so/bloom-language(/[a-z-]+)?$': require.resolve('@oxy.so/bloom-language/testing'),
+},
+```
+
 ### Vite (web)
 
 There is no Vite plugin package; the compiler's `/compile` entry is the whole

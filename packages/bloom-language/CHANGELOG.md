@@ -6,6 +6,10 @@
 
 - A root that is the child of an `asChild` element (`<Link href={h} asChild>{toElement(…)}</Link>`, Mention's post time) dropped the props the element merged into it (the `href`, the press, the role), so it was no link. The root hands them to its outermost host, merged as a Slot merges them: both handlers run (the view's first), the styles stack, and a prop the view sets is its own.
 
+### Added
+
+- `@oxy.so/bloom-language/testing`: the language for an app's jsdom suites (where React Native is a stub and Bloom's families cannot load), so an app maps it in place of writing its own `__mocks__/bloom-language.tsx` (Inbox's). Every constructor of the root and of every family's entry by the same name (`src/testing/constructors.generated.ts`, written by `generate-entries.mjs`), a chain drawn as plain DOM a test reads (text, press as `onClick`, accessible name, role, test id, disabled, busy, a field's value, a toggle's state), the compiler's `LanguageRoot`, `toElement`, `view()` (a component of its own), `screen()`/`layout()` and inert values for the rest.
+
 ## 2.0.0
 
 ### Compatibility
