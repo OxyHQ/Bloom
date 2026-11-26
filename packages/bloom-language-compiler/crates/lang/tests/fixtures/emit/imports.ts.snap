@@ -4,12 +4,13 @@ import { VStack, view } from "@oxy.so/bloom-language";
 import { Row } from "@/rows/row.bloom";
 import { Row as Again } from "@/rows";
 
+const $view0 = VStack(Row({ title: "One" }), Again({ title: "Two" }));
 export const Rows = view(function Rows() {
 "use no memo";
 const $ = $c(1);
 let $t0;
 if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t0 = VStack(Row({ title: "One" }), Again({ title: "Two" }));
+$t0 = $view0;
 $[0] = $t0;
 } else {
 $t0 = $[0];
