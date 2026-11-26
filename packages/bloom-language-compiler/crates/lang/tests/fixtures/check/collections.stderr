@@ -38,3 +38,11 @@ error[B0209]: `Set<Int>` has no method `add`
    |     ^^^ no such method
    |
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft
+
+error[B0201]: expected `[Int]`, found `[String]`
+  --> check/collections.bloom:24:9
+   |
+24 |   [1, ..a]
+   |         ^ this is `[String]`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

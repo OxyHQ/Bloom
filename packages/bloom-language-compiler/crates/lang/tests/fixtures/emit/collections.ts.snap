@@ -68,3 +68,7 @@ $t0 = $[4];
 return $t0;
 });
 
+function joined(a: readonly number[], b: readonly number[]): readonly number[] {
+return [0, ...a, ...b.filter((x: number) => x > 1), 9];
+}
+

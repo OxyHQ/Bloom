@@ -590,6 +590,7 @@ impl<'a> Formatter<'a> {
             ExprKind::Paren(inner) => concat(vec![text("("), self.expr(inner), text(")")]),
             ExprKind::Tuple(items) => self.commas(items, |i| i.span, Self::expr).bracketed("(", ")"),
             ExprKind::List(items) => self.commas(items, |i| i.span, Self::expr).bracketed("[", "]"),
+            ExprKind::Spread(inner) => concat(vec![text(".."), self.expr(inner)]),
             ExprKind::Map(entries) if entries.is_empty() => text("[:]"),
             ExprKind::Map(entries) => {
                 let entries = self.commas(

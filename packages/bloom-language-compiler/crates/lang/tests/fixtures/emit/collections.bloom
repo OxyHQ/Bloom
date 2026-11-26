@@ -48,3 +48,8 @@ pub view Tags(seen: Seen) {
     }
   }
 }
+
+// `[..a, b]`: a list's items, in place.
+fn joined(a: [Int], b: [Int]) -> [Int] {
+  [0, ..a, ..b.filter { x in x > 1 }, 9]
+}
