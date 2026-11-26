@@ -145,6 +145,8 @@ pub enum CallRes {
     OnChange(Ty),
     /// `Task { … }`: the closure's work, started and not awaited.
     Spawn,
+    /// `EnvironmentKey(name, default: v)`: `defineEnvironment(name, v)`.
+    EnvironmentKey,
     /// `T()` for a class without an `init`: `new T()`.
     New(DefId),
     /// `x.m(…)` with `x` a constrained type parameter's value (`witness` its parameter) or
@@ -458,6 +460,10 @@ pub struct Checker<'o> {
     bounds_in_scope: Vec<(String, Bound)>,
     /// Inside a class's `init`: its fields are set directly, its `let`s too.
     in_init: bool,
+    /// `EnvironmentKey(…, default: v)` calls → `v`'s type, and the module constants that
+    /// hold one → that type: what a key of this file holds.
+    env_values: HashMap<ExprId, Ty>,
+    key_values: HashMap<LocalId, Ty>,
     /// Generic calls whose witnesses are found once their type arguments are known: the
     /// call, its type arguments, its constraints, where, and the bounds in scope there.
     pending_witnesses: Vec<PendingWitnesses>,
@@ -543,6 +549,8 @@ impl<'o> Checker<'o> {
             member_reads: HashMap::default(),
             bounds_in_scope: Vec::new(),
             in_init: false,
+            env_values: HashMap::default(),
+            key_values: HashMap::default(),
             pending_witnesses: Vec::new(),
             expected: None,
             spans: true,
@@ -1350,6 +1358,9 @@ impl<'o> Checker<'o> {
                         ),
                         None => self.declare_unique(&c.name, ty, LocalKind::ModuleConst),
                     };
+                    if let Some(value) = self.env_values.get(&c.value.id).cloned() {
+                        self.key_values.insert(local, value);
+                    }
                     self.out.items.insert(index, local);
                 }
                 ItemKind::Struct(s) => self.struct_defaults(s),
@@ -1528,7 +1539,17 @@ impl<'o> Checker<'o> {
         match self.lookup(&key.name) {
             Some(local) => {
                 self.out.env_keys.insert(state.span, Some(local));
-                declared.unwrap_or_else(|| Ty::Foreign("".into()))
+                // A key of this file: the type of its default; another module's: its TS type's.
+                let value = self.key_values.get(&local).cloned().or_else(|| {
+                    match self.resolve(&self.out.locals[local].ty.clone()) {
+                        Ty::Foreign(text) => text
+                            .strip_prefix("import(\"@oxy.so/bloom-language\").EnvironmentKey<")
+                            .and_then(|t| t.strip_suffix('>'))
+                            .map(|t| self.named_ts(t)),
+                        _ => None,
+                    }
+                });
+                declared.or(value).unwrap_or_else(|| Ty::Foreign("".into()))
             }
             None => {
                 self.report(
@@ -1540,6 +1561,20 @@ impl<'o> Checker<'o> {
                 self.out.env_keys.insert(state.span, None);
                 Ty::Unknown
             }
+        }
+    }
+
+    /// A TS type's text that names a Bloom type in scope (`Session`, `string`), as the
+    /// type; else the TS type itself.
+    fn named_ts(&self, text: &str) -> Ty {
+        match text {
+            "number" => Ty::Float,
+            "string" => Ty::Str,
+            "boolean" => Ty::Bool,
+            name => match self.type_names.get(name) {
+                Some(TypeName::Def(def)) => Ty::Adt(*def, Vec::new()),
+                _ => Ty::Foreign(name.into()),
+            },
         }
     }
 
