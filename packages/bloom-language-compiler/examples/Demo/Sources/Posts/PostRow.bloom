@@ -11,8 +11,7 @@ public struct PostRow: View, Equatable {
         HStack(spacing: .xs) {
           Text(post.author.name).font(.headline)
           if post.author.isVerified { Icon(.verifiedBadgeFill).foregroundStyle(.primary) }
-          Spacer()
-          Text(post.createdAt, format: .abbreviated).foregroundStyle(.muted)
+          Text("· \(post.createdAt.formatted(.abbreviated))").foregroundStyle(.muted)
         }
         Text(post.text)
         HStack {

@@ -9,7 +9,7 @@
 //! | `Button { f() } label: { Label(…) }` | the same |
 //! | `Button("Save", action: f)` | `Button(Text("Save")).onPress(f)` |
 //! | `Label("Likes", icon: .heart)` | `HStack { Icon(.heart); Text("Likes") }.spacing(.xs)` |
-//! | `Toggle("Likes", isOn: $on)` | `Toggle($on).label("Likes")` |
+//! | `Toggle("Likes", isOn: $on)` | `HStack { Text("Likes"); Spacer(); Toggle($on).label("Likes") }` |
 //! | `Text(date, format: .relative)` | `Text(date.formatted(.relative))` |
 //! | `ProgressView()` | `Loading()` |
 //! | `VStack(spacing: .sm) { … }`, `HStack(alignment: .center, spacing: .xs) { … }` | `VStack { … }.spacing(.sm)`, `HStack { … }.align(.center).spacing(.xs)` |
@@ -242,9 +242,12 @@ impl Lowering<'_> {
                 if let Some(binding) = take_label(&mut c.args, &["isOn"])
                     && let [title] = c.args.as_slice()
                 {
+                    // A settings row: the title, then the switch (labelled with it for assistive tech).
                     let title = title.value.clone();
-                    let toggle = node("Toggle", vec![arg(binding)], None, span);
-                    *e = modifier(toggle, "label", vec![arg(title)], None);
+                    let toggle = modifier(node("Toggle", vec![arg(binding)], None, span), "label", vec![arg(title.clone())], None);
+                    let text = node("Text", vec![arg(title)], None, span);
+                    let spacer = node("Spacer", Vec::new(), None, span);
+                    *e = node("HStack", Vec::new(), Some(vec![stmt(text), stmt(spacer), stmt(toggle)]), span);
                 }
             }
             "Text" => {
