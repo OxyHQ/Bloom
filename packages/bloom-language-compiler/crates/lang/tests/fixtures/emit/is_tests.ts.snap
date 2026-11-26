@@ -1,4 +1,4 @@
-import { readSetting } from "@/api";
+import { MODES, PRESETS, readSetting } from "@/api";
 
 function label(key: string): string {
 const value = readSetting(key);
@@ -16,5 +16,21 @@ return ((typeof value === "boolean")) ? "flag" : "?";
 
 function named(handle: string | null | undefined): string {
 return handle ?? "anonymous";
+}
+
+function modes(): readonly string[] {
+return MODES.map((m: "mixed" | "tab" | "hidden") => m.toUpperCase());
+}
+
+function ids(): number {
+let n = 0;
+for (const preset of PRESETS) {
+n = n + (1);
+}
+return n;
+}
+
+function firstPreset(on: boolean): { id: string } | undefined {
+return on ? undefined : PRESETS.find((p) => true);
 }
 
