@@ -24,6 +24,23 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
             // A promise-returning call JS let go unawaited: started as a task.
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
+            // `await f()` of a call that is not async (TS awaited a plain value): the
+            // call; a `task { await f() }` around it alone is the call too.
+            ("B0215", _)
+                if d.message.starts_with("`await` waits for an async call")
+                    && source[..start].ends_with("await ") =>
+            {
+                let at = start - "await ".len();
+                let before = source[..at].trim_end();
+                let after = source[end..].trim_start();
+                match (before.strip_suffix("task {"), after.starts_with('}')) {
+                    (Some(head), true) => {
+                        let close = end + (source[end..].len() - after.len()) + 1;
+                        Some((head.len(), close, text.to_string()))
+                    }
+                    _ => Some((at, start, String::new())),
+                }
+            }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if d.message == "expected `View`, found `[View]`"
