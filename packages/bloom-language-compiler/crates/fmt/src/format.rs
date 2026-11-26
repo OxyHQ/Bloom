@@ -1110,10 +1110,14 @@ impl<'a> Formatter<'a> {
         if call.optional {
             parts.push(text("?."));
         }
+        // `label: { … }` after the trailing closure (2.0): written after it, so printed there.
+        let after = call.trailing.as_ref().map_or(u32::MAX, |t| t.span.end);
+        let (inside, outside): (Vec<Arg>, Vec<Arg>) =
+            call.args.iter().cloned().partition(|a| a.span.start < after);
         if call.parens {
             let inserted = self.inserted_labels(call);
             let args = self.commas(
-                &call.args,
+                &inside,
                 |a| a.span,
                 |this, arg| {
                     let value = this.expr(&arg.value);
@@ -1131,6 +1135,12 @@ impl<'a> Formatter<'a> {
         if let Some(trailing) = &call.trailing {
             parts.push(text(" "));
             parts.push(self.closure(trailing));
+        }
+        for arg in &outside {
+            let ExprKind::Closure(closure) = &arg.value.kind else { continue };
+            let label = arg.label.as_ref().map_or("", |l| l.name.as_str());
+            parts.push(text(format!(" {label}: ")));
+            parts.push(self.closure(closure));
         }
         concat(parts)
     }

@@ -1,0 +1,15 @@
+// 2.0's closures and environment: labelled trailing closures (`row { } label: { }`), `Task { }`,
+// and `@Environment(\.disabled)` reading a built-in environment value.
+func row(action: () -> Void, label: () -> String) -> String { label() }
+
+public struct Pane: View {
+  @Environment(\.disabled) private var disabled
+  let onTap: () async -> Void
+
+  var body: some View {
+    VStack {
+      Text(row { } label: { "Go" })
+      Button(Text(disabled ? "Off" : "On")).onPress { Task { await onTap() } }
+    }
+  }
+}

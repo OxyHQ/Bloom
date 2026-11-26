@@ -2547,6 +2547,13 @@ impl<'a> Emitter<'a> {
         };
         match res {
             CallRes::New(def) => Frag::of(format!("new {}()", self.ck.defs[def].name)),
+            CallRes::Spawn => {
+                let closure = call.trailing.as_deref().expect("`Task { … }`'s closure");
+                let saved = std::mem::replace(&mut self.conditional, 0);
+                let body = self.block_body(&closure.body, Tail::Discard, None);
+                self.conditional = saved;
+                body.wrap("void (async () => ", ")()")
+            }
             CallRes::Witness { witness, member: name, order, rest } => {
                 let (ExprKind::Field(object, _) | ExprKind::OptField(object, _)) = &call.callee.kind else {
                     unreachable!("a witness call is a member call")
@@ -4503,7 +4510,28 @@ impl<'a> Emitter<'a> {
                     StateAttr::Env => {
                         self.import_name(LANGUAGE, "useEnvironment");
                         let mut line = Frag::at(state.span, format!("const {name} = useEnvironment("));
-                        line.f(self.expr(&state.value)).s(");");
+                        // `@Environment(\.k)`: the key in scope, or a built-in value's.
+                        match (self.ck.env_keys.get(&state.span).copied(), &state.value.kind) {
+                            (Some(Some(key)), _) => {
+                                let mut key = self.local_name(key);
+                                // `@Environment(\.session) var session`: the key under another name.
+                                if key == name {
+                                    let alias = format!("$env_{key}");
+                                    self.hoisted.push(Frag::of(format!("const {alias} = {key};")));
+                                    key = alias;
+                                }
+                                line.s(&key);
+                            }
+                            (Some(None), ExprKind::KeyPath { path, .. }) => {
+                                self.import_name(LANGUAGE, "environmentValues");
+                                let key = path.first().map_or("", |p| p.name.as_str()).to_string();
+                                line.s(&member_path("environmentValues", &key));
+                            }
+                            _ => {
+                                line.f(self.expr(&state.value));
+                            }
+                        }
+                        line.s(");");
                         line
                     }
                 };
