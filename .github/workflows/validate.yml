@@ -78,14 +78,14 @@ jobs:
   race:
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && !github.event.pull_request.head.repo.fork }}
-    uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@ci/seldon-ci-router
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@main
     permissions:
       actions: read
 
   race-finish:
     needs: race
     if: needs.race.outputs.race == 'true'
-    uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@ci/seldon-ci-router
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@main
     permissions:
       actions: read
 
@@ -112,7 +112,7 @@ jobs:
       - &race-guard
         name: Seldon race guard
         if: vars.CI_SELDON_RACE == 'true'
-        uses: OxyHQ/oxy/.github/actions/seldon-race@ci/seldon-ci-router
+        uses: OxyHQ/oxy/.github/actions/seldon-race@main
         with:
           mode: guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -561,7 +561,7 @@ jobs:
       - name: Seldon race verdict
         id: race
         if: needs.race.outputs.race == 'true'
-        uses: OxyHQ/oxy/.github/actions/seldon-race@ci/seldon-ci-router
+        uses: OxyHQ/oxy/.github/actions/seldon-race@main
         with:
           mode: verdict
       - name: Every job passed
