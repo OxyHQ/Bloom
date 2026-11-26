@@ -505,6 +505,15 @@ impl Tr<'_> {
                     {
                         self.effect(call)
                     }
+                    // `useLayoutEffect`: 2.0's effects run after the frame is drawn, not before.
+                    Expression::CallExpression(call)
+                        if react_hook(self, call).as_deref() == Some("useLayoutEffect") =>
+                    {
+                        self.review(
+                            "TS ran this before the frame was drawn (`useLayoutEffect`); 2.0's effects run after it".into(),
+                        );
+                        self.effect(call)
+                    }
                     Expression::CallExpression(call) if react_hook(self, call).is_some() => {
                         let hook = react_hook(self, call).unwrap_or_default();
                         self.refuse(&format!("react:{hook}"), format!("React's `{hook}`"), call.span)
