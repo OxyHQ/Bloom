@@ -259,7 +259,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                 )
                 .label("modules resolve through the manifest")
                 .help("run `bloom check` for its errors")
-                .spec(SPEC),
+                .toolchain(SPEC),
             );
             return out;
         }
@@ -301,7 +301,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                         format!("`{}` is imported twice", found.name),
                     )
                     .label("remove this import")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
                 );
                 continue;
             }
@@ -403,7 +403,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                 Diagnostic::error("B0807", span, format!("`{name}` is declared in more than one place"))
                     .label(format!("in {}", modules.join(" and ")))
                     .help("rename one of them: a module's names are one namespace, and so are its imports")
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             continue;
         }
@@ -441,7 +441,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                 )
                 .label("a second declaration in this module")
                 .help("a module's files share one namespace: rename one of them")
-                .spec(SPEC),
+                .toolchain(SPEC),
             );
         }
     }
@@ -481,7 +481,7 @@ pub fn explain(resolution: &Resolution, diagnostics: &mut [Diagnostic], root: Op
                 )
                 .label("not `public`")
                 .help(format!("mark it `public` in {} to use it from another module", shown(file)))
-                .spec(SPEC);
+                .toolchain(SPEC);
             }
             Hidden::Private { file } => {
                 *diagnostic = Diagnostic::error(
@@ -491,7 +491,7 @@ pub fn explain(resolution: &Resolution, diagnostics: &mut [Diagnostic], root: Op
                 )
                 .label("`private` items are seen only by their file")
                 .help("drop `private` to share it with the module's other files")
-                .spec(SPEC);
+                .toolchain(SPEC);
             }
             Hidden::NotImported { module, declared, target } => {
                 diagnostic.help = Some(if *declared {
@@ -565,7 +565,7 @@ fn resolve_import(
                     "modules of this package are imported as `import {}.Name` or `import Name`",
                     manifest.name
                 ))
-                .spec(SPEC),
+                .toolchain(SPEC),
         );
         return None;
     }
@@ -575,7 +575,7 @@ fn resolve_import(
             Diagnostic::error("B0801", span, format!("`{name}` is this file's own module"))
                 .label("its names are already in scope")
                 .help("remove the import")
-                .spec(SPEC),
+                .toolchain(SPEC),
         );
         return None;
     }
@@ -586,7 +586,7 @@ fn resolve_import(
                 Diagnostic::error("B0802", span, format!("`{name}` is an `.{}` target", other.kind.word()))
                     .label("nothing imports an app or a test target")
                     .help(format!("move what is shared into a `.module` that `{}` depends on", target.name))
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         }
@@ -603,7 +603,7 @@ fn resolve_import(
                     target.kind.word(),
                     target.name
                 ))
-                .spec(SPEC),
+                .toolchain(SPEC),
             );
             return None;
         }
@@ -618,7 +618,7 @@ fn resolve_import(
                 Diagnostic::error("B0802", span, format!("the package does not depend on `{name}`"))
                     .label("not in Package.bloom's dependencies")
                     .help(format!("run `bloom add {name}`"))
-                    .spec(SPEC),
+                    .toolchain(SPEC),
             );
             return None;
         }
@@ -639,7 +639,7 @@ fn resolve_import(
         Diagnostic::error("B0801", span, format!("no module `{name}`"))
             .label("not a target of this package or a package it depends on")
             .help(help)
-            .spec(SPEC),
+            .toolchain(SPEC),
     );
     None
 }
@@ -654,7 +654,7 @@ fn foreign_types(source: &str) -> Vec<Diagnostic> {
             Diagnostic::error("B0822", w[0].span, "an app module names no TS type")
                 .label("`Foreign` is for binding modules")
                 .help("give the value a Bloom type, and declare the crossing in a binding module (`bloom bind`)")
-                .spec(SPEC)
+                .toolchain(SPEC)
         })
         .collect()
 }
@@ -667,7 +667,7 @@ fn string_import(import: &Import) -> Diagnostic {
             .help(format!(
                 "move it to Bindings/<Name>/, declared as `.bindings(\"<Name>\", npm: \"{source}@<version>\")` (`bloom bind {source}` writes both)"
             ))
-            .spec(SPEC);
+            .toolchain(SPEC);
     }
     let help = if source.starts_with('.') || source.starts_with('@') && source.contains("/src") {
         "import the module that holds it by name (`import Posts`), or, while migrating, compile with `--allow-ts-imports`".to_string()
@@ -678,7 +678,7 @@ fn string_import(import: &Import) -> Diagnostic {
     Diagnostic::error("B0806", import.source_span, format!("an app module does not import \"{source}\""))
         .label("string-path imports are for binding modules")
         .help(help)
-        .spec(SPEC)
+        .toolchain(SPEC)
 }
 
 /// Every name the file reads, with the span of its first use: an identifier

@@ -84,7 +84,7 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                             Diagnostic::error("B0820", f.name.span, "an extern function has no body")
                                 .label("the package implements it")
                                 .help("remove the body, or move the function out of `extern module` and call the binding from it")
-                                .spec("binding-modules"),
+                                .toolchain("binding-modules"),
                         );
                         continue;
                     }
@@ -113,13 +113,13 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                         call = expr(ExprKind::Await(Box::new(call)), f.name.span);
                         // `try await`: a rejected promise is the function's error.
                         if f.throws.is_some() {
-                            call = expr(ExprKind::Try(Box::new(call)), f.name.span);
+                            call = expr(ExprKind::Throwing(TryKind::Plain, Box::new(call)), f.name.span);
                         } else {
                             diagnostics.push(
                                 Diagnostic::error("B0821", f.name.span, "an async extern function throws")
                                     .label("a JS promise can reject")
                                     .help("declare it `async throws`")
-                                    .spec("binding-modules"),
+                                    .toolchain("binding-modules"),
                             );
                         }
                     }
@@ -136,7 +136,7 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                                 Diagnostic::error("B0820", c.name.span, "an extern constant has a type")
                                     .label("the Bloom type the package's value is")
                                     .help(format!("write `public let {}: Type`", c.name.name))
-                                    .spec("binding-modules"),
+                                    .toolchain("binding-modules"),
                             );
                         }
                         c.value = member(&name, c.name.span);
@@ -159,7 +159,7 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                         .help(
                             "write views in the binding module, outside `extern module`, over its functions",
                         )
-                        .spec("binding-modules"),
+                        .toolchain("binding-modules"),
                     );
                     continue;
                 }

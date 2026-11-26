@@ -75,7 +75,7 @@ pub fn lower(file: &mut File, source: &str, allowed: bool) -> Vec<Diagnostic> {
                 Diagnostic::error("B0823", test.name.span, "a test belongs to a `.tests` target")
                     .label("not in Tests/")
                     .help("move it to Tests/<Name>Tests/, declared as `.tests(\"<Name>Tests\", dependencies: […])`")
-                    .spec("bloom-test"),
+                    .toolchain("tests"),
             );
             continue;
         }
@@ -146,6 +146,14 @@ fn expect_in_stmt(stmt: &mut Stmt, source: &str) {
         StmtKind::Defer(b) => expect_in_block(b, source),
         StmtKind::While(w) => expect_in_block(&mut w.body, source),
         StmtKind::For(f) => expect_in_block(&mut f.body, source),
+        StmtKind::Guard(g) => expect_in_block(&mut g.otherwise, source),
+        StmtKind::Throw(e) => expect_in(e, source),
+        StmtKind::Do(d) => {
+            expect_in_block(&mut d.body, source);
+            for catch in &mut d.catches {
+                expect_in_block(&mut catch.body, source);
+            }
+        }
     }
 }
 

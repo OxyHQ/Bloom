@@ -106,7 +106,7 @@ pub fn generate(npm: &str, version: &str, from: &Path, options: &Options) -> Res
         let lines: Vec<String> = fields
             .iter()
             .filter(|f| valid_name(&f.name))
-            .map(|f| format!("    {}: {}", f.name, bloom_type(&f.ty, &defs, &mut nested)))
+            .map(|f| format!("    public var {}: {}", f.name, bloom_type(&f.ty, &defs, &mut nested)))
             .collect();
         pending.extend(nested);
         let generics =
