@@ -361,6 +361,12 @@ impl Tr<'_> {
                 }
             }
             Expression::ThisExpression(t) => self.refuse("class", "`this`", t.span),
+            Expression::ImportExpression(i)
+                if self.dynamic_import
+                    && let Expression::StringLiteral(s) = &i.source =>
+            {
+                format!("import({})", quote(s.value.as_str().unwrap_or_default()))
+            }
             Expression::ImportExpression(i) => self.refuse("import:dynamic", "a dynamic `import()`", i.span),
             other => {
                 self.refuse("expression", format!("`{}`", short(self.slice(other.span()))), other.span())
@@ -405,7 +411,12 @@ impl Tr<'_> {
             return name.to_string();
         }
         if self.react.contains_key(name) {
-            return self.refuse(&format!("react:{}", self.react[name]), format!("React's `{name}`"), span);
+            let export = self.react[name].clone();
+            if self.hook_fn && matches!(export.as_str(), "useMemo" | "useCallback" | "useContext") {
+                self.react_values.insert(if export == name { export } else { format!("{export} as {name}") });
+                return name.to_string();
+            }
+            return self.refuse(&format!("react:{export}"), format!("React's `{name}`"), span);
         }
         self.name(name, span)
     }
@@ -875,7 +886,9 @@ impl Tr<'_> {
             if self.is_lang(name, "view") || self.is_lang(name, "defineModifier") {
                 return self.refuse("view:nested", format!("`{name}(…)` inside an expression"), call.span);
             }
-            if let Some(export) = self.react.get(name) {
+            if let Some(export) = self.react.get(name)
+                && !(self.hook_fn && matches!(export.as_str(), "useMemo" | "useCallback" | "useContext"))
+            {
                 let export = export.clone();
                 return self.refuse(&format!("react:{export}"), format!("React's `{name}` here"), call.span);
             }

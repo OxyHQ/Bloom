@@ -133,6 +133,12 @@ pub struct Tr<'s> {
     pub head: bool,
     /// The next block translated is a loop's body: `if (c) continue;` there guards the rest.
     pub loop_block: bool,
+    /// Translating a hook function (`fn useX`): React's memo hooks are TS calls.
+    pub hook_fn: bool,
+    /// Translating `lazy`'s closure: `import("./X")` is written as is.
+    pub dynamic_import: bool,
+    /// React's hooks the output calls (from a hook function).
+    pub react_values: std::collections::BTreeSet<String>,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub defaults: HashMap<String, Vec<String>>,
     pub conditions: HashSet<String>,
@@ -333,6 +339,9 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         try_return: false,
         head: false,
         loop_block: false,
+        hook_fn: false,
+        dynamic_import: false,
+        react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
         pattern_defaults: Vec::new(),
@@ -658,23 +667,26 @@ impl<'s> Tr<'s> {
             let names: Vec<&str> = self.js.iter().map(String::as_str).collect();
             out.push_str(&format!("import {{ {} }} from \"js\"\n", names.join(", ")));
         }
-        let mut react: Vec<String> =
-            self.react
-                .iter()
-                .filter(|(local, export)| {
-                    self.used.contains(*local) && export.chars().next().is_some_and(char::is_uppercase)
-                })
-                .map(|(local, export)| {
-                    if local == export {
-                        format!("type {local}")
-                    } else {
-                        format!("type {export} as {local}")
-                    }
-                })
-                .collect();
+        let mut react: Vec<String> = self
+            .react
+            .iter()
+            .filter(|(local, export)| {
+                self.used.contains(*local) && export.chars().next().is_some_and(char::is_uppercase)
+            })
+            .map(|(local, export)| {
+                // React's components (`<Suspense>`) are values; its other names types.
+                let kind = if matches!(export.as_str(), "Suspense" | "StrictMode" | "Profiler") {
+                    ""
+                } else {
+                    "type "
+                };
+                if local == export { format!("{kind}{local}") } else { format!("{kind}{export} as {local}") }
+            })
+            .collect();
         react.extend(
             self.react_types.iter().filter(|t| !self.react.contains_key(*t)).map(|t| format!("type {t}")),
         );
+        react.extend(self.react_values.iter().cloned());
         react.sort();
         if !react.is_empty() {
             out.push_str(&format!("import {{ {} }} from \"react\"\n", react.join(", ")));
@@ -960,6 +972,7 @@ impl<'s> Tr<'s> {
     // ---- items ---------------------------------------------------------------
 
     fn item(&mut self, statement: &Statement, defaults: &HashSet<String>, body: &[Statement]) -> String {
+        self.hook_fn = false;
         match statement {
             Statement::ExportDeclaration(export) => {
                 self.declaration(&export.declaration, "pub ", defaults, body)
@@ -1231,6 +1244,24 @@ impl<'s> Tr<'s> {
             }
             if self.is_lang(&callee, "defineModifier") {
                 return String::new();
+            }
+            // `lazy(() => import("./X"))`: React's `lazy` with a Bloom closure, a component.
+            if self.react.get(&callee).is_some_and(|e| e == "lazy")
+                && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
+                && arrow.params.items.is_empty()
+                && let Some(body) = arrow.get_expression()
+            {
+                self.react_values.insert(if callee == "lazy" {
+                    callee.clone()
+                } else {
+                    format!("lazy as {callee}")
+                });
+                self.dynamic_import = true;
+                let body = self.expr(body);
+                self.dynamic_import = false;
+                let name = self.bind_param(name, call.span);
+                self.views.insert(name.clone());
+                return format!("{vis}let {name} = {callee} {{ {body} }}");
             }
             if matches!(self.react.get(&callee).map(String::as_str), Some("lazy" | "forwardRef")) {
                 return self.refuse(

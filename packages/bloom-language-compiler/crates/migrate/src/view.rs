@@ -1009,12 +1009,12 @@ impl Tr<'_> {
     /// A TS hook or a React component at module level: neither is a `.bloom` function
     /// (hooks are view members; a component that returns JSX is still React).
     fn module_fn_kind(&mut self, name: &str, span: Span) -> Option<String> {
-        if is_hook_name(name) {
-            return Some(self.refuse(
-                "hook:module",
-                format!("`{name}` is a TS hook (hooks are view members in `.bloom`)"),
-                span,
-            ));
+        // A TS hook is a hook function (`fn useX`): its `let`s may call hooks; React's
+        // memo hooks stay calls (`useMemo({ … }, [deps])`), since a hook function is not
+        // memoised by bloomc.
+        self.hook_fn = is_hook_name(name);
+        if self.hook_fn {
+            return None;
         }
         if name.starts_with(|c: char| c.is_ascii_uppercase()) && has_jsx(self.src, span) {
             return Some(self.refuse(
@@ -1048,6 +1048,17 @@ impl Tr<'_> {
         };
         // A result type bloomc infers: a closure `let` (a `fn` signature is required).
         let closure = ret.as_deref() == Some(INFERRED);
+        if closure && self.hook_fn {
+            self.scope = saved;
+            return self.refuse(
+                "hook:return-type",
+                format!("`{name}` returns a value without a return type (a hook function needs one)"),
+                match body {
+                    Body::Expr(e) => e.span(),
+                    Body::Block(_, end) => Span::new(end, end),
+                },
+            );
+        }
         if closure && (is_async || params.contains(" = ")) {
             self.scope = saved;
             return self.refuse(
