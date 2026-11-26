@@ -14,13 +14,13 @@ use bloom_lang::package::{Platform, TargetKind};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
 /// The Bloom release this toolchain builds against (`bloom new` writes it).
-pub const BLOOM_VERSION: &str = "23.9.1";
+pub const BLOOM_VERSION: &str = "23.10.0";
 
 /// The runtime under a Bloom app, pinned as Bloom's own repository pins it
 /// (a test keeps this table equal to Bloom's `package.json` files).
 pub const RUNTIME: &[(&str, &str)] = &[
     ("@oxy.so/bloom", BLOOM_VERSION),
-    ("@oxy.so/bloom-language", "1.7.0"),
+    ("@oxy.so/bloom-language", "2.0.0"),
     ("@oxy.so/bloom-language-compiler", "1.6.0"),
     ("expo", "~58.0.23"),
     ("expo-blur", "~58.0.5"),
