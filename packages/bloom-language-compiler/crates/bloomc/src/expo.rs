@@ -48,6 +48,11 @@ pub const RUNTIME: &[(&str, &str)] = &[
 pub const STDLIB_NATIVE: &[(&str, &str)] =
     &[("expo-file-system", "~58.0.13"), ("expo-secure-store", "~58.0.2"), ("expo-sqlite", "~58.0.15")];
 
+/// The native modules of today's router under `NavigationStack`: Bloom's tab pager swipes
+/// and selects its pages on `react-native-pager-view` (Bloom's optional peer, which an app
+/// without it lacks: its tabs would not change). Pinned as Mention pins it.
+pub const ROUTER_NATIVE: &[(&str, &str)] = &[("react-native-pager-view", "9.0.11")];
+
 /// Build tools, not shipped in the app.
 pub const TOOLS: &[(&str, &str)] = &[
     ("typescript", "~6.0.3"),
@@ -550,6 +555,9 @@ mod tests {
         let metro = std::fs::read_to_string(package.build_dir().join("metro.config.js")).unwrap();
         for (name, version) in STDLIB_NATIVE {
             assert_eq!(manifest.get("dependencies").get(name).as_str(), Some(*version), "{name}");
+            assert!(
+                ROUTER_NATIVE.iter().all(|(n, v)| manifest.get("dependencies").get(n).as_str() == Some(*v))
+            );
             assert!(metro.contains(&format!("'{name}'")), "{name} reaches the web bundle:\n{metro}");
             assert!(
                 bloom_lang::stdlib::SOURCES
