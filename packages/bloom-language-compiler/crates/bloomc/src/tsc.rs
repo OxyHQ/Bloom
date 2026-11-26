@@ -19,7 +19,7 @@ use std::time::Instant;
 use bloom_lang::ast::Visibility;
 use bloom_lang::{Diagnostic, Span};
 
-use crate::files::{bloom_files, relative, relative_url};
+use crate::files::{bloom_files, normalize, relative, relative_url};
 use crate::json::{self, Value, object};
 use crate::{parallel, text};
 
@@ -206,21 +206,6 @@ fn generated_config(root: &Path, tsconfig: &Path, mirror: &Path, roots: &[PathBu
         ("files", Value::Array(roots.iter().map(|r| from_mirror(mirror, r).into()).collect())),
         ("include", Value::Array(Vec::new())),
     ]))
-}
-
-/// `a/./b/../c` as `a/c`.
-fn normalize(path: &Path) -> PathBuf {
-    let mut out = PathBuf::new();
-    for component in path.components() {
-        match component {
-            std::path::Component::CurDir => {}
-            std::path::Component::ParentDir => {
-                out.pop();
-            }
-            other => out.push(other),
-        }
-    }
-    out
 }
 
 /// `paths` as written: each pattern with its targets.

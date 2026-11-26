@@ -15,6 +15,7 @@
 //! (every `.bloom` file of the project when no path is given).
 
 mod build;
+mod complete;
 mod files;
 mod json;
 mod lsp;
