@@ -121,18 +121,20 @@ pub fn dependencies(source: &str, filename: &str, options: &Options) -> Vec<Path
 /// Files are also checked against the disk (modified time and length) once per compile.
 pub fn invalidate(path: &std::path::Path) {
     ts::invalidate(path);
+    check::forget(Some(path));
 }
 
 /// Forgets every TS summary this thread has read.
 pub fn clear_caches() {
     ts::clear_caches();
+    check::forget(None);
 }
 
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
-    let mut checked = check::check(&file, source, filename, options);
+    let mut checked = check::check_for_emit(&file, source, filename, options);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
     let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
     let mut output = Output {
@@ -147,30 +149,9 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
         let emitted = emit::emit(&file, &checked, source, filename, options);
         errors.extend(emitted.diagnostics);
         if errors.is_empty() {
-            let embedded = bloom_language_compiler::compile(&emitted.code, &ts_filename(filename));
-            // The embedded pass checks every chain again; anything it finds is
-            // reported at the `.bloom` span that wrote the chain.
-            for problem in embedded.diagnostics {
-                errors.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Error));
-            }
-            for problem in embedded.warnings {
-                warnings.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Warning));
-            }
-            if errors.is_empty() {
-                let (code, map) = if embedded.changed {
-                    let map = embedded
-                        .map
-                        .as_deref()
-                        .map(|map| emitted.map.compose(map, &emitted.code, filename, source));
-                    (embedded.code, map)
-                } else {
-                    let map = emitted.map.to_json(filename, source, &emitted.code);
-                    (emitted.code, Some(map))
-                };
-                output.code = code;
-                output.map = map;
-                output.dts = Some(emitted.dts);
-            }
+            output.map = Some(emitted.map.to_json(filename, source, &emitted.code));
+            output.code = emitted.code;
+            output.dts = Some(emitted.dts);
         }
     }
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
@@ -191,9 +172,4 @@ fn merge(syntax: Vec<Diagnostic>, checked: Vec<Diagnostic>) -> (Vec<Diagnostic>,
     let (errors, warnings): (Vec<_>, Vec<_>) =
         checked.into_iter().partition(|d| d.severity == Severity::Error);
     if has_syntax { (syntax, warnings) } else { (errors, warnings) }
-}
-
-/// The emitted module's name, for the embedded pass: `x.bloom` is `x.bloom.ts`.
-fn ts_filename(filename: &str) -> String {
-    format!("{filename}.ts")
 }
