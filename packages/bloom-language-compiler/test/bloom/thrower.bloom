@@ -1,0 +1,15 @@
+import { explode } from "./explode"
+
+/// A handler that throws, for the source-map test: the frame must name line 9.
+pub view Thrower() {
+  @state presses = 0
+
+  fn press() {
+    presses += 1
+    explode("from a .bloom handler")
+  }
+
+  body {
+    Button(Text("Throw")).onPress { press() }
+  }
+}

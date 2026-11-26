@@ -1,0 +1,121 @@
+// An assertion line starts with `//` and a run of `^`: each `^` column of the
+// line above has every listed scope (the test reads this file, see grammar.test.mjs).
+import { useTranslation } from "react-i18next"
+// <---- keyword.control.import.bloom
+//                        ^^^^ keyword.control.import.bloom
+//                             ^^^^^^^^^^^^^^^ string.quoted.double.bloom
+
+/// A draft, as the composer holds it.
+// <--- comment.line.documentation.bloom
+/* outer /* nested */ still a comment */ struct Draft {
+//                    ^^^^^ comment.block.bloom
+//                                       ^^^^^^ storage.type.struct.bloom
+//                                              ^^^^^ entity.name.type.struct.bloom
+  text: String = ""
+//      ^^^^^^ support.type.primitive.bloom
+  count: Int = 1_000
+//             ^^^^^ constant.numeric.integer.bloom
+  ratio: Float = 2.5e3
+//               ^^^^^ constant.numeric.float.bloom
+  mask: Int = 0xff
+//            ^^^^ constant.numeric.hex.bloom
+}
+
+enum Load<T> {
+// <---- storage.type.enum.bloom
+//   ^^^^ entity.name.type.enum.bloom
+  loading
+  failed(message: String)
+//       ^^^^^^^ variable.parameter.bloom
+}
+
+pub view Composer(maxLength: Int = 500) {
+// <--- storage.modifier.bloom
+//  ^^^^ storage.type.view.bloom
+//       ^^^^^^^^ entity.name.type.view.bloom
+  @state draft = Draft()
+//^^^^^^ storage.modifier.attribute.bloom
+//^ punctuation.definition.attribute.bloom
+  @list feed = posts
+//^^^^^ storage.modifier.attribute.bloom
+  let left = maxLength - draft.text.count
+//^^^ storage.type.let.bloom
+//    ^^^^ variable.other.declaration.bloom
+//                             ^^^^ variable.other.property.bloom
+
+  async fn send() {
+//^^^^^ storage.modifier.bloom
+//      ^^ storage.type.function.bloom
+//         ^^^^ entity.name.function.bloom
+    match await load() {
+//  ^^^^^ keyword.control.bloom
+//        ^^^^^ keyword.control.bloom
+      case .ok(_) => draft = Draft()
+//    ^^^^ keyword.control.case.bloom
+//          ^^ variable.other.enummember.bloom
+//                ^^ keyword.operator.arrow.bloom
+      case Load.failed(message) => toast("Failed: ${message}", type: "error")
+//              ^^^^^^ variable.other.enummember.bloom
+//         ^^^^ entity.name.type.bloom
+//                                                  ^^^^^^^ meta.interpolation.bloom
+//                                                ^^ punctuation.section.interpolation.begin.bloom
+//                                                                   ^ string.quoted.double.bloom
+//                                                             ^^^^ variable.parameter.bloom
+    }
+    draft = .loading
+//           ^^^^^^^ variable.other.enummember.bloom
+  }
+
+  body {
+//^^^^ keyword.other.body.bloom
+    VStack {
+//  ^^^^^^ entity.name.type.bloom
+      TextField($draft.text, "Say \"hi\"\n")
+//              ^^^^^^ variable.other.binding.bloom
+//              ^ punctuation.definition.binding.bloom
+//                                ^^ constant.character.escape.bloom
+//                                      ^^ constant.character.escape.bloom
+      Text("${left}").foreground(left < 0 ? "error" : "muted")
+//                    ^^^^^^^^^^ entity.name.function.modifier.bloom
+//                                           ^^^^^ constant.other.token.bloom
+//                                                     ^^^^^ constant.other.token.bloom
+      Button(Text("Send")).disabled(!canSend).onPress { await send() }
+//                                            ^^^^^^^ entity.name.function.modifier.bloom
+//                                                      ^^^^^ keyword.control.bloom
+      for post in feed {
+//    ^^^ keyword.control.bloom
+//             ^^ keyword.control.bloom
+        PostRow(post: post)
+      }
+    }
+    .spacing("md")
+//   ^^^^^^^ entity.name.function.modifier.bloom
+//            ^^ constant.other.token.bloom
+    .background("primary/10")
+//               ^^^^^^^^^^ constant.other.token.bloom
+    .onChange(of: draft) { old, new in save(new) }
+//                         ^^^^^^^^ variable.parameter.closure.bloom
+//                                  ^^ keyword.control.in.bloom
+  }
+}
+
+let note = """
+  multi ${count} line
+//        ^^^^^ meta.embedded.line.bloom
+  """
+let nothing: String? = none
+//                 ^ keyword.operator.optional.bloom
+//                     ^^^^ constant.language.none.bloom
+let done = true && !false
+//         ^^^^ constant.language.boolean.bloom
+//              ^^ keyword.operator.logical.bloom
+
+fn save(value: Int) -> Promise<Unit> {
+//                     ^^^^^^^ support.type.primitive.bloom
+  defer { log("saved") }
+//^^^^^ keyword.control.bloom
+  task { await store(value) }
+//^^^^ keyword.control.bloom
+  Text("a").task { await load() }
+//          ^^^^ entity.name.function.modifier.bloom
+}

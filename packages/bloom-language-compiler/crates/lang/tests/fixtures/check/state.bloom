@@ -1,0 +1,29 @@
+import { useTranslation } from "react-i18next"
+
+view Counter {
+  @state count = 0
+  let doubled = count * 2
+
+  fn bump() {
+    count += 1
+    let shown = count
+  }
+
+  body {
+    Button(Text("${doubled}")).onPress { bump() }
+  }
+}
+
+fn helper() -> String {
+  let { t } = useTranslation()
+  t("x")
+}
+
+view Draws {
+  @state open = false
+  let flipped = if open { 1 } else {
+    open = true
+    2
+  }
+  body { Text("z") }
+}

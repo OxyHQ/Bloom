@@ -192,6 +192,10 @@ jobs:
           for package in packages/bloom-language-compiler packages/bloom-data packages/bloom-language-codemod; do
             (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
           done
+      # The VS Code extension's .bloom grammar against its scope fixtures, run
+      # through vscode-textmate, the engine VS Code uses.
+      - name: Bloom VS Code grammar
+        run: cd packages/bloom-vscode && bun run test
       # The codemod as an app installs it: packed as the release packs it, with
       # the language, installed outside the repository, run on Node.
       - name: Codemod CLI runs from its packed tarball

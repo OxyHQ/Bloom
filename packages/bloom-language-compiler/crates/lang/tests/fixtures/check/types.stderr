@@ -1,0 +1,44 @@
+error[B0203]: an optional is never optional again
+  --> check/types.bloom:22:14
+   |
+22 | fn nested(x: Int??) -> Int { 0 }
+   |              ^^^^^ `T??` has no meaning `T?` lacks
+   |
+help: write one `?`: an optional's absence is `none` alone
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#41-the-types
+
+error[B0201]: expected `Float`, found `Int`
+ --> check/types.bloom:7:3
+  |
+7 |   a * b
+  |   ^ this is `Int`
+  |
+help: convert it: `.toFloat()` (Bloom never converts numbers implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: `Post?` may be `none`
+  --> check/types.bloom:11:8
+   |
+11 |   post.title
+   |        ^^^^^ `.title` would read nothing when it is `none`
+   |
+help: write `?.title`, or unwrap it first (`if let`, `??`)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+
+error[B0206]: `Post` needs `title`
+  --> check/types.bloom:15:3
+   |
+15 |   Post(likes: 1)
+   |   ^^^^ missing field(s) without a default
+   |
+help: pass it: `Post(title: …)`, or give the field a default
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0205]: `Post` has no field `like`
+  --> check/types.bloom:19:8
+   |
+19 |   post.like
+   |        ^^^^ no such field
+   |
+help: did you mean `likes`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

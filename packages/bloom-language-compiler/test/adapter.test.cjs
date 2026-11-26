@@ -2,6 +2,8 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
 const { vlqMapFromTuples } = require('metro-source-map');
@@ -9,6 +11,7 @@ const { vlqMapFromTuples } = require('metro-source-map');
 const { compileModule } = require('../js/compile');
 const { remapMetroMap } = require('../js/remap');
 const { createTransformer } = require('../js/jest');
+const { withBloomLanguage } = require('../js/metro');
 
 const ROW = `import { HStack, Text } from '@oxy.so/bloom-language';
 
@@ -97,4 +100,160 @@ export function Feed() {
   assert.equal(said.length, 1);
   assert.match(said[0], /^warning\[bloom\]: glass in scrolling content/);
   assert.match(said[0], /= docs: https:\/\/\S+\/bloom-language-tour\.mdx#liquid-glass-rules$/m);
+});
+
+test('withBloomLanguage lets Metro resolve .bloom modules, once', () => {
+  const config = withBloomLanguage({ resolver: { sourceExts: ['ts', 'tsx', 'js'] } });
+  assert.deepEqual(config.resolver.sourceExts, ['ts', 'tsx', 'js', 'bloom']);
+  assert.deepEqual(withBloomLanguage(config).resolver.sourceExts, ['ts', 'tsx', 'js', 'bloom']);
+  assert.match(config.transformerPath, /metro-transformer\.js$/);
+});
+
+const COUNTER = `pub view Counter() {
+  @state count = 0
+
+  body {
+    Button(Text("\${count}")).onPress { count += 1 }
+  }
+}
+`;
+
+test('a .bloom module reaches the upstream transformer as TypeScript, with its map inline', () => {
+  const upstream = require.resolve('./support/echo-transformer.cjs');
+  const transformer = createTransformer({ upstream: [upstream, {}] });
+  const result = transformer.process(COUNTER, '/app/Counter.bloom', {});
+  assert.equal(result.filename, '/app/Counter.bloom.ts');
+  assert.match(result.code, /useState/);
+  const inline = /\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,(\S+)\n$/.exec(
+    result.code,
+  );
+  assert.ok(inline, 'an inline source map');
+  const map = JSON.parse(Buffer.from(inline[1], 'base64').toString('utf8'));
+  assert.deepEqual(map.sources, ['/app/Counter.bloom']);
+});
+
+test('a .bloom error is a thrown, rendered diagnostic at its position', () => {
+  const transformer = createTransformer({
+    upstream: [require.resolve('./support/echo-transformer.cjs'), {}],
+  });
+  assert.throws(
+    () =>
+      transformer.process(
+        COUNTER.replace('@state count = 0', '@state count = '),
+        '/app/Bad.bloom',
+        {},
+      ),
+    (error) => {
+      assert.match(error.message, /^error\[B01\d\d\]/m);
+      assert.match(error.message, /--> \/app\/Bad\.bloom:4:3\n/);
+      assert.equal(error.filename, '/app/Bad.bloom');
+      assert.equal(error.lineNumber, 4);
+      assert.equal(error.column, 2);
+      return true;
+    },
+  );
+});
+
+test('the Metro worker hands a .bloom module on as TypeScript and maps it back to the .bloom', async () => {
+  const { transform } = require('../js/metro-transformer');
+  const config = {
+    bloomLanguage: { upstreamTransformerPath: require.resolve('./support/echo-worker.cjs') },
+  };
+  const result = await transform(config, '/app', '/app/Counter.bloom', Buffer.from(COUNTER), {});
+  assert.equal(result.filename, '/app/Counter.bloom.ts');
+  const [output] = result.output;
+  assert.match(output.data.code, /useState/);
+  // Every mapped segment now points into the .bloom file (7 lines).
+  const lines = output.data.map
+    .filter((segment) => segment.length >= 4)
+    .map((segment) => segment[2]);
+  assert.ok(lines.length > 0);
+  assert.ok(
+    lines.every((line) => line >= 1 && line <= 7),
+    `lines ${lines}`,
+  );
+  assert.equal(output.data.functionMap, null);
+});
+
+test('the addon compiles .bloom: a tiny view has code, a bad token a diagnostic', () => {
+  const { compileBloom, checkBloom } = require('../js/native');
+  const view = 'view A {\n  body { Text("a") }\n}\n';
+  const output = compileBloom(view, 'min.bloom', {});
+  assert.deepEqual(output.diagnostics, []);
+  assert.match(output.code, /view\(function A\(/);
+  assert.ok(JSON.parse(output.map).mappings.length > 0);
+  const bad = compileBloom(
+    view.replace('Text("a")', 'Text("a").padding("medium")'),
+    'min.bloom',
+    {},
+  );
+  assert.equal(bad.code, '');
+  assert.deepEqual(
+    bad.diagnostics.map((d) => d.code),
+    ['B0502'],
+  );
+  assert.ok(checkBloom(view, 'min.bloom', {}).types.length > 0);
+});
+
+const PROJECT = path.join(__dirname, 'bloom/project');
+const HELLO = path.join(PROJECT, 'src/screens/hello.bloom');
+
+test("a .bloom module's TS imports resolve from Jest's rootDir, through the tsconfig's paths", () => {
+  const transformer = createTransformer({
+    upstream: [require.resolve('./support/echo-transformer.cjs'), {}],
+  });
+  const said = [];
+  const warn = console.warn;
+  console.warn = (message) => said.push(message);
+  try {
+    transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, { config: { rootDir: PROJECT } });
+    assert.deepEqual(said, []);
+    // Without the root, `@/greeting` is not found: the case the root fixes.
+    transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, {});
+    assert.match(
+      said.join('\n'),
+      /warning\[B0602\]: cannot find TS declarations for "@\/greeting"/,
+    );
+  } finally {
+    console.warn = warn;
+  }
+});
+
+test('Metro compiles a .bloom module by its absolute path, from the project root', async () => {
+  const { transform } = require('../js/metro-transformer');
+  const config = {
+    bloomLanguage: { upstreamTransformerPath: require.resolve('./support/echo-worker.cjs') },
+  };
+  const said = [];
+  const warn = console.warn;
+  console.warn = (message) => said.push(message);
+  try {
+    const relative = path.relative(PROJECT, HELLO);
+    const result = await transform(config, PROJECT, relative, fs.readFileSync(HELLO), {});
+    assert.equal(result.filename, `${relative}.ts`);
+    assert.deepEqual(said, []);
+  } finally {
+    console.warn = warn;
+  }
+});
+
+test('bloom-lang-dts writes Name.d.bloom.ts beside each .bloom file, once', () => {
+  const { main } = require('../js/dts');
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'bloom-dts-'));
+  fs.writeFileSync(path.join(dir, 'Counter.bloom'), COUNTER);
+  const error = console.error;
+  console.error = () => {};
+  try {
+    assert.equal(main([dir]), 0);
+    const dts = fs.readFileSync(path.join(dir, 'Counter.d.bloom.ts'), 'utf8');
+    assert.match(dts, /export declare const Counter/);
+    const before = fs.statSync(path.join(dir, 'Counter.d.bloom.ts')).mtimeMs;
+    assert.equal(main([path.join(dir, 'Counter.bloom')]), 0);
+    assert.equal(fs.statSync(path.join(dir, 'Counter.d.bloom.ts')).mtimeMs, before);
+    fs.writeFileSync(path.join(dir, 'Bad.bloom'), 'pub view Bad( {\n');
+    assert.equal(main([dir]), 1);
+  } finally {
+    console.error = error;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

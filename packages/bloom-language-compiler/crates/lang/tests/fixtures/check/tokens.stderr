@@ -1,0 +1,26 @@
+error[B0502]: `"medium"` is not a padding token
+ --> check/tokens.bloom:5:18
+  |
+5 |         .padding("medium")
+  |                  ^^^^^^^^ expected one of: none 2xs xs sm md lg xl 2xl 3xl 4xl 5xl
+  |
+help: did you mean `"md"`?
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#padding
+
+error[B0501]: `Text` has no modifier `.paddng`
+  --> check/tokens.bloom:12:15
+   |
+12 |     Text("x").paddng("md")
+   |               ^^^^^^ not a modifier of this node
+   |
+help: did you mean `.padding`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#text
+
+error[B0502]: `.spacing` takes space tokens, not the number 16
+  --> check/tokens.bloom:18:34
+   |
+18 |     VStack { Text("y") }.spacing(16)
+   |                                  ^^ a number written out
+   |
+help: write one of the space tokens
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#space
