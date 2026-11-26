@@ -1,0 +1,55 @@
+// `Map<K, V>` and `Set<T>`: JS `Map` and `Set`, built as `Map(entries)` / `Set(values)`.
+// Their methods give new collections; `[k: v]` stays the dictionary literal.
+
+struct Seen {
+  ids: Set<String>
+  counts: Map<Int, String>
+}
+
+fn build(ids: [String]) -> Seen {
+  Seen(ids: Set(ids), counts: Map([(1, "one"), (2, "two")]))
+}
+
+fn empty() -> Map<String, Int> {
+  Map()
+}
+
+fn mark(seen: Seen, id: String) -> Seen {
+  let ids = seen.ids.contains(id) ? seen.ids.removing(id) : seen.ids.inserting(id)
+  Seen(ids: ids, counts: seen.counts.setting(seen.ids.count, id).removing(0))
+}
+
+fn name(seen: Seen, n: Int) -> String {
+  seen.counts.get(n) ?? "?"
+}
+
+fn total(seen: Seen) -> Int {
+  var sum = 0
+  for (key, value) in seen.counts {
+    sum += key + value.count
+  }
+  for id in seen.ids {
+    sum += id.count
+  }
+  sum + seen.counts.keys.count + (seen.ids.isEmpty ? 0 : 1)
+}
+
+pub view Tags(seen: Seen) {
+  @state picked = Set<String>()
+
+  body {
+    VStack {
+      for id in seen.ids {
+        Button(Text(id)).onPress {
+          picked = picked.inserting(id)
+        }
+      }
+      Text("${picked.count}")
+    }
+  }
+}
+
+// `[..a, b]`: a list's items, in place.
+fn joined(a: [Int], b: [Int]) -> [Int] {
+  [0, ..a, ..b.filter { x in x > 1 }, 9]
+}

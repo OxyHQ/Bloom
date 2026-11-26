@@ -1,0 +1,17 @@
+error[B0411]: `count` is a `@ref`, used while the view draws
+ --> check/refs.bloom:5:17
+  |
+5 |   let doubled = count * 2
+  |                 ^^^^^ a ref changes without a render, so the body would not follow it
+  |
+help: read or write it in a handler, an `effect` or a `.task`; make it `@state` to draw it; pass it to `.ref(x)` as is
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0411]: `count` is a `@ref`, used while the view draws
+ --> check/refs.bloom:8:13
+  |
+8 |     Text("${count}")
+  |             ^^^^^ a ref changes without a render, so the body would not follow it
+  |
+help: read or write it in a handler, an `effect` or a `.task`; make it `@state` to draw it; pass it to `.ref(x)` as is
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time

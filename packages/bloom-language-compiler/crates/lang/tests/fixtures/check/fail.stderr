@@ -1,0 +1,34 @@
+error[B0222]: `fail(e)` throws, and nothing here catches a throw
+ --> check/fail.bloom:4:21
+  |
+4 |   if name.isEmpty { fail(Error("No name")) }
+  |                     ^^^^^^^^^^^^^^^^^^^^^^ not a closure TS calls, nor `catching { … }`
+  |
+help: return the error: `return err(e)`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0222]: `fail(e)` throws, and nothing here catches a throw
+ --> check/fail.bloom:9:21
+  |
+9 |   if name.isEmpty { fail(Error("No name")) }
+  |                     ^^^^^^^^^^^^^^^^^^^^^^ not a closure TS calls, nor `catching { … }`
+  |
+help: return a `Result` and `return err(e)`; only a closure TS calls throws
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0201]: expected `Error`, found `Int`
+  --> check/fail.bloom:14:18
+   |
+14 |   let f = { fail(1) }
+   |                  ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0222]: `fail(e)` throws, and nothing here catches a throw
+  --> check/fail.bloom:14:13
+   |
+14 |   let f = { fail(1) }
+   |             ^^^^^^^ not a closure TS calls, nor `catching { … }`
+   |
+help: return a `Result` and `return err(e)`; only a closure TS calls throws
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency

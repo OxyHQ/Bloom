@@ -1,0 +1,120 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { fetchCount, onRefresh, useQueryOf } from "@/api";
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+
+export function host(link: string): string {
+let $t0: $Result<InstanceType<typeof globalThis.URL>, Error>;
+try {
+let $t1: InstanceType<typeof globalThis.URL>;
+{
+$t1 = new URL(link);
+}
+$t0 = { ok: true, value: $t1 };
+} catch ($error) {
+$t0 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const parsed = $t0;
+if (parsed.ok) {
+return (parsed.value.hostname satisfies string);
+} else {
+return "";
+}
+}
+
+export function count(text: string): number {
+let $t2: $Result<number, Error>;
+try {
+let $t3: number;
+{
+const value: number = (JSON.parse(text) satisfies number);
+$t3 = value + 1;
+}
+$t2 = { ok: true, value: $t3 };
+} catch ($error) {
+$t2 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const read = $t2;
+if (read.ok) {
+return read.value;
+} else {
+return read.error.message.length;
+}
+}
+
+const WWW = new RegExp("^www\\.", "i");
+
+export function bare(host: string): string {
+return host.replace(WWW, "");
+}
+
+export function spaced(text: string): string {
+return text.replaceAll(" ", "_");
+}
+
+export function isWww(host: string): boolean {
+return (WWW.test(host) satisfies boolean);
+}
+
+export function digits(text: string): boolean {
+return text.match(new RegExp("[0-9]+")) != null;
+}
+
+export async function total(id: string): Promise<number> {
+let $t4: $Result<number, Error>;
+try {
+let $t5: number;
+{
+const n = (await fetchCount(id));
+$t5 = n + 1;
+}
+$t4 = { ok: true, value: $t5 };
+} catch ($error) {
+$t4 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const read = $t4;
+if (read.ok) {
+return read.value;
+} else {
+return 0;
+}
+}
+
+async function reload(): Promise<void> {
+}
+
+async function zero(): Promise<number> {
+return 0;
+}
+
+export interface CountsProps {
+  readonly id: string;
+}
+export const Counts = view(function Counts(props: CountsProps) {
+"use no memo";
+const $ = $c(3);
+const { id } = props;
+const { data } = useQueryOf({ queryKey: [id], queryFn: async () => {
+const n = (await fetchCount(id));
+return n * 2;
+} });
+let $t6;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t6 = onRefresh(reload);
+$[0] = $t6;
+} else {
+$t6 = $[0];
+}
+useQueryOf({ queryKey: ["zero"], queryFn: zero });
+let $t7;
+if ($[1] !== data) {
+$t7 = Text(`${data ?? 0}`);
+$[1] = data;
+$[2] = $t7;
+} else {
+$t7 = $[2];
+}
+return $t7;
+});
+

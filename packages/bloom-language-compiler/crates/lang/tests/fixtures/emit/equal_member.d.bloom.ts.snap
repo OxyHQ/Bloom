@@ -1,0 +1,12 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+interface Post {
+  readonly id: string;
+  readonly likes: number;
+}
+export interface PostRowProps {
+  readonly post: Post;
+  readonly seen: number;
+  readonly compact?: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostRow())`), or from TSX as `toElement(PostRow())`. */
+export declare const PostRow: (props: PostRowProps) => ComposedView;

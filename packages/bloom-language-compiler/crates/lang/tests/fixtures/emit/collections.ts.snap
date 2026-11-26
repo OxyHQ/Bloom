@@ -1,0 +1,74 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+function $mapDeleting<K, V>(map: ReadonlyMap<K, V>, key: K): ReadonlyMap<K, V> {
+  const copy = new Map(map);
+  copy.delete(key);
+  return copy;
+}
+function $setDeleting<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
+  const copy = new Set(set);
+  copy.delete(value);
+  return copy;
+}
+
+interface Seen {
+  readonly ids: ReadonlySet<string>;
+  readonly counts: ReadonlyMap<number, string>;
+}
+
+function build(ids: readonly string[]): Seen {
+return { ids: new Set<string>(ids), counts: new Map<number, string>([[1, "one"] as const, [2, "two"] as const]) };
+}
+
+function empty(): ReadonlyMap<string, number> {
+return new Map<string, number>();
+}
+
+function mark(seen: Seen, id: string): Seen {
+const ids = seen.ids.has(id) ? $setDeleting(seen.ids, id) : new Set(seen.ids).add(id);
+return { ids: ids, counts: $mapDeleting(new Map(seen.counts).set(seen.ids.size, id), 0) };
+}
+
+function name(seen: Seen, n: number): string {
+return seen.counts.get(n) ?? "?";
+}
+
+function total(seen: Seen): number {
+let sum = 0;
+for (const [key, value] of seen.counts) {
+sum = sum + (key + value.length);
+}
+for (const id of seen.ids) {
+sum = sum + (id.length);
+}
+return (sum + [...seen.counts.keys()].length) + ((seen.ids.size === 0) ? 0 : 1);
+}
+
+export interface TagsProps {
+  readonly seen: Seen;
+}
+export const Tags = view(function Tags(props: TagsProps) {
+"use no memo";
+const $ = $c(5);
+const { seen } = props;
+const [picked, setPicked] = useState<ReadonlySet<string>>(() => new Set<string>());
+let $t0;
+if ($[2] !== seen.ids || $[3] !== picked) {
+$t0 = VStack([...seen.ids].map((id) => Button(Text(id)).onPress(() => {
+setPicked((picked) => new Set(picked).add(id));
+})), ($[0] !== picked ? ($[0] = picked, $[1] = Text(`${picked.size}`)) : $[1]));
+$[2] = seen.ids;
+$[3] = picked;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+});
+
+function joined(a: readonly number[], b: readonly number[]): readonly number[] {
+return [0, ...a, ...b.filter((x: number) => x > 1), 9];
+}
+

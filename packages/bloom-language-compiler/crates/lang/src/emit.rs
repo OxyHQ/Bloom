@@ -7,7 +7,8 @@
 //! the body `"use no memo"`. A closure that reads nothing reactive is a module
 //! constant. What would read a value twice is a small module-local helper.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::Options;
 use crate::ast::*;
@@ -22,6 +23,9 @@ use crate::types::*;
 pub const LANGUAGE: &str = "@oxy.so/bloom-language";
 pub const ROUTER: &str = "@oxy.so/bloom-language/router";
 pub const DATA: &str = "@oxy.so/bloom-data";
+
+/// `KeyPath<S, V>` in TS: the names of `S`'s fields whose type is `V`.
+const KEY_PATH: &str = "type $KeyPath<S, V> = { [K in keyof S]-?: S[K] extends V ? K : never }[keyof S];\n";
 
 pub struct Emitted {
     pub code: String,
@@ -113,6 +117,10 @@ struct Emitter<'a> {
     hoisted_names: HashMap<Span, String>,
     /// Static trees hoisted to module scope, by their text.
     hoisted_trees: HashMap<String, String>,
+    /// The item's expressions that are the same value on every evaluation (`mark_static`).
+    statics: HashSet<ExprId>,
+    /// Emitting a hoisted tree: what is inside it is not hoisted again.
+    in_static: bool,
     diagnostics: Vec<Diagnostic>,
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
@@ -120,7 +128,18 @@ struct Emitter<'a> {
     /// Inside a conditional operand: `?` cannot return early from here.
     conditional: usize,
     uses_result: bool,
+    uses_key_path: bool,
+    /// A pattern's bindings: each name is the path it binds (`post`, `$t0.value`), never a copy.
+    aliases: HashMap<LocalId, String>,
+    /// An awaited TS promise matched as a `Result`: its error temp → its value temp (none for `Unit`).
+    splits: HashMap<String, Option<String>>,
+    /// Comparison functions of recursive types (`$eq0`), by TS type: their name and type.
+    eq_helpers: Vec<(String, String, Ty)>,
+    /// Names for the element variables of list and map comparisons.
+    eq_vars: usize,
     names: HashSet<String>,
+    /// The next closure maps an `.enumerated()` list: its `(i, x)` is `(x, i)`.
+    enumerated: bool,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -130,7 +149,7 @@ struct Emitter<'a> {
 
 pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, options: &Options) -> Emitted {
     let names: HashSet<String> = ck.locals.iter().map(|l| l.name.clone()).collect();
-    let mut defaults = HashMap::new();
+    let mut defaults = HashMap::default();
     for item in &file.items {
         if let ItemKind::Struct(s) = &item.kind {
             for field in &s.fields {
@@ -150,14 +169,22 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         type_imports: BTreeMap::new(),
         helpers: BTreeSet::new(),
         hoisted: Vec::new(),
-        hoisted_names: HashMap::new(),
-        hoisted_trees: HashMap::new(),
+        hoisted_names: HashMap::default(),
+        hoisted_trees: HashMap::default(),
+        statics: HashSet::default(),
+        in_static: false,
         diagnostics: Vec::new(),
         view: None,
         signal: None,
         conditional: 0,
         uses_result: false,
+        uses_key_path: false,
+        aliases: HashMap::default(),
+        splits: HashMap::default(),
+        eq_helpers: Vec::new(),
+        eq_vars: 0,
         names,
+        enumerated: false,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -169,6 +196,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     let mut items = Frag::default();
     for (index, item) in file.items.iter().enumerate() {
         emitter.item_start = item.span.start;
+        emitter.statics = emitter.static_exprs(item);
         let emitted = emitter.item(index, item);
         for hoisted in std::mem::take(&mut emitter.hoisted) {
             items.f(hoisted).s("\n");
@@ -178,12 +206,16 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     let mut code = Frag::default();
     code.f(emitter.header());
     code.f(body);
+    if emitter.uses_key_path {
+        code.s(KEY_PATH);
+    }
     if emitter.uses_result {
         code.s("type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };\n");
     }
     for helper in std::mem::take(&mut emitter.helpers) {
         code.s(helper_text(helper)).s("\n");
     }
+    code.f(emitter.eq_functions());
     code.s("\n").f(items);
     let dts = emitter.dts(file);
     let map = Mappings { points: dedup(code.marks) };
@@ -278,7 +310,7 @@ fn capitalised(name: &str) -> String {
     chars.next().map_or_else(String::new, |c| c.to_ascii_uppercase().to_string() + chars.as_str())
 }
 
-fn string_literal(text: &str) -> String {
+pub(crate) fn string_literal(text: &str) -> String {
     let mut out = String::from("\"");
     for c in text.chars() {
         match c {
@@ -317,9 +349,6 @@ fn is_atom(expr: &Expr) -> bool {
 
 fn helper_text(name: &str) -> &'static str {
     match name {
-        "settle" => {
-            "async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {\n  try {\n    return { ok: true, value: await value };\n  } catch (error) {\n    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };\n  }\n}"
-        }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
         }
@@ -337,6 +366,12 @@ fn helper_text(name: &str) -> &'static str {
         }
         "removing" => {
             "function $removing<T>(items: readonly T[], at: number): readonly T[] {\n  return [...items.slice(0, at), ...items.slice(at + 1)];\n}"
+        }
+        "mapDeleting" => {
+            "function $mapDeleting<K, V>(map: ReadonlyMap<K, V>, key: K): ReadonlyMap<K, V> {\n  const copy = new Map(map);\n  copy.delete(key);\n  return copy;\n}"
+        }
+        "setDeleting" => {
+            "function $setDeleting<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {\n  const copy = new Set(set);\n  copy.delete(value);\n  return copy;\n}"
         }
         "without" => {
             "function $without<V>(map: Readonly<Record<string, V>>, key: string): Readonly<Record<string, V>> {\n  const { [key]: _, ...rest } = map;\n  return rest;\n}"
@@ -391,6 +426,8 @@ impl<'a> Emitter<'a> {
             "bloom/data" => DATA,
             "bloom/router" => ROUTER,
             "bloom/motion" => LANGUAGE,
+            // JS's own globals: named in the file, imported from nowhere.
+            "js" => return Frag::default(),
             other => other,
         };
         let mut out = Frag::at(import.span, "import ");
@@ -434,6 +471,8 @@ impl<'a> Emitter<'a> {
             Ty::JsError => "Error".into(),
             Ty::List(t) => format!("readonly {}[]", self.ts_operand(t)),
             Ty::Map(v) => format!("Readonly<Record<string, {}>>", self.ts_type(v)),
+            Ty::JsMap(k, v) => format!("ReadonlyMap<{}, {}>", self.ts_type(k), self.ts_type(v)),
+            Ty::Set(t) => format!("ReadonlySet<{}>", self.ts_type(t)),
             Ty::Tuple(items) => {
                 format!("readonly [{}]", items.iter().map(|t| self.ts_type(t)).collect::<Vec<_>>().join(", "))
             }
@@ -445,6 +484,17 @@ impl<'a> Emitter<'a> {
             Ty::Adt(def, args) => {
                 let d = &self.ck.defs[*def];
                 let base = match &d.origin {
+                    Origin::Record => {
+                        let fields: Vec<String> = d
+                            .fields()
+                            .iter()
+                            .map(|f| {
+                                let optional = if f.default == FieldDefault::Undefined { "?" } else { "" };
+                                format!("{}{optional}: {}", prop_key(&f.name), self.ts_type(&f.ty))
+                            })
+                            .collect();
+                        format!("{{ {} }}", fields.join("; "))
+                    }
                     Origin::Local => d.name.clone(),
                     Origin::Bloom { specifier } => {
                         if !self.ck.type_imports.contains(&d.name) {
@@ -467,6 +517,10 @@ impl<'a> Emitter<'a> {
                 }
             }
             Ty::Partial(inner) => format!("Partial<{}>", self.ts_type(inner)),
+            Ty::KeyPath(root, value) => {
+                self.uses_key_path = true;
+                format!("$KeyPath<{}, {}>", self.ts_type(root), self.ts_type(value))
+            }
             Ty::Fn(f) => {
                 let params: Vec<String> = f
                     .params
@@ -474,6 +528,9 @@ impl<'a> Emitter<'a> {
                     .enumerate()
                     .map(|(i, p)| {
                         let name = p.name.clone().map_or(format!("p{i}"), |n| js_name(&n));
+                        if p.rest {
+                            return format!("...{name}: {}[]", self.ts_type(&p.ty));
+                        }
                         let optional = if p.optional { "?" } else { "" };
                         format!("{name}{optional}: {}", self.ts_type(&p.ty))
                     })
@@ -491,7 +548,14 @@ impl<'a> Emitter<'a> {
                 format!("Binding<{}>", self.ts_type(t))
             }
             Ty::Strings(set) => set.values.iter().map(|v| string_literal(v)).collect::<Vec<_>>().join(" | "),
-            Ty::Foreign(path) if !path.is_empty() && !path.contains("Navigation") => path.to_string(),
+            Ty::Foreign(path) if !path.is_empty() && !path.contains("Navigation") => {
+                for name in ["ComponentRef", "ComponentProps"] {
+                    if path.contains(&format!("{name}<")) {
+                        self.type_imports.entry("react".into()).or_default().insert(name.into());
+                    }
+                }
+                path.to_string()
+            }
             Ty::Param(_, name) => name.to_string(),
             Ty::Foreign(_) | Ty::Var(_) | Ty::Unknown => "unknown".into(),
         }
@@ -501,6 +565,7 @@ impl<'a> Emitter<'a> {
         let text = self.ts_type(ty);
         if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_))
             || text.contains(" | ") && !text.starts_with('(')
+            || text.starts_with("readonly ")
         {
             format!("({text})")
         } else {
@@ -521,14 +586,28 @@ impl<'a> Emitter<'a> {
     // ---- names ------------------------------------------------------------
 
     fn local_name(&self, local: LocalId) -> String {
-        if let Some(view) = &self.view {
-            let _ = view;
+        if let Some(alias) = self.aliases.get(&local) {
+            return alias.clone();
+        }
+        if self.ck.whole_props.contains(&local) {
+            return "props".into();
         }
         let info = &self.ck.locals[local];
         if let Some(hoisted) = self.hoisted_names.get(&info.span) {
             return hoisted.clone();
         }
+        if info.kind == LocalKind::Ref {
+            return format!("{}.current", js_name(&info.name));
+        }
         js_name(&info.name)
+    }
+
+    /// A `@ref` passed to `.ref(x)`: a host view fills it, so it holds `null` when empty.
+    fn is_view_ref(&self, local: LocalId) -> bool {
+        self.ck
+            .ref_objects
+            .iter()
+            .any(|id| matches!(self.ck.names.get(id), Some(NameRes::Local(l)) if *l == local))
     }
 
     fn setter(&self, local: LocalId) -> String {
@@ -556,13 +635,7 @@ impl<'a> Emitter<'a> {
             ItemKind::Enum(e) => self.enum_decl(e, export),
             ItemKind::Alias(a) => {
                 let generics = self.generics(&a.generics);
-                let ty = self
-                    .ck
-                    .spans
-                    .iter()
-                    .find(|(span, _)| *span == a.ty.span)
-                    .map(|(_, t)| t.clone())
-                    .unwrap_or(Ty::Unknown);
+                let ty = self.ck.type_exprs.get(&a.ty.span).cloned().unwrap_or(Ty::Unknown);
                 let text = self.ts_type(&ty);
                 Frag::at(item.span, format!("{export}type {}{generics} = {text};\n", a.name.name))
             }
@@ -653,14 +726,20 @@ impl<'a> Emitter<'a> {
         let mut list = Vec::new();
         for (param, local) in f.params.iter().zip(&params) {
             let ty = self.ck.locals[*local].ty.clone();
-            let mut p = Frag::at(param.span, format!("{}: {}", js_name(&param.name.name), self.ts_type(&ty)));
+            let dots = if param.rest { "..." } else { "" };
+            let mut p =
+                Frag::at(param.span, format!("{dots}{}: {}", js_name(&param.name.name), self.ts_type(&ty)));
             if let Some(default) = &param.default {
                 p.s(" = ").f(self.value_expr(default));
             }
             list.push(p);
         }
-        let ret_ty =
-            f.ret.as_ref().and_then(|r| self.ck.type_exprs.get(&r.span).cloned()).unwrap_or(Ty::Unit);
+        let ret_ty = f
+            .ret
+            .as_ref()
+            .and_then(|r| self.ck.type_exprs.get(&r.span).cloned())
+            .or_else(|| self.ck.fn_rets.get(&f.span).cloned())
+            .unwrap_or(Ty::Unit);
         let ret = self.ts_return(&ret_ty, f.is_async);
         let generics = self.generics(&f.generics);
         let tail = if ret_ty == Ty::Unit { Tail::Discard } else { Tail::Return };
@@ -707,6 +786,20 @@ impl<'a> Emitter<'a> {
                 self.stmts(&stmts[index + 1..], tail, signal);
                 let rest = self.bufs.pop().expect("the rest");
                 let finally = self.block_body(&deferred.stmts, Tail::Discard, None);
+                if let Some(signal) = signal {
+                    // In a task, it also runs when the task is cancelled, then not again.
+                    let name = self.temp();
+                    let mut line = Frag::at(stmt.span, format!("const {name} = () => "));
+                    line.f(finally).s(&format!(";\n{signal}.addEventListener(\"abort\", {name});\ntry {{\n"));
+                    for l in rest {
+                        line.f(l).s("\n");
+                    }
+                    line.s(&format!(
+                        "}} finally {{\n{signal}.removeEventListener(\"abort\", {name});\nif (!{signal}.aborted) {name}();\n}}"
+                    ));
+                    self.push_stmt(line);
+                    return;
+                }
                 let mut line = Frag::at(stmt.span, "try {\n");
                 for l in rest {
                     line.f(l).s("\n");
@@ -730,6 +823,15 @@ impl<'a> Emitter<'a> {
 
     /// An expression whose value goes to `tail`.
     fn tail_expr(&mut self, expr: &Expr, tail: &Tail) {
+        // `fail(e)` as a statement, or a block's last line: `throw e;` (it gives no value).
+        if let ExprKind::Call(call) = &expr.kind
+            && self.ck.calls.get(&expr.id) == Some(&CallRes::Fail)
+        {
+            let mut line = Frag::at(expr.span, "throw ");
+            line.f(self.fail_value(call)).s(";");
+            self.push_stmt(line);
+            return;
+        }
         match (&expr.kind, tail) {
             (ExprKind::If(if_expr), _) if !self.simple_if(if_expr) || matches!(tail, Tail::Discard) => {
                 self.if_stmt(if_expr, tail)
@@ -739,6 +841,10 @@ impl<'a> Emitter<'a> {
             }
             (_, Tail::Discard) => {
                 let value = self.expr(expr);
+                // `await ping()?` as a statement: the work is in the statements it pushed.
+                if value.text == "undefined" {
+                    return;
+                }
                 let mut line = value;
                 line.s(";");
                 self.push_stmt(line);
@@ -765,7 +871,13 @@ impl<'a> Emitter<'a> {
                 let value = self.value_expr(&l.value);
                 let target = self.binding_target(&l.pattern);
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
-                let mut line = Frag::at(stmt.span, format!("const {target}{annotation} = "));
+                // `let _ = v`: the value, bound to nothing (two would redeclare `_`).
+                let head = if l.pattern.kind == PatternKind::Wildcard {
+                    String::new()
+                } else {
+                    format!("const {target}{annotation} = ")
+                };
+                let mut line = Frag::at(stmt.span, head);
                 line.f(value).s(";");
                 self.push_stmt(line);
             }
@@ -791,7 +903,15 @@ impl<'a> Emitter<'a> {
             }
             StmtKind::For(f) => {
                 let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                let mut iter = self.expr(&f.iter);
+                let mut iter = match self.enumerated_list(&f.iter) {
+                    // `for (i, x) in xs.enumerated()`: the array's own `[i, x]` entries.
+                    Some(list) => {
+                        let mut out = self.operand(list);
+                        out.s(".entries()");
+                        out
+                    }
+                    None => self.expr(&f.iter),
+                };
                 if matches!(iter_ty, Ty::Map(_)) {
                     iter = iter.wrap("Object.entries(", ")");
                 }
@@ -815,7 +935,19 @@ impl<'a> Emitter<'a> {
             PatternKind::Bind(name) => js_name(&name.name),
             PatternKind::Wildcard => "_".into(),
             PatternKind::Tuple(items) => {
-                format!("[{}]", items.iter().map(|p| self.binding_target(p)).collect::<Vec<_>>().join(", "))
+                // `(_, b)`: a hole, `[, b]`.
+                let items: Vec<String> =
+                    items
+                        .iter()
+                        .map(|p| {
+                            if p.kind == PatternKind::Wildcard {
+                                String::new()
+                            } else {
+                                self.binding_target(p)
+                            }
+                        })
+                        .collect();
+                format!("[{}]", items.join(", "))
             }
             PatternKind::Record(fields) => {
                 let parts: Vec<String> = fields
@@ -872,6 +1004,11 @@ impl<'a> Emitter<'a> {
                 line.s(");");
                 self.push_stmt(line);
             }
+            AssignRes::Foreign => {
+                let mut line = Frag::at(span, "");
+                line.f(self.expr(&a.target)).s(&format!(" {} ", a.op.text())).f(value).s(";");
+                self.push_stmt(line);
+            }
             AssignRes::Var { local, fields } => {
                 let name = self.local_name(local);
                 let new = if fields.is_empty() {
@@ -906,12 +1043,9 @@ impl<'a> Emitter<'a> {
     }
 
     fn if_stmt(&mut self, if_expr: &IfExpr, tail: &Tail) {
-        let (cond, bindings) = self.condition(&if_expr.cond);
+        let cond = self.condition(&if_expr.cond);
         let signal = self.signal.clone();
         self.bufs.push(Vec::new());
-        for (name, value) in bindings {
-            self.push_stmt(Frag::of(format!("const {name} = {value};")));
-        }
         self.stmts(&if_expr.then.stmts, tail.clone(), signal.as_deref());
         if if_expr.then.stmts.is_empty() {
             self.bind_unit(tail);
@@ -960,30 +1094,64 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// A condition's test and the names an `if let` binds.
-    fn condition(&mut self, cond: &Cond) -> (Frag, Vec<(String, String)>) {
+    /// A condition's test; the names an `if let` binds become aliases of their paths.
+    fn condition(&mut self, cond: &Cond) -> Frag {
         match cond {
-            Cond::Expr(expr) => (self.expr(expr), Vec::new()),
+            Cond::Expr(expr) => self.expr(expr),
             Cond::Let(pattern, value) => {
-                let subject = self.subject(value);
+                let subject = self.subject(value, &[pattern]);
                 let value_ty = self.ck.pattern_tys.get(&value.span).cloned().unwrap_or(Ty::Unknown);
                 // `if let v = optional` unwraps; any other pattern matches.
                 if let (PatternKind::Bind(name), Ty::Option(_)) = (&pattern.kind, &value_ty) {
-                    return (
-                        Frag::of(format!("{subject} !== undefined")),
-                        vec![(js_name(&name.name), subject)],
-                    );
+                    self.alias(name, &subject);
+                    return Frag::of(format!("{subject} !== undefined"));
                 }
-                let (tests, bindings) = self.pattern_test(pattern, &subject);
-                let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                (Frag::of(test), bindings)
+                let tests = self.pattern_test(pattern, &subject);
+                Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") })
             }
         }
     }
 
-    /// A value matched more than once: a path as is, anything else in a temp.
-    fn subject(&mut self, value: &Expr) -> String {
-        if is_path(value) && !matches!(value.kind, ExprKind::Call(_)) {
+    /// The type of what `expr` evaluates to.
+    fn expr_ty(&self, expr: &Expr) -> Ty {
+        self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown)
+    }
+
+    /// Whether `path` starts at a `var` (a value that can change while its bindings are read).
+    fn var_rooted(&self, path: &Expr) -> bool {
+        let mut root = path;
+        while let ExprKind::Field(inner, _) | ExprKind::Paren(inner) = &root.kind {
+            root = inner;
+        }
+        matches!(self.ck.names.get(&root.id), Some(NameRes::Local(l)) if matches!(self.ck.locals[*l].kind, LocalKind::Var | LocalKind::Ref))
+    }
+
+    /// `name` (a pattern's binding) reads `path`.
+    fn alias(&mut self, name: &Ident, path: &str) {
+        if let Some(local) = self.ck.pattern_locals.get(&name.span) {
+            self.aliases.insert(*local, path.to_string());
+        }
+    }
+
+    /// A value matched more than once: a path as is (one no `var` roots, so it
+    /// cannot change under its bindings), anything else in a temp; an awaited
+    /// TS promise is settled in place (`await_settled`), its value kept when
+    /// one of `patterns` binds it.
+    fn subject(&mut self, value: &Expr, patterns: &[&Pattern]) -> String {
+        // Settled in place when every pattern is `.ok(…)`, `.err(…)` or `_`; a
+        // pattern that binds the `Result` itself reads it whole.
+        if let ExprKind::Await(inner) = &value.kind
+            && self.ck.awaits.get(&value.id) == Some(&AwaitRes::Ts)
+            && patterns.iter().all(|p| matches!(p.kind, PatternKind::Case { .. } | PatternKind::Wildcard))
+        {
+            let keep = patterns.iter().any(|p| {
+                matches!(&p.kind, PatternKind::Case { name, args: Some(args), .. } if name.name == "ok" && args.iter().any(binds))
+            });
+            let (ok, error) = self.await_settled(value, inner, keep);
+            self.splits.insert(error.clone(), ok);
+            return error;
+        }
+        if is_path(value) && !matches!(value.kind, ExprKind::Call(_)) && !self.var_rooted(value) {
             return self.expr(value).text;
         }
         let name = self.temp();
@@ -995,17 +1163,15 @@ impl<'a> Emitter<'a> {
     }
 
     fn match_stmt(&mut self, m: &MatchExpr, tail: &Tail) {
-        let subject = self.subject(&m.scrutinee);
+        let patterns: Vec<&Pattern> = m.arms.iter().map(|a| &a.pattern).collect();
+        let subject = self.subject(&m.scrutinee, &patterns);
         let signal = self.signal.clone();
         let mut line = Frag::default();
         let count = m.arms.len();
         for (index, arm) in m.arms.iter().enumerate() {
-            let (mut tests, bindings) = self.pattern_test(&arm.pattern, &subject);
+            let mut tests = self.pattern_test(&arm.pattern, &subject);
             let last = index + 1 == count && arm.guard.is_none();
             self.bufs.push(Vec::new());
-            for (name, value) in &bindings {
-                self.push_stmt(Frag::of(format!("const {name} = {value};")));
-            }
             let guard = arm.guard.as_ref().map(|g| self.expr(g));
             match &arm.body {
                 ArmBody::Expr(e) => self.tail_expr(e, tail),
@@ -1028,12 +1194,7 @@ impl<'a> Emitter<'a> {
                 }
                 line.s("if (").s(&tests.join(" && "));
                 if let Some(guard) = guard {
-                    // Bindings a guard reads are inlined into it.
-                    let mut text = guard.text;
-                    for (name, value) in &bindings {
-                        text = replace_word(&text, name, value);
-                    }
-                    line.s(" && (").s(&text).s(")");
+                    line.s(" && (").f(guard).s(")");
                 }
                 line.s(") {\n");
             }
@@ -1045,14 +1206,13 @@ impl<'a> Emitter<'a> {
         self.push_stmt(line);
     }
 
-    /// A pattern's tests on `subject`, and the names it binds to what.
-    fn pattern_test(&mut self, pattern: &Pattern, subject: &str) -> (Vec<String>, Vec<(String, String)>) {
+    /// A pattern's tests on `subject`; the names it binds become aliases of their paths.
+    fn pattern_test(&mut self, pattern: &Pattern, subject: &str) -> Vec<String> {
         let ty = self.ck.pattern_tys.get(&pattern.span).cloned().unwrap_or(Ty::Unknown);
         let mut tests = Vec::new();
-        let mut bindings = Vec::new();
         match &pattern.kind {
             PatternKind::Wildcard => {}
-            PatternKind::Bind(name) => bindings.push((js_name(&name.name), subject.to_string())),
+            PatternKind::Bind(name) => self.alias(name, subject),
             PatternKind::Literal(expr) => {
                 let value = self.expr(expr).text;
                 tests.push(format!("{subject} === {value}"));
@@ -1060,21 +1220,15 @@ impl<'a> Emitter<'a> {
             PatternKind::None => tests.push(format!("{subject} === undefined")),
             PatternKind::Tuple(items) => {
                 for (i, item) in items.iter().enumerate() {
-                    let (t, b) = self.pattern_test(item, &format!("{subject}[{i}]"));
-                    tests.extend(t);
-                    bindings.extend(b);
+                    tests.extend(self.pattern_test(item, &format!("{subject}[{i}]")));
                 }
             }
             PatternKind::Record(fields) => {
                 for (name, sub) in fields {
                     let path = format!("{subject}.{}", name.name);
                     match sub {
-                        Some(sub) => {
-                            let (t, b) = self.pattern_test(sub, &path);
-                            tests.extend(t);
-                            bindings.extend(b);
-                        }
-                        None => bindings.push((js_name(&name.name), path)),
+                        Some(sub) => tests.extend(self.pattern_test(sub, &path)),
+                        None => self.alias(name, &path),
                     }
                 }
             }
@@ -1082,7 +1236,7 @@ impl<'a> Emitter<'a> {
                 let alts: Vec<String> = alternatives
                     .iter()
                     .map(|a| {
-                        let (t, _) = self.pattern_test(a, subject);
+                        let t = self.pattern_test(a, subject);
                         if t.is_empty() { "true".into() } else { format!("({})", t.join(" && ")) }
                     })
                     .collect();
@@ -1090,35 +1244,43 @@ impl<'a> Emitter<'a> {
             }
             PatternKind::Case { name, args, .. } => {
                 let args = args.clone().unwrap_or_default();
-                let sub = |this: &mut Self,
-                           index: usize,
-                           path: String,
-                           tests: &mut Vec<String>,
-                           bindings: &mut Vec<(String, String)>| {
+                let sub = |this: &mut Self, index: usize, path: String, tests: &mut Vec<String>| {
                     if let Some(p) = args.get(index) {
-                        let (t, b) = this.pattern_test(p, &path);
-                        tests.extend(t);
-                        bindings.extend(b);
+                        tests.extend(this.pattern_test(p, &path));
                     }
                 };
+                // An awaited promise settled in place: no error is `ok`, its value the value temp.
+                let split = self.splits.get(subject).cloned();
                 match (&ty, name.name.as_str()) {
                     (Ty::Option(_), "none") => tests.push(format!("{subject} === undefined")),
                     (Ty::Option(_), _) => {
                         tests.push(format!("{subject} !== undefined"));
-                        sub(self, 0, subject.to_string(), &mut tests, &mut bindings);
+                        sub(self, 0, subject.to_string(), &mut tests);
                     }
-                    (Ty::Result(..), "ok") => {
-                        tests.push(format!("{subject}.ok"));
-                        sub(self, 0, format!("{subject}.value"), &mut tests, &mut bindings);
-                    }
-                    (Ty::Result(..), _) => {
-                        tests.push(format!("!{subject}.ok"));
-                        sub(self, 0, format!("{subject}.error"), &mut tests, &mut bindings);
-                    }
+                    (Ty::Result(..), "ok") => match split {
+                        Some(value) => {
+                            tests.push(format!("{subject} === undefined"));
+                            sub(self, 0, value.unwrap_or_else(|| "undefined".into()), &mut tests);
+                        }
+                        None => {
+                            tests.push(format!("{subject}.ok"));
+                            sub(self, 0, format!("{subject}.value"), &mut tests);
+                        }
+                    },
+                    (Ty::Result(..), _) => match split {
+                        Some(_) => {
+                            tests.push(format!("{subject} !== undefined"));
+                            sub(self, 0, subject.to_string(), &mut tests);
+                        }
+                        None => {
+                            tests.push(format!("!{subject}.ok"));
+                            sub(self, 0, format!("{subject}.error"), &mut tests);
+                        }
+                    },
                     (Ty::Adt(def, _), case) => {
                         let d = &self.ck.defs[*def];
                         let Some(variant) = d.variants().iter().find(|v| v.name == case).cloned() else {
-                            return (tests, bindings);
+                            return tests;
                         };
                         if variant.payload.is_empty() {
                             tests.push(format!("{subject} === {}", string_literal(case)));
@@ -1128,13 +1290,7 @@ impl<'a> Emitter<'a> {
                             }
                             tests.push(format!("{subject}.tag === {}", string_literal(case)));
                             for index in 0..variant.payload.len() {
-                                sub(
-                                    self,
-                                    index,
-                                    format!("{subject}.{}", variant.key(index)),
-                                    &mut tests,
-                                    &mut bindings,
-                                );
+                                sub(self, index, format!("{subject}.{}", variant.key(index)), &mut tests);
                             }
                         }
                     }
@@ -1142,7 +1298,7 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
-        (tests, bindings)
+        tests
     }
 
     // ---- expressions --------------------------------------------------------
@@ -1160,34 +1316,115 @@ impl<'a> Emitter<'a> {
     }
 
     /// An expression evaluated only sometimes (a branch, the right of `&&`):
-    /// statements it needs stay inside it.
-    fn conditional_expr(&mut self, expr: &Expr) -> Frag {
+    /// its value, and the statements it needs (they stay inside its branch).
+    fn conditional(&mut self, f: impl FnOnce(&mut Self) -> Frag) -> (Vec<Frag>, Frag) {
         self.conditional += 1;
         self.bufs.push(Vec::new());
-        let value = self.operand(expr);
+        let value = f(self);
         let stmts = self.bufs.pop().expect("the branch");
         self.conditional -= 1;
-        if stmts.is_empty() {
-            return value;
+        (stmts, value)
+    }
+
+    /// Choices tried in order, the first whose test holds giving the value (the
+    /// last has no test): a conditional expression when no choice needs
+    /// statements, else an `if` chain into a temp of type `ty`.
+    fn select(&mut self, choices: Vec<Choice>, ty: &Ty, paren: bool) -> Frag {
+        let needs_statements = choices.iter().enumerate().any(|(i, c)| {
+            !c.value.0.is_empty() || i > 0 && c.test.as_ref().is_some_and(|(stmts, _)| !stmts.is_empty())
+        });
+        if !needs_statements {
+            let mut out = Frag::default();
+            for choice in choices {
+                if let Some((_, test)) = choice.test {
+                    out.f(if paren { test.wrap("(", ")") } else { test }).s(" ? ").f(choice.value.1).s(" : ");
+                } else {
+                    out.f(choice.value.1);
+                }
+            }
+            return out;
         }
-        let awaits = stmts.iter().any(|s| s.text.contains("await ")) || value.text.contains("await ");
-        let mut out = Frag::of(if awaits { "(await (async () => {\n" } else { "(() => {\n" });
-        for s in stmts {
-            out.f(s).s("\n");
+        let name = self.temp();
+        let ty = self.ts_type(ty);
+        self.push_stmt(Frag::of(format!("let {name}: {ty};")));
+        let mut chain = Frag::default();
+        for (index, choice) in choices.into_iter().rev().enumerate() {
+            let mut body = Frag::default();
+            for line in choice.value.0 {
+                body.f(line).s("\n");
+            }
+            body.s(&format!("{name} = ")).f(choice.value.1).s(";\n");
+            chain = match choice.test {
+                None => body,
+                Some((stmts, test)) => {
+                    let mut out = Frag::default();
+                    for line in stmts {
+                        out.f(line).s("\n");
+                    }
+                    out.s("if (").f(test).s(") {\n").f(body).s("}");
+                    if index > 0 {
+                        out.s(" else {\n").f(chain).s("}");
+                    }
+                    out.s("\n");
+                    out
+                }
+            };
         }
-        out.s("return ").f(value).s(";\n");
-        out.s(if awaits { "})())" } else { "})()" });
-        out
+        let text = chain.text.trim_end().to_string();
+        chain.text = text;
+        self.push_stmt(chain);
+        Frag::of(name)
+    }
+
+    /// `await promise` of a TS promise, settled in place with a `try` around
+    /// only the await: the value in one temp (none for `Unit`), the error (a
+    /// JS `Error`) in another, `undefined` when the promise resolved.
+    fn await_settled(&mut self, expr: &Expr, inner: &Expr, keep: bool) -> (Option<String>, String) {
+        let value_ty = match self.ck.types.get(&expr.id) {
+            Some(Ty::Result(ok, _)) => (**ok).clone(),
+            _ => Ty::Unknown,
+        };
+        let promise = self.expr(inner);
+        let value = (keep && value_ty != Ty::Unit).then(|| self.temp());
+        let error = self.temp();
+        if let Some(value) = &value {
+            let ts = self.ts_type(&value_ty);
+            self.push_stmt(Frag::of(format!("let {value}!: {ts};")));
+        }
+        self.push_stmt(Frag::of(format!("let {error}: Error | undefined;")));
+        let assign = value.as_ref().map_or_else(String::new, |v| format!("{v} = "));
+        self.try_await(expr.span, promise, &assign, ";", &format!("{error} = {TO_ERROR};"));
+        (value, error)
+    }
+
+    /// `try { <before>await promise<after> } catch ($error) { <caught> }`.
+    fn try_await(&mut self, span: Span, promise: Frag, before: &str, after: &str, caught: &str) {
+        let mut line = Frag::at(span, "try {\n");
+        line.s(before).s("await ").f(promise).s(after).s(&format!("\n}} catch ($error) {{\n{caught}\n}}"));
+        self.push_stmt(line);
     }
 
     fn expr(&mut self, expr: &Expr) -> Frag {
         let mut out = Frag::default();
         out.mark(expr.span);
         out.f(self.expr_inner(expr));
+        // A struct passed as a record type with fewer fields: named, so TS does not refuse
+        // its other fields as excess properties of a fresh literal (the checker proved it fits).
+        if self.ck.widened.contains(&expr.id) && !self.bufs.is_empty() {
+            let name = self.temp();
+            let mut stmt = Frag::of(format!("const {name} = "));
+            stmt.f(out).s(";");
+            self.push_stmt(stmt);
+            return Frag::of(name);
+        }
         // A `Foreign` value where Bloom expects a type: TypeScript checks it is one.
         if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
             let ty = self.ts_type(&ty);
             if ty != "unknown" {
+                // `satisfies` binds tighter than an operator: `((a || b) satisfies T)`.
+                if matches!(expr.kind, ExprKind::Binary(..) | ExprKind::Ternary(..)) {
+                    return out.wrap("((", &format!(") satisfies {ty})"));
+                }
                 return out.wrap("(", &format!(" satisfies {ty})"));
             }
         }
@@ -1210,7 +1447,26 @@ impl<'a> Emitter<'a> {
                 body.wrap("void (async () => ", ")()")
             }
             ExprKind::Str { parts, .. } => self.string(parts),
+            // `x != none` narrowed `x` in its block: the narrowed name reads as this one does.
+            ExprKind::Name(_) if self.ck.narrowed.contains_key(&expr.id) => {
+                let (narrowed, original) = self.ck.narrowed[&expr.id];
+                let text = self.local_name(original);
+                self.aliases.insert(narrowed, text.clone());
+                Frag::of(text)
+            }
+            // `import("./X")`, a dynamic import.
+            ExprKind::Name(name) if name == "import" && !self.ck.names.contains_key(&expr.id) => {
+                Frag::of("import")
+            }
             ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
+                Some(NameRes::Local(local)) if self.ck.ref_objects.contains(&expr.id) => {
+                    Frag::of(js_name(&self.ck.locals[*local].name))
+                }
+                Some(NameRes::Local(local))
+                    if self.ck.locals[*local].kind == LocalKind::Ref && self.is_view_ref(*local) =>
+                {
+                    Frag::of(format!("({} ?? undefined)", self.local_name(*local)))
+                }
                 Some(NameRes::Local(local)) => Frag::of(self.local_name(*local)),
                 _ => Frag::of("undefined"),
             },
@@ -1238,17 +1494,61 @@ impl<'a> Emitter<'a> {
                 out
             }
             ExprKind::TypeApply { .. } => Frag::of("undefined"),
+            ExprKind::KeyPath { path, .. } => {
+                Frag::of(path.first().map_or_else(|| "undefined".into(), |f| string_literal(&f.name)))
+            }
             ExprKind::Paren(inner) => self.expr(inner).wrap("(", ")"),
             ExprKind::Tuple(items) if items.is_empty() => Frag::of("undefined"),
             ExprKind::Tuple(items) => {
                 let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
                 Frag::join(items, ", ").wrap("[", "] as const")
             }
+            ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
+            ExprKind::Is(subject, _) => {
+                let value = self.operand(subject);
+                if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
+                    self.aliases.insert(*narrowed, value.text.clone());
+                }
+                let test = match self.ck.is_tests.get(&expr.id) {
+                    Some(Ty::Str) => "typeof {} === \"string\"",
+                    Some(Ty::Bool) => "typeof {} === \"boolean\"",
+                    Some(Ty::Int) => "typeof {} === \"number\" && Number.isInteger({})",
+                    Some(Ty::List(_)) => "Array.isArray({})",
+                    _ => "typeof {} === \"number\"",
+                };
+                Frag::of(format!("({})", test.replace("{}", &value.text)))
+            }
             ExprKind::List(items) => {
                 let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
                 let list = Frag::join(items, ", ").wrap("[", "]");
                 if self.options.dev { list.wrap("Object.freeze(", ")") } else { list }
             }
+            ExprKind::Record(entries) => match self.ck.calls.get(&expr.id) {
+                Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, entries), *def, false),
+                Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, entries), *def, true),
+                _ => {
+                    let entries: Vec<Frag> = entries
+                        .iter()
+                        .map(|entry| match entry {
+                            RecordEntry::Field { key, value } => {
+                                let mut out = Frag::at(key.span, prop_key(&key.name));
+                                out.s(": ").f(self.expr(value));
+                                out
+                            }
+                            RecordEntry::Spread(value) => {
+                                let mut out = Frag::of("...");
+                                out.f(self.operand(value));
+                                out
+                            }
+                        })
+                        .collect();
+                    if entries.is_empty() {
+                        Frag::of("{}")
+                    } else {
+                        Frag::join(entries, ", ").wrap("{ ", " }")
+                    }
+                }
+            },
             ExprKind::Map(entries) => {
                 let entries: Vec<Frag> = entries
                     .iter()
@@ -1275,26 +1575,52 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Binary(op, lhs, rhs) => self.binary(*op, lhs, rhs, expr),
             ExprKind::Ternary(cond, then, otherwise) => {
-                let mut out = self.operand(cond);
-                out.s(" ? ").f(self.conditional_expr(then)).s(" : ").f(self.conditional_expr(otherwise));
+                let test = self.operand(cond);
+                let then = self.conditional(|this| this.operand(then));
+                let otherwise = self.conditional(|this| this.operand(otherwise));
+                let ty = self.expr_ty(expr);
+                self.select(
+                    vec![
+                        Choice { test: Some((Vec::new(), test)), value: then },
+                        Choice { test: None, value: otherwise },
+                    ],
+                    &ty,
+                    false,
+                )
+            }
+            ExprKind::Await(inner) => match self.ck.awaits.get(&expr.id) {
+                // A `Result` that escapes (bound, passed, returned): built in place.
+                Some(AwaitRes::Ts) => {
+                    let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+                    let ts = self.ts_type(&ty);
+                    let promise = self.expr(inner);
+                    let name = self.temp();
+                    self.push_stmt(Frag::of(format!("let {name}: {ts};")));
+                    self.try_await(
+                        expr.span,
+                        promise,
+                        &format!("{name} = {{ ok: true, value: "),
+                        " };",
+                        &format!("{name} = {{ ok: false, error: {TO_ERROR} }};"),
+                    );
+                    Frag::of(name)
+                }
+                _ => self.expr(inner).wrap("await (", ")"),
+            },
+            ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // A chain narrowed present: TS does not keep a property's narrowing in a closure.
+            ExprKind::Field(object, name) if self.ck.narrowed_paths.contains(&expr.id) => {
+                let mut out = self.field(expr, object, name);
+                out.s("!");
                 out
             }
-            ExprKind::Await(inner) => {
-                let value = self.expr(inner);
-                match self.ck.awaits.get(&expr.id) {
-                    Some(AwaitRes::Ts) => {
-                        self.helpers.insert("settle");
-                        self.uses_result = true;
-                        value.wrap("await $settle(", ")")
-                    }
-                    _ => value.wrap("await (", ")"),
-                }
-            }
-            ExprKind::Try(inner) => self.try_expr(expr, inner),
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
                 let mut out = self.operand(object);
                 out.s("?.").s(&name.name);
+                if self.ck.narrowed_paths.contains(&expr.id) {
+                    out.s("!");
+                }
                 out
             }
             ExprKind::Index(object, index) => {
@@ -1303,6 +1629,15 @@ impl<'a> Emitter<'a> {
                 out
             }
             ExprKind::Call(call) => self.call(expr, call),
+            ExprKind::Closure(_)
+                if matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_) | CallRes::Partial(_))) =>
+            {
+                match self.ck.calls.get(&expr.id) {
+                    Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, &[]), *def, false),
+                    Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, &[]), *def, true),
+                    _ => unreachable!("matched above"),
+                }
+            }
             ExprKind::Closure(c) => self.closure(c),
             ExprKind::If(if_expr) => self.if_value(expr, if_expr),
             ExprKind::Match(m) => self.match_value(expr, m),
@@ -1329,9 +1664,57 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A TS value against `none`: TS's absence may be `null` too (`text.match(re) != none`).
+        if matches!(op, BinaryOp::Eq | BinaryOp::Ne) {
+            let foreign = |e: &Expr| matches!(self.ck.types.get(&e.id), Some(Ty::Foreign(_)));
+            let value = match (&lhs.kind, &rhs.kind) {
+                (_, ExprKind::None) if foreign(lhs) => Some(lhs),
+                (ExprKind::None, _) if foreign(rhs) => Some(rhs),
+                _ => None,
+            };
+            if let Some(value) = value {
+                let mut out = self.operand(value);
+                out.s(if op == BinaryOp::Eq { " == null" } else { " != null" });
+                return out;
+            }
+        }
+        if let Some(ty) = self.ck.structural.get(&expr.id).cloned() {
+            // Field by field, on paths: an operand that is not one is read once, into a temp.
+            let a = self.path_or_temp(lhs);
+            let b = self.path_or_temp(rhs);
+            let same = self.equal(&a, &b, &ty, &mut Vec::new());
+            return if op == BinaryOp::Ne { Frag::of(format!("!({same})")) } else { Frag::of(same) };
+        }
         let left = self.operand(lhs);
         let right = if matches!(op, BinaryOp::And | BinaryOp::Or | BinaryOp::Default) {
-            self.conditional_expr(rhs)
+            let (stmts, right) = self.conditional(|this| this.operand(rhs));
+            if !stmts.is_empty() {
+                // `a && b` where `b` needs statements: `a`, then `b` only when it is needed.
+                let name = self.temp();
+                let ty = match op {
+                    BinaryOp::Default => {
+                        let ty = self.expr_ty(lhs);
+                        self.ts_type(&ty)
+                    }
+                    _ => "boolean".into(),
+                };
+                let mut line = Frag::of(format!("let {name}: {ty} = "));
+                line.f(left).s(";");
+                self.push_stmt(line);
+                let test = match op {
+                    BinaryOp::And => name.clone(),
+                    BinaryOp::Or => format!("!{name}"),
+                    _ => format!("{name} === undefined"),
+                };
+                let mut line = Frag::of(format!("if ({test}) {{\n"));
+                for s in stmts {
+                    line.f(s).s("\n");
+                }
+                line.s(&format!("{name} = ")).f(right).s(";\n}");
+                self.push_stmt(line);
+                return Frag::of(name);
+            }
+            right
         } else {
             self.operand(rhs)
         };
@@ -1350,6 +1733,27 @@ impl<'a> Emitter<'a> {
     }
 
     fn try_expr(&mut self, expr: &Expr, inner: &Expr) -> Frag {
+        if self.ck.tries.get(&expr.id) == Some(&TryRes::Throw) {
+            // A rejected TS promise rejects (or is caught) as it is.
+            let mut awaited_expr = inner;
+            while let ExprKind::Paren(e) = &awaited_expr.kind {
+                awaited_expr = e;
+            }
+            if let ExprKind::Await(awaited) = &awaited_expr.kind
+                && self.ck.awaits.get(&awaited_expr.id) == Some(&AwaitRes::Ts)
+            {
+                let mut out = Frag::at(expr.span, "(await ");
+                out.f(self.operand(awaited)).s(")");
+                return out;
+            }
+            let name = self.temp();
+            let value = self.expr(inner);
+            let mut line = Frag::at(expr.span, format!("const {name} = "));
+            line.f(value).s(";");
+            self.push_stmt(line);
+            self.push_stmt(Frag::of(format!("if (!{name}.ok) throw {name}.error;")));
+            return Frag::of(format!("{name}.value"));
+        }
         if self.conditional > 0 {
             self.diagnostics.push(
                 Diagnostic::error("B0220", expr.span, "`?` here would return early from inside a condition")
@@ -1358,6 +1762,23 @@ impl<'a> Emitter<'a> {
                     .spec("45-enums-option-and-result"),
             );
             return Frag::of("undefined");
+        }
+        // `await promise?`: the error returns from inside the `catch`.
+        if let ExprKind::Await(awaited) = &inner.kind
+            && self.ck.awaits.get(&inner.id) == Some(&AwaitRes::Ts)
+        {
+            let value_ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+            let promise = self.expr(awaited);
+            let caught = format!("return {{ ok: false, error: {TO_ERROR} }};");
+            if value_ty == Ty::Unit {
+                self.try_await(expr.span, promise, "", ";", &caught);
+                return Frag::of("undefined");
+            }
+            let name = self.temp();
+            let ts = self.ts_type(&value_ty);
+            self.push_stmt(Frag::of(format!("let {name}: {ts};")));
+            self.try_await(expr.span, promise, &format!("{name} = "), ";", &caught);
+            return Frag::of(name);
         }
         let name = self.temp();
         let value = self.expr(inner);
@@ -1382,6 +1803,9 @@ impl<'a> Emitter<'a> {
                 Frag::of(string_literal(&self.ck.defs[def].variants()[index].name))
             }
             Some(FieldRes::TaskSignal) => Frag::of(self.signal.clone().unwrap_or_else(|| "undefined".into())),
+            Some(FieldRes::TaskCancelled) => {
+                Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
+            }
             Some(FieldRes::Index(index)) => {
                 let mut out = self.operand(object);
                 out.s(&format!("[{index}]"));
@@ -1407,6 +1831,11 @@ impl<'a> Emitter<'a> {
                     (Recv::Map, "keys") => object.wrap("Object.keys(", ")"),
                     (Recv::Map, "values") => object.wrap("Object.values(", ")"),
                     (Recv::Map, "entries") => object.wrap("Object.entries(", ")"),
+                    (Recv::JsMap | Recv::Set, "count") => member(object, "size"),
+                    (Recv::JsMap | Recv::Set, "isEmpty") => member(object, "size").wrap("(", " === 0)"),
+                    (Recv::JsMap | Recv::Set, "keys" | "values" | "entries") => {
+                        object.wrap("[...", &format!(".{prop}()]"))
+                    }
                     (Recv::Result, _) => member(object, "ok"),
                     _ => member(object, prop),
                 }
@@ -1424,21 +1853,25 @@ impl<'a> Emitter<'a> {
             let [Stmt { kind: StmtKind::Expr(then), .. }] = if_expr.then.stmts.as_slice() else {
                 unreachable!()
             };
-            let mut out = self.operand(cond);
-            out.s(" ? ").f(self.conditional_expr(then)).s(" : ");
-            match if_expr.otherwise.as_deref() {
+            let test = self.operand(cond);
+            let then = self.conditional(|this| this.operand(then));
+            let otherwise = match if_expr.otherwise.as_deref() {
                 Some(Else::Block(b)) => {
                     let [Stmt { kind: StmtKind::Expr(e), .. }] = b.stmts.as_slice() else { unreachable!() };
-                    out.f(self.conditional_expr(e));
+                    self.conditional(|this| this.operand(e))
                 }
-                Some(Else::If(e)) => {
-                    out.f(self.expr(e));
-                }
-                None => {
-                    out.s("undefined");
-                }
-            }
-            return out;
+                Some(Else::If(e)) => self.conditional(|this| this.expr(e)),
+                None => (Vec::new(), Frag::of("undefined")),
+            };
+            let ty = self.expr_ty(expr);
+            return self.select(
+                vec![
+                    Choice { test: Some((Vec::new(), test)), value: then },
+                    Choice { test: None, value: otherwise },
+                ],
+                &ty,
+                false,
+            );
         }
         let name = self.temp();
         let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
@@ -1451,26 +1884,29 @@ impl<'a> Emitter<'a> {
     fn match_value(&mut self, expr: &Expr, m: &MatchExpr) -> Frag {
         if self.simple_match(m) {
             let subject = self.expr(&m.scrutinee).text;
-            let mut out = Frag::default();
+            let mut choices = Vec::new();
             let count = m.arms.len();
             for (index, arm) in m.arms.iter().enumerate() {
                 let ArmBody::Expr(body) = &arm.body else { unreachable!() };
-                let (tests, _) = self.pattern_test(&arm.pattern, &subject);
-                let mut tests = tests;
+                let mut tests = self.pattern_test(&arm.pattern, &subject);
                 if let Some(guard) = &arm.guard {
                     tests.push(self.operand(guard).text);
                 }
-                if index + 1 == count && arm.guard.is_none() {
-                    out.f(self.conditional_expr(body));
-                } else {
-                    let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                    out.s(&format!("({test}) ? ")).f(self.conditional_expr(body)).s(" : ");
-                }
+                let value = self.conditional(|this| this.operand(body));
+                let test = (index + 1 < count || arm.guard.is_some()).then(|| {
+                    (
+                        Vec::new(),
+                        Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") }),
+                    )
+                });
+                choices.push(Choice { test, value });
             }
             if m.arms.last().is_some_and(|a| a.guard.is_some()) {
-                out.s("undefined");
+                choices.push(Choice { test: None, value: (Vec::new(), Frag::of("undefined")) });
             }
-            return out.wrap("(", ")");
+            let ty = self.expr_ty(expr);
+            let out = self.select(choices, &ty, true);
+            return if out.text.starts_with('$') { out } else { out.wrap("(", ")") };
         }
         let name = self.temp();
         let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
@@ -1494,11 +1930,35 @@ impl<'a> Emitter<'a> {
                 let ty = self.ck.locals[*local].ty.clone();
                 match ty {
                     Ty::Foreign(ref path) if path.is_empty() => js_name(&p.name.name),
-                    Ty::Var(_) | Ty::Unknown => js_name(&p.name.name),
+                    // A view: where it is passed says which (TS's `V extends ViewModifiers<V>`).
+                    Ty::Var(_) | Ty::Unknown | Ty::View(None) => js_name(&p.name.name),
                     _ => format!("{}: {}", js_name(&p.name.name), self.ts_type(&ty)),
                 }
             })
             .collect();
+        // A parameter without a TS type takes its type from where the closure is passed.
+        let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
+        let params: Vec<String> = if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
+            // `xs.enumerated().map { (i, x) in … }` is `xs.map((x, i) => …)`.
+            vec![params[1].clone(), params[0].clone()]
+        } else if c.tuple {
+            let names: Vec<String> = c.params.iter().map(|p| js_name(&p.name.name)).collect();
+            let types: Vec<String> =
+                info.params
+                    .iter()
+                    .map(|l| self.ck.locals[*l].ty.clone())
+                    .map(|t| {
+                        if matches!(t, Ty::Var(_) | Ty::Unknown) {
+                            "unknown".into()
+                        } else {
+                            self.ts_type(&t)
+                        }
+                    })
+                    .collect();
+            vec![format!("[{}]: readonly [{}]", names.join(", "), types.join(", "))]
+        } else {
+            params
+        };
         let tail = if info.ret == Ty::Unit || matches!(info.ret, Ty::Var(_) | Ty::Unknown) {
             Tail::Discard
         } else {
@@ -1514,7 +1974,11 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(e);
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
-                    if matches!(e.kind, ExprKind::Map(_)) { value.wrap("(", ")") } else { value }
+                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) {
+                        value.wrap("(", ")")
+                    } else {
+                        value
+                    }
                 } else {
                     let mut out = Frag::of("{\n");
                     for s in stmts {
@@ -1534,7 +1998,7 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::at(c.span, if info.is_async { "async " } else { "" });
         out.s(&format!("({}) => ", params.join(", "))).f(body);
         // A closure that reads no local of its surroundings is built once, at module scope.
-        if self.view.is_some() && self.reads_only_module(c) {
+        if self.view.is_some() && !contextual && self.reads_only_module(c) {
             let name = format!("$fn{}", self.hoisted.len() + self.hoisted_names.len());
             let mut decl = Frag::of(format!("const {name} = "));
             decl.f(out).s(";");
@@ -1580,15 +2044,40 @@ impl<'a> Emitter<'a> {
         call.args.iter().map(|a| self.expr(&a.value)).collect()
     }
 
+    /// `xs` when `expr` is `xs.enumerated()`.
+    fn enumerated_list<'e>(&self, expr: &'e Expr) -> Option<&'e Expr> {
+        let ExprKind::Call(call) = &expr.kind else { return None };
+        if !matches!(
+            self.ck.calls.get(&expr.id),
+            Some(CallRes::Method { recv: Recv::List, name: "enumerated" })
+        ) {
+            return None;
+        }
+        match &call.callee.kind {
+            ExprKind::Field(list, _) => Some(list),
+            _ => None,
+        }
+    }
+
+    /// A positional argument; `..xs` into a rest parameter is `...xs`.
+    fn spread_arg(&mut self, arg: &Arg) -> Frag {
+        let value = self.expr(&arg.value);
+        if arg.spread { value.wrap("...", "") } else { value }
+    }
+
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
+        if self.hoistable(expr) {
+            return self.hoist(expr);
+        }
+        let open = if call.optional { "?.(" } else { "(" };
         let Some(res) = self.ck.calls.get(&expr.id).cloned() else {
             let callee = self.operand(&call.callee);
             let mut out = callee;
-            out.f(Frag::join(self.args(call), ", ").wrap("(", ")"));
+            out.f(Frag::join(self.args(call), ", ").wrap(open, ")"));
             return out;
         };
         match res {
-            CallRes::Bloom { order } => {
+            CallRes::Bloom { order, rest } => {
                 let mut values: Vec<Frag> = order
                     .iter()
                     .map(|slot| match slot {
@@ -1599,7 +2088,8 @@ impl<'a> Emitter<'a> {
                         None => Frag::of("undefined"),
                     })
                     .collect();
-                while values.last().is_some_and(|v| v.text == "undefined")
+                while rest.is_empty()
+                    && values.last().is_some_and(|v| v.text == "undefined")
                     && order.last().is_some_and(Option::is_none)
                 {
                     values.pop();
@@ -1607,13 +2097,20 @@ impl<'a> Emitter<'a> {
                         break;
                     }
                 }
+                if !rest.is_empty() {
+                    // The rest parameter's slot is the last; its arguments follow the others.
+                    values.truncate(order.len().saturating_sub(1));
+                    for &index in &rest {
+                        values.push(self.spread_arg(&call.args[index]));
+                    }
+                }
                 let mut out = self.operand(&call.callee);
-                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out
             }
             CallRes::Ts => {
                 let mut values: Vec<Frag> =
-                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.expr(&a.value)).collect();
+                    call.args.iter().filter(|a| a.label.is_none()).map(|a| self.spread_arg(a)).collect();
                 let named: Vec<Frag> = call
                     .args
                     .iter()
@@ -1631,11 +2128,41 @@ impl<'a> Emitter<'a> {
                     values.push(self.closure(trailing));
                 }
                 let mut out = self.operand(&call.callee);
-                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                if matches!(self.ck.names.get(&call.callee.id), Some(NameRes::Local(l)) if self.ck.constructors.contains(l))
+                {
+                    out = out.wrap("new ", "");
+                }
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
+                out
+            }
+            CallRes::Collection(ty) => {
+                let types = match &ty {
+                    Ty::JsMap(k, v) => format!("Map<{}, {}>", self.ts_type(k), self.ts_type(v)),
+                    Ty::Set(t) => format!("Set<{}>", self.ts_type(t)),
+                    _ => "Map".into(),
+                };
+                let mut out = Frag::at(call.callee.span, format!("new {types}("));
+                if let Some(arg) = call.args.first() {
+                    out.f(self.expr(&arg.value));
+                }
+                out.s(")");
                 out
             }
             CallRes::Struct(def) => self.construct(call, def, false),
             CallRes::Partial(def) => self.construct(call, def, true),
+            CallRes::Keyed { partial } => {
+                let mut out = Frag::of("{ ");
+                if !partial {
+                    let ExprKind::Field(object, _) = &call.callee.kind else { unreachable!() };
+                    out.s("...").f(self.operand(object)).s(", ");
+                }
+                out.s("[")
+                    .f(self.expr(&call.args[0].value))
+                    .s("]: ")
+                    .f(self.expr(&call.args[1].value))
+                    .s(" }");
+                out
+            }
             CallRes::With(_) => {
                 let ExprKind::Field(object, _) = &call.callee.kind else { unreachable!() };
                 let mut out = Frag::of("{ ...");
@@ -1673,7 +2200,9 @@ impl<'a> Emitter<'a> {
                 self.import_name(bloom_language_compiler::entries::module_of(ctor), ctor);
                 let mut values: Vec<Frag> = call.args.iter().map(|a| self.node_arg(&a.value)).collect();
                 if let Some(trailing) = &call.trailing {
-                    values.extend(self.children(&trailing.body));
+                    // A trailing `for` fills a rest parameter as its parent's own children.
+                    let rest = crate::ui::signature(ctor).last().is_some_and(|p| p.starts_with("..."));
+                    values.extend(self.children_spreading(&trailing.body, rest));
                 }
                 let mut out = Frag::at(call.callee.span, ctor);
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
@@ -1708,17 +2237,21 @@ impl<'a> Emitter<'a> {
                 out.s(".").mark(name.span).s(&name.name).f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
-            // A task runs in an effect of its view: the chain is its receiver.
-            CallRes::Task => {
+            // A task or an `.onChange` runs in an effect of its view: the chain is its receiver.
+            CallRes::Task | CallRes::OnChange(_) => {
                 let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
                 self.expr(receiver)
             }
-            CallRes::View { params } => {
-                let order = self.view_order(call, &params);
+            CallRes::View { params, trailing } => {
+                let order = self.view_order(call, &params, trailing.as_deref());
                 let entries: Vec<Frag> = order
                     .into_iter()
                     .map(|(name, arg)| {
-                        let mut entry = Frag::of(format!("{}: ", prop_key(&name)));
+                        let mut entry = Frag::of(if name.is_empty() {
+                            "...".to_string()
+                        } else {
+                            format!("{}: ", prop_key(&name))
+                        });
                         entry.f(arg);
                         entry
                     })
@@ -1739,9 +2272,12 @@ impl<'a> Emitter<'a> {
                 let mut props: Vec<Frag> = call
                     .args
                     .iter()
-                    .filter_map(|a| a.label.as_ref().map(|l| (l, a)))
-                    .map(|(label, a)| {
-                        let mut entry = Frag::of(format!("{}: ", prop_key(&label.name)));
+                    .filter(|a| a.label.is_some() || a.spread)
+                    .map(|a| {
+                        let mut entry = match &a.label {
+                            Some(label) => Frag::of(format!("{}: ", prop_key(&label.name))),
+                            None => Frag::of("..."),
+                        };
                         entry.f(self.expr(&a.value));
                         entry
                     })
@@ -1810,19 +2346,76 @@ impl<'a> Emitter<'a> {
                 let values = self.args(call);
                 Frag::join(values, ", ").wrap("[", "] as const")
             }
+            CallRes::Math(name) => {
+                let values: Vec<Frag> = call.args.iter().map(|a| self.spread_arg(a)).collect();
+                let mut out = Frag::at(call.callee.span, format!("Math.{name}"));
+                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out
+            }
+            CallRes::Regex => {
+                let args: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
+                Frag::join(args, ", ").wrap("new RegExp(", ")")
+            }
+            CallRes::Catching => {
+                self.uses_result = true;
+                let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+                let Ty::Result(value_ty, _) = &ty else { return Frag::of("undefined") };
+                let ts = self.ts_type(&ty);
+                let value_ts = self.ts_type(value_ty);
+                let (result, value) = (self.temp(), self.temp());
+                let body = call.trailing.as_deref().map_or(&[][..], |c| &c.body[..]);
+                self.conditional += 1;
+                let block = self.block_body(body, Tail::Bind(value.clone()), None);
+                self.conditional -= 1;
+                let mut line =
+                    Frag::at(expr.span, format!("let {result}: {ts};\ntry {{\nlet {value}: {value_ts};\n"));
+                line.f(block).s(&format!(
+                    "\n{result} = {{ ok: true, value: {value} }};\n}} catch ($error) {{\n{result} = {{ ok: false, error: {TO_ERROR} }};\n}}"
+                ));
+                self.push_stmt(line);
+                Frag::of(result)
+            }
+            CallRes::Parse { int } => {
+                let helper = if int { "toInt" } else { "toFloat" };
+                self.helpers.insert(helper);
+                let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
+                value.wrap(&format!("${helper}("), ")")
+            }
+            CallRes::Fail => {
+                // Where a value is needed (`c ? x : fail(e)`): a throw as an expression.
+                let mut out = Frag::of("(() => { throw ");
+                out.f(self.fail_value(call)).s("; })()");
+                out
+            }
             CallRes::Sleep => {
                 let ms = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
                 ms.wrap("new Promise<void>((resolve) => setTimeout(resolve, ", "))")
             }
+            CallRes::All | CallRes::Race => {
+                let method = if res == CallRes::All { "Promise.all([" } else { "Promise.race([" };
+                Frag::join(self.args(call), ", ").wrap(method, "])")
+            }
         }
     }
 
+    /// `fail(e)`'s error.
+    fn fail_value(&mut self, call: &Call) -> Frag {
+        call.args.first().map_or(Frag::of("new Error()"), |a| self.expr(&a.value))
+    }
+
     /// A view call's props in parameter order.
-    fn view_order(&mut self, call: &Call, params: &[String]) -> Vec<(String, Frag)> {
+    /// A view call's props as `(name, value)`, in the view's order; with a `..r` among
+    /// them, in the order written (a spread's name is empty: `...r`), so later ones win.
+    fn view_order(&mut self, call: &Call, params: &[String], trailing: Option<&str>) -> Vec<(String, Frag)> {
         let mut out = Vec::new();
         let mut next = 0;
-        let mut given: HashMap<String, Frag> = HashMap::new();
+        let mut given: HashMap<String, Frag> = HashMap::default();
+        let written = call.args.iter().any(|a| a.spread);
         for arg in &call.args {
+            if arg.spread && arg.label.is_none() {
+                out.push((String::new(), self.operand(&arg.value)));
+                continue;
+            }
             let name = match &arg.label {
                 Some(label) => label.name.clone(),
                 None => {
@@ -1833,13 +2426,26 @@ impl<'a> Emitter<'a> {
                 }
             };
             let value = self.expr(&arg.value);
-            given.insert(name, value);
+            if written {
+                given.insert(name.clone(), Frag::of(""));
+                out.push((name, value));
+            } else {
+                given.insert(name, value);
+            }
         }
-        if let Some(trailing) = &call.trailing
-            && let Some(name) = params.iter().rev().find(|p| !given.contains_key(*p))
+        if let Some(closure) = &call.trailing
+            && let Some(name) =
+                trailing.or_else(|| params.iter().rev().find(|p| !given.contains_key(*p)).map(|p| p.as_str()))
         {
-            let value = self.closure(trailing);
-            given.insert(name.clone(), value);
+            let value = self.closure(closure);
+            if written {
+                out.push((name.to_string(), value));
+                return out;
+            }
+            given.insert(name.to_string(), value);
+        }
+        if written {
+            return out;
         }
         for param in params {
             if let Some(value) = given.remove(param) {
@@ -1871,7 +2477,7 @@ impl<'a> Emitter<'a> {
                     Ty::Option(inner) if matches!(**inner, Ty::Partial(_)) => (true, true),
                     _ => (false, false),
                 };
-                let subject = self.subject(&arg.value);
+                let subject = self.subject(&arg.value, &[]);
                 spreads.push((subject, patch, optional));
             }
             for field in &fields {
@@ -1918,8 +2524,69 @@ impl<'a> Emitter<'a> {
     }
 
     fn method(&mut self, call: &Call, recv: Recv, name: &str) -> Frag {
-        let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
-        let object = self.operand(receiver);
+        let (receiver, optional) = match &call.callee.kind {
+            ExprKind::Field(receiver, _) => (receiver, false),
+            ExprKind::OptField(receiver, _) => (receiver, true),
+            _ => unreachable!("a method's callee is a member"),
+        };
+        // `x?.m(…)`: a JS method is `x?.m(…)`; any other lowering reads `x` once, then
+        // runs only when it is not `none`.
+        let direct = match recv {
+            Recv::Str => !matches!(name, "toInt" | "toFloat"),
+            Recv::List => {
+                matches!(
+                    name,
+                    "map"
+                        | "filter"
+                        | "find"
+                        | "reduce"
+                        | "contains"
+                        | "prefix"
+                        | "dropFirst"
+                        | "joined"
+                        | "flatMap"
+                        | "any"
+                        | "all"
+                        | "slice"
+                        | "enumerated"
+                )
+            }
+            _ => false,
+        };
+        // `xs.enumerated().map { (i, x) in … }`: `xs.map((x, i) => …)`, no pairs built.
+        let mut receiver = receiver;
+        if recv == Recv::List
+            && name == "map"
+            && !optional
+            && call.trailing.as_ref().is_some_and(|c| c.tuple && c.params.len() == 2)
+            && let ExprKind::Call(inner) = &receiver.kind
+            && matches!(
+                self.ck.calls.get(&receiver.id),
+                Some(CallRes::Method { recv: Recv::List, name: "enumerated" })
+            )
+            && let ExprKind::Field(list, _) = &inner.callee.kind
+        {
+            receiver = list;
+            self.enumerated = true;
+        }
+        let guard = (optional && !direct).then(|| self.path_or_temp(receiver));
+        let object = match &guard {
+            Some(name) => Frag::of(name.clone()),
+            None => self.operand(receiver),
+        };
+        let lowered = self.method_lowered(call, recv, name, object, optional && direct);
+        match guard {
+            Some(name) => {
+                let mut out = Frag::of(format!("({name} == null ? undefined : "));
+                out.f(lowered).s(")");
+                out
+            }
+            None => lowered,
+        }
+    }
+
+    fn method_lowered(&mut self, call: &Call, recv: Recv, name: &str, object: Frag, optional: bool) -> Frag {
+        let dot = if optional { "?." } else { "." };
         let mut args: Vec<Frag> = self.args(call);
         if let Some(trailing) = &call.trailing {
             args.push(self.closure(trailing));
@@ -1937,7 +2604,7 @@ impl<'a> Emitter<'a> {
         };
         let call_on = |object: Frag, method: &str, args: Vec<Frag>| -> Frag {
             let mut out = object;
-            out.s(&format!(".{method}")).f(Frag::join(args, ", ").wrap("(", ")"));
+            out.s(&format!("{dot}{method}")).f(Frag::join(args, ", ").wrap("(", ")"));
             out
         };
         let helper = |this: &mut Self, helper: &'static str, mut values: Vec<Frag>| -> Frag {
@@ -1956,6 +2623,15 @@ impl<'a> Emitter<'a> {
             (Recv::Str, "lowercased") => call_on(object, "toLowerCase", args),
             (Recv::Str, "uppercased") => call_on(object, "toUpperCase", args),
             (Recv::Str, "trimmed") => call_on(object, "trim", args),
+            // A `RegExp` pattern replaces as JS's `replace` does (its flags say how often).
+            (Recv::Str, "replace")
+                if call
+                    .args
+                    .first()
+                    .is_some_and(|a| matches!(self.ck.types.get(&a.value.id), Some(Ty::Foreign(_)))) =>
+            {
+                call_on(object, "replace", args)
+            }
             (Recv::Str, "replace") => call_on(object, "replaceAll", args),
             (Recv::Str, "toInt") => helper(self, "toInt", vec![object]),
             (Recv::Str, "toFloat") => helper(self, "toFloat", vec![object]),
@@ -1981,10 +2657,17 @@ impl<'a> Emitter<'a> {
                     .s(")");
                 out
             }
-            (Recv::List, "map" | "filter" | "find") => {
+            (Recv::List, "map" | "filter" | "find" | "flatMap") => {
                 let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
                 call_on(object, name, vec![f])
             }
+            (Recv::List, "any" | "all") => {
+                let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
+                call_on(object, if name == "any" { "some" } else { "every" }, vec![f])
+            }
+            (Recv::List, "slice") => call_on(object, "slice", args),
+            (Recv::List, "indexOf") => helper(self, "index", vec![call_on(object, "indexOf", args)]),
+            (Recv::List, "enumerated") => call_on(object, "map", vec![Frag::of("(x, i) => [i, x] as const")]),
             (Recv::List, "compactMap") => {
                 let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
                 helper(self, "compact", vec![call_on(object, "map", vec![f])])
@@ -2023,6 +2706,23 @@ impl<'a> Emitter<'a> {
                 helper(self, if name == "inserting" { "inserting" } else { "removing" }, values)
             }
             (Recv::List, "joined") => call_on(object, "join", args),
+            (Recv::JsMap, "get") => call_on(object, "get", args),
+            (Recv::JsMap | Recv::Set, "contains") => call_on(object, "has", args),
+            (Recv::JsMap, "setting") => {
+                let mut out = object.wrap("new Map(", ")");
+                out.s(".set").f(Frag::join(args, ", ").wrap("(", ")"));
+                out
+            }
+            (Recv::Set, "inserting") => {
+                let mut out = object.wrap("new Set(", ")");
+                out.s(".add").f(Frag::join(args, ", ").wrap("(", ")"));
+                out
+            }
+            (Recv::JsMap | Recv::Set, _) => {
+                let mut values = vec![object];
+                values.extend(args);
+                helper(self, if recv == Recv::JsMap { "mapDeleting" } else { "setDeleting" }, values)
+            }
             (Recv::Map, "setting") => {
                 let mut args = args.into_iter();
                 let mut out = Frag::of("{ ...");
@@ -2068,18 +2768,44 @@ impl<'a> Emitter<'a> {
 
     /// A builder's lines as children: views, `if`/`match` (one slot each), `for` (a list).
     fn children(&mut self, stmts: &[Stmt]) -> Vec<Frag> {
+        self.children_spreading(stmts, false)
+    }
+
+    /// [`Self::children`]; `rest`: they fill a rest parameter, so a last `for` whose
+    /// items are one plain view each, none able to leave (`.transition`), is spread
+    /// (`...xs.map(…)`): its items are the parent's children, keyed by their `.id()`
+    /// as in a list, with no list slot (`Presence`, one fiber) around them. Nothing
+    /// follows them, so no sibling shifts when the list's length changes.
+    fn children_spreading(&mut self, stmts: &[Stmt], rest: bool) -> Vec<Frag> {
+        let last = stmts.iter().rposition(|s| matches!(s.kind, StmtKind::Expr(_) | StmtKind::For(_)));
         let mut out = Vec::new();
-        for stmt in stmts {
+        for (index, stmt) in stmts.iter().enumerate() {
             match &stmt.kind {
                 StmtKind::Let(_) => self.stmt(stmt),
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                    let mut iter = self.operand(&f.iter);
+                    // `for (i, x) in xs.enumerated()`: `xs.map((x, i) => …)`.
+                    let swapped = match (self.enumerated_list(&f.iter), &f.pattern.kind) {
+                        (Some(list), PatternKind::Tuple(items)) if items.len() == 2 => {
+                            Some((list, [self.binding_target(&items[1]), self.binding_target(&items[0])]))
+                        }
+                        _ => None,
+                    };
+                    let mut iter = match &swapped {
+                        Some((list, _)) => self.operand(list),
+                        None => self.operand(&f.iter),
+                    };
                     if matches!(iter_ty, Ty::Map(_)) {
                         iter = iter.wrap("Object.entries(", ")");
+                    } else if matches!(iter_ty, Ty::JsMap(..) | Ty::Set(_)) {
+                        // A builder `for` maps over an array.
+                        iter = iter.wrap("[...", "]");
                     }
-                    let target = self.binding_target(&f.pattern);
+                    let target = match swapped {
+                        Some((_, [x, i])) => format!("{x}, {i}"),
+                        None => self.binding_target(&f.pattern),
+                    };
                     self.bufs.push(Vec::new());
                     let children = self.children(&f.body.stmts);
                     let stmts = self.bufs.pop().expect("the loop");
@@ -2098,8 +2824,12 @@ impl<'a> Emitter<'a> {
                         b.s("return ").f(value).s(";\n}");
                         b
                     };
-                    let mut line = iter;
-                    line.mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
+                    let spread = rest
+                        && last == Some(index)
+                        && matches!(f.body.stmts.as_slice(), [.., Stmt { kind: StmtKind::Expr(e), .. }] if plain_item(e))
+                        && f.body.stmts.iter().filter(|s| !matches!(s.kind, StmtKind::Let(_))).count() == 1;
+                    let mut line = if spread { Frag::of("...") } else { Frag::default() };
+                    line.f(iter).mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
                     out.push(line);
                 }
                 _ => {}
@@ -2110,81 +2840,251 @@ impl<'a> Emitter<'a> {
 
     /// One child: `if` and `match` keep their slot (`null` when they draw nothing).
     fn child(&mut self, expr: &Expr) -> Frag {
+        let child = Ty::View(None);
         match &expr.kind {
             ExprKind::If(if_expr) => {
-                let (cond, bindings) = self.condition(&if_expr.cond);
-                let then = self.branch(&if_expr.then.stmts, &bindings);
+                let test = self.condition(&if_expr.cond);
+                let then = self.branch(&if_expr.then.stmts);
                 let otherwise = match if_expr.otherwise.as_deref() {
-                    Some(Else::If(next)) => self.child(next),
-                    Some(Else::Block(block)) => self.branch(&block.stmts, &[]),
-                    None => Frag::of("null"),
+                    Some(Else::If(next)) => self.conditional(|this| this.child(next)),
+                    Some(Else::Block(block)) => self.branch(&block.stmts),
+                    None => (Vec::new(), Frag::of("null")),
                 };
+                let choices = vec![
+                    Choice { test: Some((Vec::new(), test)), value: then },
+                    Choice { test: None, value: otherwise },
+                ];
                 let mut out = Frag::at(expr.span, "");
-                out.f(cond.wrap("(", ")")).s(" ? ").f(then).s(" : ").f(otherwise);
+                out.f(self.select(choices, &child, true));
                 out
             }
             ExprKind::Match(m) => {
-                let subject = self.subject(&m.scrutinee);
-                let mut out = Frag::at(expr.span, "");
+                let patterns: Vec<&Pattern> = m.arms.iter().map(|a| &a.pattern).collect();
+                let subject = self.subject(&m.scrutinee, &patterns);
+                let mut choices = Vec::new();
                 let count = m.arms.len();
                 for (index, arm) in m.arms.iter().enumerate() {
-                    let (mut tests, bindings) = self.pattern_test(&arm.pattern, &subject);
+                    let mut tests = self.pattern_test(&arm.pattern, &subject);
                     if let Some(guard) = &arm.guard {
-                        let mut text = self.operand(guard).text;
-                        for (name, value) in &bindings {
-                            text = replace_word(&text, name, value);
-                        }
-                        tests.push(text);
+                        tests.push(self.operand(guard).text);
                     }
-                    let body = match &arm.body {
-                        ArmBody::Expr(e) => self.branch(
-                            std::slice::from_ref(&Stmt { kind: StmtKind::Expr(e.clone()), span: e.span }),
-                            &bindings,
-                        ),
-                        ArmBody::Block(b) => self.branch(&b.stmts, &bindings),
+                    let value = match &arm.body {
+                        ArmBody::Expr(e) => self.branch(std::slice::from_ref(&Stmt {
+                            kind: StmtKind::Expr(e.clone()),
+                            span: e.span,
+                        })),
+                        ArmBody::Block(b) => self.branch(&b.stmts),
                     };
-                    if index + 1 == count && arm.guard.is_none() {
-                        out.f(body);
-                    } else {
-                        let test = if tests.is_empty() { "true".to_string() } else { tests.join(" && ") };
-                        out.s(&format!("({test}) ? ")).f(body).s(" : ");
-                    }
+                    let test = (index + 1 < count || arm.guard.is_some()).then(|| {
+                        (
+                            Vec::new(),
+                            Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") }),
+                        )
+                    });
+                    choices.push(Choice { test, value });
                 }
                 if m.arms.last().is_some_and(|a| a.guard.is_some()) {
-                    out.s("null");
+                    choices.push(Choice { test: None, value: (Vec::new(), Frag::of("null")) });
                 }
-                out.wrap("(", ")")
+                let out = self.select(choices, &child, true);
+                let mut marked = Frag::at(expr.span, "");
+                marked.f(if out.text.starts_with('$') { out } else { out.wrap("(", ")") });
+                marked
             }
             _ => self.expr(expr),
         }
     }
 
-    /// A conditional builder branch: its children (one, or a list), with the names it binds.
-    fn branch(&mut self, stmts: &[Stmt], bindings: &[(String, String)]) -> Frag {
-        self.conditional += 1;
-        self.bufs.push(Vec::new());
-        for (name, value) in bindings {
-            self.push_stmt(Frag::of(format!("const {name} = {value};")));
+    /// A conditional builder branch: its children (one, or a list), and the statements they need.
+    fn branch(&mut self, stmts: &[Stmt]) -> (Vec<Frag>, Frag) {
+        self.conditional(|this| {
+            let children = this.children(stmts);
+            match children.len() {
+                0 => Frag::of("null"),
+                1 => children.into_iter().next().expect("one"),
+                _ => Frag::join(children, ", ").wrap("[", "]"),
+            }
+        })
+    }
+}
+
+impl Emitter<'_> {
+    // ---- structural equality (spec 4.3) ----------------------------------------
+
+    /// `expr` as a path to read more than once: itself when it is one, else a temp.
+    fn path_or_temp(&mut self, expr: &Expr) -> String {
+        if is_path(expr) && !matches!(expr.kind, ExprKind::Call(_)) {
+            return self.operand(expr).text;
         }
-        let children = self.children(stmts);
-        let stmts = self.bufs.pop().expect("the branch");
-        self.conditional -= 1;
-        let value = match children.len() {
-            0 => Frag::of("null"),
-            1 => children.into_iter().next().expect("one"),
-            _ => Frag::join(children, ", ").wrap("[", "]"),
+        let name = self.temp();
+        let value = self.expr(expr);
+        let mut line = Frag::at(expr.span, format!("const {name} = "));
+        line.f(value).s(";");
+        self.push_stmt(line);
+        name
+    }
+
+    /// Whether `a` and `b` (paths) are equal as values of `ty`, inline; a
+    /// recursive type compares through a module function. `seen`: the types
+    /// being expanded.
+    fn equal(&mut self, a: &str, b: &str, ty: &Ty, seen: &mut Vec<DefId>) -> String {
+        if crate::check::equality(&self.ck.defs, ty) == crate::check::Equality::Identity {
+            return format!("{a} === {b}");
+        }
+        let and = |parts: Vec<String>| -> String {
+            if parts.is_empty() {
+                "true".into()
+            } else {
+                parts
+                    .iter()
+                    .map(|p| if p.contains(" ? ") { format!("({p})") } else { p.clone() })
+                    .collect::<Vec<_>>()
+                    .join(" && ")
+            }
         };
-        if stmts.is_empty() {
-            return value;
+        match ty {
+            Ty::Option(inner) => {
+                let inner = self.equal(a, b, inner, seen);
+                format!("{a} === undefined || {b} === undefined ? {a} === {b} : {inner}")
+            }
+            Ty::Tuple(items) => {
+                let parts = items
+                    .iter()
+                    .enumerate()
+                    .map(|(i, t)| self.equal(&format!("{a}[{i}]"), &format!("{b}[{i}]"), t, seen))
+                    .collect();
+                and(parts)
+            }
+            Ty::Partial(inner) => {
+                let Ty::Adt(def, args) = &**inner else { return format!("{a} === {b}") };
+                let fields = self.ck.defs[*def].fields().to_vec();
+                let parts = fields
+                    .iter()
+                    .map(|f| {
+                        let ty = Ty::Option(Box::new(substitute(&f.ty, args)));
+                        self.equal(&member_path(a, &f.name), &member_path(b, &f.name), &ty, seen)
+                    })
+                    .collect();
+                and(parts)
+            }
+            Ty::Adt(def, args) => {
+                if seen.contains(def) {
+                    let name = self.eq_helper(ty);
+                    return format!("{name}({a}, {b})");
+                }
+                seen.push(*def);
+                let d = self.ck.defs[*def].clone();
+                let out = match &d.kind {
+                    DefKind::Struct(fields) => {
+                        let parts = fields
+                            .iter()
+                            .map(|f| {
+                                self.equal(
+                                    &member_path(a, &f.name),
+                                    &member_path(b, &f.name),
+                                    &substitute(&f.ty, args),
+                                    seen,
+                                )
+                            })
+                            .collect();
+                        and(parts)
+                    }
+                    DefKind::Enum(variants) => {
+                        // The same case (`tag`), then its payload; a fieldless case is its string.
+                        let mut out = format!("{a} === {b} || ");
+                        if variants.iter().any(|v| v.payload.is_empty()) {
+                            out.push_str(&format!(
+                                "typeof {a} === \"object\" && typeof {b} === \"object\" && "
+                            ));
+                        }
+                        let mut arms = String::new();
+                        for variant in variants.iter().filter(|v| !v.payload.is_empty()) {
+                            let tag = string_literal(&variant.name);
+                            let parts = (0..variant.payload.len())
+                                .map(|i| {
+                                    let key = variant.key(i);
+                                    self.equal(
+                                        &member_path(a, &key),
+                                        &member_path(b, &key),
+                                        &substitute(&variant.payload[i].1, args),
+                                        seen,
+                                    )
+                                })
+                                .collect();
+                            arms.push_str(&format!(
+                                "{a}.tag === {tag} && {b}.tag === {tag} ? {} : ",
+                                and(parts)
+                            ));
+                        }
+                        out.push_str(&format!("({arms}false)"));
+                        out
+                    }
+                };
+                seen.pop();
+                out
+            }
+            Ty::List(elem) => {
+                let (x, i) = (format!("$x{}", self.eq_vars), format!("$i{}", self.eq_vars));
+                self.eq_vars += 1;
+                let inner = self.equal(&x, &format!("{b}[{i}]!"), elem, seen);
+                format!("{a}.length === {b}.length && {a}.every(({x}, {i}) => {inner})")
+            }
+            Ty::Map(value) => {
+                let (x, k) = (format!("$x{}", self.eq_vars), format!("$k{}", self.eq_vars));
+                self.eq_vars += 1;
+                let inner = self.equal(&x, &format!("{b}[{k}]!"), value, seen);
+                format!(
+                    "Object.keys({a}).length === Object.keys({b}).length && Object.entries({a}).every(([{k}, {x}]) => {k} in {b} && {inner})"
+                )
+            }
+            Ty::Result(ok, err) => {
+                let ok = self.equal(&format!("{a}.value"), &format!("{b}.value"), ok, seen);
+                let err = self.equal(&format!("{a}.error"), &format!("{b}.error"), err, seen);
+                format!("{a}.ok && {b}.ok ? {ok} : !{a}.ok && !{b}.ok ? {err} : false")
+            }
+            _ => format!("{a} === {b}"),
         }
-        let mut out = Frag::of("(() => {\n");
-        for s in stmts {
-            out.f(s).s("\n");
+    }
+
+    /// The module function comparing values of the recursive type `ty`.
+    fn eq_helper(&mut self, ty: &Ty) -> String {
+        let ts = self.ts_type(ty);
+        if let Some((name, _, _)) = self.eq_helpers.iter().find(|(_, t, _)| *t == ts) {
+            return name.clone();
         }
-        out.s("return ").f(value).s(";\n})()");
+        let name = format!("$eq{}", self.eq_helpers.len());
+        self.eq_helpers.push((name.clone(), ts, ty.clone()));
+        name
+    }
+
+    /// The comparison functions the module's recursive types need: each expands
+    /// its type once, and its own recursion calls it (or another one) again.
+    fn eq_functions(&mut self) -> Frag {
+        let mut out = Frag::default();
+        let mut index = 0;
+        while index < self.eq_helpers.len() {
+            let (name, ts, ty) = self.eq_helpers[index].clone();
+            let body = self.equal("a", "b", &ty, &mut Vec::new());
+            out.s(&format!("function {name}(a: {ts}, b: {ts}): boolean {{\n  return {body};\n}}\n"));
+            index += 1;
+        }
         out
     }
 }
+
+/// `object.name` as a path (`object["a-b"]` when the name is not an identifier).
+fn member_path(object: &str, name: &str) -> String {
+    if is_ident(name) { format!("{object}.{name}") } else { format!("{object}[{name:?}]") }
+}
+
+/// One choice of [`Emitter::select`]: its test (with the statements it needs) and its value.
+struct Choice {
+    test: Option<(Vec<Frag>, Frag)>,
+    value: (Vec<Frag>, Frag),
+}
+
+/// A caught value as a JS `Error` (a TS promise may reject with anything).
+const TO_ERROR: &str = "$error instanceof Error ? $error : new Error(String($error))";
 
 /// `{ ...x, a: { ...x.a, b: value } }` for `x.a.b = value`.
 fn updated(name: &str, fields: &[String], value: Frag) -> Frag {
@@ -2207,36 +3107,6 @@ fn field_path(name: &str, fields: &[String]) -> String {
     out
 }
 
-/// Calls `f` with the id of every call in `expr` (closures included: a static tree has none).
-fn visit_calls(expr: &Expr, f: &mut dyn FnMut(ExprId)) {
-    match &expr.kind {
-        ExprKind::Call(call) => {
-            f(expr.id);
-            visit_calls(&call.callee, f);
-            call.args.iter().for_each(|a| visit_calls(&a.value, f));
-            if let Some(trailing) = &call.trailing {
-                for stmt in &trailing.body {
-                    match &stmt.kind {
-                        StmtKind::Expr(e) => visit_calls(e, f),
-                        _ => f(ExprId(u32::MAX)),
-                    }
-                }
-            }
-        }
-        ExprKind::Field(e, _) | ExprKind::Paren(e) => visit_calls(e, f),
-        ExprKind::Int(_)
-        | ExprKind::Float(_)
-        | ExprKind::Bool(_)
-        | ExprKind::None
-        | ExprKind::Unit
-        | ExprKind::Name(_)
-        | ExprKind::ImplicitMember(_) => {}
-        ExprKind::Str { parts, .. } if parts.iter().all(|p| matches!(p, StrPart::Text(_))) => {}
-        // Anything else (an operator, a closure, a conditional) is not a static tree.
-        _ => f(ExprId(u32::MAX)),
-    }
-}
-
 /// Whether `text` names `name` as a whole word.
 fn mentions(text: &str, name: &str) -> bool {
     let word = |c: char| c.is_alphanumeric() || c == '_' || c == '$';
@@ -2250,27 +3120,6 @@ fn mentions(text: &str, name: &str) -> bool {
 fn covers(outer: &str, inner: &str) -> bool {
     outer == inner
         || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
-}
-
-/// Replaces whole-word occurrences of `name` in emitted `text`.
-fn replace_word(text: &str, name: &str, value: &str) -> String {
-    let mut out = String::new();
-    let mut rest = text;
-    while let Some(at) = rest.find(name) {
-        let before = rest[..at].chars().last();
-        let after = rest[at + name.len()..].chars().next();
-        let word =
-            |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$' || c == '.');
-        out.push_str(&rest[..at]);
-        if word(before) || after.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$') {
-            out.push_str(name);
-        } else {
-            out.push_str(value);
-        }
-        rest = &rest[at + name.len()..];
-    }
-    out.push_str(rest);
-    out
 }
 
 fn is_path(expr: &Expr) -> bool {
@@ -2293,7 +3142,7 @@ fn binds(pattern: &Pattern) -> bool {
     }
 }
 
-fn stmt_awaits(stmt: &Stmt) -> bool {
+pub(crate) fn stmt_awaits(stmt: &Stmt) -> bool {
     let mut found = false;
     let mut visit = |e: &Expr| {
         if expr_awaits(e) {
@@ -2318,6 +3167,8 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Await(_) => true,
         ExprKind::Closure(_) => false,
         ExprKind::Paren(e)
+        | ExprKind::Spread(e)
+        | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Field(e, _)
@@ -2331,6 +3182,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         }
         ExprKind::Match(m) => expr_awaits(&m.scrutinee),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().any(expr_awaits),
+        ExprKind::Record(entries) => entries.iter().any(|e| expr_awaits(e.value())),
         _ => false,
     }
 }
@@ -2460,12 +3312,15 @@ impl<'a> Emitter<'a> {
                 }
             }),
             ExprKind::Paren(e)
+            | ExprKind::Spread(e)
+            | ExprKind::Is(e, _)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
             | ExprKind::Field(e, _)
             | ExprKind::OptField(e, _) => go(e),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(go),
+            ExprKind::Record(entries) => entries.iter().for_each(|e| go(e.value())),
             ExprKind::Map(entries) => entries.iter().for_each(|(k, v)| {
                 go(k);
                 go(v);
@@ -2480,6 +3335,13 @@ impl<'a> Emitter<'a> {
                 go(c);
             }
             ExprKind::Call(call) => {
+                // `.task` and `.onChange` run in effects: the render reads only their receiver.
+                if let (Some(CallRes::Task | CallRes::OnChange(_)), ExprKind::Field(receiver, _)) =
+                    (self.ck.calls.get(&expr.id), &call.callee.kind)
+                {
+                    go(receiver);
+                    return;
+                }
                 // A method reads its receiver whole.
                 match &call.callee.kind {
                     ExprKind::Field(receiver, _) => go(receiver),
@@ -2545,19 +3407,8 @@ impl<'a> Emitter<'a> {
         if matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_)) || self.reads_body_local(expr) {
             return self.child(expr);
         }
-        // A subtree of nodes that reads nothing of the view is built once, at module scope.
-        if self.static_tree(expr) {
-            let value = self.child(expr);
-            // The same tree twice is one constant.
-            if let Some(name) = self.hoisted_trees.get(&value.text) {
-                return Frag::of(name.clone());
-            }
-            let name = format!("$view{}", self.hoisted_trees.len());
-            self.hoisted_trees.insert(value.text.clone(), name.clone());
-            let mut decl = Frag::of(format!("const {name} = "));
-            decl.f(value).s(";");
-            self.hoisted.push(decl);
-            return Frag::of(name);
+        if self.hoistable(expr) {
+            return self.expr(expr);
         }
         let deps = self.expr_deps(expr);
         let narrower = !deps.is_empty()
@@ -2586,31 +3437,99 @@ impl<'a> Emitter<'a> {
         out
     }
 
-    /// Whether `expr` builds nodes only (node, modifier and component calls, literals)
-    /// from names already defined at module scope: the same value on every render.
-    fn static_tree(&self, expr: &Expr) -> bool {
-        let mut only_nodes = true;
-        let mut calls = 0;
-        visit_calls(expr, &mut |id| {
-            calls += 1;
-            if !matches!(
-                self.ck.calls.get(&id),
-                Some(
-                    CallRes::Node(_)
-                        | CallRes::Modifier { .. }
-                        | CallRes::Component
-                        | CallRes::EnumCase(..)
-                        | CallRes::Struct(_)
-                )
-            ) {
-                only_nodes = false;
+    /// The expressions of `item` that are the same value on every evaluation:
+    /// literals, names defined at module scope (before the item), closures that
+    /// read only those, and node, modifier, component, struct and enum-case
+    /// calls of static parts. One walk, bottom-up.
+    fn static_exprs(&self, item: &Item) -> HashSet<ExprId> {
+        let mut statics = HashSet::default();
+        let mut decided = HashSet::default();
+        crate::analysis::walk_item(item, &mut |node| {
+            if let crate::analysis::Node::Expr(expr) = node
+                && !decided.contains(&expr.id)
+            {
+                self.mark_static(expr, &mut statics, &mut decided);
             }
         });
-        if !only_nodes || calls == 0 || matches!(expr.kind, ExprKind::Name(_)) {
-            return false;
+        statics
+    }
+
+    fn mark_static(&self, expr: &Expr, statics: &mut HashSet<ExprId>, decided: &mut HashSet<ExprId>) -> bool {
+        let mut go = |e: &Expr| self.mark_static(e, statics, decided);
+        let is_static = match &expr.kind {
+            ExprKind::Int(_)
+            | ExprKind::Float(_)
+            | ExprKind::Bool(_)
+            | ExprKind::None
+            | ExprKind::Unit
+            | ExprKind::ImplicitMember(_)
+            | ExprKind::KeyPath { .. } => true,
+            ExprKind::Str { parts, .. } => parts.iter().all(|p| match p {
+                StrPart::Text(_) => true,
+                StrPart::Interp(e) => go(e),
+            }),
+            ExprKind::Name(_) => self.module_name(expr.id),
+            ExprKind::Paren(e) | ExprKind::Spread(e) | ExprKind::Unary(_, e) => go(e),
+            ExprKind::Field(object, _) => {
+                matches!(self.ck.fields.get(&expr.id), Some(FieldRes::EnumCase(..))) || go(object)
+            }
+            ExprKind::Binary(_, a, b) => go(a) & go(b),
+            ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().fold(true, |all, e| go(e) & all),
+            ExprKind::Record(entries) => entries.iter().fold(true, |all, e| go(e.value()) & all),
+            ExprKind::Closure(c) => {
+                let mut only = !stmts_assign(&c.body);
+                crate::check::walk_stmts(&c.body, &mut |_, id| {
+                    if !self.module_name(id) {
+                        only = false;
+                    }
+                });
+                only
+            }
+            ExprKind::Call(call) => {
+                let node = matches!(
+                    self.ck.calls.get(&expr.id),
+                    Some(
+                        CallRes::Node(_)
+                            | CallRes::Modifier { .. }
+                            | CallRes::Component
+                            | CallRes::View { .. }
+                            | CallRes::EnumCase(..)
+                            | CallRes::Struct(_)
+                    )
+                );
+                let callee = match &call.callee.kind {
+                    ExprKind::Field(receiver, _) => go(receiver),
+                    _ => true,
+                };
+                let args = call.args.iter().fold(true, |all, a| go(&a.value) & all);
+                let trailing = call.trailing.as_ref().is_none_or(|c| {
+                    let mut all = true;
+                    for stmt in &c.body {
+                        match &stmt.kind {
+                            StmtKind::Expr(e) => all &= go(e),
+                            _ => all = false,
+                        }
+                    }
+                    all && (self.ck.closures.get(&c.span).is_some_and(|i| i.builder) || {
+                        let mut only = !stmts_assign(&c.body);
+                        crate::check::walk_stmts(&c.body, &mut |_, id| only &= self.module_name(id));
+                        only
+                    })
+                });
+                node && callee && args && trailing
+            }
+            _ => false,
+        };
+        decided.insert(expr.id);
+        if is_static {
+            statics.insert(expr.id);
         }
-        let mut module = true;
-        crate::check::walk_names(expr, &mut |_, id| match self.ck.names.get(&id) {
+        is_static
+    }
+
+    /// Whether the name read at `id` is defined at module scope before the item being emitted.
+    fn module_name(&self, id: ExprId) -> bool {
+        match self.ck.names.get(&id) {
             Some(NameRes::Local(local)) => {
                 let info = &self.ck.locals[*local];
                 let defined = match info.kind {
@@ -2618,17 +3537,36 @@ impl<'a> Emitter<'a> {
                     LocalKind::ModuleConst | LocalKind::View => info.span.start < self.item_start,
                     _ => false,
                 };
-                if !defined || info.frame != 0 {
-                    module = false;
-                }
+                defined && info.frame == 0
             }
-            None => {
-                if self.ck.bindings.contains_key(&id) {
-                    module = false;
-                }
-            }
-        });
-        module
+            None => !self.ck.bindings.contains_key(&id),
+        }
+    }
+
+    /// A static node chain: built once, at module scope.
+    fn hoistable(&self, expr: &Expr) -> bool {
+        !self.in_static
+            && self.statics.contains(&expr.id)
+            && matches!(
+                self.ck.calls.get(&expr.id),
+                Some(CallRes::Node(_) | CallRes::Modifier { .. } | CallRes::Component | CallRes::View { .. })
+            )
+    }
+
+    /// `expr` (a static chain) as a module constant; the same tree twice is one constant.
+    fn hoist(&mut self, expr: &Expr) -> Frag {
+        self.in_static = true;
+        let value = self.child(expr);
+        self.in_static = false;
+        if let Some(name) = self.hoisted_trees.get(&value.text) {
+            return Frag::of(name.clone());
+        }
+        let name = format!("$view{}", self.hoisted_trees.len());
+        self.hoisted_trees.insert(value.text.clone(), name.clone());
+        let mut decl = Frag::of(format!("const {name} = "));
+        decl.f(value).s(";");
+        self.hoisted.push(decl);
+        Frag::of(name)
     }
 
     /// A node's argument: a view is a child that may be cached on its own.
@@ -2684,7 +3622,7 @@ impl<'a> Emitter<'a> {
 
     fn view_decl(&mut self, index: usize, item: &Item, v: &ViewDecl) -> Frag {
         let info = self.ck.views.get(&index).cloned().unwrap_or_default();
-        let mut setters = HashMap::new();
+        let mut setters = HashMap::default();
         for locals in &info.members {
             for local in locals {
                 if self.ck.locals[*local].kind == LocalKind::State {
@@ -2694,18 +3632,70 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
-        self.view = Some(ViewState { slots: 0, reactive: info.props.iter().copied().collect(), setters });
+        // The props, and a name for their whole value (`..props: P`), are what a render reads.
+        let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
+        self.view = Some(ViewState { slots: 0, reactive, setters });
         self.bufs.push(Vec::new());
         // Props.
         let export =
             if item.visibility == Visibility::Private || v.kind != ViewKind::View { "" } else { "export " };
-        let props_name = format!("{}Props", v.name.name);
+        let mut props_name = format!("{}Props", v.name.name);
         let mut props_decl = Frag::default();
         if !info.props.is_empty() {
             let params = v.params.as_deref().unwrap_or_default();
             let mut fields = Vec::new();
             let mut targets = Vec::new();
-            for (param, local) in params.iter().zip(&info.props) {
+            let mut extends = Vec::new();
+            let mut spreads = info.spreads.iter();
+            let mut props = info.props.iter();
+            for param in params {
+                if param.spread {
+                    // `..Props`: the interface extends it; its fields are destructured.
+                    let Some((ty, range)) = spreads.next() else { continue };
+                    let defaults: Vec<FieldDefault> = match ty {
+                        Ty::Adt(def, _) => {
+                            self.ck.defs[*def].fields().iter().map(|f| f.default.clone()).collect()
+                        }
+                        _ => Vec::new(),
+                    };
+                    // A TS interface is extended; a Bloom struct's fields are written out,
+                    // those with a default optional.
+                    let ts = matches!(ty, Ty::Adt(def, _) if matches!(self.ck.defs[*def].origin, Origin::Ts { .. }));
+                    if ts {
+                        extends.push(self.ts_type(ty));
+                    }
+                    for (index, local) in info.props[range.clone()].iter().enumerate() {
+                        props.next();
+                        if !ts {
+                            let optional = if defaults.get(index).is_some_and(|d| *d != FieldDefault::None) {
+                                "?"
+                            } else {
+                                ""
+                            };
+                            let prop_ty = self.ck.locals[*local].ty.clone();
+                            fields.push(format!(
+                                "  readonly {}{optional}: {};",
+                                prop_key(&self.ck.locals[*local].name),
+                                self.ts_type(&prop_ty)
+                            ));
+                        }
+                        let mut target = Frag::of(self.local_name(*local));
+                        match defaults.get(index) {
+                            Some(FieldDefault::Expr(id)) => {
+                                if let Some(value) = self.default_expr(*id) {
+                                    target.s(" = ").f(value);
+                                }
+                            }
+                            Some(FieldDefault::Literal(text)) => {
+                                target.s(&format!(" = {text}"));
+                            }
+                            _ => {}
+                        }
+                        targets.push(target);
+                    }
+                    continue;
+                }
+                let Some(local) = props.next() else { break };
                 let ty = self.ck.locals[*local].ty.clone();
                 let optional = if param.default.is_some() { "?" } else { "" };
                 fields.push(format!(
@@ -2719,7 +3709,24 @@ impl<'a> Emitter<'a> {
                 }
                 targets.push(target);
             }
-            props_decl = Frag::of(format!("{export}interface {props_name} {{\n{}\n}}\n", fields.join("\n")));
+            if fields.is_empty() && !extends.is_empty() {
+                // Only spreads: the props are their type, under the name it has.
+                props_name = extends.join(" & ");
+            } else {
+                if extends.contains(&props_name) {
+                    // `view PostCard(..PostCardProps, …)`: its own name is taken.
+                    props_name = format!("{}ViewProps", v.name.name);
+                }
+                let extends = if extends.is_empty() {
+                    String::new()
+                } else {
+                    format!(" extends {}", extends.join(", "))
+                };
+                props_decl = Frag::of(format!(
+                    "{export}interface {props_name}{extends} {{\n{}\n}}\n",
+                    fields.join("\n")
+                ));
+            }
             let mut line = Frag::of("const ");
             line.f(Frag::join(targets, ", ").wrap("{ ", " }")).s(" = props;");
             self.push_stmt(line);
@@ -2735,8 +3742,11 @@ impl<'a> Emitter<'a> {
             .rev()
             .find_map(|s| if let StmtKind::Expr(e) = &s.kind { Some(e) } else { None });
         if let Some(root) = root {
-            for task in self.tasks(root) {
-                self.task_effect(task);
+            for (call, watched) in self.effects(root) {
+                match watched {
+                    Some(ty) => self.change_effect(call, &ty),
+                    None => self.task_effect(call),
+                }
             }
         }
         // The body, cached on what it reads.
@@ -2784,7 +3794,20 @@ impl<'a> Emitter<'a> {
         };
         self.import_name(module, wrapper);
         let mut out = props_decl;
-        out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("});\n");
+        out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("}");
+        if let Some(equal) =
+            v.members.iter().find_map(|m| if let Member::Equal(e) = m { Some(e) } else { None })
+            && v.kind == ViewKind::View
+        {
+            let body = self.block_body(&equal.body.stmts, Tail::Return, None);
+            out.mark(equal.span).s(&format!(
+                ", ({}: {props_name}, {}: {props_name}): boolean => ",
+                js_name(&equal.old.name),
+                js_name(&equal.new.name)
+            ));
+            out.f(body);
+        }
+        out.s(");\n");
         // `pub default view`: the module's default export too.
         if v.kind == ViewKind::View && item.visibility == Visibility::PubDefault {
             out.s(&format!("export default {name};\n"));
@@ -2792,14 +3815,104 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// What an `id:` re-runs for, as effect dependencies: a tuple's values each, so
+    /// `id: (a, b)` is `[a, b]` and not a fresh array every render.
+    fn dep_values(&mut self, id: &Expr) -> Vec<Frag> {
+        match &id.kind {
+            ExprKind::Tuple(values) => values.iter().map(|v| self.expr(v)).collect(),
+            ExprKind::Paren(inner) => self.dep_values(inner),
+            _ => vec![self.expr(id)],
+        }
+    }
+
+    /// `effect { … }`: one `useEffect` on its reads (or `id:`); the `defer`s at its
+    /// top are the cleanup it returns, last first.
+    fn effect(&mut self, e: &EffectDecl) {
+        self.import_name("react", "useEffect");
+        let deps = match &e.id {
+            Some(id) => self.dep_values(id),
+            None => self.deps(&e.body.stmts).into_iter().map(Frag::of).collect(),
+        };
+        enum Cleanup {
+            Named(String),
+            Inline(Frag),
+        }
+        let mut cleanups = Vec::new();
+        self.bufs.push(Vec::new());
+        let stmts = &e.body.stmts;
+        for (index, stmt) in stmts.iter().enumerate() {
+            let StmtKind::Defer(block) = &stmt.kind else {
+                self.stmt(stmt);
+                continue;
+            };
+            let body = self.block_body(&block.stmts, Tail::Discard, None);
+            if stmts[index..].iter().all(|s| matches!(s.kind, StmtKind::Defer(_))) {
+                cleanups.push(Cleanup::Inline(body));
+            } else {
+                // A cleanup set before more work: named where it is, returned at the end.
+                let name = self.temp();
+                let mut line = Frag::at(stmt.span, format!("const {name} = () => "));
+                line.f(body).s(";");
+                self.push_stmt(line);
+                cleanups.push(Cleanup::Named(name));
+            }
+        }
+        let lines = self.bufs.pop().expect("the effect");
+        let mut out = Frag::at(e.keyword, "useEffect(() => {\n");
+        for line in lines {
+            out.f(line).s("\n");
+        }
+        match cleanups.len() {
+            0 => {}
+            1 => match cleanups.pop().expect("one") {
+                Cleanup::Named(name) => {
+                    out.s(&format!("return {name};\n"));
+                }
+                Cleanup::Inline(body) => {
+                    out.s("return () => ").f(body).s(";\n");
+                }
+            },
+            _ => {
+                out.s("return () => {\n");
+                for cleanup in cleanups.into_iter().rev() {
+                    match cleanup {
+                        Cleanup::Named(name) => out.s(&format!("{name}();\n")),
+                        Cleanup::Inline(body) => out.f(body).s("\n"),
+                    };
+                }
+                out.s("};\n");
+            }
+        }
+        out.s("}, ").f(Frag::join(deps, ", ").wrap("[", "]")).s(");");
+        self.push_stmt(out);
+    }
+
     fn member(&mut self, member: &Member, locals: &[LocalId]) {
         match member {
+            Member::Effect(e) => self.effect(e),
+            // `memo`'s comparator: the second argument of `view()`.
+            Member::Equal(_) => {}
             Member::State(state) => {
                 let local = locals[0];
                 let ty = self.ck.locals[local].ty.clone();
                 let ts = self.ts_type(&ty);
                 let name = self.local_name(local);
                 let line = match state.attr {
+                    StateAttr::Ref => {
+                        self.import_name("react", "useRef");
+                        let raw = js_name(&self.ck.locals[local].name);
+                        if self.is_view_ref(local) {
+                            let inner = match &ty {
+                                Ty::Option(inner) => self.ts_type(inner),
+                                other => self.ts_type(other),
+                            };
+                            Frag::at(state.span, format!("const {raw} = useRef<{inner} | null>(null);"))
+                        } else {
+                            let mut line = Frag::at(state.span, format!("const {raw} = useRef<{ts}>("));
+                            line.f(self.expr(&state.value)).s(");");
+                            line
+                        }
+                    }
                     StateAttr::State => {
                         self.import_name("react", "useState");
                         let setter = self.setter(local);
@@ -2863,19 +3976,26 @@ impl<'a> Emitter<'a> {
                     }
                 };
                 self.push_stmt(line);
-                self.view.as_mut().expect("a view").reactive.insert(local);
+                if state.attr != StateAttr::Ref {
+                    self.view.as_mut().expect("a view").reactive.insert(local);
+                }
             }
             Member::Let(l) => {
                 let kind = locals.first().map(|l| self.ck.locals[*l].kind.clone());
                 let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let deps = self.expr_deps(&l.value);
-                let hook = kind == Some(LocalKind::Hook);
+                let hook = kind == Some(LocalKind::Hook) || self.ck.hook_lets.contains(&l.span);
                 let target = self.binding_target(&l.pattern);
                 if hook || trivial(&l.value) {
                     let value = self.expr(&l.value);
                     let annotation =
                         annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
-                    let mut line = Frag::at(l.span, format!("const {target}{annotation} = "));
+                    let head = if l.pattern.kind == PatternKind::Wildcard {
+                        String::new()
+                    } else {
+                        format!("const {target}{annotation} = ")
+                    };
+                    let mut line = Frag::at(l.span, head);
                     line.f(value).s(";");
                     self.push_stmt(line);
                     if hook || !deps.is_empty() {
@@ -2898,7 +4018,7 @@ impl<'a> Emitter<'a> {
                 let ty = ty.map(|t| self.ts_type(&t));
                 let memo = self.memo(&name, ty, &deps, prelude, value);
                 self.push_stmt(memo);
-                if destructure {
+                if destructure && l.pattern.kind != PatternKind::Wildcard {
                     self.push_stmt(Frag::of(format!("const {target} = {name};")));
                 }
                 if !deps.is_empty() {
@@ -2949,19 +4069,23 @@ impl<'a> Emitter<'a> {
         reads || stmts_assign(&f.body.stmts)
     }
 
-    /// The `.task` calls of the body's root chain, outermost first.
-    fn tasks<'e>(&self, root: &'e Expr) -> Vec<&'e Call> {
+    /// The `.task` and `.onChange` calls of the body's root chain, in the order
+    /// they are written; an `.onChange` with the type it watches.
+    fn effects<'e>(&self, root: &'e Expr) -> Vec<(&'e Call, Option<Ty>)> {
         let mut out = Vec::new();
         let mut current = root;
         while let ExprKind::Call(call) = &current.kind {
-            if self.ck.calls.get(&current.id) == Some(&CallRes::Task) {
-                out.push(call);
+            match self.ck.calls.get(&current.id) {
+                Some(CallRes::Task) => out.push((call, None)),
+                Some(CallRes::OnChange(ty)) => out.push((call, Some(ty.clone()))),
+                _ => {}
             }
             match &call.callee.kind {
                 ExprKind::Field(receiver, _) => current = receiver,
                 _ => break,
             }
         }
+        out.reverse();
         out
     }
 
@@ -2972,7 +4096,7 @@ impl<'a> Emitter<'a> {
         let saved = self.signal.replace(signal.clone());
         let body = self.block_body(&trailing.body, Tail::Discard, Some(&signal));
         self.signal = saved;
-        let deps: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
+        let deps: Vec<Frag> = call.args.iter().flat_map(|a| self.dep_values(&a.value)).collect();
         let mut line = Frag::at(
             call.callee.span,
             "useEffect(() => {\nconst $controller = new AbortController();\nconst $signal = $controller.signal;\nvoid (async () => ",
@@ -2981,6 +4105,43 @@ impl<'a> Emitter<'a> {
             .s(")();\nreturn () => $controller.abort();\n}, ")
             .f(Frag::join(deps, ", ").wrap("[", "]"))
             .s(");");
+        self.push_stmt(line);
+    }
+
+    /// `.onChange(of: value) { old, new in … }`: one effect on `value`, with the
+    /// value it last ran for in a ref, so the first render and an equal value
+    /// (`==`, structural) do not run it.
+    fn change_effect(&mut self, call: &Call, ty: &Ty) {
+        let (Some(trailing), Some(arg)) = (&call.trailing, call.args.first()) else { return };
+        self.import_name("react", "useEffect");
+        self.import_name("react", "useRef");
+        let value = self.path_or_temp(&arg.value);
+        let previous = self.temp();
+        let ts = self.ts_type(ty);
+        self.push_stmt(Frag::of(format!("const {previous} = useRef<{ts}>({value});")));
+        let info = self.ck.closures.get(&trailing.span).cloned();
+        let params = info.as_ref().map(|i| i.params.clone()).unwrap_or_default();
+        let old = match params.first() {
+            Some(local) => self.local_name(*local),
+            None => self.temp(),
+        };
+        if let Some(new) = params.get(1) {
+            self.aliases.insert(*new, value.clone());
+        }
+        let same = self.equal(&old, &value, ty, &mut Vec::new());
+        let body = self.block_body(&trailing.body, Tail::Discard, None);
+        let mut line = Frag::at(
+            call.callee.span,
+            format!(
+                "useEffect(() => {{\nconst {old} = {previous}.current;\nif ({same}) return;\n{previous}.current = {value};\n"
+            ),
+        );
+        if info.is_some_and(|i| i.is_async) {
+            line.s("void (async () => ").f(body).s(")();\n");
+        } else {
+            line.f(body).s("\n");
+        }
+        line.s(&format!("}}, [{value}]);"));
         self.push_stmt(line);
     }
 
@@ -3017,6 +4178,9 @@ impl<'a> Emitter<'a> {
                         .iter()
                         .zip(&fn_ty.params)
                         .map(|(p, t)| {
+                            if t.rest {
+                                return format!("...{}: {}[]", js_name(&p.name.name), self.ts_type(&t.ty));
+                            }
                             format!(
                                 "{}{}: {}",
                                 js_name(&p.name.name),
@@ -3036,7 +4200,12 @@ impl<'a> Emitter<'a> {
                 ItemKind::View(v) => {
                     let local = self.ck.items[&index];
                     let Ty::Fn(fn_ty) = self.ck.locals[local].ty.clone() else { continue };
-                    let props_name = format!("{}Props", v.name.name);
+                    let mut props_name = format!("{}Props", v.name.name);
+                    let spreads = self.ck.views.get(&index).map(|i| i.spreads.clone()).unwrap_or_default();
+                    if spreads.iter().any(|(ty, _)| self.ts_type(ty) == props_name) {
+                        // `view PostCard(..PostCardProps)`: its own name is taken.
+                        props_name = format!("{}ViewProps", v.name.name);
+                    }
                     if !fn_ty.params.is_empty() {
                         let fields: Vec<String> = fn_ty
                             .params
@@ -3148,6 +4317,9 @@ impl<'a> Emitter<'a> {
         if mentions(&out, "$Result") {
             header.push_str("type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };\n");
         }
+        if mentions(&out, "$KeyPath") {
+            header.push_str(KEY_PATH);
+        }
         header + &out
     }
 }
@@ -3169,5 +4341,20 @@ fn trivial(expr: &Expr) -> bool {
             trivial(a) && trivial(b)
         }
         _ => false,
+    }
+}
+
+/// A `for` item spread among its parent's children: one view, not a branch,
+/// whose own chain cannot leave (`.transition`; `Presence` keeps those).
+fn plain_item(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::If(_) | ExprKind::Match(_) => false,
+        ExprKind::Paren(inner) => plain_item(inner),
+        ExprKind::Call(call) => match &call.callee.kind {
+            ExprKind::Field(receiver, name) => name.name != "transition" && plain_item(receiver),
+            _ => true,
+        },
+        ExprKind::Field(receiver, _) => plain_item(receiver),
+        _ => true,
     }
 }

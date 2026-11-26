@@ -1,0 +1,65 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { TextField } from "@oxy.so/bloom-language/inputs";
+import { useEffect, useRef, useState } from "react";
+import { type ViewInstance } from "@/types/views";
+import { useVisible } from "@/api";
+
+const $view0 = Button(Text("Go"));
+export interface SearchProps {
+  readonly onDone: () => void;
+}
+export const Search = view(function Search(props: SearchProps) {
+"use no memo";
+const $ = $c(9);
+const { onDone } = props;
+const timer = useRef<number>(0);
+const field = useRef<ViewInstance | null>(null);
+const [query, setQuery] = useState<string>("");
+useEffect(() => {
+timer.current = ((field.current ?? undefined) === undefined) ? 0 : (timer.current + 1);
+}, [query]);
+let submit: () => void;
+if ($[0] !== onDone) {
+submit = (): void => {
+timer.current = 0;
+onDone();
+};
+$[0] = onDone;
+$[1] = submit;
+} else {
+submit = $[1];
+}
+let $t0;
+if ($[6] !== query || $[7] !== submit) {
+$t0 = VStack(($[2] !== query ? ($[2] = query, $[3] = TextField([query, setQuery] as const, "Search").ref(field)) : $[3]), ($[4] !== submit ? ($[4] = submit, $[5] = $view0.onPress(() => submit())) : $[5]));
+$[6] = query;
+$[7] = submit;
+$[8] = $t0;
+} else {
+$t0 = $[8];
+}
+return $t0;
+});
+
+export interface CardProps {
+  readonly id: string;
+}
+export const Card = view(function Card(props: CardProps) {
+"use no memo";
+const $ = $c(2);
+const { id } = props;
+const card = useRef<ViewInstance | null>(null);
+const visible = useVisible({ key: id, target: card });
+let $t1;
+if ($[0] !== visible) {
+$t1 = VStack(Text(visible ? "seen" : "hidden")).ref(card);
+$[0] = visible;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

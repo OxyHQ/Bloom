@@ -1,0 +1,29 @@
+// `effect { … }` held to its rules.
+
+async fn load() -> Int {
+  1
+}
+
+pub view Bad {
+  @state n = 0
+
+  effect {
+    defer {
+      n = 0
+    }
+    return
+  }
+
+  effect {
+    let x = await load()
+    n = x
+  }
+
+  effect {
+    load()
+  }
+
+  body {
+    Text("${n}")
+  }
+}

@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface RowsProps {
+  readonly ids: readonly string[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Rows())`), or from TSX as `toElement(Rows())`. */
+export declare const Rows: (props: RowsProps) => ComposedView;

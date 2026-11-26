@@ -1,0 +1,26 @@
+
+type Point = { x: number; y: number };
+
+interface Labelled {
+  readonly x: number;
+  readonly y: number;
+  readonly label: string;
+}
+
+function extent(p: { x: number; y: number }): number {
+return p.x + p.y;
+}
+
+function describe(item: { title: string; subtitle?: string | undefined }): string {
+return item.subtitle ?? item.title;
+}
+
+export function uses(): number {
+const a = extent({ x: 1, y: 2 });
+const $t0 = { x: 3, y: 4, label: "c" };
+const b = extent($t0);
+const c: { x: number; y: number } = { x: 5, y: 6 };
+const t = describe({ title: "t" });
+return ((a + b) + extent(c)) + t.length;
+}
+

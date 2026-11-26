@@ -1,0 +1,43 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useRef } from "react";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Platform, StyleSheet, TextInput } from "react-native";
+
+const styles = StyleSheet.create({ root: { flex: 1 } });
+
+export function web(): boolean {
+return Platform.OS === "web";
+}
+
+const $view0 = Button(Text("Edit"));
+export interface FieldProps {
+  readonly value: string;
+}
+export const Field = view(function Field(props: FieldProps) {
+"use no memo";
+const $ = $c(3);
+const { value } = props;
+const input = useRef<NonNullable<Extract<NonNullable<ComponentProps<typeof TextInput>["ref"]>, { current: unknown }>["current"]> | null>(null);
+let focus: () => void;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+focus = (): void => {
+(input.current ?? undefined)?.focus();
+};
+$[0] = focus;
+} else {
+focus = $[0];
+}
+let $t0;
+if ($[1] !== value) {
+$t0 = VStack(Embed($jsx(TextInput, { value: value, ref: input } satisfies ComponentProps<typeof TextInput>)), $view0.onPress(() => focus()));
+$[1] = value;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+

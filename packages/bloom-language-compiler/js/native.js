@@ -2,6 +2,8 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { PACKAGE, SETUP_DOC, WASI, currentPlatform } = require('./platform');
+
 // The Rust compiler, as a Node addon. The first that loads is used:
 //
 // 1. A build from this checkout (`scripts/build-addon.sh`), beside the package.
@@ -13,21 +15,8 @@ const path = require('node:path');
 //
 // Every candidate exports the same `compile`, with the same output.
 const LOCAL = path.join(__dirname, '..', 'bloom-language-compiler.node');
-const PLATFORMS = {
-  'darwin-arm64': 'darwin-arm64',
-  'darwin-x64': 'darwin-x64',
-  'linux-arm64': 'linux-arm64-gnu',
-  'linux-x64': 'linux-x64-gnu',
-  'win32-x64': 'win32-x64-msvc',
-};
-const PACKAGE = '@oxy.so/bloom-language-compiler';
-/** Where setting the compiler up (and a platform without a build) is explained. */
-const SETUP_DOC =
-  'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-getting-started.mdx#the-compiler';
-const WASI = `${PACKAGE}-wasm32-wasi`;
-
 function candidates() {
-  const prebuilt = PLATFORMS[`${process.platform}-${process.arch}`];
+  const prebuilt = currentPlatform();
   return [LOCAL, ...(prebuilt ? [`${PACKAGE}-${prebuilt}`] : []), WASI];
 }
 
@@ -66,12 +55,13 @@ const digest = crypto.createHash('sha1').update(fs.readFileSync(binary)).digest(
 /**
  * `binary` names the build that loaded (a local one, a platform package's, or
  * the WASI module); `docLinks()` lists every docs link a diagnostic can carry.
- * `compileBloom`, `checkBloom` and `formatBloom` are the `.bloom` compiler's
+ * `compileBloom`, `bloomDependencies`, `checkBloom` and `formatBloom` are the `.bloom` compiler's
  * (absent from a build that predates it).
  */
 module.exports = {
   compile: addon.compile,
   compileBloom: addon.compileBloom,
+  bloomDependencies: addon.bloomDependencies,
   checkBloom: addon.checkBloom,
   formatBloom: addon.formatBloom,
   docLinks: addon.docLinks,

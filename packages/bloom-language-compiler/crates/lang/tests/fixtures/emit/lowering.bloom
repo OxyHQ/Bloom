@@ -1,0 +1,57 @@
+// Phase 1 lowering: an awaited TS promise is settled with a `try` around only
+// the await (matched, propagated with `?`, or kept as a `Result`), and a
+// branch that needs statements is an `if` into a temp, never an IIFE.
+
+import { fetchCount, ping } from "@/api"
+
+enum Load {
+  idle
+  ready(count: Int)
+}
+
+/// Matched: the value is read where it is bound.
+async fn describe(id: String) -> String {
+  match await fetchCount(id) {
+    case .ok(n) => "${n} posts"
+    case .err(e) => e.message
+  }
+}
+
+/// Propagated: the error returns from the `catch`.
+async fn total(a: String, b: String) -> Result<Float, Error> {
+  let x = await fetchCount(a)?
+  await ping()?
+  let y = await fetchCount(b)?
+  ok(x + y)
+}
+
+/// Kept: the `Result` escapes, so it is built in place.
+async fn attempt(id: String) -> Result<Float, Error> {
+  let result = await fetchCount(id)
+  result
+}
+
+/// A branch that awaits, and the right of `&&` that awaits.
+async fn either(fast: Bool, id: String) -> Float {
+  let n = fast ? 0.0 : (await fetchCount(id)).unwrapOr(0.0)
+  let big = n > 10.0 && (await fetchCount(id)).isOk
+  big ? n : 0.0
+}
+
+pub view Counter(load: Load, label: String?) {
+  body {
+    VStack {
+      if let text = label {
+        let shown = text.uppercased()
+        Text(shown)
+      }
+      match load {
+        case .idle => Text("Idle")
+        case .ready(count) => {
+          let line = "${count} items"
+          Text(line)
+        }
+      }
+    }
+  }
+}

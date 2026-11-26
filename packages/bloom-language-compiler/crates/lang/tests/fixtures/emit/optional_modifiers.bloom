@@ -1,0 +1,31 @@
+// A modifier parameter that takes `undefined` takes `none`, and `c ? f : none` is `F?`.
+
+pub view Feed(more: Bool, footer: Bool) {
+  fn load() {
+  }
+
+  body {
+    VStack {
+      ScrollView {
+        Text("rows")
+      }
+      .onEndReached(more ? load : none, 0.5)
+      .onEndReached(none)
+      Carousel {
+        Text("a")
+      }
+      .footerContent(footer ? Text("end") : none)
+      .footerContent(none)
+    }
+  }
+}
+
+// A node's argument TS takes as `undefined` takes `none` (`SettingsSection(label: string | undefined, …)`).
+pub view Section(title: String?) {
+  body {
+    VStack {
+      SettingsSection(none, GroupedSection(GroupedSectionItem("a")))
+      SettingsSection(title, GroupedSection(GroupedSectionItem("b")))
+    }
+  }
+}

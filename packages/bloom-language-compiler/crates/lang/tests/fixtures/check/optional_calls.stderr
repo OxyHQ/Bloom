@@ -1,0 +1,77 @@
+error[B0201]: `?.` reads an optional, and this is `Box`
+  --> check/optional_calls.bloom:11:6
+   |
+11 |   b?.label.uppercased()
+   |      ^^^^^ never `none`
+   |
+help: write `.label`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+
+error[B0201]: `?.` reads an optional, and this is `() -> Int`
+  --> check/optional_calls.bloom:15:3
+   |
+15 |   f?.()
+   |   ^ never `none`
+   |
+help: call it: `f(…)`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+
+error[B0209]: `String?` has no method `trimmed`
+  --> check/optional_calls.bloom:20:11
+   |
+20 |   b?.note.trimmed()
+   |           ^^^^^^^ no such method
+   |
+help: it may be `none`: write `?.trimmed`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft
+
+error[B0201]: expected `[Int]`, found `[String]`
+  --> check/optional_calls.bloom:28:11
+   |
+28 |   total(..xs) + total("a")
+   |           ^^ this is `[String]`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `Int`, found `String`
+  --> check/optional_calls.bloom:28:23
+   |
+28 |   total(..xs) + total("a")
+   |                       ^^^ this is `String`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0207]: `..` spreads a list into a rest parameter, and none is here
+  --> check/optional_calls.bloom:32:15
+   |
+32 |   plainSum(1, ..xs)
+   |               ^^^^ no rest parameter takes it
+   |
+help: a struct spreads into a construction: `S(..s, field: v)`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: a rest parameter comes last
+  --> check/optional_calls.bloom:39:10
+   |
+39 | fn first(..xs: [Int], last: Int) -> Int {
+   |          ^^^^^^^^^^^ not a rest parameter
+   |
+help: move it to the end
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0202]: cannot find `xs` in scope
+  --> check/optional_calls.bloom:44:3
+   |
+44 |   xs
+   |   ^^ not declared
+   |
+help: did you mean `ts`?
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0201]: expected `[String]`, found `[Int]`
+  --> check/optional_calls.bloom:48:24
+   |
+48 |   joinClasses("row", ..xs)
+   |                        ^^ this is `[Int]`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

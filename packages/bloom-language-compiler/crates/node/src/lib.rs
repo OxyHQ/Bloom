@@ -101,6 +101,8 @@ pub struct BloomOptions {
     pub paths: Option<std::collections::HashMap<String, Vec<String>>>,
     /// A development build.
     pub dev: Option<bool>,
+    /// The app's Expo Router folder, relative to `root` (default: `app/` or `src/app/`).
+    pub app: Option<String>,
 }
 
 fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
@@ -109,6 +111,7 @@ fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
         root: options.root.map(Into::into),
         paths: options.paths.unwrap_or_default().into_iter().collect(),
         dev: options.dev.unwrap_or(false),
+        app: options.app.map(Into::into),
     }
 }
 
@@ -122,9 +125,15 @@ pub struct BloomOutput {
     pub dts: Option<String>,
     pub diagnostics: Vec<BloomDiagnostic>,
     pub warnings: Vec<BloomDiagnostic>,
+    /// The files the compile read: the `.bloom` modules and TS declarations it imports.
+    pub dependencies: Vec<String>,
 }
 
-/// Compile one `.bloom` module to TypeScript (the embedded pass included).
+fn paths(paths: Vec<std::path::PathBuf>) -> Vec<String> {
+    paths.into_iter().map(|p| p.to_string_lossy().into_owned()).collect()
+}
+
+/// Compile one `.bloom` module to TypeScript (bloomc hoists its static chains itself).
 #[napi]
 pub fn compile_bloom(source: String, filename: String, options: Option<BloomOptions>) -> BloomOutput {
     let output = bloom_lang::compile(&source, &filename, &lang_options(options));
@@ -134,7 +143,15 @@ pub fn compile_bloom(source: String, filename: String, options: Option<BloomOpti
         dts: output.dts,
         diagnostics: bloom_diagnostics(output.diagnostics),
         warnings: bloom_diagnostics(output.warnings),
+        dependencies: paths(output.dependencies),
     }
+}
+
+/// The files compiling a `.bloom` module reads (its imported `.bloom` modules
+/// and TS declarations), without emitting: what a transform cache key hashes.
+#[napi]
+pub fn bloom_dependencies(source: String, filename: String, options: Option<BloomOptions>) -> Vec<String> {
+    paths(bloom_lang::dependencies(&source, &filename, &lang_options(options)))
 }
 
 /// A type the checker found: its byte span and the type as Bloom writes it.

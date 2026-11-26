@@ -18,6 +18,14 @@
 //!
 //! The output is the same program on every platform: resolving tokens stays
 //! the runtime's job, so the two can never disagree about what a token means.
+//!
+//! `.bloom` modules: bloomc (`crates/lang`) holds the same chain rules
+//! ([`rules`]: glass, toolbars, labels, choices), described from its own tree,
+//! and does not run this pass. Its output must still be a fixed point of the
+//! pass (bloomc hoists static chains itself, and its bodies are
+//! `"use no memo"`): `crates/lang/tests/fixtures.rs` holds that for every emit
+//! fixture, so a new transform here that would change bloomc's output fails
+//! there until bloomc does the same.
 
 mod check;
 mod diagnostics;
@@ -25,6 +33,9 @@ mod docs;
 #[path = "entries.generated.rs"]
 pub mod entries;
 mod module;
+/// The chain rules both front ends hold (glass, toolbars, labels, choices,
+/// environments), over a neutral description of a chain.
+pub mod rules;
 /// The names chains are checked against, generated from `spec/language.json`:
 /// public so the `.bloom` compiler checks its modifiers and tokens against the
 /// same tables instead of a copy.

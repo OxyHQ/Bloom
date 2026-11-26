@@ -1,0 +1,17 @@
+error[B0301]: this match does not cover `"loud"`
+ --> check/literal_unions.bloom:6:9
+  |
+6 |   match tone {
+  |         ^^^^ `"calm" | "loud"` is not matched by every value
+  |
+help: add the missing arm(s), or `case _ =>` for the rest:
+      case "loud" => …
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0502]: `"quiet"` is not a `"calm" | "loud"`
+  --> check/literal_unions.bloom:12:10
+   |
+12 |   volume("quiet")
+   |          ^^^^^^^ expected one of: calm loud
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary

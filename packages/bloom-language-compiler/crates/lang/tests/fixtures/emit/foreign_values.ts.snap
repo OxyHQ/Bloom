@@ -1,0 +1,174 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, RawText, Text, VStack, view } from "@oxy.so/bloom-language";
+import { GroupedSectionItem } from "@oxy.so/bloom-language/containers";
+import { useInsets, useList, useMods, usePlayer } from "@/hooks/useInsets";
+
+const OFFSET = 4;
+
+const $fn0 = (m: NonNullable<ReturnType<typeof useMods>["data"]>[number]) => m.name;
+export interface ModsProps {
+  readonly id: string;
+}
+export const Mods = view(function Mods(props: ModsProps) {
+"use no memo";
+const $ = $c(7);
+const { id } = props;
+const insets = useInsets();
+const { data } = useMods(id);
+let mods: readonly NonNullable<ReturnType<typeof useMods>["data"]>[number][];
+if ($[0] !== data) {
+mods = data ?? [];
+$[0] = data;
+$[1] = mods;
+} else {
+mods = $[1];
+}
+let names: readonly NonNullable<ReturnType<typeof useMods>["data"]>[number]["name"][];
+if ($[2] !== mods) {
+names = mods.map((v0) => ($fn0)(v0));
+$[2] = mods;
+$[3] = names;
+} else {
+names = $[3];
+}
+let $t0;
+if ($[4] !== names || $[5] !== insets.top) {
+$t0 = VStack(...names.map((name) => Text(name))).padding("top", (insets.top satisfies number) + OFFSET);
+$[4] = names;
+$[5] = insets.top;
+$[6] = $t0;
+} else {
+$t0 = $[6];
+}
+return $t0;
+});
+
+export function end(onEnd: (() => void) | undefined, label: string | undefined): string {
+if ((onEnd !== undefined) && (label !== undefined)) {
+onEnd();
+return label;
+}
+return "";
+}
+
+const $view0 = Text("on");
+export interface RowProps {
+  readonly title: string;
+  readonly active: boolean;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(3);
+const { title, active } = props;
+let $t1;
+if ($[0] !== title || $[1] !== active) {
+$t1 = GroupedSectionItem(title).trailing(active ? $view0 : undefined);
+$[0] = title;
+$[1] = active;
+$[2] = $t1;
+} else {
+$t1 = $[2];
+}
+return $t1;
+});
+
+export function shown(name: string | undefined, bio: string | undefined): string {
+if ((name === undefined) || (bio === undefined)) {
+return "";
+}
+const full = ((name !== undefined) && (!(name.length === 0))) ? name : "?";
+return `${full}: ${bio}`;
+}
+
+export function initial(name: string | undefined, fallback: string): string {
+const first = (name !== undefined) ? name : fallback;
+const second = (name === undefined) ? fallback : name;
+const blank = (name === undefined) || (name.length === 0);
+return blank ? first : second;
+}
+
+export const ListTitle = view(function ListTitle() {
+"use no memo";
+const $ = $c(2);
+const list = useList();
+const title = ((list.title || "Untitled") satisfies string);
+let $t2;
+if ($[0] !== title) {
+$t2 = Text(title.toUpperCase());
+$[0] = title;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+
+interface Author {
+  readonly name: string | undefined;
+  readonly avatar: Avatar | undefined;
+}
+
+interface Avatar {
+  readonly url: string | undefined;
+}
+
+function width(s: string): number {
+return s.length;
+}
+
+export function named(u: Author): number {
+if ((u.name !== undefined) && (!(u.name!.length === 0))) {
+return width(u.name!);
+}
+return 0;
+}
+
+export function present(u: Author | undefined): number {
+if (u?.name === undefined) {
+return 0;
+}
+return width(u?.name!);
+}
+
+export function pictured(u: Author): number {
+return (u.avatar?.url !== undefined) ? width(u.avatar?.url!) : 0;
+}
+
+const $view1 = Button(Text("Loop"));
+export const Player = view(function Player() {
+"use no memo";
+const $ = $c(1);
+const player = usePlayer();
+let $t3;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t3 = $view1.onPress(() => {
+player.loop = true;
+player.currentTime += 5;
+player.source.uri = "a.mp4";
+});
+$[0] = $t3;
+} else {
+$t3 = $[0];
+}
+return $t3;
+});
+
+export interface TipProps {
+  readonly tip: Author;
+}
+export const Tip = view(function Tip(props: TipProps) {
+"use no memo";
+const $ = $c(2);
+const { tip } = props;
+let $t4;
+if ($[0] !== tip.name) {
+$t4 = VStack((tip.name !== undefined) ? RawText(tip.name!) : null);
+$[0] = tip.name;
+$[1] = $t4;
+} else {
+$t4 = $[1];
+}
+return $t4;
+});
+

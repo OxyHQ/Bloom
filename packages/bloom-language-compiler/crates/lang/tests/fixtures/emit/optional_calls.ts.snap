@@ -1,0 +1,55 @@
+import { joinClasses } from "@/api";
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+interface Box {
+  readonly label: string;
+  readonly note: string | undefined;
+}
+
+function shout(b: Box | undefined): string | undefined {
+return b?.label.toUpperCase();
+}
+
+function number(s: string | undefined): number | undefined {
+return (s == null ? undefined : $toInt(s));
+}
+
+function size(b: Box | undefined): number | undefined {
+return b?.label.length;
+}
+
+function noted(b: Box | undefined): string | undefined {
+return b?.note?.trim();
+}
+
+function run(f: (() => number) | undefined): number | undefined {
+return f?.();
+}
+
+function tap(f: ((p0: number) => void) | undefined): void {
+f?.(1);
+}
+
+function total(base: number, step: number = 1, ...xs: readonly number[]): number {
+return xs.reduce((a: number, b: number) => a + b, base + step);
+}
+
+function totals(xs: readonly number[]): number {
+return ((total(0) + total(1, 2, 3, 4)) + total(1, undefined, ...xs)) + total(1, 2, ...xs);
+}
+
+function classes(names: readonly string[]): string {
+return joinClasses("row", ...names);
+}
+
+function more(names: readonly string[]): string {
+return joinClasses("row", "dense", ...names);
+}
+
+export function pages(data: { pages: readonly (readonly string[])[] } | undefined): readonly string[] {
+return data?.pages.flatMap((page: readonly string[]) => page) ?? [];
+}
+

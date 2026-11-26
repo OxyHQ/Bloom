@@ -640,6 +640,15 @@ ${Object.entries(nodes)
   .join('\n')}
 ];
 
+/// Each node constructor's positional parameters (\`...children\`, \`...text\`, \`view\`, \`label\`,
+/// \`string\`, \`number\`, \`boolean\`, \`binding\`, \`icon\`, \`value\`; \`?\` when optional), read from
+/// its declaration by \`generate-signatures.mjs\`.
+pub const SIGNATURES: &[(&str, &[&str])] = &[
+${Object.entries(withoutComment(spec.signatures ?? {}))
+  .map(([name, params]) => `    (${rustStr(name)}, ${rustList(params)}),`)
+  .join('\n')}
+];
+
 /// A glass value's methods (\`regular.tint('primary', 'subtle')\`) → their parameter types.
 pub const GLASS_VALUE: &[(&str, &[&str])] = &[
 ${Object.entries(glassValue)

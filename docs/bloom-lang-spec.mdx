@@ -109,14 +109,16 @@ generics      = "<" TYPE_NAME { "," TYPE_NAME } ">" ;
 
 fn            = [ "async" ] "fn" IDENT [ generics ] "(" [ params ] ")" [ "->" type ] block ;
 params        = param { "," param } [ "," ] ;
-param         = IDENT ":" type [ "=" expr ] ;
+param         = [ ".." ] IDENT ":" type [ "=" expr ] ;   (* "..": a rest parameter, last *)
 
-view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;
+view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a param may be ".." TYPE: props spread *)
 screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
 layout        = "layout" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route layout *)
 view_block    = "{" { member NL } "body" block "}" ;
-member        = state | let_stmt | fn ;
-state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
+member        = state | let_stmt | fn | effect | equal ;
+equal         = "equal" "(" IDENT "," IDENT ")" block ;   (* contextual, like effect *)
+effect        = "effect" [ "(" "id" ":" expr ")" ] block ;   (* contextual: `effect` stays a name *)
+state         = "@" ( "state" | "list" | "record" | "env" | "ref" ) IDENT [ ":" type ] "=" expr ;
 
 block         = "{" { stmt ( NL | ";" ) } "}" ;
 stmt          = let_stmt | var_stmt | assign | "return" [ expr ] | "defer" block | while | for | expr ;
@@ -142,20 +144,23 @@ match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>"
                    an arm may also be one statement: case .ok(_) => draft = Draft() *)
 task_expr     = "task" block ;                     (* spawns; the expression is Unit *)
 closure       = "{" [ closure_params "in" ] { stmt ( NL | ";" ) } "}" ;
-closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
+closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] }
+              | "(" IDENT { "," IDENT } ")" ;          (* one tuple parameter, its items named *)
 
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
                                                       await f()? is (await f())? *)
-postfix       = primary { call | "." NAME | "?." NAME | "[" expr "]" | "?" } ;
+postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | "[" expr "]" | "?" } ;
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
-arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; struct spread *)
+arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; a struct spread, or a
+                                                   list spread into a rest parameter *)
 primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
               | "(" expr ")" | "(" expr "," expr { "," expr } ")"
-              | "[" [ expr { "," expr } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
+              | "[" [ item { "," item } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
 
+item          = expr | ".." expr ;                  (* `[..a, b]`: a list's items in place *)
 pattern       = "_" | IDENT | literal | "." IDENT [ "(" pattern { "," pattern } ")" ]
               | TYPE_NAME "." IDENT [ "(" … ")" ] | "(" pattern { "," pattern } ")"
               | "{" IDENT [ ":" pattern ] { "," … } "}"     (* record destructuring *)
@@ -163,6 +168,11 @@ pattern       = "_" | IDENT | literal | "." IDENT [ "(" pattern { "," pattern } 
 ```
 
 Three grammar rules keep it unambiguous, as in Swift:
+
+A keyword that never starts an expression (`type`, `body`, `view`, `screen`, `layout`, `from`)
+may name a parameter, a struct field or a value, so a TS API's props and fields keep their
+names (`view NoticeRow(type: String, body: String)`, `Text(body)`). Record keys, labels and
+members after `.` may be any keyword.
 
 1. **No trailing closure in a head.** `if x { … }`, `match x {`, `for p in xs {` and `while`
    never read the `{` as a trailing closure of `x`.
@@ -181,7 +191,8 @@ Three grammar rules keep it unambiguous, as in Swift:
 | `Bool`, `String`, `Unit` | | boolean, string, `undefined` | `boolean`, `string`, `void` |
 | `[T]` | immutable list | frozen-in-dev JS array | `readonly T[]` |
 | `[String: V]` | immutable dictionary | plain object | `Readonly<Record<string, V>>` |
-| `[K: V]` (other K) | immutable map | `Map` | `ReadonlyMap<K, V>` |
+| `Map<K, V>` | immutable map, any key | `Map` | `ReadonlyMap<K, V>` |
+| `Set<T>` | immutable set | `Set` | `ReadonlySet<T>` |
 | `(A, B)` | tuple | array | `readonly [A, B]` |
 | `T?` | `Option<T>` | the value or `undefined` | `T \| undefined` |
 | `Result<T, E>` | success or error | `{ ok: true, value } \| { ok: false, error }` | the same union |
@@ -206,18 +217,37 @@ view parameters), inferred everywhere inside: `let`, closure parameters (from th
 function type), generic arguments at call sites, empty collections from use. A literal
 `"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
-`?.`, `match` or `?`).
+`?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a
+local, parameter or prop `x` is present in the block, as TS narrows it: `if onEnd != none {
+onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
+on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
+p.x : d`, `p == none ? d : p.x`); and after a guard
+that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
+block. Values are immutable, so a member chain of such a name narrows the same way
+(`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
+since TS does not keep a property's narrowing inside a closure.
+
+Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
+TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
+fields too (`[Int]` fits `[Float]`). It costs nothing and loses nothing: both are JS numbers
+and an `Int` stays within 2^53, so no conversion is emitted. An integer literal is a `Float`
+where one is expected (`let x: Float = 0`). Arithmetic with an `Int` and a `Float` operand
+is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even where a `Float`
+is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
+`Int` and a `Float` branch is `Float`. A `Float` never narrows implicitly.
 
 ### 4.3 Soundness rules
 
-- No `any`, no implicit null, no implicit numeric conversion (`Int` → `Float` is `.toFloat()`;
-  `Float` → `Int` is `.rounded()`, `.floor()`, `.ceil()`, `.truncated()`).
+- No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
+  `.floor()`, `.ceil()` or `.truncated()` (B0201). `Int` → `Float` widens implicitly (4.2).
 - Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
 - Values are immutable. `var` exists only as a function-local; it cannot be captured by a
   closure (B0402), so no closure observes a mutation.
 - Equality `==` is defined on `Int`, `Float`, `Bool`, `String`, fieldless enums and `none`
   checks; on structs and payload enums it is structural and compiled to a field comparison
-  (phase 1; phase 0 rejects it with B0210).
+  (phase 1; phase 0 rejects it with B0210). `x == none` / `x != none` tests presence on any
+  optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
+  Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
 
 ### 4.4 Structs
@@ -254,9 +284,18 @@ fn area(s: Shape) -> Float {
 }
 ```
 
-`Option<T>` is written `T?`: `none`, `x ?? fallback`, `x?.field`, `if let v = x { … }`.
+`Option<T>` is written `T?`: `none`, `x ?? fallback`, `x?.field`, `x?.method(…)`, `f?.(…)`,
+`if let v = x { … }`. A `?.` short-circuits the rest of its chain, as in JS: in
+`b?.label.uppercased()` the `.uppercased()` reads `b`'s label and the whole is `String?`. A
+link whose own type is optional is not read through (`b?.note.trimmed()` with `note: String?`
+is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
+JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
+is not `none`. An optional call of a Unit function is Unit.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
-`Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Methods:
+`Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Inside
+`catching { … }` and in a closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type),
+`expr?` on a `Result` throws its error instead: `catching` gives it as `.err`, and the promise
+TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). Methods:
 `.map`, `.mapErr`, `.unwrapOr`, `.ok()` (to an optional), `.isOk`.
 
 ### 4.6 Generics
@@ -280,6 +319,48 @@ and using it as a Bloom value with no expected type (an operator, a `match`, a m
 type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
 is checked by bloomc, and every crossing by `tsc`.
 
+`foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
+TS checks the whole where it lands; a TS value compared with `none` is compared loosely
+(`!= null`), as TS's absence may be `null`. Where `e` says less than TS knows (`data ?? []`), its items
+are the TS value's (`NonNullable<…>[number]`), so `.map { m in m.name }` reads TS members. A TS
+value beside a number in arithmetic is a number (`insets.top + 4` is a `Float`; for `+` beside
+a string, a `String`), and the emitter writes `(insets.top satisfies number)`. So does a TS value beside `none` or a Bloom value in a
+branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
+of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
+of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
+`satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
+emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
+`undefined` (`SettingsSection(none, …)`). A TS
+class that extends nothing (`ViewModifier`) is a value
+and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
+
+`x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
+can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its
+items are taken as `T`). `if x is T { … }` narrows a name to `T` in the block. It sits at the
+comparisons' precedence. `is` on a Bloom value, or for another type, is B0213: a Bloom type's
+cases are an enum's, matched with `match`. A Bloom file reads no JS global implicitly: numbers
+come from the prelude (section 12), timers are `task { await sleep(ms) … }`, and any other global
+is imported by name, `import { encodeURIComponent, JSON } from "js"`: nothing is emitted for
+the import, and its names are `Foreign`, typed by TypeScript (lib.es, lib.dom) where they cross.
+A JS class imported so (`Date`, `URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
+built by a call: `Date(at)` is `new Date(at)`; Bloom has no `new`. `Foreign<"T">` writes out a
+TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
+`Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
+and the emitted TS names the type as written, so TS checks every use.
+
+A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
+is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it
+(`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,
+fits a dictionary when each of its fields fits `V` (`let GAPS: [String: Float] = SPACING`).
+
+TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
+namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
+Platform: PlatformType; declare type Platform = typeof Platform`) are both read, the value
+typed, the type `Foreign`; a const whose type is, through aliases and `&`, a function from props
+to a node is a component (`TextInput(value: v)`). As a type, such a component is its instance,
+as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
+`ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
+
 ## 5. Values, functions and closures
 
 ```bloom
@@ -290,6 +371,13 @@ async fn load(id: String) -> Result<Post, String> { … }
 let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
 xs.map { p in p.title }                  // trailing closure
 ```
+
+A rest parameter `..xs: [T]` comes last, has no default, and takes any number of `T`s after
+the other positional arguments; in the body it is a `[T]`. A call spreads a list into a rest
+parameter (Bloom's or a TS function's `...args`) with `..`: `total(1, ..xs)`,
+`joinClasses("row", ..names)` compiles to `joinClasses("row", ...names)`. A spread where no rest
+parameter takes it is B0207 (outside a construction, where `..s` spreads a struct). A view takes
+props, never a rest parameter.
 
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
 in any order after the positional ones. **In a call to a TS function, named arguments form one
@@ -329,6 +417,24 @@ pub view PostRow(post: Post, compact: Bool = false) {
 - A `view` is a component: it compiles to `view(function PostRow(props) { … })` in the
   embedded language, one memoised fiber, the same as a hand-written `view()`. Parameters are its
   props.
+- **`..Props` spreads a type's fields as props**: `view PostCard(..PostCardProps, dense: Bool =
+  false)`. `..card: PostCardProps` also names their whole value, `card` (emitted `props`, a
+  dependency of what reads it), to hand on as is: `summary(card: card)`. The type is a struct, a record type or a TS interface (B0204 otherwise); each field
+  is a prop of its name and type, and one with a default (or a TS optional one) may be left
+  out. Its props interface `extends` a TS interface and writes a struct's fields out; when the
+  view's `XProps` name is the spread type's own, it is `XViewProps`, and with only spreads the
+  props are the type itself.
+- **`..r` among a call's props** spreads a struct's or record's fields as props, JSX's
+  `{...r}`: `W(..p)`, `W(..q, b: 2)` (a later prop of the same name wins). Each field a prop
+  takes is checked against it, and the record may have more. On a TS component it is `{ ...r }`,
+  which tsc checks.
+- **`equal(old, new) { <Bool> }`** is a view member: whether two props are equal for the view,
+  compiled to `memo`'s comparator (`view(function X(props) { … }, (old, new_) => …)`); `true`
+  skips the render. `old` and `new` are the view's props record as passed, so a prop with a
+  default is optional there. It reads only them and module names (it runs outside any render).
+  A view has one (B0435), and a screen, a layout or a view without props none.
+- A view called with arguments that are all static (literals, module values) is a static
+  chain like a node's: built once, at module scope.
 - A `fn … -> View`, at module level or as a view member, is **inlined UI**: a plain call, no
   fiber, no state; prefer it for repeated rows inside one view.
 - `screen Name { … }` is a view that is the file's default export and an Expo Router route
@@ -343,10 +449,15 @@ pub view PostRow(post: Post, compact: Bool = false) {
   `VStack(a, b)`. A conditional keeps its slot (structural identity, as SwiftUI does).
 - **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
-  nesting, as in the embedded language.
+  nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
+  (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
 - **Tokens are string literals checked against the token set** the modifier takes:
   `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
-  A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`).
+  A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
+  with nothing expected, a conditional of string literals is their literal union (`let side =
+  card ? "96" : "48"`, as TS's `const` infers) and a literal beside a literal union joins it
+  (`c ? "md" : gutter`), so either fits a token set. `defineModifier { v in … }` reads `v` as a
+  `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
 - **Events take closures**: `.onPress { saving = true }`; an `async` closure
   (`.onPress { await save() }`) runs as a task (section 8).
 - **Inputs take bindings**: `TextField($draft)`, `Toggle($prefs.likes)`. `$x` projects
@@ -355,6 +466,15 @@ pub view PostRow(post: Post, compact: Bool = false) {
 - **TS React components are nodes**: an imported component `OxyAuthPrompt` is called with its
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
   trailing builder as `children`.
+
+- A token parameter whose TypeScript type also takes a boolean takes a `Bool` (or an optional
+  one): `.allowsHitTesting(false)` (`HitTesting`), `.when(on) { … }` (`Condition | boolean`),
+  `.accessibilityState(checked: on)` (`boolean | "mixed"`). A modifier's closure whose
+  parameter has no Bloom type stays where it is passed, so TS types it from there.
+- A modifier's parameter that TypeScript lets be `undefined` takes `none` and any optional
+  (`.onEndReached(more ? load : none, 0.5)`, `.footerContent(none)`); a parameter marked `?`
+  in its signature may be left out. `c ? a : none` is `A?` wherever it is written, so the
+  `none` branch is never held to the other's type.
 
 ### 7.3 Reactivity (compile-time)
 
@@ -380,7 +500,20 @@ compiler pass, which runs on bloomc's output in the same process.
 state (`count += 1`, `count = count + 1`) it is the functional update `setX(count => count + 1)`.
 Reading a state member after assigning it in the same closure is B0410 (it would read the
 render's value); bind the new value to a `let` first. Hook calls are only allowed as view
-members (B0420), so the rules of hooks hold by construction.
+members and at the top level of a hook function (B0420), so the rules of hooks hold by
+construction. A **hook function** is a `fn` named `use[A-Z]…`: its top-level `let`s and its
+result may call hooks (not a branch, a loop or a closure), and calling it is calling a hook. A
+`.bloom` module of `pub fn useX(…)` is a module of hooks. A hook function written without
+`-> T` has the type of its last line (nothing when that is not a value).
+
+**Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
+and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
+effects and tasks: reading or writing it while the view draws is B0411, since the body would
+not follow it. `.ref(x)` passes the ref itself for a host view to fill; such a ref (`@ref field:
+ViewInstance? = none`) holds `null` in JS when empty and reads as `none`. So do `.inputRef(x)`,
+a TS parameter typed as a ref (`RefObject<…>`, `Ref<…>`), and, while the view draws, a TS
+argument of a type Bloom does not read (`useVisible(target: card)`; tsc checks it). A ref is
+never a memo dependency.
 
 ### 7.4 Environment
 
@@ -390,16 +523,42 @@ inherit as in the embedded language.
 
 ## 8. Effects, tasks and concurrency
 
+**Sync throws.** `catching { … }` runs its block and gives `Result<T, Error>`: the last line's
+value is `.ok`, and what TS code in it throws synchronously (`URL(link)`, `JSON.parse(s)`) is
+`.err`. It is emitted as an inline `try`/`catch`, with no helper; the block cannot `return`, and
+`?` in it ends at it (`let r = (await fetch(url))?` inside: a rejection is `.err`).
+
+**`fail(e: Error) -> Never`** throws `e`. It is allowed where a throw has a catcher: in a
+closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type), where a
+thrown error is how TS hears of a failure (`mutationFn: { v in if v.isEmpty { fail(Error("Empty")) } … }`,
+a rejected promise; a sync TS callback's throw), and in `catching { … }`'s block, which gives
+it as `.err`. As a statement or a block's last line it is `throw e;`; where a value is needed
+(`c ? x : fail(e)`), an inline throw. Anywhere else a failure is a value: `fail` is B0222,
+whose fix is to return `err(e)` from a function that returns a `Result`. `?` on a `Result`
+in those closures throws the same way (4.5).
+
 - `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
   returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
   `Result<T, Error>`**, because a JS promise can reject; `await f()?` propagates (`await` binds tighter than `?`, as Rust's `.await?`). A synchronous
-  TS throw is a panic (a bug), as in Rust.
+  TS throw is a panic (a bug), as in Rust. A Bloom `async` function (or closure) never rejects,
+  so it is TS's `(A) => Promise<T>` where TS takes one (`onRefresh: reload`); a closure that
+  awaits, given for one, has `T` as its result.
 - **An async call is awaited or spawned, never dropped**: calling an async function or a
   promise-returning TS function without `await` is B0430, except as `task { await save(v) }`,
   which spawns it (fire and forget, completing like a handler) and is `Unit`. A binding setter
   that saves is `Binding(get: prefs.likes, set: { v in task { await save(.likes, v) } })`.
 - `defer { … }` runs when the enclosing block exits, after an early `return` too (compiled to
-  `try`/`finally`); the place for "`saving = false` whatever happened".
+  `try`/`finally`); the place for "`saving = false` whatever happened". At the top of a
+  `.task { … }` it also runs when the task is cancelled (the view unmounts or its `id:`
+  changes), at once rather than at the next `await`, and then not again.
+- **`effect { … }`** is a view member: synchronous work that runs after a render. Its
+  dependencies are inferred from its reads, exactly as the memo scopes' are (no deps array);
+  `effect(id: x) { … }` re-runs for `x` instead; a tuple `id: (a, b)` is its values, each a
+  dependency (`[a, b]`, never a fresh array per render), for `.task(id:)` too. It writes states as a handler does. A `defer`
+  at the top of its body is its cleanup, run before the next run and on unmount (several run
+  last first); a `defer` in a nested block keeps its block meaning. Once a cleanup is set the
+  effect does not `return` (B0434): return before the `defer`. It does not `await` (B0215):
+  start async work with `task { … }`, or use `.task`. It compiles to exactly one `useEffect`.
 - **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
   disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
   `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
@@ -430,10 +589,18 @@ so a wrong path is a compile error.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
-  `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
-  7.2) when its type is a React component type (`ComponentType`, `FC`, a function of one props
-  object returning an element), or, when it is `Foreign`, when its name is `UpperCamel` and it is
-  used as a node.
+  `.d.ts` (4.7); a module that writes `export = N` (`@types/react`) exports namespace `N`'s
+  members (`import { type ComponentType, lazy, memo } from "react"`).
+  `let Panel = lazy { import("./Panel") }` (React's `lazy`, imported) is a component whose props
+  TS checks; `import("…")` is a dynamic import, emitted as written. A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
+  7.2) when its type is a React component type (`ComponentType`, `FC`, `ComponentClass`, the
+  exotic ones: `MemoExoticComponent`, `ForwardRefExoticComponent`, `LazyExoticComponent`,
+  `NamedExoticComponent`; a wrapped component gives its props), a function of one props object
+  returning an element, `memo(Inner)` or `memo(function Inner(props: P) { … })` (`Inner`'s
+  props), or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
+  props are TS's to check), or, when it is `Foreign`, when its name is `UpperCamel` and it is
+  used as a node. A TS interface with a call signature (`ToastFn`) or an index signature
+  (`[key: string]: unknown`) is `Foreign`: callable, and taking any keys, checked by TS.
 - **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
   packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).
   An explicit import shadows a prelude name. A module is never both `X.tsx` and `X.bloom`
@@ -488,13 +655,22 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 
 | Type | Members (each compiles to the JS intrinsic, inline) |
 |---|---|
-| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)`, `toInt() -> Int?`, `toFloat() -> Float?` |
+| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `[i] -> T?` |
-| `[K: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T?`; there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
+| `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
+
+`[k: v]` is the dictionary literal (string keys). `Map` and `Set` are the prelude's JS
+collections: a method that changes one gives a new one (`setting`, `inserting`, `removing`
+copy it), so a `var` or `@state` holding one is assigned as any other value
+(`picked = picked.inserting(id)`), and they have no `==` (B0210). A TS `Map`/`ReadonlyMap`/
+`Set`/`ReadonlySet` reads as one.
 
 ## 13. Diagnostics
 
@@ -516,9 +692,9 @@ Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects,
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
 `==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
-(captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
+(captured `var`), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
-outside a task), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 
@@ -530,7 +706,9 @@ members ordered as written, blank lines kept (at most one), imports sorted by pa
 and enum variants one per line. A block with one statement stays on one line when it fits (a
 view's `body` never does); an `if`/`else` chain is on one line together or breaks together; a
 builder line's chain breaks one modifier per line once its builder spans lines; a chain inside an
-expression breaks only with two or more calls. Formatting is idempotent and preserves comments.
+expression breaks only with two or more calls. A binary expression breaks after its operator, but
+before `<` and `>` (a line ending in `>` may close a type's arguments; one ending in `<` goes on).
+Formatting is idempotent and preserves comments.
 
 ## 15. Cheat sheet for agents
 

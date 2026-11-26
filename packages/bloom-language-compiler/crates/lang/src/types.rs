@@ -21,6 +21,10 @@ pub enum Ty {
     List(Box<Ty>),
     /// `[String: V]`.
     Map(Box<Ty>),
+    /// `Map<K, V>`: a JS `Map`, keyed by any value.
+    JsMap(Box<Ty>, Box<Ty>),
+    /// `Set<T>`: a JS `Set`.
+    Set(Box<Ty>),
     Tuple(Vec<Ty>),
     Option(Box<Ty>),
     Result(Box<Ty>, Box<Ty>),
@@ -36,6 +40,8 @@ pub enum Ty {
     /// A UI value; the node kind when known.
     View(Option<&'static str>),
     Binding(Box<Ty>),
+    /// `KeyPath<S, V>`: a field of the struct `S` whose type is `V` (at runtime, its name).
+    KeyPath(Box<Ty>, Box<Ty>),
     /// A closed set of strings: a token set of the spec, or a TS literal union.
     Strings(Rc<StrSet>),
     /// A TS value Bloom could not type: its TS type's text.
@@ -84,6 +90,8 @@ pub enum Origin {
     Local,
     /// Declared in another `.bloom` module: the specifier to import it from.
     Bloom { specifier: String },
+    /// A record literal's own type (`{ a: Int }`): named in TS by its fields.
+    Record,
     /// Declared in TS: how to name its type in the emitted TS (an imported
     /// name, or a path from one: `ReturnType<typeof useX>["value"]`).
     Ts { path: String },
@@ -150,9 +158,9 @@ impl Def {
         }
     }
 
-    /// An enum whose every case has no payload: it is a string.
+    /// An enum whose every case has no payload: it is a string. A struct is not one.
     pub fn is_fieldless(&self) -> bool {
-        self.variants().iter().all(|v| v.payload.is_empty())
+        matches!(&self.kind, DefKind::Enum(variants) if variants.iter().all(|v| v.payload.is_empty()))
     }
 }
 
@@ -176,6 +184,11 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
     match ty {
         Ty::List(t) => Ty::List(go(t)),
         Ty::Map(t) => Ty::Map(go(t)),
+        Ty::Set(t) => Ty::Set(go(t)),
+        Ty::JsMap(k, v) => {
+            let k = go(k);
+            Ty::JsMap(k, go(v))
+        }
         Ty::Option(t) => Ty::Option(go(t)),
         Ty::Partial(t) => Ty::Partial(go(t)),
         Ty::Async(t) => Ty::Async(go(t)),
@@ -184,6 +197,10 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
         Ty::Result(a, b) => {
             let a = go(a);
             Ty::Result(a, go(b))
+        }
+        Ty::KeyPath(a, b) => {
+            let a = go(a);
+            Ty::KeyPath(a, go(b))
         }
         Ty::Tuple(items) => Ty::Tuple(items.iter().map(|t| map_ty(t, f)).collect()),
         Ty::Adt(def, args) => Ty::Adt(*def, args.iter().map(|t| map_ty(t, f)).collect()),
@@ -239,6 +256,8 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::JsError => f.write_str("Error"),
         Ty::List(t) => write!(f, "[{}]", Display { ty: t, defs }),
         Ty::Map(t) => write!(f, "[String: {}]", Display { ty: t, defs }),
+        Ty::JsMap(k, v) => write!(f, "Map<{}, {}>", Display { ty: k, defs }, Display { ty: v, defs }),
+        Ty::Set(t) => write!(f, "Set<{}>", Display { ty: t, defs }),
         Ty::Tuple(items) if items.is_empty() => f.write_str("Unit"),
         Ty::Tuple(items) => {
             f.write_str("(")?;
@@ -276,6 +295,7 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::Promise(t) => write!(f, "Promise<{}>", Display { ty: t, defs }),
         Ty::View(_) => f.write_str("View"),
         Ty::Binding(t) => write!(f, "Binding<{}>", Display { ty: t, defs }),
+        Ty::KeyPath(a, b) => write!(f, "KeyPath<{}, {}>", Display { ty: a, defs }, Display { ty: b, defs }),
         Ty::Strings(set) if set.token => f.write_str(&token_type_name(&set.name)),
         Ty::Strings(set) => f.write_str(&set.name),
         Ty::Foreign(text) if text.is_empty() => f.write_str("Foreign"),

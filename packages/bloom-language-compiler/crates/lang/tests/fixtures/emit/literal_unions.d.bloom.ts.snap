@@ -1,0 +1,9 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export type Tone = "calm" | "loud";
+export declare function uses(): number;
+export interface InsetProps {
+  readonly card: boolean;
+  readonly gutter: "sm" | "md" | "lg";
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Inset())`), or from TSX as `toElement(Inset())`. */
+export declare const Inset: (props: InsetProps) => ComposedView;

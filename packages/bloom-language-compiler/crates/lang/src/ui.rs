@@ -1,11 +1,13 @@
 //! Nodes, modifiers and tokens, read from the embedded language's generated
 //! spec tables (`bloom_language_compiler::spec`), never a copy of them.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
+
 use std::rc::Rc;
 
-use bloom_language_compiler::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, TOKEN_SETS};
+use bloom_language_compiler::spec::{
+    MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
+};
 use bloom_language_compiler::{Doc, Tour};
 
 use crate::diagnostic::closest;
@@ -13,6 +15,11 @@ use crate::types::StrSet;
 
 pub fn node_by_constructor(name: &str) -> Option<&'static NodeSpec> {
     NODES.iter().find(|node| node.constructors.contains(&name))
+}
+
+/// A constructor's positional parameters (`spec::SIGNATURES`); any number of children when unknown.
+pub fn signature(constructor: &str) -> &'static [&'static str] {
+    SIGNATURES.iter().find(|(name, _)| *name == constructor).map_or(&["...children"], |(_, params)| params)
 }
 
 pub fn node(kind: &str) -> Option<&'static NodeSpec> {
@@ -39,10 +46,20 @@ pub fn token_set_by_type(name: &str) -> Option<Rc<StrSet>> {
 }
 
 thread_local! {
-    static SETS: RefCell<HashMap<String, Rc<StrSet>>> = RefCell::new(HashMap::new());
+    /// Never dropped: see [`crate::ts::ThreadCache`].
+    static SETS: crate::ts::ThreadCache<HashMap<String, Rc<StrSet>>> = crate::ts::thread_cache(HashMap::default());
 }
 
 /// The token set `name` as a type, one shared value per set.
+/// The token sets whose TS parameter also takes a boolean: `HitTesting` is
+/// `boolean | …`, `.when(condition: Condition | boolean)`, and an
+/// accessibility state's `checked` is `boolean | 'mixed'`.
+pub const BOOL_SETS: &[&str] = &["hitTesting", "condition", "accessibilityChecked"];
+
+pub fn takes_bool(set: &str) -> bool {
+    BOOL_SETS.contains(&set)
+}
+
 pub fn str_set(name: &str) -> Rc<StrSet> {
     SETS.with(|sets| {
         sets.borrow_mut()
@@ -152,16 +169,21 @@ pub fn paired(params: &[&'static str], count: usize) -> Vec<(usize, &'static str
     pairs
 }
 
-/// The arity `params` take: (required, total); `None` total when children take any number.
+/// The arity `params` take: (required, total); `None` total when children take any number
+/// (none included: `.modifier(m)` is `m(view)`, with no further arguments).
 pub fn arity(params: &[&str]) -> (usize, Option<usize>) {
-    let required = params.iter().filter(|p| !p.ends_with('?')).count();
+    let required = params.iter().filter(|p| !p.ends_with('?') && **p != "children").count();
     let total = (!params.contains(&"children")).then_some(params.len());
     (required, total)
 }
 
 /// Whether `token` is in `set`; a colour role may carry an opacity (`primary/10`).
 pub fn token_ok(set: &StrSet, token: &str) -> bool {
-    if set.values.iter().any(|t| t == token) {
+    let known = match set.token.then(|| spec_set(&set.name)).flatten() {
+        Some(tokens) => tokens.contains(token),
+        None => set.values.iter().any(|t| t == token),
+    };
+    if known {
         return true;
     }
     if set.token
@@ -172,6 +194,16 @@ pub fn token_ok(set: &StrSet, token: &str) -> bool {
             && token_set("opacity").is_some_and(|opacities| opacities.contains(&opacity));
     }
     false
+}
+
+/// A spec token set, hashed: a colour set is long, and every token argument is looked up.
+fn spec_set(name: &str) -> Option<&'static rustc_hash::FxHashSet<&'static str>> {
+    static SETS: std::sync::OnceLock<HashMap<&'static str, rustc_hash::FxHashSet<&'static str>>> =
+        std::sync::OnceLock::new();
+    SETS.get_or_init(|| {
+        TOKEN_SETS.iter().map(|(name, tokens)| (*name, tokens.iter().copied().collect())).collect()
+    })
+    .get(name)
 }
 
 /// The closest valid token, for `did you mean`.
@@ -199,4 +231,19 @@ pub fn takers(modifier: &str) -> Vec<&'static str> {
         .filter(|node| node.modifiers.contains(&modifier))
         .flat_map(|node| node.constructors.iter().copied())
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    /// Every token set the language's TS unions with `boolean` is one bloomc takes a `Bool` for.
+    #[test]
+    fn bool_sets_follow_the_tokens() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../../bloom-language/src/tokens.ts");
+        let source = std::fs::read_to_string(path).expect("the language's tokens.ts");
+        for line in source.lines() {
+            let Some(rest) = line.split(" = boolean | (typeof ENUMS.").nth(1) else { continue };
+            let set = rest.split(')').next().expect("a set name");
+            assert!(super::takes_bool(set), "`{set}` takes a boolean in tokens.ts: add it to BOOL_SETS");
+        }
+    }
 }

@@ -1,0 +1,17 @@
+{
+  // The project `bloomc check --tsc` checks in tests/tsc.rs: its own paths,
+  // a stub of the language's runtime, React's real types.
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@oxy.so/bloom-language": ["./stubs/bloom-language.d.ts"]
+    }
+  }
+}

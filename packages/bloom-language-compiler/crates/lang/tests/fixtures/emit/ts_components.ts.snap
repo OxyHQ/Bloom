@@ -1,0 +1,67 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, VStack, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Badge, Chip, Lazy, log, notify, Pill } from "@/ui/components";
+import { Card, Tag } from "@/ui/memoed";
+import { lazy } from "react";
+
+function hello(name: string): void {
+notify(`Hello ${name}`, { type: "success" });
+notify.success("again");
+log("hello", { component: "Row", name: name, count: 1 });
+}
+
+const $view0 = VStack(Embed($jsx(Badge, { label: "class" } satisfies ComponentProps<typeof Badge>)), Embed($jsx(Pill, { label: "forwardRef" } satisfies ComponentProps<typeof Pill>)), Embed($jsx(Chip, { label: "memo" } satisfies ComponentProps<typeof Chip>)), Embed($jsx(Lazy, { label: "lazy" } satisfies ComponentProps<typeof Lazy>)));
+export const Badges = view(function Badges() {
+"use no memo";
+const $ = $c(1);
+let $t0;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t0 = $view0;
+$[0] = $t0;
+} else {
+$t0 = $[0];
+}
+return $t0;
+});
+
+const Panel = lazy(() => (import("@/ui/memoed") satisfies Promise<Awaited<ReturnType<(Parameters<typeof lazy>[0])>>>));
+
+export interface MemoedProps {
+  readonly title: string;
+}
+export const Memoed = view(function Memoed(props: MemoedProps) {
+"use no memo";
+const $ = $c(2);
+const { title } = props;
+let $t1;
+if ($[0] !== title) {
+$t1 = VStack(Embed($jsx(Card, { title: title, count: 2 } satisfies ComponentProps<typeof Card>)), Embed($jsx(Tag, { label: title } satisfies ComponentProps<typeof Tag>)), Embed($jsx(Panel, { heading: title } satisfies ComponentProps<typeof Panel>)));
+$[0] = title;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+
+export interface SpreadProps {
+  readonly card: { title: string; count: number };
+}
+export const Spread = view(function Spread(props: SpreadProps) {
+"use no memo";
+const $ = $c(2);
+const { card } = props;
+let $t2;
+if ($[0] !== card) {
+$t2 = VStack(Embed($jsx(Card, { ...card } satisfies ComponentProps<typeof Card>)), Embed($jsx(Card, { ...card, count: 3 } satisfies ComponentProps<typeof Card>)));
+$[0] = card;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+

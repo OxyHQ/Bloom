@@ -1,0 +1,45 @@
+// `@ref x = v`: a value kept across renders without causing one (`useRef`). Read and
+// written as `x`, emitted `x.current`; `.ref(x)` passes the ref itself.
+
+import { type ViewInstance } from "@/types/views"
+
+pub view Search(onDone: () -> Unit) {
+  @ref timer = 0
+  @ref field: ViewInstance? = none
+  @state query = ""
+
+  effect(id: query) {
+    // An empty host ref is `none`.
+    timer = field == none ? 0 : timer + 1
+  }
+
+  fn submit() {
+    timer = 0
+    onDone()
+  }
+
+  body {
+    VStack {
+      TextField($query, "Search")
+        .ref(field)
+      Button(Text("Go")).onPress {
+        submit()
+      }
+    }
+  }
+}
+
+// Where TS takes a ref (`RefObject<…>`, `.inputRef`), a `@ref` passes the ref itself.
+import { useVisible } from "@/api"
+
+pub view Card(id: String) {
+  @ref card: ViewInstance? = none
+  let visible = useVisible(key: id, target: card)
+
+  body {
+    VStack {
+      Text(visible ? "seen" : "hidden")
+    }
+    .ref(card)
+  }
+}

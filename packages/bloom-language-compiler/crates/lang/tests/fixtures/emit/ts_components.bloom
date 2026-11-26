@@ -1,0 +1,48 @@
+// TS components as libraries declare them (a class, forwardRef, memo, lazy), a
+// callable interface, and an interface with an index signature.
+
+import { Badge, Chip, Lazy, log, notify, Pill } from "@/ui/components"
+
+fn hello(name: String) {
+  notify("Hello ${name}", { type: "success" })
+  notify.success("again")
+  log("hello", { component: "Row", name: name, count: 1 })
+}
+
+pub view Badges {
+  body {
+    VStack {
+      Badge(label: "class")
+      Pill(label: "forwardRef")
+      Chip(label: "memo")
+      Lazy(label: "lazy")
+    }
+  }
+}
+
+// `memo(Named)` and `memo(function Name…)` from TS are components with Name's props;
+// `lazy { import("./X") }` with React's `lazy` is one whose props TS checks.
+import { Card, Tag } from "@/ui/memoed"
+import { lazy } from "react"
+
+let Panel = lazy { import("@/ui/memoed") }
+
+pub view Memoed(title: String) {
+  body {
+    VStack {
+      Card(title: title, count: 2)
+      Tag(label: title)
+      Panel(heading: title)
+    }
+  }
+}
+
+// `..r` among a TS component's props is JSX's `{...r}`: its fields, then the later props.
+pub view Spread(card: { title: String, count: Int }) {
+  body {
+    VStack {
+      Card(..card)
+      Card(..card, count: 3)
+    }
+  }
+}

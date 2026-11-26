@@ -1,0 +1,17 @@
+// Hooks run on every render, in the same order: not in a branch of a hook function, and
+// not from a function that is not one.
+import { useInsets } from "@/hooks/useInsets"
+
+pub fn useTop() -> Float {
+  let insets = useInsets()
+  insets.top
+}
+
+pub fn useMaybe(on: Bool) -> Float {
+  if on {
+    let top = useTop()
+  }
+  0
+}
+
+fn plain() -> Float { useTop() }

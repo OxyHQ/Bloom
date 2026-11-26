@@ -1,0 +1,27 @@
+// `equal` held to its rules.
+
+view Row(id: String) {
+  @state open = false
+
+  equal(old, new) {
+    old.id == new.id && open
+  }
+
+  equal(a, b) {
+    a.id
+  }
+
+  body {
+    Text(id)
+  }
+}
+
+screen Home {
+  equal(old, new) {
+    true
+  }
+
+  body {
+    Text("home")
+  }
+}

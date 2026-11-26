@@ -173,6 +173,13 @@ pub struct FnDecl {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Param {
     pub name: Ident,
+    /// `..name: [T]`: a rest parameter, the last one; it takes any number of `T`.
+    pub rest: bool,
+    /// `..Props` (a view's): the fields of a struct or TS interface, each a prop.
+    /// `name` is then the type's name and `ty` the type.
+    pub spread: bool,
+    /// `..props: Props` (a view's): the props spread, and their whole value named.
+    pub whole: Option<Ident>,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,
@@ -205,6 +212,8 @@ pub enum Member {
     State(StateDecl),
     Let(LetStmt),
     Fn(FnDecl),
+    Effect(EffectDecl),
+    Equal(EqualDecl),
 }
 
 impl Member {
@@ -213,8 +222,32 @@ impl Member {
             Member::State(s) => s.span,
             Member::Let(l) => l.span,
             Member::Fn(f) => f.span,
+            Member::Effect(e) => e.span,
+            Member::Equal(e) => e.span,
         }
     }
+}
+
+/// `equal(old, new) { … }`: whether two props are equal for the view (`memo`'s
+/// comparator); `old` and `new` are its props.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EqualDecl {
+    pub keyword: Span,
+    pub old: Ident,
+    pub new: Ident,
+    pub body: Block,
+    pub span: Span,
+}
+
+/// `effect { … }` or `effect(id: value) { … }`: synchronous work after a render whose
+/// reads (or `id:`) changed; a `defer` at its top is its cleanup.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EffectDecl {
+    pub keyword: Span,
+    /// `id:`: what it re-runs for, in place of its reads.
+    pub id: Option<Expr>,
+    pub body: Block,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -223,6 +256,8 @@ pub enum StateAttr {
     List,
     Record,
     Env,
+    /// `@ref x = v`: a value that lives across renders without causing one (`useRef`).
+    Ref,
 }
 
 impl StateAttr {
@@ -232,6 +267,7 @@ impl StateAttr {
             StateAttr::List => "list",
             StateAttr::Record => "record",
             StateAttr::Env => "env",
+            StateAttr::Ref => "ref",
         }
     }
 }
@@ -431,6 +467,11 @@ pub enum ExprKind {
     ImplicitMember(Ident),
     /// `$state` or `$state.field.field`.
     Binding(Vec<Ident>),
+    /// `\.field` or `\Type.field`: a typed key path (`KeyPath<Type, V>`).
+    KeyPath {
+        root: Option<Ident>,
+        path: Vec<Ident>,
+    },
     /// `Partial<Prefs>`, `Load<Int>`: a type applied, as a callee.
     TypeApply {
         name: Ident,
@@ -439,8 +480,15 @@ pub enum ExprKind {
     Paren(Box<Expr>),
     Tuple(Vec<Expr>),
     List(Vec<Expr>),
+    /// `..xs` in a list literal (`[..a, b]`): its items, in place.
+    Spread(Box<Expr>),
+    /// `x is String`: whether a TS value is of a Bloom type (`String`, `Int`, `Float`,
+    /// `Bool`, `[T]`); `if x is T { … }` narrows `x` there.
+    Is(Box<Expr>, TypeExpr),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
+    /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.
+    Record(Vec<RecordEntry>),
     Unary(UnaryOp, Box<Expr>),
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     Ternary(Box<Expr>, Box<Expr>, Box<Expr>),
@@ -461,12 +509,52 @@ pub enum ExprKind {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum RecordEntry {
+    /// `key: value`; a quoted key's name is its text.
+    Field { key: Ident, value: Expr },
+    /// `..value`
+    Spread(Expr),
+}
+
+impl RecordEntry {
+    /// The entry's value: a field's, or the spread one.
+    pub fn value(&self) -> &Expr {
+        match self {
+            RecordEntry::Field { value, .. } | RecordEntry::Spread(value) => value,
+        }
+    }
+}
+
+/// A record as the struct construction it is (`S(key: v, ..spread)`), for a record
+/// typed by a struct: the same checks, the same object.
+pub fn record_call(span: Span, entries: &[RecordEntry]) -> Call {
+    let args = entries
+        .iter()
+        .map(|entry| match entry {
+            RecordEntry::Field { key, value } => Arg {
+                label: Some(key.clone()),
+                spread: false,
+                value: value.clone(),
+                span: key.span.to(value.span),
+            },
+            RecordEntry::Spread(value) => {
+                Arg { label: None, spread: true, value: value.clone(), span: value.span }
+            }
+        })
+        .collect();
+    let callee = Expr { id: ExprId(u32::MAX), kind: ExprKind::Name(String::new()), span };
+    Call { callee: Box::new(callee), args, parens: true, trailing: None, optional: false }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Call {
     pub callee: Box<Expr>,
     pub args: Vec<Arg>,
     /// Whether the arguments were written in parentheses (`f()` or `f { … }`).
     pub parens: bool,
     pub trailing: Option<Box<Closure>>,
+    /// `f?.(…)`: called only when the callee is not `none`.
+    pub optional: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -484,6 +572,8 @@ pub struct Closure {
     pub params: Vec<ClosureParam>,
     /// Whether `in` was written.
     pub has_in: bool,
+    /// `{ (i, x) in … }`: one tuple parameter, its items named.
+    pub tuple: bool,
     pub body: Vec<Stmt>,
     pub span: Span,
 }
@@ -580,6 +670,10 @@ pub enum TypeKind {
         ret: Box<TypeExpr>,
     },
     Optional(Box<TypeExpr>),
+    /// `"a" | "b"`: a union of string literals (TS-shaped data; an enum is Bloom's own choice).
+    Strings(Vec<String>),
+    /// `{ a: Int, b: String? }`: a structural record type (an optional field may be absent).
+    Record(Vec<(Ident, TypeExpr)>),
     /// What the parser put where it could not read a type.
     Error,
 }

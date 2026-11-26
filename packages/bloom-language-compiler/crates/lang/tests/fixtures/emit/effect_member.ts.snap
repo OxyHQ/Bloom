@@ -1,0 +1,76 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { useEffect, useState } from "react";
+import { logger } from "@oxy.so/core/logger";
+
+export interface TickerProps {
+  readonly label: string;
+  readonly step?: number;
+}
+export const Ticker = view(function Ticker(props: TickerProps) {
+"use no memo";
+const $ = $c(3);
+const { label, step = 1 } = props;
+const [count, setCount] = useState<number>(0);
+const [paused, setPaused] = useState<boolean>(false);
+const [seen, setSeen] = useState<number>(0);
+useEffect(() => {
+if (paused) {
+return;
+}
+logger.info(`watching ${label}`);
+return () => {
+logger.info(`stopped ${label}`);
+};
+}, [paused, label]);
+useEffect(() => {
+setSeen(count);
+}, [count]);
+useEffect(() => {
+logger.info("changed");
+}, [count, paused]);
+useEffect(() => {
+logger.info("a");
+const $t0 = () => {
+logger.info("a done");
+};
+logger.info(`b ${step}`);
+return () => {
+{
+logger.info("b done");
+}
+$t0();
+};
+}, [step]);
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+const $t1 = () => {
+logger.info("task over");
+};
+$signal.addEventListener("abort", $t1);
+try {
+await (new Promise<void>((resolve) => setTimeout(resolve, 1000)));
+if ($signal.aborted) return;
+setCount((count) => count + (step));
+} finally {
+$signal.removeEventListener("abort", $t1);
+if (!$signal.aborted) $t1();
+}
+})();
+return () => $controller.abort();
+}, [label, step]);
+let $t2;
+if ($[0] !== label || $[1] !== count) {
+$t2 = Text(`${label}: ${count}`);
+$[0] = label;
+$[1] = count;
+$[2] = $t2;
+} else {
+$t2 = $[2];
+}
+return $t2;
+});
+

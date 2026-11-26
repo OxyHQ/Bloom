@@ -1,0 +1,31 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+interface Badge {
+  readonly text: string;
+  readonly tone: string;
+}
+export interface PostCardViewProps {
+  readonly title: string;
+  readonly likes: number;
+  readonly subtitle?: string | undefined;
+  readonly onOpen?: (() => void) | undefined;
+  readonly dense?: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostCard())`), or from TSX as `toElement(PostCard())`. */
+export declare const PostCard: (props: PostCardViewProps) => ComposedView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Feed())`), or from TSX as `toElement(Feed())`. */
+export declare const Feed: () => ComposedView;
+export interface PostShellProps {
+  readonly title: string;
+  readonly likes: number;
+  readonly subtitle?: string | undefined;
+  readonly onOpen?: (() => void) | undefined;
+  readonly pinned?: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostShell())`), or from TSX as `toElement(PostShell())`. */
+export declare const PostShell: (props: PostShellProps) => ComposedView;
+export interface BadgesProps {
+  readonly badge: Badge;
+  readonly extra: { text: string; more: number };
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Badges())`), or from TSX as `toElement(Badges())`. */
+export declare const Badges: (props: BadgesProps) => ComposedView;

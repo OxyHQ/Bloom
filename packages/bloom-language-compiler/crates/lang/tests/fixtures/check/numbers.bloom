@@ -1,0 +1,20 @@
+// A `Float` never narrows to `Int` implicitly.
+fn count(n: Int) -> Int { n }
+
+pub fn a(x: Float) -> Int { count(n: x) }
+
+pub fn b(i: Int, x: Float) -> Int { i + x }
+
+pub fn c(xs: [Float]) -> [Int] { xs }
+
+// A member chain narrows only where its test held.
+struct Holder {
+  name: String?
+}
+
+fn size(s: String) -> Int { s.count }
+
+fn outside(h: Holder) -> Int {
+  if h.name != none { return size(h.name) }
+  size(h.name)
+}

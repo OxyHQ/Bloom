@@ -1,0 +1,66 @@
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+function $eq0(a: Tree, b: Tree): boolean {
+  return a.label === b.label && a.children.length === b.children.length && a.children.every(($x3, $i3) => $eq0($x3, b.children[$i3]!));
+}
+
+interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+type Shape = "empty" | { readonly tag: "circle"; readonly center: Point; readonly radius: number } | { readonly tag: "polygon"; readonly _0: readonly Point[] };
+
+interface Tree {
+  readonly label: string;
+  readonly children: readonly Tree[];
+}
+
+function samePoint(a: Point, b: Point): boolean {
+return a.x === b.x && a.y === b.y;
+}
+
+function moved(a: Point, b: Point): boolean {
+return !(a.x === b.x && a.y === b.y);
+}
+
+function sameShape(a: Shape, b: Shape): boolean {
+return a === b || typeof a === "object" && typeof b === "object" && (a.tag === "circle" && b.tag === "circle" ? a.center.x === b.center.x && a.center.y === b.center.y && a.radius === b.radius : a.tag === "polygon" && b.tag === "polygon" ? a._0.length === b._0.length && a._0.every(($x0, $i0) => $x0.x === b._0[$i0]!.x && $x0.y === b._0[$i0]!.y) : false);
+}
+
+function sameMaybe(a: Point | undefined, b: Point | undefined): boolean {
+return a === undefined || b === undefined ? a === b : a.x === b.x && a.y === b.y;
+}
+
+function samePair(a: readonly [number, Point], b: readonly [number, Point]): boolean {
+return a[0] === b[0] && a[1].x === b[1].x && a[1].y === b[1].y;
+}
+
+function sameScores(a: Readonly<Record<string, number>>, b: Readonly<Record<string, number>>): boolean {
+return Object.keys(a).length === Object.keys(b).length && Object.entries(a).every(([$k1, $x1]) => $k1 in b && $x1 === b[$k1]!);
+}
+
+function sameResult(a: $Result<Point, string>, b: $Result<Point, string>): boolean {
+return a.ok && b.ok ? a.value.x === b.value.x && a.value.y === b.value.y : !a.ok && !b.ok ? a.error === b.error : false;
+}
+
+function sameTree(a: Tree, b: Tree): boolean {
+return a.label === b.label && a.children.length === b.children.length && a.children.every(($x2, $i2) => $eq0($x2, b.children[$i2]!));
+}
+
+function isOrigin(p: Point): boolean {
+const $t0 = { x: 0, y: 0 };
+return p.x === $t0.x && p.y === $t0.y;
+}
+
+function present(onPress: (() => void) | undefined): boolean {
+return onPress !== undefined;
+}
+
+function sameId(a: number, b: number | undefined): boolean {
+return a === b;
+}
+
+function samePointMaybe(a: Point, b: Point | undefined): boolean {
+return a === undefined || b === undefined ? a === b : a.x === b.x && a.y === b.y;
+}
+

@@ -11,7 +11,8 @@
     "bloom-language-compiler.wasi.d.cts",
     "bloom-language-compiler.wasi-browser.js",
     "wasi-worker.mjs",
-    "wasi-worker-browser.mjs"
+    "wasi-worker-browser.mjs",
+    "bloomc.wasm32-wasi.wasm"
   ],
   "description": "Bloom's compiler: compiles .bloom modules (Bloom's own language) to typed TypeScript, and optimises @oxy.so/bloom-language chains (hoists static chains, opts view bodies into the React Compiler, checks chains against the language spec). A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",

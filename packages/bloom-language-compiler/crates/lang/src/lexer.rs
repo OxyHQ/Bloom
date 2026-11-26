@@ -42,6 +42,13 @@ pub enum Kw {
     While,
 }
 
+/// Every keyword, as written.
+pub const KEYWORDS: &[&str] = &[
+    "as", "async", "await", "body", "case", "default", "defer", "else", "enum", "false", "fn", "for", "from",
+    "if", "import", "in", "layout", "let", "match", "none", "pub", "return", "screen", "struct", "task",
+    "true", "type", "var", "view", "while",
+];
+
 impl Kw {
     pub fn from_word(word: &str) -> Option<Kw> {
         Some(match word {
@@ -154,6 +161,8 @@ pub enum P {
     At,
     Dollar,
     Pipe,
+    /// `\`: a key path (`\.likes`).
+    Backslash,
 }
 
 impl P {
@@ -196,6 +205,7 @@ impl P {
             P::At => "@",
             P::Dollar => "$",
             P::Pipe => "|",
+            P::Backslash => "\\",
         }
     }
 
@@ -213,6 +223,7 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::Lt
                 | P::Le
                 | P::Ge
                 | P::Comma
@@ -427,6 +438,7 @@ impl Lexer<'_> {
             (b'@', _) => (P::At, 1),
             (b'$', _) => (P::Dollar, 1),
             (b'|', _) => (P::Pipe, 1),
+            (b'\\', _) => (P::Backslash, 1),
             _ => return None,
         };
         self.pos += len;
@@ -773,6 +785,14 @@ fn fold_newlines(tokens: Vec<Token>) -> Vec<Token> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn every_keyword_is_listed() {
+        for word in super::KEYWORDS {
+            let kw = Kw::from_word(word).expect("a keyword");
+            assert_eq!(kw.word(), *word);
+        }
+    }
+
     fn kinds(source: &str) -> Vec<String> {
         lex(source, 0, source.len())
             .tokens
@@ -801,6 +821,8 @@ mod tests {
     #[test]
     fn operators_continue_lines() {
         assert_eq!(kinds("a &&\nb\nc\n  || d"), ["a", "&&", "b", "NL", "c", "||", "d", "NL", "EOF"]);
+        // `<` ends a line that goes on; `>` may close a type's arguments, so it starts one.
+        assert_eq!(kinds("a <\nb\nc\n  > d"), ["a", "<", "b", "NL", "c", ">", "d", "NL", "EOF"]);
         // A `-` starting a line is a new statement.
         assert_eq!(kinds("a\n-b"), ["a", "NL", "-", "b", "NL", "EOF"]);
     }

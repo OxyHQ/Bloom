@@ -1,0 +1,58 @@
+// `view X(..Props)`: a struct's or a TS interface's fields as the view's props.
+
+import { type PostCardProps } from "@/types/post"
+
+struct Badge {
+  text: String
+  tone: String = "calm"
+}
+
+pub view PostCard(..PostCardProps, dense: Bool = false) {
+  body {
+    VStack {
+      Text(title)
+      Text(subtitle ?? "")
+      Text("${likes}")
+    }
+    .padding(dense ? 4 : 8)
+  }
+}
+
+view Tag(..Badge) {
+  body {
+    Text("${text} (${tone})")
+  }
+}
+
+pub view Feed {
+  body {
+    VStack {
+      PostCard(title: "Hello", likes: 3)
+      PostCard(title: "Again", likes: 1, subtitle: "two", dense: true)
+      Tag(text: "new")
+    }
+  }
+}
+
+// `..card: PostCardProps`: the props spread, and their whole value named (handed on as is).
+fn summary(card: PostCardProps) -> String { "${card.title} (${card.likes})" }
+
+pub view PostShell(..card: PostCardProps, pinned: Bool = false) {
+  body {
+    VStack {
+      Text(pinned ? "Pinned" : title)
+      Text(summary(card: card))
+    }
+  }
+}
+
+// `..r` among a view's props: the record's fields as props (JSX's `{...r}`); a later
+// prop of the same name wins.
+pub view Badges(badge: Badge, extra: { text: String, more: Int }) {
+  body {
+    VStack {
+      Tag(..badge)
+      Tag(..extra, tone: "loud")
+    }
+  }
+}

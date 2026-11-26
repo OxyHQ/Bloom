@@ -283,6 +283,22 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.panicking = false;
     }
 
+    /// Skips to the `}` closing the braces the parser is in (not past it).
+    fn recover_to_close(&mut self) {
+        let mut depth = 0usize;
+        loop {
+            match self.tok() {
+                Tok::Eof => break,
+                Tok::P(P::LParen | P::LBracket | P::LBrace) => depth += 1,
+                Tok::P(P::RParen | P::RBracket) => depth = depth.saturating_sub(1),
+                Tok::P(P::RBrace) if depth == 0 => break,
+                Tok::P(P::RBrace) => depth -= 1,
+                _ => {}
+            }
+            self.bump();
+        }
+    }
+
     /// Skips to the next item keyword at the start of a line.
     fn recover_item(&mut self) {
         let mut depth = 0usize;
@@ -343,6 +359,17 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     /// A name where keywords are names too: argument labels, members after `.`.
+    /// A name that may be a keyword which never starts an expression (`type`, `body`,
+    /// `view`, `screen`, `layout`, `from`): a TS API's prop or field keeps its name.
+    fn soft_name(&mut self, what: &str) -> Ident {
+        if let Tok::Kw(kw) = self.tok()
+            && is_soft(*kw)
+        {
+            return self.name_or_keyword(what);
+        }
+        self.ident(what)
+    }
+
     fn name_or_keyword(&mut self, what: &str) -> Ident {
         if let Tok::Kw(kw) = self.tok() {
             let ident = Ident { name: kw.word().to_string(), span: self.span() };
@@ -519,7 +546,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
-                let field_name = self.ident("a field name");
+                let field_name = self.soft_name("a field name");
                 self.expect(P::Colon, "`:` and the field's type");
                 let ty = self.type_expr();
                 let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
@@ -656,7 +683,32 @@ impl<'s, 'i> Parser<'s, 'i> {
                 break;
             }
             let start = self.span();
-            let name = self.ident("a parameter name");
+            let rest = self.eat(P::DotDot);
+            if rest
+                && matches!(self.tok(), Tok::Ident(n) if n.starts_with(|c: char| c.is_ascii_uppercase()))
+                && !matches!(self.nth(1), Tok::P(P::Colon))
+            {
+                // `..Props`: a type's fields as props.
+                let ty = self.type_expr();
+                let name = match &ty.kind {
+                    TypeKind::Named { name, .. } => name.clone(),
+                    _ => Ident { name: String::new(), span: ty.span },
+                };
+                params.push(Param {
+                    name,
+                    rest: false,
+                    spread: true,
+                    whole: None,
+                    ty,
+                    default: None,
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                });
+                if !self.eat(P::Comma) {
+                    break;
+                }
+                continue;
+            }
+            let name = self.soft_name("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
                 self.error(
@@ -674,8 +726,27 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             let ty = self.type_expr();
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
+            // `..props: Props`, a named type and not a list: the props spread, their whole named.
+            if rest && let TypeKind::Named { name: type_name, .. } = &ty.kind {
+                params.push(Param {
+                    name: type_name.clone(),
+                    rest: false,
+                    spread: true,
+                    whole: Some(name),
+                    ty,
+                    default,
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                });
+                if !self.eat(P::Comma) {
+                    break;
+                }
+                continue;
+            }
             params.push(Param {
                 name,
+                rest,
+                spread: false,
+                whole: None,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -763,12 +834,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                     "list" => StateAttr::List,
                     "record" => StateAttr::Record,
                     "env" => StateAttr::Env,
+                    "ref" => StateAttr::Ref,
                     other => {
-                        let help = crate::diagnostic::closest(other, ["state", "list", "record", "env"])
-                            .map_or(
-                                "the attributes are @state, @list, @record and @env".to_string(),
-                                |near| format!("did you mean `@{near}`?"),
-                            );
+                        let help =
+                            crate::diagnostic::closest(other, ["state", "list", "record", "env", "ref"])
+                                .map_or(
+                                    "the attributes are @state, @list, @record, @env and @ref".to_string(),
+                                    |near| format!("did you mean `@{near}`?"),
+                                );
                         self.error(
                             Diagnostic::error(
                                 "B0101",
@@ -782,7 +855,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                         return None;
                     }
                 };
-                let name = self.ident("the state's name");
+                let name = self.soft_name("the state's name");
                 let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
                 self.expect(P::Eq, "`=` and the initial value");
                 let value = self.expr(Ctx::Normal);
@@ -797,6 +870,39 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Let) => Some(Member::Let(self.let_stmt())),
             Tok::Kw(Kw::Fn | Kw::Async) => Some(Member::Fn(self.fn_decl())),
+            Tok::Ident(word) if word == "equal" && matches!(self.nth(1), Tok::P(P::LParen)) => {
+                let keyword = self.bump();
+                let open = self.bump();
+                let old = self.ident("the old props' name");
+                self.expect(P::Comma, "`,` and the new props' name");
+                let new = self.ident("the new props' name");
+                self.expect_close(P::RParen, open);
+                let body = self.block();
+                Some(Member::Equal(EqualDecl { keyword, old, new, span: keyword.to(body.span), body }))
+            }
+            Tok::Ident(word) if word == "effect" && matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
+                let keyword = self.bump();
+                let id = if self.at(P::LParen) {
+                    let open = self.bump();
+                    let label = self.name_or_keyword("`id`");
+                    if label.name != "id" {
+                        self.error(
+                            Diagnostic::error("B0101", label.span, "an effect takes `id:` only")
+                                .label("not `id:`")
+                                .help("write `effect(id: value) { … }`, or `effect { … }` to re-run on its reads")
+                                .spec("8-effects-tasks-and-concurrency"),
+                        );
+                    }
+                    self.expect(P::Colon, "`:` and the value it re-runs for");
+                    let value = self.expr(Ctx::Normal);
+                    self.expect_close(P::RParen, open);
+                    Some(value)
+                } else {
+                    None
+                };
+                let body = self.block();
+                Some(Member::Effect(EffectDecl { keyword, id, span: keyword.to(body.span), body }))
+            }
             Tok::Kw(Kw::Var) => {
                 let span = self.span();
                 self.error(
@@ -907,6 +1013,76 @@ impl<'s, 'i> Parser<'s, 'i> {
                     return only;
                 }
                 TypeExpr { span, kind: TypeKind::Tuple(items) }
+            }
+            Tok::Str { .. } => {
+                let mut values = Vec::new();
+                loop {
+                    match self.tok().clone() {
+                        Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => {
+                            values.push(
+                                parts
+                                    .iter()
+                                    .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                                    .collect(),
+                            );
+                            self.bump();
+                        }
+                        _ => {
+                            self.unexpected("a string literal (`\"a\" | \"b\"`)");
+                            break;
+                        }
+                    }
+                    if !self.eat(P::Pipe) {
+                        break;
+                    }
+                }
+                TypeExpr {
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                    kind: TypeKind::Strings(values),
+                }
+            }
+            Tok::P(P::LBrace) => {
+                let open = self.bump();
+                let mut fields = Vec::new();
+                loop {
+                    self.skip_newlines();
+                    if self.at(P::RBrace) || matches!(self.tok(), Tok::Eof) {
+                        break;
+                    }
+                    let span = self.span();
+                    let name = match self.tok() {
+                        Tok::Ident(name) => name.clone(),
+                        Tok::Kw(kw) => kw.word().to_string(),
+                        Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => {
+                            parts
+                                .iter()
+                                .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                                .collect()
+                        }
+                        _ => {
+                            self.unexpected("a field (`name: Type`)");
+                            self.recover_to_close();
+                            break;
+                        }
+                    };
+                    self.bump();
+                    self.expect(P::Colon, "`:` and the field's type");
+                    fields.push((Ident { name, span }, self.type_expr()));
+                    self.skip_newlines();
+                    if !self.eat(P::Comma) {
+                        self.skip_newlines();
+                        if !self.at(P::RBrace) {
+                            self.unexpected("`,` or `}`");
+                            self.recover_to_close();
+                        }
+                        break;
+                    }
+                }
+                self.expect_close(P::RBrace, open);
+                TypeExpr {
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                    kind: TypeKind::Record(fields),
+                }
             }
             _ => {
                 self.unexpected("a type");
@@ -1081,6 +1257,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 PatternKind::Case { ty: None, name, args }
             }
             Tok::Ident(_) => PatternKind::Bind(self.ident("a name")),
+            // `let body = …`: a soft keyword binds as a name.
+            Tok::Kw(kw) if is_soft(kw) => PatternKind::Bind(self.soft_name("a name")),
             Tok::P(P::Dot) => {
                 self.bump();
                 let name = self.name_or_keyword("a case name");
@@ -1196,7 +1374,16 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn binary(&mut self, min: u8, ctx: Ctx) -> Expr {
         let mut lhs = self.unary(ctx);
-        while let Some(op) = self.binary_op() {
+        loop {
+            // `x is T`, at the comparisons' level.
+            if min <= BinaryOp::Eq.precedence() && matches!(self.tok(), Tok::Ident(word) if word == "is") {
+                self.bump();
+                let ty = self.type_expr();
+                let span = lhs.span.to(ty.span);
+                lhs = self.expr_node(ExprKind::Is(Box::new(lhs), ty), span);
+                continue;
+            }
+            let Some(op) = self.binary_op() else { break };
             let prec = op.precedence();
             if prec < min {
                 break;
@@ -1278,7 +1465,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let end = trailing.as_ref().map_or(end, |c| c.span);
                     let span = expr.span.to(end);
                     expr = self.expr_node(
-                        ExprKind::Call(Call { callee: Box::new(expr), args, parens: true, trailing }),
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing,
+                            optional: false,
+                        }),
                         span,
                     );
                 }
@@ -1291,6 +1484,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             args: Vec::new(),
                             parens: false,
                             trailing: Some(Box::new(closure)),
+                            optional: false,
                         }),
                         span,
                     );
@@ -1306,6 +1500,22 @@ impl<'s, 'i> Parser<'s, 'i> {
                     };
                     let span = expr.span.to(name.span);
                     expr = self.expr_node(ExprKind::Field(Box::new(expr), name), span);
+                }
+                Tok::P(P::QuestionDot) if matches!(self.nth(1), Tok::P(P::LParen)) => {
+                    // `f?.(…)`: a call only when `f` is not `none`.
+                    self.bump();
+                    let (args, end) = self.args();
+                    let span = expr.span.to(end);
+                    expr = self.expr_node(
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing: None,
+                            optional: true,
+                        }),
+                        span,
+                    );
                 }
                 Tok::P(P::QuestionDot) => {
                     self.bump();
@@ -1365,6 +1575,86 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     /// `{ [params in] stmts }`
+    /// Whether the `{` here opens a record: a key (a name, a keyword or a string) and
+    /// `:`, or `..`, first, and no closure's `in` on its first line (`{ x: Int in … }`).
+    fn record_ahead(&self) -> bool {
+        let mut at = 1;
+        while matches!(self.nth(at), Tok::Newline) {
+            at += 1;
+        }
+        let keyed = match self.nth(at) {
+            Tok::P(P::DotDot) => return true,
+            Tok::Ident(_) | Tok::Kw(_) | Tok::Str { .. } => matches!(self.nth(at + 1), Tok::P(P::Colon)),
+            _ => false,
+        };
+        if !keyed {
+            return false;
+        }
+        let mut depth = 0usize;
+        loop {
+            at += 1;
+            match self.nth(at) {
+                Tok::P(P::LParen | P::LBracket | P::LBrace) => depth += 1,
+                Tok::P(P::RParen | P::RBracket) => depth = depth.saturating_sub(1),
+                Tok::P(P::RBrace) if depth == 0 => return true,
+                Tok::P(P::RBrace) => depth -= 1,
+                Tok::Kw(Kw::In) if depth == 0 => return false,
+                Tok::Newline if depth == 0 => return true,
+                Tok::Eof => return true,
+                _ => {}
+            }
+        }
+    }
+
+    /// `{ key: value, "quoted-key": v, ..spread }`
+    fn record(&mut self) -> Expr {
+        let open = self.bump();
+        let mut entries = Vec::new();
+        loop {
+            self.skip_newlines();
+            if self.at(P::RBrace) || matches!(self.tok(), Tok::Eof) {
+                break;
+            }
+            if self.eat(P::DotDot) {
+                entries.push(RecordEntry::Spread(self.expr(Ctx::Normal)));
+            } else {
+                let span = self.span();
+                let name = match self.tok() {
+                    Tok::Ident(name) => Some(name.clone()),
+                    Tok::Kw(kw) => Some(kw.word().to_string()),
+                    Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => Some(
+                        parts
+                            .iter()
+                            .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                            .collect(),
+                    ),
+                    _ => None,
+                };
+                let Some(name) = name else {
+                    self.unexpected("a key (`name: value`) or `..spread`");
+                    self.recover_to_close();
+                    break;
+                };
+                self.bump();
+                self.expect(P::Colon, "`:` and the value");
+                let value = self.expr(Ctx::Normal);
+                entries.push(RecordEntry::Field { key: Ident { name, span }, value });
+            }
+            self.skip_newlines();
+            if !self.eat(P::Comma) {
+                self.skip_newlines();
+                if !self.at(P::RBrace) {
+                    self.unexpected("`,` or `}`");
+                    self.recover_to_close();
+                }
+                break;
+            }
+        }
+        self.expect_close(P::RBrace, open);
+        let span = open.to(Span::new(self.prev_end(), self.prev_end()));
+        self.expr_node(ExprKind::Record(entries), span)
+    }
+
     fn closure(&mut self) -> Closure {
         let open = self.bump();
         let mut params = Vec::new();
@@ -1374,6 +1664,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         let quiet = self.diagnostics.len();
         let was_panicking = self.panicking;
         self.skip_newlines();
+        let tuple = matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
+        if tuple {
+            self.bump();
+        }
         if matches!(self.tok(), Tok::Ident(_)) {
             while let Tok::Ident(_) = self.tok() {
                 let name = self.ident("a parameter");
@@ -1388,11 +1682,15 @@ impl<'s, 'i> Parser<'s, 'i> {
                     break;
                 }
             }
-            if self.at_kw(Kw::In) {
+            if tuple && !self.eat(P::RParen) {
+                params.clear();
+            }
+            if self.at_kw(Kw::In) && (!tuple || !params.is_empty()) {
                 self.bump();
                 has_in = true;
             }
         }
+        let tuple = tuple && has_in;
         if !has_in {
             params.clear();
             self.pos = save;
@@ -1401,7 +1699,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         let body = self.stmts_until_close();
         self.expect_close(P::RBrace, open);
-        Closure { params, has_in, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
+        Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
     }
 
     fn if_expr(&mut self) -> Expr {
@@ -1484,6 +1782,22 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn primary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok().clone() {
+            // `import("./X")`: a dynamic import, a call TS types (`lazy(() => import("./X"))`).
+            Tok::Kw(Kw::Import) if matches!(self.nth(1), Tok::P(P::LParen)) => {
+                self.bump();
+                self.expr_node(ExprKind::Name("import".into()), start)
+            }
+            // `type`, `body`, …: a name where a value goes (a prop or field of a TS API). Not
+            // `body {` or `view X`, which start a member or a declaration, not a value.
+            Tok::Kw(kw)
+                if is_soft(kw)
+                    && !(matches!(kw, Kw::Body) && matches!(self.nth(1), Tok::P(P::LBrace)))
+                    && !(matches!(kw, Kw::View | Kw::Screen | Kw::Layout)
+                        && matches!(self.nth(1), Tok::Ident(_))) =>
+            {
+                let ident = self.name_or_keyword("a name");
+                self.expr_node(ExprKind::Name(ident.name), start)
+            }
             Tok::Int(value) => {
                 self.bump();
                 self.expr_node(ExprKind::Int(value), start)
@@ -1539,6 +1853,29 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(name.span);
                 self.expr_node(ExprKind::ImplicitMember(name), span)
             }
+            Tok::P(P::Backslash) => {
+                self.bump();
+                let root = match self.tok() {
+                    Tok::Ident(name) if is_upper(name) => Some(self.ident("a type")),
+                    _ => None,
+                };
+                let mut path = Vec::new();
+                loop {
+                    if !self.at(P::Dot) || (!path.is_empty() || root.is_some()) && self.token().space_before {
+                        break;
+                    }
+                    self.bump();
+                    path.push(self.ident("a field (`\\.likes`)"));
+                    if !matches!(self.tok(), Tok::P(P::Dot)) {
+                        break;
+                    }
+                }
+                if path.is_empty() {
+                    self.unexpected("`.field` after `\\` (`\\.likes`, `\\Prefs.likes`)");
+                }
+                let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                self.expr_node(ExprKind::KeyPath { root, path }, span)
+            }
             Tok::P(P::Dollar) => {
                 self.bump();
                 let mut path = vec![self.ident("the state to bind (`$draft`)")];
@@ -1582,6 +1919,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let mut items = Vec::new();
                 let mut entries = Vec::new();
                 while !self.at(P::RBracket) && !matches!(self.tok(), Tok::Eof) {
+                    let dots = self.span();
+                    if self.eat(P::DotDot) {
+                        let inner = self.expr(Ctx::Normal);
+                        let span = dots.to(inner.span);
+                        items.push(self.expr_node(ExprKind::Spread(Box::new(inner)), span));
+                        if !self.eat(P::Comma) {
+                            break;
+                        }
+                        continue;
+                    }
                     let key = self.expr(Ctx::Normal);
                     if self.eat(P::Colon) {
                         let value = self.expr(Ctx::Normal);
@@ -1608,6 +1955,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 self.expr_node(ExprKind::List(items), span)
             }
+            Tok::P(P::LBrace) if self.record_ahead() => self.record(),
             Tok::P(P::LBrace) => {
                 let closure = self.closure();
                 let span = closure.span;
@@ -1705,10 +2053,10 @@ fn contains_await_marker(expr: &Expr) -> bool {
 }
 
 /// Whether `{` after `expr` is its trailing closure: after a name, a member
-/// or a call (`VStack {`, `.onPress {`, `f(x) {`).
+/// or a call (`VStack {`, `.onPress {`, `a?.map {`, `f(x) {`).
 fn is_callee(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::Name(_) | ExprKind::Field(..) | ExprKind::TypeApply { .. } => true,
+        ExprKind::Name(_) | ExprKind::Field(..) | ExprKind::OptField(..) | ExprKind::TypeApply { .. } => true,
         ExprKind::Call(call) => call.trailing.is_none(),
         _ => false,
     }
@@ -1736,6 +2084,11 @@ fn keyword_typo(word: &str) -> Option<&'static str> {
         "await_" => "await",
         _ => return None,
     })
+}
+
+/// Keywords that never start an expression, so they may name a parameter, a field or a value.
+fn is_soft(kw: Kw) -> bool {
+    matches!(kw, Kw::Type | Kw::Body | Kw::View | Kw::Screen | Kw::Layout | Kw::From)
 }
 
 #[cfg(test)]

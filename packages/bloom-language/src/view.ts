@@ -43,6 +43,11 @@ const NO_PROPS = Object.freeze({});
  */
 export function view<P extends object = Record<string, never>>(
   body: (props: P) => Child | (() => Child),
+  /**
+   * Whether two props are equal for this view (`memo`'s comparator): `true`
+   * skips the render. Without it, `memo` compares each prop with `Object.is`.
+   */
+  equal?: (previous: Readonly<P>, next: Readonly<P>) => boolean,
 ): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => ComposedView {
   // A factory of components is what `view()` is: called once per view, at
   // module scope, never inside a render.
@@ -52,6 +57,6 @@ export function view<P extends object = Record<string, never>>(
     return drawRead(typeof built === 'function' ? built() : built);
   }
   ViewHost.displayName = body.name || 'View';
-  const component = memo(ViewHost) as unknown as ComponentType<object>;
+  const component = memo(ViewHost, equal) as unknown as ComponentType<object>;
   return (...args) => new Node('view', { component, props: args[0] ?? NO_PROPS }, NO_CHILDREN);
 }

@@ -2,8 +2,9 @@
 //! Oxc from its `.d.ts` (or `.ts`/`.tsx` source), mapped to Bloom types where
 //! they map. Anything else is `Foreign`, never `any`.
 
+use rustc_hash::FxHashMap as HashMap;
 use std::cell::RefCell;
-use std::collections::HashMap;
+
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -41,6 +42,9 @@ pub enum TsType {
     Ref(String, Vec<TsType>),
     Object(Vec<TsMember>),
     Fn(Box<TsFn>),
+    /// `A & B`: foreign, but a component may be one of its members (react-native's
+    /// `TextInput` is a function from props to a node with statics beside it).
+    Intersection(Vec<TsType>),
     /// Anything else: foreign.
     Other,
 }
@@ -81,7 +85,16 @@ pub enum TsDecl {
         params: Vec<String>,
         ty: TsType,
     },
-    /// A class, an enum, a namespace: foreign.
+    /// A class. One that extends another and is named in UpperCamel is a component
+    /// (`extends Component<P>` gives its props; any other's are TS's to check); the
+    /// rest are a value and a type TS checks (`ViewModifier`).
+    Class {
+        extends: bool,
+        props: Option<TsType>,
+    },
+    /// `const X = memo(Inner)`: the component `Inner` is (its props).
+    Memo(String),
+    /// An enum, a namespace: foreign.
     Other,
 }
 
@@ -97,26 +110,126 @@ pub struct TsFile {
     /// A `.tsx` source: an uppercase function there is a component.
     pub tsx: bool,
     pub decls: HashMap<String, TsDecl>,
+    /// A type declared beside a value of the same name (`declare const X: T;
+    /// declare type X = typeof X`): the value is in `decls`, the type here.
+    pub types: HashMap<String, TsDecl>,
     pub exports: HashMap<String, Export>,
     /// `export * from "…"`.
     pub stars: Vec<String>,
+    /// `export = N`: the namespace whose members are the module's exports (`@types/react`).
+    pub export_equals: Option<String>,
+    /// A namespace's member names (`declare namespace React { … }`).
+    pub namespaces: HashMap<String, Vec<String>>,
     /// Local name → (specifier, imported name).
     pub imports: HashMap<String, (String, String)>,
 }
 
-thread_local! {
-    static FILES: RefCell<HashMap<PathBuf, Rc<TsFile>>> = RefCell::new(HashMap::new());
+/// A file's identity on disk: a cached summary is reused while it holds.
+pub(crate) type Stamp = (Option<std::time::SystemTime>, u64);
+
+pub(crate) fn stamp(path: &Path) -> Option<Stamp> {
+    let meta = std::fs::metadata(path).ok()?;
+    Some((meta.modified().ok(), meta.len()))
 }
 
-/// Reads (once per process) and summarises a TS file.
-pub fn read(path: &Path) -> Option<Rc<TsFile>> {
-    if let Some(file) = FILES.with(|files| files.borrow().get(path).cloned()) {
-        return Some(file);
+/// A summary with the stamp it was read at and the compile that last checked it.
+struct Cached<T> {
+    value: T,
+    stamp: Stamp,
+    checked: u64,
+}
+
+/// A per-thread cache that is never dropped: the thread's exit leaves it to the
+/// OS instead of running its destructor.
+///
+/// The addon runs in Node worker threads (jest-worker, Metro's workers) and in
+/// processes that `process.exit()` while other threads still compile. A
+/// `thread_local!` whose value needs dropping registers a TLS destructor
+/// (`__cxa_thread_atexit_impl`), which runs during the thread's or process's
+/// teardown, after Node has begun tearing down the environment the addon was
+/// loaded into, and in an order no caller controls. These caches hold only
+/// Rust data, so dropping them buys nothing at exit, and a value with no drop
+/// glue registers no destructor at all: the compiler stays out of the exit path
+/// (a segfault and a glibc "double free" were seen at worker exit with the
+/// addon loaded; `test/worker-exit.test.cjs` loops those exits). The cost is
+/// one cache per exited thread, which long-lived workers make rare;
+/// `clear_caches` and `forget` still free one on demand.
+pub(crate) type ThreadCache<T> = std::mem::ManuallyDrop<RefCell<T>>;
+
+/// A [`ThreadCache`] holding `value`.
+pub(crate) const fn thread_cache<T>(value: T) -> ThreadCache<T> {
+    std::mem::ManuallyDrop::new(RefCell::new(value))
+}
+
+thread_local! {
+    static FILES: ThreadCache<HashMap<PathBuf, Cached<Rc<TsFile>>>> = thread_cache(HashMap::default());
+    static TSCONFIG: ThreadCache<HashMap<PathBuf, Cached<Paths>>> = thread_cache(HashMap::default());
+    /// Bumped by each compile: a cached file is checked against the disk once per compile.
+    static EPOCH: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// The current compile (see [`next_epoch`]).
+pub(crate) fn epoch() -> u64 {
+    EPOCH.with(std::cell::Cell::get)
+}
+
+/// Starts a compile: cached files are checked against the disk again (once each).
+pub fn next_epoch() {
+    EPOCH.with(|e| e.set(e.get() + 1));
+}
+
+/// Forgets `path`'s summary (an editor changed it).
+pub fn invalidate(path: &Path) {
+    FILES.with(|files| files.borrow_mut().remove(path));
+    TSCONFIG.with(|c| c.borrow_mut().retain(|root, _| root.join("tsconfig.json") != path));
+}
+
+/// Forgets every summary.
+pub fn clear_caches() {
+    FILES.with(|files| files.borrow_mut().clear());
+    TSCONFIG.with(|c| c.borrow_mut().clear());
+}
+
+/// `cache[path]` while the file on disk is unchanged (checked once per compile), else `load()`.
+fn cached<T: Clone>(
+    cache: &'static std::thread::LocalKey<ThreadCache<HashMap<PathBuf, Cached<T>>>>,
+    path: &Path,
+    key: &Path,
+    load: impl FnOnce() -> Option<T>,
+) -> Option<T> {
+    let epoch = EPOCH.with(std::cell::Cell::get);
+    let hit = cache.with(|c| {
+        let mut c = c.borrow_mut();
+        let entry = c.get_mut(key)?;
+        if entry.checked != epoch {
+            if stamp(path).unwrap_or((None, 0)) != entry.stamp {
+                return None;
+            }
+            entry.checked = epoch;
+        }
+        Some(entry.value.clone())
+    });
+    if hit.is_some() {
+        return hit;
     }
-    let text = std::fs::read_to_string(path).ok()?;
-    let file = Rc::new(summarise(path, &text));
-    FILES.with(|files| files.borrow_mut().insert(path.to_path_buf(), file.clone()));
-    Some(file)
+    let stamp = stamp(path).unwrap_or((None, 0));
+    let value = load()?;
+    cache.with(|c| {
+        c.borrow_mut().insert(key.to_path_buf(), Cached { value: value.clone(), stamp, checked: epoch })
+    });
+    Some(value)
+}
+
+/// Reads and summarises a TS file (cached while it is unchanged on disk); a
+/// `.bloom` module is not one (see [`bloom_export`]).
+pub fn read(path: &Path) -> Option<Rc<TsFile>> {
+    if path.extension().is_some_and(|e| e == "bloom") {
+        return None;
+    }
+    cached(&FILES, path, path, || {
+        let text = std::fs::read_to_string(path).ok()?;
+        Some(Rc::new(summarise(path, &text)))
+    })
 }
 
 fn summarise(path: &Path, text: &str) -> TsFile {
@@ -132,6 +245,11 @@ fn summarise(path: &Path, text: &str) -> TsFile {
     let reader = Reader;
     for statement in &parsed.program.body {
         reader.statement(statement, &mut file, false);
+    }
+    if let Some(members) = file.export_equals.as_ref().and_then(|n| file.namespaces.get(n)).cloned() {
+        for member in members {
+            file.exports.entry(member.clone()).or_insert(Export::Local(member));
+        }
     }
     file
 }
@@ -192,6 +310,11 @@ impl Reader {
                 }
                 None => file.stars.push(export.source.value.as_str().unwrap_or_default().to_string()),
             },
+            Statement::TSExportAssignment(export) => {
+                if let oxc_ast::ast::Expression::Identifier(id) = &export.expression {
+                    file.export_equals = Some(id.name.to_string());
+                }
+            }
             Statement::ExportDefaultDeclaration(export) => match &export.declaration {
                 ExportDefaultDeclarationKind::FunctionDeclaration(function) => {
                     let name = function.id.as_ref().map_or("default".to_string(), |id| id.name.to_string());
@@ -226,9 +349,21 @@ impl Reader {
             if exported {
                 file.exports.insert(name.clone(), Export::Local(name.clone()));
             }
-            // A function's first overload is the one Bloom reads.
-            if !(matches!(decl, TsDecl::Fn(_)) && file.decls.contains_key(&name)) {
-                file.decls.insert(name, decl);
+            let is_type = matches!(decl, TsDecl::Interface { .. } | TsDecl::Alias { .. });
+            match file.decls.get(&name) {
+                // A function's first overload is the one Bloom reads.
+                Some(TsDecl::Fn(_)) if matches!(decl, TsDecl::Fn(_)) => {}
+                // A value and a type of one name: both are kept.
+                Some(TsDecl::Var(_) | TsDecl::Fn(_)) if is_type => {
+                    file.types.insert(name, decl);
+                }
+                Some(TsDecl::Interface { .. } | TsDecl::Alias { .. }) if matches!(decl, TsDecl::Var(_)) => {
+                    let ty = file.decls.insert(name.clone(), decl).expect("a type");
+                    file.types.insert(name, ty);
+                }
+                _ => {
+                    file.decls.insert(name, decl);
+                }
             }
         };
         match declaration {
@@ -244,6 +379,23 @@ impl Reader {
             }
             Declaration::VariableDeclaration(variables) => {
                 for declarator in &variables.declarations {
+                    if let BindingPattern::BindingIdentifier(id) = &declarator.id
+                        && declarator.type_annotation.is_none()
+                        && let Some(decl) = self.memo(declarator.init.as_ref())
+                    {
+                        let name = id.name.to_string();
+                        let decl = match decl {
+                            // `memo(function Inner(…) { … })`: the inner function, kept unexported.
+                            TsDecl::Fn(_) => {
+                                let inner = format!("{name}$memo");
+                                file.decls.insert(inner.clone(), decl);
+                                TsDecl::Memo(inner)
+                            }
+                            decl => decl,
+                        };
+                        add(file, name, decl);
+                        continue;
+                    }
                     if let BindingPattern::BindingIdentifier(id) = &declarator.id {
                         let ty =
                             declarator.type_annotation.as_ref().map(|t| self.ty(&t.type_annotation)).or_else(
@@ -306,13 +458,73 @@ impl Reader {
             }
             Declaration::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
-                    add(file, id.name.to_string(), TsDecl::Other);
+                    let props = class.heritage.as_ref().and_then(|heritage| {
+                        let base = match &heritage.expression {
+                            oxc_ast::ast::Expression::Identifier(id) => id.name.to_string(),
+                            oxc_ast::ast::Expression::StaticMemberExpression(member) => {
+                                member.property.name.to_string()
+                            }
+                            _ => return None,
+                        };
+                        if !matches!(base.as_str(), "Component" | "PureComponent") {
+                            return None;
+                        }
+                        heritage.type_arguments.as_ref()?.params.first().map(|t| self.ty(t))
+                    });
+                    let extends = class.heritage.is_some();
+                    add(file, id.name.to_string(), TsDecl::Class { extends, props });
                 }
             }
             Declaration::TSEnumDeclaration(enumeration) => {
                 add(file, enumeration.id.name.to_string(), TsDecl::Other)
             }
+            // `declare namespace React { … }`: its members are read beside the file's own, for
+            // an `export = React` to export them.
+            Declaration::TSNamespaceDeclaration(namespace) => {
+                let name = namespace.id.name.to_string();
+                if let oxc_ast::ast::TSNamespaceDeclarationBody::TSModuleBlock(block) = &namespace.body {
+                    let before: std::collections::HashSet<String> = file.decls.keys().cloned().collect();
+                    for statement in &block.body {
+                        self.statement(statement, file, false);
+                    }
+                    let members: Vec<String> =
+                        file.decls.keys().filter(|k| !before.contains(*k)).cloned().collect();
+                    file.namespaces.entry(name.clone()).or_default().extend(members);
+                }
+                add(file, name, TsDecl::Other);
+            }
             _ => {}
+        }
+    }
+
+    /// `memo(Inner)`, `memo(function Inner(props: P) { … })`, `memo((props: P) => …)` (also
+    /// `React.memo`): a component with the inner one's props.
+    fn memo(&self, init: Option<&oxc_ast::ast::Expression>) -> Option<TsDecl> {
+        use oxc_ast::ast::{Argument, Expression};
+        let Some(Expression::CallExpression(call)) = init else { return None };
+        let callee = match &call.callee {
+            Expression::Identifier(id) => id.name.as_str(),
+            Expression::StaticMemberExpression(member) if matches!(&member.object, Expression::Identifier(o) if o.name == "React") => {
+                member.property.name.as_str()
+            }
+            _ => return None,
+        };
+        if callee != "memo" {
+            return None;
+        }
+        match call.arguments.first()? {
+            Argument::Identifier(inner) => Some(TsDecl::Memo(inner.name.to_string())),
+            Argument::FunctionExpression(function) => Some(TsDecl::Fn(self.function(
+                &function.type_parameters,
+                &function.params,
+                function.return_type.as_ref().map(|t| &t.type_annotation),
+            ))),
+            Argument::ArrowFunctionExpression(arrow) => Some(TsDecl::Fn(self.function(
+                &arrow.type_parameters,
+                &arrow.params,
+                arrow.return_type.as_ref().map(|t| &t.type_annotation),
+            ))),
+            _ => None,
         }
     }
 
@@ -347,7 +559,7 @@ impl Reader {
                 rest: true,
             });
         }
-        TsFn { type_params: type_params(type_parameters), params: out, ret: ret.map(|t| self.ty(t)) }
+        TsFn { type_params: fn_type_params(type_parameters), params: out, ret: ret.map(|t| self.ty(t)) }
     }
 
     fn members(&self, signatures: &[TSSignature]) -> Vec<TsMember> {
@@ -382,7 +594,11 @@ impl Reader {
                     let value = self.ty(&index.type_annotation.type_annotation);
                     members.push(TsMember { name: "[index]".into(), optional: false, ty: value });
                 }
-                _ => {}
+                // `(content: string) => void` inside an interface: the value is callable.
+                TSSignature::TSCallSignatureDeclaration(_)
+                | TSSignature::TSConstructSignatureDeclaration(_) => {
+                    members.push(TsMember { name: "[call]".into(), optional: false, ty: TsType::Other });
+                }
             }
         }
         members
@@ -427,6 +643,9 @@ impl Reader {
                 TsType::Tuple(items)
             }
             TSType::TSUnionType(union) => TsType::Union(union.types.iter().map(|t| self.ty(t)).collect()),
+            TSType::TSIntersectionType(both) => {
+                TsType::Intersection(both.types.iter().map(|t| self.ty(t)).collect())
+            }
             TSType::TSTypeReference(reference) => {
                 let args = reference
                     .type_arguments
@@ -464,6 +683,30 @@ fn type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaratio
         .map(|d| d.params.iter().map(|p| p.name.name.to_string()).collect())
         .unwrap_or_default()
 }
+
+/// A function's type parameters; one bound by a view's modifiers (`<V extends
+/// ViewModifiers<V>>`, `AnyView`, `ViewNode`) is marked `V\0view`: Bloom reads it as a view.
+fn fn_type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaration>>) -> Vec<String> {
+    declaration
+        .as_ref()
+        .map(|d| {
+            d.params
+                .iter()
+                .map(|p| {
+                    let view = matches!(
+                        &p.constraint,
+                        Some(TSType::TSTypeReference(r))
+                            if matches!(type_name(&r.type_name).as_str(), "ViewModifiers" | "AnyView" | "ViewNode")
+                    );
+                    if view { format!("{}{VIEW_PARAM}", p.name.name) } else { p.name.name.to_string() }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The mark of a type parameter bound by a view's modifiers.
+const VIEW_PARAM: &str = "\0view";
 
 fn type_name(name: &TSTypeName) -> String {
     match name {
@@ -532,17 +775,15 @@ pub fn resolve(from: &Path, specifier: &str, options: &Options) -> Option<PathBu
 /// A `paths` map: each pattern with its targets.
 type Paths = Rc<Vec<(String, Vec<String>)>>;
 
-thread_local! {
-    static TSCONFIG: RefCell<HashMap<PathBuf, Paths>> = RefCell::new(HashMap::new());
-}
-
 /// `compilerOptions.paths` of the root's `tsconfig.json`, targets joined to its `baseUrl`;
 /// read without a JSON parser (keys and string arrays only).
 fn tsconfig_paths(root: &Path) -> Paths {
-    if let Some(found) = TSCONFIG.with(|c| c.borrow().get(root).cloned()) {
-        return found;
-    }
-    let text = std::fs::read_to_string(root.join("tsconfig.json")).unwrap_or_default();
+    let config = root.join("tsconfig.json");
+    cached(&TSCONFIG, &config, root, || Some(read_tsconfig_paths(&config))).unwrap_or_default()
+}
+
+fn read_tsconfig_paths(config: &Path) -> Paths {
+    let text = std::fs::read_to_string(config).unwrap_or_default();
     let base = json_field(&text, "baseUrl").unwrap_or(".").to_string();
     let mut out = Vec::new();
     if let Some(at) = text.find("\"paths\"") {
@@ -560,9 +801,7 @@ fn tsconfig_paths(root: &Path) -> Paths {
             }
         }
     }
-    let out = Rc::new(out);
-    TSCONFIG.with(|c| c.borrow_mut().insert(root.to_path_buf(), out.clone()));
-    out
+    Rc::new(out)
 }
 
 fn split_package(specifier: &str) -> (&str, &str) {
@@ -616,7 +855,7 @@ fn json_field<'j>(json: &'j str, field: &str) -> Option<&'j str> {
 fn with_extensions(base: &Path) -> Option<PathBuf> {
     let text = base.to_string_lossy();
     let is_file = |p: &Path| p.is_file();
-    if (text.ends_with(".ts") || text.ends_with(".tsx")) && is_file(base) {
+    if (text.ends_with(".ts") || text.ends_with(".tsx") || text.ends_with(".bloom")) && is_file(base) {
         return Some(base.to_path_buf());
     }
     let stem = text.strip_suffix(".js").or_else(|| text.strip_suffix(".mjs")).unwrap_or(&text).to_string();
@@ -651,6 +890,8 @@ pub struct Mapper<'m> {
     pub options: &'m Options,
     /// (file, declaration name) → its mapped type, so a recursive interface maps once.
     pub named: &'m mut HashMap<(PathBuf, String), Ty>,
+    /// Every file the mapping reads (a compile's dependencies).
+    pub reads: &'m mut std::collections::BTreeSet<PathBuf>,
 }
 
 /// The type parameters in scope while mapping a generic declaration.
@@ -676,18 +917,41 @@ const COMPONENT_TYPES: &[&str] = &[
     "React.NamedExoticComponent",
     "MemoExoticComponent",
     "React.MemoExoticComponent",
+    "ForwardRefExoticComponent",
+    "React.ForwardRefExoticComponent",
+    "LazyExoticComponent",
+    "React.LazyExoticComponent",
+    "ExoticComponent",
+    "React.ExoticComponent",
+    "ComponentClass",
+    "React.ComponentClass",
 ];
 
 impl Mapper<'_> {
+    /// The TS module `specifier` names from `from`, recorded as a dependency.
+    fn open(&mut self, from: &Path, specifier: &str) -> Option<Rc<TsFile>> {
+        let path = resolve(from, specifier, self.options)?;
+        let file = read(&path)?;
+        self.reads.insert(path);
+        Some(file)
+    }
+
     /// `name` as `file` exports it; `path` is how emitted TS names its value (`useAuth`).
     pub fn export(&mut self, file: &Rc<TsFile>, name: &str, path: &str, depth: usize) -> Option<Mapped> {
         if depth > 8 {
             return None;
         }
+        // `export * as X from "…"` (react-native's `StyleSheet`): a namespace, TS's to check.
+        if name == "*" {
+            return Some(Mapped {
+                value: Some(Ty::Foreign(format!("typeof {path}").into())),
+                ..Mapped::default()
+            });
+        }
         let local = match file.exports.get(name) {
             Some(Export::Local(local)) => local.clone(),
             Some(Export::From(specifier, imported)) => {
-                let target = read(&resolve(&file.path, specifier, self.options)?)?;
+                let target = self.open(&file.path, specifier)?;
                 return self.export(&target, imported, path, depth + 1);
             }
             None => {
@@ -698,7 +962,7 @@ impl Mapper<'_> {
                     name.to_string()
                 } else {
                     for star in file.stars.clone() {
-                        if let Some(target) = resolve(&file.path, &star, self.options).and_then(|p| read(&p))
+                        if let Some(target) = self.open(&file.path, &star)
                             && let Some(found) = self.export(&target, name, path, depth + 1)
                         {
                             return Some(found);
@@ -715,7 +979,7 @@ impl Mapper<'_> {
         let Some(decl) = file.decls.get(name).cloned() else {
             // A re-export of an import (`import { x } from "y"; export { x }`).
             let (specifier, imported) = file.imports.get(name)?.clone();
-            let target = read(&resolve(&file.path, &specifier, self.options)?)?;
+            let target = self.open(&file.path, &specifier)?;
             return self.export(&target, &imported, path, depth + 1);
         };
         let mut mapped = Mapped::default();
@@ -736,21 +1000,172 @@ impl Mapper<'_> {
                 if let TsType::Ref(reference, args) = &ty
                     && COMPONENT_TYPES.contains(&reference.as_str())
                 {
-                    let props = args.first().map_or(Ty::Unit, |p| {
-                        self.ty(file, p, &Vec::new(), &format!("React.ComponentProps<typeof {path}>"), depth)
-                    });
+                    // `MemoExoticComponent<ComponentType<P>>`, `LazyExoticComponent<…>`: the
+                    // component inside gives the props.
+                    let mut props = args.first();
+                    while let Some(TsType::Ref(inner, inner_args)) = props
+                        && COMPONENT_TYPES.contains(&inner.as_str())
+                    {
+                        props = inner_args.first();
+                    }
+                    let props = match props {
+                        Some(TsType::Ref(inner, _)) if inner.starts_with("typeof ") => Ty::Foreign("".into()),
+                        Some(p) => self.ty(
+                            file,
+                            p,
+                            &Vec::new(),
+                            &format!("React.ComponentProps<typeof {path}>"),
+                            depth,
+                        ),
+                        None => Ty::Unit,
+                    };
                     mapped.component = Some(props);
                     return Some(mapped);
                 }
+                // `declare const TextInput: TextInputType`, an alias of a function from props to
+                // a node (with statics beside it): a component.
+                // (Named by its import: react-native declares it as `$$TextInput`.)
+                if path.starts_with(|c: char| c.is_ascii_uppercase())
+                    && let Some((props_file, props)) = self.component_in(file, &ty, depth)
+                {
+                    // As a type (`@ref input: TextInput?`) it is its instance, as a ref holds it:
+                    // read from its `ref` prop when it declares one (`ComponentRef` gives `never` for
+                    // a function that takes its ref as a prop), else React's `ComponentRef`.
+                    let instance = if props.as_ref().is_some_and(has_ref_prop) {
+                        format!(
+                            "NonNullable<Extract<NonNullable<ComponentProps<typeof {path}>[\"ref\"]>, {{ current: unknown }}>[\"current\"]>"
+                        )
+                    } else {
+                        format!("ComponentRef<typeof {path}>")
+                    };
+                    let props = match props {
+                        Some(props) => self.ty(
+                            &props_file,
+                            &props,
+                            &Vec::new(),
+                            &format!("React.ComponentProps<typeof {path}>"),
+                            depth,
+                        ),
+                        None => Ty::Unit,
+                    };
+                    mapped.component = Some(props);
+                    mapped.ty = Some(Ty::Foreign(instance.into()));
+                    return Some(mapped);
+                }
                 mapped.value = Some(self.ty(file, &ty, &Vec::new(), &format!("typeof {path}"), depth));
+                mapped.ty = self.beside(file, name, path);
             }
             TsDecl::Var(None) => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
                 mapped.ty = Some(self.named(file, name, &[], path, depth));
             }
+            TsDecl::Class { extends: true, props } if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
+                let props = match props {
+                    Some(props) => self.ty(
+                        file,
+                        &props,
+                        &Vec::new(),
+                        &format!("React.ComponentProps<typeof {path}>"),
+                        depth,
+                    ),
+                    None => Ty::Foreign("".into()),
+                };
+                mapped.component = Some(props);
+            }
+            TsDecl::Class { .. } => {
+                mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()));
+                mapped.ty = Some(Ty::Foreign(path.into()));
+            }
+            TsDecl::Memo(inner) => {
+                let mapped = self.local(file, &inner, path, depth + 1)?;
+                return Some(match mapped.component {
+                    // Named through the memo itself: `Parameters<typeof X>` has no call to read.
+                    Some(_) => Mapped {
+                        component: Some(self.memo_props(file, &inner, path, depth)),
+                        ..Mapped::default()
+                    },
+                    None => mapped,
+                });
+            }
             TsDecl::Other => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
         }
         Some(mapped)
+    }
+
+    /// The props of the component `inner` names, as `React.ComponentProps<typeof {path}>`.
+    fn memo_props(&mut self, file: &Rc<TsFile>, inner: &str, path: &str, depth: usize) -> Ty {
+        let props = match file.decls.get(inner) {
+            Some(TsDecl::Fn(function)) => function.params.first().and_then(|p| p.ty.clone()),
+            _ => None,
+        };
+        match props {
+            Some(props) => {
+                self.ty(file, &props, &Vec::new(), &format!("React.ComponentProps<typeof {path}>"), depth)
+            }
+            None => Ty::Foreign("".into()),
+        }
+    }
+
+    /// The type declared beside a value of the same name, named as TS names it.
+    fn beside(&self, file: &Rc<TsFile>, name: &str, path: &str) -> Option<Ty> {
+        file.types.contains_key(name).then(|| Ty::Foreign(path.into()))
+    }
+
+    /// The function from props to a node that `ty` is (through aliases, imports and
+    /// intersections), with the file its props are read in.
+    fn component_in(
+        &mut self,
+        file: &Rc<TsFile>,
+        ty: &TsType,
+        depth: usize,
+    ) -> Option<(Rc<TsFile>, Option<TsType>)> {
+        if depth > 8 {
+            return None;
+        }
+        match ty {
+            TsType::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
+                Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
+            }
+            TsType::Intersection(members) => {
+                members.iter().find_map(|m| self.component_in(file, m, depth + 1))
+            }
+            TsType::Ref(name, args) if args.is_empty() => {
+                let (target, decl) = self.type_decl(file, name, depth + 1)?;
+                match decl {
+                    TsDecl::Alias { params, ty } if params.is_empty() => {
+                        self.component_in(&target, &ty, depth + 1)
+                    }
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+
+    /// The type declaration a local name means in `file`, through its imports.
+    fn type_decl(&mut self, file: &Rc<TsFile>, name: &str, depth: usize) -> Option<(Rc<TsFile>, TsDecl)> {
+        if depth > 8 {
+            return None;
+        }
+        if let Some(decl) = file.types.get(name).or_else(|| file.decls.get(name)) {
+            return Some((file.clone(), decl.clone()));
+        }
+        let (specifier, imported) = file.imports.get(name)?.clone();
+        let mut target = self.open(&file.path, &specifier)?;
+        let mut name = imported;
+        for _ in 0..8 {
+            match target.exports.get(&name).cloned() {
+                Some(Export::Local(local)) => return self.type_decl(&target, &local, depth + 1),
+                Some(Export::From(specifier, imported)) => {
+                    target = self.open(&target.path, &specifier)?;
+                    name = imported;
+                }
+                None => {
+                    return self.type_decl(&target, &name, depth + 1).filter(|_| target.exports.is_empty());
+                }
+            }
+        }
+        None
     }
 
     fn function(
@@ -810,6 +1225,25 @@ impl Mapper<'_> {
             TsType::Array(element) => {
                 Ty::List(Box::new(self.ty(file, element, scope, &format!("{path}[number]"), depth)))
             }
+            // `['a', 'b'] as const`: a list of its strings (the tuple's order is not a type).
+            TsType::Tuple(items)
+                if items.len() > 1 && items.iter().all(|t| matches!(t, TsType::StrLit(_))) =>
+            {
+                let mut values: Vec<String> = Vec::new();
+                for item in items {
+                    if let TsType::StrLit(v) = item
+                        && !values.contains(v)
+                    {
+                        values.push(v.clone());
+                    }
+                }
+                let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
+                Ty::List(Box::new(Ty::Strings(std::rc::Rc::new(crate::types::StrSet {
+                    name,
+                    values,
+                    token: false,
+                }))))
+            }
             TsType::Tuple(items) => Ty::Tuple(
                 items
                     .iter()
@@ -821,7 +1255,9 @@ impl Mapper<'_> {
             TsType::Fn(function) => self.function(file, function, scope, path, depth),
             TsType::Object(members) => self.object(file, members, scope, path, "{…}", depth),
             TsType::Ref(name, args) => self.reference(file, name, args, scope, path, depth),
-            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other => Ty::Foreign(path.into()),
+            TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
+                Ty::Foreign(path.into())
+            }
         }
     }
 
@@ -869,6 +1305,9 @@ impl Mapper<'_> {
         path: &str,
         depth: usize,
     ) -> Ty {
+        if scope.iter().any(|p| p.strip_suffix(VIEW_PARAM) == Some(name)) {
+            return Ty::View(None);
+        }
         if let Some(index) = scope.iter().position(|p| p == name) {
             return Ty::Param(index as u32, name.into());
         }
@@ -880,6 +1319,16 @@ impl Mapper<'_> {
             }
             "Array" | "ReadonlyArray" if args.len() == 1 => {
                 return Ty::List(Box::new(arg(self, 0, &format!("{path}[number]")).unwrap_or(Ty::Unknown)));
+            }
+            "Map" | "ReadonlyMap" if args.len() == 2 => {
+                let key = arg(self, 0, &format!("Parameters<{path}[\"get\"]>[0]")).unwrap_or(Ty::Unknown);
+                let value =
+                    arg(self, 1, &format!("NonNullable<ReturnType<{path}[\"get\"]>>")).unwrap_or(Ty::Unknown);
+                return Ty::JsMap(Box::new(key), Box::new(value));
+            }
+            "Set" | "ReadonlySet" if args.len() == 1 => {
+                let elem = arg(self, 0, &format!("Parameters<{path}[\"has\"]>[0]")).unwrap_or(Ty::Unknown);
+                return Ty::Set(Box::new(elem));
             }
             "Record" if args.len() == 2 && matches!(args[0], TsType::String) => {
                 return Ty::Map(Box::new(arg(self, 1, &format!("{path}[string]")).unwrap_or(Ty::Unknown)));
@@ -904,7 +1353,7 @@ impl Mapper<'_> {
             return self.named(file, name, &mapped, path, depth + 1);
         }
         if let Some((specifier, imported)) = file.imports.get(name).cloned()
-            && let Some(target) = resolve(&file.path, &specifier, self.options).and_then(|p| read(&p))
+            && let Some(target) = self.open(&file.path, &specifier)
             && let Some(local) = exported_local(&target, &imported)
         {
             let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
@@ -943,6 +1392,11 @@ impl Mapper<'_> {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
+                // An index signature (`[key: string]: unknown`) takes any key, and a call
+                // signature makes it callable: TS checks those values (`Foreign`).
+                if all.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+                    return Ty::Foreign(path.into());
+                }
                 // Reserve the definition first, so a recursive field refers to it.
                 let id = self.defs.len();
                 self.defs.push(Def {
@@ -990,7 +1444,7 @@ impl Mapper<'_> {
         name: &str,
         depth: usize,
     ) -> Ty {
-        if members.iter().any(|m| m.name == "[index]") {
+        if members.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
             return Ty::Foreign(path.into());
         }
         let id = self.defs.len();
@@ -1028,6 +1482,35 @@ impl Mapper<'_> {
     }
 }
 
+/// The `.bloom` module and name a TS module's export `name` comes from, when
+/// it re-exports one (`export { List } from "./list.bloom"`, through
+/// `import`/`export` pairs and `export *`).
+pub fn bloom_export(
+    file: &Rc<TsFile>,
+    name: &str,
+    options: &Options,
+    depth: usize,
+) -> Option<(PathBuf, String)> {
+    if depth > 8 {
+        return None;
+    }
+    let follow = |specifier: &str, imported: &str| -> Option<(PathBuf, String)> {
+        let path = resolve(&file.path, specifier, options)?;
+        if specifier.ends_with(".bloom") {
+            return Some((path, imported.to_string()));
+        }
+        bloom_export(&read(&path)?, imported, options, depth + 1)
+    };
+    match file.exports.get(name) {
+        Some(Export::From(specifier, imported)) => follow(specifier, imported),
+        Some(Export::Local(local)) => {
+            let (specifier, imported) = file.imports.get(local)?;
+            follow(specifier, imported)
+        }
+        None => file.stars.iter().find_map(|star| follow(star, name)),
+    }
+}
+
 /// The file and local declaration an export names, following re-exports.
 fn exported_local(file: &Rc<TsFile>, name: &str) -> Option<(Rc<TsFile>, String)> {
     match file.exports.get(name)? {
@@ -1038,6 +1521,27 @@ fn exported_local(file: &Rc<TsFile>, name: &str) -> Option<(Rc<TsFile>, String)>
 
 /// A function that is a component: an uppercase name, at most one parameter
 /// (its props), returning an element (or, in a `.tsx` file, returning anything).
+/// Whether props declare a `ref` (directly or as a member of an intersection).
+fn has_ref_prop(props: &TsType) -> bool {
+    match props {
+        TsType::Object(members) => members.iter().any(|m| m.name == "ref"),
+        TsType::Intersection(items) => items.iter().any(has_ref_prop),
+        _ => false,
+    }
+}
+
+/// Whether a function returns an element (or `null` beside one).
+fn returns_element(function: &TsFn) -> bool {
+    match &function.ret {
+        Some(TsType::Ref(ret, _)) => REACT_ELEMENTS.contains(&ret.as_str()),
+        Some(TsType::Union(members)) => members.iter().all(|m| {
+            matches!(m, TsType::Null)
+                || matches!(m, TsType::Ref(r, _) if REACT_ELEMENTS.contains(&r.as_str()))
+        }),
+        _ => false,
+    }
+}
+
 fn is_component_fn(file: &TsFile, name: &str, function: &TsFn) -> bool {
     if !name.chars().next().is_some_and(|c| c.is_ascii_uppercase()) || function.params.len() > 1 {
         return false;

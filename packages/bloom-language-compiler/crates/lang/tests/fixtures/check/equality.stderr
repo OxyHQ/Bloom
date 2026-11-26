@@ -1,0 +1,26 @@
+error[B0210]: `==` cannot compare `Handler` (it holds `() -> Unit`)
+ --> check/equality.bloom:6:3
+  |
+6 |   a == b
+  |   ^^^^^^ functions, views, bindings, pending calls and type parameters have no equality
+  |
+help: compare what they hold (a field, an id) instead
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0210]: `==` cannot compare `View`
+  --> check/equality.bloom:10:3
+   |
+10 |   a == b
+   |   ^^^^^^ functions, views, bindings, pending calls and type parameters have no equality
+   |
+help: compare what they hold (a field, an id) instead
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0210]: `==` cannot compare `T?` (it holds `T`)
+  --> check/equality.bloom:14:3
+   |
+14 |   items.first == item
+   |   ^^^^^^^^^^^^^^^^^^^ functions, views, bindings, pending calls and type parameters have no equality
+   |
+help: compare a field of it, or take a comparison function: `(T, T) -> Bool`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

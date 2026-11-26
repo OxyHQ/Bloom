@@ -1,0 +1,23 @@
+// `fail(e)` throws `e` from a closure TS calls (a sync one too), where a thrown
+// error is how TS hears of it; `?` on a `Result` there throws its error the same way.
+import { onSave, useSync } from "@/api"
+import { Error } from "js"
+
+fn check(name: String) -> Result<String, Error> {
+  if name.isEmpty { return err(Error("No name")) }
+  ok(name)
+}
+
+pub view Deck(id: String) {
+  let title = useSync {
+    if id.isEmpty { fail(Error("No track")) }
+    id
+  }
+  let _ = onSave { name in
+    let checked = check(name)?
+    if checked == "x" { fail(Error("Reserved")) }
+  }
+  let label = useSync { id.isEmpty ? fail(Error("Empty")) : id }
+
+  body { Text("${title} ${label}") }
+}

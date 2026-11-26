@@ -1,0 +1,40 @@
+// String-literal unions: TS-shaped choices, structural and zero-cost.
+
+pub type Tone = "calm" | "loud"
+
+fn volume(tone: Tone) -> Int {
+  match tone {
+    case "calm" => 1
+    case "loud" => 2
+  }
+}
+
+fn pick(size: "sm" | "lg", tone: Tone?) -> Int {
+  let base = size == "sm" ? 1 : 2
+  base + volume(tone ?? "calm")
+}
+
+pub fn uses() -> Int {
+  pick("lg", "loud") + pick("sm", none)
+}
+
+// A conditional of string literals is their literal union (TS's `const` infers the same), so it
+// fits a token set; a literal beside a literal union joins it.
+type Gutter = "sm" | "md" | "lg"
+
+pub view Inset(card: Bool, gutter: Gutter) {
+  let inset = card ? "md" : gutter
+  let side = card ? "96" : "48"
+  let corner = card ? "10" : "lg"
+  let label = card ? "card" : "row"
+
+  body {
+    VStack {
+      Text(label + "!")
+        .padding("leading", inset)
+        .frame(width: side, height: side)
+        .corner(corner)
+      Text("${label.count}")
+    }
+  }
+}

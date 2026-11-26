@@ -1,0 +1,52 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { ScrollView, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Carousel } from "@oxy.so/bloom-language/carousel";
+import { GroupedSection, GroupedSectionItem } from "@oxy.so/bloom-language/containers";
+import { SettingsSection } from "@oxy.so/bloom-language/settings";
+
+const $load = (): void => {
+};
+const $view0 = ScrollView(Text("rows"));
+const $view1 = Carousel(Text("a"));
+const $view2 = Text("end");
+export interface FeedProps {
+  readonly more: boolean;
+  readonly footer: boolean;
+}
+export const Feed = view(function Feed(props: FeedProps) {
+"use no memo";
+const $ = $c(7);
+const { more, footer } = props;
+let $t0;
+if ($[4] !== more || $[5] !== footer) {
+$t0 = VStack(($[0] !== more ? ($[0] = more, $[1] = $view0.onEndReached(more ? $load : undefined, 0.5).onEndReached(undefined)) : $[1]), ($[2] !== footer ? ($[2] = footer, $[3] = $view1.footerContent(footer ? $view2 : undefined).footerContent(undefined)) : $[3]));
+$[4] = more;
+$[5] = footer;
+$[6] = $t0;
+} else {
+$t0 = $[6];
+}
+return $t0;
+});
+
+const $view3 = SettingsSection(undefined, GroupedSection(GroupedSectionItem("a")));
+const $view4 = GroupedSection(GroupedSectionItem("b"));
+export interface SectionProps {
+  readonly title: string | undefined;
+}
+export const Section = view(function Section(props: SectionProps) {
+"use no memo";
+const $ = $c(2);
+const { title } = props;
+let $t1;
+if ($[0] !== title) {
+$t1 = VStack($view3, SettingsSection(title, $view4));
+$[0] = title;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

@@ -1,0 +1,25 @@
+// `Map` and `Set` held to their types.
+
+fn wrongEntries() -> Map<String, Int> {
+  Map([("a", "b")])
+}
+
+fn twoArgs() -> Set<Int> {
+  Set([1], [2])
+}
+
+fn key(m: Map<String, Int>) -> Int? {
+  m.get(1)
+}
+
+fn same(a: Set<Int>, b: Set<Int>) -> Bool {
+  a == b
+}
+
+fn noPush(s: Set<Int>) -> Set<Int> {
+  s.add(1)
+}
+
+fn spreadWrong(a: [String]) -> [Int] {
+  [1, ..a]
+}

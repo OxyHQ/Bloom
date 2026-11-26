@@ -1,0 +1,25 @@
+// Inline record types: structural, anywhere a type goes.
+
+type Point = { x: Int, y: Int }
+
+struct Labelled {
+  x: Int
+  y: Int
+  label: String
+}
+
+fn extent(p: Point) -> Int {
+  p.x + p.y
+}
+
+fn describe(item: { title: String, subtitle: String? }) -> String {
+  item.subtitle ?? item.title
+}
+
+pub fn uses() -> Int {
+  let a = extent({ x: 1, y: 2 })
+  let b = extent(Labelled(x: 3, y: 4, label: "c"))
+  let c: { x: Int, y: Int } = { x: 5, y: 6 }
+  let t = describe({ title: "t" })
+  a + b + extent(c) + t.count
+}

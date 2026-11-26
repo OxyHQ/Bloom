@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface DeckProps {
+  readonly id: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Deck())`), or from TSX as `toElement(Deck())`. */
+export declare const Deck: (props: DeckProps) => ComposedView;

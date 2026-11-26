@@ -1,0 +1,15 @@
+error[B0201]: expected `{ x: Int, y: Int }`, found `{ x: Int }`
+  --> check/record_types.bloom:10:10
+   |
+10 |   length(missing) + length(wrong)
+   |          ^^^^^^^ this is `{ x: Int }`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `{ x: Int, y: Int }`, found `{ x: Int, y: String }`
+  --> check/record_types.bloom:10:28
+   |
+10 |   length(missing) + length(wrong)
+   |                            ^^^^^ this is `{ x: Int, y: String }`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

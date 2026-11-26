@@ -1,0 +1,49 @@
+// List methods JS code reaches for, and `.enumerated()` without the pairs.
+
+struct Post {
+  id: String
+  tags: [String]
+  likes: Int
+}
+
+fn tags(posts: [Post]) -> [String] {
+  posts.flatMap { p in p.tags }
+}
+
+fn liked(posts: [Post]) -> Bool {
+  posts.any { p in p.likes > 0 } && !posts.all { p in p.tags.isEmpty }
+}
+
+fn page(posts: [Post], at: Int) -> [Post] {
+  posts.slice(at, at + 10)
+}
+
+fn place(ids: [String], id: String) -> Int {
+  ids.indexOf(id) ?? -1
+}
+
+fn numbered(ids: [String]) -> [String] {
+  ids.enumerated().map { (i, id) in "${i + 1}. ${id}" }
+}
+
+fn pairs(ids: [String]) -> [(Int, String)] {
+  ids.enumerated()
+}
+
+fn longest(ids: [String]) -> Int {
+  var best = 0
+  for (i, id) in ids.enumerated() {
+    best = id.count > best ? i : best
+  }
+  best
+}
+
+pub view Rows(ids: [String]) {
+  body {
+    VStack {
+      for (i, id) in ids.enumerated() {
+        Text("${i}: ${id}")
+      }
+    }
+  }
+}

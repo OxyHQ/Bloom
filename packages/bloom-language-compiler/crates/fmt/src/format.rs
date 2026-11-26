@@ -390,7 +390,13 @@ impl<'a> Formatter<'a> {
             params,
             |p| p.span,
             |this, param| {
-                let mut parts = vec![text(param.name.name.clone()), text(": "), this.ty(&param.ty)];
+                if param.spread {
+                    let whole = param.whole.as_ref().map_or(String::new(), |w| format!("{}: ", w.name));
+                    return concat(vec![text(format!("..{whole}")), this.ty(&param.ty)]);
+                }
+                let name =
+                    if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };
+                let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
                     parts.push(this.expr(default));
@@ -441,6 +447,21 @@ impl<'a> Formatter<'a> {
             }
             Member::Let(l) => self.let_stmt(l),
             Member::Fn(f) => self.fn_decl(f),
+            Member::Equal(e) => concat(vec![
+                text(format!("equal({}, {}) ", e.old.name, e.new.name)),
+                self.block(&e.body, Layout::Own),
+            ]),
+            Member::Effect(e) => {
+                let mut parts = vec![text("effect")];
+                if let Some(id) = &e.id {
+                    parts.push(text("(id: "));
+                    parts.push(self.expr(id));
+                    parts.push(text(")"));
+                }
+                parts.push(text(" "));
+                parts.push(self.block(&e.body, Layout::Own));
+                concat(parts)
+            }
         }
     }
 
@@ -558,6 +579,11 @@ impl<'a> Formatter<'a> {
             ExprKind::Binding(path) => {
                 text(format!("${}", path.iter().map(|i| i.name.as_str()).collect::<Vec<_>>().join(".")))
             }
+            ExprKind::KeyPath { root, path } => text(format!(
+                "\\{}.{}",
+                root.as_ref().map_or("", |r| r.name.as_str()),
+                path.iter().map(|i| i.name.as_str()).collect::<Vec<_>>().join(".")
+            )),
             ExprKind::TypeApply { name, args } => {
                 let args = args.iter().map(|a| self.ty(a)).collect();
                 concat(vec![text(name.name.clone()), text("<"), join(args, || text(", ")), text(">")])
@@ -565,6 +591,8 @@ impl<'a> Formatter<'a> {
             ExprKind::Paren(inner) => concat(vec![text("("), self.expr(inner), text(")")]),
             ExprKind::Tuple(items) => self.commas(items, |i| i.span, Self::expr).bracketed("(", ")"),
             ExprKind::List(items) => self.commas(items, |i| i.span, Self::expr).bracketed("[", "]"),
+            ExprKind::Spread(inner) => concat(vec![text(".."), self.expr(inner)]),
+            ExprKind::Is(inner, ty) => concat(vec![self.expr(inner), text(" is "), self.ty(ty)]),
             ExprKind::Map(entries) if entries.is_empty() => text("[:]"),
             ExprKind::Map(entries) => {
                 let entries = self.commas(
@@ -573,6 +601,20 @@ impl<'a> Formatter<'a> {
                     |this, (k, v)| concat(vec![this.expr(k), text(": "), this.expr(v)]),
                 );
                 entries.bracketed("[", "]")
+            }
+            ExprKind::Record(entries) => {
+                let entries = self.commas(entries, record_entry_span, |this, entry| match entry {
+                    RecordEntry::Field { key, value } => {
+                        let name = if record_key_is_name(&key.name) {
+                            key.name.clone()
+                        } else {
+                            format!("{:?}", key.name)
+                        };
+                        concat(vec![text(name), text(": "), this.expr(value)])
+                    }
+                    RecordEntry::Spread(value) => concat(vec![text(".."), this.expr(value)]),
+                });
+                entries.wrap("{", line, "}")
             }
             ExprKind::Unary(op, inner) => {
                 concat(vec![text(if *op == UnaryOp::Not { "!" } else { "-" }), self.expr(inner)])
@@ -617,8 +659,15 @@ impl<'a> Formatter<'a> {
         let first = self.expr(operands[0]);
         let mut rest = Vec::new();
         for (operator, operand) in operators.iter().zip(&operands[1..]) {
-            rest.push(text(format!(" {}", operator.text())));
-            rest.push(line());
+            // A line cannot end with `>` (it may close a type's arguments), so `<` and `>`
+            // start the next line instead.
+            if matches!(operator, BinaryOp::Lt | BinaryOp::Gt) {
+                rest.push(line());
+                rest.push(text(format!("{} ", operator.text())));
+            } else {
+                rest.push(text(format!(" {}", operator.text())));
+                rest.push(line());
+            }
             rest.push(self.expr(operand));
         }
         group(concat(vec![first, indent(concat(rest))]))
@@ -705,6 +754,9 @@ impl<'a> Formatter<'a> {
     /// `(args)` and a trailing closure after a callee.
     fn call_tail(&mut self, callee: Doc, call: &Call) -> Doc {
         let mut parts = vec![callee];
+        if call.optional {
+            parts.push(text("?."));
+        }
         if call.parens {
             let args = self.commas(
                 &call.args,
@@ -737,7 +789,8 @@ impl<'a> Formatter<'a> {
                     None => text(p.name.name.clone()),
                 })
                 .collect();
-            vec![join(params, || text(", "))]
+            let params = join(params, || text(", "));
+            vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }]
         } else {
             Vec::new()
         };
@@ -852,6 +905,27 @@ impl<'a> Formatter<'a> {
             }
             TypeKind::List(inner) => concat(vec![text("["), self.ty(inner), text("]")]),
             TypeKind::Map(k, v) => concat(vec![text("["), self.ty(k), text(": "), self.ty(v), text("]")]),
+            TypeKind::Strings(values) => {
+                text(values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | "))
+            }
+            TypeKind::Record(fields) => {
+                let fields: Vec<Doc> = fields
+                    .iter()
+                    .map(|(name, t)| {
+                        let key = if record_key_is_name(&name.name) {
+                            name.name.clone()
+                        } else {
+                            format!("{:?}", name.name)
+                        };
+                        concat(vec![text(key), text(": "), self.ty(t)])
+                    })
+                    .collect();
+                if fields.is_empty() {
+                    text("{}")
+                } else {
+                    concat(vec![text("{ "), join(fields, || text(", ")), text(" }")])
+                }
+            }
             TypeKind::Tuple(items) => {
                 let items = items.iter().map(|a| self.ty(a)).collect();
                 concat(vec![text("("), join(items, || text(", ")), text(")")])
@@ -864,6 +938,11 @@ impl<'a> Formatter<'a> {
                     text(") -> "),
                     self.ty(ret),
                 ])
+            }
+            // An optional function or union keeps its parentheses: `() -> Int?` returns an
+            // optional, and `"a" | "b"?` is not a type.
+            TypeKind::Optional(inner) if matches!(inner.kind, TypeKind::Fn { .. } | TypeKind::Strings(_)) => {
+                concat(vec![text("("), self.ty(inner), text(")?")])
             }
             TypeKind::Optional(inner) => concat(vec![self.ty(inner), text("?")]),
             TypeKind::Error => text(self.slice(t.span).to_string()),
@@ -905,4 +984,18 @@ fn generics(names: &[Ident]) -> Doc {
         return Doc::Nil;
     }
     text(format!("<{}>", names.iter().map(|n| n.name.as_str()).collect::<Vec<_>>().join(", ")))
+}
+
+fn record_entry_span(entry: &RecordEntry) -> Span {
+    match entry {
+        RecordEntry::Field { key, value } => key.span.to(value.span),
+        RecordEntry::Spread(value) => value.span,
+    }
+}
+
+/// Whether a record key is written bare (`name:`) rather than quoted (`"aria-label":`).
+fn record_key_is_name(key: &str) -> bool {
+    let mut chars = key.chars();
+    chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
 }

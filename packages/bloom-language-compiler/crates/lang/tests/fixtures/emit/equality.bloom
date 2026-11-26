@@ -1,0 +1,68 @@
+// Structural `==` (spec 4.3): compiled to inline comparisons of the fields,
+// recursive by type; a recursive type compares through one module function.
+
+struct Point {
+  x: Int
+  y: Int
+}
+
+enum Shape {
+  empty
+  circle(center: Point, radius: Float)
+  polygon([Point])
+}
+
+struct Tree {
+  label: String
+  children: [Tree]
+}
+
+fn samePoint(a: Point, b: Point) -> Bool {
+  a == b
+}
+
+fn moved(a: Point, b: Point) -> Bool {
+  a != b
+}
+
+fn sameShape(a: Shape, b: Shape) -> Bool {
+  a == b
+}
+
+fn sameMaybe(a: Point?, b: Point?) -> Bool {
+  a == b
+}
+
+fn samePair(a: (Int, Point), b: (Int, Point)) -> Bool {
+  a == b
+}
+
+fn sameScores(a: [String: Int], b: [String: Int]) -> Bool {
+  a == b
+}
+
+fn sameResult(a: Result<Point, String>, b: Result<Point, String>) -> Bool {
+  a == b
+}
+
+fn sameTree(a: Tree, b: Tree) -> Bool {
+  a == b
+}
+
+/// An operand that is not a path is read once.
+fn isOrigin(p: Point) -> Bool {
+  p == Point(x: 0, y: 0)
+}
+
+// `x != none` tests presence, whatever `x` holds; `T == T?` compares as optionals.
+fn present(onPress: (() -> Unit)?) -> Bool {
+  onPress != none
+}
+
+fn sameId(a: Int, b: Int?) -> Bool {
+  a == b
+}
+
+fn samePointMaybe(a: Point, b: Point?) -> Bool {
+  a == b
+}

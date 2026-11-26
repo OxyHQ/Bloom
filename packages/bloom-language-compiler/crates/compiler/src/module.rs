@@ -70,13 +70,7 @@ pub enum Binding {
     MotionConst { at: usize, fades: bool },
 }
 
-/// The kind of a literal value, as an environment value's type is checked.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Literal {
-    Boolean,
-    Number,
-    String,
-}
+pub use crate::rules::Literal;
 
 impl Literal {
     /// The kind of `expression` when it is a boolean, number or string literal.
@@ -93,14 +87,6 @@ impl Literal {
                 Some(Self::Number)
             }
             _ => None,
-        }
-    }
-
-    pub fn name(self) -> &'static str {
-        match self {
-            Self::Boolean => "boolean",
-            Self::Number => "number",
-            Self::String => "string",
         }
     }
 }

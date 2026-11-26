@@ -1,0 +1,54 @@
+// Optional calls (`x?.m()`, `f?.()`) and spreads into rest parameters (`f(..xs)`).
+
+import { joinClasses } from "@/api"
+
+struct Box {
+  label: String
+  note: String?
+}
+
+// `?.` before a call: the call runs only when the receiver is not `none`.
+fn shout(b: Box?) -> String? {
+  b?.label.uppercased()
+}
+
+// A method JS has is `?.m()`; any other reads the receiver once.
+fn number(s: String?) -> Int? {
+  s?.toInt()
+}
+
+fn size(b: Box?) -> Int? {
+  b?.label.count
+}
+
+fn noted(b: Box?) -> String? {
+  b?.note?.trimmed()
+}
+
+fn run(f: (() -> Int)?) -> Int? {
+  f?.()
+}
+
+fn tap(f: ((Int) -> Unit)?) {
+  f?.(1)
+}
+
+// A rest parameter takes any number of its elements, or a list spread into it.
+fn total(base: Int, step: Int = 1, ..xs: [Int]) -> Int {
+  xs.reduce(base + step) { a, b in a + b }
+}
+
+fn totals(xs: [Int]) -> Int {
+  total(0) + total(1, 2, 3, 4) + total(1, ..xs) + total(1, 2, ..xs)
+}
+
+fn classes(names: [String]) -> String {
+  joinClasses("row", ..names)
+}
+
+fn more(names: [String]) -> String {
+  joinClasses("row", "dense", ..names)
+}
+
+// A trailing closure after `?.m`: `a?.m { … }` is `a?.m({ … })`.
+pub fn pages(data: { pages: [[String]] }?) -> [String] { data?.pages.flatMap { page in page } ?? [] }

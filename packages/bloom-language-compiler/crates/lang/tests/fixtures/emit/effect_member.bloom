@@ -1,0 +1,55 @@
+// `effect { … }`: synchronous work after a render, re-run when what it reads
+// changes; a `defer` at its top is its cleanup. `defer` in a `.task` also runs
+// when the task is cancelled.
+
+import { logger } from "@oxy.so/core/logger"
+
+pub view Ticker(label: String, step: Int = 1) {
+  @state count = 0
+  @state paused = false
+  @state seen = 0
+
+  // Its reads are its dependencies: `label` and `paused`.
+  effect {
+    if paused {
+      return
+    }
+    logger.info("watching ${label}")
+    defer {
+      logger.info("stopped ${label}")
+    }
+  }
+
+  // `id:` names what it re-runs for, in place of its reads.
+  effect(id: count) {
+    seen = count
+  }
+
+  // A tuple `id:` is its values, each a dependency: `[count, paused]`.
+  effect(id: (count, paused)) {
+    logger.info("changed")
+  }
+
+  // Two cleanups: the one set first runs last.
+  effect {
+    logger.info("a")
+    defer {
+      logger.info("a done")
+    }
+    logger.info("b ${step}")
+    defer {
+      logger.info("b done")
+    }
+  }
+
+  body {
+    Text("${label}: ${count}")
+      .task(id: (label, step)) {
+        defer {
+          logger.info("task over")
+        }
+        await sleep(1000)
+        count += step
+      }
+  }
+}

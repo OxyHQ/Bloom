@@ -1,0 +1,13 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function host(link: string): string;
+export declare function count(text: string): number;
+export declare function bare(host: string): string;
+export declare function spaced(text: string): string;
+export declare function isWww(host: string): boolean;
+export declare function digits(text: string): boolean;
+export declare function total(id: string): Promise<number>;
+export interface CountsProps {
+  readonly id: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Counts())`), or from TSX as `toElement(Counts())`. */
+export declare const Counts: (props: CountsProps) => ComposedView;

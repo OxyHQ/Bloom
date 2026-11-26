@@ -1,0 +1,63 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+function $index(index: number): number | undefined {
+  return index < 0 ? undefined : index;
+}
+
+interface Post {
+  readonly id: string;
+  readonly tags: readonly string[];
+  readonly likes: number;
+}
+
+function tags(posts: readonly Post[]): readonly string[] {
+return posts.flatMap((p: Post) => p.tags);
+}
+
+function liked(posts: readonly Post[]): boolean {
+return posts.some((p: Post) => p.likes > 0) && (!posts.every((p: Post) => (p.tags.length === 0)));
+}
+
+function page(posts: readonly Post[], at: number): readonly Post[] {
+return posts.slice(at, at + 10);
+}
+
+function place(ids: readonly string[], id: string): number {
+return $index(ids.indexOf(id)) ?? (-1);
+}
+
+function numbered(ids: readonly string[]): readonly string[] {
+return ids.map((id: string, i: number) => `${i + 1}. ${id}`);
+}
+
+function pairs(ids: readonly string[]): readonly (readonly [number, string])[] {
+return ids.map((x, i) => [i, x] as const);
+}
+
+function longest(ids: readonly string[]): number {
+let best = 0;
+for (const [i, id] of ids.entries()) {
+best = (id.length > best) ? i : best;
+}
+return best;
+}
+
+export interface RowsProps {
+  readonly ids: readonly string[];
+}
+export const Rows = view(function Rows(props: RowsProps) {
+"use no memo";
+const $ = $c(2);
+const { ids } = props;
+let $t0;
+if ($[0] !== ids) {
+$t0 = VStack(...ids.map((id, i) => Text(`${i}: ${id}`)));
+$[0] = ids;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

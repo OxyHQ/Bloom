@@ -14,7 +14,37 @@ impl Checker<'_> {
     pub(super) fn call(&mut self, expr: &Expr, call: &Call, expected: Option<&Ty>) -> Ty {
         let hook_allowed = std::mem::take(&mut self.hook_allowed);
         let task_allowed = std::mem::take(&mut self.task_allowed);
+        if call.optional {
+            // `f?.(…)`: the call of `f`'s value when it is not `none`.
+            let ty = self.expr(&call.callee, None);
+            let end = call.callee.span.end;
+            return match self.optional_target(&ty, call.callee.span, (Span::new(end, end + 2), "")) {
+                Some(inner) => {
+                    let ret = self.value_call(expr, call, &inner);
+                    self.rechain(expr, ret)
+                }
+                None => {
+                    let ty = self.resolve(&ty);
+                    self.value_call(expr, call, &ty)
+                }
+            };
+        }
         match &call.callee.kind {
+            ExprKind::OptField(object, member) => {
+                // `x?.m(…)`: the method of `x`'s value when it is not `none`.
+                let recv = self.expr(object, None);
+                let fix = (Span::new(member.span.start - 2, member.span.start), ".");
+                match self.optional_target(&recv, member.span, fix) {
+                    Some(inner) => {
+                        let ret = self.member_call(expr, call, &inner, member, object.span, false, true);
+                        self.rechain(expr, ret)
+                    }
+                    None => {
+                        let recv = self.resolve(&recv);
+                        self.member_call(expr, call, &recv, member, object.span, false, true)
+                    }
+                }
+            }
             ExprKind::Name(name) => {
                 if let Some(local) = self.lookup(name) {
                     self.out.names.insert(call.callee.id, NameRes::Local(local));
@@ -23,7 +53,9 @@ impl Checker<'_> {
                     return match &info.kind {
                         LocalKind::Component { props } => self.component_call(expr, call, props),
                         LocalKind::View => self.view_call(expr, call, &info.ty),
-                        LocalKind::Import { hook: true } => {
+                        LocalKind::Import { hook: true } | LocalKind::ModuleFn
+                            if !matches!(info.kind, LocalKind::ModuleFn) || super::is_hook_name(name) =>
+                        {
                             if !hook_allowed {
                                 self.report(
                                     Diagnostic::error(
@@ -32,7 +64,9 @@ impl Checker<'_> {
                                         format!("the hook `{name}` is called outside a view member"),
                                     )
                                     .label("a hook runs on every render, in the same order")
-                                    .help(format!("call it as a view member: `let value = {name}(…)`"))
+                                    .help(format!(
+                                        "call it as a view member (`let value = {name}(…)`), or at the top level of a hook function (`fn useX`)"
+                                    ))
                                     .spec("73-reactivity-compile-time"),
                                 );
                             }
@@ -43,13 +77,22 @@ impl Checker<'_> {
                         // An UpperCamel TS value Bloom could not type, used as a node, is a component.
                         LocalKind::Import { hook: false }
                             if matches!(self.resolve(&info.ty), Ty::Foreign(_))
-                                && name.starts_with(|c: char| c.is_ascii_uppercase()) =>
+                                && name.starts_with(|c: char| c.is_ascii_uppercase())
+                                && !self.out.constructors.contains(&local) =>
                         {
                             self.component_call(expr, call, &Ty::Foreign("".into()))
                         }
                         _ => {
                             let ty = self.instantiate(&info.ty);
-                            self.value_call(expr, call, &ty)
+                            let ret = self.value_call(expr, call, &ty);
+                            // `URL(x)` is `new URL(x)`: an instance, not what a call returns.
+                            match (&ret, self.out.constructors.contains(&local)) {
+                                (Ty::Foreign(text), true) => match text.strip_prefix("ReturnType<") {
+                                    Some(inner) => Ty::Foreign(format!("InstanceType<{inner}").into()),
+                                    None => ret,
+                                },
+                                _ => ret,
+                            }
                         }
                     };
                 }
@@ -64,14 +107,80 @@ impl Checker<'_> {
                             let hint = (index == 0 && arg.label.is_none()).then_some(Ty::Str);
                             self.boundary(&arg.value, hint.as_ref());
                         }
+                        if name == "navigate" {
+                            self.route(call);
+                        }
                         return if name == "toast" { Ty::Unit } else { Ty::Foreign("Navigation".into()) };
                     }
+                    "fail" => return self.fail(expr, call),
                     "sleep" => {
                         self.out.calls.insert(expr.id, CallRes::Sleep);
                         self.positional(call, &[Ty::Int]);
                         return Ty::Async(Box::new(Ty::Unit));
                     }
+                    "all" | "race" => return self.all_or_race(expr, call, name == "all"),
+                    "Map" | "Set" => return self.collection(expr, call, name == "Map", None, expected),
+                    "min" | "max" | "abs" | "round" | "floor" | "ceil" => return self.math(expr, call, name),
+                    "Int" | "Float" | "Double" => {
+                        // `Int(s)` / `Float(s)`: a string's number, or `none`.
+                        self.positional(call, &[Ty::Str]);
+                        let int = name == "Int";
+                        self.out.calls.insert(expr.id, CallRes::Parse { int });
+                        return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
+                    }
                     "Binding" => return self.binding_ctor(expr, call),
+                    "Regex" => {
+                        // `Regex("^www\\.", "g")`: a JS `RegExp`, for `replace`/`match` and its `test`.
+                        if call.args.is_empty() || call.args.len() > 2 || call.trailing.is_some() {
+                            self.report(
+                                Diagnostic::error(
+                                    "B0207",
+                                    call.callee.span,
+                                    "`Regex` takes a pattern and its flags",
+                                )
+                                .label("`Regex(\"…\")` or `Regex(\"…\", \"g\")`")
+                                .spec("12-standard-library-surface-draft"),
+                            );
+                        }
+                        for arg in &call.args {
+                            self.expr(&arg.value, Some(&Ty::Str));
+                        }
+                        self.out.calls.insert(expr.id, CallRes::Regex);
+                        return Ty::Foreign("RegExp".into());
+                    }
+                    "catching" => return self.catching(expr, call),
+                    // `import("./X")`: the module's promise, TS's to type.
+                    "import" if self.lookup("import").is_none() => {
+                        self.out.calls.insert(expr.id, CallRes::Ts);
+                        let spec = match call.args.as_slice() {
+                            [arg] if arg.label.is_none() => match &arg.value.kind {
+                                ExprKind::Str { parts, .. } => match parts.as_slice() {
+                                    [StrPart::Text(s)] => Some(s.clone()),
+                                    [] => Some(String::new()),
+                                    _ => None,
+                                },
+                                _ => None,
+                            },
+                            _ => None,
+                        };
+                        let Some(spec) = spec else {
+                            self.report(
+                                Diagnostic::error(
+                                    "B0207",
+                                    call.callee.span,
+                                    "`import(…)` takes one module path",
+                                )
+                                .label("a string literal")
+                                .spec("10-modules-and-interop"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Unknown;
+                        };
+                        self.boundary(&call.args[0].value, None);
+                        return Ty::Foreign(
+                            format!("Promise<typeof import({})>", crate::emit::string_literal(&spec)).into(),
+                        );
+                    }
                     _ => {}
                 }
                 if let Some(TypeName::Def(def)) = self.type_names.get(name).cloned() {
@@ -96,6 +205,13 @@ impl Checker<'_> {
                 self.unknown_name(call.callee.span, name);
                 self.args_unchecked(call);
                 Ty::Unknown
+            }
+            ExprKind::TypeApply { name, args } if matches!(name.name.as_str(), "Map" | "Set") => {
+                let ty = self.resolve_type(&TypeExpr {
+                    kind: TypeKind::Named { name: name.clone(), args: args.clone() },
+                    span: call.callee.span,
+                });
+                self.collection(expr, call, name.name == "Map", Some(ty), expected)
             }
             ExprKind::TypeApply { name, args } => {
                 let args: Vec<Ty> = args.iter().map(|a| self.resolve_type(a)).collect();
@@ -154,6 +270,14 @@ impl Checker<'_> {
                 if let Some((def, targs)) = case_def {
                     // `S.patch(field: v)` builds a `Partial<S>`.
                     if member.name == "patch" && matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
+                        if keyed(call) {
+                            let targs = if targs.is_empty() {
+                                (0..self.out.defs[def].generics.len()).map(|_| self.fresh()).collect()
+                            } else {
+                                targs
+                            };
+                            return self.keyed(expr, call, def, targs, true);
+                        }
                         return self.construct(expr, call, def, targs, expected, true);
                     }
                     return self.case_call(expr, call, def, member, targs, expected);
@@ -162,27 +286,12 @@ impl Checker<'_> {
                 self.task_allowed = task_allowed;
                 let recv = self.expr(object, None);
                 self.task_allowed = false;
-                let recv = self.resolve(&recv);
-                match &recv {
-                    Ty::View(kind) => self.modifier(expr, call, *kind, member, &recv, task_allowed),
-                    Ty::Adt(def, targs)
-                        if member.name == "with"
-                            && matches!(self.out.defs[*def].kind, DefKind::Struct(_)) =>
-                    {
-                        let (def, targs) = (*def, targs.clone());
-                        self.with_update(expr, call, def, targs)
-                    }
-                    Ty::Foreign(_) | Ty::Adt(..) => {
-                        let field = self.member(&call.callee, &recv, member, object.span);
-                        self.out.types.insert(call.callee.id, field.clone());
-                        self.value_call(expr, call, &field)
-                    }
-                    Ty::Unknown => {
-                        self.args_unchecked(call);
-                        Ty::Unknown
-                    }
-                    _ => self.method_call(expr, call, &recv, member),
+                if let Some(inner) = self.unchain(object, &recv) {
+                    let ret = self.member_call(expr, call, &inner, member, object.span, false, false);
+                    return self.rechain(expr, ret);
                 }
+                let recv = self.resolve(&recv);
+                self.member_call(expr, call, &recv, member, object.span, task_allowed, false)
             }
             ExprKind::ImplicitMember(name) => {
                 let target = match expected.map(|e| self.resolve(e)) {
@@ -213,6 +322,183 @@ impl Checker<'_> {
                 let ty = self.resolve(&ty);
                 self.value_call(expr, call, &ty)
             }
+        }
+    }
+
+    /// `recv.member(…)` once `recv` is typed; `optional`: written `recv?.member(…)`.
+    #[allow(clippy::too_many_arguments)]
+    fn member_call(
+        &mut self,
+        expr: &Expr,
+        call: &Call,
+        recv: &Ty,
+        member: &Ident,
+        object_span: Span,
+        task_allowed: bool,
+        optional: bool,
+    ) -> Ty {
+        match recv {
+            Ty::View(kind) if !optional => self.modifier(expr, call, *kind, member, recv, task_allowed),
+            Ty::Adt(def, targs)
+                if !optional
+                    && member.name == "with"
+                    && matches!(self.out.defs[*def].kind, DefKind::Struct(_)) =>
+            {
+                let (def, targs) = (*def, targs.clone());
+                self.with_update(expr, call, def, targs)
+            }
+            Ty::Foreign(_) | Ty::Adt(..) => {
+                let field = self.member(&call.callee, recv, member, object_span);
+                self.out.types.insert(call.callee.id, field.clone());
+                self.value_call(expr, call, &field)
+            }
+            Ty::Unknown => {
+                self.args_unchecked(call);
+                Ty::Unknown
+            }
+            _ => self.method_call(expr, call, recv, member),
+        }
+    }
+
+    /// What `?.` reaches: the value of an optional; `None` (reported) when `ty` is never `none`.
+    fn optional_target(&mut self, ty: &Ty, span: Span, fix: (Span, &str)) -> Option<Ty> {
+        match self.resolve(ty) {
+            Ty::Option(inner) => Some(self.resolve(&inner)),
+            Ty::Foreign(_) | Ty::Unknown => None,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        span,
+                        format!("`?.` reads an optional, and this is {}", self.show(&other)),
+                    )
+                    .label("never `none`")
+                    .help(if fix.1.is_empty() { "call it: `f(…)`" } else { "write `.`" })
+                    .fix(fix.0, fix.1)
+                    .spec("45-enums-option-and-result"),
+                );
+                None
+            }
+        }
+    }
+
+    /// `Map(entries)` / `Set(values)`, or empty: `Map()`, `Map<K, V>()`, typed by
+    /// what is expected when the type is not written.
+    fn collection(
+        &mut self,
+        expr: &Expr,
+        call: &Call,
+        map: bool,
+        written: Option<Ty>,
+        expected: Option<&Ty>,
+    ) -> Ty {
+        let ty = match written.or_else(|| expected.map(|e| self.resolve(e))) {
+            Some(Ty::Option(inner)) => self.resolve(&inner),
+            Some(ty @ (Ty::JsMap(..) | Ty::Set(_) | Ty::Unknown)) => ty,
+            _ if map => Ty::JsMap(Box::new(self.fresh()), Box::new(self.fresh())),
+            _ => Ty::Set(Box::new(self.fresh())),
+        };
+        let items = match &ty {
+            Ty::JsMap(k, v) => Ty::List(Box::new(Ty::Tuple(vec![(**k).clone(), (**v).clone()]))),
+            Ty::Set(t) => Ty::List(t.clone()),
+            _ => Ty::Unknown,
+        };
+        if call.args.len() > 1
+            || call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some() || a.spread)
+        {
+            let what = if map {
+                "`Map(entries)` takes one list of `(key, value)`"
+            } else {
+                "`Set(values)` takes one list"
+            };
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, what)
+                    .label("one positional argument, or none")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        if let Some(arg) = call.args.first() {
+            self.expr(&arg.value, Some(&items));
+        }
+        self.out.calls.insert(expr.id, CallRes::Collection(ty.clone()));
+        ty
+    }
+
+    /// `catching { … }`: runs the block; its value is `ok`, and what TS code in it threw is
+    /// `err` (an `Error`). The block is inlined, so it cannot `return`.
+    fn catching(&mut self, expr: &Expr, call: &Call) -> Ty {
+        let Some(block) = call.trailing.as_deref().filter(|c| c.params.is_empty() && call.args.is_empty())
+        else {
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, "`catching` takes a block: `catching { … }`")
+                    .label("a trailing block, no arguments")
+                    .spec("12-standard-library-surface-draft"),
+            );
+            self.args_unchecked(call);
+            return Ty::Unknown;
+        };
+        if let Some(ret) = block.body.iter().find(|s| matches!(s.kind, StmtKind::Return(_))) {
+            self.report(
+                Diagnostic::error("B0207", ret.span, "`return` inside `catching { … }`")
+                    .label("the block's last line is its value")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        self.closure_throws = true;
+        let ty = self.closure(block, None, false);
+        self.out.calls.insert(expr.id, CallRes::Catching);
+        let value = match self.resolve(&ty) {
+            Ty::Fn(f) => f.ret.clone(),
+            _ => Ty::Unknown,
+        };
+        Ty::Result(Box::new(value), Box::new(Ty::JsError))
+    }
+
+    /// `min(a, b, …)`, `max`, `abs(x)`, `round`, `floor`, `ceil`: the prelude's numbers.
+    fn math(&mut self, expr: &Expr, call: &Call, name: &str) -> Ty {
+        let name: &'static str = match name {
+            "min" => "min",
+            "max" => "max",
+            "abs" => "abs",
+            "round" => "round",
+            "floor" => "floor",
+            _ => "ceil",
+        };
+        let many = matches!(name, "min" | "max");
+        if call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some())
+            || (!many && call.args.len() != 1)
+            || (many && call.args.len() < 2 && !call.args.iter().any(|a| a.spread))
+        {
+            let what = if many {
+                format!("`{name}` takes two or more numbers (or `..xs`)")
+            } else {
+                format!("`{name}` takes one number")
+            };
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, what)
+                    .label("its arguments")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        let mut ty = Ty::Int;
+        for arg in &call.args {
+            let t = self.expr(&arg.value, None);
+            let t = match self.resolve(&t) {
+                Ty::List(e) if arg.spread => self.resolve(&e),
+                other => other,
+            };
+            match t {
+                Ty::Float => ty = Ty::Float,
+                Ty::Int | Ty::Unknown => {}
+                other => self.operand_error(arg.value.span, &format!("`{name}`"), &other),
+            }
+        }
+        self.out.calls.insert(expr.id, CallRes::Math(name));
+        match name {
+            "round" | "floor" | "ceil" => Ty::Int,
+            _ => ty,
         }
     }
 
@@ -252,6 +538,27 @@ impl Checker<'_> {
         }
     }
 
+    /// `fail(e)`: throws `e` from a closure TS calls (or `catching { … }`'s block),
+    /// where a thrown error is how TS hears of it. Elsewhere a failure is a value.
+    fn fail(&mut self, expr: &Expr, call: &Call) -> Ty {
+        self.out.calls.insert(expr.id, CallRes::Fail);
+        self.positional(call, &[Ty::JsError]);
+        if !self.frames.last().is_some_and(|f| f.throws) {
+            let ret = self.frames.last().map(|f| self.resolve(&f.ret));
+            let help = match ret {
+                Some(Ty::Result(..)) => "return the error: `return err(e)`".to_string(),
+                _ => "return a `Result` and `return err(e)`; only a closure TS calls throws".to_string(),
+            };
+            self.report(
+                Diagnostic::error("B0222", expr.span, "`fail(e)` throws, and nothing here catches a throw")
+                    .label("not a closure TS calls, nor `catching { … }`")
+                    .help(help)
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        Ty::Never
+    }
+
     /// Calling a value of type `ty`: a Bloom function, a TS function, or a foreign value.
     fn value_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         match self.resolve(ty) {
@@ -260,8 +567,8 @@ impl Checker<'_> {
                 f.ret.clone()
             }
             Ty::Fn(f) => {
-                let order = self.bloom_args(call, &f);
-                self.out.calls.insert(expr.id, CallRes::Bloom { order });
+                let (order, rest) = self.bloom_args(call, &f, false);
+                self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
             }
             Ty::Foreign(text) => {
@@ -296,20 +603,32 @@ impl Checker<'_> {
 
     /// Named arguments in any order after the positional ones (spec 5);
     /// a trailing closure is the next parameter that takes a function.
-    fn bloom_args(&mut self, call: &Call, f: &FnTy) -> Vec<Option<usize>> {
+    /// `props`: a view's call, where `..r` spreads a record's fields as its props (JSX's
+    /// `{...r}`); a later prop of the same name wins.
+    fn bloom_args(&mut self, call: &Call, f: &FnTy, props: bool) -> (Vec<Option<usize>>, Vec<usize>) {
         let mut order: Vec<Option<usize>> = vec![None; f.params.len()];
+        let mut spread_given = vec![false; f.params.len()];
+        let mut rest = Vec::new();
+        let rest_slot = f.params.last().filter(|p| p.rest).map(|_| f.params.len() - 1);
         let mut next = 0;
         for (index, arg) in call.args.iter().enumerate() {
+            if props && arg.spread && arg.label.is_none() {
+                self.spread_arg(arg, f, index, &mut order, &mut spread_given);
+                continue;
+            }
+            // Positional arguments past the others go to the rest parameter.
+            if arg.label.is_none()
+                && let Some(slot) = rest_slot
+                && (arg.spread || (next..slot).all(|i| order[i].is_some()))
+            {
+                let element = f.params[slot].ty.clone();
+                self.rest_arg(arg, &element, false);
+                rest.push(index);
+                next = slot;
+                continue;
+            }
             if arg.spread {
-                self.report(
-                    Diagnostic::error(
-                        "B0207",
-                        arg.span,
-                        "`..` spreads a struct into a construction, not a call",
-                    )
-                    .label("not a struct construction")
-                    .spec("44-structs"),
-                );
+                self.spread_not_rest(arg);
                 continue;
             }
             let slot = match &arg.label {
@@ -346,7 +665,7 @@ impl Checker<'_> {
                     while next < order.len() && order[next].is_some() {
                         next += 1;
                     }
-                    if next >= order.len() {
+                    if next >= rest_slot.unwrap_or(order.len()) {
                         self.report(
                             Diagnostic::error(
                                 "B0207",
@@ -364,7 +683,7 @@ impl Checker<'_> {
                     next
                 }
             };
-            if order[slot].is_some() {
+            if order[slot].is_some() && !std::mem::take(&mut spread_given[slot]) {
                 self.report(
                     Diagnostic::error("B0207", arg.span, "this parameter is given twice")
                         .label("already given")
@@ -403,7 +722,7 @@ impl Checker<'_> {
             .params
             .iter()
             .zip(&order)
-            .filter(|(p, given)| given.is_none() && !p.optional)
+            .filter(|(p, given)| given.is_none() && !p.optional && !p.rest)
             .map(|(p, _)| format!("`{}`", p.name.clone().unwrap_or_default()))
             .collect();
         if !missing.is_empty() {
@@ -415,7 +734,86 @@ impl Checker<'_> {
                     .spec("5-values-functions-and-closures"),
             );
         }
-        order
+        (order, rest)
+    }
+
+    /// `..r` among a view's props: each of the record's fields a prop takes, checked
+    /// against it; the record may have more.
+    fn spread_arg(
+        &mut self,
+        arg: &Arg,
+        f: &FnTy,
+        index: usize,
+        order: &mut [Option<usize>],
+        spread_given: &mut [bool],
+    ) {
+        let ty = self.expr(&arg.value, None);
+        let fields = match self.resolve(&ty) {
+            Ty::Adt(def, targs) if matches!(self.out.defs[def].kind, DefKind::Struct(_)) => self.out.defs
+                [def]
+                .fields()
+                .iter()
+                .map(|field| (field.name.clone(), substitute(&field.ty, &targs)))
+                .collect::<Vec<_>>(),
+            Ty::Unknown => return,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0207",
+                        arg.span,
+                        format!(
+                            "`..` spreads a record's fields as props, and {} is not one",
+                            self.show(&other)
+                        ),
+                    )
+                    .label("not a struct or record")
+                    .spec("71-views-and-state"),
+                );
+                return;
+            }
+        };
+        for (name, field) in fields {
+            let Some(slot) = f.params.iter().position(|p| p.name.as_deref() == Some(name.as_str())) else {
+                continue;
+            };
+            let param = f.params[slot].ty.clone();
+            if !self.coerce(&field, &param) {
+                self.mismatch(arg.span, &field, &param);
+            }
+            order[slot] = Some(index);
+            spread_given[slot] = true;
+        }
+    }
+
+    /// An argument a rest parameter of `element`s takes: one element, or `..xs` of a list of them.
+    fn rest_arg(&mut self, arg: &Arg, element: &Ty, ts: bool) {
+        let list;
+        let ty = if arg.spread {
+            list = Ty::List(Box::new(element.clone()));
+            &list
+        } else {
+            element
+        };
+        if ts {
+            self.boundary(&arg.value, Some(ty));
+        } else {
+            self.expr(&arg.value, Some(ty));
+        }
+    }
+
+    /// `..value` where no rest parameter takes it.
+    fn spread_not_rest(&mut self, arg: &Arg) {
+        self.report(
+            Diagnostic::error(
+                "B0207",
+                arg.span,
+                "`..` spreads a list into a rest parameter, and none is here",
+            )
+            .label("no rest parameter takes it")
+            .help("a struct spreads into a construction: `S(..s, field: v)`")
+            .spec("5-values-functions-and-closures"),
+        );
+        self.boundary(&arg.value, None);
     }
 
     /// A TS function: positional arguments in order (a rest parameter takes the
@@ -430,6 +828,19 @@ impl Checker<'_> {
                 .params
                 .get(slot.min(f.params.len().saturating_sub(1)))
                 .filter(|p| slot < f.params.len() || p.rest);
+            if arg.spread {
+                // `..xs` fills the rest parameter; the ones before it are given or optional.
+                let rest = f.params.iter().position(|p| p.rest).filter(|&r| r >= slot);
+                match rest {
+                    Some(r) => {
+                        let element = f.params[r].ty.clone();
+                        self.rest_arg(arg, &element, true);
+                        slot = r;
+                    }
+                    None => self.spread_not_rest(arg),
+                }
+                continue;
+            }
             match param {
                 Some(param) => {
                     let ty = param.ty.clone();
@@ -508,6 +919,7 @@ impl Checker<'_> {
         }
         if let Some(trailing) = &call.trailing {
             let ty = f.params.get(slot).map(|p| p.ty.clone());
+            self.closure_throws = true;
             let closure = self.closure(
                 trailing,
                 ty.as_ref().filter(|t| matches!(self.resolve(t), Ty::Fn(_))),
@@ -537,6 +949,117 @@ impl Checker<'_> {
                 .spec("5-values-functions-and-closures"),
             );
         }
+    }
+
+    /// `{ key: value, ..spread }`: a struct's construction when a struct (or a patch of
+    /// one) is expected; a TS value's object when a TS type is; else a record of its own
+    /// type, its fields' types inferred.
+    pub(super) fn record_literal(
+        &mut self,
+        expr: &Expr,
+        entries: &[RecordEntry],
+        expected: Option<&Ty>,
+    ) -> Ty {
+        let target = match expected.map(|e| self.resolve(e)) {
+            Some(Ty::Option(inner)) => Some(self.resolve(&inner)),
+            target => target,
+        };
+        let is_struct = |this: &Self, def: DefId| matches!(this.out.defs[def].kind, DefKind::Struct(_));
+        match &target {
+            Some(Ty::Adt(def, args)) if is_struct(self, *def) => {
+                let call = record_call(expr.span, entries);
+                return self.construct(expr, &call, *def, args.clone(), target.as_ref(), false);
+            }
+            Some(Ty::Partial(inner)) => {
+                if let Ty::Adt(def, args) = self.resolve(inner)
+                    && is_struct(self, def)
+                {
+                    let call = record_call(expr.span, entries);
+                    return self.construct(expr, &call, def, args, target.as_ref(), true);
+                }
+            }
+            // `{ k: v }` where a `[String: V]` is expected: a dictionary literal, each value a `V`.
+            Some(Ty::Map(value)) => {
+                let value = (**value).clone();
+                let map = Ty::Map(Box::new(value.clone()));
+                let mut keys: Vec<&str> = Vec::new();
+                for entry in entries {
+                    match entry {
+                        RecordEntry::Field { key, value: v } => {
+                            if keys.contains(&key.name.as_str()) {
+                                self.report(
+                                    Diagnostic::error(
+                                        "B0208",
+                                        key.span,
+                                        format!("`{}` is given twice", key.name),
+                                    )
+                                    .label("a record has each key once")
+                                    .spec("44-structs"),
+                                );
+                            }
+                            keys.push(&key.name);
+                            self.expr(v, Some(&value));
+                        }
+                        RecordEntry::Spread(v) => {
+                            self.expr(v, Some(&map));
+                        }
+                    }
+                }
+                return map;
+            }
+            _ => {}
+        }
+        let mut fields: Vec<FieldDef> = Vec::new();
+        for entry in entries {
+            match entry {
+                RecordEntry::Field { key, value } => {
+                    if fields.iter().any(|f| f.name == key.name) {
+                        self.report(
+                            Diagnostic::error("B0208", key.span, format!("`{}` is given twice", key.name))
+                                .label("a record has each key once")
+                                .spec("44-structs"),
+                        );
+                    }
+                    let ty = self.boundary(value, None);
+                    fields.retain(|f| f.name != key.name);
+                    fields.push(FieldDef { name: key.name.clone(), ty, default: FieldDefault::None });
+                }
+                RecordEntry::Spread(value) => {
+                    let ty = self.expr(value, None);
+                    match self.resolve(&ty) {
+                        Ty::Adt(def, args) if is_struct(self, def) => {
+                            for field in self.out.defs[def].fields().to_vec() {
+                                fields.retain(|f| f.name != field.name);
+                                let ty = substitute(&field.ty, &args);
+                                fields.push(FieldDef { name: field.name, ty, default: FieldDefault::None });
+                            }
+                        }
+                        Ty::Foreign(_) | Ty::Unknown => {}
+                        other => self.report(
+                            Diagnostic::error(
+                                "B0205",
+                                value.span,
+                                format!("cannot spread {} into a record", self.show(&other)),
+                            )
+                            .label("not a record")
+                            .help("spread a struct or a record: `..base`")
+                            .spec("44-structs"),
+                        ),
+                    }
+                }
+            }
+        }
+        if let Some(foreign @ Ty::Foreign(_)) = target {
+            return foreign;
+        }
+        let ty = self.record_type(fields);
+        if let Some(target) = &target {
+            let fits = self.coerce(&ty, target);
+            if !fits {
+                self.mismatch(expr.span, &ty, target);
+            }
+        }
+        ty
     }
 
     /// `S(field: v, ..spread)`; `partial`: `Partial<S>(…)`, every field optional.
@@ -673,7 +1196,20 @@ impl Checker<'_> {
         if partial { Ty::Partial(Box::new(ty)) } else { ty }
     }
 
+    /// `S.patch(key, value)` and `s.with(key, value)`: one field, named by a key path.
+    fn keyed(&mut self, expr: &Expr, call: &Call, def: DefId, targs: Vec<Ty>, partial: bool) -> Ty {
+        let ty = Ty::Adt(def, targs);
+        let value = self.fresh();
+        self.expr(&call.args[0].value, Some(&Ty::KeyPath(Box::new(ty.clone()), Box::new(value.clone()))));
+        self.expr(&call.args[1].value, Some(&value));
+        self.out.calls.insert(expr.id, CallRes::Keyed { partial });
+        if partial { Ty::Partial(Box::new(ty)) } else { ty }
+    }
+
     fn with_update(&mut self, expr: &Expr, call: &Call, def: DefId, targs: Vec<Ty>) -> Ty {
+        if keyed(call) {
+            return self.keyed(expr, call, def, targs, false);
+        }
         let fields = self.out.defs[def].fields().to_vec();
         let ty = Ty::Adt(def, targs.clone());
         for arg in &call.args {
@@ -823,7 +1359,96 @@ impl Checker<'_> {
         Ty::Binding(Box::new(value))
     }
 
-    /// A node constructor: positional arguments; a trailing closure is its children.
+    /// `navigate("/path", param: v)`: a path written out names a route of the app's
+    /// `app/` tree, and a route's parameters are given by name, each a string or a number.
+    fn route(&mut self, call: &Call) {
+        let Some(first) = call.args.first().filter(|arg| arg.label.is_none()) else { return };
+        let ExprKind::Str { parts, .. } = &first.value.kind else { return };
+        if parts.iter().any(|part| matches!(part, StrPart::Interp(_))) {
+            return;
+        }
+        let path = super::plain_text(parts);
+        if !path.starts_with('/') {
+            return;
+        }
+        let Some(routes) = crate::routes::routes(self.options) else { return };
+        self.out.dependencies.extend(routes.folders.iter().map(|(folder, _)| folder.clone()));
+        let Some(pattern) = crate::routes::find(&routes, &path) else {
+            let help = match closest(&path, routes.patterns.iter().map(String::as_str)) {
+                Some(near) => format!("did you mean `{near}`?"),
+                None => format!("the app's routes: {}", routes.patterns.join(", ")),
+            };
+            self.report(
+                Diagnostic::error("B0701", first.value.span, format!("no route `{path}` in the app"))
+                    .label("not a file of `app/`")
+                    .help(help)
+                    .spec("9-navigation"),
+            );
+            return;
+        };
+        // A pattern written out (`/posts/[id]`) takes its parameters by name.
+        let wanted: Vec<&str> = if path.split(['?', '#']).next().unwrap_or_default().contains('[') {
+            crate::routes::params(pattern)
+        } else {
+            Vec::new()
+        };
+        for arg in call.args.iter().skip(1) {
+            let Some(label) = &arg.label else { continue };
+            if !wanted.contains(&label.name.as_str()) {
+                let help = if wanted.is_empty() {
+                    format!("`{pattern}` takes no parameters here")
+                } else {
+                    format!("its parameters: {}", wanted.join(", "))
+                };
+                self.report(
+                    Diagnostic::error(
+                        "B0702",
+                        label.span,
+                        format!("`{pattern}` has no parameter `{}`", label.name),
+                    )
+                    .label("not a parameter of this route")
+                    .help(help)
+                    .spec("9-navigation"),
+                );
+                continue;
+            }
+            let ty = self.out.types.get(&arg.value.id).cloned().unwrap_or(Ty::Unknown);
+            if !matches!(
+                self.resolve(&ty),
+                Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Float | Ty::Foreign(_) | Ty::Unknown
+            ) {
+                self.report(
+                    Diagnostic::error(
+                        "B0702",
+                        arg.value.span,
+                        format!("a route parameter is a string or a number, not {}", self.show(&ty)),
+                    )
+                    .label("in the path")
+                    .help("pass the field the route names (`id: post.id`)")
+                    .spec("9-navigation"),
+                );
+            }
+        }
+        let given: Vec<&str> =
+            call.args.iter().filter_map(|a| a.label.as_ref()).map(|l| l.name.as_str()).collect();
+        let missing: Vec<String> =
+            wanted.iter().filter(|p| !given.contains(p)).map(|p| format!("`{p}`")).collect();
+        if !missing.is_empty() {
+            self.report(
+                Diagnostic::error(
+                    "B0702",
+                    first.value.span,
+                    format!("`{pattern}` needs {}", missing.join(", ")),
+                )
+                .label("a parameter of the route is not given")
+                .help(format!("navigate(\"{pattern}\", {}: …)", wanted[0]))
+                .spec("9-navigation"),
+            );
+        }
+    }
+
+    /// A node constructor: positional arguments, checked against the
+    /// constructor's signature (`spec::SIGNATURES`); a trailing closure is its children.
     fn node_call(&mut self, expr: &Expr, call: &Call, kind: &'static str) -> Ty {
         let ExprKind::Name(name) = &call.callee.kind else { unreachable!("a node is called by name") };
         let ctor = ui::node(kind)
@@ -831,7 +1456,10 @@ impl Checker<'_> {
             .copied()
             .unwrap_or("Embed");
         self.out.calls.insert(expr.id, CallRes::Node(ctor));
-        for arg in &call.args {
+        let params = ui::signature(ctor);
+        self.node_arity(call, ctor, kind, params);
+        let fixed: Vec<&str> = params.iter().filter(|p| !p.starts_with("...")).copied().collect();
+        for (index, arg) in call.args.iter().enumerate() {
             if let Some(label) = &arg.label {
                 self.report(
                     Diagnostic::error(
@@ -848,7 +1476,8 @@ impl Checker<'_> {
                     .docs(ui::node_docs(kind)),
                 );
             }
-            self.node_arg(&arg.value);
+            let param = fixed.get(index).map_or("...", |p| p.trim_end_matches('?'));
+            self.node_arg(&arg.value, param);
         }
         if let Some(trailing) = &call.trailing {
             self.builder_closure(trailing);
@@ -856,11 +1485,57 @@ impl Checker<'_> {
         Ty::View(Some(kind))
     }
 
-    /// A node's argument: TypeScript checks it against the node's signature
-    /// (constructor signatures are not in the spec tables yet), Bloom checks the value.
-    fn node_arg(&mut self, value: &Expr) {
-        let ty = self.boundary(value, None);
-        if let Ty::Option(inner) = self.resolve(&ty)
+    /// A node takes as many arguments (a builder's lines among them) as its signature has.
+    fn node_arity(&mut self, call: &Call, ctor: &str, kind: &'static str, params: &[&str]) {
+        let rest = params.iter().any(|p| p.starts_with("..."));
+        let fixed = params.iter().filter(|p| !p.starts_with("...")).count();
+        let required = params.iter().filter(|p| !p.starts_with("...") && !p.ends_with('?')).count();
+        let lines = call.trailing.as_ref().map_or(0, |trailing| {
+            trailing.body.iter().filter(|stmt| !matches!(stmt.kind, StmtKind::Let(_))).count()
+        });
+        let count = call.args.len() + lines;
+        if count >= required && (rest || count <= fixed) {
+            return;
+        }
+        let expected = match (rest, required == fixed) {
+            (true, _) => format!("at least {required}"),
+            (false, true) => required.to_string(),
+            (false, false) => format!("{required} to {fixed}"),
+        };
+        // Past the signature: the first argument too many; short of it: the node's name.
+        let span =
+            call.args.get(fixed).filter(|_| count > fixed).map_or(call.callee.span, |extra| extra.span);
+        self.report(
+            Diagnostic::error("B0503", span, format!("`{ctor}` takes {expected} argument(s), not {count}"))
+                .label("wrong number of arguments")
+                .help(format!("write `{ctor}({})`: a parameter marked ? is optional", params.join(", ")))
+                .docs(ui::node_docs(kind)),
+        );
+    }
+
+    /// A node's argument: a primitive its signature names is checked here; any
+    /// other value TypeScript checks against the constructor on the emitted code.
+    fn node_arg(&mut self, value: &Expr, param: &str) {
+        let expected = match param {
+            "string" => Some(Ty::Str),
+            "number" => Some(Ty::Float),
+            "boolean" => Some(Ty::Bool),
+            _ => None,
+        };
+        let ty = self.boundary(value, expected.as_ref());
+        if param == "binding" && !matches!(self.resolve(&ty), Ty::Binding(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.report(
+                Diagnostic::error("B0201", value.span, format!("{} is not a binding", self.show(&ty)))
+                    .label("this node reads and writes the value")
+                    .help("pass a binding: `$name`, or `Binding(get: …, set: …)`")
+                    .spec("72-builders-modifiers-and-tokens"),
+            );
+            return;
+        }
+        // A `value` is TypeScript's to check: its declaration may take `undefined`
+        // (`SettingsSection(label: string | undefined, …)`).
+        if param != "value"
+            && let Ty::Option(inner) = self.resolve(&ty)
             && !matches!(self.resolve(&inner), Ty::View(_))
         {
             self.report(
@@ -897,7 +1572,14 @@ impl Checker<'_> {
             _ => None,
         };
         let mut given = Vec::new();
+        let mut spread = false;
         for arg in &call.args {
+            // `..r`: JSX's `{...r}`, its fields as props (tsc checks them).
+            if arg.spread && arg.label.is_none() {
+                spread = true;
+                self.boundary(&arg.value, None);
+                continue;
+            }
             let Some(label) = &arg.label else {
                 self.report(
                     Diagnostic::error("B0207", arg.span, "a component takes its props by name")
@@ -916,9 +1598,13 @@ impl Checker<'_> {
             if ty.is_none() && fields.is_some() {
                 self.unknown_field(label, &props);
             }
+            // `ref: input` gives a TS component the `@ref` itself, as `.ref(input)` gives a node.
+            let ref_object = label.name == "ref" && matches!(arg.value.kind, ExprKind::Name(_));
+            self.ref_object = ref_object;
             self.boundary(&arg.value, ty.as_ref());
+            self.ref_object = false;
         }
-        if let Some(fields) = &fields {
+        if let Some(fields) = fields.as_ref().filter(|_| !spread) {
             let missing: Vec<String> = fields
                 .iter()
                 .filter(|f| {
@@ -947,8 +1633,12 @@ impl Checker<'_> {
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         let Ty::Fn(f) = ty else { return Ty::Unknown };
         let params: Vec<String> = f.params.iter().filter_map(|p| p.name.clone()).collect();
-        self.bloom_args(call, f);
-        self.out.calls.insert(expr.id, CallRes::View { params });
+        let (order, _) = self.bloom_args(call, f, true);
+        let trailing = order
+            .iter()
+            .position(|o| *o == Some(call.args.len()))
+            .and_then(|slot| f.params[slot].name.clone());
+        self.out.calls.insert(expr.id, CallRes::View { params, trailing });
         Ty::View(Some("view"))
     }
 
@@ -965,6 +1655,20 @@ impl Checker<'_> {
     ) -> Ty {
         if name.name == "task" {
             return self.task(expr, call, name, recv, task_allowed);
+        }
+        // `.ref(x)`, `.inputRef(x)`: the `@ref` itself, for the node to fill.
+        if (name.name == "ref" || name.name.ends_with("Ref"))
+            && let [arg] = call.args.as_slice()
+            && matches!(arg.value.kind, ExprKind::Name(_))
+        {
+            self.ref_object = true;
+            self.boundary(&arg.value, None);
+            self.ref_object = false;
+            self.out.calls.insert(expr.id, CallRes::Modifier { object: false });
+            return recv.clone();
+        }
+        if name.name == "onChange" {
+            return self.on_change(expr, call, name, recv, task_allowed);
         }
         let kind = kind.unwrap_or("view");
         let Some(spec) = ui::node(kind) else { return recv.clone() };
@@ -1127,6 +1831,18 @@ impl Checker<'_> {
             return;
         }
         let expected = Ty::Strings(set.clone());
+        // A set whose TS type also takes a boolean (`HitTesting`, `Condition | boolean`).
+        if ui::takes_bool(&set.name) && !matches!(value.kind, ExprKind::Str { .. }) {
+            let ty = self.boundary(value, None);
+            let ty = match self.resolve(&ty) {
+                Ty::Option(inner) => self.resolve(&inner),
+                other => other,
+            };
+            if matches!(ty, Ty::Bool | Ty::Foreign(_) | Ty::Unknown) {
+                return;
+            }
+            self.out.types.remove(&value.id);
+        }
         if let ExprKind::Str { parts, .. } = &value.kind
             && parts.iter().all(|p| matches!(p, StrPart::Text(_)))
         {
@@ -1205,11 +1921,154 @@ impl Checker<'_> {
         recv.clone()
     }
 
+    /// `.onChange(of: value) { old, new in … }` on the body's root: runs after
+    /// `value` changes (compared as `==` does), not on the first render.
+    fn on_change(&mut self, expr: &Expr, call: &Call, name: &Ident, recv: &Ty, allowed: bool) -> Ty {
+        if !allowed {
+            self.report(
+                Diagnostic::error("B0431", name.span, "`.onChange` goes on the body's root view")
+                    .label("an effect belongs to the view that runs it")
+                    .help("move it to the end of the body's outermost chain")
+                    .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        let value = match call.args.as_slice() {
+            [arg] if arg.label.as_ref().is_some_and(|l| l.name == "of") => self.expr(&arg.value, None),
+            _ => {
+                let at = call.args.first().map_or(name.span, |a| a.span);
+                self.report(
+                    Diagnostic::error("B0207", at, "`.onChange` takes the value it watches as `of:`")
+                        .label("not `of: value`")
+                        .help("write `.onChange(of: value) { old, new in … }`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                );
+                self.args_unchecked(call);
+                Ty::Unknown
+            }
+        };
+        let value = self.zonk(&value);
+        if let super::Equality::None(part) = super::equality(&self.out.defs, &value) {
+            self.report(
+                Diagnostic::error(
+                    "B0210",
+                    call.args[0].value.span,
+                    format!("`.onChange` compares values, and {} has no equality", self.show(&part)),
+                )
+                .label("cannot tell whether it changed")
+                .help("watch what it holds (a field, an id) instead")
+                .spec("43-soundness-rules"),
+            );
+        }
+        match &call.trailing {
+            Some(trailing) => {
+                let params = match trailing.params.len() {
+                    0 => Vec::new(),
+                    2 => vec![value.clone(), value.clone()],
+                    _ => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0207",
+                                trailing.span,
+                                "`.onChange` gives the old and the new value",
+                            )
+                            .label("one parameter")
+                            .help("write `{ old, new in … }`, or `{ … }` without parameters")
+                            .spec("8-effects-tasks-and-concurrency"),
+                        );
+                        vec![value.clone(); trailing.params.len()]
+                    }
+                };
+                let params = params
+                    .into_iter()
+                    .map(|ty| ParamTy { name: None, ty, optional: false, rest: false })
+                    .collect();
+                let handler =
+                    Ty::Fn(Rc::new(FnTy { params, ret: Ty::Unit, is_async: false, generics: 0, ts: false }));
+                self.closure(trailing, Some(&handler), false);
+            }
+            None => self.report(
+                Diagnostic::error("B0207", name.span, "`.onChange` needs the work to run")
+                    .label("no closure")
+                    .help("write `.onChange(of: value) { old, new in … }`")
+                    .spec("8-effects-tasks-and-concurrency"),
+            ),
+        }
+        self.out.calls.insert(expr.id, CallRes::OnChange(value));
+        recv.clone()
+    }
+
+    /// `all(a(), b())`: both results, as a tuple; `race(a(), b())`: the first.
+    /// Each is a pending Bloom call or a TS promise; with a promise among them
+    /// the whole is a promise (awaiting it gives a `Result`).
+    fn all_or_race(&mut self, expr: &Expr, call: &Call, all: bool) -> Ty {
+        let word = if all { "all" } else { "race" };
+        if call.args.len() < 2
+            || call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some() || a.spread)
+        {
+            self.report(
+                Diagnostic::error(
+                    "B0207",
+                    call.callee.span,
+                    format!("`{word}` takes two or more pending calls"),
+                )
+                .label("in order, without labels")
+                .help(format!("write `await {word}(loadA(), loadB())`"))
+                .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
+        let mut promise = false;
+        let mut results = Vec::new();
+        let raced = self.fresh();
+        for arg in &call.args {
+            let ty = self.expr(&arg.value, None);
+            let result = match self.resolve(&ty) {
+                Ty::Async(t) => *t,
+                Ty::Promise(t) => {
+                    promise = true;
+                    *t
+                }
+                Ty::Foreign(text) => {
+                    promise = true;
+                    Ty::Foreign(format!("Awaited<{text}>").into())
+                }
+                Ty::Unknown => Ty::Unknown,
+                other => {
+                    self.report(
+                        Diagnostic::error(
+                            "B0215",
+                            arg.value.span,
+                            format!("`{word}` waits for pending calls, and this is {}", self.show(&other)),
+                        )
+                        .label("nothing to wait for")
+                        .help("pass the call itself, without `await`: `all(loadA(), loadB())`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                    );
+                    Ty::Unknown
+                }
+            };
+            if !all && !self.unify(&raced, &result) {
+                self.mismatch(arg.value.span, &result, &raced);
+            }
+            results.push(result);
+        }
+        self.out.calls.insert(expr.id, if all { CallRes::All } else { CallRes::Race });
+        let value = if all { Ty::Tuple(results) } else { raced };
+        if promise { Ty::Promise(Box::new(value)) } else { Ty::Async(Box::new(value)) }
+    }
+
     fn method_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, name: &Ident) -> Ty {
         let Some((recv_kind, method, params, ret)) = self.method_sig(recv, &name.name) else {
             let methods = method_names(recv);
-            let help =
-                closest(&name.name, methods.iter().copied()).map(|near| format!("did you mean `.{near}`?"));
+            let optional = match recv {
+                Ty::Option(inner) => method_names(&self.resolve(inner)).contains(&name.name.as_str()),
+                _ => false,
+            };
+            let help = if optional {
+                Some(format!("it may be `none`: write `?.{}`", name.name))
+            } else {
+                closest(&name.name, methods.iter().copied()).map(|near| format!("did you mean `.{near}`?"))
+            };
             self.report(
                 Diagnostic::error(
                     "B0209",
@@ -1252,7 +2111,12 @@ impl Checker<'_> {
                     "contains" | "startsWith" | "endsWith" => (vec![Ty::Str], Ty::Bool),
                     "lowercased" | "uppercased" | "trimmed" => (vec![], Ty::Str),
                     "split" => (vec![Ty::Str], list(Ty::Str)),
-                    "replace" => (vec![Ty::Str, Ty::Str], Ty::Str),
+                    // A pattern is a string (every match) or a JS `RegExp` (as JS's `replace`).
+                    "replace" => (vec![Ty::Foreign("string | RegExp".into()), Ty::Str], Ty::Str),
+                    "match" => (
+                        vec![Ty::Foreign("string | RegExp".into())],
+                        Ty::Foreign("RegExpMatchArray | null".into()),
+                    ),
                     "toInt" => (vec![], opt(Ty::Int)),
                     _ => (vec![], opt(Ty::Float)),
                 };
@@ -1274,6 +2138,11 @@ impl Checker<'_> {
                 let u = self.fresh();
                 let (params, ret) = match name {
                     "map" => (vec![f(vec![t.clone()], u.clone())], list(u)),
+                    "flatMap" => (vec![f(vec![t.clone()], list(u.clone()))], list(u)),
+                    "any" | "all" => (vec![f(vec![t.clone()], Ty::Bool)], Ty::Bool),
+                    "slice" => (vec![Ty::Int, Ty::Int], list(t)),
+                    "indexOf" => (vec![t.clone()], opt(Ty::Int)),
+                    "enumerated" => (vec![], list(Ty::Tuple(vec![Ty::Int, t.clone()]))),
                     "filter" => (vec![f(vec![t.clone()], Ty::Bool)], list(t)),
                     "compactMap" => (vec![f(vec![t.clone()], opt(u.clone()))], list(u)),
                     "reduce" => (vec![u.clone(), f(vec![u.clone(), t.clone()], u.clone())], u),
@@ -1297,6 +2166,25 @@ impl Checker<'_> {
                     _ => (vec![Ty::Str], Ty::Map(Box::new(v))),
                 };
                 (Recv::Map, name, params, ret)
+            }
+            Ty::JsMap(key, value) => {
+                let (k, v) = ((**key).clone(), (**value).clone());
+                let map = Ty::JsMap(key.clone(), value.clone());
+                let (params, ret) = match name {
+                    "get" => (vec![k], opt(v)),
+                    "contains" => (vec![k], Ty::Bool),
+                    "setting" => (vec![k, v], map),
+                    _ => (vec![k], map),
+                };
+                (Recv::JsMap, name, params, ret)
+            }
+            Ty::Set(elem) => {
+                let t = (**elem).clone();
+                let (params, ret) = match name {
+                    "contains" => (vec![t], Ty::Bool),
+                    _ => (vec![t], Ty::Set(elem.clone())),
+                };
+                (Recv::Set, name, params, ret)
             }
             Ty::Option(inner) => {
                 let t = (**inner).clone();
@@ -1336,11 +2224,12 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "trimmed",
             "split",
             "replace",
+            "match",
             "toInt",
             "toFloat",
         ],
-        Ty::Int => vec!["toFloat", "abs", "min", "max", "clamp"],
-        Ty::Float => vec!["rounded", "floor", "ceil", "truncated", "abs", "min", "max", "clamp"],
+        Ty::Int => vec!["toFloat", "abs", "min", "max", "clamp", "clamped"],
+        Ty::Float => vec!["rounded", "floor", "ceil", "truncated", "abs", "min", "max", "clamp", "clamped"],
         Ty::List(_) => vec![
             "map",
             "filter",
@@ -1357,12 +2246,28 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "inserting",
             "removing",
             "joined",
+            "flatMap",
+            "any",
+            "all",
+            "slice",
+            "indexOf",
+            "enumerated",
         ],
         Ty::Map(_) => vec!["setting", "removing"],
+        Ty::JsMap(..) => vec!["get", "contains", "setting", "removing"],
+        Ty::Set(_) => vec!["contains", "inserting", "removing"],
         Ty::Option(_) => vec!["map", "unwrapOr"],
         Ty::Result(..) => vec!["map", "mapErr", "unwrapOr", "ok"],
         _ => Vec::new(),
     }
+}
+
+/// `(key, value)`: two arguments without labels, the first of them a key path
+/// or not a field's value (a struct's fields are otherwise named).
+fn keyed(call: &Call) -> bool {
+    call.trailing.is_none()
+        && call.args.len() == 2
+        && call.args.iter().all(|a| a.label.is_none() && !a.spread)
 }
 
 /// A number written out (`16`, `-8`) where a token goes.

@@ -1,0 +1,36 @@
+// The prelude's numbers, in place of JS globals: `min`, `max`, `abs`, `round`,
+// `floor`, `ceil`, `.clamped(a, b)`, and `Int(s)` / `Float(s)`, which may be `none`.
+// Any other JS global is imported by name from "js"; TypeScript types it.
+
+import { Date, encodeURIComponent, JSON } from "js"
+
+fn fit(width: Float, columns: Int, widths: [Int]) -> Int {
+  let cell = floor(width / columns.toFloat())
+  max(min(cell, 320), 80, ..widths) + abs(-2) + round(width) + ceil(1.5)
+}
+
+fn parsed(text: String) -> Int {
+  (Int(text) ?? 0).clamped(0, 99)
+}
+
+fn ratio(text: String) -> Float {
+  Float(text) ?? 1.0
+}
+
+fn query(text: String) -> String {
+  let encoded: String = encodeURIComponent(text)
+  let payload: String = JSON.stringify(text)
+  "q=${encoded}&b=${payload}"
+}
+
+// A JS class from "js" is built by a call (`new Date(at)`); `Foreign<"…">` writes a TS
+// type out for TS to check.
+fn stamp(at: Int) -> String {
+  let date: Foreign<"Date"> = Date(at)
+  let text: String = date.toISOString()
+  text
+}
+
+fn delay(timer: Foreign<"ReturnType<typeof setTimeout>">?) -> Bool {
+  timer != none
+}

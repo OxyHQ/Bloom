@@ -1,0 +1,17 @@
+error[B0420]: the hook `useTop` is called outside a view member
+  --> check/hook_module.bloom:12:15
+   |
+12 |     let top = useTop()
+   |               ^^^^^^ a hook runs on every render, in the same order
+   |
+help: call it as a view member (`let value = useTop(…)`), or at the top level of a hook function (`fn useX`)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0420]: the hook `useTop` is called outside a view member
+  --> check/hook_module.bloom:17:23
+   |
+17 | fn plain() -> Float { useTop() }
+   |                       ^^^^^^ a hook runs on every render, in the same order
+   |
+help: call it as a view member (`let value = useTop(…)`), or at the top level of a hook function (`fn useX`)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time

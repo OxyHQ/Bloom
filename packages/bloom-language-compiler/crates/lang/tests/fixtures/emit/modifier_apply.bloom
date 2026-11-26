@@ -1,0 +1,29 @@
+// `.modifier(m)`: a defineModifier recipe applied with no further arguments.
+import { card } from "@/components/modifiers"
+
+pub view Panel {
+  body { Text("x").modifier(card) }
+}
+
+// A modifier value taken as a prop: `ViewModifier`, the language's class, is a type.
+import { type ViewModifier } from "@oxy.so/bloom-language"
+
+view Styled(look: ViewModifier? = none) {
+  body { Text("y").modifier(look ?? card) }
+}
+
+// `defineModifier { v in … }` in `.bloom`: its view is a `View` (TS's `V extends
+// ViewModifiers<V>`), and the recipe is a value to pass on.
+import { defineModifier } from "@oxy.so/bloom-language"
+
+let framed = defineModifier { v in v.padding("md").background("card") }
+let tagged = defineModifier { v: View in v.padding("horizontal", "xs") }
+
+pub view Framed(look: ViewModifier? = none) {
+  body {
+    VStack {
+      Text("a").modifier(look ?? framed)
+      Text("b").modifier(tagged)
+    }
+  }
+}

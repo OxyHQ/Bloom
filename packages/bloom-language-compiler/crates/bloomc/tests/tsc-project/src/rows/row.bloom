@@ -1,0 +1,7 @@
+import { greeting } from "../when"
+
+pub view Row(name: String) {
+  body {
+    Text(greeting(name))
+  }
+}

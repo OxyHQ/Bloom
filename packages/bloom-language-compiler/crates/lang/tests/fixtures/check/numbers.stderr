@@ -1,0 +1,43 @@
+error[B0201]: expected `Int`, found `Float`
+ --> check/numbers.bloom:4:38
+  |
+4 | pub fn a(x: Float) -> Int { count(n: x) }
+  |                                      ^ this is `Float`
+  |
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `Int`, found `Float`
+ --> check/numbers.bloom:6:41
+  |
+6 | pub fn b(i: Int, x: Float) -> Int { i + x }
+  |                                         ^ this is `Float`
+  |
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `Int`, found `Float`
+ --> check/numbers.bloom:6:37
+  |
+6 | pub fn b(i: Int, x: Float) -> Int { i + x }
+  |                                     ^^^^^ this is `Float`
+  |
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `[Int]`, found `[Float]`
+ --> check/numbers.bloom:8:34
+  |
+8 | pub fn c(xs: [Float]) -> [Int] { xs }
+  |                                  ^^ this is `[Float]`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `String`, found `String?`
+  --> check/numbers.bloom:19:8
+   |
+19 |   size(h.name)
+   |        ^^^^^^ this is `String?`
+   |
+help: it may be `none`: unwrap it with `?? fallback`, `if let value = …`, `?.` or `match`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

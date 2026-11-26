@@ -1,0 +1,39 @@
+// Spread props held to their types.
+
+import { type PostCardProps } from "@/types/post"
+
+enum Tone {
+  calm
+  loud
+}
+
+view Bad(..Tone) {
+  body {
+    Text("x")
+  }
+}
+
+view Card(..PostCardProps) {
+  body {
+    Text(title)
+  }
+}
+
+view Uses {
+  body {
+    VStack {
+      Card(title: 1, likes: 2)
+      Card(likes: 2)
+    }
+  }
+}
+
+// `..r` into a view's props: the record's fields held to the props they fill.
+view Spreads(xs: [String], r: { title: Int, likes: Int }) {
+  body {
+    VStack {
+      Card(..xs)
+      Card(..r)
+    }
+  }
+}
