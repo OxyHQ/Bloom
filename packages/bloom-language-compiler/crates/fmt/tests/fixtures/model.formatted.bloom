@@ -1,0 +1,31 @@
+/// Model 1: an item, its load state and the logic over them.
+pub struct Item1 {
+  id: String
+  title: String
+  note: String = ""
+  count: Int = 0
+  pinned: Bool = false
+}
+
+pub enum Status1 {
+  idle
+  loading
+  failed(message: String)
+  ready(count: Int)
+}
+
+pub fn label1(status: Status1) -> String {
+  match status {
+    case .idle => "Idle"
+    case .loading => "Loading"
+    case .failed(message) => "Failed: ${message}"
+    case .ready(count) => "${count} ready"
+  }
+}
+
+pub fn score1(items: [Item1]) -> Int {
+  let pinned = items.filter { it in it.pinned }
+  pinned.count * 3 + items.count
+}
+
+pub fn rename1(item: Item1, title: String) -> Item1 { item.with(title: title.trimmed()) }

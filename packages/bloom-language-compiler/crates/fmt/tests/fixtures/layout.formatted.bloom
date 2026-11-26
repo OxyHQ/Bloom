@@ -1,0 +1,66 @@
+import * as Alpha from "./alpha.bloom"
+import { zeta, type Zed } from "./zeta.bloom"
+import { useTranslation } from "react-i18next"
+
+pub fn total(
+  items: [Int],
+  scale: Float,
+  offset: Int,
+  label: String,
+  verbose: Bool,
+  extra: [String: Int],
+) -> Int {
+  let sum = items.reduce(0) { acc, n in acc + n }
+  let flagged = verbose &&
+    label.count > 10 &&
+    items.count > 100 &&
+    offset > 0 &&
+    scale.rounded() > 2 &&
+    sum > 0
+  var running = 0
+  while running < 10 { running += 1 }
+  for (i, n) in items { running = running + n * i }
+  let pair = (sum, running)
+  let table = [:]
+  let ids = ["a", "b", "c"]
+  let weights = ["a": 1, "b": 2]
+  if let first = items.first { return first } else if flagged { return -1 } else { return sum }
+}
+
+pub default view Long(items: [String]) {
+  let { t } = useTranslation()
+  @state query: String = ""
+  let shown = items
+    .filter { it in it.contains(query) }
+    .map { it in it.uppercased() }
+    .sorted(by: { a, b in a < b })
+
+  body {
+    VStack {
+      Text(
+        t(
+          "a.very.long.translation.key.that.goes.on",
+          defaultValue: "A default value that is long too",
+        ),
+      )
+      .font("headline")
+      .foreground("muted")
+      .lines(2)
+      HStack {
+        Text("a")
+        Text("b")
+      }
+      .spacing("sm")
+      for item in shown { Text(item) }
+      if query.isEmpty { Text("Nothing") } else { Text("Something") }
+    }
+    .spacing("md")
+    .padding("lg")
+  }
+}
+
+async fn persist(value: Int) -> Unit {
+  defer { log("done") }
+  task { await store(value) }
+  ()
+}

@@ -1,0 +1,9 @@
+import { greeting } from "@/greeting"
+
+pub view Hello(name: String) {
+  let line: String = greeting(name)
+
+  body {
+    Text(line)
+  }
+}

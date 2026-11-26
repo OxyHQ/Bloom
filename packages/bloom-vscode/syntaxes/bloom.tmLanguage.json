@@ -1,0 +1,317 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Bloom",
+  "scopeName": "source.bloom",
+  "fileTypes": ["bloom"],
+  "patterns": [{ "include": "#code" }],
+  "repository": {
+    "code": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#declarations" },
+        { "include": "#attributes" },
+        { "include": "#case-arm" },
+        { "include": "#named-argument" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#numbers" },
+        { "include": "#binding" },
+        { "include": "#enum-member" },
+        { "include": "#modifier-call" },
+        { "include": "#member" },
+        { "include": "#types" },
+        { "include": "#function-call" },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#parens" },
+        { "include": "#brackets" },
+        { "include": "#braces" }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.documentation.bloom",
+          "match": "(///)(?!/).*$",
+          "captures": { "1": { "name": "punctuation.definition.comment.bloom" } }
+        },
+        {
+          "name": "comment.line.double-slash.bloom",
+          "match": "(//).*$",
+          "captures": { "1": { "name": "punctuation.definition.comment.bloom" } }
+        },
+        { "include": "#block-comment" }
+      ]
+    },
+    "block-comment": {
+      "name": "comment.block.bloom",
+      "begin": "/\\*",
+      "end": "\\*/",
+      "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.comment.end.bloom" } },
+      "patterns": [{ "include": "#block-comment" }]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.bloom",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.bloom" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.string.end.bloom" } },
+          "patterns": [{ "include": "#string-escape" }, { "include": "#interpolation" }]
+        },
+        {
+          "name": "string.quoted.double.bloom",
+          "begin": "\"",
+          "end": "\"|$",
+          "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.bloom" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.string.end.bloom" } },
+          "patterns": [{ "include": "#string-escape" }, { "include": "#interpolation" }]
+        }
+      ]
+    },
+    "string-escape": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.unicode.bloom",
+          "match": "\\\\u\\{[0-9A-Fa-f]{1,6}\\}"
+        },
+        { "name": "constant.character.escape.bloom", "match": "\\\\[nt\"\\\\$]" },
+        { "name": "invalid.illegal.escape.bloom", "match": "\\\\." }
+      ]
+    },
+    "interpolation": {
+      "name": "meta.interpolation.bloom",
+      "contentName": "meta.embedded.line.bloom",
+      "begin": "\\$\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.section.interpolation.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.section.interpolation.end.bloom" } },
+      "patterns": [{ "include": "#code" }]
+    },
+    "token-string": {
+      "comment": "A token passed to a modifier: one word of a token set, with an optional /opacity (\"md\", \"primary/10\").",
+      "match": "(\")([a-z0-9][a-z0-9-]*(?:/[0-9]{1,3})?)(\")",
+      "name": "string.quoted.double.bloom",
+      "captures": {
+        "1": { "name": "punctuation.definition.string.begin.bloom" },
+        "2": { "name": "constant.other.token.bloom" },
+        "3": { "name": "punctuation.definition.string.end.bloom" }
+      }
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(struct|enum|type)\\s+([A-Z][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.$1.bloom" },
+            "2": { "name": "entity.name.type.$1.bloom" }
+          }
+        },
+        {
+          "match": "\\b(view|screen|layout)\\s+([A-Z][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.$1.bloom" },
+            "2": { "name": "entity.name.type.view.bloom" }
+          }
+        },
+        {
+          "match": "\\b(fn)\\s+([a-zA-Z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.function.bloom" },
+            "2": { "name": "entity.name.function.bloom" }
+          }
+        },
+        {
+          "match": "\\b(let|var)\\s+([a-zA-Z_][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "storage.type.$1.bloom" },
+            "2": { "name": "variable.other.declaration.bloom" }
+          }
+        },
+        {
+          "match": "\\b(body)\\s*(?=\\{)",
+          "captures": { "1": { "name": "keyword.other.body.bloom" } }
+        }
+      ]
+    },
+    "attributes": {
+      "match": "(@)(state|list|record|env)\\b",
+      "name": "storage.modifier.attribute.bloom",
+      "captures": { "1": { "name": "punctuation.definition.attribute.bloom" } }
+    },
+    "case-arm": {
+      "match": "\\b(case)\\s+(?:([A-Z][A-Za-z0-9_]*)\\s*)?(\\.)([a-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.control.case.bloom" },
+        "2": { "name": "entity.name.type.bloom" },
+        "3": { "name": "punctuation.accessor.bloom" },
+        "4": { "name": "variable.other.enummember.bloom" }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.bloom",
+          "match": "\\b(if|else|match|case|for|in|while|return|await|defer|task)\\b"
+        },
+        { "name": "keyword.control.import.bloom", "match": "\\b(import|from|as)\\b" },
+        {
+          "name": "storage.modifier.bloom",
+          "match": "\\b(pub|default|async)\\b"
+        },
+        {
+          "name": "storage.type.bloom",
+          "match": "\\b(let|var|fn|struct|enum|type|view|screen|layout)\\b"
+        },
+        { "name": "keyword.other.body.bloom", "match": "\\bbody\\b" }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        { "name": "constant.language.boolean.bloom", "match": "\\b(true|false)\\b" },
+        { "name": "constant.language.none.bloom", "match": "\\bnone\\b" },
+        { "name": "variable.language.wildcard.bloom", "match": "\\b_\\b" }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.bloom", "match": "\\b0x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*\\b" },
+        {
+          "name": "constant.numeric.float.bloom",
+          "match": "\\b[0-9](?:_?[0-9])*(?:\\.[0-9](?:_?[0-9])*(?:[eE][+-]?[0-9]+)?|[eE][+-]?[0-9]+)\\b"
+        },
+        { "name": "constant.numeric.integer.bloom", "match": "\\b[0-9](?:_?[0-9])*\\b" }
+      ]
+    },
+    "binding": {
+      "match": "(\\$)([a-zA-Z_][A-Za-z0-9_]*)",
+      "name": "variable.other.binding.bloom",
+      "captures": { "1": { "name": "punctuation.definition.binding.bloom" } }
+    },
+    "modifier-call": {
+      "comment": "`.name(` on a view: its arguments may be token strings.",
+      "begin": "(\\.)([a-z_][A-Za-z0-9_]*)\\s*(\\()",
+      "end": "\\)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.accessor.bloom" },
+        "2": { "name": "entity.name.function.modifier.bloom" },
+        "3": { "name": "punctuation.section.arguments.begin.bloom" }
+      },
+      "endCaptures": { "0": { "name": "punctuation.section.arguments.end.bloom" } },
+      "patterns": [{ "include": "#token-string" }, { "include": "#code" }]
+    },
+    "enum-member": {
+      "patterns": [
+        {
+          "comment": "A qualified case: `Load.ready`.",
+          "match": "\\b([A-Z][A-Za-z0-9_]*)(\\.)([a-z_][A-Za-z0-9_]*)\\b(?!\\s*\\()",
+          "captures": {
+            "1": { "name": "entity.name.type.bloom" },
+            "2": { "name": "punctuation.accessor.bloom" },
+            "3": { "name": "variable.other.enummember.bloom" }
+          }
+        },
+        {
+          "comment": "An implicit case where a value is expected: `= .loading`, `(.ready(x))`.",
+          "match": "(?<=[=(,:?]|=>|\\breturn)\\s*(\\.)([a-z_][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "punctuation.accessor.bloom" },
+            "2": { "name": "variable.other.enummember.bloom" }
+          }
+        }
+      ]
+    },
+    "member": {
+      "patterns": [
+        {
+          "comment": "A modifier or method taking only a trailing closure: `.onPress {`.",
+          "match": "(\\??\\.)([a-z_][A-Za-z0-9_]*)(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.bloom" },
+            "2": { "name": "entity.name.function.modifier.bloom" }
+          }
+        },
+        {
+          "match": "(\\??\\.)([a-zA-Z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.bloom" },
+            "2": { "name": "variable.other.property.bloom" }
+          }
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.bloom",
+          "match": "\\b(Int|Float|Bool|String|Unit|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error)\\b"
+        },
+        { "name": "entity.name.type.bloom", "match": "\\b[A-Z][A-Za-z0-9_]*\\b" }
+      ]
+    },
+    "function-call": {
+      "match": "\\b([a-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": { "1": { "name": "entity.name.function.call.bloom" } }
+    },
+    "named-argument": {
+      "comment": "`label:` in an argument list or parameter, never `::`.",
+      "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
+      "captures": {
+        "1": { "name": "variable.parameter.bloom" },
+        "2": { "name": "punctuation.separator.colon.bloom" }
+      }
+    },
+    "operators": {
+      "patterns": [
+        { "name": "keyword.operator.arrow.bloom", "match": "=>|->" },
+        { "name": "keyword.operator.spread.bloom", "match": "\\.\\." },
+        { "name": "keyword.operator.optional.bloom", "match": "\\?\\?|\\?" },
+        { "name": "keyword.operator.logical.bloom", "match": "&&|\\|\\||!(?!=)" },
+        { "name": "keyword.operator.comparison.bloom", "match": "==|!=|<=|>=|<|>" },
+        { "name": "keyword.operator.assignment.compound.bloom", "match": "\\+=|-=|\\*=" },
+        { "name": "keyword.operator.assignment.bloom", "match": "=" },
+        { "name": "keyword.operator.arithmetic.bloom", "match": "[+\\-*/%]" },
+        { "name": "keyword.operator.pattern.bloom", "match": "\\|" }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.separator.comma.bloom", "match": "," },
+        { "name": "punctuation.terminator.statement.bloom", "match": ";" },
+        { "name": "punctuation.separator.colon.bloom", "match": ":" }
+      ]
+    },
+    "parens": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.section.parens.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.section.parens.end.bloom" } },
+      "patterns": [{ "include": "#code" }]
+    },
+    "brackets": {
+      "begin": "\\[",
+      "end": "\\]",
+      "beginCaptures": { "0": { "name": "punctuation.section.brackets.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.section.brackets.end.bloom" } },
+      "patterns": [{ "include": "#code" }]
+    },
+    "braces": {
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.section.block.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.section.block.end.bloom" } },
+      "patterns": [{ "include": "#closure-params" }, { "include": "#code" }]
+    },
+    "closure-params": {
+      "comment": "`{ old, new in` at the start of a closure.",
+      "match": "\\G\\s*([a-z_][A-Za-z0-9_]*(?:\\s*,\\s*[a-z_][A-Za-z0-9_]*)*)\\s+(in)\\b",
+      "captures": {
+        "1": { "name": "variable.parameter.closure.bloom" },
+        "2": { "name": "keyword.control.in.bloom" }
+      }
+    }
+  }
+}

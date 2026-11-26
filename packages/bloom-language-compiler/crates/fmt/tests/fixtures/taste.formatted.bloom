@@ -1,0 +1,45 @@
+import { useTranslation } from "react-i18next"
+
+enum Load<T> {
+  loading
+  failed(message: String)
+  ready(T)
+}
+
+struct Draft {
+  text: String = ""
+  sensitive: Bool = false
+}
+
+pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, String>) {
+  let { t } = useTranslation()
+  @state draft = Draft()
+  @state sending = false
+
+  let left = maxLength - draft.text.count // derived, recomputed only when draft changes
+  let canSend = !sending && left >= 0 && !draft.text.isEmpty
+
+  async fn send() {
+    sending = true
+    match await onSend(draft) {
+      case .ok(_) => draft = Draft()
+      case .err(message) => toast(message, type: "error")
+    }
+    sending = false
+  }
+
+  body {
+    VStack {
+      TextField($draft.text, t("compose.placeholder"))
+      HStack {
+        Toggle($draft.sensitive).label(t("compose.sensitive"))
+        Spacer()
+        Text("${left}").foreground(left < 0 ? "error" : "muted")
+        Button(Text(t("compose.send"))).disabled(!canSend).onPress { await send() }
+      }
+      .spacing("sm")
+    }
+    .spacing("md")
+    .padding("lg")
+  }
+}

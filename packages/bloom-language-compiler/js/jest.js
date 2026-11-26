@@ -1,18 +1,25 @@
 const crypto = require('node:crypto');
 
-const { compileModule } = require('./compile');
+const { compileBloomModule, compileModule, hostFilename, isBloomFile } = require('./compile');
 const { digest } = require('./native');
 
 /**
- * A Jest transformer that compiles Bloom chains, then hands the module to the
- * transformer it wraps (`babel-jest` by default) unchanged in every other way:
+ * A Jest transformer that compiles Bloom chains and `.bloom` modules, then
+ * hands the module to the transformer it wraps (`babel-jest` by default):
  *
  * ```js
- * transform: { '\\.[jt]sx?$': ['@oxy.so/bloom-language-compiler/jest', { upstream: [babelJest, babelOptions] }] }
+ * moduleFileExtensions: ['bloom', 'tsx', 'ts', 'js', 'json'],
+ * transform: {
+ *   '\\.(bloom|[jt]sx?)$': ['@oxy.so/bloom-language-compiler/jest', { upstream: ['babel-jest', babelOptions] }],
+ * },
  * ```
  *
- * Stack traces point into the compiled module, whose hoisted declarations
- * shift lines below them; Metro's adapter composes source maps, this one does not.
+ * A `.bloom` module reaches the upstream transformer as the TypeScript it
+ * compiles to, named `<file>.bloom.ts` so Babel's TypeScript preset parses
+ * it, with the compiler's source map inline: Babel composes it into its own
+ * (`inputSourceMap`), so a stack trace from a `.bloom` handler names the
+ * `.bloom` file and line. A `.tsx` module's hoisted declarations still shift
+ * lines below them (its map is not composed here; Metro's adapter composes it).
  */
 function createTransformer(options = {}) {
   const [upstreamPath, upstreamOptions] = options.upstream ?? ['babel-jest', {}];
@@ -21,7 +28,24 @@ function createTransformer(options = {}) {
   const upstream = upstreamModule.createTransformer
     ? upstreamModule.createTransformer(upstreamOptions)
     : upstreamModule;
-  const compiled = (source, filename) => compileModule(source, filename)?.code ?? source;
+
+  /**
+   * What the upstream transformer gets: the module's code and the name it
+   * parses it by. A `.bloom` module's TS imports resolve from the project's
+   * root (Jest's `rootDir`: its tsconfig's `paths`, `node_modules`).
+   */
+  const prepared = (source, filename, transformOptions) => {
+    if (!isBloomFile(filename)) {
+      return { code: compileModule(source, filename)?.code ?? source, filename };
+    }
+    const root = transformOptions?.config?.rootDir;
+    const { code, map } = compileBloomModule(source, filename, root ? { root } : {});
+    const inline = map
+      ? `\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(map).toString('base64')}\n`
+      : '';
+    return { code: code + inline, filename: hostFilename(filename) };
+  };
+
   return {
     canInstrument: upstream.canInstrument,
     getCacheKey(source, filename, transformOptions) {
@@ -31,13 +55,14 @@ function createTransformer(options = {}) {
       return crypto.createHash('sha1').update(`${key}$bloom-language$${digest}`).digest('hex');
     },
     process(source, filename, transformOptions) {
-      return upstream.process(compiled(source, filename), filename, transformOptions);
+      const module = prepared(source, filename, transformOptions);
+      return upstream.process(module.code, module.filename, transformOptions);
     },
     async processAsync(source, filename, transformOptions) {
-      const code = compiled(source, filename);
+      const module = prepared(source, filename, transformOptions);
       return upstream.processAsync
-        ? upstream.processAsync(code, filename, transformOptions)
-        : upstream.process(code, filename, transformOptions);
+        ? upstream.processAsync(module.code, module.filename, transformOptions)
+        : upstream.process(module.code, module.filename, transformOptions);
     },
   };
 }

@@ -15,6 +15,9 @@
     "./compile": "./js/compile.js",
     "./package.json": "./package.json"
   },
+  "bin": {
+    "bloom-lang-dts": "./js/dts.js"
+  },
   "files": [
     "js",
     "LICENSE"
@@ -27,7 +30,8 @@
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
     "generate:platforms": "napi create-npm-dirs --npm-dir npm && for dir in npm/*/; do cp LICENSE \"$dir\"; done",
-    "pack:prebuilt": "node scripts/pack-prebuilt.mjs"
+    "pack:prebuilt": "node scripts/pack-prebuilt.mjs",
+    "pack:local": "node scripts/pack-local.mjs"
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "0.3.31"
@@ -38,11 +42,13 @@
   "packageManager": "bun@1.4.3",
   "devDependencies": {
     "@babel/core": "7.29.7",
+    "@babel/plugin-transform-modules-commonjs": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
     "@emnapi/core": "2.0.0-beta.3",
     "@emnapi/runtime": "2.0.0-beta.3",
     "@napi-rs/cli": "3.10.12",
     "@napi-rs/wasm-runtime": "1.2.7",
+    "babel-jest": "30.5.2",
     "babel-plugin-react-compiler": "1.0.0",
     "emnapi": "2.0.0-beta.3"
   },

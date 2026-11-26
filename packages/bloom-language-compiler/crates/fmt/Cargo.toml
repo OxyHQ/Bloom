@@ -1,0 +1,9 @@
+[package]
+name = "bloom_fmt"
+version = "0.0.0"
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+bloom_lang = { path = "../lang" }

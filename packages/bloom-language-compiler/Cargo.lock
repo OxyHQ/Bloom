@@ -31,6 +31,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
 
 [[package]]
+name = "bloom_fmt"
+version = "0.0.0"
+dependencies = [
+ "bloom_lang",
+]
+
+[[package]]
 name = "bloom_lang"
 version = "0.0.0"
 dependencies = [
@@ -60,10 +67,21 @@ dependencies = [
 name = "bloom_language_compiler_node"
 version = "0.0.0"
 dependencies = [
+ "bloom_fmt",
+ "bloom_lang",
  "bloom_language_compiler",
  "napi",
  "napi-build",
  "napi-derive",
+]
+
+[[package]]
+name = "bloomc"
+version = "0.0.0"
+dependencies = [
+ "bloom_fmt",
+ "bloom_lang",
+ "bloom_language_compiler",
 ]
 
 [[package]]

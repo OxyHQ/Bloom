@@ -1,0 +1,56 @@
+{
+  "name": "bloom-vscode",
+  "displayName": "Bloom",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bloom language (.bloom) support for VS Code: syntax highlighting, and diagnostics and hover from bloomc lsp.",
+  "license": "SEE LICENSE IN LICENSE",
+  "publisher": "oxy",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "bloom",
+        "aliases": [
+          "Bloom",
+          "bloom"
+        ],
+        "extensions": [
+          ".bloom"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bloom",
+        "scopeName": "source.bloom",
+        "path": "./syntaxes/bloom.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Bloom",
+      "properties": {
+        "bloom.bloomcPath": {
+          "type": "string",
+          "default": "bloomc",
+          "description": "The bloomc binary the language server runs as `bloomc lsp`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "vscode-oniguruma": "2.0.1",
+    "vscode-textmate": "9.3.2"
+  }
+}

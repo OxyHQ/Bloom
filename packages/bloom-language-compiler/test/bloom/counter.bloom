@@ -1,0 +1,18 @@
+/// A view with state, a derived value and a handler: the cost gate's first case.
+pub view Counter(step: Int = 1) {
+  @state count = 0
+
+  let label = "Count ${count}"
+
+  fn add() {
+    count += step
+  }
+
+  body {
+    VStack {
+      Text(label)
+      Button(Text("Add")).onPress { add() }
+    }
+    .spacing("md")
+  }
+}
