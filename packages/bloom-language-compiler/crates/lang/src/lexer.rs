@@ -223,6 +223,7 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::Lt
                 | P::Le
                 | P::Ge
                 | P::Comma
@@ -820,6 +821,8 @@ mod tests {
     #[test]
     fn operators_continue_lines() {
         assert_eq!(kinds("a &&\nb\nc\n  || d"), ["a", "&&", "b", "NL", "c", "||", "d", "NL", "EOF"]);
+        // `<` ends a line that goes on; `>` may close a type's arguments, so it starts one.
+        assert_eq!(kinds("a <\nb\nc\n  > d"), ["a", "<", "b", "NL", "c", ">", "d", "NL", "EOF"]);
         // A `-` starting a line is a new statement.
         assert_eq!(kinds("a\n-b"), ["a", "NL", "-", "b", "NL", "EOF"]);
     }

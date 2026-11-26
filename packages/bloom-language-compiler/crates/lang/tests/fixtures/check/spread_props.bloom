@@ -27,3 +27,13 @@ view Uses {
     }
   }
 }
+
+// `..r` into a view's props: the record's fields held to the props they fill.
+view Spreads(xs: [String], r: { title: Int, likes: Int }) {
+  body {
+    VStack {
+      Card(..xs)
+      Card(..r)
+    }
+  }
+}

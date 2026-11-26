@@ -1,4 +1,8 @@
 import type { ComposedView } from "@oxy.so/bloom-language";
+interface Badge {
+  readonly text: string;
+  readonly tone: string;
+}
 export interface PostCardViewProps {
   readonly title: string;
   readonly likes: number;
@@ -19,3 +23,9 @@ export interface PostShellProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostShell())`), or from TSX as `toElement(PostShell())`. */
 export declare const PostShell: (props: PostShellProps) => ComposedView;
+export interface BadgesProps {
+  readonly badge: Badge;
+  readonly extra: { text: string; more: number };
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Badges())`), or from TSX as `toElement(Badges())`. */
+export declare const Badges: (props: BadgesProps) => ComposedView;

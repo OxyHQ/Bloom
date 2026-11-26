@@ -32,3 +32,12 @@ error[B0201]: expected `[Int]`, found `[Float]`
   |                                  ^^ this is `[Float]`
   |
   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `String`, found `String?`
+  --> check/numbers.bloom:19:8
+   |
+19 |   size(h.name)
+   |        ^^^^^^ this is `String?`
+   |
+help: it may be `none`: unwrap it with `?? fallback`, `if let value = …`, `?.` or `match`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

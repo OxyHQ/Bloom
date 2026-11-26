@@ -1,7 +1,7 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
 import { GroupedSectionItem, Text, VStack, view } from "@oxy.so/bloom-language";
-import { useInsets, useMods } from "@/hooks/useInsets";
+import { useInsets, useList, useMods } from "@/hooks/useInsets";
 
 const OFFSET = 4;
 
@@ -85,5 +85,52 @@ const first = (name !== undefined) ? name : fallback;
 const second = (name === undefined) ? fallback : name;
 const blank = (name === undefined) || (name.length === 0);
 return blank ? first : second;
+}
+
+export const ListTitle = view(function ListTitle() {
+"use no memo";
+const $ = $c(2);
+const list = useList();
+const title = ((list.title || "Untitled") satisfies string);
+let $t2;
+if ($[0] !== title) {
+$t2 = Text(title.toUpperCase());
+$[0] = title;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+
+interface Author {
+  readonly name: string | undefined;
+  readonly avatar: Avatar | undefined;
+}
+
+interface Avatar {
+  readonly url: string | undefined;
+}
+
+function width(s: string): number {
+return s.length;
+}
+
+export function named(u: Author): number {
+if ((u.name !== undefined) && (!(u.name!.length === 0))) {
+return width(u.name!);
+}
+return 0;
+}
+
+export function present(u: Author | undefined): number {
+if (u?.name === undefined) {
+return 0;
+}
+return width(u?.name!);
+}
+
+export function pictured(u: Author): number {
+return (u.avatar?.url !== undefined) ? width(u.avatar?.url!) : 0;
 }
 

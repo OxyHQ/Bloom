@@ -47,3 +47,21 @@ $t1 = $[1];
 return $t1;
 });
 
+export interface SpreadProps {
+  readonly card: { title: string; count: number };
+}
+export const Spread = view(function Spread(props: SpreadProps) {
+"use no memo";
+const $ = $c(2);
+const { card } = props;
+let $t2;
+if ($[0] !== card) {
+$t2 = VStack(Embed($jsx(Card, { ...card } satisfies ComponentProps<typeof Card>)), Embed($jsx(Card, { ...card, count: 3 } satisfies ComponentProps<typeof Card>)));
+$[0] = card;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+

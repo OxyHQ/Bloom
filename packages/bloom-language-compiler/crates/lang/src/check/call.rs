@@ -444,6 +444,7 @@ impl Checker<'_> {
                     .spec("12-standard-library-surface-draft"),
             );
         }
+        self.closure_throws = true;
         let ty = self.closure(block, None, false);
         self.out.calls.insert(expr.id, CallRes::Catching);
         let value = match self.resolve(&ty) {
@@ -544,7 +545,7 @@ impl Checker<'_> {
                 f.ret.clone()
             }
             Ty::Fn(f) => {
-                let (order, rest) = self.bloom_args(call, &f);
+                let (order, rest) = self.bloom_args(call, &f, false);
                 self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
             }
@@ -580,12 +581,19 @@ impl Checker<'_> {
 
     /// Named arguments in any order after the positional ones (spec 5);
     /// a trailing closure is the next parameter that takes a function.
-    fn bloom_args(&mut self, call: &Call, f: &FnTy) -> (Vec<Option<usize>>, Vec<usize>) {
+    /// `props`: a view's call, where `..r` spreads a record's fields as its props (JSX's
+    /// `{...r}`); a later prop of the same name wins.
+    fn bloom_args(&mut self, call: &Call, f: &FnTy, props: bool) -> (Vec<Option<usize>>, Vec<usize>) {
         let mut order: Vec<Option<usize>> = vec![None; f.params.len()];
+        let mut spread_given = vec![false; f.params.len()];
         let mut rest = Vec::new();
         let rest_slot = f.params.last().filter(|p| p.rest).map(|_| f.params.len() - 1);
         let mut next = 0;
         for (index, arg) in call.args.iter().enumerate() {
+            if props && arg.spread && arg.label.is_none() {
+                self.spread_arg(arg, f, index, &mut order, &mut spread_given);
+                continue;
+            }
             // Positional arguments past the others go to the rest parameter.
             if arg.label.is_none()
                 && let Some(slot) = rest_slot
@@ -653,7 +661,7 @@ impl Checker<'_> {
                     next
                 }
             };
-            if order[slot].is_some() {
+            if order[slot].is_some() && !std::mem::take(&mut spread_given[slot]) {
                 self.report(
                     Diagnostic::error("B0207", arg.span, "this parameter is given twice")
                         .label("already given")
@@ -705,6 +713,54 @@ impl Checker<'_> {
             );
         }
         (order, rest)
+    }
+
+    /// `..r` among a view's props: each of the record's fields a prop takes, checked
+    /// against it; the record may have more.
+    fn spread_arg(
+        &mut self,
+        arg: &Arg,
+        f: &FnTy,
+        index: usize,
+        order: &mut [Option<usize>],
+        spread_given: &mut [bool],
+    ) {
+        let ty = self.expr(&arg.value, None);
+        let fields = match self.resolve(&ty) {
+            Ty::Adt(def, targs) if matches!(self.out.defs[def].kind, DefKind::Struct(_)) => self.out.defs
+                [def]
+                .fields()
+                .iter()
+                .map(|field| (field.name.clone(), substitute(&field.ty, &targs)))
+                .collect::<Vec<_>>(),
+            Ty::Unknown => return,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0207",
+                        arg.span,
+                        format!(
+                            "`..` spreads a record's fields as props, and {} is not one",
+                            self.show(&other)
+                        ),
+                    )
+                    .label("not a struct or record")
+                    .spec("71-views-and-state"),
+                );
+                return;
+            }
+        };
+        for (name, field) in fields {
+            let Some(slot) = f.params.iter().position(|p| p.name.as_deref() == Some(name.as_str())) else {
+                continue;
+            };
+            let param = f.params[slot].ty.clone();
+            if !self.coerce(&field, &param) {
+                self.mismatch(arg.span, &field, &param);
+            }
+            order[slot] = Some(index);
+            spread_given[slot] = true;
+        }
     }
 
     /// An argument a rest parameter of `element`s takes: one element, or `..xs` of a list of them.
@@ -1453,7 +1509,10 @@ impl Checker<'_> {
             );
             return;
         }
-        if let Ty::Option(inner) = self.resolve(&ty)
+        // A `value` is TypeScript's to check: its declaration may take `undefined`
+        // (`SettingsSection(label: string | undefined, …)`).
+        if param != "value"
+            && let Ty::Option(inner) = self.resolve(&ty)
             && !matches!(self.resolve(&inner), Ty::View(_))
         {
             self.report(
@@ -1490,7 +1549,14 @@ impl Checker<'_> {
             _ => None,
         };
         let mut given = Vec::new();
+        let mut spread = false;
         for arg in &call.args {
+            // `..r`: JSX's `{...r}`, its fields as props (tsc checks them).
+            if arg.spread && arg.label.is_none() {
+                spread = true;
+                self.boundary(&arg.value, None);
+                continue;
+            }
             let Some(label) = &arg.label else {
                 self.report(
                     Diagnostic::error("B0207", arg.span, "a component takes its props by name")
@@ -1515,7 +1581,7 @@ impl Checker<'_> {
             self.boundary(&arg.value, ty.as_ref());
             self.ref_object = false;
         }
-        if let Some(fields) = &fields {
+        if let Some(fields) = fields.as_ref().filter(|_| !spread) {
             let missing: Vec<String> = fields
                 .iter()
                 .filter(|f| {
@@ -1544,8 +1610,12 @@ impl Checker<'_> {
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         let Ty::Fn(f) = ty else { return Ty::Unknown };
         let params: Vec<String> = f.params.iter().filter_map(|p| p.name.clone()).collect();
-        self.bloom_args(call, f);
-        self.out.calls.insert(expr.id, CallRes::View { params });
+        let (order, _) = self.bloom_args(call, f, true);
+        let trailing = order
+            .iter()
+            .position(|o| *o == Some(call.args.len()))
+            .and_then(|slot| f.params[slot].name.clone());
+        self.out.calls.insert(expr.id, CallRes::View { params, trailing });
         Ty::View(Some("view"))
     }
 
