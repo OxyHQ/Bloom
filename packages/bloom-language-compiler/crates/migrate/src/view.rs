@@ -1446,11 +1446,29 @@ impl Tr<'_> {
                 for d in &v.declarations {
                     match &d.init {
                         Some(init) => out.push(self.let_decl(d, init, immutable)),
-                        None => out.push(self.refuse(
-                            "statement:uninitialised",
-                            "a `let` without a value",
-                            d.span,
-                        )),
+                        // `let host: string;` assigned on every path after (tsc checked
+                        // it): a `var` from any start value of its type.
+                        None => {
+                            let ty = d.type_annotation.as_ref().map(|t| self.ty(&t.type_annotation));
+                            let start = match ty.as_deref() {
+                                Some("String") => Some("\"\""),
+                                Some("Float") | Some("Int") => Some("0"),
+                                Some("Bool") => Some("false"),
+                                Some(t) if t.ends_with('?') => Some("none"),
+                                _ => None,
+                            };
+                            match (&d.id, start, ty) {
+                                (BindingPattern::BindingIdentifier(id), Some(start), Some(ty)) => {
+                                    let name = self.bind(&id.name, id.span);
+                                    out.push(format!("var {name}: {ty} = {start}"));
+                                }
+                                _ => out.push(self.refuse(
+                                    "statement:uninitialised",
+                                    "a `let` without a value or a simple type",
+                                    d.span,
+                                )),
+                            }
+                        }
                     }
                 }
                 out.join("\n")

@@ -71,6 +71,13 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((start, end, "slice".to_string()))
             }
+            // `s.trimEnd()` / `s.trimStart()`: JS's `\s` is the set `trim` strips.
+            ("B0209", "trimEnd" | "trimStart")
+                if receiver == Some("String") && source[end..].starts_with("()") =>
+            {
+                let re = if text == "trimEnd" { r"\\s+$" } else { r"^\\s+" };
+                Some((start, end + 2, format!("replace(Regex(\"{re}\"), \"\")")))
+            }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if (d.message == "expected `View`, found `[View]`" || d.message == "expected `View?`, found `[View]`")
