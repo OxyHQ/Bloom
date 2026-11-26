@@ -1,6 +1,6 @@
 # ADR 0001: Bloom's own language (`.bloom`)
 
-- **Status:** proposed (phase 0: design, prototype, measurements). Not adopted; the owner reviews first.
+- **Status:** accepted (2026-11-26; the owner: "si, haz todas las fases!"). Phase 0 complete; phases 1–3 in progress (see "State and next steps").
 - **Date:** 2026-11-26
 - **Spec:** [Bloom language specification, draft 0](../bloom-lang-spec.mdx)
 - **Supersedes:** nothing. Builds on the embedded language ([design](../bloom-language.mdx)) and its compiler (`packages/bloom-language-compiler/STUDY.md`).
@@ -287,6 +287,6 @@ errors, measured in phase 2), `.d.ts` coverage, and the per-file compile cost.
   The Mention PR installs the compiler from a local tarball (`file:` path) and its `bun.lock` was
   written by bun 1.4.3 rather than the pinned 1.4.4, so it cannot leave draft until the compiler
   is published and the lockfile regenerated.
-- **Next:** the owner reviews this ADR and the spec; on approval, phase 1 starts from the gaps
-  listed under "Prototype" and "Roadmap", merged in order #963 → #967 → #964, then the Mention PR
-  against the published compiler.
+- **Next:** approved; #963 → #967 → #964 merge through the queue, one release PR publishes the
+  compiler and its tooling, the Mention PR moves to the published compiler on the language line,
+  and phase 1 starts from the gaps listed under "Prototype" and "Roadmap".
