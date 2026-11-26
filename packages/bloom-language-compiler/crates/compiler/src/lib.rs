@@ -23,7 +23,7 @@ mod check;
 mod diagnostics;
 mod docs;
 #[path = "entries.generated.rs"]
-mod entries;
+pub mod entries;
 mod module;
 /// The names chains are checked against, generated from `spec/language.json`:
 /// public so the `.bloom` compiler checks its modifiers and tokens against the

@@ -1670,7 +1670,7 @@ impl<'a> Emitter<'a> {
                 out
             }
             CallRes::Node(ctor) => {
-                self.import_name(LANGUAGE, ctor);
+                self.import_name(bloom_language_compiler::entries::module_of(ctor), ctor);
                 let mut values: Vec<Frag> = call.args.iter().map(|a| self.node_arg(&a.value)).collect();
                 if let Some(trailing) = &call.trailing {
                     values.extend(self.children(&trailing.body));

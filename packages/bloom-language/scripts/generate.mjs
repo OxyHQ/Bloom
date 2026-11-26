@@ -254,6 +254,9 @@ export const MODIFIERS = ${ts(modifiers)} as const;
 /** The modifiers each node kind takes: a type, read by the type checks only, so no bundle carries it. */
 export type NodeModifiers = ${ts(nodeModifiers)};
 
+/** The modifiers a \`Group\` takes, the one row the runtime reads (what draws around a screen: \`screen()\`). */
+export const GROUP_MODIFIERS: readonly string[] = ${ts(nodeModifiers.group)};
+
 /** The densities each node kind's \`.density()\` takes: its Bloom component's own names. */
 export const NODE_DENSITIES = ${ts(nodeDensities)} as const;
 

@@ -16,7 +16,8 @@
  * - `spec/entries.generated.json`: each entry's value exports, the table the
  *   codemod writes imports from and the reference names a node's entry from;
  * - `../bloom-language-compiler/crates/compiler/src/entries.generated.rs`: the
- *   modules the compiler reads language views from (the root and each family);
+ *   modules the compiler reads language views from (the root and each family),
+ *   and the module each family's names come from (`module_of`, bloomc's imports);
  * - `src/__tests__/support/language.generated.ts`: the root and every family's
  *   entry as one module, for the suites that draw every family (`import * as L`);
  *   the router, which needs Expo Router, is imported where a suite takes it.
@@ -124,6 +125,22 @@ const outputs = [
       `    "${MODULE}",`,
       ...families.map((family) => `    "${MODULE}/${family}",`),
       '];',
+      '',
+      '/// Each value a family\'s entry exports, by name (sorted), and its module: what',
+      '/// code that writes imports (bloomc\'s emitter) imports a constructor from.',
+      'pub const FAMILY_EXPORTS: &[(&str, &str)] = &[',
+      ...families
+        .flatMap((family) => table[family].map((name) => [name, `${MODULE}/${family}`]))
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+        .map(([name, module]) => `    ("${name}", "${module}"),`),
+      '];',
+      '',
+      '/// The module that exports `name`: its family\'s entry, else the root.',
+      'pub fn module_of(name: &str) -> &\'static str {',
+      '    FAMILY_EXPORTS',
+      '        .binary_search_by(|(export, _)| (*export).cmp(name))',
+      '        .map_or(LANGUAGE_MODULES[0], |at| FAMILY_EXPORTS[at].1)',
+      '}',
       '',
     ].join('\n'),
   ],
