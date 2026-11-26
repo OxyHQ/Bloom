@@ -115,7 +115,8 @@ view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;
 screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
 layout        = "layout" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route layout *)
 view_block    = "{" { member NL } "body" block "}" ;
-member        = state | let_stmt | fn ;
+member        = state | let_stmt | fn | effect ;
+effect        = "effect" [ "(" "id" ":" expr ")" ] block ;   (* contextual: `effect` stays a name *)
 state         = "@" ( "state" | "list" | "record" | "env" ) IDENT [ ":" type ] "=" expr ;
 
 block         = "{" { stmt ( NL | ";" ) } "}" ;
@@ -413,7 +414,16 @@ inherit as in the embedded language.
   which spawns it (fire and forget, completing like a handler) and is `Unit`. A binding setter
   that saves is `Binding(get: prefs.likes, set: { v in task { await save(.likes, v) } })`.
 - `defer { … }` runs when the enclosing block exits, after an early `return` too (compiled to
-  `try`/`finally`); the place for "`saving = false` whatever happened".
+  `try`/`finally`); the place for "`saving = false` whatever happened". At the top of a
+  `.task { … }` it also runs when the task is cancelled (the view unmounts or its `id:`
+  changes), at once rather than at the next `await`, and then not again.
+- **`effect { … }`** is a view member: synchronous work that runs after a render. Its
+  dependencies are inferred from its reads, exactly as the memo scopes' are (no deps array);
+  `effect(id: x) { … }` re-runs for `x` instead. It writes states as a handler does. A `defer`
+  at the top of its body is its cleanup, run before the next run and on unmount (several run
+  last first); a `defer` in a nested block keeps its block meaning. Once a cleanup is set the
+  effect does not `return` (B0434): return before the `defer`. It does not `await` (B0215):
+  start async work with `task { … }`, or use `.task`. It compiles to exactly one `useEffect`.
 - **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
   disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
   `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
@@ -532,7 +542,7 @@ Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects,
 `==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0410 (state read after write), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
-outside a task), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+outside a task), B0434 (an effect returns after its cleanup is set), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 

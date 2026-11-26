@@ -747,6 +747,20 @@ impl<'a> Emitter<'a> {
                 self.stmts(&stmts[index + 1..], tail, signal);
                 let rest = self.bufs.pop().expect("the rest");
                 let finally = self.block_body(&deferred.stmts, Tail::Discard, None);
+                if let Some(signal) = signal {
+                    // In a task, it also runs when the task is cancelled, then not again.
+                    let name = self.temp();
+                    let mut line = Frag::at(stmt.span, format!("const {name} = () => "));
+                    line.f(finally).s(&format!(";\n{signal}.addEventListener(\"abort\", {name});\ntry {{\n"));
+                    for l in rest {
+                        line.f(l).s("\n");
+                    }
+                    line.s(&format!(
+                        "}} finally {{\n{signal}.removeEventListener(\"abort\", {name});\nif (!{signal}.aborted) {name}();\n}}"
+                    ));
+                    self.push_stmt(line);
+                    return;
+                }
                 let mut line = Frag::at(stmt.span, "try {\n");
                 for l in rest {
                     line.f(l).s("\n");
@@ -3326,8 +3340,71 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// `effect { … }`: one `useEffect` on its reads (or `id:`); the `defer`s at its
+    /// top are the cleanup it returns, last first.
+    fn effect(&mut self, e: &EffectDecl) {
+        self.import_name("react", "useEffect");
+        let deps = match &e.id {
+            Some(id) => vec![self.expr(id)],
+            None => self.deps(&e.body.stmts).into_iter().map(Frag::of).collect(),
+        };
+        enum Cleanup {
+            Named(String),
+            Inline(Frag),
+        }
+        let mut cleanups = Vec::new();
+        self.bufs.push(Vec::new());
+        let stmts = &e.body.stmts;
+        for (index, stmt) in stmts.iter().enumerate() {
+            let StmtKind::Defer(block) = &stmt.kind else {
+                self.stmt(stmt);
+                continue;
+            };
+            let body = self.block_body(&block.stmts, Tail::Discard, None);
+            if stmts[index..].iter().all(|s| matches!(s.kind, StmtKind::Defer(_))) {
+                cleanups.push(Cleanup::Inline(body));
+            } else {
+                // A cleanup set before more work: named where it is, returned at the end.
+                let name = self.temp();
+                let mut line = Frag::at(stmt.span, format!("const {name} = () => "));
+                line.f(body).s(";");
+                self.push_stmt(line);
+                cleanups.push(Cleanup::Named(name));
+            }
+        }
+        let lines = self.bufs.pop().expect("the effect");
+        let mut out = Frag::at(e.keyword, "useEffect(() => {\n");
+        for line in lines {
+            out.f(line).s("\n");
+        }
+        match cleanups.len() {
+            0 => {}
+            1 => match cleanups.pop().expect("one") {
+                Cleanup::Named(name) => {
+                    out.s(&format!("return {name};\n"));
+                }
+                Cleanup::Inline(body) => {
+                    out.s("return () => ").f(body).s(";\n");
+                }
+            },
+            _ => {
+                out.s("return () => {\n");
+                for cleanup in cleanups.into_iter().rev() {
+                    match cleanup {
+                        Cleanup::Named(name) => out.s(&format!("{name}();\n")),
+                        Cleanup::Inline(body) => out.f(body).s("\n"),
+                    };
+                }
+                out.s("};\n");
+            }
+        }
+        out.s("}, ").f(Frag::join(deps, ", ").wrap("[", "]")).s(");");
+        self.push_stmt(out);
+    }
+
     fn member(&mut self, member: &Member, locals: &[LocalId]) {
         match member {
+            Member::Effect(e) => self.effect(e),
             Member::State(state) => {
                 let local = locals[0];
                 let ty = self.ck.locals[local].ty.clone();

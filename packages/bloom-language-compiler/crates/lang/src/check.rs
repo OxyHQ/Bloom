@@ -264,6 +264,8 @@ struct Frame {
     render: bool,
     /// A `task { … }`: an async call here starts without being awaited.
     spawn: bool,
+    /// An `effect` past a `defer` at its top: its cleanup is set, so it does not `return`.
+    cleanup: bool,
 }
 
 /// A type name in scope.
@@ -361,6 +363,7 @@ impl<'o> Checker<'o> {
                 task: false,
                 render: false,
                 spawn: false,
+                cleanup: false,
             }],
             ts_named: HashMap::default(),
             view: None,
@@ -1170,6 +1173,7 @@ impl<'o> Checker<'o> {
             task: false,
             render: false,
             spawn: false,
+            cleanup: false,
         });
         let mut params = Vec::new();
         for (index, (param, ty)) in f.params.iter().zip(&fn_ty.params).enumerate() {
@@ -1190,6 +1194,35 @@ impl<'o> Checker<'o> {
         self.generics = outer_generics;
         let _ = member;
         signature
+    }
+
+    /// `effect { … }`: synchronous work after a render, which writes states as a
+    /// handler does; a `defer` at its top is its cleanup.
+    fn effect(&mut self, e: &EffectDecl) {
+        if let Some(id) = &e.id {
+            self.expr(id, None);
+        }
+        self.push();
+        self.frames.push(Frame {
+            ret: Ty::Unit,
+            is_async: false,
+            closure: false,
+            written: HashSet::default(),
+            task: false,
+            render: false,
+            spawn: false,
+            cleanup: false,
+        });
+        for stmt in &e.body.stmts {
+            if let StmtKind::Defer(block) = &stmt.kind {
+                self.block(block, Some(&Ty::Unit));
+                self.frames.last_mut().expect("the effect").cleanup = true;
+            } else {
+                self.stmt(stmt);
+            }
+        }
+        self.frames.pop();
+        self.pop();
     }
 
     /// `..name: [T]`: a list type, last, without a default.
@@ -1240,6 +1273,7 @@ impl<'o> Checker<'o> {
             task: false,
             render: true,
             spawn: false,
+            cleanup: false,
         });
         let mut info = ViewInfo::default();
         let params = self.view_params(v);
@@ -1287,6 +1321,10 @@ impl<'o> Checker<'o> {
                     let local = self.declare(&f.name, ty, LocalKind::Handler);
                     self.fn_body(f, true);
                     vec![local]
+                }
+                Member::Effect(e) => {
+                    self.effect(e);
+                    Vec::new()
                 }
             };
             info.members.push(locals);
@@ -1681,6 +1719,14 @@ impl<'o> Checker<'o> {
                 self.declare(&v.name, ty, LocalKind::Var);
             }
             StmtKind::Assign(a) => self.assign(a),
+            StmtKind::Return(_) if self.frames.last().is_some_and(|f| f.cleanup) => {
+                self.report(
+                    Diagnostic::error("B0434", stmt.span, "an effect returns after its cleanup is set")
+                        .label("a `defer` above set the cleanup")
+                        .help("return before the `defer`, or put the rest in an `if`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                );
+            }
             StmtKind::Return(value) => {
                 let ret = self.frames.last().expect("a frame").ret.clone();
                 match value {
@@ -2549,6 +2595,7 @@ impl<'o> Checker<'o> {
                     task,
                     render: false,
                     spawn: true,
+                    cleanup: false,
                 });
                 self.push();
                 self.stmts(&block.stmts, Some(&Ty::Unit), block.span);
@@ -3606,6 +3653,7 @@ impl<'o> Checker<'o> {
             task,
             render: false,
             spawn: false,
+            cleanup: false,
         });
         let mut locals = Vec::new();
         for (param, ty) in params {
