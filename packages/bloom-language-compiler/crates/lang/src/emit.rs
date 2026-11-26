@@ -659,11 +659,8 @@ impl<'a> Emitter<'a> {
             }
             list.push(p);
         }
-        let ret_ty = f
-            .ret
-            .as_ref()
-            .and_then(|r| self.ck.spans.iter().find(|(s, _)| *s == r.span).map(|(_, t)| t.clone()))
-            .unwrap_or(Ty::Unit);
+        let ret_ty =
+            f.ret.as_ref().and_then(|r| self.ck.type_exprs.get(&r.span).cloned()).unwrap_or(Ty::Unit);
         let ret = self.ts_return(&ret_ty, f.is_async);
         let generics = self.generics(&f.generics);
         let tail = if ret_ty == Ty::Unit { Tail::Discard } else { Tail::Return };
@@ -764,10 +761,7 @@ impl<'a> Emitter<'a> {
     fn stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
             StmtKind::Let(l) => {
-                let annotation = l
-                    .ty
-                    .as_ref()
-                    .and_then(|t| self.ck.spans.iter().find(|(s, _)| *s == t.span).map(|(_, ty)| ty.clone()));
+                let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let value = self.value_expr(&l.value);
                 let target = self.binding_target(&l.pattern);
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
@@ -776,10 +770,7 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             StmtKind::Var(v) => {
-                let annotation = v
-                    .ty
-                    .as_ref()
-                    .and_then(|t| self.ck.spans.iter().find(|(s, _)| *s == t.span).map(|(_, ty)| ty.clone()));
+                let annotation = v.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
                 let value = self.value_expr(&v.value);
                 let mut line = Frag::at(stmt.span, format!("let {}{annotation} = ", js_name(&v.name.name)));
@@ -2863,10 +2854,7 @@ impl<'a> Emitter<'a> {
             }
             Member::Let(l) => {
                 let kind = locals.first().map(|l| self.ck.locals[*l].kind.clone());
-                let annotation = l
-                    .ty
-                    .as_ref()
-                    .and_then(|t| self.ck.spans.iter().find(|(s, _)| *s == t.span).map(|(_, ty)| ty.clone()));
+                let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let deps = self.expr_deps(&l.value);
                 let hook = kind == Some(LocalKind::Hook);
                 let target = self.binding_target(&l.pattern);
