@@ -82,9 +82,13 @@ pub enum TsDecl {
         params: Vec<String>,
         ty: TsType,
     },
-    /// A class: a component when it is named in UpperCamel (`class X extends
-    /// Component<P>` gives its props; any other's are TS's to check).
-    Class(Option<TsType>),
+    /// A class. One that extends another and is named in UpperCamel is a component
+    /// (`extends Component<P>` gives its props; any other's are TS's to check); the
+    /// rest are a value and a type TS checks (`ViewModifier`).
+    Class {
+        extends: bool,
+        props: Option<TsType>,
+    },
     /// An enum, a namespace: foreign.
     Other,
 }
@@ -394,7 +398,8 @@ impl Reader {
                         }
                         heritage.type_arguments.as_ref()?.params.first().map(|t| self.ty(t))
                     });
-                    add(file, id.name.to_string(), TsDecl::Class(props));
+                    let extends = class.heritage.is_some();
+                    add(file, id.name.to_string(), TsDecl::Class { extends, props });
                 }
             }
             Declaration::TSEnumDeclaration(enumeration) => {
@@ -870,7 +875,7 @@ impl Mapper<'_> {
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
                 mapped.ty = Some(self.named(file, name, &[], path, depth));
             }
-            TsDecl::Class(props) if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
+            TsDecl::Class { extends: true, props } if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
                 let props = match props {
                     Some(props) => self.ty(
                         file,
@@ -883,9 +888,11 @@ impl Mapper<'_> {
                 };
                 mapped.component = Some(props);
             }
-            TsDecl::Class(_) | TsDecl::Other => {
-                mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()))
+            TsDecl::Class { .. } => {
+                mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()));
+                mapped.ty = Some(Ty::Foreign(path.into()));
             }
+            TsDecl::Other => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
         }
         Some(mapped)
     }

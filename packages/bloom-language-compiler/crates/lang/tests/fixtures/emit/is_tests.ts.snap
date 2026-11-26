@@ -14,3 +14,7 @@ return value.join(", ");
 return ((typeof value === "boolean")) ? "flag" : "?";
 }
 
+function named(handle: string | null | undefined): string {
+return handle ?? "anonymous";
+}
+

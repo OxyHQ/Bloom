@@ -3436,8 +3436,9 @@ impl<'o> Checker<'o> {
                         Ty::Unknown
                     }
                     Ty::Foreign(_) => {
-                        self.mismatch(lhs.span, &left, &Ty::Option(Box::new(Ty::Unknown)));
-                        self.expr(rhs, None)
+                        // `foreign ?? e` takes `e`'s type (the left side may be `null` in TS too);
+                        // TS checks the whole where it lands, typed as `e`.
+                        self.expr(rhs, expected)
                     }
                     other => {
                         self.report(

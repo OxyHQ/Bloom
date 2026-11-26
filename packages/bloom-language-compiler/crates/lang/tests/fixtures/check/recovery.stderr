@@ -1,18 +1,11 @@
-error[B0101]: expected an expression, found `body`
- --> check/recovery.bloom:3:3
+error[B0106]: view `Broken` has no body
+ --> check/recovery.bloom:1:6
   |
-3 |   body {
-  |   ^^^^ expected an expression here
+1 | view Broken {
+  |      ^^^^^^ this view draws nothing
   |
-  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf
-
-error[B0106]: expected an item, found `fnc`
- --> check/recovery.bloom:8:1
-  |
-8 | fnc helper() -> Int { 1 }
-  | ^^^ a module holds imports, structs, enums, types, fns, views and `let` constants
-  |
-  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#3-grammar-ebnf
+help: add `body { … }` with the view it draws, after its members
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71-a-view
 
 error[B0104]: expected `)`, found `}`
   --> check/recovery.bloom:13:1
