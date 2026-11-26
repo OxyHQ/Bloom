@@ -221,6 +221,8 @@ pub struct CheckResult {
     /// Every file the check read: imported `.bloom` modules, TS declarations
     /// (through re-exports), the `tsconfig.json` whose `paths` resolved them.
     pub dependencies: BTreeSet<PathBuf>,
+    /// `a == b` / `a != b` on a type compared field by field: the type.
+    pub structural: HashMap<ExprId, Ty>,
 }
 
 impl CheckResult {
@@ -348,6 +350,8 @@ impl<'o> Checker<'o> {
         self.out.spans = spans.into_iter().map(|(span, ty)| (span, self.zonk(&ty))).collect();
         let locals = std::mem::take(&mut self.out.locals);
         self.out.locals = locals.into_iter().map(|l| Local { ty: self.zonk(&l.ty), ..l }).collect();
+        let structural = std::mem::take(&mut self.out.structural);
+        self.out.structural = structural.into_iter().map(|(id, ty)| (id, self.zonk(&ty))).collect();
         let pattern_tys = std::mem::take(&mut self.out.pattern_tys);
         self.out.pattern_tys = pattern_tys.into_iter().map(|(s, ty)| (s, self.zonk(&ty))).collect();
         let closures = std::mem::take(&mut self.out.closures);
@@ -2455,7 +2459,7 @@ impl<'o> Checker<'o> {
                     ty
                 }
             },
-            ExprKind::Binary(op, lhs, rhs) => self.binary(*op, lhs, rhs, expected_resolved.as_ref()),
+            ExprKind::Binary(op, lhs, rhs) => self.binary(expr, *op, lhs, rhs, expected_resolved.as_ref()),
             ExprKind::Ternary(cond, then, otherwise) => {
                 self.expr(cond, Some(&Ty::Bool));
                 let a = self.expr(then, expected);
@@ -2893,7 +2897,7 @@ impl<'o> Checker<'o> {
         Ty::Binding(Box::new(ty))
     }
 
-    fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expected: Option<&Ty>) -> Ty {
+    fn binary(&mut self, expr: &Expr, op: BinaryOp, lhs: &Expr, rhs: &Expr, expected: Option<&Ty>) -> Ty {
         match op {
             BinaryOp::And | BinaryOp::Or => {
                 self.expr(lhs, Some(&Ty::Bool));
@@ -2948,40 +2952,33 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::Eq | BinaryOp::Ne => {
                 let left = self.expr(lhs, None);
-                let right = self.expr(rhs, Some(&left));
+                self.expr(rhs, Some(&left));
                 let ty = self.zonk(&left);
-                let comparable = |defs: &[Def], ty: &Ty| -> bool {
-                    match ty {
-                        Ty::Int
-                        | Ty::Float
-                        | Ty::Bool
-                        | Ty::Str
-                        | Ty::Strings(_)
-                        | Ty::Unknown
-                        | Ty::Var(_)
-                        | Ty::KeyPath(..)
-                        | Ty::Foreign(_) => true,
-                        Ty::Adt(def, _) => defs[*def].is_fieldless(),
-                        _ => false,
+                match equality(&self.out.defs, &ty) {
+                    Equality::Identity => {}
+                    Equality::Structural => {
+                        self.out.structural.insert(expr.id, ty);
                     }
-                };
-                let inner = match &ty {
-                    Ty::Option(inner) => (**inner).clone(),
-                    other => other.clone(),
-                };
-                if !comparable(&self.out.defs, &inner) {
-                    self.report(
-                        Diagnostic::error(
-                            "B0210",
-                            lhs.span.to(rhs.span),
-                            format!("`{}` on {} is phase 1", op.text(), self.show(&ty)),
-                        )
-                        .label("structural equality is not built yet")
-                        .help("compare the fields that matter (`a.id == b.id`), or `match` the case")
-                        .spec("43-soundness-rules"),
-                    );
+                    Equality::None(part) => {
+                        let what = if part == ty {
+                            self.show(&ty)
+                        } else {
+                            format!("{} (it holds {})", self.show(&ty), self.show(&part))
+                        };
+                        let help = match part {
+                            Ty::Param(..) => {
+                                "compare a field of it, or take a comparison function: `(T, T) -> Bool`"
+                            }
+                            _ => "compare what they hold (a field, an id) instead",
+                        };
+                        self.report(
+                            Diagnostic::error("B0210", lhs.span.to(rhs.span), format!("`{}` cannot compare {what}", op.text()))
+                                .label("functions, views, bindings, pending calls and type parameters have no equality")
+                                .help(help)
+                                .spec("43-soundness-rules"),
+                        );
+                    }
                 }
-                let _ = right;
                 Ty::Bool
             }
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => {
@@ -3419,6 +3416,76 @@ impl<'o> Checker<'o> {
         let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
         Ty::Fn(Rc::new(FnTy { params: param_tys, ret, is_async: frame.is_async, generics: 0, ts: false }))
+    }
+}
+
+/// How `==` compares values of a type (spec 4.3).
+#[derive(Debug, PartialEq)]
+pub enum Equality {
+    /// `===`: numbers, strings, `Bool`, fieldless enums, key paths, a TS value.
+    Identity,
+    /// Field by field (structs, tuples, payload enums, lists, maps, `Result`).
+    Structural,
+    /// Not comparable: the part that has no equality.
+    None(Ty),
+}
+
+pub fn equality(defs: &[Def], ty: &Ty) -> Equality {
+    let mut seen = Vec::new();
+    equality_in(defs, ty, &mut seen)
+}
+
+fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
+    let all = |tys: &mut dyn Iterator<Item = Ty>, seen: &mut Vec<DefId>| -> Equality {
+        for t in tys {
+            if let Equality::None(part) = equality_in(defs, &t, seen) {
+                return Equality::None(part);
+            }
+        }
+        Equality::Structural
+    };
+    match ty {
+        Ty::Int
+        | Ty::Float
+        | Ty::Bool
+        | Ty::Str
+        | Ty::Unit
+        | Ty::Strings(_)
+        | Ty::KeyPath(..)
+        | Ty::JsError
+        | Ty::Foreign(_)
+        | Ty::Never
+        | Ty::Var(_)
+        | Ty::Unknown => Equality::Identity,
+        Ty::Option(inner) => match equality_in(defs, inner, seen) {
+            Equality::Identity => Equality::Identity,
+            other => other,
+        },
+        Ty::Adt(def, args) => {
+            if defs[*def].is_fieldless() {
+                return Equality::Identity;
+            }
+            if seen.contains(def) {
+                return Equality::Structural;
+            }
+            seen.push(*def);
+            let parts: Vec<Ty> = match &defs[*def].kind {
+                DefKind::Struct(fields) => fields.iter().map(|f| substitute(&f.ty, args)).collect(),
+                DefKind::Enum(variants) => {
+                    variants.iter().flat_map(|v| v.payload.iter().map(|(_, t)| substitute(t, args))).collect()
+                }
+            };
+            let out = all(&mut parts.into_iter(), seen);
+            seen.pop();
+            out
+        }
+        Ty::Partial(inner) => equality_in(defs, inner, seen),
+        Ty::Tuple(items) => all(&mut items.iter().cloned(), seen),
+        Ty::List(t) | Ty::Map(t) => all(&mut std::iter::once((**t).clone()), seen),
+        Ty::Result(a, b) => all(&mut [(**a).clone(), (**b).clone()].into_iter(), seen),
+        Ty::Fn(_) | Ty::View(_) | Ty::Binding(_) | Ty::Async(_) | Ty::Promise(_) | Ty::Param(..) => {
+            Equality::None(ty.clone())
+        }
     }
 }
 

@@ -128,6 +128,10 @@ struct Emitter<'a> {
     aliases: HashMap<LocalId, String>,
     /// An awaited TS promise matched as a `Result`: its error temp → its value temp (none for `Unit`).
     splits: HashMap<String, Option<String>>,
+    /// Comparison functions of recursive types (`$eq0`), by TS type: their name and type.
+    eq_helpers: Vec<(String, String, Ty)>,
+    /// Names for the element variables of list and map comparisons.
+    eq_vars: usize,
     names: HashSet<String>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
@@ -168,6 +172,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         uses_key_path: false,
         aliases: HashMap::new(),
         splits: HashMap::new(),
+        eq_helpers: Vec::new(),
+        eq_vars: 0,
         names,
         scope: None,
         body_span: None,
@@ -198,6 +204,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     for helper in std::mem::take(&mut emitter.helpers) {
         code.s(helper_text(helper)).s("\n");
     }
+    code.f(emitter.eq_functions());
     code.s("\n").f(items);
     let dts = emitter.dts(file);
     let map = Mappings { points: dedup(code.marks) };
@@ -1455,6 +1462,13 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        if let Some(ty) = self.ck.structural.get(&expr.id).cloned() {
+            // Field by field, on paths: an operand that is not one is read once, into a temp.
+            let a = self.path_or_temp(lhs);
+            let b = self.path_or_temp(rhs);
+            let same = self.equal(&a, &b, &ty, &mut Vec::new());
+            return if op == BinaryOp::Ne { Frag::of(format!("!({same})")) } else { Frag::of(same) };
+        }
         let left = self.operand(lhs);
         let right = if matches!(op, BinaryOp::And | BinaryOp::Or | BinaryOp::Default) {
             let (stmts, right) = self.conditional(|this| this.operand(rhs));
@@ -2366,6 +2380,175 @@ impl<'a> Emitter<'a> {
             }
         })
     }
+}
+
+impl Emitter<'_> {
+    // ---- structural equality (spec 4.3) ----------------------------------------
+
+    /// `expr` as a path to read more than once: itself when it is one, else a temp.
+    fn path_or_temp(&mut self, expr: &Expr) -> String {
+        if is_path(expr) && !matches!(expr.kind, ExprKind::Call(_)) {
+            return self.operand(expr).text;
+        }
+        let name = self.temp();
+        let value = self.expr(expr);
+        let mut line = Frag::at(expr.span, format!("const {name} = "));
+        line.f(value).s(";");
+        self.push_stmt(line);
+        name
+    }
+
+    /// Whether `a` and `b` (paths) are equal as values of `ty`, inline; a
+    /// recursive type compares through a module function. `seen`: the types
+    /// being expanded.
+    fn equal(&mut self, a: &str, b: &str, ty: &Ty, seen: &mut Vec<DefId>) -> String {
+        if crate::check::equality(&self.ck.defs, ty) == crate::check::Equality::Identity {
+            return format!("{a} === {b}");
+        }
+        let and = |parts: Vec<String>| -> String {
+            if parts.is_empty() {
+                "true".into()
+            } else {
+                parts
+                    .iter()
+                    .map(|p| if p.contains(" ? ") { format!("({p})") } else { p.clone() })
+                    .collect::<Vec<_>>()
+                    .join(" && ")
+            }
+        };
+        match ty {
+            Ty::Option(inner) => {
+                let inner = self.equal(a, b, inner, seen);
+                format!("{a} === undefined || {b} === undefined ? {a} === {b} : {inner}")
+            }
+            Ty::Tuple(items) => {
+                let parts = items
+                    .iter()
+                    .enumerate()
+                    .map(|(i, t)| self.equal(&format!("{a}[{i}]"), &format!("{b}[{i}]"), t, seen))
+                    .collect();
+                and(parts)
+            }
+            Ty::Partial(inner) => {
+                let Ty::Adt(def, args) = &**inner else { return format!("{a} === {b}") };
+                let fields = self.ck.defs[*def].fields().to_vec();
+                let parts = fields
+                    .iter()
+                    .map(|f| {
+                        let ty = Ty::Option(Box::new(substitute(&f.ty, args)));
+                        self.equal(&member_path(a, &f.name), &member_path(b, &f.name), &ty, seen)
+                    })
+                    .collect();
+                and(parts)
+            }
+            Ty::Adt(def, args) => {
+                if seen.contains(def) {
+                    let name = self.eq_helper(ty);
+                    return format!("{name}({a}, {b})");
+                }
+                seen.push(*def);
+                let d = self.ck.defs[*def].clone();
+                let out = match &d.kind {
+                    DefKind::Struct(fields) => {
+                        let parts = fields
+                            .iter()
+                            .map(|f| {
+                                self.equal(
+                                    &member_path(a, &f.name),
+                                    &member_path(b, &f.name),
+                                    &substitute(&f.ty, args),
+                                    seen,
+                                )
+                            })
+                            .collect();
+                        and(parts)
+                    }
+                    DefKind::Enum(variants) => {
+                        // The same case (`tag`), then its payload; a fieldless case is its string.
+                        let mut out = format!("{a} === {b} || ");
+                        if variants.iter().any(|v| v.payload.is_empty()) {
+                            out.push_str(&format!(
+                                "typeof {a} === \"object\" && typeof {b} === \"object\" && "
+                            ));
+                        }
+                        let mut arms = String::new();
+                        for variant in variants.iter().filter(|v| !v.payload.is_empty()) {
+                            let tag = string_literal(&variant.name);
+                            let parts = (0..variant.payload.len())
+                                .map(|i| {
+                                    let key = variant.key(i);
+                                    self.equal(
+                                        &member_path(a, &key),
+                                        &member_path(b, &key),
+                                        &substitute(&variant.payload[i].1, args),
+                                        seen,
+                                    )
+                                })
+                                .collect();
+                            arms.push_str(&format!(
+                                "{a}.tag === {tag} && {b}.tag === {tag} ? {} : ",
+                                and(parts)
+                            ));
+                        }
+                        out.push_str(&format!("({arms}false)"));
+                        out
+                    }
+                };
+                seen.pop();
+                out
+            }
+            Ty::List(elem) => {
+                let (x, i) = (format!("$x{}", self.eq_vars), format!("$i{}", self.eq_vars));
+                self.eq_vars += 1;
+                let inner = self.equal(&x, &format!("{b}[{i}]!"), elem, seen);
+                format!("{a}.length === {b}.length && {a}.every(({x}, {i}) => {inner})")
+            }
+            Ty::Map(value) => {
+                let (x, k) = (format!("$x{}", self.eq_vars), format!("$k{}", self.eq_vars));
+                self.eq_vars += 1;
+                let inner = self.equal(&x, &format!("{b}[{k}]!"), value, seen);
+                format!(
+                    "Object.keys({a}).length === Object.keys({b}).length && Object.entries({a}).every(([{k}, {x}]) => {k} in {b} && {inner})"
+                )
+            }
+            Ty::Result(ok, err) => {
+                let ok = self.equal(&format!("{a}.value"), &format!("{b}.value"), ok, seen);
+                let err = self.equal(&format!("{a}.error"), &format!("{b}.error"), err, seen);
+                format!("{a}.ok && {b}.ok ? {ok} : !{a}.ok && !{b}.ok ? {err} : false")
+            }
+            _ => format!("{a} === {b}"),
+        }
+    }
+
+    /// The module function comparing values of the recursive type `ty`.
+    fn eq_helper(&mut self, ty: &Ty) -> String {
+        let ts = self.ts_type(ty);
+        if let Some((name, _, _)) = self.eq_helpers.iter().find(|(_, t, _)| *t == ts) {
+            return name.clone();
+        }
+        let name = format!("$eq{}", self.eq_helpers.len());
+        self.eq_helpers.push((name.clone(), ts, ty.clone()));
+        name
+    }
+
+    /// The comparison functions the module's recursive types need: each expands
+    /// its type once, and its own recursion calls it (or another one) again.
+    fn eq_functions(&mut self) -> Frag {
+        let mut out = Frag::default();
+        let mut index = 0;
+        while index < self.eq_helpers.len() {
+            let (name, ts, ty) = self.eq_helpers[index].clone();
+            let body = self.equal("a", "b", &ty, &mut Vec::new());
+            out.s(&format!("function {name}(a: {ts}, b: {ts}): boolean {{\n  return {body};\n}}\n"));
+            index += 1;
+        }
+        out
+    }
+}
+
+/// `object.name` as a path (`object["a-b"]` when the name is not an identifier).
+fn member_path(object: &str, name: &str) -> String {
+    if is_ident(name) { format!("{object}.{name}") } else { format!("{object}[{name:?}]") }
 }
 
 /// One choice of [`Emitter::select`]: its test (with the statements it needs) and its value.
