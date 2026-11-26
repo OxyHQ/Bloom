@@ -2375,7 +2375,7 @@ fn is_single_if(lines: &str) -> bool {
 }
 
 /// The members of a module object type named `name` (an interface or an object alias).
-fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
+pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
     for statement in module {
         let declaration = match statement {
             Statement::ExportDeclaration(e) => Some(&e.declaration),

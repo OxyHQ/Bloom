@@ -1209,15 +1209,22 @@ impl<'s> Tr<'s> {
                 if self.props_types.contains(&name) && vis.is_empty() {
                     return String::new();
                 }
-                if !interface.extends.is_empty() {
+                // `interface A extends B { … }` with `B` an object type here: B's fields, then A's.
+                let members: Vec<&TSSignature> = if interface.extends.is_empty() {
+                    interface.body.body.iter().collect()
+                } else if interface.type_parameters.is_none()
+                    && let Some(members) = crate::view::local_object(body, &name)
+                {
+                    members
+                } else {
                     return self.refuse(
                         "type:extends",
                         format!("`interface {name}` extends another type"),
                         interface.span,
                     );
-                }
+                };
                 let generics = self.generics(interface.type_parameters.as_deref());
-                let fields = self.struct_fields(&interface.body.body);
+                let fields = self.struct_fields(&members);
                 let vis = self.visibility(&name, vis, defaults);
                 format!("{vis}struct {name}{generics} {{\n{fields}}}")
             }
@@ -1239,7 +1246,7 @@ impl<'s> Tr<'s> {
                         return String::new();
                     }
                     let generics = self.generics(alias.type_parameters.as_deref());
-                    let fields = self.struct_fields(&literal.members);
+                    let fields = self.struct_fields(&literal.members.iter().collect::<Vec<_>>());
                     return format!("{vis}struct {name}{generics} {{\n{fields}}}");
                 }
                 let generics = self.generics(alias.type_parameters.as_deref());
@@ -1262,7 +1269,7 @@ impl<'s> Tr<'s> {
         }
     }
 
-    fn struct_fields(&mut self, members: &[TSSignature]) -> String {
+    fn struct_fields(&mut self, members: &[&TSSignature]) -> String {
         let mut out = String::new();
         for member in members {
             let comments = self.comments.before(member.span().start, false);
