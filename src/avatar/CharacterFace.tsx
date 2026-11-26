@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import { avatarCharacterOf, type ResolvedAvatarCharacter } from '../agent-avatar/character';
 import type { ImageSource } from '../shapes';
+import type { VectorHalo } from '../agent-avatar/vector-halo';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
 import type { AvatarMotion } from './types';
@@ -47,6 +48,8 @@ export interface CharacterFaceProps {
   alt?: string;
   /** The account's display name or handle, when it has one. */
   name?: string;
+  /** A gap cut around the silhouette, drawn with the character so it follows every pose. */
+  halo?: VectorHalo;
   /** Drawn at the same size until the picture is there: reserves the box, so nothing jumps. */
   placeholder: ReactNode;
 }
@@ -62,6 +65,7 @@ export function CharacterFace({
   reactionKey,
   alt,
   name,
+  halo,
   placeholder,
 }: CharacterFaceProps) {
   // Read here, not in `Avatar`: only an account with a character mounts this,
@@ -97,6 +101,7 @@ export function CharacterFace({
             <AgentAvatar
               character={written}
               size={size}
+              halo={halo}
               workingKey={workingKey ?? (episodes > 0 ? episodes : undefined)}
               reactionKey={reactionKey}
               onReady={() => setReady(true)}
@@ -115,6 +120,7 @@ export function CharacterFace({
           <AgentAvatar
             character={written}
             size={size}
+            halo={halo}
             portrait
             paused
             interactive={false}

@@ -61,6 +61,7 @@ import {
   vectorGeometryKey,
 } from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
+import { haloSurfaceStyle, withHalo } from './vector-halo';
 import {
   releaseVectorLoop,
   vectorLoop,
@@ -132,7 +133,9 @@ function VectorEyePreview(props: Props) {
   );
 }
 function AnimatedVectorCharacterAvatar(props: Props) {
-  const { character, size = 64, paused, portrait, interactive, previewPart, mood } = props;
+  const { character, size = 64, paused, portrait, interactive, previewPart, mood, halo } = props;
+  const haloColor = halo?.color;
+  const haloWidth = halo?.width;
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const catalog = useVectorAssetLoader(props.catalog);
   const reduced = usePrefersReducedMotion(),
@@ -153,8 +156,16 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     [asset, resolved],
   );
   const frameRecipeKey = useMemo(
-    () => vectorFrameRecipeKey(asset, geometryKey, resolved.paint),
-    [asset, geometryKey, resolved.paint],
+    () =>
+      vectorFrameRecipeKey(
+        asset,
+        // The halo is drawn into the frame, so it is part of what a frame is shared and cached by.
+        haloColor !== undefined && haloWidth
+          ? `${geometryKey}|${haloColor}|${haloWidth}|${size}`
+          : geometryKey,
+        resolved.paint,
+      ),
+    [asset, geometryKey, resolved.paint, haloColor, haloWidth, size],
   );
   const latestFrameRecipe = useRef(frameRecipeKey);
   latestFrameRecipe.current = frameRecipeKey;
@@ -528,13 +539,17 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           { yaw: portrait ? 0 : motion.yaw, pitch: portrait ? 0 : motion.pitch },
           feeling,
         );
-        const drawing = renderVectorFrame(asset, {
+        const plain = renderVectorFrame(asset, {
           action,
           time,
           ...framed,
           eyesOnly: previewPart === 'eyes',
           pose,
         });
+        const drawing =
+          haloColor !== undefined && haloWidth
+            ? withHalo(plain, size, { color: haloColor, width: haloWidth })
+            : plain;
         return { pose, procedural, gaze: framed.look ?? framed, drawing };
       };
       // Where there is a native surface, a loop it has is played by it, from where the clock is.
@@ -633,6 +648,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     revision,
     looping,
     endLoop,
+    haloColor,
+    haloWidth,
+    size,
   ]);
   useEffect(() => {
     if (paused || portrait || reduced) setRevision((value) => value + 1);
@@ -749,7 +767,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         </Text>
       ) : display && VectorNativeSurface ? (
         <VectorNativeSurface
-          style={{ width: '100%', height: '100%' }}
+          style={haloSurfaceStyle(size, halo)}
           pointerEvents="none"
           accessible={false}
           importantForAccessibility="no-hide-descendants"
@@ -765,8 +783,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
       ) : display ? (
         <Svg
           ref={svg}
-          width="100%"
-          height="100%"
+          width={haloSurfaceStyle(size, halo).width}
+          height={haloSurfaceStyle(size, halo).height}
+          style={halo ? haloSurfaceStyle(size, halo) : undefined}
           viewBox={avatarViewBox(display.drawing.viewBox)}
           testID="bloom-vector-drawing"
           {...svgA11yProps()}
