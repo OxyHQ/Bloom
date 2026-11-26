@@ -17,6 +17,7 @@
 
 mod comments;
 mod expr;
+mod i18n;
 mod jsx;
 mod module;
 pub mod report;
@@ -217,12 +218,16 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             default_export: None,
         };
     }
-    // String tokens as typed ones (`.padding("md")` → `.padding(.md)`), then SwiftUI's names
+    // i18next's `t("k")` as `String(localized: "k")`, string tokens as typed ones (`.padding("md")` → `.padding(.md)`), then SwiftUI's names
     // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
     let mut bloom = bloom;
     let mut compiled = compiled;
-    let passes: [Pass; 2] =
-        [&|text| tokens::typed(text, &target, options), &|text| swiftui::names(text, &target)];
+    let passes: [Pass; 4] = [
+        &|text| swiftui::private_items(text, &target),
+        &|text| i18n::localize(text, &target),
+        &|text| tokens::typed(text, &target, options),
+        &|text| swiftui::names(text, &target),
+    ];
     for pass in passes {
         let Some(next) = pass(&bloom) else { continue };
         let Ok(next) = bloom_fmt::format(&next, &target) else { continue };
