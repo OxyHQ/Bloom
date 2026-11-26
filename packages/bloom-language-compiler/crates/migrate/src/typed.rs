@@ -23,7 +23,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             ("B0209", "some") if list => Some((start, end, "any".to_string())),
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
             // A promise-returning call JS let go unawaited: started as a task.
-            ("B0430", _) => Some((start, end, format!("task {{ await {text} }}"))),
+            ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if d.message == "expected `View`, found `[View]`"

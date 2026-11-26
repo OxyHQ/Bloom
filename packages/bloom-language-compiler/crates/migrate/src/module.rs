@@ -166,9 +166,10 @@ impl<'s> Tr<'s> {
         true
     }
 
-    /// A local binding: a Bloom keyword (`body`, `type`) is renamed `body_` in its scope.
+    /// A local binding: a Bloom keyword (`if`, `let`) is renamed `if_` in its scope;
+    /// the contextual ones (`type`, `body`, `view`, `screen`, `layout`, `from`) name values as they are.
     pub fn bind(&mut self, name: &str, span: Span) -> String {
-        if bloom_lang::KEYWORDS.contains(&name) {
+        if bloom_lang::KEYWORDS.contains(&name) && !CONTEXTUAL.contains(&name) {
             let renamed = format!("{name}_");
             self.scope.renames.insert(name.to_string(), renamed.clone());
             self.used.insert(renamed.clone());
@@ -179,7 +180,7 @@ impl<'s> Tr<'s> {
 
     /// A name the output uses.
     pub fn name(&mut self, name: &str, span: Span) -> String {
-        if bloom_lang::KEYWORDS.contains(&name) {
+        if bloom_lang::KEYWORDS.contains(&name) && !CONTEXTUAL.contains(&name) {
             return self.refuse("name:keyword", format!("`{name}` is a Bloom keyword"), span);
         }
         self.used.insert(name.to_string());
@@ -1255,6 +1256,9 @@ impl Tr<'_> {
         format!("Foreign<\"{text}\">")
     }
 }
+
+/// Keywords that may name params, fields and values (#979).
+const CONTEXTUAL: &[&str] = &["type", "body", "view", "screen", "layout", "from"];
 
 pub fn optional_ty(ty: &str) -> String {
     // A function or union type is parenthesised: `(() -> Unit)?`, `("a" | "b")?`.
