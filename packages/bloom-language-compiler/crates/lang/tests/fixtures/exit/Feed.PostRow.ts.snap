@@ -1,0 +1,68 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Avatar, Button, HStack, Icon, ScrollView, Spacer, Text, VStack, useObserved, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { RiHeartFill } from "@oxy.so/bloom/icons/RiHeartFill";
+import { RiHeartLine } from "@oxy.so/bloom/icons/RiHeartLine";
+import { RiVerifiedLine } from "@oxy.so/bloom/icons/RiVerifiedLine";
+import { type Task } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
+import { type MentionAPI, MentionAPI$$live } from "../API/MentionAPI.bloom";
+import { type Post, type FeedModel, FeedModel$like, FeedModel$refresh, FeedModel$$init } from "./FeedModel.bloom";
+
+const $view0 = Icon(RiVerifiedLine).foreground("primary");
+const $view1 = Spacer();
+export interface PostRowProps {
+  readonly post: Post;
+  readonly onLike: () => Promise<void>;
+}
+export const PostRow = view(function PostRow(props: PostRowProps) {
+"use no memo";
+const $ = $c(37);
+const { post, onLike } = props;
+let $t0;
+if ($[28] !== post.author.avatar || $[29] !== post.author.name || $[30] !== post.author.isVerified || $[31] !== post.createdAt || $[32] !== post.text || $[33] !== post.isLiked || $[34] !== post.likes || $[35] !== onLike) {
+$t0 = HStack(($[0] !== post.author.avatar ? ($[0] = post.author.avatar, $[1] = Avatar(post.author.avatar).size("md")) : $[1]), ($[20] !== post.author.name || $[21] !== post.author.isVerified || $[22] !== post.createdAt || $[23] !== post.text || $[24] !== post.isLiked || $[25] !== post.likes || $[26] !== onLike ? ($[20] = post.author.name, $[21] = post.author.isVerified, $[22] = post.createdAt, $[23] = post.text, $[24] = post.isLiked, $[25] = post.likes, $[26] = onLike, $[27] = VStack(($[6] !== post.author.name || $[7] !== post.author.isVerified || $[8] !== post.createdAt ? ($[6] = post.author.name, $[7] = post.author.isVerified, $[8] = post.createdAt, $[9] = HStack(($[2] !== post.author.name ? ($[2] = post.author.name, $[3] = Text(post.author.name).weight("semibold").lines(1)) : $[3]), (post.author.isVerified) ? $view0 : null, $view1, ($[4] !== post.createdAt ? ($[4] = post.createdAt, $[5] = Text(Date$formatted(post.createdAt, "relative")).foreground("muted")) : $[5])).spacing("xs")) : $[9]), ($[10] !== post.text ? ($[10] = post.text, $[11] = Text(post.text)) : $[11]), ($[16] !== post.isLiked || $[17] !== post.likes || $[18] !== onLike ? ($[16] = post.isLiked, $[17] = post.likes, $[18] = onLike, $[19] = Button(($[12] !== post.isLiked ? ($[12] = post.isLiked, $[13] = Icon(post.isLiked ? RiHeartFill : RiHeartLine)) : $[13]), ($[14] !== post.likes ? ($[14] = post.likes, $[15] = Text(`${post.likes}`)) : $[15])).style("plain").size("sm").onPress(() => void (async () => {
+await (onLike());
+})()).tint(post.isLiked ? ("danger") : ("neutral"))) : $[19])).align("start").spacing("xs")) : $[27])).align("start").spacing("sm").padding("md");
+$[28] = post.author.avatar;
+$[29] = post.author.name;
+$[30] = post.author.isVerified;
+$[31] = post.createdAt;
+$[32] = post.text;
+$[33] = post.isLiked;
+$[34] = post.likes;
+$[35] = onLike;
+$[36] = $t0;
+} else {
+$t0 = $[36];
+}
+return $t0;
+}, (a: PostRowProps, b: PostRowProps): boolean => {
+return a.post.id === b.post.id && a.post.text === b.post.text && a.post.author.id === b.post.author.id && a.post.author.name === b.post.author.name && a.post.author.avatar === b.post.author.avatar && a.post.author.isVerified === b.post.author.isVerified && a.post.createdAt.timeIntervalSince1970 === b.post.createdAt.timeIntervalSince1970 && a.post.likes === b.post.likes && a.post.isLiked === b.post.isLiked;
+});
+
+const $fields2 = ["posts"] as const;
+export const FeedScreen = view(function FeedScreen() {
+"use no memo";
+const $ = $c(3);
+const [model, setModel] = useState<FeedModel>(() => FeedModel$$init(MentionAPI$$live()));
+const $t1 = useObserved(model, $fields2);
+let $t2;
+if ($[0] !== model.posts || $[1] !== $t1) {
+$t2 = ScrollView(VStack(...model.posts.map((post) => PostRow({ post: post, onLike: async () => await (FeedModel$like(model, post)) })))).refreshable(async () => (await (async () => {
+try {
+return await (FeedModel$refresh(model));
+} catch {
+return undefined;
+}
+})()));
+$[0] = model.posts;
+$[1] = $t1;
+$[2] = $t2;
+} else {
+$t2 = $[2];
+}
+return $t2;
+});
+

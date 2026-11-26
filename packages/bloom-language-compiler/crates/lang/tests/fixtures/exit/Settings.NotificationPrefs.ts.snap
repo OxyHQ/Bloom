@@ -1,0 +1,94 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Loading, Observable, Text, VStack, defineEnvironment, view } from "@oxy.so/bloom-language";
+import type { Binding, Child } from "@oxy.so/bloom-language";
+import { Dictionary$merging } from "../../.bloom/std/Bloom/Core.bloom";
+
+export type Session = "signedOut" | "signedIn";
+
+export const session = defineEnvironment("session", "signedOut");
+
+export type PrefsState = "loading" | "signedOut" | "ready";
+
+export type PrefKey = "likes" | "replies" | "mentions" | "follows";
+
+export function PrefKey$id(self: PrefKey): string {
+return ((self === "likes") ? "likes" : (self === "replies") ? "replies" : (self === "mentions") ? "mentions" : "follows");
+}
+
+export function PrefKey$title(self: PrefKey): string {
+return ((self === "likes") ? "settings.notifications.types.likes" : (self === "replies") ? "settings.notifications.types.replies" : (self === "mentions") ? "settings.notifications.types.mentions" : "settings.notifications.types.follows");
+}
+
+export function PrefKey$detail(self: PrefKey): string {
+return `${PrefKey$title(self)}.detail`;
+}
+
+export const PrefKey$$allCases: readonly PrefKey[] = ["likes", "replies", "mentions", "follows"];
+
+export class NotificationPrefsModel extends Observable {
+  state: PrefsState = "loading";
+  isSaving: boolean = false;
+  enabled: Readonly<Record<string, boolean>> = {};
+}
+
+export function NotificationPrefsModel$$init(): NotificationPrefsModel {
+const self: NotificationPrefsModel = new NotificationPrefsModel();
+return self;
+}
+
+export async function NotificationPrefsModel$load(self: NotificationPrefsModel, session: Session): Promise<void> {
+if (!(session === ("signedIn"))) {
+self.$set("state", "signedOut");
+return;
+}
+self.$set("enabled", { "likes": true, "replies": true, "mentions": true, "follows": false });
+self.$set("state", "ready");
+}
+
+export function NotificationPrefsModel$binding(self: NotificationPrefsModel, key: PrefKey): Binding<boolean> {
+return [self.enabled[PrefKey$id(key)] ?? false, (on: boolean) => NotificationPrefsModel$save(self, key, on)] as const;
+}
+
+export function NotificationPrefsModel$save(self: NotificationPrefsModel, key: PrefKey, on: boolean): void {
+self.$set("enabled", Dictionary$merging(self.enabled, { [PrefKey$id(key)]: on }));
+}
+
+const $view0 = Loading();
+export const SettingsSkeleton = view(function SettingsSkeleton() {
+"use no memo";
+const $ = $c(1);
+let $t0;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t0 = $view0;
+$[0] = $t0;
+} else {
+$t0 = $[0];
+}
+return $t0;
+});
+
+export function SignInPrompt(message: string): Child {
+return Text(message);
+}
+
+export interface SettingsSectionProps {
+  readonly title: string;
+  readonly rows: () => Child;
+}
+export const SettingsSection = view(function SettingsSection(props: SettingsSectionProps) {
+"use no memo";
+const $ = $c(7);
+const { title, rows } = props;
+let $t1;
+if ($[4] !== title || $[5] !== rows) {
+$t1 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title).font("headline")) : $[1]), ($[2] !== rows ? ($[2] = rows, $[3] = rows()) : $[3])).spacing("sm");
+$[4] = title;
+$[5] = rows;
+$[6] = $t1;
+} else {
+$t1 = $[6];
+}
+return $t1;
+});
+

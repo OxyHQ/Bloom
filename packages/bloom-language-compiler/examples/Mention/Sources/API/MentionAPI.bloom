@@ -1,0 +1,54 @@
+// `Mention.API`, as much of it as the examples import: the client, a page of results and a
+// post's author, on the standard library's `HTTPClient`.
+
+public struct User: Codable, Equatable {
+  public let id: String
+  public let name: String
+  public let avatar: String
+  public let isVerified: Bool
+}
+
+/// A page of a feed: its items and the cursor of the next one.
+public struct Page<T> {
+  public let items: [T]
+  public let cursor: String?
+}
+
+extension Page {
+  /// `Page<T>`'s codec, given its items' (`codable.rs` derives non-generic types only).
+  public static func codec(_ item: Codec<T>) -> Codec<Page<T>> {
+    Codec(
+      decode: { value, at in
+        Page(
+          items: Array.decoder(item.decode)(jsonField(value, "items", at), "\(at).items"),
+          cursor: Optional.decoder(String.decode)(jsonField(value, "cursor", at), "\(at).cursor"),
+        )
+      },
+      encode: { page in
+        jsonObject(["items": Array.encoder(item.encode)(page.items), "cursor": Optional.encoder(String.encode)(page.cursor)])
+      },
+    )
+  }
+}
+
+public struct MentionAPI: Equatable {
+  public let http: HTTPClient
+
+  /// `GET path`, decoded as the `T` the caller expects.
+  public func get<T: Decodable>(_ path: String) async throws -> T {
+    try await http.get(path, as: T.self)
+  }
+
+  /// `POST path`; the answer ignored.
+  public func post(_ path: String) async throws {
+    try await http.perform(.post, path)
+  }
+}
+
+extension MentionAPI {
+  /// The client of Mention's API.
+  public static func live() -> MentionAPI {
+    guard let base = URL.parse("https://api.mention.earth") else { return fatal("Mention's base URL") }
+    return MentionAPI(http: HTTPClient(baseURL: base))
+  }
+}

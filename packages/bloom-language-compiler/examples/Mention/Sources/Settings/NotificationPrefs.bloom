@@ -1,0 +1,91 @@
+// `Mention.Settings`, as much of it as example 2 imports: the session, the notification
+// preferences' keys and model, and the screens' parts.
+
+/// Who reads the app: an environment value the root sets.
+public enum Session: Equatable {
+  case signedOut, signedIn
+}
+
+public let session = EnvironmentKey("session", default: Session.signedOut)
+
+/// Where the preferences screen is.
+public enum PrefsState: Equatable {
+  case loading, signedOut, ready
+}
+
+/// A notification type a reader turns on or off.
+public enum PrefKey: CaseIterable, Identifiable, Equatable {
+  case likes, replies, mentions, follows
+
+  public var id: String {
+    switch self {
+    case .likes: "likes"
+    case .replies: "replies"
+    case .mentions: "mentions"
+    case .follows: "follows"
+    }
+  }
+
+  public var title: String {
+    switch self {
+    case .likes: "settings.notifications.types.likes"
+    case .replies: "settings.notifications.types.replies"
+    case .mentions: "settings.notifications.types.mentions"
+    case .follows: "settings.notifications.types.follows"
+    }
+  }
+
+  public var detail: String { "\(title).detail" }
+}
+
+@Observable
+public final class NotificationPrefsModel {
+  public private(set) var state: PrefsState = .loading
+  public private(set) var isSaving = false
+  public private(set) var enabled: [String: Bool] = [:]
+
+  public init() {}
+
+  public func load(_ session: Session) async {
+    guard session == .signedIn else {
+      state = .signedOut
+      return
+    }
+    enabled = ["likes": true, "replies": true, "mentions": true, "follows": false]
+    state = .ready
+  }
+
+  /// Whether `key` is on, as a binding a `Toggle` writes.
+  public func binding(for key: PrefKey) -> Binding<Bool> {
+    Binding(get: enabled[key.id] ?? false, set: { on in self.save(key, on) })
+  }
+
+  func save(_ key: PrefKey, _ on: Bool) {
+    enabled = enabled.merging([key.id: on])
+  }
+}
+
+/// The screen while the preferences load.
+public struct SettingsSkeleton: View {
+  var body: some View {
+    ProgressView()
+  }
+}
+
+/// The screen for a reader who is signed out: `message` is a string key.
+public func SignInPrompt(_ message: String) -> some View {
+  Text(message)
+}
+
+/// A titled group of settings rows.
+public struct SettingsSection: View {
+  let title: String
+  let rows: () -> View
+
+  var body: some View {
+    VStack(spacing: .sm) {
+      Text(title).font(.headline)
+      rows()
+    }
+  }
+}

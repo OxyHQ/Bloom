@@ -1,0 +1,42 @@
+// ADR 0002, example 3, as written there: a row of the feed, and the feed screen's list.
+import Bloom
+import Mention.API
+
+struct PostRow: View, Equatable {
+  let post: Post
+  let onLike: () async -> Void
+
+  var body: some View {
+    HStack(alignment: .top, spacing: .sm) {
+      Avatar(post.author.avatar).size(.md)
+      VStack(alignment: .leading, spacing: .xs) {
+        HStack(spacing: .xs) {
+          Text(post.author.name).weight(.semibold).lineLimit(1)
+          if post.author.isVerified { Icon(.verified).foregroundStyle(.primary) }
+          Spacer()
+          Text(post.createdAt, format: .relative).foregroundStyle(.muted)
+        }
+        Text(post.text)
+        Button { Task { await onLike() } } label: {
+          Label("\(post.likes)", icon: post.isLiked ? .heartFill : .heart)
+        }
+        .tint(post.isLiked ? .danger : .neutral)
+      }
+    }
+    .padding(.md)
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post }
+}
+
+// The feed screen (the example's last lines, in a view).
+public struct FeedScreen: View {
+  @State private var model = FeedModel(api: MentionAPI.live())
+
+  var body: some View {
+    List(model.posts) { post in
+      PostRow(post: post) { await model.like(post) }
+    }
+    .refreshable { try? await model.refresh() }
+  }
+}
