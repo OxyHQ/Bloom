@@ -1,0 +1,100 @@
+//! Golden tests: every `fixtures/emit/*.bloom` compiles, and its TypeScript
+//! (`.ts.snap`) and declarations (`.d.bloom.ts.snap`) match; every
+//! `fixtures/check/*.bloom` fails with exactly the rendered diagnostics of
+//! its `.stderr`. `BLOOM_BLESS=1 cargo test` rewrites the snapshots.
+
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+use bloom_lang::{Options, compile};
+
+fn fixtures() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
+}
+
+pub fn options() -> Options {
+    let mut paths = BTreeMap::new();
+    paths.insert("@/*".to_string(), vec!["stubs/frontend/*".to_string()]);
+    paths.insert("react-i18next".to_string(), vec!["stubs/react-i18next.d.ts".to_string()]);
+    paths.insert("@oxy.so/services/ui/client".to_string(), vec!["stubs/oxy-services.d.ts".to_string()]);
+    paths.insert("@oxy.so/core/logger".to_string(), vec!["stubs/oxy-logger.d.ts".to_string()]);
+    Options { root: Some(fixtures()), paths, dev: false }
+}
+
+fn bless() -> bool {
+    std::env::var_os("BLOOM_BLESS").is_some()
+}
+
+/// Compares `actual` with the snapshot at `path` (or writes it when blessing).
+fn snapshot(path: &Path, actual: &str) -> Result<(), String> {
+    if bless() {
+        std::fs::write(path, actual).expect("write the snapshot");
+        return Ok(());
+    }
+    let expected = std::fs::read_to_string(path).unwrap_or_default();
+    if expected == actual {
+        Ok(())
+    } else {
+        Err(format!("{} differs:\n--- expected\n{expected}\n--- actual\n{actual}", path.display()))
+    }
+}
+
+fn sources(dir: &str) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = std::fs::read_dir(fixtures().join(dir))
+        .expect("the fixtures directory")
+        .map(|entry| entry.expect("an entry").path())
+        .filter(|path| path.extension().is_some_and(|e| e == "bloom"))
+        .collect();
+    files.sort();
+    files
+}
+
+#[test]
+fn emit_fixtures() {
+    let mut failures = Vec::new();
+    for path in sources("emit") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("emit/{}", path.file_name().expect("a name").to_string_lossy());
+        let output = compile(&source, &name, &options());
+        if !output.diagnostics.is_empty() {
+            let rendered: Vec<&str> = output.diagnostics.iter().map(|d| d.rendered.as_str()).collect();
+            failures.push(format!("{name} has errors:\n{}", rendered.join("\n\n")));
+            continue;
+        }
+        let warnings: Vec<&str> = output.warnings.iter().map(|d| d.rendered.as_str()).collect();
+        let stem = path.with_extension("");
+        for result in [
+            snapshot(&stem.with_extension("ts.snap"), &output.code),
+            snapshot(&stem.with_extension("d.bloom.ts.snap"), output.dts.as_deref().unwrap_or_default()),
+            snapshot(&stem.with_extension("warnings"), &warnings.join("\n\n")),
+        ] {
+            if let Err(failure) = result {
+                failures.push(failure);
+            }
+        }
+        assert!(
+            output.map.as_deref().is_some_and(|map| map.contains("\"mappings\"")),
+            "{name} has a source map"
+        );
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+#[test]
+fn check_fixtures() {
+    let mut failures = Vec::new();
+    for path in sources("check") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("check/{}", path.file_name().expect("a name").to_string_lossy());
+        let output = compile(&source, &name, &options());
+        let rendered: Vec<&str> =
+            output.diagnostics.iter().chain(&output.warnings).map(|d| d.rendered.as_str()).collect();
+        if output.diagnostics.is_empty() && output.warnings.is_empty() {
+            failures.push(format!("{name} reports nothing"));
+        }
+        if let Err(failure) = snapshot(&path.with_extension("stderr"), &(rendered.join("\n\n") + "\n")) {
+            failures.push(failure);
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
