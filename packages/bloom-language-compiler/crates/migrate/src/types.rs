@@ -96,6 +96,16 @@ impl Tr<'_> {
                 match (name.as_str(), args.as_slice()) {
                     ("Array" | "ReadonlyArray", [element]) => format!("[{element}]"),
                     ("Record", [key, value]) if key == "String" => format!("[String: {value}]"),
+                    // Keyed by a union of strings: a `[String: V]`, whose keys bloomc no longer checks.
+                    ("Record", [key, value])
+                        if key != "Float" && key != "Int" && !key.starts_with('[') =>
+                    {
+                        self.review(format!(
+                            "`{}` is a `[String: {value}]`: its keys are no longer checked",
+                            self.slice(reference.span)
+                        ));
+                        format!("[String: {value}]")
+                    }
                     ("Record", _) => {
                         self.refuse("type:record", "a `Record` not keyed by `string`", reference.span)
                     }
@@ -128,7 +138,8 @@ impl Tr<'_> {
             },
             TSType::TSIntersectionType(i) => self.refuse("type:intersection", "an intersection type", i.span),
             TSType::TSAnyKeyword(t) => self.refuse("type:any", "`any`", t.span),
-            TSType::TSUnknownKeyword(t) => self.refuse("type:unknown", "`unknown`", t.span),
+            // `unknown` is exactly a `Foreign` (bloomc writes it back as `unknown`).
+            TSType::TSUnknownKeyword(_) => "Foreign".into(),
             TSType::TSNullKeyword(t) => self.refuse("type:null", "`null` alone", t.span),
             other => {
                 self.refuse("type:other", format!("the type `{}`", self.slice(other.span())), other.span())
