@@ -218,3 +218,39 @@ fn mentions_model_network_and_settings_layers_need_no_bindings() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+const ROW: &str = r#"public struct Row: View {
+  let names: [String]
+  let likes: Int
+  let createdAt: Date
+  @State private var on = true
+
+  var body: some View {
+    VStack(spacing: .sm) {
+      ForEach(names) { name in
+        Text(name).foregroundStyle(.muted).lineLimit(1)
+      }
+      HStack(alignment: .center, spacing: .xs) {
+        Button(action: { on = !on }) { Label("\(likes)", icon: .heart) }
+        Text(createdAt, format: .relative)
+        Toggle("Likes", isOn: $on)
+      }
+      List(names) { name in Text(name) }
+      ProgressView()
+    }
+  }
+}
+"#;
+
+#[test]
+fn bloomui_names_lower_onto_the_languages_nodes() {
+    let root = package("bloomui", &[("Sources/Model/Row.bloom", ROW)]);
+    let path = root.join("Sources/Model/Row.bloom");
+    let out = compile(ROW, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/bloomui.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

@@ -1,0 +1,34 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Icon, Loading, ScrollView, Text, Toggle, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { type Date, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
+
+const $view0 = Icon("heart");
+const $view1 = Loading();
+export interface RowProps {
+  readonly names: readonly string[];
+  readonly likes: number;
+  readonly createdAt: Date;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(18);
+const { names, likes, createdAt } = props;
+const [on, setOn] = useState<boolean>(true);
+let $t0;
+if ($[13] !== names || $[14] !== likes || $[15] !== on || $[16] !== createdAt) {
+$t0 = VStack(names.map((name) => Text(name).foreground("muted").lines(1)), ($[9] !== likes || $[10] !== on || $[11] !== createdAt ? ($[9] = likes, $[10] = on, $[11] = createdAt, $[12] = HStack(($[2] !== likes || $[3] !== on ? ($[2] = likes, $[3] = on, $[4] = Button($view0, ($[0] !== likes ? ($[0] = likes, $[1] = Text(`${likes}`)) : $[1])).style("plain").size("sm").onPress(() => {
+setOn((on) => !on);
+})) : $[4]), ($[5] !== createdAt ? ($[5] = createdAt, $[6] = Text(Date$formatted(createdAt, "relative"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = Toggle([on, setOn] as const).label("Likes")) : $[8])).align("center").spacing("xs")) : $[12]), ScrollView(VStack(...names.map((name) => Text(name)))), $view1).spacing("sm");
+$[13] = names;
+$[14] = likes;
+$[15] = on;
+$[16] = createdAt;
+$[17] = $t0;
+} else {
+$t0 = $[17];
+}
+return $t0;
+});
+

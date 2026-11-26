@@ -11,6 +11,7 @@
 pub mod analysis;
 pub mod ast;
 pub mod bindgen;
+mod bloomui;
 mod chains;
 mod check;
 mod codable;
