@@ -39,7 +39,18 @@ pub fn spell(
         }
         // A `!` written before the operand (`!x`, not part of the span) negates it too.
         // (`!!x`, `Boolean(x)`, is `x`'s truthiness itself.)
-        let (start, negated) = if source[..start].ends_with("!!") {
+        // `!(x)`: the negation of the parenthesised operand, parentheses dropped.
+        let (start, end, negated) = if source[..start].ends_with("!(")
+            && !source[..start].ends_with("!!(")
+            && source[end..].starts_with(')')
+        {
+            (start - 2, end + 1, !negated)
+        } else {
+            (start, end, negated)
+        };
+        let (start, negated) = if source[start..].starts_with("!(") {
+            (start, negated)
+        } else if source[..start].ends_with("!!") {
             (start - 2, negated)
         } else if source[..start].ends_with('!') {
             (start - 1, !negated)

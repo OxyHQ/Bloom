@@ -107,7 +107,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // `X(props)`: TS's `createElement(X, props)`, a props object spread (`X(..props)`).
             ("B0207", _)
-                if d.message == "a component takes its props by name" && crate::expr::is_postfix_text(text) =>
+                if d.message == "a component takes its props by name"
+                    && crate::expr::is_postfix_text(text) =>
             {
                 Some((start, end, format!("..{text}")))
             }
@@ -128,7 +129,10 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                         Some((
                             line_start,
                             close,
-                            format!("{indent}let {hook} = {}\n{indent}let {name} = {hook}", &source[start..close]),
+                            format!(
+                                "{indent}let {hook} = {}\n{indent}let {name} = {hook}",
+                                &source[start..close]
+                            ),
                         ))
                     }
                     _ => None,
