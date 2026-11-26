@@ -347,6 +347,11 @@ impl Tr<'_> {
                     _ => self.refuse("fn:anonymous", "an anonymous function", f.span),
                 },
                 Statement::ExpressionStatement(s) => match &s.expression {
+                    Expression::CallExpression(call)
+                        if react_hook(self, call).as_deref() == Some("useEffect") =>
+                    {
+                        self.effect(call)
+                    }
                     Expression::CallExpression(call) if react_hook(self, call).is_some() => {
                         let hook = react_hook(self, call).unwrap_or_default();
                         self.refuse(&format!("react:{hook}"), format!("React's `{hook}`"), call.span)
@@ -1227,22 +1232,83 @@ impl Tr<'_> {
         format!("{state} = {value}")
     }
 
-    /// `f?.(a)` as a statement: `if let f = f { f(a) }`.
-    fn optional_call(&mut self, call: &CallExpression) -> String {
-        let (bound, callee_text) = match &call.callee {
-            Expression::Identifier(id) if call.optional => {
-                let name = self.expr(&call.callee);
-                (self.name(&id.name, id.span), name)
-            }
-            Expression::StaticMemberExpression(m)
-                if call.optional && !crate::expr::has_optional(&m.object) =>
-            {
-                (m.property.name.to_string(), self.expr(&call.callee))
-            }
-            _ => return self.refuse("optional:call", "an optional call inside a longer chain", call.span),
+    /// `useEffect(() => { …; return cleanup }, deps)` as an `effect` member: `[x]` is
+    /// `effect(id: x)`, `[]` (once) `effect(id: 0)`; other deps are bloomc's inferred
+    /// reads, under review. The returned cleanup is a `defer` where it was set.
+    fn effect(&mut self, call: &CallExpression) -> String {
+        let (Some(Argument::ArrowFunctionExpression(arrow)), deps) =
+            (call.arguments.first(), call.arguments.get(1))
+        else {
+            return self.refuse(
+                "react:useEffect",
+                "a `useEffect` of something other than an arrow",
+                call.span,
+            );
         };
-        let args = self.positional(&call.arguments, false);
-        format!("if let {bound} = {callee_text} {{\n{bound}({args})\n}}")
+        if arrow.r#async || !arrow.params.items.is_empty() {
+            return self.refuse("effect:async", "an async `useEffect` (async work is `.task`)", arrow.span);
+        }
+        let head = match deps.map(|d| d.as_expression().map(|e| e.without_parentheses())) {
+            None => {
+                return self.refuse(
+                    "effect:every-render",
+                    "a `useEffect` without dependencies (it runs after every render)",
+                    call.span,
+                );
+            }
+            Some(Some(Expression::ArrayExpression(a))) => match a.elements.as_slice() {
+                [] => "effect(id: 0)".to_string(),
+                [only] if only.as_expression().is_some() => {
+                    format!("effect(id: {})", self.expr(only.to_expression()))
+                }
+                _ => {
+                    let deps = self.slice(a.span).to_string();
+                    self.review(format!("its deps were {deps}: bloomc infers them from what it reads"));
+                    "effect".to_string()
+                }
+            },
+            Some(_) => {
+                return self.refuse(
+                    "effect:deps",
+                    "a `useEffect` whose deps are not a list literal",
+                    call.span,
+                );
+            }
+        };
+        let saved = self.scope.clone();
+        let body = match arrow.get_expression() {
+            Some(e) => self.stmt_expr(e),
+            None => {
+                let statements = arrow_statements(arrow);
+                let (body, cleanup) = match statements.split_last() {
+                    Some((Statement::ReturnStatement(r), rest)) if r.argument.is_some() => {
+                        (rest, r.argument.as_ref())
+                    }
+                    _ => (statements, None),
+                };
+                let mut text = self.block_stmts(body, arrow_end(arrow), false);
+                if let Some(cleanup) = cleanup {
+                    let deferred = match cleanup.without_parentheses() {
+                        Expression::ArrowFunctionExpression(c) if c.params.items.is_empty() => {
+                            match c.get_expression() {
+                                Some(e) => self.stmt_expr(e),
+                                None => self.block_stmts(arrow_statements(c), arrow_end(c), false),
+                            }
+                        }
+                        other => format!("{}()", self.expr(other)),
+                    };
+                    text.push_str(&format!("\ndefer {{\n{deferred}\n}}"));
+                }
+                text
+            }
+        };
+        self.scope = saved;
+        format!("{head} {{\n{body}\n}}")
+    }
+
+    /// `f?.(a)` as a statement.
+    fn optional_call(&mut self, call: &CallExpression) -> String {
+        self.optional_call_expr(call)
     }
 
     /// `try { await x } catch (e) { … } finally { … }`: a `match` on the awaited

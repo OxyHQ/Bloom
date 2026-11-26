@@ -145,13 +145,7 @@ impl Tr<'_> {
             ),
             Expression::CallExpression(call) => self.call(call),
             Expression::ChainExpression(chain) => match &chain.expression {
-                ChainElement::CallExpression(call) => {
-                    if has_optional_call(call) {
-                        self.refuse("optional:call", "an optional call `f?.()` in an expression", call.span)
-                    } else {
-                        self.call(call)
-                    }
-                }
+                ChainElement::CallExpression(call) => self.optional_call_expr(call),
                 ChainElement::StaticMemberExpression(m) => {
                     self.static_member(&m.object, &m.property.name, m.optional, m.span)
                 }
@@ -370,6 +364,17 @@ impl Tr<'_> {
             return Test::Plain(format!("{left} {op} {right}"));
         }
         Test::Plain(self.condition(e))
+    }
+
+    /// A call in an optional chain: `f?.(a)` and `x.m?.(a)` stay optional calls;
+    /// `a?.b.m()` reads its receiver optionally.
+    pub fn optional_call_expr(&mut self, call: &CallExpression) -> String {
+        if !call.optional {
+            return self.call(call);
+        }
+        let callee = self.expr(&call.callee);
+        let args = self.positional(&call.arguments, false);
+        format!("{callee}?.({args})")
     }
 
     /// `Boolean(x)`: the truthiness of `x`. An operand the codemod cannot type is
@@ -623,7 +628,8 @@ impl Tr<'_> {
         for arg in args {
             let note = self.note(arg.span().start);
             let value = match arg {
-                Argument::SpreadElement(s) => self.refuse("call:spread", "a spread argument", s.span),
+                // A list spread into a rest parameter (`f(..xs)`).
+                Argument::SpreadElement(s) => format!("..{}", self.expr(&s.argument)),
                 other => self.expr(other.to_expression()),
             };
             out.push(format!("{note}{value}"));
@@ -735,7 +741,7 @@ impl Tr<'_> {
                 let mut out = Vec::new();
                 for arg in args {
                     let value = match arg {
-                        Argument::SpreadElement(s) => self.refuse("call:spread", "a spread argument", s.span),
+                        Argument::SpreadElement(s) => format!("..{}", self.expr(&s.argument)),
                         other => self.expr(other.to_expression()),
                     };
                     out.push(value);
@@ -1139,14 +1145,6 @@ pub fn has_optional(e: &Expression) -> bool {
         Expression::CallExpression(c) => c.optional || has_optional(&c.callee),
         _ => false,
     }
-}
-
-fn has_optional_call(call: &CallExpression) -> bool {
-    call.optional
-        || match &call.callee {
-            Expression::StaticMemberExpression(m) => has_optional(&m.object) || m.optional,
-            other => has_optional(other),
-        }
 }
 
 pub fn number(value: f64) -> String {

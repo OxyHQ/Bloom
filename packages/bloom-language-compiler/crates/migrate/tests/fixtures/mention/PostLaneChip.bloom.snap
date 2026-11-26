@@ -69,7 +69,7 @@ pub default view PostLaneChip(
         .onPress { event: GestureResponderEvent in
           // The chip lives inside the post's own press target: opening the lane tab
           // must never open the post detail underneath it.
-          if let stopPropagation = event.stopPropagation { stopPropagation() }
+          event.stopPropagation?.()
           router.push("/@${authorHandle}/lane/${lane.id}")
         }
       }
