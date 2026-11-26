@@ -76,6 +76,14 @@ fn emit_fixtures() {
             output.map.as_deref().is_some_and(|map| map.contains("\"mappings\"")),
             "{name} has a source map"
         );
+        // bloomc's output is a fixed point of the embedded pass: everything that pass does
+        // to a module (hoisting static chains, the React Compiler opt-in, lowering
+        // `toElement`) bloomc has already done or does not need. An optimisation added to
+        // the pass that would change bloomc's output fails here until bloomc does it too.
+        let again = bloom_language_compiler::compile(&output.code, &format!("{name}.ts"));
+        if again.changed {
+            failures.push(format!("{name}: the embedded pass changes bloomc's output:\n{}", again.code));
+        }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
