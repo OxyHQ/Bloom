@@ -516,12 +516,50 @@ impl<'a> Emitter<'a> {
                         _ => None,
                     }))
                     .collect();
+                // What the checker resolved a name to (`FeedModel$$init` for `FeedModel(…)`), and
+                // the witnesses a generic call passes (`Page$$codec(Post$$self)`, `Post$$Titled`).
+                let mut named: HashSet<String> = self
+                    .ck
+                    .names
+                    .values()
+                    .map(|NameRes::Local(l)| self.ck.locals[*l].name.clone())
+                    .filter(|n| n.contains('$'))
+                    .collect();
+                for witnesses in self.ck.witness_args.values() {
+                    for witness in witnesses.iter().flatten() {
+                        match witness {
+                            WitnessArg::Codec(text) => named.extend(
+                                text.split(|c: char| !(c.is_alphanumeric() || c == '$' || c == '_'))
+                                    .filter(|w| w.contains('$'))
+                                    .map(str::to_string),
+                            ),
+                            WitnessArg::Conformance { ty, protocol } => {
+                                named.insert(crate::extensions::mangle(ty, protocol, true));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                for (def, protocol) in self.ck.packs.values() {
+                    named.insert(crate::extensions::mangle(
+                        &self.ck.defs[*def].name,
+                        &self.ck.defs[*protocol].name,
+                        true,
+                    ));
+                }
                 let specs: Vec<&ImportSpec> = specs
                     .iter()
                     .filter(|spec| {
-                        !spec.name.name.contains('$')
-                            || used.contains(spec.name.name.as_str())
-                            || crate::codable::is_synthetic(spec.span)
+                        let name = spec.name.name.as_str();
+                        // A codec offered for a witness is kept only where one is passed.
+                        let codec = matches!(
+                            crate::extensions::demangle(name),
+                            Some((_, "self" | "codec" | "init", true))
+                        );
+                        !name.contains('$')
+                            || used.contains(name)
+                            || named.contains(name)
+                            || (crate::codable::is_synthetic(spec.span) && !codec)
                     })
                     .collect();
                 if specs.is_empty() {

@@ -521,6 +521,22 @@ fn import_uses(
             uses.push((name.clone(), *span));
         }
     }
+    // A generic call's codec witness names a type's codec the source never writes
+    // (`Post$$self`, `Page$$codec`, through `<T: Decodable>`): offered with the type.
+    let types: BTreeMap<String, Span> = uses.iter().map(|(n, s)| (n.clone(), *s)).collect();
+    for name in offered.keys() {
+        if let Some((owner, member, true)) = crate::extensions::demangle(name)
+            && matches!(member, "self" | "codec" | "init")
+            && (types.contains_key(owner) || builtin_codec(owner).is_some())
+        {
+            // A span of its own: a value, never the type's (type-only) import.
+            let at = types.get(owner).copied().unwrap_or_default();
+            uses.push((name.clone(), crate::codable::synthetic(at)));
+        }
+    }
+    if let Some(span) = ["Codable", "Decodable", "Encodable"].iter().find_map(|p| types.get(*p)) {
+        uses.push(("Codec".to_string(), *span));
+    }
     let mut seen = BTreeSet::new();
     uses.retain(|(name, _)| seen.insert(name.clone()));
     let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
@@ -1014,4 +1030,9 @@ mod tests {
             .collect();
         assert_eq!(names, ["A", "Text", "post"]);
     }
+}
+
+/// A built-in type whose codec a `<T: Codable>` call may pass without naming it.
+fn builtin_codec(owner: &str) -> Option<()> {
+    matches!(owner, "String" | "Int" | "Double" | "Bool" | "Array" | "Optional" | "Dictionary").then_some(())
 }
