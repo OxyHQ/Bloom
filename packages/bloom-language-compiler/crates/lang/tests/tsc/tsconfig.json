@@ -1,0 +1,30 @@
+{
+  // Type-checks the emitted TS of the fixtures (`../fixtures/emit/*.ts.snap`, copied
+  // to `out/` by `check.sh`) against the real runtime: @oxy.so/bloom-language from
+  // source, React's types, and the fixtures' stubs for app-only modules.
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "allowArbitraryExtensions": true,
+    "moduleSuffixes": [".ios", ".android", ".web", ""],
+    "types": ["node"],
+    "paths": {
+      "@oxy.so/bloom-language": ["../../../../../bloom-language/src/index.ts"],
+      "@oxy.so/bloom-language/router": ["../../../../../bloom-language/src/router/index.ts"],
+      "@/*": ["../fixtures/stubs/frontend/*"],
+      "react-i18next": ["../fixtures/stubs/react-i18next.d.ts"],
+      "@oxy.so/services/ui/client": ["../fixtures/stubs/oxy-services.d.ts"],
+      "@oxy.so/core/logger": ["../fixtures/stubs/oxy-logger.d.ts"]
+    }
+  },
+  "include": ["out/*.ts"]
+}
