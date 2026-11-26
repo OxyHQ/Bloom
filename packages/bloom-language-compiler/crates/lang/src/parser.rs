@@ -909,6 +909,30 @@ impl<'s, 'i> Parser<'s, 'i> {
                             );
                             continue;
                         };
+                        // `@State private var field = ViewRef<TextInputInstance>()`: a host
+                        // view's instance, filled by `.ref(field)` (React's `useRef`, one hook
+                        // and never a render). It reads as `TextInputInstance?`.
+                        if let ExprKind::Call(call) = &value.kind
+                            && call.args.is_empty()
+                            && call.trailing.is_none()
+                            && let ExprKind::TypeApply { name: callee, args } = &call.callee.kind
+                            && callee.name == "ViewRef"
+                            && let [instance] = args.as_slice()
+                        {
+                            let span = instance.span;
+                            members.push(Member::State(StateDecl {
+                                attr: StateAttr::Ref,
+                                attr_span: attr.span,
+                                name: prop.clone(),
+                                ty: Some(TypeExpr {
+                                    kind: TypeKind::Optional(Box::new(instance.clone())),
+                                    span,
+                                }),
+                                span: member.span,
+                                value: self.expr_node(ExprKind::None, value.span),
+                            }));
+                            continue;
+                        }
                         members.push(Member::State(StateDecl {
                             attr: StateAttr::State,
                             attr_span: attr.span,

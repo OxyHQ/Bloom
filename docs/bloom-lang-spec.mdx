@@ -456,6 +456,16 @@ fields only (`useObserved(model, ["isLoading", "posts"])`) and draws again only 
 changes; a cache that reads the model as a whole (a member call) depends on the subscription's
 version. A class compares by identity (`==` is `===`).
 
+**A reference held by a view** (2.0, in place of 0.x's `@ref`) is a class in `@State`:
+`@State private var ticks = Ticks()` makes the object once (`useState(() => new Ticks())`) and
+keeps it across renders. Writing its fields (`ticks.count += 1`) changes the object in place and
+draws nothing, so it costs what `useRef` does: one hook, no render. Assigning the state a new
+object (`ticks = Ticks()`) draws again, as any `@State`. A host view's instance is
+`@State private var field = ViewRef<ViewInstance>()`: `.ref(field)` (or `.inputRef(field)`, a
+TS prop `ref: field`) gives the ref itself for the host view to fill, and `field` reads as
+`ViewInstance?` outside the body (`none` until it is mounted). It compiles to
+`useRef<ViewInstance | null>(null)`, as 0.x's `@ref field: ViewInstance? = none` did.
+
 ## 5. Values, functions and closures
 
 ```bloom
