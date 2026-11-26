@@ -104,6 +104,12 @@ pub enum CallRes {
     Navigate,
     Binding,
     Sleep,
+    /// `all(a, b)`: `Promise.all`.
+    All,
+    /// `race(a, b)`: `Promise.race`.
+    Race,
+    /// `.onChange(of: v) { old, new in … }` on the body's root: the watched value's type.
+    OnChange(Ty),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -134,6 +140,8 @@ pub enum FieldRes {
     ErrorField,
     /// `Task.signal`.
     TaskSignal,
+    /// `Task.isCancelled`.
+    TaskCancelled,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -350,6 +358,14 @@ impl<'o> Checker<'o> {
         self.out.spans = spans.into_iter().map(|(span, ty)| (span, self.zonk(&ty))).collect();
         let locals = std::mem::take(&mut self.out.locals);
         self.out.locals = locals.into_iter().map(|l| Local { ty: self.zonk(&l.ty), ..l }).collect();
+        let calls = std::mem::take(&mut self.out.calls);
+        self.out.calls = calls
+            .into_iter()
+            .map(|(id, call)| match call {
+                CallRes::OnChange(ty) => (id, CallRes::OnChange(self.zonk(&ty))),
+                other => (id, other),
+            })
+            .collect();
         let structural = std::mem::take(&mut self.out.structural);
         self.out.structural = structural.into_iter().map(|(id, ty)| (id, self.zonk(&ty))).collect();
         let pattern_tys = std::mem::take(&mut self.out.pattern_tys);
@@ -605,7 +621,7 @@ impl<'o> Checker<'o> {
 
     fn names_in_scope(&self) -> Vec<String> {
         let mut names: Vec<String> = self.scopes.iter().flat_map(|s| s.keys().cloned()).collect();
-        names.extend(["ok", "err", "toast", "navigate", "Binding", "sleep"].map(String::from));
+        names.extend(["ok", "err", "toast", "navigate", "Binding", "sleep", "all", "race"].map(String::from));
         names.extend(ui::constructors().map(String::from));
         names
     }
@@ -2666,7 +2682,7 @@ impl<'o> Checker<'o> {
             return self.instantiate(&info.ty);
         }
         match name {
-            "ok" | "err" | "toast" | "navigate" | "sleep" | "Binding" => {
+            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" => {
                 self.report(
                     Diagnostic::error("B0208", expr.span, format!("`{name}` is called, not passed"))
                         .label("call it")
@@ -3163,18 +3179,22 @@ impl<'o> Checker<'o> {
         if let ExprKind::Name(type_name) = &object.kind
             && self.lookup(type_name).is_none()
         {
-            if type_name == "Task" && name.name == "signal" {
+            if type_name == "Task" && matches!(name.name.as_str(), "signal" | "isCancelled") {
                 if !self.frames.iter().any(|f| f.task) {
                     self.report(
                         Diagnostic::error(
                             "B0432",
                             expr.span,
-                            "`Task.signal` is read outside a `.task { … }`",
+                            format!("`Task.{}` is read outside a `.task {{ … }}`", name.name),
                         )
                         .label("no task here")
                         .help("read it inside `.task { … }` on the body")
                         .spec("8-effects-tasks-and-concurrency"),
                     );
+                }
+                if name.name == "isCancelled" {
+                    self.out.fields.insert(expr.id, FieldRes::TaskCancelled);
+                    return Ty::Bool;
                 }
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());

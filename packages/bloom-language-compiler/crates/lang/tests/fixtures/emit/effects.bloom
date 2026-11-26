@@ -1,0 +1,53 @@
+// Phase 1 effects: `.onChange(of:)` (one effect, the value it last ran for
+// in a ref), `all`/`race` over pending calls, and `Task.isCancelled`.
+
+import { fetchCount } from "@/api"
+
+struct Draft {
+  text: String = ""
+  tags: [String] = []
+}
+
+async fn loadA() -> Int {
+  await sleep(10)
+  1
+}
+
+async fn loadB() -> Int {
+  await sleep(20)
+  2
+}
+
+pub view Search {
+  @state query = ""
+  @state draft = Draft()
+  @state saved = true
+  @state total = 0.0
+  @state first = 0
+
+  body {
+    VStack {
+      TextField($query, "Search")
+      Text("${total}")
+    }
+    .onChange(of: query) { old, new in
+      if old.isEmpty && !new.isEmpty {
+        saved = false
+      }
+    }
+    .onChange(of: draft) {
+      saved = false
+    }
+    .task(id: query) {
+      let (a, b) = await all(loadA(), loadB())
+      if Task.isCancelled {
+        return
+      }
+      first = await race(loadA(), loadB())
+      match await all(fetchCount(query), fetchCount("all")) {
+        case .ok((mine, everyone)) => total = mine / everyone + (a + b).toFloat()
+        case .err(_) => total = 0.0
+      }
+    }
+  }
+}
