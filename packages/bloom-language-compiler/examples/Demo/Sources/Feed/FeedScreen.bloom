@@ -21,10 +21,6 @@ public struct FeedScreen: View {
       for post in state.posts { PostRow(post: post, onLike: { task { await like(post) } }) }
     }
     .spacing(.sm)
-    .task {
-      // `state = await refresh(state)` emits an `await` inside setState's updater (reported).
-      let next = await refresh(FeedState())
-      state = next
-    }
+    .task { state = await refresh(state) }
   }
 }
