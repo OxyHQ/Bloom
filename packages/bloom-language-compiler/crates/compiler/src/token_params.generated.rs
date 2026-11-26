@@ -463,6 +463,8 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "animatedCheck.tint(tint: color)", constructor: "AnimatedCheck", call: "AnimatedCheck().tint(@)", sets: &["color"], tokens: &[], opacity: true },
     TokenParam { label: "spinnerIcon.size(size: iconSize)", constructor: "SpinnerIcon", call: "SpinnerIcon().size(@)", sets: &["iconSize"], tokens: &[], opacity: false },
     TokenParam { label: "spinnerIcon.tint(tint: color)", constructor: "SpinnerIcon", call: "SpinnerIcon().tint(@)", sets: &["color"], tokens: &[], opacity: true },
+    TokenParam { label: "progressView.size(size: progressViewSize)", constructor: "ProgressView", call: "ProgressView().size(@)", sets: &["progressViewSize"], tokens: &[], opacity: false },
+    TokenParam { label: "progressView.tint(tint: color)", constructor: "ProgressView", call: "ProgressView().tint(@)", sets: &["color"], tokens: &[], opacity: true },
     TokenParam { label: "collapsible.revealMotion(timedMotion)", constructor: "Collapsible", call: "Collapsible().revealMotion(@)", sets: &["timedMotion"], tokens: &[], opacity: false },
     TokenParam { label: "dropZone.dragActions(dragAction)", constructor: "DropZone", call: "DropZone().dragActions(v, @)", sets: &["dragAction"], tokens: &[], opacity: false },
     TokenParam { label: "mediaInsetBorder.mediaCorner(cornerRadius)", constructor: "MediaInsetBorder", call: "MediaInsetBorder().mediaCorner(@)", sets: &["cornerRadius"], tokens: &[], opacity: false },

@@ -812,6 +812,17 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       testID: p('testID', 'string'),
     },
   },
+  // parity/progress-view.cases.tsx: the platform spinner.
+  'react-native#ActivityIndicator': {
+    node: 'ProgressView',
+    props: {
+      size: p('size', 'token', tokens('progressViewSize')),
+      // A theme colour as its role, an app colour as its own.
+      color: p('tint', 'ink'),
+      accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
   '@oxy.so/bloom/loading#SpinnerIcon': {
     node: 'SpinnerIcon',
     props: {

@@ -705,6 +705,7 @@
     "tabsStyle": ["underline", "pill", "filled"],
     "kbdSize": ["sm", "md"],
     "loadingStyle": ["spinner", "top", "inline"],
+    "progressViewSize": ["small", "large"],
     "contentTransition": ["roll", "numeric"],
     "swipeDirection": ["left", "right", "up", "down"],
     "inputMode": ["none", "text", "decimal", "numeric", "tel", "search", "email", "url"],
@@ -3882,6 +3883,12 @@
       "constructors": ["SpinnerIcon"],
       "modifiers": ["size", "tint"],
       "size": "iconSize",
+      "tint": "color"
+    },
+    "progressView": {
+      "constructors": ["ProgressView"],
+      "modifiers": ["size", "tint"],
+      "size": "progressViewSize",
       "tint": "color"
     },
     "contextMenu": {

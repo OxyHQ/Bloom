@@ -93,7 +93,8 @@ import { Switch as I74 } from 'bloom-22/switch';
 import { RiArrowRightLine as I75 } from 'bloom-22/icons/RiArrowRightLine';
 import { RiArrowRightLine as I76 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { PageHeader as I77 } from 'bloom-22/page-header';
-import { RiLinksLine as I78 } from '@oxy.so/bloom/icons/RiLinksLine';
+import { ActivityIndicator as I78 } from 'react-native';
+import { RiLinksLine as I79 } from '@oxy.so/bloom/icons/RiLinksLine';
 
 const L = { ...L0, ...L1, ...L2, ...L3, ...L4, ...L5, ...L6, ...L7, ...L8 };
 
@@ -1219,6 +1220,18 @@ export const CASES = [
     after: () => { const View = I0; const Text = I1; const { VStack, Text: LText, HStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(VStack(LText('Reply')).padding('left', 37).padding('bottom', 43), VStack(LText('Suggestions')).position({ left: 'none', bottom: '100%' }), HStack(VStack(LText('Lane')).shrink('20'), LText('Meta'))).safeAreaPadding('top', 'content').padding('top', '5xl'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
+    name: "components/Spinners.tsx:7",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const ActivityIndicator = I78; return (<ActivityIndicator color={parityTheme.colors.primary} />); } return (<Before />); },
+    after: () => { const ActivityIndicator = I78; const { ProgressView } = L;  return (toElement(ProgressView().tint('primary'))); },
+  },
+  {
+    name: "components/Spinners.tsx:11",
+    bloom22: false,
+    before: () => { const ActivityIndicator = I78; return (<ActivityIndicator size="small" accessibilityLabel="Moving your history" />); },
+    after: () => { const ActivityIndicator = I78; const { ProgressView, toElement } = L;  return (toElement(ProgressView().size('small').label('Moving your history'))); },
+  },
+  {
     name: "components/Surfaces.tsx:10",
     bloom22: false,
     before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I0; const Text = I1; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>
@@ -1282,10 +1295,10 @@ export const CASES = [
   {
     name: "components/Toolbar.tsx:9",
     bloom22: false,
-    before: () => { const Button = I22; const RiLinksLine = I78; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
+    before: () => { const Button = I22; const RiLinksLine = I79; return (<Button appearance="plain" tone="neutral" iconOnly accessibilityLabel="Link" onPress={() => {}}>
       {(color) => <RiLinksLine width={20} height={20} fill={color} />}
     </Button>); },
-    after: () => { const Button = I22; const RiLinksLine = I78; const { Icon, Group, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
+    after: () => { const Button = I22; const RiLinksLine = I79; const { Icon, Group, Button: LButton } = L;  return (toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))); },
   },
   {
     name: "components/Toolbar.tsx:16",

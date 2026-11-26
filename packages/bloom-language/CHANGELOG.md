@@ -19,6 +19,7 @@
 
 ### Added
 
+- `ProgressView()`: the platform's own spinner (SwiftUI's indeterminate `ProgressView()`), React Native's `ActivityIndicator`, with `.size('small' | 'large')`, `.tint(color)` (a role or an app colour), `.label()` and its box modifiers as its `style`. Bloom's `Loading` and `SpinnerIcon` stay Bloom's own loaders. React Native's `Image` gets no node: the language's `Image` (Bloom's `BloomImage`) covers what apps draw with it (design document, Image).
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
 - `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).

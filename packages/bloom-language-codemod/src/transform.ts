@@ -550,7 +550,8 @@ function kindOf(source: Source | undefined): Kind | undefined {
     if (source.imported === 'TouchableOpacity') return 'pressable';
     if (source.imported === 'Text') return 'rnText';
     if (source.imported === 'Image') return 'rnImage';
-    return undefined;
+    // A React Native component the language draws as a node of its own (`ActivityIndicator`).
+    return ruleFor(source.module, source.imported) ? 'component' : undefined;
   }
   if (
     source.module === '@oxy.so/bloom/typography' &&

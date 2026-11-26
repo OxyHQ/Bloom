@@ -187,6 +187,23 @@ export const A = ({ go, hold }) => (
     expect(flat(code)).toContain(".onLongPress(hold, '500')");
     expect(flat(code)).toContain('.collapsable(false)');
   });
+  it('maps React Native’s spinner to the platform spinner node', () => {
+    const { code, unconverted } = run(`import { ActivityIndicator, View } from 'react-native';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View>
+      <ActivityIndicator size="small" color={theme.colors.primarySubtleForeground} />
+      <ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading" />
+    </View>
+  );
+}
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain("ProgressView().size('small').tint('primaryText')");
+    expect(flat(code)).toContain("ProgressView().tint('primary').label('Loading')");
+  });
   it('keeps a long press delay that is no duration token, or has no long press', () => {
     const result = run(`import { Pressable } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';

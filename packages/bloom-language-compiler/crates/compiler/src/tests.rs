@@ -245,6 +245,17 @@ fn elevation_rings_and_overlays_are_checked() {
 }
 
 #[test]
+fn the_platform_spinner_is_checked() {
+    let ok = compiled_with(
+        "ProgressView",
+        "export const x = () => ProgressView().size('small').tint('primary').label('Loading');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with("ProgressView", "export const x = () => ProgressView().size('md');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown progressViewSize token 'md' for .size()");
+}
+
+#[test]
 fn mentions_host_props_text_shadow_and_inline_insets_are_checked() {
     let ok = compiled(
         "export const x = (f) => VStack(Text('a').textShadow('0 1px 3px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })).onPress(f).onLongPress(f, '500').accessibilityElement(false).focusable(false).collapsable(false).sticky().position({ vertical: 'sm' });\n",

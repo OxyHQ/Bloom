@@ -87,6 +87,7 @@ import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
 import type { AnimatedCheckKind } from './controls/animated-check';
 import type { SpinnerIconKind } from './controls/spinner-icon';
+import type { ProgressViewKind } from './controls/progress-view';
 import type { MediaInsetBorderKind } from './controls/media-inset-border';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
@@ -333,6 +334,7 @@ import {
   type OrderStatusBarStyle,
   type EngagementBarTone,
   type LockupSize,
+  type ProgressViewSize,
   type TitleAlign,
   type TitleLayout,
   type TitleAppearance,
@@ -1505,6 +1507,7 @@ export type Modifier =
         | NoteToolbarSize
         | OfferingBadgeSize
         | LockupSize
+        | ProgressViewSize
         | SidebarSize;
     }
   | {
@@ -1912,6 +1915,7 @@ export type NodeKind =
   | ConfirmationDialogKind
   | AnimatedCheckKind
   | SpinnerIconKind
+  | ProgressViewKind
   | FactStripKind
   | ExpandableTextKind
   | CompositionBarKind
@@ -2348,6 +2352,7 @@ export class Node {
       | NoteToolbarSize
       | OfferingBadgeSize
       | LockupSize
+      | ProgressViewSize
       | SidebarSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
