@@ -528,6 +528,7 @@ impl<'a> Formatter<'a> {
                 text(" "),
                 self.block(&f.body, Layout::Own),
             ]),
+            StmtKind::Defer(b) => concat(vec![text("defer "), self.block(b, Layout::Own)]),
             StmtKind::Expr(e) => self.expr_in(e, Context::Statement),
         }
     }
@@ -550,6 +551,8 @@ impl<'a> Formatter<'a> {
             }
             ExprKind::Bool(b) => text(if *b { "true" } else { "false" }),
             ExprKind::None => text("none"),
+            ExprKind::Unit => text("()"),
+            ExprKind::Task(b) => concat(vec![text("task "), self.block(b, Layout::Own)]),
             ExprKind::Name(name) => text(name.clone()),
             ExprKind::ImplicitMember(name) => text(format!(".{}", name.name)),
             ExprKind::Binding(path) => {

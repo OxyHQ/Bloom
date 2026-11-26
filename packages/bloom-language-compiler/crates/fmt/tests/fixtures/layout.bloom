@@ -32,3 +32,11 @@ pub default view Long(items: [String]) {
     }.spacing("md").padding("lg")
   }
 }
+
+async fn persist(value: Int) -> Unit {
+  defer {   log("done") }
+  task {
+    await store(value)
+  }
+  ()
+}
