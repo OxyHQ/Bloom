@@ -1,0 +1,17 @@
+error[B0601]: a `Foreign` value flows into `Float`
+ --> check/foreign.bloom:5:15
+  |
+5 |   let count = section.isLoading + 1
+  |               ^^^^^^^^^^^^^^^^^ a TS value Bloom could not type (`ReturnType<typeof useViewerSettingsSection>["isLoading"]`)
+  |
+help: annotate it where Bloom first uses it: `let value: Float = …`; TypeScript then checks the boundary
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
+
+error[B0430]: this async call is neither awaited nor started as a task
+  --> check/foreign.bloom:12:36
+   |
+12 |     Button(Text("Save")).onPress { save() }
+   |                                    ^^^^^^ its result (and any failure) would be dropped
+   |
+help: write `await` before it, or start it on its own: `task { await … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency

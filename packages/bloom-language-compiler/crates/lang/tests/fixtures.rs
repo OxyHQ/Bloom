@@ -1,0 +1,183 @@
+//! Golden tests: every `fixtures/emit/*.bloom` compiles, and its TypeScript
+//! (`.ts.snap`) and declarations (`.d.bloom.ts.snap`) match; every
+//! `fixtures/check/*.bloom` fails with exactly the rendered diagnostics of
+//! its `.stderr`. `BLOOM_BLESS=1 cargo test` rewrites the snapshots.
+
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+use bloom_lang::{Options, compile};
+
+fn fixtures() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
+}
+
+pub fn options() -> Options {
+    let mut paths = BTreeMap::new();
+    paths.insert("@/*".to_string(), vec!["stubs/frontend/*".to_string()]);
+    paths.insert("react-i18next".to_string(), vec!["stubs/react-i18next.d.ts".to_string()]);
+    paths.insert("@oxy.so/services/ui/client".to_string(), vec!["stubs/oxy-services.d.ts".to_string()]);
+    paths.insert("@oxy.so/core/logger".to_string(), vec!["stubs/oxy-logger.d.ts".to_string()]);
+    Options { root: Some(fixtures()), paths, dev: false }
+}
+
+fn bless() -> bool {
+    std::env::var_os("BLOOM_BLESS").is_some()
+}
+
+/// Compares `actual` with the snapshot at `path` (or writes it when blessing).
+fn snapshot(path: &Path, actual: &str) -> Result<(), String> {
+    if bless() {
+        std::fs::write(path, actual).expect("write the snapshot");
+        return Ok(());
+    }
+    let expected = std::fs::read_to_string(path).unwrap_or_default();
+    if expected == actual {
+        Ok(())
+    } else {
+        Err(format!("{} differs:\n--- expected\n{expected}\n--- actual\n{actual}", path.display()))
+    }
+}
+
+fn sources(dir: &str) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = std::fs::read_dir(fixtures().join(dir))
+        .expect("the fixtures directory")
+        .map(|entry| entry.expect("an entry").path())
+        .filter(|path| path.extension().is_some_and(|e| e == "bloom"))
+        .collect();
+    files.sort();
+    files
+}
+
+#[test]
+fn emit_fixtures() {
+    let mut failures = Vec::new();
+    for path in sources("emit") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("emit/{}", path.file_name().expect("a name").to_string_lossy());
+        let output = compile(&source, &name, &options());
+        if !output.diagnostics.is_empty() {
+            let rendered: Vec<&str> = output.diagnostics.iter().map(|d| d.rendered.as_str()).collect();
+            failures.push(format!("{name} has errors:\n{}", rendered.join("\n\n")));
+            continue;
+        }
+        let warnings: Vec<&str> = output.warnings.iter().map(|d| d.rendered.as_str()).collect();
+        let stem = path.with_extension("");
+        for result in [
+            snapshot(&stem.with_extension("ts.snap"), &output.code),
+            snapshot(&stem.with_extension("d.bloom.ts.snap"), output.dts.as_deref().unwrap_or_default()),
+            snapshot(&stem.with_extension("warnings"), &warnings.join("\n\n")),
+        ] {
+            if let Err(failure) = result {
+                failures.push(failure);
+            }
+        }
+        assert!(
+            output.map.as_deref().is_some_and(|map| map.contains("\"mappings\"")),
+            "{name} has a source map"
+        );
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+#[test]
+fn check_fixtures() {
+    let mut failures = Vec::new();
+    for path in sources("check") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("check/{}", path.file_name().expect("a name").to_string_lossy());
+        let output = compile(&source, &name, &options());
+        let rendered: Vec<&str> =
+            output.diagnostics.iter().chain(&output.warnings).map(|d| d.rendered.as_str()).collect();
+        if output.diagnostics.is_empty() && output.warnings.is_empty() {
+            failures.push(format!("{name} reports nothing"));
+        }
+        if let Err(failure) = snapshot(&path.with_extension("stderr"), &(rendered.join("\n\n") + "\n")) {
+            failures.push(failure);
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// `BLOOM_FILE=… BLOOM_ROOT=… cargo test -p bloom_lang --test fixtures compile_one -- --ignored --nocapture`:
+/// compiles one file against a real project (its `tsconfig.json` paths), printing
+/// the diagnostics, then writing the TS (`BLOOM_OUT`, default: stdout).
+#[test]
+#[ignore]
+fn compile_one() {
+    let file = std::env::var("BLOOM_FILE").expect("BLOOM_FILE");
+    let root = std::env::var("BLOOM_ROOT").expect("BLOOM_ROOT");
+    let source = std::fs::read_to_string(&file).expect("the file");
+    let relative =
+        Path::new(&file).strip_prefix(&root).map(Path::to_path_buf).unwrap_or_else(|_| file.clone().into());
+    let options = Options { root: Some(root.into()), paths: BTreeMap::new(), dev: false };
+    let output = compile(&source, &relative.to_string_lossy(), &options);
+    for diagnostic in output.diagnostics.iter().chain(&output.warnings) {
+        eprintln!("{}\n", diagnostic.rendered);
+    }
+    match std::env::var("BLOOM_OUT") {
+        Ok(out) => {
+            std::fs::write(&out, &output.code).expect("write");
+            if let Some(dts) = &output.dts {
+                std::fs::write(format!("{out}.d.bloom.ts"), dts).expect("write");
+            }
+        }
+        Err(_) => println!("{}", output.code),
+    }
+}
+
+/// `cargo test --release -p bloom_lang --test fixtures timing -- --ignored --nocapture`:
+/// the compile time of each emit fixture, cold (the first compile reads the TS
+/// declarations it imports) and warm (the median of 200, declarations cached).
+#[test]
+#[ignore]
+fn timing() {
+    for path in sources("emit") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("emit/{}", path.file_name().expect("a name").to_string_lossy());
+        let options = options();
+        let cold = std::time::Instant::now();
+        let _ = compile(&source, &name, &options);
+        let cold = cold.elapsed();
+        let mut runs: Vec<std::time::Duration> = (0..200)
+            .map(|_| {
+                let start = std::time::Instant::now();
+                let output = compile(&source, &name, &options);
+                assert!(output.diagnostics.is_empty());
+                start.elapsed()
+            })
+            .collect();
+        runs.sort();
+        let parse = {
+            let start = std::time::Instant::now();
+            for _ in 0..200 {
+                let _ = bloom_lang::parse(&source, &name);
+            }
+            start.elapsed() / 200
+        };
+        let average = |f: &dyn Fn()| {
+            let start = std::time::Instant::now();
+            for _ in 0..200 {
+                f();
+            }
+            start.elapsed() / 200
+        };
+        let check = average(&|| {
+            let _ = bloom_lang::check(&source, &name, &options);
+        });
+        let code = compile(&source, &name, &options).code;
+        let embedded = average(&|| {
+            let _ = bloom_language_compiler::compile(&code, &format!("{name}.ts"));
+        });
+        println!(
+            "{name}: {} lines, cold {:?}, warm median {:?} (p90 {:?}); parse {:?}, parse+check {:?}, embedded pass {:?}",
+            source.lines().count(),
+            cold,
+            runs[100],
+            runs[180],
+            parse,
+            check,
+            embedded
+        );
+    }
+}

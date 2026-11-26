@@ -1,0 +1,15 @@
+view Broken {
+  @state count =
+  body {
+    Text("one")
+  }
+}
+
+fnc helper() -> Int { 1 }
+
+fn ok() -> Int {
+  let a = (1 +
+  a
+}
+
+fn fine() -> Int { 2 }

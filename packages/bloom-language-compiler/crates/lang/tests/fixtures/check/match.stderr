@@ -1,0 +1,28 @@
+error[B0301]: this match does not cover `.failed(_)`
+ --> check/match.bloom:8:9
+  |
+8 |   match load {
+  |         ^^^^ `Load<Int>` is not matched by every value
+  |
+help: add the missing arm(s), or `case _ =>` for the rest:
+      case .failed(_) => …
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0301]: this match does not cover `false`
+  --> check/match.bloom:22:9
+   |
+22 |   match flag {
+   |         ^^^^ `Bool` is not matched by every value
+   |
+help: add the missing arm(s), or `case _ =>` for the rest:
+      case false => …
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+warning[B0302]: this arm is never reached
+  --> check/match.bloom:17:10
+   |
+17 |     case .loading => 1
+   |          ^^^^^^^^ the arms above match every value it matches
+   |
+help: remove it, or move it above the arm that covers it
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

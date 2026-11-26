@@ -1,0 +1,109 @@
+// A fixture that exercises the phase 0 subset beyond the Notifications screen.
+
+enum Load<T> {
+  loading
+  failed(message: String)
+  ready(T)
+}
+
+enum Tone { calm, loud }
+
+struct Draft {
+  text: String = ""
+  sensitive: Bool = false
+  tags: [String] = []
+}
+
+pub fn first<T>(items: [T]) -> T? {
+  items.first
+}
+
+fn describe(load: Load<Int>) -> String {
+  match load {
+    case .loading => "Loading"
+    case .failed(message) => "Failed: ${message}"
+    case .ready(n) if n > 99 => "Many"
+    case .ready(n) => "${n} items"
+  }
+}
+
+fn parse(text: String) -> Result<Int, String> {
+  match text.toInt() {
+    case .some(n) => ok(n)
+    case none => err("not a number: ${text}")
+  }
+}
+
+fn sum(texts: [String]) -> Result<Int, String> {
+  var total = 0
+  for text in texts {
+    let n = parse(text)?
+    total += n
+  }
+  ok(total)
+}
+
+fn loudness(tone: Tone) -> Float {
+  match tone {
+    case .calm => 0.5
+    case .loud => 1
+  }
+}
+
+fn tagged(draft: Draft, tag: String) -> Draft {
+  draft.with(tags: draft.tags.appending(tag).sorted { a, b in a < b })
+}
+
+pub view Composer(maxLength: Int = 280, onSend: async (Draft) -> Result<Unit, String>) {
+  @state draft = Draft()
+  @state sending = false
+  @state sent = 0
+
+  let left = maxLength - draft.text.count
+  let canSend = !sending && left >= 0 && !draft.text.isEmpty
+  let tone: Tone = left < 20 ? .loud : .calm
+
+  async fn send() {
+    sending = true
+    defer { sending = false }
+    match await onSend(draft) {
+      case .ok(_) => {
+        draft = Draft()
+        sent += 1
+      }
+      case .err(message) => toast(message, type: "error")
+    }
+  }
+
+  body {
+    VStack {
+      TextField($draft.text, "What is new?")
+      HStack {
+        Toggle($draft.sensitive).label("Sensitive")
+        Spacer()
+        Text("${left}").foreground(left < 0 ? "error" : "muted")
+        Button(Text("Send")).disabled(!canSend).onPress { task { await send() } }
+      }
+      .spacing("sm")
+      if let tag = first(draft.tags) {
+        Text(tag).foreground("muted")
+      }
+      for tag in draft.tags {
+        Text(tag)
+      }
+      Text("${loudness(tone)}")
+    }
+    .spacing("md")
+    .padding("lg")
+    .task(id: sent) {
+      if sent > 0 {
+        await sleep(1000)
+      }
+    }
+  }
+}
+
+/// The module's default export.
+pub default view Badge {
+  body { Text("a") }
+}

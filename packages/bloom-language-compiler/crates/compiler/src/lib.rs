@@ -23,9 +23,12 @@ mod check;
 mod diagnostics;
 mod docs;
 mod module;
+/// The names chains are checked against, generated from `spec/language.json`:
+/// public so the `.bloom` compiler checks its modifiers and tokens against the
+/// same tables instead of a copy.
 #[rustfmt::skip]
 #[path = "spec.generated.rs"]
-mod spec;
+pub mod spec;
 
 use std::collections::HashSet;
 
@@ -43,7 +46,7 @@ use oxc_syntax::scope::ScopeFlags;
 use oxc_syntax::symbol::SymbolId;
 
 pub use diagnostics::{Diagnostic, Severity};
-pub use docs::{DOCS_BASE, links as doc_links};
+pub use docs::{DOCS_BASE, Doc, Tour, links as doc_links};
 pub use module::LANGUAGE_MODULE;
 use module::{Binding, Module};
 
