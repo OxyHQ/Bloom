@@ -930,7 +930,81 @@ impl<'a> Emitter<'a> {
                 let body = self.block_body(&block.stmts, Tail::Discard, None);
                 self.push_stmt(body);
             }
+            // `guard c else { … }`: `if (!(c)) { … }`; what `c` binds reads its path after it.
+            StmtKind::Guard(g) => {
+                let cond = self.condition(&g.cond);
+                let body = self.block_body(&g.otherwise.stmts, Tail::Discard, self.signal.clone().as_deref());
+                let mut line = Frag::at(stmt.span, "if (!(");
+                line.f(cond).s(")) ").f(body);
+                self.push_stmt(line);
+            }
+            StmtKind::Throw(value) => {
+                let value = self.expr(value);
+                let mut line = Frag::at(stmt.span, "throw ");
+                line.f(value).s(";");
+                self.push_stmt(line);
+            }
+            StmtKind::Do(d) => self.do_stmt(d, stmt.span),
         }
+    }
+
+    /// `do { … } catch … { … }`: one JS `try`; several catches test the error in order, and
+    /// one that matches none rethrows it.
+    fn do_stmt(&mut self, d: &DoStmt, span: Span) {
+        let signal = self.signal.clone();
+        let body = self.block_body(&d.body.stmts, Tail::Discard, signal.as_deref());
+        let mut line = Frag::at(span, "try ");
+        line.f(body);
+        match d.catches.as_slice() {
+            [] => {
+                line.s(" finally {}");
+            }
+            [only] if only.pattern.is_none() => {
+                let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
+                let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
+                line.s(&format!(" catch ({name}) ")).f(body);
+            }
+            catches => {
+                line.s(" catch ($error) {\n");
+                let mut caught_all = false;
+                for (index, catch) in catches.iter().enumerate() {
+                    let test = match &catch.pattern {
+                        Some(pattern) => {
+                            let tests = self.pattern_test(pattern, "$error");
+                            if tests.is_empty() { None } else { Some(tests.join(" && ")) }
+                        }
+                        None => None,
+                    };
+                    let mut lines = Vec::new();
+                    if catch.pattern.is_none() {
+                        let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
+                        lines.push(format!("const {name} = $error;"));
+                    }
+                    let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
+                    let head = match (&test, index) {
+                        (Some(test), 0) => format!("if ({test}) "),
+                        (Some(test), _) => format!(" else if ({test}) "),
+                        (None, 0) => String::new(),
+                        (None, _) => " else ".to_string(),
+                    };
+                    line.s(&head);
+                    if lines.is_empty() {
+                        line.f(body);
+                    } else {
+                        line.s("{\n").s(&lines.join("\n")).s("\n").f(body).s("\n}");
+                    }
+                    if test.is_none() {
+                        caught_all = true;
+                        break;
+                    }
+                }
+                if !caught_all {
+                    line.s(" else {\nthrow $error;\n}");
+                }
+                line.s("\n}");
+            }
+        }
+        self.push_stmt(line);
     }
 
     /// The JS binding a `let` pattern writes (`x`, `{ a, b: c }`, `[a, b]`).
@@ -1612,6 +1686,16 @@ impl<'a> Emitter<'a> {
                 _ => self.expr(inner).wrap("await (", ")"),
             },
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            ExprKind::Throwing(TryKind::Plain | TryKind::Force, inner) => self.expr(inner),
+            // `try? f()`: its value, or `undefined` when it throws.
+            ExprKind::Throwing(TryKind::Optional, inner) => {
+                let value = self.expr(inner);
+                let (open, close) =
+                    if expr_awaits(inner) { ("(await (async () => ", ")())") } else { ("(() => ", ")()") };
+                let mut out = Frag::of(open);
+                out.s("{\ntry {\nreturn ").f(value).s(";\n} catch {\nreturn undefined;\n}\n}").s(close);
+                out
+            }
             // A chain narrowed present: TS does not keep a property's narrowing in a closure.
             ExprKind::Field(object, name) if self.ck.narrowed_paths.contains(&expr.id) => {
                 let mut out = self.field(expr, object, name);
@@ -3160,7 +3244,11 @@ pub(crate) fn stmt_awaits(stmt: &Stmt) -> bool {
         StmtKind::Return(Some(e)) | StmtKind::Expr(e) => visit(e),
         StmtKind::While(w) => visit(&w.cond),
         StmtKind::For(f) => visit(&f.iter),
-        StmtKind::Return(None) | StmtKind::Defer(_) => {}
+        StmtKind::Guard(g) => match &g.cond {
+            Cond::Expr(e) | Cond::Let(_, e) => visit(e),
+        },
+        StmtKind::Throw(e) => visit(e),
+        StmtKind::Return(None) | StmtKind::Defer(_) | StmtKind::Do(_) => {}
     }
     found
 }
@@ -3175,6 +3263,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
+        | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
         ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => expr_awaits(a) || expr_awaits(b),
@@ -3266,6 +3355,17 @@ impl<'a> Emitter<'a> {
                 self.collect(&f.iter, out);
                 f.body.stmts.iter().for_each(|s| self.stmt_deps(s, out));
             }
+            StmtKind::Guard(g) => {
+                match &g.cond {
+                    Cond::Expr(e) | Cond::Let(_, e) => self.collect(e, out),
+                }
+                g.otherwise.stmts.iter().for_each(|s| self.stmt_deps(s, out));
+            }
+            StmtKind::Throw(e) => self.collect(e, out),
+            StmtKind::Do(d) => {
+                d.body.stmts.iter().for_each(|s| self.stmt_deps(s, out));
+                d.catches.iter().flat_map(|c| &c.body.stmts).for_each(|s| self.stmt_deps(s, out));
+            }
         }
     }
 
@@ -3321,6 +3421,7 @@ impl<'a> Emitter<'a> {
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
+            | ExprKind::Throwing(_, e)
             | ExprKind::Field(e, _)
             | ExprKind::OptField(e, _) => go(e),
             ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(go),
