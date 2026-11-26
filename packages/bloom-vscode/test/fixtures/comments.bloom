@@ -1,0 +1,60 @@
+// A header comment, kept at the top.
+
+import { b } from "./b.bloom" // trailing an import
+// leading the import it moves with
+import { a } from "./a.bloom"
+
+/// Doc for Draft.
+/// Second doc line.
+struct Draft {
+  // leading a field
+  text: String = "" // trailing a field
+  /* a block before a field */ sensitive: Bool = false
+
+  // after an empty line
+  count: Int = 0
+  // dangling at the end of a struct
+}
+
+enum Mode {
+  /// a doc on a variant
+  idle // trailing a variant
+  busy(reason: String)
+}
+
+pub view Panel(title: String, /* inline param comment */ compact: Bool = false) {
+  @state open = false // trailing a state
+
+  /* block member comment */
+  let label = title.uppercased() // derived
+
+  fn toggle() {
+    // only a comment and a statement
+    open = !open
+  }
+
+  // leading the body
+  body {
+    VStack {
+      Text(label) // trailing a child
+      // between children
+      Button(Text("Toggle"))
+        // leading a modifier
+        .onPress { toggle() }
+      Text(
+        title, // trailing an argument
+        "second",
+      )
+      match open {
+        // leading an arm
+        case true => Text("Open") // trailing an arm
+        case false => Spacer()
+      }
+    }
+    .padding("md") /* trailing a modifier */
+    // dangling at the end of the body
+  }
+}
+// The end of the file.
+
+/* And a last block. */
