@@ -2,14 +2,15 @@
 //!
 //! `.bloom` source is lexed and parsed ([`parse`]) into a lossless tree
 //! ([`ast`], comments in [`ast::Comments`]), resolved and type-checked
-//! ([`check`]), and emitted as typed TypeScript that calls the embedded
-//! language (`@oxy.so/bloom-language`). The embedded language's own pass
-//! (`bloom_language_compiler::compile`) then runs on that TypeScript in the
-//! same process, hoisting static chains, and the two source maps are composed
-//! back to the `.bloom` file ([`compile`]).
+//! ([`check`]), held to the chain rules the embedded language's pass holds
+//! too (`bloom_language_compiler::rules`, fed from this tree by [`chains`]),
+//! and emitted as typed TypeScript that calls the embedded language
+//! (`@oxy.so/bloom-language`), with its static chains already hoisted, so the
+//! embedded pass has nothing left to do on it ([`compile`]).
 
 pub mod analysis;
 pub mod ast;
+mod chains;
 mod check;
 pub mod diagnostic;
 mod emit;
@@ -87,6 +88,7 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut result = check::check(&file, source, filename, options);
+    rules(&file, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
@@ -101,6 +103,7 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
+    rules(&file, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
@@ -135,6 +138,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
     let (file, _, syntax) = parser::parse(source);
     let mut checked = check::check_for_emit(&file, source, filename, options);
+    rules(&file, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
     let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
     let mut output = Output {
@@ -149,32 +153,9 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
         let emitted = emit::emit(&file, &checked, source, filename, options);
         errors.extend(emitted.diagnostics);
         if errors.is_empty() {
-            // The embedded pass checks every chain again (glass, toolbars, labels, environments:
-            // its rules are the one source of them). bloomc's output is already what the pass
-            // makes of it (static chains are hoisted), so it returns it unchanged
-            // (`tests/fixtures.rs` holds that), and what it finds is reported at the `.bloom` span.
-            let embedded = bloom_language_compiler::compile(&emitted.code, &format!("{filename}.ts"));
-            for problem in embedded.diagnostics {
-                errors.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Error));
-            }
-            for problem in embedded.warnings {
-                warnings.push(emitted.map.lift(&problem, &emitted.code, source, Severity::Warning));
-            }
-            if errors.is_empty() {
-                let (code, map) = if embedded.changed {
-                    let map = embedded
-                        .map
-                        .as_deref()
-                        .map(|map| emitted.map.compose(map, &emitted.code, filename, source));
-                    (embedded.code, map)
-                } else {
-                    let map = emitted.map.to_json(filename, source, &emitted.code);
-                    (emitted.code, Some(map))
-                };
-                output.code = code;
-                output.map = map;
-                output.dts = Some(emitted.dts);
-            }
+            output.map = Some(emitted.map.to_json(filename, source, &emitted.code));
+            output.code = emitted.code;
+            output.dts = Some(emitted.dts);
         }
     }
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
@@ -185,6 +166,15 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     output.diagnostics = errors;
     output.warnings = warnings;
     output
+}
+
+/// The chain rules (glass, toolbars, labels, choices), once the module checks:
+/// on a module with type errors they would be about what failed to resolve.
+fn rules(file: &Ast, result: &mut check::CheckResult) {
+    if result.diagnostics.iter().all(|d| d.severity != Severity::Error) {
+        let found = chains::check(file, result);
+        result.diagnostics.extend(found);
+    }
 }
 
 /// Syntax errors and the checker's findings, as errors and warnings. With a
