@@ -1,0 +1,15 @@
+let package = Package(
+  name: "Demo",
+  platforms: [.iOS(17), .android(26), .web],
+  dependencies: [
+    .package("Bloom", from: "23.9.1"),
+  ],
+  targets: [
+    .app("Demo", dependencies: ["Feed", "Settings"]),
+    .module("Feed", dependencies: ["Posts", "API"]),
+    .module("Settings"),
+    .module("Posts"),
+    .module("API", dependencies: ["Posts"]),
+    .tests("PostsTests", dependencies: ["Posts", "API"]),
+  ]
+)

@@ -121,7 +121,11 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
     let options = module_options.as_ref().unwrap_or(options);
-    let mut result = check::check(&file, source, filename, options);
+    // A module's file is read by its absolute path: its root is the build directory.
+    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
+    let at = absolute.as_ref().map(|p| p.to_string_lossy().into_owned());
+    let at = at.as_deref().unwrap_or(filename);
+    let mut result = check::check(&file, source, at, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
@@ -140,7 +144,11 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
     let options = module_options.as_ref().unwrap_or(options);
-    let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
+    // A module's file is read by its absolute path: its root is the build directory.
+    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
+    let at = absolute.as_ref().map(|p| p.to_string_lossy().into_owned());
+    let at = at.as_deref().unwrap_or(filename);
+    let (mut result, expected, path) = check::check_recording(&file, source, at, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
@@ -181,7 +189,11 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
     let options = module_options.as_ref().unwrap_or(options);
-    let mut checked = check::check_for_emit(&file, source, filename, options);
+    // A module's file is read by its absolute path: its root is the build directory.
+    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
+    let at = absolute.as_ref().map(|p| p.to_string_lossy().into_owned());
+    let at = at.as_deref().unwrap_or(filename);
+    let mut checked = check::check_for_emit(&file, source, at, options);
     rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
     resolved(resolution, &mut errors, &mut warnings, &mut checked.dependencies, options);
@@ -195,7 +207,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
         dependencies,
     };
     if errors.is_empty() {
-        let emitted = emit::emit(&file, &checked, source, filename, options);
+        let emitted = emit::emit(&file, &checked, source, at, options);
         errors.extend(emitted.diagnostics);
         if errors.is_empty() {
             output.map = Some(emitted.map.to_json(filename, source, &emitted.code));
