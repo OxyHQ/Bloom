@@ -1,0 +1,12 @@
+// Optional function and union types keep their parentheses.
+struct Handlers {
+  onPress: (() -> Unit)?
+  onPick: ((String) -> Unit)?
+  tone: ("calm" | "loud")?
+  load: () -> Int?
+}
+
+fn pick(tone: ("a" | "b")?, run: (() -> Unit)?) -> ("a" | "b")? {
+  run?.()
+  tone
+}
