@@ -18,6 +18,14 @@
 //!
 //! The output is the same program on every platform: resolving tokens stays
 //! the runtime's job, so the two can never disagree about what a token means.
+//!
+//! `.bloom` modules: bloomc (`crates/lang`) runs this pass on what it emits,
+//! for the checks above, and its output must be a fixed point of the pass
+//! (bloomc hoists static chains itself, and its bodies are `"use no memo"`),
+//! so the pass returns it unchanged without printing it again.
+//! `crates/lang/tests/fixtures.rs` holds that for every emit fixture: a new
+//! transform here that would change bloomc's output fails there until bloomc
+//! does the same.
 
 mod check;
 mod diagnostics;
