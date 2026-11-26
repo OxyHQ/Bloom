@@ -17,9 +17,15 @@ export type ToolbarSpacerKind = (typeof ENUMS.toolbarSpacer)[number];
  * (a menu from any item grows out of the whole group), one Liquid Glass or
  * Surface capsule elsewhere, and items the system bar groups on iOS.
  */
-export type ToolbarGroupView = ViewNode;
+export interface ToolbarGroupView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ToolbarGroupView;
+}
 /** SwiftUI's `ToolbarSpacer`: a fixed gap between groups, or the free space. */
-export type ToolbarSpacerView = ViewNode;
+export interface ToolbarSpacerView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ToolbarSpacerView;
+}
 
 /** Toolbar items that share one background (Apple: group items that perform similar actions). */
 export function ToolbarGroup(...items: Child[]): ToolbarGroupView {

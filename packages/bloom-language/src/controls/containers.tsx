@@ -183,6 +183,8 @@ export interface CardView extends ViewModifiers<CardView> {
 export type CardPartView = ViewModifiers<CardPartView>;
 /** A Card's title or description, in the card's own type. */
 export interface CardTextView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): CardTextView;
   /** Truncates it to `n` lines. */
   lines(value: number): CardTextView;
 }
@@ -223,6 +225,8 @@ export interface GroupedSectionView extends ViewModifiers<GroupedSectionView> {
 }
 /** Bloom `GroupedSectionItem`: a row of a grouped section; its box is the row's own. */
 export interface GroupedSectionItemView extends ViewNode, BoxModifiers<GroupedSectionItemView> {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): GroupedSectionItemView;
   /** Its icon (a `GroupedSectionIcon`, an `Icon`, an avatar). */
   leadingView(...value: Child[]): GroupedSectionItemView;
   description(value: string): GroupedSectionItemView;
@@ -246,16 +250,22 @@ export interface GroupedSectionItemView extends ViewNode, BoxModifiers<GroupedSe
 }
 /** Bloom `GroupedSectionIcon`: a glyph on a disc, a row's icon. */
 export interface GroupedSectionIconView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): GroupedSectionIconView;
   /** The disc's tone (`primary` by default). */
   tint(value: AccentTone): GroupedSectionIconView;
   testID(value: string): GroupedSectionIconView;
 }
 /** Bloom `GroupedSectionDivider`: a line between rows, inset at the text. */
 export interface GroupedSectionDividerView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): GroupedSectionDividerView;
   inset(value: SpaceToken): GroupedSectionDividerView;
 }
 /** Bloom `GroupedSectionCollapse`: rows revealed and hidden in place, kept mounted. */
 export interface GroupedSectionCollapseView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): GroupedSectionCollapseView;
   testID(value: string): GroupedSectionCollapseView;
 }
 /** Bloom `Chip`: an `Icon` before the `Text` leads it, one after trails it. */
@@ -340,6 +350,8 @@ export interface TabsView extends ViewModifiers<TabsView> {
 }
 /** A tab of a `Tabs` strip: its value and label. */
 export interface TabItemView<V extends string = string> extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): TabItemView<V>;
   icon(value: IconComponent): TabItemView<V>;
   count(value: number | null | undefined): TabItemView<V>;
   disabled(value?: boolean): TabItemView<V>;
@@ -399,6 +411,8 @@ export interface SelectionCardView extends ViewModifiers<SelectionCardView> {
 }
 /** Bloom `ErrorBoundary`: its content, or Bloom's fallback when the content throws. */
 export interface ErrorBoundaryView extends ViewNode, BoxModifiers<ErrorBoundaryView> {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ErrorBoundaryView;
   title(value: string): ErrorBoundaryView;
   message(value: string): ErrorBoundaryView;
   retryLabel(value: string): ErrorBoundaryView;

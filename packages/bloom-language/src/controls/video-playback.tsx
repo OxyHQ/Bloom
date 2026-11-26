@@ -18,13 +18,21 @@ export type VideoPlaybackKind = 'videoPlayback' | 'videoViewability' | 'videoVie
 
 /** Bloom `VideoPlaybackProvider`: the election of the one playing video, for what it holds. */
 export interface VideoPlaybackView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): VideoPlaybackView;
   /** Whether a visible video starts on its own (the viewer's preference by default). */
   autoplay(value: boolean): VideoPlaybackView;
 }
 /** Bloom `VideoViewabilityProvider`: the keys a list has on screen, for the players inside it. */
-export type VideoViewabilityView = ViewNode;
+export interface VideoViewabilityView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): VideoViewabilityView;
+}
 /** Bloom `VideoViewabilityScope`: what it holds is visible as the list's item `key` is. */
-export type VideoViewabilityScopeView = ViewNode;
+export interface VideoViewabilityScopeView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): VideoViewabilityScopeView;
+}
 
 /** Bloom `VideoPlaybackProvider` around `children` (once, at the app's root). */
 export function VideoPlayback(...children: Child[]): VideoPlaybackView {

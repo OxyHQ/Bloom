@@ -18,7 +18,10 @@ export type AvatarFlightKind = 'avatarAnchor' | 'avatarFlightLayer';
 /** Bloom `AvatarAnchor`: a place avatars leave and land, by key. */
 export type AvatarAnchorView = ViewModifiers<AvatarAnchorView>;
 /** Bloom `AvatarFlightLayer`: where `flights` fly. */
-export type AvatarFlightLayerView = ViewNode;
+export interface AvatarFlightLayerView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): AvatarFlightLayerView;
+}
 
 /** Bloom `AvatarAnchor` around `children`: anchor `key` of `flights` (from `useAvatarFlights()`). */
 export function AvatarAnchor(

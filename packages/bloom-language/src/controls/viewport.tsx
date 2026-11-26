@@ -12,6 +12,8 @@ export type ViewportKind = 'viewport';
 
 /** Bloom `ViewportProvider`: a scope of clipping viewports for what it holds. */
 export interface ViewportView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ViewportView;
   /** Starts a chain of its own (a portaled dialog's), not inside the enclosing one. */
   root(): ViewportView;
 }

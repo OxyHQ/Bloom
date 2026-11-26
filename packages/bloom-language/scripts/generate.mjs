@@ -98,6 +98,8 @@ spec.layers.forEach((kinds, rank) => {
   for (const kind of kinds) layerRank[kind] = rank;
 });
 
+/** Items drawn by their parent, keyed by a parameter of their own rather than `.id()`. */
+const KEYED_BY_PARAM = new Set(['sortableChip', 'dataColumn']);
 const nodeModifiers = {};
 const constructors = {};
 /** Each node's own densities (a node that takes `.density()` lists Bloom's names for them). */
@@ -107,6 +109,16 @@ for (const [kind, node] of Object.entries(nodes)) {
   if (takesDensity !== Array.isArray(node.densities))
     throw new Error(`nodes.${kind}: a node lists densities exactly when it takes density()`);
   if (takesDensity) nodeDensities[kind] = node.densities;
+  // `.id()` keys every node a view draws (a list's item, a branch): a node that
+  // chains no universal modifiers lists it, but for a parent's item whose
+  // identity is its own parameter (`SortableChip(key, …)`, `DataColumn(id, …)`).
+  if (
+    node.universal === false &&
+    node.constructors.length > 0 &&
+    !node.modifiers.includes('id') &&
+    !KEYED_BY_PARAM.has(kind)
+  )
+    throw new Error(`nodes.${kind}: a node takes .id(); list "id" in its modifiers`);
   nodeModifiers[kind] =
     node.universal === false
       ? [...node.modifiers]

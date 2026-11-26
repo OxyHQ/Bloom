@@ -808,6 +808,7 @@ Modifiers:
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 - [`.tag()`](bloom-language-modifiers.mdx#tag) `(value: string)`: The row's action by name: the menu's `actions()` resolve it when the row is chosen.
 - [`.shortcut()`](bloom-language-modifiers.mdx#shortcut) `(value: string)`: The key chord that runs it from a menubar (`Mod+N`, `Mod+Shift+Z`), drawn beside its title there.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -822,6 +823,7 @@ Modifiers:
 - [`.iconForeground()`](bloom-language-modifiers.mdx#iconforeground) `(value: InkToken)`: The glyph's ink, a colour role, over the menu's quiet ink, as an `Item`'s. Bloom's menus draw it; the lens menu's submenus and the system menu on iOS draw their own.
 - [`.disabled()`](bloom-language-modifiers.mdx#disabled) `(value?: boolean)`
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -833,6 +835,7 @@ Modifiers:
 
 - [`.title()`](bloom-language-modifiers.mdx#title) `(value: string)`: A quiet heading above the section's rows.
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: readonly [value: T | undefined, set: (value: T) => void])`: One of the section's rows chosen, as SwiftUI's `Picker` in a `Menu` (a `UIMenu` of single selection): each tagged `Item` in it is a choice whose tag is its value, marked while the binding holds it; choosing one sets the binding. `undefined` is no row chosen. Bloom's menus draw a radio group (`DropdownMenuRadioGroup`), the lens menu a check on the chosen row, iOS the system's inline picker.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -871,6 +874,7 @@ Modifiers:
 - [`.dismissible()`](bloom-language-modifiers.mdx#dismissible) `(value: boolean)`: `false`: Escape and the backdrop do not dismiss it.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: ViewNode)`: A view above the title (the application's icon).
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -900,6 +904,7 @@ Modifiers:
 - [`.control()`](bloom-language-modifiers.mdx#control) `(control: DialogControlProps)`: The dialog as a view of its own, opened and closed by Bloom's dialog control (`useDialogControl()`: `control.open()`, `control.close()`), for a dialog another view opens imperatively. It ends the chain, as `.presented()` does.
 - [`.detached()`](bloom-language-modifiers.mdx#detached) `(value?: boolean)`: Floats a bottom dialog above the window's safe area, with rounded corners and gutters beside it (Bloom's `detached`); other placements are as they were.
 - [`.panelFrame()`](bloom-language-modifiers.mdx#panelframe) `(value: FrameSpec)`: The side or bottom panel's own frame (Bloom's `panelStyle`): a bottom dialog kept to a width on a wide window (`{ maxWidth: '540' }`). `.frame()` is the centred card's width and ceiling.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -915,6 +920,7 @@ Modifiers:
 - [`.sideOffset()`](bloom-language-modifiers.mdx#sideoffset) `(value: SpaceToken)`: The gap between the view and the popover.
 - [`.alignOffset()`](bloom-language-modifiers.mdx#alignoffset) `(value: PaddingToken | Points)`: A shift along the side it opens on (negative toward the start).
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: PopoverFrame)`: Its widths and its height ceiling.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -929,6 +935,7 @@ Modifiers:
 - [`.restoredMessage()`](bloom-language-modifiers.mdx#restoredmessage) `(value: string)`
 - [`.reconnectingDelay()`](bloom-language-modifiers.mdx#reconnectingdelay) `(value: DurationName)`: How long an outage lasts before the reconnecting toast shows: a duration token (`'3000'` by default).
 - [`.restoredDuration()`](bloom-language-modifiers.mdx#restoredduration) `(value: DurationName)`: How long the restored toast stays: a duration token (`'2500'` by default).
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -965,6 +972,7 @@ Modifiers:
 - [`.scrimColor()`](bloom-language-modifiers.mdx#scrimcolor) `(value: ColorToken | AppToken<'color'>)`: A colour role (painted from the theme, at an opacity too), or an app's own colour as written.
 - [`.scrimFalloff()`](bloom-language-modifiers.mdx#scrimfalloff) `(value: ScrimFalloff)`
 - [`.titleReveal()`](bloom-language-modifiers.mdx#titlereveal) `(value: TitleReveal)`: When the title shows: `auto` (default), `always`, `onScroll`, `onDock`.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -980,6 +988,7 @@ Modifiers:
 - [`.progress()`](bloom-language-modifiers.mdx#progress) `(value: Progress | undefined)`: A swipe pager's continuous selection, in tab-index space.
 - [`.hide()`](bloom-language-modifiers.mdx#hide) `(value: Progress | undefined)`: The bar's presence, 0 (shown) to 1 (gone): it slides off its edge as a pager leaves its pages.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1099,6 +1108,7 @@ Takes the universal modifiers.
 Modifiers:
 
 - [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: Truncates it to `n` lines.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1109,6 +1119,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: Truncates it to `n` lines.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1183,6 +1194,7 @@ Modifiers:
 - [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge)`: A border: a colour role (or a role at an opacity, or an app colour), a width (`hairline` by default) and an edge (`all` by default). A colour of `undefined` writes the width alone, so the line keeps the platform's default colour (black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` does: `.border(subscribed ? 'border' : undefined, 'thin')`.
 - [`.corner()`](bloom-language-modifiers.mdx#corner) `(value: CornerName, side?: CornerSide)`: Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape it sits in, less the inset between them: a glass's, another concentric box's, a Bloom card's).
 - [`.opacity()`](bloom-language-modifiers.mdx#opacity) `(value: OpacityName)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1284,6 +1296,7 @@ Modifiers:
 - [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, FontFamilyName>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
 - [`.leading()`](bloom-language-modifiers.mdx#leading) `(value: LeadingToken)`
 - [`.weight()`](bloom-language-modifiers.mdx#weight) `(value: WeightName)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1323,6 +1336,7 @@ Modifiers:
 - [`.border()`](bloom-language-modifiers.mdx#border) `(value: InkToken | undefined, width?: BorderWidthName, edge?: BorderEdge)`: A border: a colour role (or a role at an opacity, or an app colour), a width (`hairline` by default) and an edge (`all` by default). A colour of `undefined` writes the width alone, so the line keeps the platform's default colour (black natively, react-native-web's own on the web), as a style with a `borderWidth` and no `borderColor` does: `.border(subscribed ? 'border' : undefined, 'thin')`.
 - [`.corner()`](bloom-language-modifiers.mdx#corner) `(value: CornerName, side?: CornerSide)`: Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape it sits in, less the inset between them: a glass's, another concentric box's, a Bloom card's).
 - [`.opacity()`](bloom-language-modifiers.mdx#opacity) `(value: OpacityName)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1395,6 +1409,7 @@ Modifiers:
 - [`.panels()`](bloom-language-modifiers.mdx#panels) `(...value: PanelView[])`: The shell's panels, in order; a `Panel` without content holds the navigator.
 - [`.destinations()`](bloom-language-modifiers.mdx#destinations) `(...value: DestinationView[])`: The app's destinations (Bloom's `TabPagerProvider`): the pager's pages, the bar's tabs, the sidebar's rows.
 - [`.onReselect()`](bloom-language-modifiers.mdx#onreselect) `(value: ((name: string) => void) | undefined)`: Pressing the destination in front again, by its name (Bloom's scroll to the top, then reload, by default).
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1402,17 +1417,29 @@ Takes only the modifiers above (no universal modifiers).
 
 - `Stack(...routes: (string | RouteView)[])`: A stack of routes. Each name is a route of the layout's directory, pushed over the ones before it; `Sheet(name)` presents one as a sheet. With no names, the directory's routes as expo-router finds them.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `route`
 
 - `Sheet(name: string)`: A stack's route presented as a sheet over the one under it (iOS); pushed elsewhere.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `tabView`
 
 - `TabView()`: The tabs group's navigator over the `TabPagerProvider`'s pages: the system tab bar on iOS (expo-router's `NativeTabs`), Bloom's swipe pager under the shell's bottom bar on Android and OxyOS, the routed page on the web.
+
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1616,6 +1643,7 @@ Modifiers:
 - [`.leadingView()`](bloom-language-modifiers.mdx#leadingview) `(...value: Child[])`: A mark before the label in a picker's row, and in its trigger while it is the one chosen.
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: A swatch radio's colour (`RadioGroup(...).style('swatch')`).
 - [`.foreground()`](bloom-language-modifiers.mdx#foreground) `(value: ColorName)` (here: [colorRole](bloom-language-tokens.mdx#colorrole)): The chosen swatch's centre dot, readable on its colour (white by default).
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1656,6 +1684,10 @@ And every universal modifier.
 
 - `OptionGroup(label: string, ...options: OptionChild<V>[])`: Options under `label` in a picker's list.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `chipRow`
@@ -1695,6 +1727,7 @@ Modifiers:
 
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: AccentTone)`: The disc's tone (`primary` by default).
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1705,6 +1738,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.inset()`](bloom-language-modifiers.mdx#inset) `(value: SpaceToken)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1715,6 +1749,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1785,6 +1820,7 @@ Modifiers:
 - [`.footer()`](bloom-language-modifiers.mdx#footer) `(content: Child, options?: SheetFooter)`: A bar under the body, its height reserved; `viewport` keeps it at the screen's edge while dragged.
 - [`.progress()`](bloom-language-modifiers.mdx#progress) `(value: Progress | undefined)`: The sheet's presence, 0 (closed) to 1 (presented), on the UI thread.
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: The sheet's accessible name.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1821,6 +1857,7 @@ Modifiers:
 - [`.onboarding()`](bloom-language-modifiers.mdx#onboarding) `(value: SidebarOnboarding)`: The getting-started card under the destinations.
 - [`.query()`](bloom-language-modifiers.mdx#query) `(value: Binding<string>)`: Its quick search's text, and what to tell when it changes (the app filters its own content with it).
 - [`.onDrop()`](bloom-language-modifiers.mdx#ondrop) `(value: (drop: TreeDrop) => void)`: A `draggable` tree row was dropped: where it landed, by id; the app moves it.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1904,6 +1941,7 @@ Modifiers:
 - [`.footer()`](bloom-language-modifiers.mdx#footer) `(content: Child)`: Pinned below the items (an account control).
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): Its width; Bloom's 80 by default.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1930,6 +1968,7 @@ Modifiers:
 - [`.query()`](bloom-language-modifiers.mdx#query) `(value: Binding<string>)`: The query, held by the app.
 - [`.filter()`](bloom-language-modifiers.mdx#filter) `(value: (item: BloomCommandItem, query: string) => boolean)`: Which items a query matches; a substring of the label, subtitle or keywords by default.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1953,6 +1992,10 @@ Takes only the modifiers above (no universal modifiers).
 
 - `CommandGroup(title: string, ...items: Rows<CommandItemView>)`: Commands under a title.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `settings`
@@ -1966,6 +2009,7 @@ Modifiers:
 - [`.initialView()`](bloom-language-modifiers.mdx#initialview) `(value: SettingsView)`: Where a narrow screen starts: the `navigation` list (default) or the `page`.
 - [`.presentation()`](bloom-language-modifiers.mdx#presentation) `(value: 'bar' | 'floating')` (here: [settingsPresentation](bloom-language-tokens.mdx#settingspresentation)): Its header: a `bar` (default) or the `floating` capsule.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2010,6 +2054,7 @@ Modifiers:
 - [`.keepMounted()`](bloom-language-modifiers.mdx#keepmounted) `(value?: boolean)`: Kept mounted while hidden.
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: An inspector's open state: a column from `lg`, a sheet from the end below it.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2030,6 +2075,7 @@ Modifiers:
 - [`.sidebarAfter()`](bloom-language-modifiers.mdx#sidebarafter) `(value: string)`: Its sidebar row goes after this destination's.
 - [`.onPress()`](bloom-language-modifiers.mdx#onpress) `(value: (() => void) | undefined)`
 - [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: (() => void) | undefined)` (here: a value)
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2047,6 +2093,7 @@ Modifiers:
 - [`.accessory()`](bloom-language-modifiers.mdx#accessory) `(value: Child)`: A second row under the tools.
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: BloomSize)`: Its controls' size; the nearest Bloom scope's by default.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2057,6 +2104,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2071,6 +2119,7 @@ Modifiers:
 - [`.scrollEdge()`](bloom-language-modifiers.mdx#scrolledge) `(value: ScrollEdge)`: The gradient behind it: `always` (default), `auto` as the page scrolls, or `none`.
 - [`.ignoresSafeArea()`](bloom-language-modifiers.mdx#ignoressafearea) `(value?: boolean)`: No bottom safe-area padding (native pads it by default).
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2149,6 +2198,7 @@ Modifiers:
 - [`.showMotion()`](bloom-language-modifiers.mdx#showmotion) `(value: MotionToken)`: How it comes back, revealed or peeked: a motion token (Bloom's own ease-out over 200ms by default).
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: Names the strip's button.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2170,6 +2220,7 @@ Modifiers:
 - [`.onNudge()`](bloom-language-modifiers.mdx#onnudge) `(value: (distance: number) => void)`: A keyboard nudge (on the web, the arrow keys move it by 16).
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: Names the separator.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2236,6 +2287,7 @@ Modifiers:
 - [`.disabled()`](bloom-language-modifiers.mdx#disabled) `(value?: boolean)`
 - [`.savedToast()`](bloom-language-modifiers.mdx#savedtoast) `(value?: boolean)`: The modal's saved toast on a commit (shown by default).
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -2250,6 +2302,7 @@ Modifiers:
 - [`.dateFormat()`](bloom-language-modifiers.mdx#dateformat) `(value: (date: Date) => string)`: How the date reads; the locale's long date by default.
 - [`.savedToast()`](bloom-language-modifiers.mdx#savedtoast) `(value?: boolean)`: The modal's saved toast on a change (shown by default).
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3237,6 +3290,7 @@ And every universal modifier.
 Modifiers:
 
 - [`.autoplay()`](bloom-language-modifiers.mdx#autoplay) `(value: boolean)`: Whether a visible video starts on its own (the viewer's preference by default).
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3244,11 +3298,19 @@ Takes only the modifiers above (no universal modifiers).
 
 - `VideoViewability(viewable: ReadonlySet<string> | ViewableKeysStore, ...children: Child[])`: Bloom `VideoViewabilityProvider` around `children`: `viewable` is the keys on screen (a set derived while rendering) or the store a list publishes them to.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `videoViewabilityScope`
 
 - `VideoViewabilityScope(key: string, ...children: Child[])`: Bloom `VideoViewabilityScope` around `children`: visible as the item `key` is.
+
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3356,6 +3418,10 @@ And every universal modifier.
 
 - `MediaFlightLayer()`: Bloom `MediaFlightLayer`.
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `mediaFlightHost`
@@ -3411,6 +3477,10 @@ Takes the universal modifiers.
 ### `avatarFlightLayer`
 
 - `AvatarFlightLayer(flights: AvatarFlights)`: Bloom `AvatarFlightLayer`: draws `flights` while any is in the air.
+
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3509,6 +3579,7 @@ Modifiers:
 - [`.videoOverlay()`](bloom-language-modifiers.mdx#videooverlay) `(value: (media: GalleryVideo) => Child)`: Status or actions of your own over the active video.
 - [`.sourceAnchors()`](bloom-language-modifiers.mdx#sourceanchors) `(value: readonly (string | undefined)[])`: The media-flight anchors (`MediaFlightHost` ids) its items open from and fly back to, by index: without one, an item fades in and out at the centre.
 - [`.labels()`](bloom-language-modifiers.mdx#labels) `(value: Partial<ZoomableMediaGalleryLabels>)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3644,6 +3715,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.root()`](bloom-language-modifiers.mdx#root) `()`: Starts a chain of its own (a portaled dialog's), not inside the enclosing one.
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3671,11 +3743,19 @@ Takes the universal modifiers.
 
 - `ToolbarGroup(...items: Child[])`: Toolbar items that share one background (Apple: group items that perform similar actions).
 
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
+
 Takes only the modifiers above (no universal modifiers).
 
 ### `toolbarSpacer`
 
 - `ToolbarSpacer(kind: ToolbarSpacerKind = 'fixed')`: A gap between toolbar groups: `fixed` (the default, a small gap) or `flexible` (the free space).
+
+Modifiers:
+
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -3690,6 +3770,7 @@ Modifiers:
 - [`.actions()`](bloom-language-modifiers.mdx#actions) `(value: MenuActionsView)`: What its tagged rows do, as a `Menu`'s: an `actions()` view, run only when a row is chosen.
 - [`.cancelLabel()`](bloom-language-modifiers.mdx#cancellabel) `(value: string)`: An explicit cancel row, with this label, where the platform draws none of its own.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
+- [`.id()`](bloom-language-modifiers.mdx#id) `(value: string | number)`: Keys the view among its siblings (a list's item, a branch): its identity.
 
 Takes only the modifiers above (no universal modifiers).
 

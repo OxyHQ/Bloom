@@ -44,7 +44,10 @@ interface SurfaceModifiers<Self> {
 }
 
 /** Bloom `MediaFlightLayer`: where flights paint, once at the app's root. */
-export type MediaFlightLayerView = ViewNode;
+export interface MediaFlightLayerView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): MediaFlightLayerView;
+}
 /** Bloom `MediaFlightHost`: media a flight takes off from and lands in, known by its id. */
 export interface MediaFlightHostView
   extends ViewModifiers<MediaFlightHostView>,

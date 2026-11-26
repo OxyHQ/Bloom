@@ -80,6 +80,8 @@ export interface Presentation {
 
 /** Bloom `AlertDialog`: a title, a message and its confirm and cancel actions. */
 export interface AlertView extends PresentedNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): AlertView;
   /** The text under the title. */
   message(value: string): AlertView;
   /** The confirm button's label (Bloom's localized "Confirm" without it). */
@@ -105,6 +107,8 @@ export interface AlertView extends PresentedNode {
 
 /** Bloom `Dialog`: its content, a title, a message and a row of buttons. */
 export interface DialogView extends PresentedNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): DialogView;
   title(value: string): DialogView;
   /** The text under the title. */
   message(value: string): DialogView;
@@ -167,6 +171,8 @@ export interface DialogView extends PresentedNode {
 
 /** Bloom `Popover`: content anchored on the view that presents it. */
 export interface PopoverView extends PresentedNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): PopoverView;
   /** The popover's accessible name. */
   label(value: string | undefined): PopoverView;
   /** The side of the view it opens on, and its alignment along that side. */
@@ -182,6 +188,8 @@ export interface PopoverView extends PresentedNode {
 
 /** Bloom `ConnectionStatusToasts`: the offline, reconnecting and restored toasts. It draws nothing itself. */
 export interface ConnectionStatusView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ConnectionStatusView;
   /** What the offline toast says (Bloom's localized words without it). */
   offlineMessage(value: string): ConnectionStatusView;
   reconnectingMessage(value: string): ConnectionStatusView;
