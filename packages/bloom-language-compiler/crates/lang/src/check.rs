@@ -5358,6 +5358,129 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
     Some(sig)
 }
 
+/// What other files see of the `.bloom` file `file` (at `path`, its module imports
+/// prepared): the types and signatures [`signatures`] reads for an import, as text,
+/// one declaration per line, sorted. Each line starts with who sees it: `public`
+/// (the modules that import its module; every importer outside a package) or
+/// `internal` (the other files of its module). Bodies, comments and private items
+/// are not in it, except a private type a visible signature names, so a build keys
+/// a file's importers on the lines they see.
+pub fn interface(file: &File, source: &str, path: &Path, options: &Options) -> String {
+    let mut sub = Checker::new(source, &path.to_string_lossy(), options);
+    sub.declare_signatures(file, "");
+    // Who sees a name: 2 other modules, 1 its module, 0 its file only.
+    let mut items: std::collections::BTreeMap<&str, u8> = Default::default();
+    for item in &file.items {
+        let seen = match item.visibility {
+            v if !v.exported(options.modules) => 0,
+            Visibility::Internal => 1,
+            _ => 2,
+        };
+        let entry = items.entry(item.kind.name().name.as_str()).or_default();
+        *entry = (*entry).max(seen);
+    }
+    let defs: Vec<Def> =
+        sub.out.defs.iter().map(|d| Def { kind: zonk_kind(&sub, &d.kind), ..d.clone() }).collect();
+    let field_types = |kind: &DefKind| -> Vec<Ty> {
+        match kind {
+            DefKind::Struct(fields) => fields.iter().map(|f| f.ty.clone()).collect(),
+            DefKind::Enum(variants) => {
+                variants.iter().flat_map(|v| v.payload.iter().map(|(_, t)| t.clone())).collect()
+            }
+            DefKind::Protocol(requirements) => requirements.iter().map(|r| r.ty.clone()).collect(),
+        }
+    };
+    // A type is seen as widely as the widest visible declaration that names it.
+    let mut seen = vec![0u8; defs.len()];
+    let mut work: Vec<(Ty, u8)> = Vec::new();
+    for (&name, &level) in &items {
+        if level == 0 {
+            continue;
+        }
+        if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
+            work.push((Ty::Adt(*def, Vec::new()), level));
+        }
+        if let Some(id) = sub.scopes[0].get(name) {
+            work.push((sub.zonk(&sub.out.locals[*id].ty), level));
+        }
+    }
+    while let Some((ty, level)) = work.pop() {
+        map_ty(&ty, &mut |t| {
+            if let Ty::Adt(def, _) | Ty::Any(def) = t
+                && seen[*def] < level
+            {
+                seen[*def] = level;
+                work.extend(field_types(&defs[*def].kind).into_iter().map(|t| (t, level)));
+            }
+            None
+        });
+    }
+    // Types by name, not by number, so a new private type leaves the others' lines alone.
+    let keys: Vec<String> = defs
+        .iter()
+        .map(|d| match &d.origin {
+            Origin::Bloom { specifier } if specifier.is_empty() => d.name.clone(),
+            origin => format!("{}@{origin:?}", d.name),
+        })
+        .collect();
+    fn named(ty: &Ty, keys: &[String]) -> Ty {
+        map_ty(ty, &mut |t| match t {
+            Ty::Adt(def, args) => {
+                let args: Vec<Ty> = args.iter().map(|a| named(a, keys)).collect();
+                Some(Ty::Foreign(format!("{}{args:?}", keys[*def]).into()))
+            }
+            Ty::Any(def) => Some(Ty::Foreign(format!("any {}", keys[*def]).into())),
+            _ => None,
+        })
+    }
+    let who = |level: u8| if level == 2 { "public" } else { "internal" };
+    let mut lines = Vec::new();
+    for (&name, &level) in &items {
+        if level == 0 {
+            continue;
+        }
+        let mut line = format!("{} {name}", who(level));
+        if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
+            line.push_str(&format!(" type {}", keys[*def]));
+        }
+        if let Some(id) = sub.scopes[0].get(name) {
+            let local = &sub.out.locals[*id];
+            line.push_str(&format!(" value {:?} {:?}", named(&sub.zonk(&local.ty), &keys), local.kind));
+        }
+        lines.push(line);
+    }
+    for (def, d) in defs.iter().enumerate() {
+        if seen[def] == 0 {
+            continue;
+        }
+        let kind = match &d.kind {
+            DefKind::Struct(fields) => DefKind::Struct(
+                fields.iter().map(|f| FieldDef { ty: named(&f.ty, &keys), ..f.clone() }).collect(),
+            ),
+            DefKind::Enum(variants) => DefKind::Enum(
+                variants
+                    .iter()
+                    .map(|v| VariantDef {
+                        payload: v.payload.iter().map(|(n, t)| (n.clone(), named(t, &keys))).collect(),
+                        ..v.clone()
+                    })
+                    .collect(),
+            ),
+            DefKind::Protocol(requirements) => DefKind::Protocol(
+                requirements
+                    .iter()
+                    .map(|r| RequirementDef { ty: named(&r.ty, &keys), ..r.clone() })
+                    .collect(),
+            ),
+        };
+        lines.push(format!("{} def {} {:?} {kind:?}", who(seen[def]), keys[def], d.generics));
+    }
+    lines.sort();
+    let mut text = lines.join("\n");
+    text.push('\n');
+    text
+}
+
 fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
     match kind {
         DefKind::Struct(fields) => DefKind::Struct(
