@@ -431,6 +431,11 @@ pub enum ExprKind {
     ImplicitMember(Ident),
     /// `$state` or `$state.field.field`.
     Binding(Vec<Ident>),
+    /// `\.field` or `\Type.field`: a typed key path (`KeyPath<Type, V>`).
+    KeyPath {
+        root: Option<Ident>,
+        path: Vec<Ident>,
+    },
     /// `Partial<Prefs>`, `Load<Int>`: a type applied, as a callee.
     TypeApply {
         name: Ident,

@@ -154,6 +154,8 @@ pub enum P {
     At,
     Dollar,
     Pipe,
+    /// `\`: a key path (`\.likes`).
+    Backslash,
 }
 
 impl P {
@@ -196,6 +198,7 @@ impl P {
             P::At => "@",
             P::Dollar => "$",
             P::Pipe => "|",
+            P::Backslash => "\\",
         }
     }
 
@@ -427,6 +430,7 @@ impl Lexer<'_> {
             (b'@', _) => (P::At, 1),
             (b'$', _) => (P::Dollar, 1),
             (b'|', _) => (P::Pipe, 1),
+            (b'\\', _) => (P::Backslash, 1),
             _ => return None,
         };
         self.pos += len;
