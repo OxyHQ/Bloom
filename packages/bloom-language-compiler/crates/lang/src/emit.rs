@@ -3400,7 +3400,20 @@ impl<'a> Emitter<'a> {
         };
         self.import_name(module, wrapper);
         let mut out = props_decl;
-        out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("});\n");
+        out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("}");
+        if let Some(equal) =
+            v.members.iter().find_map(|m| if let Member::Equal(e) = m { Some(e) } else { None })
+            && v.kind == ViewKind::View
+        {
+            let body = self.block_body(&equal.body.stmts, Tail::Return, None);
+            out.mark(equal.span).s(&format!(
+                ", ({}: {props_name}, {}: {props_name}): boolean => ",
+                js_name(&equal.old.name),
+                js_name(&equal.new.name)
+            ));
+            out.f(body);
+        }
+        out.s(");\n");
         // `pub default view`: the module's default export too.
         if v.kind == ViewKind::View && item.visibility == Visibility::PubDefault {
             out.s(&format!("export default {name};\n"));
@@ -3473,6 +3486,8 @@ impl<'a> Emitter<'a> {
     fn member(&mut self, member: &Member, locals: &[LocalId]) {
         match member {
             Member::Effect(e) => self.effect(e),
+            // `memo`'s comparator: the second argument of `view()`.
+            Member::Equal(_) => {}
             Member::State(state) => {
                 let local = locals[0];
                 let ty = self.ck.locals[local].ty.clone();

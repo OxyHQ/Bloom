@@ -1198,6 +1198,60 @@ impl<'o> Checker<'o> {
         signature
     }
 
+    /// `equal(old, new) { … }`: `memo`'s comparator. It reads only its two props
+    /// records (as passed: a prop with a default may be absent) and module names.
+    fn equal_member(&mut self, v: &ViewDecl, e: &EqualDecl) {
+        let first = v.members.iter().find_map(|m| if let Member::Equal(e) = m { Some(e.span) } else { None });
+        if first != Some(e.span) {
+            self.report(
+                Diagnostic::error("B0435", e.keyword, "a view has one `equal`")
+                    .label("a second comparator")
+                    .help("join the conditions with `&&` in one `equal(old, new) { … }`")
+                    .spec("71-a-view"),
+            );
+        }
+        if v.kind != ViewKind::View || v.params.as_ref().is_none_or(Vec::is_empty) {
+            self.report(
+                Diagnostic::error("B0435", e.keyword, "`equal` compares a view's props, and this has none")
+                    .label("not a view with props")
+                    .help("a screen or layout is not memoised on props; a view without props never re-renders for them")
+                    .spec("71-a-view"),
+            );
+        }
+        let fields = self
+            .view_params(v)
+            .into_iter()
+            .map(|p| {
+                let ty = match (p.optional, self.resolve(&p.ty)) {
+                    (true, Ty::Option(_)) | (false, _) => p.ty,
+                    (true, other) => Ty::Option(Box::new(other)),
+                };
+                let default = if p.optional { FieldDefault::Undefined } else { FieldDefault::None };
+                FieldDef { name: p.name.unwrap_or_default(), ty, default }
+            })
+            .collect();
+        let props = self.record_type(fields);
+        // Only module names: the comparator runs outside any render.
+        let inner = self.scopes.split_off(1);
+        self.push();
+        self.frames.push(Frame {
+            ret: Ty::Bool,
+            is_async: false,
+            closure: false,
+            written: HashSet::default(),
+            task: false,
+            render: false,
+            spawn: false,
+            cleanup: false,
+        });
+        self.declare(&e.old, props.clone(), LocalKind::Param);
+        self.declare(&e.new, props, LocalKind::Param);
+        self.block(&e.body, Some(&Ty::Bool));
+        self.frames.pop();
+        self.pop();
+        self.scopes.extend(inner);
+    }
+
     /// `effect { … }`: synchronous work after a render, which writes states as a
     /// handler does; a `defer` at its top is its cleanup.
     fn effect(&mut self, e: &EffectDecl) {
@@ -1381,6 +1435,10 @@ impl<'o> Checker<'o> {
                 }
                 Member::Effect(e) => {
                     self.effect(e);
+                    Vec::new()
+                }
+                Member::Equal(e) => {
+                    self.equal_member(v, e);
                     Vec::new()
                 }
             };

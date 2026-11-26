@@ -1,0 +1,34 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+interface Post {
+  readonly id: string;
+  readonly likes: number;
+}
+
+export interface PostRowProps {
+  readonly post: Post;
+  readonly seen: number;
+  readonly compact?: boolean;
+}
+export const PostRow = view(function PostRow(props: PostRowProps) {
+"use no memo";
+const $ = $c(5);
+const { post, seen, compact = false } = props;
+let $t0;
+if ($[0] !== post.id || $[1] !== post.likes || $[2] !== seen || $[3] !== compact) {
+$t0 = Text(`${post.id}: ${post.likes} (${seen})`).padding(compact ? 4 : 8);
+$[0] = post.id;
+$[1] = post.likes;
+$[2] = seen;
+$[3] = compact;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+}, (old: PostRowProps, new_: PostRowProps): boolean => {
+return ((old.post.id === new_.post.id) && (old.post.likes === new_.post.likes)) && (old.compact === new_.compact);
+});
+

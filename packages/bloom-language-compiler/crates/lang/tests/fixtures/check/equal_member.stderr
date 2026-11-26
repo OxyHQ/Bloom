@@ -1,0 +1,34 @@
+error[B0202]: cannot find `open` in scope
+ --> check/equal_member.bloom:7:25
+  |
+7 |     old.id == new.id && open
+  |                         ^^^^ not declared
+  |
+help: declare it with `let`, or import it from its module
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0435]: a view has one `equal`
+  --> check/equal_member.bloom:10:3
+   |
+10 |   equal(a, b) {
+   |   ^^^^^ a second comparator
+   |
+help: join the conditions with `&&` in one `equal(old, new) { … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71-a-view
+
+error[B0201]: expected `Bool`, found `String`
+  --> check/equal_member.bloom:11:5
+   |
+11 |     a.id
+   |     ^^^^ this is `String`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0435]: `equal` compares a view's props, and this has none
+  --> check/equal_member.bloom:20:3
+   |
+20 |   equal(old, new) {
+   |   ^^^^^ not a view with props
+   |
+help: a screen or layout is not memoised on props; a view without props never re-renders for them
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71-a-view
