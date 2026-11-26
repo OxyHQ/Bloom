@@ -1,4 +1,6 @@
 import { Avatar } from '@oxy.so/bloom/avatar';
+import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { Badge } from '@oxy.so/bloom/badge';
 import { RiArchiveLine, RiArrowRightSLine, RiStarLine } from '@oxy.so/bloom/icons';
 import { List, ListItem, ListSelectionBar, VirtualList } from '@oxy.so/bloom/list';
 import { Screen } from '@oxy.so/bloom/screen';
@@ -273,7 +275,79 @@ const recipes: ParityCase[] = [
   },
 ];
 
+/** A group's faces, as Allo's share sheet leads a recent group's row. */
+const FACES = [
+  { id: 'ana', name: 'Ana Lima' },
+  { id: 'rui', name: 'Rui Costa' },
+];
+
 const lists: ParityCase[] = [
+  {
+    name: 'a list whose rows lead with an avatar group and end with a badge, as nodes',
+    language: () =>
+      toElement(
+        L.List([
+          {
+            id: 'g',
+            title: 'Design team',
+            leading: L.AvatarGroup(FACES).layout('conversation').size('lg'),
+            trailing: L.Badge('Admin'),
+          },
+          { id: 'b', title: 'Rui Costa', trailing: L.Text('Owner').foreground('muted') },
+        ]),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <List
+            items={[
+              {
+                id: 'g',
+                title: 'Design team',
+                leading: <AvatarGroup items={FACES} layout="conversation" size={36} />,
+                trailing: <Badge content="Admin" />,
+              },
+              {
+                id: 'b',
+                title: 'Rui Costa',
+                trailing: <Text style={{ color: c.textSecondary }}>Owner</Text>,
+              },
+            ]}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a list in sections whose rows hold roots (toElement) in their slots',
+    language: () =>
+      toElement(
+        L.SectionedList([
+          {
+            id: 'team',
+            title: 'Team',
+            items: [
+              { id: 'a', title: 'Ana Lima', trailing: toElement(L.Badge('Owner')) },
+              { id: 'b', title: 'Rui Costa', supporting: 'Support' },
+            ],
+          },
+        ]),
+      ),
+    bloom: () => (
+      <List
+        sections={[
+          {
+            id: 'team',
+            title: 'Team',
+            items: [
+              { id: 'a', title: 'Ana Lima', trailing: <Badge content="Owner" /> },
+              { id: 'b', title: 'Rui Costa', supporting: 'Support' },
+            ],
+          },
+        ]}
+      />
+    ),
+  },
   {
     name: 'a list',
     language: () => toElement(L.List(ENTRIES)),

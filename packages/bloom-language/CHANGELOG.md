@@ -10,6 +10,7 @@
 
 - The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
 - `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
+- A `List`'s and a `SectionedList`'s entries take language nodes in their slots (`leading: AvatarGroup(faces)`, `trailing: Badge(role)`, the `ListRow` type), drawn in the list's own tree: a row costs what the JSX in its slots does (the cost gate holds Allo's share and members rows to it). A language root in a slot (`toElement(chain)`) is drawn as part of the tree too, where it was a boundary per row.
 
 ## 1.7.0
 

@@ -12,6 +12,8 @@ export {
 } from '../controls/list';
 export type {
   ListItemView,
+  ListRow,
+  ListRowSection,
   ListSelectionBarView,
   ListText,
   ListView,

@@ -2231,6 +2231,23 @@ fn own_screens_and_providers_with_props_compile() {
 }
 
 #[test]
+fn list_entry_slots_take_checked_nodes() {
+    // A list entry's slot holds a node, drawn in the list's tree; its chain is still the spec's.
+    let imports = "import { AvatarGroup, Badge, List, SectionedList } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "rows.tsx");
+    let valid = check(concat!(
+        "export const x = (f, role) => List([{ id: 'a', title: 'A', leading: AvatarGroup(f).layout('conversation').size('lg'), trailing: role ? Badge(role) : undefined }]);\n",
+        "export const y = (f) => SectionedList([{ id: 's', items: [{ id: 'a', leading: AvatarGroup(f).size('lg') }] }]);\n",
+    ));
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (f) => List([{ id: 'a', leading: AvatarGroup(f).size('2xl') }]);\n");
+    assert_eq!(
+        output.diagnostics.first().map(|d| d.message.as_str()),
+        Some("Unknown avatarSize token '2xl' for .size()")
+    );
+}
+
+#[test]
 fn data_tables_are_checked() {
     let imports = "import { DataTable, DataColumn, DataTableFilter, DataTableSearch, DataTableSelect, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
