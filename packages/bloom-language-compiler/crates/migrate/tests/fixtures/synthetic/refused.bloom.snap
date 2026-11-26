@@ -1,2 +1,2 @@
 refused
-18: statement:switch: a `switch` (a `match`)
+22: statement:throw: `throw` (return a `Result`)

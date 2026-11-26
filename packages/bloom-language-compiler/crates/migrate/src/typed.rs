@@ -32,6 +32,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((start, end, format!("for v in {text} {{ v }}")))
             }
+            // `{}` where a dictionary is expected: the empty dictionary `[:]` (`{}` is a closure).
+            ("B0201", "{}")
+                if d.message.starts_with("expected `[") && d.message.ends_with("found `() -> Unit`") =>
+            {
+                Some((start, end, "[:]".to_string()))
+            }
             // Text of an optional string: JS drew nothing for `undefined`.
             ("B0201", _)
                 if d.message == "`String?` may be `none` here"
