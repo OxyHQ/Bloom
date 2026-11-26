@@ -3,15 +3,17 @@
  * threw: bloomc's map, inlined by the Jest transformer, composed by Babel
  * into the map Jest's stack traces read.
  */
-import { toElement } from '@oxy.so/bloom-language';
+import { type ComposedView, toElement } from '@oxy.so/bloom-language';
 import type TestRenderer from 'react-test-renderer';
 
-import { Thrower } from './bloom/thrower.bloom';
 import { measured } from './support/fibers';
+
+// Required, not imported: see bloom.cost.test.tsx.
+const { Thrower } = require('./bloom/thrower.bloom') as { Thrower: () => ComposedView };
 
 /** The first host with a press handler. */
 function press(renderer: TestRenderer.ReactTestRenderer): void {
-  const [pressable] = renderer.root.findAll((node) => typeof node.props.onPress === 'function');
+  const pressable = renderer.root.find((node) => typeof node.props.onPress === 'function');
   pressable.props.onPress();
 }
 

@@ -5,11 +5,16 @@
  */
 import { toElement, VStack } from '@oxy.so/bloom-language';
 
-import { Counter } from './bloom/counter.bloom';
 import * as Hand from './bloom/equivalents';
-import { Row } from './bloom/row.bloom';
-import { Banner } from './bloom/static.bloom';
 import { type Cost, measured } from './support/fibers';
+
+// Required, not imported: TypeScript types a `.bloom` module from the
+// `.d.bloom.ts` bloomc writes beside it, which fixtures do not commit. Each
+// module must have its hand-written equivalent's surface.
+type Views = typeof Hand;
+const { Counter } = require('./bloom/counter.bloom') as Pick<Views, 'Counter'>;
+const { Row } = require('./bloom/row.bloom') as Pick<Views, 'Row'>;
+const { Banner } = require('./bloom/static.bloom') as Pick<Views, 'Banner'>;
 
 const TITLES = ['one', 'two', 'three', 'four', 'five'];
 
