@@ -1598,6 +1598,7 @@ impl Tr<'_> {
             // In a `Result` closure (a `try` written as one): its error. In `catching` or a closure
             // TS calls (`mutationFn`, `queryFn`): `fail(e)`, TS's throw (bloomc checks
             // that TS calls it, B0222).
+            Statement::ThrowStatement(t) if self.in_do => format!("throw {}", self.expr(&t.argument)),
             Statement::ThrowStatement(t) if self.try_return => {
                 format!("return err({})", self.expr(&t.argument))
             }
@@ -2072,6 +2073,12 @@ impl Tr<'_> {
                 [only] if only.as_expression().is_some() => {
                     format!("effect(id: {})", self.expr(only.to_expression()))
                 }
+                // `[a, b]`: re-run when any changes, as React's deps (a tuple `id:` is flat).
+                elements if elements.iter().all(|e| e.as_expression().is_some()) => {
+                    let deps: Vec<String> =
+                        elements.iter().map(|e| self.expr(e.to_expression())).collect();
+                    format!("effect(id: ({}))", deps.join(", "))
+                }
                 _ => {
                     let deps = self.slice(a.span).to_string();
                     self.review(format!("its deps were {deps}: bloomc infers them from what it reads"));
@@ -2324,63 +2331,39 @@ impl Tr<'_> {
             let body = self.block_stmts(&t.block.body, t.block.span.end, false);
             return format!("{}\n{body}", finalizer.unwrap_or_default());
         };
-        // `catching { … }` is TS's try/catch: every TS `await` in it propagates its
-        // rejection with `?` (a `?` throws inside `catching`), a sync throw is caught too.
-        let awaits = self.slice(t.block.span).contains("await");
-        // A `return` inside an async `try` (other than one ending it): `catching` cannot
-        // hold it; the awaited call's `Result` is matched instead (under review).
-        let mut returns = Vec::new();
-        collect_returns(&t.block.body, &mut returns);
-        let tail_only = returns.is_empty()
-            || returns.len() == 1 && matches!(t.block.body.last(), Some(Statement::ReturnStatement(_)));
-        if !awaits || tail_only {
-            return self.try_catching(t, handler, finalizer, last, awaits);
-        }
-        let body = &t.block.body;
-        let fast = body.iter().position(|s| awaited_start(s).is_some()).filter(|&k| {
-            !self.awaits_bloom(awaited_start(&body[k]).expect("an awaited start").value())
-                && body[..k].iter().all(|s| self.cannot_throw(s))
-                && !body[k + 1..].iter().any(|s| self.slice(s.span()).contains("await"))
-        });
-        let Some(k) = fast else {
-            return self.try_closure(t, handler, finalizer, last);
-        };
-        let prefix = self.block_stmts(&body[..k], body[k].span().start, false);
-        let mut destructure = None;
-        let (bound, awaited, rest, returns) = match awaited_start(&body[k]).expect("an awaited start") {
-            AwaitStart::Expr(a) => ("_".to_string(), a, &body[k + 1..], false),
-            AwaitStart::Let(id, a) => (self.bind(&id.name, id.span), a, &body[k + 1..], false),
-            AwaitStart::Return(a) => ("value".to_string(), a, &body[k + 1..], true),
-            AwaitStart::Pattern(p, a) => {
-                let pattern = self.record_pattern(p);
-                destructure = Some(format!("let {pattern} = value"));
-                ("value".to_string(), a, &body[k + 1..], false)
+        // TS's `try`/`catch` is 2.0's `do`/`catch`: a TS `await` in it is `try await`, a throw
+        // anywhere in it (sync or a rejection) is caught, and a `return` returns from the function.
+        self.do_catch(t, handler, finalizer)
+    }
+
+    /// `try { … } catch (e) { … }` as `do { … } catch let e { … }` (`catch { … }` when the error
+    /// is unnamed, Swift's implicit `error`).
+    fn do_catch(
+        &mut self,
+        t: &oxc_ast::ast::TryStatement,
+        handler: &oxc_ast::ast::CatchClause,
+        finalizer: Option<String>,
+    ) -> String {
+        let catch = match handler.param.as_ref().map(|p| &p.pattern) {
+            Some(BindingPattern::BindingIdentifier(id)) => {
+                let name = self.bind(&id.name, id.span);
+                if name == "error" { "catch".to_string() } else { format!("catch let {name}") }
             }
-        };
-        let error = match handler.param.as_ref().map(|p| &p.pattern) {
-            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
-            None => "_".into(),
+            None => "catch".into(),
             Some(other) => {
                 return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
             }
         };
-        let awaited = self.head_expr(awaited);
-        let mut ok = self.block_stmts(rest, t.block.span.end, false);
-        if returns {
-            ok = format!("return value\n{ok}");
-        }
-        if let Some(d) = destructure {
-            ok = format!("{d}\n{ok}");
-        }
-        let prefix = if prefix.trim().is_empty() { String::new() } else { format!("{prefix}\n") };
+        let propagate = std::mem::replace(&mut self.propagate, false);
+        let returning = std::mem::replace(&mut self.try_return, false);
+        let in_do = std::mem::replace(&mut self.in_do, true);
+        let block = self.block_stmts(&t.block.body, t.block.span.end, false);
+        self.in_do = in_do;
         let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
-        let marker = format!(
-            "// {REVIEW_MARKER}: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection"
-        );
+        self.propagate = propagate;
+        self.try_return = returning;
         let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
-        format!(
-            "{prefix}{marker}\n{defer}match await {awaited} {{\ncase .ok({bound}) => {{\n{ok}\n}}\ncase .err({error}) => {{\n{err}\n}}\n}}"
-        )
+        format!("{defer}do {{\n{block}\n}} {catch} {{\n{err}\n}}")
     }
 }
 

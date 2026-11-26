@@ -122,6 +122,8 @@ pub struct Tr<'s> {
     pub quiet: bool,
     /// Inside a `try` written as a `Result` closure: an `await` propagates with `?`.
     pub propagate: bool,
+    /// Inside a `do` block (TS's `try`): a TS `await` is `try await`, a `throw` is `throw`.
+    pub in_do: bool,
     /// Translating a `Map`'s entries: a two-item list literal is a tuple.
     pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
@@ -348,6 +350,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
+        in_do: false,
         pairs: false,
         try_return: false,
         closures: 0,
