@@ -817,6 +817,20 @@ impl Tr<'_> {
         {
             match call.arguments[0].as_expression().map(|e| e.without_parentheses()) {
                 Some(Expression::RegExpLiteral(r)) if r.regex.flags.to_string().contains('g') => {}
+                // `^…`, or `…$` that cannot match empty, without `m`: one match at most,
+                // so every match is the first.
+                Some(Expression::RegExpLiteral(r))
+                    if matches_once(r.regex.pattern.text.as_str())
+                        && !r.regex.flags.to_string().contains('m') =>
+                {
+                    self.js.insert("RegExp".into());
+                    let pattern = quote(r.regex.pattern.text.as_str());
+                    let flags = quote(&format!("g{}", r.regex.flags));
+                    let object = self.expr(&m.object);
+                    let optional = if m.optional { "?" } else { "" };
+                    let with = call.arguments[1].as_expression().map(|e| self.expr(e)).unwrap_or_default();
+                    return format!("{object}{optional}.replace(RegExp({pattern}, {flags}), {with})");
+                }
                 Some(Expression::RegExpLiteral(r)) => {
                     return self.refuse(
                         "string:replace",
@@ -1703,4 +1717,14 @@ pub fn quote(text: &str) -> String {
 fn short(text: &str) -> String {
     let line = text.lines().next().unwrap_or_default();
     if line.len() > 40 { format!("{}…", &line[..line.floor_char_boundary(40)]) } else { line.to_string() }
+}
+
+/// Whether a regex (without `m`) matches a string once at most: anchored at its
+/// start, or at its end by a last atom that cannot match empty (`\/+$`, not `a*$`).
+fn matches_once(pattern: &str) -> bool {
+    if pattern.starts_with('^') {
+        return true;
+    }
+    let Some(body) = pattern.strip_suffix('$') else { return false };
+    !body.is_empty() && !body.ends_with('\\') && !body.contains('|') && !body.ends_with(['*', '?', ')', '}'])
 }
