@@ -81,7 +81,7 @@ impl Walker<'_> {
                 self.stmts(&view.body.stmts);
             }
             ItemKind::Const(c) => self.expr(&c.value),
-            ItemKind::Enum(_) | ItemKind::Alias(_) => {}
+            ItemKind::Enum(_) | ItemKind::Alias(_) | ItemKind::Extension(_) => {}
         }
     }
 

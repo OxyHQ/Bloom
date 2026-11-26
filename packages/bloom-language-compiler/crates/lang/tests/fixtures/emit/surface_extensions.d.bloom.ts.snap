@@ -1,0 +1,14 @@
+export interface Post {
+  readonly id: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+export declare function Post$liked(self: Post, on: boolean): Post;
+export declare function Post$label(self: Post): string;
+export declare function String$padded(self: string, width: number): string;
+export declare function String$isBlank(self: string): boolean;
+export declare function String$$repeating(s: string, count: number): string;
+export declare const String$$separator: string;
+export declare function Array$second<Element>(self: readonly Element[]): Element | undefined;
+export declare function Int$doubled(self: number): number;
+export declare function demo(post: Post): string;

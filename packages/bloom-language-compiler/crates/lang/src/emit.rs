@@ -643,6 +643,8 @@ impl<'a> Emitter<'a> {
                 let text = self.ts_type(&ty);
                 Frag::at(item.span, format!("{export}type {}{generics} = {text};\n", a.name.name))
             }
+            // Lowered before checking (`crate::extensions::lower`).
+            ItemKind::Extension(_) => Frag::default(),
             ItemKind::Const(c) => {
                 let local = self.ck.items[&index];
                 let ty = self.ck.locals[local].ty.clone();
@@ -1904,6 +1906,13 @@ impl<'a> Emitter<'a> {
                 Frag::of(string_literal(&self.ck.defs[def].variants()[index].name))
             }
             Some(FieldRes::TaskSignal) => Frag::of(self.signal.clone().unwrap_or_else(|| "undefined".into())),
+            Some(FieldRes::Extension(func)) => {
+                let object = self.expr(object);
+                let mut out = Frag::of(func.to_string());
+                out.f(object.wrap("(", ")"));
+                out
+            }
+            Some(FieldRes::Static(func)) => Frag::of(func.to_string()),
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
             }
@@ -2166,6 +2175,37 @@ impl<'a> Emitter<'a> {
         if arg.spread { value.wrap("...", "") } else { value }
     }
 
+    /// A Bloom call's argument values, in its parameters' order (`CallRes::Bloom`).
+    fn ordered_args(&mut self, call: &Call, order: &[Option<usize>], rest: &[usize]) -> Vec<Frag> {
+        let mut values: Vec<Frag> = order
+            .iter()
+            .map(|slot| match slot {
+                Some(i) if *i == call.args.len() => {
+                    self.closure(call.trailing.as_ref().expect("a trailing closure"))
+                }
+                Some(i) => self.expr(&call.args[*i].value),
+                None => Frag::of("undefined"),
+            })
+            .collect();
+        while rest.is_empty()
+            && values.last().is_some_and(|v| v.text == "undefined")
+            && order.last().is_some_and(Option::is_none)
+        {
+            values.pop();
+            if values.len() < order.len() && order[values.len()].is_some() {
+                break;
+            }
+        }
+        if !rest.is_empty() {
+            // The rest parameter's slot is the last; its arguments follow the others.
+            values.truncate(order.len().saturating_sub(1));
+            for &index in rest {
+                values.push(self.spread_arg(&call.args[index]));
+            }
+        }
+        values
+    }
+
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
         if self.hoistable(expr) {
             return self.hoist(expr);
@@ -2178,33 +2218,18 @@ impl<'a> Emitter<'a> {
             return out;
         };
         match res {
+            CallRes::Extension { func, order, rest } => {
+                let (ExprKind::Field(object, _) | ExprKind::OptField(object, _)) = &call.callee.kind else {
+                    unreachable!("an extension call is a member call")
+                };
+                let mut values = vec![self.expr(object)];
+                values.extend(self.ordered_args(call, &order, &rest));
+                let mut out = Frag::of(func.to_string());
+                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out
+            }
             CallRes::Bloom { order, rest } => {
-                let mut values: Vec<Frag> = order
-                    .iter()
-                    .map(|slot| match slot {
-                        Some(i) if *i == call.args.len() => {
-                            self.closure(call.trailing.as_ref().expect("a trailing closure"))
-                        }
-                        Some(i) => self.expr(&call.args[*i].value),
-                        None => Frag::of("undefined"),
-                    })
-                    .collect();
-                while rest.is_empty()
-                    && values.last().is_some_and(|v| v.text == "undefined")
-                    && order.last().is_some_and(Option::is_none)
-                {
-                    values.pop();
-                    if values.len() < order.len() && order[values.len()].is_some() {
-                        break;
-                    }
-                }
-                if !rest.is_empty() {
-                    // The rest parameter's slot is the last; its arguments follow the others.
-                    values.truncate(order.len().saturating_sub(1));
-                    for &index in &rest {
-                        values.push(self.spread_arg(&call.args[index]));
-                    }
-                }
+                let values = self.ordered_args(call, &order, &rest);
                 let mut out = self.operand(&call.callee);
                 out.f(Frag::join(values, ", ").wrap(open, ")"));
                 out
@@ -4284,6 +4309,7 @@ impl<'a> Emitter<'a> {
                 ItemKind::Struct(s) => out.push_str(&self.struct_decl(s, "export ").text),
                 ItemKind::Enum(e) => out.push_str(&self.enum_decl(e, "export ").text),
                 ItemKind::Alias(_) => out.push_str(&self.item(index, item).text),
+                ItemKind::Extension(_) => {}
                 ItemKind::Const(c) => {
                     let local = self.ck.items[&index];
                     let ty = self.ck.locals[local].ty.clone();

@@ -34,6 +34,8 @@ pub fn check(file: &File, source: &str) -> Vec<Diagnostic> {
             ItemKind::Alias(a) => types.push(&a.ty),
             ItemKind::Const(c) => types.extend(c.ty.iter()),
             ItemKind::View(v) => types.extend(v.params.iter().flatten().map(|p| &p.ty)),
+            // Lowered before checking (`crate::extensions::lower`).
+            ItemKind::Extension(_) => {}
         }
         let mut seen: Vec<&str> = Vec::new();
         for ty in types {

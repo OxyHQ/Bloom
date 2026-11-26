@@ -14,6 +14,7 @@ mod chains;
 mod check;
 pub mod diagnostic;
 mod emit;
+mod extensions;
 mod lexer;
 mod parser;
 mod routes;
@@ -106,7 +107,7 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 /// Parses and checks `source`, without emitting.
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
-    let (file, _, syntax) = parser::parse(source);
+    let (file, syntax) = lowered(source);
     let mut result = check::check(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -121,7 +122,7 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
 /// scopes, members and expected types, with the diagnostics of [`check`].
 pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
-    let (file, _, syntax) = parser::parse(source);
+    let (file, syntax) = lowered(source);
     let (mut result, expected, path) = check::check_recording(&file, source, filename, options);
     rules(&file, source, &mut result);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
@@ -157,7 +158,7 @@ pub fn clear_caches() {
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
-    let (file, _, syntax) = parser::parse(source);
+    let (file, syntax) = lowered(source);
     let mut checked = check::check_for_emit(&file, source, filename, options);
     rules(&file, source, &mut checked);
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
@@ -187,6 +188,13 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     output.diagnostics = errors;
     output.warnings = warnings;
     output
+}
+
+/// `source` parsed, with its 2.0 type members lowered for the checker (`extensions`).
+fn lowered(source: &str) -> (Ast, Vec<Diagnostic>) {
+    let (mut file, _, syntax) = parser::parse(source);
+    extensions::lower(&mut file);
+    (file, syntax)
 }
 
 /// The chain rules (glass, toolbars, labels, choices), once the module checks:

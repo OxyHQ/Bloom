@@ -1,0 +1,54 @@
+
+export interface Post {
+  readonly id: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+
+export function Post$liked(self: Post, on: boolean): Post {
+return { id: self.id, likes: self.likes + (on ? 1 : (-1)), isLiked: on };
+}
+
+export function Post$label(self: Post): string {
+return `${self.likes} likes`;
+}
+
+export function String$padded(self: string, width: number): string {
+let out = self;
+while (out.length < width) {
+out = " " + out;
+}
+return out;
+}
+
+export function String$isBlank(self: string): boolean {
+return (self.trim().length === 0);
+}
+
+export function String$$repeating(s: string, count: number): string {
+let out = "";
+while (out.length < (s.length * count)) {
+out = out + s;
+}
+return out;
+}
+
+export const String$$separator: string = " · ";
+
+export function Array$second<Element>(self: readonly Element[]): Element | undefined {
+return (self.length > 1) ? self[1] : undefined;
+}
+
+export function Int$doubled(self: number): number {
+return self * 2;
+}
+
+export function demo(post: Post): string {
+const next = Post$liked(post, true);
+const title = String$padded("id", 4);
+const blank = String$isBlank("  ");
+const line = String$$repeating("-", 3);
+const second = Array$second([1, 2, 3]) ?? 0;
+return `${title}${String$$separator}${Post$label(next)} ${blank} ${line} ${Int$doubled(second)}`;
+}
+
