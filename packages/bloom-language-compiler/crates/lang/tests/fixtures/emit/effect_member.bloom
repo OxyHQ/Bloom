@@ -25,6 +25,11 @@ pub view Ticker(label: String, step: Int = 1) {
     seen = count
   }
 
+  // A tuple `id:` is its values, each a dependency: `[count, paused]`.
+  effect(id: (count, paused)) {
+    logger.info("changed")
+  }
+
   // Two cleanups: the one set first runs last.
   effect {
     logger.info("a")
@@ -39,7 +44,7 @@ pub view Ticker(label: String, step: Int = 1) {
 
   body {
     Text("${label}: ${count}")
-      .task(id: label) {
+      .task(id: (label, step)) {
         defer {
           logger.info("task over")
         }
