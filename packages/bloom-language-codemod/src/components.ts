@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { MODULE_OF } from './entries';
 import { type Arg, LANGUAGE_PACKAGE } from './table';
 
 /**
@@ -811,6 +812,17 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       testID: p('testID', 'string'),
     },
   },
+  // parity/progress-view.cases.tsx: the platform spinner.
+  'react-native#ActivityIndicator': {
+    node: 'ProgressView',
+    props: {
+      size: p('size', 'token', tokens('progressViewSize')),
+      // A theme colour as its role, an app colour as its own.
+      color: p('tint', 'ink'),
+      accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
   '@oxy.so/bloom/loading#SpinnerIcon': {
     node: 'SpinnerIcon',
     props: {
@@ -1103,10 +1115,8 @@ export const SCREEN: ComponentRule = {
   },
 };
 
-const exported = readFileSync(join(LANGUAGE_PACKAGE, 'src/index.ts'), 'utf8');
-
 /** The rule for a Bloom component, when the checked-out language draws its node. */
 export function ruleFor(module: string, imported: string): ComponentRule | undefined {
   const rule = COMPONENT_RULES[`${module}#${imported}`];
-  return rule && new RegExp(`\\b${rule.node}\\b`).test(exported) ? rule : undefined;
+  return rule && MODULE_OF.has(rule.node) ? rule : undefined;
 }

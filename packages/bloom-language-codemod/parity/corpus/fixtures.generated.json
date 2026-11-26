@@ -3724,6 +3724,47 @@
   "appColors": null
  },
  {
+  "name": "components/Spinners.tsx:7",
+  "before": "<ActivityIndicator color={parityTheme.colors.primary} />",
+  "after": "toElement(ProgressView().tint('primary'))",
+  "bindings": {
+   "ActivityIndicator": {
+    "module": "react-native",
+    "imported": "ActivityIndicator"
+   }
+  },
+  "language": [
+   "ProgressView"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Spinners.tsx:11",
+  "before": "<ActivityIndicator size=\"small\" accessibilityLabel=\"Moving your history\" />",
+  "after": "toElement(ProgressView().size('small').label('Moving your history'))",
+  "bindings": {
+   "ActivityIndicator": {
+    "module": "react-native",
+    "imported": "ActivityIndicator"
+   }
+  },
+  "language": [
+   "ProgressView",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Surfaces.tsx:10",
   "before": "<View className=\"flex-row gap-2 px-4\" style={{ backgroundColor: paritySurface }}>\n      <Text style={{ color: paritySurface }}>Posts</Text>\n    </View>",
   "after": "toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))",

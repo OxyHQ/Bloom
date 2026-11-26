@@ -44,7 +44,8 @@ const CASES = [
 
 const fixture = join(packageRoot, 'src/__completions__.ts');
 const header =
-  "import { Avatar, Button, HStack, Lockup, Sidebar, Text, VStack, regular } from './index';\n";
+  "import { Avatar, Button, HStack, Sidebar, Text, VStack, regular } from './index';\n" +
+  "import { Lockup } from './entries/lockup';\n";
 let text = header;
 const cursors = [];
 CASES.forEach(({ code }, index) => {

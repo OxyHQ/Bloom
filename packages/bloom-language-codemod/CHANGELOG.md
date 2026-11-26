@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Maps React Native's `ActivityIndicator` to `ProgressView()` (`size`, `color` as its role or an app colour, `accessibilityLabel`, `testID`).
+
+### Changed
+
+- Imports each language name from its entry: the root, `/router`, or its family's (`@oxy.so/bloom-language/inputs`…), from the language's `spec/entries.generated.json`; a file's existing import of a name from any entry is reused.
+
 ## 0.5.0
 
 ### Compatibility

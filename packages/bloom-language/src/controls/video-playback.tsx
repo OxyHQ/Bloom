@@ -6,7 +6,7 @@ import {
 } from '@oxy.so/bloom/video-playback';
 
 import { Node, type Child, type ViewNode } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /**
  * Which video plays (Bloom `video-playback`): one audible player app-wide,
@@ -50,7 +50,7 @@ export function VideoViewabilityScope(
 
 const children = (d: ControlDraw) => d.children(d.node.children);
 
-export const VIDEO_PLAYBACK: Record<VideoPlaybackKind, ControlRenderer> = {
+const VIDEO_PLAYBACK: Record<VideoPlaybackKind, ControlRenderer> = {
   videoPlayback: (d) => {
     const props = d.props();
     props.autoplay = d.own('autoplay')?.value;
@@ -69,3 +69,4 @@ export const VIDEO_PLAYBACK: Record<VideoPlaybackKind, ControlRenderer> = {
     return d.component(BloomVideoViewabilityScope, props, ...children(d));
   },
 };
+defineControls(VIDEO_PLAYBACK);

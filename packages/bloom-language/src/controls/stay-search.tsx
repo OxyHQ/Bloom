@@ -16,7 +16,7 @@ import {
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { GuestPickerSize, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A stay search on a narrow screen: its trigger, its steps and their panels. */
@@ -99,7 +99,7 @@ export function GuestPicker(
   return new Node('guestPicker', { binding: guests, options }, []);
 }
 
-export const STAY_SEARCH: Record<StaySearchKind, ControlRenderer> = {
+const STAY_SEARCH: Record<StaySearchKind, ControlRenderer> = {
   staySearchCompact: product(BloomStaySearchCompact, { press: true }),
   staySearchPanel: product(BloomStaySearchPanel, { lengths: ['width', 'padding'] }),
   staySearchStep: product(BloomStaySearchStep, { press: true }),
@@ -112,3 +112,4 @@ export const STAY_SEARCH: Record<StaySearchKind, ControlRenderer> = {
     own: (d) => ({ size: d.own('size')?.value }),
   }),
 };
+defineControls(STAY_SEARCH);

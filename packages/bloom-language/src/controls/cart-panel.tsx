@@ -14,7 +14,7 @@ import {
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The basket: its lines, the tip and promo fields, and the panel that holds them. */
@@ -122,7 +122,7 @@ function promoOf(promo: CartPanelPromo | undefined): CartPromoFieldProps | undef
   return { ...options, value, onChangeText: set };
 }
 
-export const CARTS: Record<CartKind, ControlRenderer> = {
+const CARTS: Record<CartKind, ControlRenderer> = {
   cartLine: product(BloomCartLine, {
     bindings: { quantity: ['quantity', 'onQuantityChange'] },
     own: (d) => ({ density: d.own('density')?.value }),
@@ -144,3 +144,4 @@ export const CARTS: Record<CartKind, ControlRenderer> = {
     own: (d) => ({ disabled: d.own('disabled')?.value }),
   }),
 };
+defineControls(CARTS);

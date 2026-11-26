@@ -18,9 +18,11 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_syntax::symbol::SymbolId;
 
+use crate::entries::LANGUAGE_MODULES;
 use crate::spec::{HANDLERS, HOST_VIEWS, NODES, READS_NOTHING};
 
-/// The module the language's exports come from.
+/// The language's root module: its views and values. Each family of nodes is
+/// an entry of its own (`LANGUAGE_MODULES`).
 pub const LANGUAGE_MODULE: &str = "@oxy.so/bloom-language";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -129,7 +131,8 @@ impl Module {
             match statement {
                 Statement::ImportDeclaration(declaration) => {
                     module.after_imports = index + 1;
-                    let from_language = declaration.source.value == LANGUAGE_MODULE;
+                    let from_language =
+                        LANGUAGE_MODULES.iter().any(|module| declaration.source.value == *module);
                     language |= from_language;
                     for specifier in declaration.specifiers.iter().flatten() {
                         let binding = match specifier {

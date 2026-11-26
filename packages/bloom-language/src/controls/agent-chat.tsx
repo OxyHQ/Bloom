@@ -10,7 +10,7 @@ import {
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { TitleAlign } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The agent chat: a conversation with an agent, and its history rail. */
@@ -81,7 +81,7 @@ export function AgentChat(
   return new Node('agentChat', { messages, options }, []);
 }
 
-export const AGENT_CHATS: Record<AgentChatKind, ControlRenderer> = {
+const AGENT_CHATS: Record<AgentChatKind, ControlRenderer> = {
   agentChatHistory: product(BloomAgentChatHistory, {
     bindings: { query: ['query', 'onQueryChange'], selection: ['activeId', 'onSelect'] },
     slots: ['after'],
@@ -96,3 +96,4 @@ export const AGENT_CHATS: Record<AgentChatKind, ControlRenderer> = {
     own: (d) => ({ headerTitleAlign: d.own('titleAlign')?.value }),
   }),
 };
+defineControls(AGENT_CHATS);

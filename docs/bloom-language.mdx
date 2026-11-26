@@ -38,7 +38,16 @@ reference lists every [node](bloom-language-nodes.mdx),
 ## Syntax
 
 ```ts
-import { view, HStack, VStack, Text, Avatar, Spacer, Action, ActionBar } from '@oxy.so/bloom-language';
+import {
+  view,
+  HStack,
+  VStack,
+  Text,
+  Avatar,
+  Spacer,
+  Action,
+  ActionBar,
+} from '@oxy.so/bloom-language';
 import { ReplyIcon } from '@oxy.so/bloom/icons/ReplyIcon';
 import { LikeIcon } from '@oxy.so/bloom/icons/LikeIcon';
 
@@ -1313,6 +1322,15 @@ hover card on the web (a follow button), drawn as a tree of its own.
   its `color`: a role painted from the theme, or an app colour as written
   (white over a video, the same in both schemes); its box modifiers are its
   `style`.
+- **`ProgressView()`**: the platform's own spinner, SwiftUI's indeterminate
+  `ProgressView()`: React Native's `ActivityIndicator` (UIKit's activity
+  indicator on iOS, Material's on Android, react-native-web's ring on the web),
+  for a screen that draws the platform's wait where Bloom's `Loading` and
+  `SpinnerIcon` draw Bloom's own (Allo's loading conversation, a banner's
+  transfer). `.size()` is `small` (its default) or `large`, `.tint(color)` its
+  `color` (a role painted from the theme, or an app colour as written; the
+  platform's grey without one), `.label()` its name; its box modifiers are
+  its `style`. The codemod maps `ActivityIndicator` to it.
 - **`Skeleton(shape)`**: `text`, `circle`, `pill` or `box`. Its frame is its
   size (a circle's and a pill's height, a box's width and height), a box's
   corner its radius, a text line's height its font's. It takes nothing else
@@ -2538,6 +2556,14 @@ Image(post.cover, 'Cover')
   writes it as its `aria-label` and `<img alt>`, as React Native's Image with
   an `accessibilityLabel` does (`parity/image-name.cases.tsx`). `.label()`
   names it the same way on the web.
+- **React Native's `Image`.** There is no node for it: `Image` covers what an
+  app draws with it. A bundled asset (`require()`) or a `{ uri }` is a source
+  `BloomImage` takes, `resizeMode="contain"` is `.contentFit('contain')`, a
+  style's size is `.frame()`, and `accessible={false}` is
+  `.accessibilityHidden()`. Natively the pixels come from expo-image (its
+  cache and decoders) where React Native's `Image` decoded them; on the web
+  both are react-native-web's `Image`. Allo's welcome artwork and story media
+  are `Image(art).contentFit('contain').frame(…)`.
 - **Presses.** `BloomImage` takes accessibility props but no presses, so an image
   with `onPress`, `onHover` or `hoverGroup` is drawn inside its pressable host,
   which also takes `grow` and `shrink`.

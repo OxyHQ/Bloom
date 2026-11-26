@@ -8,7 +8,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { AccentTone, Axis, Density, OrderStatusBarStyle } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An order's status: the live strip, and the steps it went through. */
@@ -57,7 +57,7 @@ export function OrderStatusTimeline(
   return new Node('orderStatusTimeline', { steps, options }, []);
 }
 
-export const ORDER_STATUSES: Record<OrderStatusKind, ControlRenderer> = {
+const ORDER_STATUSES: Record<OrderStatusKind, ControlRenderer> = {
   orderStatusBar: product(BloomOrderStatusBar, {
     slots: ['leading', 'action'],
     own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
@@ -66,3 +66,4 @@ export const ORDER_STATUSES: Record<OrderStatusKind, ControlRenderer> = {
     own: (d) => ({ orientation: d.own('axis')?.value, density: d.own('density')?.value }),
   }),
 };
+defineControls(ORDER_STATUSES);

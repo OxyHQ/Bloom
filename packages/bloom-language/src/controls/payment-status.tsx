@@ -8,7 +8,7 @@ import {
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { PaymentStatusStyle } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** What happened to the money: a strip, and the block a reader arrives at. */
@@ -54,10 +54,11 @@ export function PaymentStatusBlock(
 
 const variant = (d: ControlDraw) => ({ variant: d.own('style')?.value });
 
-export const PAYMENT_STATUSES: Record<PaymentStatusKind, ControlRenderer> = {
+const PAYMENT_STATUSES: Record<PaymentStatusKind, ControlRenderer> = {
   paymentStatusBar: product(BloomPaymentStatusBar, { slots: ['action'], own: variant }),
   paymentStatusBlock: product(BloomPaymentStatusBlock, {
     slots: ['actions', 'illustration'],
     own: variant,
   }),
 };
+defineControls(PAYMENT_STATUSES);

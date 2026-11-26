@@ -4,7 +4,7 @@ import {
 } from '@oxy.so/bloom/link-preview';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** An unfurled link (Bloom `link-preview`). */
 export type LinkPreviewKind = 'linkPreview';
@@ -26,7 +26,7 @@ export function LinkPreview(preview: LinkPreviewData): LinkPreviewView {
   return new Node('linkPreview', { preview }, []);
 }
 
-export const LINK_PREVIEWS: Record<LinkPreviewKind, ControlRenderer> = {
+const LINK_PREVIEWS: Record<LinkPreviewKind, ControlRenderer> = {
   linkPreview: (d) => {
     const props = d.props();
     Object.assign(props, (d.node.props as { preview: LinkPreviewData }).preview, {
@@ -35,3 +35,4 @@ export const LINK_PREVIEWS: Record<LinkPreviewKind, ControlRenderer> = {
     return d.component(BloomLinkPreviewCard, props);
   },
 };
+defineControls(LINK_PREVIEWS);

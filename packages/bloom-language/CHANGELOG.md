@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `ProgressView()` (`@oxy.so/bloom-language/progress-view`): the platform's own spinner (SwiftUI's indeterminate `ProgressView()`), React Native's `ActivityIndicator`, with `.size('small' | 'large')`, `.tint(color)` (a role or an app colour), `.label()` and its box modifiers as its `style`. Bloom's `Loading` and `SpinnerIcon` stay Bloom's own loaders. React Native's `Image` gets no node: the language's `Image` (Bloom's `BloomImage`) covers what apps draw with it (design document, Image).
+
+### Breaking
+
+- Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved.
+
+### Changed
+
+- The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
+- `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
+
 ## 1.7.0
 
 ### Compatibility

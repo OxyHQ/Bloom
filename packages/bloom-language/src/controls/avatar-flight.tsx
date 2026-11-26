@@ -5,7 +5,7 @@ import {
 } from '@oxy.so/bloom/avatar-flight';
 
 import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /**
  * Avatars that fly from one place on the screen to another (Bloom
@@ -33,7 +33,7 @@ export function AvatarFlightLayer(flights: AvatarFlights): AvatarFlightLayerView
   return new Node('avatarFlightLayer', { flights }, []);
 }
 
-export const AVATAR_FLIGHTS: Record<AvatarFlightKind, ControlRenderer> = {
+const AVATAR_FLIGHTS: Record<AvatarFlightKind, ControlRenderer> = {
   avatarAnchor: (d) => {
     const props = d.props();
     Object.assign(props, d.node.props as { flights: AvatarFlights; anchor: string });
@@ -45,3 +45,4 @@ export const AVATAR_FLIGHTS: Record<AvatarFlightKind, ControlRenderer> = {
     return d.component(BloomAvatarFlightLayer, props);
   },
 };
+defineControls(AVATAR_FLIGHTS);

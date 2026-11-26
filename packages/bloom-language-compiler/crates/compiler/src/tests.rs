@@ -25,6 +25,24 @@ fn a_static_chain_inside_a_function_is_hoisted_to_module_scope() {
 }
 
 #[test]
+fn a_node_imported_from_its_family_entry_is_a_language_view() {
+    let source = "import { HStack, Text } from '@oxy.so/bloom-language';\nimport { Rating } from '@oxy.so/bloom-language/rating';\nexport function Stars() {\n  return HStack(Text('x'), Rating(4)).padding('md');\n}\n";
+    let output = compile(source, "row.tsx");
+    assert!(
+        output.changed && output.diagnostics.is_empty(),
+        "{:?}",
+        output.diagnostics.first().map(|d| &d.message)
+    );
+    assert!(
+        output.code.contains("const _bloomStatic0 = HStack(Text(\"x\"), Rating(4)).padding(\"md\");"),
+        "{}",
+        output.code
+    );
+    let unknown = compile(&source.replace("/rating'", "/not-an-entry'"), "row.tsx");
+    assert!(!unknown.code.contains("_bloomStatic0 = HStack(Text(\"x\"), Rating(4))"), "{}", unknown.code);
+}
+
+#[test]
 fn module_scope_chains_already_run_once_and_are_left_alone() {
     let output = compiled("export const Row = HStack(Text('x'));\n");
     assert!(!output.changed);
@@ -224,6 +242,17 @@ fn elevation_rings_and_overlays_are_checked() {
     assert!(output.diagnostics.is_empty());
     let output = compiled("export const x = () => HStack().overlay(Text('x'), 'top-right');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown overlayAlignment token 'top-right' for .overlay()");
+}
+
+#[test]
+fn the_platform_spinner_is_checked() {
+    let ok = compiled_with(
+        "ProgressView",
+        "export const x = () => ProgressView().size('small').tint('primary').label('Loading');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with("ProgressView", "export const x = () => ProgressView().size('md');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown progressViewSize token 'md' for .size()");
 }
 
 #[test]

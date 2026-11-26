@@ -10,7 +10,7 @@ import {
 } from '@oxy.so/bloom/media-flight';
 
 import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /**
  * Shared-element media that survives a route change (Bloom `media-flight`).
@@ -96,7 +96,7 @@ function surfaceProps(d: ControlDraw): Record<string, unknown> {
   return props;
 }
 
-export const MEDIA_FLIGHTS: Record<MediaFlightKind, ControlRenderer> = {
+const MEDIA_FLIGHTS: Record<MediaFlightKind, ControlRenderer> = {
   mediaFlightLayer: (d) => d.component(BloomMediaFlightLayer, d.props()),
   mediaFlightHost: (d) => {
     const props = surfaceProps(d);
@@ -112,3 +112,4 @@ export const MEDIA_FLIGHTS: Record<MediaFlightKind, ControlRenderer> = {
   },
   emptyMediaSurface: (d) => d.component(BloomEmptyMediaSurface, d.props()),
 };
+defineControls(MEDIA_FLIGHTS);

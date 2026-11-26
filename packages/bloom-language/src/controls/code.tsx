@@ -11,7 +11,7 @@ import {
 
 import { Node, type Child, type ViewModifiers } from '../node';
 import type { CodeLinesSize } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Inline monospace, preformatted text, numbered lines and code cards (Bloom `code`). */
 export type CodeKind = 'code' | 'pre' | 'codeLines' | 'codeBlock';
@@ -90,7 +90,7 @@ function lines(d: ControlDraw): Record<string, unknown> {
   return props;
 }
 
-export const CODES: Record<CodeKind, ControlRenderer> = {
+const CODES: Record<CodeKind, ControlRenderer> = {
   code: (d) => d.component(BloomCode, d.props(), code(d)),
   pre: (d) => {
     const props = d.props();
@@ -119,3 +119,4 @@ export const CODES: Record<CodeKind, ControlRenderer> = {
     return d.component(BloomCodeBlock, props);
   },
 };
+defineControls(CODES);

@@ -3,7 +3,7 @@ import { CategoryBar as BloomCategoryBar, type CategoryBarItem } from '@oxy.so/b
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { resolveSpace, type ColorToken, type SpaceToken } from '../tokens';
-import { slot, type ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls, slot } from './draw';
 
 /** A scrolling strip of icon-over-label categories with a fixed trailing slot (Bloom `category-bar`). */
 export type CategoryBarKind = 'categoryBar';
@@ -38,7 +38,7 @@ export function CategoryBar(
   return new Node('categoryBar', { label, items, selection }, []);
 }
 
-export const CATEGORY_BARS: Record<CategoryBarKind, ControlRenderer> = {
+const CATEGORY_BARS: Record<CategoryBarKind, ControlRenderer> = {
   categoryBar: (d) => {
     const { label, items, selection } = d.node.props as {
       label: string;
@@ -61,3 +61,4 @@ export const CATEGORY_BARS: Record<CategoryBarKind, ControlRenderer> = {
     return d.painted(BloomCategoryBar, props, { fadeColor: d.own('backdrop')?.value });
   },
 };
+defineControls(CATEGORY_BARS);

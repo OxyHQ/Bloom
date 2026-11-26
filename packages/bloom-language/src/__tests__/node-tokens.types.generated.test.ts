@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import type { MotionSpec, SurfaceTransition } from '@oxy.so/bloom/motion';
 
 import type { GlassValue } from '../glass';
-import type * as Language from '../index';
+import type * as Language from './support/language.generated';
 import type { ViewModifiers, ViewNode } from '../node';
 import type * as Router from '../router';
 import type { AppToken } from '../tokens';
@@ -134,6 +134,7 @@ type S = {
   "tabsStyle": "underline" | "pill" | "filled";
   "kbdSize": "sm" | "md";
   "loadingStyle": "spinner" | "top" | "inline";
+  "progressViewSize": "small" | "large";
   "contentTransition": "roll" | "numeric";
   "swipeDirection": "left" | "right" | "up" | "down";
   "inputMode": "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
@@ -1450,6 +1451,12 @@ type spinnerIconChecks = [
   Expect<"spinnerIcon.size(size: iconSize)", Ok<At<View<'SpinnerIcon'>['size'], '0'>, S['iconSize']>>,
   Expect<"spinnerIcon.size(size: iconSize) takes AppToken<'iconSize'>", Takes<At<View<'SpinnerIcon'>['size'], '0'>, AppToken<'iconSize'>>>,
   Expect<"spinnerIcon.tint(tint: color)", Ok<At<View<'SpinnerIcon'>['tint'], '0'>, S['color'] | AtOpacity>>,
+];
+
+type progressViewChecks = [
+  Expect<'progressView: the universal modifiers', Universal<View<'ProgressView'>>>,
+  Expect<"progressView.size(size: progressViewSize)", Ok<At<View<'ProgressView'>['size'], '0'>, S['progressViewSize']>>,
+  Expect<"progressView.tint(tint: color)", Ok<At<View<'ProgressView'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type contextMenuChecks = [

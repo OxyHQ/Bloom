@@ -1,7 +1,7 @@
 import { ViewportProvider } from '@oxy.so/bloom/viewport';
 
 import { Node, type Child, type ViewNode } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /**
  * Native clipping geometry for what scrolls (Bloom `viewport`). Its provider
@@ -21,10 +21,11 @@ export function Viewport(...children: Child[]): ViewportView {
   return new Node('viewport', null, children);
 }
 
-export const VIEWPORTS: Record<ViewportKind, ControlRenderer> = {
+const VIEWPORTS: Record<ViewportKind, ControlRenderer> = {
   viewport: (d) => {
     const props = d.props();
     props.root = d.own('root') === undefined ? undefined : true;
     return d.component(ViewportProvider, props, ...d.children(d.node.children));
   },
 };
+defineControls(VIEWPORTS);

@@ -2,7 +2,7 @@ import { Pressable } from 'react-native';
 import { AgentAvatar } from '@oxy.so/bloom/agent-avatar';
 
 import { AVATAR_SIZE, ENUMS } from '../src/generated/spec.generated';
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { type AvatarSizeName, defineTokens } from '../src/tokens';
 import type { ParityCase } from './support/cases';

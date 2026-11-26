@@ -5,7 +5,7 @@ import type { ENUMS } from '../generated/spec.generated';
 import { Node, type ViewModifiers } from '../node';
 import { isAppColor, textVariant } from '../style';
 import type { ColorToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** Text clamped to a few lines, with a control to read the rest (Bloom `expandable-text`). */
 export type ExpandableTextKind = 'expandableText';
@@ -37,7 +37,7 @@ export function ExpandableText(text: string, expanded?: Binding<boolean>): Expan
   return new Node('expandableText', { text, expanded }, []);
 }
 
-export const EXPANDABLE_TEXTS: Record<ExpandableTextKind, ControlRenderer> = {
+const EXPANDABLE_TEXTS: Record<ExpandableTextKind, ControlRenderer> = {
   expandableText: (d) => {
     const { text, expanded } = d.node.props as { text: string; expanded?: Binding<boolean> };
     const ink = d.text.foreground;
@@ -61,3 +61,4 @@ export const EXPANDABLE_TEXTS: Record<ExpandableTextKind, ControlRenderer> = {
     );
   },
 };
+defineControls(EXPANDABLE_TEXTS);

@@ -187,6 +187,23 @@ export const A = ({ go, hold }) => (
     expect(flat(code)).toContain(".onLongPress(hold, '500')");
     expect(flat(code)).toContain('.collapsable(false)');
   });
+  it('maps React Native’s spinner to the platform spinner node', () => {
+    const { code, unconverted } = run(`import { ActivityIndicator, View } from 'react-native';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View>
+      <ActivityIndicator size="small" color={theme.colors.primarySubtleForeground} />
+      <ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading" />
+    </View>
+  );
+}
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain("ProgressView().size('small').tint('primaryText')");
+    expect(flat(code)).toContain("ProgressView().tint('primary').label('Loading')");
+  });
   it('keeps a long press delay that is no duration token, or has no long press', () => {
     const result = run(`import { Pressable } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
@@ -1730,7 +1747,7 @@ export const E = ({ open }) => <Dialog open={open} label="E" />;
     );
     // The language's Dialog beside Bloom's, which the dialogs kept JSX still draw.
     expect(result.code).toContain(
-      "import { Dialog as LDialog, VStack, toElement } from '@oxy.so/bloom-language';",
+      "import { VStack, toElement } from '@oxy.so/bloom-language';\nimport { Dialog as LDialog } from '@oxy.so/bloom-language/overlays';",
     );
     // A control's close handler, a handler that may read an argument, and an open no one closes stay JSX.
     expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([

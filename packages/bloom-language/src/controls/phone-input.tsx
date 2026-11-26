@@ -3,7 +3,7 @@ import { PhoneInput as BloomPhoneInput, type Country } from '@oxy.so/bloom/phone
 
 import type { Binding } from '../binding';
 import { Node, type IconComponent, type ViewModifiers } from '../node';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A phone number with its country-code select (Bloom `phone-input`). */
 export type PhoneInputKind = 'phoneInput';
@@ -40,7 +40,7 @@ export function PhoneInput(number: Binding<string>, title?: string): PhoneInputV
   return new Node('phoneInput', { number, title }, []);
 }
 
-export const PHONE_INPUTS: Record<PhoneInputKind, ControlRenderer> = {
+const PHONE_INPUTS: Record<PhoneInputKind, ControlRenderer> = {
   phoneInput: (d) => {
     const { number, title } = d.node.props as { number: Binding<string>; title?: string };
     const country = d.own('country')?.value;
@@ -66,3 +66,4 @@ export const PHONE_INPUTS: Record<PhoneInputKind, ControlRenderer> = {
     return d.component(BloomPhoneInput, props);
   },
 };
+defineControls(PHONE_INPUTS);

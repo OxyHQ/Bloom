@@ -15,7 +15,7 @@ import type { PropertyType } from '@oxy.so/bloom/stay-filters';
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { SearchModeTabsStyle } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A home search: the segmented bar, the mode tabs, the type tiles, a saved search. */
@@ -99,7 +99,7 @@ export function SavedSearchCard(
   return new Node('savedSearchCard', { title, options }, []);
 }
 
-export const HOME_SEARCHES: Record<HomeSearchKind, ControlRenderer> = {
+const HOME_SEARCHES: Record<HomeSearchKind, ControlRenderer> = {
   homeSearchBar: product(BloomHomeSearchBar, {
     bindings: { query: ['query', 'onQueryChange'] },
     binding: ['activeSegment', 'onActiveSegmentChange'],
@@ -115,3 +115,4 @@ export const HOME_SEARCHES: Record<HomeSearchKind, ControlRenderer> = {
   }),
   savedSearchCard: product(BloomSavedSearchCard, { press: true }),
 };
+defineControls(HOME_SEARCHES);

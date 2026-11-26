@@ -7,7 +7,7 @@ import {
 import type { ENUMS } from '../generated/spec.generated';
 import { Node, type Child, type IconComponent, type ViewModifiers } from '../node';
 import { type DurationName, resolveDuration } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** The notification card: a status disc or an avatar, the message, actions and dismiss (Bloom `notification`). */
 export type NotificationKind = 'notification';
@@ -61,7 +61,7 @@ function seconds(token: DurationName | undefined): number | undefined {
 const text = (d: ControlDraw, value: string | Child) =>
   typeof value === 'string' ? value : d.render(value);
 
-export const NOTIFICATIONS: Record<NotificationKind, ControlRenderer> = {
+const NOTIFICATIONS: Record<NotificationKind, ControlRenderer> = {
   notification: (d) => {
     const props = d.props();
     const buttons = d.own('buttons')?.value;
@@ -84,3 +84,4 @@ export const NOTIFICATIONS: Record<NotificationKind, ControlRenderer> = {
     return d.component(BloomNotification, props);
   },
 };
+defineControls(NOTIFICATIONS);

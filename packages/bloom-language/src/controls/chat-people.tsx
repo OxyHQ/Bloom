@@ -12,7 +12,7 @@ import {
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { DurationName, SelectedChipsLayout, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** The people beside a conversation: stories, picked people and a new group. */
@@ -83,7 +83,7 @@ export function NewGroupForm(
   );
 }
 
-export const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
+const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
   storyViewer: product(BloomStoryViewer, {
     bindings: { muted: ['muted', 'onMutedChange'] },
     slots: ['composer'],
@@ -99,3 +99,4 @@ export const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
     binding: ['name', 'onNameChange'],
   }),
 };
+defineControls(CHAT_PEOPLE);

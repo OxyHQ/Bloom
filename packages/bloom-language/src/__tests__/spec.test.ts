@@ -31,7 +31,7 @@ import {
   LEADING_PX,
   MOTION,
   type CONTENT_VIEW_MODIFIERS,
-  type NODE_MODIFIERS,
+  type NodeModifiers,
   OPACITY,
   ROTATION,
   SCALE,
@@ -437,6 +437,7 @@ import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
 import type { AnimatedCheckView } from '../controls/animated-check';
 import type { SpinnerIconView } from '../controls/spinner-icon';
+import type { ProgressViewView } from '../controls/progress-view';
 import type { ContextMenuView } from '../controls/context-menu';
 import type { CollapsibleView } from '../controls/collapsible';
 import type { DropZoneView } from '../controls/drop-zone';
@@ -675,7 +676,7 @@ describe('the spec drives the rules', () => {
       [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never;
     }[keyof T];
     type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-    type Of<K extends keyof typeof NODE_MODIFIERS> = (typeof NODE_MODIFIERS)[K][number];
+    type Of<K extends keyof NodeModifiers> = NodeModifiers[K][number];
     // A type error here means a node interface and spec/language.json disagree.
     const checks: [
       Same<MethodsOf<StackView>, Of<'stack'>>,
@@ -817,6 +818,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
       Same<MethodsOf<AnimatedCheckView>, Of<'animatedCheck'>>,
       Same<MethodsOf<SpinnerIconView>, Of<'spinnerIcon'>>,
+      Same<MethodsOf<ProgressViewView>, Of<'progressView'>>,
       Same<MethodsOf<ContextMenuView>, Of<'contextMenu'>>,
       Same<MethodsOf<CollapsibleView>, Of<'collapsible'>>,
       Same<MethodsOf<DropZoneView>, Of<'dropZone'>>,
@@ -1074,6 +1076,7 @@ describe('the spec drives the rules', () => {
       // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
       Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
     ] = [
+      true,
       true,
       true,
       true,

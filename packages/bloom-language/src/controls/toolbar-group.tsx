@@ -5,7 +5,7 @@ import { Node, type Child, type ViewNode } from '../node';
 import { HStack, Spacer } from '../primitives';
 import type { ENUMS } from '../generated/spec.generated';
 import { resolveSpace } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 export type ToolbarGroupKind = 'toolbarGroup' | 'toolbarSpacer';
 /** A toolbar spacer's kind: a fixed gap, or the free space. */
@@ -36,7 +36,7 @@ export const TOOLBAR_SPACER_WIDTH = resolveSpace('sm');
 const FIXED = { width: TOOLBAR_SPACER_WIDTH } as const;
 const FLEXIBLE = Spacer();
 
-export const TOOLBAR_GROUPS: Record<ToolbarGroupKind, ControlRenderer> = {
+const TOOLBAR_GROUPS: Record<ToolbarGroupKind, ControlRenderer> = {
   // One glass around the group's items: the lens base, Liquid Glass or a Surface capsule.
   toolbarGroup: (d) => d.render(HStack(...d.node.children).glass()) as ReactElement,
   toolbarSpacer: (d) =>
@@ -44,3 +44,4 @@ export const TOOLBAR_GROUPS: Record<ToolbarGroupKind, ControlRenderer> = {
       ? (d.render(FLEXIBLE) as ReactElement)
       : createElement(View, { key: d.key, style: FIXED }),
 };
+defineControls(TOOLBAR_GROUPS);

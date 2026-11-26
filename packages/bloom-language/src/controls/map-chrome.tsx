@@ -21,7 +21,7 @@ import type { DirectionsManeuver } from '@oxy.so/bloom/directions';
 import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Axis, LocationPuckMode, MapAttributionStyle, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** What a map draws over its tiles: the scale, the control stack, the reader's puck and the turn banner. */
@@ -94,7 +94,7 @@ export function NavigationBanner(
   );
 }
 
-export const MAP_CHROME: Record<MapChromeKind, ControlRenderer> = {
+const MAP_CHROME: Record<MapChromeKind, ControlRenderer> = {
   mapScaleBar: product(BloomMapScaleBar, { own: (d) => ({ variant: d.own('style')?.value }) }),
   mapControls: product(BloomMapControls, {
     bindings: { tilted: ['tilted', 'onTiltChange'] },
@@ -106,3 +106,4 @@ export const MAP_CHROME: Record<MapChromeKind, ControlRenderer> = {
   }),
   navigationBanner: product(BloomNavigationBanner),
 };
+defineControls(MAP_CHROME);

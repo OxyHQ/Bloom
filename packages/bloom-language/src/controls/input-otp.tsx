@@ -3,7 +3,7 @@ import { InputOtp as BloomInputOtp } from '@oxy.so/bloom/input-otp';
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { OtpCharacters } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A one-time code, one box per character (Bloom `input-otp`). */
 export type InputOtpKind = 'inputOtp';
@@ -29,7 +29,7 @@ export function InputOtp(code: Binding<string>): InputOtpView {
   return new Node('inputOtp', { code }, []);
 }
 
-export const INPUT_OTPS: Record<InputOtpKind, ControlRenderer> = {
+const INPUT_OTPS: Record<InputOtpKind, ControlRenderer> = {
   inputOtp: (d) => {
     const [value, onChange] = (d.node.props as { code: Binding<string> }).code;
     const props = d.props();
@@ -47,3 +47,4 @@ export const INPUT_OTPS: Record<InputOtpKind, ControlRenderer> = {
     return d.component(BloomInputOtp, props);
   },
 };
+defineControls(INPUT_OTPS);

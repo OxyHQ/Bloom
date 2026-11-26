@@ -49,6 +49,8 @@ export type NegativeSpaceName = `-${SpaceName}`;
 export type CornerName = keyof typeof CORNER | (typeof ENUMS.cornerExtra)[number];
 /** A corner's curve, as Bloom's shapes draw it: `smooth` is the platform's continuous corner. */
 export type CornerCurve = (typeof ENUMS.cornerCurve)[number];
+/** The platform spinner's size (`ProgressView`): React Native's `ActivityIndicator` sizes. */
+export type ProgressViewSize = (typeof ENUMS.progressViewSize)[number];
 /** A control's size: Bloom's control rungs. */
 export type ControlSize = (typeof ENUMS.controlSize)[number];
 /** The edge of a scroll a `safeAreaInset` or `safeAreaBar` is pinned at. */

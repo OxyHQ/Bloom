@@ -53,6 +53,7 @@ import {
   type StyleMod,
   type Table,
 } from './table';
+import { isLanguageModule, LANGUAGE_MODULE, MODULE_OF } from './entries';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -524,7 +525,6 @@ export interface TransformOptions {
   readonly name?: string;
 }
 
-const LANGUAGE_MODULE = '@oxy.so/bloom-language';
 /** Bloom's floating action button. */
 const FAB_MODULE = '@oxy.so/bloom/fab';
 /** Bloom's dropdown menu and its parts. */
@@ -550,7 +550,8 @@ function kindOf(source: Source | undefined): Kind | undefined {
     if (source.imported === 'TouchableOpacity') return 'pressable';
     if (source.imported === 'Text') return 'rnText';
     if (source.imported === 'Image') return 'rnImage';
-    return undefined;
+    // A React Native component the language draws as a node of its own (`ActivityIndicator`).
+    return ruleFor(source.module, source.imported) ? 'component' : undefined;
   }
   if (
     source.module === '@oxy.so/bloom/typography' &&
@@ -779,8 +780,7 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The language names the file already imports, by their local name (`Embed`, `toElement`). */
   const importedLanguage = new Map<string, string>();
   for (const [local, source] of sources)
-    if (source.module === LANGUAGE_MODULE || source.module === `${LANGUAGE_MODULE}/router`)
-      importedLanguage.set(source.imported, local);
+    if (isLanguageModule(source.module)) importedLanguage.set(source.imported, local);
   /** A language name: the file's own import of it, else one added, aliased when the file already uses the name. */
   const usedLanguage = new Map<string, string>();
   const lang = (name: string) => {
@@ -5033,7 +5033,7 @@ export function transformSource(source: string, options: TransformOptions): File
     // A language view the before side already writes (a menu row's `toElement(Icon(…))`).
     for (const match of uncommented(before).matchAll(/\b([A-Z][\w]*)\(/g)) {
       const local = match[1] as string;
-      if (sources.get(local)?.module === LANGUAGE_MODULE)
+      if (isLanguageModule(sources.get(local)?.module))
         bindings[local] = sources.get(local) as Source;
     }
     for (const match of uncommented(after).matchAll(/\b([A-Z][\w]*)\b/g)) {
@@ -5339,27 +5339,22 @@ export function transformSource(source: string, options: TransformOptions): File
       });
       if (before > 0 && statement.specifiers.length === 0) body.splice(body.indexOf(statement), 1);
     }
-    // `screen` is the router's; every other name the language's own.
-    const imports = (module: string, names: [string, string][]) => {
-      if (!names.length) return [];
-      const specifiers = names
-        .sort(([a], [b]) => (a < b ? -1 : 1))
-        .map(([name, local]) => (name === local ? name : `${name} as ${local}`));
-      return recast.parse(`import { ${specifiers.join(', ')} } from '${module}';\n`, {
-        parser: babelTs,
-      }).program.body;
-    };
-    const names = [...usedLanguage.entries()];
-    const declarations = [
-      ...imports(
-        LANGUAGE_MODULE,
-        names.filter(([name]) => name !== 'screen'),
-      ),
-      ...imports(
-        `${LANGUAGE_MODULE}/router`,
-        names.filter(([name]) => name === 'screen'),
-      ),
-    ];
+    // Each name from its entry: the root, the router or its family's.
+    const byModule = new Map<string, [string, string][]>();
+    for (const [name, local] of usedLanguage) {
+      const module = MODULE_OF.get(name) ?? LANGUAGE_MODULE;
+      byModule.set(module, [...(byModule.get(module) ?? []), [name, local]]);
+    }
+    const declarations = [...byModule]
+      .sort(([a], [b]) => (a === LANGUAGE_MODULE ? -1 : b === LANGUAGE_MODULE ? 1 : a < b ? -1 : 1))
+      .flatMap(([module, names]) => {
+        const specifiers = names
+          .sort(([a], [b]) => (a < b ? -1 : 1))
+          .map(([name, local]) => (name === local ? name : `${name} as ${local}`));
+        return recast.parse(`import { ${specifiers.join(', ')} } from '${module}';\n`, {
+          parser: babelTs,
+        }).program.body;
+      });
     const lastImport = body.reduce(
       (last: number, s: AnyNode, i: number) => (n.ImportDeclaration.check(s) ? i : last),
       -1,

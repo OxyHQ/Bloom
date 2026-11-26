@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { getPlatformGlassGroup, systemGlassGroup } from '../platform/glass-group-host';
 import { resolveSpace, type SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /**
  * SwiftUI's `GlassEffectContainer`: the glasses inside render together. Each
@@ -27,7 +27,7 @@ export function GlassGroup(...children: Child[]): GlassGroupView {
   return new Node('glassGroup', null, children);
 }
 
-export const GLASS_GROUPS: Record<GlassGroupKind, ControlRenderer> = {
+const GLASS_GROUPS: Record<GlassGroupKind, ControlRenderer> = {
   glassGroup: (d) => {
     const blend = d.own('blend')?.value;
     const points = blend === undefined ? undefined : resolveSpace(blend as SpaceToken);
@@ -41,3 +41,4 @@ export const GLASS_GROUPS: Record<GlassGroupKind, ControlRenderer> = {
     return d.component(host, props, ...d.children(d.node.children));
   },
 };
+defineControls(GLASS_GROUPS);

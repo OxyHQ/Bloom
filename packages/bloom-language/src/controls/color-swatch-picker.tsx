@@ -3,7 +3,7 @@ import { ColorSwatchPicker as BloomColorSwatchPicker } from '@oxy.so/bloom/color
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import { resolveSpace, type SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** A wrapping row of colour swatches, one chosen (Bloom `color-swatch-picker`). */
 export type ColorSwatchPickerKind = 'colorSwatchPicker';
@@ -29,7 +29,7 @@ export function ColorSwatchPicker(
   return new Node('colorSwatchPicker', { label, color, colors }, []);
 }
 
-export const COLOR_SWATCH_PICKERS: Record<ColorSwatchPickerKind, ControlRenderer> = {
+const COLOR_SWATCH_PICKERS: Record<ColorSwatchPickerKind, ControlRenderer> = {
   colorSwatchPicker: (d) => {
     const { label, color, colors } = d.node.props as {
       label: string;
@@ -50,3 +50,4 @@ export const COLOR_SWATCH_PICKERS: Record<ColorSwatchPickerKind, ControlRenderer
     return d.component(BloomColorSwatchPicker, props);
   },
 };
+defineControls(COLOR_SWATCH_PICKERS);

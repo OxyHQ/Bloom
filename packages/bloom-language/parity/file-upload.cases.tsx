@@ -1,7 +1,7 @@
 import { FileUpload } from '@oxy.so/bloom/file-upload';
 import { RiFilePdf2Line } from '@oxy.so/bloom/icons';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
 

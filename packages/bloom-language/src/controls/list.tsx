@@ -40,7 +40,7 @@ import {
   type SpaceToken,
 } from '../tokens';
 import { DISMISS_MODE, containerStyle } from '../chrome/scroll-view-host';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type ControlDraw, type ControlRenderer, defineControls } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
 export type ListKind = 'listItem' | 'mailRow' | 'list' | 'virtualList' | 'listSelectionBar';
@@ -395,7 +395,7 @@ const listItem: ControlRenderer = (d) => {
   return d.component(BloomListItem, props);
 };
 
-export const LISTS: Record<ListKind, ControlRenderer> = {
+const LISTS: Record<ListKind, ControlRenderer> = {
   listItem,
   mailRow: listItem,
   list: (d) => {
@@ -474,3 +474,4 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     return d.component(BloomListSelectionBar, props);
   },
 };
+defineControls(LISTS);

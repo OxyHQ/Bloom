@@ -28,7 +28,7 @@ import {
 import { useMenuChoice } from '../platform/menu-actions';
 import { drawMenuRows, glyph, type Leading, type MenuParts } from '../platform/menu-dropdown';
 import { readMenuRows } from '../platform/menu-rows';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 
 /** The menu a right-click or a long press opens on a view (Bloom `context-menu`). */
 export type ContextMenuKind = 'contextMenu';
@@ -115,7 +115,7 @@ function ContextMenuHost({
   );
 }
 
-export const CONTEXT_MENUS: Record<ContextMenuKind, ControlRenderer> = {
+const CONTEXT_MENUS: Record<ContextMenuKind, ControlRenderer> = {
   contextMenu: (d) => {
     const { content } = d.node.props as { content: Child };
     const trigger = d.component(
@@ -136,3 +136,4 @@ export const CONTEXT_MENUS: Record<ContextMenuKind, ControlRenderer> = {
     );
   },
 };
+defineControls(CONTEXT_MENUS);

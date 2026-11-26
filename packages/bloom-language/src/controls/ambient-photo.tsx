@@ -5,7 +5,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { DurationName } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** An ambient display's photo. */
@@ -34,6 +34,7 @@ export function AmbientPhoto(
   return new Node('ambientPhoto', { source, options }, []);
 }
 
-export const AMBIENT_PHOTOS: Record<AmbientPhotoKind, ControlRenderer> = {
+const AMBIENT_PHOTOS: Record<AmbientPhotoKind, ControlRenderer> = {
   ambientPhoto: product(BloomAmbientPhoto, { durations: ['fadeMs', 'driftMs'] }),
 };
+defineControls(AMBIENT_PHOTOS);

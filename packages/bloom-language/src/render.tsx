@@ -173,8 +173,7 @@ import {
   type VariantStyles,
 } from './style';
 import { Reporting, ReportedState, StateHost } from './state-host';
-import { CONTROLS } from './controls';
-import type { ControlDraw, ControlRenderer } from './controls/draw';
+import { type ControlDraw, type ControlRenderer, controlOf } from './controls/draw';
 import { drawDialog, presentAround } from './controls/overlays';
 import {
   STATES,
@@ -3199,7 +3198,7 @@ function renderHost(
       );
     }
     default: {
-      const control: ControlRenderer | undefined = CONTROLS[node.kind as NodeKind];
+      const control: ControlRenderer | undefined = controlOf(node.kind);
       if (control === undefined) throw new Error(`bloom-language: no renderer for ${node.kind}`);
       const controlDraw: ControlDraw = {
         node,

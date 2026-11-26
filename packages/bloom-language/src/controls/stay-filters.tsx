@@ -29,7 +29,7 @@ import {
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { FeatureFilterStyle, FilterTriggerSize, PriceScale, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** A stay search's filters: their sections, ranges, counts, chips and footer. */
@@ -239,7 +239,7 @@ export function FloorFilter(
 const disabled = (d: Parameters<ControlRenderer>[0]) => ({ disabled: d.own('disabled')?.value });
 const edited = ['value', 'onValueChange'] as const;
 
-export const STAY_FILTERS: Record<StayFilterKind, ControlRenderer> = {
+const STAY_FILTERS: Record<StayFilterKind, ControlRenderer> = {
   filterSection: product(BloomFilterSection, {
     own: (d) => ({ divider: d.own('dividers')?.value }),
   }),
@@ -271,3 +271,4 @@ export const STAY_FILTERS: Record<StayFilterKind, ControlRenderer> = {
   }),
   floorFilter: product(BloomFloorFilter, { binding: edited, own: disabled }),
 };
+defineControls(STAY_FILTERS);

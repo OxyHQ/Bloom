@@ -3,7 +3,7 @@ import { RiGroupLine, RiToolsLine } from '@oxy.so/bloom/icons';
 import { PlaceReviewSummary, WriteReviewPrompt } from '@oxy.so/bloom/place-reviews';
 import { Text } from '@oxy.so/bloom/typography';
 
-import * as L from '../src/index';
+import * as L from '../src/__tests__/support/language.generated';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 

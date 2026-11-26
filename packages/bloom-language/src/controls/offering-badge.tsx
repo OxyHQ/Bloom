@@ -6,7 +6,7 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { OfferingBadgeSize, OfferingBadgeStyle } from '../tokens';
-import type { ControlRenderer } from './draw';
+import { type ControlRenderer, defineControls } from './draw';
 import { product } from './product';
 
 /** What a listing is offered as: to rent, to buy, to swap. */
@@ -34,8 +34,9 @@ export function OfferingBadge(
   return new Node('offeringBadge', { offering, options }, []);
 }
 
-export const OFFERING_BADGES: Record<OfferingBadgeKind, ControlRenderer> = {
+const OFFERING_BADGES: Record<OfferingBadgeKind, ControlRenderer> = {
   offeringBadge: product(BloomOfferingBadge, {
     own: (d) => ({ size: d.own('size')?.value, variant: d.own('style')?.value }),
   }),
 };
+defineControls(OFFERING_BADGES);
