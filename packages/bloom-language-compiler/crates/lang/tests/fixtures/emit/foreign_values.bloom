@@ -99,3 +99,14 @@ pub view Player {
     }
   }
 }
+
+// A view's `if` narrows a member chain for the nodes it draws.
+pub view Tip(tip: Author) {
+  body {
+    VStack {
+      if tip.name != none {
+        RawText(tip.name)
+      }
+    }
+  }
+}

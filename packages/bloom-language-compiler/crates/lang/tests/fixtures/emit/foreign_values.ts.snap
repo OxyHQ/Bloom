@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, GroupedSectionItem, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Button, GroupedSectionItem, RawText, Text, VStack, view } from "@oxy.so/bloom-language";
 import { useInsets, useList, useMods, usePlayer } from "@/hooks/useInsets";
 
 const OFFSET = 4;
@@ -151,5 +151,23 @@ $[0] = $t3;
 $t3 = $[0];
 }
 return $t3;
+});
+
+export interface TipProps {
+  readonly tip: Author;
+}
+export const Tip = view(function Tip(props: TipProps) {
+"use no memo";
+const $ = $c(2);
+const { tip } = props;
+let $t4;
+if ($[0] !== tip.name) {
+$t4 = VStack((tip.name !== undefined) ? RawText(tip.name!) : null);
+$[0] = tip.name;
+$[1] = $t4;
+} else {
+$t4 = $[1];
+}
+return $t4;
 });
 
