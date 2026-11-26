@@ -1496,7 +1496,9 @@ impl Tr<'_> {
         let head = std::mem::replace(&mut self.head, false);
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
+        self.closures += 1;
         let text = self.closure_inner(arrow);
+        self.closures -= 1;
         self.head = head;
         self.propagate = propagate;
         self.try_return = returning;
@@ -1508,12 +1510,14 @@ impl Tr<'_> {
         let saved = self.scope.clone();
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
+        self.closures += 1;
         let body = match arrow.get_expression() {
             Some(e) => self.stmt_expr(e),
             None => {
                 self.block_stmts(crate::view::arrow_statements(arrow), crate::view::arrow_end(arrow), false)
             }
         };
+        self.closures -= 1;
         self.propagate = propagate;
         self.try_return = returning;
         self.scope = saved;

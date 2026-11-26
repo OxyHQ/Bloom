@@ -1587,8 +1587,15 @@ impl Tr<'_> {
                 format!("for {item} in {list} {{\n{body}\n}}")
             }
             Statement::TryStatement(t) => self.try_stmt(t, false),
+            // In a `Result` closure (a `try` written as one): its error. In a closure
+            // TS calls (`mutationFn`, `queryFn`): `err(e)?`, which throws there (spec
+            // 4.5; bloomc checks that TS calls it). The prelude's `fail(e)` replaces it.
+            Statement::ThrowStatement(t) if self.propagate => {
+                format!("return err({})", self.expr(&t.argument))
+            }
+            Statement::ThrowStatement(t) if self.closures > 0 => format!("err({})?", self.expr(&t.argument)),
             Statement::ThrowStatement(t) => {
-                self.refuse("statement:throw", "`throw` (return a `Result`)", t.span)
+                self.refuse("statement:throw", "`throw` outside a closure (return a `Result`)", t.span)
             }
             Statement::SwitchStatement(s) => self.switch(s),
             Statement::BlockStatement(b) => self.refuse("statement:block", "a bare block", b.span),
