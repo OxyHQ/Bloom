@@ -74,6 +74,8 @@ pub struct Scope {
     /// A value whose branches give it (`let body; if (c) body = a; else body = b`):
     /// a write of it is the branch's `return`.
     pub assign_returns: Option<String>,
+    /// The props are named whole (`..props: P`): `props` is a value.
+    pub whole_props: bool,
 }
 
 pub struct Tr<'s> {
@@ -905,6 +907,13 @@ impl<'s> Tr<'s> {
             Expression::ArrowFunctionExpression(a) => &a.params,
             _ => return,
         };
+        // Props handed on whole keep their type (`..props: P`).
+        if let Some(oxc_ast::ast::FormalParameter { pattern: BindingPattern::BindingIdentifier(id), .. }) =
+            params.items.first()
+            && props_used_whole(self.src, f.span(), &id.name)
+        {
+            return;
+        }
         if let Some(name) = params.items.first().and_then(|p| p.type_annotation.as_ref()).and_then(|t| {
             if let TSType::TSTypeReference(r) = &t.type_annotation
                 && let TSTypeName::IdentifierReference(id) = &r.type_name
@@ -919,6 +928,12 @@ impl<'s> Tr<'s> {
     }
 
     fn note_function_props(&mut self, f: &Function) {
+        if let Some(oxc_ast::ast::FormalParameter { pattern: BindingPattern::BindingIdentifier(id), .. }) =
+            f.params.items.first()
+            && props_used_whole(self.src, f.span, &id.name)
+        {
+            return;
+        }
         if let Some(name) = f.params.items.first().and_then(|p| p.type_annotation.as_ref()).and_then(|t| {
             if let TSType::TSTypeReference(r) = &t.type_annotation
                 && let TSTypeName::IdentifierReference(id) = &r.type_name
@@ -1434,4 +1449,25 @@ fn hoist_lets(items: Vec<String>) -> Vec<String> {
     out.extend(moved.iter().map(|&i| items[i].clone()));
     out.extend((first..items.len()).filter(|i| !moved.contains(i)).map(|i| items[i].clone()));
     out
+}
+
+/// Whether the props parameter `name` of the function at `span` is read whole: a
+/// use that is not `name.x` / `name?.x` (nor the parameter itself).
+pub fn props_used_whole(src: &str, span: Span, name: &str) -> bool {
+    let text = &src[span.start as usize..span.end as usize];
+    let mut seen_param = false;
+    text.match_indices(name).any(|(i, _)| {
+        let before = text[..i].chars().next_back();
+        let after = &text[i + name.len()..];
+        let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$');
+        if word(before) || before == Some('.') || word(after.chars().next()) {
+            return false;
+        }
+        let after = after.trim_start();
+        if !seen_param && after.starts_with(':') {
+            seen_param = true;
+            return false;
+        }
+        !(after.starts_with('.') || after.starts_with("?.") || after.starts_with(':'))
+    })
 }

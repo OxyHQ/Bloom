@@ -391,6 +391,10 @@ impl Tr<'_> {
             let state = setter.state.clone();
             return format!("{{ next in {state} = next }}");
         }
+        if self.scope.props.as_deref() == Some(name) && self.scope.whole_props {
+            self.used.insert(name.to_string());
+            return name.to_string();
+        }
         if self.scope.props.as_deref() == Some(name) {
             return self.refuse(
                 "view:props-object",
@@ -921,6 +925,11 @@ impl Tr<'_> {
                 match call.arguments.as_slice() {
                     [] => format!("{callee}()"),
                     [Argument::ObjectExpression(o)] => format!("{callee}({})", self.named_args(o)),
+                    // `X(props)`: its fields as the arguments.
+                    [arg] if arg.as_expression().is_some() => {
+                        let value = self.expr(arg.to_expression());
+                        format!("{callee}(..{value})")
+                    }
                     _ => self.refuse(
                         "view:props-object",
                         "a view called with a computed props object",

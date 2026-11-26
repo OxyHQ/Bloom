@@ -203,6 +203,20 @@ impl Tr<'_> {
         let Some(annotation) = param.type_annotation.as_ref().map(|t| &t.type_annotation).or(props_ty) else {
             return Some(self.refuse("view:untyped-props", "untyped props", param.span));
         };
+        // `function X(props: P)` that hands `props` on whole (`<Y {...props} />`): `..props: P`
+        // spreads P's fields and names the whole value.
+        if let BindingPattern::BindingIdentifier(id) = &param.pattern
+            && let TSType::TSTypeReference(reference) = annotation
+            && reference.type_arguments.is_none()
+            && let TSTypeName::IdentifierReference(ty) = &reference.type_name
+            && crate::module::props_used_whole(self.src, span, &id.name)
+        {
+            self.scope.props = Some(id.name.to_string());
+            self.scope.whole_props = true;
+            let ty = self.name(&ty.name, ty.span);
+            let name = self.bind_param(&id.name, id.span);
+            return Some(format!("..{name}: {ty}"));
+        }
         let mut spread = None;
         let members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
@@ -525,6 +539,7 @@ impl Tr<'_> {
                 if self.scope.props.as_deref() == Some(source.name.as_str()) =>
             {
                 // `const { a, b: c } = props`: the parameters are already in scope.
+                let mut lines = Vec::new();
                 for property in &pattern.properties {
                     if let (Some(key), BindingPattern::BindingIdentifier(local)) =
                         (key_name(&property.key), &property.value)
@@ -532,6 +547,16 @@ impl Tr<'_> {
                         if local.name != key.as_str() {
                             self.scope.renames.insert(local.name.to_string(), key);
                         }
+                    } else if let (Some(key), BindingPattern::AssignmentPattern(a)) =
+                        (key_name(&property.key), &property.value)
+                        && let BindingPattern::BindingIdentifier(local) = &a.left
+                    {
+                        // `{ isNested = false } = props`: the prop, or the default when absent.
+                        let value = self.expr(&a.right);
+                        self.scope.renames.remove(local.name.as_str());
+                        let name = self.bind(&local.name, local.span);
+                        self.scope.decl.remove(&name);
+                        lines.push(format!("let {name} = {key} ?? {value}"));
                     } else {
                         return self.refuse(
                             "view:props-pattern",
@@ -543,7 +568,7 @@ impl Tr<'_> {
                 if pattern.rest.is_some() {
                     return self.refuse("view:rest-props", "rest props `{ a, ...rest }`", pattern.span);
                 }
-                String::new()
+                lines.join("\n")
             }
             _ => self.let_decl(d, init, true),
         }
@@ -882,7 +907,13 @@ impl Tr<'_> {
                             ));
                             continue;
                         }
-                        let line = self.let_decl(d, init, true);
+                        // `const { a } = props` after a return: the props are in scope.
+                        let line = if matches!(init.without_parentheses(), Expression::Identifier(s) if self.scope.props.as_deref() == Some(s.name.as_str()))
+                        {
+                            self.member(d)
+                        } else {
+                            self.let_decl(d, init, true)
+                        };
                         lines.push(self.take_reviews() + &line);
                     }
                 }
