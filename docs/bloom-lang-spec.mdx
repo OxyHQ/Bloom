@@ -500,9 +500,13 @@ so a wrong path is a compile error.
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
   `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
-  7.2) when its type is a React component type (`ComponentType`, `FC`, a function of one props
-  object returning an element), or, when it is `Foreign`, when its name is `UpperCamel` and it is
-  used as a node.
+  7.2) when its type is a React component type (`ComponentType`, `FC`, `ComponentClass`, the
+  exotic ones: `MemoExoticComponent`, `ForwardRefExoticComponent`, `LazyExoticComponent`,
+  `NamedExoticComponent`; a wrapped component gives its props), a function of one props object
+  returning an element, or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
+  props are TS's to check), or, when it is `Foreign`, when its name is `UpperCamel` and it is
+  used as a node. A TS interface with a call signature (`ToastFn`) or an index signature
+  (`[key: string]: unknown`) is `Foreign`: callable, and taking any keys, checked by TS.
 - **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
   packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).
   An explicit import shadows a prelude name. A module is never both `X.tsx` and `X.bloom`

@@ -1,0 +1,3 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Badges())`), or from TSX as `toElement(Badges())`. */
+export declare const Badges: () => ComposedView;

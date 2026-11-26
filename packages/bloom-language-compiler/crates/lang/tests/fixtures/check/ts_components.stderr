@@ -1,0 +1,24 @@
+error[B0205]: `BadgeProps` has no field `labl`
+ --> check/ts_components.bloom:8:13
+  |
+8 |       Badge(labl: "x")
+  |             ^^^^ no such field
+  |
+help: did you mean `label`?
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0206]: this component needs `label`
+ --> check/ts_components.bloom:8:7
+  |
+8 |       Badge(labl: "x")
+  |       ^^^^^ missing required props
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens
+
+error[B0201]: expected `String`, found `Int`
+ --> check/ts_components.bloom:9:19
+  |
+9 |       Chip(label: 1)
+  |                   ^ this is `Int`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
