@@ -641,7 +641,11 @@ impl Tr<'_> {
     /// setter is TS's (`Dispatch<SetStateAction<T>>`, tsc checks its calls).
     fn hook_state(&mut self, pattern: &oxc_ast::ast::ArrayPattern, call: &CallExpression) -> String {
         if pattern.rest.is_some() || pattern.elements.len() > 2 {
-            return self.refuse("react:useState", "`useState` destructured beyond `[value, setValue]`", pattern.span);
+            return self.refuse(
+                "react:useState",
+                "`useState` destructured beyond `[value, setValue]`",
+                pattern.span,
+            );
         }
         let mut names = Vec::new();
         for i in 0..2 {
@@ -668,7 +672,11 @@ impl Tr<'_> {
         let name = self.name(&names[0], pattern.span);
         let Expression::Identifier(callee) = &call.callee else { unreachable!() };
         let state = callee.name.to_string();
-        self.react_values.insert(if state == "useState" { state.clone() } else { format!("useState as {state}") });
+        self.react_values.insert(if state == "useState" {
+            state.clone()
+        } else {
+            format!("useState as {state}")
+        });
         format!("let ({name}, {}): ({ty}, Foreign) = {state}({init})", names[1])
     }
 
@@ -1414,7 +1422,10 @@ impl Tr<'_> {
                 let text = self.stmt(statement);
                 let marked = format!("await {call}");
                 if text.matches(&marked).count() == 1 {
-                    let text = text.replace(&format!("({marked})"), "value").replace(&marked, "value").replace("!(value)", "!value");
+                    let text = text
+                        .replace(&format!("({marked})"), "value")
+                        .replace(&marked, "value")
+                        .replace("!(value)", "!value");
                     let rest = self.block_stmts(&statements[i + 1..], end, tail);
                     let reviews = self.take_reviews();
                     lines.push(format!(
@@ -2177,7 +2188,11 @@ impl Tr<'_> {
         // value returned from the `.ok` arm; only where the `try` ends its block.
         let called = tail.is_none() && !returns.is_empty();
         if called && (!last || returns.iter().any(|r| r.argument.is_none())) {
-            return self.refuse("try:return", "a `return` inside a `try` that does not end its block", returns[0].span);
+            return self.refuse(
+                "try:return",
+                "a `return` inside a `try` that does not end its block",
+                returns[0].span,
+            );
         }
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
@@ -2892,7 +2907,9 @@ fn writes_state(tr: &Tr, statement: &Statement) -> bool {
 fn awaited_test<'b, 'a>(test: &'b Expression<'a>) -> Option<&'b Expression<'a>> {
     match test.without_parentheses() {
         Expression::AwaitExpression(a) => Some(&a.argument),
-        Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => awaited_test(&u.argument),
+        Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => {
+            awaited_test(&u.argument)
+        }
         _ => None,
     }
 }

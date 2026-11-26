@@ -115,9 +115,24 @@ impl Tr<'_> {
                 ];
                 // JS's own classes and DOM types as types: the TS type, kept as a `Foreign`.
                 const JS_TYPES: &[&str] = &[
-                    "Date", "RegExp", "Error", "URL", "Blob", "File", "FormData", "HTMLElement",
-                    "HTMLDivElement", "HTMLInputElement", "Element", "Event", "KeyboardEvent",
-                    "MouseEvent", "AbortController", "AbortSignal", "Response", "Headers",
+                    "Date",
+                    "RegExp",
+                    "Error",
+                    "URL",
+                    "Blob",
+                    "File",
+                    "FormData",
+                    "HTMLElement",
+                    "HTMLDivElement",
+                    "HTMLInputElement",
+                    "Element",
+                    "Event",
+                    "KeyboardEvent",
+                    "MouseEvent",
+                    "AbortController",
+                    "AbortSignal",
+                    "Response",
+                    "Headers",
                 ];
                 if JS_TYPES.contains(&name.as_str())
                     && reference.type_arguments.is_none()

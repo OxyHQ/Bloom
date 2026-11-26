@@ -213,10 +213,12 @@ impl Tr<'_> {
                 let test = self.test(&c.test, false);
                 // `(n < 3) ? …`: bloom_fmt may break a long line after `<`/`>`, which
                 // bloomc reads as the end of the line unless it is in parentheses.
-                let test = if relational(&c.test) && !test.starts_with('(') { format!("({test})") } else { test };
+                let test =
+                    if relational(&c.test) && !test.starts_with('(') { format!("({test})") } else { test };
                 let a = self.expr(&c.consequent);
                 // A conditional in the first branch keeps its parentheses (`a ? (b ? c : d) : e`).
-                let a = if matches!(c.consequent.without_parentheses(), Expression::ConditionalExpression(_)) {
+                let a = if matches!(c.consequent.without_parentheses(), Expression::ConditionalExpression(_))
+                {
                     format!("({a})")
                 } else {
                     a

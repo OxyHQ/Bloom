@@ -159,8 +159,10 @@ pub fn defaults(
         let head = head.trim_end();
         let right_sq = squeeze(right);
         let Some(left) = defaults.iter().find_map(|(left, rights)| {
-            (rights.iter().any(|r| squeeze(r) == right_sq) && head.ends_with(left.as_str()) && is_postfix(left))
-                .then_some(left.as_str())
+            (rights.iter().any(|r| squeeze(r) == right_sq)
+                && head.ends_with(left.as_str())
+                && is_postfix(left))
+            .then_some(left.as_str())
         }) else {
             continue;
         };
@@ -184,7 +186,10 @@ pub fn defaults(
     // The same `a || b` of two TS values, typed `Bool` where a value is expected
     // (bloomc reports the whole expression).
     for d in diagnostics {
-        if d.code != "B0201" || !d.message.ends_with("found `Bool`") || d.message.starts_with("expected `Bool") {
+        if d.code != "B0201"
+            || !d.message.ends_with("found `Bool`")
+            || d.message.starts_with("expected `Bool")
+        {
             continue;
         }
         let (start, end) = (d.span.start as usize, d.span.end as usize);

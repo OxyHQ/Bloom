@@ -67,7 +67,9 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             // `s.substring(a, b)` from literal non-negative indices: Bloom's `slice`.
             ("B0209", "substring")
                 if receiver == Some("String")
-                    && source[end..].strip_prefix('(').is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit())) =>
+                    && source[end..]
+                        .strip_prefix('(')
+                        .is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit())) =>
             {
                 Some((start, end, "slice".to_string()))
             }
@@ -105,7 +107,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
-                if (d.message == "expected `View`, found `[View]`" || d.message == "expected `View?`, found `[View]`")
+                if (d.message == "expected `View`, found `[View]`"
+                    || d.message == "expected `View?`, found `[View]`")
                     && crate::expr::is_postfix_text(text)
                     && (line_is(source, start, end) || braced(source, start, end)) =>
             {
@@ -113,7 +116,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // A `[View?]` (TS's `Child[]`, `null`s drawn as nothing) as a child.
             ("B0201", _)
-                if (d.message == "expected `View`, found `[View?]`" || d.message == "expected `View?`, found `[View?]`")
+                if (d.message == "expected `View`, found `[View?]`"
+                    || d.message == "expected `View?`, found `[View?]`")
                     && crate::expr::is_postfix_text(text)
                     && (line_is(source, start, end) || braced(source, start, end)) =>
             {
