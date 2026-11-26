@@ -14,4 +14,5 @@ export const SEE = {
   animation: `${DOCS}bloom-language-tour.mdx#animation-and-gestures`,
   corner: `${DOCS}bloom-language-modifiers.mdx#corner`,
   contentView: `${DOCS}bloom-language-modifiers.mdx#contentview`,
+  avoidsKeyboard: `${DOCS}bloom-language-modifiers.mdx#avoidskeyboard`,
 } as const;

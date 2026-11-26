@@ -131,6 +131,8 @@ export type CornerSide = (typeof ENUMS.cornerSide)[number];
 export type WordBreak = (typeof ENUMS.wordBreak)[number];
 /** The scroll container's edge a sticky view is held at. */
 export type StickyEdge = (typeof ENUMS.stickyEdge)[number];
+/** How a region keeps above the keyboard: React Native's `KeyboardAvoidingView` `behavior` (a bottom padding, its height, or its content moved up). */
+export type KeyboardBehavior = (typeof ENUMS.keyboardBehavior)[number];
 /** Whether an avatar's character moves: Bloom's `AvatarMotion`. */
 export type AvatarMotion = (typeof ENUMS.avatarMotion)[number];
 /**

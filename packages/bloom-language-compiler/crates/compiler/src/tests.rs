@@ -252,6 +252,26 @@ fn mentions_host_props_text_shadow_and_inline_insets_are_checked() {
 }
 
 #[test]
+fn a_keyboard_region_is_checked_against_the_spec() {
+    let ok = compiled(
+        "export const x = (header) => VStack(VStack(Text('a')).grow(), HStack(Text('b')).avoidsKeyboard('height', header)).flex('1').avoidsKeyboard('padding');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().avoidsKeyboard('resize');\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown keyboardBehavior token 'resize' for .avoidsKeyboard()"
+    );
+    let output = compiled("export const x = () => VStack().avoidsKeyboard('padding', 'tall');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'tall' for .avoidsKeyboard()");
+    let output = compiled("export const x = () => VStack().avoidsKeyboard('padding', 44);\n");
+    assert_eq!(output.diagnostics[0].message, ".avoidsKeyboard() takes padding tokens, not the number 44");
+    // A region is a stack's: a text is no region.
+    let output = compiled("export const x = () => Text('a').avoidsKeyboard('padding');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .avoidsKeyboard()");
+}
+
+#[test]
 fn bloom_component_props_mention_writes_are_checked() {
     let names = "Dialog, Avatar, AvatarGroup, Search, ScrollView, Text";
     let ok = compiled_with(

@@ -259,6 +259,7 @@ import {
   type CornerSide,
   type WordBreak,
   type StickyEdge,
+  type KeyboardBehavior,
   type AvatarMotion,
   type Cursor,
   type SafeArea,
@@ -1642,6 +1643,12 @@ export type Modifier =
   | { readonly kind: 'focusable'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'collapsable'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'sticky'; readonly key: string; readonly value: StickyEdge }
+  | {
+      readonly kind: 'avoidsKeyboard';
+      readonly key: string;
+      readonly value: KeyboardBehavior;
+      readonly offset: PaddingToken | Points | undefined;
+    }
   | { readonly kind: 'cursor'; readonly key: string; readonly value: Cursor }
   | { readonly kind: 'textShadow'; readonly key: string; readonly value: TextShadowName }
   | {
@@ -3234,6 +3241,10 @@ export class Node {
   }
   listMarker(value: ListMarker): Node {
     return this.with({ kind: 'listMarker', key: `list:${value}`, value });
+  }
+  avoidsKeyboard(value: KeyboardBehavior, offset?: PaddingToken | Points): Node {
+    const key = `keyboard:${value}:${offset === undefined ? '' : tokenKey(offset)}`;
+    return this.with({ kind: 'avoidsKeyboard', key, value, offset });
   }
   pressed(value: boolean | AnyBinding): Node {
     return this.set('pressed', value);
@@ -5078,6 +5089,18 @@ export interface StackView extends ViewModifiers<StackView> {
    * leading padding. Native draws no markers, as React Native has none.
    */
   listMarker(value: ListMarker): StackView;
+  /**
+   * The stack kept above the keyboard: drawn as React Native's own
+   * `KeyboardAvoidingView` (no view around it), which moves it out of the
+   * keyboard's way by `behavior`: a bottom `padding`, its `height`, or its
+   * content moved up (`position`). `offset` is React Native's
+   * `keyboardVerticalOffset`, the distance from the window's top to the
+   * stack's (a header above it), a space token or a number computed at render.
+   * The region a chat's transcript and composer sit in; a whole screen takes
+   * `.keyboardAvoiding()`. A stack that takes presses is its press host
+   * instead, so the region is the stack around the pressable views.
+   */
+  avoidsKeyboard(behavior: KeyboardBehavior, offset?: PaddingToken | Points): StackView;
 }
 /**
  * Children over one another, later ones on top (SwiftUI's `ZStack`): the

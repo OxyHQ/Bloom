@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (668). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (669). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -3094,6 +3094,16 @@ The screen kept above the keyboard: React Native's `KeyboardAvoidingView` around
 - Signature: `.keyboardAvoiding(fill?: FlexName)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
 - `flex` tokens: `'auto'`, `'initial'`, `'none'`, `'grow'`, `'1'`
+
+### `avoidsKeyboard`
+
+The stack kept above the keyboard: drawn as React Native's own `KeyboardAvoidingView` (no view around it), which moves it out of the keyboard's way by `behavior`: a bottom `padding`, its `height`, or its content moved up (`position`). `offset` is React Native's `keyboardVerticalOffset`, the distance from the window's top to the stack's (a header above it), a space token or a number computed at render. The region a chat's transcript and composer sit in; a whole screen takes `.keyboardAvoiding()`. A stack that takes presses is its press host instead, so the region is the stack around the pressable views.
+
+- Parameters: [keyboardBehavior](bloom-language-tokens.mdx#keyboardbehavior); [padding](bloom-language-tokens.mdx#padding) (optional)
+- Signature: `.avoidsKeyboard(behavior: KeyboardBehavior, offset?: PaddingToken | Points)`
+- Taken by: [stack](bloom-language-nodes.mdx#stack)
+- `keyboardBehavior` tokens: `'padding'`, `'height'`, `'position'`
+- `padding` tokens: 116, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `provider`
 

@@ -467,6 +467,7 @@ Modifiers:
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: Lays the children out along `horizontal` or `vertical`, over the constructor's own (a breakpoint variant's row).
 - [`.hoverHighlight()`](bloom-language-modifiers.mdx#hoverhighlight) `(active?: boolean)`: Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on the web; or while `active` (a coordinated highlight), on every platform.
 - [`.listMarker()`](bloom-language-modifiers.mdx#listmarker) `(value: ListMarker)`: Web: a list, each child a row behind the marker (an HTML list and its items, `list-style-type`); give it the room for the markers with a leading padding. Native draws no markers, as React Native has none.
+- [`.avoidsKeyboard()`](bloom-language-modifiers.mdx#avoidskeyboard) `(behavior: KeyboardBehavior, offset?: PaddingToken | Points)`: The stack kept above the keyboard: drawn as React Native's own `KeyboardAvoidingView` (no view around it), which moves it out of the keyboard's way by `behavior`: a bottom `padding`, its `height`, or its content moved up (`position`). `offset` is React Native's `keyboardVerticalOffset`, the distance from the window's top to the stack's (a header above it), a space token or a number computed at render. The region a chat's transcript and composer sit in; a whole screen takes `.keyboardAvoiding()`. A stack that takes presses is its press host instead, so the region is the stack around the pressable views.
 
 And every universal modifier.
 

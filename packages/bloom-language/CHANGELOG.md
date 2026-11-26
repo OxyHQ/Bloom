@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `.avoidsKeyboard(behavior, offset?)` on a stack: a region kept above the keyboard (a chat's transcript and composer), drawn as React Native's own `KeyboardAvoidingView` with no view around it, on every platform, as the JSX it stands for. `behavior` is React Native's (`'padding'`, `'height'`, `'position'`: the token set `keyboardBehavior`), `offset` its `keyboardVerticalOffset`, a space token or a number computed at render (a header's measured height). Its padding, fill and accessibility props are the region's own; it reads nothing, so a root of host views around it has no boundary. A stack that takes presses keeps its press host and the runtime warns. The screen's `.keyboardAvoiding(fill?)` is unchanged.
+
 ## 1.7.0
 
 ### Compatibility

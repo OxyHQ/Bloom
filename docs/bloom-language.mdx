@@ -2197,6 +2197,28 @@ pads its ends clear of both. The keyboard is the footer's
 the keyboard and keeps the focused field above it) and the scroll view's
 (`scrollDismissesKeyboard`, `keyboardTaps`).
 
+A region of the screen, not the whole of it, keeps above the keyboard with a
+stack's `.avoidsKeyboard(behavior, offset?)`: the stack is drawn as React
+Native's own `<KeyboardAvoidingView>` (no view around it, on every platform),
+`behavior` named as React Native names it (`'padding'`, `'height'` or
+`'position'`) and `offset` its `keyboardVerticalOffset` (a space token, or a
+header's height measured at render). A chat's transcript and composer are the
+region; what is above them stays where it is:
+
+```ts
+VStack(Transcript().grow(), VStack(Composer()).safeAreaPadding('bottom'))
+  .flex('1')
+  .avoidsKeyboard('padding');
+```
+
+Its padding and fill are the region's own style, so it costs the JSX it stands
+for. React Native's `padding` writes the region's bottom padding, so a
+safe-area bottom goes on a view inside it (the composer's, above). A stack that
+takes presses is its press host and does not avoid the keyboard (the runtime
+warns): put the region on the stack around it. `.keyboardAvoiding(fill?)` is
+the screen's: it wraps the whole `Screen`, with React Native's recommended
+behaviour per platform.
+
 A screen of several views returns them in a `Group(...views)`, as Bloom's
 `Screen` takes several children: the group draws no view of its own (React's
 fragment, SwiftUI's `Group`), so each view is one of the Screen's children, laid

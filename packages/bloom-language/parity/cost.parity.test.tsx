@@ -242,6 +242,37 @@ const CASES: Case[] = [
     ),
   },
   {
+    name: 'a keyboard region (.avoidsKeyboard()) and React Native’s KeyboardAvoidingView',
+    node: L.VStack(L.Text('a')).avoidsKeyboard('padding'),
+    jsx: (
+      <RN.KeyboardAvoidingView behavior="padding">
+        <Text>a</Text>
+      </RN.KeyboardAvoidingView>
+    ),
+  },
+  {
+    // Allo's conversation: the transcript and the composer in one region that fills, offset
+    // below a header by the height it measured.
+    name: 'a filling keyboard region of two stacks, offset by a measured height',
+    node: L.VStack(L.VStack(L.Text('a')).grow(), L.VStack(L.Text('b')))
+      .flex('1')
+      .avoidsKeyboard('padding', NUDGE),
+    jsx: (
+      <RN.KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={NUDGE}
+        style={{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
+      >
+        <RN.View style={{ flex: 1 }}>
+          <Text>a</Text>
+        </RN.View>
+        <RN.View>
+          <Text>b</Text>
+        </RN.View>
+      </RN.KeyboardAvoidingView>
+    ),
+  },
+  {
     name: 'a press on a painted background',
     node: L.VStack(L.Text('a')).background('surface').onPress(onPress),
     jsx: (c) => (
@@ -511,6 +542,15 @@ describe('a language node costs React what the JSX it stands for costs', () => {
           style={{ position: 'absolute', width: 0, height: 0 }}
           onLayout={noop}
         />,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // A keyboard region of host views: React Native's KeyboardAvoidingView, with no boundary.
+    expect(
+      boundary(
+        L.VStack(L.VStack().frame({ width: '120' })).avoidsKeyboard('height'),
+        <RN.KeyboardAvoidingView behavior="height">
+          <RN.View style={{ width: 120 }} />
+        </RN.KeyboardAvoidingView>,
       ),
     ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
     // Host views inside host views: still one tree of views.
