@@ -29,3 +29,10 @@ export const Banner = view(function Banner() {
     .spacing('sm')
     .padding('lg');
 });
+
+export const Titled = view(function Titled({ titles }: { titles: readonly string[] }) {
+  return VStack(
+    Text('Titles').font('headline'),
+    ...titles.map((title) => Text(title).id(title)),
+  ).spacing('sm');
+});

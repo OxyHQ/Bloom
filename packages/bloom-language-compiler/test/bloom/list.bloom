@@ -1,0 +1,13 @@
+/// A titled list: a builder `for` as its stack's last child, spread among the
+/// stack's children as a hand-written `...titles.map(…)` is.
+pub view Titled(titles: [String]) {
+  body {
+    VStack {
+      Text("Titles").font("headline")
+      for title in titles {
+        Text(title).id(title)
+      }
+    }
+    .spacing("sm")
+  }
+}
