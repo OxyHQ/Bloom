@@ -39,7 +39,7 @@ impl<'b, 'a> Body<'b, 'a> {
 }
 
 /// React hooks the codemod rewrites; every other React hook is a refusal.
-fn react_hook<'e>(tr: &Tr, call: &'e CallExpression) -> Option<String> {
+fn react_hook(tr: &Tr, call: &CallExpression) -> Option<String> {
     match &call.callee {
         Expression::Identifier(id) => tr.react.get(id.name.as_str()).cloned(),
         Expression::StaticMemberExpression(m) => match &m.object {
@@ -112,8 +112,24 @@ impl Tr<'_> {
         module: &[Statement],
         span: Span,
     ) -> String {
+        self.view_decl_typed(kind, name, vis, params, None, fn_body, module, span)
+    }
+
+    /// A view whose props type may come from elsewhere (`const X: React.FC<P> = (…) =>`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn view_decl_typed(
+        &mut self,
+        kind: &str,
+        name: &str,
+        vis: &'static str,
+        params: &FormalParameters,
+        props_ty: Option<&TSType>,
+        fn_body: Body,
+        module: &[Statement],
+        span: Span,
+    ) -> String {
         self.scope = Default::default();
-        let params = self.view_params(params, module, span);
+        let params = self.view_params(params, props_ty, module, span);
         let (members, body) = match fn_body {
             Body::Expr(e) => (String::new(), self.view_value(e)),
             Body::Block(statements, end) => self.view_members(statements, end),
@@ -125,18 +141,28 @@ impl Tr<'_> {
     }
 
     /// The props as parameters, from the props type's fields.
-    fn view_params(&mut self, params: &FormalParameters, module: &[Statement], span: Span) -> Option<String> {
+    fn view_params(
+        &mut self,
+        params: &FormalParameters,
+        props_ty: Option<&TSType>,
+        module: &[Statement],
+        span: Span,
+    ) -> Option<String> {
         let param = match params.items.as_slice() {
             [] => return None,
             [param] => param,
             _ => {
-                return Some(self.refuse("view:params", "a view function with more than one parameter", span));
+                return Some(self.refuse(
+                    "view:params",
+                    "a view function with more than one parameter",
+                    span,
+                ));
             }
         };
-        let Some(annotation) = &param.type_annotation else {
+        let Some(annotation) = param.type_annotation.as_ref().map(|t| &t.type_annotation).or(props_ty) else {
             return Some(self.refuse("view:untyped-props", "untyped props", param.span));
         };
-        let members: Vec<&TSSignature> = match &annotation.type_annotation {
+        let members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
             TSType::TSTypeReference(reference) => {
                 let TSTypeName::IdentifierReference(id) = &reference.type_name else {
@@ -223,6 +249,8 @@ impl Tr<'_> {
             }
             let Some((field, ty, optional)) = self.field(member) else { continue };
             let default = defaults.iter().find(|(k, _)| *k == field).map(|(_, e)| *e);
+            let declared = if optional && default.is_none() { optional_ty(&ty) } else { ty.clone() };
+            self.scope.decl.insert(field.clone(), declared);
             let text = match (default, optional) {
                 (Some(value), _) => {
                     let value = self.typed_value(value, self.scope.types.get(&field).cloned());
@@ -315,7 +343,6 @@ impl Tr<'_> {
             }
             members.push(format!("{note}{member}"));
         }
-        members.retain(|m| !m.is_empty() || true);
         let body = self.refuse("view:no-return", "a view that does not return", Span::new(end, end));
         (members.join("\n"), body)
     }
@@ -567,15 +594,18 @@ impl Tr<'_> {
                     return lines.join("\n");
                 }
                 Statement::IfStatement(s) if branch_returns(&s.consequent) => {
-                    let test = self.expr(&s.test);
+                    let empty = branch(&s.consequent)
+                        .iter()
+                        .all(|st| matches!(st, Statement::ReturnStatement(r) if r.argument.as_ref().is_none_or(is_nothing)));
+                    let test = if empty { self.test_negated(&s.test) } else { self.test(&s.test, true) };
                     let then = self.view_lines(branch(&s.consequent), s.consequent.span().end);
                     let otherwise = match &s.alternate {
                         Some(alternate) => self.view_lines(branch(alternate), alternate.span().end),
                         None => self.view_lines(&statements[i + 1..], end),
                     };
-                    if then.trim().is_empty() {
+                    if empty {
                         // `if (c) return null; …`: the rest, under the negated condition.
-                        lines.push(format!("if {} {{\n{otherwise}\n}}", negate(&s.test, &test)));
+                        lines.push(format!("if {test} {{\n{otherwise}\n}}"));
                     } else if is_single_if(&otherwise) {
                         lines.push(format!("if {test} {{\n{then}\n}} else {otherwise}"));
                     } else {
@@ -623,7 +653,19 @@ impl Tr<'_> {
 
     /// A returned UI value as builder lines: nothing is no line, a conditional an `if`.
     fn view_value(&mut self, value: &Expression) -> String {
-        if is_nothing(value) { String::new() } else { self.child(value) }
+        if is_nothing(value) {
+            return String::new();
+        }
+        // A component's `return toElement(tree)`: the tree is the body.
+        if let Expression::CallExpression(call) = value.without_parentheses()
+            && let Expression::Identifier(id) = &call.callee
+            && self.is_lang(&id.name, "toElement")
+            && let [arg] = call.arguments.as_slice()
+            && let Some(tree) = arg.as_expression()
+        {
+            return self.child(tree);
+        }
+        self.child(value)
     }
 
     /// The lines of a `for` built from `xs.map((x) => …)`.
@@ -636,7 +678,19 @@ impl Tr<'_> {
 
     // ---- functions -------------------------------------------------------------
 
-    pub fn function_item(&mut self, name: &str, f: &Function, vis: &'static str) -> String {
+    pub fn function_item(
+        &mut self,
+        name: &str,
+        f: &Function,
+        vis: &'static str,
+        module: &[Statement],
+    ) -> String {
+        if self.components.contains(name) {
+            return match Body::of_function(f) {
+                Some(body) => self.view_decl("view", name, vis, &f.params, body, module, f.span),
+                None => self.refuse("fn:declare", "a function without a body", f.span),
+            };
+        }
         if let Some(refusal) = self.module_fn_kind(name, f.span) {
             return refusal;
         }
@@ -658,7 +712,27 @@ impl Tr<'_> {
         }
     }
 
-    pub fn arrow_item(&mut self, name: &str, arrow: &ArrowFunctionExpression, vis: &'static str) -> String {
+    pub fn arrow_item(
+        &mut self,
+        name: &str,
+        arrow: &ArrowFunctionExpression,
+        vis: &'static str,
+        props_ty: Option<&TSType>,
+        module: &[Statement],
+    ) -> String {
+        if self.components.contains(name) {
+            let body = Body::of_arrow(arrow);
+            return self.view_decl_typed(
+                "view",
+                name,
+                vis,
+                &arrow.params,
+                props_ty,
+                body,
+                module,
+                arrow.span,
+            );
+        }
         if let Some(refusal) = self.module_fn_kind(name, arrow.span) {
             return refusal;
         }
@@ -712,7 +786,7 @@ impl Tr<'_> {
             Body::Expr(e) => {
                 if ret.is_some() {
                     if ret.as_deref().is_some_and(|r| r.starts_with("View")) {
-                        self.view_value_expr(e)
+                        self.view_value(e)
                     } else {
                         self.expr(e)
                     }
@@ -734,11 +808,6 @@ impl Tr<'_> {
         let keyword = if is_async { "async fn" } else { "fn" };
         let ret = ret.map(|r| format!(" -> {r}")).unwrap_or_default();
         format!("{vis}{keyword} {name}({params}){ret} {{\n{text}\n}}")
-    }
-
-    /// A UI value an arrow returns: a conditional of views stays one expression.
-    fn view_value_expr(&mut self, e: &Expression) -> String {
-        self.view_value(e)
     }
 
     /// A function's parameters, and the `let`s that destructure a typed object parameter.
@@ -796,6 +865,9 @@ impl Tr<'_> {
                 self.scope.types.insert(id.name.to_string(), tid.name.to_string());
             }
             let ty = self.ty(&t.type_annotation);
+            let declared =
+                if param.optional && param.initializer.is_none() { optional_ty(&ty) } else { ty.clone() };
+            self.scope.decl.insert(name.clone(), declared);
             let text = match &param.initializer {
                 Some(default) => format!(
                     "{name}: {ty} = {}",
@@ -927,7 +999,7 @@ impl Tr<'_> {
             }
             Statement::ExpressionStatement(s) => self.stmt_expr(&s.expression),
             Statement::IfStatement(s) => {
-                let test = self.expr(&s.test);
+                let test = self.test(&s.test, true);
                 let then = self.block_of(&s.consequent);
                 match &s.alternate {
                     None => format!("if {test} {{\n{then}\n}}"),
@@ -1086,7 +1158,11 @@ impl Tr<'_> {
                         text
                     }
                     _ => {
-                        return self.refuse("state:update", "a functional update with statements", arrow.span);
+                        return self.refuse(
+                            "state:update",
+                            "a functional update with statements",
+                            arrow.span,
+                        );
                     }
                 }
             }
@@ -1192,7 +1268,7 @@ pub fn arrow_end(arrow: &ArrowFunctionExpression) -> u32 {
 }
 
 /// `!(test)`, written the short way when `test` is a comparison or a negation.
-fn negate(test: &Expression, text: &str) -> String {
+pub fn negate(test: &Expression, text: &str) -> String {
     use oxc_syntax::operator::BinaryOperator;
     match test.without_parentheses() {
         Expression::BinaryExpression(b) => {
@@ -1412,7 +1488,7 @@ fn is_hook_name(name: &str) -> bool {
 }
 
 /// Whether the code in `span` holds JSX outside an `Embed(…)`.
-fn has_jsx(source: &str, span: Span) -> bool {
+pub fn has_jsx(source: &str, span: Span) -> bool {
     use oxc_ast_visit::Visit;
     struct Finder {
         found: bool,

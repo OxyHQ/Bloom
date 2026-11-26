@@ -58,6 +58,13 @@ const RENAMED: &[(&str, &str)] = &[
 /// Stacks, whose children read best as a builder even when there is one.
 const STACKS: &[&str] = &["VStack", "HStack", "ZStack", "ScrollView", "Group", "List", "Section"];
 
+/// A condition as [`Tr::test_parts`] reads it.
+pub enum Test {
+    Plain(String),
+    /// `if let name = name`, and the unwrapped value's own test.
+    Bind(String, Option<String>),
+}
+
 /// What a call's callee is.
 enum Callee {
     Node(String),
@@ -168,7 +175,7 @@ impl Tr<'_> {
                 format!("{object}[{}]", self.expr(&m.expression))
             }
             Expression::ConditionalExpression(c) => {
-                let test = self.expr(&c.test);
+                let test = self.test(&c.test, false);
                 let a = self.expr(&c.consequent);
                 let b = self.expr(&c.alternate);
                 format!("{test} ? {a} : {b}")
@@ -302,6 +309,89 @@ impl Tr<'_> {
             return "none".into();
         }
         self.expr(side)
+    }
+
+    /// A condition. JS truthiness is spelled out from the declared type: a `String`
+    /// is `!s.isEmpty`, a `Float` `n != 0`, an optional value `x != none` (or, with
+    /// `binds`, where the branch reads it unwrapped, `if let x = x`).
+    pub fn test(&mut self, e: &Expression, binds: bool) -> String {
+        match self.test_parts(e, binds) {
+            Test::Plain(text) => text,
+            Test::Bind(name, None) => format!("let {name} = {name}"),
+            Test::Bind(_, Some(_)) => self.test(e, false),
+        }
+    }
+
+    /// A condition, keeping an optional `String`/`Float` as `if let` plus its own test,
+    /// for a builder line to nest (`if let s = s { if !s.isEmpty { … } }`).
+    pub fn test_parts(&mut self, e: &Expression, binds: bool) -> Test {
+        if let Some((name, ty)) = self.declared(e) {
+            let plain = is_plain_name(&name);
+            return Test::Plain(match ty.as_str() {
+                "Bool" => name,
+                "String" => format!("!{name}.isEmpty"),
+                "Float" => format!("{name} != 0"),
+                "Bool?" => format!("{name} == true"),
+                "String?" if binds && plain => {
+                    return Test::Bind(name.clone(), Some(format!("!{name}.isEmpty")));
+                }
+                "Float?" if binds && plain => return Test::Bind(name.clone(), Some(format!("{name} != 0"))),
+                "String?" => format!("({name} ?? \"\") != \"\""),
+                "Float?" => format!("({name} ?? 0) != 0"),
+                t if t.ends_with('?') && binds && plain => return Test::Bind(name, None),
+                t if t.ends_with('?') => format!("{name} != none"),
+                _ => self.expr(e),
+            });
+        }
+        if let Expression::UnaryExpression(u) = e.without_parentheses()
+            && u.operator == UnaryOperator::LogicalNot
+            && self.declared(&u.argument).is_some()
+        {
+            return Test::Plain(self.test_negated(&u.argument));
+        }
+        Test::Plain(self.expr(e))
+    }
+
+    /// `!(test)`, with truthiness spelled out as in [`Tr::test`].
+    pub fn test_negated(&mut self, e: &Expression) -> String {
+        if let Some((name, ty)) = self.declared(e) {
+            return match ty.as_str() {
+                "Bool" => format!("!{name}"),
+                "String" => format!("{name}.isEmpty"),
+                "Float" => format!("{name} == 0"),
+                "Bool?" => format!("{name} != true"),
+                "String?" => format!("({name} ?? \"\") == \"\""),
+                "Float?" => format!("({name} ?? 0) == 0"),
+                t if t.ends_with('?') => format!("{name} == none"),
+                _ => format!("!({})", self.expr(e)),
+            };
+        }
+        if let Expression::UnaryExpression(u) = e.without_parentheses()
+            && u.operator == UnaryOperator::LogicalNot
+        {
+            return self.test(&u.argument, false);
+        }
+        let text = self.expr(e);
+        crate::view::negate(e, &text)
+    }
+
+    /// A name or a prop with its declared Bloom type, as the output writes the name.
+    fn declared(&mut self, e: &Expression) -> Option<(String, String)> {
+        let name = match e.without_parentheses() {
+            Expression::Identifier(id) => {
+                self.scope.renames.get(id.name.as_str()).cloned().unwrap_or(id.name.to_string())
+            }
+            Expression::StaticMemberExpression(m) => match &m.object {
+                Expression::Identifier(id) if self.scope.props.as_deref() == Some(id.name.as_str()) => {
+                    m.property.name.to_string()
+                }
+                _ => return None,
+            },
+            _ => return None,
+        };
+        let ty = self.scope.decl.get(&name)?.clone();
+        self.used.insert(name.clone());
+        Some((name, ty))
     }
 
     /// The declared type name of a name or a prop, when known.
@@ -620,33 +710,26 @@ impl Tr<'_> {
         match e {
             Expression::ParenthesizedExpression(p) => self.child(&p.expression),
             Expression::ConditionalExpression(c) if is_nothing(&c.alternate) => {
-                let test = self.expr(&c.test);
-                let then = self.child(&c.consequent);
-                format!("if {test} {{\n{then}\n}}")
+                let then = |tr: &mut Self| tr.child(&c.consequent);
+                self.child_if(&c.test, then, None::<fn(&mut Self) -> String>)
             }
             Expression::ConditionalExpression(c) if is_nothing(&c.consequent) => {
-                let test = self.expr(&c.test);
+                let test = self.test_negated(&c.test);
                 let otherwise = self.child(&c.alternate);
-                format!("if {test} {{\n}} else {{\n{otherwise}\n}}")
+                format!("if {test} {{\n{otherwise}\n}}")
             }
             Expression::ConditionalExpression(c)
                 if self.is_view(&c.consequent) || self.is_view(&c.alternate) =>
             {
-                let test = self.expr(&c.test);
-                let then = self.child(&c.consequent);
-                let otherwise = self.child(&c.alternate);
-                if otherwise.starts_with("if ") {
-                    format!("if {test} {{\n{then}\n}} else {otherwise}")
-                } else {
-                    format!("if {test} {{\n{then}\n}} else {{\n{otherwise}\n}}")
-                }
+                let then = |tr: &mut Self| tr.child(&c.consequent);
+                let otherwise = |tr: &mut Self| tr.child(&c.alternate);
+                self.child_if(&c.test, then, Some(otherwise))
             }
             Expression::LogicalExpression(l)
                 if l.operator == LogicalOperator::And && self.is_view(&l.right) =>
             {
-                let test = self.expr(&l.left);
-                let then = self.child(&l.right);
-                format!("if {test} {{\n{then}\n}}")
+                let then = |tr: &mut Self| tr.child(&l.right);
+                self.child_if(&l.left, then, None::<fn(&mut Self) -> String>)
             }
             Expression::CallExpression(call) if is_map(call) => {
                 let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() else {
@@ -668,6 +751,32 @@ impl Tr<'_> {
                 self.refuse("children:null", "a `null` child (an empty slot)", n.span)
             }
             _ => self.expr(e),
+        }
+    }
+
+    /// A conditional builder line. An optional `String` read in the branch is
+    /// unwrapped and tested: `if let s = s { if !s.isEmpty { A } else { B } } else { B }`.
+    fn child_if(
+        &mut self,
+        test: &Expression,
+        then: impl Fn(&mut Self) -> String,
+        otherwise: Option<impl Fn(&mut Self) -> String>,
+    ) -> String {
+        let parts = self.test_parts(test, true);
+        let then = then(self);
+        let otherwise = otherwise.map(|o| o(self));
+        let tail = |b: &Option<String>| match b {
+            Some(b) if b.starts_with("if ") => format!(" else {b}"),
+            Some(b) => format!(" else {{\n{b}\n}}"),
+            None => String::new(),
+        };
+        match parts {
+            Test::Plain(test) => format!("if {test} {{\n{then}\n}}{}", tail(&otherwise)),
+            Test::Bind(name, None) => format!("if let {name} = {name} {{\n{then}\n}}{}", tail(&otherwise)),
+            Test::Bind(name, Some(inner)) => {
+                let t = tail(&otherwise);
+                format!("if let {name} = {name} {{\nif {inner} {{\n{then}\n}}{t}\n}}{t}")
+            }
         }
     }
 
@@ -825,6 +934,10 @@ fn returns_view(statements: &[oxc_ast::ast::Statement], tr: &Tr) -> bool {
         }
     }
     any
+}
+
+fn is_plain_name(text: &str) -> bool {
+    crate::module::is_identifier(text)
 }
 
 pub fn is_nothing(e: &Expression) -> bool {

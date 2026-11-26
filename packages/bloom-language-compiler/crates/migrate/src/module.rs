@@ -54,6 +54,8 @@ pub struct Scope {
     pub render: Option<String>,
     /// Names bound to UI values (`const header = HStack(…)`).
     pub view_values: HashSet<String>,
+    /// Names with a declared Bloom type (parameters, props): conditions read it.
+    pub decl: HashMap<String, String>,
     /// Member functions of the view being translated.
     pub member_fns: HashSet<String>,
 }
@@ -79,6 +81,8 @@ pub struct Tr<'s> {
     pub props_types: HashSet<String>,
     /// Local views (and the module functions a `view(F)` wraps).
     pub views: HashSet<String>,
+    /// React components whose every return is `toElement(tree)`: they become views.
+    pub components: HashSet<String>,
     /// Module functions (Bloom `fn`s).
     pub fns: HashSet<String>,
     /// Module functions and constants that return or hold UI.
@@ -212,6 +216,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         objects: HashSet::new(),
         props_types: HashSet::new(),
         views: HashSet::new(),
+        components: HashSet::new(),
         fns: HashSet::new(),
         view_fns: HashSet::new(),
         used: HashSet::new(),
@@ -259,22 +264,18 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     }
     let trailing = pending + &tr.comments.rest();
 
-    let mut out = header;
-    if !out.is_empty() {
-        out.push('\n');
-    }
-    out.push_str(&tr.imports_text(&imports));
-    for item in items {
-        if !out.is_empty() {
-            out.push('\n');
-        }
-        out.push_str(&item);
-        out.push('\n');
-    }
-    if !trailing.is_empty() {
-        out.push('\n');
-        out.push_str(&trailing);
-    }
+    // Sections one empty line apart: the header, the imports, each item, what trails.
+    let imports = tr.imports_text(&imports);
+    let mut sections = vec![header, imports];
+    sections.extend(items);
+    sections.push(trailing);
+    let out = sections
+        .iter()
+        .map(|s| s.trim_matches('\n'))
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n\n")
+        + "\n";
     Translated { text: out, reasons: tr.reasons }
 }
 
@@ -290,13 +291,101 @@ fn undoc(comments: &str) -> String {
 fn default_exports(body: &[Statement]) -> HashSet<String> {
     let mut out = HashSet::new();
     for statement in body {
-        if let Statement::ExportDefaultDeclaration(export) = statement
-            && let Some(Expression::Identifier(id)) = export.declaration.as_expression()
-        {
-            out.insert(id.name.to_string());
+        if let Statement::ExportDefaultDeclaration(export) = statement {
+            match export.declaration.as_expression() {
+                Some(Expression::Identifier(id)) => {
+                    out.insert(id.name.to_string());
+                }
+                Some(Expression::CallExpression(call)) if memo_of(call).is_some() => {
+                    out.extend(memo_of(call));
+                }
+                _ => {}
+            }
         }
     }
     out
+}
+
+/// The name of a component's props type: its parameter's annotation, or `React.FC<P>`'s `P`.
+fn component_props_type(declaration: Option<&Declaration>) -> Option<String> {
+    let named = |t: &TSType| match t {
+        TSType::TSTypeReference(r) => match &r.type_name {
+            TSTypeName::IdentifierReference(id) => Some(id.name.to_string()),
+            _ => None,
+        },
+        _ => None,
+    };
+    match declaration? {
+        Declaration::FunctionDeclaration(f) => {
+            f.params.items.first()?.type_annotation.as_ref().and_then(|t| named(&t.type_annotation))
+        }
+        Declaration::VariableDeclaration(v) => {
+            let d = v.declarations.first()?;
+            if let Some(Expression::ArrowFunctionExpression(a)) = &d.init
+                && let Some(t) = a.params.items.first().and_then(|p| p.type_annotation.as_ref())
+            {
+                return named(&t.type_annotation);
+            }
+            let TSType::TSTypeReference(r) = &d.type_annotation.as_ref()?.type_annotation else {
+                return None;
+            };
+            named(r.type_arguments.as_ref()?.params.first()?)
+        }
+        _ => None,
+    }
+}
+
+/// `memo(X)` / `React.memo(X)` without a comparator: `X`.
+fn memo_of(call: &oxc_ast::ast::CallExpression) -> Option<String> {
+    let memo = match &call.callee {
+        Expression::Identifier(id) => id.name == "memo",
+        Expression::StaticMemberExpression(m) => m.property.name == "memo",
+        _ => false,
+    };
+    match (memo, call.arguments.as_slice()) {
+        (true, [Argument::Identifier(id)]) => Some(id.name.to_string()),
+        _ => None,
+    }
+}
+
+/// Whether every return of a component body is `toElement(…)` or nothing.
+fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> bool) -> bool {
+    fn value_ok(e: &Expression, to_element: &dyn Fn(&str) -> bool) -> bool {
+        match e.without_parentheses() {
+            Expression::NullLiteral(_) => true,
+            Expression::CallExpression(call) => {
+                matches!(&call.callee, Expression::Identifier(id) if to_element(&id.name))
+            }
+            _ => false,
+        }
+    }
+    fn walk(statements: &[Statement], to_element: &dyn Fn(&str) -> bool, any: &mut bool) -> bool {
+        for statement in statements {
+            match statement {
+                Statement::ReturnStatement(r) => match &r.argument {
+                    Some(v) if value_ok(v, to_element) => *any |= !matches!(v, Expression::NullLiteral(_)),
+                    Some(_) => return false,
+                    None => {}
+                },
+                Statement::IfStatement(i) => {
+                    let branches = [Some(&i.consequent), i.alternate.as_ref()];
+                    for branch in branches.into_iter().flatten() {
+                        let inner: &[Statement] = match branch {
+                            Statement::BlockStatement(b) => &b.body,
+                            other => std::slice::from_ref(other),
+                        };
+                        if !walk(inner, to_element, any) {
+                            return false;
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        true
+    }
+    let mut any = false;
+    walk(statements, to_element, &mut any) && any
 }
 
 impl<'s> Tr<'s> {
@@ -498,6 +587,17 @@ impl<'s> Tr<'s> {
                 }
             }
         }
+        // `export default view(function X(props: P) { … })`: P types the props too.
+        for statement in body {
+            if let Statement::ExportDefaultDeclaration(export) = statement
+                && let Some(Expression::CallExpression(call)) = export.declaration.as_expression()
+                && let Expression::Identifier(callee) = &call.callee
+                && ["view", "screen", "layout"].iter().any(|v| self.is_lang(&callee.name, v))
+                && let Some(f) = call.arguments.first().and_then(|a| a.as_expression())
+            {
+                self.note_props_type(f);
+            }
+        }
         // `view(F)`: F's props type is the view's.
         self.wrapped.extend(wrapped.iter().cloned());
         for statement in body {
@@ -505,6 +605,40 @@ impl<'s> Tr<'s> {
                 && f.id.as_ref().is_some_and(|id| wrapped.contains(&id.name.to_string()))
             {
                 self.note_function_props(f);
+            }
+        }
+        // React components that only return `toElement(tree)`: views.
+        for statement in body {
+            let declaration = match statement {
+                Statement::ExportDeclaration(export) => Some(&export.declaration),
+                _ => statement.as_declaration(),
+            };
+            let found: Option<(String, &[Statement], Span)> = match declaration {
+                Some(Declaration::FunctionDeclaration(f)) => match (&f.id, &f.body) {
+                    (Some(id), Some(b)) => Some((id.name.to_string(), &b.statements[..], f.span)),
+                    _ => None,
+                },
+                Some(Declaration::VariableDeclaration(v)) => {
+                    v.declarations.first().and_then(|d| match (&d.id, &d.init) {
+                        (
+                            BindingPattern::BindingIdentifier(id),
+                            Some(Expression::ArrowFunctionExpression(a)),
+                        ) => Some((id.name.to_string(), crate::view::arrow_statements(a), a.span)),
+                        _ => None,
+                    })
+                }
+                _ => None,
+            };
+            if let Some((name, statements, span)) = found
+                && name.starts_with(|c: char| c.is_ascii_uppercase())
+                && returns_to_element(statements, &|n| self.is_lang(n, "toElement"))
+                && !crate::view::has_jsx(self.src, span)
+            {
+                self.components.insert(name.clone());
+                self.views.insert(name);
+                if let Some(props) = component_props_type(declaration) {
+                    self.props_types.insert(props);
+                }
             }
         }
         // Module functions and constants that build UI.
@@ -624,6 +758,11 @@ impl<'s> Tr<'s> {
             }
             Statement::ExportDefaultDeclaration(export) => match &export.declaration {
                 ExportDefaultDeclarationKind::Identifier(_) => String::new(),
+                ExportDefaultDeclarationKind::CallExpression(call)
+                    if memo_of(call).is_some_and(|x| self.components.contains(&x)) =>
+                {
+                    String::new()
+                }
                 ExportDefaultDeclarationKind::CallExpression(call) => {
                     let name = match call.arguments.first().and_then(|a| a.as_expression()) {
                         Some(Expression::FunctionExpression(f)) => {
@@ -729,7 +868,7 @@ impl<'s> Tr<'s> {
                     return String::new();
                 }
                 let vis = self.visibility(&name, vis, defaults);
-                self.function_item(&name, f, vis)
+                self.function_item(&name, f, vis, body)
             }
             Declaration::TSInterfaceDeclaration(interface) => {
                 let name = interface.id.name.to_string();
@@ -887,8 +1026,15 @@ impl<'s> Tr<'s> {
             );
         }
         match init {
-            Expression::ArrowFunctionExpression(arrow) => self.arrow_item(name, arrow, vis),
-            Expression::FunctionExpression(f) => self.function_item(name, f, vis),
+            Expression::ArrowFunctionExpression(arrow) => {
+                // `const X: React.FC<P> = (…) =>`: the props type is the annotation's argument.
+                let props_ty = annotation.and_then(|t| match &t.type_annotation {
+                    TSType::TSTypeReference(r) => r.type_arguments.as_ref().and_then(|a| a.params.first()),
+                    _ => None,
+                });
+                self.arrow_item(name, arrow, vis, props_ty, body)
+            }
+            Expression::FunctionExpression(f) => self.function_item(name, f, vis, body),
             _ => {
                 let ty = annotation.map(|t| format!(": {}", self.ty(&t.type_annotation))).unwrap_or_default();
                 let value = self.expr(init);

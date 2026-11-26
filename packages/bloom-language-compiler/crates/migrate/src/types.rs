@@ -26,7 +26,11 @@ impl Tr<'_> {
                             items.push(self.ty(t))
                         }
                         _ => {
-                            return self.refuse("type:tuple", "an optional or rest tuple element", tuple.span);
+                            return self.refuse(
+                                "type:tuple",
+                                "an optional or rest tuple element",
+                                tuple.span,
+                            );
                         }
                     }
                 }

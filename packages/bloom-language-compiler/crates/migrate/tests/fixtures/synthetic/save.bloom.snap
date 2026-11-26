@@ -1,0 +1,21 @@
+// try/catch around one await: a `match` on the `Result`, under a review marker.
+
+import { save } from "./api"
+
+pub view SaveButton(id: String) {
+  @state saving = false
+
+  async fn onSave() {
+    saving = true
+    // bloom: review: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection
+    defer { saving = false }
+    match await save(id) {
+      case .ok(_) => {}
+      case .err(error) => { toast("Could not save", type: "error") }
+    }
+  }
+
+  body {
+    Button(Text(saving ? "Saving" : "Save")).disabled(saving).onPress { task { await onSave() } }
+  }
+}
