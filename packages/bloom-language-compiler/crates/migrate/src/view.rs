@@ -187,6 +187,7 @@ impl Tr<'_> {
         let Some(annotation) = param.type_annotation.as_ref().map(|t| &t.type_annotation).or(props_ty) else {
             return Some(self.refuse("view:untyped-props", "untyped props", param.span));
         };
+        let mut spread = None;
         let members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
             TSType::TSTypeReference(reference) => {
@@ -195,6 +196,13 @@ impl Tr<'_> {
                 };
                 match local_object(module, &id.name) {
                     Some(members) => members,
+                    // Props typed elsewhere (`X.types.ts`): their fields spread in (`..XProps`).
+                    None if self.imported.contains(id.name.as_str())
+                        && reference.type_arguments.is_none() =>
+                    {
+                        spread = Some(self.name(&id.name, id.span));
+                        Vec::new()
+                    }
                     None => {
                         return Some(self.refuse(
                             "view:imported-props",
@@ -263,6 +271,16 @@ impl Tr<'_> {
             _ => return Some(self.refuse("view:props-pattern", "an array props pattern", param.span)),
         }
         let mut out = Vec::new();
+        if let Some(spread) = spread {
+            if let Some((key, value)) = defaults.first() {
+                return Some(self.refuse(
+                    "view:spread-default",
+                    format!("a default for `{key}`, a prop of an imported props type"),
+                    value.span(),
+                ));
+            }
+            out.push(format!("..{spread}"));
+        }
         for member in members {
             if let TSSignature::TSPropertySignature(p) = member
                 && let Some(t) = &p.type_annotation
