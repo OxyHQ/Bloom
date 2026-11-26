@@ -2,6 +2,8 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
 const { vlqMapFromTuples } = require('metro-source-map');
@@ -191,4 +193,67 @@ test('the addon compiles .bloom: a tiny view has code, a bad token a diagnostic'
     ['B0502'],
   );
   assert.ok(checkBloom(view, 'min.bloom', {}).types.length > 0);
+});
+
+const PROJECT = path.join(__dirname, 'bloom/project');
+const HELLO = path.join(PROJECT, 'src/screens/hello.bloom');
+
+test("a .bloom module's TS imports resolve from Jest's rootDir, through the tsconfig's paths", () => {
+  const transformer = createTransformer({
+    upstream: [require.resolve('./support/echo-transformer.cjs'), {}],
+  });
+  const said = [];
+  const warn = console.warn;
+  console.warn = (message) => said.push(message);
+  try {
+    transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, { config: { rootDir: PROJECT } });
+    assert.deepEqual(said, []);
+    // Without the root, `@/greeting` is not found: the case the root fixes.
+    transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, {});
+    assert.match(
+      said.join('\n'),
+      /warning\[B0602\]: cannot find TS declarations for "@\/greeting"/,
+    );
+  } finally {
+    console.warn = warn;
+  }
+});
+
+test('Metro compiles a .bloom module by its absolute path, from the project root', async () => {
+  const { transform } = require('../js/metro-transformer');
+  const config = {
+    bloomLanguage: { upstreamTransformerPath: require.resolve('./support/echo-worker.cjs') },
+  };
+  const said = [];
+  const warn = console.warn;
+  console.warn = (message) => said.push(message);
+  try {
+    const relative = path.relative(PROJECT, HELLO);
+    const result = await transform(config, PROJECT, relative, fs.readFileSync(HELLO), {});
+    assert.equal(result.filename, `${relative}.ts`);
+    assert.deepEqual(said, []);
+  } finally {
+    console.warn = warn;
+  }
+});
+
+test('bloom-lang-dts writes Name.d.bloom.ts beside each .bloom file, once', () => {
+  const { main } = require('../js/dts');
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'bloom-dts-'));
+  fs.writeFileSync(path.join(dir, 'Counter.bloom'), COUNTER);
+  const error = console.error;
+  console.error = () => {};
+  try {
+    assert.equal(main([dir]), 0);
+    const dts = fs.readFileSync(path.join(dir, 'Counter.d.bloom.ts'), 'utf8');
+    assert.match(dts, /export declare const Counter/);
+    const before = fs.statSync(path.join(dir, 'Counter.d.bloom.ts')).mtimeMs;
+    assert.equal(main([path.join(dir, 'Counter.bloom')]), 0);
+    assert.equal(fs.statSync(path.join(dir, 'Counter.d.bloom.ts')).mtimeMs, before);
+    fs.writeFileSync(path.join(dir, 'Bad.bloom'), 'pub view Bad( {\n');
+    assert.equal(main([dir]), 1);
+  } finally {
+    console.error = error;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

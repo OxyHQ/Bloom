@@ -29,12 +29,17 @@ function createTransformer(options = {}) {
     ? upstreamModule.createTransformer(upstreamOptions)
     : upstreamModule;
 
-  /** What the upstream transformer gets: the module's code and the name it parses it by. */
-  const prepared = (source, filename) => {
+  /**
+   * What the upstream transformer gets: the module's code and the name it
+   * parses it by. A `.bloom` module's TS imports resolve from the project's
+   * root (Jest's `rootDir`: its tsconfig's `paths`, `node_modules`).
+   */
+  const prepared = (source, filename, transformOptions) => {
     if (!isBloomFile(filename)) {
       return { code: compileModule(source, filename)?.code ?? source, filename };
     }
-    const { code, map } = compileBloomModule(source, filename);
+    const root = transformOptions?.config?.rootDir;
+    const { code, map } = compileBloomModule(source, filename, root ? { root } : {});
     const inline = map
       ? `\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(map).toString('base64')}\n`
       : '';
@@ -50,11 +55,11 @@ function createTransformer(options = {}) {
       return crypto.createHash('sha1').update(`${key}$bloom-language$${digest}`).digest('hex');
     },
     process(source, filename, transformOptions) {
-      const module = prepared(source, filename);
+      const module = prepared(source, filename, transformOptions);
       return upstream.process(module.code, module.filename, transformOptions);
     },
     async processAsync(source, filename, transformOptions) {
-      const module = prepared(source, filename);
+      const module = prepared(source, filename, transformOptions);
       return upstream.processAsync
         ? upstream.processAsync(module.code, module.filename, transformOptions)
         : upstream.process(module.code, module.filename, transformOptions);
