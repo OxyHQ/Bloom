@@ -1,0 +1,23 @@
+// Bloom 2.0's functions: `func`, argument labels, `$0`, `\(…)` and visibility.
+import Bloom
+
+public struct Point {
+  x: Int
+  y: Int
+}
+
+/// `to` is the label a call writes; `target` is the name the body uses.
+public func move(_ point: Point, to target: Point, by step: Int = 1) -> Point {
+  Point(x: point.x + (target.x - point.x) * step, y: point.y + (target.y - point.y) * step)
+}
+
+private func describe(point: Point) -> String { "(\(point.x), \(point.y))" }
+
+func label(for point: Point) -> String { "at \(describe(point: point))" }
+
+public func farthest(_ points: [Point]) -> [String] {
+  let moved = points.map { move($0, to: Point(x: 0, y: 0)) }
+  moved.filter { $0.x > 1 }.map { label(for: $0) }
+}
+
+public func total(_ points: [Point]) -> Int { points.map { p in p.x + p.y }.reduce(0) { $0 + $1 } }

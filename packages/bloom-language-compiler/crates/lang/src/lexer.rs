@@ -161,6 +161,8 @@ pub enum P {
     At,
     Dollar,
     Pipe,
+    /// `&`: a protocol composition (`T: Equatable & Hashable`).
+    Amp,
     /// `\`: a key path (`\.likes`).
     Backslash,
 }
@@ -204,6 +206,7 @@ impl P {
             P::StarEq => "*=",
             P::At => "@",
             P::Dollar => "$",
+            P::Amp => "&",
             P::Pipe => "|",
             P::Backslash => "\\",
         }
@@ -438,6 +441,7 @@ impl Lexer<'_> {
             (b'@', _) => (P::At, 1),
             (b'$', _) => (P::Dollar, 1),
             (b'|', _) => (P::Pipe, 1),
+            (b'&', _) => (P::Amp, 1),
             (b'\\', _) => (P::Backslash, 1),
             _ => return None,
         };
@@ -584,11 +588,14 @@ impl Lexer<'_> {
             if !raw && c == b'\n' {
                 break;
             }
-            if c == b'\\' {
+            // `\(x)` (2.0) and 0.x `${x}`: an interpolation.
+            let swift = c == b'\\' && self.peek(1) == b'(';
+            if c == b'\\' && !swift {
                 self.escape(&mut text);
                 continue;
             }
-            if c == b'$' && self.peek(1) == b'{' {
+            if swift || (c == b'$' && self.peek(1) == b'{') {
+                let (opens, closes) = if swift { (b'(', b')') } else { (b'{', b'}') };
                 if !text.is_empty() {
                     parts.push(RawPart::Text(std::mem::take(&mut text)));
                 }
@@ -598,8 +605,8 @@ impl Lexer<'_> {
                 let mut depth = 1;
                 while self.pos < self.end && depth > 0 {
                     match self.peek(0) {
-                        b'{' => depth += 1,
-                        b'}' => depth -= 1,
+                        b if b == opens => depth += 1,
+                        b if b == closes => depth -= 1,
                         b'"' => {
                             // A string inside the interpolation: skip it whole.
                             self.pos += 1;
@@ -624,8 +631,12 @@ impl Lexer<'_> {
                             Span::new(open as u32, open as u32 + 2),
                             "unterminated interpolation",
                         )
-                        .label("this `${` is never closed")
-                        .help("close it with `}`"),
+                        .label(if swift { "this `\\(` is never closed" } else { "this `${` is never closed" })
+                        .help(if swift {
+                            "close it with `)`"
+                        } else {
+                            "close it with `}`"
+                        }),
                     );
                     break;
                 }

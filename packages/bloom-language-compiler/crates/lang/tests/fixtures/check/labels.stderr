@@ -1,0 +1,50 @@
+error[B0207]: missing argument label `to:`
+  --> check/labels.bloom:17:19
+   |
+17 |   let b = move(p, p)
+   |                   ^ this argument is `to`
+   |
+help: write `to: …`, or declare the parameter `_ to` to call it by position
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: no parameter is named `point`
+  --> check/labels.bloom:18:16
+   |
+18 |   let c = move(point: p, to: p)
+   |                ^^^^^ unknown label
+   |
+help: the parameters are `to`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: missing argument(s): the 1st (unlabelled)
+  --> check/labels.bloom:18:26
+   |
+18 |   let c = move(point: p, to: p)
+   |                          ^^^^^ this call leaves them out
+   |
+help: pass them: `the 1st (unlabelled): …`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0108]: a public declaration names the internal type `Point`
+  --> check/labels.bloom:11:27
+   |
+ 2 | struct Point {
+   |        ----- declared here
+   |
+11 | public func move(_ point: Point, to target: Point) -> Point { target }
+   |                           ^^^^^ `Point` is internal
+   |
+help: make `Point` public, or this declaration internal
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0108]: a public declaration names the private type `Secret`
+  --> check/labels.bloom:13:30
+   |
+ 7 | private struct Secret {
+   |                ------ declared here
+   |
+13 | public func reveal(_ secret: Secret) -> Int { secret.value }
+   |                              ^^^^^^ `Secret` is private
+   |
+help: make `Secret` public, or this declaration private
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop

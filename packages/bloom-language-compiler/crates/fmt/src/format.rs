@@ -275,6 +275,7 @@ impl<'a> Formatter<'a> {
     fn import(&mut self, import: &Import) -> Doc {
         let source = text(self.slice(import.source_span).to_string());
         match &import.kind {
+            ImportKind::Module(_) => concat(vec![text("import "), source]),
             ImportKind::Namespace(name) => {
                 concat(vec![text(format!("import * as {} from ", name.name)), source])
             }
@@ -304,11 +305,7 @@ impl<'a> Formatter<'a> {
     // ----- items -----
 
     fn item(&mut self, item: &Item) -> Doc {
-        let visibility = match item.visibility {
-            Visibility::Private => "",
-            Visibility::Pub => "pub ",
-            Visibility::PubDefault => "pub default ",
-        };
+        let modifiers = self.modifiers(item.visibility, &item.modifiers);
         let kind = match &item.kind {
             ItemKind::Struct(s) => self.struct_decl(s, item.span),
             ItemKind::Enum(e) => self.enum_decl(e, item.span),
@@ -325,7 +322,33 @@ impl<'a> Formatter<'a> {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
         };
-        concat(vec![text(visibility), kind])
+        concat(vec![modifiers, kind])
+    }
+
+    /// `@Observable` (a line each), then `public private(set) static final `, as written.
+    fn modifiers(&mut self, visibility: Visibility, modifiers: &Modifiers) -> Doc {
+        let mut parts = Vec::new();
+        for attr in &modifiers.attrs {
+            parts.push(text(self.slice(attr.span).to_string()));
+            parts.push(hardline());
+        }
+        if let Some(span) = modifiers.visibility_span {
+            let word = match visibility {
+                Visibility::PubDefault => "pub default",
+                _ => self.slice(span),
+            };
+            parts.push(text(format!("{word} ")));
+        }
+        if let Some((_, span)) = modifiers.setter {
+            parts.push(text(format!("{} ", self.slice(span))));
+        }
+        if modifiers.is_static {
+            parts.push(text("static "));
+        }
+        if modifiers.is_final {
+            parts.push(text("final "));
+        }
+        concat(parts)
     }
 
     fn struct_decl(&mut self, s: &StructDecl, span: Span) -> Doc {
@@ -369,13 +392,22 @@ impl<'a> Formatter<'a> {
 
     fn fn_decl(&mut self, f: &FnDecl) -> Doc {
         let mut parts = Vec::new();
-        if f.is_async {
+        if f.is_async && !f.func {
             parts.push(text("async "));
         }
-        parts.push(text("fn "));
-        parts.push(text(f.name.name.clone()));
-        parts.push(generics(&f.generics));
+        parts.push(text(if f.func { "func " } else { "fn " }));
+        parts.push(text(if f.name.name == "==" { "== ".to_string() } else { f.name.name.clone() }));
+        parts.push(self.constrained_generics(&f.generics, &f.constraints));
         parts.push(self.params(&f.params));
+        if f.is_async && f.func {
+            parts.push(text(" async"));
+        }
+        if let Some(throws) = &f.throws {
+            parts.push(text(" throws"));
+            if let Some(ty) = &throws.ty {
+                parts.push(concat(vec![text("("), self.ty(ty), text(")")]));
+            }
+        }
         if let Some(ret) = &f.ret {
             parts.push(text(" -> "));
             parts.push(self.ty(ret));
@@ -394,8 +426,11 @@ impl<'a> Formatter<'a> {
                     let whole = param.whole.as_ref().map_or(String::new(), |w| format!("{}: ", w.name));
                     return concat(vec![text(format!("..{whole}")), this.ty(&param.ty)]);
                 }
-                let name =
+                let mut name =
                     if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };
+                if let Some(label) = &param.label {
+                    name = format!("{} {name}", label.name);
+                }
                 let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
@@ -977,6 +1012,30 @@ enum Link<'e> {
 
 fn is_member(callee: &Expr) -> bool {
     matches!(callee.kind, ExprKind::Field(..) | ExprKind::OptField(..))
+}
+
+impl Formatter<'_> {
+    /// `<T, U: Equatable & Hashable>`.
+    fn constrained_generics(&mut self, names: &[Ident], constraints: &[(Ident, TypeExpr)]) -> Doc {
+        if constraints.is_empty() {
+            return generics(names);
+        }
+        let mut parts = vec![text("<")];
+        for (index, name) in names.iter().enumerate() {
+            if index > 0 {
+                parts.push(text(", "));
+            }
+            parts.push(text(name.name.clone()));
+            let bounds: Vec<&TypeExpr> =
+                constraints.iter().filter(|(n, _)| n.name == name.name).map(|(_, ty)| ty).collect();
+            for (k, ty) in bounds.into_iter().enumerate() {
+                parts.push(text(if k == 0 { ": " } else { " & " }));
+                parts.push(self.ty(ty));
+            }
+        }
+        parts.push(text(">"));
+        concat(parts)
+    }
 }
 
 fn generics(names: &[Ident]) -> Doc {

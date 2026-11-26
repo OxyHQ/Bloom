@@ -1191,6 +1191,7 @@ impl Mapper<'_> {
                 None => Ty::Foreign("unknown".into()),
             };
             params.push(ParamTy {
+                labelled: false,
                 name: Some(param.name.clone()),
                 ty,
                 optional: param.optional,

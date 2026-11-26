@@ -67,6 +67,8 @@ pub struct FnTy {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParamTy {
+    /// A `func`'s labelled parameter: a call names it (`move(to: 1)`), never by position.
+    pub labelled: bool,
     pub name: Option<String>,
     pub ty: Ty,
     /// Has a default (Bloom) or is optional (TS `?`).
@@ -209,6 +211,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
                 .params
                 .iter()
                 .map(|p| ParamTy {
+                    labelled: p.labelled,
                     name: p.name.clone(),
                     ty: map_ty(&p.ty, f),
                     optional: p.optional,

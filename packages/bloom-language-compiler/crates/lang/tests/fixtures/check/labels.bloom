@@ -1,0 +1,20 @@
+// Bloom 2.0's argument labels, and a public declaration's types.
+struct Point {
+  x: Int
+  y: Int
+}
+
+private struct Secret {
+  value: Int
+}
+
+public func move(_ point: Point, to target: Point) -> Point { target }
+
+public func reveal(_ secret: Secret) -> Int { secret.value }
+
+func calls(p: Point) -> Point {
+  let a = move(p, to: p)
+  let b = move(p, p)
+  let c = move(point: p, to: p)
+  b
+}
