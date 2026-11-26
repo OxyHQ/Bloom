@@ -1134,6 +1134,7 @@ impl Tr<'_> {
             }
             Statement::ReturnStatement(r) => match &r.argument {
                 Some(value) => format!("return {}", self.expr(value)),
+                None if self.try_return => "return ok(())".into(),
                 None => "return".into(),
             },
             Statement::ForOfStatement(f) => {
@@ -1405,6 +1406,81 @@ impl Tr<'_> {
     }
 
     /// `f?.(a)` as a statement.
+    /// Any other `try` around awaits: its block as a closure returning a `Result`,
+    /// each `await` propagating with `?`, matched like an awaited call. A `return`
+    /// in the block would return from the closure, so it is refused unless it is a
+    /// bare `return` of a `try` that ends its block (then `return ok(())` is the same).
+    fn try_closure(
+        &mut self,
+        t: &oxc_ast::ast::TryStatement,
+        handler: &oxc_ast::ast::CatchClause,
+        finalizer: Option<String>,
+        last: bool,
+    ) -> String {
+        let mut returns = Vec::new();
+        collect_returns(&t.block.body, &mut returns);
+        if let Some(r) = returns.iter().find(|r| r.argument.is_some() || !last) {
+            return self.refuse(
+                "try:return",
+                "a `return` inside a `try` around several awaits (it would return from the `Result` closure)",
+                r.span,
+            );
+        }
+        let error = match handler.param.as_ref().map(|p| &p.pattern) {
+            Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
+            None => "_".into(),
+            Some(other) => {
+                return self.refuse("try:pattern", "a destructured `catch` parameter", other.span());
+            }
+        };
+        let propagate = std::mem::replace(&mut self.propagate, true);
+        let returning = std::mem::replace(&mut self.try_return, true);
+        let block = self.block_stmts(&t.block.body, t.block.span.end, false);
+        self.propagate = propagate;
+        self.try_return = returning;
+        let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
+        let marker = format!(
+            "// {REVIEW_MARKER}: the `try` block as a `Result` closure; every `await` propagates its rejection with `?` (a synchronous TS throw is not caught)"
+        );
+        let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
+        format!(
+            "{marker}\nlet attempt = {{\n{block}\nreturn ok(())\n}}\n{defer}match await attempt() {{\ncase .ok(_) => {{ }}\ncase .err({error}) => {{\n{err}\n}}\n}}"
+        )
+    }
+
+    /// A statement before a `try`'s first `await` that cannot throw, so it may be
+    /// written before the `match`: a state write of a pure value, a logger call,
+    /// a `const` of a pure value.
+    fn cannot_throw(&self, statement: &Statement) -> bool {
+        match statement {
+            Statement::ExpressionStatement(s) => match s.expression.without_parentheses() {
+                Expression::CallExpression(call) => {
+                    let args_pure = call.arguments.iter().all(|a| a.as_expression().is_some_and(is_pure));
+                    match &call.callee {
+                        Expression::Identifier(id) => {
+                            self.scope.setters.contains_key(id.name.as_str()) && args_pure
+                        }
+                        Expression::StaticMemberExpression(m) => {
+                            matches!(&m.object, Expression::Identifier(o) if o.name.to_lowercase().ends_with("logger"))
+                                && matches!(m.property.name.as_str(), "debug" | "info" | "warn" | "error" | "log")
+                                && args_pure
+                        }
+                        _ => false,
+                    }
+                }
+                _ => false,
+            },
+            Statement::VariableDeclaration(v) => {
+                v.kind == VariableDeclarationKind::Const
+                    && v.declarations.iter().all(|d| {
+                        matches!(d.id, BindingPattern::BindingIdentifier(_)) && d.init.as_ref().is_some_and(is_pure)
+                    })
+            }
+            Statement::EmptyStatement(_) => true,
+            _ => false,
+        }
+    }
+
     fn optional_call(&mut self, call: &CallExpression) -> String {
         self.optional_call_expr(call)
     }
@@ -1432,27 +1508,33 @@ impl Tr<'_> {
             let body = self.block_stmts(&t.block.body, t.block.span.end, false);
             return format!("{}\n{body}", finalizer.unwrap_or_default());
         };
-        let (bound, awaited, rest) = match t.block.body.split_first() {
-            Some((Statement::ExpressionStatement(s), rest)) => match &s.expression {
-                Expression::AwaitExpression(a) => ("_".to_string(), &a.argument, rest),
-                _ => return self.refuse("try:shape", "a `try` that does not start with an `await`", t.span),
-            },
-            Some((Statement::VariableDeclaration(v), rest)) if v.declarations.len() == 1 => {
-                let d = &v.declarations[0];
-                match (&d.id, d.init.as_ref().map(|i| i.without_parentheses())) {
-                    (BindingPattern::BindingIdentifier(id), Some(Expression::AwaitExpression(a))) => {
-                        (self.bind(&id.name, id.span), &a.argument, rest)
-                    }
-                    _ => {
-                        return self.refuse(
-                            "try:shape",
-                            "a `try` that does not start with an `await`",
-                            t.span,
-                        );
-                    }
-                }
+        let body = &t.block.body;
+        let fast = body.iter().position(|s| awaited_start(s).is_some()).filter(|&k| {
+            !self.awaits_bloom(awaited_start(&body[k]).expect("an awaited start").value())
+                && body[..k].iter().all(|s| self.cannot_throw(s))
+                && !body[k + 1..].iter().any(|s| self.slice(s.span()).contains("await"))
+        });
+        let Some(k) = fast else {
+            if !self.slice(t.block.span).contains("await") {
+                return self.refuse(
+                    "try:sync",
+                    "a `try` around code with no `await` (`.bloom` has no exceptions: the throwing TS call needs a `Result` wrapper)",
+                    t.span,
+                );
             }
-            _ => return self.refuse("try:shape", "a `try` that does not start with an `await`", t.span),
+            return self.try_closure(t, handler, finalizer, last);
+        };
+        let prefix = self.block_stmts(&body[..k], body[k].span().start, false);
+        let mut destructure = None;
+        let (bound, awaited, rest, returns) = match awaited_start(&body[k]).expect("an awaited start") {
+            AwaitStart::Expr(a) => ("_".to_string(), a, &body[k + 1..], false),
+            AwaitStart::Let(id, a) => (self.bind(&id.name, id.span), a, &body[k + 1..], false),
+            AwaitStart::Return(a) => ("value".to_string(), a, &body[k + 1..], true),
+            AwaitStart::Pattern(p, a) => {
+                let pattern = self.record_pattern(p);
+                destructure = Some(format!("let {pattern} = value"));
+                ("value".to_string(), a, &body[k + 1..], false)
+            }
         };
         let error = match handler.param.as_ref().map(|p| &p.pattern) {
             Some(BindingPattern::BindingIdentifier(id)) => self.bind(&id.name, id.span),
@@ -1462,15 +1544,119 @@ impl Tr<'_> {
             }
         };
         let awaited = self.expr(awaited);
-        let ok = self.block_stmts(rest, t.block.span.end, false);
+        let mut ok = self.block_stmts(rest, t.block.span.end, false);
+        if returns {
+            ok = format!("return value\n{ok}");
+        }
+        if let Some(d) = destructure {
+            ok = format!("{d}\n{ok}");
+        }
+        let prefix = if prefix.trim().is_empty() { String::new() } else { format!("{prefix}\n") };
         let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
         let marker = format!(
             "// {REVIEW_MARKER}: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection"
         );
         let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
         format!(
-            "{marker}\n{defer}match await {awaited} {{\ncase .ok({bound}) => {{\n{ok}\n}}\ncase .err({error}) => {{\n{err}\n}}\n}}"
+            "{prefix}{marker}\n{defer}match await {awaited} {{\ncase .ok({bound}) => {{\n{ok}\n}}\ncase .err({error}) => {{\n{err}\n}}\n}}"
         )
+    }
+}
+
+/// How a `try` block's first awaited statement starts.
+enum AwaitStart<'b, 'a> {
+    /// `await x`
+    Expr(&'b Expression<'a>),
+    /// `const v = await x`
+    Let(&'b oxc_ast::ast::BindingIdentifier<'a>, &'b Expression<'a>),
+    /// `return await x`
+    Return(&'b Expression<'a>),
+    /// `const { a, b } = await x`
+    Pattern(&'b oxc_ast::ast::ObjectPattern<'a>, &'b Expression<'a>),
+}
+
+impl<'b, 'a> AwaitStart<'b, 'a> {
+    fn value(&self) -> &'b Expression<'a> {
+        match self {
+            AwaitStart::Expr(a) | AwaitStart::Let(_, a) | AwaitStart::Return(a) | AwaitStart::Pattern(_, a) => a,
+        }
+    }
+}
+
+fn awaited_start<'b, 'a>(statement: &'b Statement<'a>) -> Option<AwaitStart<'b, 'a>> {
+    match statement {
+        Statement::ExpressionStatement(s) => match s.expression.without_parentheses() {
+            Expression::AwaitExpression(a) => Some(AwaitStart::Expr(&a.argument)),
+            _ => None,
+        },
+        Statement::VariableDeclaration(v) if v.declarations.len() == 1 => {
+            let d = &v.declarations[0];
+            match (&d.id, d.init.as_ref().map(|i| i.without_parentheses())) {
+                (BindingPattern::BindingIdentifier(id), Some(Expression::AwaitExpression(a))) => {
+                    Some(AwaitStart::Let(id, &a.argument))
+                }
+                (BindingPattern::ObjectPattern(p), Some(Expression::AwaitExpression(a))) => {
+                    Some(AwaitStart::Pattern(p, &a.argument))
+                }
+                _ => None,
+            }
+        }
+        Statement::ReturnStatement(r) => match r.argument.as_ref().map(|a| a.without_parentheses()) {
+            Some(Expression::AwaitExpression(a)) => Some(AwaitStart::Return(&a.argument)),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// The `return`s of a block, outside nested functions.
+fn collect_returns<'b, 'a>(statements: &'b [Statement<'a>], out: &mut Vec<&'b oxc_ast::ast::ReturnStatement<'a>>) {
+    for statement in statements {
+        match statement {
+            Statement::ReturnStatement(r) => out.push(r),
+            Statement::IfStatement(i) => {
+                collect_returns(std::slice::from_ref(&i.consequent), out);
+                if let Some(a) = &i.alternate {
+                    collect_returns(std::slice::from_ref(a), out);
+                }
+            }
+            Statement::BlockStatement(b) => collect_returns(&b.body, out),
+            Statement::ForOfStatement(f) => collect_returns(std::slice::from_ref(&f.body), out),
+            Statement::WhileStatement(w) => collect_returns(std::slice::from_ref(&w.body), out),
+            Statement::TryStatement(t) => {
+                collect_returns(&t.block.body, out);
+                if let Some(h) = &t.handler {
+                    collect_returns(&h.body.body, out);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// A value read that cannot throw: literals, names, field reads, records and lists of them.
+fn is_pure(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::StringLiteral(_)
+        | Expression::Identifier(_) => true,
+        Expression::TemplateLiteral(t) => t.expressions.iter().all(is_pure),
+        Expression::StaticMemberExpression(m) => is_pure(&m.object),
+        Expression::ChainExpression(c) => match &c.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(m) => is_pure(&m.object),
+            _ => false,
+        },
+        Expression::ConditionalExpression(c) => is_pure(&c.test) && is_pure(&c.consequent) && is_pure(&c.alternate),
+        Expression::LogicalExpression(l) => is_pure(&l.left) && is_pure(&l.right),
+        Expression::UnaryExpression(u) => u.operator == UnaryOperator::LogicalNot && is_pure(&u.argument),
+        Expression::ObjectExpression(o) => o.properties.iter().all(|p| match p {
+            oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) => !p.computed && is_pure(&p.value),
+            oxc_ast::ast::ObjectPropertyKind::SpreadProperty(_) => false,
+        }),
+        Expression::ArrayExpression(a) => a.elements.iter().all(|e| e.as_expression().is_some_and(is_pure)),
+        _ => false,
     }
 }
 

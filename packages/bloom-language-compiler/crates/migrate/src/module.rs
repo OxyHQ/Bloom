@@ -103,6 +103,10 @@ pub struct Tr<'s> {
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
     pub quiet: bool,
+    /// Inside a `try` written as a `Result` closure: an `await` propagates with `?`.
+    pub propagate: bool,
+    /// Inside that closure: a bare `return` is `return ok(())`.
+    pub try_return: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub conditions: HashSet<String>,
     /// Calls whose one type argument types the binding they initialise.
@@ -269,6 +273,8 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         wrapped: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
+        propagate: false,
+        try_return: false,
         pending_equal: None,
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),

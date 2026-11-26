@@ -206,7 +206,10 @@ impl Tr<'_> {
                     u.span,
                 ),
             },
-            Expression::AwaitExpression(a) => format!("await {}", self.expr(&a.argument)),
+            Expression::AwaitExpression(a) => {
+                let value = self.expr(&a.argument);
+                if self.propagate && !self.awaits_bloom(&a.argument) { format!("await {value}?") } else { format!("await {value}") }
+            }
             Expression::JSXElement(el) => self.component(el),
             Expression::JSXFragment(f) => self.fragment_value(f),
             Expression::AssignmentExpression(a) => {
@@ -507,6 +510,12 @@ impl Tr<'_> {
             return Callee::LocalFn;
         }
         Callee::Ts
+    }
+
+    /// An awaited value that is a Bloom async function's result (no `Result`:
+    /// a Bloom function does not reject).
+    pub fn awaits_bloom(&self, e: &Expression) -> bool {
+        matches!(e.without_parentheses(), Expression::CallExpression(call) if matches!(self.callee(call), Callee::LocalFn))
     }
 
     pub fn call(&mut self, call: &CallExpression) -> String {
@@ -976,6 +985,15 @@ impl Tr<'_> {
     // ---- closures --------------------------------------------------------------
 
     pub fn closure(&mut self, arrow: &ArrowFunctionExpression) -> String {
+        let propagate = std::mem::replace(&mut self.propagate, false);
+        let returning = std::mem::replace(&mut self.try_return, false);
+        let text = self.closure_inner(arrow);
+        self.propagate = propagate;
+        self.try_return = returning;
+        text
+    }
+
+    fn closure_inner(&mut self, arrow: &ArrowFunctionExpression) -> String {
         let saved = self.scope.clone();
         let (params, prelude) = self.closure_params(&arrow.params);
         let body = match arrow.get_expression() {

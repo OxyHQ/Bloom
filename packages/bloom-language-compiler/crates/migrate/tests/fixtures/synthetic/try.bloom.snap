@@ -1,0 +1,57 @@
+// try shapes: state writes before the first await, a destructured await, and a
+// block of several awaits (a `Result` closure, each await propagating).
+
+import { load, save, saveLogger, unsave } from "./api"
+
+async fn resolveUrl(id: String) -> String {
+  // bloom: review: the `catch` caught a throw anywhere in the `try`; `.err` is the awaited call's rejection
+  match await load(id) {
+    case .ok(value) => {
+      let { data } = value
+      return data.url
+    }
+    case .err(_) => return id
+  }
+}
+
+pub view SaveToggle(id: String, saved: Bool) {
+  @state busy = false
+  @state failed = false
+
+  async fn onToggle() {
+    // bloom: review: the `try` block as a `Result` closure; every `await` propagates its rejection with `?` (a synchronous TS throw is not caught)
+    let attempt = {
+      busy = true
+      saveLogger.debug("toggling")
+      if saved { await unsave(id)? } else { await save(id)? }
+      failed = false
+      return ok(())
+    }
+    defer { busy = false }
+    match await attempt() {
+      case .ok(_) => {}
+      case .err(_) => failed = true
+    }
+  }
+
+  async fn onLoad() {
+    // bloom: review: the `try` block as a `Result` closure; every `await` propagates its rejection with `?` (a synchronous TS throw is not caught)
+    let attempt = {
+      busy = true
+      let url = await resolveUrl(id)
+      saveLogger.debug(url)
+      return ok(())
+    }
+    match await attempt() {
+      case .ok(_) => {}
+      case .err(_) => failed = true
+    }
+  }
+
+  body {
+    Button(Text(failed ? "Retry" : saved ? "Saved" : "Save"))
+    .disabled(busy)
+    .onPress { task { await onToggle() } }
+    .onLongPress { task { await onLoad() } }
+  }
+}
