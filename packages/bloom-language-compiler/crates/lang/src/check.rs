@@ -210,6 +210,8 @@ pub struct CheckResult {
     pub type_only_imports: HashSet<Span>,
     /// The names an assignment writes (`count` in `count += 1`): written, not read.
     pub assign_targets: HashSet<ExprId>,
+    /// Each written type's span → the type it names.
+    pub type_exprs: HashMap<Span, Ty>,
     /// `Foreign` values accepted as a Bloom type: emitted `(value satisfies T)`.
     pub foreign_checks: HashMap<ExprId, Ty>,
 }
@@ -581,6 +583,7 @@ impl<'o> Checker<'o> {
     fn resolve_type(&mut self, te: &TypeExpr) -> Ty {
         let ty = self.resolve_type_inner(te);
         self.out.spans.push((te.span, ty.clone()));
+        self.out.type_exprs.insert(te.span, ty.clone());
         ty
     }
 

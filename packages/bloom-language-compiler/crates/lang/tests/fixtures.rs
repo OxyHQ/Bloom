@@ -125,3 +125,59 @@ fn compile_one() {
         Err(_) => println!("{}", output.code),
     }
 }
+
+/// `cargo test --release -p bloom_lang --test fixtures timing -- --ignored --nocapture`:
+/// the compile time of each emit fixture, cold (the first compile reads the TS
+/// declarations it imports) and warm (the median of 200, declarations cached).
+#[test]
+#[ignore]
+fn timing() {
+    for path in sources("emit") {
+        let source = std::fs::read_to_string(&path).expect("the fixture");
+        let name = format!("emit/{}", path.file_name().expect("a name").to_string_lossy());
+        let options = options();
+        let cold = std::time::Instant::now();
+        let _ = compile(&source, &name, &options);
+        let cold = cold.elapsed();
+        let mut runs: Vec<std::time::Duration> = (0..200)
+            .map(|_| {
+                let start = std::time::Instant::now();
+                let output = compile(&source, &name, &options);
+                assert!(output.diagnostics.is_empty());
+                start.elapsed()
+            })
+            .collect();
+        runs.sort();
+        let parse = {
+            let start = std::time::Instant::now();
+            for _ in 0..200 {
+                let _ = bloom_lang::parse(&source, &name);
+            }
+            start.elapsed() / 200
+        };
+        let average = |f: &dyn Fn()| {
+            let start = std::time::Instant::now();
+            for _ in 0..200 {
+                f();
+            }
+            start.elapsed() / 200
+        };
+        let check = average(&|| {
+            let _ = bloom_lang::check(&source, &name, &options);
+        });
+        let code = compile(&source, &name, &options).code;
+        let embedded = average(&|| {
+            let _ = bloom_language_compiler::compile(&code, &format!("{name}.ts"));
+        });
+        println!(
+            "{name}: {} lines, cold {:?}, warm median {:?} (p90 {:?}); parse {:?}, parse+check {:?}, embedded pass {:?}",
+            source.lines().count(),
+            cold,
+            runs[100],
+            runs[180],
+            parse,
+            check,
+            embedded
+        );
+    }
+}

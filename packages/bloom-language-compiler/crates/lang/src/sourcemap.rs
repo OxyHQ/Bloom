@@ -12,23 +12,45 @@ pub struct Mappings {
     pub points: Vec<(u32, u32)>,
 }
 
-/// Each line's start offset, for (line, column) ↔ offset.
-fn line_starts(text: &str) -> Vec<u32> {
-    std::iter::once(0).chain(text.match_indices('\n').map(|(i, _)| i as u32 + 1)).collect()
+/// Each line's start offset, and whether the line is ASCII (its UTF-16 columns are its bytes).
+struct Lines {
+    starts: Vec<u32>,
+    ascii: Vec<bool>,
+}
+
+fn line_starts(text: &str) -> Lines {
+    let starts: Vec<u32> =
+        std::iter::once(0).chain(text.match_indices('\n').map(|(i, _)| i as u32 + 1)).collect();
+    let ascii = starts
+        .iter()
+        .enumerate()
+        .map(|(i, start)| {
+            let end = starts.get(i + 1).map_or(text.len(), |e| *e as usize);
+            text.as_bytes()[*start as usize..end].is_ascii()
+        })
+        .collect();
+    Lines { starts, ascii }
 }
 
 /// 0-based (line, UTF-16 column) of `offset`, as source maps count.
-fn position(text: &str, starts: &[u32], offset: u32) -> (u32, u32) {
-    let line = starts.partition_point(|s| *s <= offset).saturating_sub(1);
-    let start = starts[line] as usize;
+fn position(text: &str, lines: &Lines, offset: u32) -> (u32, u32) {
+    let line = lines.starts.partition_point(|s| *s <= offset).saturating_sub(1);
+    let start = lines.starts[line];
+    if lines.ascii[line] {
+        return (line as u32, offset.min(text.len() as u32) - start);
+    }
     let end = (offset as usize).min(text.len());
-    let column = text.get(start..end).map_or(0, |t| t.encode_utf16().count());
+    let column = text.get(start as usize..end).map_or(0, |t| t.encode_utf16().count());
     (line as u32, column as u32)
 }
 
 /// The offset of 0-based (line, UTF-16 column).
-fn offset(text: &str, starts: &[u32], line: u32, column: u32) -> u32 {
-    let Some(start) = starts.get(line as usize).copied() else { return text.len() as u32 };
+fn offset(text: &str, lines: &Lines, line: u32, column: u32) -> u32 {
+    let Some(start) = lines.starts.get(line as usize).copied() else { return text.len() as u32 };
+    if lines.ascii[line as usize] {
+        let end = lines.starts.get(line as usize + 1).map_or(text.len() as u32, |e| *e);
+        return (start + column).min(end);
+    }
     let mut units = 0;
     for (index, ch) in text[start as usize..].char_indices() {
         if units >= column || ch == '\n' {

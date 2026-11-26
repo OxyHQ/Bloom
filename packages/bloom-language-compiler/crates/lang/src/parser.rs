@@ -91,8 +91,9 @@ impl<'s, 'i> Parser<'s, 'i> {
         if self.pos == 0 { 0 } else { self.tokens[self.pos - 1].span.end }
     }
 
-    fn bump(&mut self) -> Token {
-        let token = self.tokens[self.pos].clone();
+    /// Moves past the current token; its span.
+    fn bump(&mut self) -> Span {
+        let token = self.tokens[self.pos].span;
         if self.pos < self.tokens.len() - 1 {
             self.pos += 1;
         }
@@ -176,7 +177,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn expect(&mut self, p: P, expected: &str) -> Option<Span> {
         if self.at(p) {
-            Some(self.bump().span)
+            Some(self.bump())
         } else {
             self.unexpected(expected);
             None
@@ -383,7 +384,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn import(&mut self) -> Option<Import> {
-        let start = self.bump().span;
+        let start = self.bump();
         let kind = if self.eat(P::Star) {
             if !self.eat_kw(Kw::As) {
                 self.unexpected("`as` (`import * as name from \"…\"`)");
@@ -428,7 +429,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         let (source, source_span) = match self.tok().clone() {
             Tok::Str { parts, .. } => {
-                let span = self.bump().span;
+                let span = self.bump();
                 let text = parts
                     .iter()
                     .map(|part| match part {
@@ -567,7 +568,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 let variant_name = self.ident("a case name");
                 let mut payload = Vec::new();
-                if let Some(open) = self.at(P::LParen).then(|| self.bump().span) {
+                if let Some(open) = self.at(P::LParen).then(|| self.bump()) {
                     loop {
                         if self.at(P::RParen) {
                             break;
@@ -619,7 +620,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn const_decl(&mut self) -> ConstDecl {
-        let start = self.bump().span;
+        let start = self.bump();
         let name = self.ident("the constant's name");
         let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
         self.expect(P::Eq, "`=` and the value");
@@ -647,7 +648,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn params(&mut self) -> Vec<Param> {
-        let open = self.bump().span;
+        let open = self.bump();
         let mut params = Vec::new();
         loop {
             self.skip_newlines();
@@ -689,11 +690,12 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn view_decl(&mut self) -> ViewDecl {
         let start = self.span();
-        let kind = match self.bump().tok {
+        let kind = match self.tok() {
             Tok::Kw(Kw::Screen) => ViewKind::Screen,
             Tok::Kw(Kw::Layout) => ViewKind::Layout,
             _ => ViewKind::View,
         };
+        self.bump();
         let name = self.ident("the view's name");
         let params = if self.at(P::LParen) { Some(self.params()) } else { None };
         let mut members = Vec::new();
@@ -704,7 +706,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let at = self.span();
                 match self.tok() {
                     Tok::Kw(Kw::Body) => {
-                        let keyword = self.bump().span;
+                        let keyword = self.bump();
                         let block = self.block();
                         if body.is_some() {
                             self.error(
@@ -754,7 +756,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn member(&mut self) -> Option<Member> {
         match self.tok() {
             Tok::P(P::At) => {
-                let start = self.bump().span;
+                let start = self.bump();
                 let word = self.ident("`state`, `list`, `record` or `env`");
                 let attr = match word.name.as_str() {
                     "state" => StateAttr::State,
@@ -825,10 +827,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut ty = self.base_type();
         loop {
             if self.at(P::Question) && !self.token().space_before {
-                let end = self.bump().span;
+                let end = self.bump();
                 ty = TypeExpr { span: ty.span.to(end), kind: TypeKind::Optional(Box::new(ty)) };
             } else if self.at(P::QuestionQuestion) && !self.token().space_before {
-                let end = self.bump().span;
+                let end = self.bump();
                 let inner = TypeExpr {
                     span: ty.span.to(Span::new(end.start, end.start + 1)),
                     kind: TypeKind::Optional(Box::new(ty)),
@@ -863,7 +865,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
             }
             Tok::P(P::LBracket) => {
-                let open = self.bump().span;
+                let open = self.bump();
                 let first = self.type_expr();
                 let kind = if self.eat(P::Colon) {
                     let value = self.type_expr();
@@ -943,7 +945,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn let_stmt(&mut self) -> LetStmt {
-        let start = self.bump().span;
+        let start = self.bump();
         let pattern = self.pattern();
         let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
         self.expect(P::Eq, "`=` and the value");
@@ -1047,7 +1049,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn pattern_args(&mut self) -> Option<Vec<Pattern>> {
-        let open = self.at(P::LParen).then(|| self.bump().span)?;
+        let open = self.at(P::LParen).then(|| self.bump())?;
         let mut args = Vec::new();
         while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
             args.push(self.pattern());
@@ -1095,7 +1097,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             | Tok::Kw(Kw::True | Kw::False)
             | Tok::P(P::Minus) => PatternKind::Literal(Box::new(self.unary(Ctx::Head))),
             Tok::P(P::LParen) => {
-                let open = self.bump().span;
+                let open = self.bump();
                 let mut items = Vec::new();
                 while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
                     items.push(self.pattern());
@@ -1112,7 +1114,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 PatternKind::Tuple(items)
             }
             Tok::P(P::LBrace) => {
-                let open = self.bump().span;
+                let open = self.bump();
                 let mut fields = Vec::new();
                 loop {
                     self.skip_newlines();
@@ -1199,7 +1201,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             if prec < min {
                 break;
             }
-            let op_span = self.bump().span;
+            let op_span = self.bump();
             let rhs =
                 if op == BinaryOp::Default { self.binary(prec, ctx) } else { self.binary(prec + 1, ctx) };
             // Comparisons do not chain: `a < b < c` says nothing clear.
@@ -1297,7 +1299,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     self.bump();
                     let name = match self.tok().clone() {
                         Tok::Int(index) => {
-                            let span = self.bump().span;
+                            let span = self.bump();
                             Ident { name: index.to_string(), span }
                         }
                         _ => self.name_or_keyword("a member name"),
@@ -1312,14 +1314,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                     expr = self.expr_node(ExprKind::OptField(Box::new(expr), name), span);
                 }
                 Tok::P(P::LBracket) if !self.token().space_before => {
-                    let open = self.bump().span;
+                    let open = self.bump();
                     let index = self.expr(Ctx::Normal);
                     self.expect_close(P::RBracket, open);
                     let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
                     expr = self.expr_node(ExprKind::Index(Box::new(expr), Box::new(index)), span);
                 }
                 Tok::P(P::Question) if !self.token().space_before => {
-                    let end = self.bump().span;
+                    let end = self.bump();
                     if let Some(keyword) = awaiting.take() {
                         let span = keyword.to(expr.span);
                         expr = self.expr_node(ExprKind::Await(Box::new(expr)), span);
@@ -1334,7 +1336,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn args(&mut self) -> (Vec<Arg>, Span) {
-        let open = self.bump().span;
+        let open = self.bump();
         let mut args = Vec::new();
         while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
             let start = self.span();
@@ -1364,7 +1366,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     /// `{ [params in] stmts }`
     fn closure(&mut self) -> Closure {
-        let open = self.bump().span;
+        let open = self.bump();
         let mut params = Vec::new();
         let mut has_in = false;
         // `{ a, b: T in …`: read the parameters, or go back when there is no `in`.
@@ -1403,7 +1405,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn if_expr(&mut self) -> Expr {
-        let start = self.bump().span;
+        let start = self.bump();
         let cond = if self.eat_kw(Kw::Let) {
             let pattern = self.pattern();
             self.expect(P::Eq, "`=` and the value to match");
@@ -1429,7 +1431,7 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn match_expr(&mut self) -> Expr {
-        let start = self.bump().span;
+        let start = self.bump();
         let scrutinee = self.expr(Ctx::Head);
         let mut arms = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the match's `case` arms") {
@@ -1548,7 +1550,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.expr_node(ExprKind::Binding(path), span)
             }
             Tok::P(P::LParen) => {
-                let open = self.bump().span;
+                let open = self.bump();
                 let mut items = Vec::new();
                 let mut trailing_comma = false;
                 while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
@@ -1570,7 +1572,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.expr_node(ExprKind::Tuple(items), span)
             }
             Tok::P(P::LBracket) => {
-                let open = self.bump().span;
+                let open = self.bump();
                 if self.at(P::Colon) && matches!(self.nth(1), Tok::P(P::RBracket)) {
                     self.bump();
                     self.bump();
