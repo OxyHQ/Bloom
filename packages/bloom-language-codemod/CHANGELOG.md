@@ -1,14 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Imports each language name from its entry: the root, `/router`, or its family's (`@oxy.so/bloom-language/inputs`…), from the language's `spec/entries.generated.json`; a file's existing import of a name from any entry is reused.
+
 ## 0.5.0
 
 ### Compatibility
 
 - Its peer is `@oxy.so/bloom-language` 1.7.0 or newer, the language it writes (an offset in points, the frame length `'auto'`, the stacking level `'1000'` and a border width with no colour).
-
-### Changed
-
-- Imports each language name from its entry: the root, `/router`, or its family's (`@oxy.so/bloom-language/inputs`…), from the language's `spec/entries.generated.json`; a file's existing import of a name from any entry is reused.
 
 ### Added
 
