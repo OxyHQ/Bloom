@@ -2,6 +2,8 @@
 //! views that read them (`@Observable`), protocols and their conformances, the witnesses
 //! that constrained generics and `any P` pass, and writes into a model's fields.
 
+use std::rc::Rc;
+
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use super::{Checker, TypeName};
@@ -12,21 +14,44 @@ use crate::types::*;
 /// What a generic's type parameter is constrained to, when it is passed a witness.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Bound {
-    /// A protocol of a `.bloom` module: its requirements' witness object.
-    Protocol(DefId),
-    /// `Equatable`: its `==`, a function.
+    /// A protocol of a `.bloom` module, by name: its requirements' witness object.
+    Protocol(Rc<str>),
+    /// `Equatable` (`Hashable`, `Comparable`): its `==`, a function.
     Equatable,
+    /// `Codable` (`Decodable`, `Encodable`): its `Codec<T>`, which `T.self` is.
+    Codable,
+}
+
+impl Bound {
+    /// The bound a protocol's name stands for, as [`FnTy::bounds`] spells it.
+    pub fn of(name: &str) -> Bound {
+        match name {
+            "Equatable" => Bound::Equatable,
+            "Codable" => Bound::Codable,
+            other => Bound::Protocol(other.into()),
+        }
+    }
+
+    pub fn name(&self) -> Rc<str> {
+        match self {
+            Bound::Protocol(name) => name.clone(),
+            Bound::Equatable => "Equatable".into(),
+            Bound::Codable => "Codable".into(),
+        }
+    }
 }
 
 /// A witness a generic call passes for one of its constraints.
 #[derive(Debug, Clone, PartialEq)]
 pub enum WitnessArg {
-    /// `T$$P`: the conformance's witness object.
-    Conformance { def: DefId, protocol: DefId },
+    /// `T$$P`: the conformance's witness object (its type's and protocol's names).
+    Conformance { ty: String, protocol: String },
     /// The caller's own witness parameter (`$w_T_P`), passed on.
     Param(String),
     /// `==` of a type, compared field by field where it is a struct.
     Equal(Ty),
+    /// A codec: `T$$self`, or a generic type's `T$$codec(…)` of its arguments' codecs.
+    Codec(String),
 }
 
 /// How a conforming type meets one requirement.
@@ -383,11 +408,12 @@ impl Checker<'_> {
             let TypeKind::Named { name, .. } = &protocol.kind else { continue };
             let bound = match name.name.as_str() {
                 "Equatable" | "Hashable" | "Comparable" => Bound::Equatable,
+                "Codable" | "Decodable" | "Encodable" => Bound::Codable,
                 other => match self.type_names.get(other).cloned() {
                     Some(TypeName::Def(def)) if matches!(self.out.defs[def].kind, DefKind::Protocol(_)) => {
-                        Bound::Protocol(def)
+                        Bound::Protocol(other.into())
                     }
-                    // A built-in protocol with no requirement a body reads (`Codable`, `Sendable`).
+                    // A built-in protocol with no requirement a body reads (`Sendable`).
                     _ => continue,
                 },
             };
@@ -399,69 +425,94 @@ impl Checker<'_> {
     /// The witness a constraint is met with at a call, once its type argument is known.
     pub(super) fn witness_for(&mut self, ty: &Ty, bound: &Bound, span: Span) -> Option<WitnessArg> {
         let ty = self.zonk(ty);
+        let protocol = bound.name();
+        let refuse = |checker: &mut Self, ty: &Ty, help: Option<String>| {
+            let shown = checker.show(ty);
+            checker.report(
+                Diagnostic::error("B0232", span, format!("{shown} does not conform to `{protocol}`"))
+                    .label("a constraint of the function called")
+                    .maybe_help(help)
+                    .spec("48-protocols"),
+            );
+            None
+        };
         match (bound, &ty) {
             (_, Ty::Unknown | Ty::Var(_)) => None,
-            (Bound::Equatable, Ty::Param(_, name)) | (Bound::Protocol(_), Ty::Param(_, name)) => {
-                let protocol = match bound {
-                    Bound::Equatable => "Equatable".to_string(),
-                    Bound::Protocol(p) => self.out.defs[*p].name.clone(),
-                };
-                let found = self.bounds_in_scope.iter().any(|(n, b)| n == &**name && b == bound);
-                if !found {
-                    self.report(
-                        Diagnostic::error(
-                            "B0232",
-                            span,
-                            format!("`{name}` is not known to conform to `{protocol}`"),
-                        )
-                        .label("a constraint of the function called")
-                        .help(format!("constrain it: `<{name}: {protocol}>`"))
-                        .spec("46-generics"),
-                    );
-                    return None;
+            (_, Ty::Param(_, name)) => {
+                if !self.bounds_in_scope.iter().any(|(n, b)| n == &**name && b == bound) {
+                    let help = format!("constrain it: `<{name}: {protocol}>`");
+                    return refuse(self, &ty, Some(help));
                 }
                 Some(WitnessArg::Param(witness_param(name, &protocol)))
             }
             (Bound::Equatable, _) => match super::equality(&self.out.defs, &ty) {
-                super::Equality::None(_) => {
-                    let shown = self.show(&ty);
-                    self.report(
-                        Diagnostic::error("B0232", span, format!("{shown} is not `Equatable`"))
-                            .label("a constraint of the function called")
-                            .spec("46-generics"),
-                    );
-                    None
-                }
+                super::Equality::None(_) => refuse(self, &ty, None),
                 _ => Some(WitnessArg::Equal(ty)),
             },
-            (Bound::Protocol(protocol), Ty::Adt(def, _)) => {
-                let declared = self.out.conformances.iter().any(|c| c.def == *def && c.protocol == *protocol);
-                let imported = self.out.defs[*def].origin != Origin::Local;
-                if !declared && !imported {
-                    let (shown, name) = (self.show(&ty), self.out.defs[*protocol].name.clone());
-                    self.report(
-                        Diagnostic::error("B0232", span, format!("{shown} does not conform to `{name}`"))
-                            .label("a constraint of the function called")
-                            .help(format!(
-                                "declare it: `extension {}: {name} {{ … }}`",
-                                self.out.defs[*def].name
-                            ))
-                            .spec("48-protocols"),
-                    );
-                    return None;
+            (Bound::Codable, _) => match self.codec(&ty) {
+                Some(codec) => Some(WitnessArg::Codec(codec)),
+                None => refuse(self, &ty, Some("conform it to `Codable`".into())),
+            },
+            (Bound::Protocol(name), Ty::Adt(def, _)) => {
+                let d = &self.out.defs[*def];
+                let declared = self
+                    .out
+                    .conformances
+                    .iter()
+                    .any(|c| c.def == *def && self.out.defs[c.protocol].name == **name);
+                if !declared && d.origin == Origin::Local {
+                    let help = format!("declare it: `extension {}: {name} {{ … }}`", d.name);
+                    return refuse(self, &ty, Some(help));
                 }
-                Some(WitnessArg::Conformance { def: *def, protocol: *protocol })
+                Some(WitnessArg::Conformance { ty: d.name.clone(), protocol: name.to_string() })
             }
-            (Bound::Protocol(protocol), _) => {
-                let (shown, name) = (self.show(&ty), self.out.defs[*protocol].name.clone());
-                self.report(
-                    Diagnostic::error("B0232", span, format!("{shown} does not conform to `{name}`"))
-                        .label("a constraint of the function called")
-                        .spec("48-protocols"),
-                );
-                None
-            }
+            (Bound::Protocol(_), _) => refuse(self, &ty, None),
         }
+    }
+
+    /// `ty`'s codec as TS text: `Post$$self`, `String$$self`, a generic type's
+    /// `Page$$codec(Post$$self)` and `Array$$codec(…)` (`None`: it has none in scope).
+    fn codec(&self, ty: &Ty) -> Option<String> {
+        let named = |owner: &str, args: &[Ty]| -> Option<String> {
+            if args.is_empty() {
+                let name = crate::extensions::mangle(owner, "self", true);
+                return self.lookup(&name).map(|_| name);
+            }
+            let name = crate::extensions::mangle(owner, "codec", true);
+            self.lookup(&name)?;
+            let args: Option<Vec<String>> = args.iter().map(|a| self.codec(a)).collect();
+            Some(format!("{name}({})", args?.join(", ")))
+        };
+        match self.resolve(ty) {
+            Ty::Param(_, name) => self
+                .bounds_in_scope
+                .iter()
+                .any(|(n, b)| n == &*name && *b == Bound::Codable)
+                .then(|| witness_param(&name, "Codable")),
+            Ty::Str | Ty::Strings(_) => named("String", &[]),
+            Ty::Int => named("Int", &[]),
+            Ty::Float => named("Double", &[]),
+            Ty::Bool => named("Bool", &[]),
+            Ty::List(t) => named("Array", &[*t]),
+            Ty::Option(t) => named("Optional", &[*t]),
+            Ty::Map(t) => named("Dictionary", &[*t]),
+            Ty::Adt(def, args) => named(&self.out.defs[def].name.clone(), &args),
+            _ => None,
+        }
+    }
+
+    /// `T.self` in a function constrained `<T: Codable>`: its codec witness, a `Codec<T>`.
+    pub(super) fn codec_param(&mut self, expr: &Expr, param: &str) -> Option<Ty> {
+        if !self.bounds_in_scope.iter().any(|(n, b)| n == param && *b == Bound::Codable) {
+            return None;
+        }
+        let index = self.generics.iter().rposition(|g| g == param)?;
+        self.out.fields.insert(expr.id, super::FieldRes::Static(witness_param(param, "Codable").into()));
+        let t = Ty::Param(index as u32, param.into());
+        Some(match self.type_names.get("Codec").cloned() {
+            Some(TypeName::Def(def)) => Ty::Adt(def, vec![t]),
+            _ => Ty::Foreign(format!("Codec<{param}>").into()),
+        })
     }
 
     /// `x.name` where `x` is a constrained type parameter's value or an `any P`: the
@@ -473,7 +524,13 @@ impl Checker<'_> {
                 self.bounds_in_scope
                     .iter()
                     .filter(|(n, _)| n == &**param)
-                    .filter_map(|(_, b)| if let Bound::Protocol(p) = b { Some(*p) } else { None })
+                    .filter_map(|(_, b)| match b {
+                        Bound::Protocol(p) => match self.type_names.get(&**p) {
+                            Some(TypeName::Def(def)) => Some(*def),
+                            _ => None,
+                        },
+                        _ => None,
+                    })
                     .collect(),
             ),
             Ty::Any(protocol) => (None, vec![*protocol]),

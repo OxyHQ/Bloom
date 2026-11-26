@@ -82,14 +82,6 @@ impl Checker<'_> {
                         {
                             self.component_call(expr, call, &Ty::Foreign("".into()))
                         }
-                        _ if self.fn_bounds.contains_key(name) => {
-                            let bounds = self.fn_bounds[name].clone();
-                            let (ty, args) = self.instantiate_with(&info.ty);
-                            let ret = self.value_call(expr, call, &ty);
-                            let scope = self.bounds_in_scope.clone();
-                            self.pending_witnesses.push((expr.id, args, bounds, call.callee.span, scope));
-                            ret
-                        }
                         _ => {
                             let ty = self.instantiate(&info.ty);
                             let ret = self.value_call(expr, call, &ty);
@@ -458,6 +450,7 @@ impl Checker<'_> {
             self.mismatch(member.span, recv, &first.ty);
         }
         self.throwing_call(expr.span, &f);
+        self.witnesses_of(expr, member.span, &f);
         let rest = FnTy { params: params.to_vec(), ..(*f).clone() };
         let (order, rest_args) = self.bloom_args(call, &rest, false);
         self.out.calls.insert(expr.id, CallRes::Extension { func, order, rest: rest_args });
@@ -672,6 +665,7 @@ impl Checker<'_> {
             }
             Ty::Fn(f) => {
                 self.throwing_call(expr.span, &f);
+                self.witnesses_of(expr, call.callee.span, &f);
                 let (order, rest) = self.bloom_args(call, &f, false);
                 self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
@@ -1479,6 +1473,7 @@ impl Checker<'_> {
             generics: 0,
             ts: false,
             throws: false,
+            bounds: Vec::new(),
         }));
         let labels: Vec<Option<&str>> =
             call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.as_str())).collect();
@@ -2117,6 +2112,7 @@ impl Checker<'_> {
                         generics: 0,
                         ts: false,
                         throws: false,
+                        bounds: Vec::new(),
                     }))),
                     false,
                 );
@@ -2208,6 +2204,7 @@ impl Checker<'_> {
                     generics: 0,
                     ts: false,
                     throws: false,
+                    bounds: Vec::new(),
                 }));
                 self.closure(trailing, Some(&handler), false);
             }
@@ -2332,6 +2329,7 @@ impl Checker<'_> {
                 generics: 0,
                 ts: false,
                 throws: false,
+                bounds: Vec::new(),
             }))
         };
         let opt = |t: Ty| Ty::Option(Box::new(t));

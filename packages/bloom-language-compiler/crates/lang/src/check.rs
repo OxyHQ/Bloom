@@ -385,7 +385,7 @@ struct Frame {
 
 /// A generic call waiting for its witnesses: the call, its type arguments, its constraints,
 /// where it is, and the constrained type parameters in scope there.
-type PendingWitnesses = (ExprId, Vec<Ty>, Vec<(u32, String, Bound)>, Span, Vec<(String, Bound)>);
+type PendingWitnesses = (ExprId, Vec<(Ty, Rc<str>)>, Span, Vec<(String, Bound)>);
 
 /// A TS type that is a React ref: a `@ref` passed there is the ref, not its value.
 fn is_ref_type(text: &str) -> bool {
@@ -456,8 +456,6 @@ pub struct Checker<'o> {
     member_reads: HashMap<String, HashSet<Read>>,
     /// The constrained type parameters in scope: each one's name and bound.
     bounds_in_scope: Vec<(String, Bound)>,
-    /// Each generic function's constraints, by its name.
-    fn_bounds: HashMap<String, Vec<(u32, String, Bound)>>,
     /// Inside a class's `init`: its fields are set directly, its `let`s too.
     in_init: bool,
     /// Generic calls whose witnesses are found once their type arguments are known: the
@@ -544,7 +542,6 @@ impl<'o> Checker<'o> {
             member_fn: None,
             member_reads: HashMap::default(),
             bounds_in_scope: Vec::new(),
-            fn_bounds: HashMap::default(),
             in_init: false,
             pending_witnesses: Vec::new(),
             expected: None,
@@ -1008,6 +1005,7 @@ impl<'o> Checker<'o> {
                     generics: 0,
                     ts: false,
                     throws: false,
+                    bounds: Vec::new(),
                 }))
             }
             TypeKind::Optional(inner) => {
@@ -1300,20 +1298,20 @@ impl<'o> Checker<'o> {
             let local = match &item.kind {
                 ItemKind::Fn(f) => {
                     let ty = self.fn_signature(f);
-                    let bounds = self.bounds(f);
-                    if !bounds.is_empty() {
-                        let params = bounds
+                    if let Ty::Fn(fn_ty) = &ty
+                        && !fn_ty.bounds.is_empty()
+                    {
+                        let params = fn_ty
+                            .bounds
                             .iter()
-                            .map(|(index, name, bound)| {
-                                let protocol = match bound {
-                                    Bound::Equatable => "Equatable".to_string(),
-                                    Bound::Protocol(p) => self.out.defs[*p].name.clone(),
-                                };
-                                (witness_param(name, &protocol), *index, bound.clone())
+                            .filter_map(|(param, protocol)| match param {
+                                Ty::Param(index, name) => {
+                                    Some((witness_param(name, protocol), *index, Bound::of(protocol)))
+                                }
+                                _ => None,
                             })
                             .collect();
                         self.out.witness_params.insert(f.span, params);
-                        self.fn_bounds.insert(f.name.name.clone(), bounds);
                     }
                     Some(self.declare_unique(&f.name, ty, LocalKind::ModuleFn))
                 }
@@ -1326,6 +1324,7 @@ impl<'o> Checker<'o> {
                         generics: 0,
                         ts: false,
                         throws: false,
+                        bounds: Vec::new(),
                     }));
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
@@ -1380,14 +1379,11 @@ impl<'o> Checker<'o> {
             }
         }
         self.observed();
-        for (id, args, bounds, span, scope) in std::mem::take(&mut self.pending_witnesses) {
+        for (id, bounds, span, scope) in std::mem::take(&mut self.pending_witnesses) {
             let outer = std::mem::replace(&mut self.bounds_in_scope, scope);
             let witnesses = bounds
                 .iter()
-                .map(|(index, _, bound)| {
-                    let ty = args.get(*index as usize).cloned().unwrap_or(Ty::Unknown);
-                    self.witness_for(&ty, bound, span)
-                })
+                .map(|(ty, protocol)| self.witness_for(ty, &Bound::of(protocol), span))
                 .collect();
             self.bounds_in_scope = outer;
             self.out.witness_args.insert(id, witnesses);
@@ -1494,6 +1490,11 @@ impl<'o> Checker<'o> {
             },
             None => Ty::Unit,
         };
+        let bounds = self
+            .bounds(f)
+            .into_iter()
+            .map(|(index, name, bound)| (Ty::Param(index, name.as_str().into()), bound.name()))
+            .collect();
         self.generics.clear();
         Ty::Fn(Rc::new(FnTy {
             params,
@@ -1502,6 +1503,7 @@ impl<'o> Checker<'o> {
             generics: f.generics.len() as u32,
             ts: false,
             throws: f.throws.is_some(),
+            bounds,
         }))
     }
 
@@ -1563,6 +1565,16 @@ impl<'o> Checker<'o> {
         self.trying = trying;
         self.pop();
         self.frames.pop();
+    }
+
+    /// A call of a generic function whose constraints take witnesses: found once its
+    /// type arguments are known (at the module's end).
+    pub(super) fn witnesses_of(&mut self, expr: &Expr, span: Span, f: &FnTy) {
+        if f.bounds.is_empty() {
+            return;
+        }
+        let scope = self.bounds_in_scope.clone();
+        self.pending_witnesses.push((expr.id, f.bounds.clone(), span, scope));
     }
 
     /// A call of a function that throws: written in a `try`.
@@ -1628,11 +1640,14 @@ impl<'o> Checker<'o> {
             self.declare(&Ident { name: "self".into(), span: f.name.span }, self_ty, LocalKind::Let);
             self.frames.last_mut().expect("a frame").ret = Ty::Unit;
         }
-        let bounds: Vec<(String, Bound)> = self
-            .fn_bounds
-            .get(&f.name.name)
-            .map(|b| b.iter().map(|(_, n, b)| (n.clone(), b.clone())).collect())
-            .unwrap_or_default();
+        let bounds: Vec<(String, Bound)> = fn_ty
+            .bounds
+            .iter()
+            .filter_map(|(param, protocol)| match param {
+                Ty::Param(_, name) => Some((name.to_string(), Bound::of(protocol))),
+                _ => None,
+            })
+            .collect();
         let outer_bounds = std::mem::replace(&mut self.bounds_in_scope, bounds);
         let mut params = Vec::new();
         for (index, (param, ty)) in f.params.iter().zip(&fn_ty.params).enumerate() {
@@ -2280,6 +2295,7 @@ impl<'o> Checker<'o> {
                         generics: 0,
                         ts: false,
                         throws: false,
+                        bounds: Vec::new(),
                     }));
                     self.declare(&v.name, ty, LocalKind::View);
                 }
@@ -4174,20 +4190,6 @@ impl<'o> Checker<'o> {
         self.report(diagnostic);
     }
 
-    /// [`Self::instantiate`], with the variables it chose for the type parameters.
-    pub(super) fn instantiate_with(&mut self, ty: &Ty) -> (Ty, Vec<Ty>) {
-        match ty {
-            Ty::Fn(f) if f.generics > 0 => {
-                let args: Vec<Ty> = (0..f.generics).map(|_| self.fresh()).collect();
-                let params =
-                    f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
-                let ret = substitute(&f.ret, &args);
-                (Ty::Fn(Rc::new(FnTy { params, ret, generics: 0, ..(**f).clone() })), args)
-            }
-            _ => (ty.clone(), Vec::new()),
-        }
-    }
-
     /// A generic function's type with fresh variables for its parameters.
     fn instantiate(&mut self, ty: &Ty) -> Ty {
         match ty {
@@ -4195,7 +4197,14 @@ impl<'o> Checker<'o> {
                 let args: Vec<Ty> = (0..f.generics).map(|_| self.fresh()).collect();
                 let params =
                     f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
-                Ty::Fn(Rc::new(FnTy { params, ret: substitute(&f.ret, &args), generics: 0, ..(**f).clone() }))
+                let bounds = f.bounds.iter().map(|(t, p)| (substitute(t, &args), p.clone())).collect();
+                Ty::Fn(Rc::new(FnTy {
+                    params,
+                    ret: substitute(&f.ret, &args),
+                    bounds,
+                    generics: 0,
+                    ..(**f).clone()
+                }))
             }
             _ => ty.clone(),
         }
@@ -4769,6 +4778,11 @@ impl<'o> Checker<'o> {
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());
             }
+            if name.name == "self"
+                && let Some(ty) = self.codec_param(expr, type_name)
+            {
+                return ty;
+            }
             if let Some(ty) = self.static_member(expr, type_name, name) {
                 return ty;
             }
@@ -5198,6 +5212,7 @@ impl<'o> Checker<'o> {
             generics: 0,
             ts: false,
             throws: false,
+            bounds: Vec::new(),
         }))
     }
 }

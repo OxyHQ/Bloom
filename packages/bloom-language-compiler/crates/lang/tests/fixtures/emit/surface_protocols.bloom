@@ -40,9 +40,36 @@ func firstIndex<T: Equatable>(_ items: [T], of item: T) -> Int? {
 
 func describe(_ item: any Titled) -> String { "\(item.id): \(item.title)" }
 
+// `<T: Codable>` passes the type's codec: `T.self` (`Post$$self`, `Page$$codec(…)`).
+public struct Codec<T> {
+  public let name: String
+}
+
+extension Post {
+  public static let self: Codec<Post> = Codec(name: "post")
+}
+
+public struct Page<T> {
+  public let items: [T]
+}
+
+extension Page {
+  public static func codec(_ item: Codec<T>) -> Codec<Page<T>> { Codec(name: "page of \(item.name)") }
+}
+
+public struct API {
+  public let base: String
+
+  public func describe<T: Decodable>(_ value: T) -> String { "\(base): \(T.self.name)" }
+}
+
+func codecName<T: Codable>(_ value: T) -> String { T.self.name }
+
 public func demo(_ post: Post) -> String {
+  let api = API(base: "/feeds")
+  let names = "\(codecName(post)) \(api.describe(Page(items: [post])))"
   let titles = PrefKey.allCases.map { $0.title }
   let at = firstIndex(PrefKey.allCases, of: .replies) ?? -1
   let found = firstIndex([post], of: post) ?? -1
-  "\(label(post)) \(describe(post)) \(titles.count) \(at) \(found)"
+  "\(label(post)) \(describe(post)) \(titles.count) \(at) \(found) \(names)"
 }
