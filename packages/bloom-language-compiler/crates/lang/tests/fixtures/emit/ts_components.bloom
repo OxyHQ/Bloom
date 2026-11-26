@@ -36,3 +36,13 @@ pub view Memoed(title: String) {
     }
   }
 }
+
+// `..r` among a TS component's props is JSX's `{...r}`: its fields, then the later props.
+pub view Spread(card: { title: String, count: Int }) {
+  body {
+    VStack {
+      Card(..card)
+      Card(..card, count: 3)
+    }
+  }
+}

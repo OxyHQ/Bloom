@@ -1,3 +1,7 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { fetchCount, onRefresh, useQueryOf } from "@/api";
 type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 
 export function host(link: string): string {
@@ -56,4 +60,61 @@ return (WWW.test(host) satisfies boolean);
 export function digits(text: string): boolean {
 return text.match(new RegExp("[0-9]+")) != null;
 }
+
+export async function total(id: string): Promise<number> {
+let $t4: $Result<number, Error>;
+try {
+let $t5: number;
+{
+const n = (await fetchCount(id));
+$t5 = n + 1;
+}
+$t4 = { ok: true, value: $t5 };
+} catch ($error) {
+$t4 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const read = $t4;
+if (read.ok) {
+return read.value;
+} else {
+return 0;
+}
+}
+
+async function reload(): Promise<void> {
+}
+
+async function zero(): Promise<number> {
+return 0;
+}
+
+export interface CountsProps {
+  readonly id: string;
+}
+export const Counts = view(function Counts(props: CountsProps) {
+"use no memo";
+const $ = $c(3);
+const { id } = props;
+const { data } = useQueryOf({ queryKey: [id], queryFn: async () => {
+const n = (await fetchCount(id));
+return n * 2;
+} });
+let $t6;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t6 = onRefresh(reload);
+$[0] = $t6;
+} else {
+$t6 = $[0];
+}
+useQueryOf({ queryKey: ["zero"], queryFn: zero });
+let $t7;
+if ($[1] !== data) {
+$t7 = Text(`${data ?? 0}`);
+$[1] = data;
+$[2] = $t7;
+} else {
+$t7 = $[2];
+}
+return $t7;
+});
 

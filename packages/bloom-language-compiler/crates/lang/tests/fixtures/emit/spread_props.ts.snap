@@ -87,3 +87,23 @@ $t3 = $[8];
 return $t3;
 });
 
+export interface BadgesProps {
+  readonly badge: Badge;
+  readonly extra: { text: string; more: number };
+}
+export const Badges = view(function Badges(props: BadgesProps) {
+"use no memo";
+const $ = $c(7);
+const { badge, extra } = props;
+let $t4;
+if ($[4] !== badge || $[5] !== extra) {
+$t4 = VStack(($[0] !== badge ? ($[0] = badge, $[1] = Tag({ ...badge })) : $[1]), ($[2] !== extra ? ($[2] = extra, $[3] = Tag({ ...extra, tone: "loud" })) : $[3]));
+$[4] = badge;
+$[5] = extra;
+$[6] = $t4;
+} else {
+$t4 = $[6];
+}
+return $t4;
+});
+

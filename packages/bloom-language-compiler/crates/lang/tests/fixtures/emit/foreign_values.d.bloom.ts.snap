@@ -1,4 +1,11 @@
 import type { ComposedView } from "@oxy.so/bloom-language";
+interface Author {
+  readonly name: string | undefined;
+  readonly avatar: Avatar | undefined;
+}
+interface Avatar {
+  readonly url: string | undefined;
+}
 export interface ModsProps {
   readonly id: string;
 }
@@ -13,3 +20,8 @@ export interface RowProps {
 export declare const Row: (props: RowProps) => ComposedView;
 export declare function shown(name: string | undefined, bio: string | undefined): string;
 export declare function initial(name: string | undefined, fallback: string): string;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ListTitle())`), or from TSX as `toElement(ListTitle())`. */
+export declare const ListTitle: () => ComposedView;
+export declare function named(u: Author): number;
+export declare function present(u: Author | undefined): number;
+export declare function pictured(u: Author): number;

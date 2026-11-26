@@ -1,0 +1,16 @@
+// A long comparison breaks before `<` and `>` (a line cannot end with `>`), after the others.
+pub fn label(names: [String], count: Int, limit: Int, overflowAllowed: Bool) -> String {
+  let few = names.count < 2 ||
+    overflowAllowed && count + names.count < limit * 2 + names.count ? "few" : "many"
+  let more = names.count > 2 ||
+    overflowAllowed && count + names.count > limit * 2 + names.count ? "more" : "less"
+  "${few} ${more}"
+}
+
+pub fn fits(firstNameCount: Int, secondNameCount: Int, thirdNameCount: Int, limit: Int) -> String {
+  let t = firstNameCount + secondNameCount + thirdNameCount
+    < limit * 2 + firstNameCount * 3 ? "b" : "c"
+  let u = firstNameCount + secondNameCount + thirdNameCount
+    > limit * 2 + firstNameCount * 3 ? "b" : "c"
+  "${t}${u}"
+}

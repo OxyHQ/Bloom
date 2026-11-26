@@ -223,7 +223,9 @@ onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
 p.x : d`, `p == none ? d : p.x`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
-block.
+block. Values are immutable, so a member chain of such a name narrows the same way
+(`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
+since TS does not keep a property's narrowing inside a closure.
 
 Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
 TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
@@ -290,7 +292,10 @@ is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
 is not `none`. An optional call of a Unit function is Unit.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
-`Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Methods:
+`Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Inside
+`catching { … }` and in a closure TS calls (a TS parameter's function, or one of no Bloom type),
+`expr?` on a `Result` throws its error instead: `catching` gives it as `.err`, and the promise
+TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). Methods:
 `.map`, `.mapErr`, `.unwrapOr`, `.ok()` (to an optional), `.isOk`.
 
 ### 4.6 Generics
@@ -321,7 +326,10 @@ are the TS value's (`NonNullable<…>[number]`), so `.map { m in m.name }` reads
 value beside a number in arithmetic is a number (`insets.top + 4` is a `Float`; for `+` beside
 a string, a `String`), and the emitter writes `(insets.top satisfies number)`. So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
-of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. A TS
+of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
+of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
+`satisfies`. A node's argument TS types (a signature's `value`) takes `none` where TS takes
+`undefined` (`SettingsSection(none, …)`). A TS
 class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
@@ -415,6 +423,10 @@ pub view PostRow(post: Post, compact: Bool = false) {
   out. Its props interface `extends` a TS interface and writes a struct's fields out; when the
   view's `XProps` name is the spread type's own, it is `XViewProps`, and with only spreads the
   props are the type itself.
+- **`..r` among a call's props** spreads a struct's or record's fields as props, JSX's
+  `{...r}`: `W(..p)`, `W(..q, b: 2)` (a later prop of the same name wins). Each field a prop
+  takes is checked against it, and the record may have more. On a TS component it is `{ ...r }`,
+  which tsc checks.
 - **`equal(old, new) { <Bool> }`** is a view member: whether two props are equal for the view,
   compiled to `memo`'s comparator (`view(function X(props) { … }, (old, new_) => …)`); `true`
   skips the render. `old` and `new` are the view's props record as passed, so a prop with a
@@ -506,13 +518,15 @@ inherit as in the embedded language.
 
 **Sync throws.** `catching { … }` runs its block and gives `Result<T, Error>`: the last line's
 value is `.ok`, and what TS code in it throws synchronously (`URL(link)`, `JSON.parse(s)`) is
-`.err`. It is emitted as an inline `try`/`catch`, with no helper; the block cannot `return` or use
-`?`.
+`.err`. It is emitted as an inline `try`/`catch`, with no helper; the block cannot `return`, and
+`?` in it ends at it (`let r = (await fetch(url))?` inside: a rejection is `.err`).
 
 - `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
   returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
   `Result<T, Error>`**, because a JS promise can reject; `await f()?` propagates (`await` binds tighter than `?`, as Rust's `.await?`). A synchronous
-  TS throw is a panic (a bug), as in Rust.
+  TS throw is a panic (a bug), as in Rust. A Bloom `async` function (or closure) never rejects,
+  so it is TS's `(A) => Promise<T>` where TS takes one (`onRefresh: reload`); a closure that
+  awaits, given for one, has `T` as its result.
 - **An async call is awaited or spawned, never dropped**: calling an async function or a
   promise-returning TS function without `await` is B0430, except as `task { await save(v) }`,
   which spawns it (fire and forget, completing like a handler) and is `Unit`. A binding setter
@@ -631,7 +645,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
-| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` or `?` inside) |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
@@ -676,7 +690,9 @@ members ordered as written, blank lines kept (at most one), imports sorted by pa
 and enum variants one per line. A block with one statement stays on one line when it fits (a
 view's `body` never does); an `if`/`else` chain is on one line together or breaks together; a
 builder line's chain breaks one modifier per line once its builder spans lines; a chain inside an
-expression breaks only with two or more calls. Formatting is idempotent and preserves comments.
+expression breaks only with two or more calls. A binary expression breaks after its operator, but
+before `<` and `>` (a line ending in `>` may close a type's arguments; one ending in `<` goes on).
+Formatting is idempotent and preserves comments.
 
 ## 15. Cheat sheet for agents
 

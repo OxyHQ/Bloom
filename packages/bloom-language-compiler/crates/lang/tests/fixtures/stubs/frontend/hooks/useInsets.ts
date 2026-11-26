@@ -5,3 +5,6 @@ export function useInsets() {
 export function useMods(id: string) {
   return { data: [{ id, name: id }] as { id: string; name: string }[] | undefined };
 }
+export function useList() {
+  return { title: '' as string | undefined, count: 0 };
+}

@@ -19,3 +19,13 @@ pub view Feed(more: Bool, footer: Bool) {
     }
   }
 }
+
+// A node's argument TS takes as `undefined` takes `none` (`SettingsSection(label: string | undefined, …)`).
+pub view Section(title: String?) {
+  body {
+    VStack {
+      SettingsSection(none, GroupedSection(GroupedSectionItem("a")))
+      SettingsSection(title, GroupedSection(GroupedSectionItem("b")))
+    }
+  }
+}

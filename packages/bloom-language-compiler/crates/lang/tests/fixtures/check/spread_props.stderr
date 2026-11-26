@@ -23,3 +23,19 @@ error[B0207]: missing argument(s): `title`
    |
 help: pass them: `title: …`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: `..` spreads a record's fields as props, and `[String]` is not one
+  --> check/spread_props.bloom:35:12
+   |
+35 |       Card(..xs)
+   |            ^^^^ not a struct or record
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71-views-and-state
+
+error[B0201]: expected `String`, found `Int`
+  --> check/spread_props.bloom:36:12
+   |
+36 |       Card(..r)
+   |            ^^^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

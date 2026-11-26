@@ -6,3 +6,8 @@ export interface MemoedProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Memoed())`), or from TSX as `toElement(Memoed())`. */
 export declare const Memoed: (props: MemoedProps) => ComposedView;
+export interface SpreadProps {
+  readonly card: { title: string; count: number };
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Spread())`), or from TSX as `toElement(Spread())`. */
+export declare const Spread: (props: SpreadProps) => ComposedView;

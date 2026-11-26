@@ -862,7 +862,13 @@ impl<'a> Emitter<'a> {
                 let value = self.value_expr(&l.value);
                 let target = self.binding_target(&l.pattern);
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
-                let mut line = Frag::at(stmt.span, format!("const {target}{annotation} = "));
+                // `let _ = v`: the value, bound to nothing (two would redeclare `_`).
+                let head = if l.pattern.kind == PatternKind::Wildcard {
+                    String::new()
+                } else {
+                    format!("const {target}{annotation} = ")
+                };
+                let mut line = Frag::at(stmt.span, head);
                 line.f(value).s(";");
                 self.push_stmt(line);
             }
@@ -920,7 +926,19 @@ impl<'a> Emitter<'a> {
             PatternKind::Bind(name) => js_name(&name.name),
             PatternKind::Wildcard => "_".into(),
             PatternKind::Tuple(items) => {
-                format!("[{}]", items.iter().map(|p| self.binding_target(p)).collect::<Vec<_>>().join(", "))
+                // `(_, b)`: a hole, `[, b]`.
+                let items: Vec<String> =
+                    items
+                        .iter()
+                        .map(|p| {
+                            if p.kind == PatternKind::Wildcard {
+                                String::new()
+                            } else {
+                                self.binding_target(p)
+                            }
+                        })
+                        .collect();
+                format!("[{}]", items.join(", "))
             }
             PatternKind::Record(fields) => {
                 let parts: Vec<String> = fields
@@ -1389,6 +1407,10 @@ impl<'a> Emitter<'a> {
         if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
             let ty = self.ts_type(&ty);
             if ty != "unknown" {
+                // `satisfies` binds tighter than an operator: `((a || b) satisfies T)`.
+                if matches!(expr.kind, ExprKind::Binary(..) | ExprKind::Ternary(..)) {
+                    return out.wrap("((", &format!(") satisfies {ty})"));
+                }
                 return out.wrap("(", &format!(" satisfies {ty})"));
             }
         }
@@ -1572,10 +1594,19 @@ impl<'a> Emitter<'a> {
                 _ => self.expr(inner).wrap("await (", ")"),
             },
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // A chain narrowed present: TS does not keep a property's narrowing in a closure.
+            ExprKind::Field(object, name) if self.ck.narrowed_paths.contains(&expr.id) => {
+                let mut out = self.field(expr, object, name);
+                out.s("!");
+                out
+            }
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
                 let mut out = self.operand(object);
                 out.s("?.").s(&name.name);
+                if self.ck.narrowed_paths.contains(&expr.id) {
+                    out.s("!");
+                }
                 out
             }
             ExprKind::Index(object, index) => {
@@ -1688,6 +1719,27 @@ impl<'a> Emitter<'a> {
     }
 
     fn try_expr(&mut self, expr: &Expr, inner: &Expr) -> Frag {
+        if self.ck.tries.get(&expr.id) == Some(&TryRes::Throw) {
+            // A rejected TS promise rejects (or is caught) as it is.
+            let mut awaited_expr = inner;
+            while let ExprKind::Paren(e) = &awaited_expr.kind {
+                awaited_expr = e;
+            }
+            if let ExprKind::Await(awaited) = &awaited_expr.kind
+                && self.ck.awaits.get(&awaited_expr.id) == Some(&AwaitRes::Ts)
+            {
+                let mut out = Frag::at(expr.span, "(await ");
+                out.f(self.operand(awaited)).s(")");
+                return out;
+            }
+            let name = self.temp();
+            let value = self.expr(inner);
+            let mut line = Frag::at(expr.span, format!("const {name} = "));
+            line.f(value).s(";");
+            self.push_stmt(line);
+            self.push_stmt(Frag::of(format!("if (!{name}.ok) throw {name}.error;")));
+            return Frag::of(format!("{name}.value"));
+        }
         if self.conditional > 0 {
             self.diagnostics.push(
                 Diagnostic::error("B0220", expr.span, "`?` here would return early from inside a condition")
@@ -2173,12 +2225,16 @@ impl<'a> Emitter<'a> {
                 let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
                 self.expr(receiver)
             }
-            CallRes::View { params } => {
-                let order = self.view_order(call, &params);
+            CallRes::View { params, trailing } => {
+                let order = self.view_order(call, &params, trailing.as_deref());
                 let entries: Vec<Frag> = order
                     .into_iter()
                     .map(|(name, arg)| {
-                        let mut entry = Frag::of(format!("{}: ", prop_key(&name)));
+                        let mut entry = Frag::of(if name.is_empty() {
+                            "...".to_string()
+                        } else {
+                            format!("{}: ", prop_key(&name))
+                        });
                         entry.f(arg);
                         entry
                     })
@@ -2199,9 +2255,12 @@ impl<'a> Emitter<'a> {
                 let mut props: Vec<Frag> = call
                     .args
                     .iter()
-                    .filter_map(|a| a.label.as_ref().map(|l| (l, a)))
-                    .map(|(label, a)| {
-                        let mut entry = Frag::of(format!("{}: ", prop_key(&label.name)));
+                    .filter(|a| a.label.is_some() || a.spread)
+                    .map(|a| {
+                        let mut entry = match &a.label {
+                            Some(label) => Frag::of(format!("{}: ", prop_key(&label.name))),
+                            None => Frag::of("..."),
+                        };
                         entry.f(self.expr(&a.value));
                         entry
                     })
@@ -2317,11 +2376,18 @@ impl<'a> Emitter<'a> {
     }
 
     /// A view call's props in parameter order.
-    fn view_order(&mut self, call: &Call, params: &[String]) -> Vec<(String, Frag)> {
+    /// A view call's props as `(name, value)`, in the view's order; with a `..r` among
+    /// them, in the order written (a spread's name is empty: `...r`), so later ones win.
+    fn view_order(&mut self, call: &Call, params: &[String], trailing: Option<&str>) -> Vec<(String, Frag)> {
         let mut out = Vec::new();
         let mut next = 0;
         let mut given: HashMap<String, Frag> = HashMap::default();
+        let written = call.args.iter().any(|a| a.spread);
         for arg in &call.args {
+            if arg.spread && arg.label.is_none() {
+                out.push((String::new(), self.operand(&arg.value)));
+                continue;
+            }
             let name = match &arg.label {
                 Some(label) => label.name.clone(),
                 None => {
@@ -2332,13 +2398,26 @@ impl<'a> Emitter<'a> {
                 }
             };
             let value = self.expr(&arg.value);
-            given.insert(name, value);
+            if written {
+                given.insert(name.clone(), Frag::of(""));
+                out.push((name, value));
+            } else {
+                given.insert(name, value);
+            }
         }
-        if let Some(trailing) = &call.trailing
-            && let Some(name) = params.iter().rev().find(|p| !given.contains_key(*p))
+        if let Some(closure) = &call.trailing
+            && let Some(name) =
+                trailing.or_else(|| params.iter().rev().find(|p| !given.contains_key(*p)).map(|p| p.as_str()))
         {
-            let value = self.closure(trailing);
-            given.insert(name.clone(), value);
+            let value = self.closure(closure);
+            if written {
+                out.push((name.to_string(), value));
+                return out;
+            }
+            given.insert(name.to_string(), value);
+        }
+        if written {
+            return out;
         }
         for param in params {
             if let Some(value) = given.remove(param) {
@@ -3021,7 +3100,7 @@ fn binds(pattern: &Pattern) -> bool {
     }
 }
 
-fn stmt_awaits(stmt: &Stmt) -> bool {
+pub(crate) fn stmt_awaits(stmt: &Stmt) -> bool {
     let mut found = false;
     let mut visit = |e: &Expr| {
         if expr_awaits(e) {
@@ -3863,13 +3942,18 @@ impl<'a> Emitter<'a> {
                 let kind = locals.first().map(|l| self.ck.locals[*l].kind.clone());
                 let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let deps = self.expr_deps(&l.value);
-                let hook = kind == Some(LocalKind::Hook);
+                let hook = kind == Some(LocalKind::Hook) || self.ck.hook_lets.contains(&l.span);
                 let target = self.binding_target(&l.pattern);
                 if hook || trivial(&l.value) {
                     let value = self.expr(&l.value);
                     let annotation =
                         annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
-                    let mut line = Frag::at(l.span, format!("const {target}{annotation} = "));
+                    let head = if l.pattern.kind == PatternKind::Wildcard {
+                        String::new()
+                    } else {
+                        format!("const {target}{annotation} = ")
+                    };
+                    let mut line = Frag::at(l.span, head);
                     line.f(value).s(";");
                     self.push_stmt(line);
                     if hook || !deps.is_empty() {
@@ -3892,7 +3976,7 @@ impl<'a> Emitter<'a> {
                 let ty = ty.map(|t| self.ts_type(&t));
                 let memo = self.memo(&name, ty, &deps, prelude, value);
                 self.push_stmt(memo);
-                if destructure {
+                if destructure && l.pattern.kind != PatternKind::Wildcard {
                     self.push_stmt(Frag::of(format!("const {target} = {name};")));
                 }
                 if !deps.is_empty() {

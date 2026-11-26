@@ -45,3 +45,14 @@ pub view PostShell(..card: PostCardProps, pinned: Bool = false) {
     }
   }
 }
+
+// `..r` among a view's props: the record's fields as props (JSX's `{...r}`); a later
+// prop of the same name wins.
+pub view Badges(badge: Badge, extra: { text: String, more: Int }) {
+  body {
+    VStack {
+      Tag(..badge)
+      Tag(..extra, tone: "loud")
+    }
+  }
+}

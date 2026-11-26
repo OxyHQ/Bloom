@@ -1,6 +1,6 @@
 // TS values Bloom leaves to TS: beside a number they are numbers (`insets.top + 4`,
 // checked by `satisfies`), and `foreign ?? []` stays foreign while `[]` says less than TS knows.
-import { useInsets, useMods } from "@/hooks/useInsets"
+import { useInsets, useList, useMods } from "@/hooks/useInsets"
 
 let OFFSET = 4
 
@@ -49,4 +49,40 @@ pub fn initial(name: String?, fallback: String) -> String {
   let second = name == none ? fallback : name
   let blank = name == none || name.isEmpty
   blank ? first : second
+}
+
+// `f || b` of a TS value is JS's `||`: `b` when `f` is falsy, typed as `b` (tsc checks it).
+pub view ListTitle {
+  let list = useList()
+  let title = list.title || "Untitled"
+
+  body {
+    Text(title.uppercased())
+  }
+}
+
+// A member chain of an immutable value narrows as a name does (`u.name`, `u?.name`).
+struct Author {
+  name: String?
+  avatar: Avatar?
+}
+
+struct Avatar {
+  url: String?
+}
+
+fn width(s: String) -> Int { s.count }
+
+pub fn named(u: Author) -> Int {
+  if u.name != none && !u.name.isEmpty { return width(u.name) }
+  0
+}
+
+pub fn present(u: Author?) -> Int {
+  if u?.name == none { return 0 }
+  width(u?.name)
+}
+
+pub fn pictured(u: Author) -> Int {
+  u.avatar?.url != none ? width(u.avatar?.url) : 0
 }
