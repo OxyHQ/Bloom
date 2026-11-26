@@ -15,6 +15,7 @@ type Views = typeof Hand;
 const { Counter } = require('./bloom/counter.bloom') as Pick<Views, 'Counter'>;
 const { Row } = require('./bloom/row.bloom') as Pick<Views, 'Row'>;
 const { Banner } = require('./bloom/static.bloom') as Pick<Views, 'Banner'>;
+const { Titled } = require('./bloom/list.bloom') as Pick<Views, 'Titled'>;
 
 const TITLES = ['one', 'two', 'three', 'four', 'five'];
 
@@ -30,6 +31,11 @@ const CASES = [
     hand: () => VStack(...TITLES.map((title, i) => Hand.Row({ title, pinned: i % 2 === 0 }))),
   },
   { name: 'a static view', bloom: () => Banner(), hand: () => Hand.Banner() },
+  {
+    name: 'a builder `for` as the last child of its stack',
+    bloom: () => Titled({ titles: TITLES }),
+    hand: () => Hand.Titled({ titles: TITLES }),
+  },
 ];
 
 describe('a .bloom view costs what its hand-written equivalent does', () => {

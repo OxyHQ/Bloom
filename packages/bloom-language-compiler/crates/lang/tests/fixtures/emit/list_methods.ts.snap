@@ -52,7 +52,7 @@ const $ = $c(2);
 const { ids } = props;
 let $t0;
 if ($[0] !== ids) {
-$t0 = VStack(ids.map((id, i) => Text(`${i}: ${id}`)));
+$t0 = VStack(...ids.map((id, i) => Text(`${i}: ${id}`)));
 $[0] = ids;
 $[1] = $t0;
 } else {

@@ -2200,7 +2200,9 @@ impl<'a> Emitter<'a> {
                 self.import_name(bloom_language_compiler::entries::module_of(ctor), ctor);
                 let mut values: Vec<Frag> = call.args.iter().map(|a| self.node_arg(&a.value)).collect();
                 if let Some(trailing) = &call.trailing {
-                    values.extend(self.children(&trailing.body));
+                    // A trailing `for` fills a rest parameter as its parent's own children.
+                    let rest = crate::ui::signature(ctor).last().is_some_and(|p| p.starts_with("..."));
+                    values.extend(self.children_spreading(&trailing.body, rest));
                 }
                 let mut out = Frag::at(call.callee.span, ctor);
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
@@ -2766,8 +2768,18 @@ impl<'a> Emitter<'a> {
 
     /// A builder's lines as children: views, `if`/`match` (one slot each), `for` (a list).
     fn children(&mut self, stmts: &[Stmt]) -> Vec<Frag> {
+        self.children_spreading(stmts, false)
+    }
+
+    /// [`Self::children`]; `rest`: they fill a rest parameter, so a last `for` whose
+    /// items are one plain view each, none able to leave (`.transition`), is spread
+    /// (`...xs.map(…)`): its items are the parent's children, keyed by their `.id()`
+    /// as in a list, with no list slot (`Presence`, one fiber) around them. Nothing
+    /// follows them, so no sibling shifts when the list's length changes.
+    fn children_spreading(&mut self, stmts: &[Stmt], rest: bool) -> Vec<Frag> {
+        let last = stmts.iter().rposition(|s| matches!(s.kind, StmtKind::Expr(_) | StmtKind::For(_)));
         let mut out = Vec::new();
-        for stmt in stmts {
+        for (index, stmt) in stmts.iter().enumerate() {
             match &stmt.kind {
                 StmtKind::Let(_) => self.stmt(stmt),
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
@@ -2812,8 +2824,12 @@ impl<'a> Emitter<'a> {
                         b.s("return ").f(value).s(";\n}");
                         b
                     };
-                    let mut line = iter;
-                    line.mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
+                    let spread = rest
+                        && last == Some(index)
+                        && matches!(f.body.stmts.as_slice(), [.., Stmt { kind: StmtKind::Expr(e), .. }] if plain_item(e))
+                        && f.body.stmts.iter().filter(|s| !matches!(s.kind, StmtKind::Let(_))).count() == 1;
+                    let mut line = if spread { Frag::of("...") } else { Frag::default() };
+                    line.f(iter).mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
                     out.push(line);
                 }
                 _ => {}
@@ -4325,5 +4341,20 @@ fn trivial(expr: &Expr) -> bool {
             trivial(a) && trivial(b)
         }
         _ => false,
+    }
+}
+
+/// A `for` item spread among its parent's children: one view, not a branch,
+/// whose own chain cannot leave (`.transition`; `Presence` keeps those).
+fn plain_item(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::If(_) | ExprKind::Match(_) => false,
+        ExprKind::Paren(inner) => plain_item(inner),
+        ExprKind::Call(call) => match &call.callee.kind {
+            ExprKind::Field(receiver, name) => name.name != "transition" && plain_item(receiver),
+            _ => true,
+        },
+        ExprKind::Field(receiver, _) => plain_item(receiver),
+        _ => true,
     }
 }
