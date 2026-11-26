@@ -370,6 +370,8 @@ impl<'a> Formatter<'a> {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
+            ItemKind::Class(c) => self.type_body("class ", &c.name, &c.generics, &c.body, item.span),
+            ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
         };
         concat(vec![modifiers, kind])
     }
@@ -483,11 +485,46 @@ impl<'a> Formatter<'a> {
             conformances,
             text(" "),
         ]);
-        // One variant per line, as a struct's fields.
+        // One variant per line, as a struct's fields; members (2.0) where they were written.
         let case = if e.swift || self.migrating_now() { "case " } else { "" };
-        let variants =
-            self.lines(&e.variants, |v| v.span, |this, v| concat(vec![text(case), this.variant(v)]));
+        let mut entries: Vec<(Span, Result<&Variant, &TypeMember>)> =
+            e.variants.iter().map(|v| (v.span, Ok(v))).collect();
+        entries.extend(e.members.iter().map(|m| (m.span, Err(m))));
+        entries.sort_by_key(|(span, _)| span.start);
+        let variants = self.lines(
+            &entries,
+            |(span, _)| *span,
+            |this, (_, entry)| match entry {
+                Ok(v) => concat(vec![text(case), this.variant(v)]),
+                Err(m) => this.type_member(m),
+            },
+        );
         concat(vec![head, self.braced(variants, span.end)])
+    }
+
+    /// `protocol P: Q { requirements }`.
+    fn protocol_decl(&mut self, p: &ProtocolDecl, span: Span) -> Doc {
+        let inherits = self.conformances(&p.inherits);
+        let head = concat(vec![text("protocol "), text(p.name.name.clone()), inherits, text(" ")]);
+        let lines = self.lines(
+            &p.requirements,
+            |r| match r {
+                Requirement::Property { span, .. } => *span,
+                Requirement::Func { decl, .. } => decl.span,
+            },
+            |this, r| match r {
+                Requirement::Property { name, ty, settable, is_static, .. } => concat(vec![
+                    text(if *is_static { "static var " } else { "var " }),
+                    text(format!("{}: ", name.name)),
+                    this.ty(ty),
+                    text(if *settable { " { get set }" } else { " { get }" }),
+                ]),
+                Requirement::Func { decl, is_static } => {
+                    concat(vec![text(if *is_static { "static " } else { "" }), this.fn_signature(decl)])
+                }
+            },
+        );
+        concat(vec![head, self.braced(lines, span.end)])
     }
 
     /// `: View, Equatable`.
@@ -515,6 +552,12 @@ impl<'a> Formatter<'a> {
     }
 
     fn fn_decl(&mut self, f: &FnDecl) -> Doc {
+        let signature = self.fn_signature(f);
+        concat(vec![signature, text(" "), self.block(&f.body, Layout::Own)])
+    }
+
+    /// `func name<T>(params) async throws -> R`, without the body.
+    fn fn_signature(&mut self, f: &FnDecl) -> Doc {
         let mut parts = Vec::new();
         let func = f.func || self.migrating_now();
         if f.is_async && !func {
@@ -538,8 +581,6 @@ impl<'a> Formatter<'a> {
             parts.push(text(" -> "));
             parts.push(self.ty(ret));
         }
-        parts.push(text(" "));
-        parts.push(self.block(&f.body, Layout::Own));
         concat(parts)
     }
 
@@ -1291,16 +1332,21 @@ impl<'a> Formatter<'a> {
     }
 
     fn ty(&mut self, t: &TypeExpr) -> Doc {
-        // `some View`, `any P`: the word, then the type it was read as.
-        let written = self.slice(t.span);
-        for word in ["some ", "any "] {
-            if written.starts_with(word) {
-                let inner = TypeExpr {
-                    kind: t.kind.clone(),
-                    span: Span::new(t.span.start + word.len() as u32, t.span.end),
-                };
-                return concat(vec![text(word), self.ty(&inner)]);
-            }
+        // `any P`: an existential, read as `any` applied to `P`.
+        if let TypeKind::Named { name, args } = &t.kind
+            && name.name == "any"
+            && let [inner] = args.as_slice()
+        {
+            return concat(vec![text("any "), self.ty(inner)]);
+        }
+        // `some View`: the word, then the type it was read as.
+        let word = "some ";
+        if self.slice(t.span).starts_with(word) {
+            let inner = TypeExpr {
+                kind: t.kind.clone(),
+                span: Span::new(t.span.start + word.len() as u32, t.span.end),
+            };
+            return concat(vec![text(word), self.ty(&inner)]);
         }
         match &t.kind {
             TypeKind::Named { name, args } if args.is_empty() => text(name.name.clone()),

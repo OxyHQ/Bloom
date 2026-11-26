@@ -42,33 +42,36 @@ export interface ComposerProps {
 }
 export const Composer = view(function Composer(props: ComposerProps) {
 "use no memo";
-const $ = $c(11);
+const $ = $c(17);
 const { isOn } = props;
 const [draft, setDraft] = useState<string>("");
 const [sent, setSent] = useState<number>(0);
 const title = "Compose";
 let send: () => void;
-if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+if ($[0] !== isOn) {
 send = (): void => {
 setSent((sent) => sent + (1));
 setDraft("");
+isOn[1](false);
 };
-$[0] = send;
+$[0] = isOn;
+$[1] = send;
 } else {
-send = $[0];
+send = $[1];
 }
 useEffect(() => {
 setSent(0);
 }, []);
 let $t1;
-if ($[7] !== sent || $[8] !== draft || $[9] !== isOn) {
-$t1 = VStack(($[1] !== sent ? ($[1] = sent, $[2] = Text(`${title}: ${sent}`)) : $[2]), ($[3] !== draft ? ($[3] = draft, $[4] = TextField([draft, setDraft] as const, "Write")) : $[4]), ($[5] !== isOn ? ($[5] = isOn, $[6] = Toggle(isOn)) : $[6]), $view0.onPress(() => send()));
-$[7] = sent;
-$[8] = draft;
-$[9] = isOn;
-$[10] = $t1;
+if ($[12] !== sent || $[13] !== draft || $[14] !== isOn || $[15] !== send) {
+$t1 = VStack(($[2] !== sent ? ($[2] = sent, $[3] = Text(`${title}: ${sent}`)) : $[3]), ($[4] !== draft ? ($[4] = draft, $[5] = TextField([draft, setDraft] as const, "Write")) : $[5]), ($[6] !== isOn ? ($[6] = isOn, $[7] = Toggle(isOn)) : $[7]), ($[8] !== isOn ? ($[8] = isOn, $[9] = Text(isOn[0] ? "On" : "Off")) : $[9]), ($[10] !== send ? ($[10] = send, $[11] = $view0.onPress(() => send())) : $[11]));
+$[12] = sent;
+$[13] = draft;
+$[14] = isOn;
+$[15] = send;
+$[16] = $t1;
 } else {
-$t1 = $[10];
+$t1 = $[16];
 }
 return $t1;
 });

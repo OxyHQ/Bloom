@@ -1,0 +1,26 @@
+import type { ComposedView, Observable } from "@oxy.so/bloom-language";
+export interface Post {
+  readonly id: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+export interface FeedModel extends Observable {
+  posts: readonly Post[];
+  isLoading: boolean;
+  filter: string;
+  cursor: string | undefined;
+  source: string;
+}
+export declare const FeedModel: new () => FeedModel;
+export declare function FeedModel$$init(source: string): FeedModel;
+export declare function FeedModel$isEmpty(self: FeedModel): boolean;
+export declare function FeedModel$load(self: FeedModel): void;
+export declare function FeedModel$like(self: FeedModel, post: Post): void;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(FeedScreen())`), or from TSX as `toElement(FeedScreen())`. */
+export declare const FeedScreen: () => ComposedView;
+export interface FilterBarProps {
+  readonly model: FeedModel;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(FilterBar())`), or from TSX as `toElement(FilterBar())`. */
+export declare const FilterBar: (props: FilterBarProps) => ComposedView;
+export declare function tally(): number;

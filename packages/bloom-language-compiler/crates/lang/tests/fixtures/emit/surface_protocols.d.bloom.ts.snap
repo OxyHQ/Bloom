@@ -1,0 +1,16 @@
+export interface Titled$Witness<Self> {
+  id(self: Self): string;
+  title(self: Self): string;
+  badge(self: Self, count: number): string;
+}
+export type Titled$Any = { readonly self: unknown; readonly w: Titled$Witness<unknown> };
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+}
+export declare function Post$title(self: Post): string;
+export declare function Post$badge(self: Post, count: number): string;
+export type PrefKey = "likes" | "replies";
+export declare const PrefKey$$allCases: readonly PrefKey[];
+export declare function demo(post: Post): string;
+export declare const Post$$Titled: Titled$Witness<Post>;
