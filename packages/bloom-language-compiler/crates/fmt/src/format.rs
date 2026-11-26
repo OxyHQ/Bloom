@@ -924,8 +924,9 @@ impl<'a> Formatter<'a> {
                     self.ty(ret),
                 ])
             }
-            // An optional function keeps its parentheses: `() -> Int?` returns an optional.
-            TypeKind::Optional(inner) if matches!(inner.kind, TypeKind::Fn { .. }) => {
+            // An optional function or union keeps its parentheses: `() -> Int?` returns an
+            // optional, and `"a" | "b"?` is not a type.
+            TypeKind::Optional(inner) if matches!(inner.kind, TypeKind::Fn { .. } | TypeKind::Strings(_)) => {
                 concat(vec![text("("), self.ty(inner), text(")?")])
             }
             TypeKind::Optional(inner) => concat(vec![self.ty(inner), text("?")]),
