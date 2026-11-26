@@ -80,6 +80,35 @@ function executable(file) {
   if ((mode & 0o111) === 0) fs.chmodSync(file, mode | 0o755);
 }
 
+/** The options whose next argument is their value, not a path to check. */
+const VALUE_OPTIONS = new Set(['--project', '-p', '--out', '--jobs', '-j']);
+
+/** Every `.bloom` file under `dir`, as bloomc's own walk finds them (crates/bloomc/src/files.rs). */
+function bloomFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      return entry.name.startsWith('.') || entry.name === 'node_modules' ? [] : bloomFiles(full);
+    }
+    return entry.name.endsWith('.bloom') ? [full] : [];
+  });
+}
+
+/**
+ * Node's WASI cannot list a directory on Windows (uvwasi has no `fd_readdir`
+ * there: ENOSYS), so a directory given to `check` or `fmt` reaches the WASI
+ * build as the `.bloom` files under it.
+ */
+function wasiArgs(args, cwd, platform = process.platform) {
+  if (platform !== 'win32' || (args[0] !== 'check' && args[0] !== 'fmt')) return args;
+  return args.flatMap((arg, index) => {
+    if (index === 0 || arg.startsWith('-') || VALUE_OPTIONS.has(args[index - 1])) return [arg];
+    const full = path.resolve(cwd, arg);
+    if (!fs.statSync(full, { throwIfNoEntry: false })?.isDirectory()) return [arg];
+    return bloomFiles(full).map((file) => path.relative(cwd, file).split(path.sep).join('/'));
+  });
+}
+
 /** The WASI build under Node's WASI: `/` is the root (a drive's root on Windows). */
 async function runWasi(file, args, cwd) {
   const { WASI: NodeWasi } = require('node:wasi');
@@ -87,7 +116,7 @@ async function runWasi(file, args, cwd) {
   const inside = `/${path.relative(root, cwd).split(path.sep).join('/')}`;
   const wasi = new NodeWasi({
     version: 'preview1',
-    args: ['bloomc', ...args],
+    args: ['bloomc', ...wasiArgs(args, cwd)],
     // bloomc starts in PWD (WASI has no working directory of its own).
     env: { ...process.env, PWD: inside },
     preopens: { '/': root },
@@ -98,7 +127,7 @@ async function runWasi(file, args, cwd) {
   return wasi.start(instance);
 }
 
-module.exports = { locate, run, runWasi };
+module.exports = { locate, run, runWasi, wasiArgs };
 
 if (require.main === module) {
   run(process.argv.slice(2)).then(

@@ -57,3 +57,24 @@ test('the WASI bloomc checks the same files from the working directory', {
   assert.match(run.stderr, /bloomc: checked \d+ files \(0 errors/);
   assert.equal(typeof runWasi, 'function');
 });
+
+test('on Windows the WASI bloomc is given the .bloom files under a directory, as its own walk finds them', () => {
+  const { wasiArgs } = require('../js/bloomc');
+  const files = fs
+    .readdirSync(BLOOM, { recursive: true })
+    .filter((name) => name.endsWith('.bloom') && !name.split(path.sep).includes('node_modules'))
+    .map((name) => path.relative(ROOT, path.join(BLOOM, name)).split(path.sep).join('/'))
+    .sort();
+  assert.ok(files.length > 0);
+  const expanded = wasiArgs(['check', 'test/bloom', '--project', 'test'], ROOT, 'win32');
+  assert.deepEqual(expanded.slice(1, -2).sort(), files);
+  assert.deepEqual(expanded.slice(-2), ['--project', 'test']);
+  // Only `check` and `fmt` take a list; elsewhere, and off Windows, nothing changes.
+  assert.deepEqual(wasiArgs(['build', 'test/bloom', '--out', 'x'], ROOT, 'win32'), [
+    'build',
+    'test/bloom',
+    '--out',
+    'x',
+  ]);
+  assert.deepEqual(wasiArgs(['check', 'test/bloom'], ROOT, 'linux'), ['check', 'test/bloom']);
+});
