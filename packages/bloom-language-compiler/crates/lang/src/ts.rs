@@ -2,8 +2,9 @@
 //! Oxc from its `.d.ts` (or `.ts`/`.tsx` source), mapped to Bloom types where
 //! they map. Anything else is `Foreign`, never `any`.
 
+use rustc_hash::FxHashMap as HashMap;
 use std::cell::RefCell;
-use std::collections::HashMap;
+
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -105,9 +106,9 @@ pub struct TsFile {
 }
 
 /// A file's identity on disk: a cached summary is reused while it holds.
-type Stamp = (Option<std::time::SystemTime>, u64);
+pub(crate) type Stamp = (Option<std::time::SystemTime>, u64);
 
-fn stamp(path: &Path) -> Option<Stamp> {
+pub(crate) fn stamp(path: &Path) -> Option<Stamp> {
     let meta = std::fs::metadata(path).ok()?;
     Some((meta.modified().ok(), meta.len()))
 }
@@ -120,10 +121,15 @@ struct Cached<T> {
 }
 
 thread_local! {
-    static FILES: RefCell<HashMap<PathBuf, Cached<Rc<TsFile>>>> = RefCell::new(HashMap::new());
-    static TSCONFIG: RefCell<HashMap<PathBuf, Cached<Paths>>> = RefCell::new(HashMap::new());
+    static FILES: RefCell<HashMap<PathBuf, Cached<Rc<TsFile>>>> = RefCell::new(HashMap::default());
+    static TSCONFIG: RefCell<HashMap<PathBuf, Cached<Paths>>> = RefCell::new(HashMap::default());
     /// Bumped by each compile: a cached file is checked against the disk once per compile.
     static EPOCH: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// The current compile (see [`next_epoch`]).
+pub(crate) fn epoch() -> u64 {
+    EPOCH.with(std::cell::Cell::get)
 }
 
 /// Starts a compile: cached files are checked against the disk again (once each).
