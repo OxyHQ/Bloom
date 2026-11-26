@@ -33,3 +33,12 @@ pub view Row(title: String, active: Bool) {
     GroupedSectionItem(title).trailing(active ? Text("on") : none)
   }
 }
+
+// Present on the right of `&&`, and after a guard that returns.
+pub fn shown(name: String?, bio: String?) -> String {
+  if name == none || bio == none {
+    return ""
+  }
+  let full = name != none && !name.isEmpty ? name : "?"
+  "${full}: ${bio}"
+}

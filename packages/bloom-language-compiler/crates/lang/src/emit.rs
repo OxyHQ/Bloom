@@ -734,8 +734,12 @@ impl<'a> Emitter<'a> {
             }
             list.push(p);
         }
-        let ret_ty =
-            f.ret.as_ref().and_then(|r| self.ck.type_exprs.get(&r.span).cloned()).unwrap_or(Ty::Unit);
+        let ret_ty = f
+            .ret
+            .as_ref()
+            .and_then(|r| self.ck.type_exprs.get(&r.span).cloned())
+            .or_else(|| self.ck.fn_rets.get(&f.span).cloned())
+            .unwrap_or(Ty::Unit);
         let ret = self.ts_return(&ret_ty, f.is_async);
         let generics = self.generics(&f.generics);
         let tail = if ret_ty == Ty::Unit { Tail::Discard } else { Tail::Return };
@@ -1615,6 +1619,20 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A TS value against `none`: TS's absence may be `null` too (`text.match(re) != none`).
+        if matches!(op, BinaryOp::Eq | BinaryOp::Ne) {
+            let foreign = |e: &Expr| matches!(self.ck.types.get(&e.id), Some(Ty::Foreign(_)));
+            let value = match (&lhs.kind, &rhs.kind) {
+                (_, ExprKind::None) if foreign(lhs) => Some(lhs),
+                (ExprKind::None, _) if foreign(rhs) => Some(rhs),
+                _ => None,
+            };
+            if let Some(value) = value {
+                let mut out = self.operand(value);
+                out.s(if op == BinaryOp::Eq { " == null" } else { " != null" });
+                return out;
+            }
+        }
         if let Some(ty) = self.ck.structural.get(&expr.id).cloned() {
             // Field by field, on paths: an operand that is not one is read once, into a temp.
             let a = self.path_or_temp(lhs);
@@ -2258,6 +2276,29 @@ impl<'a> Emitter<'a> {
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
+            CallRes::Regex => {
+                let args: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
+                Frag::join(args, ", ").wrap("new RegExp(", ")")
+            }
+            CallRes::Catching => {
+                self.uses_result = true;
+                let ty = self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown);
+                let Ty::Result(value_ty, _) = &ty else { return Frag::of("undefined") };
+                let ts = self.ts_type(&ty);
+                let value_ts = self.ts_type(value_ty);
+                let (result, value) = (self.temp(), self.temp());
+                let body = call.trailing.as_deref().map_or(&[][..], |c| &c.body[..]);
+                self.conditional += 1;
+                let block = self.block_body(body, Tail::Bind(value.clone()), None);
+                self.conditional -= 1;
+                let mut line =
+                    Frag::at(expr.span, format!("let {result}: {ts};\ntry {{\nlet {value}: {value_ts};\n"));
+                line.f(block).s(&format!(
+                    "\n{result} = {{ ok: true, value: {value} }};\n}} catch ($error) {{\n{result} = {{ ok: false, error: {TO_ERROR} }};\n}}"
+                ));
+                self.push_stmt(line);
+                Frag::of(result)
+            }
             CallRes::Parse { int } => {
                 let helper = if int { "toInt" } else { "toFloat" };
                 self.helpers.insert(helper);
@@ -2475,6 +2516,15 @@ impl<'a> Emitter<'a> {
             (Recv::Str, "lowercased") => call_on(object, "toLowerCase", args),
             (Recv::Str, "uppercased") => call_on(object, "toUpperCase", args),
             (Recv::Str, "trimmed") => call_on(object, "trim", args),
+            // A `RegExp` pattern replaces as JS's `replace` does (its flags say how often).
+            (Recv::Str, "replace")
+                if call
+                    .args
+                    .first()
+                    .is_some_and(|a| matches!(self.ck.types.get(&a.value.id), Some(Ty::Foreign(_)))) =>
+            {
+                call_on(object, "replace", args)
+            }
             (Recv::Str, "replace") => call_on(object, "replaceAll", args),
             (Recv::Str, "toInt") => helper(self, "toInt", vec![object]),
             (Recv::Str, "toFloat") => helper(self, "toFloat", vec![object]),

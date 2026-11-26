@@ -32,3 +32,28 @@ $t0 = $[2];
 return $t0;
 });
 
+export function useHeader(title: string): { title: string; top: number } {
+const top = useTopInset(4);
+return { title: title, top: top };
+}
+
+export interface HeaderProps {
+  readonly title: string;
+}
+export const Header = view(function Header(props: HeaderProps) {
+"use no memo";
+const $ = $c(3);
+const { title } = props;
+const header = useHeader(title);
+let $t1;
+if ($[0] !== header.title || $[1] !== header.top) {
+$t1 = Text(header.title).padding("top", header.top);
+$[0] = header.title;
+$[1] = header.top;
+$[2] = $t1;
+} else {
+$t1 = $[2];
+}
+return $t1;
+});
+
