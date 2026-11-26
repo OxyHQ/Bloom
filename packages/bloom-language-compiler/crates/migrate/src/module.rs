@@ -132,6 +132,24 @@ impl<'s> Tr<'s> {
         "«?»".to_string()
     }
 
+    /// Whether `e` is `X.displayName = "…"` for a view `X` (React DevTools' name; a
+    /// view's fiber is named after its function, `X`).
+    fn view_display_name(&mut self, e: &Expression) -> bool {
+        let Expression::AssignmentExpression(a) = e else { return false };
+        let oxc_ast::ast::AssignmentTarget::StaticMemberExpression(m) = &a.left else { return false };
+        let Expression::Identifier(object) = &m.object else { return false };
+        if m.property.name != "displayName" || !self.views.contains(object.name.as_str()) {
+            return false;
+        }
+        if let Expression::StringLiteral(s) = &a.right
+            && s.value.as_str().unwrap_or_default() != object.name.as_str()
+        {
+            let shown = s.value.as_str().unwrap_or_default().to_string();
+            self.review(format!("the DevTools name `{shown}` dropped: the view is named `{}`", object.name));
+        }
+        true
+    }
+
     /// A local binding: a Bloom keyword (`body`, `type`) is renamed `body_` in its scope.
     pub fn bind(&mut self, name: &str, span: Span) -> String {
         if bloom_lang::KEYWORDS.contains(&name) {
@@ -905,6 +923,8 @@ impl<'s> Tr<'s> {
             Statement::ExportAllDeclaration(export) => {
                 self.refuse("export:list", "an `export * from` re-export", export.span)
             }
+            // `X.displayName = "…"` on a component that is now a view: the view names itself.
+            Statement::ExpressionStatement(e) if self.view_display_name(&e.expression) => String::new(),
             _ => match statement.as_declaration() {
                 Some(declaration) => self.declaration(declaration, "", defaults, body),
                 None => self.refuse("statement:top-level", "a statement at module level", statement.span()),

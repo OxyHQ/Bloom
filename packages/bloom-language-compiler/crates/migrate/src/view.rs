@@ -463,7 +463,8 @@ impl Tr<'_> {
                     );
                 };
                 let value = match pattern.elements.first() {
-                    Some(Some(BindingPattern::BindingIdentifier(id))) => id.name.to_string(),
+                    // A state named by a keyword (`body`) is renamed in the view (`body_`).
+                    Some(Some(BindingPattern::BindingIdentifier(id))) => self.bind(&id.name, id.span),
                     _ => return self.refuse("react:useState", "`useState` without a value name", d.span),
                 };
                 if let Some(Some(BindingPattern::BindingIdentifier(setter))) = pattern.elements.get(1) {
