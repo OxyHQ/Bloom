@@ -2152,6 +2152,11 @@ export function transformSource(source: string, options: TransformOptions): File
         props.push({ name, args: [{ node: expression, hole: 'handler' }] });
         continue;
       }
+      // A touch going down and lifting off: a Pressable's own (a hold that ends).
+      if (kind === 'pressable' && (name === 'onPressIn' || name === 'onPressOut')) {
+        props.push({ name, args: [{ node: expression, hole: 'handler' }] });
+        continue;
+      }
       if (kind === 'pressable' && name === 'disabled') {
         props.push({ name: 'disabled', args: [{ node: expression, hole: 'boolean' }] });
         continue;

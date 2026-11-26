@@ -785,6 +785,40 @@ export const CASES = [
     after: () => { const View = I0; const Text = I1; const { HStack, Text: LText, toElement, VStack } = L;  return (toElement(VStack(LText('New')).allowsHitTesting('children'))); },
   },
   {
+    name: "components/Holds.tsx:10",
+    bloom22: false,
+    before: () => { const Pressable = I55; const Text = I1; return (<Pressable onLongPress={() => {}} onPressOut={() => {}}>
+      <Text>Story</Text>
+    </Pressable>); },
+    after: () => { const Pressable = I55; const Text = I1; const { VStack, Text: LText } = L;  return (toElement(VStack(LText('Story')).onLongPress(() => {}).onPressOut(() => {}))); },
+  },
+  {
+    name: "components/Holds.tsx:18",
+    bloom22: false,
+    before: () => { const TextFieldInput = I15; return (<TextFieldInput
+      label="Name"
+      value='⟨0⟩'
+      onChangeText={() => {}}
+      onBlur={() => {}}
+      spellCheck={false}
+      returnKeyType="done"
+    />); },
+    after: () => { const TextFieldInput = I15; const { VStack, Text: LText, toElement, TextField } = L;  return (toElement(TextField(['⟨0⟩', () => {}], 'Name').onBlur(() => {}).spellCheck(false).submitLabel('done'))); },
+  },
+  {
+    name: "components/Holds.tsx:31",
+    bloom22: false,
+    before: () => { const Textarea = I31; return (<Textarea
+      accessibilityLabel="Recovery phrase"
+      value='⟨0⟩'
+      onChangeText={() => {}}
+      autoComplete="off"
+      spellCheck={false}
+      textContentType="none"
+    />); },
+    after: () => { const Textarea = I31; const { VStack, Text: LText, toElement, TextField, TextEditor } = L;  return (toElement(TextEditor(['⟨0⟩', () => {}]).label('Recovery phrase').contentType('off').spellCheck(false).textContentType('none'))); },
+  },
+  {
     name: "components/HostProps.tsx:9",
     bloom22: false,
     before: () => { const View = I0; const Pressable = I55; const Text = I1; return (<View collapsable={false}>

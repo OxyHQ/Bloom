@@ -1724,6 +1724,28 @@ const hostProps: ParityCase[] = [
     ),
   })),
   {
+    // Allo's story viewer: a hold pauses it, and lifting the touch plays it again.
+    name: 'a hold that ends when the touch lifts (onLongPress, onPressOut)',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a')).onLongPress(hold).onPressOut(hold).accessibilityElement(false),
+      ),
+    bloom: () => (
+      <RN.Pressable onLongPress={hold} onPressOut={hold} accessible={false}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'a touch going down and lifting off (onPressIn, onPressOut)',
+    language: () => toElement(L.VStack(L.Text('a')).onPressIn(hold).onPressOut(hold)),
+    bloom: () => (
+      <RN.Pressable onPressIn={hold} onPressOut={hold} focusable={false}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
     name: 'a bar held at the top of its scroll on the web (sticky)',
     language: () =>
       toElement(L.VStack(L.VStack(L.Text('bar')).sticky().zIndex('floating'), L.Text('a'))),

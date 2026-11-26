@@ -178,6 +178,26 @@ describe('inputs', () => {
     expect(native.blur).toHaveBeenCalledTimes(1);
   });
 
+  it('leaving an input runs its onBlur, after its focus binding is written', () => {
+    const saved: string[] = [];
+    let focusedNow: boolean | undefined;
+    const Screen = view(function Screen() {
+      const focused = useState(true);
+      focusedNow = focused[0];
+      return VStack(
+        TextField(useState(''), 'Name').onBlur(() => saved.push('bare')),
+        TextEditor(useState(''))
+          .focused(focused)
+          .onBlur(() => saved.push(`bound:${String(focusedNow)}`)),
+      );
+    });
+    const renderer = mount(toElement(Screen()));
+    act(() => renderer.root.findByType('TextFieldInput' as never).props.onBlur());
+    act(() => renderer.root.findByType('Textarea' as never).props.onBlur());
+    expect(saved).toEqual(['bare', 'bound:true']);
+    expect(focusedNow).toBe(false);
+  });
+
   it('the input’s own ref is the app’s (inputRef), with its focus binding or without one', () => {
     const own = { current: null };
     const bound = { current: null };

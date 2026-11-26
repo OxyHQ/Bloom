@@ -187,6 +187,20 @@ export const A = ({ go, hold }) => (
     expect(flat(code)).toContain(".onLongPress(hold, '500')");
     expect(flat(code)).toContain('.collapsable(false)');
   });
+  it('maps a hold that ends as the touch lifts, and an input that saves as it is left', () => {
+    const { code, unconverted } = run(`import { Pressable } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { Textarea } from '@oxy.so/bloom/textarea';
+export const A = ({ hold, release }) => <Pressable onLongPress={hold} onPressIn={release} onPressOut={release}><Text>a</Text></Pressable>;
+export const B = ({ name, setName, save }) => <TextFieldInput label="Name" value={name} onChangeText={setName} onBlur={save} spellCheck={false} />;
+export const C = ({ text, setText }) => <Textarea value={text} onChangeText={setText} autoComplete="off" spellCheck={false} textContentType="none" />;
+`);
+    expect(unconverted).toEqual([]);
+    expect(flat(code)).toContain('.onLongPress(hold).onPressIn(release).onPressOut(release)');
+    expect(flat(code)).toContain('.onBlur(save).spellCheck(false)');
+    expect(flat(code)).toContain(".contentType('off').spellCheck(false).textContentType('none')");
+  });
   it('keeps a long press delay that is no duration token, or has no long press', () => {
     const result = run(`import { Pressable } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';

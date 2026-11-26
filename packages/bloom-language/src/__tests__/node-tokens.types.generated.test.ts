@@ -850,6 +850,8 @@ type textEditorChecks = [
   Expect<"textEditor.keyboard(keyboard)", Ok<At<View<'TextEditor'>['keyboard'], '0'>, S['keyboard']>>,
   Expect<"textEditor.inputMode(inputMode)", Ok<At<View<'TextEditor'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"textEditor.autocapitalize(autocapitalize)", Ok<At<View<'TextEditor'>['autocapitalize'], '0'>, S['autocapitalize']>>,
+  Expect<"textEditor.contentType(contentType)", Ok<At<View<'TextEditor'>['contentType'], '0'>, S['contentType']>>,
+  Expect<"textEditor.textContentType(textContentType)", Ok<At<View<'TextEditor'>['textContentType'], '0'>, S['textContentType']>>,
 ];
 
 type fieldChecks = [
@@ -903,6 +905,7 @@ type searchChecks = [
   Expect<"search.keyboard(keyboard)", Ok<At<View<'Search'>['keyboard'], '0'>, S['keyboard']>>,
   Expect<"search.inputMode(inputMode)", Ok<At<View<'Search'>['inputMode'], '0'>, S['inputMode']>>,
   Expect<"search.autocapitalize(autocapitalize)", Ok<At<View<'Search'>['autocapitalize'], '0'>, S['autocapitalize']>>,
+  Expect<"search.contentType(contentType)", Ok<At<View<'Search'>['contentType'], '0'>, S['contentType']>>,
   Expect<"search.submitLabel(submitLabel)", Ok<At<View<'Search'>['submitLabel'], '0'>, S['submitLabel']>>,
 ];
 

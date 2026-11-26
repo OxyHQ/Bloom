@@ -1441,7 +1441,9 @@ Modifiers:
 - [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
-- [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`
+- [`.spellCheck()`](bloom-language-modifiers.mdx#spellcheck) `(value: boolean)`: `false`: no spelling marks under the text (React Native's `spellCheck`, the web's `spellcheck`).
+- [`.onBlur()`](bloom-language-modifiers.mdx#onblur) `(value: () => void)`: The action of the input losing the keyboard's focus (React Native's `onBlur`): a name saved when the reader leaves it. Beside `.focused()`, the binding is written first.
+- [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`: What the text is, for the platform's autofill (Android's and the web's `autoComplete`): `'off'` offers none.
 - [`.textContentType()`](bloom-language-modifiers.mdx#textcontenttype) `(value: TextContentType)`: iOS: what the text is (React Native's `textContentType`: `URL`, `emailAddress`, `oneTimeCode`…), which its autofill and keyboard offer; `.contentType()` is Android's and the web's `autoComplete`.
 - [`.submitLabel()`](bloom-language-modifiers.mdx#submitlabel) `(value: SubmitLabel)`
 - [`.onSubmit()`](bloom-language-modifiers.mdx#onsubmit) `(value: () => void)`: The return key's action.
@@ -1481,6 +1483,10 @@ Modifiers:
 - [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
+- [`.spellCheck()`](bloom-language-modifiers.mdx#spellcheck) `(value: boolean)`: `false`: no spelling marks under the text (React Native's `spellCheck`, the web's `spellcheck`).
+- [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`: What the text is, for the platform's autofill (Android's and the web's `autoComplete`): `'off'` offers none.
+- [`.textContentType()`](bloom-language-modifiers.mdx#textcontenttype) `(value: TextContentType)`: iOS: what the text is (React Native's `textContentType`): `'none'` offers no autofill.
+- [`.onBlur()`](bloom-language-modifiers.mdx#onblur) `(value: () => void)`: The action of the input losing the keyboard's focus (React Native's `onBlur`): a name saved when the reader leaves it. Beside `.focused()`, the binding is written first.
 - [`.autoFocus()`](bloom-language-modifiers.mdx#autofocus) `()`: Takes the keyboard's focus when it appears.
 - [`.focused()`](bloom-language-modifiers.mdx#focused) `(value: Binding<boolean>)`: Whether it holds the keyboard's focus: focusing or leaving it writes the binding, and setting the binding focuses or blurs it.
 
@@ -1640,6 +1646,9 @@ Modifiers:
 - [`.onSelectionChange()`](bloom-language-modifiers.mdx#onselectionchange) `(value: (event: TextInputSelectionChangeEvent) => void)`: React Native's `onSelectionChange`: the input's caret or selection moved.
 - [`.autocapitalize()`](bloom-language-modifiers.mdx#autocapitalize) `(value: Autocapitalize)`
 - [`.autocorrect()`](bloom-language-modifiers.mdx#autocorrect) `(value: boolean)`
+- [`.spellCheck()`](bloom-language-modifiers.mdx#spellcheck) `(value: boolean)`: `false`: no spelling marks under the text (React Native's `spellCheck`, the web's `spellcheck`).
+- [`.contentType()`](bloom-language-modifiers.mdx#contenttype) `(value: ContentType)`: What the text is, for the platform's autofill (Android's and the web's `autoComplete`): `'off'` offers none.
+- [`.onBlur()`](bloom-language-modifiers.mdx#onblur) `(value: () => void)`: The action of the input losing the keyboard's focus (React Native's `onBlur`): a name saved when the reader leaves it. Beside `.focused()`, the binding is written first.
 - [`.submitLabel()`](bloom-language-modifiers.mdx#submitlabel) `(value: SubmitLabel)`
 - [`.onSubmit()`](bloom-language-modifiers.mdx#onsubmit) `(value: () => void)`
 - [`.onClearText()`](bloom-language-modifiers.mdx#oncleartext) `(value: () => void)`: Called when the clear button is pressed: the screen empties its text (and, with tokens, its tokens).

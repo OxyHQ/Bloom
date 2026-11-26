@@ -19,7 +19,7 @@ is `toElement`'s second argument, a child's `.id()`).
 | JSX | Language |
 | --- | --- |
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
-| React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
+| React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()`; its `onPressIn` / `onPressOut` as `.onPressIn()` / `.onPressOut()` |
 | Bloom `PressableScale` (`@oxy.so/bloom/pressable-scale`), as a `Pressable` | the same stack with `.pressScale()`; its `targetScale` is a reason |
 | React Native's `TouchableOpacity`, as a `Pressable` | the same stack with `.pressFade(token)`, its `activeOpacity` the opacity token of its value (`0.7` is `'70'`; none, `.pressFade()`); an `activeOpacity` that is no token, or set at runtime, is a reason |
 | `accessibilityState`, `accessibilityLiveRegion` on a view, a pressable or a text | `.accessibilityState(state)` (the object as written), `.liveRegion(region)`; `accessibilityElementsHidden`, `importantForAccessibility` and `aria-hidden` stay reasons: `.accessibilityHidden()` writes each platform's own form, which none of an app's single forms draws on every platform |

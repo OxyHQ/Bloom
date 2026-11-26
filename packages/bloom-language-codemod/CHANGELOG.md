@@ -14,6 +14,7 @@
 
 ### Added
 
+- Maps a Pressable's `onPressIn`/`onPressOut` to `.onPressIn()`/`.onPressOut()`, a text input's `onBlur` and `spellCheck` to `.onBlur()` and `.spellCheck()`, and a `Textarea`'s `textContentType` to `.textContentType()`.
 - Maps a transform of translations alone as `.offset()` (a number written out as its space token, one computed at render as points), an `aspectRatio` computed at render, `width: 'auto'` and `w-auto`/`h-auto`/`size-auto` as the frame length `'auto'` (no longer dropped: on a Bloom component it takes back the component's own length), and `zIndex: 1000`/`z-[1000]` as `.zIndex('1000')`.
 - Maps `absolute` with no inset (a class or `position: 'absolute'` in a style) to `.position({})`, a view taken out of the flow where it sits, where it gave up (`absolute-without-edges`); an edge computed at render stays the position on its own.
 - Maps a border width with no colour, a style's `borderWidth` (or an edge's, `borderBottomWidth`…) beside no border colour and a `border` / `border-b-2` class beside no colour class, to `.border(undefined, width, edge?)`: the line in the platform's default colour, where it was left JSX. A sample-app pill and rule join the corpus.

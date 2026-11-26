@@ -227,6 +227,28 @@ fn elevation_rings_and_overlays_are_checked() {
 }
 
 #[test]
+fn allos_press_phases_and_input_props_are_checked() {
+    let ok =
+        compiled("export const x = (f) => VStack(Text('a')).onLongPress(f).onPressIn(f).onPressOut(f);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let ok = compiled_with(
+        "TextEditor",
+        "export const x = (v, f) => TextEditor(v).spellCheck(false).contentType('off').textContentType('none').onBlur(f);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let ok = compiled_with(
+        "TextField",
+        "export const x = (v, f) => TextField(v, 'Name').spellCheck(false).onBlur(f);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output =
+        compiled_with("TextEditor", "export const x = (v) => TextEditor(v).textContentType('url');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown textContentType token 'url' for .textContentType()");
+    let output = compiled("export const x = (f) => Text('a').onBlur(f);\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .onBlur()");
+}
+
+#[test]
 fn mentions_host_props_text_shadow_and_inline_insets_are_checked() {
     let ok = compiled(
         "export const x = (f) => VStack(Text('a').textShadow('0 1px 3px rgb(0 0 0 / 0.8)').position({ horizontal: 'none' })).onPress(f).onLongPress(f, '500').accessibilityElement(false).focusable(false).collapsable(false).sticky().position({ vertical: 'sm' });\n",

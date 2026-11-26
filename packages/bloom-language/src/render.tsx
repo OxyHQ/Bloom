@@ -365,6 +365,9 @@ interface Plan {
   onLongPress: (() => void) | undefined;
   /** `.onLongPress(action, duration)`: React Native's `delayLongPress`, in milliseconds. */
   longPressDelay: number | undefined;
+  /** `.onPressIn()` and `.onPressOut()`: a touch going down and lifting off. */
+  onPressIn: (() => void) | undefined;
+  onPressOut: (() => void) | undefined;
   onHoverIn: (() => void) | undefined;
   onHoverOut: (() => void) | undefined;
   hoverGroup: boolean;
@@ -690,6 +693,8 @@ function plan(node: Node, env: Env): Plan {
     navigation: undefined,
     onLongPress: undefined,
     longPressDelay: undefined,
+    onPressIn: undefined,
+    onPressOut: undefined,
     onHoverIn: undefined,
     onHoverOut: undefined,
     hoverGroup: false,
@@ -797,6 +802,14 @@ function plan(node: Node, env: Env): Plan {
         result.pressable = true;
         result.onLongPress = modifier.value;
         result.longPressDelay = resolveDuration(modifier.duration);
+        break;
+      case 'onPressIn':
+        result.pressable = true;
+        result.onPressIn = modifier.value;
+        break;
+      case 'onPressOut':
+        result.pressable = true;
+        result.onPressOut = modifier.value;
         break;
       case 'hoverGroup':
         result.hoverGroup = true;
@@ -1088,6 +1101,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
     if (p.longPressDelay !== undefined) props.delayLongPress = p.longPressDelay;
+    if (p.onPressIn) props.onPressIn = p.onPressIn;
+    if (p.onPressOut) props.onPressOut = p.onPressOut;
     if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
@@ -4119,6 +4134,8 @@ function modifierReads(kind: NodeKind | typeof RAW_TEXT, modifiers: readonly Mod
         continue;
       case 'onPress':
       case 'onLongPress':
+      case 'onPressIn':
+      case 'onPressOut':
         // A press takes a `.disabled()` set above it, and a `navigate()` the navigator.
         reads |= READS_ENVIRONMENT;
         continue;

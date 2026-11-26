@@ -2472,6 +2472,78 @@
   "appColors": null
  },
  {
+  "name": "components/Holds.tsx:10",
+  "before": "<Pressable onLongPress={() => {}} onPressOut={() => {}}>\n      <Text>Story</Text>\n    </Pressable>",
+  "after": "toElement(VStack(LText('Story')).onLongPress(() => {}).onPressOut(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Holds.tsx:18",
+  "before": "<TextFieldInput\n      label=\"Name\"\n      value='⟨0⟩'\n      onChangeText={() => {}}\n      onBlur={() => {}}\n      spellCheck={false}\n      returnKeyType=\"done\"\n    />",
+  "after": "toElement(TextField(['⟨0⟩', () => {}], 'Name').onBlur(() => {}).spellCheck(false).submitLabel('done'))",
+  "bindings": {
+   "TextFieldInput": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldInput"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "TextField"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Holds.tsx:31",
+  "before": "<Textarea\n      accessibilityLabel=\"Recovery phrase\"\n      value='⟨0⟩'\n      onChangeText={() => {}}\n      autoComplete=\"off\"\n      spellCheck={false}\n      textContentType=\"none\"\n    />",
+  "after": "toElement(TextEditor(['⟨0⟩', () => {}]).label('Recovery phrase').contentType('off').spellCheck(false).textContentType('none'))",
+  "bindings": {
+   "Textarea": {
+    "module": "@oxy.so/bloom/textarea",
+    "imported": "Textarea"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "TextField",
+   "TextEditor"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/HostProps.tsx:9",
   "before": "<View collapsable={false}>\n      <Pressable onPress={() => {}} accessible={false} tabIndex={-1}>\n        <Text>Ana liked your post</Text>\n      </Pressable>\n      <Pressable onPress={() => {}} onLongPress={() => {}} delayLongPress={500}>\n        <Text>Show all</Text>\n      </Pressable>\n    </View>",
   "after": "toElement(VStack(VStack(LText('Ana liked your post')).onPress(() => {}).accessibilityElement(false).focusable(false), VStack(LText('Show all')).onPress(() => {}).onLongPress(() => {}, '500')).collapsable(false))",
