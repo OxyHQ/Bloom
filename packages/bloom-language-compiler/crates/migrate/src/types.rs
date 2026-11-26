@@ -51,12 +51,10 @@ impl Tr<'_> {
                         if optional { optional_ty(&inner) } else { inner }
                     }
                     _ => {
-                        if rest.iter().all(|t| matches!(t, TSType::TSLiteralType(_))) {
-                            self.refuse(
-                                "type:inline-union",
-                                "an inline string-literal union (name it with `type`)",
-                                union.span,
-                            )
+                        let literals: Option<Vec<String>> = rest.iter().map(|t| string_literal(t)).collect();
+                        if let Some(literals) = literals {
+                            let union = literals.join(" | ");
+                            if optional { format!("({union})?") } else { union }
                         } else {
                             self.refuse("type:union", "a union of several types", union.span)
                         }
@@ -111,9 +109,23 @@ impl Tr<'_> {
                 self.fn_type(&f.params, Some(&f.return_type.type_annotation), f.span)
             }
             TSType::TSTypeLiteral(literal) => {
-                self.refuse("type:inline-object", "an inline object type (name it as a struct)", literal.span)
+                // An inline object type is a record type: `{ a: Int, b: String? }`.
+                let mut fields = Vec::new();
+                for member in &literal.members {
+                    if let Some((name, ty, optional)) = self.field(member) {
+                        let ty = if optional { optional_ty(&ty) } else { ty };
+                        fields.push(format!("{name}: {ty}"));
+                    }
+                }
+                if fields.is_empty() {
+                    return self.refuse("type:inline-object", "an empty object type", literal.span);
+                }
+                format!("{{ {} }}", fields.join(", "))
             }
-            TSType::TSLiteralType(literal) => self.refuse("type:literal", "a literal type", literal.span),
+            TSType::TSLiteralType(literal) => match string_literal(ty) {
+                Some(s) => s,
+                None => self.refuse("type:literal", "a literal type other than a string", literal.span),
+            },
             TSType::TSIntersectionType(i) => self.refuse("type:intersection", "an intersection type", i.span),
             TSType::TSAnyKeyword(t) => self.refuse("type:any", "`any`", t.span),
             TSType::TSUnknownKeyword(t) => self.refuse("type:unknown", "`unknown`", t.span),
@@ -182,4 +194,11 @@ impl Tr<'_> {
             _ => false,
         }
     }
+}
+
+/// `'a'` as the Bloom string literal type `"a"`.
+fn string_literal(ty: &TSType) -> Option<String> {
+    let TSType::TSLiteralType(literal) = ty else { return None };
+    let oxc_ast::ast::TSLiteral::StringLiteral(s) = &literal.literal else { return None };
+    Some(crate::expr::quote(s.value.as_str().unwrap_or_default()))
 }

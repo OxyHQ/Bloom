@@ -136,9 +136,7 @@ impl Tr<'_> {
                 }
                 format!("[{}]", items.join(", "))
             }
-            Expression::ObjectExpression(o) => {
-                self.refuse("object:literal", "an object literal (no record literals in `.bloom`)", o.span)
-            }
+            Expression::ObjectExpression(o) => self.record(o),
             Expression::ArrowFunctionExpression(arrow) => self.closure(arrow),
             Expression::FunctionExpression(f) => self.refuse(
                 "function:expression",
@@ -547,8 +545,9 @@ impl Tr<'_> {
                 "type arguments `{args}` dropped from `{callee}(…)`: annotate the binding if tsc needs them"
             ));
         }
+        // A trailing object with a spread or a computed key stays one record.
         let (last_object, rest) = match call.arguments.split_last() {
-            Some((Argument::ObjectExpression(o), rest)) => (Some(o), rest),
+            Some((Argument::ObjectExpression(o), rest)) if named_args_fit(o) => (Some(o), rest),
             _ => (None, call.arguments.as_slice()),
         };
         let mut args = self.positional(rest, false);
@@ -568,20 +567,59 @@ impl Tr<'_> {
         format!("{callee}({args})")
     }
 
-    pub fn positional(&mut self, args: &[Argument], local: bool) -> String {
+    pub fn positional(&mut self, args: &[Argument], _local: bool) -> String {
         let mut out = Vec::new();
         for arg in args {
             let note = self.note(arg.span().start);
             let value = match arg {
                 Argument::SpreadElement(s) => self.refuse("call:spread", "a spread argument", s.span),
-                Argument::ObjectExpression(o) if local => {
-                    self.refuse("object:literal", "an object literal passed to a `.bloom` function", o.span)
-                }
                 other => self.expr(other.to_expression()),
             };
             out.push(format!("{note}{value}"));
         }
         out.join(", ")
+    }
+
+    /// `{ a: 1, b, 'x-y': 2, ...rest }` as the record `{ a: 1, b: b, "x-y": 2, ..rest }`.
+    pub fn record(&mut self, object: &ObjectExpression) -> String {
+        let mut out = Vec::new();
+        for property in &object.properties {
+            let note = self.note(property.span().start);
+            match property {
+                ObjectPropertyKind::SpreadProperty(s) => {
+                    out.push(format!("{note}..{}", self.expr(&s.argument)))
+                }
+                ObjectPropertyKind::ObjectProperty(p) => {
+                    if p.method || p.kind != oxc_ast::ast::PropertyKind::Init {
+                        out.push(self.refuse(
+                            "object:method",
+                            "a method or accessor in an object literal",
+                            p.span,
+                        ));
+                        continue;
+                    }
+                    let key = match &p.key {
+                        PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                        PropertyKey::StringLiteral(s) => {
+                            let key = s.value.as_str().unwrap_or_default();
+                            if crate::module::is_identifier(key) { key.to_string() } else { quote(key) }
+                        }
+                        PropertyKey::NumericLiteral(n) => quote(&n.value.to_string()),
+                        _ => {
+                            out.push(self.refuse(
+                                "object:computed-key",
+                                "a computed key in a record",
+                                p.span,
+                            ));
+                            continue;
+                        }
+                    };
+                    let value = self.expr(&p.value);
+                    out.push(format!("{note}{key}: {value}"));
+                }
+            }
+        }
+        if out.is_empty() { "{}".to_string() } else { format!("{{ {} }}", out.join(", ")) }
     }
 
     /// `{ a: 1, b }` as `a: 1, b: b`.
@@ -618,12 +656,7 @@ impl Tr<'_> {
                         ));
                         continue;
                     }
-                    let value = match &p.value {
-                        Expression::ObjectExpression(o) => {
-                            self.refuse("object:nested", "a nested object literal", o.span)
-                        }
-                        value => self.expr(value),
-                    };
+                    let value = self.expr(&p.value);
                     out.push(format!("{note}{key}: {value}"));
                 }
             }
@@ -643,17 +676,12 @@ impl Tr<'_> {
             return format!("{receiver}{sep}{chain}");
         }
         let args = match call.arguments.as_slice() {
-            [Argument::ObjectExpression(o)] => format!("({})", self.named_args(o)),
+            [Argument::ObjectExpression(o)] if named_args_fit(o) => format!("({})", self.named_args(o)),
             [Argument::ArrowFunctionExpression(arrow)] => format!(" {}", self.closure(arrow)),
             args => {
                 let mut out = Vec::new();
                 for arg in args {
                     let value = match arg {
-                        Argument::ObjectExpression(o) => self.refuse(
-                            "modifier:object",
-                            format!("`.{name}(…)` with an object among other arguments"),
-                            o.span,
-                        ),
                         Argument::SpreadElement(s) => self.refuse("call:spread", "a spread argument", s.span),
                         other => self.expr(other.to_expression()),
                     };
@@ -680,11 +708,6 @@ impl Tr<'_> {
         for arg in leading {
             let note = self.note(arg.span().start);
             let value = match arg {
-                Argument::ObjectExpression(o) => self.refuse(
-                    "node:options",
-                    format!("`{ctor}`'s options object (a node takes positional values)"),
-                    o.span,
-                ),
                 Argument::SpreadElement(s) => self.spread_child(&s.argument),
                 Argument::ArrayExpression(array) if array.elements.len() == 2 => self.binding(array),
                 other => self.expr(other.to_expression()),
@@ -992,6 +1015,20 @@ fn returns_view(statements: &[oxc_ast::ast::Statement], tr: &Tr) -> bool {
 
 fn is_plain_name(text: &str) -> bool {
     crate::module::is_identifier(text)
+}
+
+/// Whether an object literal reads as named arguments: plain keys, no spread.
+fn named_args_fit(object: &ObjectExpression) -> bool {
+    object.properties.iter().all(|p| match p {
+        ObjectPropertyKind::SpreadProperty(_) => false,
+        ObjectPropertyKind::ObjectProperty(p) => match &p.key {
+            PropertyKey::StaticIdentifier(_) => true,
+            PropertyKey::StringLiteral(s) => {
+                crate::module::is_identifier(s.value.as_str().unwrap_or_default())
+            }
+            _ => false,
+        },
+    })
 }
 
 pub fn is_nothing(e: &Expression) -> bool {

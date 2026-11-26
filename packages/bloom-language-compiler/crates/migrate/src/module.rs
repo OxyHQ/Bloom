@@ -591,8 +591,8 @@ impl<'s> Tr<'s> {
             }
             if let Some(Declaration::TSTypeAliasDeclaration(alias)) = declaration {
                 let name = alias.id.name.to_string();
-                if let Some(cases) = string_union(&alias.type_annotation) {
-                    self.unions.insert(name, cases);
+                // A string-literal union stays one (`"a" | "b"`): TS-shaped data, zero-cost.
+                if string_union(&alias.type_annotation).is_some() {
                 } else if matches!(alias.type_annotation, TSType::TSTypeLiteral(_)) {
                     self.objects.insert(name);
                 }

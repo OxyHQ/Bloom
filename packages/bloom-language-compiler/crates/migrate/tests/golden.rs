@@ -25,7 +25,7 @@ fn options() -> bloom_lang::Options {
     .into_iter()
     .map(|(k, v)| (k.to_string(), vec![v.to_string()]))
     .collect();
-    bloom_lang::Options { root: Some(fixtures()), paths, dev: false }
+    bloom_lang::Options { root: Some(fixtures()), paths, dev: false, ..Default::default() }
 }
 
 /// What a fixture's snapshot holds: the `.bloom`, or the status and its reasons.
