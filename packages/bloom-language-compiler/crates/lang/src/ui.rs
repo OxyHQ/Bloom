@@ -162,7 +162,11 @@ pub fn arity(params: &[&str]) -> (usize, Option<usize>) {
 
 /// Whether `token` is in `set`; a colour role may carry an opacity (`primary/10`).
 pub fn token_ok(set: &StrSet, token: &str) -> bool {
-    if set.values.iter().any(|t| t == token) {
+    let known = match set.token.then(|| spec_set(&set.name)).flatten() {
+        Some(tokens) => tokens.contains(token),
+        None => set.values.iter().any(|t| t == token),
+    };
+    if known {
         return true;
     }
     if set.token
@@ -173,6 +177,16 @@ pub fn token_ok(set: &StrSet, token: &str) -> bool {
             && token_set("opacity").is_some_and(|opacities| opacities.contains(&opacity));
     }
     false
+}
+
+/// A spec token set, hashed: a colour set is long, and every token argument is looked up.
+fn spec_set(name: &str) -> Option<&'static rustc_hash::FxHashSet<&'static str>> {
+    static SETS: std::sync::OnceLock<HashMap<&'static str, rustc_hash::FxHashSet<&'static str>>> =
+        std::sync::OnceLock::new();
+    SETS.get_or_init(|| {
+        TOKEN_SETS.iter().map(|(name, tokens)| (*name, tokens.iter().copied().collect())).collect()
+    })
+    .get(name)
 }
 
 /// The closest valid token, for `did you mean`.
