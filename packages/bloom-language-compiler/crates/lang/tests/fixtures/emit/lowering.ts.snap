@@ -2,7 +2,7 @@
 import { c as $c } from "react/compiler-runtime";
 import { Text, VStack, view } from "@oxy.so/bloom-language";
 import type { Child } from "@oxy.so/bloom-language";
-import { fetchCount, ping } from "../stubs/api";
+import { fetchCount, ping } from "@/api";
 type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 function $unwrapOr<T, E>(result: $Result<T, E>, fallback: T): T {
   return result.ok ? result.value : fallback;
