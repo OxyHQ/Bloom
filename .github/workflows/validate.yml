@@ -68,13 +68,13 @@ jobs:
   # The Seldon race (OxyHQ/oxy docs/engineering/build-and-deploy.md, CI on
   # Seldon), opt-in with the repository variable CI_SELDON_RACE=true. Unset,
   # every job runs hosted as before and none of the race's jobs takes a runner.
-  # Set, the raced jobs (build, language-parity, tests) run on the self-hosted
-  # seldon-ci pool; a lane still queued 3 minutes after it was created gets a
-  # hosted twin of the same name (the `-hosted` jobs), the lane that starts
-  # first wins, and race-finish cancels the other through its job-level
-  # concurrency group. A fork's pull request never runs on Seldon. CI complete
-  # takes the raced jobs' verdict from the race, so a cancelled loser is never
-  # a red.
+  # Set, the raced jobs (build, language, language-parity, tests) run on the
+  # self-hosted seldon-ci pool; a lane still queued 3 minutes after it was
+  # created gets a hosted twin of the same name (the `-hosted` jobs), the lane
+  # that starts first wins, and race-finish cancels the other through its
+  # job-level concurrency group. A fork's pull request never runs on Seldon.
+  # CI complete takes the raced jobs' verdict from the race, so a cancelled
+  # loser is never a red.
   race:
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && !github.event.pull_request.head.repo.fork }}
@@ -125,10 +125,6 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
-          # Seldon's workspace is one level deeper than hosted's, and a cached
-          # ~/.bun restores relative to it: a hosted entry lands in the wrong
-          # place there ("Unable to locate executable file: .../bin/bun").
-          no-cache: ${{ runner.environment == 'self-hosted' }}
       - run: bun install --frozen-lockfile --ignore-scripts
       # Biome formatting + lint (config: biome.json), before the slower build.
       # Call the installed binary by path: a bare `bunx biome` that misses the
@@ -204,9 +200,13 @@ jobs:
     name: Language packages
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: *seldon-lane
     timeout-minutes: 45
-    steps:
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Language packages
+    steps: &language-steps
+      - *race-guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -221,7 +221,8 @@ jobs:
       # The language builds and typechecks against Bloom's built package.
       - run: bun run build
       # The language compiler is Rust (Oxc needs 1.97+). Pinned, so a new
-      # stable never changes what CI builds; rustup ships with the runner.
+      # stable never changes what CI builds; rustup ships with the runner
+      # (hosted and seldon-ci both).
       - name: Rust toolchain for the language compiler
         run: |
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
@@ -270,6 +271,17 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
+  language-hosted:
+    name: Language packages
+    needs: race
+    if: needs.race.outputs.race == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Language packages
+    steps: *language-steps
+
   # The language's parity suite: every family rendered as the language and as
   # hand-written Bloom, native and web, light and dark. Alone it takes about
   # half an hour, so it runs in two shards beside the other language packages.
@@ -300,7 +312,6 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
-          no-cache: ${{ runner.environment == 'self-hosted' }}
       - run: bun install --frozen-lockfile --ignore-scripts
       # The suite renders Bloom from its source, beside the outputs its build generates.
       - run: bun run build
@@ -346,7 +357,6 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
-          no-cache: ${{ runner.environment == 'self-hosted' }}
       - run: bun install --frozen-lockfile --ignore-scripts
       # Keep the runtime/Intl data aligned with the build. --no-opt mitigates
       # the documented V8 contextify crashes; it cannot go in NODE_OPTIONS.
@@ -542,7 +552,7 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, race, build, build-hosted, language, language-parity, language-parity-hosted, tests, tests-hosted, android]
+    needs: [provenance, race, build, build-hosted, language, language-hosted, language-parity, language-parity-hosted, tests, tests-hosted, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -579,7 +589,7 @@ jobs:
           for job in build language language-parity tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             case "$RACED:$job" in
-              true:build | true:language-parity | true:tests) result="$RACE_VERDICT" ;;
+              true:build | true:language | true:language-parity | true:tests) result="$RACE_VERDICT" ;;
             esac
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
