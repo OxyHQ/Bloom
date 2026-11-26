@@ -557,6 +557,12 @@ mod tests {
                     .any(|(f, text)| *f == "runtime.ts" && text.contains(&format!("require('{name}')")))
             );
         }
+        // Edge to edge: the screen (its background) is outermost, under the status bar; the
+        // safe area is inside it, so no band of the window's own colour shows above the app.
+        let index = std::fs::read_to_string(package.build_dir().join("index.js")).unwrap();
+        let screen = index.find("Screen,\n        null,").expect(&index);
+        let safe_area = index.find("createElement(SafeAreaView").expect(&index);
+        assert!(screen < safe_area, "{index}");
         let _ = std::fs::remove_dir_all(&root);
     }
 
