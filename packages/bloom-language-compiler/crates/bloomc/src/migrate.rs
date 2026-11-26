@@ -176,7 +176,8 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
                 out.push_str(spec);
                 out.push_str(".bloom");
                 changed = true;
-                drawn.push(target);
+                let statement = &head[head.rfind("import").unwrap_or(head.len())..];
+                drawn.extend(imported_names(statement));
             } else {
                 out.push_str(spec);
             }
@@ -188,9 +189,12 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
             std::fs::write(&file, &out).map_err(|e| format!("{}: {e}", file.display()))?;
             let shown = file.strip_prefix(root).unwrap_or(&file).display().to_string();
             notes.push(format!("{shown}: imports the .bloom module(s)"));
-            for target in drawn {
-                let name = target.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-                if out.contains(&format!("<{name}")) {
+            for name in drawn {
+                let tag = format!("<{name}");
+                let drawn_as_jsx = out.match_indices(&tag).any(|(i, _)| {
+                    !out[i + tag.len()..].starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_')
+                });
+                if drawn_as_jsx {
                     notes.push(format!(
                         "  draws <{name} …/> as JSX: a view is drawn as toElement({name}({{ … }}))"
                     ));
@@ -199,6 +203,31 @@ fn rewrite_importers(root: &Path, migrated: &[PathBuf]) -> Result<Vec<String>, S
         }
     }
     Ok(notes)
+}
+
+/// The local names an `import … from` statement binds (`import X`, `{ A, B as C }`).
+fn imported_names(statement: &str) -> Vec<String> {
+    let Some(clause) = statement.strip_prefix("import") else { return Vec::new() };
+    let clause = clause.trim().trim_end_matches("from").trim();
+    let clause = clause.strip_prefix("type ").unwrap_or(clause);
+    let mut names = Vec::new();
+    let (default, braces) = match clause.find('{') {
+        Some(i) => (&clause[..i], &clause[i + 1..clause.rfind('}').unwrap_or(clause.len())]),
+        None => (clause, ""),
+    };
+    let default = default.trim().trim_end_matches(',').trim();
+    if !default.is_empty() && !default.starts_with('*') {
+        names.push(default.to_string());
+    }
+    for part in braces.split(',') {
+        let part = part.trim();
+        let local = part.rsplit(" as ").next().unwrap_or(part).trim();
+        let local = local.strip_prefix("type ").unwrap_or(local);
+        if !local.is_empty() {
+            names.push(local.to_string());
+        }
+    }
+    names
 }
 
 /// `a/./b/../c` as `a/c`, without touching the disk.

@@ -311,7 +311,11 @@ fn default_exports(body: &[Statement]) -> HashSet<String> {
 }
 
 /// The name of a component's props type: its parameter's annotation, or `React.FC<P>`'s `P`.
-fn component_props_type(declaration: Option<&Declaration>) -> Option<String> {
+fn component_props_type(
+    declaration: Option<&Declaration>,
+    default_fn: Option<&Function>,
+    react: &HashMap<String, String>,
+) -> Option<String> {
     let named = |t: &TSType| match t {
         TSType::TSTypeReference(r) => match &r.type_name {
             TSTypeName::IdentifierReference(id) => Some(id.name.to_string()),
@@ -319,16 +323,31 @@ fn component_props_type(declaration: Option<&Declaration>) -> Option<String> {
         },
         _ => None,
     };
+    let first_param = |params: &oxc_ast::ast::FormalParameters| {
+        params.items.first()?.type_annotation.as_ref().and_then(|t| named(&t.type_annotation))
+    };
+    if let Some(f) = default_fn {
+        return first_param(&f.params);
+    }
     match declaration? {
-        Declaration::FunctionDeclaration(f) => {
-            f.params.items.first()?.type_annotation.as_ref().and_then(|t| named(&t.type_annotation))
-        }
+        Declaration::FunctionDeclaration(f) => first_param(&f.params),
         Declaration::VariableDeclaration(v) => {
             let d = v.declarations.first()?;
-            if let Some(Expression::ArrowFunctionExpression(a)) = &d.init
-                && let Some(t) = a.params.items.first().and_then(|p| p.type_annotation.as_ref())
+            let init = d.init.as_ref();
+            let memo = init.and_then(|i| memo_call(i, react));
+            if let Some(m) = &memo
+                && let Some(p) = m.props.and_then(named)
             {
-                return named(&t.type_annotation);
+                return Some(p);
+            }
+            let function = memo.map(|m| m.function).or(init);
+            let params = match function {
+                Some(Expression::ArrowFunctionExpression(a)) => Some(&a.params),
+                Some(Expression::FunctionExpression(f)) => Some(&f.params),
+                _ => None,
+            };
+            if let Some(p) = params.and_then(|p| first_param(p)) {
+                return Some(p);
             }
             let TSType::TSTypeReference(r) = &d.type_annotation.as_ref()?.type_annotation else {
                 return None;
@@ -337,6 +356,38 @@ fn component_props_type(declaration: Option<&Declaration>) -> Option<String> {
         }
         _ => None,
     }
+}
+
+/// `memo(F)`, `memo<P>(F)`, `React.memo(F)` around a function `F`: `F`, `P`, and
+/// the comparator when there is one. A view is already `memo`'d (shallow props).
+pub struct Memo<'b, 'a> {
+    pub function: &'b Expression<'a>,
+    pub props: Option<&'b TSType<'a>>,
+    pub comparator: Option<&'b Expression<'a>>,
+}
+
+pub fn memo_call<'b, 'a>(e: &'b Expression<'a>, react: &HashMap<String, String>) -> Option<Memo<'b, 'a>> {
+    let Expression::CallExpression(call) = e.without_parentheses() else { return None };
+    let namespace = |n: &str| react.get(n).is_some_and(|e| e == "default" || e == "*");
+    let is_memo = match &call.callee {
+        Expression::Identifier(id) => react.get(id.name.as_str()).is_some_and(|e| e == "memo"),
+        Expression::StaticMemberExpression(m) => {
+            m.property.name == "memo" && matches!(&m.object, Expression::Identifier(o) if namespace(&o.name))
+        }
+        _ => false,
+    };
+    if !is_memo {
+        return None;
+    }
+    let function = call.arguments.first()?.as_expression()?;
+    if !matches!(function, Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_)) {
+        return None;
+    }
+    Some(Memo {
+        function,
+        props: call.type_arguments.as_ref().and_then(|a| a.params.first()),
+        comparator: call.arguments.get(1).and_then(|a| a.as_expression()),
+    })
 }
 
 /// `memo(X)` / `React.memo(X)` without a comparator: `X`.
@@ -356,9 +407,12 @@ fn memo_of(call: &oxc_ast::ast::CallExpression) -> Option<String> {
 fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> bool) -> bool {
     fn value_ok(e: &Expression, to_element: &dyn Fn(&str) -> bool) -> bool {
         match e.without_parentheses() {
-            Expression::NullLiteral(_) => true,
+            Expression::NullLiteral(_) | Expression::JSXElement(_) | Expression::JSXFragment(_) => true,
             Expression::CallExpression(call) => {
                 matches!(&call.callee, Expression::Identifier(id) if to_element(&id.name))
+            }
+            Expression::ConditionalExpression(c) => {
+                value_ok(&c.consequent, to_element) && value_ok(&c.alternate, to_element)
             }
             _ => false,
         }
@@ -617,30 +671,53 @@ impl<'s> Tr<'s> {
                 Statement::ExportDeclaration(export) => Some(&export.declaration),
                 _ => statement.as_declaration(),
             };
-            let found: Option<(String, &[Statement], Span)> = match declaration {
-                Some(Declaration::FunctionDeclaration(f)) => match (&f.id, &f.body) {
-                    (Some(id), Some(b)) => Some((id.name.to_string(), &b.statements[..], f.span)),
+            let default_fn = match statement {
+                Statement::ExportDefaultDeclaration(export) => match &export.declaration {
+                    ExportDefaultDeclarationKind::FunctionDeclaration(f) => Some(f),
                     _ => None,
                 },
-                Some(Declaration::VariableDeclaration(v)) => {
-                    v.declarations.first().and_then(|d| match (&d.id, &d.init) {
-                        (
-                            BindingPattern::BindingIdentifier(id),
-                            Some(Expression::ArrowFunctionExpression(a)),
-                        ) => Some((id.name.to_string(), crate::view::arrow_statements(a), a.span)),
-                        _ => None,
-                    })
-                }
                 _ => None,
             };
-            if let Some((name, statements, span)) = found
+            let found: Option<(String, &[Statement], Span)> = if let Some(f) = default_fn {
+                match (&f.id, &f.body) {
+                    (Some(id), Some(b)) => Some((id.name.to_string(), &b.statements[..], f.span)),
+                    _ => None,
+                }
+            } else {
+                match declaration {
+                    Some(Declaration::FunctionDeclaration(f)) => match (&f.id, &f.body) {
+                        (Some(id), Some(b)) => Some((id.name.to_string(), &b.statements[..], f.span)),
+                        _ => None,
+                    },
+                    Some(Declaration::VariableDeclaration(v)) => v.declarations.first().and_then(|d| {
+                        let BindingPattern::BindingIdentifier(id) = &d.id else { return None };
+                        let init = d.init.as_ref()?;
+                        let init = match memo_call(init, &self.react) {
+                            Some(m) if m.comparator.is_none() => m.function,
+                            Some(_) => return None,
+                            None => init,
+                        };
+                        match init {
+                            Expression::ArrowFunctionExpression(a) => {
+                                Some((id.name.to_string(), crate::view::arrow_statements(a), a.span))
+                            }
+                            Expression::FunctionExpression(f) => {
+                                f.body.as_ref().map(|b| (id.name.to_string(), &b.statements[..], f.span))
+                            }
+                            _ => None,
+                        }
+                    }),
+                    _ => None,
+                }
+            };
+            if let Some((name, statements, _span)) = found
                 && name.starts_with(|c: char| c.is_ascii_uppercase())
                 && returns_to_element(statements, &|n| self.is_lang(n, "toElement"))
-                && !crate::view::has_jsx(self.src, span)
             {
                 self.components.insert(name.clone());
                 self.views.insert(name);
-                if let Some(props) = component_props_type(declaration) {
+                if let Some(props) = component_props_type(declaration, default_fn.map(|f| &**f), &self.react)
+                {
                     self.props_types.insert(props);
                 }
             }
@@ -782,6 +859,16 @@ impl<'s> Tr<'s> {
                             "a default export that is not a named view",
                             export.span,
                         ),
+                    }
+                }
+                ExportDefaultDeclarationKind::FunctionDeclaration(f)
+                    if f.id.as_ref().is_some_and(|id| self.components.contains(id.name.as_str())) =>
+                {
+                    let name = f.id.as_ref().map(|id| id.name.to_string()).unwrap_or_default();
+                    match self.route_kind() {
+                        // A route's default export is a React component: a `screen` or `layout`.
+                        Some(kind) => self.route_fn(kind, &name, f, body),
+                        None => self.function_item(&name, f, "pub default ", body),
                     }
                 }
                 ExportDefaultDeclarationKind::FunctionDeclaration(f) => {
@@ -1010,13 +1097,33 @@ impl<'s> Tr<'s> {
             if self.is_lang(&callee, "defineModifier") {
                 return String::new();
             }
-            if matches!(self.react.get(&callee).map(String::as_str), Some("memo" | "lazy" | "forwardRef")) {
+            if matches!(self.react.get(&callee).map(String::as_str), Some("lazy" | "forwardRef")) {
                 return self.refuse(
                     &format!("react:{}", self.react[&callee]),
                     format!("`{callee}(…)`"),
                     call.span,
                 );
             }
+        }
+        if let Some(memo) = memo_call(init, &self.react) {
+            if let Some(comparator) = memo.comparator {
+                return self.refuse(
+                    "react:memo-compare",
+                    format!(
+                        "`memo` with the comparator `{}` (a view compares its arguments shallowly)",
+                        self.slice(comparator.span())
+                    ),
+                    comparator.span(),
+                );
+            }
+            // A view is already `memo`'d: the wrapper goes.
+            return match memo.function {
+                Expression::ArrowFunctionExpression(arrow) => {
+                    self.arrow_item(name, arrow, vis, memo.props, body)
+                }
+                Expression::FunctionExpression(f) => self.function_item_typed(name, f, vis, memo.props, body),
+                _ => unreachable!(),
+            };
         }
         if let Expression::CallExpression(call) = init
             && let Expression::StaticMemberExpression(member) = &call.callee

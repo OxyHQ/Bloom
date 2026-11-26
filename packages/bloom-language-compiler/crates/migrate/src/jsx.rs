@@ -7,7 +7,8 @@
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXMemberExpressionObject,
+    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXFragment,
+    JSXMemberExpressionObject,
 };
 use oxc_span::GetSpan;
 
@@ -81,7 +82,7 @@ impl Tr<'_> {
     }
 
     /// `<C a={x} b>…</C>` as `C(a: x, b: true) { … }`.
-    fn component(&mut self, el: &JSXElement) -> String {
+    pub fn component(&mut self, el: &JSXElement) -> String {
         let name = match &el.opening_element.name {
             JSXElementName::IdentifierReference(id) => self.name(&id.name, id.span),
             JSXElementName::MemberExpression(m) => {
@@ -114,6 +115,7 @@ impl Tr<'_> {
             return self.refuse("ts:type-arguments", "type arguments on a JSX element", el.span);
         }
         let mut props = Vec::new();
+        let mut node_id = None;
         for attribute in &el.opening_element.attributes {
             let note = self.note(attribute.span().start);
             match attribute {
@@ -126,7 +128,19 @@ impl Tr<'_> {
                         continue;
                     };
                     if key.name == "key" {
-                        props.push(self.refuse("jsx:key", "a JSX `key` (use `.id(…)`)", a.span));
+                        // A JSX `key` is the node's `.id(…)`.
+                        node_id = Some(match &a.value {
+                            Some(JSXAttributeValue::StringLiteral(s)) => {
+                                crate::expr::quote(s.value.as_str().unwrap_or_default())
+                            }
+                            Some(JSXAttributeValue::ExpressionContainer(c)) => {
+                                match c.expression.as_expression() {
+                                    Some(e) => self.expr(e),
+                                    None => self.refuse("jsx:key", "an empty `key`", a.span),
+                                }
+                            }
+                            _ => self.refuse("jsx:key", "a `key` that is not a value", a.span),
+                        });
                         continue;
                     }
                     let value = match &a.value {
@@ -145,34 +159,57 @@ impl Tr<'_> {
                 }
             }
         }
+        let lines = self.jsx_children(&el.children);
+        let head = format!("{name}({})", props.join(", "));
+        let node = if lines.is_empty() { head } else { format!("{head} {{\n{lines}\n}}") };
+        match node_id {
+            Some(key) => format!("{node}.id({key})"),
+            None => node,
+        }
+    }
+
+    /// JSX children as builder lines: `{toElement(x)}` is `x`, `{cond && x}` an `if`,
+    /// `{xs.map(…)}` a `for`, an element a node, a fragment its children.
+    pub fn jsx_children(&mut self, children: &oxc_allocator::Vec<JSXChild>) -> String {
         let mut lines = Vec::new();
-        for child in &el.children {
+        for child in children {
             if is_blank(child) {
                 continue;
             }
             let line = match child {
                 JSXChild::ExpressionContainer(c) => match self.to_element_arg(&c.expression) {
-                    Some(inner) => self.expr(inner),
-                    None => {
-                        self.refuse("jsx:child", "a JSX child expression that is not `toElement(…)`", c.span)
-                    }
+                    Some(inner) => self.child(inner),
+                    None => match c.expression.as_expression() {
+                        Some(e) => self.child(e),
+                        None => continue,
+                    },
                 },
                 JSXChild::Element(inner) => self.component(inner),
+                JSXChild::Fragment(f) => self.jsx_children(&f.children),
                 JSXChild::Text(t) => self.refuse("jsx:text", "text inside a TS component", t.span),
-                other => self.refuse("jsx:child", "a fragment or spread inside a TS component", other.span()),
+                JSXChild::Spread(s) => self.refuse("jsx:child", "a spread child `{...xs}`", s.span),
             };
             lines.push(line);
         }
-        let head = format!("{name}({})", props.join(", "));
-        if lines.is_empty() { head } else { format!("{head} {{\n{}\n}}", lines.join("\n")) }
+        lines.join("\n")
+    }
+
+    /// A fragment as one value: its only child, or a `Group` of them.
+    pub fn fragment_value(&mut self, f: &JSXFragment) -> String {
+        let count = f.children.iter().filter(|c| !is_blank(c)).count();
+        let lines = self.jsx_children(&f.children);
+        match count {
+            0 => self.refuse("jsx:fragment", "an empty fragment", f.span),
+            1 => lines,
+            _ => format!("Group {{\n{lines}\n}}"),
+        }
     }
 
     /// A prop: a JSX element there is a component node too.
     fn prop_value(&mut self, e: &Expression) -> String {
         match e.without_parentheses() {
-            Expression::JSXElement(el) => {
-                self.refuse("jsx:element-prop", "an element passed as a prop", el.span)
-            }
+            Expression::JSXElement(el) => self.component(el),
+            Expression::JSXFragment(f) => self.fragment_value(f),
             other => self.expr(other),
         }
     }

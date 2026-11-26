@@ -64,6 +64,10 @@ impl Tr<'_> {
                 }
             }
             TSType::TSTypeReference(reference) => {
+                // React's element types are a `View` (bloomc reads them so at the TS boundary).
+                if self.is_react_element_type(&reference.type_name) {
+                    return "View".into();
+                }
                 let name = match &reference.type_name {
                     TSTypeName::IdentifierReference(id) => id.name.to_string(),
                     // `React.ReactNode`: React's type by name, imported from `react`.
@@ -146,5 +150,36 @@ impl Tr<'_> {
         }
         let ret = ret.map_or_else(|| "Unit".to_string(), |t| self.ty(t));
         format!("({}) -> {ret}", out.join(", "))
+    }
+}
+
+/// React's element types, as `react` exports them.
+const REACT_ELEMENT_TYPES: &[&str] = &["ReactNode", "ReactElement"];
+
+impl Tr<'_> {
+    /// `ReactNode`/`ReactElement` imported from `react`, `React.ReactNode`, `JSX.Element`.
+    fn is_react_element_type(&self, name: &TSTypeName) -> bool {
+        let react_namespace = |n: &str| self.react.get(n).is_some_and(|e| e == "default" || e == "*");
+        match name {
+            TSTypeName::IdentifierReference(id) => self
+                .react
+                .get(id.name.as_str())
+                .is_some_and(|export| REACT_ELEMENT_TYPES.contains(&export.as_str())),
+            TSTypeName::QualifiedName(q) => match &q.left {
+                TSTypeName::IdentifierReference(l) if react_namespace(&l.name) => {
+                    REACT_ELEMENT_TYPES.contains(&q.right.name.as_str())
+                }
+                TSTypeName::IdentifierReference(l) => {
+                    l.name == "JSX" && !self.imported.contains("JSX") && q.right.name == "Element"
+                }
+                TSTypeName::QualifiedName(inner) => {
+                    matches!(&inner.left, TSTypeName::IdentifierReference(l) if react_namespace(&l.name))
+                        && inner.right.name == "JSX"
+                        && q.right.name == "Element"
+                }
+                _ => false,
+            },
+            _ => false,
+        }
     }
 }

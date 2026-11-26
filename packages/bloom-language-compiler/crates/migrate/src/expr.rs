@@ -214,8 +214,8 @@ impl Tr<'_> {
                 ),
             },
             Expression::AwaitExpression(a) => format!("await {}", self.expr(&a.argument)),
-            Expression::JSXElement(el) => self.refuse("jsx:bare", "JSX outside an `Embed`", el.span),
-            Expression::JSXFragment(f) => self.refuse("jsx:bare", "JSX outside an `Embed`", f.span),
+            Expression::JSXElement(el) => self.component(el),
+            Expression::JSXFragment(f) => self.fragment_value(f),
             Expression::AssignmentExpression(a) => {
                 self.refuse("assign:expression", "an assignment inside an expression", a.span)
             }
@@ -474,7 +474,17 @@ impl Tr<'_> {
                 return format!("\"${{{}}}\"", self.expr(value));
             }
             if self.is_lang(name, "toElement") {
-                return self.refuse("embed:to-element", "`toElement` outside an `Embed`", call.span);
+                // The boundary disappears: a view is a value where TS takes an element.
+                // `toElement(x, key)` is `x.id(key)`.
+                return match call.arguments.as_slice() {
+                    [arg] if arg.as_expression().is_some() => self.expr(arg.to_expression()),
+                    [arg, key] if arg.as_expression().is_some() && key.as_expression().is_some() => {
+                        let value = self.expr(arg.to_expression());
+                        let key = self.expr(key.to_expression());
+                        format!("{value}.id({key})")
+                    }
+                    _ => self.refuse("embed:to-element", "`toElement` with a spread argument", call.span),
+                };
             }
             if self.is_lang(name, "view") || self.is_lang(name, "defineModifier") {
                 return self.refuse("view:nested", format!("`{name}(…)` inside an expression"), call.span);
@@ -774,6 +784,22 @@ impl Tr<'_> {
             Expression::NullLiteral(n) => {
                 self.refuse("children:null", "a `null` child (an empty slot)", n.span)
             }
+            Expression::JSXFragment(f) => self.fragment_value(f),
+            // An optional view (`children?: ReactNode`) is drawn when it is there.
+            Expression::Identifier(id)
+                if self.scope.decl.get(id.name.as_str()).is_some_and(|t| t == "View?") =>
+            {
+                let name = self.expr(e);
+                format!("if let {name} = {name} {{\n{name}\n}}")
+            }
+            Expression::CallExpression(call)
+                if matches!(&call.callee, Expression::Identifier(id) if self.is_lang(&id.name, "toElement"))
+                    && call.arguments.len() == 1
+                    && call.arguments[0].as_expression().is_some()
+                    && !is_conditional_child(call.arguments[0].to_expression()) =>
+            {
+                self.child(call.arguments[0].to_expression())
+            }
             _ => self.expr(e),
         }
     }
@@ -815,6 +841,10 @@ impl Tr<'_> {
     /// Whether an expression is UI: a chain from a node, a view call, a conditional of them.
     pub fn is_view(&self, e: &Expression) -> bool {
         match e.without_parentheses() {
+            Expression::JSXElement(_) | Expression::JSXFragment(_) => true,
+            Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(id) if self.is_lang(&id.name, "toElement")) => {
+                true
+            }
             Expression::CallExpression(call) => {
                 if is_map(call) {
                     let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() else {

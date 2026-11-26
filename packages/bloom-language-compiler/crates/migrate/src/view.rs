@@ -101,6 +101,28 @@ impl Tr<'_> {
         }
     }
 
+    /// An Expo Router route file (under `app/`): `layout` for `_layout`, else `screen`.
+    pub fn route_kind(&self) -> Option<&'static str> {
+        let path = self.filename.replace('\\', "/");
+        let in_app = path.starts_with("app/") || path.starts_with("./app/") || path.contains("/app/");
+        if !in_app {
+            return None;
+        }
+        let stem = path.rsplit('/').next().unwrap_or_default();
+        Some(if stem.starts_with("_layout") { "layout" } else { "screen" })
+    }
+
+    /// `export default function X()` in a route file, as `pub default screen X`.
+    pub fn route_fn(&mut self, kind: &str, name: &str, f: &Function, module: &[Statement]) -> String {
+        if !f.params.items.is_empty() {
+            return self.refuse("route:props", format!("the route component `{name}` takes props"), f.span);
+        }
+        match Body::of_function(f) {
+            Some(b) => self.view_decl(kind, name, "pub default ", &f.params, b, module, f.span),
+            None => self.refuse("fn:declare", "a function without a body", f.span),
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn view_decl(
         &mut self,
@@ -688,9 +710,23 @@ impl Tr<'_> {
         vis: &'static str,
         module: &[Statement],
     ) -> String {
+        self.function_item_typed(name, f, vis, None, module)
+    }
+
+    /// A module function; a component's props type may come from elsewhere (`memo<P>(function …)`).
+    pub fn function_item_typed(
+        &mut self,
+        name: &str,
+        f: &Function,
+        vis: &'static str,
+        props_ty: Option<&TSType>,
+        module: &[Statement],
+    ) -> String {
         if self.components.contains(name) {
             return match Body::of_function(f) {
-                Some(body) => self.view_decl("view", name, vis, &f.params, body, module, f.span),
+                Some(body) => {
+                    self.view_decl_typed("view", name, vis, &f.params, props_ty, body, module, f.span)
+                }
                 None => self.refuse("fn:declare", "a function without a body", f.span),
             };
         }
