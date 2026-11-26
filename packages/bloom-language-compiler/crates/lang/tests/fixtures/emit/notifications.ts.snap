@@ -1,7 +1,10 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, Embed, GroupedSection, GroupedSectionItem, Loading, SettingsSection, Text, Toggle, VStack, toast } from "@oxy.so/bloom-language";
+import { Button, Embed, Loading, Text, VStack, toast } from "@oxy.so/bloom-language";
+import { GroupedSection, GroupedSectionItem } from "@oxy.so/bloom-language/containers";
+import { Toggle } from "@oxy.so/bloom-language/inputs";
 import { screen } from "@oxy.so/bloom-language/router";
+import { SettingsSection } from "@oxy.so/bloom-language/settings";
 import { useState } from "react";
 import { jsx as $jsx } from "react/jsx-runtime";
 import type { Child } from "@oxy.so/bloom-language";
