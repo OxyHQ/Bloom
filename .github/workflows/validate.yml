@@ -110,8 +110,7 @@ jobs:
       actions: read
     concurrency:
       group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Build, package and types
-    steps: &build-steps
-      # A lane that starts after its twin waits here to be cancelled.
+    steps: &build-steps # A lane that starts after its twin waits here to be cancelled.
       - &race-guard
         name: Seldon race guard
         if: vars.CI_SELDON_RACE == 'true'
@@ -555,7 +554,20 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, race, build, build-hosted, language, language-hosted, language-parity, language-parity-hosted, tests, tests-hosted, android]
+    needs:
+      [
+        provenance,
+        race,
+        build,
+        build-hosted,
+        language,
+        language-hosted,
+        language-parity,
+        language-parity-hosted,
+        tests,
+        tests-hosted,
+        android,
+      ]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
