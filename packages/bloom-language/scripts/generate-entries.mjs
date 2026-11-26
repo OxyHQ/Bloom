@@ -126,8 +126,8 @@ const outputs = [
       ...families.map((family) => `    "${MODULE}/${family}",`),
       '];',
       '',
-      '/// Each value a family\'s entry exports, by name (sorted), and its module: what',
-      '/// code that writes imports (bloomc\'s emitter) imports a constructor from.',
+      "/// Each value a family's entry exports, by name (sorted), and its module: what",
+      "/// code that writes imports (bloomc's emitter) imports a constructor from.",
       'pub const FAMILY_EXPORTS: &[(&str, &str)] = &[',
       ...families
         .flatMap((family) => table[family].map((name) => [name, `${MODULE}/${family}`]))
@@ -135,8 +135,8 @@ const outputs = [
         .map(([name, module]) => `    ("${name}", "${module}"),`),
       '];',
       '',
-      '/// The module that exports `name`: its family\'s entry, else the root.',
-      'pub fn module_of(name: &str) -> &\'static str {',
+      "/// The module that exports `name`: its family's entry, else the root.",
+      "pub fn module_of(name: &str) -> &'static str {",
       '    FAMILY_EXPORTS',
       '        .binary_search_by(|(export, _)| (*export).cmp(name))',
       '        .map_or(LANGUAGE_MODULES[0], |at| FAMILY_EXPORTS[at].1)',
