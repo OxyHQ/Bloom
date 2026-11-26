@@ -2,10 +2,10 @@
 
 use std::collections::{BTreeMap, HashMap};
 use std::hash::{DefaultHasher, Hasher};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-use crate::files::{bloom_files, relative, relative_url};
+use crate::files::{bloom_files, normalize, relative, relative_url};
 use crate::json::{self, Value};
 use crate::parallel;
 
@@ -119,7 +119,8 @@ fn hash(parts: &[&[u8]]) -> u128 {
 }
 
 /// A file's last successful build: its content, its key (content, compiler
-/// and dependencies) and its relative imports, so an unchanged file is not parsed.
+/// and dependencies) and the files that compile read (`Output::dependencies`:
+/// the `.bloom` modules and TS declarations it imports).
 struct Entry {
     content: u128,
     key: u128,
@@ -156,44 +157,6 @@ fn save_cache(path: &Path, entries: &BTreeMap<PathBuf, Entry>) -> Result<(), Str
     std::fs::write(path, text).map_err(|e| format!("{}: {e}", path.display()))
 }
 
-/// `a/./b/../c` as `a/c`, without touching the file system.
-fn normalize(path: &Path) -> PathBuf {
-    let mut out = PathBuf::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                out.pop();
-            }
-            other => out.push(other),
-        }
-    }
-    out
-}
-
-/// The files a module's relative imports name (`./Row.bloom`, `../model`),
-/// resolved as the compiler does; package imports are not followed.
-fn relative_imports(source: &str, file: &Path) -> Vec<PathBuf> {
-    let (ast, _, _) = bloom_lang::parse(source, "");
-    let dir = file.parent().unwrap_or(Path::new(""));
-    let mut deps: Vec<PathBuf> = ast
-        .imports
-        .iter()
-        .filter(|import| import.source.starts_with("./") || import.source.starts_with("../"))
-        .filter_map(|import| {
-            let base = normalize(&dir.join(&import.source));
-            let candidates = ["", ".bloom", ".ts", ".tsx", ".d.ts", "/index.ts", "/index.tsx"];
-            candidates
-                .iter()
-                .map(|ext| PathBuf::from(format!("{}{ext}", base.display())))
-                .find(|p| p.is_file())
-        })
-        .collect();
-    deps.sort();
-    deps.dedup();
-    deps
-}
-
 /// The binary's digest: a new compiler invalidates every cached file.
 fn compiler_digest(dev: bool) -> u128 {
     let binary = std::env::current_exe().and_then(std::fs::read).unwrap_or_default();
@@ -203,6 +166,7 @@ fn compiler_digest(dev: bool) -> u128 {
 struct Compiled {
     diagnostics: Vec<bloom_lang::Diagnostic>,
     warnings: Vec<bloom_lang::Diagnostic>,
+    dependencies: Vec<PathBuf>,
 }
 
 /// Compiles every `.bloom` file under `dir` into `out` at the same relative
@@ -222,47 +186,18 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
 
     let cache_path = out.join(CACHE_FILE);
     let cache = if options.cache { load_cache(&cache_path) } else { HashMap::new() };
-    // Each file's imports: from the cache when its content is unchanged, else parsed.
-    let deps: Vec<Vec<PathBuf>> =
-        parallel::map(&files.iter().zip(&sources).collect::<Vec<_>>(), options.jobs, |(path, source)| {
-            match cache.get(*path) {
-                Some(entry) if entry.content == contents[path.as_path()] => entry.deps.clone(),
-                _ => relative_imports(source, path),
-            }
-        });
-    let deps_of: HashMap<&Path, &[PathBuf]> =
-        files.iter().map(PathBuf::as_path).zip(deps.iter().map(Vec::as_slice)).collect();
-    let digest = compiler_digest(options.dev);
-    let mut foreign: HashMap<PathBuf, u128> = HashMap::new();
-    let keys: Vec<u128> = files
+    // Each file's dependencies, as its last build read them. A changed file is
+    // compiled again whatever they are, and so is every file that imports it.
+    let deps: Vec<Vec<PathBuf>> = files
         .iter()
-        .map(|file| {
-            // The content of the file and of everything it imports, transitively, by path.
-            let mut closure: BTreeMap<&Path, u128> = BTreeMap::new();
-            let mut stack = vec![file.as_path()];
-            while let Some(current) = stack.pop() {
-                if closure.contains_key(current) {
-                    continue;
-                }
-                let content = match contents.get(current) {
-                    Some(&content) => {
-                        stack.extend(deps_of[current].iter().map(PathBuf::as_path));
-                        content
-                    }
-                    None => *foreign
-                        .entry(current.to_path_buf())
-                        .or_insert_with(|| hash(&[&std::fs::read(current).unwrap_or_default()])),
-                };
-                closure.insert(current, content);
-            }
-            let mut bytes = digest.to_le_bytes().to_vec();
-            for (path, content) in &closure {
-                bytes.extend(path.as_os_str().as_encoded_bytes());
-                bytes.extend(content.to_le_bytes());
-            }
-            hash(&[&bytes])
+        .map(|path| match cache.get(path) {
+            Some(entry) if entry.content == contents[path.as_path()] => entry.deps.clone(),
+            _ => Vec::new(),
         })
         .collect();
+    let digest = compiler_digest(options.dev);
+    let mut foreign: HashMap<PathBuf, u128> = HashMap::new();
+    let keys = keys(&files, &contents, &deps, digest, &mut foreign);
 
     let outputs = |file: &Path| {
         let rel = relative(file, &dir);
@@ -312,7 +247,10 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
                 write(&dts, text)?;
             }
         }
-        Ok(Compiled { diagnostics: output.diagnostics, warnings: output.warnings })
+        // As the compile read them, absolute, so a dependency is the same path from any importer.
+        let cwd = std::env::current_dir().unwrap_or_default();
+        let dependencies = output.dependencies.iter().map(|d| normalize(&cwd.join(d))).collect();
+        Ok(Compiled { diagnostics: output.diagnostics, warnings: output.warnings, dependencies })
     });
 
     let mut entries: BTreeMap<PathBuf, Entry> = BTreeMap::new();
@@ -322,6 +260,14 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
         .filter(|(_, r)| r.as_ref().map_or(true, |c| !c.diagnostics.is_empty()))
         .map(|(&i, _)| i)
         .collect();
+    // The keys again with what the compiles read, as the next build computes them.
+    let mut deps = deps;
+    for (&i, result) in stale.iter().zip(&results) {
+        if let Ok(compiled) = result {
+            deps[i] = compiled.dependencies.clone();
+        }
+    }
+    let keys = self::keys(&files, &contents, &deps, digest, &mut foreign);
     for (i, file) in files.iter().enumerate() {
         if !failed.contains(&i) {
             entries.insert(
@@ -345,6 +291,47 @@ pub fn build(dir: &Path, out: &Path, options: &BuildOptions) -> Result<bool, Str
     Ok(errors == 0)
 }
 
+/// Each file's cache key: the compiler, and the content of the file and of
+/// everything it depends on, transitively through `.bloom` files, by path.
+fn keys(
+    files: &[PathBuf],
+    contents: &HashMap<&Path, u128>,
+    deps: &[Vec<PathBuf>],
+    digest: u128,
+    foreign: &mut HashMap<PathBuf, u128>,
+) -> Vec<u128> {
+    let deps_of: HashMap<&Path, &[PathBuf]> =
+        files.iter().map(PathBuf::as_path).zip(deps.iter().map(Vec::as_slice)).collect();
+    files
+        .iter()
+        .map(|file| {
+            let mut closure: BTreeMap<&Path, u128> = BTreeMap::new();
+            let mut stack = vec![file.as_path()];
+            while let Some(current) = stack.pop() {
+                if closure.contains_key(current) {
+                    continue;
+                }
+                let content = match contents.get(current) {
+                    Some(&content) => {
+                        stack.extend(deps_of[current].iter().map(PathBuf::as_path));
+                        content
+                    }
+                    None => *foreign
+                        .entry(current.to_path_buf())
+                        .or_insert_with(|| hash(&[&std::fs::read(current).unwrap_or_default()])),
+                };
+                closure.insert(current, content);
+            }
+            let mut bytes = digest.to_le_bytes().to_vec();
+            for (path, content) in &closure {
+                bytes.extend(path.as_os_str().as_encoded_bytes());
+                bytes.extend(content.to_le_bytes());
+            }
+            hash(&[&bytes])
+        })
+        .collect()
+}
+
 /// The compiler's map, named for its output file and pointing at the source
 /// by a path relative to the map.
 fn relocate_map(map: &str, file: &str, source: &str) -> Result<String, String> {
@@ -359,11 +346,6 @@ fn relocate_map(map: &str, file: &str, source: &str) -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn normalizes_lexically() {
-        assert_eq!(normalize(Path::new("/a/b/./../c/d.bloom")), PathBuf::from("/a/c/d.bloom"));
-    }
 
     #[test]
     fn a_cache_round_trips() {
