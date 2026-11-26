@@ -1,0 +1,21 @@
+// TS components as libraries declare them (a class, forwardRef, memo, lazy), a
+// callable interface, and an interface with an index signature.
+
+import { Badge, Chip, Lazy, log, notify, Pill } from "@/ui/components"
+
+fn hello(name: String) {
+  notify("Hello ${name}", { type: "success" })
+  notify.success("again")
+  log("hello", { component: "Row", name: name, count: 1 })
+}
+
+pub view Badges {
+  body {
+    VStack {
+      Badge(label: "class")
+      Pill(label: "forwardRef")
+      Chip(label: "memo")
+      Lazy(label: "lazy")
+    }
+  }
+}
