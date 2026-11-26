@@ -62,7 +62,11 @@ impl Tr<'_> {
                 out
             }
             // JSX (or a conditional of it) is a node now: the boundary goes.
-            other if self.is_view(other.to_expression()) => self.child(other.to_expression()),
+            // (A mapped list stays a value: `xs.map { … }`, one `[View]`.)
+            other if self.is_view(other.to_expression()) => match other.to_expression().without_parentheses() {
+                Expression::CallExpression(call) if crate::expr::is_map(call) => self.expr(other.to_expression()),
+                e => self.child(e),
+            },
             other => {
                 // A TS value that is already a React node: it stays embedded.
                 let value = self.expr(other.to_expression());

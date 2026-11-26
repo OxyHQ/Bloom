@@ -1134,7 +1134,7 @@ fn is_conditional_child(e: &Expression) -> bool {
     }
 }
 
-fn is_map(call: &CallExpression) -> bool {
+pub fn is_map(call: &CallExpression) -> bool {
     matches!(&call.callee, Expression::StaticMemberExpression(m) if m.property.name == "map")
         && matches!(call.arguments.as_slice(), [Argument::ArrowFunctionExpression(_)])
 }
