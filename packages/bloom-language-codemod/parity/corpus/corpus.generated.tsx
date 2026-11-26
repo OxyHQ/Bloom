@@ -6,9 +6,10 @@ import * as L2 from '@oxy.so/bloom-language/containers';
 import * as L3 from '@oxy.so/bloom-language/inputs';
 import * as L4 from '@oxy.so/bloom-language/list';
 import * as L5 from '@oxy.so/bloom-language/overlays';
-import * as L6 from '@oxy.so/bloom-language/settings';
-import * as L7 from '@oxy.so/bloom-language/slider';
-import * as L8 from '@oxy.so/bloom-language/spinner-icon';
+import * as L6 from '@oxy.so/bloom-language/progress-view';
+import * as L7 from '@oxy.so/bloom-language/settings';
+import * as L8 from '@oxy.so/bloom-language/slider';
+import * as L9 from '@oxy.so/bloom-language/spinner-icon';
 import { toElement } from '@oxy.so/bloom-language';
 import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';
 import { useTheme as useParityTheme22 } from 'bloom-22/theme';
@@ -96,7 +97,7 @@ import { PageHeader as I77 } from 'bloom-22/page-header';
 import { ActivityIndicator as I78 } from 'react-native';
 import { RiLinksLine as I79 } from '@oxy.so/bloom/icons/RiLinksLine';
 
-const L = { ...L0, ...L1, ...L2, ...L3, ...L4, ...L5, ...L6, ...L7, ...L8 };
+const L = { ...L0, ...L1, ...L2, ...L3, ...L4, ...L5, ...L6, ...L7, ...L8, ...L9 };
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });

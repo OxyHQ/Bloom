@@ -80,6 +80,7 @@ export * from '../../entries/phone-input';
 export * from '../../entries/place-reviews';
 export * from '../../entries/places';
 export * from '../../entries/price-breakdown';
+export * from '../../entries/progress-view';
 export * from '../../entries/project-board';
 export * from '../../entries/property-insights';
 export * from '../../entries/rating';

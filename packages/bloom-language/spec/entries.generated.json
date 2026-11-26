@@ -562,6 +562,9 @@
       "PriceSummary",
       "PriceSummaryLine"
     ],
+    "progress-view": [
+      "ProgressView"
+    ],
     "project-board": [
       "BoardDragHandle",
       "GroupedProjectBoard",

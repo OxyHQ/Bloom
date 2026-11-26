@@ -1148,6 +1148,20 @@
         "default": "./lib/commonjs/entries/price-breakdown.js"
       }
     },
+    "./progress-view": {
+      "react-native": {
+        "types": "./lib/typescript/module/entries/progress-view.d.ts",
+        "default": "./src/entries/progress-view.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/entries/progress-view.d.ts",
+        "default": "./lib/module/entries/progress-view.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/entries/progress-view.d.ts",
+        "default": "./lib/commonjs/entries/progress-view.js"
+      }
+    },
     "./project-board": {
       "react-native": {
         "types": "./lib/typescript/module/entries/project-board.d.ts",

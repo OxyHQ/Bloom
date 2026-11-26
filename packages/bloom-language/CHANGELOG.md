@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `ProgressView()` (`@oxy.so/bloom-language/progress-view`): the platform's own spinner (SwiftUI's indeterminate `ProgressView()`), React Native's `ActivityIndicator`, with `.size('small' | 'large')`, `.tint(color)` (a role or an app colour), `.label()` and its box modifiers as its `style`. Bloom's `Loading` and `SpinnerIcon` stay Bloom's own loaders. React Native's `Image` gets no node: the language's `Image` (Bloom's `BloomImage`) covers what apps draw with it (design document, Image).
+
 ### Breaking
 
 - Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved.
@@ -19,7 +23,6 @@
 
 ### Added
 
-- `ProgressView()`: the platform's own spinner (SwiftUI's indeterminate `ProgressView()`), React Native's `ActivityIndicator`, with `.size('small' | 'large')`, `.tint(color)` (a role or an app colour), `.label()` and its box modifiers as its `style`. Bloom's `Loading` and `SpinnerIcon` stay Bloom's own loaders. React Native's `Image` gets no node: the language's `Image` (Bloom's `BloomImage`) covers what apps draw with it (design document, Image).
 - `.offset({ x, y })` takes points the view computes as it renders (`.offset({ y: nudge })`, React Native's `translateY` by a size's own amount), the geometry rule a frame, a pinned edge, a stacking order and a padding follow (spec `points.params`); a number written out stays a token. `.aspectRatio()` was a number already: a ratio computed at render (a media's own) is documented beside the written one.
 - Tokens: the frame length `'auto'` (a width's or a height's own size, React Native's and the web's `auto`, Tailwind's `w-auto`/`h-auto`), which takes back a Bloom component's own length for its content's (a `Field`'s full width); the stacking level `'1000'` (`z-[1000]`).
 - `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).

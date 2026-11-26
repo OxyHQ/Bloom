@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (432), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (433), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 The root, `@oxy.so/bloom-language`, holds the language's views, modifiers and values; each family of nodes is an entry of its own (`@oxy.so/bloom-language/<family>`), so an app's bundle carries only the families it imports. Each node names the module it is imported from.
 
@@ -177,6 +177,7 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [colorSwatchPicker](#colorswatchpicker) | `ColorSwatchPicker` | `@oxy.so/bloom-language/color-swatch-picker` |
 | [animatedCheck](#animatedcheck) | `AnimatedCheck` | `@oxy.so/bloom-language/animated-check` |
 | [spinnerIcon](#spinnericon) | `SpinnerIcon` | `@oxy.so/bloom-language/spinner-icon` |
+| [progressView](#progressview) | `ProgressView` | `@oxy.so/bloom-language/progress-view` |
 | [contextMenu](#contextmenu) | `ContextMenu` | `@oxy.so/bloom-language/context-menu` |
 | [collapsible](#collapsible) | `Collapsible` | `@oxy.so/bloom-language/collapsible` |
 | [dropZone](#dropzone) | `DropZone` | `@oxy.so/bloom-language/drop-zone` |
@@ -3441,6 +3442,24 @@ Modifiers:
 
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: IconSizeToken)`: Its width and height: an icon rung, a numeric side or an app token (Bloom's 26 by default).
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: InkToken)`: Its colour (Bloom's `color`): a role painted from the theme, or an app's own colour (`defineTokens({ color: { onVideo: '#FFFFFF' } })`), drawn as written; the text's colour by default.
+
+And every universal modifier.
+
+### `progressView`
+
+- `ProgressView()`: The platform's spinner (React Native's `ActivityIndicator`), turning while it is drawn.
+
+Imported from `@oxy.so/bloom-language/progress-view`.
+
+Token sets:
+
+- `.size()`: [progressViewSize](bloom-language-tokens.mdx#progressviewsize), `'small'`, `'large'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+
+Modifiers:
+
+- [`.size()`](bloom-language-modifiers.mdx#size) `(value: ProgressViewSize)`: `small` (its default, 20pt) or `large` (36pt), React Native's `size`.
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: InkToken)`: Its colour (React Native's `color`): a role painted from the theme, or an app's own colour; the platform's grey by default.
 
 And every universal modifier.
 

@@ -19642,6 +19642,7 @@ export type NodeModifiers = {
     "colorScope",
     "keyboardAvoiding",
     "provider",
+    "ownScreen",
     "fullScreenCover",
     "glassID",
     "glassUnion",
