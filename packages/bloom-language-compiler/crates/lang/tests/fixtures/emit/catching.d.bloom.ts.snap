@@ -1,0 +1,6 @@
+export declare function host(link: string): string;
+export declare function count(text: string): number;
+export declare function bare(host: string): string;
+export declare function spaced(text: string): string;
+export declare function isWww(host: string): boolean;
+export declare function digits(text: string): boolean;

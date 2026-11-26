@@ -219,7 +219,9 @@ function type), generic arguments at call sites, empty collections from use. A l
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a
 local, parameter or prop `x` is present in the block, as TS narrows it: `if onEnd != none {
-onEnd() }`.
+onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`), and after a guard
+that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
+block.
 
 Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
 TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
@@ -311,7 +313,8 @@ type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unc
 is checked by bloomc, and every crossing by `tsc`.
 
 `foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
-TS checks the whole where it lands. Where `e` says less than TS knows (`data ?? []`), its items
+TS checks the whole where it lands; a TS value compared with `none` is compared loosely
+(`!= null`), as TS's absence may be `null`. Where `e` says less than TS knows (`data ?? []`), its items
 are the TS value's (`NonNullable<…>[number]`), so `.map { m in m.name }` reads TS members. A TS
 value beside a number in arithmetic is a number (`insets.top + 4` is a `Float`; for `+` beside
 a string, a `String`), and the emitter writes `(insets.top satisfies number)`. So does a TS value beside `none` or a Bloom value in a
@@ -481,7 +484,8 @@ render's value); bind the new value to a `let` first. Hook calls are only allowe
 members and at the top level of a hook function (B0420), so the rules of hooks hold by
 construction. A **hook function** is a `fn` named `use[A-Z]…`: its top-level `let`s and its
 result may call hooks (not a branch, a loop or a closure), and calling it is calling a hook. A
-`.bloom` module of `pub fn useX(…)` is a module of hooks.
+`.bloom` module of `pub fn useX(…)` is a module of hooks. A hook function written without
+`-> T` has the type of its last line (nothing when that is not a value).
 
 **Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
 and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
@@ -497,6 +501,11 @@ dependency.
 inherit as in the embedded language.
 
 ## 8. Effects, tasks and concurrency
+
+**Sync throws.** `catching { … }` runs its block and gives `Result<T, Error>`: the last line's
+value is `.ok`, and what TS code in it throws synchronously (`URL(link)`, `JSON.parse(s)`) is
+`.err`. It is emitted as an inline `try`/`catch`, with no helper; the block cannot `return` or use
+`?`.
 
 - `async fn` / `await`. Awaiting a Bloom async function yields its result. **A TS function that
   returns a promise has the Bloom type `(A) -> Promise<T>`, and awaiting a `Promise<T>` yields
@@ -614,13 +623,13 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 
 | Type | Members (each compiles to the JS intrinsic, inline) |
 |---|---|
-| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)`, `toInt() -> Int?`, `toFloat() -> Float?` |
+| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
 | `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T?`; there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
-| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)` |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` or `?` inside) |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |

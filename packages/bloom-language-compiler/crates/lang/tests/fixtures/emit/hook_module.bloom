@@ -16,3 +16,17 @@ pub view Padded(title: String) {
     Text(title).padding("top", top)
   }
 }
+
+// A hook function written without `->`: its result is its last line's.
+pub fn useHeader(title: String) {
+  let top = useTopInset(4)
+  { title: title, top: top }
+}
+
+pub view Header(title: String) {
+  let header = useHeader(title)
+
+  body {
+    Text(header.title).padding("top", header.top)
+  }
+}
