@@ -1,0 +1,17 @@
+// Node arguments checked against the constructors' signatures (spec `signatures`).
+
+view Form {
+  @state on = false
+  @state name = ""
+
+  body {
+    VStack {
+      Toggle($on, "Notify")
+      TextField(name, "Name")
+      TextField($name, 42)
+      Meter()
+      Spacer { Text("x") }
+      AspectRatio(1.5) { Text("ok") }
+    }
+  }
+}
