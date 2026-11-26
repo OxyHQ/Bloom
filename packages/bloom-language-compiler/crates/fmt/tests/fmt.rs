@@ -9,7 +9,8 @@ use std::path::{Path, PathBuf};
 fn fixtures() -> Vec<PathBuf> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut out = Vec::new();
-    for dir in [root.join("tests/fixtures"), root.join("../lang/tests/fixtures")] {
+    // This crate's fixtures, and the core's that parse (its emit fixtures).
+    for dir in [root.join("tests/fixtures"), root.join("../lang/tests/fixtures/emit")] {
         let Ok(entries) = std::fs::read_dir(&dir) else { continue };
         for entry in entries.flatten() {
             let path = entry.path();
