@@ -1,7 +1,7 @@
 //! `bloomc`: check, format and build `.bloom` files, and serve them to an editor.
 //!
 //! ```text
-//! bloomc check [--jobs N] <paths…>
+//! bloomc check [--tsc] [--project <dir>] [--jobs N] <paths…>
 //! bloomc fmt [--check] [--jobs N] <paths…>
 //! bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
 //! bloomc lsp
@@ -10,19 +10,23 @@
 //! A path is a `.bloom` file or a directory searched for them (skipping
 //! `node_modules` and hidden directories). Files run in parallel on
 //! `--jobs` threads (the machine's parallelism by default); output and
-//! diagnostics come out in path order, so a run is deterministic.
+//! diagnostics come out in path order, so a run is deterministic. `check
+//! --tsc` also type-checks the emitted TypeScript with the project's `tsc`
+//! (every `.bloom` file of the project when no path is given).
 
 mod build;
 mod files;
 mod json;
 mod lsp;
 mod parallel;
+mod text;
+mod tsc;
 
 use std::path::PathBuf;
 use std::process::ExitCode;
 
 const USAGE: &str = "usage:
-  bloomc check [--jobs N] <paths…>
+  bloomc check [--tsc] [--project <dir>] [--jobs N] <paths…>
   bloomc fmt [--check] [--jobs N] <paths…>
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]
   bloomc lsp";
@@ -33,10 +37,12 @@ struct Args {
     command: String,
     paths: Vec<PathBuf>,
     out: Option<PathBuf>,
+    project: Option<PathBuf>,
     jobs: Option<usize>,
     check: bool,
     no_cache: bool,
     dev: bool,
+    tsc: bool,
 }
 
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
@@ -47,6 +53,10 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--check" => args.check = true,
             "--no-cache" => args.no_cache = true,
             "--dev" => args.dev = true,
+            "--tsc" => args.tsc = true,
+            "--project" | "-p" => {
+                args.project = Some(raw.next().ok_or("--project needs a directory")?.into());
+            }
             "--out" => args.out = Some(raw.next().ok_or("--out needs a directory")?.into()),
             "--jobs" | "-j" => {
                 let n = raw.next().ok_or("--jobs needs a number")?;
@@ -70,6 +80,7 @@ fn main() -> ExitCode {
     };
     let jobs = args.jobs.unwrap_or_else(|| std::thread::available_parallelism().map_or(1, |n| n.get()));
     let result = match args.command.as_str() {
+        "check" if args.tsc => tsc::check(&args.paths, args.project.as_deref(), jobs),
         "check" => build::check(&args.paths, jobs),
         "fmt" => build::fmt(&args.paths, args.check, jobs),
         "build" => match (args.paths.as_slice(), &args.out) {
@@ -111,6 +122,9 @@ mod tests {
         assert_eq!(a.out, Some(PathBuf::from("lib")));
         assert_eq!(a.jobs, Some(3));
         assert!(a.no_cache);
+        let c = args("check --tsc -p app").unwrap();
+        assert!(c.tsc);
+        assert_eq!(c.project, Some(PathBuf::from("app")));
     }
 
     #[test]

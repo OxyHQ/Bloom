@@ -1,0 +1,9 @@
+import { Row } from "../rows/row"
+
+pub view Pair() {
+  body {
+    VStack {
+      Row(name: "a")
+    }
+  }
+}
