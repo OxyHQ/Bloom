@@ -143,6 +143,8 @@ pub enum CallRes {
     Race,
     /// `.onChange(of: v) { old, new in … }` on the body's root: the watched value's type.
     OnChange(Ty),
+    /// `Task { … }`: the closure's work, started and not awaited.
+    Spawn,
     /// `T()` for a class without an `init`: `new T()`.
     New(DefId),
     /// `x.m(…)` with `x` a constrained type parameter's value (`witness` its parameter) or
@@ -336,6 +338,9 @@ pub struct CheckResult {
     pub packs: HashMap<ExprId, (DefId, DefId)>,
     /// A generic call's witnesses, after its arguments, for its constraints in order.
     pub witness_args: HashMap<ExprId, Vec<Option<WitnessArg>>>,
+    /// `@Environment(\.k)` (by the state's span): the environment key `k` in scope, or
+    /// `None` for a built-in one (`environmentValues.k`).
+    pub env_keys: HashMap<Span, Option<LocalId>>,
     /// A generic function's witness parameters (by the function's span): each one's name
     /// and what it witnesses.
     pub witness_params: HashMap<Span, Vec<(String, u32, Bound)>>,
@@ -1500,6 +1505,66 @@ impl<'o> Checker<'o> {
         }))
     }
 
+    /// `@Environment(\.k)`: the built-in value `k` (`disabled`, `controlSize`,
+    /// `buttonStyle`), or the environment key named `k` in scope (an app's own value).
+    fn environment_key(&mut self, state: &StateDecl, key: &Ident, declared: Option<Ty>) -> Ty {
+        let builtin = match key.name.as_str() {
+            "disabled" => Some(Ty::Bool),
+            "controlSize" | "buttonStyle" => Some(Ty::Foreign(
+                format!(
+                    "(typeof import(\"@oxy.so/bloom-language\").environmentValues)[\"{}\"][\"defaultValue\"]",
+                    key.name
+                )
+                .into(),
+            )),
+            _ => None,
+        };
+        if let Some(ty) = builtin {
+            self.out.env_keys.insert(state.span, None);
+            return declared.unwrap_or(ty);
+        }
+        match self.lookup(&key.name) {
+            Some(local) => {
+                self.out.env_keys.insert(state.span, Some(local));
+                declared.unwrap_or_else(|| Ty::Foreign("".into()))
+            }
+            None => {
+                self.report(
+                    Diagnostic::error("B0202", key.span, format!("no environment value `\\.{}` in scope", key.name))
+                        .label("not a built-in value, nor a key declared or imported here")
+                        .help("import the module that declares it, or use `disabled`, `controlSize` or `buttonStyle`")
+                        .spec("74-environment"),
+                );
+                self.out.env_keys.insert(state.span, None);
+                Ty::Unknown
+            }
+        }
+    }
+
+    /// `task { … }` / `Task { … }`: work started without being awaited (its own async frame).
+    pub(super) fn spawn(&mut self, stmts: &[Stmt], span: Span) {
+        let task = self.frames.last().is_some_and(|f| f.task);
+        self.frames.push(Frame {
+            ret: Ty::Unit,
+            is_async: true,
+            closure: true,
+            written: HashSet::default(),
+            task,
+            render: false,
+            spawn: true,
+            cleanup: false,
+            throws: false,
+            raises: None,
+            handled: 0,
+        });
+        self.push();
+        let trying = std::mem::take(&mut self.trying);
+        self.stmts(stmts, Some(&Ty::Unit), span);
+        self.trying = trying;
+        self.pop();
+        self.frames.pop();
+    }
+
     /// A call of a function that throws: written in a `try`.
     pub(super) fn throwing_call(&mut self, span: Span, f: &FnTy) {
         if f.throws && !self.trying {
@@ -1832,7 +1897,14 @@ impl<'o> Checker<'o> {
             let locals = match member {
                 Member::State(state) => {
                     let declared = state.ty.as_ref().map(|t| self.resolve_type(t));
+                    let ty = match (&state.attr, &state.value.kind) {
+                        (StateAttr::Env, ExprKind::KeyPath { root: None, path }) if path.len() == 1 => {
+                            self.environment_key(state, &path[0], declared.clone())
+                        }
+                        _ => Ty::Unknown,
+                    };
                     let ty = match state.attr {
+                        _ if ty != Ty::Unknown || self.out.env_keys.contains_key(&state.span) => ty,
                         StateAttr::State | StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
@@ -3649,24 +3721,7 @@ impl<'o> Checker<'o> {
             ExprKind::Float(_) => Ty::Float,
             ExprKind::Unit => Ty::Unit,
             ExprKind::Task(block) => {
-                let task = self.frames.last().is_some_and(|f| f.task);
-                self.frames.push(Frame {
-                    ret: Ty::Unit,
-                    is_async: true,
-                    closure: true,
-                    written: HashSet::default(),
-                    task,
-                    render: false,
-                    spawn: true,
-                    cleanup: false,
-                    throws: false,
-                    raises: None,
-                    handled: 0,
-                });
-                self.push();
-                self.stmts(&block.stmts, Some(&Ty::Unit), block.span);
-                self.pop();
-                self.frames.pop();
+                self.spawn(&block.stmts, block.span);
                 Ty::Unit
             }
             ExprKind::Bool(_) => Ty::Bool,

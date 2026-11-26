@@ -105,6 +105,13 @@ impl Checker<'_> {
                     };
                 }
                 match name.as_str() {
+                    // `Task { … }` (2.0): starts the work and goes on, as 0.x `task { … }`.
+                    "Task" if call.args.is_empty() && call.trailing.is_some() => {
+                        let closure = call.trailing.as_deref().expect("checked");
+                        self.spawn(&closure.body, closure.span);
+                        self.out.calls.insert(expr.id, CallRes::Spawn);
+                        return Ty::Unit;
+                    }
                     "ok" | "err" => return self.result_ctor(expr, call, name == "ok", expected),
                     "toast" | "navigate" => {
                         self.out.calls.insert(

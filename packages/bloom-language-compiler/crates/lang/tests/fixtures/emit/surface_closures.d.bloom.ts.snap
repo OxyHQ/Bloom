@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface PaneProps {
+  readonly onTap: () => Promise<void>;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Pane())`), or from TSX as `toElement(Pane())`. */
+export declare const Pane: (props: PaneProps) => ComposedView;
