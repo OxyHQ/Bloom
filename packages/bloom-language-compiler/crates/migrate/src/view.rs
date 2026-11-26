@@ -1403,6 +1403,26 @@ impl Tr<'_> {
                 ));
                 return lines.join("\n");
             }
+            // `if (!(await tsCall())) …` outside a `try`: the same, the `if` and the rest
+            // of the block on `.ok(value)`.
+            if !self.propagate
+                && let Statement::IfStatement(s) = statement
+                && let Some(awaited) = awaited_test(&s.test)
+                && !self.awaits_bloom(awaited)
+            {
+                let call = self.head_expr(awaited);
+                let text = self.stmt(statement);
+                let marked = format!("await {call}");
+                if text.matches(&marked).count() == 1 {
+                    let text = text.replace(&format!("({marked})"), "value").replace(&marked, "value").replace("!(value)", "!value");
+                    let rest = self.block_stmts(&statements[i + 1..], end, tail);
+                    let reviews = self.take_reviews();
+                    lines.push(format!(
+                        "{note}{reviews}// {REVIEW_MARKER}: a rejection of the awaited call stops the block here (TS: an unhandled rejection)\nmatch await {call} {{\ncase .ok(value) => {{\n{text}\n{rest}\n}}\ncase .err(_) => {{}}\n}}"
+                    ));
+                    return lines.join("\n");
+                }
+            }
             // `if (c) continue;` in a loop's body: the rest of the body runs when `!c`.
             if loop_block
                 && let Statement::IfStatement(s) = statement
@@ -2865,5 +2885,14 @@ fn writes_state(tr: &Tr, statement: &Statement) -> bool {
                 if matches!(&call.callee, Expression::Identifier(id) if tr.scope.setters.contains_key(id.name.as_str()))
         ),
         _ => false,
+    }
+}
+
+/// The awaited call an `if` tests: `await f()`, `!(await f())`, parenthesised.
+fn awaited_test<'b, 'a>(test: &'b Expression<'a>) -> Option<&'b Expression<'a>> {
+    match test.without_parentheses() {
+        Expression::AwaitExpression(a) => Some(&a.argument),
+        Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => awaited_test(&u.argument),
+        _ => None,
     }
 }

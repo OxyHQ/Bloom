@@ -1,7 +1,7 @@
 // try shapes: state writes before the first await, a destructured await, and a
 // block of several awaits (a `Result` closure, each await propagating).
 
-import { load, save, saveLogger, unsave } from "./api"
+import { confirm, load, save, saveLogger, unsave } from "./api"
 import { RegExp } from "js"
 
 async fn resolveUrl(id: String) -> String {
@@ -22,6 +22,17 @@ async fn warm(id: String) {
     case .ok(value) => {
       let { data } = value
       saveLogger.debug(data.url.replace(RegExp("^https?:\\/\\/", "g"), ""))
+    }
+    case .err(_) => {}
+  }
+}
+
+async fn confirmUnsave(id: String) {
+  // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+  match await confirm("Remove?") {
+    case .ok(value) => {
+      if !value { return }
+      saveLogger.debug(id)
     }
     case .err(_) => {}
   }

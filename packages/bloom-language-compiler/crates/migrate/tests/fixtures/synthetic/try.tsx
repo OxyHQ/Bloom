@@ -2,7 +2,7 @@
 // block of several awaits (a `Result` closure, each await propagating).
 import { useState } from 'react';
 import { Button, Text, view } from '@oxy.so/bloom-language';
-import { load, save, saveLogger, unsave } from './api';
+import { confirm, load, save, saveLogger, unsave } from './api';
 
 async function resolveUrl(id: string): Promise<string> {
   try {
@@ -17,6 +17,11 @@ async function resolveUrl(id: string): Promise<string> {
 async function warm(id: string): Promise<void> {
   const { data } = await load(id);
   saveLogger.debug(data.url.replace(/^https?:\/\//g, ''));
+}
+
+async function confirmUnsave(id: string): Promise<void> {
+  if (!(await confirm('Remove?'))) return;
+  saveLogger.debug(id);
 }
 
 export const SaveToggle = view(function SaveToggle(props: { id: string; saved: boolean }) {

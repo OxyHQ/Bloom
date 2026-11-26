@@ -92,6 +92,17 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                         })
                 })
                 .map(|(a, b)| (a, b, format!("{{ {} }}", source[a..b].trim()))),
+            // `d.title` on a dictionary (TS's `Record<string, …>` read by a key): `d["title"]`.
+            ("B0205", _)
+                if receiver.is_some_and(|r| r.starts_with("[String: "))
+                    && d.message.contains("has no member")
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    && source[..start].ends_with('.') =>
+            {
+                let dot = if source[..start].ends_with("?.") { 2 } else { 1 };
+                let open = if dot == 2 { "?[" } else { "[" };
+                Some((start - dot, end, format!("{open}\"{text}\"]")))
+            }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if (d.message == "expected `View`, found `[View]`" || d.message == "expected `View?`, found `[View]`")
