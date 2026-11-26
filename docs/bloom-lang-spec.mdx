@@ -109,7 +109,7 @@ generics      = "<" TYPE_NAME { "," TYPE_NAME } ">" ;
 
 fn            = [ "async" ] "fn" IDENT [ generics ] "(" [ params ] ")" [ "->" type ] block ;
 params        = param { "," param } [ "," ] ;
-param         = IDENT ":" type [ "=" expr ] ;
+param         = [ ".." ] IDENT ":" type [ "=" expr ] ;   (* "..": a rest parameter, last *)
 
 view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;
 screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
@@ -147,11 +147,12 @@ closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] } ;
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
                                                       await f()? is (await f())? *)
-postfix       = primary { call | "." NAME | "?." NAME | "[" expr "]" | "?" } ;
+postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | "[" expr "]" | "?" } ;
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
-arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; struct spread *)
+arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; a struct spread, or a
+                                                   list spread into a rest parameter *)
 primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
               | "(" expr ")" | "(" expr "," expr { "," expr } ")"
               | "[" [ expr { "," expr } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
@@ -254,7 +255,13 @@ fn area(s: Shape) -> Float {
 }
 ```
 
-`Option<T>` is written `T?`: `none`, `x ?? fallback`, `x?.field`, `if let v = x { … }`.
+`Option<T>` is written `T?`: `none`, `x ?? fallback`, `x?.field`, `x?.method(…)`, `f?.(…)`,
+`if let v = x { … }`. A `?.` short-circuits the rest of its chain, as in JS: in
+`b?.label.uppercased()` the `.uppercased()` reads `b`'s label and the whole is `String?`. A
+link whose own type is optional is not read through (`b?.note.trimmed()` with `note: String?`
+is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
+JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
+is not `none`. An optional call of a Unit function is Unit.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
 `Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Methods:
 `.map`, `.mapErr`, `.unwrapOr`, `.ok()` (to an optional), `.isOk`.
@@ -290,6 +297,13 @@ async fn load(id: String) -> Result<Post, String> { … }
 let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
 xs.map { p in p.title }                  // trailing closure
 ```
+
+A rest parameter `..xs: [T]` comes last, has no default, and takes any number of `T`s after
+the other positional arguments; in the body it is a `[T]`. A call spreads a list into a rest
+parameter (Bloom's or a TS function's `...args`) with `..`: `total(1, ..xs)`,
+`joinClasses("row", ..names)` compiles to `joinClasses("row", ...names)`. A spread where no rest
+parameter takes it is B0207 (outside a construction, where `..s` spreads a struct). A view takes
+props, never a rest parameter.
 
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
 in any order after the positional ones. **In a call to a TS function, named arguments form one

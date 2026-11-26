@@ -390,7 +390,9 @@ impl<'a> Formatter<'a> {
             params,
             |p| p.span,
             |this, param| {
-                let mut parts = vec![text(param.name.name.clone()), text(": "), this.ty(&param.ty)];
+                let name =
+                    if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };
+                let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
                     parts.push(this.expr(default));
@@ -724,6 +726,9 @@ impl<'a> Formatter<'a> {
     /// `(args)` and a trailing closure after a callee.
     fn call_tail(&mut self, callee: Doc, call: &Call) -> Doc {
         let mut parts = vec![callee];
+        if call.optional {
+            parts.push(text("?."));
+        }
         if call.parens {
             let args = self.commas(
                 &call.args,
@@ -904,6 +909,10 @@ impl<'a> Formatter<'a> {
                     text(") -> "),
                     self.ty(ret),
                 ])
+            }
+            // An optional function keeps its parentheses: `() -> Int?` returns an optional.
+            TypeKind::Optional(inner) if matches!(inner.kind, TypeKind::Fn { .. }) => {
+                concat(vec![text("("), self.ty(inner), text(")?")])
             }
             TypeKind::Optional(inner) => concat(vec![self.ty(inner), text("?")]),
             TypeKind::Error => text(self.slice(t.span).to_string()),

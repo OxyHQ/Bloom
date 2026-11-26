@@ -672,6 +672,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 break;
             }
             let start = self.span();
+            let rest = self.eat(P::DotDot);
             let name = self.ident("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
@@ -692,6 +693,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
             params.push(Param {
                 name,
+                rest,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1364,7 +1366,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let end = trailing.as_ref().map_or(end, |c| c.span);
                     let span = expr.span.to(end);
                     expr = self.expr_node(
-                        ExprKind::Call(Call { callee: Box::new(expr), args, parens: true, trailing }),
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing,
+                            optional: false,
+                        }),
                         span,
                     );
                 }
@@ -1377,6 +1385,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             args: Vec::new(),
                             parens: false,
                             trailing: Some(Box::new(closure)),
+                            optional: false,
                         }),
                         span,
                     );
@@ -1392,6 +1401,22 @@ impl<'s, 'i> Parser<'s, 'i> {
                     };
                     let span = expr.span.to(name.span);
                     expr = self.expr_node(ExprKind::Field(Box::new(expr), name), span);
+                }
+                Tok::P(P::QuestionDot) if matches!(self.nth(1), Tok::P(P::LParen)) => {
+                    // `f?.(…)`: a call only when `f` is not `none`.
+                    self.bump();
+                    let (args, end) = self.args();
+                    let span = expr.span.to(end);
+                    expr = self.expr_node(
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing: None,
+                            optional: true,
+                        }),
+                        span,
+                    );
                 }
                 Tok::P(P::QuestionDot) => {
                     self.bump();
