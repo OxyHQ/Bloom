@@ -871,6 +871,9 @@ impl<'a> Formatter<'a> {
             }
             TypeKind::List(inner) => concat(vec![text("["), self.ty(inner), text("]")]),
             TypeKind::Map(k, v) => concat(vec![text("["), self.ty(k), text(": "), self.ty(v), text("]")]),
+            TypeKind::Strings(values) => {
+                text(values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | "))
+            }
             TypeKind::Record(fields) => {
                 let fields: Vec<Doc> = fields
                     .iter()

@@ -924,6 +924,33 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 TypeExpr { span, kind: TypeKind::Tuple(items) }
             }
+            Tok::Str { .. } => {
+                let mut values = Vec::new();
+                loop {
+                    match self.tok().clone() {
+                        Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => {
+                            values.push(
+                                parts
+                                    .iter()
+                                    .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                                    .collect(),
+                            );
+                            self.bump();
+                        }
+                        _ => {
+                            self.unexpected("a string literal (`\"a\" | \"b\"`)");
+                            break;
+                        }
+                    }
+                    if !self.eat(P::Pipe) {
+                        break;
+                    }
+                }
+                TypeExpr {
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                    kind: TypeKind::Strings(values),
+                }
+            }
             Tok::P(P::LBrace) => {
                 let open = self.bump();
                 let mut fields = Vec::new();

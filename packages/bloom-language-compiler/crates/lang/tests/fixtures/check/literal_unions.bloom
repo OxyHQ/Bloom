@@ -1,0 +1,13 @@
+// String-literal unions are closed and matched exhaustively.
+
+type Tone = "calm" | "loud"
+
+fn volume(tone: Tone) -> Int {
+  match tone {
+    case "calm" => 1
+  }
+}
+
+fn uses() -> Int {
+  volume("quiet")
+}

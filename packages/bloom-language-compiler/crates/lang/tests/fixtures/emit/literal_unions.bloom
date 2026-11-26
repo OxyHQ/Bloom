@@ -1,0 +1,19 @@
+// String-literal unions: TS-shaped choices, structural and zero-cost.
+
+pub type Tone = "calm" | "loud"
+
+fn volume(tone: Tone) -> Int {
+  match tone {
+    case "calm" => 1
+    case "loud" => 2
+  }
+}
+
+fn pick(size: "sm" | "lg", tone: Tone?) -> Int {
+  let base = size == "sm" ? 1 : 2
+  base + volume(tone ?? "calm")
+}
+
+pub fn uses() -> Int {
+  pick("lg", "loud") + pick("sm", none)
+}

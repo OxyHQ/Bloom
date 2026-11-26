@@ -625,6 +625,8 @@ pub enum TypeKind {
         ret: Box<TypeExpr>,
     },
     Optional(Box<TypeExpr>),
+    /// `"a" | "b"`: a union of string literals (TS-shaped data; an enum is Bloom's own choice).
+    Strings(Vec<String>),
     /// `{ a: Int, b: String? }`: a structural record type (an optional field may be absent).
     Record(Vec<(Ident, TypeExpr)>),
     /// What the parser put where it could not read a type.
