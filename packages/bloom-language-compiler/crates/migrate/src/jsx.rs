@@ -183,6 +183,24 @@ impl Tr<'_> {
                 None => group,
             };
         }
+        // A view of this module takes its children as the `children` prop (a `View`):
+        // one view, or a `Group` of them.
+        if !lines.is_empty() && self.views.contains(name.as_str()) {
+            let single = el.children.iter().filter(|c| !is_blank(c)).count() == 1
+                && !lines.starts_with("if ")
+                && !lines.starts_with("for ");
+            let children = if single {
+                lines.clone()
+            } else {
+                format!("{} {{\n{lines}\n}}", self.name("Group", el.span))
+            };
+            props.push(format!("children: {children}"));
+            let node = format!("{name}({})", props.join(", "));
+            return match node_id {
+                Some(key) => format!("{node}.id({key})"),
+                None => node,
+            };
+        }
         let head = format!("{name}({})", props.join(", "));
         let node = if lines.is_empty() { head } else { format!("{head} {{\n{lines}\n}}") };
         match node_id {

@@ -230,13 +230,16 @@ impl Tr<'_> {
                     return self.expr(&l.left);
                 }
                 // `a || 0`, `a || ""`, `a || false`: the falsy value of `a`'s own type as
-                // the default gives what `a ?? d` gives (only `NaN || 0` differs).
+                // the default gives what `a ?? d` gives (only `NaN || 0` differs); `a || []`
+                // and `a || {}` too (a list or an object is never falsy).
                 if l.operator == LogicalOperator::Or
                     && !is_boolean_shaped(&l.left)
                     && match l.right.without_parentheses() {
                         Expression::NumericLiteral(n) => n.value == 0.0,
                         Expression::StringLiteral(s) => s.value.is_empty(),
                         Expression::BooleanLiteral(b) => !b.value,
+                        Expression::ArrayExpression(a) => a.elements.is_empty(),
+                        Expression::ObjectExpression(o) => o.properties.is_empty(),
                         _ => false,
                     }
                 {

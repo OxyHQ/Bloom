@@ -32,6 +32,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((start, end, format!("for v in {text} {{ v }}")))
             }
+            // A `for` where one view is expected (an `if` branch given as a value): a `Group`.
+            ("B0201", _)
+                if d.message == "this block gives no value; expected `View`" && text.starts_with("for ") =>
+            {
+                block_end(source, start).map(|e| (start, e, format!("Group {{\n{}\n}}", &source[start..e])))
+            }
             // `{}` where a dictionary is expected: the empty dictionary `[:]` (`{}` is a closure).
             ("B0201", "{}")
                 if d.message.starts_with("expected `[") && d.message.ends_with("found `() -> Unit`") =>
@@ -137,4 +143,35 @@ fn line_is(source: &str, start: usize, end: usize) -> bool {
     let after = &source[end..];
     let line_end = after.find('\n').unwrap_or(after.len());
     before[line_start..].trim().is_empty() && after[..line_end].trim().is_empty()
+}
+
+/// The end of the block whose `{` is the first one at or after `start`: just past
+/// its matching `}` (strings skipped).
+fn block_end(source: &str, start: usize) -> Option<usize> {
+    let open = start + source[start..].find('{')?;
+    let mut depth = 0i32;
+    let mut quote = false;
+    let mut prev = ' ';
+    for (i, c) in source[open..].char_indices() {
+        if quote {
+            if c == '"' && prev != '\\' {
+                quote = false;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' => quote = true,
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(open + i + 1);
+                }
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    None
 }
