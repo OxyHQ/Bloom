@@ -67,41 +67,41 @@ pub fn anchor(diagnostic: &mut Diagnostic) {
     }
 }
 
-struct Gen {
+pub(crate) struct Gen {
     /// The type's name: what derived code's spans stand for.
-    span: Span,
+    pub(crate) span: Span,
     /// Every name the derived code refers to (imported from the standard library or the
     /// module that declares it, as written names are).
-    names: BTreeSet<String>,
+    pub(crate) names: BTreeSet<String>,
 }
 
 impl Gen {
-    fn fresh(&self) -> Span {
+    pub(crate) fn fresh(&self) -> Span {
         synthetic(self.span)
     }
 
-    fn expr(&self, kind: ExprKind) -> Expr {
+    pub(crate) fn expr(&self, kind: ExprKind) -> Expr {
         Expr { id: ExprId(NEXT_ID.fetch_add(1, Ordering::Relaxed)), kind, span: self.fresh() }
     }
 
-    fn ident(&self, name: &str) -> Ident {
+    pub(crate) fn ident(&self, name: &str) -> Ident {
         Ident { name: name.to_string(), span: self.fresh() }
     }
 
-    fn name(&mut self, name: &str) -> Expr {
+    pub(crate) fn name(&mut self, name: &str) -> Expr {
         self.names.insert(name.to_string());
         self.expr(ExprKind::Name(name.to_string()))
     }
 
-    fn local(&self, name: &str) -> Expr {
+    pub(crate) fn local(&self, name: &str) -> Expr {
         self.expr(ExprKind::Name(name.to_string()))
     }
 
-    fn str(&self, text: &str) -> Expr {
+    pub(crate) fn str(&self, text: &str) -> Expr {
         self.expr(ExprKind::Str { parts: vec![StrPart::Text(text.to_string())], raw: false })
     }
 
-    fn call(&mut self, callee: Expr, args: Vec<(Option<&str>, Expr)>) -> Expr {
+    pub(crate) fn call(&mut self, callee: Expr, args: Vec<(Option<&str>, Expr)>) -> Expr {
         let args = args
             .into_iter()
             .map(|(label, value)| Arg {
@@ -120,7 +120,7 @@ impl Gen {
         }))
     }
 
-    fn named_type(&mut self, name: &str, args: Vec<TypeExpr>) -> TypeExpr {
+    pub(crate) fn named_type(&mut self, name: &str, args: Vec<TypeExpr>) -> TypeExpr {
         self.names.insert(name.to_string());
         TypeExpr { kind: TypeKind::Named { name: self.ident(name), args }, span: self.fresh() }
     }
@@ -327,7 +327,8 @@ pub fn lower(file: &mut File, diagnostics: &mut Vec<Diagnostic>) -> BTreeSet<Str
     let mut names = BTreeSet::new();
     let mut out = Vec::new();
     for item in std::mem::take(&mut file.items) {
-        let derived = derive(&item, &mut names, diagnostics);
+        let mut derived = derive(&item, &mut names, diagnostics);
+        derived.extend(crate::model::derive(&item, &mut names, diagnostics));
         // Beside the type: `T.self` is a constant, read after it is declared.
         out.push(item);
         out.extend(derived);

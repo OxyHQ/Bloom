@@ -1,0 +1,49 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { type ModelStore, modelStore, useQuery, useRecordQuery, ModelStore$insert, ModelStore$update } from "../../.bloom/std/Bloom/Data.bloom";
+import { Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, type JSONValue, Optional$$decode, String$$decode, String$$encode, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type Date } from "../../.bloom/std/Bloom/Time.bloom";
+
+export interface Note {
+  readonly slug: string;
+  readonly text: string;
+  readonly createdAt: Date;
+  readonly pinned: boolean;
+}
+
+export function Note$$decode(value: unknown, at: string): Note {
+return { slug: String$$decode(jsonField(value, "slug", at), "Note.slug"), text: String$$decode(jsonField(value, "text", at), "Note.text"), createdAt: Date$$decode(jsonField(value, "createdAt", at), "Note.createdAt"), pinned: (Optional$$decode(jsonField(value, "pinned", at), "Note.pinned", Bool$$decode)) ?? false };
+}
+
+export function Note$$encode(value: Note): unknown {
+return jsonObject({ "slug": String$$encode(value.slug), "text": String$$encode(value.text), "createdAt": Date$$encode(value.createdAt), "pinned": Bool$$encode(value.pinned) });
+}
+
+export const Note$$self: Codec<Note> = { decode: Note$$decode, encode: Note$$encode };
+
+export const Note$$store: ModelStore<Note> = modelStore("Note", "slug");
+
+export function remember(note: Note): boolean {
+ModelStore$insert(Note$$store, note);
+return ModelStore$update(Note$$store, note.slug, (n: Note) => ({ slug: n.slug, text: n.text, createdAt: n.createdAt, pinned: true }));
+}
+
+const $fn0 = ($0: Note) => $0.pinned;
+export const Notes = view(function Notes() {
+"use no memo";
+const $ = $c(5);
+const pinned: readonly Note[] = useQuery(Note$$store, "createdAt", "reverse", $fn0);
+const welcome: Note | undefined = useRecordQuery(Note$$store, "welcome");
+let $t0;
+if ($[2] !== welcome?.text || $[3] !== pinned) {
+$t0 = VStack(($[0] !== welcome?.text ? ($[0] = welcome?.text, $[1] = Text(welcome?.text ?? "")) : $[1]), ...pinned.map((note) => Text(note.text))).spacing("sm");
+$[2] = welcome?.text;
+$[3] = pinned;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+});
+

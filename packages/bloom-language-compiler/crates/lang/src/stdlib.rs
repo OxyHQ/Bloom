@@ -29,8 +29,10 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("Logger.bloom", include_str!("../../../stdlib/Bloom/Logger.bloom")),
     ("Localization.bloom", include_str!("../../../stdlib/Bloom/Localization.bloom")),
     ("Navigation.bloom", include_str!("../../../stdlib/Bloom/Navigation.bloom")),
+    ("Data.bloom", include_str!("../../../stdlib/Bloom/Data.bloom")),
     ("runtime.ts", include_str!("../../../stdlib/Bloom/runtime.ts")),
     ("routing.ts", include_str!("../../../stdlib/Bloom/routing.ts")),
+    ("models.ts", include_str!("../../../stdlib/Bloom/models.ts")),
 ];
 
 thread_local! {

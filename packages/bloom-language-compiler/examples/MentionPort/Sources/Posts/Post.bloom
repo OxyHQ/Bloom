@@ -1,5 +1,6 @@
 // A post and its author as the API sends them (packages/shared-types), decoded by
-// derived Codable: no hand-written mapping.
+// derived Codable: no hand-written mapping. Posts are a `@Model`: held once by id
+// (`Post.store`), whichever feed or screen shows them, and kept on the device.
 
 public struct Author: Codable, Equatable {
   public let id: String
@@ -21,8 +22,8 @@ public struct PostStats: Codable, Equatable {
   public var replies: Int = 0
 }
 
-public struct Post: Codable, Equatable {
-  public let id: String
+@Model public struct Post: Codable, Equatable {
+  @Attribute(.unique) public let id: String
   public let text: String
   public let author: Author
   public let createdAt: Date

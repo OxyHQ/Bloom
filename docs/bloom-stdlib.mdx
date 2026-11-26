@@ -931,3 +931,126 @@ Back to the screen under this one (or closes the sheet in front).
 ### `func href<R>(_ route: R) -> String`
 
 The address of `route` (`"/post/42"`): what a deep link or a web URL to it reads.
+
+## Data
+
+Bloom (data): `@Model` types held by key, read by `@Query`, filled by a `Source`,
+changed optimistically by an `Action`, and fed by `Realtime` events.
+
+```swift
+@Model public struct Post: Codable {
+  @Attribute(.unique) public let id: String
+  public var likes: Int
+  public let createdAt: Date
+}
+
+Post.store.insert(post)
+Post.store.update(post.id) { $0.liked(true) }
+
+struct Feed: View {
+  @Query(Post.self, sort: \.createdAt, order: .reverse) var posts: [Post]
+  var body: some View { List(posts) { post in PostRow(post: post) } }
+}
+
+```
+
+`@Model` derives `Post.store` at compile time, beside `Codable`'s `Post.self`, keyed by
+the `@Attribute(.unique)` field (else `id`). A view's `@Query` re-renders when one of
+its records changes, and only then. Records persist across launches: Android and iOS
+copy them to SQLite in the background (`@oxy.so/bloom-data/sqlite` on `expo-sqlite`);
+the web and tests keep them in memory.
+
+### `type ModelHandle<T>`
+
+The data layer's records of one `@Model` type.
+
+### `type SourceHandle<T>`
+
+The data layer's server list.
+
+### `type ActionHandle<A, R>`
+
+The data layer's action.
+
+### `type EventSocket`
+
+What `Realtime` listens on: a socket with `on(event, listener)` and `off` (socket.io's).
+
+### `enum SortOrder`
+
+A `@Query`'s order.
+
+- `case forward`
+- `case reverse`
+
+### `struct ModelStore<T>`
+
+The records of one `@Model` type, by key: what `@Model` derives as `T.store`.
+
+- `let name: String`: The type's name: its records' namespace on disk.
+
+### `func modelStore<T>(_ name: String, key: KeyPath<T, String>, persist: Bool = true) -> ModelStore<T>`
+
+What `@Model` writes for `T.store`: the records of `name`, keyed by `key`.
+
+### `extension ModelStore`
+
+- `func get(_ id: String) -> T?`: The record with key `id`, or `none`.
+- `func insert(_ record: T)`: Stores `record`, replacing the one with its key.
+- `func insertAll(_ records: [T])`: Stores every one of `records`.
+- `func update(_ id: String, _ change: (T) -> T) -> Bool`: Replaces the record `id` by `change` of it. Inside an `Action`'s `optimistic`, the change is the action's, rolled back when it fails. Whether `id` was held.
+- `func delete(_ id: String) -> Bool`: Removes the record `id`, in memory and on disk. Whether it was held.
+- `var all: [T]`: Every record held, in the order they were first inserted.
+- `func load() async throws`: Reads the records from the device's copy (a `@Query` does this on its first read).
+
+### `func useQuery<T, V>(_ store: ModelStore<T>, sort: KeyPath<T, V>? = none, order: SortOrder = .forward, filter: ((T) -> Bool)? = none) -> [T]`
+
+What `@Query(T.self, sort:order:filter:)` lowers onto: `store`'s records, filtered and sorted (by a number, string, `Bool` or `Date` field), re-read when one of them changes.
+
+### `func useRecordQuery<T>(_ store: ModelStore<T>, id: String?) -> T?`
+
+What `@Query(T.store, id: x)` lowers onto: one record, re-read when it changes.
+
+### `struct SourcePage<T>`
+
+One page of a `Source`: its records and the next page's cursor (`none`: the last).
+
+- `let items: [T]`
+- `let next: String?`
+
+### `struct Source<T>`
+
+A server list of a `@Model` type's records, read a page at a time and kept on the device. `@Query(source)` in a view reads it when it is due.  let home = Source(Post.store, name: "home") { cursor, signal in let page = try await api.get("feeds/home", as: FeedPage.self, query: ["cursor": cursor ?? ""], cancellation: signal) return SourcePage(items: page.items, next: page.nextCursor) }
+
+- `let name: String`
+
+### `extension Source`
+
+- `static func make(_ store: ModelStore<T>, name: String, _ load: (String?, TaskSignal) async throws -> SourcePage<T>) -> Source<T>`: The list `name` of `store`'s records, whose pages `load(cursor, cancellation)` reads.
+- `func refresh() async`: Reads the first page again (a failure keeps the list as it was).
+- `func loadMore() async`: Reads the next page, if there is one.
+
+### `func useSource<T>(_ source: Source<T>) -> [T]`
+
+What `@Query(source)` lowers onto: the source's records, in its order.
+
+### `struct Action<Input, Output>`
+
+A change shown at once (`optimistic`, on `@Model` stores) and settled by `perform`: when it throws, the optimistic change is rolled back.  let like = Action.make("like", optimistic: { (post: Post) in _ = Post.store.update(post.id) { $0.liked(!post.isLiked) } }) { post in try await api.post("posts/\(post.id)/like") } await like.run(post)
+
+- `let name: String`
+
+### `extension Action`
+
+- `static func make(_ name: String, optimistic: ((Input) -> Unit)? = none, _ perform: (Input) async throws -> Output) -> Action<Input, Output>`
+- `func run(_ input: Input) async -> Output?`: Runs the action: its result, or `none` when it failed (and was rolled back).
+
+### `struct Realtime`
+
+A socket's events written into `@Model` stores, applied together once per frame.
+
+
+### `extension Realtime`
+
+- `static func listen(_ socket: EventSocket, _ handlers: [String: (JSONValue) -> Unit]) -> Realtime`: Calls each handler with its event's payload; `cancel()` stops listening.
+- `func cancel()`: Stops listening.

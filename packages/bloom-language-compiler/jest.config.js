@@ -39,5 +39,7 @@ module.exports = {
   moduleNameMapper: {
     ...runtime.moduleNameMapper,
     '^@oxy.so/bloom-language$': path.join(__dirname, '../bloom-language/src/index.ts'),
+    // The data layer under the standard library's `@Model` (stdlib/Bloom/models.ts), from source.
+    '^@oxy.so/bloom-data$': path.join(__dirname, '../bloom-data/src/index.ts'),
   },
 };

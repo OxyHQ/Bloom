@@ -23,6 +23,7 @@ pub mod i18n;
 #[path = "icons.generated.rs"]
 pub mod icons;
 mod lexer;
+mod model;
 pub mod modules;
 pub mod package;
 mod parser;

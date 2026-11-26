@@ -347,3 +347,62 @@ fn refreshable_runs_an_async_action() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+const MODEL: &str = r#"@Model public struct Note: Codable, Equatable {
+  @Attribute(.unique) public let slug: String
+  public var text: String
+  public let createdAt: Date
+  public var pinned: Bool = false
+}
+
+public func remember(_ note: Note) -> Bool {
+  Note.store.insert(note)
+  return Note.store.update(note.slug) { n in Note(slug: n.slug, text: n.text, createdAt: n.createdAt, pinned: true) }
+}
+
+public struct Notes: View {
+  @Query(Note.self, sort: \.createdAt, order: .reverse, filter: { $0.pinned }) var pinned: [Note]
+  @Query(Note.self, id: "welcome") var welcome: Note?
+
+  var body: some View {
+    VStack(spacing: .sm) {
+      Text(welcome?.text ?? "")
+      ForEach(pinned) { note in Text(note.text) }
+    }
+  }
+}
+"#;
+
+/// `@Model` derives the type's store (`Note.store`, keyed by its `@Attribute(.unique)`
+/// field), and a view's `@Query` reads it with the data layer's hooks.
+#[test]
+fn a_model_is_derived_and_queried() {
+    let root = package("model", &[("Sources/Model/Notes.bloom", MODEL)]);
+    let path = root.join("Sources/Model/Notes.bloom");
+    let out = compile(MODEL, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("modelStore(\"Note\", \"slug\")"), "{}", out.code);
+    assert!(out.code.contains("useQuery(Note$$store, \"createdAt\", \"reverse\""), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/model.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+#[test]
+fn a_model_without_a_string_key_is_reported() {
+    for (source, expected) in [
+        ("@Model public struct A: Codable {\n  public let name: String\n}\n", "has no key"),
+        ("@Model public struct B: Codable {\n  public let id: Int\n}\n", "not a `String`"),
+    ] {
+        let root = package("model-key", &[("Sources/Model/A.bloom", source)]);
+        let path = root.join("Sources/Model/A.bloom");
+        let out = compile(source, &path.to_string_lossy(), &Options::default());
+        assert!(
+            out.diagnostics.iter().any(|d| d.code == "B0831" && d.message.contains(expected)),
+            "{}",
+            rendered(&out)
+        );
+    }
+}

@@ -1162,6 +1162,9 @@ impl<'o> Checker<'o> {
                     Ty::Adt(def, _) if matches!(self.out.defs[*def].kind, DefKind::Struct(_)) => {
                         Ty::KeyPath(Box::new(root), Box::new(value))
                     }
+                    // A generic function's `KeyPath<T, V>`: each call's `T` is a struct, which
+                    // the key path written at the call is checked against.
+                    Ty::Param(..) => Ty::KeyPath(Box::new(root), Box::new(value)),
                     Ty::Unknown => Ty::Unknown,
                     _ => {
                         self.report(
@@ -5174,6 +5177,11 @@ impl<'o> Checker<'o> {
     pub fn closure(&mut self, c: &Closure, expected: Option<&Ty>, boundary: bool) -> Ty {
         let expected_fn = match expected.map(|e| self.resolve(e)) {
             Some(Ty::Fn(f)) => Some(f),
+            // A closure where an optional function is expected (`filter: ((T) -> Bool)?`).
+            Some(Ty::Option(inner)) => match self.resolve(&inner) {
+                Ty::Fn(f) => Some(f),
+                _ => None,
+            },
             _ => None,
         };
         // A `() -> View` closure of several lines (Swift's `@ViewBuilder`): each line a child.

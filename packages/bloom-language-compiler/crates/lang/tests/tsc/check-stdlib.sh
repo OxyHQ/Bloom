@@ -29,9 +29,16 @@ for ts in "$std"/*.ts; do
   sed -E 's/from "\.\/([A-Za-z]+)\.bloom"/from ".\/\1"/' "$ts" > "$out/$name"
 done
 tsc="${TSC:-$(cd "$compiler/../.." && pwd)/node_modules/.bin/tsc}"
-cat > "$out/tsconfig.json" <<'JSON'
+# `data.ts` is checked against the data layer's own sources (`packages/bloom-data`).
+data="$(cd "$compiler/../bloom-data" && pwd)/src"
+cat > "$out/tsconfig.json" <<JSON
 {
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@oxy.so/bloom-data": ["$data/index.ts"],
+      "@oxy.so/bloom-data/sqlite": ["$data/sqlite.ts"]
+    },
     "strict": true,
     "noEmit": true,
     "target": "ES2022",

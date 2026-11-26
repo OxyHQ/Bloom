@@ -1,5 +1,6 @@
 import type { RegexMatch } from "../../.bloom/std/Bloom/Regex.bloom";
 import { uniqued } from "../../.bloom/std/Bloom/Core.bloom";
+import { type ModelStore, modelStore } from "../../.bloom/std/Bloom/Data.bloom";
 import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Int$$decode, Int$$encode, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, URL$$decode, URL$$encode, decodeCase, encodeCase, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
 import { type Regex, Regex$matches, RegexMatch$group } from "../../.bloom/std/Bloom/Regex.bloom";
 import { type Date, Date$$get$now, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
@@ -74,6 +75,8 @@ return jsonObject({ "id": String$$encode(value.id), "text": String$$encode(value
 }
 
 export const Post$$self: Codec<Post> = { decode: Post$$decode, encode: Post$$encode };
+
+export const Post$$store: ModelStore<Post> = modelStore("Post", "id");
 
 export interface FeedPage {
   readonly items: readonly Post[];

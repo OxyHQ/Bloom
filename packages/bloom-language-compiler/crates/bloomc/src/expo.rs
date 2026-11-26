@@ -48,6 +48,10 @@ pub const RUNTIME: &[(&str, &str)] = &[
 pub const STDLIB_NATIVE: &[(&str, &str)] =
     &[("expo-file-system", "~58.0.13"), ("expo-secure-store", "~58.0.2"), ("expo-sqlite", "~58.0.15")];
 
+/// The data layer under the standard library's `@Model`, `@Query`, `Source` and `Action`
+/// (`stdlib/Bloom/models.ts`), its SQLite copy on `expo-sqlite` above. Bloom's own package.
+pub const STDLIB_DATA: &[(&str, &str)] = &[("@oxy.so/bloom-data", "0.1.2")];
+
 /// The native modules of today's router under `NavigationStack`: Bloom's tab pager swipes
 /// and selects its pages on `react-native-pager-view` (Bloom's optional peer, which an app
 /// without it lacks: its tabs would not change). Pinned as Mention pins it.
@@ -556,7 +560,11 @@ mod tests {
         for (name, version) in STDLIB_NATIVE {
             assert_eq!(manifest.get("dependencies").get(name).as_str(), Some(*version), "{name}");
             assert!(
-                ROUTER_NATIVE.iter().all(|(n, v)| manifest.get("dependencies").get(n).as_str() == Some(*v))
+                ROUTER_NATIVE.iter().chain(STDLIB_DATA).all(|(n, v)| manifest
+                    .get("dependencies")
+                    .get(n)
+                    .as_str()
+                    == Some(*v))
             );
             assert!(metro.contains(&format!("'{name}'")), "{name} reaches the web bundle:\n{metro}");
             assert!(
@@ -591,6 +599,8 @@ mod tests {
                 "{name} is the app's runtime, not Bloom's"
             );
         }
+        let data = crate::json::parse(&read("packages/bloom-data/package.json")).unwrap();
+        assert_eq!(Some(STDLIB_DATA[0].1), data.get("version").as_str(), "the data layer's version");
         for (name, version) in RUNTIME.iter().chain(TOOLS) {
             if name.starts_with("@oxy.so/") {
                 let dir = name.trim_start_matches("@oxy.so/");

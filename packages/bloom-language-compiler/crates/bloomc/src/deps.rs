@@ -15,7 +15,7 @@ use std::process::Command;
 
 use bloom_lang::package::{self, KNOWN_PACKAGES, Requirement, Version, known_package};
 
-use crate::expo::{ROUTER_NATIVE, RUNTIME, STDLIB_NATIVE, TOOLS};
+use crate::expo::{ROUTER_NATIVE, RUNTIME, STDLIB_DATA, STDLIB_NATIVE, TOOLS};
 use crate::project::{Package, write};
 
 /// The content-addressed store bun fetches tarballs into.
@@ -155,6 +155,7 @@ pub fn package_json(package: &Package) -> Result<String, String> {
     let mut deps: BTreeMap<String, String> = RUNTIME
         .iter()
         .chain(STDLIB_NATIVE)
+        .chain(STDLIB_DATA)
         .chain(ROUTER_NATIVE)
         .map(|(n, v)| (n.to_string(), v.to_string()))
         .collect();

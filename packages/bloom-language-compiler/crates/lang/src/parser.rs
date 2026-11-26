@@ -881,6 +881,53 @@ impl<'s, 'i> Parser<'s, 'i> {
         })
     }
 
+    /// `@Query(…) var x`: a view member reading the data layer (`stdlib/Bloom/Data.bloom`).
+    /// `@Query(Post.self, sort: \.createdAt, order: .reverse, filter: { … })` is
+    /// `useQuery(Post.store, …)` (a `@Model` type's records), `@Query(Post.self, id: x)` is
+    /// `useRecordQuery(Post.store, id: x)` (one of them), and `@Query(source)` is
+    /// `useSource(source)` (a `Source`'s records, in its order).
+    fn query(&mut self, attr: &Attr, prop: &Ident) -> Option<Expr> {
+        let Some(first) = attr.args.first().filter(|a| a.label.is_none()) else {
+            self.error(
+                Diagnostic::error(
+                    "B0101",
+                    attr.span,
+                    format!("`@Query var {}` names what it reads", prop.name),
+                )
+                .label("expected `(Model.self)` or `(source)`")
+                .help(format!("write `@Query(Post.self, sort: \\.createdAt) var {}: [Post]`", prop.name))
+                .spec("73-reactivity-compile-time"),
+            );
+            return None;
+        };
+        let span = attr.span;
+        let mut args = attr.args.clone();
+        let model = match &first.value.kind {
+            ExprKind::Field(base, member) if member.name == "self" => Some(base.clone()),
+            _ => None,
+        };
+        let callee = match model {
+            Some(base) => {
+                let store = Ident { name: "store".into(), span: first.value.span };
+                args[0].value = self.expr_node(ExprKind::Field(base, store), first.value.span);
+                let one = args.iter().any(|a| a.label.as_ref().is_some_and(|l| l.name == "id"));
+                if one { "useRecordQuery" } else { "useQuery" }
+            }
+            None => "useSource",
+        };
+        let callee = self.expr_node(ExprKind::Name(callee.into()), attr.name.span);
+        Some(self.expr_node(
+            ExprKind::Call(Call {
+                callee: Box::new(callee),
+                args,
+                parens: true,
+                trailing: None,
+                optional: false,
+            }),
+            span,
+        ))
+    }
+
     /// `struct X: View { … }` as the view it compiles to: stored `let`s (and `var`s with a
     /// default) are props, `@State` states, `@Environment(\.k)` environment reads, `@Binding`
     /// a prop holding a `Binding<T>`, `func`s members, `static func ==` the memo comparator,
@@ -956,6 +1003,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                             span: member.span,
                         });
                     }
+                    (Some("Query"), None) => {
+                        let attr = attr.expect("an attribute").clone();
+                        let Some(value) = self.query(&attr, prop) else { continue };
+                        members.push(Member::Let(LetStmt {
+                            pattern: Pattern { kind: PatternKind::Bind(prop.clone()), span: prop.span },
+                            ty: ty.clone(),
+                            value,
+                            span: member.span,
+                        }));
+                    }
                     (Some(other), _) => {
                         let attr = attr.expect("an attribute");
                         self.error(
@@ -964,7 +1021,9 @@ impl<'s, 'i> Parser<'s, 'i> {
                                 attr.span,
                                 format!("unknown property wrapper `@{other}`"),
                             )
-                            .label("a view's properties take `@State`, `@Binding` or `@Environment`")
+                            .label(
+                                "a view's properties take `@State`, `@Binding`, `@Environment` or `@Query`",
+                            )
                             .spec("73-reactivity-compile-time"),
                         );
                     }
@@ -2899,7 +2958,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 has_in = true;
             }
         }
-        let tuple = tuple && has_in;
+        // `{ (post: Post) in … }`: one parameter in parentheses (Swift's way), not a 1-tuple.
+        let tuple = tuple && has_in && params.len() != 1;
         if !has_in {
             params.clear();
             self.pos = save;
