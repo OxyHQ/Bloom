@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `ScrollPane(...children)` (`@oxy.so/bloom-language/scroll-pane`): React Native's own `ScrollView`, a scroll of its own inside a dialog, a panel or a pane, bounded by its frame (`.frame({ maxHeight })`, `.frame({ height })`). Its box modifiers are the scroll view's `style` and its children its content, with no view around either: it costs the `ScrollView` an app writes. Its content takes `.contentMargins()`, `.spacing()`, `.contentGrows()`, `.align()` and `.justify()` (a short transcript at its end); the scroll `.axis()`, `.scrollIndicators()`, `.bounces()`, `.scrollDismissesKeyboard()` and `.keyboardTaps()`; `.ref()` is the scroll view (`scrollToEnd`), and `.scrollEvents({ onScroll, scrollEventThrottle, onScrollBeginDrag, … })` its events as its props. The screen's scroller stays `ScrollView`, and a scroll with Bloom's bar `ScrollArea` (Allo's poll composer, sticker picker and transcript; Mention's article).
+
 ### Breaking
 
 - Each family of nodes is an entry of its own, `@oxy.so/bloom-language/<family>` (`/inputs`, `/list`, `/containers`, `/overlays`, `/settings`, `/chart-cards`…, one per file of `src/controls`), and the root exports only the language: its layout, text, media and navigation views, modifiers and values. A family's module declares its renderers where it defines its nodes (`defineControls`), so an app's bundle carries the families it imports and no other: Allo's first web chunk went from 3.50 MB to 2.60 MB gzip. The reference names each node's module, `package.json#exports` is written by `scripts/generate-entries.mjs` (with `spec/entries.generated.json`, the table the codemod and the compiler read), and the codemod writes the new imports. To move an app, import each family's names from its entry; TypeScript names any that moved.

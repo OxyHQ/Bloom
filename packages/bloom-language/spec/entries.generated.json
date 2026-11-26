@@ -582,6 +582,9 @@
     "route-stops": [
       "RouteStops"
     ],
+    "scroll-pane": [
+      "ScrollPane"
+    ],
     "settings": [
       "SettingsDateField",
       "SettingsSection",

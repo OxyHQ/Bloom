@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (432), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (433), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 The root, `@oxy.so/bloom-language`, holds the language's views, modifiers and values; each family of nodes is an entry of its own (`@oxy.so/bloom-language/<family>`), so an app's bundle carries only the families it imports. Each node names the module it is imported from.
 
@@ -177,6 +177,7 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [colorSwatchPicker](#colorswatchpicker) | `ColorSwatchPicker` | `@oxy.so/bloom-language/color-swatch-picker` |
 | [animatedCheck](#animatedcheck) | `AnimatedCheck` | `@oxy.so/bloom-language/animated-check` |
 | [spinnerIcon](#spinnericon) | `SpinnerIcon` | `@oxy.so/bloom-language/spinner-icon` |
+| [scrollPane](#scrollpane) | `ScrollPane` | `@oxy.so/bloom-language/scroll-pane` |
 | [contextMenu](#contextmenu) | `ContextMenu` | `@oxy.so/bloom-language/context-menu` |
 | [collapsible](#collapsible) | `Collapsible` | `@oxy.so/bloom-language/collapsible` |
 | [dropZone](#dropzone) | `DropZone` | `@oxy.so/bloom-language/drop-zone` |
@@ -3441,6 +3442,28 @@ Modifiers:
 
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: IconSizeToken)`: Its width and height: an icon rung, a numeric side or an app token (Bloom's 26 by default).
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: InkToken)`: Its colour (Bloom's `color`): a role painted from the theme, or an app's own colour (`defineTokens({ color: { onVideo: '#FFFFFF' } })`), drawn as written; the text's colour by default.
+
+And every universal modifier.
+
+### `scrollPane`
+
+- `ScrollPane(...children: Child[])`: A plain scroll (React Native's `ScrollView`); its children are its content.
+
+Imported from `@oxy.so/bloom-language/scroll-pane`.
+
+Modifiers:
+
+- [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: `horizontal` scrolls across (React Native's `horizontal`); `vertical` by default.
+- [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the content, inside the scroll (the content container's padding).
+- [`.contentGrows()`](bloom-language-modifiers.mdx#contentgrows) `(on?: boolean)`: The content container grows to fill the scroll (`flexGrow: 1`), so content shorter than it can sit at its end (`.justify('end')`) or centre.
+- [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between the content's children.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: Alignment)`: The children's place across the axis (the content container's `alignItems`).
+- [`.justify()`](bloom-language-modifiers.mdx#justify) `(value: Justify)`: How the children spread along the axis (the content container's `justifyContent`).
+- [`.scrollIndicators()`](bloom-language-modifiers.mdx#scrollindicators) `(value: ScrollIndicators, axis?: Axis)`: Whether its bar shows (`visible`, `hidden`; the platform's by default), on one axis or both.
+- [`.bounces()`](bloom-language-modifiers.mdx#bounces) `(on?: boolean)`: Whether it bounces past its ends (iOS; it does by default), React Native's `bounces`.
+- [`.scrollDismissesKeyboard()`](bloom-language-modifiers.mdx#scrolldismisseskeyboard) `(value: KeyboardDismiss)`: A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default.
+- [`.keyboardTaps()`](bloom-language-modifiers.mdx#keyboardtaps) `(value: KeyboardTaps)`: Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default).
+- [`.scrollEvents()`](bloom-language-modifiers.mdx#scrollevents) `(value: ScrollEvents)`: React Native's scroll events, as its props: `onScroll` (at most every `scrollEventThrottle` ms), a drag's and a fling's start and end, and the content's size changing.
 
 And every universal modifier.
 

@@ -87,6 +87,7 @@ import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
 import type { AnimatedCheckKind } from './controls/animated-check';
 import type { SpinnerIconKind } from './controls/spinner-icon';
+import type { ScrollEvents, ScrollPaneKind } from './controls/scroll-pane';
 import type { MediaInsetBorderKind } from './controls/media-inset-border';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
@@ -664,6 +665,10 @@ export interface ValueModifiers {
   ownScreen: boolean;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
+  /** The scroll bounces past its ends (React Native's `bounces`, iOS's). */
+  bounces: boolean;
+  /** React Native's scroll events, handed to the scroll view as its props. */
+  scrollEvents: ScrollEvents;
   detached: boolean;
   dragIndicator: DragIndicator;
   material: SheetMaterial | ButtonMaterial;
@@ -1912,6 +1917,7 @@ export type NodeKind =
   | ConfirmationDialogKind
   | AnimatedCheckKind
   | SpinnerIconKind
+  | ScrollPaneKind
   | FactStripKind
   | ExpandableTextKind
   | CompositionBarKind
@@ -2871,6 +2877,12 @@ export class Node {
   }
   keyboardTaps(value: KeyboardTaps): Node {
     return this.set('keyboardTaps', value);
+  }
+  bounces(value = true): Node {
+    return this.set('bounces', value);
+  }
+  scrollEvents(value: ScrollEvents): Node {
+    return this.set('scrollEvents', value);
   }
   detached(value = true): Node {
     return this.set('detached', value);

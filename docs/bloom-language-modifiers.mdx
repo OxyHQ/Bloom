@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (668). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (670). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -356,7 +356,7 @@ The gap between children.
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.spacing(value: SpaceToken)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [avatarGroup](bloom-language-nodes.mdx#avatargroup), [grid](bloom-language-nodes.mdx#grid), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [chipRow](bloom-language-nodes.mdx#chiprow), [cappedChipRow](bloom-language-nodes.mdx#cappedchiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [carousel](bloom-language-nodes.mdx#carousel), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap), [choiceList](bloom-language-nodes.mdx#choicelist), [categoryBar](bloom-language-nodes.mdx#categorybar), [chartCardSurface](bloom-language-nodes.mdx#chartcardsurface), [chatFolderTabs](bloom-language-nodes.mdx#chatfoldertabs), [storiesRow](bloom-language-nodes.mdx#storiesrow), [sharedMediaGrid](bloom-language-nodes.mdx#sharedmediagrid), [shelf](bloom-language-nodes.mdx#shelf), [shelfSkeleton](bloom-language-nodes.mdx#shelfskeleton), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [avatarGroup](bloom-language-nodes.mdx#avatargroup), [grid](bloom-language-nodes.mdx#grid), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [chipRow](bloom-language-nodes.mdx#chiprow), [cappedChipRow](bloom-language-nodes.mdx#cappedchiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [carousel](bloom-language-nodes.mdx#carousel), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap), [scrollPane](bloom-language-nodes.mdx#scrollpane), [choiceList](bloom-language-nodes.mdx#choicelist), [categoryBar](bloom-language-nodes.mdx#categorybar), [chartCardSurface](bloom-language-nodes.mdx#chartcardsurface), [chatFolderTabs](bloom-language-nodes.mdx#chatfoldertabs), [storiesRow](bloom-language-nodes.mdx#storiesrow), [sharedMediaGrid](bloom-language-nodes.mdx#sharedmediagrid), [shelf](bloom-language-nodes.mdx#shelf), [shelfSkeleton](bloom-language-nodes.mdx#shelfskeleton), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
@@ -366,7 +366,7 @@ The children's place across the axis.
 
 - Parameters: [alignment](bloom-language-tokens.mdx#alignment)
 - Signature: `.align(value: Alignment)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carousel](bloom-language-nodes.mdx#carousel), [hoverCard](bloom-language-nodes.mdx#hovercard), [dataColumn](bloom-language-nodes.mdx#datacolumn), [mapControls](bloom-language-nodes.mdx#mapcontrols)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carousel](bloom-language-nodes.mdx#carousel), [scrollPane](bloom-language-nodes.mdx#scrollpane), [hoverCard](bloom-language-nodes.mdx#hovercard), [dataColumn](bloom-language-nodes.mdx#datacolumn), [mapControls](bloom-language-nodes.mdx#mapcontrols)
 - Narrower on: [divider](bloom-language-nodes.mdx#divider) ([dividerAlign](bloom-language-tokens.mdx#divideralign)), [tableColumn](bloom-language-nodes.mdx#tablecolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [tableCell](bloom-language-nodes.mdx#tablecell) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [carousel](bloom-language-nodes.mdx#carousel) ([carouselAlign](bloom-language-tokens.mdx#carouselalign)), [hoverCard](bloom-language-nodes.mdx#hovercard) ([floatingAlign](bloom-language-tokens.mdx#floatingalign)), [dataColumn](bloom-language-nodes.mdx#datacolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [mapControls](bloom-language-nodes.mdx#mapcontrols) ([mapControlsAlign](bloom-language-tokens.mdx#mapcontrolsalign))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `alignment` tokens: `'start'`, `'center'`, `'end'`, `'stretch'`, `'baseline'`
@@ -386,7 +386,7 @@ How the children spread along the axis: packed at `start`, `center` or `end`, or
 
 - Parameters: [justify](bloom-language-tokens.mdx#justify)
 - Signature: `.justify(value: Justify)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [card](bloom-language-nodes.mdx#card)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [card](bloom-language-nodes.mdx#card), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `justify` tokens: `'start'`, `'center'`, `'end'`, `'between'`, `'around'`, `'evenly'`
 
@@ -405,7 +405,7 @@ Lays the children out along `horizontal` or `vertical`, over the constructor's o
 
 - Parameters: [axis](bloom-language-tokens.mdx#axis)
 - Signature: `.axis(value: Axis)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [buttonGroup](bloom-language-nodes.mdx#buttongroup), [divider](bloom-language-nodes.mdx#divider), [actionBar](bloom-language-nodes.mdx#actionbar), [card](bloom-language-nodes.mdx#card), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [choiceList](bloom-language-nodes.mdx#choicelist), [mapControls](bloom-language-nodes.mdx#mapcontrols), [orderStatusTimeline](bloom-language-nodes.mdx#orderstatustimeline)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [buttonGroup](bloom-language-nodes.mdx#buttongroup), [divider](bloom-language-nodes.mdx#divider), [actionBar](bloom-language-nodes.mdx#actionbar), [card](bloom-language-nodes.mdx#card), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [scrollPane](bloom-language-nodes.mdx#scrollpane), [choiceList](bloom-language-nodes.mdx#choicelist), [mapControls](bloom-language-nodes.mdx#mapcontrols), [orderStatusTimeline](bloom-language-nodes.mdx#orderstatustimeline)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `axis` tokens: `'horizontal'`, `'vertical'`
 
@@ -811,7 +811,7 @@ An escape hatch: the view's outermost box as React Native's view (its host, or t
 
 - Parameters: a value
 - Signature: `.ref(value: Ref<ViewInstance>)`
-- Taken by: every node (universal)
+- Taken by: every node (universal), and [scrollPane](bloom-language-nodes.mdx#scrollpane)
 
 ### `onLayout`
 
@@ -2504,8 +2504,24 @@ Whether a tap on a chip reaches it while the keyboard is open (`handled` by defa
 
 - Parameters: [keyboardTaps](bloom-language-tokens.mdx#keyboardtaps)
 - Signature: `.keyboardTaps(value: KeyboardTaps)`
-- Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 - `keyboardTaps` tokens: `'always'`, `'never'`, `'handled'`
+
+### `bounces`
+
+Whether it bounces past its ends (iOS; it does by default), React Native's `bounces`.
+
+- Parameters: a value (optional)
+- Signature: `.bounces(on?: boolean)`
+- Taken by: [scrollPane](bloom-language-nodes.mdx#scrollpane)
+
+### `scrollEvents`
+
+React Native's scroll events, as its props: `onScroll` (at most every `scrollEventThrottle` ms), a drag's and a fling's start and end, and the content's size changing.
+
+- Parameters: a value
+- Signature: `.scrollEvents(value: ScrollEvents)`
+- Taken by: [scrollPane](bloom-language-nodes.mdx#scrollpane)
 
 ### `nativeID`
 
@@ -2623,7 +2639,7 @@ Room around the content, inside the scroll (the content container's padding).
 
 - Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentMargins(value: SpaceToken)` or `.contentMargins(edge: Edge, value: SpaceToken)`
-- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
 - `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
@@ -2633,7 +2649,7 @@ The content container grows to fill the scroll (`flexGrow: 1` on React Native's 
 
 - Parameters: a value (optional)
 - Signature: `.contentGrows(on?: boolean)`
-- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 
 ### `refreshable`
 
@@ -2659,7 +2675,7 @@ The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the 
 
 - Parameters: [scrollIndicators](bloom-language-tokens.mdx#scrollindicators); [axis](bloom-language-tokens.mdx#axis) (optional)
 - Signature: `.scrollIndicators(value: ScrollIndicators, axis?: Axis)`
-- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 - `scrollIndicators` tokens: `'automatic'`, `'visible'`, `'hidden'`
 - `axis` tokens: `'horizontal'`, `'vertical'`
 
@@ -2669,7 +2685,7 @@ A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `
 
 - Parameters: [keyboardDismiss](bloom-language-tokens.mdx#keyboarddismiss)
 - Signature: `.scrollDismissesKeyboard(value: KeyboardDismiss)`
-- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [scrollPane](bloom-language-nodes.mdx#scrollpane)
 - `keyboardDismiss` tokens: `'never'`, `'immediately'`, `'interactively'`
 
 ### `detached`

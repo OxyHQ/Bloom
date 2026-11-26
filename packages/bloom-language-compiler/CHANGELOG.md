@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Checks `ScrollPane` and its modifiers (`.bounces()`, `.scrollEvents()` among them), from the spec.
 - A view's constructor imported from a family's entry (`import { Rating } from '@oxy.so/bloom-language/rating'`) is a language view, as one from the root is; the entries are generated from the language (`entries.generated.rs`).
 - bloomc imports each view's constructor from its entry (`@oxy.so/bloom-language/inputs` for a `TextField`), from the generated table (`entries::module_of`).
 

@@ -1822,6 +1822,8 @@
     "fade": ["color"],
     "ringInset": ["space"],
     "keyboardTaps": ["keyboardTaps"],
+    "bounces": ["value?"],
+    "scrollEvents": ["value"],
     "nativeID": ["value"],
     "describedBy": ["value"],
     "sideGutter": ["space"],
@@ -3883,6 +3885,23 @@
       "modifiers": ["size", "tint"],
       "size": "iconSize",
       "tint": "color"
+    },
+    "scrollPane": {
+      "constructors": ["ScrollPane"],
+      "modifiers": [
+        "ref",
+        "axis",
+        "contentMargins",
+        "contentGrows",
+        "spacing",
+        "align",
+        "justify",
+        "scrollIndicators",
+        "bounces",
+        "scrollDismissesKeyboard",
+        "keyboardTaps",
+        "scrollEvents"
+      ]
     },
     "contextMenu": {
       "constructors": ["ContextMenu"],

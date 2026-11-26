@@ -1204,6 +1204,20 @@
         "default": "./lib/commonjs/entries/route-stops.js"
       }
     },
+    "./scroll-pane": {
+      "react-native": {
+        "types": "./lib/typescript/module/entries/scroll-pane.d.ts",
+        "default": "./src/entries/scroll-pane.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/entries/scroll-pane.d.ts",
+        "default": "./lib/module/entries/scroll-pane.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/entries/scroll-pane.d.ts",
+        "default": "./lib/commonjs/entries/scroll-pane.js"
+      }
+    },
     "./settings": {
       "react-native": {
         "types": "./lib/typescript/module/entries/settings.d.ts",
