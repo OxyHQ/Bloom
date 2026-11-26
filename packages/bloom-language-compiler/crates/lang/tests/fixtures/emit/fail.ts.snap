@@ -1,0 +1,54 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { onSave, useSync } from "@/api";
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+
+function check(name: string): $Result<string, Error> {
+if ((name.length === 0)) {
+return { ok: false as const, error: (new Error("No name") satisfies Error) };
+}
+return { ok: true as const, value: name };
+}
+
+const $fn0 = (name: string) => {
+const $t0 = check(name);
+if (!$t0.ok) throw $t0.error;
+const checked = $t0.value;
+if (checked === "x") {
+throw (new Error("Reserved") satisfies Error);
+}
+};
+export interface DeckProps {
+  readonly id: string;
+}
+export const Deck = view(function Deck(props: DeckProps) {
+"use no memo";
+const $ = $c(4);
+const { id } = props;
+const title = useSync(() => {
+if ((id.length === 0)) {
+throw (new Error("No track") satisfies Error);
+}
+return id;
+});
+let $t1;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t1 = onSave($fn0);
+$[0] = $t1;
+} else {
+$t1 = $[0];
+}
+const label = useSync(() => (id.length === 0) ? (() => { throw (new Error("Empty") satisfies Error); })() : id);
+let $t2;
+if ($[1] !== title || $[2] !== label) {
+$t2 = Text(`${title} ${label}`);
+$[1] = title;
+$[2] = label;
+$[3] = $t2;
+} else {
+$t2 = $[3];
+}
+return $t2;
+});
+

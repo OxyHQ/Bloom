@@ -823,6 +823,15 @@ impl<'a> Emitter<'a> {
 
     /// An expression whose value goes to `tail`.
     fn tail_expr(&mut self, expr: &Expr, tail: &Tail) {
+        // `fail(e)` as a statement, or a block's last line: `throw e;` (it gives no value).
+        if let ExprKind::Call(call) = &expr.kind
+            && self.ck.calls.get(&expr.id) == Some(&CallRes::Fail)
+        {
+            let mut line = Frag::at(expr.span, "throw ");
+            line.f(self.fail_value(call)).s(";");
+            self.push_stmt(line);
+            return;
+        }
         match (&expr.kind, tail) {
             (ExprKind::If(if_expr), _) if !self.simple_if(if_expr) || matches!(tail, Tail::Discard) => {
                 self.if_stmt(if_expr, tail)
@@ -2370,6 +2379,12 @@ impl<'a> Emitter<'a> {
                 let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
                 value.wrap(&format!("${helper}("), ")")
             }
+            CallRes::Fail => {
+                // Where a value is needed (`c ? x : fail(e)`): a throw as an expression.
+                let mut out = Frag::of("(() => { throw ");
+                out.f(self.fail_value(call)).s("; })()");
+                out
+            }
             CallRes::Sleep => {
                 let ms = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
                 ms.wrap("new Promise<void>((resolve) => setTimeout(resolve, ", "))")
@@ -2379,6 +2394,11 @@ impl<'a> Emitter<'a> {
                 Frag::join(self.args(call), ", ").wrap(method, "])")
             }
         }
+    }
+
+    /// `fail(e)`'s error.
+    fn fail_value(&mut self, call: &Call) -> Frag {
+        call.args.first().map_or(Frag::of("new Error()"), |a| self.expr(&a.value))
     }
 
     /// A view call's props in parameter order.

@@ -15,3 +15,5 @@ export declare function useQueryOf(options: { queryKey: string[]; queryFn: () =>
 export declare function onRefresh(handler: () => Promise<void>): void;
 /** TS taking a React ref object. */
 export declare function useVisible(options: { key: string; target: import('react').RefObject<unknown> }): boolean;
+export declare function useSync(run: () => string): string;
+export declare function onSave(handler: (name: string) => void): void;
