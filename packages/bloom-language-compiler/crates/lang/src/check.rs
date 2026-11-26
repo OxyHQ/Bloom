@@ -78,6 +78,12 @@ pub enum CallRes {
     Ts,
     /// `Map(entries)` / `Set(values)`: `new Map<K, V>(…)`, `new Set<T>(…)`.
     Collection(Ty),
+    /// `min`, `max`, `abs`, `round`, `floor`, `ceil`: `Math.…`.
+    Math(&'static str),
+    /// `Int(s)` / `Float(s)`.
+    Parse {
+        int: bool,
+    },
     Struct(DefId),
     Partial(DefId),
     /// `s.with(field: v)`.
@@ -3095,7 +3101,8 @@ impl<'o> Checker<'o> {
             return self.instantiate(&info.ty);
         }
         match name {
-            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" => {
+            "ok" | "err" | "toast" | "navigate" | "sleep" | "all" | "race" | "Binding" | "min" | "max"
+            | "abs" | "round" | "floor" | "ceil" => {
                 self.report(
                     Diagnostic::error("B0208", expr.span, format!("`{name}` is called, not passed"))
                         .label("call it")

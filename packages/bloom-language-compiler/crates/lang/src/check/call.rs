@@ -106,6 +106,14 @@ impl Checker<'_> {
                     }
                     "all" | "race" => return self.all_or_race(expr, call, name == "all"),
                     "Map" | "Set" => return self.collection(expr, call, name == "Map", None, expected),
+                    "min" | "max" | "abs" | "round" | "floor" | "ceil" => return self.math(expr, call, name),
+                    "Int" | "Float" | "Double" => {
+                        // `Int(s)` / `Float(s)`: a string's number, or `none`.
+                        self.positional(call, &[Ty::Str]);
+                        let int = name == "Int";
+                        self.out.calls.insert(expr.id, CallRes::Parse { int });
+                        return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
+                    }
                     "Binding" => return self.binding_ctor(expr, call),
                     _ => {}
                 }
@@ -349,6 +357,53 @@ impl Checker<'_> {
         }
         self.out.calls.insert(expr.id, CallRes::Collection(ty.clone()));
         ty
+    }
+
+    /// `min(a, b, …)`, `max`, `abs(x)`, `round`, `floor`, `ceil`: the prelude's numbers.
+    fn math(&mut self, expr: &Expr, call: &Call, name: &str) -> Ty {
+        let name: &'static str = match name {
+            "min" => "min",
+            "max" => "max",
+            "abs" => "abs",
+            "round" => "round",
+            "floor" => "floor",
+            _ => "ceil",
+        };
+        let many = matches!(name, "min" | "max");
+        if call.trailing.is_some()
+            || call.args.iter().any(|a| a.label.is_some())
+            || (!many && call.args.len() != 1)
+            || (many && call.args.len() < 2 && !call.args.iter().any(|a| a.spread))
+        {
+            let what = if many {
+                format!("`{name}` takes two or more numbers (or `..xs`)")
+            } else {
+                format!("`{name}` takes one number")
+            };
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, what)
+                    .label("its arguments")
+                    .spec("12-standard-library-surface-draft"),
+            );
+        }
+        let mut ty = Ty::Int;
+        for arg in &call.args {
+            let t = self.expr(&arg.value, None);
+            let t = match self.resolve(&t) {
+                Ty::List(e) if arg.spread => self.resolve(&e),
+                other => other,
+            };
+            match t {
+                Ty::Float => ty = Ty::Float,
+                Ty::Int | Ty::Unknown => {}
+                other => self.operand_error(arg.value.span, &format!("`{name}`"), &other),
+            }
+        }
+        self.out.calls.insert(expr.id, CallRes::Math(name));
+        match name {
+            "round" | "floor" | "ceil" => Ty::Int,
+            _ => ty,
+        }
     }
 
     /// Checks the arguments of a call that already failed, so their own errors show.
@@ -1946,8 +2001,8 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "toInt",
             "toFloat",
         ],
-        Ty::Int => vec!["toFloat", "abs", "min", "max", "clamp"],
-        Ty::Float => vec!["rounded", "floor", "ceil", "truncated", "abs", "min", "max", "clamp"],
+        Ty::Int => vec!["toFloat", "abs", "min", "max", "clamp", "clamped"],
+        Ty::Float => vec!["rounded", "floor", "ceil", "truncated", "abs", "min", "max", "clamp", "clamped"],
         Ty::List(_) => vec![
             "map",
             "filter",
