@@ -1,0 +1,65 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { type PostCardProps } from "@/types/post";
+
+interface Badge {
+  readonly text: string;
+  readonly tone: string;
+}
+
+export interface PostCardViewProps extends PostCardProps {
+  readonly dense?: boolean;
+}
+export const PostCard = view(function PostCard(props: PostCardViewProps) {
+"use no memo";
+const $ = $c(11);
+const { title, likes, subtitle, onOpen, dense = false } = props;
+let $t0;
+if ($[6] !== title || $[7] !== subtitle || $[8] !== likes || $[9] !== dense) {
+$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), ($[2] !== subtitle ? ($[2] = subtitle, $[3] = Text(subtitle ?? "")) : $[3]), ($[4] !== likes ? ($[4] = likes, $[5] = Text(`${likes}`)) : $[5])).padding(dense ? 4 : 8);
+$[6] = title;
+$[7] = subtitle;
+$[8] = likes;
+$[9] = dense;
+$[10] = $t0;
+} else {
+$t0 = $[10];
+}
+return $t0;
+});
+
+interface TagProps {
+  readonly text: string;
+  readonly tone?: string;
+}
+const Tag = view(function Tag(props: TagProps) {
+"use no memo";
+const $ = $c(3);
+const { text, tone = "calm" } = props;
+let $t1;
+if ($[0] !== text || $[1] !== tone) {
+$t1 = Text(`${text} (${tone})`);
+$[0] = text;
+$[1] = tone;
+$[2] = $t1;
+} else {
+$t1 = $[2];
+}
+return $t1;
+});
+
+const $view0 = VStack(PostCard({ title: "Hello", likes: 3 }), PostCard({ title: "Again", likes: 1, subtitle: "two", dense: true }), Tag({ text: "new" }));
+export const Feed = view(function Feed() {
+"use no memo";
+const $ = $c(1);
+let $t2;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t2 = $view0;
+$[0] = $t2;
+} else {
+$t2 = $[0];
+}
+return $t2;
+});
+

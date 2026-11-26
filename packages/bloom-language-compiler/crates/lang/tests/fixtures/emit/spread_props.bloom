@@ -1,0 +1,35 @@
+// `view X(..Props)`: a struct's or a TS interface's fields as the view's props.
+
+import { type PostCardProps } from "@/types/post"
+
+struct Badge {
+  text: String
+  tone: String = "calm"
+}
+
+pub view PostCard(..PostCardProps, dense: Bool = false) {
+  body {
+    VStack {
+      Text(title)
+      Text(subtitle ?? "")
+      Text("${likes}")
+    }
+    .padding(dense ? 4 : 8)
+  }
+}
+
+view Tag(..Badge) {
+  body {
+    Text("${text} (${tone})")
+  }
+}
+
+pub view Feed {
+  body {
+    VStack {
+      PostCard(title: "Hello", likes: 3)
+      PostCard(title: "Again", likes: 1, subtitle: "two", dense: true)
+      Tag(text: "new")
+    }
+  }
+}
