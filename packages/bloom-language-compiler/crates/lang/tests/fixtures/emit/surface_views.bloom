@@ -44,3 +44,17 @@ public struct Composer: View {
     .onAppear { sent = 0 }
   }
 }
+
+public struct Feed {
+  var count: Int = 0
+}
+
+func refresh(_ feed: Feed) async -> Feed { Feed(count: feed.count + 1) }
+
+public struct FeedScreen: View {
+  @State private var feed = Feed()
+
+  var body: some View {
+    Text("\(feed.count)").task { feed = await refresh(feed) }
+  }
+}

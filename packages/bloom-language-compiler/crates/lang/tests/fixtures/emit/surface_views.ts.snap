@@ -73,3 +73,35 @@ $t1 = $[10];
 return $t1;
 });
 
+export interface Feed {
+  readonly count: number;
+}
+
+async function refresh(feed: Feed): Promise<Feed> {
+return { count: feed.count + 1 };
+}
+
+export const FeedScreen = view(function FeedScreen() {
+"use no memo";
+const $ = $c(2);
+const [feed, setFeed] = useState<Feed>(() => ({ count: 0 }));
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+const $t2 = await (refresh(feed));
+setFeed((feed) => $t2);
+})();
+return () => $controller.abort();
+}, []);
+let $t3;
+if ($[0] !== feed.count) {
+$t3 = Text(`${feed.count}`);
+$[0] = feed.count;
+$[1] = $t3;
+} else {
+$t3 = $[1];
+}
+return $t3;
+});
+
