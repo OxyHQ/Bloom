@@ -42,7 +42,8 @@ test('bloom-lang-check --tsc reports a planted boundary error at its .bloom span
     /error\[B0620\]: TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'\./,
   );
   assert.match(run.stderr, /--> \S*tsc-project\/src\/screens\/stamp\.bloom:4:33\n/);
-  assert.match(run.stderr, /checked 5 files with tsc \(1 error, 0 warnings\)/);
+  // The fixtures' 0.x forms warn (B0950); the one error is tsc's.
+  assert.match(run.stderr, /checked 5 files with tsc \(1 error, \d+ warnings?\)/);
 });
 
 test('the WASI bloomc checks the same files from the working directory', {

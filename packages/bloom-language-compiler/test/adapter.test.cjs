@@ -196,6 +196,8 @@ test('the addon compiles .bloom: a tiny view has code, a bad token a diagnostic'
 });
 
 const PROJECT = path.join(__dirname, 'bloom/project');
+/** What the adapters said, but the B0950 warnings of the 0.x forms the fixture is written in. */
+const withoutRetired = (said) => said.filter((m) => !String(m).includes('[B0950]'));
 const HELLO = path.join(PROJECT, 'src/screens/hello.bloom');
 
 test("a .bloom module's TS imports resolve from Jest's rootDir, through the tsconfig's paths", () => {
@@ -207,7 +209,7 @@ test("a .bloom module's TS imports resolve from Jest's rootDir, through the tsco
   console.warn = (message) => said.push(message);
   try {
     transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, { config: { rootDir: PROJECT } });
-    assert.deepEqual(said, []);
+    assert.deepEqual(withoutRetired(said), []);
     // Without the root, `@/greeting` is not found: the case the root fixes.
     transformer.process(fs.readFileSync(HELLO, 'utf8'), HELLO, {});
     assert.match(
@@ -231,7 +233,7 @@ test('Metro compiles a .bloom module by its absolute path, from the project root
     const relative = path.relative(PROJECT, HELLO);
     const result = await transform(config, PROJECT, relative, fs.readFileSync(HELLO), {});
     assert.equal(result.filename, `${relative}.ts`);
-    assert.deepEqual(said, []);
+    assert.deepEqual(withoutRetired(said), []);
   } finally {
     console.warn = warn;
   }
