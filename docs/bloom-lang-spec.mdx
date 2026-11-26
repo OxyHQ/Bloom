@@ -404,7 +404,8 @@ pub view PostRow(post: Post, compact: Bool = false) {
   embedded language, one memoised fiber, the same as a hand-written `view()`. Parameters are its
   props.
 - **`..Props` spreads a type's fields as props**: `view PostCard(..PostCardProps, dense: Bool =
-  false)`. The type is a struct, a record type or a TS interface (B0204 otherwise); each field
+  false)`. `..card: PostCardProps` also names their whole value, `card` (emitted `props`, a
+  dependency of what reads it), to hand on as is: `summary(card: card)`. The type is a struct, a record type or a TS interface (B0204 otherwise); each field
   is a prop of its name and type, and one with a default (or a TS optional one) may be left
   out. Its props interface `extends` a TS interface and writes a struct's fields out; when the
   view's `XProps` name is the spread type's own, it is `XViewProps`, and with only spreads the
@@ -477,7 +478,10 @@ compiler pass, which runs on bloomc's output in the same process.
 state (`count += 1`, `count = count + 1`) it is the functional update `setX(count => count + 1)`.
 Reading a state member after assigning it in the same closure is B0410 (it would read the
 render's value); bind the new value to a `let` first. Hook calls are only allowed as view
-members (B0420), so the rules of hooks hold by construction.
+members and at the top level of a hook function (B0420), so the rules of hooks hold by
+construction. A **hook function** is a `fn` named `use[A-Z]…`: its top-level `let`s and its
+result may call hooks (not a branch, a loop or a closure), and calling it is calling a hook. A
+`.bloom` module of `pub fn useX(…)` is a module of hooks.
 
 **Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
 and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
@@ -544,11 +548,15 @@ so a wrong path is a compile error.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
-  `.d.ts` (4.7). A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
+  `.d.ts` (4.7); a module that writes `export = N` (`@types/react`) exports namespace `N`'s
+  members (`import { type ComponentType, lazy, memo } from "react"`).
+  `let Panel = lazy { import("./Panel") }` (React's `lazy`, imported) is a component whose props
+  TS checks; `import("…")` is a dynamic import, emitted as written. A `use[A-Z]` function is a hook (7.3). An import is a **component** (a node,
   7.2) when its type is a React component type (`ComponentType`, `FC`, `ComponentClass`, the
   exotic ones: `MemoExoticComponent`, `ForwardRefExoticComponent`, `LazyExoticComponent`,
   `NamedExoticComponent`; a wrapped component gives its props), a function of one props object
-  returning an element, or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
+  returning an element, `memo(Inner)` or `memo(function Inner(props: P) { … })` (`Inner`'s
+  props), or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
   props are TS's to check), or, when it is `Foreign`, when its name is `UpperCamel` and it is
   used as a node. A TS interface with a call signature (`ToastFn`) or an index signature
   (`[key: string]: unknown`) is `Foreign`: callable, and taking any keys, checked by TS.

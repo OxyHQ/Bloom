@@ -4,6 +4,8 @@ import { Embed, VStack, view } from "@oxy.so/bloom-language";
 import { jsx as $jsx } from "react/jsx-runtime";
 import type { ComponentProps } from "react";
 import { Badge, Chip, Lazy, log, notify, Pill } from "@/ui/components";
+import { Card, Tag } from "@/ui/memoed";
+import { lazy } from "react";
 
 function hello(name: string): void {
 notify(`Hello ${name}`, { type: "success" });
@@ -23,5 +25,25 @@ $[0] = $t0;
 $t0 = $[0];
 }
 return $t0;
+});
+
+const Panel = lazy(() => (import("@/ui/memoed") satisfies Promise<Awaited<ReturnType<(Parameters<typeof lazy>[0])>>>));
+
+export interface MemoedProps {
+  readonly title: string;
+}
+export const Memoed = view(function Memoed(props: MemoedProps) {
+"use no memo";
+const $ = $c(2);
+const { title } = props;
+let $t1;
+if ($[0] !== title) {
+$t1 = VStack(Embed($jsx(Card, { title: title, count: 2 } satisfies ComponentProps<typeof Card>)), Embed($jsx(Tag, { label: title } satisfies ComponentProps<typeof Tag>)), Embed($jsx(Panel, { heading: title } satisfies ComponentProps<typeof Panel>)));
+$[0] = title;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
 });
 

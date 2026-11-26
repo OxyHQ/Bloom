@@ -1,0 +1,8 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function useTopInset(extra: number): number;
+export declare function usePadding(): number;
+export interface PaddedProps {
+  readonly title: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Padded())`), or from TSX as `toElement(Padded())`. */
+export declare const Padded: (props: PaddedProps) => ComposedView;

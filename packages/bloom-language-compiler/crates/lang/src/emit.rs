@@ -310,7 +310,7 @@ fn capitalised(name: &str) -> String {
     chars.next().map_or_else(String::new, |c| c.to_ascii_uppercase().to_string() + chars.as_str())
 }
 
-fn string_literal(text: &str) -> String {
+pub(crate) fn string_literal(text: &str) -> String {
     let mut out = String::from("\"");
     for c in text.chars() {
         match c {
@@ -588,6 +588,9 @@ impl<'a> Emitter<'a> {
     fn local_name(&self, local: LocalId) -> String {
         if let Some(alias) = self.aliases.get(&local) {
             return alias.clone();
+        }
+        if self.ck.whole_props.contains(&local) {
+            return "props".into();
         }
         let info = &self.ck.locals[local];
         if let Some(hoisted) = self.hoisted_names.get(&info.span) {
@@ -1410,6 +1413,10 @@ impl<'a> Emitter<'a> {
                 let text = self.local_name(original);
                 self.aliases.insert(narrowed, text.clone());
                 Frag::of(text)
+            }
+            // `import("./X")`, a dynamic import.
+            ExprKind::Name(name) if name == "import" && !self.ck.names.contains_key(&expr.id) => {
+                Frag::of("import")
             }
             ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
                 Some(NameRes::Local(local)) if self.ck.ref_objects.contains(&expr.id) => {
@@ -3454,7 +3461,9 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
-        self.view = Some(ViewState { slots: 0, reactive: info.props.iter().copied().collect(), setters });
+        // The props, and a name for their whole value (`..props: P`), are what a render reads.
+        let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
+        self.view = Some(ViewState { slots: 0, reactive, setters });
         self.bufs.push(Vec::new());
         // Props.
         let export =

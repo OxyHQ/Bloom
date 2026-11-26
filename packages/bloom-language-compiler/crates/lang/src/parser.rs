@@ -698,6 +698,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     name,
                     rest: false,
                     spread: true,
+                    whole: None,
                     ty,
                     default: None,
                     span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -725,10 +726,27 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             let ty = self.type_expr();
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
+            // `..props: Props`, a named type and not a list: the props spread, their whole named.
+            if rest && let TypeKind::Named { name: type_name, .. } = &ty.kind {
+                params.push(Param {
+                    name: type_name.clone(),
+                    rest: false,
+                    spread: true,
+                    whole: Some(name),
+                    ty,
+                    default,
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                });
+                if !self.eat(P::Comma) {
+                    break;
+                }
+                continue;
+            }
             params.push(Param {
                 name,
                 rest,
                 spread: false,
+                whole: None,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1764,6 +1782,11 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn primary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok().clone() {
+            // `import("./X")`: a dynamic import, a call TS types (`lazy(() => import("./X"))`).
+            Tok::Kw(Kw::Import) if matches!(self.nth(1), Tok::P(P::LParen)) => {
+                self.bump();
+                self.expr_node(ExprKind::Name("import".into()), start)
+            }
             // `type`, `body`, …: a name where a value goes (a prop or field of a TS API).
             Tok::Kw(kw) if is_soft(kw) => {
                 let ident = self.name_or_keyword("a name");

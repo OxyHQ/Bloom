@@ -178,6 +178,8 @@ pub struct Param {
     /// `..Props` (a view's): the fields of a struct or TS interface, each a prop.
     /// `name` is then the type's name and `ty` the type.
     pub spread: bool,
+    /// `..props: Props` (a view's): the props spread, and their whole value named.
+    pub whole: Option<Ident>,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,
