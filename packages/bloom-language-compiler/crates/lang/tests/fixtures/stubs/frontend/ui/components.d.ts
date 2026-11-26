@@ -1,5 +1,12 @@
 /** Components as libraries declare them: a class, exotic components, a callable value. */
-import type { Component, ComponentType, ForwardRefExoticComponent, LazyExoticComponent, MemoExoticComponent, ReactNode } from "react";
+import type {
+  Component,
+  ComponentType,
+  ForwardRefExoticComponent,
+  LazyExoticComponent,
+  MemoExoticComponent,
+  ReactNode,
+} from 'react';
 
 export interface BadgeProps {
   label: string;
@@ -11,7 +18,7 @@ export declare const Chip: MemoExoticComponent<ComponentType<BadgeProps>>;
 export declare const Lazy: LazyExoticComponent<ComponentType<BadgeProps>>;
 
 export interface ToastFn {
-  (content: string, options?: { type?: "success" | "error" }): string;
+  (content: string, options?: { type?: 'success' | 'error' }): string;
   success(content: string): string;
 }
 export declare const notify: ToastFn;

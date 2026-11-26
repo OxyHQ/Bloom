@@ -1,6 +1,6 @@
 // Components as an app writes them: memo of a named function, of an inline one, and a
 // lazily loaded module.
-import { memo, type ReactNode } from "react";
+import { memo, type ReactNode } from 'react';
 
 export interface CardProps {
   readonly title: string;

@@ -1,4 +1,4 @@
-import type { ComposedView } from "@oxy.so/bloom-language";
+import type { ComposedView } from '@oxy.so/bloom-language';
 export interface RowProps {
   readonly title: string;
 }
