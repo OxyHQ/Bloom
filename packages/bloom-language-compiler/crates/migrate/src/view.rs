@@ -1161,7 +1161,7 @@ impl Tr<'_> {
             out.push(text);
         }
         if let Some(rest) = &params.rest {
-            out.push(self.refuse("param:rest", "a rest parameter (a list in `.bloom`)", rest.span));
+            out.push(self.rest_param(rest));
         }
         (out.join(", "), prelude)
     }

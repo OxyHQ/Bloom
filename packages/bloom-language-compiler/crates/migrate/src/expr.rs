@@ -1542,9 +1542,25 @@ impl Tr<'_> {
             out.push(format!("{name}{}", ty.unwrap_or_default()));
         }
         if let Some(rest) = &params.rest {
-            out.push(self.refuse("param:rest", "a rest parameter", rest.span));
+            out.push(self.rest_param(rest));
         }
         (out.join(", "), prelude)
+    }
+
+    /// `...runs: T[]` as the rest parameter `..runs: [T]`.
+    pub fn rest_param(&mut self, rest: &oxc_ast::ast::FormalParameterRest) -> String {
+        let BindingPattern::BindingIdentifier(id) = &rest.rest.argument else {
+            return self.refuse("param:rest", "a rest parameter with a pattern", rest.span);
+        };
+        let Some(t) = &rest.type_annotation else {
+            return self.refuse("param:rest", "an untyped rest parameter", rest.span);
+        };
+        let ty = self.ty(&t.type_annotation);
+        if !ty.starts_with('[') {
+            return self.refuse("param:rest", "a rest parameter that is not a list", rest.span);
+        }
+        let name = self.bind(&id.name, id.span);
+        format!("..{name}: {ty}")
     }
 }
 
