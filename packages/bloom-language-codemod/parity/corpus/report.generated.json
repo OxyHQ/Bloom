@@ -1,0 +1,41 @@
+{
+  "app": "parity/sample-app",
+  "files": 11,
+  "changedFiles": 11,
+  "candidates": 179,
+  "converted": 178,
+  "regions": 66,
+  "rate": 99.4,
+  "overridden": [],
+  "bloomComponents": {
+    "@oxy.so/bloom/segmented-control#SegmentedControlItemText": 5,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuItem": 2,
+    "@oxy.so/bloom/text-field#TextFieldIcon": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuTrigger": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuContent": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuSeparator": 1
+  },
+  "patterns": [
+    {
+      "code": "style",
+      "elements": 1,
+      "top": {
+        "backgroundColor": 1
+      }
+    }
+  ],
+  "unconverted": [
+    {
+      "file": "components/Surfaces.tsx",
+      "line": 20,
+      "element": "View",
+      "reasons": [
+        {
+          "subject": "backgroundColor",
+          "code": "style",
+          "why": "a style `backgroundColor` whose value no Tailwind utility writes exactly"
+        }
+      ]
+    }
+  ]
+}
