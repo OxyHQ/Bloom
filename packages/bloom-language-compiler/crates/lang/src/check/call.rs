@@ -136,6 +136,9 @@ impl Checker<'_> {
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }
                     "Binding" => return self.binding_ctor(expr, call),
+                    // `EnvironmentKey("session", default: Session.signedOut)`: an app's own
+                    // environment value, which `@Environment(\.session)` reads.
+                    "EnvironmentKey" => return self.environment_key_value(expr, call),
                     "Regex" => {
                         // `Regex("^www\\.", "g")`: a JS `RegExp`, for `replace`/`match` and its `test`.
                         if call.args.is_empty() || call.args.len() > 2 || call.trailing.is_some() {
@@ -401,6 +404,28 @@ impl Checker<'_> {
             }
             _ => self.method_call(expr, call, recv, member),
         }
+    }
+
+    fn environment_key_value(&mut self, expr: &Expr, call: &Call) -> Ty {
+        let (Some(name), Some(default)) = (
+            call.args.iter().find(|a| a.label.is_none()),
+            call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == "default")),
+        ) else {
+            self.report(
+                Diagnostic::error("B0207", call.callee.span, "`EnvironmentKey` takes a name and its default")
+                    .label("`EnvironmentKey(\"session\", default: …)`")
+                    .spec("74-environment"),
+            );
+            self.args_unchecked(call);
+            return Ty::Unknown;
+        };
+        self.expr(&name.value, Some(&Ty::Str));
+        let ty = self.expr(&default.value, None);
+        let ty = self.zonk(&ty);
+        self.out.calls.insert(expr.id, CallRes::EnvironmentKey);
+        self.env_values.insert(expr.id, ty.clone());
+        let text = crate::check::members::ts_text(&self.out.defs, &ty).unwrap_or_else(|| "unknown".into());
+        Ty::Foreign(format!("import(\"@oxy.so/bloom-language\").EnvironmentKey<{text}>").into())
     }
 
     /// `Model(…)`: a class's `init` (`T$$init`), or `new T()` when it has none.

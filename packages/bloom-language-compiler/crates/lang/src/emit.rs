@@ -2855,6 +2855,18 @@ impl<'a> Emitter<'a> {
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
+            CallRes::EnvironmentKey => {
+                self.import_name(LANGUAGE, "defineEnvironment");
+                let name = call.args.iter().find(|a| a.label.is_none()).map(|a| self.expr(&a.value));
+                let value = call
+                    .args
+                    .iter()
+                    .find(|a| a.label.as_ref().is_some_and(|l| l.name == "default"))
+                    .map(|a| self.expr(&a.value));
+                let mut out = Frag::of("defineEnvironment(");
+                out.f(name.unwrap_or_default()).s(", ").f(value.unwrap_or_default()).s(")");
+                out
+            }
             CallRes::Regex => {
                 let args: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
                 Frag::join(args, ", ").wrap("new RegExp(", ")")

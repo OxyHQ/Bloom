@@ -13,3 +13,19 @@ public struct Pane: View {
     }
   }
 }
+
+// An app's own environment value, and a view reading it under the same name.
+public enum Session { case signedOut, signedIn }
+
+public let session = EnvironmentKey("session", default: Session.signedOut)
+
+public struct Account: View {
+  @Environment(\.session) private var session
+
+  var body: some View {
+    switch session {
+    case .signedOut: Text("Sign in")
+    case .signedIn: Text("Welcome")
+    }
+  }
+}
