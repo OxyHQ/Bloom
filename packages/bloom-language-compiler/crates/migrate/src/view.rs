@@ -253,6 +253,40 @@ impl Tr<'_> {
                     }
                 }
             }
+            // `P & { label: string }`: the local object types' fields, and one imported
+            // type's spread (`..P`).
+            TSType::TSIntersectionType(intersection) => {
+                let mut members = Vec::new();
+                for part in &intersection.types {
+                    match part {
+                        TSType::TSTypeLiteral(literal) => members.extend(literal.members.iter()),
+                        TSType::TSTypeReference(r)
+                            if r.type_arguments.is_none()
+                                && let TSTypeName::IdentifierReference(id) = &r.type_name =>
+                        {
+                            if let Some(local) = local_object(module, &id.name) {
+                                members.extend(local);
+                            } else if spread.is_none() && self.imported.contains(id.name.as_str()) {
+                                spread = Some(self.name(&id.name, id.span));
+                            } else {
+                                return Some(self.refuse(
+                                    "view:props-type",
+                                    "props of an intersection of types from elsewhere",
+                                    part.span(),
+                                ));
+                            }
+                        }
+                        other => {
+                            return Some(self.refuse(
+                                "view:props-type",
+                                "props of an intersection with a computed type",
+                                other.span(),
+                            ));
+                        }
+                    }
+                }
+                members
+            }
             other => {
                 return Some(self.refuse(
                     "view:props-type",
