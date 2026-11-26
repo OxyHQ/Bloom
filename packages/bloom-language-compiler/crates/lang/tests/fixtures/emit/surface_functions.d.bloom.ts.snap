@@ -1,0 +1,7 @@
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+export declare function move(point: Point, target: Point, step?: number): Point;
+export declare function farthest(points: readonly Point[]): readonly string[];
+export declare function total(points: readonly Point[]): number;

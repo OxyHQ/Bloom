@@ -61,6 +61,9 @@ pub enum ImportKind {
     Named(Vec<ImportSpec>),
     /// `import * as ns from "…"`
     Namespace(Ident),
+    /// `import Bloom`, `import Mention.Posts` (2.0): a module by name, its segments in order.
+    /// The import's `source` is the dotted text and `source_span` the path's span.
+    Module(Vec<Ident>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -80,15 +83,53 @@ impl ImportSpec {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Visibility {
+    /// `private` (or `fileprivate`): this file only.
     Private,
-    Pub,
-    /// `pub default`: the module's default export.
+    /// Unwritten, or `internal`: the whole module (the default).
+    Internal,
+    /// `public` (0.x `pub`): other modules too.
+    Public,
+    /// 0.x `pub default`: the module's default export.
     PubDefault,
+}
+
+impl Visibility {
+    /// Visible outside its file, so exported by the emitted module. `internal` is exported
+    /// when the file is compiled as part of a directory module (`modules`); a file compiled
+    /// on its own is its own module, so its internal names stay in it.
+    pub fn exported(self, modules: bool) -> bool {
+        match self {
+            Visibility::Private => false,
+            Visibility::Internal => modules,
+            Visibility::Public | Visibility::PubDefault => true,
+        }
+    }
+}
+
+/// `@Name` or `@Name(args)` before a declaration (`@Observable`, `@State`, `@extern("init")`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Attr {
+    pub name: Ident,
+    pub args: Vec<Arg>,
+    pub span: Span,
+}
+
+/// A declaration's written modifiers: its visibility, and the attributes before it.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Modifiers {
+    pub attrs: Vec<Attr>,
+    /// `None`: unwritten (internal).
+    pub visibility_span: Option<Span>,
+    /// `private(set)`, `internal(set)`: who may assign it, when narrower than who reads it.
+    pub setter: Option<(Visibility, Span)>,
+    pub is_static: bool,
+    pub is_final: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Item {
     pub visibility: Visibility,
+    pub modifiers: Modifiers,
     pub kind: ItemKind,
     pub span: Span,
 }
@@ -162,16 +203,31 @@ pub struct AliasDecl {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FnDecl {
     pub is_async: bool,
+    /// Spelled `func` (2.0): its parameters are labelled unless written `_`.
+    pub func: bool,
     pub name: Ident,
     pub generics: Vec<Ident>,
+    /// `<T: Equatable>`, `where T: P`: the protocols a type parameter conforms to.
+    pub constraints: Vec<(Ident, TypeExpr)>,
     pub params: Vec<Param>,
+    /// `throws`, or `throws(E)` with the error type it throws.
+    pub throws: Option<Throws>,
     pub ret: Option<TypeExpr>,
     pub body: Block,
     pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Throws {
+    pub span: Span,
+    pub ty: Option<TypeExpr>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Param {
+    /// `to x: Int`: the argument label a call writes (`move(to: 1)`); `_` for none.
+    /// Unwritten in a `func`, the label is the name.
+    pub label: Option<Ident>,
     pub name: Ident,
     /// `..name: [T]`: a rest parameter, the last one; it takes any number of `T`.
     pub rest: bool,

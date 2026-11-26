@@ -887,7 +887,13 @@ impl<'o> Checker<'o> {
             TypeKind::Fn { is_async, params, ret } => {
                 let params = params
                     .iter()
-                    .map(|p| ParamTy { name: None, ty: self.resolve_type(p), optional: false, rest: false })
+                    .map(|p| ParamTy {
+                        labelled: false,
+                        name: None,
+                        ty: self.resolve_type(p),
+                        optional: false,
+                        rest: false,
+                    })
                     .collect();
                 let ret = self.resolve_type(ret);
                 Ty::Fn(Rc::new(FnTy { params, ret, is_async: *is_async, generics: 0, ts: false }))
@@ -1284,7 +1290,13 @@ impl<'o> Checker<'o> {
                     (true, Ty::List(element)) => (*element, true),
                     _ => (ty, false),
                 };
-                ParamTy { name: Some(p.name.name.clone()), ty, optional: p.default.is_some(), rest }
+                // A `func`'s parameter is called by its label (its name unless written), `_` by position.
+                let (labelled, name) = match (&p.label, f.func) {
+                    (Some(label), _) if label.name == "_" => (false, None),
+                    (Some(label), _) => (true, Some(label.name.clone())),
+                    (None, func) => (func && !rest, Some(p.name.name.clone())),
+                };
+                ParamTy { labelled, name, ty, optional: p.default.is_some(), rest }
             })
             .collect();
         let ret = match &f.ret {
@@ -1469,6 +1481,7 @@ impl<'o> Checker<'o> {
                 continue;
             }
             out.push(ParamTy {
+                labelled: false,
                 name: Some(p.name.name.clone()),
                 ty: self.resolve_type(&p.ty),
                 optional: p.default.is_some(),
@@ -1490,6 +1503,7 @@ impl<'o> Checker<'o> {
             .fields()
             .iter()
             .map(|f| ParamTy {
+                labelled: false,
                 name: Some(f.name.clone()),
                 ty: substitute(&f.ty, &targs),
                 optional: f.default != FieldDefault::None,
@@ -1656,6 +1670,11 @@ impl<'o> Checker<'o> {
     // ---- imports --------------------------------------------------------
 
     fn import(&mut self, import: &Import) {
+        // `import Bloom`, `import Mention.Posts`: modules by name, resolved by the module graph
+        // (crates/lang/src/modules.rs); `Bloom` is the implicit core.
+        if matches!(import.kind, ImportKind::Module(_)) {
+            return;
+        }
         let specifier = match import.source.as_str() {
             "bloom/data" => "@oxy.so/bloom-data",
             "bloom/router" => "@oxy.so/bloom-language/router",
@@ -1733,6 +1752,7 @@ impl<'o> Checker<'o> {
             );
         }
         match &import.kind {
+            ImportKind::Module(_) => {}
             ImportKind::Namespace(name) => {
                 self.declare_unique(
                     name,
@@ -1919,7 +1939,7 @@ impl<'o> Checker<'o> {
         }
         let _ = first;
         for item in &file.items {
-            if item.visibility == Visibility::Private {
+            if !item.visibility.exported(self.options.modules) {
                 continue;
             }
             match &item.kind {
@@ -4410,6 +4430,7 @@ impl<'o> Checker<'o> {
                 (None, None) => self.fresh(),
             };
             param_tys.push(ParamTy {
+                labelled: false,
                 name: Some(param.name.name.clone()),
                 ty: ty.clone(),
                 optional: false,
@@ -4419,7 +4440,8 @@ impl<'o> Checker<'o> {
         }
         if c.tuple {
             let tuple = Ty::Tuple(param_tys.iter().map(|p| p.ty.clone()).collect());
-            param_tys = vec![ParamTy { name: None, ty: tuple, optional: false, rest: false }];
+            param_tys =
+                vec![ParamTy { labelled: false, name: None, ty: tuple, optional: false, rest: false }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
         // TS's `() => Promise<T>` taking a closure that awaits: the closure's result is `T`.
