@@ -580,7 +580,18 @@ impl<'a> Emitter<'a> {
         if let Some(hoisted) = self.hoisted_names.get(&info.span) {
             return hoisted.clone();
         }
+        if info.kind == LocalKind::Ref {
+            return format!("{}.current", js_name(&info.name));
+        }
         js_name(&info.name)
+    }
+
+    /// A `@ref` passed to `.ref(x)`: a host view fills it, so it holds `null` when empty.
+    fn is_view_ref(&self, local: LocalId) -> bool {
+        self.ck
+            .ref_objects
+            .iter()
+            .any(|id| matches!(self.ck.names.get(id), Some(NameRes::Local(l)) if *l == local))
     }
 
     fn setter(&self, local: LocalId) -> String {
@@ -1052,7 +1063,7 @@ impl<'a> Emitter<'a> {
         while let ExprKind::Field(inner, _) | ExprKind::Paren(inner) = &root.kind {
             root = inner;
         }
-        matches!(self.ck.names.get(&root.id), Some(NameRes::Local(l)) if self.ck.locals[*l].kind == LocalKind::Var)
+        matches!(self.ck.names.get(&root.id), Some(NameRes::Local(l)) if matches!(self.ck.locals[*l].kind, LocalKind::Var | LocalKind::Ref))
     }
 
     /// `name` (a pattern's binding) reads `path`.
@@ -1373,6 +1384,14 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Str { parts, .. } => self.string(parts),
             ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
+                Some(NameRes::Local(local)) if self.ck.ref_objects.contains(&expr.id) => {
+                    Frag::of(js_name(&self.ck.locals[*local].name))
+                }
+                Some(NameRes::Local(local))
+                    if self.ck.locals[*local].kind == LocalKind::Ref && self.is_view_ref(*local) =>
+                {
+                    Frag::of(format!("({} ?? undefined)", self.local_name(*local)))
+                }
                 Some(NameRes::Local(local)) => Frag::of(self.local_name(*local)),
                 _ => Frag::of("undefined"),
             },
@@ -3555,6 +3574,21 @@ impl<'a> Emitter<'a> {
                 let ts = self.ts_type(&ty);
                 let name = self.local_name(local);
                 let line = match state.attr {
+                    StateAttr::Ref => {
+                        self.import_name("react", "useRef");
+                        let raw = js_name(&self.ck.locals[local].name);
+                        if self.is_view_ref(local) {
+                            let inner = match &ty {
+                                Ty::Option(inner) => self.ts_type(inner),
+                                other => self.ts_type(other),
+                            };
+                            Frag::at(state.span, format!("const {raw} = useRef<{inner} | null>(null);"))
+                        } else {
+                            let mut line = Frag::at(state.span, format!("const {raw} = useRef<{ts}>("));
+                            line.f(self.expr(&state.value)).s(");");
+                            line
+                        }
+                    }
                     StateAttr::State => {
                         self.import_name("react", "useState");
                         let setter = self.setter(local);
@@ -3618,7 +3652,9 @@ impl<'a> Emitter<'a> {
                     }
                 };
                 self.push_stmt(line);
-                self.view.as_mut().expect("a view").reactive.insert(local);
+                if state.attr != StateAttr::Ref {
+                    self.view.as_mut().expect("a view").reactive.insert(local);
+                }
             }
             Member::Let(l) => {
                 let kind = locals.first().map(|l| self.ck.locals[*l].kind.clone());
