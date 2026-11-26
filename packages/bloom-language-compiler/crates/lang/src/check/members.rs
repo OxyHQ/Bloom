@@ -567,3 +567,14 @@ fn literal_type(value: &Expr) -> Option<Ty> {
         _ => return None,
     })
 }
+
+/// A simple type's TS text (`number`, `string`, a struct's name), for a TS type Bloom writes.
+pub fn ts_text(defs: &[Def], ty: &Ty) -> Option<String> {
+    Some(match ty {
+        Ty::Int | Ty::Float => "number".into(),
+        Ty::Str => "string".into(),
+        Ty::Bool => "boolean".into(),
+        Ty::Adt(def, args) if args.is_empty() => defs.get(*def)?.name.clone(),
+        _ => return None,
+    })
+}
