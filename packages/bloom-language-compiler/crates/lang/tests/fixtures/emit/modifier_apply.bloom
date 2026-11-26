@@ -1,0 +1,6 @@
+// `.modifier(m)`: a defineModifier recipe applied with no further arguments.
+import { card } from "@/components/modifiers"
+
+pub view Panel {
+  body { Text("x").modifier(card) }
+}
