@@ -924,6 +924,49 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 TypeExpr { span, kind: TypeKind::Tuple(items) }
             }
+            Tok::P(P::LBrace) => {
+                let open = self.bump();
+                let mut fields = Vec::new();
+                loop {
+                    self.skip_newlines();
+                    if self.at(P::RBrace) || matches!(self.tok(), Tok::Eof) {
+                        break;
+                    }
+                    let span = self.span();
+                    let name = match self.tok() {
+                        Tok::Ident(name) => name.clone(),
+                        Tok::Kw(kw) => kw.word().to_string(),
+                        Tok::Str { parts, .. } if parts.iter().all(|p| matches!(p, RawPart::Text(_))) => {
+                            parts
+                                .iter()
+                                .map(|p| if let RawPart::Text(t) = p { t.as_str() } else { "" })
+                                .collect()
+                        }
+                        _ => {
+                            self.unexpected("a field (`name: Type`)");
+                            self.recover_to_close();
+                            break;
+                        }
+                    };
+                    self.bump();
+                    self.expect(P::Colon, "`:` and the field's type");
+                    fields.push((Ident { name, span }, self.type_expr()));
+                    self.skip_newlines();
+                    if !self.eat(P::Comma) {
+                        self.skip_newlines();
+                        if !self.at(P::RBrace) {
+                            self.unexpected("`,` or `}`");
+                            self.recover_to_close();
+                        }
+                        break;
+                    }
+                }
+                self.expect_close(P::RBrace, open);
+                TypeExpr {
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                    kind: TypeKind::Record(fields),
+                }
+            }
             _ => {
                 self.unexpected("a type");
                 TypeExpr { kind: TypeKind::Error, span: start }

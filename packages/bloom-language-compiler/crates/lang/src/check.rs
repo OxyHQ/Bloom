@@ -276,6 +276,8 @@ pub struct Checker<'o> {
     options: &'o Options,
     pub out: CheckResult,
     vars: Vec<Option<Ty>>,
+    /// Record types by shape (`record_type`).
+    records: HashMap<String, DefId>,
     scopes: Vec<HashMap<String, LocalId>>,
     type_names: HashMap<String, TypeName>,
     /// Type parameters in scope (innermost last).
@@ -340,6 +342,7 @@ impl<'o> Checker<'o> {
             options,
             out: CheckResult::default(),
             vars: Vec::new(),
+            records: HashMap::default(),
             scopes: vec![HashMap::default()],
             type_names: HashMap::default(),
             generics: Vec::new(),
@@ -571,6 +574,54 @@ impl<'o> Checker<'o> {
     /// `T` promotes to `T?`, a token is a `String`, a struct is its own patch,
     /// anything flows into TS, and a function returning anything fits one
     /// returning `Unit`.
+    /// The structural record type of `fields`: one definition per shape, so two records
+    /// of the same fields are the same type.
+    pub(crate) fn record_type(&mut self, fields: Vec<FieldDef>) -> Ty {
+        let name = format!(
+            "{{ {} }}",
+            fields
+                .iter()
+                .map(|f| {
+                    let optional = if f.default == FieldDefault::Undefined { "?" } else { "" };
+                    format!("{}{optional}: {}", f.name, Display { ty: &f.ty, defs: &self.out.defs })
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        if let Some(&def) = self.records.get(&name) {
+            return Ty::Adt(def, Vec::new());
+        }
+        self.out.defs.push(Def {
+            name: name.clone(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Record,
+        });
+        let def = self.out.defs.len() - 1;
+        self.records.insert(name, def);
+        Ty::Adt(def, Vec::new())
+    }
+
+    /// A record (or struct) fits a record type when it has each of its fields (an optional one
+    /// may be absent), each fitting.
+    fn fits_record(
+        &mut self,
+        actual: DefId,
+        actual_args: &[Ty],
+        expected: DefId,
+        expected_args: &[Ty],
+    ) -> bool {
+        let have = self.out.defs[actual].fields().to_vec();
+        let want = self.out.defs[expected].fields().to_vec();
+        want.iter().all(|w| match have.iter().find(|h| h.name == w.name) {
+            Some(h) => {
+                let (a, e) = (substitute(&h.ty, actual_args), substitute(&w.ty, expected_args));
+                self.coerce(&a, &e)
+            }
+            None => w.default == FieldDefault::Undefined,
+        })
+    }
+
     fn coerce(&mut self, actual: &Ty, expected: &Ty) -> bool {
         let a = self.resolve(actual);
         let e = self.resolve(expected);
@@ -582,6 +633,15 @@ impl<'o> Checker<'o> {
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
             (Ty::Strings(_), Ty::Str) => true,
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if d1 != d2
+                    && (self.out.defs[*d1].origin == Origin::Record
+                        || self.out.defs[*d2].origin == Origin::Record)
+                    && matches!(self.out.defs[*d2].kind, DefKind::Struct(_)) =>
+            {
+                let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
+                self.fits_record(d1, &x, d2, &y)
+            }
             (Ty::Strings(x), Ty::Strings(y)) => {
                 Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
             }
@@ -675,6 +735,21 @@ impl<'o> Checker<'o> {
                     );
                 }
                 Ty::Map(Box::new(self.resolve_type(v)))
+            }
+            TypeKind::Record(fields) => {
+                let fields = fields
+                    .iter()
+                    .map(|(name, t)| {
+                        let ty = self.resolve_type(t);
+                        let default = if matches!(ty, Ty::Option(_)) {
+                            FieldDefault::Undefined
+                        } else {
+                            FieldDefault::None
+                        };
+                        FieldDef { name: name.name.clone(), ty, default }
+                    })
+                    .collect();
+                self.record_type(fields)
             }
             TypeKind::Tuple(items) if items.is_empty() => Ty::Unit,
             TypeKind::Tuple(items) => Ty::Tuple(items.iter().map(|t| self.resolve_type(t)).collect()),
