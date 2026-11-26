@@ -260,7 +260,7 @@
   "deprecatedVersions": [],
   "defaultVersion": "23.9.1",
   "docsPath": "docs/",
-  "docsIgnore": ["superpowers", "audits", "benchmarks", "bloom-language*.mdx", "no-nativewind.mdx"],
+  "docsIgnore": ["superpowers", "audits", "benchmarks", "bloom-language*.mdx"],
   "typedoc": {
     "entry": "src/index.ts"
   },
