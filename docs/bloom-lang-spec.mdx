@@ -318,7 +318,11 @@ requirements (section 4.8) and a `T: Equatable` value compares with `==`. Dispat
 each constraint is one more parameter, a *witness* (`$w_T_P`), which the call site fills for
 the type it inferred: the conformance's witness object `Post$$Titled`, or for `Equatable` the
 type's `==` (field by field for a struct). A type argument that does not conform is B0232.
-`Codable`, `Sendable` and other built-in protocols with nothing a body reads pass no witness.
+`T: Codable` (`Decodable`, `Encodable`) passes `T`'s codec, which the body reads as `T.self`: a
+type's `T$$self` (derived for a `Codable` struct, the standard library's for `String`, `Int`, …),
+or a generic type's `T.codec(…)` of its arguments' codecs (`Page$$codec(Post$$self)`,
+`Array$$codec(…)`), so `let page: Page<Post> = try await api.get("/feeds/home")` decodes with no
+codec written. `Sendable` and other built-in protocols with nothing a body reads pass no witness.
 
 ### 4.7 The foreign boundary
 

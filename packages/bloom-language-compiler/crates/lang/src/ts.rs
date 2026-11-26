@@ -1207,7 +1207,15 @@ impl Mapper<'_> {
             Some(ret) => self.ty(file, ret, &scope, &ret_path, depth),
             None => Ty::Foreign(ret_path.into()),
         };
-        Ty::Fn(Rc::new(FnTy { params, ret, is_async: false, generics, ts: true, throws: false }))
+        Ty::Fn(Rc::new(FnTy {
+            params,
+            ret,
+            is_async: false,
+            generics,
+            ts: true,
+            throws: false,
+            bounds: Vec::new(),
+        }))
     }
 
     /// A TS type as a Bloom type; `path` names it in emitted TS.

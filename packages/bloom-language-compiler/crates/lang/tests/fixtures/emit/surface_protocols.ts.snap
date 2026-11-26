@@ -52,11 +52,39 @@ function describe(item: Titled$Any): string {
 return `${item.w.id(item.self)}: ${item.w.title(item.self)}`;
 }
 
+export interface Codec<T> {
+  readonly name: string;
+}
+
+export const Post$$self: Codec<Post> = { name: "post" };
+
+export interface Page<T> {
+  readonly items: readonly T[];
+}
+
+export function Page$$codec<T>(item: Codec<T>): Codec<Page<T>> {
+return { name: `page of ${item.name}` };
+}
+
+export interface API {
+  readonly base: string;
+}
+
+export function API$describe<T>(self: API, value: T, $w_T_Codable: Codec<T>): string {
+return `${self.base}: ${$w_T_Codable.name}`;
+}
+
+function codecName<T>(value: T, $w_T_Codable: Codec<T>): string {
+return $w_T_Codable.name;
+}
+
 export function demo(post: Post): string {
+const api = { base: "/feeds" };
+const names = `${codecName(post, Post$$self)} ${API$describe(api, { items: [post] }, Page$$codec(Post$$self))}`;
 const titles = PrefKey$$allCases.map(($0: PrefKey) => PrefKey$title($0));
 const at = firstIndex(PrefKey$$allCases, "replies", $eq0) ?? (-1);
 const found = firstIndex([post], post, $eq1) ?? (-1);
-return `${label(post, Post$$Titled)} ${describe({ self: post, w: Post$$Titled })} ${titles.length} ${at} ${found}`;
+return `${label(post, Post$$Titled)} ${describe({ self: post, w: Post$$Titled })} ${titles.length} ${at} ${found} ${names}`;
 }
 
 export const Post$$Titled: Titled$Witness<Post> = { id: (self: Post) => self.id, title: Post$title, badge: Post$badge };
