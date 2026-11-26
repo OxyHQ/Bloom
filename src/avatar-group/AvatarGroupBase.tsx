@@ -11,7 +11,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { tryResolveAvatarCharacter } from '../agent-avatar/character';
 import { Avatar } from '../avatar';
+import { pickAccountCharacter } from '../avatar/account';
 import type { AvatarMotion } from '../avatar/types';
 import { useMessages } from '../locale/messages';
 import { useColorTokens } from '../theme/color-tokens';
@@ -83,6 +85,15 @@ function getItemKey(item: AvatarGroupItem, index: number): string {
   return firstNonBlank(item.id, item.username, item.uri) ?? `avatar-${index}`;
 }
 
+/** Whether this member is drawn as a character (an agent) rather than a photo or initials. */
+function hasCharacter(item: AvatarGroupItem): boolean {
+  return (
+    tryResolveAvatarCharacter(
+      pickAccountCharacter({ account: { kind: item.kind, character: item.character } }),
+    ) !== undefined
+  );
+}
+
 /** Hover callbacks injected by the web fork; undefined (no-op) on native. */
 export interface AvatarGroupCellHoverHandlers {
   onHoverIn?: (item: AvatarGroupItem, index: number) => void;
@@ -139,10 +150,17 @@ function AvatarGroupCell({
     typeof hoverHandlers?.onHoverIn === 'function' ||
     typeof hoverHandlers?.onHoverOut === 'function';
 
-  const expressive = shape !== undefined && shape !== 'circle';
+  // A character is its own silhouette: clipping it to the cell's circle would cut it and a circular
+  // ring would not follow it, so it is drawn unclipped with a gap cut around its outline instead.
+  const silhouette = hasCharacter(item);
+  const expressive = silhouette || (shape !== undefined && shape !== 'circle');
   const frame = StyleSheet.flatten(cellStyle);
+  const halo =
+    silhouette && typeof frame?.borderWidth === 'number' && frame.borderWidth > 0
+      ? { width: frame.borderWidth, color: String(frame.borderColor) }
+      : undefined;
   const shapeRing =
-    expressive && typeof frame?.borderWidth === 'number' && frame.borderWidth > 0
+    expressive && !silhouette && typeof frame?.borderWidth === 'number' && frame.borderWidth > 0
       ? { width: frame.borderWidth, colors: String(frame.borderColor) }
       : undefined;
 
@@ -178,6 +196,7 @@ function AvatarGroupCell({
         motion={motion}
         size={innerSize + (shapeRing?.width ?? 0) * 2}
         ring={shapeRing}
+        halo={halo}
         shape={shape}
         testID={testID}
       />
@@ -371,6 +390,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
             ...(isRow ? {} : { zIndex: 0 }),
           }}
           textStyle={overflowTextStyle}
+          plain={shown.some(hasCharacter)}
           onPress={overflowOnPress}
         />
       )}
@@ -481,6 +501,7 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
           fontSize: Math.max(fontSize._2xs, Math.round(diameter * 0.34)),
           fontWeight: '600',
         }}
+        plain={shown.some(hasCharacter)}
         onPress={overflowOnPress}
       />
     );
@@ -553,12 +574,15 @@ function OverflowCircle({
   cellStyle,
   wrapperStyle,
   textStyle,
+  plain = false,
   onPress,
 }: {
   count: number;
   cellStyle: StyleProp<ViewStyle>;
   wrapperStyle: StyleProp<ViewStyle>;
   textStyle: TextStyle;
+  /** Just the count, no chip: beside characters, whose silhouettes are not circles. */
+  plain?: boolean;
   onPress?: () => void;
 }) {
   const tokens = useColorTokens();
@@ -569,8 +593,15 @@ function OverflowCircle({
   // (margin for the facepile, absolute coords for the cluster) is supplied by
   // the caller via `wrapperStyle`.
   const circle = (
-    <View style={[cellStyle, { backgroundColor: tokens.mutedForeground }]}>
-      <Text allowFontScaling={false} style={textStyle}>
+    <View
+      style={[cellStyle, plain ? styles.plainCount : { backgroundColor: tokens.mutedForeground }]}
+    >
+      <Text
+        allowFontScaling={false}
+        style={
+          plain ? [textStyle, { color: tokens.mutedForeground, fontWeight: '700' }] : textStyle
+        }
+      >
         +{count}
       </Text>
     </View>
@@ -593,6 +624,7 @@ function OverflowCircle({
 }
 
 const styles = StyleSheet.create({
+  plainCount: { borderWidth: 0 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

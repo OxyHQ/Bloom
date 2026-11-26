@@ -361,6 +361,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   liveLabel: liveLabelProp,
   liveColor,
   ring,
+  halo,
   testID,
 }) => {
   const theme = useTheme();
@@ -463,6 +464,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           character={resolvedCharacter}
           still={characterStill}
           size={size}
+          halo={halo}
           motion={motion}
           activity={activity}
           reactionKey={reactionKey}

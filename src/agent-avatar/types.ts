@@ -1,3 +1,4 @@
+import type { VectorHalo } from './vector-halo';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomThemeStorage } from '../theme/persistence';
@@ -45,6 +46,11 @@ export type AgentAvatarProps = {
   onLoadingChange?: (loading: boolean) => void;
   /** The vector assets to draw from, overriding the provider's. See `createVectorAssetLoader`. */
   catalog?: VectorAssetLoader;
+  /**
+   * A gap cut around the character's silhouette, in the surface's colour, drawn with the character
+   * so it follows every pose. It overflows the avatar's box by `width`. For overlapping characters.
+   */
+  halo?: VectorHalo;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;

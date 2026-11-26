@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `halo` on `Avatar` and `AgentAvatar`, and a gap around the silhouette of every character in an `AvatarGroup`. Characters in a group were clipped to a circle and separated by a circular ring, which does not follow a blob, a pill or a star. The halo is one extra path in the character's own frame (every unclipped outline, stroked and filled in the surface colour, with the viewBox widened), so it follows every pose, is cached and shared with the frame and is drawn by the SVG renderers and the native surface alike, for a frame and for a played loop. A group with characters draws its `+N` as a bare count, not a chip. Photos and initials draw as before.
+
 ### Changed
 
 - `StatBar` and `DataTable` paint through the colour tokens (`useColorTokens()`) instead of `useTheme().colors`, their tertiary text through `--faint-foreground`. Nothing draws differently.

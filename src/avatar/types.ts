@@ -180,5 +180,11 @@ export interface AvatarProps {
   liveColor?: string;
   /** Decorative inner border: one color or a gradient. Does not change layout size. */
   ring?: AvatarRingConfig;
+  /**
+   * A gap cut around a character's silhouette, in `color` (the surface behind), `width` pixels
+   * wide. For characters that overlap, as in an `AvatarGroup`; it overflows the avatar's box and
+   * does nothing for an avatar that is not a character.
+   */
+  halo?: { color: string; width: number };
   testID?: string;
 }

@@ -3,17 +3,27 @@ import { svgA11yProps } from '../styles/svg-a11y';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import { Platform, View } from 'react-native';
 import { AvatarSnapshotObserver } from './context';
-import { memo, useContext, useEffect, useRef, type ComponentRef } from 'react';
+import { memo, useContext, useEffect, useMemo, useRef, type ComponentRef } from 'react';
+import { haloSurfaceStyle, withHalo } from './vector-halo';
 import Svg, { ClipPath, Defs, Path } from 'react-native-svg';
 import type { AgentAvatarProps } from './types';
 import type { VectorFrame } from './vector-types';
 
 type Props = Pick<
   AgentAvatarProps,
-  'size' | 'style' | 'testID' | 'onReady' | 'accessibilityLabel' | 'label'
+  'size' | 'style' | 'testID' | 'onReady' | 'accessibilityLabel' | 'label' | 'halo'
 > & { frame?: VectorFrame; bodyColor?: string };
 /** Offline projected portrait: no asset fetch, animation clock or runtime canvas. */
-function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Props) {
+function StaticPortrait({ frame: plain, size = 64, bodyColor, onReady, halo, ...props }: Props) {
+  const haloColor = halo?.color;
+  const haloWidth = halo?.width;
+  const frame = useMemo(
+    () =>
+      plain && haloColor !== undefined && haloWidth
+        ? withHalo(plain, size, { color: haloColor, width: haloWidth })
+        : plain,
+    [plain, size, haloColor, haloWidth],
+  );
   const host = useRef<ComponentRef<typeof View> | null>(null);
   const svg = useRef<Svg | null>(null);
   const observe = useContext(AvatarSnapshotObserver);
@@ -58,8 +68,9 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
       {frame ? (
         <Svg
           ref={svg}
-          width="100%"
-          height="100%"
+          width={haloSurfaceStyle(size, halo).width}
+          height={haloSurfaceStyle(size, halo).height}
+          style={halo ? haloSurfaceStyle(size, halo) : undefined}
           viewBox={avatarViewBox(frame.viewBox)}
           {...svgA11yProps()}
         >
@@ -102,6 +113,8 @@ export const VectorStaticPortrait = memo(
     a.frame === b.frame &&
     a.bodyColor === b.bodyColor &&
     a.size === b.size &&
+    a.halo?.color === b.halo?.color &&
+    a.halo?.width === b.halo?.width &&
     a.style === b.style &&
     a.testID === b.testID &&
     a.onReady === b.onReady &&
