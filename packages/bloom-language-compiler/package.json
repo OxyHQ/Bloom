@@ -27,7 +27,8 @@
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
     "generate:platforms": "napi create-npm-dirs --npm-dir npm && for dir in npm/*/; do cp LICENSE \"$dir\"; done",
-    "pack:prebuilt": "node scripts/pack-prebuilt.mjs"
+    "pack:prebuilt": "node scripts/pack-prebuilt.mjs",
+    "pack:local": "node scripts/pack-local.mjs"
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "0.3.31"

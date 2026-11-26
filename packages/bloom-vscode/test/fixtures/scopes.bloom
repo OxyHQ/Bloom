@@ -109,3 +109,13 @@ let nothing: String? = none
 let done = true && !false
 //         ^^^^ constant.language.boolean.bloom
 //              ^^ keyword.operator.logical.bloom
+
+fn save(value: Int) -> Promise<Unit> {
+//                     ^^^^^^^ support.type.primitive.bloom
+  defer { log("saved") }
+//^^^^^ keyword.control.bloom
+  task { await store(value) }
+//^^^^ keyword.control.bloom
+  Text("a").task { await load() }
+//          ^^^^ entity.name.function.modifier.bloom
+}

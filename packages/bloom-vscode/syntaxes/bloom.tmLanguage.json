@@ -155,7 +155,7 @@
       "patterns": [
         {
           "name": "keyword.control.bloom",
-          "match": "\\b(if|else|match|case|for|in|while|return|await)\\b"
+          "match": "\\b(if|else|match|case|for|in|while|return|await|defer|task)\\b"
         },
         { "name": "keyword.control.import.bloom", "match": "\\b(import|from|as)\\b" },
         {
@@ -247,7 +247,7 @@
       "patterns": [
         {
           "name": "support.type.primitive.bloom",
-          "match": "\\b(Int|Float|Bool|String|Unit|View|Binding|Result|Option|Partial|Foreign|Children)\\b"
+          "match": "\\b(Int|Float|Bool|String|Unit|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error)\\b"
         },
         { "name": "entity.name.type.bloom", "match": "\\b[A-Z][A-Za-z0-9_]*\\b" }
       ]

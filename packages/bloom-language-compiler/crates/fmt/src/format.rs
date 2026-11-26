@@ -381,7 +381,7 @@ impl<'a> Formatter<'a> {
             parts.push(self.ty(ret));
         }
         parts.push(text(" "));
-        parts.push(self.block(&f.body, true));
+        parts.push(self.block(&f.body, Layout::Own));
         concat(parts)
     }
 
@@ -427,7 +427,7 @@ impl<'a> Formatter<'a> {
         }
         inner.push(self.leading(v.body_keyword.start));
         inner.push(text("body "));
-        inner.push(self.block(&v.body, false));
+        inner.push(self.block(&v.body, Layout::Broken));
         inner.push(self.trailing(v.body.span.end));
         inner.push(self.dangling(v.span.end));
         concat(vec![concat(head), indent(concat(vec![hardline(), concat(inner)])), hardline(), text("}")])
@@ -471,13 +471,13 @@ impl<'a> Formatter<'a> {
 
     /// A block: `{ one }` on one line when it holds one statement, no comment,
     /// and fits (and `flat` allows it); otherwise one statement per line.
-    fn block(&mut self, block: &Block, flat: bool) -> Doc {
-        self.statements(&[], &block.stmts, block.span, flat)
+    fn block(&mut self, block: &Block, layout: Layout) -> Doc {
+        self.statements(&[], &block.stmts, block.span, layout)
     }
 
     /// `{ [header] statements }`: a closure's `a, b in` header, then its body.
-    fn statements(&mut self, header: &[Doc], stmts: &[Stmt], span: Span, flat: bool) -> Doc {
-        let single = flat && stmts.len() == 1 && !self.has_comment_in(span);
+    fn statements(&mut self, header: &[Doc], stmts: &[Stmt], span: Span, layout: Layout) -> Doc {
+        let single = layout != Layout::Broken && stmts.len() == 1 && !self.has_comment_in(span);
         let header_doc =
             if header.is_empty() { Doc::Nil } else { concat(vec![concat(header.to_vec()), text(" in")]) };
         if stmts.is_empty() && !self.has_comment_in(span) {
@@ -489,7 +489,7 @@ impl<'a> Formatter<'a> {
         }
         let body = self.lines(stmts, |s| s.span, Self::stmt);
         if single {
-            return group(concat(vec![
+            let inner = concat(vec![
                 text("{"),
                 indent(concat(vec![
                     line(),
@@ -498,7 +498,8 @@ impl<'a> Formatter<'a> {
                 ])),
                 line(),
                 text("}"),
-            ]));
+            ]);
+            return if layout == Layout::Shared { inner } else { group(inner) };
         }
         let dangling = self.dangling(span.end);
         let open = if header.is_empty() { text("{") } else { concat(vec![text("{ "), header_doc]) };
@@ -517,7 +518,7 @@ impl<'a> Formatter<'a> {
                 None => text("return"),
             },
             StmtKind::While(w) => {
-                concat(vec![text("while "), self.expr(&w.cond), text(" "), self.block(&w.body, true)])
+                concat(vec![text("while "), self.expr(&w.cond), text(" "), self.block(&w.body, Layout::Own)])
             }
             StmtKind::For(f) => concat(vec![
                 text("for "),
@@ -525,7 +526,7 @@ impl<'a> Formatter<'a> {
                 text(" in "),
                 self.expr(&f.iter),
                 text(" "),
-                self.block(&f.body, true),
+                self.block(&f.body, Layout::Own),
             ]),
             StmtKind::Expr(e) => self.expr_in(e, Context::Statement),
         }
@@ -737,22 +738,29 @@ impl<'a> Formatter<'a> {
         } else {
             Vec::new()
         };
-        self.statements(&header, &closure.body, closure.span, true)
+        self.statements(&header, &closure.body, closure.span, Layout::Own)
     }
 
+    /// An `if`/`else` chain: its blocks are one group, so they go on one line
+    /// together or each on its own lines.
     fn if_expr(&mut self, i: &IfExpr) -> Doc {
+        group(self.if_chain(i))
+    }
+
+    fn if_chain(&mut self, i: &IfExpr) -> Doc {
         let cond = match &i.cond {
             Cond::Expr(e) => self.expr(e),
             Cond::Let(pattern, value) => {
                 concat(vec![text("let "), self.pattern(pattern), text(" = "), self.expr(value)])
             }
         };
-        let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, true)];
+        let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, Layout::Shared)];
         if let Some(otherwise) = &i.otherwise {
             parts.push(text(" else "));
             parts.push(match otherwise.as_ref() {
+                Else::If(Expr { kind: ExprKind::If(inner), .. }) => self.if_chain(inner),
                 Else::If(e) => self.expr(e),
-                Else::Block(b) => self.block(b, true),
+                Else::Block(b) => self.block(b, Layout::Shared),
             });
         }
         concat(parts)
@@ -781,7 +789,7 @@ impl<'a> Formatter<'a> {
                     {
                         this.stmt(&b.stmts[0])
                     }
-                    ArmBody::Block(b) => this.block(b, true),
+                    ArmBody::Block(b) => this.block(b, Layout::Own),
                 });
                 concat(parts)
             },
@@ -858,6 +866,17 @@ impl<'a> Formatter<'a> {
             TypeKind::Error => text(self.slice(t.span).to_string()),
         }
     }
+}
+
+/// How a block of one statement may lie.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Layout {
+    /// Always one statement per line (a view's body).
+    Broken,
+    /// On one line when it fits, by itself.
+    Own,
+    /// On one line when the group around it (an `if`/`else` chain) fits.
+    Shared,
 }
 
 #[derive(Clone, Copy)]
