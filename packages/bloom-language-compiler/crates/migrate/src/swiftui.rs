@@ -128,3 +128,29 @@ fn apply(source: &str, edits: BTreeMap<usize, (usize, String)>) -> Option<String
     out.push_str(&source[at..]);
     Some(out)
 }
+
+/// TS's module-private declarations (not exported) as 2.0's `private`: a module is a
+/// directory of files in 2.0, so an unwritten (internal) name would be seen by every file
+/// of the module, and two files' helpers of one name would collide.
+pub fn private_items(source: &str, filename: &str) -> Option<String> {
+    let (file, _, diagnostics) = bloom_lang::parse(source, filename);
+    if !diagnostics.is_empty() {
+        return None;
+    }
+    let mut edits = BTreeMap::new();
+    for item in &file.items {
+        let skipped = matches!(item.kind, ItemKind::Extension(_) | ItemKind::Extern(_) | ItemKind::Test(_));
+        if skipped || item.modifiers.visibility_span.is_some() || !item.modifiers.attrs.is_empty() {
+            continue;
+        }
+        // A screen or a layout is its route's export.
+        if let ItemKind::View(v) = &item.kind
+            && v.kind != ViewKind::View
+        {
+            continue;
+        }
+        let at = item.span.start as usize;
+        edits.insert(at, (at, "private ".to_string()));
+    }
+    apply(source, edits)
+}
