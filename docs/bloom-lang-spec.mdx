@@ -465,6 +465,8 @@ object (`ticks = Ticks()`) draws again, as any `@State`. A host view's instance 
 TS prop `ref: field`) gives the ref itself for the host view to fill, and `field` reads as
 `ViewInstance?` outside the body (`none` until it is mounted). It compiles to
 `useRef<ViewInstance | null>(null)`, as 0.x's `@ref field: ViewInstance? = none` did.
+A class declared in another file of the module is imported with its `init` (`Box(0)` is
+`Box$$init`), so a reference's class may live in its own file.
 
 ## 5. Values, functions and closures
 
