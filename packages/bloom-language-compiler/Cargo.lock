@@ -83,6 +83,7 @@ dependencies = [
  "bloom_fmt",
  "bloom_lang",
  "bloom_language_compiler",
+ "oxc_sourcemap",
 ]
 
 [[package]]

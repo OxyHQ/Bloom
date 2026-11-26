@@ -1,0 +1,9 @@
+import { formatWhen } from "@/when"
+
+pub view Stamp(at: String) {
+  let line: String = formatWhen(at)
+
+  body {
+    Text(line)
+  }
+}

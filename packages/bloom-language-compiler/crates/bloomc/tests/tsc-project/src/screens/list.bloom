@@ -1,0 +1,10 @@
+import { Row } from "../rows/row.bloom"
+
+pub view List(names: [String]) {
+  body {
+    VStack {
+      Row(name: "a")
+      Row(name: "b")
+    }
+  }
+}

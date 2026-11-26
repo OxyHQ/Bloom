@@ -1,0 +1,7 @@
+import { screenCount } from "../index"
+
+pub view Count() {
+  body {
+    Text("${screenCount} screens")
+  }
+}
