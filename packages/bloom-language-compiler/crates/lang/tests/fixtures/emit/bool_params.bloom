@@ -1,0 +1,13 @@
+// A token parameter whose TS type also takes a boolean takes a `Bool`.
+
+pub view Row(on: Bool) {
+  body {
+    Text("a")
+      .allowsHitTesting(false)
+      .allowsHitTesting(on)
+      .when(on) { v in v.padding(4) }
+      .when("dark") { v in v.padding(8) }
+      .accessibilityState(checked: on, disabled: false, selected: on)
+      .accessibilityState(checked: "mixed")
+  }
+}
