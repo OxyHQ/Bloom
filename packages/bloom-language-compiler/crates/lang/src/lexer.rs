@@ -42,6 +42,13 @@ pub enum Kw {
     While,
 }
 
+/// Every keyword, as written.
+pub const KEYWORDS: &[&str] = &[
+    "as", "async", "await", "body", "case", "default", "defer", "else", "enum", "false", "fn", "for", "from",
+    "if", "import", "in", "layout", "let", "match", "none", "pub", "return", "screen", "struct", "task",
+    "true", "type", "var", "view", "while",
+];
+
 impl Kw {
     pub fn from_word(word: &str) -> Option<Kw> {
         Some(match word {
@@ -776,6 +783,14 @@ fn fold_newlines(tokens: Vec<Token>) -> Vec<Token> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_keyword_is_listed() {
+        for word in super::KEYWORDS {
+            let kw = Kw::from_word(word).expect("a keyword");
+            assert_eq!(kw.word(), *word);
+        }
+    }
 
     fn kinds(source: &str) -> Vec<String> {
         lex(source, 0, source.len())

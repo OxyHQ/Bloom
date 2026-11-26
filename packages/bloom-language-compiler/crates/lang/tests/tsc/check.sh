@@ -14,8 +14,10 @@ done
 tsc="$(cd "$here/../../../../../.." && pwd)/node_modules/.bin/tsc"
 # The runtime's own sources are checked by its package; only the emitted
 # modules and the stubs they import are this check's.
-log="$("$tsc" -p "$here/tsconfig.json" 2>&1 || true)"
-mine="$(printf '%s\n' "$log" | grep -E '^(out/|\.\./fixtures/)' -A3 | grep -vE '^\.\./\.\./' || true)"
+# tsc prints paths relative to where it runs: run it here, so they start `out/`.
+log="$(cd "$here" && "$tsc" -p tsconfig.json 2>&1 || true)"
+# An error of the emitted modules or the stubs, with its indented continuation lines.
+mine="$(printf '%s\n' "$log" | awk '/^(out\/|\.\.\/fixtures\/)/ { keep = 1; print; next } /^ / { if (keep) print; next } { keep = 0 }')"
 if [ -n "$mine" ]; then
   printf '%s\n' "$mine"
   exit 1

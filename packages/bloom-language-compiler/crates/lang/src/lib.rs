@@ -27,6 +27,9 @@ pub use analysis::{Analysis, Definition, DefinitionKind, DefinitionOrigin, Membe
 pub use ast::{Comments, File as Ast, Span};
 pub use diagnostic::{Diagnostic, Label, Severity};
 
+/// The language's keywords (spec section 2), for editors and highlighters.
+pub const KEYWORDS: &[&str] = lexer::KEYWORDS;
+
 /// What a compile needs from its host. Small on purpose.
 #[derive(Debug, Clone, Default)]
 pub struct Options {
