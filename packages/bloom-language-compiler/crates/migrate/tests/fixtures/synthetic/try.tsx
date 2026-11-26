@@ -13,6 +13,12 @@ async function resolveUrl(id: string): Promise<string> {
   }
 }
 
+/** Outside a `try`, a rejection stops the block; a global regex is the `"js"` `RegExp`. */
+async function warm(id: string): Promise<void> {
+  const { data } = await load(id);
+  saveLogger.debug(data.url.replace(/^https?:\/\//g, ''));
+}
+
 export const SaveToggle = view(function SaveToggle(props: { id: string; saved: boolean }) {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);

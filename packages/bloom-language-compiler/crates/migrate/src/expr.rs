@@ -269,7 +269,9 @@ impl Tr<'_> {
                     format!("{}{targs}({})", id.name, args.join(", "))
                 }
                 // `new Date(x)`: construction is a call of the `"js"` import.
-                Expression::Identifier(id) if GLOBALS.contains(&id.name.as_str()) && !self.imported.contains(id.name.as_str()) => {
+                Expression::Identifier(id)
+                    if GLOBALS.contains(&id.name.as_str()) && !self.imported.contains(id.name.as_str()) =>
+                {
                     self.js.insert(id.name.to_string());
                     let args: Vec<String> = n
                         .arguments
@@ -287,7 +289,17 @@ impl Tr<'_> {
             Expression::TaggedTemplateExpression(t) => {
                 self.refuse("template:tagged", "a tagged template", t.span)
             }
-            Expression::RegExpLiteral(r) => self.refuse("regexp", "a regular expression", r.span),
+            // `/a+/g`: `RegExp("a+", "g")`, the `"js"` import's constructor.
+            Expression::RegExpLiteral(r) => {
+                self.js.insert("RegExp".into());
+                let pattern = quote(r.regex.pattern.text.as_str());
+                let flags = r.regex.flags.to_string();
+                if flags.is_empty() {
+                    format!("RegExp({pattern})")
+                } else {
+                    format!("RegExp({pattern}, {})", quote(&flags))
+                }
+            }
             Expression::ThisExpression(t) => self.refuse("class", "`this`", t.span),
             Expression::ImportExpression(i) => self.refuse("import:dynamic", "a dynamic `import()`", i.span),
             other => {
@@ -317,7 +329,11 @@ impl Tr<'_> {
         }
         if GLOBALS.contains(&name) && !self.imported.contains(name) {
             if matches!(name, "Map" | "Set") {
-                return self.refuse(&format!("global:{name}"), format!("the JS global `{name}` as a value"), span);
+                return self.refuse(
+                    &format!("global:{name}"),
+                    format!("the JS global `{name}` as a value"),
+                    span,
+                );
             }
             // A JS global is a `Foreign` import from `"js"` (tsc checks its uses).
             self.js.insert(name.to_string());
@@ -376,8 +392,10 @@ impl Tr<'_> {
             _ => None,
         };
         if matches!(op, "==" | "!=") {
-            let (t, lit) = if typeof_of(&b.left).is_some() { (&b.left, &b.right) } else { (&b.right, &b.left) };
-            if let (Expression::UnaryExpression(u), Expression::StringLiteral(kind)) = (t.without_parentheses(), lit.without_parentheses())
+            let (t, lit) =
+                if typeof_of(&b.left).is_some() { (&b.left, &b.right) } else { (&b.right, &b.left) };
+            if let (Expression::UnaryExpression(u), Expression::StringLiteral(kind)) =
+                (t.without_parentheses(), lit.without_parentheses())
                 && u.operator == UnaryOperator::Typeof
             {
                 let value = self.expr(&u.argument);
@@ -710,6 +728,24 @@ impl Tr<'_> {
                 let value = self.expr(call.arguments[0].to_expression());
                 let value = if is_postfix_text(&value) { value } else { format!("({value})") };
                 return format!("{value} is [Foreign]");
+            }
+        }
+        // JS `s.replace(a, b)` replaces the first match; Bloom's `replace` is `replaceAll`.
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && m.property.name == "replace"
+            && call.arguments.len() == 2
+        {
+            match call.arguments[0].as_expression().map(|e| e.without_parentheses()) {
+                Some(Expression::RegExpLiteral(r)) if r.regex.flags.to_string().contains('g') => {}
+                Some(Expression::RegExpLiteral(r)) => {
+                    return self.refuse(
+                        "string:replace",
+                        "`replace` with a regex without `g` (Bloom's `replace` replaces every match)",
+                        r.span,
+                    );
+                }
+                _ => self
+                    .review("`replace` replaces every occurrence in `.bloom`; JS replaced the first".into()),
             }
         }
         if let Expression::Identifier(id) = &call.callee {

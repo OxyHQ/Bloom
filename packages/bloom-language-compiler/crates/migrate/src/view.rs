@@ -1114,6 +1114,28 @@ impl Tr<'_> {
             }
             previous = Some(span.end);
             let last = i + 1 == statements.len();
+            // `const x = await tsCall()` outside a `try`: the rest of the block runs on
+            // `.ok(x)`; a rejection stops it (TS: an unhandled rejection).
+            if !self.propagate
+                && let Some(start @ (AwaitStart::Let(..) | AwaitStart::Pattern(..))) =
+                    awaited_start(statement)
+                && !self.awaits_bloom(start.value())
+            {
+                let awaited = self.expr(start.value());
+                let (bound, destructure) = match start {
+                    AwaitStart::Let(id, _) => (self.bind(&id.name, id.span), String::new()),
+                    AwaitStart::Pattern(p, _) => {
+                        ("value".to_string(), format!("let {} = value\n", self.record_pattern(p)))
+                    }
+                    _ => unreachable!(),
+                };
+                let rest = self.block_stmts(&statements[i + 1..], end, tail);
+                let reviews = self.take_reviews();
+                lines.push(format!(
+                    "{note}{reviews}// {REVIEW_MARKER}: a rejection of the awaited call stops the block here (TS: an unhandled rejection)\nmatch await {awaited} {{\ncase .ok({bound}) => {{\n{destructure}{rest}\n}}\ncase .err(_) => {{}}\n}}"
+                ));
+                return lines.join("\n");
+            }
             let text = match statement {
                 Statement::ReturnStatement(r) if last && tail => match &r.argument {
                     Some(value) => self.expr(value),

@@ -90,10 +90,24 @@ impl Tr<'_> {
                 };
                 // TS's utility types have no Bloom spelling: the TS type, kept as a `Foreign`.
                 const UTILITY: &[&str] = &[
-                    "ReturnType", "Parameters", "Awaited", "NonNullable", "Partial", "Required", "Pick", "Omit",
-                    "Exclude", "Extract", "InstanceType", "ComponentProps", "ComponentPropsWithoutRef",
+                    "ReturnType",
+                    "Parameters",
+                    "Awaited",
+                    "NonNullable",
+                    "Partial",
+                    "Required",
+                    "Pick",
+                    "Omit",
+                    "Exclude",
+                    "Extract",
+                    "InstanceType",
+                    "ComponentProps",
+                    "ComponentPropsWithoutRef",
                 ];
-                if UTILITY.contains(&name.as_str()) && !self.objects.contains(&name) && !self.unions.contains_key(&name) {
+                if UTILITY.contains(&name.as_str())
+                    && !self.objects.contains(&name)
+                    && !self.unions.contains_key(&name)
+                {
                     let text = self.slice(reference.span).to_string();
                     return self.foreign_ty(&text);
                 }
