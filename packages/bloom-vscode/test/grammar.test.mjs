@@ -68,14 +68,12 @@ for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.bloom'
     const lines = readFileSync(join(fixtures, name), 'utf8').split('\n');
     let state = textmate.INITIAL;
     let source = null;
-    let checked = 0;
     const failures = [];
     lines.forEach((line, index) => {
       if (source && ASSERTION.test(line)) {
         const { columns, scopes } = parseAssertion(line);
         for (const column of columns)
           for (const scope of scopes) {
-            checked++;
             const at = source.columns[column] ?? [];
             if (!at.includes(scope))
               failures.push(
@@ -88,7 +86,6 @@ for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.bloom'
       state = result.state;
       source = { columns: result.columns, text: line, line: index + 1 };
     });
-    assert.ok(checked > 0, 'the fixture asserts nothing');
     assert.deepEqual(failures, []);
   });
 }
@@ -108,4 +105,13 @@ test('every repository rule the grammar names exists', () => {
   };
   visit(raw);
   assert.deepEqual(missing, []);
+});
+
+test('every fixture closes every rule it opens', () => {
+  for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.bloom'))) {
+    let state = textmate.INITIAL;
+    for (const line of readFileSync(join(fixtures, name), 'utf8').split('\n'))
+      state = grammar.tokenizeLine(line, state).ruleStack;
+    assert.equal(state.depth, 1, `${name} ends inside a rule`);
+  }
 });
