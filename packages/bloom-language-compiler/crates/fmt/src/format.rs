@@ -390,6 +390,9 @@ impl<'a> Formatter<'a> {
             params,
             |p| p.span,
             |this, param| {
+                if param.spread {
+                    return concat(vec![text(".."), this.ty(&param.ty)]);
+                }
                 let name =
                     if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };
                 let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];

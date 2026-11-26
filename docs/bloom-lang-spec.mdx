@@ -111,7 +111,7 @@ fn            = [ "async" ] "fn" IDENT [ generics ] "(" [ params ] ")" [ "->" ty
 params        = param { "," param } [ "," ] ;
 param         = [ ".." ] IDENT ":" type [ "=" expr ] ;   (* "..": a rest parameter, last *)
 
-view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;
+view          = "view"   TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a param may be ".." TYPE: props spread *)
 screen        = "screen" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route: default export *)
 layout        = "layout" TYPE_NAME [ "(" [ params ] ")" ] view_block ;   (* a route layout *)
 view_block    = "{" { member NL } "body" block "}" ;
@@ -344,6 +344,14 @@ pub view PostRow(post: Post, compact: Bool = false) {
 - A `view` is a component: it compiles to `view(function PostRow(props) { … })` in the
   embedded language, one memoised fiber, the same as a hand-written `view()`. Parameters are its
   props.
+- **`..Props` spreads a type's fields as props**: `view PostCard(..PostCardProps, dense: Bool =
+  false)`. The type is a struct, a record type or a TS interface (B0204 otherwise); each field
+  is a prop of its name and type, and one with a default (or a TS optional one) may be left
+  out. Its props interface `extends` a TS interface and writes a struct's fields out; when the
+  view's `XProps` name is the spread type's own, it is `XViewProps`, and with only spreads the
+  props are the type itself.
+- A view called with arguments that are all static (literals, module values) is a static
+  chain like a node's: built once, at module scope.
 - A `fn … -> View`, at module level or as a view member, is **inlined UI**: a plain call, no
   fiber, no state; prefer it for repeated rows inside one view.
 - `screen Name { … }` is a view that is the file's default export and an Expo Router route

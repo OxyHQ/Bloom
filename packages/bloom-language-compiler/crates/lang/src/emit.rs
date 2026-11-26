@@ -3100,6 +3100,7 @@ impl<'a> Emitter<'a> {
                         CallRes::Node(_)
                             | CallRes::Modifier { .. }
                             | CallRes::Component
+                            | CallRes::View { .. }
                             | CallRes::EnumCase(..)
                             | CallRes::Struct(_)
                     )
@@ -3156,7 +3157,7 @@ impl<'a> Emitter<'a> {
             && self.statics.contains(&expr.id)
             && matches!(
                 self.ck.calls.get(&expr.id),
-                Some(CallRes::Node(_) | CallRes::Modifier { .. } | CallRes::Component)
+                Some(CallRes::Node(_) | CallRes::Modifier { .. } | CallRes::Component | CallRes::View { .. })
             )
     }
 
@@ -3244,13 +3245,63 @@ impl<'a> Emitter<'a> {
         // Props.
         let export =
             if item.visibility == Visibility::Private || v.kind != ViewKind::View { "" } else { "export " };
-        let props_name = format!("{}Props", v.name.name);
+        let mut props_name = format!("{}Props", v.name.name);
         let mut props_decl = Frag::default();
         if !info.props.is_empty() {
             let params = v.params.as_deref().unwrap_or_default();
             let mut fields = Vec::new();
             let mut targets = Vec::new();
-            for (param, local) in params.iter().zip(&info.props) {
+            let mut extends = Vec::new();
+            let mut spreads = info.spreads.iter();
+            let mut props = info.props.iter();
+            for param in params {
+                if param.spread {
+                    // `..Props`: the interface extends it; its fields are destructured.
+                    let Some((ty, range)) = spreads.next() else { continue };
+                    let defaults: Vec<FieldDefault> = match ty {
+                        Ty::Adt(def, _) => {
+                            self.ck.defs[*def].fields().iter().map(|f| f.default.clone()).collect()
+                        }
+                        _ => Vec::new(),
+                    };
+                    // A TS interface is extended; a Bloom struct's fields are written out,
+                    // those with a default optional.
+                    let ts = matches!(ty, Ty::Adt(def, _) if matches!(self.ck.defs[*def].origin, Origin::Ts { .. }));
+                    if ts {
+                        extends.push(self.ts_type(ty));
+                    }
+                    for (index, local) in info.props[range.clone()].iter().enumerate() {
+                        props.next();
+                        if !ts {
+                            let optional = if defaults.get(index).is_some_and(|d| *d != FieldDefault::None) {
+                                "?"
+                            } else {
+                                ""
+                            };
+                            let prop_ty = self.ck.locals[*local].ty.clone();
+                            fields.push(format!(
+                                "  readonly {}{optional}: {};",
+                                prop_key(&self.ck.locals[*local].name),
+                                self.ts_type(&prop_ty)
+                            ));
+                        }
+                        let mut target = Frag::of(self.local_name(*local));
+                        match defaults.get(index) {
+                            Some(FieldDefault::Expr(id)) => {
+                                if let Some(value) = self.default_expr(*id) {
+                                    target.s(" = ").f(value);
+                                }
+                            }
+                            Some(FieldDefault::Literal(text)) => {
+                                target.s(&format!(" = {text}"));
+                            }
+                            _ => {}
+                        }
+                        targets.push(target);
+                    }
+                    continue;
+                }
+                let Some(local) = props.next() else { break };
                 let ty = self.ck.locals[*local].ty.clone();
                 let optional = if param.default.is_some() { "?" } else { "" };
                 fields.push(format!(
@@ -3264,7 +3315,24 @@ impl<'a> Emitter<'a> {
                 }
                 targets.push(target);
             }
-            props_decl = Frag::of(format!("{export}interface {props_name} {{\n{}\n}}\n", fields.join("\n")));
+            if fields.is_empty() && !extends.is_empty() {
+                // Only spreads: the props are their type, under the name it has.
+                props_name = extends.join(" & ");
+            } else {
+                if extends.contains(&props_name) {
+                    // `view PostCard(..PostCardProps, …)`: its own name is taken.
+                    props_name = format!("{}ViewProps", v.name.name);
+                }
+                let extends = if extends.is_empty() {
+                    String::new()
+                } else {
+                    format!(" extends {}", extends.join(", "))
+                };
+                props_decl = Frag::of(format!(
+                    "{export}interface {props_name}{extends} {{\n{}\n}}\n",
+                    fields.join("\n")
+                ));
+            }
             let mut line = Frag::of("const ");
             line.f(Frag::join(targets, ", ").wrap("{ ", " }")).s(" = props;");
             self.push_stmt(line);
@@ -3691,7 +3759,12 @@ impl<'a> Emitter<'a> {
                 ItemKind::View(v) => {
                     let local = self.ck.items[&index];
                     let Ty::Fn(fn_ty) = self.ck.locals[local].ty.clone() else { continue };
-                    let props_name = format!("{}Props", v.name.name);
+                    let mut props_name = format!("{}Props", v.name.name);
+                    let spreads = self.ck.views.get(&index).map(|i| i.spreads.clone()).unwrap_or_default();
+                    if spreads.iter().any(|(ty, _)| self.ts_type(ty) == props_name) {
+                        // `view PostCard(..PostCardProps)`: its own name is taken.
+                        props_name = format!("{}ViewProps", v.name.name);
+                    }
                     if !fn_ty.params.is_empty() {
                         let fields: Vec<String> = fn_ty
                             .params

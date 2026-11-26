@@ -186,6 +186,8 @@ pub struct ClosureInfo {
 #[derive(Debug, Clone, Default)]
 pub struct ViewInfo {
     pub props: Vec<LocalId>,
+    /// `..Props`: the type spread, and the props it gave (a range of `props`).
+    pub spreads: Vec<(Ty, std::ops::Range<usize>)>,
     /// Each member's locals, in order (a destructuring `let` has several).
     pub members: Vec<Vec<LocalId>>,
 }
@@ -1250,16 +1252,41 @@ impl<'o> Checker<'o> {
     }
 
     fn view_params(&mut self, v: &ViewDecl) -> Vec<ParamTy> {
-        v.params
-            .iter()
-            .flatten()
-            .map(|p| ParamTy {
+        let mut out = Vec::new();
+        for p in v.params.iter().flatten() {
+            if p.spread {
+                out.extend(self.spread_props(p).map(|(_, props)| props).unwrap_or_default());
+                continue;
+            }
+            out.push(ParamTy {
                 name: Some(p.name.name.clone()),
                 ty: self.resolve_type(&p.ty),
                 optional: p.default.is_some(),
                 rest: false,
+            });
+        }
+        out
+    }
+
+    /// `..Props`: the type, and each of its fields as a prop (one with a default, or a
+    /// TS optional one, may be left out). `None` when it has no fields Bloom can read.
+    fn spread_props(&mut self, p: &Param) -> Option<(Ty, Vec<ParamTy>)> {
+        let ty = self.resolve_type(&p.ty);
+        let Ty::Adt(def, targs) = self.resolve(&ty) else { return None };
+        if !matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
+            return None;
+        }
+        let props = self.out.defs[def]
+            .fields()
+            .iter()
+            .map(|f| ParamTy {
+                name: Some(f.name.clone()),
+                ty: substitute(&f.ty, &targs),
+                optional: f.default != FieldDefault::None,
+                rest: false,
             })
-            .collect()
+            .collect();
+        Some((ty, props))
     }
 
     fn view_decl(&mut self, index: usize, v: &ViewDecl) {
@@ -1276,8 +1303,38 @@ impl<'o> Checker<'o> {
             cleanup: false,
         });
         let mut info = ViewInfo::default();
-        let params = self.view_params(v);
-        for (param, ty) in v.params.iter().flatten().zip(params) {
+        let mut params = self.view_params(v).into_iter();
+        for param in v.params.iter().flatten() {
+            if param.spread {
+                match self.spread_props(param) {
+                    Some((ty, props)) => {
+                        let start = info.props.len();
+                        for _ in &props {
+                            let prop = params.next().expect("a spread prop");
+                            let name =
+                                Ident { name: prop.name.clone().unwrap_or_default(), span: param.name.span };
+                            info.props.push(self.declare(&name, prop.ty, LocalKind::Prop));
+                        }
+                        info.spreads.push((ty, start..info.props.len()));
+                    }
+                    None => {
+                        let ty = self.resolve_type(&param.ty);
+                        let shown = self.show(&ty);
+                        self.report(
+                            Diagnostic::error(
+                                "B0204",
+                                param.span,
+                                format!("cannot spread {shown} into props"),
+                            )
+                            .label("not a struct or an interface Bloom reads")
+                            .help("spread a struct, a record type or a TS interface: `..PostProps`")
+                            .spec("71-a-view"),
+                        );
+                    }
+                }
+                continue;
+            }
+            let ty = params.next().expect("a prop");
             if let Some(default) = &param.default {
                 self.expr(default, Some(&ty.ty));
             }

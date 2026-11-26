@@ -175,6 +175,9 @@ pub struct Param {
     pub name: Ident,
     /// `..name: [T]`: a rest parameter, the last one; it takes any number of `T`.
     pub rest: bool,
+    /// `..Props` (a view's): the fields of a struct or TS interface, each a prop.
+    /// `name` is then the type's name and `ty` the type.
+    pub spread: bool,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,

@@ -673,6 +673,29 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             let start = self.span();
             let rest = self.eat(P::DotDot);
+            if rest
+                && matches!(self.tok(), Tok::Ident(n) if n.starts_with(|c: char| c.is_ascii_uppercase()))
+                && !matches!(self.nth(1), Tok::P(P::Colon))
+            {
+                // `..Props`: a type's fields as props.
+                let ty = self.type_expr();
+                let name = match &ty.kind {
+                    TypeKind::Named { name, .. } => name.clone(),
+                    _ => Ident { name: String::new(), span: ty.span },
+                };
+                params.push(Param {
+                    name,
+                    rest: false,
+                    spread: true,
+                    ty,
+                    default: None,
+                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                });
+                if !self.eat(P::Comma) {
+                    break;
+                }
+                continue;
+            }
             let name = self.ident("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
@@ -694,6 +717,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             params.push(Param {
                 name,
                 rest,
+                spread: false,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),

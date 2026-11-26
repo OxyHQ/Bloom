@@ -1,0 +1,29 @@
+// Spread props held to their types.
+
+import { type PostCardProps } from "@/types/post"
+
+enum Tone {
+  calm
+  loud
+}
+
+view Bad(..Tone) {
+  body {
+    Text("x")
+  }
+}
+
+view Card(..PostCardProps) {
+  body {
+    Text(title)
+  }
+}
+
+view Uses {
+  body {
+    VStack {
+      Card(title: 1, likes: 2)
+      Card(likes: 2)
+    }
+  }
+}

@@ -1,0 +1,12 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface PostCardViewProps {
+  readonly title: string;
+  readonly likes: number;
+  readonly subtitle?: string | undefined;
+  readonly onOpen?: (() => void) | undefined;
+  readonly dense?: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostCard())`), or from TSX as `toElement(PostCard())`. */
+export declare const PostCard: (props: PostCardViewProps) => ComposedView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Feed())`), or from TSX as `toElement(Feed())`. */
+export declare const Feed: () => ComposedView;
