@@ -38,6 +38,16 @@ impl<'b, 'a> Body<'b, 'a> {
     }
 }
 
+/// TanStack Query's hooks: a type argument is the data's type, not the result's.
+const QUERY_HOOKS: &[&str] = &[
+    "useQuery",
+    "useInfiniteQuery",
+    "useSuspenseQuery",
+    "useSuspenseInfiniteQuery",
+    "useMutation",
+    "useQueries",
+];
+
 /// React hooks the codemod rewrites; every other React hook is a refusal.
 fn react_hook(tr: &Tr, call: &CallExpression) -> Option<String> {
     match &call.callee {
@@ -393,6 +403,50 @@ impl Tr<'_> {
                         let hook = react_hook(self, call).unwrap_or_default();
                         self.refuse(&format!("react:{hook}"), format!("React's `{hook}`"), call.span)
                     }
+                    // `useFocusEffect(useCallback(() => { … }, deps))`: the callback is a
+                    // member `fn` (memoised on what it reads, as the deps did), handed to the hook.
+                    Expression::CallExpression(call)
+                        if let Expression::Identifier(hook) = &call.callee
+                            && is_hook_name(&hook.name)
+                            && let [Argument::CallExpression(inner)] = call.arguments.as_slice()
+                            && react_hook(self, inner).as_deref() == Some("useCallback")
+                            && let Some(Argument::ArrowFunctionExpression(arrow)) =
+                                inner.arguments.first()
+                            && arrow.params.items.is_empty()
+                            && !arrow.r#async
+                            && arrow.get_expression().is_none()
+                            && {
+                                let mut returns = Vec::new();
+                                collect_returns(arrow_statements(arrow), &mut returns);
+                                returns.iter().all(|r| r.argument.is_none())
+                            } =>
+                    {
+                        let base = hook.name.trim_start_matches("use");
+                        let mut name = format!("{}{}Callback", base[..1].to_lowercase(), &base[1..]);
+                        while self.scope.member_fns.contains(&name) {
+                            name.push('_');
+                        }
+                        self.scope.member_fns.insert(name.clone());
+                        if let Some(deps) = inner.arguments.get(1) {
+                            let span = deps.span();
+                            self.comments.skip_within(span.start, span.end);
+                        }
+                        let mut f =
+                            self.fn_text(&name, "", false, &arrow.params, None, Body::of_arrow(arrow));
+                        // React Navigation's effect callback returns its cleanup or nothing.
+                        if hook.name == "useFocusEffect"
+                            && let Some(open) = f.find(") {")
+                            && f.ends_with('}')
+                        {
+                            f = format!(
+                                "{}) -> (() -> Unit)? {{{}\nreturn none\n}}",
+                                &f[..open],
+                                &f[open + 3..f.len() - 1]
+                            );
+                        }
+                        let hook = self.name(&hook.name, hook.span);
+                        format!("{f}\nlet _ = {hook}({name})")
+                    }
                     // A TS hook called for what it does: a member whose value is unused.
                     Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(id) if is_hook_name(&id.name)) =>
                     {
@@ -615,6 +669,14 @@ impl Tr<'_> {
                 immutable = false;
             }
         }
+        // An object literal whose fields are written after: a `var` each write reassigns.
+        if let (BindingPattern::BindingIdentifier(id), Expression::ObjectExpression(_)) =
+            (&d.id, init.without_parentheses())
+            && let Some(by_key) = field_writes(self.src, &id.name)
+        {
+            self.scope.grown.insert(id.name.to_string(), by_key);
+            immutable = false;
+        }
         // A list literal grown in place (`xs.push(x)`): a `var` each push reassigns.
         if let (BindingPattern::BindingIdentifier(id), Expression::ArrayExpression(_)) =
             (&d.id, init.without_parentheses())
@@ -634,6 +696,8 @@ impl Tr<'_> {
             && let Expression::CallExpression(call) = init.without_parentheses()
             && let Some(args) = &call.type_arguments
             && let [only] = args.params.as_slice()
+            // `useQuery<T>()` types its data, not what it returns (a query result).
+            && !matches!(&call.callee, Expression::Identifier(c) if QUERY_HOOKS.contains(&c.name.as_str()))
             // A record pattern takes the type argument only when it is a record type
             // (`useLocalSearchParams<{ id: string }>()`, not `useQuery<Lane[]>()`).
             && (matches!(d.id, BindingPattern::BindingIdentifier(_)) || matches!(only, TSType::TSTypeLiteral(_)))
@@ -1125,6 +1189,7 @@ impl Tr<'_> {
 
     /// A block's statements; with `tail`, a last `return e` is the result `e`.
     pub fn block_stmts(&mut self, statements: &[Statement], end: u32, tail: bool) -> String {
+        let loop_block = std::mem::replace(&mut self.loop_block, false);
         let mut lines = Vec::new();
         let mut previous: Option<u32> = None;
         for (i, statement) in statements.iter().enumerate() {
@@ -1155,6 +1220,19 @@ impl Tr<'_> {
                 lines.push(format!(
                     "{note}{reviews}// {REVIEW_MARKER}: a rejection of the awaited call stops the block here (TS: an unhandled rejection)\nmatch await {awaited} {{\ncase .ok({bound}) => {{\n{destructure}{rest}\n}}\ncase .err(_) => {{}}\n}}"
                 ));
+                return lines.join("\n");
+            }
+            // `if (c) continue;` in a loop's body: the rest of the body runs when `!c`.
+            if loop_block
+                && let Statement::IfStatement(s) = statement
+                && s.alternate.is_none()
+                && is_continue(&s.consequent)
+            {
+                let test = self.test_negated(&s.test);
+                let reviews = self.take_reviews();
+                self.loop_block = true;
+                let rest = self.block_stmts(&statements[i + 1..], end, tail);
+                lines.push(format!("{note}{reviews}if {test} {{\n{rest}\n}}"));
                 return lines.join("\n");
             }
             let text = match statement {
@@ -1232,16 +1310,16 @@ impl Tr<'_> {
                     return self.refuse("statement:for-pattern", "a `for…of` over a pattern", f.span);
                 };
                 let list = self.head_expr(&f.right);
+                self.loop_block = true;
                 let body = self.block_of(&f.body);
+                self.loop_block = false;
                 format!("for {item} in {list} {{\n{body}\n}}")
             }
             Statement::TryStatement(t) => self.try_stmt(t, false),
             Statement::ThrowStatement(t) => {
                 self.refuse("statement:throw", "`throw` (return a `Result`)", t.span)
             }
-            Statement::SwitchStatement(s) => {
-                self.refuse("statement:switch", "a `switch` (a `match`)", s.span)
-            }
+            Statement::SwitchStatement(s) => self.switch(s),
             Statement::BlockStatement(b) => self.refuse("statement:block", "a bare block", b.span),
             Statement::FunctionDeclaration(f) => {
                 self.refuse("fn:nested", "a function inside a function", f.span)
@@ -1255,6 +1333,94 @@ impl Tr<'_> {
             Statement::EmptyStatement(_) => String::new(),
             other => self.refuse("statement", "a statement with no `.bloom` form", other.span()),
         }
+    }
+
+    /// A `switch` as a `match` on its literals (an `if` chain on other cases): each
+    /// case group ends in `break`, `return` or `throw`; a fallthrough into a case
+    /// with statements of its own is refused.
+    fn switch(&mut self, s: &oxc_ast::ast::SwitchStatement) -> String {
+        // The groups: the tests, whether `default` is among them, and what they run.
+        let mut groups: Vec<(Vec<&Expression>, bool, &[Statement])> = Vec::new();
+        let mut tests = Vec::new();
+        let mut default = false;
+        for (i, case) in s.cases.iter().enumerate() {
+            match &case.test {
+                Some(t) => tests.push(t),
+                None => default = true,
+            }
+            if case.consequent.is_empty() && i + 1 < s.cases.len() {
+                continue;
+            }
+            let mut body: &[Statement] = &case.consequent;
+            // A block body (`case x: { … }`) is its statements.
+            if let [Statement::BlockStatement(b)] = body {
+                body = &b.body;
+            }
+            let ends = match body.last() {
+                Some(Statement::BreakStatement(b)) if b.label.is_none() => {
+                    body = &body[..body.len() - 1];
+                    true
+                }
+                Some(Statement::ReturnStatement(_) | Statement::ThrowStatement(_)) => true,
+                None => true,
+                _ => i + 1 == s.cases.len(),
+            };
+            if !ends || body.iter().any(has_break) {
+                return self.refuse(
+                    "statement:switch",
+                    "a `switch` case that falls through or breaks early",
+                    case.span,
+                );
+            }
+            groups.push((std::mem::take(&mut tests), std::mem::replace(&mut default, false), body));
+        }
+        let literal = |e: &Expression| {
+            matches!(e.without_parentheses(), Expression::StringLiteral(_) | Expression::NumericLiteral(_))
+        };
+        let subject = self.head_expr(&s.discriminant);
+        let end = s.span.end;
+        let all_literal = groups.iter().all(|(tests, ..)| tests.iter().all(|t| literal(t)));
+        let mut arms = Vec::new();
+        let mut fallback = None;
+        for (tests, default, body) in &groups {
+            let saved = self.scope.clone();
+            let text = self.block_stmts(body, end, false);
+            self.scope = saved;
+            if *default {
+                fallback = Some(text);
+                continue;
+            }
+            let values: Vec<String> = tests.iter().map(|t| self.expr(t)).collect();
+            arms.push((values, text));
+        }
+        if all_literal {
+            let mut lines: Vec<String> = arms
+                .into_iter()
+                .map(|(v, text)| format!("case {} => {{\n{text}\n}}", v.join(" | ")))
+                .collect();
+            lines.push(format!("case _ => {{\n{}\n}}", fallback.unwrap_or_default()));
+            return format!("match {subject} {{\n{}\n}}", lines.join("\n"));
+        }
+        // Cases of TS values: an `if` chain on `==` (the `switch`'s `===`).
+        if !crate::expr::is_postfix_text(&subject) {
+            return self.refuse(
+                "statement:switch",
+                "a `switch` on a computed value with cases that are not literals",
+                s.span,
+            );
+        }
+        let branches: Vec<String> = arms
+            .into_iter()
+            .map(|(values, text)| {
+                let test: Vec<String> = values.iter().map(|v| format!("{subject} == {v}")).collect();
+                format!("if {} {{\n{text}\n}}", test.join(" || "))
+            })
+            .collect();
+        let mut out = branches.join(" else ");
+        if let Some(f) = fallback {
+            out = if out.is_empty() { f } else { format!("{out} else {{\n{f}\n}}") };
+        }
+        out
     }
 
     fn block_of(&mut self, statement: &Statement) -> String {
@@ -1364,6 +1530,36 @@ impl Tr<'_> {
                     {
                         let Expression::Identifier(o) = &m.object else { unreachable!() };
                         self.name(&o.name, o.span)
+                    }
+                    // `params.q = v` on a local object literal: `params = { ..params, q: v }`.
+                    AssignmentTarget::StaticMemberExpression(m)
+                        if let Expression::Identifier(o) = &m.object
+                            && self.scope.grown.get(o.name.as_str()) == Some(&false)
+                            && op != "*=" =>
+                    {
+                        let name = self.name(&o.name, o.span);
+                        let field = m.property.name.as_str();
+                        let value = self.expr(&a.right);
+                        let value = match op {
+                            "=" => value,
+                            op => format!("{name}.{field} {} {value}", &op[..1]),
+                        };
+                        return format!("{name} = {{ ..{name}, {field}: {value} }}");
+                    }
+                    // `counts[k] = v` on a local object literal: `counts = counts.setting(k, v)`.
+                    AssignmentTarget::ComputedMemberExpression(m)
+                        if let Expression::Identifier(o) = &m.object
+                            && self.scope.grown.get(o.name.as_str()) == Some(&true)
+                            && op != "*=" =>
+                    {
+                        let name = self.name(&o.name, o.span);
+                        let key = self.expr(&m.expression);
+                        let value = self.expr(&a.right);
+                        let value = match op {
+                            "=" => value,
+                            op => format!("({name}[{key}] ?? 0) {} {value}", &op[..1]),
+                        };
+                        return format!("{name} = {name}.setting({key}, {value})");
                     }
                     other => {
                         return self.refuse(
@@ -1786,6 +1982,41 @@ fn awaited_start<'b, 'a>(statement: &'b Statement<'a>) -> Option<AwaitStart<'b, 
 }
 
 /// Whether the module changes the collection `name` in place (`name.add(…)`).
+/// Whether `name`'s fields are written in `src`: `Some(true)` when only by key
+/// (`name[k] = v`), `Some(false)` when only by name (`name.f = v`), `None` when
+/// neither or both.
+fn field_writes(src: &str, name: &str) -> Option<bool> {
+    let mut by_key = false;
+    let mut by_name = false;
+    for (i, _) in src.match_indices(name) {
+        if src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.') {
+            continue;
+        }
+        let rest = &src[i + name.len()..];
+        let target_end = if let Some(r) = rest.strip_prefix('[') {
+            r.find(']').map(|j| (true, j + 2))
+        } else if let Some(r) = rest.strip_prefix('.') {
+            let j = r.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(r.len());
+            (j > 0).then_some((false, j + 1))
+        } else {
+            None
+        };
+        let Some((keyed, end)) = target_end else { continue };
+        let after = rest[end..].trim_start();
+        let assigns = (after.starts_with('=') && !after.starts_with("==") && !after.starts_with("=>"))
+            || after.starts_with("+=")
+            || after.starts_with("-=");
+        if assigns {
+            if keyed { by_key = true } else { by_name = true }
+        }
+    }
+    match (by_key, by_name) {
+        (true, false) => Some(true),
+        (false, true) => Some(false),
+        _ => None,
+    }
+}
+
 /// Whether `name.push(` occurs in `src` (as a name of its own, not `a.name.push(`).
 fn pushes(src: &str, name: &str) -> bool {
     let needle = format!("{name}.push(");
@@ -2133,6 +2364,30 @@ fn only_state_writes(tr: &Tr, statement: &Statement) -> bool {
             Expression::CallExpression(call)
                 if matches!(&call.callee, Expression::Identifier(id) if tr.scope.setters.contains_key(id.name.as_str()))
         ),
+        _ => false,
+    }
+}
+
+/// Whether a statement is `continue` (or a block of only that).
+fn is_continue(statement: &Statement) -> bool {
+    match statement {
+        Statement::ContinueStatement(c) => c.label.is_none(),
+        Statement::BlockStatement(b) => matches!(b.body.as_slice(), [only] if is_continue(only)),
+        _ => false,
+    }
+}
+
+/// Whether a `break` (of the enclosing `switch`) occurs in `statement`, outside loops.
+fn has_break(statement: &Statement) -> bool {
+    match statement {
+        Statement::BreakStatement(_) => true,
+        Statement::IfStatement(i) => has_break(&i.consequent) || i.alternate.as_ref().is_some_and(has_break),
+        Statement::BlockStatement(b) => b.body.iter().any(has_break),
+        Statement::TryStatement(t) => {
+            t.block.body.iter().any(has_break)
+                || t.handler.as_ref().is_some_and(|h| h.body.body.iter().any(has_break))
+                || t.finalizer.as_ref().is_some_and(|f| f.body.iter().any(has_break))
+        }
         _ => false,
     }
 }

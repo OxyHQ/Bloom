@@ -229,6 +229,21 @@ impl Tr<'_> {
                     );
                     return self.expr(&l.left);
                 }
+                // `a || 0`, `a || ""`, `a || false`: the falsy value of `a`'s own type as
+                // the default gives what `a ?? d` gives (only `NaN || 0` differs).
+                if l.operator == LogicalOperator::Or
+                    && !is_boolean_shaped(&l.left)
+                    && match l.right.without_parentheses() {
+                        Expression::NumericLiteral(n) => n.value == 0.0,
+                        Expression::StringLiteral(s) => s.value.is_empty(),
+                        Expression::BooleanLiteral(b) => !b.value,
+                        _ => false,
+                    }
+                {
+                    let left = self.expr(&l.left);
+                    let right = self.expr(&l.right);
+                    return format!("{left} ?? {right}");
+                }
                 if l.operator == LogicalOperator::Or && !is_boolean_shaped(&l.left) {
                     // `a || b || c` is `a || (b || c)` (JS gives the first truthy one either
                     // way): each `||`'s left is one operand, its default the rest.
@@ -953,6 +968,9 @@ impl Tr<'_> {
 
     /// `{ a: 1, b, 'x-y': 2, ...rest }` as the record `{ a: 1, b: b, "x-y": 2, ..rest }`.
     pub fn record(&mut self, object: &ObjectExpression) -> String {
+        if let Some(dictionary) = self.dictionary(object) {
+            return dictionary;
+        }
         let mut out = Vec::new();
         for property in &object.properties {
             let note = self.note(property.span().start);
@@ -991,6 +1009,54 @@ impl Tr<'_> {
             }
         }
         if out.is_empty() { "{}".to_string() } else { format!("{{ {} }}", out.join(", ")) }
+    }
+
+    /// An object literal with a computed key is a dictionary: `{ ...d, [k]: v }` is
+    /// `d.setting(k, v)`, `{ [k]: v, s: w }` the literal `[k: v, "s": w]`. `None`
+    /// without a computed key, or with a spread that is not first or a method.
+    fn dictionary(&mut self, object: &ObjectExpression) -> Option<String> {
+        let props = &object.properties;
+        let computed = |p: &ObjectPropertyKind| {
+            matches!(p, ObjectPropertyKind::ObjectProperty(p) if p.computed
+                && !matches!(p.key, PropertyKey::StringLiteral(_) | PropertyKey::NumericLiteral(_)))
+        };
+        if !props.iter().any(computed) {
+            return None;
+        }
+        let (base, rest) = match props.first() {
+            Some(ObjectPropertyKind::SpreadProperty(s)) => (Some(&s.argument), &props[1..]),
+            _ => (None, &props[..]),
+        };
+        let mut entries = Vec::new();
+        for property in rest {
+            let ObjectPropertyKind::ObjectProperty(p) = property else { return None };
+            if p.method || p.kind != oxc_ast::ast::PropertyKind::Init || p.shorthand {
+                return None;
+            }
+            let key = match &p.key {
+                PropertyKey::StaticIdentifier(id) => quote(&id.name),
+                PropertyKey::StringLiteral(s) => quote(s.value.as_str().unwrap_or_default()),
+                key => self.expr(key.as_expression()?),
+            };
+            let value = self.expr(&p.value);
+            entries.push((key, value));
+        }
+        Some(match base {
+            Some(base) => {
+                let mut out = self.expr(base);
+                if !is_postfix_text(&out) {
+                    out = format!("({out})");
+                }
+                for (k, v) in entries {
+                    out.push_str(&format!(".setting({k}, {v})"));
+                }
+                out
+            }
+            None => {
+                let items: Vec<String> = entries.into_iter().map(|(k, v)| format!("{k}: {v}")).collect();
+                format!("[{}]", items.join(", "))
+            }
+        })
     }
 
     /// `{ a: 1, b }` as `a: 1, b: b`.
@@ -1063,7 +1129,9 @@ impl Tr<'_> {
                     let value = match arg {
                         Argument::SpreadElement(s) => format!("..{}", self.expr(&s.argument)),
                         // `.presented([open, setOpen])`: the pair is a binding.
-                        Argument::ArrayExpression(array) if array.elements.len() == 2 => self.binding(array),
+                        Argument::ArrayExpression(array) if self.is_binding_pair(array) => {
+                            self.binding(array)
+                        }
                         other => self.expr(other.to_expression()),
                     };
                     out.push(value);
@@ -1142,6 +1210,16 @@ impl Tr<'_> {
             Expression::CallExpression(call) if is_map(call) => self.child(list),
             other => self.expr(other),
         }
+    }
+
+    /// Whether `[a, b]` reads as a binding pair: `b` is a function or a state's setter.
+    fn is_binding_pair(&self, array: &oxc_ast::ast::ArrayExpression) -> bool {
+        array.elements.len() == 2
+            && match array.elements[1].as_expression().map(|e| e.without_parentheses()) {
+                Some(Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)) => true,
+                Some(Expression::Identifier(id)) => self.scope.setters.contains_key(id.name.as_str()),
+                _ => false,
+            }
     }
 
     /// `[value, setter]`: `$state` when it is a state's own pair, else `Binding(get:set:)`.

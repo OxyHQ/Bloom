@@ -68,6 +68,9 @@ pub struct Scope {
     pub collections: HashMap<String, String>,
     /// Member functions of the view being translated.
     pub member_fns: HashSet<String>,
+    /// Object literals whose fields are then written (`params.q = v`, `counts[k] += 1`):
+    /// a `var` each write reassigns; `true` for one written by key (a dictionary).
+    pub grown: HashMap<String, bool>,
 }
 
 pub struct Tr<'s> {
@@ -125,6 +128,8 @@ pub struct Tr<'s> {
     /// Translating an `if`/`for`/`while` head, where `{` opens the body: a closure
     /// argument stays inside the parentheses.
     pub head: bool,
+    /// The next block translated is a loop's body: `if (c) continue;` there guards the rest.
+    pub loop_block: bool,
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub defaults: HashMap<String, Vec<String>>,
     pub conditions: HashSet<String>,
@@ -324,6 +329,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         pairs: false,
         try_return: false,
         head: false,
+        loop_block: false,
         import_renames: HashMap::new(),
         pending_equal: None,
         pattern_defaults: Vec::new(),
