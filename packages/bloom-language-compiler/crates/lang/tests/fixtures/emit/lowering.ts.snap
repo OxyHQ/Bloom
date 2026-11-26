@@ -1,0 +1,124 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import type { Child } from "@oxy.so/bloom-language";
+import { fetchCount, ping } from "../stubs/api";
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+function $unwrapOr<T, E>(result: $Result<T, E>, fallback: T): T {
+  return result.ok ? result.value : fallback;
+}
+
+type Load = "idle" | { readonly tag: "ready"; readonly count: number };
+
+async function describe(id: string): Promise<string> {
+let $t0!: number;
+let $t1: Error | undefined;
+try {
+$t0 = await fetchCount(id);
+} catch ($error) {
+$t1 = $error instanceof Error ? $error : new Error(String($error));
+}
+if ($t1 === undefined) {
+return `${$t0} posts`;
+} else {
+return $t1.message;
+}
+}
+
+async function total(a: string, b: string): Promise<$Result<number, Error>> {
+let $t2: number;
+try {
+$t2 = await fetchCount(a);
+} catch ($error) {
+return { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const x = $t2;
+try {
+await ping();
+} catch ($error) {
+return { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+let $t3: number;
+try {
+$t3 = await fetchCount(b);
+} catch ($error) {
+return { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const y = $t3;
+return { ok: true as const, value: x + y };
+}
+
+async function attempt(id: string): Promise<$Result<number, Error>> {
+let $t4: $Result<number, Error>;
+try {
+$t4 = { ok: true, value: await fetchCount(id) };
+} catch ($error) {
+$t4 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+const result = $t4;
+return result;
+}
+
+async function either(fast: boolean, id: string): Promise<number> {
+let $t6: number;
+if (fast) {
+$t6 = 0.0;
+} else {
+let $t5: $Result<number, Error>;
+try {
+$t5 = { ok: true, value: await fetchCount(id) };
+} catch ($error) {
+$t5 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t6 = $unwrapOr(($t5), 0.0);
+}
+const n = $t6;
+let $t8: boolean = (n > 10.0);
+if ($t8) {
+let $t7: $Result<number, Error>;
+try {
+$t7 = { ok: true, value: await fetchCount(id) };
+} catch ($error) {
+$t7 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t8 = ($t7).ok;
+}
+const big = $t8;
+return big ? n : 0.0;
+}
+
+const $view0 = Text("Idle");
+export interface CounterProps {
+  readonly load: Load;
+  readonly label: string | undefined;
+}
+export const Counter = view(function Counter(props: CounterProps) {
+"use no memo";
+const $ = $c(3);
+const { load, label } = props;
+let $t11;
+if ($[0] !== label || $[1] !== load) {
+let $t9: Child;
+if (label !== undefined) {
+const shown = label.toUpperCase();
+$t9 = Text(shown);
+} else {
+$t9 = null;
+}
+let $t10: Child;
+if (load === "idle") {
+$t10 = $view0;
+} else {
+const line = `${load.count} items`;
+$t10 = Text(line);
+}
+$t11 = VStack($t9, $t10);
+$[0] = label;
+$[1] = load;
+$[2] = $t11;
+} else {
+$t11 = $[2];
+}
+return $t11;
+});
+

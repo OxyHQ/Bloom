@@ -15,14 +15,6 @@ import { logger } from "@oxy.so/core/logger";
 import { SettingsSkeleton } from "@/components/loading/ContentSkeleton";
 import { useSettingsRouter } from "@/context/MentionSettingsContext";
 import { useViewerSettingsSection } from "@/hooks/useViewerSettings";
-type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
-async function $settle<T>(value: PromiseLike<T> | T): Promise<$Result<Awaited<T>, Error>> {
-  try {
-    return { ok: true, value: await value };
-  } catch (error) {
-    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };
-  }
-}
 
 interface NotificationPreferences {
   readonly pushEnabled: boolean;
@@ -63,10 +55,14 @@ let save: (patch: Partial<NotificationPreferences>) => Promise<void>;
 if ($[2] !== section || $[3] !== t) {
 save = async (patch: Partial<NotificationPreferences>): Promise<void> => {
 setSaving(true);
-const $t0 = await $settle(section.update(patch));
-if (!$t0.ok) {
-const error = $t0.error;
-logger.error("Error updating notification preferences", error);
+let $t0: Error | undefined;
+try {
+await section.update(patch);
+} catch ($error) {
+$t0 = $error instanceof Error ? $error : new Error(String($error));
+}
+if ($t0 !== undefined) {
+logger.error("Error updating notification preferences", $t0);
 toast(t("settings.notifications.saveError", { defaultValue: "Failed to save notification preference" }), { type: "error" });
 }
 setSaving(false);
