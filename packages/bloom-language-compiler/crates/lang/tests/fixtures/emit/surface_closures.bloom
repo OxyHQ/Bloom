@@ -29,3 +29,23 @@ public struct Account: View {
     }
   }
 }
+
+// A `() -> View` closure of several lines is a builder (`@ViewBuilder`): its children.
+public struct Section: View {
+  let title: String
+  let rows: () -> View
+
+  var body: some View {
+    VStack {
+      Text(title)
+      rows()
+    }
+  }
+}
+
+func names(_ xs: [String]) -> View {
+  Section(title: "Names") {
+    Text("First")
+    for x in xs { Text(x) }
+  }
+}
