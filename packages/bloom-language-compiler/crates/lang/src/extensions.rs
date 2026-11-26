@@ -10,7 +10,7 @@
 //! ```
 //!
 //! An instance member `m` of `T` becomes `T$m`, whose first parameter is `self`; a static
-//! one becomes `T$$m`. `x.m(…)` and `x.m` (a computed property) on a value of type `T`,
+//! one becomes `T$$m` (a static computed property `T$$get$m`, called where it is read). `x.m(…)` and `x.m` (a computed property) on a value of type `T`,
 //! and `T.m(…)` / `T.m`, resolve to them (statically dispatched: nothing exists at
 //! runtime but the functions). The built-in types extend under their Bloom names:
 //! `String`, `Int`, `Double` (`Float` too), `Bool`, `Array` (generic over `Element`),
@@ -34,7 +34,7 @@ pub fn key(name: &str) -> &str {
 /// The member an extension function was lowered from (`String$padded` → `("String", "padded", false)`).
 pub fn demangle(name: &str) -> Option<(&str, &str, bool)> {
     if let Some((owner, member)) = name.split_once("$$") {
-        return Some((owner, member, true));
+        return Some((owner, member.strip_prefix("get$").unwrap_or(member), true));
     }
     let (owner, member) = name.split_once('$')?;
     Some((owner, member, false))
@@ -195,7 +195,15 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
             ItemKind::Fn(FnDecl {
                 is_async: false,
                 func: true,
-                name: Ident { name: mangle(&owner.key, &name.name, is_static), span: name.span },
+                // A static computed property is read without a call: `T$$get$p()`.
+                name: Ident {
+                    name: if is_static {
+                        mangle(&owner.key, &format!("get${}", name.name), true)
+                    } else {
+                        mangle(&owner.key, &name.name, false)
+                    },
+                    span: name.span,
+                },
                 generics: owner.generics.clone(),
                 constraints: Vec::new(),
                 params,

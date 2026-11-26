@@ -83,3 +83,45 @@ fn a_package_name_shadows_the_standard_library() {
     assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
     assert!(!out.code.contains(".bloom/std"), "{}", out.code);
 }
+
+const POST: &str = r#"public struct User: Codable, Equatable {
+  public let name: String
+  public let isVerified: Bool
+}
+
+public enum Visibility: Codable {
+  case everyone
+  case followers
+}
+
+public struct Post: Codable, Equatable {
+  public let id: String
+  public let author: User
+  @CodingKey("created_at") public let createdAt: Date
+  public var likes: Int = 0
+  public let tags: [String]
+  public let replyTo: String?
+  public let visibility: Visibility
+  public let counts: [String: Int]
+}
+
+public func read(_ text: String) throws -> [Post] {
+  try JSON.decode(Array.codec(Post.self), from: text)
+}
+
+public func write(_ post: Post) -> String { JSON.encode(Post.self, post) }
+"#;
+
+#[test]
+fn codable_is_derived_at_compile_time() {
+    let root = package("codable", &[("Sources/Model/Post.bloom", POST)]);
+    let path = root.join("Sources/Model/Post.bloom");
+    let out = compile(POST, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/codable.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::create_dir_all(golden.parent().unwrap()).unwrap();
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

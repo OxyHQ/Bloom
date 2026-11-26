@@ -1,1 +1,271 @@
-// JSON
+// Bloom (I/O): `JSON` and `Codable`.
+//
+// A struct or enum that conforms to `Codable` gets its decoder and encoder at compile
+// time (`crates/lang/src/codable.rs`), with no reflection: `T.decode`, `T.encode` and the
+// codec `T.self`, which the APIs here and `HTTPClient` take.
+//
+//     public struct Post: Codable, Equatable {
+//       public let id: String
+//       @CodingKey("created_at") public let createdAt: Date
+//       public var likes: Int = 0          // absent in the JSON: the default
+//       public let replyTo: String?        // absent or null: `none`
+//     }
+//
+//     let post = try JSON.decode(Post.self, from: text)
+//     let text = JSON.encode(Post.self, post)
+//
+// Each field decodes by its type: `String`, `Int`, `Double`, `Bool`, `Date` (ISO 8601,
+// or milliseconds since 1970), `URL`, another `Codable` type, `[T]`, `T?` and
+// `[String: T]`. A case-only enum decodes from its case name. A value of the wrong type
+// throws a `DecodingError` naming the type and the field.
+
+/// A JSON value as parsed: what the derived decoders read.
+public type JSONValue = Foreign<"unknown">
+
+extern module "./runtime" {
+  private func parseJSON(_ text: String) -> JSONValue
+  private func stringifyJSON(_ value: JSONValue, _ indent: Int) -> String
+  private func jsonKind(_ value: JSONValue) -> String
+  private func jsonMember(_ value: JSONValue, _ key: String) -> JSONValue
+  private func jsonKeys(_ value: JSONValue) -> [String]
+  private func jsonItems(_ value: JSONValue) -> [JSONValue]
+  private func jsonString(_ value: JSONValue) -> String
+  private func jsonNumber(_ value: JSONValue) -> Double
+  private func jsonBool(_ value: JSONValue) -> Bool
+  private func jsonOneOf<T>(_ value: JSONValue, _ cases: [T]) -> T?
+  private func jsonOfCase<T>(_ value: T) -> JSONValue
+  private func jsonOfString(_ s: String) -> JSONValue
+  private func jsonOfNumber(_ n: Double) -> JSONValue
+  private func jsonOfBool(_ b: Bool) -> JSONValue
+  private func jsonNull() -> JSONValue
+  private func jsonAbsent() -> JSONValue
+  private func jsonOfArray(_ xs: [JSONValue]) -> JSONValue
+  private func jsonOfObject(_ entries: [String: JSONValue]) -> JSONValue
+}
+
+/// Why a JSON value did not decode: at `at` (`Post.author`), `expected` was wanted
+/// and `found` was there.
+public struct DecodingError: Equatable {
+  public let at: String
+  public let expected: String
+  public let found: String
+  /// "Post.likes: expected a number, found a string".
+  public let message: String
+}
+
+/// How a type decodes from JSON and encodes to it: `T.self` for a `Codable` type.
+public struct Codec<T> {
+  /// The value `json` holds; `at` names the field for errors.
+  public let decode: (JSONValue, String) -> T
+  /// The value as JSON.
+  public let encode: (T) -> JSONValue
+}
+
+/// The JSON kind `value` is, as an error message says it.
+private func described(_ value: JSONValue) -> String {
+  switch jsonKind(value) {
+  case "absent":
+    "nothing"
+  case "null":
+    "null"
+  case "bool":
+    "a boolean"
+  case "number":
+    "a number"
+  case "string":
+    "a string"
+  case "array":
+    "an array"
+  default:
+    "an object"
+  }
+}
+
+/// Throws the `DecodingError` for `value` at `at`, which is not `expected`.
+public func decodingFailure<T>(_ value: JSONValue, _ at: String, _ expected: String) -> T {
+  let found = described(value)
+  throw DecodingError(at: at, expected: expected, found: found, message: "\(at): expected \(expected), found \(found)")
+}
+
+/// The member `key` of the object `value` (absent when it has none).
+public func jsonField(_ value: JSONValue, _ key: String, _ at: String) -> JSONValue {
+  if jsonKind(value) != "object" { return decodingFailure(value, at, "an object") }
+  return jsonMember(value, key)
+}
+
+/// `entries` as a JSON object (absent values left out).
+public func jsonObject(_ entries: [String: JSONValue]) -> JSONValue { jsonOfObject(entries) }
+
+extension String {
+  public static func decode(_ value: JSONValue, _ at: String) -> String {
+    jsonKind(value) == "string" ? jsonString(value) : decodingFailure(value, at, "a string")
+  }
+
+  public static func encode(_ value: String) -> JSONValue { jsonOfString(value) }
+
+  /// The codec of strings.
+  public static let self: Codec<String> = Codec(decode: String.decode, encode: String.encode)
+}
+
+extension Int {
+  public static func decode(_ value: JSONValue, _ at: String) -> Int {
+    if jsonKind(value) != "number" { return decodingFailure(value, at, "an integer") }
+    let n = jsonNumber(value)
+    return n.truncated().toFloat() == n ? n.truncated() : decodingFailure(value, at, "an integer")
+  }
+
+  public static func encode(_ value: Int) -> JSONValue { jsonOfNumber(value.toFloat()) }
+
+  /// The codec of integers.
+  public static let self: Codec<Int> = Codec(decode: Int.decode, encode: Int.encode)
+}
+
+extension Double {
+  public static func decode(_ value: JSONValue, _ at: String) -> Double {
+    jsonKind(value) == "number" ? jsonNumber(value) : decodingFailure(value, at, "a number")
+  }
+
+  public static func encode(_ value: Double) -> JSONValue { jsonOfNumber(value) }
+
+  /// The codec of numbers.
+  public static let self: Codec<Double> = Codec(decode: Double.decode, encode: Double.encode)
+}
+
+extension Bool {
+  public static func decode(_ value: JSONValue, _ at: String) -> Bool {
+    jsonKind(value) == "bool" ? jsonBool(value) : decodingFailure(value, at, "a boolean")
+  }
+
+  public static func encode(_ value: Bool) -> JSONValue { jsonOfBool(value) }
+
+  /// The codec of booleans.
+  public static let self: Codec<Bool> = Codec(decode: Bool.decode, encode: Bool.encode)
+}
+
+extension Date {
+  /// An ISO 8601 string, or a number of milliseconds since 1970.
+  public static func decode(_ value: JSONValue, _ at: String) -> Date {
+    let kind = jsonKind(value)
+    if kind == "number" { return Date.fromMilliseconds(jsonNumber(value)) }
+    if kind != "string" { return decodingFailure(value, at, "a date") }
+    guard let date = Date.parse(iso8601: jsonString(value)) else { return decodingFailure(value, at, "an ISO 8601 date") }
+    return date
+  }
+
+  /// As ISO 8601, in UTC.
+  public static func encode(_ value: Date) -> JSONValue { jsonOfString(value.iso8601) }
+
+  /// The codec of dates.
+  public static let self: Codec<Date> = Codec(decode: Date.decode, encode: Date.encode)
+}
+
+extension URL {
+  public static func decode(_ value: JSONValue, _ at: String) -> URL {
+    if jsonKind(value) != "string" { return decodingFailure(value, at, "a URL") }
+    guard let url = URL.parse(jsonString(value)) else { return decodingFailure(value, at, "an absolute URL") }
+    return url
+  }
+
+  public static func encode(_ value: URL) -> JSONValue { jsonOfString(value.absoluteString) }
+
+  /// The codec of URLs.
+  public static let self: Codec<URL> = Codec(decode: URL.decode, encode: URL.encode)
+}
+
+extension Array {
+  /// Each item decoded by `element`.
+  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Element) -> [Element] {
+    if jsonKind(value) != "array" { return decodingFailure(value, at, "an array") }
+    return jsonItems(value).map { element($0, at) }
+  }
+
+  public static func encode(_ value: [Element], _ element: (Element) -> JSONValue) -> JSONValue {
+    jsonOfArray(value.map { element($0) })
+  }
+
+  /// The decoder of arrays of what `element` decodes (for nested types).
+  public static func decoder(_ element: (JSONValue, String) -> Element) -> (JSONValue, String) -> [Element] {
+    { value, at in Array.decode(value, at, element) }
+  }
+
+  /// The encoder of arrays of what `element` encodes.
+  public static func encoder(_ element: (Element) -> JSONValue) -> ([Element]) -> JSONValue {
+    { value in Array.encode(value, element) }
+  }
+
+  /// The codec of arrays of `element`'s type: `Codec.array(Post.self)` is `[Post]`'s.
+  public static func codec(_ element: Codec<Element>) -> Codec<[Element]> {
+    Codec(decode: Array.decoder(element.decode), encode: Array.encoder(element.encode))
+  }
+}
+
+extension Optional {
+  /// `none` when absent or null; else what `wrapped` decodes.
+  public static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) -> Wrapped) -> Wrapped? {
+    let kind = jsonKind(value)
+    return kind == "absent" || kind == "null" ? none : wrapped(value, at)
+  }
+
+  /// Absent (left out of its object) when `none`.
+  public static func encode(_ value: Wrapped?, _ wrapped: (Wrapped) -> JSONValue) -> JSONValue {
+    value.map { wrapped($0) } ?? jsonAbsent()
+  }
+
+  public static func decoder(_ wrapped: (JSONValue, String) -> Wrapped) -> (JSONValue, String) -> Wrapped? {
+    { value, at in Optional.decode(value, at, wrapped) }
+  }
+
+  public static func encoder(_ wrapped: (Wrapped) -> JSONValue) -> (Wrapped?) -> JSONValue {
+    { value in Optional.encode(value, wrapped) }
+  }
+}
+
+extension Dictionary {
+  /// Each member decoded by `element`.
+  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Value) -> [String: Value] {
+    if jsonKind(value) != "object" { return decodingFailure(value, at, "an object") }
+    return jsonKeys(value).reduce([:]) { out, key in out.setting(key, element(jsonMember(value, key), at)) }
+  }
+
+  public static func encode(_ value: [String: Value], _ element: (Value) -> JSONValue) -> JSONValue {
+    jsonOfObject(value.mapValues { element($0) })
+  }
+
+  public static func decoder(_ element: (JSONValue, String) -> Value) -> (JSONValue, String) -> [String: Value] {
+    { value, at in Dictionary.decode(value, at, element) }
+  }
+
+  public static func encoder(_ element: (Value) -> JSONValue) -> ([String: Value]) -> JSONValue {
+    { value in Dictionary.encode(value, element) }
+  }
+}
+
+/// A case-only enum's value from its case name, one of `cases`.
+public func decodeCase<T>(_ value: JSONValue, _ at: String, _ cases: [T], _ expected: String) -> T {
+  if jsonKind(value) != "string" { return decodingFailure(value, at, expected) }
+  guard let found = jsonOneOf(value, cases) else { return decodingFailure(value, at, expected) }
+  return found
+}
+
+/// A case-only enum's value as its case name.
+public func encodeCase<T>(_ value: T) -> JSONValue { jsonOfCase(value) }
+
+extension JSON {
+  /// `text` parsed (throws on invalid JSON).
+  public static func parse(_ text: String) -> JSONValue { parseJSON(text) }
+
+  /// `value` as JSON text; `indent` spaces per level (0: on one line).
+  public static func stringify(_ value: JSONValue, indent: Int = 0) -> String { stringifyJSON(value, indent) }
+
+  /// The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
+  public static func decode<T>(_ codec: Codec<T>, from text: String) -> T {
+    let decode = codec.decode
+    return decode(parseJSON(text), "JSON")
+  }
+
+  /// `value` as JSON text.
+  public static func encode<T>(_ codec: Codec<T>, _ value: T, indent: Int = 0) -> String {
+    let encode = codec.encode
+    return stringifyJSON(encode(value), indent)
+  }
+}

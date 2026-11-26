@@ -192,6 +192,7 @@ pub fn summary(path: &Path) -> Rc<Summary> {
     crate::externs::lower(&mut file);
     // Its members as the functions other files call (`T$m`).
     crate::extensions::lower(&mut file);
+    crate::codable::lower(&mut file, &mut Vec::new());
     let summary = Rc::new(summarize(&file));
     SUMMARIES.with(|s| s.borrow_mut().insert(path.to_path_buf(), (stamp, summary.clone())));
     summary
@@ -237,6 +238,7 @@ enum Hidden {
 /// string imports. Without a package above `filename`, does nothing.
 pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options) -> Resolution {
     let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
+    let derived = crate::codable::lower(file, &mut out.diagnostics);
     let path = absolute(Path::new(filename));
     let tests_allowed = in_tests(&path, options);
     out.diagnostics.extend(crate::testing::lower(file, source, tests_allowed));
@@ -260,7 +262,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                 }
             }
         }
-        import_uses(file, source, &dir, &own, &offered, &mut out);
+        import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
         return out;
     }
     let Some(root) = options.package.clone().or_else(|| find_root(&path)) else {
@@ -421,7 +423,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         }
     }
 
-    import_uses(file, source, &dir, &own, &offered, &mut out);
+    import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
     // Two files of a module declaring one name.
     for item in &file.items {
         let name = &item.kind.name().name;
@@ -453,11 +455,14 @@ fn import_uses(
     dir: &Path,
     own: &BTreeSet<String>,
     offered: &BTreeMap<String, Vec<Offer>>,
+    derived: &BTreeSet<String>,
     out: &mut Resolution,
 ) {
     // The names the file uses, at their first use; an extension's member (`T$m`, `T$$m`)
     // where `.m` is written.
     let mut uses = free_names(source);
+    // What derived code (`Codable`) names, as if written at the start.
+    uses.extend(derived.iter().map(|n| (n.clone(), crate::codable::synthetic(Span::new(0, 0)))));
     let members = member_names(source);
     for name in offered.keys() {
         if own.contains(name) {
@@ -469,6 +474,8 @@ fn import_uses(
             uses.push((name.clone(), *span));
         }
     }
+    let mut seen = BTreeSet::new();
+    uses.retain(|(name, _)| seen.insert(name.clone()));
     let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
     for (name, span) in uses {
         if own.contains(&name) {

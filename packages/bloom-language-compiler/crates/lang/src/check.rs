@@ -201,6 +201,8 @@ pub enum FieldRes {
         witness: Option<String>,
         member: String,
     },
+    /// `T.p`, an extension's static computed property: `func()`.
+    StaticGet(Rc<str>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -2237,6 +2239,12 @@ impl<'o> Checker<'o> {
         for (name, local, spec_span) in names {
             if let Some(def) = module.types.get(&name.name) {
                 self.type_names.insert(local.name.clone(), TypeName::Def(def + offset));
+                self.out.type_imports.push(local.name.clone());
+                self.out.type_only_imports.insert(*spec_span);
+                continue;
+            }
+            if let Some((ty, n)) = module.aliases.get(&name.name) {
+                self.type_names.insert(local.name.clone(), TypeName::Alias(shift(ty, offset), *n));
                 self.out.type_imports.push(local.name.clone());
                 self.out.type_only_imports.insert(*spec_span);
                 continue;
@@ -4945,6 +4953,14 @@ impl<'o> Checker<'o> {
     /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
     fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
         let owner = crate::extensions::key(type_name);
+        let getter = crate::extensions::mangle(owner, &format!("get${}", name.name), true);
+        if let Some(local) = self.lookup(&getter) {
+            let ty = self.out.locals[local].ty.clone();
+            if let Ty::Fn(f) = self.instantiate(&ty) {
+                self.out.fields.insert(expr.id, FieldRes::StaticGet(getter.into()));
+                return Some(f.ret.clone());
+            }
+        }
         let func = crate::extensions::mangle(owner, &name.name, true);
         let local = self.lookup(&func)?;
         self.out.fields.insert(expr.id, FieldRes::Static(func.into()));
@@ -5286,6 +5302,8 @@ impl<'o> Checker<'o> {
 struct Signatures {
     defs: Vec<Def>,
     types: HashMap<String, DefId>,
+    /// Its exported `type X = …` aliases: the type and how many parameters it takes.
+    aliases: HashMap<String, (Ty, usize)>,
     values: HashMap<String, (Ty, LocalKind)>,
     files: Vec<(PathBuf, ts::Stamp)>,
     checked: std::cell::Cell<u64>,
@@ -5334,6 +5352,15 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
             _ => None,
         })
         .collect();
+    let aliases = file
+        .items
+        .iter()
+        .filter(|i| matches!(i.kind, ItemKind::Alias(_)) && i.visibility.exported(options.modules))
+        .filter_map(|i| match sub.type_names.get(&i.kind.name().name) {
+            Some(TypeName::Alias(ty, n)) => Some((i.kind.name().name.clone(), (sub.zonk(ty), *n))),
+            _ => None,
+        })
+        .collect();
     let values = sub.scopes[0]
         .iter()
         .map(|(name, id)| {
@@ -5350,6 +5377,7 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
     let sig = Rc::new(Signatures {
         defs: sub.out.defs.iter().map(|d| Def { kind: zonk_kind(&sub, &d.kind), ..d.clone() }).collect(),
         types,
+        aliases,
         values,
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),

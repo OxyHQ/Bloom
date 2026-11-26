@@ -1,0 +1,59 @@
+import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Dictionary$$decode, Dictionary$$encode, Int$$decode, Int$$encode, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, decodeCase, encodeCase, jsonField, jsonObject, Array$$codec, JSON$$decode, JSON$$encode } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type Date } from "../../.bloom/std/Bloom/Time.bloom";
+
+export interface User {
+  readonly name: string;
+  readonly isVerified: boolean;
+}
+
+export function User$$decode(value: unknown, at: string): User {
+return { name: String$$decode(jsonField(value, "name", at), "User.name"), isVerified: Bool$$decode(jsonField(value, "isVerified", at), "User.isVerified") };
+}
+
+export function User$$encode(value: User): unknown {
+return jsonObject({ "name": String$$encode(value.name), "isVerified": Bool$$encode(value.isVerified) });
+}
+
+export const User$$self: Codec<User> = { decode: User$$decode, encode: User$$encode };
+
+export type Visibility = "everyone" | "followers";
+
+export function Visibility$$decode(value: unknown, at: string): Visibility {
+return decodeCase(value, at, ["everyone", "followers"], "one of \"everyone\", \"followers\"");
+}
+
+export function Visibility$$encode(value: Visibility): unknown {
+return encodeCase(value);
+}
+
+export const Visibility$$self: Codec<Visibility> = { decode: Visibility$$decode, encode: Visibility$$encode };
+
+export interface Post {
+  readonly id: string;
+  readonly author: User;
+  readonly createdAt: Date;
+  readonly likes: number;
+  readonly tags: readonly string[];
+  readonly replyTo: string | undefined;
+  readonly visibility: Visibility;
+  readonly counts: Readonly<Record<string, number>>;
+}
+
+export function Post$$decode(value: unknown, at: string): Post {
+return { id: String$$decode(jsonField(value, "id", at), "Post.id"), author: User$$decode(jsonField(value, "author", at), "Post.author"), createdAt: Date$$decode(jsonField(value, "created_at", at), "Post.createdAt"), likes: (Optional$$decode(jsonField(value, "likes", at), "Post.likes", Int$$decode)) ?? 0, tags: Array$$decode(jsonField(value, "tags", at), "Post.tags", String$$decode), replyTo: Optional$$decode(jsonField(value, "replyTo", at), "Post.replyTo", String$$decode), visibility: Visibility$$decode(jsonField(value, "visibility", at), "Post.visibility"), counts: Dictionary$$decode(jsonField(value, "counts", at), "Post.counts", Int$$decode) };
+}
+
+export function Post$$encode(value: Post): unknown {
+return jsonObject({ "id": String$$encode(value.id), "author": User$$encode(value.author), "created_at": Date$$encode(value.createdAt), "likes": Int$$encode(value.likes), "tags": Array$$encode(value.tags, String$$encode), "replyTo": Optional$$encode(value.replyTo, String$$encode), "visibility": Visibility$$encode(value.visibility), "counts": Dictionary$$encode(value.counts, Int$$encode) });
+}
+
+export const Post$$self: Codec<Post> = { decode: Post$$decode, encode: Post$$encode };
+
+export function read(text: string): readonly Post[] {
+return JSON$$decode(Array$$codec(Post$$self), text);
+}
+
+export function write(post: Post): string {
+return JSON$$encode(Post$$self, post);
+}
+

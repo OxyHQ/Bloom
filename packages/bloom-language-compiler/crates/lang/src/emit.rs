@@ -467,13 +467,19 @@ impl<'a> Emitter<'a> {
                         _ => None,
                     })
                     .chain(self.ck.fields.values().filter_map(|f| match f {
-                        FieldRes::Extension(func) | FieldRes::Static(func) => Some(&**func),
+                        FieldRes::Extension(func) | FieldRes::Static(func) | FieldRes::StaticGet(func) => {
+                            Some(&**func)
+                        }
                         _ => None,
                     }))
                     .collect();
                 let specs: Vec<&ImportSpec> = specs
                     .iter()
-                    .filter(|spec| !spec.name.name.contains('$') || used.contains(spec.name.name.as_str()))
+                    .filter(|spec| {
+                        !spec.name.name.contains('$')
+                            || used.contains(spec.name.name.as_str())
+                            || crate::codable::is_synthetic(spec.span)
+                    })
                     .collect();
                 if specs.is_empty() {
                     return Frag::default();
@@ -2285,6 +2291,7 @@ impl<'a> Emitter<'a> {
                     Frag::of(format!("{value}.w.{name}({value}.self)"))
                 }
             },
+            Some(FieldRes::StaticGet(func)) => Frag::of(format!("{func}()")),
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
             }

@@ -1,1 +1,118 @@
-// URL
+// Bloom (I/O): `URL` and its query items.
+//
+//     guard let api = URL.parse("https://api.mention.earth") else { return }
+//     let feed = api.appending(path: "feeds/home").appendingQuery(["cursor": cursor])
+
+extern module "./runtime" {
+  private func parseURL(_ s: String, _ base: String) -> URLParts?
+  private func encodeComponent(_ s: String) -> String
+  private func decodeComponent(_ s: String) -> String
+}
+
+/// What the runtime reads of a URL.
+public struct URLParts: Equatable {
+  public let href: String
+  public let scheme: String
+  public let host: String
+  public let port: String
+  public let path: String
+  public let query: String
+  public let fragment: String
+}
+
+/// An absolute URL (`https://host/path?query#fragment`).
+public struct URL: Equatable {
+  /// The URL as text, normalised (`https://a.b/c?d=1`).
+  public let absoluteString: String
+  /// `https`, `mailto`, …
+  public let scheme: String
+  /// The host name, without the port.
+  public let host: String
+  /// The port when written, else `none`.
+  public let port: Int?
+  /// The path, from its `/`.
+  public let path: String
+  /// The query, without its `?`.
+  public let query: String
+  /// The fragment, without its `#`.
+  public let fragment: String
+}
+
+/// One `name=value` of a query.
+public struct URLQueryItem: Equatable {
+  public let name: String
+  public let value: String
+}
+
+private func urlOf(_ p: URLParts) -> URL {
+  URL(
+    absoluteString: p.href,
+    scheme: p.scheme,
+    host: p.host,
+    port: p.port.toInt(),
+    path: p.path,
+    query: p.query,
+    fragment: p.fragment,
+  )
+}
+
+extension URL {
+  /// `text` as an absolute URL, or `none` when it is not one.
+  public static func parse(_ text: String) -> URL? { parseURL(text, "").map { urlOf($0) } }
+
+  /// `text` resolved against `base` (`"../a"`, `"/b"`, `"?c=1"`), or `none`.
+  public static func resolve(_ text: String, against base: URL) -> URL? {
+    parseURL(text, base.absoluteString).map { urlOf($0) }
+  }
+
+  /// The query's items, in order, decoded.
+  public var queryItems: [URLQueryItem] {
+    self.query.isEmpty
+      ? []
+      : self.query.split("&").map { pair in
+          let parts = pair.split("=")
+          URLQueryItem(
+            name: decodeComponent(parts[0] ?? ""),
+            value: decodeComponent(parts.dropFirst(1).joined("=")),
+          )
+        }
+  }
+
+  /// The value of the query item `name`, or `none`.
+  public func queryValue(_ name: String) -> String? { self.queryItems.find { $0.name == name }.map { $0.value } }
+
+  /// The path's segments (`/a/b` is `["a", "b"]`).
+  public var pathComponents: [String] { self.path.split("/").filter { !$0.isEmpty }.map { decodeComponent($0) } }
+
+  /// The last path segment, or `""`.
+  public var lastPathComponent: String { self.pathComponents.last ?? "" }
+
+  /// The URL with `path` added after its own (each segment percent-encoded), keeping its query.
+  public func appending(path: String) -> URL {
+    let segments = path.split("/").filter { !$0.isEmpty }.map { encodeComponent($0) }.joined("/")
+    let base = self.path.endsWith("/") ? self.path : self.path + "/"
+    let joined = segments.isEmpty ? self.path : base + segments
+    return self.with(text: joined, query: self.query)
+  }
+
+  /// The URL with `items` added to its query (percent-encoded), in key order.
+  public func appendingQuery(_ items: [String: String]) -> URL {
+    let added = items.sortedEntries.map { e in "\(encodeComponent(e.0))=\(encodeComponent(e.1))" }.joined("&")
+    let query = self.query.isEmpty ? added : (added.isEmpty ? self.query : self.query + "&" + added)
+    return self.with(text: self.path, query: query)
+  }
+
+  /// The URL with this path and query, the rest kept.
+  private func with(text path: String, query: String) -> URL {
+    let port = self.port.map { ":\($0)" } ?? ""
+    let q = query.isEmpty ? "" : "?\(query)"
+    let f = self.fragment.isEmpty ? "" : "#\(self.fragment)"
+    return URL.parse("\(self.scheme)://\(self.host)\(port)\(path)\(q)\(f)") ?? self
+  }
+}
+
+/// `text` percent-encoded for a URL's path segment or query value.
+public func percentEncoded(_ text: String) -> String { encodeComponent(text) }
+
+/// `text` with its percent-escapes (and `+` spaces) decoded.
+public func percentDecoded(_ text: String) -> String { decodeComponent(text) }

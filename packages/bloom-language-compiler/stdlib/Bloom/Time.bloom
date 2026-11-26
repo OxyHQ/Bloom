@@ -1,1 +1,246 @@
-// Time
+// Bloom (time): `Date`, `Duration`, `Clock`, `Calendar` and formatting.
+//
+// A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encodes
+// as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
+//
+//     Text(post.createdAt.formatted(.relative))   // "2 minutes ago"
+//     Text(event.startsAt.formatted(.dateTime(.medium, .short)))
+
+extern module "./runtime" {
+  private func nowMs() -> Double
+  private func monotonicMs() -> Double
+  private func parseISO(_ s: String) -> Double?
+  private func isoString(_ ms: Double) -> String
+  private func formatDate(_ ms: Double, _ locale: String, _ date: String, _ time: String, _ timeZone: String) -> String
+  private func formatRelative(_ value: Double, _ unit: String, _ locale: String, _ style: String) -> String
+  private func dateParts(_ ms: Double, _ utc: Bool) -> DateComponents
+  private func dateFromParts(
+    _ year: Int,
+    _ month: Int,
+    _ day: Int,
+    _ hour: Int,
+    _ minute: Int,
+    _ second: Int,
+    _ utc: Bool,
+  ) -> Double
+  private func currentTimeZone() -> String
+}
+
+/// An instant in time.
+public struct Date: Equatable {
+  /// Seconds since 1970-01-01T00:00:00Z.
+  public let timeIntervalSince1970: Double
+}
+
+/// A length of time, in seconds (negative: before).
+public struct Duration: Equatable {
+  /// The length in seconds.
+  public let seconds: Double
+}
+
+/// How much of a date or a time a format shows.
+public enum DateStyle {
+  case omitted
+  case short
+  case medium
+  case long
+  case full
+}
+
+/// How `Date.formatted(_:)` writes a date.
+public enum DateFormat {
+  /// "2 minutes ago", "in 3 days", "yesterday".
+  case relative
+  /// "2m", "3h", "4d": the short form timelines use.
+  case abbreviated
+  /// The date and the time, each in its style.
+  case dateTime(DateStyle, DateStyle)
+  /// `2026-11-26T18:30:00.000Z`.
+  case iso8601
+}
+
+/// The calendar fields of a date (`month` 1–12, `weekday` 1 = Sunday … 7).
+public struct DateComponents: Equatable {
+  public let year: Int
+  public let month: Int
+  public let day: Int
+  public let hour: Int
+  public let minute: Int
+  public let second: Int
+  public let weekday: Int
+}
+
+extension Date {
+  /// The current instant.
+  public static var now: Date { Date(timeIntervalSince1970: nowMs() / 1000.0) }
+
+  /// The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
+  public static func fromMilliseconds(_ ms: Double) -> Date { Date(timeIntervalSince1970: ms / 1000.0) }
+
+  /// The instant an ISO 8601 string names (`2026-11-26T18:30:00Z`), or `none`.
+  public static func parse(iso8601 text: String) -> Date? {
+    guard let ms = parseISO(text) else { return none }
+    return Date(timeIntervalSince1970: ms / 1000.0)
+  }
+
+  /// Milliseconds since 1970.
+  public var millisecondsSince1970: Double { self.timeIntervalSince1970 * 1000.0 }
+
+  /// The instant as ISO 8601, in UTC.
+  public var iso8601: String { isoString(self.millisecondsSince1970) }
+
+  /// The instant `duration` later (earlier when negative).
+  public func adding(_ duration: Duration) -> Date {
+    Date(timeIntervalSince1970: self.timeIntervalSince1970 + duration.seconds)
+  }
+
+  /// How long from this instant to `other` (negative when `other` is earlier).
+  public func distance(to other: Date) -> Duration {
+    Duration(seconds: other.timeIntervalSince1970 - self.timeIntervalSince1970)
+  }
+
+  /// Whether this instant is before `other`.
+  public func isBefore(_ other: Date) -> Bool { self.timeIntervalSince1970 < other.timeIntervalSince1970 }
+
+  /// Whether this instant is after `other`.
+  public func isAfter(_ other: Date) -> Bool { self.timeIntervalSince1970 > other.timeIntervalSince1970 }
+
+  /// The date written for a person in `locale` (`""`: the device's), relative to `now`
+  /// for `.relative` and `.abbreviated`.
+  public func formatted(_ format: DateFormat = .dateTime(.medium, .short), locale: String = "", now: Date = Date.now) -> String {
+    switch format {
+    case .relative:
+      relativeText(self.timeIntervalSince1970 - now.timeIntervalSince1970, locale, "long")
+    case .abbreviated:
+      abbreviatedText(now.timeIntervalSince1970 - self.timeIntervalSince1970)
+    case .dateTime(let date, let time):
+      formatDate(self.millisecondsSince1970, locale, styleName(date), styleName(time), "")
+    case .iso8601:
+      self.iso8601
+    }
+  }
+
+  /// The calendar fields in the device's time zone (in UTC with `utc`).
+  public func components(utc: Bool = false) -> DateComponents { dateParts(self.millisecondsSince1970, utc) }
+}
+
+private func styleName(_ style: DateStyle) -> String {
+  switch style {
+  case .omitted:
+    "omitted"
+  case .short:
+    "short"
+  case .medium:
+    "medium"
+  case .long:
+    "long"
+  case .full:
+    "full"
+  }
+}
+
+/// "in 3 minutes" / "2 hours ago": the largest unit that fits.
+private func relativeText(_ seconds: Double, _ locale: String, _ style: String) -> String {
+  let size = abs(seconds)
+  if size < 60.0 { return formatRelative((seconds).rounded().toFloat(), "second", locale, style) }
+  if size < 3600.0 { return formatRelative((seconds / 60.0).rounded().toFloat(), "minute", locale, style) }
+  if size < 86400.0 { return formatRelative((seconds / 3600.0).rounded().toFloat(), "hour", locale, style) }
+  if size < 604800.0 { return formatRelative((seconds / 86400.0).rounded().toFloat(), "day", locale, style) }
+  if size < 2629800.0 { return formatRelative((seconds / 604800.0).rounded().toFloat(), "week", locale, style) }
+  if size < 31557600.0 { return formatRelative((seconds / 2629800.0).rounded().toFloat(), "month", locale, style) }
+  formatRelative((seconds / 31557600.0).rounded().toFloat(), "year", locale, style)
+}
+
+/// "now", "5m", "3h", "2d", "4w", "1y": how long ago, in a timeline's short form.
+private func abbreviatedText(_ ago: Double) -> String {
+  let s = abs(ago)
+  if s < 60.0 { return "now" }
+  if s < 3600.0 { return "\((s / 60.0).floor())m" }
+  if s < 86400.0 { return "\((s / 3600.0).floor())h" }
+  if s < 604800.0 { return "\((s / 86400.0).floor())d" }
+  if s < 31557600.0 { return "\((s / 604800.0).floor())w" }
+  "\((s / 31557600.0).floor())y"
+}
+
+extension Duration {
+  /// `n` milliseconds.
+  public static func milliseconds(_ n: Double) -> Duration { Duration(seconds: n / 1000.0) }
+
+  /// `n` seconds.
+  public static func seconds(_ n: Double) -> Duration { Duration(seconds: n) }
+
+  /// `n` minutes.
+  public static func minutes(_ n: Double) -> Duration { Duration(seconds: n * 60.0) }
+
+  /// `n` hours.
+  public static func hours(_ n: Double) -> Duration { Duration(seconds: n * 3600.0) }
+
+  /// `n` days of 24 hours.
+  public static func days(_ n: Double) -> Duration { Duration(seconds: n * 86400.0) }
+
+  /// No time.
+  public static let zero: Duration = Duration(seconds: 0.0)
+
+  /// The length in milliseconds.
+  public var milliseconds: Double { self.seconds * 1000.0 }
+
+  /// The two durations added.
+  public func plus(_ other: Duration) -> Duration { Duration(seconds: self.seconds + other.seconds) }
+
+  /// The duration `factor` times over.
+  public func times(_ factor: Double) -> Duration { Duration(seconds: self.seconds * factor) }
+
+  /// "1:05", "1:02:03": as a player shows it.
+  public var clockText: String {
+    let total = self.seconds.floor()
+    let h = total / 3600
+    let m = (total % 3600) / 60
+    let sec = total % 60
+    let mm = h > 0 ? "\(m)".paddingStart(to: 2, with: "0") : "\(m)"
+    let ss = "\(sec)".paddingStart(to: 2, with: "0")
+    return h > 0 ? "\(h):\(mm):\(ss)" : "\(mm):\(ss)"
+  }
+}
+
+/// A clock that only goes forward (unaffected by the device's time being changed): for
+/// measuring how long something took.
+public struct ContinuousClock: Equatable {
+  /// Milliseconds since an arbitrary start.
+  public let milliseconds: Double
+}
+
+extension ContinuousClock {
+  /// This instant of the monotonic clock.
+  public static var now: ContinuousClock { ContinuousClock(milliseconds: monotonicMs()) }
+
+  /// How long since this instant.
+  public var elapsed: Duration { Duration.milliseconds(monotonicMs() - self.milliseconds) }
+}
+
+/// The device's calendar: dates from their fields, and the start of a day.
+public struct Calendar: Equatable {
+  /// UTC instead of the device's time zone.
+  public var utc: Bool = false
+}
+
+extension Calendar {
+  /// The device's calendar, in its time zone.
+  public static var current: Calendar { Calendar(utc: false) }
+
+  /// The device's time zone (`Europe/Madrid`).
+  public static var timeZone: String { currentTimeZone() }
+
+  /// The date of these fields (`month` 1–12).
+  public func date(year: Int, month: Int, day: Int, hour: Int = 0, minute: Int = 0, second: Int = 0) -> Date {
+    Date.fromMilliseconds(dateFromParts(year, month, day, hour, minute, second, self.utc))
+  }
+
+  /// Midnight at the start of `date`'s day.
+  public func startOfDay(_ date: Date) -> Date {
+    let c = date.components(utc: self.utc)
+    return self.date(year: c.year, month: c.month, day: c.day)
+  }
+
+  /// Whether `a` and `b` fall on the same day.
+  public func isSameDay(_ a: Date, _ b: Date) -> Bool { self.startOfDay(a) == self.startOfDay(b) }
+}

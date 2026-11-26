@@ -319,6 +319,16 @@ export function jsonItems(value: JSONValue): readonly JSONValue[] {
   return Array.isArray(value) ? (value as JSONValue[]) : [];
 }
 
+/** `value` when it is one of `cases` (an enum's cases, which are their names at runtime). */
+export function jsonOneOf<T>(value: JSONValue, cases: readonly T[]): T | undefined {
+  return cases.includes(value as T) ? (value as T) : undefined;
+}
+
+/** An enum case as JSON: its name. */
+export function jsonOfCase<T>(value: T): JSONValue {
+  return value;
+}
+
 export function jsonString(value: JSONValue): string {
   return value as string;
 }
@@ -450,7 +460,11 @@ export function isCancellation(error: unknown): boolean {
 }
 
 export function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  if (error instanceof Error) return error.message;
+  if (error !== null && typeof error === 'object' && typeof (error as { message?: unknown }).message === 'string') {
+    return (error as { message: string }).message;
+  }
+  return String(error);
 }
 
 /** A broadcast channel of values, for `AsyncStream`. */
