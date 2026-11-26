@@ -619,7 +619,11 @@ A data `struct` takes Swift's members too (`public let id: String`, `public var 
 they are its fields; its methods, computed properties and `static` members, and an `enum`'s,
 are statically dispatched functions (section 4.8). A `@Binding var isOn: Bool` is read as a
 `Bool` (`isOn`, compiled `isOn[0]`), assigned as one (`isOn = false`, compiled `isOn[1](false)`),
-and passed on as the binding with `$isOn`. A view holding an `@Observable` model subscribes to
+and passed on as the binding with `$isOn`. `@Environment(\.k)` reads the built-in value `k` (`disabled`, `controlSize`, `buttonStyle`) or the
+environment key named `k` that the file declares or imports. A call takes more trailing closures
+after the first, each labelled on the same line (`Button { … } label: { … }`, Swift's form); they
+are labelled arguments. `Task { … }` starts async work without awaiting it (0.x `task { … }`).
+A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
 

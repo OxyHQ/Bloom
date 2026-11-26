@@ -2540,6 +2540,26 @@ impl<'s, 'i> Parser<'s, 'i> {
     /// Calls, members, indexing, `?` and trailing closures after `expr`.
     /// Under `await`, the first `?` applies to the awaited value:
     /// `await f()?` is `(await f())?`.
+    /// `Button { … } label: { … }` (2.0): the trailing closures after the first, each a
+    /// labelled argument written after it (on the same line). Gives the last one's span.
+    fn labelled_trailing(&mut self, args: &mut Vec<Arg>) -> Option<Span> {
+        let mut end = None;
+        while matches!(self.tok(), Tok::Ident(_))
+            && matches!(self.nth(1), Tok::P(P::Colon))
+            && matches!(self.nth(2), Tok::P(P::LBrace))
+            && !self.at_line_start()
+        {
+            let label = self.ident("a closure's label");
+            self.bump();
+            let closure = self.closure();
+            let (span, closure_span) = (label.span.to(closure.span), closure.span);
+            let value = self.expr_node(ExprKind::Closure(closure), closure_span);
+            args.push(Arg { label: Some(label), spread: false, value, span });
+            end = Some(span);
+        }
+        end
+    }
+
     fn postfix_loop(&mut self, mut expr: Expr, ctx: Ctx, mut awaiting: Option<Span>) -> Expr {
         loop {
             match self.tok() {
@@ -2547,13 +2567,18 @@ impl<'s, 'i> Parser<'s, 'i> {
                     if !self.token().space_before
                         || matches!(expr.kind, ExprKind::Name(_) | ExprKind::Field(..)) =>
                 {
-                    let (args, end) = self.args();
+                    let (mut args, end) = self.args();
                     let trailing = if ctx == Ctx::Normal && self.at(P::LBrace) {
                         Some(Box::new(self.closure()))
                     } else {
                         None
                     };
                     let end = trailing.as_ref().map_or(end, |c| c.span);
+                    let end = if trailing.is_some() {
+                        self.labelled_trailing(&mut args).unwrap_or(end)
+                    } else {
+                        end
+                    };
                     let span = expr.span.to(end);
                     expr = self.expr_node(
                         ExprKind::Call(Call {
@@ -2568,11 +2593,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 Tok::P(P::LBrace) if ctx == Ctx::Normal && is_callee(&expr) => {
                     let closure = self.closure();
-                    let span = expr.span.to(closure.span);
+                    let mut args = Vec::new();
+                    let end = self.labelled_trailing(&mut args).unwrap_or(closure.span);
+                    let span = expr.span.to(end);
                     expr = self.expr_node(
                         ExprKind::Call(Call {
                             callee: Box::new(expr),
-                            args: Vec::new(),
+                            args,
                             parens: false,
                             trailing: Some(Box::new(closure)),
                             optional: false,
