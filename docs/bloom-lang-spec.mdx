@@ -379,6 +379,11 @@ pub view PostRow(post: Post, compact: Bool = false) {
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
   trailing builder as `children`.
 
+- A modifier's parameter that TypeScript lets be `undefined` takes `none` and any optional
+  (`.onEndReached(more ? load : none, 0.5)`, `.footerContent(none)`); a parameter marked `?`
+  in its signature may be left out. `c ? a : none` is `A?` wherever it is written, so the
+  `none` branch is never held to the other's type.
+
 ### 7.3 Reactivity (compile-time)
 
 | Declaration | Meaning | Compiles to |
