@@ -32,6 +32,8 @@ impl Tr<'_> {
                             fragment.span,
                         ),
                     },
+                    // Several children: the fragment's children, one `Group`.
+                    [_, _, ..] => self.fragment_value(fragment),
                     _ => self.refuse(
                         "embed:fragment",
                         "an `Embed` fragment that is not one `toElement(…)`",
