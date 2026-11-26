@@ -1619,7 +1619,7 @@ export type Modifier =
   | { readonly kind: 'hoverGroup'; readonly key: string }
   | { readonly kind: 'label'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
-  | { readonly kind: 'role'; readonly key: string; readonly value: Role }
+  | { readonly kind: 'role'; readonly key: string; readonly value: Role | undefined }
   | { readonly kind: 'ref'; readonly key: string; readonly value: Ref<ViewInstance> }
   | {
       readonly kind: 'onLayout';
@@ -2478,7 +2478,7 @@ export class Node {
   hint(value: string | undefined): Node {
     return this.with({ kind: 'hint', key: 'hint', value });
   }
-  role(value: Role): Node {
+  role(value: Role | undefined): Node {
     return this.with({ kind: 'role', key: `role:${value}`, value });
   }
   accessibilityState(value: AccessibilityState): Node {
@@ -4836,7 +4836,14 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   aspectRatio(value: number): Self;
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
-  role(value: Role): Self;
+  /**
+   * What the view is to assistive technology (`accessibilityRole`, or a web
+   * role as React Native's `role`). `undefined` is none, a role chosen at
+   * render that may be none (`.role(href ? 'link' : undefined)`): a pressable
+   * with `.pressScale()`, a button by default, then names itself nothing, as
+   * Bloom's `PressableScale` with `accessibilityRole={undefined}` does.
+   */
+  role(value: Role | undefined): Self;
   /**
    * What assistive technology reads of the view's state: `selected`,
    * `checked` (or `'mixed'`), `busy`, `expanded`, `disabled` (React Native's

@@ -215,6 +215,25 @@ const presses: ParityCase[] = [
       </PressableScale>
     ),
   },
+  ...([undefined, 'link'] as const).map((role) => ({
+    // Mention's suggested profile tile: a link when it has somewhere to go, else no role at all.
+    name: `a press that scales, its role chosen at render (${role ?? 'none'})`,
+    language: () => toElement(L.VStack(L.Text('Open')).onPress(onPress).pressScale().role(role)),
+    bloom: () => (
+      <PressableScale onPress={onPress} accessibilityRole={role}>
+        <Text>Open</Text>
+      </PressableScale>
+    ),
+  })),
+  {
+    name: 'a view whose role is none',
+    language: () => toElement(L.VStack(L.Text('Plain')).label('Plain').role(undefined)),
+    bloom: () => (
+      <RN.View accessibilityLabel="Plain" accessibilityRole={undefined}>
+        <Text>Plain</Text>
+      </RN.View>
+    ),
+  },
   {
     name: 'a hover wash',
     language: () => toElement(L.HStack(L.Text('Row')).hoverHighlight()),

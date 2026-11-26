@@ -11,6 +11,10 @@
 - The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
 - `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
 
+### Added
+
+- `.role(undefined)`: a role chosen at render that may be none (`.role(href ? 'link' : undefined)`). A pressable with `.pressScale()`, a button by default, then names itself nothing, as Bloom's `PressableScale` handed `accessibilityRole={undefined}` does (Mention's suggested profile tile).
+
 ## 1.7.0
 
 ### Compatibility
