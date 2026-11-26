@@ -302,6 +302,11 @@ cases are an enum's, matched with `match`. A Bloom file reads no JS global impli
 come from the prelude (section 12), timers are `task { await sleep(ms) … }`, and any other global
 is imported by name, `import { encodeURIComponent, JSON } from "js"`: nothing is emitted for
 the import, and its names are `Foreign`, typed by TypeScript (lib.es, lib.dom) where they cross.
+A JS class imported so (`Date`, `URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
+built by a call: `Date(at)` is `new Date(at)`; Bloom has no `new`. `Foreign<"T">` writes out a
+TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
+`Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
+and the emitted TS names the type as written, so TS checks every use.
 
 ## 5. Values, functions and closures
 

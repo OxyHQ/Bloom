@@ -221,6 +221,8 @@ pub struct CheckResult {
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
     pub assigns: HashMap<Span, AssignRes>,
+    /// JS classes imported from "js": a call of one is `new`.
+    pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
     pub is_tests: HashMap<ExprId, Ty>,
     /// `if x is T`: the narrowed local and the one it narrows.
@@ -842,6 +844,13 @@ impl<'o> Checker<'o> {
         };
         if let Some(index) = self.generics.iter().rposition(|g| *g == name.name) {
             return Ty::Param(index as u32, name.name.as_str().into());
+        }
+        // `Foreign<"ReturnType<typeof setTimeout>">`: a TS type written out, which TS checks.
+        if name.name == "Foreign"
+            && let [TypeExpr { kind: TypeKind::Strings(texts), .. }] = args
+            && let [text] = texts.as_slice()
+        {
+            return Ty::Foreign(text.as_str().into());
         }
         let simple = match name.name.as_str() {
             "Int" => Some(Ty::Int),
@@ -1569,7 +1578,11 @@ impl<'o> Checker<'o> {
                 for spec in specs {
                     let local = spec.local().clone();
                     let value = Ty::Foreign(format!("typeof globalThis.{}", spec.name.name).into());
-                    self.declare_unique(&local, value, LocalKind::Import { hook: false });
+                    let id = self.declare_unique(&local, value, LocalKind::Import { hook: false });
+                    // A JS class is constructed by a call: `Date(x)` is `new Date(x)`.
+                    if JS_CLASSES.contains(&spec.name.name.as_str()) {
+                        self.out.constructors.insert(id);
+                    }
                 }
             }
             return;
@@ -4209,6 +4222,34 @@ pub fn reads_name(expr: &Expr, name: &str) -> bool {
     });
     found
 }
+
+/// JS's built-in classes: calling one from "js" constructs it.
+const JS_CLASSES: &[&str] = &[
+    "AbortController",
+    "ArrayBuffer",
+    "Blob",
+    "DataView",
+    "Date",
+    "Error",
+    "FormData",
+    "Headers",
+    "Image",
+    "Promise",
+    "RangeError",
+    "RegExp",
+    "Request",
+    "Response",
+    "TextDecoder",
+    "TextEncoder",
+    "TypeError",
+    "Uint8Array",
+    "URL",
+    "URLSearchParams",
+    "WeakMap",
+    "WeakSet",
+    "WebSocket",
+    "Worker",
+];
 
 /// Every name `expr` reads, with its expression id (closures included).
 pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
