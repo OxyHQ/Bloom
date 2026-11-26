@@ -205,8 +205,13 @@ pub struct CheckResult {
     pub items: HashMap<usize, LocalId>,
     /// Type names the module declares or imports: what the emitter names them.
     pub type_imports: Vec<String>,
+    /// Imported names that are types only (a struct or enum of another `.bloom` module,
+    /// a TS interface): emitted as `import type`.
+    pub type_only_imports: HashSet<Span>,
     /// The names an assignment writes (`count` in `count += 1`): written, not read.
     pub assign_targets: HashSet<ExprId>,
+    /// `Foreign` values accepted as a Bloom type: emitted `(value satisfies T)`.
+    pub foreign_checks: HashMap<ExprId, Ty>,
 }
 
 impl CheckResult {
@@ -233,8 +238,8 @@ struct Frame {
     task: bool,
     /// A render frame (a view's members and body): states are not written here.
     render: bool,
-    /// The result type was written: a `Foreign` result is checked by TS.
-    declared_ret: bool,
+    /// A `task { … }`: an async call here starts without being awaited.
+    spawn: bool,
 }
 
 /// A type name in scope.
@@ -267,9 +272,6 @@ pub struct Checker<'o> {
     task_allowed: bool,
     /// Spans already reported: one error per place.
     reported: HashSet<Span>,
-    /// The next expression is written where its type is annotated (`let x: T =`,
-    /// a declared result): a `Foreign` value is accepted there, and TS checks it.
-    accept_foreign: bool,
 }
 
 pub fn check(file: &File, source: &str, filename: &str, options: &Options) -> CheckResult {
@@ -300,7 +302,7 @@ impl<'o> Checker<'o> {
                 written: HashSet::new(),
                 task: false,
                 render: false,
-                declared_ret: false,
+                spawn: false,
             }],
             ts_named: HashMap::new(),
             view: None,
@@ -308,7 +310,6 @@ impl<'o> Checker<'o> {
             was_hook: false,
             task_allowed: false,
             reported: HashSet::new(),
-            accept_foreign: false,
         }
     }
 
@@ -673,6 +674,13 @@ impl<'o> Checker<'o> {
                     Ty::Unknown
                 };
             }
+            "Promise" => {
+                return if arity(self, 1) {
+                    Ty::Promise(Box::new(self.resolve_type(&args[0])))
+                } else {
+                    Ty::Unknown
+                };
+            }
             "Binding" => {
                 return if arity(self, 1) {
                     Ty::Binding(Box::new(self.resolve_type(&args[0])))
@@ -831,9 +839,7 @@ impl<'o> Checker<'o> {
             match &item.kind {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
-                    self.accept_foreign = declared.is_some();
                     let ty = self.expr(&c.value, declared.as_ref());
-                    let ty = declared.unwrap_or(ty);
                     let local = self.declare_unique(&c.name, ty, LocalKind::ModuleConst);
                     self.out.items.insert(index, local);
                 }
@@ -967,7 +973,7 @@ impl<'o> Checker<'o> {
             written: HashSet::new(),
             task: false,
             render: false,
-            declared_ret: f.ret.is_some(),
+            spawn: false,
         });
         let mut params = Vec::new();
         for (param, ty) in f.params.iter().zip(&fn_ty.params) {
@@ -1009,7 +1015,7 @@ impl<'o> Checker<'o> {
             written: HashSet::new(),
             task: false,
             render: true,
-            declared_ret: false,
+            spawn: false,
         });
         let mut info = ViewInfo::default();
         let params = self.view_params(v);
@@ -1024,11 +1030,7 @@ impl<'o> Checker<'o> {
                 Member::State(state) => {
                     let declared = state.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = match state.attr {
-                        StateAttr::State => {
-                            self.accept_foreign = declared.is_some();
-                            let ty = self.expr(&state.value, declared.as_ref());
-                            declared.unwrap_or(ty)
-                        }
+                        StateAttr::State => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
                             self.boundary(&state.value, None);
@@ -1043,10 +1045,8 @@ impl<'o> Checker<'o> {
                     self.hook_allowed = true;
                     self.was_hook = false;
                     let declared = stmt.ty.as_ref().map(|t| self.resolve_type(t));
-                    self.accept_foreign = declared.is_some();
                     let ty = self.expr(&stmt.value, declared.as_ref());
                     self.hook_allowed = false;
-                    let ty = declared.unwrap_or(ty);
                     let kind = if self.was_hook { LocalKind::Hook } else { LocalKind::Derived };
                     self.bind_irrefutable(&stmt.pattern, &ty, kind)
                 }
@@ -1114,6 +1114,24 @@ impl<'o> Checker<'o> {
             self.import_bloom(import, specifier);
             return;
         }
+        // `import { Row } from "./Row"`: a `.bloom` module when one is there, never both.
+        let relative = specifier.starts_with("./") || specifier.starts_with("../");
+        if relative && Path::new(specifier).extension().is_none() {
+            let with_extension = format!("{specifier}.bloom");
+            if self.path.parent().unwrap_or(Path::new(".")).join(&with_extension).is_file() {
+                if let Some(ts_path) = ts::resolve(&self.path, specifier, self.options) {
+                    self.report(
+                        Diagnostic::error("B0610", import.source_span, format!("\"{specifier}\" is both a .bloom module and a TS module"))
+                            .label(format!("also `{}`", ts_path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned())))
+                            .help(format!("remove one of them, or import the one you mean with its extension: \"{with_extension}\""))
+                            .spec("10-modules-and-interop"),
+                    );
+                    return;
+                }
+                self.import_bloom(import, &with_extension);
+                return;
+            }
+        }
         let file = ts::resolve(&self.path, specifier, self.options).and_then(|path| ts::read(&path));
         if file.is_none() {
             self.out.diagnostics.push(
@@ -1169,6 +1187,9 @@ impl<'o> Checker<'o> {
                             component: None,
                         },
                     };
+                    if mapped.value.is_none() && mapped.component.is_none() && mapped.ty.is_some() {
+                        self.out.type_only_imports.insert(spec.span);
+                    }
                     if let Some(ty) = mapped.ty {
                         self.type_names.insert(local.name.clone(), TypeName::Ty(ty));
                         self.out.type_imports.push(local.name.clone());
@@ -1217,6 +1238,8 @@ impl<'o> Checker<'o> {
             let local = spec.local().clone();
             if let Some(TypeName::Def(def)) = sub.type_names.get(&spec.name.name).cloned() {
                 self.type_names.insert(local.name.clone(), TypeName::Def(def));
+                self.out.type_imports.push(local.name.clone());
+                self.out.type_only_imports.insert(spec.span);
                 continue;
             }
             match sub.lookup(&spec.name.name).map(|id| sub.out.locals[id].clone()) {
@@ -1339,7 +1362,6 @@ impl<'o> Checker<'o> {
             let last = index + 1 == stmts.len();
             match &stmt.kind {
                 StmtKind::Expr(expr) if last && !discard => {
-                    self.accept_foreign = self.frames.last().is_some_and(|f| f.declared_ret);
                     ty = self.expr(expr, expected);
                 }
                 StmtKind::Return(_) => {
@@ -1381,23 +1403,19 @@ impl<'o> Checker<'o> {
         match &stmt.kind {
             StmtKind::Let(l) => {
                 let declared = l.ty.as_ref().map(|t| self.resolve_type(t));
-                self.accept_foreign = declared.is_some();
                 let ty = self.expr(&l.value, declared.as_ref());
-                let ty = declared.unwrap_or(ty);
                 self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
             }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
-                self.accept_foreign = declared.is_some();
                 let ty = self.expr(&v.value, declared.as_ref());
-                self.declare(&v.name, declared.unwrap_or(ty), LocalKind::Var);
+                self.declare(&v.name, ty, LocalKind::Var);
             }
             StmtKind::Assign(a) => self.assign(a),
             StmtKind::Return(value) => {
                 let ret = self.frames.last().expect("a frame").ret.clone();
                 match value {
                     Some(value) => {
-                        self.accept_foreign = self.frames.last().is_some_and(|f| f.declared_ret);
                         self.expr(value, Some(&ret));
                     }
                     None => {
@@ -1429,8 +1447,25 @@ impl<'o> Checker<'o> {
                 self.stmts(&f.body.stmts, Some(&Ty::Unit), f.body.span);
                 self.pop();
             }
+            StmtKind::Defer(block) => {
+                self.block(block, Some(&Ty::Unit));
+            }
             StmtKind::Expr(expr) => {
-                self.expr(expr, None);
+                let ty = self.expr(expr, None);
+                if matches!(self.resolve(&ty), Ty::Async(_) | Ty::Promise(_))
+                    && !self.frames.last().is_some_and(|f| f.spawn)
+                {
+                    self.report(
+                        Diagnostic::error(
+                            "B0430",
+                            expr.span,
+                            "this async call is neither awaited nor started as a task",
+                        )
+                        .label("its result (and any failure) would be dropped")
+                        .help("write `await` before it, or start it on its own: `task { await … }`")
+                        .spec("8-effects-tasks-and-concurrency"),
+                    );
+                }
             }
         }
     }
@@ -2092,6 +2127,14 @@ impl<'o> Checker<'o> {
             tys.push(arm(self, &a.body));
             self.pop();
         }
+        if matches!(zonked, Ty::Foreign(_)) {
+            self.report(
+                Diagnostic::error("B0601", m.scrutinee.span, "a `Foreign` value is matched")
+                    .label("Bloom cannot check these patterns against a TS value it could not type")
+                    .help("annotate it first: `let value: T = …`, then `match value`")
+                    .spec("47-the-foreign-boundary"),
+            );
+        }
         if !matches!(zonked, Ty::Unknown | Ty::Foreign(_)) {
             let missing = exhaust::missing(&rows, &zonked, &self.out.defs);
             if !missing.is_empty() {
@@ -2126,14 +2169,39 @@ impl<'o> Checker<'o> {
 
     /// Checks `expr` against `expected` (when there is one) and records its type.
     pub fn expr(&mut self, expr: &Expr, expected: Option<&Ty>) -> Ty {
-        let accept_foreign = std::mem::take(&mut self.accept_foreign);
         let ty = self.infer(expr, expected);
         self.out.types.insert(expr.id, ty.clone());
         self.out.spans.push((expr.span, ty.clone()));
         match expected {
             Some(expected) => {
-                if accept_foreign && matches!(self.resolve(&ty), Ty::Foreign(_)) {
-                    return expected.clone();
+                // A TS value Bloom could not type is accepted where a type is
+                // expected; the emitted `satisfies` lets TypeScript check it (spec 4.7).
+                if matches!(self.resolve(&ty), Ty::Foreign(_))
+                    && !matches!(self.resolve(expected), Ty::Unknown | Ty::Foreign(_))
+                {
+                    if let Ty::Fn(f) = self.resolve(expected)
+                        && f.is_async
+                    {
+                        let params: Vec<String> =
+                            f.params.iter().map(|p| self.show(&p.ty).trim_matches('`').to_string()).collect();
+                        let ret = self.show(&f.ret).trim_matches('`').to_string();
+                        self.report(
+                                Diagnostic::error("B0201", expr.span, "a TS function returns a promise, not a Bloom async result")
+                                    .label("a TS value typed as a Bloom `async` function")
+                                    .help(format!("type it with `Promise`: `({}) -> Promise<{ret}>`; awaiting it gives a `Result`", params.join(", ")))
+                                    .spec("8-effects-tasks-and-concurrency"),
+                            );
+                    }
+                    let mut expected = self.zonk(expected);
+                    // Go on with the type the help writes, so one mistake is one error.
+                    if let Ty::Fn(f) = &expected
+                        && f.is_async
+                    {
+                        let ret = Ty::Promise(Box::new(f.ret.clone()));
+                        expected = Ty::Fn(Rc::new(FnTy { ret, is_async: false, ..(**f).clone() }));
+                    }
+                    self.out.foreign_checks.insert(expr.id, expected.clone());
+                    return expected;
                 }
                 if !self.coerce(&ty, expected) {
                     self.mismatch(expr.span, &ty, expected);
@@ -2169,7 +2237,7 @@ impl<'o> Checker<'o> {
         }
         if matches!(self.resolve(&ty), Ty::Async(_)) {
             self.report(
-                Diagnostic::error("B0201", expr.span, "a pending async call is passed to TS")
+                Diagnostic::error("B0430", expr.span, "a pending async call is passed to TS")
                     .label("an async Bloom call")
                     .help("write `await` before it, or pass the function itself")
                     .spec("8-effects-tasks-and-concurrency"),
@@ -2189,6 +2257,24 @@ impl<'o> Checker<'o> {
                 _ => Ty::Int,
             },
             ExprKind::Float(_) => Ty::Float,
+            ExprKind::Unit => Ty::Unit,
+            ExprKind::Task(block) => {
+                let task = self.frames.last().is_some_and(|f| f.task);
+                self.frames.push(Frame {
+                    ret: Ty::Unit,
+                    is_async: true,
+                    closure: true,
+                    written: HashSet::new(),
+                    task,
+                    render: false,
+                    spawn: true,
+                });
+                self.push();
+                self.stmts(&block.stmts, Some(&Ty::Unit), block.span);
+                self.pop();
+                self.frames.pop();
+                Ty::Unit
+            }
             ExprKind::Bool(_) => Ty::Bool,
             ExprKind::None => match expected_resolved {
                 Some(Ty::Option(inner)) => Ty::Option(inner),
@@ -2404,7 +2490,10 @@ impl<'o> Checker<'o> {
             .values
             .iter()
             .map(String::as_str)
-            .filter(|t| !t.chars().all(|c| c.is_ascii_digit() || c == '.' || c == '-'))
+            .filter(|t| {
+                !t.starts_with('-')
+                    && !t.chars().all(|c| c.is_ascii_digit() || c == '.' || c == '%' || c == '/')
+            })
             .collect();
         let label = if shown.len() <= 16 {
             format!("expected one of: {}", shown.join(" "))
@@ -2887,7 +2976,7 @@ impl<'o> Checker<'o> {
                 if !self.frames.iter().any(|f| f.task) {
                     self.report(
                         Diagnostic::error(
-                            "B0430",
+                            "B0432",
                             expr.span,
                             "`Task.signal` is read outside a `.task { … }`",
                         )
@@ -3105,7 +3194,7 @@ impl<'o> Checker<'o> {
             written: HashSet::new(),
             task,
             render: false,
-            declared_ret: false,
+            spawn: false,
         });
         let mut locals = Vec::new();
         for (param, ty) in params {
@@ -3113,6 +3202,21 @@ impl<'o> Checker<'o> {
         }
         let ret_resolved = self.resolve(&ret);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
+        // A Bloom async call is awaited or started as a task, never returned unawaited.
+        if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
+            (self.resolve(&body_ty), c.body.last())
+        {
+            self.report(
+                Diagnostic::error(
+                    "B0430",
+                    tail.span,
+                    "this async call is neither awaited nor started as a task",
+                )
+                .label("its result (and any failure) would be dropped")
+                .help("write `await` before it, or start it on its own: `task { await … }`")
+                .spec("8-effects-tasks-and-concurrency"),
+            );
+        }
         if matches!(ret_resolved, Ty::Var(_)) {
             self.unify(&ret, &body_ty);
         }
@@ -3175,6 +3279,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             }
         }
         ExprKind::Closure(c) => walk_stmts(&c.body, f),
+        ExprKind::Task(block) => walk_stmts(&block.stmts, f),
         ExprKind::If(i) => walk_if(i, f),
         ExprKind::Match(m) => {
             walk_names(&m.scrutinee, f);
@@ -3190,6 +3295,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             }
         }
         ExprKind::Int(_)
+        | ExprKind::Unit
         | ExprKind::Float(_)
         | ExprKind::Bool(_)
         | ExprKind::None
@@ -3239,6 +3345,7 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
             }
             StmtKind::Return(Some(e)) | StmtKind::Expr(e) => walk_names(e, f),
             StmtKind::Return(None) => {}
+            StmtKind::Defer(block) => walk_stmts(&block.stmts, f),
             StmtKind::While(w) => {
                 walk_names(&w.cond, f);
                 walk_stmts(&w.body.stmts, f);

@@ -1,0 +1,25 @@
+enum Load<T> {
+  loading
+  failed(message: String)
+  ready(T)
+}
+
+fn label(load: Load<Int>) -> String {
+  match load {
+    case .loading => "Loading"
+    case .ready(n) => "${n}"
+  }
+}
+
+fn twice(load: Load<Int>) -> Int {
+  match load {
+    case _ => 0
+    case .loading => 1
+  }
+}
+
+fn pick(flag: Bool, n: Int?) -> Int {
+  match flag {
+    case true => n ?? 0
+  }
+}

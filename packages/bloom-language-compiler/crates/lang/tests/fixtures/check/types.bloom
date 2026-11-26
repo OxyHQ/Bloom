@@ -1,0 +1,22 @@
+struct Post {
+  title: String
+  likes: Int = 0
+}
+
+fn ratio(a: Int, b: Float) -> Float {
+  a * b
+}
+
+fn title(post: Post?) -> String {
+  post.title
+}
+
+fn make() -> Post {
+  Post(likes: 1)
+}
+
+fn read(post: Post) -> Int {
+  post.like
+}
+
+fn nested(x: Int??) -> Int { 0 }

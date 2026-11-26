@@ -1,0 +1,179 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Spacer, Text, TextField, Toggle, VStack, toast, view } from "@oxy.so/bloom-language";
+import { useEffect, useState } from "react";
+const _bloomStatic0 = Spacer();
+const _bloomStatic1 = Button(Text("Send"));
+type $Result<
+	T,
+	E
+> = {
+	readonly ok: true;
+	readonly value: T;
+} | {
+	readonly ok: false;
+	readonly error: E;
+};
+function $sorted<T>(items: readonly T[], before: (a: T, b: T) => boolean): readonly T[] {
+	return [...items].sort((a, b) => before(a, b) ? -1 : before(b, a) ? 1 : 0);
+}
+function $toInt(text: string): number | undefined {
+	const value = Number(text.trim());
+	return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+type Load<T> = "loading" | {
+	readonly tag: "failed";
+	readonly message: string;
+} | {
+	readonly tag: "ready";
+	readonly _0: T;
+};
+type Tone = "calm" | "loud";
+interface Draft {
+	readonly text: string;
+	readonly sensitive: boolean;
+	readonly tags: readonly string[];
+}
+export function first<T>(items: readonly T[]): T | undefined {
+	return items[0];
+}
+function describe(load: Load<number>): string {
+	if (load === "loading") {
+		return "Loading";
+	} else if (typeof load === "object" && load.tag === "failed") {
+		const message = load.message;
+		return `Failed: ${message}`;
+	} else if (typeof load === "object" && load.tag === "ready" && load._0 > 99) {
+		const n = load._0;
+		return "Many";
+	} else {
+		const n = load._0;
+		return `${n} items`;
+	}
+}
+function parse(text: string): $Result<number, string> {
+	const $t0 = $toInt(text);
+	if ($t0 !== undefined) {
+		const n = $t0;
+		return {
+			ok: true as const,
+			value: n
+		};
+	} else {
+		return {
+			ok: false as const,
+			error: `not a number: ${text}`
+		};
+	}
+}
+function sum(texts: readonly string[]): $Result<number, string> {
+	let total = 0;
+	for (const text of texts) {
+		const $t1 = parse(text);
+		if (!$t1.ok) return $t1;
+		const n = $t1.value;
+		total = total + n;
+	}
+	return {
+		ok: true as const,
+		value: total
+	};
+}
+function loudness(tone: Tone): number {
+	return tone === "calm" ? .5 : 1;
+}
+function tagged(draft: Draft, tag: string): Draft {
+	return {
+		...draft,
+		tags: $sorted([...draft.tags, tag], (a: string, b: string) => a < b)
+	};
+}
+export interface ComposerProps {
+	readonly maxLength?: number;
+	readonly onSend: (p0: Draft) => Promise<$Result<undefined, string>>;
+}
+export const Composer = view(function Composer(props: ComposerProps) {
+	"use no memo";
+	const $ = $c(12);
+	const { maxLength = 280, onSend } = props;
+	const [draft, setDraft] = useState<Draft>(() => ({
+		text: "",
+		sensitive: false,
+		tags: []
+	}));
+	const [sending, setSending] = useState<boolean>(false);
+	const [sent, setSent] = useState<number>(0);
+	const left = maxLength - draft.text.length;
+	const canSend = !sending && left >= 0 && !(draft.text.length === 0);
+	let tone: Tone;
+	if ($[0] !== left) {
+		tone = left < 20 ? "loud" : "calm";
+		$[0] = left;
+		$[1] = tone;
+	} else {
+		tone = $[1];
+	}
+	let send: () => Promise<void>;
+	if ($[2] !== onSend || $[3] !== draft) {
+		send = async (): Promise<void> => {
+			setSending(true);
+			try {
+				const $t2 = await onSend(draft);
+				if ($t2.ok) {
+					setDraft({
+						text: "",
+						sensitive: false,
+						tags: []
+					});
+					setSent((sent) => sent + 1);
+				} else {
+					const message = $t2.error;
+					toast(message, { type: "error" });
+				}
+			} finally {
+				setSending(false);
+			}
+		};
+		$[2] = onSend;
+		$[3] = draft;
+		$[4] = send;
+	} else {
+		send = $[4];
+	}
+	useEffect(() => {
+		const $controller = new AbortController();
+		const $signal = $controller.signal;
+		void (async () => {
+			if (sent > 0) {
+				await new Promise<void>((resolve) => setTimeout(resolve, 1e3));
+			}
+		})();
+		return () => $controller.abort();
+	}, [sent]);
+	let $t4;
+	if ($[5] !== draft || $[6] !== left || $[7] !== canSend || $[8] !== send || $[9] !== tone || $[10] !== sent) {
+		const $t3 = first(draft.tags);
+		$t4 = VStack(TextField([draft.text, (value: string) => setDraft((draft) => ({
+			...draft,
+			text: value
+		}))] as const, "What is new?"), HStack(Toggle([draft.sensitive, (value: boolean) => setDraft((draft) => ({
+			...draft,
+			sensitive: value
+		}))] as const).label("Sensitive"), _bloomStatic0, Text(`${left}`).foreground(left < 0 ? "error" : "muted"), _bloomStatic1.disabled(!canSend).onPress(() => void (async () => {
+			await send();
+		})())).spacing("sm"), $t3 !== undefined ? (() => {
+			const tag = $t3;
+			return Text(tag).foreground("muted");
+		})() : null, draft.tags.map((tag) => Text(tag)), Text(`${loudness(tone)}`)).spacing("md").padding("lg");
+		$[5] = draft;
+		$[6] = left;
+		$[7] = canSend;
+		$[8] = send;
+		$[9] = tone;
+		$[10] = sent;
+		$[11] = $t4;
+	} else {
+		$t4 = $[11];
+	}
+	return $t4;
+});

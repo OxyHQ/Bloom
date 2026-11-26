@@ -1,0 +1,26 @@
+error[B0410]: `count` is read after it is written in this closure
+ --> check/state.bloom:9:17
+  |
+9 |     let shown = count
+  |                 ^^^^^ this reads the value the view drew with, not the new one
+  |
+help: bind the new value first: `let next = …; count = next`, then use `next`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0420]: the hook `useTranslation` is called outside a view member
+  --> check/state.bloom:18:15
+   |
+18 |   let { t } = useTranslation()
+   |               ^^^^^^^^^^^^^^ a hook runs on every render, in the same order
+   |
+help: call it as a view member: `let value = useTranslation(…)`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0401]: `open` is written while the view draws
+  --> check/state.bloom:25:5
+   |
+25 |     open = true
+   |     ^^^^ a state changes in an event, not in the body or a derived value
+   |
+help: write it in a handler (`fn`, `.onPress { … }`) or a `.task { … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time

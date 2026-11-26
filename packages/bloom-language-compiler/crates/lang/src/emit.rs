@@ -391,7 +391,11 @@ impl<'a> Emitter<'a> {
                     .iter()
                     .map(|spec| {
                         let local = spec.local();
-                        let kind = if spec.type_only { "type " } else { "" };
+                        let kind = if spec.type_only || self.ck.type_only_imports.contains(&spec.span) {
+                            "type "
+                        } else {
+                            ""
+                        };
                         if local.name == spec.name.name {
                             format!("{kind}{}", spec.name.name)
                         } else {
@@ -431,7 +435,9 @@ impl<'a> Emitter<'a> {
                 let base = match &d.origin {
                     Origin::Local => d.name.clone(),
                     Origin::Bloom { specifier } => {
-                        self.type_imports.entry(specifier.clone()).or_default().insert(d.name.clone());
+                        if !self.ck.type_imports.contains(&d.name) {
+                            self.type_imports.entry(specifier.clone()).or_default().insert(d.name.clone());
+                        }
                         d.name.clone()
                     }
                     Origin::Ts { path } => {
@@ -686,6 +692,20 @@ impl<'a> Emitter<'a> {
     fn stmts(&mut self, stmts: &[Stmt], tail: Tail, signal: Option<&str>) {
         for (index, stmt) in stmts.iter().enumerate() {
             let last = index + 1 == stmts.len();
+            if let StmtKind::Defer(deferred) = &stmt.kind {
+                // The rest of the block runs in `try`, the deferred block in `finally`.
+                self.bufs.push(Vec::new());
+                self.stmts(&stmts[index + 1..], tail, signal);
+                let rest = self.bufs.pop().expect("the rest");
+                let finally = self.block_body(&deferred.stmts, Tail::Discard, None);
+                let mut line = Frag::at(stmt.span, "try {\n");
+                for l in rest {
+                    line.f(l).s("\n");
+                }
+                line.s("} finally ").f(finally);
+                self.push_stmt(line);
+                return;
+            }
             match (&stmt.kind, last) {
                 (StmtKind::Expr(expr), true) => self.tail_expr(expr, &tail),
                 _ => self.stmt(stmt),
@@ -779,6 +799,10 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             StmtKind::Expr(expr) => self.tail_expr(expr, &Tail::Discard),
+            StmtKind::Defer(block) => {
+                let body = self.block_body(&block.stmts, Tail::Discard, None);
+                self.push_stmt(body);
+            }
         }
     }
 
@@ -1157,6 +1181,13 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::default();
         out.mark(expr.span);
         out.f(self.expr_inner(expr));
+        // A `Foreign` value where Bloom expects a type: TypeScript checks it is one.
+        if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
+            let ty = self.ts_type(&ty);
+            if ty != "unknown" {
+                return out.wrap("(", &format!(" satisfies {ty})"));
+            }
+        }
         out
     }
 
@@ -1168,7 +1199,13 @@ impl<'a> Emitter<'a> {
                 Frag::of(if v.fract() == 0.0 && v.is_finite() { format!("{v:.1}") } else { v.to_string() })
             }
             ExprKind::Bool(v) => Frag::of(v.to_string()),
-            ExprKind::None => Frag::of("undefined"),
+            ExprKind::None | ExprKind::Unit => Frag::of("undefined"),
+            ExprKind::Task(block) => {
+                let saved = std::mem::replace(&mut self.conditional, 0);
+                let body = self.block_body(&block.stmts, Tail::Discard, None);
+                self.conditional = saved;
+                body.wrap("void (async () => ", ")()")
+            }
             ExprKind::Str { parts, .. } => self.string(parts),
             ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
                 Some(NameRes::Local(local)) => Frag::of(self.local_name(*local)),
@@ -1814,28 +1851,51 @@ impl<'a> Emitter<'a> {
         let given: HashMap<&str, &Expr> =
             call.args.iter().filter_map(|a| a.label.as_ref().map(|l| (l.name.as_str(), &a.value))).collect();
         let mut entries: Vec<Frag> = Vec::new();
-        if !partial {
+        if partial {
+            for arg in call.args.iter().filter(|a| a.spread) {
+                let mut entry = Frag::of("...");
+                entry.f(self.operand(&arg.value));
+                entries.push(entry);
+            }
+        } else {
+            // Each spread, in order: a struct gives every field, a patch only the
+            // fields it has (`p?.likes ?? <default>`), so a field is never `undefined`.
+            let mut spreads: Vec<(String, bool, bool)> = Vec::new();
+            for arg in call.args.iter().filter(|a| a.spread) {
+                let ty = self.ck.types.get(&arg.value.id).cloned().unwrap_or(Ty::Unknown);
+                let (patch, optional) = match &ty {
+                    Ty::Partial(_) => (true, false),
+                    Ty::Option(inner) if matches!(**inner, Ty::Partial(_)) => (true, true),
+                    _ => (false, false),
+                };
+                let subject = self.subject(&arg.value);
+                spreads.push((subject, patch, optional));
+            }
             for field in &fields {
                 if given.contains_key(field.name.as_str()) {
                     continue;
                 }
-                let value = match &field.default {
+                let mut value = match &field.default {
                     FieldDefault::Expr(id) => self.default_expr(*id),
                     FieldDefault::Literal(text) => Some(Frag::of(text.clone())),
                     FieldDefault::Undefined | FieldDefault::None => None,
                 };
+                for (subject, patch, optional) in &spreads {
+                    let read = format!("{subject}{}{}", if *optional { "?." } else { "." }, field.name);
+                    value = Some(match (patch, value) {
+                        (true, Some(fallback)) => {
+                            let mut out = Frag::of(format!("{read} ?? "));
+                            out.f(fallback.wrap("(", ")"));
+                            out
+                        }
+                        _ => Frag::of(read),
+                    });
+                }
                 if let Some(value) = value {
                     let mut entry = Frag::of(format!("{}: ", prop_key(&field.name)));
                     entry.f(value);
                     entries.push(entry);
                 }
-            }
-        }
-        for arg in &call.args {
-            if arg.spread {
-                let mut entry = Frag::of("...");
-                entry.f(self.operand(&arg.value));
-                entries.push(entry);
             }
         }
         for arg in &call.args {
@@ -2199,7 +2259,7 @@ fn stmt_awaits(stmt: &Stmt) -> bool {
         StmtKind::Return(Some(e)) | StmtKind::Expr(e) => visit(e),
         StmtKind::While(w) => visit(&w.cond),
         StmtKind::For(f) => visit(&f.iter),
-        StmtKind::Return(None) => {}
+        StmtKind::Return(None) | StmtKind::Defer(_) => {}
     }
     found
 }

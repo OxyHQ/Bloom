@@ -76,8 +76,7 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     let (file, _, syntax) = parser::parse(source);
     let mut result = check::check(&file, source, filename, options);
-    let (mut errors, mut warnings): (Vec<_>, Vec<_>) =
-        syntax.into_iter().chain(result.diagnostics.drain(..)).partition(|d| d.severity == Severity::Error);
+    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         diagnostic.render(source, filename);
     }
@@ -88,8 +87,7 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     let (file, _, syntax) = parser::parse(source);
     let mut checked = check::check(&file, source, filename, options);
-    let (mut errors, mut warnings): (Vec<_>, Vec<_>) =
-        syntax.into_iter().chain(checked.diagnostics.drain(..)).partition(|d| d.severity == Severity::Error);
+    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
     let mut output =
         Output { code: String::new(), map: None, dts: None, diagnostics: Vec::new(), warnings: Vec::new() };
     if errors.is_empty() {
@@ -130,6 +128,16 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     output.diagnostics = errors;
     output.warnings = warnings;
     output
+}
+
+/// Syntax errors and the checker's findings, as errors and warnings. With a
+/// syntax error the checker's errors are left out: they would be about the
+/// parser's recovery, and one typo is one error.
+fn merge(syntax: Vec<Diagnostic>, checked: Vec<Diagnostic>) -> (Vec<Diagnostic>, Vec<Diagnostic>) {
+    let has_syntax = !syntax.is_empty();
+    let (errors, warnings): (Vec<_>, Vec<_>) =
+        checked.into_iter().partition(|d| d.severity == Severity::Error);
+    if has_syntax { (syntax, warnings) } else { (errors, warnings) }
 }
 
 /// The emitted module's name, for the embedded pass: `x.bloom` is `x.bloom.ts`.

@@ -1,0 +1,20 @@
+view Card {
+  body {
+    VStack {
+      Text("Hello")
+        .padding("medium")
+    }
+  }
+}
+
+view Row {
+  body {
+    Text("x").paddng("md")
+  }
+}
+
+view Gap {
+  body {
+    VStack { Text("y") }.spacing(16)
+  }
+}
