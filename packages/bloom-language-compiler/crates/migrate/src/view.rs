@@ -1596,13 +1596,13 @@ impl Tr<'_> {
             }
             Statement::TryStatement(t) => self.try_stmt(t, false),
             // In a `Result` closure (a `try` written as one): its error. In `catching` or a closure
-            // TS calls (`mutationFn`, `queryFn`): `err(e)?`, which throws there (spec
-            // 4.5; bloomc checks that TS calls it). The prelude's `fail(e)` replaces it.
+            // TS calls (`mutationFn`, `queryFn`): `fail(e)`, TS's throw (bloomc checks
+            // that TS calls it, B0222).
             Statement::ThrowStatement(t) if self.try_return => {
                 format!("return err({})", self.expr(&t.argument))
             }
             Statement::ThrowStatement(t) if self.propagate || self.closures > 0 => {
-                format!("err({})?", self.expr(&t.argument))
+                format!("fail({})", self.expr(&t.argument))
             }
             Statement::ThrowStatement(t) => {
                 self.refuse("statement:throw", "`throw` outside a closure (return a `Result`)", t.span)

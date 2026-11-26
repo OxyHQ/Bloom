@@ -18,7 +18,7 @@ fn labelOf(track: Track) -> String {
 pub view Deck(track: Track) {
   let player = usePlayer()
   let _ = useTask {
-    if track.id.isEmpty { err(Error("No track"))? }
+    if track.id.isEmpty { fail(Error("No track")) }
     let loaded = await load(track.id)?
     return loaded.data.url
   }
