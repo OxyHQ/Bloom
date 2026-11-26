@@ -1,0 +1,16 @@
+
+export type Tone = "calm" | "loud";
+
+function volume(tone: "calm" | "loud"): number {
+return ((tone === "calm") ? 1 : 2);
+}
+
+function pick(size: "sm" | "lg", tone: ("calm" | "loud") | undefined): number {
+const base = (size === "sm") ? 1 : 2;
+return base + volume(tone ?? "calm");
+}
+
+export function uses(): number {
+return pick("lg", "loud") + pick("sm", undefined);
+}
+
