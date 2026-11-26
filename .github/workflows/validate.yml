@@ -65,6 +65,36 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/merge-queue-verified.sh
 
+  # The Seldon race (OxyHQ/oxy docs/engineering/build-and-deploy.md, CI on
+  # Seldon), opt-in with the repository variable CI_SELDON_RACE=true. Unset,
+  # every job runs hosted as before and none of the race's jobs takes a runner.
+  # Set, the raced jobs (build, language, language-parity, tests) run on the
+  # self-hosted seldon-ci pool; a lane still queued 3 minutes after it was
+  # created gets a hosted twin of the same name (the `-hosted` jobs), the lane
+  # that starts first wins, and race-finish cancels the other through its
+  # job-level concurrency group. A fork's pull request never runs on Seldon.
+  # Pull requests and the merge queue only, never a push: the release trusts a
+  # push run that concluded `success`, and a cancelled loser would make it
+  # conclude `cancelled`.
+  # A Seldon lane that fails, whatever the reason (the house network drops new
+  # connections in bursts), reruns hosted in its `-rescue` job, which fails
+  # again on a genuine failure. CI complete takes the raced jobs' verdict from
+  # the race, so neither a cancelled loser nor a rescued lane is a red.
+  race:
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@main
+    permissions:
+      actions: read
+
+  race-finish:
+    needs: race
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
+    uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@main
+    permissions:
+      actions: read
+
   build:
     name: Build, package and types
     needs: provenance
@@ -73,9 +103,23 @@ jobs:
     # dispatch run) would otherwise skip the dependent too; it runs unless
     # provenance positively answered verified.
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    # Each raced lane: Seldon when the race is on (never for a fork), its own
+    # concurrency group (the race cancels a loser by queuing into it; the name
+    # must be the job's display name), and the guard as its first step.
+    runs-on: &seldon-lane ${{ vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
     timeout-minutes: 20
-    steps:
+    permissions: &race-lane-permissions
+      contents: read
+      actions: read
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Build, package and types
+    steps: &build-steps # A lane that starts after its twin waits here to be cancelled.
+      - &race-guard
+        name: Seldon race guard
+        if: vars.CI_SELDON_RACE == 'true' && !endsWith(github.job, '-rescue')
+        uses: OxyHQ/oxy/.github/actions/seldon-race@main
+        with:
+          mode: guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -140,6 +184,29 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
+  # build's hosted twin in the Seldon race: the same name, strategy and steps.
+  build-hosted:
+    name: Build, package and types
+    needs: race
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Build, package and types
+    steps: *build-steps
+
+  # build's rescue: reruns it hosted when a Seldon lane of it failed.
+  build-rescue:
+    name: Build, package and types
+    needs: [provenance, build]
+    if: ${{ !cancelled() && needs.build.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: *race-lane-permissions
+    steps: *build-steps
+
   # The language packages: the language (its unit suite; its parity suite runs
   # in `language-parity`), the compiler (Rust, its adapters and its own parity
   # suite), Bloom data and the className codemod (its transform, and its sample
@@ -149,9 +216,13 @@ jobs:
     name: Language packages
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: *seldon-lane
     timeout-minutes: 45
-    steps:
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Language packages
+    steps: &language-steps
+      - *race-guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -166,7 +237,8 @@ jobs:
       # The language builds and typechecks against Bloom's built package.
       - run: bun run build
       # The language compiler is Rust (Oxc needs 1.97+). Pinned, so a new
-      # stable never changes what CI builds; rustup ships with the runner.
+      # stable never changes what CI builds; rustup ships with the runner
+      # (hosted and seldon-ci both).
       - name: Rust toolchain for the language compiler
         run: |
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
@@ -228,6 +300,28 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
+  language-hosted:
+    name: Language packages
+    needs: race
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Language packages
+    steps: *language-steps
+
+  # language's rescue: reruns it hosted when a Seldon lane of it failed.
+  language-rescue:
+    name: Language packages
+    needs: [provenance, language]
+    if: ${{ !cancelled() && needs.language.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions: *race-lane-permissions
+    steps: *language-steps
+
   # The language's parity suite: every family rendered as the language and as
   # hand-written Bloom, native and web, light and dark. Alone it takes about
   # half an hour, so it runs in two shards beside the other language packages.
@@ -237,13 +331,17 @@ jobs:
     name: Language parity (${{ matrix.shard }}/2)
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: *seldon-lane
     timeout-minutes: 35
-    strategy:
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Language parity (${{ matrix.shard }}/2)
+    strategy: &language-parity-strategy
       fail-fast: false
       matrix:
         shard: [1, 2]
-    steps:
+    steps: &language-parity-steps
+      - *race-guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -260,19 +358,47 @@ jobs:
       - name: Language parity suite
         run: cd packages/bloom-language && bun run test:parity --shard=${{ matrix.shard }}/2
 
+  language-parity-hosted:
+    name: Language parity (${{ matrix.shard }}/2)
+    needs: race
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Language parity (${{ matrix.shard }}/2)
+    strategy: *language-parity-strategy
+    steps: *language-parity-steps
+
+  # language-parity's rescue: reruns it hosted when a Seldon lane of it failed.
+  language-parity-rescue:
+    name: Language parity (${{ matrix.shard }}/2)
+    needs: [provenance, language-parity]
+    if: ${{ !cancelled() && needs.language-parity.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions: *race-lane-permissions
+    strategy: *language-parity-strategy
+    steps: *language-parity-steps
+
   # The shard list and the `/5` denominator (name + --shard) must agree, or
   # jest silently runs only part of the suite.
   tests:
     name: Tests (${{ matrix.shard }}/5)
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: *seldon-lane
     timeout-minutes: 20
-    strategy:
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Tests (${{ matrix.shard }}/5)
+    strategy: &tests-strategy
       fail-fast: false
       matrix:
         shard: [1, 2, 3, 4, 5]
-    steps:
+    steps: &tests-steps
+      - *race-guard
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -290,6 +416,30 @@ jobs:
       # worker at or below the old nine x two: the crash grows with files per
       # worker and with FEWER workers, not with memory (AGENTS.md).
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
+
+  tests-hosted:
+    name: Tests (${{ matrix.shard }}/5)
+    needs: race
+    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
+    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: *race-lane-permissions
+    concurrency:
+      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Tests (${{ matrix.shard }}/5)
+    strategy: *tests-strategy
+    steps: *tests-steps
+
+  # tests's rescue: reruns it hosted when a Seldon lane of it failed.
+  tests-rescue:
+    name: Tests (${{ matrix.shard }}/5)
+    needs: [provenance, tests]
+    if: ${{ !cancelled() && needs.tests.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: *race-lane-permissions
+    strategy: *tests-strategy
+    steps: *tests-steps
 
   # The Android gates, one variant each. Their steps are the local action
   # .github/actions/android-native-check, which gradle-dependency-cache below
@@ -458,18 +608,51 @@ jobs:
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
   # legitimate skip is a push whose exact SHA already passed this job in the
   # merge queue (provenance verified) — and then the heavy jobs MUST be
-  # skipped, so a gating bug that ran them anyway is a red too.
+  # skipped, so a gating bug that ran them anyway is a red too. When the Seldon
+  # race or a rescue ran, a raced job passes when the race's verdict says each
+  # of its names passed in some lane and failed in no hosted lane: the loser's
+  # cancellation makes the job's own result `cancelled`, and a Seldon lane that
+  # failed on the network is excused by its rescue's success. It does not need
+  # race-finish, whose reapers only follow the cancellation.
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, build, language, language-parity, tests, android]
+    needs:
+      [
+        provenance,
+        race,
+        build,
+        build-hosted,
+        build-rescue,
+        language,
+        language-hosted,
+        language-rescue,
+        language-parity,
+        language-parity-hosted,
+        language-parity-rescue,
+        tests,
+        tests-hosted,
+        tests-rescue,
+        android,
+      ]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      actions: read
     steps:
+      # Whenever the race is on: a rescue can run without the race.
+      - name: Seldon race verdict
+        id: race
+        if: vars.CI_SELDON_RACE == 'true'
+        uses: OxyHQ/oxy/.github/actions/seldon-race@main
+        with:
+          mode: verdict
       - name: Every job passed
         env:
           RESULTS: ${{ toJSON(needs) }}
           EVENT_NAME: ${{ github.event_name }}
+          RACED: ${{ needs.race.outputs.race }}
+          RACE_VERDICT: ${{ steps.race.outputs.outcome }}
         run: |
           set -euo pipefail
           failures=()
@@ -488,6 +671,20 @@ jobs:
 
           for job in build language language-parity tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
+            case "$job" in
+              build | language | language-parity | tests)
+                twin="$(jq -r --arg job "$job-hosted" '.[$job].result' <<<"$RESULTS")"
+                rescue="$(jq -r --arg job "$job-rescue" '.[$job].result' <<<"$RESULTS")"
+                # The family {job, job-hosted, job-rescue} stands on the race's
+                # verdict when the race or the rescue ran; otherwise the job is
+                # judged alone and its twin and rescue must not have run.
+                if [ "$RACED" = true ] || [ "$rescue" != skipped ]; then
+                  result="$RACE_VERDICT"
+                else
+                  [ "$twin" = skipped ] || failures+=("$job-hosted ran although the race did not: $twin")
+                fi
+                ;;
+            esac
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
             elif [ "$result" != success ]; then
