@@ -738,6 +738,16 @@ impl<'o> Checker<'o> {
                 }
                 Ty::Map(Box::new(self.resolve_type(v)))
             }
+            TypeKind::Strings(values) => {
+                let name = values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+                let mut unique: Vec<String> = Vec::new();
+                for value in values {
+                    if !unique.contains(value) {
+                        unique.push(value.clone());
+                    }
+                }
+                Ty::Strings(Rc::new(StrSet { name, values: unique, token: false }))
+            }
             TypeKind::Record(fields) => {
                 let fields = fields
                     .iter()
@@ -2725,7 +2735,15 @@ impl<'o> Checker<'o> {
                 }
             }
         }
-        if let (Some(Ty::Strings(set)), false) = (expected, interpolated) {
+        // A literal where an optional choice is expected (`tone ?? "calm"`) is one of its strings.
+        let expected = match expected {
+            Some(Ty::Option(inner)) => match self.resolve(inner) {
+                Ty::Strings(set) => Some(Ty::Strings(set)),
+                _ => None,
+            },
+            other => other.cloned(),
+        };
+        if let (Some(Ty::Strings(set)), false) = (expected.as_ref(), interpolated) {
             let text = plain_text(parts);
             if ui::token_ok(set, &text) {
                 return Ty::Strings(set.clone());

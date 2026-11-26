@@ -1,0 +1,2 @@
+export type Tone = "calm" | "loud";
+export declare function uses(): number;
