@@ -21,7 +21,7 @@ pub const BLOOM_VERSION: &str = "23.9.1";
 pub const RUNTIME: &[(&str, &str)] = &[
     ("@oxy.so/bloom", BLOOM_VERSION),
     ("@oxy.so/bloom-language", "1.7.0"),
-    ("@oxy.so/bloom-language-compiler", "1.5.0"),
+    ("@oxy.so/bloom-language-compiler", "1.6.0"),
     ("expo", "~58.0.23"),
     ("expo-blur", "~58.0.5"),
     ("expo-font", "~58.0.11"),
