@@ -109,6 +109,12 @@ jobs:
       # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.
       - name: Colour engine subpath
         run: node --test scripts/test-color-engine-subpath.mjs
+      # bunfig.toml exempts every first-party package from the install
+      # quarantine by exact name (see scripts/check-release-age-excludes.mjs).
+      - name: First-party packages are exempt from the install quarantine
+        run: |
+          node --test scripts/test-check-release-age-excludes.mjs
+          node scripts/check-release-age-excludes.mjs
       - name: Offline avatar extraction source units
         run: |
           mkdir -p .local
