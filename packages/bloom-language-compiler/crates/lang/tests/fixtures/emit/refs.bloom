@@ -28,3 +28,18 @@ pub view Search(onDone: () -> Unit) {
     }
   }
 }
+
+// Where TS takes a ref (`RefObject<…>`, `.inputRef`), a `@ref` passes the ref itself.
+import { useVisible } from "@/api"
+
+pub view Card(id: String) {
+  @ref card: ViewInstance? = none
+  let visible = useVisible(key: id, target: card)
+
+  body {
+    VStack {
+      Text(visible ? "seen" : "hidden")
+    }
+    .ref(card)
+  }
+}

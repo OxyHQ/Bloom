@@ -1,6 +1,6 @@
 // TS values Bloom leaves to TS: beside a number they are numbers (`insets.top + 4`,
 // checked by `satisfies`), and `foreign ?? []` stays foreign while `[]` says less than TS knows.
-import { useInsets, useList, useMods } from "@/hooks/useInsets"
+import { useInsets, useList, useMods, usePlayer } from "@/hooks/useInsets"
 
 let OFFSET = 4
 
@@ -85,4 +85,17 @@ pub fn present(u: Author?) -> Int {
 
 pub fn pictured(u: Author) -> Int {
   u.avatar?.url != none ? width(u.avatar?.url) : 0
+}
+
+// A field of a TS value is TS's to write (tsc checks it).
+pub view Player {
+  let player = usePlayer()
+
+  body {
+    Button(Text("Loop")).onPress {
+      player.loop = true
+      player.currentTime += 5
+      player.source.uri = "a.mp4"
+    }
+  }
 }
