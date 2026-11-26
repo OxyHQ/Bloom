@@ -1,0 +1,13 @@
+// A model, a protocol and its witnesses from another module: what a view holds and passes.
+import { FeedModel } from "./surface_models.bloom"
+import { Titled } from "./surface_protocols.bloom"
+
+public struct FeedCount: View {
+  let model: FeedModel
+
+  var body: some View {
+    Text("\(model.posts.count)")
+  }
+}
+
+func titleOf(_ item: any Titled) -> String { item.title }

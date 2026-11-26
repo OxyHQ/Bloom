@@ -7,7 +7,11 @@ rm -rf "$here/out" && mkdir -p "$here/out"
 for snap in "$here"/../fixtures/emit/*.ts.snap; do
   case "$snap" in
     # The declarations a TS importer sees must type-check on their own too.
-    *.d.bloom.ts.snap) cp "$snap" "$here/out/$(basename "$snap" .d.bloom.ts.snap).decl.d.ts" ;;
+    # And they are what a fixture importing another (`./surface_models.bloom`) reads.
+    *.d.bloom.ts.snap)
+      cp "$snap" "$here/out/$(basename "$snap" .d.bloom.ts.snap).decl.d.ts"
+      cp "$snap" "$here/out/$(basename "$snap" .d.bloom.ts.snap).d.bloom.ts"
+      ;;
     *) cp "$snap" "$here/out/$(basename "$snap" .ts.snap).ts" ;;
   esac
 done

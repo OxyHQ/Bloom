@@ -1,0 +1,7 @@
+import type { FeedModel } from "./surface_models.bloom";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface FeedCountProps {
+  readonly model: FeedModel;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(FeedCount())`), or from TSX as `toElement(FeedCount())`. */
+export declare const FeedCount: (props: FeedCountProps) => ComposedView;
