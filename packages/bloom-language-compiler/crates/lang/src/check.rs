@@ -3375,9 +3375,20 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::Eq | BinaryOp::Ne => {
                 let left = self.expr(lhs, None);
-                self.expr(rhs, Some(&left));
-                let ty = self.zonk(&left);
-                match equality(&self.out.defs, &ty) {
+                // `T == T?` compares as optionals (as Swift does).
+                let hint = match self.resolve(&left) {
+                    Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never => left.clone(),
+                    other => Ty::Option(Box::new(other)),
+                };
+                self.expr(rhs, Some(&hint));
+                // The right side's own type (`expr` gives back the expected one).
+                let right = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
+                let optional =
+                    matches!(self.resolve(&right), Ty::Option(_)) && !matches!(rhs.kind, ExprKind::None);
+                let ty = if optional { self.zonk(&hint) } else { self.zonk(&left) };
+                // `x != none` tests presence, whatever `x` holds.
+                let presence = matches!(lhs.kind, ExprKind::None) || matches!(rhs.kind, ExprKind::None);
+                match if presence { Equality::Identity } else { equality(&self.out.defs, &ty) } {
                     Equality::Identity => {}
                     Equality::Structural => {
                         self.out.structural.insert(expr.id, ty);
