@@ -1,7 +1,7 @@
 //! The map from the emitted TypeScript back to the `.bloom` source, and its
 //! composition with the embedded pass's map, so the final code maps to `.bloom`.
 
-use oxc_sourcemap::{SourceMap, SourceMapBuilder};
+use oxc_sourcemap::SourceMap;
 
 use crate::ast::Span;
 use crate::diagnostic::{Diagnostic, Severity, line_column};
@@ -71,14 +71,12 @@ impl Mappings {
     pub fn to_json(&self, filename: &str, source: &str, code: &str) -> String {
         let code_starts = line_starts(code);
         let source_starts = line_starts(source);
-        let mut builder = SourceMapBuilder::default();
-        let id = builder.add_source_and_content(filename, source);
-        for (generated, original) in &self.points {
+        let tokens = self.points.iter().map(|(generated, original)| {
             let (dst_line, dst_col) = position(code, &code_starts, *generated);
             let (src_line, src_col) = position(source, &source_starts, *original);
-            builder.add_token(dst_line, dst_col, src_line, src_col, Some(id), None);
-        }
-        builder.into_sourcemap().to_json_string()
+            (dst_line, dst_col, src_line, src_col)
+        });
+        write_map(filename, source, tokens)
     }
 
     /// `embedded` maps the final code to the emitted TS; the result maps it to `.bloom`.
@@ -88,23 +86,16 @@ impl Mappings {
         };
         let emitted_starts = line_starts(emitted);
         let source_starts = line_starts(source);
-        let mut builder = SourceMapBuilder::default();
-        let id = builder.add_source_and_content(filename, source);
-        for token in map.get_tokens() {
-            let at = offset(emitted, &emitted_starts, token.get_src_line(), token.get_src_col());
-            if let Some(original) = self.source_of(at) {
+        let tokens: Vec<(u32, u32, u32, u32)> = map
+            .get_tokens()
+            .filter_map(|token| {
+                let at = offset(emitted, &emitted_starts, token.get_src_line(), token.get_src_col());
+                let original = self.source_of(at)?;
                 let (src_line, src_col) = position(source, &source_starts, original);
-                builder.add_token(
-                    token.get_dst_line(),
-                    token.get_dst_col(),
-                    src_line,
-                    src_col,
-                    Some(id),
-                    None,
-                );
-            }
-        }
-        builder.into_sourcemap().to_json_string()
+                Some((token.get_dst_line(), token.get_dst_col(), src_line, src_col))
+            })
+            .collect();
+        write_map(filename, source, tokens.into_iter())
     }
 
     /// A diagnostic of the embedded pass (on the emitted TS), at the `.bloom` span that wrote it.
@@ -131,4 +122,72 @@ impl Mappings {
         let _ = line_column(source, original);
         diagnostic
     }
+}
+
+/// A v3 source map of one source, its tokens (generated line and column,
+/// source line and column) in generated order, written here rather than by
+/// `oxc_sourcemap`: its JSON escaping (`escape-simd` 0.1.1's AVX2 path) reads
+/// past the end of a short string (`tests/sourcemap.rs`).
+fn write_map(filename: &str, source: &str, tokens: impl Iterator<Item = (u32, u32, u32, u32)>) -> String {
+    let mut mappings = String::new();
+    let (mut line, mut col, mut src_line, mut src_col) = (0u32, 0i64, 0i64, 0i64);
+    let mut first = true;
+    for (dst_line, dst_col, s_line, s_col) in tokens {
+        while line < dst_line {
+            mappings.push(';');
+            line += 1;
+            col = 0;
+            first = true;
+        }
+        if !first {
+            mappings.push(',');
+        }
+        first = false;
+        for delta in [dst_col as i64 - col, 0, s_line as i64 - src_line, s_col as i64 - src_col] {
+            vlq(&mut mappings, delta);
+        }
+        (col, src_line, src_col) = (dst_col as i64, s_line as i64, s_col as i64);
+    }
+    format!(
+        "{{\"version\":3,\"sources\":[{}],\"sourcesContent\":[{}],\"names\":[],\"mappings\":\"{mappings}\"}}",
+        json_string(filename),
+        json_string(source)
+    )
+}
+
+/// One base64 VLQ value.
+fn vlq(out: &mut String, value: i64) {
+    const DIGITS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut rest = if value < 0 { ((-value) << 1) | 1 } else { value << 1 } as u64;
+    loop {
+        let mut digit = rest & 31;
+        rest >>= 5;
+        if rest > 0 {
+            digit |= 32;
+        }
+        out.push(DIGITS[digit as usize] as char);
+        if rest == 0 {
+            break;
+        }
+    }
+}
+
+fn json_string(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 || c == '\u{2028}' || c == '\u{2029}' => {
+                out.push_str(&format!("\\u{:04x}", c as u32))
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
