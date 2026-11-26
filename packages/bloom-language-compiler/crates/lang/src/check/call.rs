@@ -4,7 +4,7 @@
 
 use std::rc::Rc;
 
-use super::{CallRes, Checker, ClosureInfo, LocalKind, NameRes, Recv, TypeName};
+use super::{CallRes, Checker, ClosureInfo, FieldRes, LocalKind, NameRes, Recv, TypeName};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, closest};
 use crate::types::*;
@@ -81,6 +81,14 @@ impl Checker<'_> {
                                 && !self.out.constructors.contains(&local) =>
                         {
                             self.component_call(expr, call, &Ty::Foreign("".into()))
+                        }
+                        _ if self.fn_bounds.contains_key(name) => {
+                            let bounds = self.fn_bounds[name].clone();
+                            let (ty, args) = self.instantiate_with(&info.ty);
+                            let ret = self.value_call(expr, call, &ty);
+                            let scope = self.bounds_in_scope.clone();
+                            self.pending_witnesses.push((expr.id, args, bounds, call.callee.span, scope));
+                            ret
                         }
                         _ => {
                             let ty = self.instantiate(&info.ty);
@@ -184,6 +192,9 @@ impl Checker<'_> {
                     _ => {}
                 }
                 if let Some(TypeName::Def(def)) = self.type_names.get(name).cloned() {
+                    if self.out.defs[def].class.is_some() {
+                        return self.construct_class(expr, call, def, name);
+                    }
                     if matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
                         return self.construct(expr, call, def, Vec::new(), expected, false);
                     }
@@ -346,7 +357,29 @@ impl Checker<'_> {
         optional: bool,
     ) -> Ty {
         if let Some(ret) = self.extension_call(expr, call, recv, member) {
+            if let (Some(CallRes::Extension { func, .. }), ExprKind::Field(object, _)) =
+                (self.out.calls.get(&expr.id).cloned(), &call.callee.kind)
+            {
+                self.observe(object, super::Read::Member(func.to_string()));
+            }
             return ret;
+        }
+        if matches!(recv, Ty::Param(..) | Ty::Any(_))
+            && let Some((witness, requirement)) = self.requirement(recv, &member.name)
+        {
+            let Ty::Fn(f) = requirement.ty.clone() else {
+                let ty = requirement.ty.clone();
+                self.out
+                    .fields
+                    .insert(call.callee.id, FieldRes::Witness { witness, member: member.name.clone() });
+                return self.value_call(expr, call, &ty);
+            };
+            self.throwing_call(expr.span, &f);
+            let (order, rest) = self.bloom_args(call, &f, false);
+            self.out
+                .calls
+                .insert(expr.id, CallRes::Witness { witness, member: member.name.clone(), order, rest });
+            return if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() };
         }
         match recv {
             Ty::View(kind) if !optional => self.modifier(expr, call, *kind, member, recv, task_allowed),
@@ -371,6 +404,34 @@ impl Checker<'_> {
         }
     }
 
+    /// `Model(…)`: a class's `init` (`T$$init`), or `new T()` when it has none.
+    fn construct_class(&mut self, expr: &Expr, call: &Call, def: DefId, name: &str) -> Ty {
+        let init = crate::extensions::mangle(name, "init", true);
+        if let Some(local) = self.lookup(&init) {
+            self.out.names.insert(call.callee.id, NameRes::Local(local));
+            let ty = self.out.locals[local].ty.clone();
+            let ty = self.instantiate(&ty);
+            return self.value_call(expr, call, &ty);
+        }
+        if !call.args.is_empty() || call.trailing.is_some() {
+            self.report(
+                Diagnostic::error(
+                    "B0207",
+                    call.callee.span,
+                    format!("class `{name}` has no `init` taking arguments"),
+                )
+                .label("its fields start at their values")
+                .help(format!("write `{name}()`, or add `init(…)` to it"))
+                .spec("49-classes-and-observable-models"),
+            );
+            self.args_unchecked(call);
+        }
+        self.out.calls.insert(expr.id, CallRes::New(def));
+        let count = self.out.defs[def].generics.len();
+        let args = (0..count).map(|_| self.fresh()).collect();
+        Ty::Adt(def, args)
+    }
+
     /// `x.m(…)` with `m` an extension method of `x`'s type (`crate::extensions`), unless the
     /// type has a field, a built-in method or a modifier of that name.
     fn extension_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, member: &Ident) -> Option<Ty> {
@@ -389,6 +450,7 @@ impl Checker<'_> {
         if !self.unify(&first.ty, recv) {
             self.mismatch(member.span, recv, &first.ty);
         }
+        self.throwing_call(expr.span, &f);
         let rest = FnTy { params: params.to_vec(), ..(*f).clone() };
         let (order, rest_args) = self.bloom_args(call, &rest, false);
         self.out.calls.insert(expr.id, CallRes::Extension { func, order, rest: rest_args });
@@ -602,6 +664,7 @@ impl Checker<'_> {
                 f.ret.clone()
             }
             Ty::Fn(f) => {
+                self.throwing_call(expr.span, &f);
                 let (order, rest) = self.bloom_args(call, &f, false);
                 self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
@@ -1408,6 +1471,7 @@ impl Checker<'_> {
             is_async: false,
             generics: 0,
             ts: false,
+            throws: false,
         }));
         let labels: Vec<Option<&str>> =
             call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.as_str())).collect();
@@ -2045,6 +2109,7 @@ impl Checker<'_> {
                         is_async: false,
                         generics: 0,
                         ts: false,
+                        throws: false,
                     }))),
                     false,
                 );
@@ -2129,8 +2194,14 @@ impl Checker<'_> {
                         rest: false,
                     })
                     .collect();
-                let handler =
-                    Ty::Fn(Rc::new(FnTy { params, ret: Ty::Unit, is_async: false, generics: 0, ts: false }));
+                let handler = Ty::Fn(Rc::new(FnTy {
+                    params,
+                    ret: Ty::Unit,
+                    is_async: false,
+                    generics: 0,
+                    ts: false,
+                    throws: false,
+                }));
                 self.closure(trailing, Some(&handler), false);
             }
             None => self.report(
@@ -2253,6 +2324,7 @@ impl Checker<'_> {
                 is_async: false,
                 generics: 0,
                 ts: false,
+                throws: false,
             }))
         };
         let opt = |t: Ty| Ty::Option(Box::new(t));

@@ -1,0 +1,45 @@
+// The checks of 2.0's models, protocols and typed throws.
+enum APIError { case offline, denied }
+
+func load() throws(APIError) -> Int { throw .offline }
+
+func unmarked() throws(APIError) -> Int { load() }
+
+func unhandled() -> Int { try load() }
+
+func handled() -> Int {
+  do {
+    return try load()
+  } catch {
+    return 0
+  }
+}
+
+func wrongThrow() throws(APIError) -> Int { throw "nope" }
+
+@Observable
+final class Feed {
+  private(set) var count = 0
+  let name: String
+
+  init(name: String) { self.name = name }
+
+  func bump() { count += 1 }
+}
+
+func poke(_ feed: Feed) {
+  feed.count = 2
+  feed.name = "other"
+}
+
+protocol Named {
+  var name: String { get }
+}
+
+struct Tag: Named {
+  let label: String
+}
+
+func show<T: Named>(_ x: T) -> String { x.name }
+
+func callShow() -> String { show(1) }

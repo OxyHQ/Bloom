@@ -1,0 +1,76 @@
+// Bloom 2.0's models: `@Observable final class` with `init`, `private(set)` fields written in
+// place (an element rebuilt with value semantics), and views subscribed to the fields they read.
+public struct Post: Equatable {
+  public let id: String
+  public var likes: Int
+  public var isLiked: Bool
+}
+
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  public private(set) var isLoading = false
+  public var filter = ""
+  private var cursor: String?
+  private let source: String
+
+  public init(source: String) {
+    self.source = source
+  }
+
+  public var isEmpty: Bool { posts.isEmpty }
+
+  public func load() {
+    isLoading = true
+    posts = [Post(id: "1", likes: 0, isLiked: false)]
+    cursor = source
+    isLoading = false
+  }
+
+  public func like(_ post: Post) {
+    for (i, p) in posts.enumerated() {
+      if p.id == post.id {
+        posts[i].isLiked = true
+        posts[i].likes += 1
+      }
+    }
+  }
+}
+
+final class Counter {
+  var count = 0
+  func bump() { count += 1 }
+}
+
+public struct FeedScreen: View {
+  @State private var model = FeedModel(source: "home")
+
+  var body: some View {
+    VStack {
+      if model.isLoading { Text("Loading") }
+      Text("\(model.posts.count) posts")
+      Button(Text("Like")).onPress {
+        if let first = model.posts.first { model.like(first) }
+      }
+    }
+    .onAppear { model.load() }
+  }
+}
+
+public struct FilterBar: View {
+  let model: FeedModel
+
+  var body: some View {
+    HStack {
+      Text(model.filter)
+      Button(Text("Clear")).onPress { model.filter = "" }
+      if model.isEmpty { Text("Nothing yet") }
+    }
+  }
+}
+
+public func tally() -> Int {
+  let counter = Counter()
+  counter.bump()
+  counter.count
+}

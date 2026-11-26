@@ -1,0 +1,36 @@
+// 2.0's type declarations as the formatter prints them.
+public protocol Titled: Identifiable {
+  var title: String {  get }
+  var note: String { get   set }
+  func badge(_ count: Int) -> String
+  static func make() -> Int
+}
+
+@Observable
+public final class Feed {
+  public private(set) var items: [String] = []
+  private let source: String
+
+  init(source: String) {   self.source = source }
+
+  func add(_ item: String) { items = items + [item] }
+}
+
+public enum Key: CaseIterable {
+  case likes
+  // The second case.
+  case replies
+
+  var title: String {
+    switch self {
+    case .likes: "Likes"
+    case .replies: "Replies"
+    }
+  }
+}
+
+extension Key: Titled {
+  static func make() -> Int { 1 }
+}
+
+func show(_ item: any   Titled) -> String { item.title }

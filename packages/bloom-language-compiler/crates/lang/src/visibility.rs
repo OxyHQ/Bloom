@@ -13,6 +13,8 @@ pub fn check(file: &File, source: &str) -> Vec<Diagnostic> {
     let levels: FxHashMap<&str, (Visibility, Span)> = file
         .items
         .iter()
+        // An extension names the type it extends; it declares none.
+        .filter(|item| !matches!(item.kind, ItemKind::Extension(_)))
         .map(|item| (item.kind.name().name.as_str(), (item.visibility, item.kind.name().span)))
         .collect();
     let mut out = Vec::new();
@@ -36,6 +38,16 @@ pub fn check(file: &File, source: &str) -> Vec<Diagnostic> {
             ItemKind::View(v) => types.extend(v.params.iter().flatten().map(|p| &p.ty)),
             // Lowered before checking (`crate::extensions::lower`).
             ItemKind::Extension(_) => {}
+            ItemKind::Class(c) => types.extend(c.body.members.iter().filter_map(|m| match &m.kind {
+                TypeMemberKind::Stored { ty, .. } if m.visibility != Visibility::Private => ty.as_ref(),
+                _ => None,
+            })),
+            ItemKind::Protocol(p) => types.extend(p.requirements.iter().flat_map(|r| match r {
+                Requirement::Property { ty, .. } => vec![ty],
+                Requirement::Func { decl, .. } => {
+                    decl.params.iter().map(|p| &p.ty).chain(decl.ret.iter()).collect()
+                }
+            })),
         }
         let mut seen: Vec<&str> = Vec::new();
         for ty in types {

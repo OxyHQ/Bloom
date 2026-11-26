@@ -35,6 +35,7 @@ pub fn ctors(ty: &Ty, defs: &[Def]) -> Option<Vec<(String, Vec<Ty>)>> {
             DefKind::Struct(fields) => {
                 vec![("struct".into(), fields.iter().map(|f| substitute(&f.ty, args)).collect())]
             }
+            DefKind::Protocol(_) => return None,
         },
         _ => return None,
     })

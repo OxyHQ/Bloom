@@ -104,6 +104,15 @@ field         = IDENT ":" type [ "=" expr ] ;
 enum          = "enum" TYPE_NAME [ generics ] "{" { variant ( NL | "," ) } "}" ;
 variant       = IDENT [ "(" payload { "," payload } ")" ] ;
 payload       = [ IDENT ":" ] type ;
+(* 2.0 type declarations (sections 4.8, 4.9, 7.1a): *)
+class         = { "@" TYPE_NAME } [ "final" ] "class" TYPE_NAME [ generics ] [ conforms ]
+                "{" { member NL } "}" ;
+protocol      = "protocol" TYPE_NAME [ conforms ] "{" { requirement NL } "}" ;
+requirement   = [ "static" ] "var" IDENT ":" type "{" "get" [ "set" ] "}" | [ "static" ] func_sig ;
+extension     = "extension" TYPE_NAME [ generics ] [ conforms ] "{" { member NL } "}" ;
+conforms      = ":" type { "," type } ;
+member        = { attr } [ visibility ] [ "static" ] ( ( "let" | "var" ) IDENT [ ":" type ] [ "=" expr ]
+              | "var" IDENT ":" type block | func | "init" params block ) ;
 alias         = "type" TYPE_NAME [ generics ] "=" type ;
 generics      = "<" TYPE_NAME { "," TYPE_NAME } ">" ;
 
@@ -301,8 +310,15 @@ TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). M
 ### 4.6 Generics
 
 `fn first<T>(xs: [T]) -> T?`, `struct Page<T> { items: [T], cursor: String? }`,
-`enum Load<T>`. Type parameters are inferred at call sites; no bounds in phase 0 (phase 1:
-`<T: Equatable>`-style protocol bounds compiled away by monomorphising the comparison).
+`enum Load<T>`. Type parameters are inferred at call sites.
+
+A type parameter may be constrained (2.0): `func firstIndex<T: Equatable>(_ xs: [T], of x: T)`,
+`<T: Titled & Equatable>`, `where T: Titled`. Inside the function, a `T: P` value reads `P`'s
+requirements (section 4.8) and a `T: Equatable` value compares with `==`. Dispatch is static:
+each constraint is one more parameter, a *witness* (`$w_T_P`), which the call site fills for
+the type it inferred: the conformance's witness object `Post$$Titled`, or for `Equatable` the
+type's `==` (field by field for a struct). A type argument that does not conform is B0232.
+`Codable`, `Sendable` and other built-in protocols with nothing a body reads pass no witness.
 
 ### 4.7 The foreign boundary
 
@@ -360,6 +376,74 @@ typed, the type `Foreign`; a const whose type is, through aliases and `&`, a fun
 to a node is a component (`TextInput(value: v)`). As a type, such a component is its instance,
 as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
 `ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
+
+### 4.8 Protocols
+
+```swift
+public protocol Titled {
+  var id: String { get }
+  var title: String { get }
+  func badge(_ count: Int) -> String
+}
+
+extension Post: Titled {
+  public var title: String { text }                   // `id` is a stored property already
+  public func badge(_ count: Int) -> String { "\(title) (\(count))" }
+}
+
+func describe(_ item: any Titled) -> String { "\(item.id): \(item.title)" }
+```
+
+A protocol lists requirements: properties (`{ get }`, `{ get set }`) and `func` signatures.
+A type conforms where it is declared (`struct Post: Titled`) or in an extension
+(`extension Post: Titled { … }`); each requirement is met by a stored property, a computed
+property or a method, and a missing one is B0231. Structs stay structural at runtime: a
+conformance compiles to one witness object (`const Post$$Titled = { id: (self) => self.id,
+title: Post$title, badge: Post$badge }`), exported with its type. The built-in protocols are
+checked as such: `Identifiable` needs an `id`, `CaseIterable` an enum whose cases carry nothing
+(and gives `T.allCases`, in order), `Equatable` and `Hashable` a type `==` compares.
+
+`any P` is an existential, its witness passed with it, written explicitly: a `Post` passed where
+`any Titled` is expected becomes `{ self: post, w: Post$$Titled }`, and `item.title` reads
+`item.w.title(item.self)`. A protocol written bare as a type (`Titled`) means `any Titled`.
+
+Members and extensions (section 5) are statically dispatched: an instance member `m` of `T`
+compiles to the function `T$m(self, …)`, a static one to `T$$m`, and inside a member a name of
+one of `T`'s members that the body binds nowhere itself reads `self` (Swift's implicit `self`).
+
+### 4.9 Classes and observable models
+
+```swift
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  public private(set) var isLoading = false
+  private let api: MentionAPI
+
+  public init(api: MentionAPI) { self.api = api }
+
+  public func like(_ post: Post) async {
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return }
+    posts[i].isLiked = true      // rebuilds `posts` (value semantics) and writes it once
+    posts[i].likes += 1
+  }
+}
+```
+
+A `class` is a reference type: a TS class with its stored properties as fields (a property
+written without a type takes its literal's), `init` (lowered to `T$$init`, which makes `self`
+and returns it; without one, `T()` is `new T()`), and members lowered as a struct's. A `let`
+property is assigned only in `init` (B0403); a `private(set)` or `private` one only in the
+class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`,
+also on a `var`'s list) rebuilds the path with fresh objects, so values stay values.
+
+`@Observable` makes the class a store with field-level subscriptions and no proxies: writes go
+through `$set(field, value)` (a write of the same value notifies nobody), and bloomc computes at
+compile time which fields each view reads of each model it holds (as `@State`, a prop or a
+`let`), including what the model's own members it calls read. The view subscribes to those
+fields only (`useObserved(model, ["isLoading", "posts"])`) and draws again only when one of them
+changes; a cache that reads the model as a whole (a member call) depends on the subscription's
+version. A class compares by identity (`==` is `===`).
 
 ## 5. Values, functions and closures
 
@@ -457,8 +541,11 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `do { } catch { }` is one JS `try`, where an unnamed catch binds `error`, `catch let e as T`
   types it, and catches with patterns (`catch .offline`) test it in order and rethrow what none
   matches. A function's last statement may be a `do` whose body and catches all return.
-  `throws(E)` is parsed and printed; that a throwing call is marked `try`, and that a `throw`
-  matches `E`, are not checked yet (phase A follow-up). `Result` and 0.x `?` stay.
+  A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
+  `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
+  `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
+  elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
+  `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
 
 ## 7. Views
 
@@ -529,10 +616,12 @@ is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); an
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
 A data `struct` takes Swift's members too (`public let id: String`, `public var likes: Int`):
-they are its fields. Phase A does not compile yet: methods or computed properties of a data
-struct, computed properties of a view other than `body`, reading through a `@Binding` (it is the
-binding pair, passed on as is), and `Button`'s trailing action (its label is the trailing block,
-as in 0.x).
+they are its fields; its methods, computed properties and `static` members, and an `enum`'s,
+are statically dispatched functions (section 4.8). A `@Binding var isOn: Bool` is read as a
+`Bool` (`isOn`, compiled `isOn[0]`), assigned as one (`isOn = false`, compiled `isOn[1](false)`),
+and passed on as the binding with `$isOn`. A view holding an `@Observable` model subscribes to
+the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
+other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
 
 ### 7.2 Builders, modifiers and tokens
 
@@ -799,8 +888,10 @@ help: did you mean `"md"`?
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
-`==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
-(captured `var`), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
+`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0231 (a
+requirement of a conformance not met), B0232 (a type argument or `any P` value that does not
+conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
+(captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
 outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,

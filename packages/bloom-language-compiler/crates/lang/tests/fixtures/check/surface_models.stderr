@@ -1,0 +1,60 @@
+error[B0231]: `Tag` does not conform to `Named`: it has no `var name: String`
+  --> check/surface_models.bloom:39:13
+   |
+39 | struct Tag: Named {
+   |             ^^^^^ a requirement is not met
+   |
+help: add it to `Tag`, or in `extension Tag: Named { … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#48-protocols
+
+error[B0223]: this call can throw, and it is not marked with `try`
+ --> check/surface_models.bloom:6:43
+  |
+6 | func unmarked() throws(APIError) -> Int { load() }
+  |                                           ^^^^^^ a throwing call
+  |
+help: write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow
+
+error[B0224]: errors thrown from here are not handled
+ --> check/surface_models.bloom:8:27
+  |
+8 | func unhandled() -> Int { try load() }
+  |                           ^^^^^^^^^^ this function does not throw
+  |
+help: mark the function `throws`, catch it in `do { … } catch { … }`, or write `try?`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow
+
+error[B0201]: expected `APIError`, found `String`
+  --> check/surface_models.bloom:18:51
+   |
+18 | func wrongThrow() throws(APIError) -> Int { throw "nope" }
+   |                                                   ^^^^^^ this is `String`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0404]: `count` is assigned only inside `Feed`
+  --> check/surface_models.bloom:31:8
+   |
+31 |   feed.count = 2
+   |        ^^^^^ `private(set)` (or `private`)
+   |
+help: call a method of `Feed` that changes it
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#49-classes-and-observable-models
+
+error[B0403]: cannot assign to `name`: it is a `let`
+  --> check/surface_models.bloom:32:8
+   |
+32 |   feed.name = "other"
+   |        ^^^^ set once, in `init`
+   |
+help: declare it `var name`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#49-classes-and-observable-models
+
+error[B0232]: `Int` does not conform to `Named`
+  --> check/surface_models.bloom:45:29
+   |
+45 | func callShow() -> String { show(1) }
+   |                             ^^^^ a constraint of the function called
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#48-protocols

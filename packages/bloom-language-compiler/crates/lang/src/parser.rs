@@ -662,6 +662,13 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Ident(word) if word == "extension" && matches!(self.nth(1), Tok::Ident(_)) => {
                 ItemKind::Extension(self.extension_decl())
             }
+            Tok::Ident(word) if word == "class" && matches!(self.nth(1), Tok::Ident(_)) => {
+                let observable = modifiers.attrs.iter().any(|a| a.name.name == "Observable");
+                ItemKind::Class(self.class_decl(observable))
+            }
+            Tok::Ident(word) if word == "protocol" && matches!(self.nth(1), Tok::Ident(_)) => {
+                ItemKind::Protocol(self.protocol_decl())
+            }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
             Tok::Kw(Kw::Var) => {
@@ -1118,11 +1125,21 @@ impl<'s, 'i> Parser<'s, 'i> {
         let generics = self.generics();
         let conformances = self.conformances();
         let mut variants = Vec::new();
+        let mut members = Vec::new();
         let mut swift = false;
         if let Some(open) = self.expect(P::LBrace, "`{` and the enum's cases") {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
+                // A member (2.0): `var title: String { … }`, `func`, `static let`.
+                if self.member_ahead() {
+                    if let Some(member) = self.type_member() {
+                        members.push(member);
+                    }
+                    self.member_end();
+                    self.skip_newlines();
+                    continue;
+                }
                 // `case loading, failed(Error)` (2.0): Swift's cases.
                 if self.eat_kw(Kw::Case) {
                     swift = true;
@@ -1168,7 +1185,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             self.expect_close(P::RBrace, open);
         }
-        EnumDecl { name, generics, conformances, variants, swift }
+        EnumDecl { name, generics, conformances, variants, swift, members }
     }
 
     /// `: View, Equatable`: the protocols a type conforms to (2.0).
@@ -1243,6 +1260,158 @@ impl<'s, 'i> Parser<'s, 'i> {
             span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
         };
         ExtensionDecl { name, generics, body }
+    }
+
+    /// Whether a type member (not an enum case) starts here: a modifier, `@`, `func`,
+    /// `var`, `let`, `init`.
+    fn member_ahead(&self) -> bool {
+        match self.tok() {
+            Tok::P(P::At) => true,
+            Tok::Kw(Kw::Let | Kw::Var | Kw::Fn | Kw::Async) => true,
+            Tok::Ident(w) => {
+                matches!(w.as_str(), "func" | "init")
+                    || (visibility_word(w).is_some() || w == "static") && self.modifier_follows()
+            }
+            _ => false,
+        }
+    }
+
+    /// `[@Observable] [final] class Name[<T>][: P] { members }`.
+    fn class_decl(&mut self, observable: bool) -> ClassDecl {
+        self.bump();
+        let name = self.ident("the class's name");
+        let generics = self.generics();
+        let conformances = self.conformances();
+        let mut members = Vec::new();
+        let body_start = self.span();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the class's members") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(member) = self.type_member() {
+                    if let TypeMemberKind::Stored { name, ty: None, value: None, .. } = &member.kind {
+                        self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                name.span,
+                                format!("stored property `{}` needs a type", name.name),
+                            )
+                            .label("expected `:` and a type, or `= value`")
+                            .spec("44-structs"),
+                        );
+                    }
+                    members.push(member);
+                }
+                self.eat(P::Comma);
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let body = TypeBody {
+            conformances,
+            members,
+            span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
+        };
+        ClassDecl { name, generics, observable, body }
+    }
+
+    /// `protocol Name[: Q] { var x: T { get [set] }; func f(…) -> R }`.
+    fn protocol_decl(&mut self) -> ProtocolDecl {
+        let start = self.bump();
+        let name = self.ident("the protocol's name");
+        let inherits = self.conformances();
+        let mut requirements = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the protocol's requirements") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                let member_start = self.span();
+                let (_, modifiers) = self.modifiers();
+                let is_static = modifiers.is_static;
+                match self.tok() {
+                    Tok::Kw(Kw::Var | Kw::Let) => {
+                        self.bump();
+                        let prop = self.soft_name("the property's name");
+                        self.expect(P::Colon, "`:` and the property's type");
+                        let ty = self.type_expr();
+                        let mut settable = false;
+                        if let Some(open) = self.at(P::LBrace).then(|| self.bump()) {
+                            while matches!(self.tok(), Tok::Ident(_) | Tok::Newline) {
+                                if matches!(self.tok(), Tok::Ident(w) if w == "set") {
+                                    settable = true;
+                                }
+                                self.bump();
+                            }
+                            self.expect_close(P::RBrace, open);
+                        }
+                        let span = member_start.to(Span::new(self.prev_end(), self.prev_end()));
+                        requirements.push(Requirement::Property {
+                            name: prop,
+                            ty,
+                            settable,
+                            is_static,
+                            span,
+                        });
+                    }
+                    Tok::Ident(w) if w == "func" => {
+                        let decl = self.fn_signature_decl();
+                        requirements.push(Requirement::Func { decl, is_static });
+                    }
+                    _ => {
+                        let found = describe(self.tok());
+                        let span = self.span();
+                        self.error(
+                            Diagnostic::error(
+                                "B0106",
+                                span,
+                                format!("expected a requirement, found {found}"),
+                            )
+                            .label("a protocol holds `var x: T { get }` and `func` signatures")
+                            .spec("48-protocols"),
+                        );
+                        self.recover_line();
+                    }
+                }
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        ProtocolDecl {
+            name,
+            inherits,
+            requirements,
+            span: start.to(Span::new(self.prev_end(), self.prev_end())),
+        }
+    }
+
+    /// A `func`'s signature without a body (a protocol's requirement).
+    fn fn_signature_decl(&mut self) -> FnDecl {
+        let start = self.bump();
+        let name = self.ident("the function's name");
+        let (generics, mut constraints) = self.constrained_generics();
+        let params = if self.at(P::LParen) {
+            self.params()
+        } else {
+            self.unexpected("`(` and the parameters");
+            Vec::new()
+        };
+        let is_async = self.eat_kw(Kw::Async);
+        let throws = self.throws_clause();
+        let ret = if self.eat(P::Arrow) { Some(self.type_expr()) } else { None };
+        constraints.extend(self.where_clause());
+        let end = Span::new(self.prev_end(), self.prev_end());
+        FnDecl {
+            is_async,
+            func: true,
+            name,
+            generics,
+            constraints,
+            params,
+            throws,
+            ret,
+            body: Block { stmts: Vec::new(), span: end },
+            span: start.to(end),
+        }
     }
 
     fn fn_decl(&mut self) -> FnDecl {
@@ -1655,7 +1824,20 @@ impl<'s, 'i> Parser<'s, 'i> {
         match self.tok().clone() {
             // `some View`, `any Identifiable` (2.0): the protocol's type, statically (an
             // existential's witness is explicit, phase A follow-up).
-            Tok::Ident(word) if (word == "some" || word == "any") && matches!(self.nth(1), Tok::Ident(_)) => {
+            // `any P`: an existential, its witness passed with it (`Named { any, [P] }`).
+            Tok::Ident(word) if word == "any" && matches!(self.nth(1), Tok::Ident(_)) => {
+                let keyword = self.bump();
+                let inner = self.base_type();
+                let span = start.to(inner.span);
+                TypeExpr {
+                    kind: TypeKind::Named {
+                        name: Ident { name: "any".into(), span: keyword },
+                        args: vec![inner],
+                    },
+                    span,
+                }
+            }
+            Tok::Ident(word) if word == "some" && matches!(self.nth(1), Tok::Ident(_)) => {
                 self.bump();
                 let mut inner = self.base_type();
                 inner.span = start.to(inner.span);
@@ -1892,7 +2074,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let otherwise = self.block();
                 StmtKind::Guard(GuardStmt { cond, otherwise })
             }
-            Tok::Ident(word) if word == "throw" && self.statement_word() => {
+            // `throw .offline`: an implicit member after a space, not `throw.offline`.
+            Tok::Ident(word)
+                if word == "throw"
+                    && (self.statement_word()
+                        || matches!(self.nth(1), Tok::P(P::Dot))
+                            && self.tokens[(self.pos + 1).min(self.tokens.len() - 1)].space_before) =>
+            {
                 self.bump();
                 StmtKind::Throw(self.expr(Ctx::Normal))
             }
@@ -3019,6 +3207,8 @@ fn is_place(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::Name(name) => !is_upper(name),
         ExprKind::Field(inner, _) => is_place(inner),
+        // `posts[i].likes += 1` (2.0): an element, rebuilt with value semantics.
+        ExprKind::Index(inner, _) => is_place(inner),
         _ => false,
     }
 }
