@@ -374,6 +374,11 @@ impl Tr<'_> {
                         let hook = react_hook(self, call).unwrap_or_default();
                         self.refuse(&format!("react:{hook}"), format!("React's `{hook}`"), call.span)
                     }
+                    // A TS hook called for what it does: a member whose value is unused.
+                    Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(id) if is_hook_name(&id.name)) =>
+                    {
+                        format!("let _ = {}", self.expr(&s.expression))
+                    }
                     _ => self.refuse(
                         "view:statement",
                         "a statement in a view body (a view computes, it does not do)",
@@ -531,7 +536,18 @@ impl Tr<'_> {
                             let name = self.name(&name, id.span);
                             format!("let {name}{} = {value}", ty.unwrap_or_default())
                         }
-                        None => self.refuse("react:useMemo-block", "a `useMemo` with statements", arrow.span),
+                        // A computation with statements: a closure called in place (bloomc memoises it).
+                        None => {
+                            let ty = d
+                                .type_annotation
+                                .as_ref()
+                                .map(|t| format!(": {}", self.ty(&t.type_annotation)));
+                            let saved = self.scope.clone();
+                            let body = self.block_stmts(arrow_statements(arrow), arrow_end(arrow), true);
+                            self.scope = saved;
+                            let name = self.bind(&name, id.span);
+                            format!("let {name}{} = {{\n{body}\n}}()", ty.unwrap_or_default())
+                        }
                     }
                 };
                 if let Some(deps) = call.arguments.get(1) {
@@ -594,7 +610,13 @@ impl Tr<'_> {
             other => return self.refuse("destructure", "a destructuring pattern", other.span()),
         };
         let value = self.expr(init);
-        format!("{keyword} {pattern}{ty} = {value}")
+        let defaults = std::mem::take(&mut self.pattern_defaults);
+        let mut out = format!("{keyword} {pattern}{ty} = {value}");
+        for line in defaults {
+            out.push('\n');
+            out.push_str(&line);
+        }
+        out
     }
 
     pub fn record_pattern(&mut self, pattern: &ObjectPattern) -> String {
@@ -608,24 +630,28 @@ impl Tr<'_> {
                 continue;
             };
             match &property.value {
-                BindingPattern::BindingIdentifier(local) if local.name == key.as_str() => {
-                    parts.push(self.name(&key, local.span))
-                }
                 BindingPattern::BindingIdentifier(local) => {
-                    let local = self.name(&local.name, local.span);
-                    parts.push(format!("{key}: {local}"));
+                    let bound = self.bind(&local.name, local.span);
+                    parts.push(if bound == key { key } else { format!("{key}: {bound}") });
                 }
                 BindingPattern::ObjectPattern(inner) => {
                     let inner = self.record_pattern(inner);
                     parts.push(format!("{key}: {inner}"));
                 }
-                BindingPattern::AssignmentPattern(a) => {
-                    parts.push(self.refuse(
+                // `{ data: lanes = [] }`: bound, then `let lanes = lanes ?? []`.
+                BindingPattern::AssignmentPattern(a) => match &a.left {
+                    BindingPattern::BindingIdentifier(local) => {
+                        let bound = self.bind(&local.name, local.span);
+                        parts.push(if bound == key { key } else { format!("{key}: {bound}") });
+                        let value = self.expr(&a.right);
+                        self.pattern_defaults.push(format!("let {bound} = {bound} ?? {value}"));
+                    }
+                    other => parts.push(self.refuse(
                         "destructure:default",
-                        "a default in a pattern (`?? value` instead)",
-                        a.span,
-                    ));
-                }
+                        "a default on a nested pattern",
+                        other.span(),
+                    )),
+                },
                 BindingPattern::ArrayPattern(a) => {
                     parts.push(self.refuse("destructure:array", "array destructuring", a.span));
                 }
@@ -914,6 +940,7 @@ impl Tr<'_> {
                 let ty = self.ty(&t.type_annotation);
                 let pattern = self.record_pattern(pattern);
                 prelude.push(format!("let {pattern} = {name}"));
+                prelude.append(&mut self.pattern_defaults);
                 out.push(format!("{name}: {ty}"));
                 continue;
             }

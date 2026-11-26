@@ -107,6 +107,8 @@ pub struct Tr<'s> {
     pub conditions: HashSet<String>,
     /// Calls whose one type argument types the binding they initialise.
     pub typed_calls: HashSet<u32>,
+    /// `let x = x ?? d` lines a pattern's defaults leave for after its `let`.
+    pub pattern_defaults: Vec<String>,
 }
 
 impl<'s> Tr<'s> {
@@ -247,6 +249,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         wrapped: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
+        pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
     };
