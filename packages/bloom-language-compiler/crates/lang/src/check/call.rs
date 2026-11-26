@@ -2038,6 +2038,18 @@ impl Checker<'_> {
 
     /// A token parameter: a literal in the set, or a value of the set's type.
     fn token_arg(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) {
+        // `isLiked ? .danger : .neutral`: a token each way.
+        if let ExprKind::Ternary(cond, then, otherwise) = &value.kind
+            && [then, otherwise].iter().any(|b| matches!(b.kind, ExprKind::ImplicitMember(_)))
+        {
+            self.expr(cond, Some(&Ty::Bool));
+            self.token_arg(then, set, modifier);
+            self.token_arg(otherwise, set, modifier);
+            let ty = Ty::Strings(set.clone());
+            self.out.types.insert(value.id, ty.clone());
+            self.span_type((value.span, ty));
+            return;
+        }
         if let Some(number) = written_number(value) {
             let as_token = set.values.contains(&number);
             let mut diagnostic = Diagnostic::error(
