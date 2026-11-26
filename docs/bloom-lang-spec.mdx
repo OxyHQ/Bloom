@@ -300,7 +300,10 @@ type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unc
 is checked by bloomc, and every crossing by `tsc`.
 
 `foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
-TS checks the whole where it lands. A TS class that extends nothing (`ViewModifier`) is a value
+TS checks the whole where it lands. So does a TS value beside `none` or a Bloom value in a
+branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
+of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. A TS
+class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
 `x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS

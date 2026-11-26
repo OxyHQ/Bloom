@@ -954,6 +954,25 @@ impl Mapper<'_> {
             TsType::Array(element) => {
                 Ty::List(Box::new(self.ty(file, element, scope, &format!("{path}[number]"), depth)))
             }
+            // `['a', 'b'] as const`: a list of its strings (the tuple's order is not a type).
+            TsType::Tuple(items)
+                if items.len() > 1 && items.iter().all(|t| matches!(t, TsType::StrLit(_))) =>
+            {
+                let mut values: Vec<String> = Vec::new();
+                for item in items {
+                    if let TsType::StrLit(v) = item
+                        && !values.contains(v)
+                    {
+                        values.push(v.clone());
+                    }
+                }
+                let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
+                Ty::List(Box::new(Ty::Strings(std::rc::Rc::new(crate::types::StrSet {
+                    name,
+                    values,
+                    token: false,
+                }))))
+            }
             TsType::Tuple(items) => Ty::Tuple(
                 items
                     .iter()

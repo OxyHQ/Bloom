@@ -1975,6 +1975,8 @@ impl<'o> Checker<'o> {
             Ty::JsMap(key, value) => Ty::Tuple(vec![*key, *value]),
             Ty::Set(elem) => *elem,
             Ty::Unknown => Ty::Unknown,
+            // A TS iterable: its items are TS's too.
+            Ty::Foreign(text) => Ty::Foreign(format!("{text}[number]").into()),
             Ty::Var(_) => {
                 let elem = self.fresh();
                 self.unify(&ty, &Ty::List(Box::new(elem.clone())));
@@ -2579,6 +2581,9 @@ impl<'o> Checker<'o> {
         match (&ra, &rb) {
             (Ty::Never, _) => rb,
             (_, Ty::Never) => ra,
+            // A TS value beside `none` or a Bloom value: TS checks the whole where it lands.
+            (Ty::Foreign(_), _) => ra,
+            (_, Ty::Foreign(_)) => rb,
             (Ty::Option(_), _) if self.coerce(&rb, &ra) => ra,
             (_, Ty::Option(_)) if self.coerce(&ra, &rb) => rb,
             (Ty::Strings(_), Ty::Str) | (Ty::Str, Ty::Strings(_)) => Ty::Str,
