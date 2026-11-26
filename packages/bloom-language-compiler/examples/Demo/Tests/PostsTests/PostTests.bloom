@@ -1,0 +1,11 @@
+import API
+import Posts
+
+test("a like counts once, and an unlike takes it back") {
+  let page = await homeFeed()
+  guard let post = page.items[0] else { return }
+  let once = liked(post, true)
+  #expect(once.likes == post.likes + 1)
+  #expect(once.isLiked)
+  #expect(liked(once, false) == post)
+}

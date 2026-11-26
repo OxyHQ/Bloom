@@ -105,7 +105,7 @@ impl Package {
 pub fn find(paths: &[PathBuf]) -> Result<Option<Package>, String> {
     let start = match paths.first() {
         Some(path) => std::path::absolute(path).map_err(|e| e.to_string())?,
-        None => std::env::current_dir().map_err(|e| e.to_string())?.join("."),
+        None => std::env::current_dir().map_err(|e| e.to_string())?,
     };
     let Some(root) = std::iter::once(start.as_path())
         .chain(start.ancestors().skip(1))
@@ -279,4 +279,45 @@ pub fn check_modules(package: &Package, options: &CheckOptions, force: bool) -> 
         started.elapsed().as_millis()
     );
     Ok(Checked { ok: errors == 0, emitted })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn copy(from: &Path, to: &Path) {
+        std::fs::create_dir_all(to).unwrap();
+        for entry in std::fs::read_dir(from).unwrap().flatten() {
+            let target = to.join(entry.file_name());
+            if entry.path().is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), target).unwrap();
+            }
+        }
+    }
+
+    /// The exit demo (ADR 0002's three examples) checks, and a second check
+    /// reuses every module; an edit inside a function body rechecks only its module.
+    #[test]
+    fn the_demo_checks_per_module() {
+        let example = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/Demo");
+        let root = std::env::temp_dir().join(format!("bloom-demo-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        copy(&example, &root);
+        let package = Package::load(&root).unwrap();
+        let options = CheckOptions { jobs: 2, tsc: false, allow_ts_imports: false };
+        let first = check_modules(&package, &options, false).unwrap();
+        assert!(first.ok);
+        assert_eq!(first.emitted.len(), package.manifest.targets.len());
+        assert!(check_modules(&package, &options, false).unwrap().emitted.is_empty(), "all cached");
+        let api = root.join("Sources/API/API.bloom");
+        let text = std::fs::read_to_string(&api).unwrap().replace("id != \"3\"", "id != \"2\"");
+        std::fs::write(&api, text).unwrap();
+        let again = check_modules(&package, &options, false).unwrap();
+        let names: Vec<&str> =
+            again.emitted.keys().map(|&i| package.manifest.targets[i].name.as_str()).collect();
+        assert_eq!(names, ["API"], "a body edit keeps API's interface, so its dependents stay cached");
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }

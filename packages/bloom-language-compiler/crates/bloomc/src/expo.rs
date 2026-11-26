@@ -295,7 +295,7 @@ pub fn generate(package: &Package) -> Result<(), String> {
         write(
             &build.join("index.js"),
             &format!(
-                "{header}import {{ registerRootComponent }} from 'expo';\nimport {{ {entry_name} }} from '{}';\n\nregisterRootComponent({entry_name});\n",
+                "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ {entry_name} }} from '{}';\n\n// The app's root view: a screen under Bloom's provider.\nfunction Root() {{\n  return createElement(BloomProvider, null, createElement(Screen, null, toElement({entry_name}())));\n}}\n\nregisterRootComponent(Root);\n",
                 rel(&entry_file)
             ),
         )?;
