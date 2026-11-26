@@ -13,6 +13,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -37,6 +38,12 @@ const local = {
 writeFileSync(join(stage, 'package.json'), `${JSON.stringify(local, null, 2)}\n`);
 for (const file of ['js', 'LICENSE', ADDON])
   cpSync(join(ROOT, file), join(stage, file), { recursive: true });
+
+// The staged addon must compile a view: a stub build is never packed.
+const staged = createRequire(join(stage, 'package.json'))('./js/native.js');
+const probe = staged.compileBloom?.('view A {\n  body { Text("a") }\n}\n', 'probe.bloom', {});
+if (!probe?.code)
+  throw new Error(`the addon compiles no .bloom (${JSON.stringify(probe)}): rebuild it`);
 
 mkdirSync(out, { recursive: true });
 const tarball = execFileSync('npm', ['pack', '--pack-destination', out], {
