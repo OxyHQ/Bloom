@@ -1539,6 +1539,29 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(name.span);
                 self.expr_node(ExprKind::ImplicitMember(name), span)
             }
+            Tok::P(P::Backslash) => {
+                self.bump();
+                let root = match self.tok() {
+                    Tok::Ident(name) if is_upper(name) => Some(self.ident("a type")),
+                    _ => None,
+                };
+                let mut path = Vec::new();
+                loop {
+                    if !self.at(P::Dot) || (!path.is_empty() || root.is_some()) && self.token().space_before {
+                        break;
+                    }
+                    self.bump();
+                    path.push(self.ident("a field (`\\.likes`)"));
+                    if !matches!(self.tok(), Tok::P(P::Dot)) {
+                        break;
+                    }
+                }
+                if path.is_empty() {
+                    self.unexpected("`.field` after `\\` (`\\.likes`, `\\Prefs.likes`)");
+                }
+                let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                self.expr_node(ExprKind::KeyPath { root, path }, span)
+            }
             Tok::P(P::Dollar) => {
                 self.bump();
                 let mut path = vec![self.ident("the state to bind (`$draft`)")];

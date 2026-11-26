@@ -558,6 +558,11 @@ impl<'a> Formatter<'a> {
             ExprKind::Binding(path) => {
                 text(format!("${}", path.iter().map(|i| i.name.as_str()).collect::<Vec<_>>().join(".")))
             }
+            ExprKind::KeyPath { root, path } => text(format!(
+                "\\{}.{}",
+                root.as_ref().map_or("", |r| r.name.as_str()),
+                path.iter().map(|i| i.name.as_str()).collect::<Vec<_>>().join(".")
+            )),
             ExprKind::TypeApply { name, args } => {
                 let args = args.iter().map(|a| self.ty(a)).collect();
                 concat(vec![text(name.name.clone()), text("<"), join(args, || text(", ")), text(">")])
