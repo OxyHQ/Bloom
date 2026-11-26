@@ -38,6 +38,35 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 block_end(source, start).map(|e| (start, e, format!("Group {{\n{}\n}}", &source[start..e])))
             }
+            // `count > 1` on a `Float?`: JS compares `undefined` as `NaN` (false), as `0 > 1` is;
+            // so for `> n` (n ≥ 0) and `>= n` (n > 0) the absent value is `0`.
+            ("B0201", _)
+                if (d.message == "`>` does not apply to `Float?`"
+                    || d.message == "`>=` does not apply to `Float?`"
+                    || d.message == "`>` does not apply to `Int?`"
+                    || d.message == "`>=` does not apply to `Int?`")
+                    && crate::expr::is_postfix_text(text) =>
+            {
+                let rest = source[end..].trim_start();
+                let (op, after) = if let Some(a) = rest.strip_prefix(">=") {
+                    (">=", a)
+                } else if let Some(a) = rest.strip_prefix('>') {
+                    (">", a)
+                } else {
+                    ("", rest)
+                };
+                let literal: String =
+                    after.trim_start().chars().take_while(|c| c.is_ascii_digit() || *c == '.').collect();
+                let n: Option<f64> = literal.parse().ok();
+                let after_literal = after.trim_start()[literal.len()..].chars().next();
+                let simple =
+                    after_literal.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '.' || c == '('));
+                match (op, n) {
+                    (">", Some(n)) if n >= 0.0 && simple => Some((start, end, format!("({text} ?? 0)"))),
+                    (">=", Some(n)) if n > 0.0 && simple => Some((start, end, format!("({text} ?? 0)"))),
+                    _ => None,
+                }
+            }
             // `{}` where a dictionary is expected: the empty dictionary `[:]` (`{}` is a closure).
             ("B0201", "{}")
                 if d.message.starts_with("expected `[") && d.message.ends_with("found `() -> Unit`") =>

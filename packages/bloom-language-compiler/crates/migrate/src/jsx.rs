@@ -242,6 +242,31 @@ impl Tr<'_> {
     /// A fragment as one value: its only child, or a `Group` of them.
     pub fn fragment_value(&mut self, f: &JSXFragment) -> String {
         let count = f.children.iter().filter(|c| !is_blank(c)).count();
+        // `<>{time}{count > 1 ? " · n" : ""}</>` (a prop): text of values, one string.
+        let text_only = count > 1
+            && f.children.iter().filter(|c| !is_blank(c)).all(|c| match c {
+                JSXChild::ExpressionContainer(e) => e
+                    .expression
+                    .as_expression()
+                    .is_some_and(|e| !self.is_view(e) && !crate::expr::is_nothing(e)),
+                JSXChild::Text(_) => true,
+                _ => false,
+            });
+        if text_only {
+            let mut out = String::from("\"");
+            for child in f.children.iter().filter(|c| !is_blank(c)) {
+                match child {
+                    JSXChild::ExpressionContainer(e) => {
+                        let value = self.expr(e.expression.to_expression());
+                        out.push_str(&format!("${{{value}}}"));
+                    }
+                    JSXChild::Text(t) => out.push_str(&crate::expr::escape(t.value.as_str())),
+                    _ => {}
+                }
+            }
+            out.push('"');
+            return out;
+        }
         let lines = self.jsx_children(&f.children);
         match count {
             0 => self.refuse("jsx:fragment", "an empty fragment", f.span),
