@@ -14,15 +14,14 @@
 
 - `.ownScreen()`: a `screen()` branch that is a surface of its own (Bloom's `CallScreen`, `IncomingCallScreen`, a story viewer) is drawn as it is, with no Bloom `Screen` around it, its sheets, colour scope, keyboard avoidance and providers still drawn; another branch of the same body stays a Screen. A branch that returns `null` draws nothing (it drew an empty Screen).
 - `.provider(Component, props)`: a screen's provider takes the props it needs besides its children (Allo's ask provider with its context), and `.provider(undefined)` draws none, for a provider only some people get.
+- `.role(undefined)`: a role chosen at render that may be none (`.role(href ? 'link' : undefined)`). A pressable with `.pressScale()`, a button by default, then names itself nothing, as Bloom's `PressableScale` handed `accessibilityRole={undefined}` does (Mention's suggested profile tile).
+- `view(body, equal)`: an optional second argument, `memo`'s comparator (what a `.bloom` view's `equal(old, new)` member compiles to).
+- The spec's `signatures`: each node constructor's positional parameters, read from its declaration (`scripts/generate-signatures.mjs`), which bloomc checks a node's arguments against.
 
 ### Changed
 
 - The spec's table of the modifiers each node takes is a type (`NodeModifiers`), read only by the type checks, so no bundle carries it (about 500 KB of the web chunk).
 - `verify:bundle` (CI): the root bundled as an app's web export bundles it reaches no family beyond the ones the renderer draws itself, and stays within its budget.
-
-### Added
-
-- `.role(undefined)`: a role chosen at render that may be none (`.role(href ? 'link' : undefined)`). A pressable with `.pressScale()`, a button by default, then names itself nothing, as Bloom's `PressableScale` handed `accessibilityRole={undefined}` does (Mention's suggested profile tile).
 
 ## 1.7.0
 

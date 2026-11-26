@@ -1,11 +1,22 @@
 # Changelog
 
-## Unreleased
+## 1.7.0
+
+### Compatibility
+
+- A `.bloom` module needs `@oxy.so/bloom-language` 2.0.0 or newer: bloomc imports each view's constructor from its family's entry. A TypeScript chain compiles against the language 1.x and 2.x alike: a view's constructor is read from the root or from any family's entry.
+
+### Added
+
+- `bloomc`, the `.bloom` command line (`build`, `check`, `fmt`), ships in each platform package as `bloomc.<platform>`; `npx bloomc` runs this platform's, and the `bloom-lang-check` bin checks a project's `.bloom` files.
+- `.bloom`, phase 1 of ADR 0001 (`docs/bloom-lang-spec.mdx`): record literals and inline record types, string-literal unions with exhaustive `match`, key paths, structural `==`, optional calls and rest spreads, an `effect { … }` member, an `equal(old, new) { … }` member (`view()`'s comparator), props spreads, `Map` and `Set`, `@ref`, `Int` widening to `Float`, typed routes from the app's `app/` tree, `catching { … }`, and TypeScript interop with class components, `memo`, `lazy` and react-native's values.
+- bloomc checks a node's arguments against its constructor's signature (the spec's `signatures`): the count, string, number and boolean arguments, and bindings.
 
 ### Changed
 
 - A view's constructor imported from a family's entry (`import { Rating } from '@oxy.so/bloom-language/rating'`) is a language view, as one from the root is; the entries are generated from the language (`entries.generated.rs`).
 - bloomc imports each view's constructor from its entry (`@oxy.so/bloom-language/inputs` for a `TextField`), from the generated table (`entries::module_of`).
+- The chain rules (glass, toolbars, icon-only controls, untagged choices…) are one module that the TypeScript pass and bloomc share; bloomc checks its own tree with it instead of printing TypeScript and parsing it again. The TypeScript diagnostics are unchanged.
 
 ## 1.6.0
 

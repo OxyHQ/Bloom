@@ -173,7 +173,7 @@
     },
     "packages/bloom-language-compiler": {
       "name": "@oxy.so/bloom-language-compiler",
-      "version": "1.6.0",
+      "version": "1.7.0",
       "dependencies": {
         "@jridgewell/trace-mapping": "0.3.31",
       },
@@ -203,23 +203,23 @@
     },
     "packages/bloom-language-compiler/npm/darwin-arm64": {
       "name": "@oxy.so/bloom-language-compiler-darwin-arm64",
-      "version": "1.6.0",
+      "version": "1.7.0",
     },
     "packages/bloom-language-compiler/npm/darwin-x64": {
       "name": "@oxy.so/bloom-language-compiler-darwin-x64",
-      "version": "1.6.0",
+      "version": "1.7.0",
     },
     "packages/bloom-language-compiler/npm/linux-arm64-gnu": {
       "name": "@oxy.so/bloom-language-compiler-linux-arm64-gnu",
-      "version": "1.6.0",
+      "version": "1.7.0",
     },
     "packages/bloom-language-compiler/npm/linux-x64-gnu": {
       "name": "@oxy.so/bloom-language-compiler-linux-x64-gnu",
-      "version": "1.6.0",
+      "version": "1.7.0",
     },
     "packages/bloom-language-compiler/npm/wasm32-wasi": {
       "name": "@oxy.so/bloom-language-compiler-wasm32-wasi",
-      "version": "1.6.0",
+      "version": "1.7.0",
       "dependencies": {
         "@emnapi/core": "2.0.0-beta.3",
         "@emnapi/runtime": "2.0.0-beta.3",
@@ -228,7 +228,7 @@
     },
     "packages/bloom-language-compiler/npm/win32-x64-msvc": {
       "name": "@oxy.so/bloom-language-compiler-win32-x64-msvc",
-      "version": "1.6.0",
+      "version": "1.7.0",
     },
     "packages/bloom-lens": {
       "name": "@oxy.so/bloom-lens",
