@@ -1,0 +1,62 @@
+function $eq0(a: PrefKey, b: PrefKey): boolean {
+  return a === b;
+}
+function $eq1(a: Post, b: Post): boolean {
+  return a.id === b.id && a.text === b.text;
+}
+
+export interface Titled$Witness<Self> {
+  id(self: Self): string;
+  title(self: Self): string;
+  badge(self: Self, count: number): string;
+}
+export type Titled$Any = { readonly self: unknown; readonly w: Titled$Witness<unknown> };
+
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+}
+
+export function Post$title(self: Post): string {
+return self.text;
+}
+
+export function Post$badge(self: Post, count: number): string {
+return `${Post$title(self)} (${count})`;
+}
+
+export type PrefKey = "likes" | "replies";
+
+function PrefKey$title(self: PrefKey): string {
+return ((self === "likes") ? "Likes" : "Replies");
+}
+
+export const PrefKey$$allCases: readonly PrefKey[] = ["likes", "replies"];
+
+function label<T>(item: T, $w_T_Titled: Titled$Witness<T>): string {
+return $w_T_Titled.badge(item, 1);
+}
+
+function firstIndex<T>(items: readonly T[], item: T, $w_T_Equatable: (a: T, b: T) => boolean): number | undefined {
+let index = 0;
+for (const candidate of items) {
+if ($w_T_Equatable(candidate, item)) {
+return index;
+}
+index = index + (1);
+}
+return undefined;
+}
+
+function describe(item: Titled$Any): string {
+return `${item.w.id(item.self)}: ${item.w.title(item.self)}`;
+}
+
+export function demo(post: Post): string {
+const titles = PrefKey$$allCases.map(($0: PrefKey) => PrefKey$title($0));
+const at = firstIndex(PrefKey$$allCases, "replies", $eq0) ?? (-1);
+const found = firstIndex([post], post, $eq1) ?? (-1);
+return `${label(post, Post$$Titled)} ${describe({ self: post, w: Post$$Titled })} ${titles.length} ${at} ${found}`;
+}
+
+export const Post$$Titled: Titled$Witness<Post> = { id: (self: Post) => self.id, title: Post$title, badge: Post$badge };

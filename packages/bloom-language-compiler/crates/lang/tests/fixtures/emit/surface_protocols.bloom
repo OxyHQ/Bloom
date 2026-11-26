@@ -1,0 +1,48 @@
+// Bloom 2.0's protocols: requirements met by fields, computed properties and methods,
+// `extension T: P`, constrained generics passed a witness, and `any P` packed with one.
+public protocol Titled {
+  var id: String { get }
+  var title: String { get }
+  func badge(_ count: Int) -> String
+}
+
+public struct Post {
+  public let id: String
+  public let text: String
+}
+
+extension Post: Titled {
+  public var title: String { text }
+  public func badge(_ count: Int) -> String { "\(title) (\(count))" }
+}
+
+public enum PrefKey: CaseIterable, Equatable {
+  case likes, replies
+
+  var title: String {
+    switch self {
+    case .likes: "Likes"
+    case .replies: "Replies"
+    }
+  }
+}
+
+func label<T: Titled>(_ item: T) -> String { item.badge(1) }
+
+func firstIndex<T: Equatable>(_ items: [T], of item: T) -> Int? {
+  var index = 0
+  for candidate in items {
+    if candidate == item { return index }
+    index += 1
+  }
+  return none
+}
+
+func describe(_ item: any Titled) -> String { "\(item.id): \(item.title)" }
+
+public func demo(_ post: Post) -> String {
+  let titles = PrefKey.allCases.map { $0.title }
+  let at = firstIndex(PrefKey.allCases, of: .replies) ?? -1
+  let found = firstIndex([post], of: post) ?? -1
+  "\(label(post)) \(describe(post)) \(titles.count) \(at) \(found)"
+}

@@ -146,6 +146,48 @@ pub enum ItemKind {
     /// a type declared elsewhere (a built-in, or a struct or enum). Lowered before checking
     /// (`crate::extensions::lower`) to free functions the checker finds by the receiver's type.
     Extension(ExtensionDecl),
+    /// `@Observable final class Model { … }` (2.0): a reference type. Its stored properties
+    /// are its fields, its `init` and members are lowered like a struct's (`crate::extensions`).
+    Class(ClassDecl),
+    /// `protocol P: Q { var id: String { get }; func f() -> Int }` (2.0): requirements a
+    /// conforming type meets with fields, computed properties or methods.
+    Protocol(ProtocolDecl),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ClassDecl {
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    /// `@Observable`: its fields are a store a view subscribes to, field by field.
+    pub observable: bool,
+    /// Its conformances and members as written.
+    pub body: TypeBody,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProtocolDecl {
+    pub name: Ident,
+    /// `: Q, R`: the protocols it refines.
+    pub inherits: Vec<TypeExpr>,
+    pub requirements: Vec<Requirement>,
+    pub span: Span,
+}
+
+/// A protocol's requirement: `var id: String { get }` (`{ get set }`), or a `func`'s
+/// signature (its body is empty).
+#[derive(Debug, Clone, PartialEq)]
+pub enum Requirement {
+    Property { name: Ident, ty: TypeExpr, settable: bool, is_static: bool, span: Span },
+    Func { decl: FnDecl, is_static: bool },
+}
+
+impl Requirement {
+    pub fn name(&self) -> &Ident {
+        match self {
+            Requirement::Property { name, .. } => name,
+            Requirement::Func { decl, .. } => &decl.name,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -167,6 +209,8 @@ impl ItemKind {
             ItemKind::View(v) => &v.name,
             ItemKind::Const(c) => &c.name,
             ItemKind::Extension(e) => &e.name,
+            ItemKind::Class(c) => &c.name,
+            ItemKind::Protocol(p) => &p.name,
         }
     }
 }
@@ -227,6 +271,9 @@ pub struct EnumDecl {
     /// Written with Swift's `case` before its cases (2.0).
     pub swift: bool,
     pub variants: Vec<Variant>,
+    /// Its other members as written (2.0): computed properties, methods, `static let`s.
+    /// Lowered like a struct's (`crate::extensions`).
+    pub members: Vec<TypeMember>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
