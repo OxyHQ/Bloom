@@ -1562,6 +1562,18 @@ impl<'o> Checker<'o> {
                 return;
             }
         }
+        if specifier == "js" {
+            // `import { encodeURIComponent, Math } from "js"`: JS's globals, named before use.
+            // TypeScript types them (lib.es and lib.dom) where they cross.
+            if let ImportKind::Named(specs) = &import.kind {
+                for spec in specs {
+                    let local = spec.local().clone();
+                    let value = Ty::Foreign(format!("typeof globalThis.{}", spec.name.name).into());
+                    self.declare_unique(&local, value, LocalKind::Import { hook: false });
+                }
+            }
+            return;
+        }
         let resolved = ts::resolve(&self.path, specifier, self.options);
         let file = resolved.as_deref().and_then(ts::read);
         if let Some(path) = resolved {

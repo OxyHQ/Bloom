@@ -1,5 +1,8 @@
 // The prelude's numbers, in place of JS globals: `min`, `max`, `abs`, `round`,
 // `floor`, `ceil`, `.clamped(a, b)`, and `Int(s)` / `Float(s)`, which may be `none`.
+// Any other JS global is imported by name from "js"; TypeScript types it.
+
+import { encodeURIComponent, JSON } from "js"
 
 fn fit(width: Float, columns: Int, widths: [Int]) -> Int {
   let cell = floor(width / columns.toFloat())
@@ -12,4 +15,10 @@ fn parsed(text: String) -> Int {
 
 fn ratio(text: String) -> Float {
   Float(text) ?? 1.0
+}
+
+fn query(text: String) -> String {
+  let encoded: String = encodeURIComponent(text)
+  let payload: String = JSON.stringify(text)
+  "q=${encoded}&b=${payload}"
 }
