@@ -2871,6 +2871,14 @@ impl<'a> Emitter<'a> {
                     .map(|a| self.expr(&a.value));
                 let mut out = Frag::of("defineEnvironment(");
                 out.f(name.unwrap_or_default()).s(", ").f(value.unwrap_or_default()).s(")");
+                // Typed by its default as Bloom typed it (`defineEnvironment` widens a literal union).
+                let ty = match self.ck.types.get(&expr.id) {
+                    Some(Ty::Foreign(text)) => text.to_string(),
+                    _ => String::new(),
+                };
+                if !ty.is_empty() && !ty.ends_with("<unknown>") {
+                    out = out.wrap("(", &format!(" as {ty})"));
+                }
                 out
             }
             CallRes::Regex => {

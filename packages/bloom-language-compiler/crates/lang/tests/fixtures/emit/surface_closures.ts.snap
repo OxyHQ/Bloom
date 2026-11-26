@@ -34,7 +34,7 @@ return $t0;
 
 export type Session = "signedOut" | "signedIn";
 
-export const session = defineEnvironment("session", "signedOut");
+export const session = (defineEnvironment("session", "signedOut") as import("@oxy.so/bloom-language").EnvironmentKey<Session>);
 
 const $env_session = session;
 const $view0 = Text("Sign in");
