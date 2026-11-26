@@ -6,7 +6,9 @@ use std::cell::RefCell;
 
 use std::rc::Rc;
 
-use bloom_language_compiler::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, TOKEN_SETS};
+use bloom_language_compiler::spec::{
+    MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
+};
 use bloom_language_compiler::{Doc, Tour};
 
 use crate::diagnostic::closest;
@@ -14,6 +16,11 @@ use crate::types::StrSet;
 
 pub fn node_by_constructor(name: &str) -> Option<&'static NodeSpec> {
     NODES.iter().find(|node| node.constructors.contains(&name))
+}
+
+/// A constructor's positional parameters (`spec::SIGNATURES`); any number of children when unknown.
+pub fn signature(constructor: &str) -> &'static [&'static str] {
+    SIGNATURES.iter().find(|(name, _)| *name == constructor).map_or(&["...children"], |(_, params)| params)
 }
 
 pub fn node(kind: &str) -> Option<&'static NodeSpec> {

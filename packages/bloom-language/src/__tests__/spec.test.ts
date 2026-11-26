@@ -1492,6 +1492,13 @@ describe('the spec drives the rules', () => {
     ).not.toThrow();
   });
 
+  it('the constructor signatures are current with the constructors', () => {
+    const script = join(PACKAGE, 'scripts/generate-signatures.mjs');
+    expect(() =>
+      execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+
   it('the generated outputs are current with the spec', () => {
     const script = join(PACKAGE, 'scripts/generate.mjs');
     expect(() =>
