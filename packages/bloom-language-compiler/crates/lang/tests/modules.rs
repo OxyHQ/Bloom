@@ -106,3 +106,96 @@ fn two_files_of_a_module_share_one_namespace() {
     assert_eq!(codes(&out), ["B0807"], "{:?}", out.diagnostics);
     assert!(out.diagnostics[0].message.contains("Sources/Feed/Row.bloom"));
 }
+
+const INTERNAL_ROW: &str = "view Line(title: String) {\n  body {\n    Text(title)\n  }\n}\n";
+const USES_ROW: &str =
+    "public view Lines {\n  body {\n    VStack {\n      Line(title: \"One\")\n    }\n  }\n}\n";
+
+fn app(imports: &str) -> String {
+    format!("{imports}\n\npublic view Home {{\n  body {{\n    Lines()\n  }}\n}}\n")
+}
+
+#[test]
+fn internal_is_the_module_and_private_the_file() {
+    let root = package(
+        "access",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/Line.bloom", INTERNAL_ROW),
+            ("Sources/Feed/Rows.bloom", USES_ROW),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Rows.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { Line } from \"./Line.bloom\";"), "{}", out.code);
+    let row = build(&root, "Sources/Feed/Line.bloom", &Options::default());
+    assert!(
+        row.code.contains("export const Line"),
+        "an internal item is exported for its module: {}",
+        row.code
+    );
+
+    std::fs::write(root.join("Sources/Feed/Line.bloom"), format!("private {INTERNAL_ROW}")).unwrap();
+    let out = build(&root, "Sources/Feed/Rows.bloom", &Options::default());
+    assert_eq!(codes(&out), ["B0804"], "{:?}", out.diagnostics);
+    assert!(
+        out.diagnostics[0].message.contains("private to Sources/Feed/Line.bloom"),
+        "{}",
+        out.diagnostics[0].message
+    );
+}
+
+#[test]
+fn imports_name_modules_and_see_their_public_items() {
+    let root = package(
+        "imports",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/Line.bloom", INTERNAL_ROW),
+            ("Sources/Feed/Rows.bloom", USES_ROW),
+            ("Sources/Demo/Home.bloom", &app("import Bloom\nimport Demo.Feed")),
+        ],
+    );
+    let out = build(&root, "Sources/Demo/Home.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { Lines } from \"../Feed/Rows.bloom\";"), "{}", out.code);
+
+    // Not imported: the checker's "cannot find" says which import it needs.
+    std::fs::write(root.join("Sources/Demo/Home.bloom"), app("import Bloom")).unwrap();
+    let out = build(&root, "Sources/Demo/Home.bloom", &Options::default());
+    let missing = out.diagnostics.iter().find(|d| d.code == "B0202").expect("cannot find `Lines`");
+    assert_eq!(missing.help.as_deref(), Some("`Lines` is in module `Feed`: add `import Feed`"));
+
+    // An internal item of another module.
+    std::fs::write(
+        root.join("Sources/Demo/Home.bloom"),
+        "import Feed\n\npublic view Home {\n  body {\n    Line(title: \"x\")\n  }\n}\n",
+    )
+    .unwrap();
+    let out = build(&root, "Sources/Demo/Home.bloom", &Options::default());
+    assert_eq!(codes(&out), ["B0803"], "{:?}", out.diagnostics);
+    assert_eq!(out.diagnostics[0].message, "`Line` is internal to module `Feed`");
+}
+
+#[test]
+fn an_import_is_a_declared_dependency() {
+    let manifest = MANIFEST.replace(".module(\"Feed\")", ".module(\"Feed\"),\n    .module(\"Posts\")");
+    let root = package(
+        "undeclared",
+        &[
+            ("Package.bloom", &manifest),
+            ("Sources/Posts/Post.bloom", "public view Post {\n  body {\n    Text(\"p\")\n  }\n}\n"),
+            ("Sources/Feed/Rows.bloom", "import Posts\nimport Feeds\nimport BloomData\nimport Feed\n"),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Rows.bloom", &Options::default());
+    let found: Vec<(&str, String)> =
+        out.diagnostics.iter().map(|d| (d.code, d.help.clone().unwrap_or_default())).collect();
+    assert_eq!(
+        found[0],
+        ("B0802", "add \"Posts\" to `.module(\"Feed\", dependencies: […])` in Package.bloom".into())
+    );
+    assert_eq!(found[1], ("B0801", "did you mean `Feed`?".into()));
+    assert_eq!(found[2], ("B0802", "run `bloom add BloomData`".into()));
+    assert_eq!(found[3].0, "B0801", "its own module: {found:?}");
+}

@@ -48,9 +48,9 @@ pub enum Access {
 impl Access {
     fn of(visibility: Visibility) -> Access {
         match visibility {
-            Visibility::Pub | Visibility::PubDefault => Access::Public,
-            // 0.x has no `internal`: an unwritten visibility is the module's.
-            Visibility::Private => Access::Internal,
+            Visibility::Public | Visibility::PubDefault => Access::Public,
+            Visibility::Internal => Access::Internal,
+            Visibility::Private => Access::Private,
         }
     }
 }
@@ -218,6 +218,8 @@ pub struct Resolution {
     hidden: HashMap<String, Hidden>,
     /// The files the resolution read (the manifest and the module's other files): a cache key.
     pub reads: Vec<PathBuf>,
+    /// The file is one of a package's modules: compile it as a directory module.
+    pub in_module: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -262,6 +264,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     let Some(index) = graph.target_of(&path) else {
         return out;
     };
+    out.in_module = true;
     let target = &graph.manifest.targets[index];
     let bindings = matches!(target.kind, TargetKind::Bindings { .. });
     let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();
@@ -269,7 +272,12 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     // What the file imports, by module.
     let mut imported: Vec<Imported> = Vec::new();
     let mut kept = Vec::new();
+    let mut written = Vec::new();
     for import in std::mem::take(&mut file.imports) {
+        if let ImportKind::Module(segments) = &import.kind {
+            written.push(ModuleImport { segments: segments.clone(), span: import.span });
+            continue;
+        }
         let bloom_file = import.source.ends_with(".bloom");
         if !bindings && !options.allow_ts_imports && !bloom_file {
             out.diagnostics.push(string_import(&import));
@@ -277,7 +285,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         kept.push(import);
     }
     file.imports = kept;
-    for module_import in module_imports(source, file) {
+    for module_import in written {
         if let Some(found) = resolve_import(graph, index, &module_import, &mut out) {
             if imported.iter().any(|i| i.name == found.name) {
                 out.diagnostics.push(
@@ -512,43 +520,6 @@ enum Source {
 pub struct ModuleImport {
     pub segments: Vec<Ident>,
     pub span: Span,
-}
-
-/// The module imports of `file`. Read from the tokens until the parser
-/// carries them (`ImportKind::Module`): `import` then dotted names, at the
-/// start of a line, before the first item.
-fn module_imports(source: &str, file: &File) -> Vec<ModuleImport> {
-    let end = file.items.first().map_or(source.len(), |i| i.span.start as usize);
-    let lexed = lexer::lex(source, 0, end);
-    let tokens = lexed.tokens;
-    let mut out = Vec::new();
-    let mut i = 0;
-    while i < tokens.len() {
-        let at_line_start = i == 0 || tokens[i - 1].tok == Tok::Newline;
-        if at_line_start && matches!(&tokens[i].tok, Tok::Kw(kw) if kw.word() == "import") {
-            let start = tokens[i].span;
-            let mut segments = Vec::new();
-            let mut j = i + 1;
-            while let Some(Tok::Ident(name)) = tokens.get(j).map(|t| &t.tok) {
-                segments.push(Ident { name: name.clone(), span: tokens[j].span });
-                j += 1;
-                if tokens.get(j).map(|t| &t.tok) == Some(&Tok::P(P::Dot)) {
-                    j += 1;
-                } else {
-                    break;
-                }
-            }
-            let ends_line =
-                tokens.get(j).is_none_or(|t| matches!(t.tok, Tok::Newline | Tok::Eof | Tok::P(P::Semi)));
-            if !segments.is_empty() && ends_line {
-                let last = segments.last().map_or(start, |s| s.span);
-                out.push(ModuleImport { segments, span: start.to(last) });
-            }
-            i = j;
-        }
-        i += 1;
-    }
-    out
 }
 
 fn resolve_import(
