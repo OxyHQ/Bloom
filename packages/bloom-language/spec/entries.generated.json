@@ -38,6 +38,7 @@
       "Menu",
       "NavItem",
       "Node",
+      "Observable",
       "PageFooter",
       "Rail",
       "RailItem",
@@ -91,6 +92,7 @@
       "useMappedValue",
       "useMotionValue",
       "useNamespace",
+      "useObserved",
       "view"
     ],
     "router": [
