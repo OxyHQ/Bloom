@@ -39,7 +39,8 @@ fn tsc_errors_in_emitted_code_land_on_the_bloom_span() {
             .contains("4 |   let line: String = formatWhen(at)\n  |                                 ^^ tsc"),
         "{stderr}"
     );
-    assert!(stderr.contains("checked 5 files with tsc (1 error, 0 warnings)"), "{stderr}");
+    // The fixtures' 0.x forms warn (B0950); one error is tsc's.
+    assert!(stderr.contains("checked 5 files with tsc (1 error, "), "{stderr}");
 
     // `--project` from elsewhere, and one file: the same error.
     let run = Command::new(env!("CARGO_BIN_EXE_bloomc"))
@@ -52,5 +53,5 @@ fn tsc_errors_in_emitted_code_land_on_the_bloom_span() {
     let stderr = String::from_utf8_lossy(&run.stderr);
     assert_eq!(run.status.code(), Some(1), "{stderr}");
     assert!(stderr.contains("--> tsc-project/src/screens/stamp.bloom:4:33"), "{stderr}");
-    assert!(stderr.contains("checked 1 file with tsc (1 error, 0 warnings)"), "{stderr}");
+    assert!(stderr.contains("checked 1 file with tsc (1 error, "), "{stderr}");
 }
