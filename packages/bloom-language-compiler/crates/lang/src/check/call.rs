@@ -806,6 +806,35 @@ impl Checker<'_> {
                     return self.construct(expr, &call, def, args, target.as_ref(), true);
                 }
             }
+            // `{ k: v }` where a `[String: V]` is expected: a dictionary literal, each value a `V`.
+            Some(Ty::Map(value)) => {
+                let value = (**value).clone();
+                let map = Ty::Map(Box::new(value.clone()));
+                let mut keys: Vec<&str> = Vec::new();
+                for entry in entries {
+                    match entry {
+                        RecordEntry::Field { key, value: v } => {
+                            if keys.contains(&key.name.as_str()) {
+                                self.report(
+                                    Diagnostic::error(
+                                        "B0208",
+                                        key.span,
+                                        format!("`{}` is given twice", key.name),
+                                    )
+                                    .label("a record has each key once")
+                                    .spec("44-structs"),
+                                );
+                            }
+                            keys.push(&key.name);
+                            self.expr(v, Some(&value));
+                        }
+                        RecordEntry::Spread(v) => {
+                            self.expr(v, Some(&map));
+                        }
+                    }
+                }
+                return map;
+            }
             _ => {}
         }
         let mut fields: Vec<FieldDef> = Vec::new();
@@ -1387,7 +1416,11 @@ impl Checker<'_> {
             if ty.is_none() && fields.is_some() {
                 self.unknown_field(label, &props);
             }
+            // `ref: input` gives a TS component the `@ref` itself, as `.ref(input)` gives a node.
+            let ref_object = label.name == "ref" && matches!(arg.value.kind, ExprKind::Name(_));
+            self.ref_object = ref_object;
             self.boundary(&arg.value, ty.as_ref());
+            self.ref_object = false;
         }
         if let Some(fields) = &fields {
             let missing: Vec<String> = fields

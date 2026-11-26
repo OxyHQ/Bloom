@@ -1,0 +1,16 @@
+import { type Icon, ListIcon, MergeIcon, SPACING } from "@/ui/icons";
+
+const MODE_ICON: Readonly<Record<string, Icon>> = { mixed: MergeIcon, list: ListIcon };
+
+const GAPS: Readonly<Record<string, number>> = SPACING;
+
+const SIZES: Readonly<Record<string, number>> = { small: 12, large: 18.5, ...GAPS };
+
+export function icon(mode: string): Icon | undefined {
+return MODE_ICON[mode];
+}
+
+export function gap(name: string): number {
+return SIZES[name] ?? (GAPS["tight"] ?? 0);
+}
+

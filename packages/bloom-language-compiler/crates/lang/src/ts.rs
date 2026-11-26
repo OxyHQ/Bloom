@@ -42,6 +42,9 @@ pub enum TsType {
     Ref(String, Vec<TsType>),
     Object(Vec<TsMember>),
     Fn(Box<TsFn>),
+    /// `A & B`: foreign, but a component may be one of its members (react-native's
+    /// `TextInput` is a function from props to a node with statics beside it).
+    Intersection(Vec<TsType>),
     /// Anything else: foreign.
     Other,
 }
@@ -105,6 +108,9 @@ pub struct TsFile {
     /// A `.tsx` source: an uppercase function there is a component.
     pub tsx: bool,
     pub decls: HashMap<String, TsDecl>,
+    /// A type declared beside a value of the same name (`declare const X: T;
+    /// declare type X = typeof X`): the value is in `decls`, the type here.
+    pub types: HashMap<String, TsDecl>,
     pub exports: HashMap<String, Export>,
     /// `export * from "…"`.
     pub stars: Vec<String>,
@@ -305,9 +311,21 @@ impl Reader {
             if exported {
                 file.exports.insert(name.clone(), Export::Local(name.clone()));
             }
-            // A function's first overload is the one Bloom reads.
-            if !(matches!(decl, TsDecl::Fn(_)) && file.decls.contains_key(&name)) {
-                file.decls.insert(name, decl);
+            let is_type = matches!(decl, TsDecl::Interface { .. } | TsDecl::Alias { .. });
+            match file.decls.get(&name) {
+                // A function's first overload is the one Bloom reads.
+                Some(TsDecl::Fn(_)) if matches!(decl, TsDecl::Fn(_)) => {}
+                // A value and a type of one name: both are kept.
+                Some(TsDecl::Var(_) | TsDecl::Fn(_)) if is_type => {
+                    file.types.insert(name, decl);
+                }
+                Some(TsDecl::Interface { .. } | TsDecl::Alias { .. }) if matches!(decl, TsDecl::Var(_)) => {
+                    let ty = file.decls.insert(name.clone(), decl).expect("a type");
+                    file.types.insert(name, ty);
+                }
+                _ => {
+                    file.decls.insert(name, decl);
+                }
             }
         };
         match declaration {
@@ -524,6 +542,9 @@ impl Reader {
                 TsType::Tuple(items)
             }
             TSType::TSUnionType(union) => TsType::Union(union.types.iter().map(|t| self.ty(t)).collect()),
+            TSType::TSIntersectionType(both) => {
+                TsType::Intersection(both.types.iter().map(|t| self.ty(t)).collect())
+            }
             TSType::TSTypeReference(reference) => {
                 let args = reference
                     .type_arguments
@@ -795,6 +816,13 @@ impl Mapper<'_> {
         if depth > 8 {
             return None;
         }
+        // `export * as X from "…"` (react-native's `StyleSheet`): a namespace, TS's to check.
+        if name == "*" {
+            return Some(Mapped {
+                value: Some(Ty::Foreign(format!("typeof {path}").into())),
+                ..Mapped::default()
+            });
+        }
         let local = match file.exports.get(name) {
             Some(Export::Local(local)) => local.clone(),
             Some(Export::From(specifier, imported)) => {
@@ -869,7 +897,38 @@ impl Mapper<'_> {
                     mapped.component = Some(props);
                     return Some(mapped);
                 }
+                // `declare const TextInput: TextInputType`, an alias of a function from props to
+                // a node (with statics beside it): a component.
+                // (Named by its import: react-native declares it as `$$TextInput`.)
+                if path.starts_with(|c: char| c.is_ascii_uppercase())
+                    && let Some((props_file, props)) = self.component_in(file, &ty, depth)
+                {
+                    // As a type (`@ref input: TextInput?`) it is its instance, as a ref holds it:
+                    // read from its `ref` prop when it declares one (`ComponentRef` gives `never` for
+                    // a function that takes its ref as a prop), else React's `ComponentRef`.
+                    let instance = if props.as_ref().is_some_and(has_ref_prop) {
+                        format!(
+                            "NonNullable<Extract<NonNullable<ComponentProps<typeof {path}>[\"ref\"]>, {{ current: unknown }}>[\"current\"]>"
+                        )
+                    } else {
+                        format!("ComponentRef<typeof {path}>")
+                    };
+                    let props = match props {
+                        Some(props) => self.ty(
+                            &props_file,
+                            &props,
+                            &Vec::new(),
+                            &format!("React.ComponentProps<typeof {path}>"),
+                            depth,
+                        ),
+                        None => Ty::Unit,
+                    };
+                    mapped.component = Some(props);
+                    mapped.ty = Some(Ty::Foreign(instance.into()));
+                    return Some(mapped);
+                }
                 mapped.value = Some(self.ty(file, &ty, &Vec::new(), &format!("typeof {path}"), depth));
+                mapped.ty = self.beside(file, name, path);
             }
             TsDecl::Var(None) => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
@@ -895,6 +954,68 @@ impl Mapper<'_> {
             TsDecl::Other => mapped.value = Some(Ty::Foreign(format!("typeof {path}").into())),
         }
         Some(mapped)
+    }
+
+    /// The type declared beside a value of the same name, named as TS names it.
+    fn beside(&self, file: &Rc<TsFile>, name: &str, path: &str) -> Option<Ty> {
+        file.types.contains_key(name).then(|| Ty::Foreign(path.into()))
+    }
+
+    /// The function from props to a node that `ty` is (through aliases, imports and
+    /// intersections), with the file its props are read in.
+    fn component_in(
+        &mut self,
+        file: &Rc<TsFile>,
+        ty: &TsType,
+        depth: usize,
+    ) -> Option<(Rc<TsFile>, Option<TsType>)> {
+        if depth > 8 {
+            return None;
+        }
+        match ty {
+            TsType::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
+                Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
+            }
+            TsType::Intersection(members) => {
+                members.iter().find_map(|m| self.component_in(file, m, depth + 1))
+            }
+            TsType::Ref(name, args) if args.is_empty() => {
+                let (target, decl) = self.type_decl(file, name, depth + 1)?;
+                match decl {
+                    TsDecl::Alias { params, ty } if params.is_empty() => {
+                        self.component_in(&target, &ty, depth + 1)
+                    }
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+
+    /// The type declaration a local name means in `file`, through its imports.
+    fn type_decl(&mut self, file: &Rc<TsFile>, name: &str, depth: usize) -> Option<(Rc<TsFile>, TsDecl)> {
+        if depth > 8 {
+            return None;
+        }
+        if let Some(decl) = file.types.get(name).or_else(|| file.decls.get(name)) {
+            return Some((file.clone(), decl.clone()));
+        }
+        let (specifier, imported) = file.imports.get(name)?.clone();
+        let mut target = self.open(&file.path, &specifier)?;
+        let mut name = imported;
+        for _ in 0..8 {
+            match target.exports.get(&name).cloned() {
+                Some(Export::Local(local)) => return self.type_decl(&target, &local, depth + 1),
+                Some(Export::From(specifier, imported)) => {
+                    target = self.open(&target.path, &specifier)?;
+                    name = imported;
+                }
+                None => {
+                    return self.type_decl(&target, &name, depth + 1).filter(|_| target.exports.is_empty());
+                }
+            }
+        }
+        None
     }
 
     fn function(
@@ -984,7 +1105,9 @@ impl Mapper<'_> {
             TsType::Fn(function) => self.function(file, function, scope, path, depth),
             TsType::Object(members) => self.object(file, members, scope, path, "{…}", depth),
             TsType::Ref(name, args) => self.reference(file, name, args, scope, path, depth),
-            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other => Ty::Foreign(path.into()),
+            TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
+                Ty::Foreign(path.into())
+            }
         }
     }
 
@@ -1245,6 +1368,27 @@ fn exported_local(file: &Rc<TsFile>, name: &str) -> Option<(Rc<TsFile>, String)>
 
 /// A function that is a component: an uppercase name, at most one parameter
 /// (its props), returning an element (or, in a `.tsx` file, returning anything).
+/// Whether props declare a `ref` (directly or as a member of an intersection).
+fn has_ref_prop(props: &TsType) -> bool {
+    match props {
+        TsType::Object(members) => members.iter().any(|m| m.name == "ref"),
+        TsType::Intersection(items) => items.iter().any(has_ref_prop),
+        _ => false,
+    }
+}
+
+/// Whether a function returns an element (or `null` beside one).
+fn returns_element(function: &TsFn) -> bool {
+    match &function.ret {
+        Some(TsType::Ref(ret, _)) => REACT_ELEMENTS.contains(&ret.as_str()),
+        Some(TsType::Union(members)) => members.iter().all(|m| {
+            matches!(m, TsType::Null)
+                || matches!(m, TsType::Ref(r, _) if REACT_ELEMENTS.contains(&r.as_str()))
+        }),
+        _ => false,
+    }
+}
+
 fn is_component_fn(file: &TsFile, name: &str, function: &TsFn) -> bool {
     if !name.chars().next().is_some_and(|c| c.is_ascii_uppercase()) || function.params.len() > 1 {
         return false;

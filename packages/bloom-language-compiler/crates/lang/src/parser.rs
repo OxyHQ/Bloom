@@ -2022,10 +2022,10 @@ fn contains_await_marker(expr: &Expr) -> bool {
 }
 
 /// Whether `{` after `expr` is its trailing closure: after a name, a member
-/// or a call (`VStack {`, `.onPress {`, `f(x) {`).
+/// or a call (`VStack {`, `.onPress {`, `a?.map {`, `f(x) {`).
 fn is_callee(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::Name(_) | ExprKind::Field(..) | ExprKind::TypeApply { .. } => true,
+        ExprKind::Name(_) | ExprKind::Field(..) | ExprKind::OptField(..) | ExprKind::TypeApply { .. } => true,
         ExprKind::Call(call) => call.trailing.is_none(),
         _ => false,
     }

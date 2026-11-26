@@ -1,0 +1,7 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function web(): boolean;
+export interface FieldProps {
+  readonly value: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Field())`), or from TSX as `toElement(Field())`. */
+export declare const Field: (props: FieldProps) => ComposedView;

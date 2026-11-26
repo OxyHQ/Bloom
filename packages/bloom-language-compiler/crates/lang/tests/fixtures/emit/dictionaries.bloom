@@ -1,0 +1,13 @@
+// A record literal where a `[String: V]` is expected is a dictionary literal, each value a
+// `V` (TS values too); a record, or a TS object type, fits a dictionary when its fields do.
+import { type Icon, ListIcon, MergeIcon, SPACING } from "@/ui/icons"
+
+let MODE_ICON: [String: Icon] = { mixed: MergeIcon, list: ListIcon }
+
+let GAPS: [String: Float] = SPACING
+
+let SIZES: [String: Float] = { small: 12, large: 18.5, ..GAPS }
+
+pub fn icon(mode: String) -> Icon? { MODE_ICON[mode] }
+
+pub fn gap(name: String) -> Float { SIZES[name] ?? GAPS["tight"] ?? 0 }

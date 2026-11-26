@@ -1,0 +1,47 @@
+
+const SIZE = 32;
+
+const RING = 2;
+
+function scaled(size: number): number {
+return size * 1.5;
+}
+
+export function ring(): number {
+return scaled(SIZE - (RING * 2));
+}
+
+export function each(xs: readonly string[], on: (p0: number, p1: string) => void): void {
+for (const [i, x] of xs.entries()) {
+on(i, x);
+}
+}
+
+export function atLeast(start: number): number {
+return Math.max(0, start - 5);
+}
+
+export function pick(on: boolean, x: number): number {
+return on ? 0 : x;
+}
+
+export function mixed(i: number, x: number): number {
+return (i * x) + (x / i);
+}
+
+export function half(i: number, j: number): number {
+return Math.trunc(i / j);
+}
+
+export function widths(xs: readonly number[]): readonly number[] {
+return xs;
+}
+
+export function maybe(i: number | undefined): number | undefined {
+return i;
+}
+
+export function stops(): readonly number[] {
+return [0, SIZE];
+}
+
