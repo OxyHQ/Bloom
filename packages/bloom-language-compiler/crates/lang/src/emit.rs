@@ -2211,6 +2211,18 @@ impl<'a> Emitter<'a> {
                 let values = self.args(call);
                 Frag::join(values, ", ").wrap("[", "] as const")
             }
+            CallRes::Math(name) => {
+                let values: Vec<Frag> = call.args.iter().map(|a| self.spread_arg(a)).collect();
+                let mut out = Frag::at(call.callee.span, format!("Math.{name}"));
+                out.f(Frag::join(values, ", ").wrap("(", ")"));
+                out
+            }
+            CallRes::Parse { int } => {
+                let helper = if int { "toInt" } else { "toFloat" };
+                self.helpers.insert(helper);
+                let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
+                value.wrap(&format!("${helper}("), ")")
+            }
             CallRes::Sleep => {
                 let ms = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
                 ms.wrap("new Promise<void>((resolve) => setTimeout(resolve, ", "))")

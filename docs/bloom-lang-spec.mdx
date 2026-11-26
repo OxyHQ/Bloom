@@ -554,6 +554,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)` |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |

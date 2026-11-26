@@ -1,0 +1,22 @@
+function $toFloat(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && !Number.isNaN(value) ? value : undefined;
+}
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+function fit(width: number, columns: number, widths: readonly number[]): number {
+const cell = Math.floor(width / columns);
+return ((Math.max(Math.min(cell, 320), 80, ...widths) + Math.abs(-2)) + Math.round(width)) + Math.ceil(1.5);
+}
+
+function parsed(text: string): number {
+return Math.min(Math.max(($toInt(text) ?? 0), 0), 99);
+}
+
+function ratio(text: string): number {
+return $toFloat(text) ?? 1.0;
+}
+

@@ -1,0 +1,15 @@
+// The prelude's numbers, in place of JS globals: `min`, `max`, `abs`, `round`,
+// `floor`, `ceil`, `.clamped(a, b)`, and `Int(s)` / `Float(s)`, which may be `none`.
+
+fn fit(width: Float, columns: Int, widths: [Int]) -> Int {
+  let cell = floor(width / columns.toFloat())
+  max(min(cell, 320), 80, ..widths) + abs(-2) + round(width) + ceil(1.5)
+}
+
+fn parsed(text: String) -> Int {
+  (Int(text) ?? 0).clamped(0, 99)
+}
+
+fn ratio(text: String) -> Float {
+  Float(text) ?? 1.0
+}
