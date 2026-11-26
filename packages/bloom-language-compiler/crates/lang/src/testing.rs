@@ -194,7 +194,9 @@ fn expect_in(e: &mut Expr, source: &str) {
                 expect_in_stmt(stmt, source);
             }
         }
-        ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Paren(inner) => expect_in(inner, source),
+        ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Force(inner) | ExprKind::Paren(inner) => {
+            expect_in(inner, source)
+        }
         ExprKind::If(i) => {
             expect_in_block(&mut i.then, source);
             match i.otherwise.as_deref_mut() {

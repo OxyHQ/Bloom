@@ -304,6 +304,9 @@ link whose own type is optional is not read through (`b?.note.trimmed()` with `n
 is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
 is not `none`. An optional call of a Unit function is Unit.
+`x!` (2.0, Swift's force unwrap, written against its operand) is the value of an optional;
+`none` there is a trap. A dev build checks it (`$unwrap(x)`, a `TypeError`); a release build
+emits TS's `x!`, so it costs nothing. `!` on a value that is never `none` is B0201.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
 `Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Inside
 `catching { … }` and in a closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type),
@@ -493,7 +496,7 @@ object passed last**: `t("key", defaultValue: "General")` is `t("key", { default
 
 | Level | Operators | Assoc. |
 |---|---|---|
-| postfix | call, `.x`, `?.x`, `[i]`, `?` | left |
+| postfix | call, `.x`, `?.x`, `[i]`, `?`, `!` (no space before it) | left |
 | prefix | `!` `-` `await` | right |
 | multiplicative | `*` `/` `%` | left |
 | additive | `+` `-` (`+` also joins `String`s) | left |

@@ -355,6 +355,7 @@ fn is_atom(expr: &Expr) -> bool {
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
             | ExprKind::Index(..)
+            | ExprKind::Force(_)
             | ExprKind::List(_)
             | ExprKind::Binding(_)
     )
@@ -367,6 +368,9 @@ fn helper_text(name: &str) -> &'static str {
         }
         "get" => {
             "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
+        }
+        "unwrap" => {
+            "function $unwrap<T>(value: T | undefined): T {\n  if (value === undefined) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
         }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
@@ -2035,6 +2039,19 @@ impl<'a> Emitter<'a> {
                 _ => self.expr(inner).wrap("await (", ")"),
             },
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // `x!`: a dev build traps on `none` (Swift's check); a release build is TS's `x!`.
+            ExprKind::Force(inner) => {
+                if self.options.dev {
+                    self.helpers.insert("unwrap");
+                    let mut out = Frag::of("$unwrap(");
+                    out.f(self.expr(inner)).s(")");
+                    out
+                } else {
+                    let mut out = self.operand(inner);
+                    out.s("!");
+                    out
+                }
+            }
             ExprKind::Throwing(TryKind::Plain | TryKind::Force, inner) => self.expr(inner),
             // `try? f()`: its value, or `undefined` when it throws.
             ExprKind::Throwing(TryKind::Optional, inner) => {
@@ -3729,6 +3746,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
+        | ExprKind::Force(e)
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
@@ -3905,6 +3923,7 @@ impl<'a> Emitter<'a> {
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
+            | ExprKind::Force(e)
             | ExprKind::Throwing(_, e)
             | ExprKind::Field(e, _)
             | ExprKind::OptField(e, _) => go(e),

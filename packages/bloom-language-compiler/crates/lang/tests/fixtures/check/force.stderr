@@ -1,0 +1,8 @@
+error[B0201]: `!` unwraps an optional, and this is `String`
+ --> check/force.bloom:2:41
+  |
+2 | func count(_ name: String) -> Int { name!.count }
+  |                                         ^ never `none`
+  |
+help: remove `!`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result

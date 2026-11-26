@@ -526,6 +526,7 @@ fn walk_expr(expr: &mut Expr, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
+        | ExprKind::Force(e)
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_expr(e, f, bind),
