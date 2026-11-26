@@ -3077,7 +3077,14 @@ impl<'o> Checker<'o> {
                 self.out.types.insert(expr.id, ty.clone());
                 ty
             }
-            _ => self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_)))),
+            _ => {
+                let ty = self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_))));
+                if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty() {
+                    self.narrowed_path(expr, ty)
+                } else {
+                    ty
+                }
+            }
         };
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));

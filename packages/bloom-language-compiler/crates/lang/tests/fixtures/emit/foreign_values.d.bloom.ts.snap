@@ -27,3 +27,8 @@ export declare function present(u: Author | undefined): number;
 export declare function pictured(u: Author): number;
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Player())`), or from TSX as `toElement(Player())`. */
 export declare const Player: () => ComposedView;
+export interface TipProps {
+  readonly tip: Author;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Tip())`), or from TSX as `toElement(Tip())`. */
+export declare const Tip: (props: TipProps) => ComposedView;
