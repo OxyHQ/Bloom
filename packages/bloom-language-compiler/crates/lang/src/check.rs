@@ -2741,8 +2741,12 @@ impl<'o> Checker<'o> {
             ExprKind::Ternary(cond, then, otherwise) => {
                 self.expr(cond, Some(&Ty::Bool));
                 let a = self.expr(then, expected);
-                let b = self
-                    .expr(otherwise, expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)));
+                // `c ? f : none` is `F?`: `none` is not held to the other branch's type.
+                let hint = match otherwise.kind {
+                    ExprKind::None => expected,
+                    _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
+                };
+                let b = self.expr(otherwise, hint);
                 self.join(&a, &b, expr.span)
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),
