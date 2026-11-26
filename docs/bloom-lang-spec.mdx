@@ -219,7 +219,9 @@ function type), generic arguments at call sites, empty collections from use. A l
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a
 local, parameter or prop `x` is present in the block, as TS narrows it: `if onEnd != none {
-onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`), and after a guard
+onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
+on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
+p.x : d`, `p == none ? d : p.x`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
 block.
 

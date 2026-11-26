@@ -42,3 +42,11 @@ pub fn shown(name: String?, bio: String?) -> String {
   let full = name != none && !name.isEmpty ? name : "?"
   "${full}: ${bio}"
 }
+
+// Present in the branch of `?:` that knows, and on the right of `||`.
+pub fn initial(name: String?, fallback: String) -> String {
+  let first = name != none ? name : fallback
+  let second = name == none ? fallback : name
+  let blank = name == none || name.isEmpty
+  blank ? first : second
+}

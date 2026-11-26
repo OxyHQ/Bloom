@@ -80,3 +80,10 @@ const full = ((name !== undefined) && (!(name.length === 0))) ? name : "?";
 return `${full}: ${bio}`;
 }
 
+export function initial(name: string | undefined, fallback: string): string {
+const first = (name !== undefined) ? name : fallback;
+const second = (name === undefined) ? fallback : name;
+const blank = (name === undefined) || (name.length === 0);
+return blank ? first : second;
+}
+
