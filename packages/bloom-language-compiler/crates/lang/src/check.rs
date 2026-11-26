@@ -178,8 +178,6 @@ pub struct ViewInfo {
 #[derive(Debug, Clone)]
 pub enum NameRes {
     Local(LocalId),
-    /// `none`-like prelude names are literals; these are values.
-    Prelude(&'static str),
 }
 
 #[derive(Default)]
@@ -220,14 +218,6 @@ impl CheckResult {
             .collect();
         out.sort_by_key(|(span, _)| (span.start, std::cmp::Reverse(span.end)));
         out
-    }
-
-    pub fn ty(&self, id: ExprId) -> &Ty {
-        self.types.get(&id).unwrap_or(&Ty::Unknown)
-    }
-
-    pub fn display(&self, ty: &Ty) -> String {
-        Display { ty, defs: &self.defs }.to_string()
     }
 }
 
@@ -1364,26 +1354,25 @@ impl<'o> Checker<'o> {
                 }
             }
         }
-        if let Some(expected) = expected {
-            if !discard
-                && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
-            {
-                let expected = expected.clone();
-                if !self.coerce(&Ty::Unit, &expected) {
-                    let at = stmts.last().map_or(span, |s| s.span);
-                    self.report(
-                        Diagnostic::error(
-                            "B0201",
-                            at,
-                            format!("this block gives no value; expected {}", self.show(&expected)),
-                        )
-                        .label("the last line is not an expression")
-                        .help("end the block with the value (the last expression is the result)")
-                        .spec("5-values-functions-and-closures"),
-                    );
-                }
-                return expected;
+        if let Some(expected) = expected
+            && !discard
+            && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
+        {
+            let expected = expected.clone();
+            if !self.coerce(&Ty::Unit, &expected) {
+                let at = stmts.last().map_or(span, |s| s.span);
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        at,
+                        format!("this block gives no value; expected {}", self.show(&expected)),
+                    )
+                    .label("the last line is not an expression")
+                    .help("end the block with the value (the last expression is the result)")
+                    .spec("5-values-functions-and-closures"),
+                );
             }
+            return expected;
         }
         if discard { Ty::Unit } else { ty }
     }
@@ -1838,11 +1827,11 @@ impl<'o> Checker<'o> {
             },
             Ty::Adt(def, args) if matches!(self.out.defs[*def].kind, DefKind::Enum(_)) => {
                 let d = self.out.defs[*def].clone();
-                if let Some(q) = qualifier {
-                    if q.name != d.name {
-                        self.pattern_mismatch(pattern, &format!("`{}`", q.name), ty);
-                        return None;
-                    }
+                if let Some(q) = qualifier
+                    && q.name != d.name
+                {
+                    self.pattern_mismatch(pattern, &format!("`{}`", q.name), ty);
+                    return None;
                 }
                 match d.variants().iter().find(|v| v.name == name.name) {
                     Some(v) => Some(v.payload.iter().map(|(_, t)| substitute(t, args)).collect()),
@@ -2462,17 +2451,6 @@ impl<'o> Checker<'o> {
         }
         match name {
             "ok" | "err" | "toast" | "navigate" | "sleep" | "Binding" => {
-                self.out.names.insert(
-                    expr.id,
-                    NameRes::Prelude(match name {
-                        "ok" => "ok",
-                        "err" => "err",
-                        "toast" => "toast",
-                        "navigate" => "navigate",
-                        "sleep" => "sleep",
-                        _ => "Binding",
-                    }),
-                );
                 self.report(
                     Diagnostic::error("B0208", expr.span, format!("`{name}` is called, not passed"))
                         .label("call it")
@@ -2902,34 +2880,34 @@ impl<'o> Checker<'o> {
 
     fn field(&mut self, expr: &Expr, object: &Expr, name: &Ident) -> Ty {
         // `Type.case` and `Task.signal`, before values.
-        if let ExprKind::Name(type_name) = &object.kind {
-            if self.lookup(type_name).is_none() {
-                if type_name == "Task" && name.name == "signal" {
-                    if !self.frames.iter().any(|f| f.task) {
-                        self.report(
-                            Diagnostic::error(
-                                "B0430",
-                                expr.span,
-                                "`Task.signal` is read outside a `.task { … }`",
-                            )
-                            .label("no task here")
-                            .help("read it inside `.task { … }` on the body")
-                            .spec("8-effects-tasks-and-concurrency"),
-                        );
-                    }
-                    self.out.fields.insert(expr.id, FieldRes::TaskSignal);
-                    return Ty::Foreign("AbortSignal".into());
+        if let ExprKind::Name(type_name) = &object.kind
+            && self.lookup(type_name).is_none()
+        {
+            if type_name == "Task" && name.name == "signal" {
+                if !self.frames.iter().any(|f| f.task) {
+                    self.report(
+                        Diagnostic::error(
+                            "B0430",
+                            expr.span,
+                            "`Task.signal` is read outside a `.task { … }`",
+                        )
+                        .label("no task here")
+                        .help("read it inside `.task { … }` on the body")
+                        .spec("8-effects-tasks-and-concurrency"),
+                    );
                 }
-                if let Some(TypeName::Def(def)) = self.type_names.get(type_name).cloned() {
-                    return self.enum_case_value(expr, def, name, Vec::new());
-                }
+                self.out.fields.insert(expr.id, FieldRes::TaskSignal);
+                return Ty::Foreign("AbortSignal".into());
+            }
+            if let Some(TypeName::Def(def)) = self.type_names.get(type_name).cloned() {
+                return self.enum_case_value(expr, def, name, Vec::new());
             }
         }
-        if let ExprKind::TypeApply { name: type_name, args } = &object.kind {
-            if let Some(TypeName::Def(def)) = self.type_names.get(&type_name.name).cloned() {
-                let args = args.iter().map(|a| self.resolve_type(a)).collect();
-                return self.enum_case_value(expr, def, name, args);
-            }
+        if let ExprKind::TypeApply { name: type_name, args } = &object.kind
+            && let Some(TypeName::Def(def)) = self.type_names.get(&type_name.name).cloned()
+        {
+            let args = args.iter().map(|a| self.resolve_type(a)).collect();
+            return self.enum_case_value(expr, def, name, args);
         }
         let ty = self.expr(object, None);
         self.member(expr, &ty, name, object.span)

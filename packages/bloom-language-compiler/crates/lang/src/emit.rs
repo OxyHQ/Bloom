@@ -690,10 +690,11 @@ impl<'a> Emitter<'a> {
                 (StmtKind::Expr(expr), true) => self.tail_expr(expr, &tail),
                 _ => self.stmt(stmt),
             }
-            if let Some(signal) = signal {
-                if stmt_awaits(stmt) && !last {
-                    self.push_stmt(Frag::of(format!("if ({signal}.aborted) return;")));
-                }
+            if let Some(signal) = signal
+                && stmt_awaits(stmt)
+                && !last
+            {
+                self.push_stmt(Frag::of(format!("if ({signal}.aborted) return;")));
             }
         }
     }
@@ -1794,11 +1795,11 @@ impl<'a> Emitter<'a> {
             let value = self.expr(&arg.value);
             given.insert(name, value);
         }
-        if let Some(trailing) = &call.trailing {
-            if let Some(name) = params.iter().rev().find(|p| !given.contains_key(*p)) {
-                let value = self.closure(trailing);
-                given.insert(name.clone(), value);
-            }
+        if let Some(trailing) = &call.trailing
+            && let Some(name) = params.iter().rev().find(|p| !given.contains_key(*p))
+        {
+            let value = self.closure(trailing);
+            given.insert(name.clone(), value);
         }
         for param in params {
             if let Some(value) = given.remove(param) {
@@ -2265,10 +2266,10 @@ impl<'a> Emitter<'a> {
                 Some(NameRes::Local(local)) => Some(*local),
                 _ => self.ck.bindings.get(&id).map(|(local, _)| *local),
             };
-            if let Some(local) = local.filter(|l| view.reactive.contains(l)) {
-                if !out.contains(&local) {
-                    out.push(local);
-                }
+            if let Some(local) = local.filter(|l| view.reactive.contains(l))
+                && !out.contains(&local)
+            {
+                out.push(local);
             }
         });
         out

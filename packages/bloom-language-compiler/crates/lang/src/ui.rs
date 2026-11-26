@@ -164,11 +164,12 @@ pub fn token_ok(set: &StrSet, token: &str) -> bool {
     if set.values.iter().any(|t| t == token) {
         return true;
     }
-    if set.token && (set.name == "color" || set.name == "ring") {
-        if let Some((role, opacity)) = token.split_once('/') {
-            return token_set("color").is_some_and(|roles| roles.contains(&role))
-                && token_set("opacity").is_some_and(|opacities| opacities.contains(&opacity));
-        }
+    if set.token
+        && (set.name == "color" || set.name == "ring")
+        && let Some((role, opacity)) = token.split_once('/')
+    {
+        return token_set("color").is_some_and(|roles| roles.contains(&role))
+            && token_set("opacity").is_some_and(|opacities| opacities.contains(&opacity));
     }
     false
 }
@@ -198,9 +199,4 @@ pub fn takers(modifier: &str) -> Vec<&'static str> {
         .filter(|node| node.modifiers.contains(&modifier))
         .flat_map(|node| node.constructors.iter().copied())
         .collect()
-}
-
-/// Every modifier name of the spec.
-pub fn all_modifiers() -> impl Iterator<Item = &'static str> {
-    MODIFIERS.iter().map(|(name, _)| *name)
 }

@@ -166,10 +166,10 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut diagnostic = Diagnostic::error("B0101", span, format!("expected {expected}, found {found}"))
             .label(format!("expected {expected} here"))
             .spec("3-grammar-ebnf");
-        if let Tok::Ident(name) = self.tok() {
-            if let Some(kw) = keyword_typo(name) {
-                diagnostic = diagnostic.help(format!("write `{kw}`")).fix(span, kw);
-            }
+        if let Tok::Ident(name) = self.tok()
+            && let Some(kw) = keyword_typo(name)
+        {
+            diagnostic = diagnostic.help(format!("write `{kw}`")).fix(span, kw);
         }
         self.error(diagnostic);
     }
@@ -458,10 +458,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                             "a module holds imports, structs, enums, types, fns, views and `let` constants",
                         )
                         .spec("3-grammar-ebnf");
-                if let Tok::Ident(name) = self.tok() {
-                    if let Some(kw) = keyword_typo(name) {
-                        diagnostic = diagnostic.help(format!("write `{kw}`")).fix(span, kw);
-                    }
+                if let Tok::Ident(name) = self.tok()
+                    && let Some(kw) = keyword_typo(name)
+                {
+                    diagnostic = diagnostic.help(format!("write `{kw}`")).fix(span, kw);
                 }
                 self.error(diagnostic);
                 return None;
@@ -1174,21 +1174,20 @@ impl<'s, 'i> Parser<'s, 'i> {
             let rhs =
                 if op == BinaryOp::Default { self.binary(prec, ctx) } else { self.binary(prec + 1, ctx) };
             // Comparisons do not chain: `a < b < c` says nothing clear.
-            if matches!(prec, 4 | 5) {
-                if let ExprKind::Binary(inner, _, _) = &lhs.kind {
-                    if inner.precedence() == prec {
-                        self.error(
-                            Diagnostic::error(
-                                "B0101",
-                                op_span,
-                                format!("`{}` cannot follow another comparison", op.text()),
-                            )
-                            .label("comparisons do not chain")
-                            .help("join two comparisons with `&&`: `a < b && b < c`")
-                            .spec("61-precedence-high-to-low"),
-                        );
-                    }
-                }
+            if matches!(prec, 4 | 5)
+                && let ExprKind::Binary(inner, _, _) = &lhs.kind
+                && inner.precedence() == prec
+            {
+                self.error(
+                    Diagnostic::error(
+                        "B0101",
+                        op_span,
+                        format!("`{}` cannot follow another comparison", op.text()),
+                    )
+                    .label("comparisons do not chain")
+                    .help("join two comparisons with `&&`: `a < b && b < c`")
+                    .spec("61-precedence-high-to-low"),
+                );
             }
             let span = lhs.span.to(rhs.span);
             lhs = self.expr_node(ExprKind::Binary(op, Box::new(lhs), Box::new(rhs)), span);
@@ -1345,8 +1344,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let was_panicking = self.panicking;
         self.skip_newlines();
         if matches!(self.tok(), Tok::Ident(_)) {
-            loop {
-                let Tok::Ident(_) = self.tok() else { break };
+            while let Tok::Ident(_) = self.tok() {
                 let name = self.ident("a parameter");
                 let ty = if self.at(P::Colon) {
                     self.bump();

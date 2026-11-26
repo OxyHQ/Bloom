@@ -14,7 +14,7 @@ use oxc_ast::ast::{
     TSTypeOperatorOperator, TSTypeParameterDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::SourceType;
 
 use crate::Options;
 use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Ty};
@@ -33,7 +33,7 @@ pub enum TsType {
     Unknown,
     Never,
     StrLit(String),
-    BoolLit(bool),
+    BoolLit,
     Array(Box<TsType>),
     Tuple(Vec<TsType>),
     Union(Vec<TsType>),
@@ -41,8 +41,8 @@ pub enum TsType {
     Ref(String, Vec<TsType>),
     Object(Vec<TsMember>),
     Fn(Box<TsFn>),
-    /// Anything else, by its text.
-    Other(String),
+    /// Anything else: foreign.
+    Other,
 }
 
 #[derive(Debug, Clone)]
@@ -129,18 +129,16 @@ fn summarise(path: &Path, text: &str) -> TsFile {
     };
     let parsed = Parser::new(&allocator, text, source_type).parse();
     let mut file = TsFile { path: path.to_path_buf(), tsx: name.ends_with(".tsx"), ..TsFile::default() };
-    let reader = Reader { text };
+    let reader = Reader;
     for statement in &parsed.program.body {
         reader.statement(statement, &mut file, false);
     }
     file
 }
 
-struct Reader<'t> {
-    text: &'t str,
-}
+struct Reader;
 
-impl Reader<'_> {
+impl Reader {
     fn statement(&self, statement: &Statement, file: &mut TsFile, exported: bool) {
         match statement {
             Statement::ImportDeclaration(import) => {
@@ -405,8 +403,8 @@ impl Reader<'_> {
                 TSLiteral::StringLiteral(s) => {
                     TsType::StrLit(s.value.as_str().unwrap_or_default().to_string())
                 }
-                TSLiteral::BooleanLiteral(b) => TsType::BoolLit(b.value),
-                _ => self.other(ty),
+                TSLiteral::BooleanLiteral(_) => TsType::BoolLit,
+                _ => self.other(),
             },
             TSType::TSArrayType(array) => TsType::Array(Box::new(self.ty(&array.element_type))),
             TSType::TSTypeOperatorType(operator) if operator.operator == TSTypeOperatorOperator::Readonly => {
@@ -418,11 +416,11 @@ impl Reader<'_> {
                 for element in &tuple.element_types {
                     match element {
                         TSTupleElement::TSOptionalType(_) | TSTupleElement::TSRestType(_) => {
-                            return self.other(ty);
+                            return self.other();
                         }
                         other => match other.as_ts_type() {
                             Some(t) => items.push(self.ty(t)),
-                            None => return self.other(ty),
+                            None => return self.other(),
                         },
                     }
                 }
@@ -439,10 +437,10 @@ impl Reader<'_> {
             }
             TSType::TSTypeLiteral(literal) => {
                 let members = self.members(&literal.members);
-                if let [TsMember { name, ty, .. }] = members.as_slice() {
-                    if name == "[index]" {
-                        return TsType::Ref("Record".into(), vec![TsType::String, ty.clone()]);
-                    }
+                if let [TsMember { name, ty, .. }] = members.as_slice()
+                    && name == "[index]"
+                {
+                    return TsType::Ref("Record".into(), vec![TsType::String, ty.clone()]);
                 }
                 TsType::Object(members)
             }
@@ -451,13 +449,12 @@ impl Reader<'_> {
                 &function.params,
                 Some(&function.return_type.type_annotation),
             ))),
-            _ => self.other(ty),
+            _ => self.other(),
         }
     }
 
-    fn other(&self, ty: &TSType) -> TsType {
-        let span = ty.span();
-        TsType::Other(self.text[span.start as usize..span.end as usize].to_string())
+    fn other(&self) -> TsType {
+        TsType::Other
     }
 }
 
@@ -543,10 +540,10 @@ fn in_package(dir: &Path, sub: &str) -> Option<PathBuf> {
     let manifest = std::fs::read_to_string(dir.join("package.json")).unwrap_or_default();
     if sub.is_empty() {
         for field in ["types", "typings"] {
-            if let Some(path) = json_field(&manifest, field) {
-                if let Some(found) = with_extensions(&dir.join(path)) {
-                    return Some(found);
-                }
+            if let Some(path) = json_field(&manifest, field)
+                && let Some(found) = with_extensions(&dir.join(path))
+            {
+                return Some(found);
             }
         }
         if let Some(found) = with_extensions(&dir.join("index")) {
@@ -556,12 +553,11 @@ fn in_package(dir: &Path, sub: &str) -> Option<PathBuf> {
     }
     // `exports["./sub"].types`, read without a JSON parser: the first `types` after the key.
     let key = format!("\"./{sub}\"");
-    if let Some(at) = manifest.find(&key) {
-        if let Some(path) = json_field(&manifest[at..], "types") {
-            if let Some(found) = with_extensions(&dir.join(path)) {
-                return Some(found);
-            }
-        }
+    if let Some(at) = manifest.find(&key)
+        && let Some(path) = json_field(&manifest[at..], "types")
+        && let Some(found) = with_extensions(&dir.join(path))
+    {
+        return Some(found);
     }
     with_extensions(&dir.join(sub))
 }
@@ -660,10 +656,9 @@ impl Mapper<'_> {
                 } else {
                     for star in file.stars.clone() {
                         if let Some(target) = resolve(&file.path, &star, self.options).and_then(|p| read(&p))
+                            && let Some(found) = self.export(&target, name, path, depth + 1)
                         {
-                            if let Some(found) = self.export(&target, name, path, depth + 1) {
-                                return Some(found);
-                            }
+                            return Some(found);
                         }
                     }
                     return None;
@@ -695,20 +690,14 @@ impl Mapper<'_> {
                 }
             }
             TsDecl::Var(Some(ty)) => {
-                if let TsType::Ref(reference, args) = &ty {
-                    if COMPONENT_TYPES.contains(&reference.as_str()) {
-                        let props = args.first().map_or(Ty::Unit, |p| {
-                            self.ty(
-                                file,
-                                p,
-                                &Vec::new(),
-                                &format!("React.ComponentProps<typeof {path}>"),
-                                depth,
-                            )
-                        });
-                        mapped.component = Some(props);
-                        return Some(mapped);
-                    }
+                if let TsType::Ref(reference, args) = &ty
+                    && COMPONENT_TYPES.contains(&reference.as_str())
+                {
+                    let props = args.first().map_or(Ty::Unit, |p| {
+                        self.ty(file, p, &Vec::new(), &format!("React.ComponentProps<typeof {path}>"), depth)
+                    });
+                    mapped.component = Some(props);
+                    return Some(mapped);
                 }
                 mapped.value = Some(self.ty(file, &ty, &Vec::new(), &format!("typeof {path}"), depth));
             }
@@ -769,7 +758,7 @@ impl Mapper<'_> {
             TsType::Boolean => Ty::Bool,
             TsType::Void | TsType::Undefined => Ty::Unit,
             TsType::Never => Ty::Never,
-            TsType::BoolLit(_) => Ty::Bool,
+            TsType::BoolLit => Ty::Bool,
             TsType::StrLit(value) => Ty::Strings(Rc::new(StrSet {
                 name: format!("\"{value}\""),
                 values: vec![value.clone()],
@@ -789,7 +778,7 @@ impl Mapper<'_> {
             TsType::Fn(function) => self.function(file, function, scope, path, depth),
             TsType::Object(members) => self.object(file, members, scope, path, "{…}", depth),
             TsType::Ref(name, args) => self.reference(file, name, args, scope, path, depth),
-            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other(_) => Ty::Foreign(path.into()),
+            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other => Ty::Foreign(path.into()),
         }
     }
 
@@ -814,7 +803,7 @@ impl Mapper<'_> {
                 .collect();
             let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
             Ty::Strings(Rc::new(StrSet { name, values, token: false }))
-        } else if rest.iter().all(|m| matches!(m, TsType::BoolLit(_) | TsType::Boolean)) && !rest.is_empty() {
+        } else if rest.iter().all(|m| matches!(m, TsType::BoolLit | TsType::Boolean)) && !rest.is_empty() {
             Ty::Bool
         } else if let [only] = rest.as_slice() {
             self.ty(file, only, scope, &inner_path, depth)
@@ -871,14 +860,13 @@ impl Mapper<'_> {
             let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
             return self.named(file, name, &mapped, path, depth + 1);
         }
-        if let Some((specifier, imported)) = file.imports.get(name).cloned() {
-            if let Some(target) = resolve(&file.path, &specifier, self.options).and_then(|p| read(&p)) {
-                if let Some(local) = exported_local(&target, &imported) {
-                    let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
-                    let (target, local) = local;
-                    return self.named(&target, &local, &mapped, path, depth + 1);
-                }
-            }
+        if let Some((specifier, imported)) = file.imports.get(name).cloned()
+            && let Some(target) = resolve(&file.path, &specifier, self.options).and_then(|p| read(&p))
+            && let Some(local) = exported_local(&target, &imported)
+        {
+            let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
+            let (target, local) = local;
+            return self.named(&target, &local, &mapped, path, depth + 1);
         }
         Ty::Foreign(path.into())
     }
@@ -889,10 +877,10 @@ impl Mapper<'_> {
             return Ty::Foreign(path.into());
         }
         let key = (file.path.clone(), name.to_string());
-        if args.is_empty() {
-            if let Some(ty) = self.named.get(&key) {
-                return ty.clone();
-            }
+        if args.is_empty()
+            && let Some(ty) = self.named.get(&key)
+        {
+            return ty.clone();
         }
         let Some(decl) = file.decls.get(name).cloned() else { return Ty::Foreign(path.into()) };
         let ty = match decl {
@@ -902,13 +890,12 @@ impl Mapper<'_> {
                 }
                 let mut all = Vec::new();
                 for parent in &extends {
-                    if let TsType::Ref(parent_name, _) = parent {
-                        if let Some(TsDecl::Interface { members: inherited, .. }) =
+                    if let TsType::Ref(parent_name, _) = parent
+                        && let Some(TsDecl::Interface { members: inherited, .. }) =
                             file.decls.get(parent_name)
-                        {
-                            all.extend(inherited.iter().cloned());
-                            continue;
-                        }
+                    {
+                        all.extend(inherited.iter().cloned());
+                        continue;
                     }
                     return Ty::Foreign(path.into());
                 }
