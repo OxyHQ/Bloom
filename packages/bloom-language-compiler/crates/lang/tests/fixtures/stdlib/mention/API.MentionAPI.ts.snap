@@ -1,0 +1,76 @@
+import { type TaskSignal, isCancelled } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { Error$localizedDescription } from "../../.bloom/std/Bloom/Core.bloom";
+import { type HTTPClient, Error$httpBody, Error$httpStatus, HTTPClient$adding, HTTPClient$get, HTTPClient$perform, HTTPClient$timeout } from "../../.bloom/std/Bloom/HTTP.bloom";
+import { type Codec, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, jsonField, jsonObject, JSON$$decode } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type Locale, Locale$$get$current } from "../../.bloom/std/Bloom/Localization.bloom";
+import { type Logger, Logger$warning } from "../../.bloom/std/Bloom/Logger.bloom";
+import { type Duration, Duration$$seconds } from "../../.bloom/std/Bloom/Time.bloom";
+import { type URL } from "../../.bloom/std/Bloom/URL.bloom";
+
+export const log = { subsystem: "mention", category: "api" };
+
+export interface ErrorBody {
+  readonly message: string | undefined;
+  readonly code: string | undefined;
+  readonly error: string | undefined;
+}
+
+export function ErrorBody$$decode(value: unknown, at: string): ErrorBody {
+return { message: Optional$$decode(jsonField(value, "message", at), "ErrorBody.message", String$$decode), code: Optional$$decode(jsonField(value, "code", at), "ErrorBody.code", String$$decode), error: Optional$$decode(jsonField(value, "error", at), "ErrorBody.error", String$$decode) };
+}
+
+export function ErrorBody$$encode(value: ErrorBody): unknown {
+return jsonObject({ "message": Optional$$encode(value.message, String$$encode), "code": Optional$$encode(value.code, String$$encode), "error": Optional$$encode(value.error, String$$encode) });
+}
+
+export const ErrorBody$$self: Codec<ErrorBody> = { decode: ErrorBody$$decode, encode: ErrorBody$$encode };
+
+export interface APIFailure {
+  readonly status: number | undefined;
+  readonly code: string;
+  readonly message: string;
+}
+
+export interface MentionAPI {
+  readonly http: HTTPClient;
+}
+
+export function MentionAPI$$make(baseURL: URL, token: string | undefined, language: Locale = Locale$$get$current()): MentionAPI {
+const base = HTTPClient$adding(HTTPClient$timeout({ headers: {}, timeoutSeconds: 30, baseURL: baseURL }, Duration$$seconds(15.0)), "Accept-Language", language.identifier);
+if (!(token !== undefined)) {
+return { http: base };
+}
+return { http: HTTPClient$adding(base, "Authorization", `Bearer ${token}`) };
+}
+
+export async function MentionAPI$get<T>(self: MentionAPI, path: string, codec: Codec<T>, query: Readonly<Record<string, string>> = {}, cancellation: AbortSignal | undefined = undefined): Promise<T> {
+return await (HTTPClient$get(self.http, path, codec, query, cancellation));
+}
+
+export async function MentionAPI$post(self: MentionAPI, path: string, body: unknown | undefined = undefined): Promise<void> {
+await (HTTPClient$perform(self.http, "post", path, body));
+}
+
+export async function MentionAPI$delete(self: MentionAPI, path: string): Promise<void> {
+await (HTTPClient$perform(self.http, "delete", path));
+}
+
+export function normalized(error: Error): APIFailure {
+if (isCancelled(error)) {
+return { status: undefined, code: "CANCELLED", message: "The request was cancelled" };
+}
+if (!(Error$httpStatus(error) !== undefined)) {
+Logger$warning(log, `network failure: ${Error$localizedDescription(error)}`);
+return { status: undefined, code: "NETWORK", message: Error$localizedDescription(error) };
+}
+const body = (() => {
+try {
+return JSON$$decode(ErrorBody$$self, Error$httpBody(error) ?? "{}");
+} catch {
+return undefined;
+}
+})();
+const message = body?.message ?? (body?.error ?? `Request failed with status ${Error$httpStatus(error)}`);
+return { status: Error$httpStatus(error), code: body?.code ?? `HTTP_${Error$httpStatus(error)}`, message: message };
+}
+

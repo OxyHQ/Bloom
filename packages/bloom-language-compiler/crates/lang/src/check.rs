@@ -724,6 +724,19 @@ impl<'o> Checker<'o> {
         found
     }
 
+    /// One `.bloom` declaration reached through two imports (a module's own and another
+    /// module's signature that names it): each import numbers its types anew.
+    fn same_declaration(&self, a: DefId, b: DefId) -> bool {
+        let (x, y) = (&self.out.defs[a], &self.out.defs[b]);
+        let bloom = |o: &Origin| matches!(o, Origin::Bloom { .. } | Origin::Local);
+        x.name == y.name
+            && x.generics.len() == y.generics.len()
+            && bloom(&x.origin)
+            && bloom(&y.origin)
+            && matches!(x.origin, Origin::Bloom { .. }) | matches!(y.origin, Origin::Bloom { .. })
+            && std::mem::discriminant(&x.kind) == std::mem::discriminant(&y.kind)
+    }
+
     fn unify(&mut self, a: &Ty, b: &Ty) -> bool {
         let a = self.resolve(a);
         let b = self.resolve(b);
@@ -753,7 +766,9 @@ impl<'o> Checker<'o> {
                 x.len() == y.len() && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
             }
             (Ty::Adt(d1, x), Ty::Adt(d2, y)) => {
-                d1 == d2 && x.len() == y.len() && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
+                (d1 == d2 || self.same_declaration(*d1, *d2))
+                    && x.len() == y.len()
+                    && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
             }
             (Ty::Strings(x), Ty::Strings(y)) => x.name == y.name || x.values == y.values,
             (Ty::Fn(f), Ty::Fn(g)) => {
@@ -2271,10 +2286,10 @@ impl<'o> Checker<'o> {
 
     /// Another module's `pub` types and signatures, for an import.
     fn declare_signatures(&mut self, file: &File, specifier: &str) {
+        // Its imports name the types its signatures use: `.bloom` ones too (their
+        // signatures are cached; a cycle reads as an unknown type).
         for import in &file.imports {
-            if !import.source.ends_with(".bloom") {
-                self.import(import);
-            }
+            self.import(import);
         }
         let first = self.out.defs.len();
         let no_generics: Vec<Ident> = Vec::new();
@@ -5322,6 +5337,21 @@ struct Signatures {
 }
 
 thread_local! {
+    /// The `.bloom` modules whose signatures are being read (an import cycle stops there).
+    static READING: std::cell::RefCell<std::collections::BTreeSet<PathBuf>> =
+        const { std::cell::RefCell::new(std::collections::BTreeSet::new()) };
+}
+
+/// Marks a module's signatures as read when dropped.
+struct Reading(PathBuf);
+
+impl Drop for Reading {
+    fn drop(&mut self) {
+        READING.with(|r| r.borrow_mut().remove(&self.0));
+    }
+}
+
+thread_local! {
     /// Imported `.bloom` modules, by path and the specifier their types are imported by.
     /// Never dropped: see [`ts::ThreadCache`].
     static MODULES: ts::ThreadCache<HashMap<(PathBuf, String), Rc<Signatures>>> =
@@ -5349,7 +5379,12 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         sig.checked.set(epoch);
         return Some(sig);
     }
+    if READING.with(|r| r.borrow().contains(path)) {
+        return None;
+    }
     let source = std::fs::read_to_string(path).ok()?;
+    READING.with(|r| r.borrow_mut().insert(path.to_path_buf()));
+    let _reading = Reading(path.to_path_buf());
     let (mut file, _, _) = crate::parser::parse(&source);
     crate::extensions::lower(&mut file);
     // Its module imports, as the names its signatures use (`crate::modules`).

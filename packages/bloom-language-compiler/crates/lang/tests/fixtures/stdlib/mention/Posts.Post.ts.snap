@@ -1,0 +1,107 @@
+import type { RegexMatch } from "../../.bloom/std/Bloom/Regex.bloom";
+import { uniqued } from "../../.bloom/std/Bloom/Core.bloom";
+import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Int$$decode, Int$$encode, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, URL$$decode, URL$$encode, decodeCase, encodeCase, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type Regex, Regex$matches, RegexMatch$group } from "../../.bloom/std/Bloom/Regex.bloom";
+import { type Date, Date$$get$now, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
+import { type URL } from "../../.bloom/std/Bloom/URL.bloom";
+function $compact<T>(items: readonly (T | undefined)[]): readonly T[] {
+  return items.filter((item): item is T => item !== undefined);
+}
+
+export interface Author {
+  readonly id: string;
+  readonly username: string;
+  readonly name: string;
+  readonly avatarURL: URL | undefined;
+  readonly isVerified: boolean;
+}
+
+export function Author$$decode(value: unknown, at: string): Author {
+return { id: String$$decode(jsonField(value, "id", at), "Author.id"), username: String$$decode(jsonField(value, "username", at), "Author.username"), name: String$$decode(jsonField(value, "name", at), "Author.name"), avatarURL: Optional$$decode(jsonField(value, "avatar", at), "Author.avatarURL", URL$$decode), isVerified: (Optional$$decode(jsonField(value, "isVerified", at), "Author.isVerified", Bool$$decode)) ?? false };
+}
+
+export function Author$$encode(value: Author): unknown {
+return jsonObject({ "id": String$$encode(value.id), "username": String$$encode(value.username), "name": String$$encode(value.name), "avatar": Optional$$encode(value.avatarURL, URL$$encode), "isVerified": Bool$$encode(value.isVerified) });
+}
+
+export const Author$$self: Codec<Author> = { decode: Author$$decode, encode: Author$$encode };
+
+export type PostVisibility = "everyone" | "followers" | "mentioned";
+
+export function PostVisibility$$decode(value: unknown, at: string): PostVisibility {
+return decodeCase(value, at, ["everyone", "followers", "mentioned"], "one of \"everyone\", \"followers\", \"mentioned\"");
+}
+
+export function PostVisibility$$encode(value: PostVisibility): unknown {
+return encodeCase(value);
+}
+
+export const PostVisibility$$self: Codec<PostVisibility> = { decode: PostVisibility$$decode, encode: PostVisibility$$encode };
+
+export interface PostStats {
+  readonly likes: number;
+  readonly boosts: number;
+  readonly replies: number;
+}
+
+export function PostStats$$decode(value: unknown, at: string): PostStats {
+return { likes: (Optional$$decode(jsonField(value, "likes", at), "PostStats.likes", Int$$decode)) ?? 0, boosts: (Optional$$decode(jsonField(value, "boosts", at), "PostStats.boosts", Int$$decode)) ?? 0, replies: (Optional$$decode(jsonField(value, "replies", at), "PostStats.replies", Int$$decode)) ?? 0 };
+}
+
+export function PostStats$$encode(value: PostStats): unknown {
+return jsonObject({ "likes": Int$$encode(value.likes), "boosts": Int$$encode(value.boosts), "replies": Int$$encode(value.replies) });
+}
+
+export const PostStats$$self: Codec<PostStats> = { decode: PostStats$$decode, encode: PostStats$$encode };
+
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+  readonly author: Author;
+  readonly createdAt: Date;
+  readonly stats: PostStats;
+  readonly isLiked: boolean;
+  readonly visibility: PostVisibility;
+  readonly hashtags: readonly string[];
+}
+
+export function Post$$decode(value: unknown, at: string): Post {
+return { id: String$$decode(jsonField(value, "id", at), "Post.id"), text: String$$decode(jsonField(value, "text", at), "Post.text"), author: Author$$decode(jsonField(value, "author", at), "Post.author"), createdAt: Date$$decode(jsonField(value, "createdAt", at), "Post.createdAt"), stats: (Optional$$decode(jsonField(value, "stats", at), "Post.stats", PostStats$$decode)) ?? { likes: 0, boosts: 0, replies: 0 }, isLiked: (Optional$$decode(jsonField(value, "isLiked", at), "Post.isLiked", Bool$$decode)) ?? false, visibility: PostVisibility$$decode(jsonField(value, "visibility", at), "Post.visibility"), hashtags: Array$$decode(jsonField(value, "hashtags", at), "Post.hashtags", String$$decode) };
+}
+
+export function Post$$encode(value: Post): unknown {
+return jsonObject({ "id": String$$encode(value.id), "text": String$$encode(value.text), "author": Author$$encode(value.author), "createdAt": Date$$encode(value.createdAt), "stats": PostStats$$encode(value.stats), "isLiked": Bool$$encode(value.isLiked), "visibility": PostVisibility$$encode(value.visibility), "hashtags": Array$$encode(value.hashtags, String$$encode) });
+}
+
+export const Post$$self: Codec<Post> = { decode: Post$$decode, encode: Post$$encode };
+
+export interface FeedPage {
+  readonly items: readonly Post[];
+  readonly nextCursor: string | undefined;
+  readonly hasMore: boolean;
+}
+
+export function FeedPage$$decode(value: unknown, at: string): FeedPage {
+return { items: Array$$decode(jsonField(value, "items", at), "FeedPage.items", Post$$decode), nextCursor: Optional$$decode(jsonField(value, "nextCursor", at), "FeedPage.nextCursor", String$$decode), hasMore: (Optional$$decode(jsonField(value, "hasMore", at), "FeedPage.hasMore", Bool$$decode)) ?? false };
+}
+
+export function FeedPage$$encode(value: FeedPage): unknown {
+return jsonObject({ "items": Array$$encode(value.items, Post$$encode), "nextCursor": Optional$$encode(value.nextCursor, String$$encode), "hasMore": Bool$$encode(value.hasMore) });
+}
+
+export const FeedPage$$self: Codec<FeedPage> = { decode: FeedPage$$decode, encode: FeedPage$$encode };
+
+export function Post$liked(self: Post, on: boolean): Post {
+const delta = (on === self.isLiked) ? 0 : (on ? 1 : (-1));
+const stats = { likes: self.stats.likes + delta, boosts: self.stats.boosts, replies: self.stats.replies };
+return { id: self.id, text: self.text, author: self.author, createdAt: self.createdAt, stats: stats, isLiked: on, visibility: self.visibility, hashtags: self.hashtags };
+}
+
+export function Post$age(self: Post, now: Date = Date$$get$now()): string {
+return Date$formatted(self.createdAt, "abbreviated", undefined, now);
+}
+
+export function Post$mentions(self: Post): readonly string[] {
+return uniqued($compact(Regex$matches({ flags: "", pattern: "@([A-Za-z0-9_]+)" }, self.text).map(($0: RegexMatch) => RegexMatch$group($0, 1))));
+}
+

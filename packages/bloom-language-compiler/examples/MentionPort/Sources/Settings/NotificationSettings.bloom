@@ -1,0 +1,113 @@
+// Mention's Settings → Notifications (app/(app)/settings/notifications.tsx): the
+// preferences cached on the device (KeyValueStore, as JSON), synced with the server,
+// and their titles localized against Resources/Localizable at compile time.
+
+import API
+
+/// One notification a person can turn off.
+public enum PrefKey: Codable {
+  case likes
+  case boosts
+  case replies
+  case mentions
+  case follows
+}
+
+/// Every key, in the screen's order.
+public let allPrefKeys: [PrefKey] = [.likes, .boosts, .replies, .mentions, .follows]
+
+/// The preferences: every one on until turned off.
+public struct NotificationPrefs: Codable, Equatable {
+  public var likes: Bool = true
+  public var boosts: Bool = true
+  public var replies: Bool = true
+  public var mentions: Bool = true
+  public var follows: Bool = true
+}
+
+extension PrefKey {
+  /// The row's title, in the reader's language.
+  public var title: String {
+    switch self {
+    case .likes:
+      String(localized: "settings.notifications.likes")
+    case .boosts:
+      String(localized: "settings.notifications.boosts")
+    case .replies:
+      String(localized: "settings.notifications.replies")
+    case .mentions:
+      String(localized: "settings.notifications.mentions")
+    case .follows:
+      String(localized: "settings.notifications.follows")
+    }
+  }
+}
+
+extension NotificationPrefs {
+  /// Whether `key` is on.
+  public func isOn(_ key: PrefKey) -> Bool {
+    switch key {
+    case .likes:
+      self.likes
+    case .boosts:
+      self.boosts
+    case .replies:
+      self.replies
+    case .mentions:
+      self.mentions
+    case .follows:
+      self.follows
+    }
+  }
+
+  /// The preferences with `key` set to `on`.
+  public func setting(_ key: PrefKey, _ on: Bool) -> NotificationPrefs {
+    NotificationPrefs(
+      likes: key == .likes ? on : self.likes,
+      boosts: key == .boosts ? on : self.boosts,
+      replies: key == .replies ? on : self.replies,
+      mentions: key == .mentions ? on : self.mentions,
+      follows: key == .follows ? on : self.follows,
+    )
+  }
+}
+
+/// Where the preferences live: the device's cache and the server.
+public struct SettingsStore: Equatable {
+  public let api: MentionAPI
+  public var cache: KeyValueStore = KeyValueStore(name: "mention.settings")
+}
+
+let cacheKey = "notifications"
+
+extension SettingsStore {
+  /// The cached preferences, at once (the defaults before the first sync).
+  public func cached() -> NotificationPrefs {
+    self.cache.value(NotificationPrefs.self, for: cacheKey) ?? NotificationPrefs()
+  }
+
+  /// `GET /settings/notifications`, cached; the cached ones when the server cannot answer.
+  public func load(cancellation: TaskSignal? = none) async -> NotificationPrefs {
+    do {
+      let prefs = try await self.api.get("settings/notifications", as: NotificationPrefs.self, cancellation: cancellation)
+      self.cache.setValue(NotificationPrefs.self, prefs, for: cacheKey)
+      return prefs
+    } catch {
+      return self.cached()
+    }
+  }
+
+  /// Sets `key` to `on`: cached at once, then `PUT` to the server; the previous
+  /// preferences back (cached again) when the server refuses.
+  public func set(_ prefs: NotificationPrefs, _ key: PrefKey, _ on: Bool) async -> NotificationPrefs {
+    let next = prefs.setting(key, on)
+    self.cache.setValue(NotificationPrefs.self, next, for: cacheKey)
+    do {
+      try await self.api.http.perform(.put, "settings/notifications", json: NotificationPrefs.encode(next))
+      return next
+    } catch {
+      self.cache.setValue(NotificationPrefs.self, prefs, for: cacheKey)
+      return prefs
+    }
+  }
+}

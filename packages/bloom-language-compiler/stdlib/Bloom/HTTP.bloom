@@ -19,6 +19,8 @@ extern module "./runtime" {
   ) async throws -> HTTPReply
   private func stringifyJSON(_ value: JSONValue, _ indent: Int) -> String
   private func parseJSON(_ text: String) -> JSONValue
+  private func errorStatus(_ error: Error) -> Int?
+  private func errorBody(_ error: Error) -> String?
 }
 
 /// What the runtime answers for a request.
@@ -83,18 +85,19 @@ extension HTTPResponse {
 public struct HTTPClient: Equatable {
   public let baseURL: URL
   public var headers: [String: String] = [:]
-  public var timeout: Duration = Duration(seconds: 30.0)
+  /// Each request's timeout, in seconds (`timeout(_:)` sets it from a `Duration`).
+  public var timeoutSeconds: Double = 30.0
 }
 
 extension HTTPClient {
   /// The client with one more header on every request.
   public func adding(header name: String, value: String) -> HTTPClient {
-    HTTPClient(baseURL: self.baseURL, headers: self.headers.setting(name, value), timeout: self.timeout)
+    HTTPClient(baseURL: self.baseURL, headers: self.headers.setting(name, value), timeoutSeconds: self.timeoutSeconds)
   }
 
   /// The client with this timeout per request.
   public func timeout(_ duration: Duration) -> HTTPClient {
-    HTTPClient(baseURL: self.baseURL, headers: self.headers, timeout: duration)
+    HTTPClient(baseURL: self.baseURL, headers: self.headers, timeoutSeconds: duration.seconds)
   }
 
   /// The URL of `path` (relative to `baseURL`) with `query`.
@@ -113,7 +116,7 @@ extension HTTPClient {
     let target = self.url(path, query: query)
     let headers = body == none ? self.headers : self.headers.setting("content-type", "application/json")
     let text = body.map { stringifyJSON($0, 0) }
-    let reply = try await request(verb(method), target.absoluteString, headers, text, cancellation, self.timeout.milliseconds)
+    let reply = try await request(verb(method), target.absoluteString, headers, text, cancellation, self.timeoutSeconds * 1000.0)
     let response = HTTPResponse(status: reply.status, headers: reply.headers, text: reply.text)
     if !response.isSuccess {
       throw HTTPError(
@@ -158,4 +161,13 @@ extension HTTPClient {
   ) async throws {
     let _ = try await self.send(method, path, json: body, cancellation: cancellation)
   }
+}
+
+extension Error {
+  /// The status, when this is an `HTTPError` (a response outside 200–299); else `none`
+  /// (a network failure, a timeout, a cancellation).
+  public var httpStatus: Int? { errorStatus(self) }
+
+  /// The response's body, when this is an `HTTPError`.
+  public var httpBody: String? { errorBody(self) }
 }

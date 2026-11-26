@@ -1,0 +1,95 @@
+// Mention's home feed (services/feedService.ts, stores/feedQueryCache.ts): pages
+// loaded through the API, merged without duplicates, and an optimistic like that
+// rolls back when the server refuses it.
+
+import API
+import Posts
+
+let log = Logger(subsystem: "mention", category: "feed")
+
+/// The feed as a screen shows it.
+public struct FeedState: Equatable {
+  public var posts: [Post] = []
+  public var cursor: String? = none
+  public var hasMore: Bool = true
+  public var isLoading: Bool = false
+  public var failure: APIFailure? = none
+  public var loadedAt: Date? = none
+}
+
+extension FeedState {
+  /// The state with `page` after its posts (or in place of them, on a refresh), each post once.
+  public func merging(_ page: FeedPage, refresh: Bool, at now: Date) -> FeedState {
+    let posts = refresh ? page.items : self.posts.appendingAll(page.items).uniqued(by: { $0.id })
+    return FeedState(
+      posts: posts,
+      cursor: page.nextCursor,
+      hasMore: page.hasMore && page.nextCursor != none,
+      isLoading: false,
+      failure: none,
+      loadedAt: now,
+    )
+  }
+
+  /// The state with the post `id` replaced by `update` of it.
+  public func updating(_ id: String, _ update: (Post) -> Post) -> FeedState {
+    FeedState(
+      posts: self.posts.updating(where: { $0.id == id }, update),
+      cursor: self.cursor,
+      hasMore: self.hasMore,
+      isLoading: self.isLoading,
+      failure: self.failure,
+      loadedAt: self.loadedAt,
+    )
+  }
+
+  /// Whether the feed is older than `maxAge` (a refresh is due when the screen returns).
+  public func isStale(now: Date, maxAge: Duration = Duration.minutes(5.0)) -> Bool {
+    guard let loadedAt = self.loadedAt else { return true }
+    return loadedAt.distance(to: now).seconds > maxAge.seconds
+  }
+}
+
+/// `GET /feeds/home`: the first page (`refresh`) or the one after `state`'s cursor.
+public func loadFeed(
+  _ api: MentionAPI,
+  _ state: FeedState,
+  refresh: Bool,
+  cancellation: TaskSignal? = none,
+) async -> FeedState {
+  let query: [String: String] = refresh ? [:] : ["cursor": state.cursor ?? ""]
+  do {
+    let page = try await api.get("feeds/home", as: FeedPage.self, query: query, cancellation: cancellation)
+    log.debug("loaded \(page.items.count) posts")
+    return state.merging(page, refresh: refresh, at: Date.now)
+  } catch {
+    return FeedState(
+      posts: state.posts,
+      cursor: state.cursor,
+      hasMore: state.hasMore,
+      isLoading: false,
+      failure: normalized(error),
+      loadedAt: state.loadedAt,
+    )
+  }
+}
+
+/// The feed with `post` (un)liked before the server answers.
+public func optimisticLike(_ state: FeedState, _ post: Post) -> FeedState {
+  state.updating(post.id, { $0.liked(!post.isLiked) })
+}
+
+/// `POST` / `DELETE /posts/:id/like`; the post as it was when the server refuses.
+public func sendLike(_ api: MentionAPI, _ state: FeedState, _ post: Post) async -> FeedState {
+  do {
+    if post.isLiked {
+      try await api.delete("posts/\(percentEncoded(post.id))/like")
+    } else {
+      try await api.post("posts/\(percentEncoded(post.id))/like")
+    }
+    return state
+  } catch {
+    log.error("like failed: \(normalized(error).message)")
+    return state.updating(post.id, { _ in post })
+  }
+}

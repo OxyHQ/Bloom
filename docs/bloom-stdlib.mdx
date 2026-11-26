@@ -72,7 +72,7 @@ One user-perceived character: an extended grapheme cluster, as a string.
 - `func replacing(at index: Int, with value: Element) -> [Element]`: The array with the element at `index` replaced.
 - `func updating(where predicate: (Element) -> Bool, _ update: (Element) -> Element) -> [Element]`: The array with every element `predicate` accepts replaced by `update` of it.
 - `func removingAll(where predicate: (Element) -> Bool) -> [Element]`: The array without the elements `predicate` accepts.
-- `func appending(contentsOf other: [Element]) -> [Element]`: The array with `other`'s elements after its own.
+- `func appendingAll(_ other: [Element]) -> [Element]`: The array with `other`'s elements after its own.
 - `func windows(of n: Int) -> [[Element]]`: The elements in `n`-element windows, overlapping.
 
 ### `func uniqued(_ xs: [String]) -> [String]`
@@ -570,7 +570,7 @@ A client for one server: its base URL, the headers every request sends and a tim
 
 - `let baseURL: URL`
 - `var headers: [String: String]`
-- `var timeout: Duration`
+- `var timeoutSeconds: Double`: Each request's timeout, in seconds (`timeout(_:)` sets it from a `Duration`).
 
 ### `extension HTTPClient`
 
@@ -581,6 +581,11 @@ A client for one server: its base URL, the headers every request sends and a tim
 - `func get<T>(_ path: String, as codec: Codec<T>, query: [String: String] = [:], cancellation: TaskSignal? = none) async throws -> T`: `GET path`, its body decoded as a `T`.
 - `func post<B, T>(_ path: String, body: B, encoding: Codec<B>, as codec: Codec<T>, cancellation: TaskSignal? = none) async throws -> T`: `POST path` with `body` (encoded by `encoding`), the answer decoded as a `T`.
 - `func perform(_ method: HTTPMethod, _ path: String, json body: JSONValue? = none, cancellation: TaskSignal? = none) async throws`: `method path` with a JSON body, the answer ignored (`POST /posts/:id/like`).
+
+### `extension Error`
+
+- `var httpStatus: Int?`: The status, when this is an `HTTPError` (a response outside 200–299); else `none` (a network failure, a timeout, a cancellation).
+- `var httpBody: String?`: The response's body, when this is an `HTTPError`.
 
 ## Storage
 

@@ -1,0 +1,71 @@
+// Mention's API client (packages/frontend/utils/api.ts and apiError.ts), on the
+// standard library alone: HTTPClient, URL, Duration, Locale, Codable and Logger.
+
+let log = Logger(subsystem: "mention", category: "api")
+
+/// The API's error body: `{ "message": …, "code": … }` (either may be absent).
+public struct ErrorBody: Codable, Equatable {
+  public let message: String?
+  public let code: String?
+  public let error: String?
+}
+
+/// A failure as screens show it: the status when the server answered, a stable code
+/// and the best message available.
+public struct APIFailure: Equatable {
+  public let status: Int?
+  public let code: String
+  public let message: String
+}
+
+/// The client: Mention's base URL, the reader's language and the session's token.
+public struct MentionAPI: Equatable {
+  public let http: HTTPClient
+}
+
+extension MentionAPI {
+  /// A client for `baseURL` that sends `token` and the reader's language on every request
+  /// (the backend picks a multilingual post's body by `Accept-Language`).
+  public static func make(baseURL: URL, token: String?, language: Locale = Locale.current) -> MentionAPI {
+    let base = HTTPClient(baseURL: baseURL)
+      .timeout(Duration.seconds(15.0))
+      .adding(header: "Accept-Language", value: language.identifier)
+    guard let token = token else { return MentionAPI(http: base) }
+    return MentionAPI(http: base.adding(header: "Authorization", value: "Bearer \(token)"))
+  }
+
+  /// `GET path`, decoded as a `T`.
+  public func get<T>(
+    _ path: String,
+    as codec: Codec<T>,
+    query: [String: String] = [:],
+    cancellation: TaskSignal? = none,
+  ) async throws -> T {
+    try await self.http.get(path, as: codec, query: query, cancellation: cancellation)
+  }
+
+  /// `POST path` with a JSON body; the answer ignored.
+  public func post(_ path: String, json body: JSONValue? = none) async throws {
+    try await self.http.perform(.post, path, json: body)
+  }
+
+  /// `DELETE path`.
+  public func delete(_ path: String) async throws {
+    try await self.http.perform(.delete, path)
+  }
+}
+
+/// `error` as a screen shows it (`normalizeApiError`): the server's message and code
+/// when it sent them, else a transport code.
+public func normalized(_ error: Error) -> APIFailure {
+  if isCancelled(error) {
+    return APIFailure(status: none, code: "CANCELLED", message: "The request was cancelled")
+  }
+  guard let status = error.httpStatus else {
+    log.warning("network failure: \(error.localizedDescription)")
+    return APIFailure(status: none, code: "NETWORK", message: error.localizedDescription)
+  }
+  let body = try? JSON.decode(ErrorBody.self, from: error.httpBody ?? "{}")
+  let message = body?.message ?? body?.error ?? "Request failed with status \(status)"
+  return APIFailure(status: status, code: body?.code ?? "HTTP_\(status)", message: message)
+}

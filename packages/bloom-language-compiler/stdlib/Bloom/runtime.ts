@@ -409,6 +409,18 @@ export async function request(
   }
 }
 
+/** The status of an `HTTPError` (thrown by `HTTPClient`), or `undefined`. */
+export function errorStatus(error: unknown): number | undefined {
+  const status = error !== null && typeof error === 'object' ? (error as { status?: unknown }).status : undefined;
+  return typeof status === 'number' ? status : undefined;
+}
+
+/** The body of an `HTTPError`, or `undefined`. */
+export function errorBody(error: unknown): string | undefined {
+  const body = error !== null && typeof error === 'object' ? (error as { body?: unknown }).body : undefined;
+  return typeof body === 'string' ? body : undefined;
+}
+
 // ---- concurrency --------------------------------------------------------------
 
 /** Resolves after `ms`; rejects with a `CancellationError` when `signal` aborts first. */

@@ -225,7 +225,7 @@ extension Array {
   public func removingAll(where predicate: (Element) -> Bool) -> [Element] { self.filter { !predicate($0) } }
 
   /// The array with `other`'s elements after its own.
-  public func appending(contentsOf other: [Element]) -> [Element] { concat(self, other) }
+  public func appendingAll(_ other: [Element]) -> [Element] { concat(self, other) }
 
   /// The elements in `n`-element windows, overlapping.
   public func windows(of n: Int) -> [[Element]] {

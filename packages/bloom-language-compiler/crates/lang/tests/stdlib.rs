@@ -182,3 +182,35 @@ fn the_reference_is_generated_from_the_sources() {
         "docs/bloom-stdlib.mdx is stale: run BLOOM_BLESS=1 cargo test -p bloom_lang --test stdlib reference"
     );
 }
+
+/// Mention's API client, a feed model and the settings store, on the standard library
+/// alone (ADR 0002 phase B's exit): `examples/MentionPort`, compiled and kept as goldens.
+#[test]
+fn mentions_model_network_and_settings_layers_need_no_bindings() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/MentionPort");
+    let goldens = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/mention");
+    let mut failures = Vec::new();
+    for module in ["API", "Posts", "Feed", "Settings"] {
+        let dir = root.join("Sources").join(module);
+        let mut files: Vec<PathBuf> = std::fs::read_dir(&dir).unwrap().map(|e| e.unwrap().path()).collect();
+        files.sort();
+        for path in files {
+            let source = std::fs::read_to_string(&path).unwrap();
+            assert!(!source.contains("extern module") && !source.contains("Foreign"), "no bindings: {}", path.display());
+            let out = compile(&source, &path.to_string_lossy(), &Options::default());
+            if !out.diagnostics.is_empty() {
+                failures.push(format!("{}:\n{}", path.display(), rendered(&out)));
+                continue;
+            }
+            let name = format!("{module}.{}.ts.snap", path.file_stem().unwrap().to_string_lossy());
+            let golden = goldens.join(name);
+            if std::env::var_os("BLOOM_BLESS").is_some() {
+                std::fs::create_dir_all(&goldens).unwrap();
+                std::fs::write(&golden, &out.code).unwrap();
+            } else if std::fs::read_to_string(&golden).unwrap_or_default() != out.code {
+                failures.push(format!("{} differs", golden.display()));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
