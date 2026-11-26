@@ -1049,7 +1049,15 @@ impl<'a> Emitter<'a> {
             AssignOp::Sub => Some("-"),
             AssignOp::Mul => Some("*"),
         };
-        let value = self.expr(&a.value);
+        let mut value = self.expr(&a.value);
+        // `state = await f(state)`: awaited before the update, which is not async.
+        if expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. }) {
+            let temp = self.temp();
+            let mut line = Frag::at(a.value.span, format!("const {temp} = "));
+            line.f(value).s(";");
+            self.push_stmt(line);
+            value = Frag::of(temp);
+        }
         let combine = |current: Frag, value: Frag| -> Frag {
             match op {
                 Some(op) => {
