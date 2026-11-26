@@ -212,6 +212,8 @@ function walk(element: Element, rules: CSSStyleRule[], inherited: Record<string,
   const scope = { ...inherited };
   customProperties(own, scope);
   const css = computed(own, scope);
+  // A filter names its element by id (an image's tint), counted as the element's id is.
+  if (css.filter?.includes('url(#')) css.filter = reactIds(css.filter);
   const attributes: Record<string, string> = {};
   for (const attribute of Array.from(element.attributes).sort((a, b) =>
     a.name < b.name ? -1 : 1,
@@ -254,9 +256,15 @@ function byOrder(id: string): string {
   }
   return seen;
 }
-/** Bloom's counted ids first (their prefixes are Bloom's own), then React's. */
+/**
+ * react-native-web's Image counts the ids of its tint filters with a module
+ * counter (`_filterId++` per image drawn: `<filter id="tint-12">` and its
+ * `filter: url(#tint-12)`), so two draws of the same image differ by it.
+ */
+const IMAGE_TINT_ID = /\btint-\d+\b/g;
+/** Bloom's and react-native-web's counted ids first (their prefixes are their own), then React's. */
 function reactIds(text: string): string {
-  return text.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
+  return text.replace(BLOOM_ID, byOrder).replace(IMAGE_TINT_ID, byOrder).replace(REACT_ID, byOrder);
 }
 
 const MARK = 'data-parity-subject';
