@@ -27,7 +27,8 @@ test('npx bloomc runs the checkout’s bloomc with its arguments and exit code',
   });
   const help = node(BLOOMC, ['--help']);
   assert.equal(help.status, 0, help.stderr);
-  assert.match(help.stdout, /bloomc check \[--tsc\]/);
+  // `bloom` is the CLI (ADR 0002); `bloomc` its alias, whose help is the same.
+  assert.match(help.stdout, /bloom check \[--tsc\]/);
   const checked = node(BLOOMC, ['check', '.'], BLOOM);
   assert.equal(checked.status, 0, checked.stderr);
   assert.match(checked.stderr, /bloomc: checked \d+ files \(0 errors/);
