@@ -1,0 +1,29 @@
+// A builder `for` that is its parent's last child, one plain view per item, is
+// spread among the parent's children (no list slot around it, one fiber fewer);
+// its items keep their `.id()` keys. A `for` followed by a sibling, or whose
+// items can leave (`.transition`), stays one list slot.
+import { opacity } from "@oxy.so/bloom-language"
+
+pub view Lists(titles: [String]) {
+  body {
+    VStack {
+      VStack {
+        Text("Spread")
+        for title in titles {
+          Text(title).id(title)
+        }
+      }
+      VStack {
+        for title in titles {
+          Text(title)
+        }
+        Text("A sibling follows")
+      }
+      VStack {
+        for title in titles {
+          Text(title).id(title).transition(opacity)
+        }
+      }
+    }
+  }
+}

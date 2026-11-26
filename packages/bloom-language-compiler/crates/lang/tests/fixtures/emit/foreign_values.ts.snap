@@ -33,7 +33,7 @@ names = $[3];
 }
 let $t0;
 if ($[4] !== names || $[5] !== insets.top) {
-$t0 = VStack(names.map((name) => Text(name))).padding("top", (insets.top satisfies number) + OFFSET);
+$t0 = VStack(...names.map((name) => Text(name))).padding("top", (insets.top satisfies number) + OFFSET);
 $[4] = names;
 $[5] = insets.top;
 $[6] = $t0;
