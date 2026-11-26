@@ -6,13 +6,6 @@
 use bloom_lang::{Analysis, DefinitionKind, MemberKind, Span};
 use bloom_language_compiler::spec::{MODIFIERS, NODES, NodeSpec, TOKEN_SETS};
 
-/// The spec's keywords (section 2).
-pub const KEYWORDS: &[&str] = &[
-    "as", "async", "await", "body", "case", "default", "defer", "else", "enum", "false", "fn", "for", "from",
-    "if", "import", "in", "layout", "let", "match", "none", "pub", "return", "screen", "struct", "task",
-    "true", "type", "var", "view", "while",
-];
-
 /// LSP's `CompletionItemKind`s used here.
 pub mod kind {
     pub const METHOD: u32 = 2;
@@ -130,7 +123,7 @@ pub fn complete(text: &str, offset: u32, analyze: &dyn Fn(&str) -> Analysis) -> 
             items.push(Item::new(constructor, kind::CONSTRUCTOR, Some("node".to_string())));
         }
     }
-    items.extend(KEYWORDS.iter().map(|k| Item::new(*k, kind::KEYWORD, None)));
+    items.extend(bloom_lang::KEYWORDS.iter().map(|k| Item::new(*k, kind::KEYWORD, None)));
     items
 }
 
