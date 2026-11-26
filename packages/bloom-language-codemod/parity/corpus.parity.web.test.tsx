@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { webTree } from '../../bloom-language/parity/support/web';
 import { bloom22Web } from './support/web-frames';
 import { bloom23Labels, withBloom23Changes } from './support/bloom-23-changes';
-import { CORPUS, loadCorpus } from './support/corpus';
+import { CORPUS, expectSame, loadCorpus } from './support/corpus';
 import { insertRules, jsdomRules, normalizeWeb } from './support/web-css';
 
 const { cases, css } = loadCorpus();
@@ -49,8 +49,7 @@ describe.each(['light', 'dark'] as const)('%s', (scheme) => {
     const after = normalizeWeb(webTree(c.after(), scheme));
     // Bloom 22 drawn, Bloom 23's own changes taken where the after side has them.
     const before = c.bloom22 ? withBloom23Changes(drawn, after, 'web', met) : drawn;
-    results[`${scheme} ${name}`] = JSON.stringify(before) === JSON.stringify(after);
-    expect(after).toEqual(before);
+    expectSame(results, `${scheme} ${name}`, after, before);
   });
 });
 
