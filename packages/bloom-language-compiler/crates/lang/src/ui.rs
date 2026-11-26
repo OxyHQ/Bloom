@@ -160,9 +160,10 @@ pub fn paired(params: &[&'static str], count: usize) -> Vec<(usize, &'static str
     pairs
 }
 
-/// The arity `params` take: (required, total); `None` total when children take any number.
+/// The arity `params` take: (required, total); `None` total when children take any number
+/// (none included: `.modifier(m)` is `m(view)`, with no further arguments).
 pub fn arity(params: &[&str]) -> (usize, Option<usize>) {
-    let required = params.iter().filter(|p| !p.ends_with('?')).count();
+    let required = params.iter().filter(|p| !p.ends_with('?') && **p != "children").count();
     let total = (!params.contains(&"children")).then_some(params.len());
     (required, total)
 }
