@@ -5,7 +5,15 @@
 #
 #     VERIFIED = this exact SHA has a `.github/workflows/validate.yml` run from
 #                the `merge_group` event, in this repository, that concluded
-#                `success`, and whose `CI complete` job concluded `success`.
+#                `success` (or `cancelled`, below), and whose `CI complete` job
+#                concluded `success`.
+#
+# `cancelled` too, because the Seldon race (validate.yml's `race`) cancels the
+# losing lane of each raced job, and one cancelled job makes the whole run
+# conclude `cancelled`. CI complete is still the proof: it runs last, on
+# always(), and goes green only when every job (the race's verdict for the
+# raced ones) passed; a run cancelled before it finished leaves it red or
+# cancelled, never `success`.
 #
 # Ported from OxyHQ/Mention's .github/scripts/merge-queue-verified.sh. Its one
 # caller is validate.yml on push to main: a queue-merged push is the very SHA
@@ -46,7 +54,7 @@ candidate_runs="$(
       '.workflow_runs[]
         | select(.head_sha == $sha
             and .event == "merge_group"
-            and .conclusion == "success"
+            and (.conclusion == "success" or .conclusion == "cancelled")
             and .head_repository.full_name == $repo
             and (.path == $path or (.path | startswith($path + "@"))))
         | .id'
@@ -71,7 +79,7 @@ done
 if [[ -n "$verified_run" ]]; then
   echo "Merge-queue verified: run $verified_run tested $VERIFY_SHA in merge_group and '$required_job' passed." >&2
 else
-  echo "Not merge-queue verified: no successful merge_group run with a green '$required_job' exists for $VERIFY_SHA." >&2
+  echo "Not merge-queue verified: no merge_group run with a green '$required_job' exists for $VERIFY_SHA." >&2
 fi
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   echo "verified=$([[ -n "$verified_run" ]] && echo true || echo false)" >>"$GITHUB_OUTPUT"
