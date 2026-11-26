@@ -2739,6 +2739,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
                     expr = self.expr_node(ExprKind::Index(Box::new(expr), Box::new(index)), span);
                 }
+                // `x!` (2.0): a force unwrap, written against its operand as Swift's is.
+                Tok::P(P::Bang) if !self.token().space_before => {
+                    let end = self.bump();
+                    let span = expr.span.to(end);
+                    expr = self.expr_node(ExprKind::Force(Box::new(expr)), span);
+                }
                 Tok::P(P::Question) if !self.token().space_before => {
                     let end = self.bump();
                     if let Some(keyword) = awaiting.take() {
@@ -3305,6 +3311,7 @@ fn contains_await_marker(expr: &Expr) -> bool {
         ExprKind::Field(inner, _)
         | ExprKind::OptField(inner, _)
         | ExprKind::Try(inner)
+        | ExprKind::Force(inner)
         | ExprKind::Index(inner, _) => contains_await_marker(inner),
         ExprKind::Call(call) => contains_await_marker(&call.callee),
         _ => false,

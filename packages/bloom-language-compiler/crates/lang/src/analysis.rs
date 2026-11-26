@@ -990,6 +990,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         | ExprKind::Unary(_, a)
         | ExprKind::Await(a)
         | ExprKind::Try(a)
+        | ExprKind::Force(a)
         | ExprKind::Throwing(_, a)
         | ExprKind::Field(a, _)
         | ExprKind::OptField(a, _) => walk_expr(a, f),

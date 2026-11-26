@@ -3955,6 +3955,7 @@ impl<'o> Checker<'o> {
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            ExprKind::Force(inner) => self.force(inner, expected_resolved.as_ref()),
             // `try f()`: a JS exception propagates; `try? f()` is `none` when it throws.
             ExprKind::Throwing(kind, inner) => {
                 let expected_inner = match (kind, expected.map(|e| self.resolve(e))) {
@@ -4719,6 +4720,34 @@ impl<'o> Checker<'o> {
                     .label("nothing to wait for")
                     .help("remove `await`")
                     .spec("8-effects-tasks-and-concurrency"),
+                );
+                other
+            }
+        }
+    }
+
+    /// `x!` (2.0): the value of an optional; `none` traps (checked in a dev build).
+    fn force(&mut self, inner: &Expr, expected: Option<&Ty>) -> Ty {
+        let expected = expected.map(|t| match t {
+            Ty::Option(_) => t.clone(),
+            other => Ty::Option(Box::new(other.clone())),
+        });
+        let ty = self.expr(inner, expected.as_ref());
+        match self.resolve(&ty) {
+            Ty::Option(value) => *value,
+            Ty::Foreign(text) => Ty::Foreign(text),
+            Ty::Unknown => Ty::Unknown,
+            other => {
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        Span::new(inner.span.end, inner.span.end + 1),
+                        format!("`!` unwraps an optional, and this is {}", self.show(&other)),
+                    )
+                    .label("never `none`")
+                    .help("remove `!`")
+                    .fix(Span::new(inner.span.end, inner.span.end + 1), "")
+                    .spec("45-enums-option-and-result"),
                 );
                 other
             }
@@ -5677,6 +5706,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
+        | ExprKind::Force(e)
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_names(e, f),

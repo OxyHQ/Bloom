@@ -1,6 +1,0 @@
-// A dev build checks `xs[i]` against the array's bounds (Swift's trap), with a clear message.
-public func first(_ xs: [String]) -> String { xs[0] }
-
-public func maybe(_ xs: [String], _ i: Int) -> String? { xs.at(i) }
-
-public func holes(_ xs: [Int?]) -> Int { xs[0] ?? -1 }

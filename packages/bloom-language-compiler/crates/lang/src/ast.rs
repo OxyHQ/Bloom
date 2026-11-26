@@ -706,6 +706,8 @@ pub enum ExprKind {
     Await(Box<Expr>),
     /// `expr?`: return the error (or `none`) early.
     Try(Box<Expr>),
+    /// `expr!` (2.0): the optional's value; `none` is a trap.
+    Force(Box<Expr>),
     /// `try f()`, `try? f()`, `try! f()` (2.0): a call that throws.
     Throwing(TryKind, Box<Expr>),
     Field(Box<Expr>, Ident),

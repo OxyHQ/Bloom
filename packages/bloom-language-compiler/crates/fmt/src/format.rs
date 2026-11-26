@@ -985,9 +985,11 @@ impl<'a> Formatter<'a> {
                 concat(vec![self.expr(c), text(" ? "), self.expr(a), text(" : "), self.expr(b)])
             }
             ExprKind::Await(inner) => concat(vec![text("await "), self.expr(inner)]),
-            ExprKind::Try(_) | ExprKind::Field(..) | ExprKind::OptField(..) | ExprKind::Index(..) => {
-                self.chain(e, context)
-            }
+            ExprKind::Try(_)
+            | ExprKind::Force(_)
+            | ExprKind::Field(..)
+            | ExprKind::OptField(..)
+            | ExprKind::Index(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1068,6 +1070,10 @@ impl<'a> Formatter<'a> {
                     links.push(Link::Try);
                     current = inner;
                 }
+                ExprKind::Force(inner) => {
+                    links.push(Link::Force);
+                    current = inner;
+                }
                 _ => break,
             }
         }
@@ -1094,6 +1100,7 @@ impl<'a> Formatter<'a> {
                     lines.last_mut().expect("head").extend([text("["), index, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
+                Link::Force => lines.last_mut().expect("head").push(text("!")),
             }
         }
         let mut lines = lines.into_iter().map(concat);
@@ -1442,6 +1449,7 @@ enum Link<'e> {
     Member { name: &'e Ident, optional: bool, call: Option<&'e Call> },
     Index(&'e Expr),
     Try,
+    Force,
 }
 
 fn is_member(callee: &Expr) -> bool {

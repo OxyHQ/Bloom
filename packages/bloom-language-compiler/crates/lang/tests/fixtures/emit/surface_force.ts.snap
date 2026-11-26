@@ -1,0 +1,26 @@
+
+export interface Event {
+  readonly revision: number;
+  readonly title: string | undefined;
+}
+
+export function revision(event: Event | undefined): number {
+return event!.revision;
+}
+
+export function title(event: Event): string {
+return event.title!.toUpperCase();
+}
+
+export function sum(a: number | undefined, b: number | undefined): number {
+return a! + b!;
+}
+
+export function not(flag: boolean | undefined): boolean {
+return !flag!;
+}
+
+export function differs(a: number | undefined, b: number): boolean {
+return a! !== b;
+}
+
