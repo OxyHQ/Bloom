@@ -105,6 +105,35 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 let open = if dot == 2 { "?[" } else { "[" };
                 Some((start - dot, end, format!("{open}\"{text}\"]")))
             }
+            // `X(props)`: TS's `createElement(X, props)`, a props object spread (`X(..props)`).
+            ("B0207", _)
+                if d.message == "a component takes its props by name" && crate::expr::is_postfix_text(text) =>
+            {
+                Some((start, end, format!("..{text}")))
+            }
+            // `let s = useX().menu()`: the hook's call is a member of its own,
+            // `let sHook = useX()`, then `let s = sHook.menu()`.
+            ("B0420", _) if d.message.ends_with("is called outside a view member") => {
+                let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                let head = &source[line_start..start];
+                let name = head.trim_start().strip_prefix("let ").and_then(|h| h.strip_suffix(" = "));
+                let call_end = source[end..].starts_with('(').then(|| matching_paren(source, end)).flatten();
+                match (name, call_end) {
+                    (Some(name), Some(close))
+                        if name.chars().all(|c| c.is_alphanumeric() || c == '_')
+                            && source[close..].starts_with('.') =>
+                    {
+                        let indent = &head[..head.len() - head.trim_start().len()];
+                        let hook = format!("{name}Hook");
+                        Some((
+                            line_start,
+                            close,
+                            format!("{indent}let {hook} = {}\n{indent}let {name} = {hook}", &source[start..close]),
+                        ))
+                    }
+                    _ => None,
+                }
+            }
             // A list of views drawn as a child (`{rows}`): each of its views.
             ("B0201", _)
                 if (d.message == "expected `View`, found `[View]`"
@@ -257,6 +286,26 @@ fn operand_len(source: &str) -> Option<usize> {
 }
 
 /// Whether `start..end` is all of its line.
+/// Just past the `)` matching the `(` at `open`.
+fn matching_paren(source: &str, open: usize) -> Option<usize> {
+    let mut depth = 0i32;
+    let mut quoted = false;
+    for (i, b) in source.bytes().enumerate().skip(open) {
+        match b {
+            b'"' => quoted = !quoted,
+            b'(' if !quoted => depth += 1,
+            b')' if !quoted => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i + 1);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
 /// The argument list holding `start..end`: from just after its `(` to its `)`
 /// (strings skipped crudely: a quote toggles).
 fn call_args(source: &str, start: usize, end: usize) -> Option<(usize, usize)> {

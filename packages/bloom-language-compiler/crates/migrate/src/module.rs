@@ -1536,7 +1536,8 @@ pub const VIEW_TYPES: &[&str] = LANG_VIEW_TYPES;
 fn hoist_lets(items: Vec<String>) -> Vec<String> {
     fn let_name(item: &str) -> Option<&str> {
         let code = item.lines().find(|l| !l.trim_start().starts_with("//") && !l.trim().is_empty())?;
-        let rest = code.strip_prefix("pub ").unwrap_or(code).strip_prefix("let ")?;
+        let code = code.strip_prefix("pub ").unwrap_or(code);
+        let rest = code.strip_prefix("default ").unwrap_or(code).strip_prefix("let ")?;
         let end = rest.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(rest.len());
         (end > 0).then(|| &rest[..end])
     }
