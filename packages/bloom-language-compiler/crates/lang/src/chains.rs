@@ -74,6 +74,7 @@ impl Walker<'_> {
                         Member::State(state) => self.expr(&state.value),
                         Member::Let(l) => self.expr(&l.value),
                         Member::Fn(func) => self.function(func),
+                        Member::Effect(e) => self.stmts(&e.body.stmts),
                     }
                 }
                 self.stmts(&view.body.stmts);
