@@ -19,8 +19,20 @@ fn options() -> bloom_lang::Options {
 
 /// The code without `export`: a migration makes `public` the types a 0.x `pub` declaration
 /// named, which 2.0 exports (0.x declared them beside it, unexported).
+/// A 0.x `screen` is its file's default export; 2.0's `struct X: Screen` is so only in a route
+/// (`bloom migrate` rewrites its importers), and a named export elsewhere.
 fn unexported(code: &str) -> String {
-    code.lines().map(|l| l.strip_prefix("export ").unwrap_or(l)).collect::<Vec<_>>().join("\n")
+    code.lines()
+        .map(|l| l.strip_prefix("export ").unwrap_or(l))
+        .map(|l| match l.strip_prefix("default screen(function ") {
+            Some(rest) => {
+                let name = rest.split('(').next().unwrap_or_default();
+                format!("const {name} = screen(function {rest}")
+            }
+            None => l.to_string(),
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[test]
