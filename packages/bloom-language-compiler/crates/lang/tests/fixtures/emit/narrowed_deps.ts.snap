@@ -1,0 +1,40 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Overlay } from "@/rows/Overlay";
+
+export interface ThreadRowProps {
+  readonly sliceKey?: string | undefined;
+  readonly owner: object;
+  readonly title: string;
+  readonly detail: unknown;
+}
+export const ThreadRow = view(function ThreadRow(props: ThreadRowProps) {
+"use no memo";
+const $ = $c(19);
+const { sliceKey = undefined, owner, title, detail } = props;
+let badge: string;
+if ($[0] !== title) {
+badge = title.toUpperCase();
+$[0] = title;
+$[1] = badge;
+} else {
+badge = $[1];
+}
+let $t0;
+if ($[13] !== title || $[14] !== sliceKey || $[15] !== owner || $[16] !== badge || $[17] !== detail) {
+$t0 = VStack(Text(title), ((sliceKey != null) && (!(sliceKey.length === 0))) ? ($[2] !== sliceKey || $[3] !== owner ? ($[2] = sliceKey, $[3] = owner, $[4] = Embed($jsx(Overlay, { sliceKey: sliceKey, owner: owner } satisfies ComponentProps<typeof Overlay>))) : $[4]) : null, (sliceKey != null) ? ($[5] !== sliceKey || $[6] !== badge ? ($[5] = sliceKey, $[6] = badge, $[7] = VStack(Text(sliceKey), Text(badge))) : $[7]) : null, ((typeof detail === "string")) ? ($[10] !== detail || $[11] !== badge ? ($[10] = detail, $[11] = badge, $[12] = VStack(($[8] !== detail ? ($[8] = detail, $[9] = Text(detail.toUpperCase())) : $[9]), Text(badge))) : $[12]) : null);
+$[13] = title;
+$[14] = sliceKey;
+$[15] = owner;
+$[16] = badge;
+$[17] = detail;
+$[18] = $t0;
+} else {
+$t0 = $[18];
+}
+return $t0;
+});
+

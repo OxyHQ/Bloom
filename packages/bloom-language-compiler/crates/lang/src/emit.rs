@@ -177,6 +177,8 @@ struct Emitter<'a> {
     hoisted_names: HashMap<Span, String>,
     /// The `$fn` numbers taken by closures hoisted to module scope.
     hoisted_fns: HashSet<usize>,
+    /// Each narrowed local (`x` inside `if x != none`) → the one it narrows.
+    narrowed_from: HashMap<LocalId, LocalId>,
     /// Static trees hoisted to module scope, by their text.
     hoisted_trees: HashMap<String, String>,
     /// The item's expressions that are the same value on every evaluation (`mark_static`).
@@ -255,6 +257,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         arrow_generics: None,
         hoisted_names: HashMap::default(),
         hoisted_fns: HashSet::default(),
+        narrowed_from: ck.narrowed.values().map(|(narrowed, original)| (*narrowed, *original)).collect(),
         hoisted_trees: HashMap::default(),
         statics: HashSet::default(),
         in_static: false,
@@ -4690,21 +4693,19 @@ impl<'a> Emitter<'a> {
     fn dep_path(&self, expr: &Expr) -> Option<String> {
         let view = self.view.as_ref()?;
         match &expr.kind {
-            ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
-                Some(NameRes::Local(local)) if view.versions.contains_key(local) => {
-                    Some(view.versions[local].clone())
-                }
-                Some(NameRes::Local(local)) if view.reactive.contains(local) => Some(self.local_name(*local)),
+            ExprKind::Name(_) => match self.source_local(expr.id) {
+                Some(local) if view.versions.contains_key(&local) => Some(view.versions[&local].clone()),
+                Some(local) if view.reactive.contains(&local) => Some(self.local_name(local)),
                 _ => None,
             },
             // A model's field: the field itself, which its store replaces when it changes.
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field)
                     && is_ident(&name.name)
-                    && matches!(self.ck.names.get(&object.id), Some(NameRes::Local(l)) if view.versions.contains_key(l)) =>
+                    && self.source_local(object.id).is_some_and(|l| view.versions.contains_key(&l)) =>
             {
-                let Some(NameRes::Local(local)) = self.ck.names.get(&object.id) else { return None };
-                Some(format!("{}.{}", self.local_name(*local), name.name))
+                let local = self.source_local(object.id)?;
+                Some(format!("{}.{}", self.local_name(local), name.name))
             }
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
@@ -4722,6 +4723,17 @@ impl<'a> Emitter<'a> {
             ExprKind::Paren(inner) => self.dep_path(inner),
             _ => None,
         }
+    }
+
+    /// The local a name reads, through its narrowings: `sliceKey` inside `if sliceKey != none`
+    /// (or `if x is T`) is a local of its own, which changes exactly when the one it narrows
+    /// does. A dependency is the narrowed one, which the cache's test can read.
+    fn source_local(&self, id: ExprId) -> Option<LocalId> {
+        let Some(NameRes::Local(mut local)) = self.ck.names.get(&id).cloned() else { return None };
+        while let Some(original) = self.narrowed_from.get(&local) {
+            local = *original;
+        }
+        Some(local)
     }
 
     fn push_dep(out: &mut Vec<String>, dep: String) {
@@ -4926,9 +4938,7 @@ impl<'a> Emitter<'a> {
         let Some(view) = self.view.as_ref() else { return 0 };
         let mut count = 0;
         crate::check::walk_names(expr, &mut |_, id| {
-            if let Some(NameRes::Local(local)) = self.ck.names.get(&id)
-                && view.reactive.contains(local)
-            {
+            if self.source_local(id).is_some_and(|local| view.reactive.contains(&local)) {
                 count += 1;
             }
         });
