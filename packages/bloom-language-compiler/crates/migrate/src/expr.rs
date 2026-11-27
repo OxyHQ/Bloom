@@ -1448,14 +1448,14 @@ impl Tr<'_> {
                 let then = |tr: &mut Self| tr.splice(&c.consequent);
                 let otherwise = |tr: &mut Self| tr.splice(&c.alternate);
                 return if empty(&c.alternate) {
-                    self.child_if(&c.test, then, None::<fn(&mut Self) -> String>)
+                    self.child_if(&c.test, c.consequent.span(), then, None::<fn(&mut Self) -> String>)
                 } else {
-                    self.child_if(&c.test, then, Some(otherwise))
+                    self.child_if(&c.test, c.consequent.span(), then, Some(otherwise))
                 };
             }
             Expression::LogicalExpression(l) if l.operator == LogicalOperator::And && literal(&l.right) => {
                 let then = |tr: &mut Self| tr.splice(&l.right);
-                return self.child_if(&l.left, then, None::<fn(&mut Self) -> String>);
+                return self.child_if(&l.left, l.right.span(), then, None::<fn(&mut Self) -> String>);
             }
             e if literal(e) => return self.splice(e),
             _ => {}
@@ -1512,7 +1512,7 @@ impl Tr<'_> {
             Expression::ParenthesizedExpression(p) => self.child(&p.expression),
             Expression::ConditionalExpression(c) if is_nothing(&c.alternate) => {
                 let then = |tr: &mut Self| tr.child(&c.consequent);
-                self.child_if(&c.test, then, None::<fn(&mut Self) -> String>)
+                self.child_if(&c.test, c.consequent.span(), then, None::<fn(&mut Self) -> String>)
             }
             Expression::ConditionalExpression(c) if is_nothing(&c.consequent) => {
                 let test = self.test_negated(&c.test);
@@ -1527,13 +1527,13 @@ impl Tr<'_> {
             {
                 let then = |tr: &mut Self| tr.child(&c.consequent);
                 let otherwise = |tr: &mut Self| tr.child(&c.alternate);
-                self.child_if(&c.test, then, Some(otherwise))
+                self.child_if(&c.test, c.consequent.span(), then, Some(otherwise))
             }
             Expression::LogicalExpression(l)
                 if l.operator == LogicalOperator::And && self.is_view(&l.right) =>
             {
                 let then = |tr: &mut Self| tr.child(&l.right);
-                self.child_if(&l.left, then, None::<fn(&mut Self) -> String>)
+                self.child_if(&l.left, l.right.span(), then, None::<fn(&mut Self) -> String>)
             }
             Expression::CallExpression(call) if is_map(call) => {
                 let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() else {
@@ -1621,11 +1621,12 @@ impl Tr<'_> {
     fn child_if(
         &mut self,
         test: &Expression,
+        branch: Span,
         then: impl Fn(&mut Self) -> String,
         otherwise: Option<impl Fn(&mut Self) -> String>,
     ) -> String {
         let parts = self.test_parts(test, true);
-        let then = then(self);
+        let (bound, then) = self.unwrapped_branch(&parts, branch, then);
         let otherwise = otherwise.map(|o| o(self));
         let tail = |b: &Option<String>| match b {
             Some(b) if b.starts_with("if ") => format!(" else {b}"),
@@ -1634,12 +1635,51 @@ impl Tr<'_> {
         };
         match parts {
             Test::Plain(test) => format!("if {test} {{\n{then}\n}}{}", tail(&otherwise)),
-            Test::Bind(name, None) => format!("if let {name} = {name} {{\n{then}\n}}{}", tail(&otherwise)),
+            Test::Bind(name, None) => {
+                let bound = bound.unwrap_or_else(|| name.clone());
+                format!("if let {bound} = {name} {{\n{then}\n}}{}", tail(&otherwise))
+            }
             Test::Bind(name, Some(inner)) => {
                 let t = tail(&otherwise);
-                format!("if let {name} = {name} {{\nif {inner} {{\n{then}\n}}{t}\n}}{t}")
+                let (bound, inner) = match bound {
+                    Some(b) => (b.clone(), inner.replacen(&name, &b, 1)),
+                    None => (name.clone(), inner),
+                };
+                format!("if let {bound} = {name} {{\nif {inner} {{\n{then}\n}}{t}\n}}{t}")
             }
         }
+    }
+
+    /// A branch under `if let x = x` that writes `x` (its setter, `x = …`, `x.current = …`):
+    /// the unwrapped value is `xValue`, since `x` there would be the immutable binding, and
+    /// each write in the branch goes to `x` itself (TS's narrowed reads, its writes to the state).
+    pub fn unwrapped_branch(
+        &mut self,
+        parts: &Test,
+        branch: Span,
+        then: impl FnOnce(&mut Self) -> String,
+    ) -> (Option<String>, String) {
+        let name = match parts {
+            Test::Bind(name, _) if self.writes_in(branch, name) => name.clone(),
+            _ => return (None, then(self)),
+        };
+        let bound = format!("{name}Value");
+        let previous = self.scope.renames.insert(name.clone(), bound.clone());
+        let text = then(self);
+        match previous {
+            Some(p) => self.scope.renames.insert(name.clone(), p),
+            None => self.scope.renames.remove(&name),
+        };
+        let text = redirect_writes(&text, &bound, &name);
+        (Some(bound), text)
+    }
+
+    /// Whether the TS text in `span` writes `name`: a call of its state's setter, `name = …`
+    /// or `name.current = …`.
+    pub fn writes_in(&self, span: Span, name: &str) -> bool {
+        let setters: Vec<String> =
+            self.scope.setters.iter().filter(|(_, s)| s.state == name).map(|(k, _)| k.clone()).collect();
+        writes_name(&self.src[span.start as usize..span.end as usize], name, &setters)
     }
 
     /// Whether an argument is a child: a view, a conditional or mapped view, a spread.
@@ -2085,4 +2125,89 @@ pub fn index_read<'b, 'a>(e: &'b Expression<'a>) -> Option<(&'b Expression<'a>, 
 /// `xs.map(…)` (a mapped list drawn as children).
 fn is_mapped(e: &Expression) -> bool {
     matches!(e.without_parentheses(), Expression::CallExpression(call) if is_map(call))
+}
+
+/// `text` with each assignment to `from` (`from = …`, `from += …`) written to `to`: `from` is
+/// an immutable binding, so a write of it can only mean `to`.
+fn redirect_writes(text: &str, from: &str, to: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(at) = rest.find(from) {
+        let before = rest[..at].chars().next_back();
+        let after = &rest[at + from.len()..];
+        let word = before.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '.'))
+            && after.chars().next().is_none_or(|c| !(c.is_alphanumeric() || c == '_'));
+        let op = after.trim_start();
+        let assigns = ["=", "+=", "-=", "*="].iter().any(|o| op.starts_with(o))
+            && !op.starts_with("==")
+            && !op.starts_with("=>");
+        out.push_str(&rest[..at]);
+        out.push_str(if word && assigns { to } else { from });
+        rest = after;
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Whether TS `code` (an expression or a statement) writes `name`: `name = …`, `name.current = …`,
+/// `name++`, or a call of one of `setters`.
+fn writes_name(code: &str, name: &str, setters: &[String]) -> bool {
+    use oxc_ast::ast::{AssignmentTarget, SimpleAssignmentTarget};
+    use oxc_ast_visit::Visit;
+    struct Finder<'n> {
+        name: &'n str,
+        setters: &'n [String],
+        found: bool,
+    }
+    impl Finder<'_> {
+        fn target(&mut self, t: &SimpleAssignmentTarget) {
+            match t {
+                SimpleAssignmentTarget::AssignmentTargetIdentifier(id) if id.name == self.name => {
+                    self.found = true
+                }
+                SimpleAssignmentTarget::StaticMemberExpression(m)
+                    if m.property.name == "current"
+                        && matches!(&m.object, Expression::Identifier(o) if o.name == self.name) =>
+                {
+                    self.found = true
+                }
+                _ => {}
+            }
+        }
+    }
+    impl<'a> Visit<'a> for Finder<'_> {
+        fn visit_assignment_expression(&mut self, a: &oxc_ast::ast::AssignmentExpression<'a>) {
+            if let Some(t) = a.left.as_simple_assignment_target() {
+                self.target(t);
+            } else if let AssignmentTarget::AssignmentTargetIdentifier(id) = &a.left
+                && id.name == self.name
+            {
+                self.found = true;
+            }
+            oxc_ast_visit::walk::walk_assignment_expression(self, a);
+        }
+        fn visit_update_expression(&mut self, u: &oxc_ast::ast::UpdateExpression<'a>) {
+            self.target(&u.argument);
+            oxc_ast_visit::walk::walk_update_expression(self, u);
+        }
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            if matches!(&call.callee, Expression::Identifier(id) if self.setters.iter().any(|s| s == id.name.as_str()))
+            {
+                self.found = true;
+            }
+            oxc_ast_visit::walk::walk_call_expression(self, call);
+        }
+    }
+    if !code.contains(name) && !setters.iter().any(|s| code.contains(s.as_str())) {
+        return false;
+    }
+    let allocator = oxc_allocator::Allocator::default();
+    let wrapped = format!("({code})");
+    let mut parsed = oxc_parser::Parser::new(&allocator, &wrapped, oxc_span::SourceType::tsx()).parse();
+    if !parsed.diagnostics.is_empty() {
+        parsed = oxc_parser::Parser::new(&allocator, code, oxc_span::SourceType::tsx()).parse();
+    }
+    let mut finder = Finder { name, setters, found: false };
+    finder.visit_program(&parsed.program);
+    finder.found
 }
