@@ -32,6 +32,8 @@ export const Tabs = function Tabs({ tabs, author, note }: TabsProps) {
     Text(name),
     Text(note!),
     Text(LABELS['a']),
-    tabs.map((tab: { id: string; label: string; count?: number }) => Text(`${tab.label} ${tab.count ?? 0}`)),
+    tabs.map((tab: { id: string; label: string; count?: number }) =>
+      Text(`${tab.label} ${tab.count ?? 0}`),
+    ),
   );
 };
