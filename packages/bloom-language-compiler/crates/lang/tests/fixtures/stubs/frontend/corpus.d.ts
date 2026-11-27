@@ -104,3 +104,9 @@ export interface FeedMeta {
 }
 export declare function useViewPost(): FeedPost | undefined;
 export declare function lookupPost(id: string): FeedPost | undefined;
+/** Mention's `NestedPostRenderer`: a TS callback that returns a React node. */
+export type NestedRenderer = (post: FeedPost, depth: number) => import('react').ReactNode;
+export declare function NestedCard(props: {
+  renderPost: NestedRenderer;
+  post: FeedPost;
+}): import('react').ReactNode;

@@ -1,0 +1,53 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, RawText, Text, VStack, toElement, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { type FeedPost, NestedCard, type NestedRenderer } from "@/corpus";
+
+interface RowProps {
+  readonly post: FeedPost;
+}
+const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(2);
+const { post } = props;
+let $t0;
+if ($[0] !== post.id) {
+$t0 = Text(post.id);
+$[0] = post.id;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+const renderNested: (post: FeedPost, depth: number) => import("react").ReactNode = (nested: FeedPost, depth: number) => (toElement(Row({ post: nested })));
+
+function contextText(runs: readonly (string | undefined)[]): Child {
+return Text(...runs);
+}
+
+const $view0 = RawText("a");
+export interface CardProps {
+  readonly post: FeedPost;
+  readonly name: string;
+}
+export const Card = view(function Card(props: CardProps) {
+"use no memo";
+const $ = $c(9);
+const { post, name } = props;
+let $t1;
+if ($[6] !== post || $[7] !== name) {
+$t1 = VStack(($[0] !== post ? ($[0] = post, $[1] = Embed($jsx(NestedCard, { renderPost: renderNested, post: post } satisfies ComponentProps<typeof NestedCard>))) : $[1]), ($[2] !== name ? ($[2] = name, $[3] = contextText(["by", " ", name])) : $[3]), ($[4] !== name ? ($[4] = name, $[5] = RawText(...[$view0, RawText(name)])) : $[5]));
+$[6] = post;
+$[7] = name;
+$[8] = $t1;
+} else {
+$t1 = $[8];
+}
+return $t1;
+});
+
