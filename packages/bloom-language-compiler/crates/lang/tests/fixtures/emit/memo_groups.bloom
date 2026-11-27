@@ -1,0 +1,75 @@
+// Mention's ContentWarning: three `t(…)` strings keyed on `t` share one test, and a leaf that
+// reads its one dependency once is built with its parent, in no slots of its own.
+import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine"
+import { useTranslation } from "react-i18next"
+
+public struct ContentWarning: View {
+  let text: String
+  let revealed: Bool
+  let onToggle: () -> Unit
+  let { t } = useTranslation()
+  let label = t("post.contentWarning", defaultValue: "Content warning")
+  let show = t("post.contentWarningShow", defaultValue: "Show")
+  let hide = t("post.contentWarningHide", defaultValue: "Hide")
+
+  var body: some View {
+    if revealed {
+      HStack {
+        Icon(RiAlertLine).size("13").foreground("muted")
+        RawText(!text.isEmpty ? "\(label) · \(text)" : label)
+        .foreground("muted")
+        .shrink("normal")
+        .font("sm")
+        .lines(1)
+        VStack { RawText(hide).foreground("primary").font("sm").weight("semibold") }
+        .onPress(onToggle)
+        .hitSlop("md")
+        .role("button")
+        .label(hide)
+      }
+      .margin("bottom", "6")
+      .align("center")
+      .spacing("6")
+    } else {
+      HStack {
+        VStack { Icon(RiAlertLine).size("18").foreground("muted") }
+        .frame(width: "36", height: "36")
+        .background("background")
+        .corner("infinite")
+        .align("center")
+        .justify("center")
+        VStack {
+          RawText(label)
+          .foreground("muted")
+          .font("xs")
+          .weight("semibold")
+          .textCase("uppercase")
+          .tracking("wide")
+          if !text.isEmpty {
+            RawText(text).foreground("foreground").font("md").weight("semibold").lines(3)
+          }
+        }
+        .flex("1")
+        .shrink("normal")
+        .spacing("2xs")
+        VStack { RawText(show).foreground("onPrimary").font("sm").weight("semibold") }
+        .padding("horizontal", "14")
+        .padding("vertical", "6")
+        .background("primary")
+        .corner("infinite")
+      }
+      .padding("horizontal", "md")
+      .padding("vertical", "md")
+      .background("mutedFill")
+      .border("border", "thin")
+      .corner("lg")
+      .margin("top", "2xs")
+      .align("center")
+      .spacing("md")
+      .when("pressed", { v in v.opacity("80") })
+      .onPress(onToggle)
+      .role("button")
+      .label(!text.isEmpty ? "\(label): \(text). \(show)" : "\(label). \(show)")
+    }
+  }
+}

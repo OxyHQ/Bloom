@@ -20,21 +20,21 @@ export interface RowProps {
 }
 export const Row = view(function Row(props: RowProps) {
 "use no memo";
-const $ = $c(20);
+const $ = $c(18);
 const { names, likes, createdAt } = props;
 const [on, setOn] = useState<boolean>(true);
 let $t0;
-if ($[15] !== names || $[16] !== likes || $[17] !== on || $[18] !== createdAt) {
-$t0 = VStack(names.map((name) => Text(name).foreground("muted").lines(1)), ($[11] !== likes || $[12] !== on || $[13] !== createdAt ? ($[11] = likes, $[12] = on, $[13] = createdAt, $[14] = HStack(($[2] !== likes || $[3] !== on ? ($[2] = likes, $[3] = on, $[4] = Button($view0, ($[0] !== likes ? ($[0] = likes, $[1] = Text(`${likes}`)) : $[1])).style("plain").size("sm").onPress(() => {
+if ($[13] !== names || $[14] !== likes || $[15] !== on || $[16] !== createdAt) {
+$t0 = VStack(names.map((name) => Text(name).foreground("muted").lines(1)), ($[9] !== likes || $[10] !== on || $[11] !== createdAt ? ($[9] = likes, $[10] = on, $[11] = createdAt, $[12] = HStack(($[0] !== likes || $[1] !== on ? ($[0] = likes, $[1] = on, $[2] = Button($view0, Text(`${likes}`)).style("plain").size("sm").onPress(() => {
 setOn((on) => !on);
-})) : $[4]), $view1, ($[5] !== createdAt ? ($[5] = createdAt, $[6] = Text(Date$formatted(createdAt, "relative"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = HStack($view2, $view3, Toggle([on, setOn] as const).label("Likes"))) : $[8]), ($[9] !== on ? ($[9] = on, $[10] = HStack($view4, $view3, Toggle([on, setOn] as const).label("Reposts"))) : $[10])).align("center").spacing("xs")) : $[14]), ScrollView(VStack(...names.map((name) => Text(name)))), $view5).spacing("sm");
-$[15] = names;
-$[16] = likes;
-$[17] = on;
-$[18] = createdAt;
-$[19] = $t0;
+})) : $[2]), $view1, ($[3] !== createdAt ? ($[3] = createdAt, $[4] = Text(Date$formatted(createdAt, "relative"))) : $[4]), ($[5] !== on ? ($[5] = on, $[6] = HStack($view2, $view3, Toggle([on, setOn] as const).label("Likes"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = HStack($view4, $view3, Toggle([on, setOn] as const).label("Reposts"))) : $[8])).align("center").spacing("xs")) : $[12]), ScrollView(VStack(...names.map((name) => Text(name)))), $view5).spacing("sm");
+$[13] = names;
+$[14] = likes;
+$[15] = on;
+$[16] = createdAt;
+$[17] = $t0;
 } else {
-$t0 = $[19];
+$t0 = $[17];
 }
 return $t0;
 });
