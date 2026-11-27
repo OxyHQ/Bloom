@@ -457,9 +457,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 Some((end, end, "!".to_string()))
             }
             // `const [a, b] = f()` of a longer TS tuple: the rest of it is not bound, `(a, b, _)`.
-            ("B0303", _) if d.message.starts_with("a tuple of ") && text.starts_with('(') && text.ends_with(')') => {
+            ("B0303", _)
+                if d.message.starts_with("a tuple of ") && text.starts_with('(') && text.ends_with(')') =>
+            {
                 let have: usize = d.message["a tuple of ".len()..].split(' ').next()?.parse().ok()?;
-                let ty = d.message.split_once("cannot match `").map(|(_, t)| t.trim_end_matches('`')).unwrap_or_default();
+                let ty = d
+                    .message
+                    .split_once("cannot match `")
+                    .map(|(_, t)| t.trim_end_matches('`'))
+                    .unwrap_or_default();
                 let inner = ty.strip_prefix('(').and_then(|t| t.strip_suffix(')')).unwrap_or_default();
                 let arity = tuple_arity(inner);
                 (arity > have).then(|| {
@@ -469,7 +475,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // A TS tuple's `length` (`coordinates: [number, number]`): its arity.
             ("B0205", "count")
-                if receiver.is_some_and(|r| r.starts_with('(') && r.ends_with(')')) && source[..start].ends_with('.') =>
+                if receiver.is_some_and(|r| r.starts_with('(') && r.ends_with(')'))
+                    && source[..start].ends_with('.') =>
             {
                 let r = receiver.unwrap_or_default();
                 let inner = &r[1..r.len() - 1];
