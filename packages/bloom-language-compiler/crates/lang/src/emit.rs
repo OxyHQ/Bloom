@@ -3254,8 +3254,22 @@ impl<'a> Emitter<'a> {
                     .collect();
                 // The children are built inside the render function, so a static one is hoisted on
                 // its own even when the whole component is (the embedded pass would hoist it out).
+                // Text children (`TextFieldLabel { label }`) are passed as they are.
+                if let Some(trailing) =
+                    call.trailing.as_ref().filter(|t| self.ck.text_children.contains(&t.span))
+                    && let [Stmt { kind: StmtKind::Expr(line), .. }] = trailing.body.as_slice()
+                {
+                    let slot = self.ck.component_slots.get(&trailing.span).map_or("children", String::as_str);
+                    let mut entry = Frag::of(format!("{}: ", prop_key(slot)));
+                    entry.f(self.expr(line));
+                    props.push(entry);
+                }
                 let was_static = std::mem::replace(&mut self.in_static, false);
-                let children = call.trailing.as_ref().map(|t| self.children(&t.body));
+                let children = call
+                    .trailing
+                    .as_ref()
+                    .filter(|t| !self.ck.text_children.contains(&t.span))
+                    .map(|t| self.children(&t.body));
                 self.in_static = was_static;
                 if let Some(children) = &children {
                     let rendered = if children.len() == 1 {
