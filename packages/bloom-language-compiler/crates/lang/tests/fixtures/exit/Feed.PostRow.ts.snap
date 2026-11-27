@@ -8,7 +8,7 @@ import { RiVerifiedBadgeLine } from "@oxy.so/bloom/icons/RiVerifiedBadgeLine";
 import { type Task, refreshAction } from "../../.bloom/std/Bloom/Concurrency.bloom";
 import { Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
 import { type MentionAPI, MentionAPI$$live } from "../API/MentionAPI.bloom";
-import { type Post, type FeedModel, FeedModel$like, FeedModel$refresh, FeedModel$$init } from "./FeedModel.bloom";
+import { type Post, type FeedModel, FeedModel$$init, FeedModel$like, FeedModel$refresh } from "./FeedModel.bloom";
 
 const $view0 = Icon(RiVerifiedBadgeLine).foreground("primary");
 const $view1 = Spacer();

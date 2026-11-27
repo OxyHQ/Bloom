@@ -1,10 +1,11 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { HStack, Loading, Spacer, Text, Toggle, VStack, useEnvironment, useObserved, view } from "@oxy.so/bloom-language";
+import { HStack, Loading, Spacer, Text, VStack, useEnvironment, useObserved, view } from "@oxy.so/bloom-language";
+import { Toggle } from "@oxy.so/bloom-language/inputs";
 import { useEffect, useState } from "react";
 import type { Session } from "../Settings/NotificationPrefs.bloom";
 import type { Child } from "@oxy.so/bloom-language";
-import { session, type NotificationPrefsModel, SettingsSkeleton, SignInPrompt, SettingsSection, type PrefKey, NotificationPrefsModel$binding, NotificationPrefsModel$load, PrefKey$$allCases, PrefKey$detail, PrefKey$title, NotificationPrefsModel$$init } from "../Settings/NotificationPrefs.bloom";
+import { session, type NotificationPrefsModel, SettingsSkeleton, SignInPrompt, SettingsSection, type PrefKey, NotificationPrefsModel$$init, NotificationPrefsModel$binding, NotificationPrefsModel$load, PrefKey$$allCases, PrefKey$detail, PrefKey$title } from "../Settings/NotificationPrefs.bloom";
 
 const $env_session = session;
 const $fields0 = ["isSaving", "state"] as const;
