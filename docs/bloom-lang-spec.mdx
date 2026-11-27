@@ -678,8 +678,14 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `static func cast(_ error: Error) -> T?`, as the standard library's `HTTPError` has) is tested:
   `catch let e as HTTPError { … e.response.status … }` runs for an `HTTPError` only (one
   `HTTPClient` threw, or a TS client's, as Axios throws it), and `error as? HTTPError` is the
-  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). `as?` to a type
-  with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
+  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). A cast to a string
+  literal union tests membership: `raw as? Tab` (with `type Tab = "videos" | "following"`) is
+  `raw` when it is one of `Tab`'s values and `none` otherwise (`raw === "videos" || raw ===
+  "following" ? raw : undefined`, `raw` read once); its subject is a `String`, a `String?`,
+  another literal union or a TS value. `raw as! Tab` is the `Tab` itself: a dev build traps
+  when it is not one (`$cast(raw, [...])` throws a `TypeError`), and a release build is TS's
+  plain `raw as Tab`, at no cost, as `x!` is. `as!` to anything else, and a cast of a
+  non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
   `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
@@ -855,6 +861,9 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   (`c ? "md" : gutter`), so either fits a token set. A module constant's record literal written
   without a type keeps its string literals' types (`let SIDES = { small: "fit", large: "full" }`
   is `{ small: "fit", large: "full" }`, emitted `as const`), so `SIDES[size]` fits a token set.
+  A module constant's list of string literals is a list of their union (`let TABS = ["videos",
+  "following"]` is `["videos" | "following"]`, emitted `as const`, frozen inside in a dev
+  build), so `for tab in TABS` gives a `"videos" | "following"`, as TS's `as const` tab lists.
   With nothing expected, `c ? s : opt?.x` is the optional of `s`'s type: an optional chain may be
   `none`, as a branch written `none` is. `defineModifier { v in … }` reads `v` as a
   `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
@@ -1124,7 +1133,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | Type | Members (each compiles to the JS intrinsic, inline) |
 |---|---|
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
-| `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
+| `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `formatted(digits:locale:)` (Intl, localized), `formatted(fractionDigits: n)` (JS's `toFixed(n)`: exactly `n` decimals, never localized, `"3.14"`) |
 | `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |

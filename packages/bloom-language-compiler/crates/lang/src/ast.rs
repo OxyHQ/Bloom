@@ -722,8 +722,10 @@ pub enum ExprKind {
     /// `Bool`, `[T]`); `if x is T { … }` narrows `x` there.
     Is(Box<Expr>, TypeExpr),
     /// `error as? HTTPError` (2.0, Swift's conditional cast): the value as a `T`, or `none`;
-    /// `T` says how (`static func cast(_ error: Error) -> T?`).
-    CastAs(Box<Expr>, TypeExpr),
+    /// `T` says how (`static func cast(_ error: Error) -> T?`). A string literal union
+    /// (`x as? Tab`) is a membership test. `forced`: `x as! Tab`, the value itself, a trap in a
+    /// dev build when it is not one.
+    CastAs(Box<Expr>, TypeExpr, bool),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
     /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.

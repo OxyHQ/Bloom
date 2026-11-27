@@ -441,6 +441,9 @@ fn helper_text(name: &str) -> &'static str {
         "unwrap" => {
             "function $unwrap<T>(value: T | null | undefined): T {\n  if (value == null) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
         }
+        "cast" => {
+            "function $cast<T extends string>(value: unknown, values: readonly T[]): T {\n  if ((values as readonly unknown[]).includes(value)) return value as T;\n  throw new TypeError(`${JSON.stringify(value)} is not one of ${values.map((v) => JSON.stringify(v)).join(\", \")} (\\`as!\\`)`);\n}"
+        }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
         }
@@ -833,8 +836,17 @@ impl<'a> Emitter<'a> {
                 let ty = self.ck.locals[local].ty.clone();
                 let annotation =
                     if c.ty.is_some() { format!(": {}", self.ts_type(&ty)) } else { String::new() };
-                let mut value = self.value_expr(&c.value);
-                if self.ck.literal_consts.contains(&c.value.id) {
+                let literal = self.ck.literal_consts.contains(&c.value.id);
+                let mut value = match &c.value.kind {
+                    // `["videos", "following"] as const`, frozen inside in a dev build.
+                    ExprKind::List(items) if literal => {
+                        let items: Vec<Frag> = items.iter().map(|i| self.expr(i)).collect();
+                        let list = Frag::join(items, ", ").wrap("[", "] as const");
+                        if self.options.dev { list.wrap("Object.freeze(", ")") } else { list }
+                    }
+                    _ => self.value_expr(&c.value),
+                };
+                if literal && !matches!(c.value.kind, ExprKind::List(_)) {
                     value.s(" as const");
                 }
                 let mut out =
@@ -2230,7 +2242,27 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
             // `x as? T`: `T`'s cast of it (`HTTPError$$cast(x)`), `undefined` when it is not one.
-            ExprKind::CastAs(subject, _) => {
+            ExprKind::CastAs(subject, _, forced) if self.ck.union_casts.contains_key(&expr.id) => {
+                let set = self.ck.union_casts[&expr.id].clone();
+                let ts = set.values.iter().map(|v| string_literal(v)).collect::<Vec<_>>();
+                let union = ts.join(" | ");
+                if *forced {
+                    if self.options.dev {
+                        self.helpers.insert("cast");
+                        let mut out = Frag::of("$cast(");
+                        out.f(self.expr(subject)).s(&format!(", [{}])", ts.join(", ")));
+                        return out;
+                    }
+                    let mut out = self.operand(subject);
+                    out.s(&format!(" as {union}"));
+                    return out.wrap("(", ")");
+                }
+                // `x as? Tab`: read once, compared with each value (TS narrows it by them).
+                let value = self.path_or_temp(subject);
+                let test: Vec<String> = ts.iter().map(|v| format!("{value} === {v}")).collect();
+                Frag::of(format!("({} ? {value} as {union} : undefined)", test.join(" || ")))
+            }
+            ExprKind::CastAs(subject, ..) => {
                 let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
                 let value = self.expr(subject);
                 let mut out = Frag::of(func);
@@ -3773,6 +3805,7 @@ impl<'a> Emitter<'a> {
             (Recv::Str, "toInt") => helper(self, "toInt", vec![object]),
             (Recv::Str, "toFloat") => helper(self, "toFloat", vec![object]),
             (Recv::Int | Recv::Float, "toFloat") => object,
+            (Recv::Int | Recv::Float, "toFixed") => call_on(object, "toFixed", args),
             (Recv::Int | Recv::Float, "rounded") => object.wrap("Math.round(", ")"),
             (Recv::Int | Recv::Float, "floor") => object.wrap("Math.floor(", ")"),
             (Recv::Int | Recv::Float, "ceil") => object.wrap("Math.ceil(", ")"),
@@ -4449,7 +4482,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
-        | ExprKind::CastAs(e, _)
+        | ExprKind::CastAs(e, ..)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Force(e)
@@ -4631,7 +4664,7 @@ impl<'a> Emitter<'a> {
             ExprKind::Paren(e)
             | ExprKind::Spread(e)
             | ExprKind::Is(e, _)
-            | ExprKind::CastAs(e, _)
+            | ExprKind::CastAs(e, ..)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
