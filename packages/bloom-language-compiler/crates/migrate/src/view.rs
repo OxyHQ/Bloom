@@ -176,7 +176,7 @@ impl Tr<'_> {
     ) -> String {
         let equal = self.pending_equal.take().or_else(|| self.equal_for.remove(name));
         self.scope = Default::default();
-        let params = self.view_params(params, props_ty, module, span);
+        let params = self.view_params(name, params, props_ty, module, span);
         let (members, body) = match fn_body {
             Body::Expr(e) => (String::new(), self.view_value(e)),
             Body::Block(statements, end) => self.view_members(statements, end),
@@ -195,6 +195,7 @@ impl Tr<'_> {
     /// The props as parameters, from the props type's fields.
     fn view_params(
         &mut self,
+        view: &str,
         params: &FormalParameters,
         props_ty: Option<&TSType>,
         module: &[Statement],
@@ -223,6 +224,29 @@ impl Tr<'_> {
             && crate::module::props_used_whole(self.src, span, &id.name)
         {
             self.scope.props = Some(id.name.to_string());
+            // Its fields written out when the codemod can read them (2.0 has no `..props`): a
+            // call that hands `props` on passes each (`Tr::whole_props_fields`).
+            let fields: Option<Vec<(String, String, bool)>> = match local_object(module, &ty.name) {
+                Some(members) => Some(members.iter().filter_map(|m| self.field(m)).collect()),
+                None if self.imported.contains(ty.name.as_str()) => self
+                    .external_props(&ty.name)
+                    .map(|fields| fields.into_iter().map(|f| (f.name, f.ty, f.optional)).collect()),
+                None => None,
+            };
+            if let Some(fields) = fields.filter(|f| !f.is_empty()) {
+                let mut out = Vec::new();
+                for (name, ty, optional) in fields {
+                    let declared = if optional { optional_ty(&ty) } else { ty.clone() };
+                    self.scope.decl.insert(name.clone(), declared.clone());
+                    out.push(if optional {
+                        format!("{name}: {declared} = none")
+                    } else {
+                        format!("{name}: {ty}")
+                    });
+                    self.scope.props_fields.push(name);
+                }
+                return Some(out.join(", "));
+            }
             self.scope.whole_props = true;
             let ty = self.name(&ty.name, ty.span);
             let name = self.bind_param(&id.name, id.span);
@@ -317,6 +341,7 @@ impl Tr<'_> {
         };
         // Destructured props: their local names and defaults.
         let mut defaults: Vec<(String, &Expression)> = Vec::new();
+        let mut rest_field: Option<String> = None;
         match &param.pattern {
             BindingPattern::BindingIdentifier(id) => self.scope.props = Some(id.name.to_string()),
             BindingPattern::ObjectPattern(pattern) => {
@@ -339,8 +364,12 @@ impl Tr<'_> {
                         (BindingPattern::BindingIdentifier(id), Some(base))
                             if taken == own_sorted && taken.len() == pattern.properties.len() =>
                         {
+                            // 2.0: the rest is one stored property of `P` (no `..menu`); a call's
+                            // fields other than the own props are its record (`Tr::rest_args`).
                             let name = self.bind_param(&id.name, id.span);
-                            spread = Some(format!("{name}: {base}"));
+                            self.rest_views.insert(view.to_string(), (name.clone(), taken.clone()));
+                            rest_field = Some(format!("{name}: {base}"));
+                            spread = None;
                         }
                         _ => {
                             return Some(self.refuse(
@@ -427,6 +456,7 @@ impl Tr<'_> {
             };
             out.push(text);
         }
+        out.extend(rest_field);
         for field in external {
             let default = defaults.iter().find(|(k, _)| *k == field.name).map(|(_, e)| *e);
             let ty = field.ty;
@@ -447,7 +477,7 @@ impl Tr<'_> {
 
     /// The fields of a props type imported from another TS file, with the types they
     /// name imported here (`None`: they cannot be written out).
-    fn external_props(&mut self, name: &str) -> Option<Vec<crate::props::Field>> {
+    pub fn external_props(&mut self, name: &str) -> Option<Vec<crate::props::Field>> {
         let specifier = self.import_sources.get(name)?.clone();
         let (fields, imports) = crate::props::external_fields(&self.path, &specifier, name)?;
         for (source, ty) in imports {
@@ -1335,7 +1365,8 @@ impl Tr<'_> {
         body: Body,
     ) -> String {
         let saved = self.scope.clone();
-        let (params, prelude) = self.fn_params(params);
+        let labels = self.labelled.get(name).cloned();
+        let (params, prelude) = self.fn_params(params, labels);
         let ret = match ret {
             Some(t) => self.ret_type(t, is_async),
             None => self.infer_ret(body),
@@ -1390,9 +1421,54 @@ impl Tr<'_> {
     }
 
     /// A function's parameters, and the `let`s that destructure a typed object parameter.
-    fn fn_params(&mut self, params: &FormalParameters) -> (String, Vec<String>) {
+    fn fn_params(
+        &mut self,
+        params: &FormalParameters,
+        labels: Option<Vec<(String, String, bool)>>,
+    ) -> (String, Vec<String>) {
         let mut out = Vec::new();
         let mut prelude = Vec::new();
+        // `f({ a, b: local = 1 }: P)` called only with an object or a name: `a: A, b: B? = none`,
+        // then `let local = b ?? 1` (TS's default applies to an absent field).
+        if let Some(labels) = labels
+            && let [param] = params.items.as_slice()
+            && let BindingPattern::ObjectPattern(pattern) = &param.pattern
+        {
+            for (property, (key, ty, optional)) in pattern.properties.iter().zip(labels) {
+                let (local, default) = match &property.value {
+                    BindingPattern::BindingIdentifier(id) => (id, None),
+                    BindingPattern::AssignmentPattern(a) => match &a.left {
+                        BindingPattern::BindingIdentifier(id) => (id, Some(&a.right)),
+                        _ => unreachable!("scan_labelled takes plain names"),
+                    },
+                    _ => unreachable!("scan_labelled takes plain names"),
+                };
+                let default = default.filter(|d| !crate::expr::is_nothing(d));
+                self.scope.renames.remove(local.name.as_str());
+                let label = self.bind_param(&key, property.span);
+                let bound = self.bind(&local.name, local.span);
+                let opt = optional_ty(&ty);
+                out.push(if optional || default.is_some() {
+                    format!("{label}: {opt} = none")
+                } else {
+                    format!("{label}: {ty}")
+                });
+                match default {
+                    Some(value) => {
+                        let value = self.expr(value);
+                        prelude.push(format!("let {bound} = {label} ?? {value}"));
+                        self.scope.decl.insert(bound.clone(), ty.clone());
+                    }
+                    None => {
+                        if bound != label {
+                            prelude.push(format!("let {bound} = {label}"));
+                        }
+                        self.scope.decl.insert(bound.clone(), if optional { opt } else { ty.clone() });
+                    }
+                }
+            }
+            return (out.join(", "), prelude);
+        }
         let several = params.items.len() > 1;
         for (index, param) in params.items.iter().enumerate() {
             if let (BindingPattern::ObjectPattern(pattern), Some(t)) =
@@ -2687,7 +2763,7 @@ fn local_extends<'b, 'a>(
     None
 }
 
-fn key_name(key: &PropertyKey) -> Option<String> {
+pub fn key_name(key: &PropertyKey) -> Option<String> {
     match key {
         PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
         _ => None,

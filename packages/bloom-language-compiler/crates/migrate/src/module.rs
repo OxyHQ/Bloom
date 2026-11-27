@@ -76,6 +76,8 @@ pub struct Scope {
     pub assign_returns: Option<String>,
     /// The props are named whole (`..props: P`): `props` is a value.
     pub whole_props: bool,
+    /// The props of a view that hands them on whole, written out: `X(props)` passes each.
+    pub props_fields: Vec<String>,
 }
 
 pub struct Tr<'s> {
@@ -123,6 +125,12 @@ pub struct Tr<'s> {
     pub scope: Scope,
     /// Module functions a `view(F)` constant wraps: translated as that view.
     pub wrapped: HashSet<String>,
+    /// Module functions taking one destructured object, every call passing one object or
+    /// a name: labelled parameters (key, type, optional), in the pattern's order.
+    pub labelled: HashMap<String, Vec<(String, String, bool)>>,
+    /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
+    /// name and the own props; a call's other fields are the rest's record.
+    pub rest_views: HashMap<String, (String, Vec<String>)>,
     /// Review notes for the statement being translated (`Tr::review`).
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
@@ -344,6 +352,8 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         react_types: Default::default(),
         scope: Scope::default(),
         wrapped: HashSet::new(),
+        labelled: HashMap::new(),
+        rest_views: HashMap::new(),
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
@@ -444,6 +454,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
             tr.listed_exports.extend(names);
         }
     }
+    tr.scan_labelled(&program.body);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -838,6 +849,92 @@ impl<'s> Tr<'s> {
     /// What the translation needs to know about the module's own names.
     /// `const X = memo(Named, compare)` of a component of this module: Named takes
     /// the comparator as its `equal` member (X is then Named itself).
+    /// [`Tr::labelled`]: a module function `f({ a, b = 1 }: P)` that nothing exports or reads
+    /// except as `f({ … })` or `f(name)` takes `a`/`b` as labelled parameters, so a caller
+    /// that holds the fields passes them, with no object built.
+    fn scan_labelled(&mut self, body: &[Statement]) {
+        use oxc_ast_visit::Visit;
+        #[derive(Default)]
+        struct Uses {
+            refs: HashMap<String, usize>,
+            calls: HashMap<String, usize>,
+        }
+        impl<'a> Visit<'a> for Uses {
+            fn visit_identifier_reference(&mut self, id: &oxc_ast::ast::IdentifierReference<'a>) {
+                *self.refs.entry(id.name.to_string()).or_default() += 1;
+            }
+            fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
+                if let Expression::Identifier(id) = &call.callee
+                    && let [arg] = call.arguments.as_slice() && match arg {
+                    Argument::Identifier(_) => true,
+                    Argument::ObjectExpression(o) => o.properties.iter().all(
+                        |p| matches!(p, oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) if !p.computed),
+                    ),
+                    _ => false,
+                } {
+                    *self.calls.entry(id.name.to_string()).or_default() += 1;
+                }
+                oxc_ast_visit::walk::walk_call_expression(self, call);
+            }
+        }
+        let mut uses = Uses::default();
+        for statement in body {
+            uses.visit_statement(statement);
+        }
+        for statement in body {
+            let Statement::FunctionDeclaration(f) = statement else { continue };
+            let Some(id) = &f.id else { continue };
+            let name = id.name.as_str();
+            let [param] = f.params.items.as_slice() else { continue };
+            let (BindingPattern::ObjectPattern(pattern), Some(t)) = (&param.pattern, &param.type_annotation)
+            else {
+                continue;
+            };
+            if pattern.rest.is_some()
+                || uses.calls.get(name).is_none_or(|&c| c == 0 || uses.refs.get(name) != Some(&c))
+                || self.listed_exports.contains(name)
+            {
+                continue;
+            }
+            let TSType::TSTypeReference(r) = &t.type_annotation else { continue };
+            let TSTypeName::IdentifierReference(ty) = &r.type_name else { continue };
+            if r.type_arguments.is_some() {
+                continue;
+            }
+            let fields: Vec<(String, String, bool)> = match crate::view::local_object(body, &ty.name) {
+                Some(members) => members.iter().filter_map(|m| self.field(m)).collect(),
+                None if self.imported.contains(ty.name.as_str()) => match self.external_props(&ty.name) {
+                    Some(fields) => fields.into_iter().map(|f| (f.name, f.ty, f.optional)).collect(),
+                    None => continue,
+                },
+                None => continue,
+            };
+            let mut params = Vec::new();
+            for property in &pattern.properties {
+                let simple = match &property.value {
+                    BindingPattern::BindingIdentifier(_) => true,
+                    BindingPattern::AssignmentPattern(a) => {
+                        matches!(a.left, BindingPattern::BindingIdentifier(_))
+                    }
+                    _ => false,
+                };
+                let Some(key) = crate::view::key_name(&property.key).filter(|_| simple && !property.computed)
+                else {
+                    params.clear();
+                    break;
+                };
+                let Some((_, ty, optional)) = fields.iter().find(|(k, ..)| *k == key) else {
+                    params.clear();
+                    break;
+                };
+                params.push((key, ty.clone(), *optional));
+            }
+            if !params.is_empty() {
+                self.labelled.insert(name.to_string(), params);
+            }
+        }
+    }
+
     fn scan_memo_aliases(&mut self, body: &[Statement]) {
         for statement in body {
             let declaration = match statement {
