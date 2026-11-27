@@ -45,13 +45,9 @@ fn resolve(from: &Path, specifier: &str) -> Option<PathBuf> {
         return None;
     }
     let base = from.parent()?.join(specifier);
-    let candidates = [
-        base.with_extension("ts"),
-        base.with_extension("tsx"),
-        base.with_extension("d.ts"),
-        base.join("index.ts"),
-        base.join("index.tsx"),
-    ];
+    // `./badge.types` is `badge.types.ts`: the extension is appended, not replaced.
+    let with = |ext: &str| PathBuf::from(format!("{}.{ext}", base.to_string_lossy()));
+    let candidates = [with("ts"), with("tsx"), with("d.ts"), base.join("index.ts"), base.join("index.tsx")];
     candidates.into_iter().find(|p| p.is_file())
 }
 
@@ -200,6 +196,7 @@ fn fields_in(
     let file_name = file.to_string_lossy().into_owned();
     let mut tr = crate::module::new_tr(&source, &file_name, Comments::new(&source, &program.comments));
     tr.quiet = true;
+    crate::module::read_imports(&mut tr, &program.body);
     for member in members {
         let TSSignature::TSPropertySignature(p) = member else { return None };
         let key = match &p.key {
@@ -250,6 +247,10 @@ fn fields_in(
                 };
                 imports.push((specifier, word));
             }
+        }
+        // React's types it names (`ReactNode`), imported from `react` in the view's file.
+        for name in std::mem::take(&mut tr.react_types) {
+            imports.push(("react".to_string(), name));
         }
         // A field redeclared by the interface itself replaces its base's.
         fields.retain(|f: &Field| f.name != key);
@@ -316,4 +317,30 @@ fn substitute(text: &str, name: &str, replacement: &str) -> Option<String> {
         i += c.len_utf8();
     }
     Some(out)
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn reads_a_props_interface_of_another_file() {
+        let view = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/synthetic/props-elsewhere.tsx");
+        let (fields, imports) =
+            super::external_fields(view, "./badge.types", "BadgeProps").expect("the fields");
+        let fields: Vec<String> =
+            fields.iter().map(|f| format!("{}:{}:{}", f.name, f.ty, f.optional)).collect();
+        assert_eq!(
+            fields,
+            [
+                "tone:Tone:true",
+                "title:String:false",
+                "size:Size:true",
+                "label:((Float) -> String):false",
+                "children:View:true"
+            ]
+        );
+        assert_eq!(
+            imports,
+            [("./tone".to_string(), "Tone".to_string()), ("./badge.types".to_string(), "Size".to_string())]
+        );
+    }
 }

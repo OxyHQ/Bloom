@@ -449,8 +449,12 @@ impl Tr<'_> {
     /// name imported here (`None`: they cannot be written out).
     fn external_props(&mut self, name: &str) -> Option<Vec<crate::props::Field>> {
         let specifier = self.import_sources.get(name)?.clone();
-        let (fields, imports) = crate::props::external_fields(&self.filename, &specifier, name)?;
+        let (fields, imports) = crate::props::external_fields(&self.path, &specifier, name)?;
         for (source, ty) in imports {
+            if source == "react" {
+                self.react_types.insert(ty);
+                continue;
+            }
             self.used.insert(ty.clone());
             if !self.imported.contains(&ty) && !self.extra_imports.contains(&(source.clone(), ty.clone())) {
                 self.extra_imports.push((source, ty));

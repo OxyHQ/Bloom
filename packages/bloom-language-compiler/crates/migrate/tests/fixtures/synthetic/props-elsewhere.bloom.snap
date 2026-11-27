@@ -1,0 +1,20 @@
+// Props typed in another TS file: 2.0 has no `..Props` spread, so the view's stored
+// properties are that interface's fields (its base's first), and the types they name are
+// imported where that file has them; a type alias the file keeps to itself is written in place.
+
+import { type Size } from "./badge.types"
+import { type Tone } from "./tone"
+
+public struct Badge: View {
+  var tone: Tone? = none
+  let title: String
+  var size: Size = "md"
+  let label: (Float) -> String
+  var children: View? = none
+  var body: some View {
+    VStack {
+      Text(title)
+      Text("\(size) \(label(2))")
+    }
+  }
+}
