@@ -1,0 +1,13 @@
+// A test in parentheses narrows as one without (`(room.status != none) ? room.status : d`).
+public struct Room {
+  public let status: ("scheduled" | "live")?
+}
+
+func take(_ status: "scheduled" | "live") -> String { status }
+
+public func shown(_ room: Room?) -> String {
+  if (room != none) {
+    return take((room.status != none) ? room.status : "scheduled")
+  }
+  return ""
+}

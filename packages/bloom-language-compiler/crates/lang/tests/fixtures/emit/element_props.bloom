@@ -1,0 +1,21 @@
+// A Bloom view where TS takes a React element crosses as one, `toElement(…)`: an optional one
+// branch by branch (`bare ? none : Text("foot")`), and one given to a component whose props
+// Bloom cannot read (`ShellProps extends ViewProps`), as a React component's props are
+// elements. A TS `view()` is a node factory, called with its props (spec 4.7).
+import { default as Badge, NamedBadge } from "@/elements/Badge"
+import { Frame } from "@/elements/Frame"
+import { Shell } from "@/elements/Shell"
+
+public struct ElementProps: View {
+  var bare: Bool = false
+  var title: String = "title"
+
+  var body: some View {
+    VStack {
+      Frame(header: Text("head"), footer: bare ? none : Text("foot")) { Text("body") }
+      Shell(header: Text(title)) { Text("body") }
+      Badge(label: "a")
+      NamedBadge(label: "b")
+    }
+  }
+}
