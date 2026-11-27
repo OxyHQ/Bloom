@@ -49,6 +49,7 @@ Ask first before changing a published subpath, a peer dependency range or the `e
 ## PR and commits
 
 - One topic per PR, branched from `main`. Merging a version bump to `main` publishes the package once CI passes on that commit ([npm releases](https://github.com/OxyHQ/oxy/blob/main/docs/npm-releases.md)).
+- A change adds a changelog fragment, `changes/<topic>.md` ([format](changes/README.md)), and never edits a `CHANGELOG.md` or bumps a version; the release PR compiles the fragments ([releasing](docs/releasing.mdx)). Why: every PR editing `## Unreleased` made the merge queue's PRs conflict; CI fails a CHANGELOG edit outside a release.
 - Lint and format with Biome ([lint and format](https://github.com/OxyHQ/oxy/blob/main/docs/engineering/lint-and-format.md)).
 
 ## Secrets

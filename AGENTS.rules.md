@@ -9,6 +9,8 @@ bun run test / typescript / lint / format / clean / verify:package
 
 npm: version-bump merge to main publishes via Oxy's shared Release packages workflow after that commit passes CI; gates = CI - https://github.com/OxyHQ/oxy/blob/main/docs/npm-releases.md
 
+Changelog: a PR adds `changes/<topic>.md` (package, bump, section, entry) and never edits a `CHANGELOG.md`; only a release PR does, through `bun run changelog:release`. `bun run changelog:check` in CI fails a CHANGELOG edit without its package's version bump, an `## Unreleased` section and an unreadable fragment - docs/releasing.mdx
+
 RN + Web. Families: `src/<name>/`, published subpaths/root exports
 
 ## Packaging

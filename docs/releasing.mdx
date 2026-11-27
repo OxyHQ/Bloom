@@ -1,0 +1,56 @@
+---
+title: Releasing Bloom
+description: How a change records its changelog entry (a fragment in changes/), and how a release PR decides the versions, compiles the fragments and publishes every package through CI.
+---
+
+# Releasing Bloom
+
+A version merged to `main` is the release: once CI passes on that commit, Oxy's shared Release
+packages workflow publishes every package whose version is not on npm yet, with npm trusted
+publishing and provenance ([npm releases](https://github.com/OxyHQ/oxy/blob/main/docs/npm-releases.md)).
+Nothing is ever published from a laptop.
+
+## A change: a fragment, not the CHANGELOG
+
+A feature or fix PR bumps no version and never edits a `CHANGELOG.md`. It adds a fragment for
+each package it changes, `changes/<topic>.md`, with the package, the bump it asks for and the
+section, then the entry ([changes/README.md](../changes/README.md) has the format). Every PR
+editing the same `## Unreleased` lines made the PRs in the merge queue conflict with each other.
+A file of its own conflicts with nothing.
+
+CI (`bun run changelog:check`, in the build job) fails a PR that:
+
+- edits a package's `CHANGELOG.md` without changing that package's `package.json` version (that
+  is, outside a release), or adds an `## Unreleased` section. A change that only removes lines
+  passes, because it moves an old entry out into a fragment;
+- has a fragment it cannot read: an unknown package, bump or section, or an entry that is not a
+  list item.
+
+## A release
+
+One release PR at a time, branched from `main` in a worktree. If another release PR is open, it
+goes first.
+
+1. **See what is pending.** `bun run changelog:plan` lists each package's fragments and the
+   version their largest bump asks for, from the package's last released heading.
+2. **Decide the versions.** A fix is a patch and a feature a minor. A removal no app uses
+   (check with a consumer scan) is a minor with a `Breaking` entry. A breaking change an app feels
+   is a major. Set each `package.json` version, and keep the peers consistent:
+   - `@oxy.so/bloom-language`'s peer on `@oxy.so/bloom` moves to the new Bloom when the language
+     relies on it (write a `Compatibility` fragment saying so);
+   - the codemod's peer on the language moves to the language it writes;
+   - the compiler's six platform packages (`packages/bloom-language-compiler/npm/*`) take the
+     compiler's version.
+
+   A package can be released with no fragment of its own (the compiler for a new spec). Its
+   CHANGELOG entry is then written in the release PR by hand.
+3. **Compile the fragments.** `bun run changelog:release` writes each package's section under its
+   new version (Bloom's names the packages released beside it) and deletes the fragments. It
+   refuses, and changes nothing, when a package is not bumped yet or is bumped less than its
+   fragments ask. Read the result, and edit the wording if it needs to.
+4. **Regenerate and gate.** `bun install` (the lockfile's workspace versions), `bun run build`
+   (the task catalog's version, `verify:package`), `bun run lint`, `bun run typescript` and
+   `bun run test`, plus the changed packages' own tests.
+5. **Merge.** Open the PR, titled with every version (`chore(release): Bloom 23.10.0, the language
+   1.8.0`), and enqueue it (`gh pr merge <n> --squash`). After the merge, check each package in the
+   release job's log (`+ @oxy.so/<name>@<version>`) and with `npm view <name> version`.

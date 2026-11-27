@@ -123,6 +123,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The commit before this one is the base the changelog check diffs
+          # against: a pull request's merge commit, a merge-queue entry and a
+          # squash pushed to main each have it as their first parent.
+          fetch-depth: 2
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '24.21.0'
@@ -130,6 +134,13 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
+      # A change records its changelog entry as a fragment in changes/; only a
+      # release (its package's version bumped) edits a CHANGELOG.md
+      # (scripts/changelog.mjs, docs/releasing.mdx).
+      - name: Changelog fragments, and no CHANGELOG edit outside a release
+        run: |
+          node --test scripts/test-changelog.mjs
+          node scripts/changelog.mjs check
       - run: bun install --frozen-lockfile --ignore-scripts
       # Biome formatting + lint (config: biome.json), before the slower build.
       # Call the installed binary by path: a bare `bunx biome` that misses the
