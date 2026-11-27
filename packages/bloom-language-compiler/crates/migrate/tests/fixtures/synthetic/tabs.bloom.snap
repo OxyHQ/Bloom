@@ -1,0 +1,22 @@
+// TS's `as const` tab lists: written inline in a view, a module constant of its own, which
+// keeps the literals' union; a module constant written `as const` stays itself.
+
+public type Tab = "videos" | "following"
+
+private let SIZES = ["sm", "md"]
+
+private let VIDEOS_FOLLOWING = ["videos", "following"]
+
+public struct Tabs: View {
+  let value: Tab
+  let onChange: (Tab) -> Unit
+  var body: some View {
+    HStack {
+      for tab in VIDEOS_FOLLOWING {
+        Text(tab).accessibilityState(selected: tab == value).onPress { onChange(tab) }.id(tab)
+      }
+      for size in SIZES { Text(size).id(size) }
+      for tab in VIDEOS_FOLLOWING { Text(tab).id("again-\(tab)") }
+    }
+  }
+}
