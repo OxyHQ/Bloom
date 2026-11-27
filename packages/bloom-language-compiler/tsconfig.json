@@ -4,6 +4,7 @@
     "noEmit": true,
     "paths": {
       "@oxy.so/bloom-language": ["../bloom-language/src/index.ts"],
+      "@oxy.so/bloom-language/screen-host": ["../bloom-language/src/screen-host.ts"],
       "@oxy.so/bloom-language/*": ["../bloom-language/src/entries/*.ts"],
       "@oxy.so/bloom-data": ["../bloom-data/src/index.ts"],
       "@oxy.so/bloom-data/sqlite": ["../bloom-data/src/sqlite.ts"]

@@ -58,5 +58,7 @@ export function view<P extends object = Record<string, never>>(
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost, equal) as unknown as ComponentType<object>;
-  return (...args) => new Node('view', { component, props: args[0] ?? NO_PROPS }, NO_CHILDREN);
+  const read = body as (props: object) => Child | (() => Child);
+  return (...args) =>
+    new Node('view', { component, props: args[0] ?? NO_PROPS, body: read }, NO_CHILDREN);
 }

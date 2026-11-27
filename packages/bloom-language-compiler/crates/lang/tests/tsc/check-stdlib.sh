@@ -44,9 +44,13 @@ declare module '@oxy.so/bloom/bottom-bar' {
   import type { ComponentType } from 'react';
   export const BottomBar: ComponentType<Record<string, unknown>>;
 }
-declare module '@oxy.so/bloom/screen' {
-  import type { ComponentType, ReactNode } from 'react';
-  export const Screen: ComponentType<{ children?: ReactNode }>;
+declare module '@oxy.so/bloom-language/screen-host' {
+  import type { ReactNode } from 'react';
+  import type { Child } from '@oxy.so/bloom-language';
+  export function drawScreen(
+    root: Child,
+    options?: { readonly back?: () => void; readonly throughViews?: boolean },
+  ): ReactNode;
 }
 declare module '@oxy.so/bloom/theme' {
   export function useThemeColor(key: string): string;

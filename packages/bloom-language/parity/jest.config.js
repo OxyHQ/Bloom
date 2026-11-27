@@ -28,6 +28,7 @@ const rootMapper = root.moduleNameMapper;
 const bloomSource = {
   '^@oxy.so/bloom-language$': `${PACKAGE}/src/index.ts`,
   '^@oxy.so/bloom-language/router$': `${PACKAGE}/src/router/index.ts`,
+  '^@oxy.so/bloom-language/screen-host$': `${PACKAGE}/src/screen-host.ts`,
   '^@oxy.so/bloom-language/([a-z-]+)$': `${PACKAGE}/src/entries/$1.ts`,
   '^@oxy.so/bloom/icons/(Ri[A-Za-z0-9]+)$': '<rootDir>/src/icons/remix/$1',
   '^@oxy.so/bloom/icons/(SiSubstack)$': '<rootDir>/src/icons/simple-icons/$1',
