@@ -1,0 +1,22 @@
+// React's `useMemo` and `useCallback` written as a view's members (TS the codemod kept) are
+// plain members: bloomc memoises them in the view's one cache on their exact dependencies, with
+// no hook slot each (Mention's row-cost gate: PostItem's 45 cost +35 hooks per row).
+import { useCallback, useMemo } from "react"
+
+public struct Row: View {
+  let title: String
+  let count: Int
+  let onOpen: (String) -> Unit
+  let label = useMemo({ "\(title) (\(count))" }, [title, count])
+  let total = useMemo({
+    let doubled = count * 2
+    return doubled + 1
+  }, [count])
+  let open = useCallback({ onOpen(title) }, [onOpen, title])
+  var body: some View {
+    VStack {
+      Button(Text(label)).onPress(open)
+      Text("\(total)")
+    }
+  }
+}
