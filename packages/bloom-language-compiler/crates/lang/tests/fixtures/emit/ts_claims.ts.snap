@@ -66,13 +66,12 @@ return path?.endsWith("/about") ?? false;
 export function pick(onSelect: (p0: FeedMeta) => void): void {
 }
 
-const $fn0 = (meta: FeedMeta | undefined) => {
+export function usePick(): void {
+pick((meta: FeedMeta | undefined) => {
 if (meta?.lane == null) {
 return;
 }
-};
-export function usePick(): void {
-pick($fn0);
+});
 }
 
 export const Frame = view(function Frame() {
