@@ -1,6 +1,6 @@
 // `Array.from({ length })` as a range: with an index callback, with none, mapped after,
 // and a `number` bound (truncated, as `Array.from` truncates it). A set added to and
-// assigned back is `inserting`.
+// assigned back is `inserting`. A generic arrow function keeps its type parameter.
 
 public struct Dots: View {
   let count: Float
@@ -13,6 +13,7 @@ public struct Dots: View {
     next = next.inserting(id)
     seen = next
   }
+  func pick<T: Equatable>(_ values: [T], _ chosen: T) -> Bool { values.any { v in v == chosen } }
 
   var body: some View {
     // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
@@ -21,6 +22,7 @@ public struct Dots: View {
       for v in rows { v }
       for v in blanks { v }
       Text("\(slots.count) slots")
+      Text(pick(["a", "b"], "a") ? "picked" : "none")
       Button("Mark").onPress { mark("a") }
     }
   }
