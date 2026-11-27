@@ -400,6 +400,9 @@ impl Tr<'_> {
         if let Some(renamed) = self.scope.renames.get(name) {
             return renamed.clone();
         }
+        if let Some(view) = self.view_aliases.get(name).cloned() {
+            return self.ident(&view, span);
+        }
         if let Some(renamed) = self.import_renames.get(name) {
             let renamed = renamed.clone();
             self.used.insert(renamed.clone());
