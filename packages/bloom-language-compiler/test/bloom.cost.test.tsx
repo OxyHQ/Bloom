@@ -17,9 +17,11 @@ const { Row } = require('./bloom/row.bloom') as Pick<Views, 'Row'>;
 const { Banner } = require('./bloom/static.bloom') as Pick<Views, 'Banner'>;
 const { Titled } = require('./bloom/list.bloom') as Pick<Views, 'Titled'>;
 const { Grid } = require('./bloom/grid.bloom') as Pick<Views, 'Grid'>;
+const { Tagged } = require('./bloom/tagged.bloom') as Pick<Views, 'Tagged'>;
 
 const TITLES = ['one', 'two', 'three', 'four', 'five'];
 const ENTRIES = TITLES.map((label) => ({ id: label, label, extra: label.length }));
+const open = (_title: string) => {};
 
 const CASES = [
   {
@@ -43,15 +45,22 @@ const CASES = [
     bloom: () => Grid({ entries: ENTRIES }),
     hand: () => Hand.Grid({ entries: ENTRIES }),
   },
+  {
+    name: "a hook function's useMemo/useCallback (one memo cache, no hook slot each)",
+    bloom: () => Tagged({ title: 'one', tags: TITLES, onOpen: open }),
+    hand: () => Hand.Tagged({ title: 'one', tags: TITLES, onOpen: open }),
+    // The hand-written hook holds three slots; bloomc's cache is none (`$c` is the fiber's).
+    fewerHooks: true,
+  },
 ];
 
 describe('a .bloom view costs what its hand-written equivalent does', () => {
-  it.each(CASES)('$name', ({ bloom, hand }) => {
+  it.each(CASES)('$name', ({ bloom, hand, fewerHooks }) => {
     const compiled: Cost = measured(toElement(bloom()));
     const written: Cost = measured(toElement(hand()));
     expect(compiled.fibers).toBeGreaterThan(0);
     expect(compiled.fibers).toBeLessThanOrEqual(written.fibers);
-    expect(compiled.hooks).toBeLessThanOrEqual(written.hooks);
+    expect(compiled.hooks).toBeLessThanOrEqual(written.hooks - (fewerHooks ? 3 : 0));
     expect(compiled.contexts).toBeLessThanOrEqual(written.contexts);
   });
 });

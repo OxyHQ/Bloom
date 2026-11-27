@@ -1,14 +1,14 @@
-//! React's `useMemo` and `useCallback` written as a view's members (TS code the codemod kept):
-//! lowered to plain members, which bloomc memoises in the view's one cache on their exact
-//! dependencies (ADR 0002 section 5, "memoisation: none written"). Each costs no hook slot,
-//! as the React Compiler folded them into its `_c(n)` cache for the TS.
+//! React's `useMemo` and `useCallback` written as a view's members, or as the top-level `let`s
+//! of a hook function (`func useX`; TS code the codemod kept): lowered to plain `let`s, which
+//! bloomc memoises in the view's or the hook function's one cache on their exact dependencies
+//! (ADR 0002 section 5, "memoisation: none written"). Each costs no hook slot, as the React
+//! Compiler folded them into its `_c(n)` cache for the TS.
 //!
 //! - `let f = useCallback({ … }, [deps])` is `let f = { … }`;
-//! - `let x = useMemo({ e }, [deps])` is `let x = e`, and a closure of several lines is called
-//!   (`let x = { … }()`).
+//! - `let x = useMemo({ e }, [deps])` is `let x = e`, and a closure of several lines (or whose
+//!   line returns early with `?`) is called (`let x = { … }()`).
 //!
-//! The written dependencies are not read: bloomc's are exact. A hook function keeps its calls,
-//! since it has no cache of its own.
+//! The written dependencies are not read: bloomc's are exact.
 
 use crate::ast::*;
 
@@ -32,10 +32,22 @@ pub fn lower(file: &mut File) {
         return;
     }
     for item in &mut file.items {
-        let ItemKind::View(view) = &mut item.kind else { continue };
-        for member in &mut view.members {
-            let Member::Let(stmt) = member else { continue };
-            lower_value(&mut stmt.value, &use_memo, &use_callback);
+        match &mut item.kind {
+            ItemKind::View(view) => {
+                for member in &mut view.members {
+                    let Member::Let(stmt) = member else { continue };
+                    lower_value(&mut stmt.value, &use_memo, &use_callback);
+                }
+            }
+            ItemKind::Fn(f) if crate::check::is_hook_name(&f.name.name) && !f.is_async => {
+                for stmt in &mut f.body.stmts {
+                    let StmtKind::Let(l) = &mut stmt.kind else { continue };
+                    if !l.is_async {
+                        lower_value(&mut l.value, &use_memo, &use_callback);
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }
@@ -63,11 +75,27 @@ fn lower_value(value: &mut Expr, use_memo: &[String], use_callback: &[String]) {
         return;
     }
     let ExprKind::Closure(closure) = &function.kind else { unreachable!("matched above") };
-    if let [Stmt { kind: StmtKind::Expr(tail), .. }] = closure.body.as_slice() {
+    // Inlined, a `?` would return from the hook function, not from the closure.
+    if let [Stmt { kind: StmtKind::Expr(tail), .. }] = closure.body.as_slice()
+        && !returns_early(tail)
+    {
         *value = tail.clone();
         return;
     }
     // Several lines: the closure, called where the member is computed.
     *call.callee = function;
     call.args.clear();
+}
+
+/// Whether `expr` holds a `?` (one in a closure of its own too: the IIFE is never wrong).
+fn returns_early(expr: &Expr) -> bool {
+    let mut found = false;
+    crate::analysis::walk_expr(expr, &mut |node| {
+        if let crate::analysis::Node::Expr(e) = node
+            && matches!(e.kind, ExprKind::Try(_))
+        {
+            found = true;
+        }
+    });
+    found
 }
