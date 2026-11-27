@@ -15,6 +15,7 @@ pub mod bloomui;
 mod chains;
 mod check;
 mod codable;
+mod composition;
 pub mod diagnostic;
 mod emit;
 mod extensions;
@@ -265,6 +266,7 @@ fn lowered(source: &str) -> (Ast, Vec<Diagnostic>) {
     let (mut file, _, syntax) = parser::parse(source);
     extensions::lower(&mut file);
     memo::lower(&mut file);
+    composition::lower(&mut file);
     (file, syntax)
 }
 

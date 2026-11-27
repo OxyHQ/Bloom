@@ -291,6 +291,7 @@ fn written(ty: &TypeExpr) -> String {
         TypeKind::Fn { .. } => "a function".into(),
         TypeKind::Record(_) => "a record".into(),
         TypeKind::Strings(_) => "a string union".into(),
+        TypeKind::Composition(_) => "a protocol composition".into(),
         TypeKind::Error => "?".into(),
     }
 }
