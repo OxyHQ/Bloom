@@ -820,7 +820,9 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
   trailing builder as `children`. A TS function is a component when it is UpperCamel, takes at
   most its props and returns a React element (`JSX.Element`, `ReactElement`, `ReactNode`, also as
-  emitted declarations write them: `import("react").JSX.Element`): `EngagementBar(size: "md") {
+  emitted declarations write them: `import("react").JSX.Element`), and so is a `const` typed
+  `typeof` one (react-native's `View`) and a namespace's member (`import * as Skeleton`,
+  `Skeleton.Region { … }`): `EngagementBar(size: "md") {
   Action(…) }` draws the bar with the actions inside, built in the caller's render. A component
   whose props declare no `children` passes the builder to the one node prop (`ReactNode`, a
   `View`) it declares and the call does not give (`Slot(title:) { … }` is its `content`); with

@@ -1214,6 +1214,13 @@ impl Mapper<'_> {
             TsType::Intersection(members) => {
                 members.iter().find_map(|m| self.component_in(file, m, depth + 1))
             }
+            // `declare const $$View: typeof View` (react-native's `View`): the function it names.
+            TsType::Query(name) => match file.decls.get(name)? {
+                TsDecl::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
+                    Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
+                }
+                _ => None,
+            },
             TsType::Ref(name, args) if args.is_empty() => {
                 let (target, decl) = self.type_decl(file, name, depth + 1)?;
                 match decl {

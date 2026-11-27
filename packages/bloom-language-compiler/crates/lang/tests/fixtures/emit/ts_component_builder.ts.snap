@@ -1,10 +1,13 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Embed, Header, Text, VStack, view } from "@oxy.so/bloom-language";
 import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
 import type { ComponentProps } from "react";
 import { Action, EngagementBar } from "@/ui/bars";
 import { Slot } from "@/ui/bars";
+import { Box } from "@/ui/rn";
+import * as Skeleton from "@/ui/skeleton";
 
 const $view0 = Embed($jsx(Action, { label: "a" } satisfies ComponentProps<typeof Action>));
 const $view1 = Text("b");
@@ -34,5 +37,35 @@ const $view6 = Embed(($render) => $jsx(Slot, { title: "t", content: $render($vie
 export const Slotted = view(function Slotted() {
 "use no memo";
 return $view6;
+});
+
+const $view7 = Embed($jsx(Skeleton.Circle, { size: 36 } satisfies ComponentProps<typeof Skeleton.Circle>));
+const $view8 = Text("loading");
+const $view9 = Embed(($render) => $jsx(Skeleton.Region, { children: $render([$view7, $view8]) } satisfies ComponentProps<typeof Skeleton.Region>));
+const $view10 = Embed(($render) => $jsx(Box, { testID: "box", children: $render($view9) } satisfies ComponentProps<typeof Box>));
+const $view11 = Header("Loading");
+const $view12 = Text("open");
+export interface PlaceholderProps {
+  readonly open: boolean;
+}
+export const Placeholder = view(function Placeholder(props: PlaceholderProps) {
+"use no memo";
+const $ = $c(2);
+const { open } = props;
+let $t2;
+if ($[0] !== open) {
+let $t1: Child;
+if (open) {
+$t1 = $view12;
+} else {
+$t1 = undefined;
+}
+$t2 = $view10.header($view11.accessory($t1));
+$[0] = open;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
 });
 

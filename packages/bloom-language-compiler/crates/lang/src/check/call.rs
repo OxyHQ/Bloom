@@ -300,6 +300,19 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Field(object, member) => {
+                // `Skeleton.Region(…) { … }` on `import * as Skeleton`: a member the module
+                // exports as a component is drawn as one (its builder its `children`).
+                if let ExprKind::Name(ns) = &object.kind
+                    && member.name.starts_with(|c: char| c.is_ascii_uppercase())
+                    && let Some(file) = self.ts_namespaces.get(ns).cloned()
+                    && self
+                        .lookup(ns)
+                        .is_some_and(|l| matches!(self.out.locals[l].kind, LocalKind::Import { .. }))
+                    && let Some(props) = self.namespace_component(&file, ns, &member.name)
+                {
+                    self.expr(&call.callee, None);
+                    return self.component_call(expr, call, &props);
+                }
                 // `Type.m(…)`: an extension's static function.
                 if let ExprKind::Name(type_name) = &object.kind
                     && self.lookup(type_name).is_none()
@@ -1814,6 +1827,17 @@ impl Checker<'_> {
         );
     }
 
+    /// The props of `ns.name` when the module `file` exports it as a component.
+    fn namespace_component(&mut self, file: &Rc<crate::ts::TsFile>, ns: &str, name: &str) -> Option<Ty> {
+        let mut mapper = crate::ts::Mapper {
+            defs: &mut self.out.defs,
+            options: self.options,
+            named: &mut self.ts_named,
+            reads: &mut self.out.dependencies,
+        };
+        mapper.export(file, name, &format!("{ns}.{name}"), 0)?.component
+    }
+
     fn component_call(&mut self, expr: &Expr, call: &Call, props: &Ty) -> Ty {
         self.out.calls.insert(expr.id, CallRes::Component);
         let props = self.resolve(props);
@@ -2130,6 +2154,10 @@ impl Checker<'_> {
                     self.expr(value, Some(&Ty::Bool));
                 }
                 ParamKind::View | ParamKind::Children => self.child(value),
+                // `.accessory(if open { row })`: an `if` without `else` is an optional child.
+                ParamKind::Object { .. } | ParamKind::Any if matches!(&value.kind, ExprKind::If(i) if i.otherwise.is_none()) => {
+                    self.child(value)
+                }
                 ParamKind::Object { .. } | ParamKind::Any => {
                     self.boundary(value, None);
                 }
