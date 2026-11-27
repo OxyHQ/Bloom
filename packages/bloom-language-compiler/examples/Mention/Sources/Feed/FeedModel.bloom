@@ -1,0 +1,44 @@
+// ADR 0002, example 1 (docs/adr/0002-resumen-es.md), as written there: the feed, with an
+// optimistic like.
+import Bloom
+import Mention.API
+
+public struct Post: Codable, Identifiable, Equatable {
+  public let id: String
+  public let text: String
+  public let author: User
+  public let createdAt: Date
+  public var likes: Int
+  public var isLiked: Bool
+}
+
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  public private(set) var isLoading = false
+  private var cursor: String?
+  private let api: MentionAPI
+
+  public init(api: MentionAPI) { self.api = api }
+
+  public func refresh() async throws {
+    isLoading = true
+    defer { isLoading = false }
+    let page: Page<Post> = try await api.get("/feeds/home")
+    posts = page.items
+    cursor = page.cursor
+  }
+
+  public func like(_ post: Post) async {
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return }
+    posts[i].isLiked = true
+    posts[i].likes += 1
+    do {
+      try await api.post("/posts/\(post.id)/like")
+    } catch {
+      posts[i].isLiked = false
+      posts[i].likes -= 1
+      Toast.show("feed.likeFailed", style: .error)
+    }
+  }
+}

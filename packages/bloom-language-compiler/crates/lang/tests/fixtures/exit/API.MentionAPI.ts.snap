@@ -1,0 +1,51 @@
+import { fatal } from "../../.bloom/std/Bloom/Core.bloom";
+import { type HTTPClient, HTTPClient$get, HTTPClient$perform } from "../../.bloom/std/Bloom/HTTP.bloom";
+import { type Codec, jsonField, jsonObject, Bool$$decode, Bool$$encode, type JSONValue, String$$decode, String$$encode, Array$$decoder, Array$$encoder, Optional$$decoder, Optional$$encoder } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type URL, URL$$parse } from "../../.bloom/std/Bloom/URL.bloom";
+
+export interface User {
+  readonly id: string;
+  readonly name: string;
+  readonly avatar: string;
+  readonly isVerified: boolean;
+}
+
+export function User$$decode(value: unknown, at: string): User {
+return { id: String$$decode(jsonField(value, "id", at), "User.id"), name: String$$decode(jsonField(value, "name", at), "User.name"), avatar: String$$decode(jsonField(value, "avatar", at), "User.avatar"), isVerified: Bool$$decode(jsonField(value, "isVerified", at), "User.isVerified") };
+}
+
+export function User$$encode(value: User): unknown {
+return jsonObject({ "id": String$$encode(value.id), "name": String$$encode(value.name), "avatar": String$$encode(value.avatar), "isVerified": Bool$$encode(value.isVerified) });
+}
+
+export const User$$self: Codec<User> = { decode: User$$decode, encode: User$$encode };
+
+export interface Page<T> {
+  readonly items: readonly T[];
+  readonly cursor: string | undefined;
+}
+
+export function Page$$codec<T>(item: Codec<T>): Codec<Page<T>> {
+return { decode: (value: unknown, at: string) => ({ items: Array$$decoder(item.decode)(jsonField(value, "items", at), `${at}.items`), cursor: Optional$$decoder(String$$decode)(jsonField(value, "cursor", at), `${at}.cursor`) }), encode: (page: Page<T>) => jsonObject({ "items": Array$$encoder(item.encode)(page.items), "cursor": Optional$$encoder(String$$encode)(page.cursor) }) };
+}
+
+export interface MentionAPI {
+  readonly http: HTTPClient;
+}
+
+export async function MentionAPI$get<T>(self: MentionAPI, path: string, $w_T_Codable: Codec<T>): Promise<T> {
+return await (HTTPClient$get(self.http, path, $w_T_Codable));
+}
+
+export async function MentionAPI$post(self: MentionAPI, path: string): Promise<void> {
+await (HTTPClient$perform(self.http, "post", path));
+}
+
+export function MentionAPI$$live(): MentionAPI {
+const $t0 = URL$$parse("https://api.mention.earth");
+if (!($t0 !== undefined)) {
+return fatal("Mention's base URL");
+}
+return { http: { headers: {}, timeoutSeconds: 30, baseURL: $t0 } };
+}
+

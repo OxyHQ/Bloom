@@ -1,0 +1,28 @@
+// ADR 0002, example 2, as written there: Settings → Notifications.
+import Bloom
+import Mention.Settings
+
+struct NotificationSettings: View {
+  @Environment(\.session) private var session
+  @State private var model = NotificationPrefsModel()
+
+  var body: some View {
+    switch model.state {
+    case .loading:
+      SettingsSkeleton()
+    case .signedOut:
+      SignInPrompt("settings.notifications.signInRequired")
+    case .ready:
+      VStack(spacing: .lg) {
+        if model.isSaving { ProgressView().controlSize(.sm) }
+        SettingsSection("settings.notifications.sections.types") {
+          ForEach(PrefKey.allCases) { key in
+            Toggle(key.title, isOn: model.binding(for: key))
+              .description(key.detail)
+          }
+        }
+      }
+    }
+    .task { await model.load(session) }
+  }
+}

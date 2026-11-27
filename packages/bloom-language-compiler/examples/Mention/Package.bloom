@@ -1,0 +1,15 @@
+// ADR 0002's exit check: the Spanish summary's three Mention examples, as written there,
+// in a package with the two app modules they import (`Mention.API`, `Mention.Settings`).
+let package = Package(
+  name: "Mention",
+  platforms: [.iOS(17), .android(26), .web],
+  dependencies: [
+    .package("Bloom", from: "23.9.1"),
+  ],
+  targets: [
+    .module("API"),
+    .module("Settings"),
+    .module("Feed", dependencies: ["API"]),
+    .module("Screens", dependencies: ["Settings"]),
+  ]
+)

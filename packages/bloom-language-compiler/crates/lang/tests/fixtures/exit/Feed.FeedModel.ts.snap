@@ -1,0 +1,70 @@
+import { Observable, toast } from "@oxy.so/bloom-language";
+import { Array$firstIndex } from "../../.bloom/std/Bloom/Core.bloom";
+import { Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Int$$decode, Int$$encode, type JSONValue, String$$decode, String$$encode, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
+import { type Date } from "../../.bloom/std/Bloom/Time.bloom";
+import { type User, type MentionAPI, type Page, User$$decode, User$$encode, MentionAPI$get, MentionAPI$post, Page$$codec } from "../API/MentionAPI.bloom";
+function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {
+  const out = items.slice();
+  out[at] = item;
+  return out;
+}
+
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+  readonly author: User;
+  readonly createdAt: Date;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+
+export function Post$$decode(value: unknown, at: string): Post {
+return { id: String$$decode(jsonField(value, "id", at), "Post.id"), text: String$$decode(jsonField(value, "text", at), "Post.text"), author: User$$decode(jsonField(value, "author", at), "Post.author"), createdAt: Date$$decode(jsonField(value, "createdAt", at), "Post.createdAt"), likes: Int$$decode(jsonField(value, "likes", at), "Post.likes"), isLiked: Bool$$decode(jsonField(value, "isLiked", at), "Post.isLiked") };
+}
+
+export function Post$$encode(value: Post): unknown {
+return jsonObject({ "id": String$$encode(value.id), "text": String$$encode(value.text), "author": User$$encode(value.author), "createdAt": Date$$encode(value.createdAt), "likes": Int$$encode(value.likes), "isLiked": Bool$$encode(value.isLiked) });
+}
+
+export const Post$$self: Codec<Post> = { decode: Post$$decode, encode: Post$$encode };
+
+export class FeedModel extends Observable {
+  posts: readonly Post[] = [];
+  isLoading: boolean = false;
+  cursor: string | undefined = undefined;
+  api!: MentionAPI;
+}
+
+export function FeedModel$$init(api: MentionAPI): FeedModel {
+const self: FeedModel = new FeedModel();
+self.api = api;
+return self;
+}
+
+export async function FeedModel$refresh(self: FeedModel): Promise<void> {
+self.$set("isLoading", true);
+try {
+const page: Page<Post> = await (MentionAPI$get(self.api, "/feeds/home", Page$$codec(Post$$self)));
+self.$set("posts", page.items);
+self.$set("cursor", page.cursor);
+} finally {
+self.$set("isLoading", false);
+}
+}
+
+export async function FeedModel$like(self: FeedModel, post: Post): Promise<void> {
+const $t0 = Array$firstIndex(self.posts, ($0: Post) => $0.id === post.id);
+if (!($t0 !== undefined)) {
+return;
+}
+self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, isLiked: true }));
+self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, likes: self.posts[$t0]!.likes + (1) }));
+try {
+await (MentionAPI$post(self.api, `/posts/${post.id}/like`));
+} catch (error) {
+self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, isLiked: false }));
+self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, likes: self.posts[$t0]!.likes - (1) }));
+toast("feed.likeFailed");
+}
+}
+
