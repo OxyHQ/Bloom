@@ -447,6 +447,14 @@ impl Tr<'_> {
             self.used.insert(name.to_string());
             return name.to_string();
         }
+        // A menu's actions or content (built only when its menu opens or a row is chosen) hands
+        // its props on as TS did: one record of the stored properties.
+        if self.in_menu
+            && let Some(fields) = self.whole_props_fields(name)
+        {
+            let fields: Vec<String> = fields.iter().map(|f| format!("{f}: {}", self.name(f, span))).collect();
+            return format!("{{ {} }}", fields.join(", "));
+        }
         if self.scope.props.as_deref() == Some(name) {
             return self.refuse(
                 "view:props-object",
