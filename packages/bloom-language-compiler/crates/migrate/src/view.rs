@@ -1629,6 +1629,10 @@ impl Tr<'_> {
                     None => String::new(),
                 },
                 Statement::TryStatement(t) => self.try_stmt(t, last),
+                // The last statement's bare block: nothing after it sees its names, and a
+                // name may be declared again, so its statements are this block's (its `return`
+                // stays the function's tail).
+                Statement::BlockStatement(b) if last => self.block_stmts(&b.body, b.span.end, tail),
                 other => self.stmt(other),
             };
             let reviews = self.take_reviews();
@@ -1681,9 +1685,22 @@ impl Tr<'_> {
             }
             Statement::ExpressionStatement(s) => self.stmt_expr(&s.expression),
             Statement::IfStatement(s) => {
-                let test = self.test(&s.test, true);
+                let parts = self.test_parts(&s.test, true);
+                // Only a plain `if let` rebinds (an optional `String`'s test is spelled `s != none && …`).
+                let (bound, then) = match &parts {
+                    crate::expr::Test::Bind(_, None) => {
+                        self.unwrapped_branch(&parts, s.consequent.span(), |tr| tr.block_of(&s.consequent))
+                    }
+                    _ => (None, self.block_of(&s.consequent)),
+                };
+                let test = match (parts, bound) {
+                    (crate::expr::Test::Plain(text), _) => text,
+                    (crate::expr::Test::Bind(name, None), bound) => {
+                        format!("let {} = {name}", bound.unwrap_or_else(|| name.clone()))
+                    }
+                    (crate::expr::Test::Bind(..), _) => self.test(&s.test, false),
+                };
                 let test = crate::expr::strip_parens(&test).to_string();
-                let then = self.block_of(&s.consequent);
                 match &s.alternate {
                     None => format!("if {test} {{\n{then}\n}}"),
                     Some(Statement::IfStatement(_)) => {
@@ -1767,7 +1784,12 @@ impl Tr<'_> {
                 self.refuse("statement:throw", "`throw` outside a closure (return a `Result`)", t.span)
             }
             Statement::SwitchStatement(s) => self.switch(s),
-            Statement::BlockStatement(b) => self.refuse("statement:block", "a bare block", b.span),
+            // A bare block is a scope: `do { … }`. (The last statement's block is spliced, in
+            // `block_stmts`.)
+            Statement::BlockStatement(b) => {
+                let body = self.block_stmts(&b.body, b.span.end, false);
+                format!("do {{\n{body}\n}}")
+            }
             Statement::FunctionDeclaration(f) => {
                 self.refuse("fn:nested", "a function inside a function", f.span)
             }
@@ -2368,7 +2390,18 @@ impl Tr<'_> {
         handler: &oxc_ast::ast::CatchClause,
         finalizer: Option<String>,
     ) -> String {
+        // A state named like the caught error (`error`, Swift's implicit one too): the handler's
+        // `error = …` writes the state, so the caught value takes another name.
+        let state_named = |tr: &Self, name: &str| tr.scope.setters.values().any(|s| s.state == name);
+        let shadow = match handler.param.as_ref().map(|p| &p.pattern) {
+            Some(BindingPattern::BindingIdentifier(id)) if state_named(self, &id.name) => {
+                Some(id.name.to_string())
+            }
+            None if state_named(self, "error") => Some(String::new()),
+            _ => None,
+        };
         let catch = match handler.param.as_ref().map(|p| &p.pattern) {
+            _ if shadow.is_some() => "catch let caught".to_string(),
             Some(BindingPattern::BindingIdentifier(id)) => {
                 let name = self.bind(&id.name, id.span);
                 if name == "error" { "catch".to_string() } else { format!("catch let {name}") }
@@ -2383,7 +2416,22 @@ impl Tr<'_> {
         let in_do = std::mem::replace(&mut self.in_do, true);
         let block = self.block_stmts(&t.block.body, t.block.span.end, false);
         self.in_do = in_do;
+        let renamed = shadow.as_ref().map(|ts| {
+            let previous = (!ts.is_empty()).then(|| self.scope.renames.insert(ts.clone(), "caught".into()));
+            (ts.clone(), previous)
+        });
         let err = self.block_stmts(&handler.body.body, handler.body.span.end, false);
+        if let Some((ts, previous)) = renamed {
+            match previous {
+                Some(Some(p)) => {
+                    self.scope.renames.insert(ts, p);
+                }
+                Some(None) => {
+                    self.scope.renames.remove(&ts);
+                }
+                None => {}
+            }
+        }
         self.propagate = propagate;
         self.try_return = returning;
         let defer = finalizer.map(|f| format!("{f}\n")).unwrap_or_default();
