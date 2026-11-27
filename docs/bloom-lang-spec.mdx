@@ -321,7 +321,10 @@ value whose type comes from TS (a `Foreign`, a type read from a `.d.ts`, or what
 one, `viewPost.authors`), TS may say it is always there while the data at run time lacks it, so
 `viewPost?.authors?.map { … } ?? []` keeps each guard as written, silently, and a guarded link
 is optional from there on. `{}` is the empty record where a struct, or its optional, is
-expected (`viewPost?.metadata ?? {}`). A method
+expected (`viewPost?.metadata ?? {}`); where a TS type with required fields is expected, `ts.state
+?? {}` is TS's `State | {}`, a `Partial<State>` whose fields read as optional. A `let` keeps the
+claim of the TS value it holds. A closure's parameter may be wider than the one expected (`{ file:
+File? in … }` for `(File) -> Unit`), as Swift's `(T?) -> U` fits `(T) -> U`. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
 is not `none`. A member Bloom respells keeps its spelling through `?.` and the chain after it,
 whatever the generic it came through: `query.data?.count` with `data: T?` and `T = [Post]` is

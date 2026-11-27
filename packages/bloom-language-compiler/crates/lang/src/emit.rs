@@ -2475,6 +2475,12 @@ impl<'a> Emitter<'a> {
                     Some(CallRes::Struct(def)) => {
                         self.construct(&record_call(expr.span, &[]), *def, false, false)
                     }
+                    // `post.state ?? {}`: typed as the patch, so TS reads its fields beside the
+                    // struct's (`State | {}` alone has no `spoiler`).
+                    Some(CallRes::Partial(_)) if self.ck.partial_fallbacks.contains(&expr.id) => {
+                        let ty = self.expr_ty(expr);
+                        Frag::of(format!("({{}} as {})", self.ts_type(&ty)))
+                    }
                     Some(CallRes::Partial(def)) => {
                         self.construct(&record_call(expr.span, &[]), *def, true, false)
                     }
