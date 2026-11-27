@@ -157,8 +157,8 @@ class BloomImageView(context: ThemedReactContext) : View(context) {
     val next = Wanted(source, headers, cachePolicy, if (sized) 0 else width, if (sized) 0 else height)
     if (next == wanted) return
     val sourceChanged = wanted?.source != next.source || wanted?.headers != next.headers
-    wanted = next
     cancel()
+    wanted = next
     val gen = ++generation
     val uri = source?.let { Pipeline.uri(context, it) }
     if (uri == null) {
@@ -248,7 +248,12 @@ class BloomImageView(context: ThemedReactContext) : View(context) {
     }
   }
 
+  /**
+   * Stops the load in flight. One that had not arrived is asked for again when the view
+   * is next attached or laid out (a screen's transition detaches and reattaches its views).
+   */
   private fun cancel() {
+    if (loading?.isFinished == false) wanted = null
     loading?.close()
     loading = null
     loadingPlaceholder?.close()
