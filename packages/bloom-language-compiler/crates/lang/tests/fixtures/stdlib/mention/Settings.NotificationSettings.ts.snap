@@ -74,7 +74,7 @@ export async function SettingsStore$set(self: SettingsStore, prefs: Notification
 const next = NotificationPrefs$setting(prefs, key, on);
 KeyValueStore$setValue(self.cache, NotificationPrefs$$self, next, cacheKey);
 try {
-await (HTTPClient$perform(self.api.http, "put", "settings/notifications", (NotificationPrefs$$encode(next) satisfies unknown | undefined | null)));
+await (HTTPClient$perform(self.api.http, "put", "settings/notifications", (((NotificationPrefs$$encode(next)) ?? undefined) satisfies unknown | undefined)));
 return next;
 } catch (error) {
 KeyValueStore$setValue(self.cache, NotificationPrefs$$self, prefs, cacheKey);

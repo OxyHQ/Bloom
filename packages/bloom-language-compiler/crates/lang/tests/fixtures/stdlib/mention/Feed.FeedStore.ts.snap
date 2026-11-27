@@ -14,7 +14,7 @@ function $mapOption<T, U>(value: T | null | undefined, f: (value: T) => U): U | 
 export function homeFeed(api: MentionAPI): Source<Post> {
 return Source$$make(Post$$store, "home", async (cursor: string | undefined, signal: AbortSignal) => {
 const query: Readonly<Record<string, string>> = $mapOption(cursor, ($0: string) => ({ "cursor": $0 })) ?? ({});
-const page = await (MentionAPI$get(api, "feeds/home", FeedPage$$self, query, (signal satisfies AbortSignal | undefined | null)));
+const page = await (MentionAPI$get(api, "feeds/home", FeedPage$$self, query, (((signal) ?? undefined) satisfies AbortSignal | undefined)));
 return { items: page.items, next: page.hasMore ? page.nextCursor : undefined };
 });
 }

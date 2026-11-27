@@ -2036,13 +2036,14 @@ impl<'a> Emitter<'a> {
         }
         // A `Foreign` value where Bloom expects a type: TypeScript checks it is one.
         if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
-            // A `T?` takes a TS `null` too (`T | null` reads as `T?`): where the value lands
-            // still checks the whole.
-            let ty = match &ty {
-                Ty::Option(_) => format!("{} | null", self.ts_type(&ty)),
-                _ => self.ts_type(&ty),
-            };
+            // A `T?` takes a TS `null` too (`T | null` reads as `T?`), and it reads as `none`:
+            // `(x ?? undefined)` is the `T | undefined` Bloom's own optional is.
+            let optional = matches!(ty, Ty::Option(_));
+            let ty = self.ts_type(&ty);
             if ty != "unknown" {
+                if optional {
+                    return out.wrap("(((", &format!(") ?? undefined) satisfies {ty})"));
+                }
                 // `satisfies` binds tighter than an operator: `((a || b) satisfies T)`.
                 if matches!(expr.kind, ExprKind::Binary(..) | ExprKind::Ternary(..)) {
                     return out.wrap("((", &format!(") satisfies {ty})"));
