@@ -1224,10 +1224,13 @@ impl Tr<'_> {
     /// A call by TypeScript's convention: a trailing object literal is named arguments.
     fn ts_call(&mut self, call: &CallExpression) -> String {
         // `useQuery({ queryKey, queryFn: () => f() })`: the `TanStackQuery` binding's
-        // `useQuery(QueryOptions(queryKey:, queryFn: { try await f() }))` (`Tr::tanstack`).
+        // `useQuery(QueryOptions(queryKey:, queryFn: { try await f() }))` (`Tr::tanstack`), and
+        // `useInfiniteQuery` likewise with `InfiniteQueryOptions`.
         if self.tanstack.contains(&call.span.start)
             && let [Argument::ObjectExpression(o)] = call.arguments.as_slice()
         {
+            let infinite =
+                matches!(&call.callee, Expression::Identifier(id) if id.name == "useInfiniteQuery");
             let mut fields = Vec::new();
             for property in &o.properties {
                 let ObjectPropertyKind::ObjectProperty(p) = property else { unreachable!() };
@@ -1239,11 +1242,27 @@ impl Tr<'_> {
                             Expression::AwaitExpression(a) => &a.argument,
                             other => other,
                         };
-                        format!("{{ try await {} }}", self.expr(value))
+                        let value = self.expr(value);
+                        match (infinite, arrow.params.items.is_empty()) {
+                            (false, _) => format!("{{ try await {value} }}"),
+                            (true, true) => format!("{{ _ in try await {value} }}"),
+                            // `({ pageParam }) => f(pageParam)`: the page's context, its cursor read.
+                            (true, false) => format!(
+                                "{{ page in\nlet pageParam = page.pageParam\nreturn try await {value}\n}}"
+                            ),
+                        }
                     }
+                    // `undefined as string | undefined`: no first cursor.
+                    _ if key.name == "initialPageParam" => "none".to_string(),
                     value => self.expr(value),
                 };
                 fields.push(format!("{}: {value}", key.name));
+            }
+            if infinite {
+                if !fields.iter().any(|f| f.starts_with("getNextPageParam:")) {
+                    fields.push("getNextPageParam: { _ in none }".to_string());
+                }
+                return format!("useInfiniteQuery(InfiniteQueryOptions({}))", fields.join(", "));
             }
             return format!("useQuery(QueryOptions({}))", fields.join(", "));
         }
