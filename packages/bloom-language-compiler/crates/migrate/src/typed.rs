@@ -39,8 +39,11 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 first_write(source, start, text).map(|line_start| {
                     let snapshot = format!("{text}Before");
                     let indent: String = source[line_start..].chars().take_while(|c| *c == ' ').collect();
-                    let already = source[..line_start].trim_end().ends_with(&format!("let {snapshot} = {text}"))
-                        || edits.iter().any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot));
+                    let already =
+                        source[..line_start].trim_end().ends_with(&format!("let {snapshot} = {text}"))
+                            || edits.iter().any(|(a, b, t)| {
+                                *a == line_start && *b == line_start && t.contains(&snapshot)
+                            });
                     if !already {
                         edits.push((line_start, line_start, format!("{indent}let {snapshot} = {text}\n")));
                     }
@@ -84,12 +87,17 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     .take_while(|l| l.trim().is_empty() || l.len() - l.trim_start().len() >= indent.len())
                     .any(|l| {
                         let t = l.trim_start();
-                        t.starts_with(&format!("{text} =")) || t.starts_with(&format!("{text}.")) || t.starts_with(&format!("{text}["))
+                        t.starts_with(&format!("{text} ="))
+                            || t.starts_with(&format!("{text}."))
+                            || t.starts_with(&format!("{text}["))
                     });
                 let declared_var = decl.is_some_and(|d| d < line_start);
                 (!written_after && declared_var).then(|| {
                     let snapshot = format!("{text}Now");
-                    if !edits.iter().any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot)) {
+                    if !edits
+                        .iter()
+                        .any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot))
+                    {
                         edits.push((line_start, line_start, format!("{indent}let {snapshot} = {text}\n")));
                     }
                     (start, end, snapshot)
@@ -890,9 +898,14 @@ fn first_write(source: &str, read: usize, name: &str) -> Option<usize> {
         }
         if depth < 0 {
             let head = trimmed.trim_end();
-            let closure = head.ends_with(" in") || head.contains(".on") || head.starts_with("task")
-                || head.starts_with("fn ") || head.starts_with("func ") || head.contains(" fn ")
-                || head.contains(" func ") || head.contains(" in ");
+            let closure = head.ends_with(" in")
+                || head.contains(".on")
+                || head.starts_with("task")
+                || head.starts_with("fn ")
+                || head.starts_with("func ")
+                || head.contains(" fn ")
+                || head.contains(" func ")
+                || head.contains(" in ");
             if closure {
                 break;
             }
