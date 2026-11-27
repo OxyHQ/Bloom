@@ -23,4 +23,5 @@ export declare function ProfileCard(props: {
   profile: ProfileCardData;
   account?: AvatarAccount;
   subtitle?: ViewNode;
+  footer?: React.ReactNode;
 }): React.JSX.Element;

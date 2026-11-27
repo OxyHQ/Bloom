@@ -1,4 +1,3 @@
-import type { toElement } from "@oxy.so/bloom-language";
 import type { ComposedView } from "@oxy.so/bloom-language";
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Opener())`), or from TSX as `toElement(Opener())`. */
 export declare const Opener: () => ComposedView;

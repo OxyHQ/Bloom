@@ -124,6 +124,8 @@ struct Emitter<'a> {
     statics: HashSet<ExprId>,
     /// Emitting a hoisted tree: what is inside it is not hoisted again.
     in_static: bool,
+    /// The static chain being hoisted: its `toElement` is written where it is used.
+    hoisting: Option<ExprId>,
     diagnostics: Vec<Diagnostic>,
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
@@ -183,6 +185,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         hoisted_trees: HashMap::default(),
         statics: HashSet::default(),
         in_static: false,
+        hoisting: None,
         diagnostics: Vec::new(),
         view: None,
         signal: None,
@@ -1878,6 +1881,11 @@ impl<'a> Emitter<'a> {
             return out;
         }
         out.f(self.expr_inner(expr));
+        // A Bloom view where TS takes a React element.
+        if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
+            self.import_name(LANGUAGE, "toElement");
+            return out.wrap("toElement(", ")");
+        }
         // A value passed as `any P`: with its conformance's witness.
         if let Some((def, protocol)) = self.ck.packs.get(&expr.id).copied() {
             let witness =
@@ -4251,7 +4259,9 @@ impl<'a> Emitter<'a> {
     /// `expr` (a static chain) as a module constant; the same tree twice is one constant.
     fn hoist(&mut self, expr: &Expr) -> Frag {
         self.in_static = true;
+        let outer = self.hoisting.replace(expr.id);
         let value = self.child(expr);
+        self.hoisting = outer;
         self.in_static = false;
         if let Some(name) = self.hoisted_trees.get(&value.text) {
             return Frag::of(name.clone());

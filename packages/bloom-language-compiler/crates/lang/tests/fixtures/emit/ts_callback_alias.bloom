@@ -1,13 +1,13 @@
 // A closure's parameter takes its type from the expected function type, also when a TS
-// callback type alias names it through a re-export (R5): `surface` is a `SurfaceControls`.
+// callback type alias names it through a re-export (R5): `surface` is a `SurfaceControls`, and
+// the view it returns where TS takes a `ReactNode` is `toElement(view)`.
 import { presentSheet } from "@/sheet"
-import { toElement } from "@oxy.so/bloom-language"
 
 public struct Opener: View {
   func open() async {
     await presentSheet { surface in
-      // TS renders what it returns: a Bloom view crosses as an element.
-      toElement(Button(Text("Close")).onPress { surface.dismiss() })
+      // TS renders what it returns (`ReactNode`): the view crosses as an element.
+      Button(Text("Close")).onPress { surface.dismiss() }
     }
   }
 

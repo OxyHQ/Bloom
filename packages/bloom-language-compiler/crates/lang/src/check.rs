@@ -335,6 +335,9 @@ pub struct CheckResult {
     pub dependencies: BTreeSet<PathBuf>,
     /// Struct constructions passed as a record type with fewer fields (emitted through a temp).
     pub widened: HashSet<ExprId>,
+    /// Bloom views where TS takes a React element (a prop, an argument, what a TS callback
+    /// returns): emitted as `toElement(view)`.
+    pub elements: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
@@ -3861,6 +3864,9 @@ impl<'o> Checker<'o> {
         };
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));
+        if hint.as_ref().is_some_and(is_element) && matches!(self.resolve(&ty), Ty::View(_)) {
+            self.out.elements.insert(expr.id);
+        }
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
@@ -5666,6 +5672,15 @@ impl<'o> Checker<'o> {
         let trying = std::mem::take(&mut self.trying);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
+        // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
+        // as one.
+        if is_element(&ret_resolved)
+            && let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last()
+            && let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
+            && matches!(self.resolve(&tail_ty), Ty::View(_))
+        {
+            self.out.elements.insert(tail.id);
+        }
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
             (self.resolve(&body_ty), c.body.last())
@@ -6250,6 +6265,16 @@ fn exits(stmt: &Stmt) -> bool {
             ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
             _ => false,
         },
+        _ => false,
+    }
+}
+
+/// Whether a TS type is a React element (`ReactNode`, `ReactElement`, `JSX.Element`), which a
+/// Bloom view crosses into as `toElement(view)`.
+pub(crate) fn is_element(ty: &Ty) -> bool {
+    match ty {
+        Ty::Foreign(text) => text.starts_with("import(\"react\")."),
+        Ty::Option(inner) => is_element(inner),
         _ => false,
     }
 }

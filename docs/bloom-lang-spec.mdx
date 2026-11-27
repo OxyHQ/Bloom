@@ -418,7 +418,9 @@ callback alias types a closure's parameters: with `presentSheet(render: SurfaceR
 surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
 one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
 `Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
-`AnyView` are views.
+`AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
+`JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
+… }` does) crosses as one: the emitter writes `toElement(view)`.
 
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const

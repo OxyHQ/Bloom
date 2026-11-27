@@ -1453,8 +1453,11 @@ impl Mapper<'_> {
             "AbortSignal" => return Ty::Foreign("AbortSignal".into()),
             _ => {}
         }
+        // A React element: named as React names it, so a Bloom view crosses into it as one
+        // (`toElement(view)`, see `crate::check::is_element`).
         if REACT_ELEMENTS.contains(&name) {
-            return Ty::Foreign(path.into());
+            let element = if name.ends_with("ReactNode") { "ReactNode" } else { "ReactElement" };
+            return Ty::Foreign(format!("import(\"react\").{element}").into());
         }
         // The embedded language's view types, now followed through its re-exports: a view.
         if matches!(name, "ViewNode" | "AnyView") {
