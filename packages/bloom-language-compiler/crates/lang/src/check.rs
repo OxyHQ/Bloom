@@ -377,6 +377,8 @@ pub struct CheckResult {
     /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
     /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
     pub map_writes: HashSet<ExprId>,
+    /// `{}` where a TS object type Bloom does not map is expected: the empty object, not a closure.
+    pub empty_objects: HashSet<ExprId>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
     /// Module constants whose record literal keeps its string literals' types (`let SIZES =
@@ -917,6 +919,7 @@ impl<'o> Checker<'o> {
             kind: DefKind::Struct(fields),
             origin: Origin::Record,
             class: None,
+            tagged: None,
         });
         let def = self.out.defs.len() - 1;
         self.records.insert(name, def);
@@ -1543,6 +1546,7 @@ impl<'o> Checker<'o> {
                 kind,
                 origin: Origin::Local,
                 class,
+                tagged: None,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
             self.span_type((name.span, Ty::Adt(def, Vec::new())));
@@ -2768,6 +2772,7 @@ impl<'o> Checker<'o> {
                 kind,
                 origin: Origin::Bloom { specifier: specifier.to_string() },
                 class,
+                tagged: None,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
         }
@@ -3143,6 +3148,17 @@ impl<'o> Checker<'o> {
         let model = class.is_some() && !segs.is_empty();
         if !bound && !model && !indexed {
             return false;
+        }
+        // An element of a TS value (`patch[key] = "show"`, `patch` a TS `Partial<Record<K, V>>`
+        // Bloom does not map): TS's own object, written in place as TS writes it; tsc checks it.
+        if indexed && matches!(self.resolve(&info.ty), Ty::Foreign(_)) && info.kind != LocalKind::State {
+            if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+                self.var_captured(&info, a.target.span);
+            }
+            self.expr(&a.target, None);
+            self.boundary(&a.value, None);
+            self.out.assigns.insert(a.span, AssignRes::Foreign);
+            return true;
         }
         self.out.assign_targets.insert(root.id);
         self.out.names.insert(root.id, NameRes::Local(local));
@@ -3869,6 +3885,20 @@ impl<'o> Checker<'o> {
                 self.narrow(lhs, test, join);
                 self.narrow(rhs, test, join);
             }
+            // `rows.kind == "sources"` (where `!= none` would narrow) on a TS discriminated
+            // union: `rows` is that member there, as TS narrows it.
+            op if (*op == BinaryOp::Eq && test == BinaryOp::Ne)
+                || (*op == BinaryOp::Ne && test == BinaryOp::Eq) =>
+            {
+                let (subject, literal) = match (&lhs.kind, &rhs.kind) {
+                    (_, ExprKind::Str { parts, .. }) => (lhs, parts),
+                    (ExprKind::Str { parts, .. }, _) => (rhs, parts),
+                    _ => return,
+                };
+                let [StrPart::Text(value)] = literal.as_slice() else { return };
+                let value = value.clone();
+                self.narrow_tag(expr.id, subject, &value);
+            }
             op if *op == test => {
                 let subject = match (&lhs.kind, &rhs.kind) {
                     (_, ExprKind::None) => lhs,
@@ -3944,8 +3974,11 @@ impl<'o> Checker<'o> {
         else {
             return ty;
         };
-        if !matches!(self.resolve(&ty), Ty::Option(_)) {
-            return ty;
+        match self.resolve(&ty) {
+            Ty::Option(_) => {}
+            // A TS discriminated union narrowed on its tag: the member, read as it is.
+            Ty::Adt(def, _) if self.out.defs[def].tagged.is_some() => return present,
+            _ => return ty,
         }
         self.out.narrowed_paths.insert(expr.id);
         present
@@ -4075,6 +4108,47 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// A `match`'s subject that is a TS discriminated union's tag (`rows.kind`, `rows` a local):
+    /// the subject's id, the local, and the union.
+    fn tagged_subject(&self, scrutinee: &Expr) -> Option<(ExprId, LocalId, Rc<Tagged>)> {
+        let ExprKind::Field(object, field) = &scrutinee.kind else { return None };
+        let ExprKind::Name(_) = &object.kind else { return None };
+        let Some(NameRes::Local(local)) = self.out.names.get(&object.id).cloned() else { return None };
+        let Ty::Adt(def, _) = self.resolve(&self.out.locals[local].ty) else { return None };
+        let tagged = self.out.defs[def].tagged.clone()?;
+        (tagged.tag == field.name).then_some((scrutinee.id, local, tagged))
+    }
+
+    /// A tag read on a member chain (`item.media.mode`, `item.media` a TS discriminated union):
+    /// the chain as a path, and the union. Values are immutable, so the chain narrows as a name
+    /// does.
+    fn tagged_path(&self, scrutinee: &Expr) -> Option<(LocalId, FieldPath, Rc<Tagged>)> {
+        let ExprKind::Field(object, field) = &scrutinee.kind else { return None };
+        if matches!(object.kind, ExprKind::Name(_)) {
+            return None;
+        }
+        let (root, path) = self.path_of(object)?;
+        let ty = self.out.types.get(&object.id)?;
+        let Ty::Adt(def, _) = self.resolve(ty) else { return None };
+        let tagged = self.out.defs[def].tagged.clone()?;
+        (tagged.tag == field.name).then_some((root, path, tagged))
+    }
+
+    /// Narrows a tag test's subject (a name or a member chain) to the member `value` names.
+    fn narrow_tag(&mut self, id: ExprId, subject: &Expr, value: &str) {
+        if let Some((_, original, tagged)) = self.tagged_subject(subject) {
+            let Some((_, member)) = tagged.members.iter().find(|(v, _)| v == value) else { return };
+            let ident =
+                Ident { name: self.out.locals[original].name.clone(), span: self.out.locals[original].span };
+            let narrowed = self.declare(&ident, member.clone(), LocalKind::Let);
+            self.out.narrowed.insert(id, (narrowed, original));
+        } else if let Some((root, path, tagged)) = self.tagged_path(subject) {
+            let Some((_, member)) = tagged.members.iter().find(|(v, _)| v == value) else { return };
+            let depth = self.scopes.len();
+            self.paths.push((depth, root, path, member.clone()));
+        }
+    }
+
     /// Checks a `match`'s arms (exhaustive, reachable); `arm` checks each body.
     fn match_arms(
         &mut self,
@@ -4088,10 +4162,21 @@ impl<'o> Checker<'o> {
         let mut rows: Vec<Vec<Pat>> = Vec::new();
         let mut tys = Vec::new();
         let zonked = self.zonk(&scrutinee);
+        let tagged = self.tagged_subject(&m.scrutinee).is_some() || self.tagged_path(&m.scrutinee).is_some();
         for a in &m.arms {
             self.push();
             let mut locals = Vec::new();
             self.bind(&a.pattern, &scrutinee, &LocalKind::Let, &mut locals);
+            // `switch rows.kind { case "sources": … }` on a TS discriminated union: `rows` is that
+            // member in the arm, as TS narrows it (`rows.sources`).
+            if tagged
+                && let PatternKind::Literal(literal) = &a.pattern.kind
+                && let ExprKind::Str { parts, .. } = &literal.kind
+                && let [StrPart::Text(value)] = parts.as_slice()
+            {
+                let value = value.clone();
+                self.narrow_tag(literal.id, &m.scrutinee, &value);
+            }
             if let Some(guard) = &a.guard {
                 self.expr(guard, Some(&Ty::Bool));
             }
@@ -4848,6 +4933,18 @@ impl<'o> Checker<'o> {
             {
                 let inner = self.resolve(inner);
                 self.record_literal(expr, &[], Some(&inner))
+            }
+            // Where a TS object type Bloom does not map is expected (`var patch: Prefs = {}`, a
+            // `Partial<Record<K, V>>`): the empty object, as TS's `{}`. A TS function type Bloom
+            // maps is a function, so a `Foreign` here is an object unless its text says otherwise.
+            ExprKind::Closure(c)
+                if c.params.is_empty()
+                    && c.body.is_empty()
+                    && matches!(&expected_resolved, Some(Ty::Foreign(text))
+                        if !text.is_empty() && !text.contains("=>") && !text.contains("Parameters<")) =>
+            {
+                self.out.empty_objects.insert(expr.id);
+                expected_resolved.clone().expect("matched")
             }
             ExprKind::Closure(c) => self.closure(c, expected_resolved.as_ref(), false),
             ExprKind::If(if_expr) => self.if_expr(if_expr, expected, expr.span),
@@ -6839,7 +6936,13 @@ fn shift_def(def: &Def, offset: usize) -> Def {
             requirements.iter().map(|r| RequirementDef { ty: shift(&r.ty, offset), ..r.clone() }).collect(),
         ),
     };
-    Def { kind, ..def.clone() }
+    let tagged = def.tagged.as_ref().map(|t| {
+        Rc::new(Tagged {
+            tag: t.tag.clone(),
+            members: t.members.iter().map(|(v, ty)| (v.clone(), shift(ty, offset))).collect(),
+        })
+    });
+    Def { kind, tagged, ..def.clone() }
 }
 
 /// How `==` compares values of a type (spec 4.3).

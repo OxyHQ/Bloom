@@ -18,7 +18,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::Options;
-use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Ty};
+use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Tagged, Ty};
 
 mod infer;
 
@@ -1630,6 +1630,8 @@ impl Mapper<'_> {
             Ty::Bool
         } else if let [only] = rest.as_slice() {
             self.ty(file, only, scope, &inner_path, depth)
+        } else if let Some(tagged) = self.tagged_union(file, &rest, scope, &inner_path, depth) {
+            tagged
         } else {
             return Ty::Foreign(path.into());
         };
@@ -1907,6 +1909,7 @@ impl Mapper<'_> {
                     kind: DefKind::Struct(Vec::new()),
                     origin: Origin::Ts { path: path.to_string() },
                     class: None,
+                    tagged: None,
                 });
                 let ty = Ty::Adt(id, Vec::new());
                 if args.is_empty() {
@@ -1938,6 +1941,79 @@ impl Mapper<'_> {
         ty
     }
 
+    /// A discriminated union of object types (`{ kind: "a"; … } | { kind: "b"; … }`): a def whose
+    /// field is the tag, every member's own field with one distinct string literal, and that
+    /// knows each member's type (`Extract<T, { kind: "a" }>`), which a `match` on the tag narrows to.
+    fn tagged_union(
+        &mut self,
+        file: &Rc<TsFile>,
+        members: &[&TsType],
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Option<Ty> {
+        if members.len() < 2 {
+            return None;
+        }
+        let objects: Vec<&[TsMember]> = members
+            .iter()
+            .map(|m| if let TsType::Object(fields) = m { Some(fields.as_slice()) } else { None })
+            .collect::<Option<_>>()?;
+        let literal = |fields: &[TsMember], name: &str| {
+            fields.iter().find(|f| f.name == name && !f.optional).and_then(|f| match &f.ty {
+                TsType::StrLit(value) => Some(value.clone()),
+                _ => None,
+            })
+        };
+        let tag = objects[0].iter().map(|f| f.name.clone()).find(|name| {
+            let values: Vec<Option<String>> = objects.iter().map(|o| literal(o, name)).collect();
+            values.iter().all(Option::is_some)
+                && values.iter().collect::<std::collections::HashSet<_>>().len() == values.len()
+        })?;
+        let mut tagged = Vec::new();
+        for fields in &objects {
+            let value = literal(fields, &tag).expect("every member has the tag");
+            let member_path = format!("Extract<{path}, {{ {}: \"{value}\" }}>", crate::emit::prop_key(&tag));
+            let ty = self.object(file, fields, scope, &member_path, &member_path, depth);
+            tagged.push((value, ty));
+        }
+        let values: Vec<String> = tagged.iter().map(|(v, _)| v.clone()).collect();
+        let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
+        let mut fields = vec![FieldDef {
+            name: tag.clone(),
+            ty: Ty::Strings(Rc::new(StrSet { name, values, token: false })),
+            default: FieldDefault::None,
+        }];
+        // A field every member has, with one type, is the union's too (`block.domain`), as TS
+        // reads it without narrowing.
+        let member_fields: Vec<Vec<FieldDef>> = tagged
+            .iter()
+            .map(|(_, ty)| match ty {
+                Ty::Adt(def, _) => self.defs[*def].fields().to_vec(),
+                _ => Vec::new(),
+            })
+            .collect();
+        if let Some((first, rest)) = member_fields.split_first() {
+            for field in first {
+                if field.name != tag
+                    && rest.iter().all(|m| m.iter().any(|f| f.name == field.name && f.ty == field.ty))
+                {
+                    fields.push(field.clone());
+                }
+            }
+        }
+        let id = self.defs.len();
+        self.defs.push(Def {
+            name: path.to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Ts { path: path.to_string() },
+            class: None,
+            tagged: Some(Rc::new(Tagged { tag, members: tagged })),
+        });
+        Some(Ty::Adt(id, Vec::new()))
+    }
+
     fn object(
         &mut self,
         file: &Rc<TsFile>,
@@ -1957,6 +2033,7 @@ impl Mapper<'_> {
             kind: DefKind::Struct(Vec::new()),
             origin: Origin::Ts { path: path.to_string() },
             class: None,
+            tagged: None,
         });
         let fields = self.fields(file, members, scope, path, depth);
         self.defs[id].kind = DefKind::Struct(fields);
