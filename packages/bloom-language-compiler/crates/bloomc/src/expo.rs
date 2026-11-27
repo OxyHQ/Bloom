@@ -366,11 +366,30 @@ pub fn generate_for(package: &Package, bloom: bool) -> Result<(), String> {
                     &single_root(header, &runtime, &entry_name, &entry_rel, &catalogs, bloom),
                 )?;
             }
+            Some(table) if bloom => {
+                // The Bloom router: no file routes, the table its spec.
+                let _ = std::fs::remove_dir_all(build.join("app"));
+                write(
+                    &build.join("index.js"),
+                    &crate::android::routed_entry(
+                        header,
+                        &crate::android::RoutedEntry {
+                            std: &rel(&std_dir),
+                            entry_name: &entry_name,
+                            entry: &entry_rel,
+                            catalogs: &catalogs,
+                            table: &table,
+                        },
+                    ),
+                )?;
+            }
             Some(table) => {
-                // Today's router: expo-router's file routes, written from the app's routes enum.
+                // The Expo path: expo-router's file routes, written from the app's routes enum.
                 let routing = crate::files::relative_url(&build.join("app"), &std_dir.join("routing"));
+                let routing_expo =
+                    crate::files::relative_url(&build.join("app"), &std_dir.join("routing-expo"));
                 let registration =
-                    crate::navigation::write_routes(&build, routing.trim_start_matches("./"), &table)?;
+                    crate::navigation::write_routes(&build, routing_expo.trim_start_matches("./"), &table)?;
                 let (icons, destinations) = crate::navigation::destinations(&table);
                 write(
                     &build.join("app/_layout.js"),
@@ -382,6 +401,7 @@ pub fn generate_for(package: &Package, bloom: bool) -> Result<(), String> {
                                 &std_dir.join("runtime"),
                             ),
                             routing: &routing,
+                            routing_expo: &routing_expo,
                             entry_name: &entry_name,
                             entry: &crate::files::relative_url(&build.join("app"), &entry_file),
                             catalogs: &catalogs_from(&build.join("app")),
@@ -391,14 +411,7 @@ pub fn generate_for(package: &Package, bloom: bool) -> Result<(), String> {
                         },
                     ),
                 )?;
-                if bloom {
-                    write(
-                        &build.join("index.js"),
-                        &crate::android::routed_entry(header, &build.join("app"))?,
-                    )?;
-                } else {
-                    write(&build.join("index.js"), &format!("{header}import 'expo-router/entry';\n"))?;
-                }
+                write(&build.join("index.js"), &format!("{header}import 'expo-router/entry';\n"))?;
             }
         }
     }
@@ -499,6 +512,7 @@ pub(crate) fn single_root(
 struct RoutedRoot<'a> {
     runtime: &'a str,
     routing: &'a str,
+    routing_expo: &'a str,
     entry_name: &'a str,
     entry: &'a str,
     catalogs: &'a str,
@@ -528,9 +542,10 @@ fn routed_root(header: &str, r: &RoutedRoot) -> String {
         ),
     };
     format!(
-        "{header}import {{ createElement }} from 'react';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge. Bloom's tab bar takes its taps through the gesture handler's\n// root (without it, Android delivers none).\n{root}\nexport default function RootLayout() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation))),\n  );\n}}\n",
+        "{header}import {{ createElement }} from 'react';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ expoDriver }} from '{routing_expo}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge. Bloom's tab bar takes its taps through the gesture handler's\n// root (without it, Android delivers none).\n{root}\nexport default function RootLayout() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation))),\n  );\n}}\n",
         runtime = r.runtime,
         routing = r.routing,
+        routing_expo = r.routing_expo,
         entry_name = r.entry_name,
         entry = r.entry,
         catalogs = r.catalogs,

@@ -178,10 +178,17 @@ Native's own Gradle plugin (ADR 0002, section 7):
   package's native modules. No Expo module is linked.
 - **Metro.** `bloom-metro.js` (`bundle` for Gradle, `start` for the dev server) runs Metro
   over React Native's own config and Babel preset.
-- **Expo packages.** The Expo JS that remains until its Bloom replacement lands
-  (expo-router, until the Bloom router) runs over small shims of the Expo surface it reads.
-  Any other Expo package does not resolve: an optional `require` falls back, and an import
-  fails the build.
+- **Navigation.** `NavigationStack` is the Bloom router (`stdlib/Bloom/router.ts`): each route
+  a native screen of react-native-screens' stack, `sheets:` as the platform's form sheet,
+  `tabs:` as Bloom's swipe pager under Bloom's `BottomBar`, Android's back (button and
+  predictive gesture) popping the route in front, and the manifest's schemes opening the route
+  their path names (`demo://post/2`). No expo-router and no file routes: the route table is
+  written into the entry from the app's `Routable` enum. The web and `--with-expo` keep
+  expo-router's file routes.
+- **Expo packages.** The few Expo imports Bloom's own components still make (`expo-blur`,
+  `expo-font`, `expo`'s lens check) are answered by small shims until their Bloom modules
+  land. Any other Expo package does not resolve: an optional `require` falls back, and an
+  import fails the build.
 
 ## Native modules
 
