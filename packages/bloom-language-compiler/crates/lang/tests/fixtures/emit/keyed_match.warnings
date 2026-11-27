@@ -1,0 +1,26 @@
+warning[B0950]: `pub` is Bloom 0.x (4 times in this file)
+  --> emit/keyed_match.bloom:15:1
+   |
+15 | pub fn isOn(prefs: Prefs, key: Key) -> Bool {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (4 times in this file)
+  --> emit/keyed_match.bloom:15:5
+   |
+15 | pub fn isOn(prefs: Prefs, key: Key) -> Bool {
+   |     ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (4 times in this file)
+  --> emit/keyed_match.bloom:16:3
+   |
+16 |   match key {
+   |   ^^^^^ retired in 2.0
+   |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
