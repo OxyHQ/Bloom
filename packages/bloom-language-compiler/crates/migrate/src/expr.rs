@@ -130,11 +130,20 @@ impl Tr<'_> {
             Expression::TSAsExpression(a) => {
                 // `as const` says nothing at run time; `as T` neither, so it is dropped
                 // under review (`bloomc check --tsc` checks the value where it lands).
-                let ty = self.slice(a.type_annotation.span());
+                let ty = self.slice(a.type_annotation.span()).to_string();
                 if ty != "const" {
                     self.review(format!("`as {ty}` dropped: annotate where the value lands if tsc needs it"));
                 }
-                self.expr(&a.expression)
+                let text = self.expr(&a.expression);
+                // `as T` of a named type: kept for bloomc's answer (`crate::typed::casts`).
+                if let oxc_ast::ast::TSType::TSTypeReference(r) = &a.type_annotation
+                    && r.type_arguments.is_none()
+                    && let oxc_ast::ast::TSTypeName::IdentifierReference(id) = &r.type_name
+                {
+                    let name = self.name(&id.name, id.span);
+                    self.casts.insert(crate::truthiness::squeeze(&text), name);
+                }
+                text
             }
             Expression::TSSatisfiesExpression(s) => self.expr(&s.expression),
             // `x!`: Swift's force unwrap (a dev build traps on `none`, a release one is TS's `x!`).

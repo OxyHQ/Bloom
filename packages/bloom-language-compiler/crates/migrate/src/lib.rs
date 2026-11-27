@@ -159,6 +159,7 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             &translated.defaults,
         )
         .or_else(|| typed::fix(&formatted, &compiled.diagnostics))
+        .or_else(|| typed::casts(&formatted, &compiled.diagnostics, &translated.casts))
         .or_else(|| truthiness::fold(&formatted));
         let Some(spelled) = spelled else { break };
         let Ok(reformatted) = bloom_fmt::format(&spelled, &target) else { break };
