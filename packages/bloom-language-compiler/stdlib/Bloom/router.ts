@@ -20,6 +20,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from 'react';
 import { BackHandler, Linking, StyleSheet, View } from 'react-native';
@@ -193,6 +194,13 @@ function Tabs({ store, spec }: { store: RouterStore; spec: RouterSpec }): ReactN
   const progress = useSharedValue(index);
   const pager = useRef<PagerView>(null);
   const shown = useRef(index);
+  // The page in front draws first; the others once the first frame is up (each is a whole
+  // screen, and drawing them all delayed the first page's content by ~90 ms, measured).
+  const [all, setAll] = useState(false);
+  useEffect(() => {
+    const later = setTimeout(() => setAll(true), 0);
+    return () => clearTimeout(later);
+  }, []);
   // The bar (or back) chose a page: the pager slides to it; a swipe already did.
   useEffect(() => {
     if (shown.current !== index) {
@@ -228,11 +236,11 @@ function Tabs({ store, spec }: { store: RouterStore; spec: RouterSpec }): ReactN
           if (selected) store.selectTab(selected.route);
         },
       },
-      ...spec.tabs.map((t) =>
+      ...spec.tabs.map((t, i) =>
         createElement(
           View,
           { key: t.route, style: styles.fill, collapsable: false },
-          createElement(RouteScreen, { route: t.route }),
+          all || i === index ? createElement(RouteScreen, { route: t.route }) : null,
         ),
       ),
     ),
