@@ -5017,8 +5017,23 @@ impl<'o> Checker<'o> {
                     && !matches!(self.resolve(&inner), Ty::Bool)
                     && !matches!(expected.map(|e| self.resolve(e)), Some(Ty::Bool))
                 {
-                    let right = self.expr(rhs, Some(&inner));
-                    return self.join(&inner, &right, expr.span);
+                    // The other side may be absent too (`user.username || user.handle`): then
+                    // so is the whole, as JS's `||` gives it.
+                    let optional = Ty::Option(inner.clone());
+                    let right = self.expr(rhs, Some(&optional));
+                    let mut inside = rhs;
+                    while let ExprKind::Paren(e) = &inside.kind {
+                        inside = e;
+                    }
+                    let own = self.out.types.get(&inside.id).cloned().unwrap_or(right);
+                    let own = match self.resolve(&own) {
+                        // Checked as the optional (`satisfies T | undefined`).
+                        Ty::Foreign(_) => return optional,
+                        Ty::Option(r) => *r,
+                        other => other,
+                    };
+                    let joined = self.join(&inner, &own, expr.span);
+                    return if self.may_be_absent(rhs) { Ty::Option(Box::new(joined)) } else { joined };
                 }
                 // As `expr(lhs, Some(Bool))` would have.
                 if let Some(recorded) = &mut self.expected {
@@ -5285,6 +5300,24 @@ impl<'o> Checker<'o> {
                     }
                 }
             }
+        }
+    }
+
+    /// Whether `expr`, checked against an optional, may be `none`: its own type, through the
+    /// branches and fallbacks that pass the optional down (`(a || (c ? b : d))`).
+    fn may_be_absent(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::None => true,
+            ExprKind::Paren(inner) => self.may_be_absent(inner),
+            ExprKind::Ternary(_, then, otherwise) => {
+                self.may_be_absent(then) || self.may_be_absent(otherwise)
+            }
+            ExprKind::Binary(BinaryOp::Or | BinaryOp::Default, lhs, rhs)
+                if matches!(self.out.types.get(&lhs.id).map(|t| self.resolve(t)), Some(Ty::Option(_))) =>
+            {
+                self.may_be_absent(rhs)
+            }
+            _ => matches!(self.out.types.get(&expr.id).map(|t| self.resolve(t)), Some(Ty::Option(_))),
         }
     }
 

@@ -1,0 +1,16 @@
+// `a || b` of an optional that is not a `Bool` is JS's value `||`; when the other side may be
+// absent too (`user.username || user.handle`), so may the whole: a `String?` (spec 4.7).
+public func handle(_ username: String?, _ handle: String?) -> String? {
+  username || handle
+}
+
+func open(_ url: String) -> String { url }
+
+// A chain that ends in a present value is present, through parentheses and branches.
+public func link(_ apply: String?, _ source: String?, _ canonical: String, _ alt: String) -> String {
+  open(apply || (source || (canonical.isEmpty ? alt : canonical)))
+}
+
+public func label(_ name: String?, _ nick: String?) -> String {
+  (name || nick) ?? "anonymous"
+}
