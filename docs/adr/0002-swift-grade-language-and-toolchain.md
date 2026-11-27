@@ -334,16 +334,42 @@ The gate is **more than 80%**.
 | 2026-11-27 | #1007 rebased on main 7742f55fe (#1017, #1019 merged); `--from 0.x` names a default export and rewrites its importers; with #1021 (1caebfbb1) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
 | 2026-11-27 | the same, with #1026 (on #1021: none-defaulted fields optional, TS `T \| null` as `T?`, keyword field names, a `Foreign` value fits a record field) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = **53.7%** |
 | 2026-11-27 | #1007 on main b448b98c4 (#1021 merged): `Array.from({ length })` as a range, `xs = xs.add(x)` on a `Set` as `inserting`; with #1028 (38b9fff4f, on #1026: a TS component's trailing builder is its children, ranges, memo bytes) | 324 files (fd8a4290f) | 39.5% (+13.9% review) = **53.4%** (see below) |
+| 2026-11-27 | the same, + generic arrow functions' type parameters (`T: Equatable` for `extends string \| number`) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = 53.7% (KeyboardShortcutsModal won) |
+| 2026-11-27 | the same, with #1033 (d9fbcfc44, on #1030 and #1028: TS lists into typed lists, `[View]` as a child, generic literals, indexed access types) | 324 files (fd8a4290f) | 41.4% (+15.1% review) = 56.5% |
+| 2026-11-27 | the same, with #1035 (471ca249a, on #1033: TS values compared with numbers and strings, `a \|\| b` of optionals) | 324 files (fd8a4290f) | 42.0% (+15.4% review) = **57.4%**; 5 of the 12 render-checked files draw wrongly (below), so at most 55.9% is verified |
 
 The rate counts a file the compiler accepts, so a miscompile can hide in it. One was found on
 2026-11-27: a TS function component drawn with a trailing builder was called as a plain function,
 and its builder's nodes were dropped (Mention's PostActions drew an empty bar). #1028 fixes it.
 Its re-check of every migrated and review file (an emit diff) found 13 files that had been
-counted while drawing wrongly: 9 had dropped nodes and 4 ran a component as a plain call. All 13
-now compile to components. Only PostActions has been render-checked so far (Mention #2049,
-PostActionsShape 4/4). The other 12 count in the 53.4% line but are not verified until each one
-renders correctly in Mention's harness. The port's measurements (pixels, tests) catch this kind
-of bug; the rate does not.
+counted while drawing wrongly: 9 had dropped nodes and 4 ran a component as a plain call.
+
+PostActions was render-checked first (Mention #2049, PostActionsShape 4/4). The other 12 were
+render-checked on 2026-11-27 with #1033's stack, in Mention's harness
+(`__perf__/lang-proof/corpus/`, Mention #2049). Each file is drawn as TS and as its printed 2.0
+text, with the same props and stand-ins, and the host trees are compared (every view, its
+props with styles flattened, its text). 24 states were checked:
+
+| Result | Files |
+|---|---|
+| Same tree in every state (17 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget (and SuggestedProfileCard's skeleton) |
+| A node reaches React as an object | Error (a conditional node into a TS `ReactNode` prop), VideoReplies and ProfileSkeleton (a node into a Bloom component's `ReactNode` prop: `Screen(header:)`, `CoverHeader(cover:)`), SuggestedProfileCard (a TS `view()` mounted as a component) |
+| The export is lost | WelcomeScreen (a `Screen` outside `app/` is emitted as the default export, so `import { WelcomeScreen }` is undefined) |
+
+The five failures are compiler emits (repros R1–R4 in `~/.local/share/bloom-lang/repros/mention5/`,
+sent to the compiler owner). Until they are fixed, the five count in the rate but are not
+verified.
+
+Two conditions apply to every result above:
+
+- **Catalogs.** `bloom migrate` writes i18next's `t("k")` as `String(localized: "k")`, which
+  reads the package's `Resources/Localizable` catalogs. Mention has none (its strings are
+  i18next's `locales/*.json`), so without them every migrated file that had `t()` draws its keys.
+  The harness registers `locales/en.json` converted (keys flattened, `{{x}}` as `{x}`, `k_one`/`k_other`
+  as plural forms). Mention's port needs the same catalogs and their registration at startup.
+- **Migration mode.** The printed text compiles only inside a package (outside one a file is 0.x),
+  and inside one its TS imports need the migration mode in Jest and Metro (`allowTsImports`,
+  #1007).
 
 Most refusals come from bloomc's errors on the draft. On 2026-11-26 that was 133 of 221
 refused files, and the largest single cause was an indexed array read typing as `T?` where
