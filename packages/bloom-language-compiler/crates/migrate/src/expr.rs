@@ -1702,7 +1702,11 @@ impl Tr<'_> {
         array.elements.len() == 2
             && match array.elements[1].as_expression().map(|e| e.without_parentheses()) {
                 Some(Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)) => true,
-                Some(Expression::Identifier(id)) => self.scope.setters.contains_key(id.name.as_str()),
+                Some(Expression::Identifier(id)) => {
+                    self.scope.setters.contains_key(id.name.as_str())
+                        // `[audience, onAudienceChange]`: a handler named as one (`onX`, `setX`).
+                        || handler_name(&id.name)
+                }
                 _ => false,
             }
     }
@@ -2453,4 +2457,11 @@ fn is_member_chain(e: &Expression) -> bool {
         },
         _ => false,
     }
+}
+
+/// `onChange`, `onAudienceChange`, `setValue`: a name React code gives a value's handler.
+fn handler_name(name: &str) -> bool {
+    ["on", "set"].iter().any(|prefix| {
+        name.strip_prefix(prefix).and_then(|rest| rest.chars().next()).is_some_and(|c| c.is_ascii_uppercase())
+    })
 }
