@@ -6,7 +6,7 @@ export declare function forced(raw: string): "videos" | "following" | "live";
 export declare function first(): "videos" | "following" | "live";
 export declare function all(): readonly ("videos" | "following" | "live")[];
 export declare function price(amount: number): string;
-export declare function score(value: number | undefined): string | undefined;
+export declare function score(value: number | undefined | null): string | undefined;
 export interface TabsProps {
   readonly selected: "videos" | "following" | "live";
   readonly onSelect: (p0: "videos" | "following" | "live") => void;
