@@ -798,7 +798,7 @@ impl Checker<'_> {
                 if let Some(trailing) = &call.trailing {
                     self.closure(trailing, None, true);
                 }
-                Ty::Foreign(format!("ReturnType<{text}>").into())
+                foreign_of(&text, |t| format!("ReturnType<{t}>"))
             }
             Ty::Unknown => {
                 self.args_unchecked(call);
@@ -2646,7 +2646,7 @@ impl Checker<'_> {
                 }
                 Ty::Foreign(text) => {
                     promise = true;
-                    Ty::Foreign(format!("Awaited<{text}>").into())
+                    foreign_of(&text, |t| format!("Awaited<{t}>"))
                 }
                 Ty::Unknown => Ty::Unknown,
                 other => {
