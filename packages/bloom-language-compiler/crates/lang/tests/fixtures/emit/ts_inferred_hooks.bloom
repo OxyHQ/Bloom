@@ -1,10 +1,13 @@
 // A TS hook with no annotated result (R7): Bloom reads what it returns from its body, as TS
 // infers it, and `ReturnType<typeof useX>` is that result, for a TS hook and a `.bloom` one.
-import { useJobForm } from "@/jobs/jobForm"
+import { HEADER_CONTENT_GAP, useJobForm, useJobSeo } from "@/jobs/jobForm"
 import { JobFormFields, type RowHeader } from "@/jobs/JobFormFields"
 
 public struct JobEditor: View {
   let form = useJobForm()
+  let seo = useJobSeo()
+  // An optional of a TS type Bloom does not map is `Foreign`, checked where it lands.
+  let robots: String? = seo.robots
 
   var body: some View {
     VStack {
@@ -17,6 +20,7 @@ public struct JobEditor: View {
       }
       Button("Save").disabled(!form.isComplete)
       JobFormFields(form: form)
+      Text("\(HEADER_CONTENT_GAP * 2) \(robots ?? "")")
     }
   }
 }

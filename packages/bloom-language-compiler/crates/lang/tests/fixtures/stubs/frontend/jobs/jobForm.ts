@@ -37,3 +37,13 @@ export function useJobForm() {
 }
 
 export type JobForm = ReturnType<typeof useJobForm>;
+
+/** A constant of the module, unannotated: its initializer's type. */
+export const HEADER_CONTENT_GAP = 12;
+
+type RobotsDirective = string & { readonly kind?: 'robots' };
+
+/** A hook whose member is the optional of a type Bloom does not map: TS's to check. */
+export function useJobSeo(robots?: RobotsDirective) {
+  return { robots };
+}

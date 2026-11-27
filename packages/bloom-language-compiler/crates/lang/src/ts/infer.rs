@@ -30,6 +30,13 @@ impl Reader {
         }
     }
 
+    /// The type of a module-level `const`'s initializer when it is plain data (`export const
+    /// GAP = 12`, a record or list of literals); anything else (a call, a component, a
+    /// function) stays the TS value it is.
+    pub(super) fn infer_init(&self, init: &Expression) -> Option<TsType> {
+        Some(self.expr(init, &Env::default())).filter(plain)
+    }
+
     /// What an arrow returns when it is not annotated (`const useX = () => …`).
     pub(super) fn infer_arrow(&self, arrow: &oxc_ast::ast::ArrowFunctionExpression) -> Option<TsType> {
         if arrow.return_type.is_some() {
@@ -457,6 +464,16 @@ fn contains_return(statement: &Statement) -> bool {
                 || s.handler.as_ref().is_some_and(|h| h.body.body.iter().any(contains_return))
         }
         Statement::LabeledStatement(s) => contains_return(&s.body),
+        _ => false,
+    }
+}
+
+/// Whether a type is data of literals only (no name, call or function of the module).
+fn plain(ty: &TsType) -> bool {
+    match ty {
+        TsType::Number | TsType::String | TsType::Boolean | TsType::StrLit(_) | TsType::BoolLit => true,
+        TsType::Array(item) => plain(item),
+        TsType::Object(members) => !members.is_empty() && members.iter().all(|m| plain(&m.ty)),
         _ => false,
     }
 }
