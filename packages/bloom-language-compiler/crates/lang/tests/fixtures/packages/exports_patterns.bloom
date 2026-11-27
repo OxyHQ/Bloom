@@ -1,0 +1,13 @@
+// `@oxy.so/bloom`'s `"./icons/Ri*"` subpath pattern: the import resolves (no B0602), and the
+// glyph's `import("react").ForwardRefExoticComponent<…>` type makes it a component.
+import { RiHeart3Line } from "@oxy.so/bloom/icons/RiHeart3Line"
+import { LikeIcon } from "@oxy.so/bloom/icons/LikeIcon"
+
+public struct Liked: View {
+  var body: some View {
+    HStack {
+      Icon(RiHeart3Line)
+      LikeIcon(size: 16)
+    }
+  }
+}
