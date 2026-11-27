@@ -212,6 +212,13 @@ impl Def {
     }
 }
 
+/// A TS type built from a `Foreign`'s text (`ReturnType<T>`, `T["k"]`, `T[number]`). An
+/// untyped `Foreign` (no text, TS's `unknown`) stays untyped: `ReturnType<>` and `["k"]` are no
+/// TS types (Babel: "Type argument list cannot be empty").
+pub fn foreign_of(text: &str, f: impl FnOnce(&str) -> String) -> Ty {
+    if text.is_empty() { Ty::Foreign("".into()) } else { Ty::Foreign(f(text).into()) }
+}
+
 /// Replaces `Ty::Param(i)` with `args[i]`.
 pub fn substitute(ty: &Ty, args: &[Ty]) -> Ty {
     if args.is_empty() {
