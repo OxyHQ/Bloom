@@ -284,7 +284,10 @@ pub(crate) fn rewrite_importers(
                 // 2.0 exports a TS default export by name: `import X from` becomes
                 // `import { Name as X } from`.
                 let name = migrated[index].1.as_deref();
-                if let Some(name) = name {
+                // Only a static `import … from` names its default import; a mock is renamed below.
+                if let Some(name) = name
+                    && head.ends_with("from")
+                {
                     named_default_import(&mut out, name);
                 }
                 out.push_str(bare);
@@ -427,6 +430,7 @@ mod tests {
             "// The row's chip, and the warning's.\n\
              import Chip from './Post/LaneChip.bloom';\n\
              import { Other } from './Post/Other.bloom';\n\
+             /* drags ESM in at import time */\n\
              jest.mock('@/Post/LaneChip.bloom', () => ({ __esModule: true, default: () => null }));\n",
         )
         .unwrap();
@@ -441,6 +445,7 @@ mod tests {
             "// The row's chip, and the warning's.\n\
              import { LaneChip as Chip } from './Post/LaneChip.bloom';\n\
              import { Other } from './Post/Other.bloom';\n\
+             /* drags ESM in at import time */\n\
              jest.mock('@/Post/LaneChip.bloom', () => ({ __esModule: true, LaneChip: () => null }));\n"
         );
     }
