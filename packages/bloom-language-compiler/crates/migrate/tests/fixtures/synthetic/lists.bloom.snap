@@ -1,3 +1,2 @@
 refused
-0: 0.x:view: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
-0: 0.x:@ref: `@ref` is Bloom 0.x (once in this file)
+0: 2.0:bloomc:B0202: cannot find `Ref` in scope

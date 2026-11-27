@@ -1,0 +1,41 @@
+// A list's element read where TS allows `undefined` is `xs.at(i)`; TS's `x!` is `x!`; a
+// callback's wider record type is kept in the loop; a member TS narrowed is read with `!`.
+
+public struct Tab {
+  let id: String
+  let label: String
+}
+
+public struct Author {
+  let name: String
+}
+
+public struct TabsProps {
+  let tabs: [Tab]
+  var author: Author? = none
+  var note: String? = none
+}
+
+// bloom: review: `Record<'a' | 'b', string>` is a `[String: String]`: its keys are no longer checked
+private let LABELS: [String: String] = { a: "A", b: "B" }
+
+public func Tabs(_ arg: TabsProps) -> View {
+  let { tabs, author, note } = arg
+  let first = tabs.at(0)?.label ?? ""
+  let second = tabs.at(1) ?? tabs[0]
+  let name = ({
+    if author?.name == none || author?.name.isEmpty { return "" }
+    return author!.name
+  })()
+  VStack {
+    Text(first)
+    Text(second.label)
+    Text(name)
+    Text(note!)
+    Text(LABELS["a"] ?? "")
+    for tab in tabs {
+      let tab: { id: String, label: String, count: Float? } = tab
+      Text("\(tab.label) \(tab.count ?? 0)")
+    }
+  }
+}
