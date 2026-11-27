@@ -14,3 +14,4 @@ section: Changed
 - A presence test in parentheses narrows as one without (`(room.status != none) ? room.status : "scheduled"`).
 - `String(localized:)` and `Text("key")` in a view read the locale through `useLocalization()` and are memoised on it, so `Locale.prefer` re-draws a mounted view in the new language.
 - A plural lookup with a count of 0 takes the catalog's `zero` form where it has one, in every language (i18next's `_zero`), before the CLDR category.
+- An UpperCamel arrow in a `.tsx` (`const List = (props: ListProps) => …`) is a component, and so is its `memo(List, eq)`: mounted with `$jsx`, where it was called as a function and drew nothing.
