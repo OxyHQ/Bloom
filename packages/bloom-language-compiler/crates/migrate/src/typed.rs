@@ -1190,29 +1190,89 @@ fn texts_beside_nodes(source: &str, at: usize) -> Option<(usize, usize, String)>
         prev = c;
     }
     items.push((from, inner.len()));
-    let text_item = |item: &str| {
-        let literal = item.len() >= 2 && item.starts_with('"') && item.ends_with('"');
-        let path = item.starts_with(|c: char| c.is_lowercase() || c == '_')
-            && item.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.'));
-        literal || path
-    };
     let mut out = String::with_capacity(inner.len() + 16);
     let mut wrapped = false;
     let mut last = 0;
     for (a, b) in items {
         let raw = &inner[a..b];
         let item = raw.trim();
-        if item.is_empty() || !text_item(item) {
-            continue;
-        }
+        let Some(text) = (!item.is_empty()).then(|| as_text(item)).flatten() else { continue };
         let lead = a + (raw.len() - raw.trim_start().len());
         out.push_str(&inner[last..lead]);
-        out.push_str(&format!("RawText({item})"));
+        out.push_str(&text);
         last = lead + item.len();
         wrapped = true;
     }
     out.push_str(&inner[last..]);
     wrapped.then(|| (open + 1, close, out))
+}
+
+/// Whether `item` is a string: a literal, or a lowercase name or member path.
+fn text_item(item: &str) -> bool {
+    let literal = item.len() >= 2 && item.starts_with('"') && item.ends_with('"');
+    let path = item.starts_with(|c: char| c.is_lowercase() || c == '_')
+        && item.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.'));
+    literal || path
+}
+
+/// `item` as a node when it is a string (`RawText(item)`), or a ternary whose string
+/// branches are (`c ? RawText(a) : Link(…)`, `RawText(c ? "a" : "b")`); `None` otherwise.
+fn as_text(item: &str) -> Option<String> {
+    if text_item(item) {
+        return Some(format!("RawText({item})"));
+    }
+    let (q, colon) = ternary(item)?;
+    let (cond, yes, no) = (&item[..q], item[q + 1..colon].trim(), item[colon + 1..].trim());
+    if text_item(yes) && text_item(no) {
+        return Some(format!("RawText({item})"));
+    }
+    let yes2 = as_text(yes);
+    let no2 = as_text(no);
+    if yes2.is_none() && no2.is_none() {
+        return None;
+    }
+    let yes = yes2.unwrap_or_else(|| yes.to_string());
+    let no = no2.unwrap_or_else(|| no.to_string());
+    Some(format!("{}? {yes} : {no}", cond))
+}
+
+/// The top-level `?` and its `:` of a ternary `item` (strings and brackets skipped).
+fn ternary(item: &str) -> Option<(usize, usize)> {
+    let bytes = item.as_bytes();
+    let (mut depth, mut quote, mut q, mut nested) = (0i32, false, None, 0);
+    for (i, &b) in bytes.iter().enumerate() {
+        if quote {
+            if b == b'"' && bytes[i - 1] != b'\\' {
+                quote = false;
+            }
+            continue;
+        }
+        match b {
+            b'"' => quote = true,
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => depth -= 1,
+            // `?.`, `??` and a postfix `x?` are not the ternary's.
+            b'?' if depth == 0
+                && bytes.get(i + 1).is_some_and(|n| *n == b' ')
+                && i > 0
+                && bytes[i - 1] == b' ' =>
+            {
+                if q.is_none() {
+                    q = Some(i);
+                } else {
+                    nested += 1;
+                }
+            }
+            b':' if depth == 0 && q.is_some() => {
+                if nested == 0 {
+                    return q.map(|q| (q, i));
+                }
+                nested -= 1;
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 /// The `]` matching the `[` at `open` (strings skipped).

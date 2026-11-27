@@ -23,3 +23,18 @@ export const Byline = view(function Byline(props: BylineProps) {
     ),
   );
 });
+
+interface Variant {
+  label: string;
+  rendered: boolean;
+}
+
+// A ternary item: of two strings, its text; of a string and a node, the string branch's.
+export const Variants = view(function Variants({ variants }: { variants: Variant[] }) {
+  return RawText(
+    ...variants.flatMap((variant, index) => [
+      index > 0 ? ' · ' : '',
+      variant.rendered ? variant.label : Text(variant.label).foreground('muted'),
+    ]),
+  );
+});
