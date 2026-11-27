@@ -456,24 +456,24 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((end, end, "!".to_string()))
             }
+            // `const [a, b] = f()` of a longer TS tuple: the rest of it is not bound, `(a, b, _)`.
+            ("B0303", _) if d.message.starts_with("a tuple of ") && text.starts_with('(') && text.ends_with(')') => {
+                let have: usize = d.message["a tuple of ".len()..].split(' ').next()?.parse().ok()?;
+                let ty = d.message.split_once("cannot match `").map(|(_, t)| t.trim_end_matches('`')).unwrap_or_default();
+                let inner = ty.strip_prefix('(').and_then(|t| t.strip_suffix(')')).unwrap_or_default();
+                let arity = tuple_arity(inner);
+                (arity > have).then(|| {
+                    let pad = ", _".repeat(arity - have);
+                    (end - 1, end - 1, pad)
+                })
+            }
             // A TS tuple's `length` (`coordinates: [number, number]`): its arity.
             ("B0205", "count")
                 if receiver.is_some_and(|r| r.starts_with('(') && r.ends_with(')')) && source[..start].ends_with('.') =>
             {
                 let r = receiver.unwrap_or_default();
                 let inner = &r[1..r.len() - 1];
-                let mut depth = 0i32;
-                let arity = 1 + inner
-                    .chars()
-                    .filter(|c| {
-                        match c {
-                            '(' | '[' | '{' | '<' => depth += 1,
-                            ')' | ']' | '}' | '>' => depth -= 1,
-                            _ => {}
-                        }
-                        *c == ',' && depth == 0
-                    })
-                    .count();
+                let arity = tuple_arity(inner);
                 receiver_start(source, start).map(|at| (at, end, arity.to_string()))
             }
             // An `Int?` index (`indexOf`, `findIndex`) TS's test had found (`if (i > 0)`), used
@@ -957,6 +957,25 @@ fn first_write(source: &str, read: usize, name: &str) -> Option<usize> {
         line_end = line_start - 1;
     }
     found
+}
+
+/// How many items a tuple type's inside (`A, (B) -> C, [D]`) lists: its commas outside brackets
+/// (an arrow's `>` is not one).
+fn tuple_arity(inner: &str) -> usize {
+    let mut depth = 0i32;
+    let mut prev = ' ';
+    let mut commas = 0;
+    for c in inner.chars() {
+        match c {
+            '(' | '[' | '{' | '<' => depth += 1,
+            '>' if prev == '-' => {}
+            ')' | ']' | '}' | '>' => depth -= 1,
+            ',' if depth == 0 => commas += 1,
+            _ => {}
+        }
+        prev = c;
+    }
+    commas + 1
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
