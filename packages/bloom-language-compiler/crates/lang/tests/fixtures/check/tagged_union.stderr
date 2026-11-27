@@ -1,0 +1,18 @@
+error[B0205]: `Extract<SubmenuRows, { kind: "sources" }>` has no field `laneId`
+ --> check/tagged_union.bloom:8:17
+  |
+8 |     return rows.laneId.count
+  |                 ^^^^^^ no such field
+  |
+help: its fields are `kind`, `sources`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0301]: this switch does not cover `"lane"`
+ --> check/tagged_union.bloom:6:10
+  |
+6 |   switch rows.kind {
+  |          ^^^^^^^^^ `"sources" | "replySettings" | "lane"` is not matched by every value
+  |
+help: add the missing arm(s), or `case _ =>` for the rest:
+      case "lane" => …
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

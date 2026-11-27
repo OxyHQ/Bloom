@@ -1,0 +1,10 @@
+import type { SubmenuRows } from "@/types/rows";
+import type { Block, Variant, Prefs } from "@/types/rows";
+export declare function count(rows: SubmenuRows): number;
+export declare function describe(rows: SubmenuRows): string;
+export declare function firstSource(rows: SubmenuRows): string | undefined;
+export declare function lane(rows: SubmenuRows): string;
+export declare function domain(block: Block): string;
+export declare function ownMedia(item: Variant): (readonly string[]) | undefined;
+export declare function alt(item: Variant, id: string): string | undefined;
+export declare function showAll(): Prefs;

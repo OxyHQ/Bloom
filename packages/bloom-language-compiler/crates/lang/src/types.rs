@@ -182,6 +182,16 @@ pub struct Def {
     pub origin: Origin,
     /// A class (a reference type): its fields are written in place.
     pub class: Option<ClassDef>,
+    /// A TS discriminated union (`{ kind: "a"; … } | { kind: "b"; … }`): its tag field and each
+    /// member's type by its tag. The def's own field is the tag, a union of the members' tags;
+    /// a `match` on it narrows the value to the member each arm names.
+    pub tagged: Option<std::rc::Rc<Tagged>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Tagged {
+    pub tag: String,
+    pub members: Vec<(String, Ty)>,
 }
 
 impl Def {
