@@ -3,6 +3,10 @@
 //! is (B0209 "`Set<String>` has no method `has`") and the member becomes its
 //! `.bloom` name. Only receivers whose type has the member under another name are
 //! rewritten; anything else stays an error (a refusal).
+//!
+//! A guard the source had (`?.`, `?.[`, `?.(`, `??`) is never dropped here, even where TS types
+//! the value present: JS reads it at run time (a cache, a test's `as never`), so it stays as
+//! written and bloomc keeps it on a TS value. A Bloom value bloomc says is never `none` refuses.
 
 use bloom_lang::Diagnostic;
 use std::collections::HashMap;
@@ -26,15 +30,6 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     && !source[end..].starts_with("()") =>
             {
                 Some((start, end + 1, "formatted(fractionDigits: ".to_string()))
-            }
-            // `xs?[0]` from JS's `xs?.[0]`, where TS typed `xs` present (a TS value, `Foreign`):
-            // there is nothing to unwrap, so the read is `xs[0]`, as JS read it.
-            ("B0214", _)
-                if d.message.starts_with("`?` unwraps a `Result` or an optional, and this is `Foreign(")
-                    && text.ends_with('?')
-                    && source[end..].starts_with('[') =>
-            {
-                Some((end - 1, end, String::new()))
             }
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
             // `m.values()`, `m.keys()`, `m.entries()`: a Bloom `Map`/`Set`'s lists.
@@ -385,12 +380,6 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 promise_then(source, start, end)
             }
-            // `f?.(x)` on a function that is always there: `f(x)`.
-            ("B0201", _)
-                if d.message.starts_with("`?.` reads an optional") && source[end..].starts_with("?.(") =>
-            {
-                Some((end, end + 2, String::new()))
-            }
             // `[..xs].sort((a, b) => a.n - b.n)`: JS's comparator as Bloom's order, `sorted { a, b in (…) < 0 }`.
             ("B0209", "sort")
                 if receiver.is_some_and(|r| r.starts_with('[')) && source[end..].starts_with(" {") =>
@@ -401,12 +390,6 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     (params.split(',').count() == 2 && !body.contains('\n'))
                         .then(|| (start, close, format!("sorted {{ {params} in ({}) < 0 }}", body.trim())))
                 })
-            }
-            // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
-            ("B0201", _)
-                if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") =>
-            {
-                Some((start - 2, start, ".".to_string()))
             }
             // `xs[i] ?? d`: the element when it is there, `xs.at(i) ?? d`.
             ("B0201", _)
@@ -652,14 +635,6 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     None
                 }
             }
-            // `x ?? fallback` where `x` is never `none`: `x`.
-            ("B0201", _) if d.message.starts_with("`??` gives a fallback") => {
-                let rest = &source[end..];
-                let op = rest.find(|c: char| !c.is_whitespace()).filter(|&i| rest[i..].starts_with("??"));
-                op.and_then(|i| {
-                    operand_len(&rest[i + 2..]).map(|n| (start, end + i + 2 + n, text.to_string()))
-                })
-            }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
             ("B0201", _) => {
                 let found = d.message.split("found `").nth(1).unwrap_or_default();
@@ -690,44 +665,6 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         out.replace_range(*start..*end, text);
     }
     Some(out)
-}
-
-/// The length of the operand at the start of `source` (after spaces): up to a
-/// delimiter outside brackets and strings.
-fn operand_len(source: &str) -> Option<usize> {
-    let mut depth = 0i32;
-    let mut quote: Option<char> = None;
-    let mut started = false;
-    let mut prev = ' ';
-    for (i, c) in source.char_indices() {
-        if let Some(q) = quote {
-            if c == q && prev != '\\' {
-                quote = None;
-            }
-            prev = c;
-            continue;
-        }
-        match c {
-            '"' | '\'' | '`' => quote = Some(c),
-            '(' | '[' | '{' => depth += 1,
-            ')' | ']' | '}' if depth == 0 => return started.then_some(i),
-            ')' | ']' | '}' => depth -= 1,
-            ',' | '\n' | '?' | ':' | '|' | '&' if depth == 0 && started => return Some(i),
-            c if c.is_whitespace() && depth == 0 && started => {
-                // `a ?? b c`: an operator follows; the operand ended.
-                let next = source[i..].trim_start();
-                if !next.starts_with('.') {
-                    return Some(i);
-                }
-            }
-            _ => {}
-        }
-        if !c.is_whitespace() {
-            started = true;
-        }
-        prev = c;
-    }
-    started.then_some(source.len())
 }
 
 /// Whether `start..end` is all of its line.
