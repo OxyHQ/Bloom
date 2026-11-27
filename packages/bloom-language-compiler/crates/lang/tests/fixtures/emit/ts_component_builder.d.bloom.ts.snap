@@ -1,0 +1,8 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface BarProps {
+  readonly liked: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Bar())`), or from TSX as `toElement(Bar())`. */
+export declare const Bar: (props: BarProps) => ComposedView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Slotted())`), or from TSX as `toElement(Slotted())`. */
+export declare const Slotted: () => ComposedView;

@@ -1,0 +1,17 @@
+import { EngagementBar, Slot } from "./engagement-bar"
+
+/// A TS component drawn with a trailing builder: its lines are the component's children.
+public struct Actions: View {
+  let liked: Bool
+
+  var body: some View {
+    VStack {
+      EngagementBar(size: "md") {
+        Text("Reply")
+        Text("Boost")
+        if liked { Text("Liked") }
+      }
+      Slot(title: "t") { Text("Inside") }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+error[B0506]: this component takes no children
+ --> check/builder_dropped.bloom:9:24
+  |
+9 |       Leaf(title: "t") { Text("dropped") }
+  |       ---- its props have no `children`, and no node prop is left for them
+  |                        ^^^^^^^^^^^^^^^^^^^ these nodes would never be drawn
+  |
+help: draw the nodes beside it, or give it a `children` prop
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens
+
+error[B0207]: `children` is given twice
+  --> check/builder_dropped.bloom:11:42
+   |
+11 |       EngagementBar(children: Text("a")) { Text("b") }
+   |                                          ^^^^^^^^^^^^^ the trailing builder is the component's `children`
+   |
+help: pass the children by name or as the trailing builder, not both
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens
+
+error[B0207]: no parameter takes this trailing closure
+  --> check/builder_dropped.bloom:13:27
+   |
+13 |       Text(formatCount(3) { Text("c") })
+   |                           ^^^^^^^^^^^^^ this TS function takes 1 argument(s)
+   |
+help: a TS component takes a builder as its `children`: declare it to return a React element (`JSX.Element`, `ReactNode`), or pass the closure as an argument
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0506]: this component takes no children
+  --> check/builder_dropped.bloom:15:44
+   |
+15 |       Slot(title: "t", content: Text("a")) { Text("b") }
+   |       ---- its props have no `children`, and no node prop is left for them
+   |                                            ^^^^^^^^^^^^^ these nodes would never be drawn
+   |
+help: draw the nodes beside it, or give it a `children` prop
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens
+
+error[B0506]: this node is built and never drawn
+  --> check/builder_dropped.bloom:22:3
+   |
+22 |   Text("never drawn")
+   |   ^^^^^^^^^^^^^^^^^^^ a line of a closure or function that is not a builder
+   |
+help: return it (the last line is the value), or pass it where a view is drawn: a node's or view's trailing builder, or a `View` prop
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72-builders-modifiers-and-tokens

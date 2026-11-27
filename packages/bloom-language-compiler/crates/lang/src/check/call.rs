@@ -1112,6 +1112,19 @@ impl Checker<'_> {
         }
         if let Some(trailing) = &call.trailing {
             let ty = f.params.get(slot).map(|p| p.ty.clone());
+            // A trailing closure past a TS function's parameters is an argument it never reads
+            // (and a builder's nodes in it are never drawn).
+            if ty.is_none() && !f.params.last().is_some_and(|p| p.rest) {
+                self.report(
+                    Diagnostic::error("B0207", trailing.span, "no parameter takes this trailing closure")
+                        .label(format!("this TS function takes {} argument(s)", f.params.len()))
+                        .help(
+                            "a TS component takes a builder as its `children`: declare it to return a React \
+                             element (`JSX.Element`, `ReactNode`), or pass the closure as an argument",
+                        )
+                        .spec("5-values-functions-and-closures"),
+                );
+            }
             self.closure_throws = true;
             let closure = self.closure(
                 trailing,
@@ -1828,9 +1841,77 @@ impl Checker<'_> {
             }
         }
         if let Some(trailing) = &call.trailing {
+            self.component_builder(call.callee.span, trailing, fields.as_deref(), &given);
             self.builder_closure(trailing);
         }
         Ty::View(Some("embed"))
+    }
+
+    /// Where a TS component's trailing builder goes: its `children` (JSX children), or the
+    /// one node prop it declares in their place (`content: ReactNode`), as a view's builder
+    /// fills its `View` property. A component with neither cannot draw the builder's nodes,
+    /// so that is an error, never a silent drop. Props Bloom cannot read are TS's to check
+    /// (`satisfies ComponentProps<…>`), so the builder is their `children`.
+    fn component_builder(
+        &mut self,
+        callee: Span,
+        trailing: &Closure,
+        fields: Option<&[FieldDef]>,
+        given: &[String],
+    ) {
+        if given.iter().any(|g| g == "children") {
+            self.report(
+                Diagnostic::error("B0207", trailing.span, "`children` is given twice")
+                    .label("the trailing builder is the component's `children`")
+                    .help("pass the children by name or as the trailing builder, not both")
+                    .spec("72-builders-modifiers-and-tokens"),
+            );
+            return;
+        }
+        let Some(fields) = fields else { return };
+        if fields.iter().any(|f| f.name == "children") {
+            return;
+        }
+        let slots: Vec<&str> = fields
+            .iter()
+            .filter(|f| !given.contains(&f.name) && self.is_node_ty(&f.ty))
+            .map(|f| f.name.as_str())
+            .collect();
+        if let [slot] = slots.as_slice() {
+            self.out.component_slots.insert(trailing.span, (*slot).to_string());
+            return;
+        }
+        let help = if slots.is_empty() {
+            "draw the nodes beside it, or give it a `children` prop".to_string()
+        } else {
+            format!(
+                "it has several node props ({}): pass each by name, as `{}: VStack {{ … }}`",
+                slots.iter().map(|s| format!("`{s}`")).collect::<Vec<_>>().join(", "),
+                slots[0]
+            )
+        };
+        self.report(
+            Diagnostic::error("B0506", trailing.span, "this component takes no children")
+                .label("these nodes would never be drawn")
+                .with_label(callee, "its props have no `children`, and no node prop is left for them")
+                .help(help)
+                .spec("72-builders-modifiers-and-tokens"),
+        );
+    }
+
+    /// A TS prop that holds a node: `ReactNode`, `ReactElement`, a Bloom view, or one of those
+    /// optional.
+    fn is_node_ty(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::View(_) => true,
+            Ty::Option(inner) => self.is_node_ty(&inner),
+            Ty::Foreign(text) => {
+                text.ends_with(".ReactNode")
+                    || text.ends_with(".ReactElement")
+                    || text.ends_with("JSX.Element")
+            }
+            _ => false,
+        }
     }
 
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {

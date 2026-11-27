@@ -1,0 +1,23 @@
+// A builder whose nodes could not be drawn is an error, never a silent drop.
+import { EngagementBar, Leaf, Slot } from "@/ui/bars"
+import { formatCount } from "@/ui/counts"
+
+public struct Bar: View {
+  var body: some View {
+    VStack {
+      // No `children` and no node prop.
+      Leaf(title: "t") { Text("dropped") }
+      // `children` by name and as the builder.
+      EngagementBar(children: Text("a")) { Text("b") }
+      // A plain TS function takes no closure here.
+      Text(formatCount(3) { Text("c") })
+      // `content` is given, so no node prop is left for the builder.
+      Slot(title: "t", content: Text("a")) { Text("b") }
+    }
+  }
+}
+
+func helper() {
+  // A node on a line of its own outside a builder: built, then dropped.
+  Text("never drawn")
+}

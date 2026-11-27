@@ -1,0 +1,31 @@
+// A TS function component drawn with a trailing builder: the builder's nodes are its
+// `children` (JSX children), never the arguments of a plain function call.
+import { Action, EngagementBar } from "@/ui/bars"
+
+public struct Bar: View {
+  let liked: Bool
+
+  var body: some View {
+    VStack {
+      EngagementBar(size: "md") {
+        Action(label: "a")
+        Text("b")
+        if liked { Text("liked") }
+      }
+      EngagementBar {
+        Action(label: "one")
+      }
+    }
+  }
+}
+
+// A component whose one node prop is not `children` (`content?: ReactNode`): the builder fills it.
+import { Slot } from "@/ui/bars"
+
+public struct Slotted: View {
+  var body: some View {
+    Slot(title: "t") {
+      Text("inside")
+    }
+  }
+}

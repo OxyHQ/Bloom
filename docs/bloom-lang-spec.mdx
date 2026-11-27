@@ -789,7 +789,16 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   `Binding(get: v, set: { v in … })`.
 - **TS React components are nodes**: an imported component `OxyAuthPrompt` is called with its
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
-  trailing builder as `children`.
+  trailing builder as `children`. A TS function is a component when it is UpperCamel, takes at
+  most its props and returns a React element (`JSX.Element`, `ReactElement`, `ReactNode`, also as
+  emitted declarations write them: `import("react").JSX.Element`): `EngagementBar(size: "md") {
+  Action(…) }` draws the bar with the actions inside, built in the caller's render. A component
+  whose props declare no `children` passes the builder to the one node prop (`ReactNode`, a
+  `View`) it declares and the call does not give (`Slot(title:) { … }` is its `content`); with
+  none, or several, the builder is B0506, and `children:` given beside a builder is B0207. A
+  builder's nodes are never dropped: a trailing closure past a TS function's parameters is B0207,
+  and a node on a line of its own in a closure or function that is not a builder (`func f() {
+  Text("x") }`) is B0506 (built and never drawn).
 
 - A token parameter whose TypeScript type also takes a boolean takes a `Bool` (or an optional
   one): `.allowsHitTesting(false)` (`HitTesting`), `.when(on) { … }` (`Condition | boolean`),
@@ -1060,7 +1069,7 @@ requirement of a conformance not met), B0232 (a type argument or `any P` value t
 conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
-outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0506 (a node that would never be drawn), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 
