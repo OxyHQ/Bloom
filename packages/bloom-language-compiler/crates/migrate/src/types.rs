@@ -210,6 +210,9 @@ impl Tr<'_> {
             // `unknown` is exactly a `Foreign` (bloomc writes it back as `unknown`).
             TSType::TSUnknownKeyword(_) => "Foreign".into(),
             TSType::TSNullKeyword(t) => self.refuse("type:null", "`null` alone", t.span),
+            // `(x): x is T`: a test, so a `Bool`. TS's narrowing at the call is bloomc's to
+            // check (an `is`/`!= none` test narrows; anything else it refuses).
+            TSType::TSTypePredicate(p) if !p.asserts => "Bool".into(),
             // `X['k']`, `keyof X`, `typeof f`, `ReturnType<…>`: the TS type, kept as a `Foreign`.
             TSType::TSIndexedAccessType(_) | TSType::TSTypeOperatorType(_) | TSType::TSTypeQuery(_) => {
                 let text = self.slice(ty.span()).to_string();
