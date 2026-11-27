@@ -3179,14 +3179,24 @@ impl<'a> Emitter<'a> {
                         entry
                     })
                     .collect();
+                // The children are built inside the render function, so a static one is hoisted on
+                // its own even when the whole component is (the embedded pass would hoist it out).
+                let was_static = std::mem::replace(&mut self.in_static, false);
                 let children = call.trailing.as_ref().map(|t| self.children(&t.body));
+                self.in_static = was_static;
                 if let Some(children) = &children {
                     let rendered = if children.len() == 1 {
                         children[0].clone()
                     } else {
                         Frag::join(children.clone(), ", ").wrap("[", "]")
                     };
-                    props.push(rendered.wrap("children: $render(", ")"));
+                    // `children`, or the one node prop the component declares in their place.
+                    let slot = call
+                        .trailing
+                        .as_ref()
+                        .and_then(|t| self.ck.component_slots.get(&t.span))
+                        .map_or("children", String::as_str);
+                    props.push(rendered.wrap(&format!("{}: $render(", prop_key(slot)), ")"));
                 }
                 let object =
                     if props.is_empty() { Frag::of("{}") } else { Frag::join(props, ", ").wrap("{ ", " }") };

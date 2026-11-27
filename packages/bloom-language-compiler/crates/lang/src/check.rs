@@ -345,6 +345,9 @@ pub struct CheckResult {
     pub narrowed_paths: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
     pub builder_props: HashSet<Span>,
+    /// Trailing builders of a TS component that fill a node prop other than `children`
+    /// (`content: ReactNode`), by the builder's span: the prop's name.
+    pub component_slots: HashMap<Span, String>,
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,
@@ -2797,6 +2800,19 @@ impl<'o> Checker<'o> {
             }
             StmtKind::Expr(expr) => {
                 let ty = self.expr(expr, None);
+                // A node on a line of its own outside a builder (a closure that is not a
+                // builder, a function's body): built, then dropped, so nothing draws it.
+                if matches!(self.resolve(&ty), Ty::View(_)) {
+                    self.report(
+                        Diagnostic::error("B0506", expr.span, "this node is built and never drawn")
+                            .label("a line of a closure or function that is not a builder")
+                            .help(
+                                "return it (the last line is the value), or pass it where a view is \
+                                 drawn: a node's or view's trailing builder, or a `View` prop",
+                            )
+                            .spec("72-builders-modifiers-and-tokens"),
+                    );
+                }
                 if matches!(self.resolve(&ty), Ty::Async(_) | Ty::Promise(_))
                     && !self.frames.last().is_some_and(|f| f.spawn)
                 {
