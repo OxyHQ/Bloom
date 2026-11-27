@@ -4,16 +4,18 @@
     "blockComment": ["/*", "*/"]
   },
   "brackets": [["{", "}"], ["[", "]"], ["(", ")"]],
+  "colorizedBracketPairs": [["{", "}"], ["[", "]"], ["(", ")"]],
   "autoClosingPairs": [
     { "open": "{", "close": "}" },
     { "open": "[", "close": "]" },
     { "open": "(", "close": ")" },
     { "open": "\"", "close": "\"", "notIn": ["string", "comment"] },
-    { "open": "/*", "close": " */", "notIn": ["string"] },
-    { "open": "${", "close": "}", "notIn": ["comment"] }
+    { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string", "comment"] },
+    { "open": "/*", "close": " */", "notIn": ["string"] }
   ],
   "autoCloseBefore": ";:.,=}])> \n\t",
   "surroundingPairs": [["{", "}"], ["[", "]"], ["(", ")"], ["\"", "\""]],
+  "wordPattern": "(0[xX][0-9a-fA-F_]+)|(\\d[\\d_]*(\\.\\d[\\d_]*)?([eE][+-]?\\d+)?)|(\\$\\d+)|([@$#]?[A-Za-z_][A-Za-z0-9_]*)",
   "folding": {
     "markers": {
       "start": "^\\s*//\\s*#?region\\b",
@@ -21,13 +23,30 @@
     }
   },
   "indentationRules": {
-    "increaseIndentPattern": "^.*(\\{[^}]*|\\([^)]*|\\[[^\\]]*)$",
-    "decreaseIndentPattern": "^\\s*[}\\])]"
+    "increaseIndentPattern": "^((?!//).)*(\\{[^}\"]*|\\([^)\"]*|\\[[^\\]\"]*)$|^\\s*(case\\b.*|default)\\s*:\\s*(//.*)?$",
+    "decreaseIndentPattern": "^\\s*([}\\])]|(case\\b[^{]*|default)\\s*:\\s*(//.*)?$)"
   },
   "onEnterRules": [
     {
-      "beforeText": "^\\s*///.*$",
+      "beforeText": "^\\s*///(?!/).*$",
       "action": { "indent": "none", "appendText": "/// " }
+    },
+    {
+      "beforeText": "^\\s*/\\*(?!/)([^*]|\\*(?!/))*$",
+      "afterText": "^\\s*\\*/$",
+      "action": { "indent": "indentOutdent", "appendText": " * " }
+    },
+    {
+      "beforeText": "^\\s*/\\*(?!/)([^*]|\\*(?!/))*$",
+      "action": { "indent": "none", "appendText": " * " }
+    },
+    {
+      "beforeText": "^(\\t|[ ])*[ ]\\*([ ]([^*]|\\*(?!/))*)?$",
+      "action": { "indent": "none", "appendText": "* " }
+    },
+    {
+      "beforeText": "^(\\t|[ ])*[ ]\\*/\\s*$",
+      "action": { "indent": "none", "removeText": 1 }
     }
   ]
 }

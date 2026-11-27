@@ -1,0 +1,232 @@
+name: Release the VS Code extension
+
+# Publishes the Bloom VS Code extension (packages/bloom-vscode, `oxy.bloom-vscode`)
+# to the Visual Studio Marketplace and Open VSX when its version is not on them
+# yet, once Validate Bloom has passed on that exact commit: as for Bloom's npm
+# packages, merging a version bump to main is the release. docs/releasing.mdx,
+# "The VS Code extension".
+#
+#   plan     reads the extension's version and asks each registry whether it
+#            has it. Nothing missing, nothing else runs. Else it waits for
+#            Validate Bloom to have passed on this commit (the shared release's
+#            own check, OxyHQ/oxy's release-package.mjs `ci`), and fails closed.
+#   package  ONE .vsix of this commit, with the locked vsce, and no credential.
+#   publish  environment `vscode-marketplace`, which alone holds VSCE_PAT and
+#            OVSX_PAT. Runs none of the repository's code: it publishes that
+#            same .vsix to each registry missing the version. A registry whose
+#            token is not set is skipped with a notice, not failed, so the
+#            workflow is green before the accounts exist.
+#   tag      `bloom-vscode@<version>` at the released commit, and a GitHub
+#            release (never marked latest) carrying the .vsix.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/bloom-vscode/**
+      - .github/workflows/vscode-extension-release.yml
+  # main's current head, without a new push: after the tokens are first set, or
+  # to retry a registry that was down.
+  workflow_dispatch:
+
+# Nothing at the workflow level: each job is granted what it needs.
+permissions: {}
+
+# Every run waits its turn and none is cancelled: each releases what its own
+# commit holds that the registries do not.
+concurrency:
+  group: vscode-extension-release
+  cancel-in-progress: false
+
+env:
+  EXTENSION: packages/bloom-vscode
+
+jobs:
+  plan:
+    name: What this commit releases
+    # Only main releases, even from a dispatch on another branch.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.registries.outputs.version }}
+      marketplace: ${{ steps.registries.outputs.marketplace }}
+      openvsx: ${{ steps.registries.outputs.openvsx }}
+      release: ${{ steps.registries.outputs.release }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: ${{ env.EXTENSION }}/package.json
+          sparse-checkout-cone-mode: false
+      # Anonymous. A registry that cannot answer counts as missing the version:
+      # publishing skips a duplicate, so the worst case is a no-op publish.
+      - name: Is the version on each registry?
+        id: registries
+        run: |
+          manifest="$EXTENSION/package.json"
+          publisher="$(jq -r .publisher "$manifest")"
+          name="$(jq -r .name "$manifest")"
+          version="$(jq -r .version "$manifest")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          marketplace=missing
+          if curl -fsS --max-time 30 -X POST \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json;api-version=3.0-preview.1' \
+              --data "$(jq -cn --arg id "$publisher.$name" '{filters: [{criteria: [{filterType: 7, value: $id}]}], flags: 1}')" \
+              https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery \
+            | jq -e --arg v "$version" '[.results[0].extensions[]?.versions[]?.version] | index($v)' >/dev/null; then
+            marketplace=published
+          fi
+
+          openvsx=missing
+          if [ "$(curl -sS --max-time 30 -o /dev/null -w '%{http_code}' "https://open-vsx.org/api/$publisher/$name/$version")" = 200 ]; then
+            openvsx=published
+          fi
+
+          echo "$publisher.$name@$version: Marketplace $marketplace, Open VSX $openvsx"
+          echo "marketplace=$marketplace" >> "$GITHUB_OUTPUT"
+          echo "openvsx=$openvsx" >> "$GITHUB_OUTPUT"
+          if [ "$marketplace" = published ] && [ "$openvsx" = published ]; then
+            echo "::notice::$publisher.$name@$version is on both registries; nothing to release"
+            echo release=false >> "$GITHUB_OUTPUT"
+          else
+            echo release=true >> "$GITHUB_OUTPUT"
+          fi
+      # The same check as Bloom's npm release, from a pinned commit of OxyHQ/oxy.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.registries.outputs.release == 'true'
+        with:
+          repository: OxyHQ/oxy
+          ref: e67272cedd326500be70090085c6d15b13952de4
+          path: release-tools
+          persist-credentials: false
+          sparse-checkout: .github/scripts/release-package.mjs
+          sparse-checkout-cone-mode: false
+      - name: Validate Bloom passed on this exact commit
+        if: steps.registries.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node release-tools/.github/scripts/release-package.mjs ci "$GITHUB_SHA" validate.yml
+
+  package:
+    name: Package the .vsix
+    needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: ${{ env.EXTENSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - name: Package
+        working-directory: ${{ env.EXTENSION }}
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          npm ci --prefix release --ignore-scripts --no-audit --fund=false --userconfig /dev/null
+          release/node_modules/.bin/vsce package --no-dependencies --out "bloom-vscode-$VERSION.vsix"
+          sha256sum "bloom-vscode-$VERSION.vsix"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bloom-vscode-release
+          path: ${{ env.EXTENSION }}/bloom-vscode-${{ needs.plan.outputs.version }}.vsix
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish to the Marketplace and Open VSX
+    needs: [plan, package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: vscode-marketplace
+    permissions:
+      contents: read
+    outputs:
+      published: ${{ steps.marketplace.outputs.published == 'true' || steps.openvsx.outputs.published == 'true' }}
+    env:
+      VSIX: bloom-vscode-${{ needs.plan.outputs.version }}.vsix
+    steps:
+      # The locked publishing tools only: their manifest and lockfile.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            ${{ env.EXTENSION }}/release/package.json
+            ${{ env.EXTENSION }}/release/package-lock.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - run: npm ci --prefix "$EXTENSION/release" --ignore-scripts --no-audit --fund=false --userconfig /dev/null
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bloom-vscode-release
+      - name: Visual Studio Marketplace
+        id: marketplace
+        if: needs.plan.outputs.marketplace == 'missing'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::notice::VSCE_PAT is not set in the vscode-marketplace environment; the Marketplace is skipped"
+            exit 0
+          fi
+          "$EXTENSION/release/node_modules/.bin/vsce" publish --packagePath "$VSIX" --skip-duplicate
+          echo published=true >> "$GITHUB_OUTPUT"
+      - name: Open VSX
+        id: openvsx
+        if: needs.plan.outputs.openvsx == 'missing'
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "::notice::OVSX_PAT is not set in the vscode-marketplace environment; Open VSX is skipped"
+            exit 0
+          fi
+          "$EXTENSION/release/node_modules/.bin/ovsx" publish "$VSIX" --skip-duplicate
+          echo published=true >> "$GITHUB_OUTPUT"
+
+  tag:
+    name: Tag the release
+    needs: [plan, publish]
+    if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TAG: bloom-vscode@${{ needs.plan.outputs.version }}
+      VSIX: bloom-vscode-${{ needs.plan.outputs.version }}.vsix
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bloom-vscode-release
+      # Idempotent: a version published to one registry first and the other
+      # later is tagged once, at its first release.
+      - name: Tag and GitHub release
+        run: |
+          if gh api "repos/$GH_REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::notice::$TAG exists already"
+            exit 0
+          fi
+          gh release create "$TAG" "$VSIX" \
+            --target "$GITHUB_SHA" \
+            --title "Bloom for VS Code $VERSION" \
+            --latest=false \
+            --notes "Bloom, the language by Oxy, for VS Code: \`oxy.bloom-vscode\` on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=oxy.bloom-vscode) and [Open VSX](https://open-vsx.org/extension/oxy/bloom-vscode). The .vsix below installs with Extensions: Install from VSIX."
