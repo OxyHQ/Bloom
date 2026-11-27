@@ -706,7 +706,8 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
 - **`.id(x)` is on every node** (2.0, 0.x's `key=`), the ones that chain no universal
   modifiers too (`GroupedSectionItem(id).id(id)`), a view and a TS component as well: in a
   `for`, it is the repeated child's identity (`x` a `String` or a number).
-- **Icons by name (BloomUI, 2.0):** `Icon(.close)` names a glyph of Bloom's icon set; the
+- **Icons by name (BloomUI, 2.0):** `Icon(.close)` (and the first argument of `IconCircle`,
+  `GroupedSectionIcon` and the action bar's `Action(.close, "Close")`) names a glyph of Bloom's icon set; the
   compiler imports its component (`RiCloseLine` from `@oxy.so/bloom/icons/RiCloseLine`). A file
   that also imports that component itself, from that path, keeps its one import: the two are the
   same glyph, not two declarations.
