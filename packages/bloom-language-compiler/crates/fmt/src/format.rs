@@ -786,16 +786,15 @@ impl<'a> Formatter<'a> {
                     let name = state.name.name.clone();
                     let value = match host_ref(state, view_text) {
                         Some(inner) => text(format!("ViewRef<{}>()", this.slice(inner))),
-                        None => {
-                            let ty = state.ty.as_ref().map(|t| format!("<{}>", this.slice(t.span)));
-                            concat(vec![
-                                text(format!("Ref{}(", ty.unwrap_or_default())),
-                                this.expr(&state.value),
-                                text(")"),
-                            ])
-                        }
+                        None => concat(vec![text("Ref("), this.expr(&state.value), text(")")]),
                     };
-                    concat(vec![text(format!("@State private var {name} = ")), value])
+                    // A typed ref is annotated (`Ref<T>`): a type argument in an expression
+                    // could not hold a generic TS type (`Foreign<"…">`).
+                    let annotation = match (host_ref(state, view_text), &state.ty) {
+                        (None, Some(ty)) => format!(": Ref<{}>", this.slice(ty.span)),
+                        _ => String::new(),
+                    };
+                    concat(vec![text(format!("@State private var {name}{annotation} = ")), value])
                 }
                 Entry::Member(Member::State(state)) => {
                     let (attr, value) = match state.attr {
@@ -1308,7 +1307,19 @@ impl<'a> Formatter<'a> {
 
     fn if_chain(&mut self, i: &IfExpr) -> Doc {
         let cond = self.cond(&i.cond);
-        let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, Layout::Shared)];
+        // `if let r = r.value { … }`: inside, `r` is the unwrapped value, not the ref.
+        let shadowed = match &i.cond {
+            Cond::Let(Pattern { kind: PatternKind::Bind(name), .. }, _) => self
+                .migrate
+                .as_mut()
+                .and_then(|m| m.refs.iter().position(|r| *r == name.name).map(|at| m.refs.remove(at))),
+            _ => None,
+        };
+        let then = self.block(&i.then, Layout::Shared);
+        if let (Some(name), Some(m)) = (shadowed, self.migrate.as_mut()) {
+            m.refs.push(name);
+        }
+        let mut parts = vec![text("if "), cond, text(" "), then];
         if let Some(otherwise) = &i.otherwise {
             parts.push(text(" else "));
             parts.push(match otherwise.as_ref() {
