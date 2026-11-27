@@ -1,0 +1,62 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, view } from "@oxy.so/bloom-language";
+
+export interface Tagged {
+  readonly tags: readonly string[];
+  readonly actions: Readonly<Record<string, () => void>>;
+}
+
+export function tagged(tags: readonly string[], run: (p0: string) => void): Tagged {
+let handlers: Readonly<Record<string, () => void>> = {};
+const add = (tag: string) => {
+handlers = { ...handlers, [tag]: () => run(tag) };
+return tag;
+};
+const rows = tags.map((t: string) => add(t));
+return { tags: rows, actions: handlers };
+}
+
+export function total(tags: readonly string[]): number {
+let count = 0;
+tags.map((t: string) => {
+count = count + (t.length);
+});
+return count;
+}
+
+const $view0 = Button(Text("Count"));
+export interface CounterProps {
+  readonly tags: readonly string[];
+  readonly onCount: (p0: number) => void;
+}
+export const Counter = view(function Counter(props: CounterProps) {
+"use no memo";
+const $ = $c(5);
+const { tags, onCount } = props;
+let tap: () => void;
+if ($[0] !== tags || $[1] !== onCount) {
+tap = (): void => {
+let seen = 0;
+tags.map((t: string) => {
+seen = seen + (1);
+});
+onCount(seen);
+};
+$[0] = tags;
+$[1] = onCount;
+$[2] = tap;
+} else {
+tap = $[2];
+}
+let $t0;
+if ($[3] !== tap) {
+$t0 = $view0.onPress(() => tap());
+$[3] = tap;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+});
+
