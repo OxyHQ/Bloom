@@ -113,6 +113,11 @@ pub struct Tr<'s> {
     pub react_types: std::collections::BTreeSet<String>,
     /// Every imported local name (a JS global is only one when not imported).
     pub imported: HashSet<String>,
+    /// Each imported local name's module specifier.
+    pub import_sources: HashMap<String, String>,
+    /// TS types the output names that the file did not import (a props type's fields
+    /// written out): (module specifier, name), imported as types.
+    pub extra_imports: Vec<(String, String)>,
     pub scope: Scope,
     /// Module functions a `view(F)` constant wraps: translated as that view.
     pub wrapped: HashSet<String>,
@@ -306,30 +311,17 @@ const LANG_HANDLED: &[&str] = &[
 /// Types the language exports that `.bloom` writes as `View`.
 const LANG_VIEW_TYPES: &[&str] = &["Child", "ViewNode"];
 
-pub fn translate(source: &str, filename: &str) -> Translated {
-    let allocator = Allocator::default();
-    let source_type = SourceType::from_path(filename).unwrap_or_default();
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-    if parsed.diagnostics.has_errors() {
-        return Translated {
-            conditions: HashSet::new(),
-            defaults: HashMap::new(),
-            text: String::new(),
-            reasons: vec![Reason {
-                code: "parse".into(),
-                detail: "the TypeScript does not parse".into(),
-                line: 0,
-            }],
-        };
-    }
-    let program = parsed.program;
-    let mut line_starts = vec![0];
-    line_starts.extend(source.match_indices('\n').map(|(i, _)| i as u32 + 1));
-    let mut tr = Tr {
+/// A translator for `source` (`filename`), before its imports are read.
+pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s> {
+    Tr {
         src: source,
         filename: filename.to_string(),
-        line_starts,
-        comments: Comments::new(source, &program.comments),
+        line_starts: {
+            let mut starts = vec![0];
+            starts.extend(source.match_indices('\n').map(|(i, _)| i as u32 + 1));
+            starts
+        },
+        comments,
         reasons: Vec::new(),
         lang: HashMap::new(),
         react: HashMap::new(),
@@ -344,6 +336,8 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         used: HashSet::new(),
         js: Default::default(),
         imported: HashSet::new(),
+        import_sources: HashMap::new(),
+        extra_imports: Vec::new(),
         react_types: Default::default(),
         scope: Scope::default(),
         wrapped: HashSet::new(),
@@ -369,7 +363,27 @@ pub fn translate(source: &str, filename: &str) -> Translated {
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
         defaults: HashMap::new(),
-    };
+    }
+}
+
+pub fn translate(source: &str, filename: &str) -> Translated {
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path(filename).unwrap_or_default();
+    let parsed = Parser::new(&allocator, source, source_type).parse();
+    if parsed.diagnostics.has_errors() {
+        return Translated {
+            conditions: HashSet::new(),
+            defaults: HashMap::new(),
+            text: String::new(),
+            reasons: vec![Reason {
+                code: "parse".into(),
+                detail: "the TypeScript does not parse".into(),
+                line: 0,
+            }],
+        };
+    }
+    let program = parsed.program;
+    let mut tr = new_tr(source, filename, Comments::new(source, &program.comments));
 
     // The imports first: every later decision depends on where a name comes from.
     let mut imports = Imports::default();
@@ -657,6 +671,7 @@ impl<'s> Tr<'s> {
                     };
                     let local = s.local.name.to_string();
                     self.imported.insert(local.clone());
+                    self.import_sources.insert(local.clone(), source.clone());
                     if language {
                         self.lang.insert(local.clone(), imported.clone());
                         if !bloom_lang_nodes().contains(imported.as_str())
@@ -766,6 +781,26 @@ impl<'s> Tr<'s> {
                 })
                 .collect();
             if !names.is_empty() {
+                out.push_str(&format!("import {{ {} }} from \"{source}\"\n", names.join(", ")));
+            }
+        }
+        let mut extra: Vec<&String> = Vec::new();
+        for (source, _) in &self.extra_imports {
+            if !extra.contains(&source) {
+                extra.push(source);
+            }
+        }
+        for source in extra {
+            let mut names: Vec<&str> = self
+                .extra_imports
+                .iter()
+                .filter(|(s, n)| s == source && !self.imported.contains(n))
+                .map(|(_, n)| n.as_str())
+                .collect();
+            names.sort();
+            names.dedup();
+            if !names.is_empty() {
+                let names: Vec<String> = names.iter().map(|n| format!("type {n}")).collect();
                 out.push_str(&format!("import {{ {} }} from \"{source}\"\n", names.join(", ")));
             }
         }

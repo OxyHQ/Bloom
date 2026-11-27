@@ -415,7 +415,8 @@ impl Tr<'_> {
                 span,
             );
         }
-        if GLOBALS.contains(&name) && !self.imported.contains(name) {
+        // A prop named like a JS global (`location`) is the prop.
+        if GLOBALS.contains(&name) && !self.imported.contains(name) && !self.scope.decl.contains_key(name) {
             if matches!(name, "Map" | "Set") {
                 return self.refuse(
                     &format!("global:{name}"),
