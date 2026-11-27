@@ -1,0 +1,16 @@
+error[B0201]: expected `() -> Unit`, found `String`
+ --> check/menu_protocols.bloom:6:14
+  |
+6 |     ["open": id]
+  |              ^^ this is `String`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0501]: `MenuContent` has no modifier `.padding`
+  --> check/menu_protocols.bloom:19:14
+   |
+19 |       Rows().padding("md")
+   |              ^^^^^^^ not a modifier of this node
+   |
+help: `HStack`, `VStack`, `ZStack` take(s) `.padding`; `MenuContent` does not
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#menucontent

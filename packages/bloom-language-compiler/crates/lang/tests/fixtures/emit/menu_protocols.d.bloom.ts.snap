@@ -1,0 +1,22 @@
+import type { ComposedView, MenuActionsView, MenuContentView } from "@oxy.so/bloom-language";
+export interface Post {
+  readonly id: string;
+  readonly title: string;
+}
+export interface Action {
+  readonly label: string;
+  readonly run: () => void;
+}
+export interface PostMenuActionsProps {
+  readonly post: Post;
+}
+export declare const PostMenuActions: (props: PostMenuActionsProps) => MenuActionsView;
+export interface PostMenuProps {
+  readonly post: Post;
+}
+export declare const PostMenu: (props: PostMenuProps) => MenuContentView;
+export interface PostRowProps {
+  readonly post: Post;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostRow())`), or from TSX as `toElement(PostRow())`. */
+export declare const PostRow: (props: PostRowProps) => ComposedView;
