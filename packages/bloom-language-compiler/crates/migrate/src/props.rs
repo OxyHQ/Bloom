@@ -109,9 +109,30 @@ fn fields_in(
     let mut private_aliases: HashMap<String, &TSType> = HashMap::new();
     let mut interface: Option<&TSInterfaceDeclaration> = None;
     let mut alias_members: Option<&oxc_allocator::Vec<TSSignature>> = None;
+    // Where a barrel (`index.ts`) re-exports `name` from: (specifier, its name there).
+    let mut reexported: Option<(String, String)> = None;
+    let mut star_sources: Vec<String> = Vec::new();
+    let export_name = |n: &ModuleExportName| match n {
+        ModuleExportName::IdentifierName(n) => n.name.to_string(),
+        ModuleExportName::IdentifierReference(n) => n.name.to_string(),
+        ModuleExportName::StringLiteral(n) => n.value.as_str().unwrap_or_default().to_string(),
+    };
     for statement in &program.body {
         let (declaration, exported) = match statement {
             Statement::ExportDeclaration(e) => (Some(&e.declaration), true),
+            Statement::ExportFromDeclaration(e) => {
+                for spec in &e.specifiers {
+                    if export_name(&spec.exported) == name {
+                        let from = e.source.value.as_str().unwrap_or_default().to_string();
+                        reexported = Some((from, export_name(&spec.local)));
+                    }
+                }
+                continue;
+            }
+            Statement::ExportAllDeclaration(e) if e.exported.is_none() => {
+                star_sources.push(e.source.value.as_str().unwrap_or_default().to_string());
+                continue;
+            }
             Statement::ImportDeclaration(import) => {
                 let from = import.source.value.as_str().unwrap_or_default().to_string();
                 for s in import.specifiers.iter().flatten() {
@@ -189,7 +210,24 @@ fn fields_in(
             &i.body.body
         }
         (None, Some(members)) => members,
-        (None, None) => return None,
+        // Not declared here: the file it is re-exported from (`export { X } from './types'`,
+        // `export * from './types'`).
+        (None, None) => {
+            let candidates: Vec<(String, String)> = match reexported {
+                Some(found) => vec![found],
+                None => star_sources.into_iter().map(|s| (s, name.to_string())).collect(),
+            };
+            for (from, original) in candidates {
+                let Some(target) = resolve(file, &from) else { continue };
+                let Some(target_specifier) = relative(Path::new(view), &target) else { continue };
+                if let Some(found) =
+                    fields_in(&target, view, &target_specifier, &original, imports, depth + 1)
+                {
+                    return Some(found);
+                }
+            }
+            return None;
+        }
     };
     // The members' types, translated as the props file writes them.
     let file_name = file.to_string_lossy().into_owned();
