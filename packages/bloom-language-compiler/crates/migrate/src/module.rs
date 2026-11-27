@@ -204,6 +204,11 @@ pub struct Tr<'s> {
     /// Module constants an expression inside a function needs (`(['a', 'b'] as const).map(…)`):
     /// written above the item being translated, in order (`Tr::hoist_const_list`).
     pub hoisted: Vec<(String, String)>,
+    /// `actions(…)`/`menu(…)` constants written as `MenuActions`/`MenuContent` structs: a
+    /// call of one takes labelled arguments, as a view's does.
+    pub menu_structs: HashSet<String>,
+    /// Translating a `MenuActions`/`MenuContent` struct (`Tr::menu_struct`).
+    pub in_menu: bool,
 }
 
 impl<'s> Tr<'s> {
@@ -403,6 +408,8 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         pending_equal: None,
         module_init: None,
         hoisted: Vec::new(),
+        menu_structs: HashSet::new(),
+        in_menu: false,
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
@@ -1783,6 +1790,67 @@ impl<'s> Tr<'s> {
         name
     }
 
+    /// A menu's actions or content as the struct that conforms to `protocol`: drafted as a view
+    /// (its props, its members, its result), then written as the struct, its props stored `let`s
+    /// and its result `body` (a tag → action table for `MenuActions`, the rows for `MenuContent`).
+    fn menu_struct(
+        &mut self,
+        protocol: &str,
+        name: &str,
+        call: &oxc_ast::ast::CallExpression,
+        vis: &'static str,
+        body: &[Statement],
+    ) -> String {
+        let outer = std::mem::replace(&mut self.in_menu, true);
+        let draft = self.view_item(name, call, vis, body);
+        self.in_menu = outer;
+        let head = format!("{vis}view {name}");
+        let Some(rest) = draft.strip_prefix(head.as_str()) else { return draft };
+        // `(a: T, b: U = v) {` → stored properties; the members and `body { … }` follow.
+        let (params, rest) = match rest.strip_prefix('(') {
+            Some(after) => {
+                let mut depth = 1usize;
+                let mut end = 0;
+                for (i, c) in after.char_indices() {
+                    match c {
+                        '(' | '[' | '{' => depth += 1,
+                        ')' | ']' | '}' => {
+                            depth -= 1;
+                            if depth == 0 {
+                                end = i;
+                                break;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                (&after[..end], &after[end + 1..])
+            }
+            None => ("", rest),
+        };
+        let Some(inner) = rest.trim_start().strip_prefix('{') else { return draft };
+        let Some(at) = inner.rfind("body {") else { return draft };
+        let (members, body_part) = inner.split_at(at);
+        let body_part = &body_part["body {".len()..];
+        let result_type = if protocol == "MenuActions" { "[String: () -> Unit]" } else { "some View" };
+        let stored: Vec<String> = split_top_level(params)
+            .into_iter()
+            .filter(|p| !p.trim().is_empty())
+            .map(|p| {
+                let p = p.trim();
+                if p.contains('=') { format!("var {p}") } else { format!("let {p}") }
+            })
+            .collect();
+        self.menu_structs.insert(name.to_string());
+        self.views.insert(name.to_string());
+        let vis = vis.replace("pub ", "public ");
+        format!(
+            "{vis}struct {name}: {protocol} {{\n{}\n{}var body: {result_type} {{{body_part}",
+            stored.join("\n"),
+            members
+        )
+    }
+
     fn constant_item(
         &mut self,
         name: &str,
@@ -1820,6 +1888,12 @@ impl<'s> Tr<'s> {
                 || self.is_lang(&callee, "layout")
             {
                 return self.view_item(name, call, vis, body);
+            }
+            // `actions(function F(props) { …; return table })` and `menu(function F(props) { …;
+            // return rows })`: a struct conforming to `MenuActions` or `MenuContent` (#1046).
+            if self.is_lang(&callee, "actions") || self.is_lang(&callee, "menu") {
+                let protocol = if self.is_lang(&callee, "actions") { "MenuActions" } else { "MenuContent" };
+                return self.menu_struct(protocol, name, call, vis, body);
             }
             if self.is_lang(&callee, "defineModifier") {
                 // Used as a value too (`.modifier(look ?? card)`, a prop): the modifier itself.
@@ -2130,4 +2204,25 @@ fn modifier_used_as_value(src: &str, name: &str) -> bool {
         let closes = a.starts_with([')', ',', '}', ']', ';', '?', '\n']) || a.is_empty();
         !applied && opens && closes
     })
+}
+
+/// `a: T, b: [K: V] = [:]` split at its top-level commas.
+fn split_top_level(text: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let (mut depth, mut start) = (0i32, 0);
+    let mut quoted = false;
+    for (i, c) in text.char_indices() {
+        match c {
+            '"' => quoted = !quoted,
+            '(' | '[' | '{' | '<' if !quoted => depth += 1,
+            ')' | ']' | '}' | '>' if !quoted && !text[..i].ends_with('-') => depth -= 1,
+            ',' if depth == 0 && !quoted => {
+                out.push(&text[start..i]);
+                start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    out.push(&text[start..]);
+    out
 }

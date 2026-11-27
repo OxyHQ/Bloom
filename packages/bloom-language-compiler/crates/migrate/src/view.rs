@@ -11,6 +11,8 @@ use oxc_ast::ast::{
     Declaration, Expression, FormalParameters, Function, ObjectPattern, PropertyKey, SimpleAssignmentTarget,
     Statement, TSSignature, TSType, TSTypeName, VariableDeclarationKind, VariableDeclarator,
 };
+use std::collections::HashSet;
+
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::{LogicalOperator, UnaryOperator};
 
@@ -338,6 +340,24 @@ impl Tr<'_> {
                                 ));
                             }
                         }
+                        // `Omit<P, 'k'>` of a local object type: its fields but those.
+                        TSType::TSTypeReference(r)
+                            if let TSTypeName::IdentifierReference(omit) = &r.type_name
+                                && omit.name == "Omit"
+                                && let Some(args) = &r.type_arguments
+                                && let [TSType::TSTypeReference(base), keys] = args.params.as_slice()
+                                && base.type_arguments.is_none()
+                                && let TSTypeName::IdentifierReference(base) = &base.type_name
+                                && let Some(local) = local_object(module, &base.name)
+                                && let Some(omitted) = string_literals(keys) =>
+                        {
+                            members.extend(local.into_iter().filter(|m| match m {
+                                TSSignature::TSPropertySignature(p) => {
+                                    key_name(&p.key).is_none_or(|k| !omitted.contains(&k))
+                                }
+                                _ => true,
+                            }));
+                        }
                         other => {
                             return Some(self.refuse(
                                 "view:props-type",
@@ -347,7 +367,21 @@ impl Tr<'_> {
                         }
                     }
                 }
-                members
+                // A field the intersection names twice (`Omit<P, 't'> & { profileData: ProfileData }`)
+                // is its last one, TS's narrower.
+                let mut seen = HashSet::new();
+                let mut kept: Vec<_> = members
+                    .into_iter()
+                    .rev()
+                    .filter(|m| match m {
+                        TSSignature::TSPropertySignature(p) => {
+                            key_name(&p.key).is_none_or(|k| seen.insert(k))
+                        }
+                        _ => true,
+                    })
+                    .collect();
+                kept.reverse();
+                kept
             }
             other => {
                 return Some(self.refuse(
@@ -1252,7 +1286,60 @@ impl Tr<'_> {
         {
             return self.child(tree);
         }
+        // A menu's rows, `return [a, c && b, xs.map(…)]`: one builder line each.
+        if self.in_menu
+            && let Expression::ArrayExpression(rows) = value.without_parentheses()
+        {
+            return self.menu_rows(rows);
+        }
         self.child(value)
+    }
+
+    /// A menu's row list as builder lines: `c && [a, b]` is `if c { a; b }`, `c ? [a] : [b]`
+    /// an `if`/`else`, a spread a `for`.
+    fn menu_rows(&mut self, rows: &oxc_ast::ast::ArrayExpression) -> String {
+        let mut lines = Vec::new();
+        for row in &rows.elements {
+            match row {
+                oxc_ast::ast::ArrayExpressionElement::SpreadElement(spread) => {
+                    let list = self.head_expr(&spread.argument);
+                    lines.push(format!("for row in {list} {{ row }}"));
+                }
+                oxc_ast::ast::ArrayExpressionElement::Elision(_) => {}
+                other => {
+                    if let Some(e) = other.as_expression() {
+                        lines.push(self.menu_row(e));
+                    }
+                }
+            }
+        }
+        lines.join("\n")
+    }
+
+    fn menu_row(&mut self, e: &Expression) -> String {
+        match e.without_parentheses() {
+            Expression::ArrayExpression(rows) => self.menu_rows(rows),
+            Expression::LogicalExpression(l)
+                if l.operator == LogicalOperator::And
+                    && matches!(l.right.without_parentheses(), Expression::ArrayExpression(_)) =>
+            {
+                let test = self.test(&l.left, false);
+                let test = crate::expr::strip_parens(&test).to_string();
+                let then = self.menu_row(&l.right);
+                format!("if {test} {{\n{then}\n}}")
+            }
+            Expression::ConditionalExpression(c)
+                if matches!(c.consequent.without_parentheses(), Expression::ArrayExpression(_))
+                    || matches!(c.alternate.without_parentheses(), Expression::ArrayExpression(_)) =>
+            {
+                let test = self.test(&c.test, false);
+                let test = crate::expr::strip_parens(&test).to_string();
+                let then = self.menu_row(&c.consequent);
+                let otherwise = self.menu_row(&c.alternate);
+                format!("if {test} {{\n{then}\n}} else {{\n{otherwise}\n}}")
+            }
+            other => self.child(other),
+        }
     }
 
     /// The lines of a `for` built from `xs.map((x) => …)`.
@@ -1413,6 +1500,16 @@ impl Tr<'_> {
         let ret = match ret {
             Some(t) => self.ret_type(t, is_async),
             None => self.infer_ret(body),
+        };
+        // `(…): Child` that returns `null` on a path: `View?` (TS's `Child` takes `null`).
+        let ret = match (ret, &body) {
+            (Some(r), Body::Block(statements, _)) if r == "View" => {
+                let mut returns = Vec::new();
+                collect_returns(statements, &mut returns);
+                let nothing = returns.iter().any(|r| r.argument.as_ref().is_none_or(is_nothing));
+                Some(if nothing { "View?".to_string() } else { r })
+            }
+            (ret, _) => ret,
         };
         // A result type bloomc infers: a closure `let` (a `fn` signature is required).
         let closure = ret.as_deref() == Some(INFERRED);
@@ -3202,5 +3299,19 @@ fn is_constant(e: &Expression) -> bool {
                 && matches!(u.argument, Expression::NumericLiteral(_))
         }
         _ => false,
+    }
+}
+
+/// The strings of `'a' | 'b'` (or one `'a'`).
+fn string_literals(ty: &TSType) -> Option<Vec<String>> {
+    match ty {
+        TSType::TSLiteralType(l) => match &l.literal {
+            oxc_ast::ast::TSLiteral::StringLiteral(s) => s.value.as_str().map(|v| vec![v.to_string()]),
+            _ => None,
+        },
+        TSType::TSUnionType(u) => {
+            u.types.iter().map(string_literals).collect::<Option<Vec<_>>>().map(|v| v.concat())
+        }
+        _ => None,
     }
 }
