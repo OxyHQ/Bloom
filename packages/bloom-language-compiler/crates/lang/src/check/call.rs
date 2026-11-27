@@ -1213,7 +1213,12 @@ impl Checker<'_> {
                                 .spec("44-structs"),
                         );
                     }
-                    let ty = self.boundary(value, None);
+                    // A module constant's record (`let SIZES = { small: "8" }`): its literals'
+                    // types, as TS's `as const` (R6). Only its own fields, not nested values.
+                    let literal = std::mem::take(&mut self.literal_record);
+                    let hint = if literal { super::string_literal(value) } else { None };
+                    let ty = self.boundary(value, hint.as_ref());
+                    self.literal_record = literal;
                     fields.retain(|f| f.name != key.name);
                     fields.push(FieldDef { name: key.name.clone(), ty, default: FieldDefault::None });
                 }
@@ -2089,6 +2094,16 @@ impl Checker<'_> {
 
     /// A token parameter: a literal in the set, or a value of the set's type.
     fn token_arg(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) {
+        // `.tint(support ? .success : none)`: where TS takes `undefined`, `none` leaves the
+        // modifier unapplied (R4).
+        if let Some(handled) = self.none_token(value, set, modifier) {
+            if handled {
+                let ty = Ty::Option(Box::new(Ty::Strings(set.clone())));
+                self.out.types.insert(value.id, ty.clone());
+                self.span_type((value.span, ty));
+            }
+            return;
+        }
         // `isLiked ? .danger : .neutral`: a token each way.
         if let ExprKind::Ternary(cond, then, otherwise) = &value.kind
             && [then, otherwise].iter().any(|b| matches!(b.kind, ExprKind::ImplicitMember(_)))
@@ -2147,7 +2162,45 @@ impl Checker<'_> {
                 return;
             }
         }
+        // A `Tone?` where TS takes `undefined`.
+        let expected = if ui::takes_none(modifier) { Ty::Option(Box::new(expected)) } else { expected };
         self.expr(value, Some(&expected));
+    }
+
+    /// A token argument that is `none`, or a conditional with a `none` branch: checked, each
+    /// other branch a token (`Some(true)`), or refused where TS takes no `undefined`
+    /// (`Some(false)`). `None`: not such an argument.
+    fn none_token(&mut self, value: &Expr, set: &Rc<StrSet>, modifier: &str) -> Option<bool> {
+        let (cond, then, otherwise) = match &value.kind {
+            ExprKind::None => (None, None, None),
+            ExprKind::Paren(inner) => return self.none_token(inner, set, modifier),
+            ExprKind::Ternary(cond, then, otherwise) if super::ends_in_none(value) => {
+                (Some(cond), Some(then), Some(otherwise))
+            }
+            _ => return None,
+        };
+        if !ui::takes_none(modifier) {
+            self.report(
+                Diagnostic::error("B0502", value.span, format!("`.{modifier}` does not take `none`"))
+                    .label("it may be `none`")
+                    .help(format!(
+                        "give it a {} token each way, or apply `.{modifier}` only where it has one",
+                        set.name
+                    ))
+                    .docs(ui::token_docs(set)),
+            );
+            self.boundary(value, None);
+            return Some(false);
+        }
+        if let Some(cond) = cond {
+            self.expr(cond, Some(&Ty::Bool));
+        }
+        for branch in [then, otherwise].into_iter().flatten() {
+            if !matches!(branch.kind, ExprKind::None) {
+                self.token_arg(branch, set, modifier);
+            }
+        }
+        Some(true)
     }
 
     /// A parameter that takes points (a computed number) or a token.

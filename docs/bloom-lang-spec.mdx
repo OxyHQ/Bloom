@@ -373,7 +373,15 @@ of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
 `undefined` (`SettingsSection(none, …)`), and a TS function's optional parameter (`locale?: string`) takes
 an optional as well as its type (`formatRelativeTime(at, locale)` with `locale: String?`), as
-TS's `undefined` is `none`; a required one does not. A TS
+TS's `undefined` is `none`; a required one does not. A TS callback typed `() => Promise<void> |
+void` (read as `Promise<Unit>?`) takes a closure that returns nothing or one that awaits, as TS
+discards its result (`Retry(onRetry: { task { await refetch() } })`). A TS literal union compares
+with any `String` (`value == tab` with `value: Tab?` and `tab` from a list), as TS's `===` does; a
+string literal compared with it is still held to its values. A TS function whose overloads take
+mapped option types Bloom cannot read (TanStack Query's `useQuery`) is `Foreign`, so what it
+returns says nothing of its data; a binding module gives it a generic signature
+(`public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>` with `queryFn: () async
+-> T`), and `T` is then the `queryFn` closure's result. A TS
 class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
@@ -734,7 +742,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
 - **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
-  (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
+  (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing. A token modifier whose
+  TS value takes `undefined` (`spec/language.json`'s `noneModifiers`, read from `Node`'s
+  methods) takes `none` and a token optional too (`.tint(support ? "success" : none)`), which
+  leaves it unapplied; any other is B0502 for a `none`.
 - **`.id(x)` is on every node** (2.0, 0.x's `key=`), the ones that chain no universal
   modifiers too (`GroupedSectionItem(id).id(id)`), a view and a TS component as well: in a
   `for`, it is the repeated child's identity (`x` a `String` or a number).
@@ -748,7 +759,11 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
   with nothing expected, a conditional of string literals is their literal union (`let side =
   card ? "96" : "48"`, as TS's `const` infers) and a literal beside a literal union joins it
-  (`c ? "md" : gutter`), so either fits a token set. `defineModifier { v in … }` reads `v` as a
+  (`c ? "md" : gutter`), so either fits a token set. A module constant's record literal written
+  without a type keeps its string literals' types (`let SIDES = { small: "fit", large: "full" }`
+  is `{ small: "fit", large: "full" }`, emitted `as const`), so `SIDES[size]` fits a token set.
+  With nothing expected, `c ? s : opt?.x` is the optional of `s`'s type: an optional chain may be
+  `none`, as a branch written `none` is. `defineModifier { v in … }` reads `v` as a
   `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
 - **Events take closures**: `.onPress { saving = true }`; an `async` closure
   (`.onPress { await save() }`) runs as a task (section 8).

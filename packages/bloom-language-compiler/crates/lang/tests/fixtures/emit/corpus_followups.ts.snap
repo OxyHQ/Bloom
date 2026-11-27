@@ -1,0 +1,94 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Chip } from "@oxy.so/bloom-language/containers";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Retry, type Selected, type Tab, refetch } from "@/corpus";
+import * as __extern0 from "@tanstack/react-query";
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+
+export interface QueryResult<T> {
+  readonly data: T | undefined;
+  readonly isLoading: boolean;
+}
+
+export interface QueryOptions<T> {
+  readonly queryKey: readonly string[];
+  readonly queryFn: () => Promise<T>;
+  readonly enabled: boolean;
+}
+
+export function useQuery<T>(options: QueryOptions<T>): QueryResult<T> {
+return (__extern0.useQuery(options) satisfies QueryResult<T>);
+}
+
+const SIDES = { small: "fit", medium: "1/2", large: "full" } as const;
+
+export interface Post {
+  readonly id: string;
+}
+
+async function top(): Promise<readonly Post[]> {
+return [];
+}
+
+function count(posts: readonly Post[]): number {
+return posts.length;
+}
+
+export function label(c: boolean, name: string, selected: Selected | undefined): string | undefined {
+const label = c ? `${name}` : selected?.label;
+return label;
+}
+
+const $fn0 = async () => {
+const posts: readonly Post[] = await (top());
+return { topPosts: posts, total: 1 };
+};
+const $fn2 = () => void (async () => {
+let $t0: $Result<Awaited<ReturnType<typeof refetch>>, Error>;
+try {
+$t0 = { ok: true, value: await refetch() };
+} catch ($error) {
+$t0 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t0;
+})();
+const $view0 = Embed($jsx(Retry, { onRetry: $fn2 } satisfies ComponentProps<typeof Retry>));
+const $view1 = Chip(Text("x"));
+export interface FollowupsProps {
+  readonly value: ("videos" | "following") | undefined;
+  readonly support: boolean;
+  readonly size: "small" | "medium" | "large";
+  readonly tabs: readonly string[];
+}
+export const Followups = view(function Followups(props: FollowupsProps) {
+"use no memo";
+const $ = $c(12);
+const { value, support, size, tabs } = props;
+const query = useQuery({ enabled: true, queryKey: ["top"], queryFn: $fn0 });
+let topPosts: readonly Post[];
+if ($[0] !== query.data?.topPosts) {
+topPosts = query.data?.topPosts ?? [];
+$[0] = query.data?.topPosts;
+$[1] = topPosts;
+} else {
+topPosts = $[1];
+}
+let $t1;
+if ($[6] !== size || $[7] !== tabs || $[8] !== value || $[9] !== support || $[10] !== topPosts) {
+const side = SIDES[size];
+$t1 = VStack($view0, tabs.map((tab) => Text(tab).foreground((value === tab) ? ("foreground") : ("muted"))), ($[2] !== support ? ($[2] = support, $[3] = $view1.tint(support ? "success" : undefined)) : $[3]), ($[4] !== topPosts ? ($[4] = topPosts, $[5] = Text(`${count(topPosts)}`)) : $[5])).frame({ width: side, height: side });
+$[6] = size;
+$[7] = tabs;
+$[8] = value;
+$[9] = support;
+$[10] = topPosts;
+$[11] = $t1;
+} else {
+$t1 = $[11];
+}
+return $t1;
+});
+

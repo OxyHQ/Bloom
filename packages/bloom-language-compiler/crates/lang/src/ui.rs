@@ -6,7 +6,7 @@ use rustc_hash::FxHashMap as HashMap;
 use std::rc::Rc;
 
 use bloom_language_compiler::spec::{
-    MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
+    MODIFIERS, NODES, NONE_MODIFIERS, NodeSpec, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
 };
 use bloom_language_compiler::{Doc, Tour};
 
@@ -20,6 +20,12 @@ pub fn node_by_constructor(name: &str) -> Option<&'static NodeSpec> {
 /// A constructor's positional parameters (`spec::SIGNATURES`); any number of children when unknown.
 pub fn signature(constructor: &str) -> &'static [&'static str] {
     SIGNATURES.iter().find(|(name, _)| *name == constructor).map_or(&["...children"], |(_, params)| params)
+}
+
+/// Whether TS takes the modifier's value as `undefined` (`spec::NONE_MODIFIERS`): a `.bloom`
+/// token argument may be `none` there, which leaves the modifier unapplied.
+pub fn takes_none(modifier: &str) -> bool {
+    NONE_MODIFIERS.contains(&modifier)
 }
 
 pub fn node(kind: &str) -> Option<&'static NodeSpec> {

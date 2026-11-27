@@ -352,6 +352,9 @@ pub struct CheckResult {
     pub hook_lets: HashSet<Span>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
+    /// Module constants whose record literal keeps its string literals' types (`let SIZES =
+    /// { small: "8" }` is `{ small: "8" }`), by the value's id: TS's `as const`.
+    pub literal_consts: HashSet<ExprId>,
     /// `a == b` on a type parameter constrained `Equatable`: its witness parameter.
     pub witness_eq: HashMap<ExprId, String>,
     /// The module's declared conformances to protocols, with how each requirement is met.
@@ -495,6 +498,8 @@ pub struct Checker<'o> {
     /// The type parameters in scope bounded by a shape (`<T: ProfileGridEntry>`): each one's
     /// name and shape, whose fields a value of it has.
     shapes_in_scope: Vec<(String, Ty)>,
+    /// Checking a module constant's record literal: its string literal fields keep their types.
+    literal_record: bool,
     /// Calls of a shape-bounded generic, checked once their type arguments are known: each
     /// type argument, its shape, where, and the shapes in scope there.
     pending_shapes: Vec<PendingShape>,
@@ -591,6 +596,7 @@ impl<'o> Checker<'o> {
             member_reads: HashMap::default(),
             bounds_in_scope: Vec::new(),
             shapes_in_scope: Vec::new(),
+            literal_record: false,
             pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
@@ -952,7 +958,19 @@ impl<'o> Checker<'o> {
                     return false;
                 }
                 let params_ok = f.params.iter().zip(&g.params).all(|(p, q)| self.coerce(&q.ty, &p.ty));
-                let ret = self.resolve(&g.ret);
+                let mut ret = self.resolve(&g.ret);
+                // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): its result may be
+                // discarded, so a function returning nothing fits it, and an async one its promise (R1).
+                if let Ty::Option(inner) = &ret {
+                    let inner = self.resolve(inner);
+                    let void_promise =
+                        matches!(&inner, Ty::Promise(value) if self.resolve(value) == Ty::Unit);
+                    if inner == Ty::Unit || (void_promise && !f.is_async) {
+                        ret = Ty::Unit;
+                    } else if void_promise {
+                        ret = inner;
+                    }
+                }
                 let ret_ok = if ret == Ty::Unit {
                     // The result is discarded; an async function's promise too.
                     let _ = self.unify(&f.ret, &Ty::Unit) || true;
@@ -1443,7 +1461,7 @@ impl<'o> Checker<'o> {
             match &item.kind {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
-                    let ty = self.expr(&c.value, declared.as_ref());
+                    let ty = self.const_value(&c.value, declared.as_ref());
                     let local = match self.lazy_props(&c.value) {
                         // `let X = lazy(() => import("./X"))`: a component, with the module's props.
                         Some(props) => self.declare_unique(
@@ -1499,6 +1517,20 @@ impl<'o> Checker<'o> {
             self.has_shape(&ty, &shape, span);
             self.shapes_in_scope = outer;
         }
+    }
+
+    /// A module constant's value. A record literal written without a type keeps its string
+    /// literals' types (`let SIZES = { small: "8", large: "12" }` is `{ small: "8", large:
+    /// "12" }`), as TS's `as const` does, so a field read is a token where one is taken (R6).
+    fn const_value(&mut self, value: &Expr, declared: Option<&Ty>) -> Ty {
+        let literal = declared.is_none() && matches!(value.kind, ExprKind::Record(_));
+        let outer = std::mem::replace(&mut self.literal_record, literal);
+        let ty = self.expr(value, declared);
+        self.literal_record = outer;
+        if literal {
+            self.out.literal_consts.insert(value.id);
+        }
+        ty
     }
 
     fn duplicate(&mut self, name: &Ident) {
@@ -2558,7 +2590,7 @@ impl<'o> Checker<'o> {
                 ItemKind::Const(c) => {
                     let ty = match &c.ty {
                         Some(t) => self.resolve_type(t),
-                        None => self.expr(&c.value, None),
+                        None => self.const_value(&c.value, None),
                     };
                     self.declare(&c.name, ty, LocalKind::ModuleConst);
                 }
@@ -4197,8 +4229,11 @@ impl<'o> Checker<'o> {
                 let else_lit = expected.is_none().then(|| string_literal(otherwise)).flatten();
                 // `c ? x : d ? y : none` (R3): the rest of the chain ends in `none`, so it is held
                 // to `x`'s optional, not to `x`'s type.
-                let optional_a =
-                    (expected.is_none() && ends_in_none(otherwise)).then(|| Ty::Option(Box::new(a.clone())));
+                // `c ? s : opt?.x`: the other branch may be `none` too (an optional chain), so it
+                // is held to `s`'s optional and the two join to it.
+                let optional_a = (expected.is_none()
+                    && (ends_in_none(otherwise) || optional_chain(otherwise)))
+                .then(|| Ty::Option(Box::new(a.clone())));
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
@@ -4891,6 +4926,17 @@ impl<'o> Checker<'o> {
                 let hint = match self.resolve(&left) {
                     Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never => left.clone(),
                     other => Ty::Option(Box::new(other)),
+                };
+                // A literal union (`Tab?`, TS's `'videos' | 'following'`) compares with any
+                // `String`, as TS's does; a string literal is still held to its values (R3).
+                let hint = match self.resolve(&hint) {
+                    Ty::Option(inner)
+                        if matches!(self.resolve(&inner), Ty::Strings(_))
+                            && string_literal(rhs).is_none() =>
+                    {
+                        Ty::Option(Box::new(Ty::Str))
+                    }
+                    _ => hint,
                 };
                 self.expr(rhs, Some(&hint));
                 // The right side's own type (`expr` gives back the expected one).
@@ -5762,6 +5808,15 @@ impl<'o> Checker<'o> {
             }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
+        // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): a closure that returns
+        // nothing, or one that awaits (its promise), fits it (R1).
+        if let Ty::Option(inner) = self.resolve(&ret) {
+            let inner = self.resolve(&inner);
+            if inner == Ty::Unit || matches!(&inner, Ty::Promise(value) if self.resolve(value) == Ty::Unit) {
+                let awaits = c.body.iter().any(crate::emit::stmt_awaits);
+                ret = if awaits { Ty::Promise(Box::new(Ty::Unit)) } else { Ty::Unit };
+            }
+        }
         // TS's `() => Promise<T>` taking a closure that awaits: the closure's result is `T`.
         let promised = match self.resolve(&ret) {
             Ty::Promise(inner) if c.body.iter().any(crate::emit::stmt_awaits) => Some(*inner),
@@ -6397,6 +6452,17 @@ pub(crate) fn is_element(ty: &Ty) -> bool {
     match ty {
         Ty::Foreign(text) => text.starts_with("import(\"react\")."),
         Ty::Option(inner) => is_element(inner),
+        _ => false,
+    }
+}
+
+/// Whether `expr` is an optional chain (`selected?.label`, `user?.name.count`, `f?()`), which
+/// gives `none` when what it reads through is.
+fn optional_chain(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::OptField(..) => true,
+        ExprKind::Paren(inner) | ExprKind::Field(inner, _) => optional_chain(inner),
+        ExprKind::Call(call) => call.optional || optional_chain(&call.callee),
         _ => false,
     }
 }

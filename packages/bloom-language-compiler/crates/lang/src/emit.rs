@@ -745,7 +745,10 @@ impl<'a> Emitter<'a> {
                 let ty = self.ck.locals[local].ty.clone();
                 let annotation =
                     if c.ty.is_some() { format!(": {}", self.ts_type(&ty)) } else { String::new() };
-                let value = self.value_expr(&c.value);
+                let mut value = self.value_expr(&c.value);
+                if self.ck.literal_consts.contains(&c.value.id) {
+                    value.s(" as const");
+                }
                 let mut out =
                     Frag::at(item.span, format!("{export}const {}{annotation} = ", js_name(&c.name.name)));
                 out.f(value).s(";\n");
