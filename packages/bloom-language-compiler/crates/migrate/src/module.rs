@@ -1852,9 +1852,21 @@ fn hoist_lets(items: Vec<String>) -> Vec<String> {
             !word(before) && !word(after)
         })
     }
+    /// The name a declaration item (`struct X`, `func X`, `enum X`) declares.
+    fn decl_name(item: &str) -> Option<&str> {
+        let code = item.lines().find(|l| !l.trim_start().starts_with("//") && !l.trim().is_empty())?;
+        let mut words = code.split_whitespace();
+        words.find(|w| matches!(*w, "struct" | "func" | "enum" | "fn" | "view" | "class"))?;
+        let name = words.next()?;
+        let end = name.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(name.len());
+        (end > 0).then(|| &name[..end])
+    }
     let Some(first) = items.iter().position(|item| let_name(item).is_none()) else { return items };
+    // A `let` that reads a declaration between `first` and itself stays: a view or function
+    // is a JS `const` too, so the hoisted value would read it before it is defined.
     let late: Vec<usize> = (first..items.len())
         .filter(|&i| let_name(&items[i]).is_some_and(|n| items[..i].iter().any(|it| mentions(it, n))))
+        .filter(|&i| !(first..i).any(|j| decl_name(&items[j]).is_some_and(|d| mentions(&items[i], d))))
         .collect();
     if late.is_empty() {
         return items;
@@ -1866,6 +1878,7 @@ fn hoist_lets(items: Vec<String>) -> Vec<String> {
             if !moved.contains(&j)
                 && let Some(n) = let_name(&items[j])
                 && mentions(&items[i], n)
+                && !(first..j).any(|k| decl_name(&items[k]).is_some_and(|d| mentions(&items[j], d)))
             {
                 moved.push(j);
             }
