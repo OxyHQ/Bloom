@@ -337,6 +337,7 @@ The gate is **more than 80%**.
 | 2026-11-27 | the same, + generic arrow functions' type parameters (`T: Equatable` for `extends string \| number`) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = 53.7% (KeyboardShortcutsModal won) |
 | 2026-11-27 | the same, with #1033 (d9fbcfc44, on #1030 and #1028: TS lists into typed lists, `[View]` as a child, generic literals, indexed access types) | 324 files (fd8a4290f) | 41.4% (+15.1% review) = 56.5% |
 | 2026-11-27 | the same, with #1035 (471ca249a, on #1033: TS values compared with numbers and strings, `a \|\| b` of optionals) | 324 files (fd8a4290f) | 42.0% (+15.4% review) = **57.4%**; 5 of the 12 render-checked files draw wrongly (below), so at most 55.9% is verified |
+| 2026-11-27 | #1007: the migration mode in Jest, Metro and `bloom-lang-dts`, `xs?.[i]` on a present TS value as `xs[i]`, untyped `&&`/`\|\|` operands in a condition as `Boolean(x)`; with #1035 (9cfa4eb89: R1–R5, locale-reactive `String(localized:)`, `k_zero` for a count of 0) | 324 files (fd8a4290f) | 42.3% (+15.7% review) = **58.0%**; 11 of the 12 render-checked files draw as the TS (WelcomeScreen does not) |
 
 The rate counts a file the compiler accepts, so a miscompile can hide in it. One was found on
 2026-11-27: a TS function component drawn with a trailing builder was called as a plain function,
@@ -345,28 +346,31 @@ Its re-check of every migrated and review file (an emit diff) found 13 files tha
 counted while drawing wrongly: 9 had dropped nodes and 4 ran a component as a plain call.
 
 PostActions was render-checked first (Mention #2049, PostActionsShape 4/4). The other 12 were
-render-checked on 2026-11-27 with #1033's stack, in Mention's harness
-(`__perf__/lang-proof/corpus/`, Mention #2049). Each file is drawn as TS and as its printed 2.0
-text, with the same props and stand-ins, and the host trees are compared (every view, its
-props with styles flattened, its text). 24 states were checked:
+render-checked on 2026-11-27 in Mention's harness (`__perf__/lang-proof/corpus/`, Mention #2049).
+Each file is drawn as TS and as its printed 2.0 text, with the same props and stand-ins, and
+the host trees are compared (every view, its props with styles flattened, its text) over 24
+states. On #1033's stack, 7 files matched and 5 were miscompiled. The compiler fixed those
+(repros R1–R5 in `~/.local/share/bloom-lang/repros/mention5/`, #1035):
 
-| Result | Files |
+| Result on #1035 9cfa4eb89 | Files |
 |---|---|
-| Same tree in every state (17 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget (and SuggestedProfileCard's skeleton) |
-| A node reaches React as an object | Error (a conditional node into a TS `ReactNode` prop), VideoReplies and ProfileSkeleton (a node into a Bloom component's `ReactNode` prop: `Screen(header:)`, `CoverHeader(cover:)`), SuggestedProfileCard (a TS `view()` mounted as a component) |
-| The export is lost | WelcomeScreen (a `Screen` outside `app/` is emitted as the default export, so `import { WelcomeScreen }` is undefined) |
+| Same tree in every state (23 of 24 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget, Error, ProfileSkeleton, SuggestedProfileCard, VideoReplies |
+| An element type is undefined inside the language's renderer (not located yet) | WelcomeScreen |
 
-The five failures are compiler emits (repros R1–R4 in `~/.local/share/bloom-lang/repros/mention5/`,
-sent to the compiler owner). Until they are fixed, the five count in the rate but are not
-verified.
+The fixed emits were: a TS `view()` mounted as a component (R1), a conditional node, or a node
+for a Bloom component's `ReactNode` prop, not converted to an element (R2, R3), a `Screen` outside
+`app/` that lost its named export (R4), and a memo component with a comparator called as a view
+(R5, which R1's first fix caused).
 
 Two conditions apply to every result above:
 
 - **Catalogs.** `bloom migrate` writes i18next's `t("k")` as `String(localized: "k")`, which
   reads the package's `Resources/Localizable` catalogs. Mention has none (its strings are
   i18next's `locales/*.json`), so without them every migrated file that had `t()` draws its keys.
-  The harness registers `locales/en.json` converted (keys flattened, `{{x}}` as `{x}`, `k_one`/`k_other`
-  as plural forms). Mention's port needs the same catalogs and their registration at startup.
+  Mention now generates them from `locales/` (`scripts/bloom-catalogs.ts`: keys flattened,
+  `{{x}}` as `{x}`, `k_one`/`k_other` as plural forms), and `lib/i18n.ts` registers every
+  catalog i18next loads with Bloom's runtime and follows its language (Mention #2049). A test
+  checks that every key of all 15 locales draws as i18next draws it, plurals included.
 - **Migration mode.** The printed text compiles only inside a package (outside one a file is 0.x),
   and inside one its TS imports need the migration mode in Jest and Metro (`allowTsImports`,
   #1007).
