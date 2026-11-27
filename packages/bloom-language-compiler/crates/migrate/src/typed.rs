@@ -518,6 +518,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((end, end, "!".to_string()))
             }
+            // A string tested for its truthiness (`user.handle ? … : …`): whether it is not empty.
+            ("B0201", _)
+                if d.message == "expected `Bool`, found `String`"
+                    && !text.is_empty()
+                    && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '!'))
+                    && !text.starts_with('!') =>
+            {
+                Some((start, end, format!("!{text}.isEmpty")))
+            }
             // A test of an optional TS read for its truthiness (`if (members.find(…))`): an object
             // or a non-empty literal is truthy, so it is whether it is there; a `Bool?` whether it is `true`.
             ("B0201", _)
