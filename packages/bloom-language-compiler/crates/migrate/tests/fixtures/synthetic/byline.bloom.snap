@@ -1,0 +1,30 @@
+// A list of a string and nodes spread into a text (PostItem's collaborators' byline): its
+// strings are text nodes. Props destructured from `props` are field reads, not the whole value.
+
+public struct Author {
+  let firstName: String
+  var href: String? = none
+}
+
+public struct Byline: View {
+  let authors: [Author]
+  let joiner: String
+  var body: some View {
+    HStack {
+      RawText(
+        authors
+          .enumerated()
+          .flatMap { (i, a) in
+            // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+            let separator = i == 0 ? "" : joiner
+            return [
+              RawText(separator),
+              a.href != none && !a.href.isEmpty ? Text(a.firstName).weight(.semibold) : RawText(
+                a.firstName,
+              ),
+            ]
+          },
+      )
+    }
+  }
+}
