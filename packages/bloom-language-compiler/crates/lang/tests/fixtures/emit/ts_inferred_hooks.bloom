@@ -22,7 +22,7 @@ public struct JobEditor: View {
       if let salary = form.salary {
         Text("\(salary.min ?? 0) \(salary.currency)")
       }
-      Button("Save").disabled(!form.isComplete)
+      Button(Text("Save")).disabled(!form.isComplete)
       JobFormFields(form: form)
       Text("\(HEADER_CONTENT_GAP * 2) \(robots ?? "") \(served ?? "") \(currency ?? "")")
     }

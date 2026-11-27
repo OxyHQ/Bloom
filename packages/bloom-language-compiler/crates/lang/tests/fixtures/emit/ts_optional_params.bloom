@@ -4,6 +4,7 @@ import { formatRelativeTime, useBloomLocale } from "@/locale"
 
 public struct Stamp: View {
   let at: Float
+  let english: Bool
   let locale = useBloomLocale()
 
   var body: some View {
@@ -11,6 +12,7 @@ public struct Stamp: View {
       Text(formatRelativeTime(at, locale))
       Text(formatRelativeTime(at, "en"))
       Text(formatRelativeTime(at))
+      Text(formatRelativeTime(at, english ? "en" : none))
     }
   }
 }

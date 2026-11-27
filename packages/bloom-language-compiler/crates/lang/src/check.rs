@@ -456,9 +456,9 @@ pub struct Checker<'o> {
     chained: HashSet<ExprId>,
     /// Checking `.ref(x)`'s argument: a `@ref` there is the ref itself.
     ref_object: bool,
-    /// The argument being checked is for a TS optional parameter (`locale?: string`): it
-    /// also takes an optional, as TS's `undefined` is `none` (R2).
-    optional_param: bool,
+    /// The pairs of TS object types being compared field by field (a recursive interface
+    /// fits itself while it is compared).
+    structural: Vec<(DefId, DefId)>,
     /// The next closure checked is `catching { … }`'s block (its frame throws).
     pub(super) closure_throws: bool,
     /// Member chains of immutable values narrowed present (`u.name != none`): the
@@ -558,7 +558,7 @@ impl<'o> Checker<'o> {
             reported: HashSet::default(),
             chained: HashSet::default(),
             ref_object: false,
-            optional_param: false,
+            structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
             trying: false,
@@ -889,6 +889,24 @@ impl<'o> Checker<'o> {
             {
                 let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
                 self.fits_record(d1, &x, d2, &y)
+            }
+            // Two TS object types (`PostUser` where `ProfileCardData` is expected): TS's types
+            // are structural, so one fits the other when its fields do.
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if d1 != d2
+                    && matches!(self.out.defs[*d1].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d2].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d1].kind, DefKind::Struct(_))
+                    && matches!(self.out.defs[*d2].kind, DefKind::Struct(_)) =>
+            {
+                let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
+                if self.structural.contains(&(d1, d2)) {
+                    return true;
+                }
+                self.structural.push((d1, d2));
+                let fits = self.fits_record(d1, &x, d2, &y);
+                self.structural.pop();
+                fits
             }
             (Ty::Strings(x), Ty::Strings(y)) => {
                 Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
@@ -3788,7 +3806,6 @@ impl<'o> Checker<'o> {
     /// An argument TS checks: `Foreign` and Bloom values alike, an `Int` where
     /// a TS `number` is, a closure whose untyped parameters TS infers.
     pub fn boundary(&mut self, expr: &Expr, ts_ty: Option<&Ty>) -> Ty {
-        let optional_param = std::mem::take(&mut self.optional_param);
         let hint = ts_ty.map(|t| self.resolve(t));
         // A `@ref` where TS takes a ref (`RefObject<…>`, `Ref<…>`): the ref itself. While the
         // view draws, where TS's type is not known to Bloom, too (its value would be B0411;
@@ -3835,8 +3852,9 @@ impl<'o> Checker<'o> {
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
-                || self.coerce(&ty, &hint)
-                || (optional_param && self.coerce(&ty, &Ty::Option(Box::new(hint.clone()))));
+                // A `Foreign?` where TS takes an optional (`account: account`): TS checks it.
+                || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
+                || self.coerce(&ty, &hint);
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
             }

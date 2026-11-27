@@ -1456,6 +1456,10 @@ impl Mapper<'_> {
         if REACT_ELEMENTS.contains(&name) {
             return Ty::Foreign(path.into());
         }
+        // The embedded language's view types, now followed through its re-exports: a view.
+        if matches!(name, "ViewNode" | "AnyView") {
+            return Ty::View(None);
+        }
         if file.decls.contains_key(name) {
             let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
             return self.named(file, name, &mapped, path, depth + 1);

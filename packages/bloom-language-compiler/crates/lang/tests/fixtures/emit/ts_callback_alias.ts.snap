@@ -1,11 +1,12 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, view } from "@oxy.so/bloom-language";
+import { Button, Text, view } from "@oxy.so/bloom-language";
 import { presentSheet } from "@/sheet";
+import { toElement } from "@oxy.so/bloom-language";
 type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 
-const $view0 = Button("Close");
-const $fn1 = (surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => $view0.onPress(() => surface.dismiss());
+const $view0 = Button(Text("Close"));
+const $fn1 = (surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => toElement($view0.onPress(() => surface.dismiss()));
 const $open = async (): Promise<void> => {
 let $t0: $Result<unknown, Error>;
 try {
@@ -15,7 +16,7 @@ $t0 = { ok: false, error: $error instanceof Error ? $error : new Error(String($e
 }
 $t0;
 };
-const $view1 = Button("Open");
+const $view1 = Button(Text("Open"));
 export const Opener = view(function Opener() {
 "use no memo";
 const $ = $c(1);

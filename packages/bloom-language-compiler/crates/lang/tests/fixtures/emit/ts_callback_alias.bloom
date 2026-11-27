@@ -1,15 +1,17 @@
 // A closure's parameter takes its type from the expected function type, also when a TS
 // callback type alias names it through a re-export (R5): `surface` is a `SurfaceControls`.
 import { presentSheet } from "@/sheet"
+import { toElement } from "@oxy.so/bloom-language"
 
 public struct Opener: View {
   func open() async {
     await presentSheet { surface in
-      Button("Close").onPress { surface.dismiss() }
+      // TS renders what it returns: a Bloom view crosses as an element.
+      toElement(Button(Text("Close")).onPress { surface.dismiss() })
     }
   }
 
   var body: some View {
-    Button("Open").onPress { Task { await open() } }
+    Button(Text("Open")).onPress { Task { await open() } }
   }
 }

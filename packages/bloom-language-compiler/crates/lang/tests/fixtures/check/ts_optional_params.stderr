@@ -7,7 +7,7 @@ error[B0201]: expected `String`, found `String?`
 help: it may be `none`: unwrap it with `?? fallback`, `if let value = …`, `?.` or `match`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
 
-error[B0201]: expected `String`, found `Int`
+error[B0201]: expected `String?`, found `Int`
   --> check/ts_optional_params.bloom:11:35
    |
 11 |       Text(formatRelativeTime(at, 1))

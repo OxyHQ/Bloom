@@ -1,0 +1,16 @@
+error[B0206]: `ProfileCardData` needs `name`
+ --> check/ts_structural.bloom:8:26
+  |
+8 |     ProfileCard(profile: { id: data.id }, subtitle: 1)
+  |                          ^^^^^^^^^^^^^^^ missing field(s) without a default
+  |
+help: pass it: `ProfileCardData(name: …)`, or give the field a default
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `View?`, found `Int`
+ --> check/ts_structural.bloom:8:53
+  |
+8 |     ProfileCard(profile: { id: data.id }, subtitle: 1)
+  |                                                     ^ this is `Int`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

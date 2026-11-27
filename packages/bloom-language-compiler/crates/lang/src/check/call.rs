@@ -1025,10 +1025,19 @@ impl Checker<'_> {
             }
             match param {
                 Some(param) => {
-                    let ty = param.ty.clone();
-                    self.optional_param = param.optional && !param.rest;
+                    // A TS optional parameter (`locale?: string`) takes an optional as well, as
+                    // TS's `undefined` is `none` (R2); a closure still reads the function type.
+                    let ty = match self.resolve(&param.ty) {
+                        Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown => param.ty.clone(),
+                        _ if param.optional
+                            && !param.rest
+                            && !matches!(arg.value.kind, ExprKind::Closure(_)) =>
+                        {
+                            Ty::Option(Box::new(param.ty.clone()))
+                        }
+                        _ => param.ty.clone(),
+                    };
                     self.boundary(&arg.value, Some(&ty));
-                    self.optional_param = false;
                 }
                 None => {
                     self.report(

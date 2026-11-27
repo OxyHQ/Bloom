@@ -410,7 +410,10 @@ A TS type named through re-exports (`export type { SurfaceRenderFn } from './typ
 module's index, an `import`/`export` pair, `export *`) is the declaration it names, so a
 callback alias types a closure's parameters: with `presentSheet(render: SurfaceRenderFn)` and
 `SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
-surface.dismiss() }` reads `surface` as a `SurfaceControls`.
+surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
+one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
+`Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
+`AnyView` are views.
 
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const

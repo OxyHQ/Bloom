@@ -7,7 +7,7 @@ import type { ComponentProps } from "react";
 import { HEADER_CONTENT_GAP, MAX_SKILLS, seoServer, useJobForm, useJobSeo } from "@/jobs/jobForm";
 import { JobFormFields, type RowHeader } from "@/jobs/JobFormFields";
 
-const $view0 = Button("Save");
+const $view0 = Button(Text("Save"));
 export const JobEditor = view(function JobEditor() {
 "use no memo";
 const $ = $c(14);
