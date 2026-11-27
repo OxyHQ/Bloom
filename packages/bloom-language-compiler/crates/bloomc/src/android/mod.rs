@@ -27,12 +27,14 @@ use crate::json::{self, Value};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
 /// The shims of the Expo surface a Bloom build answers, by file: what Bloom's own components
-/// still read (`expo-blur`, `expo-font`, `expo`'s lens check), until their Bloom modules land.
+/// still read (`expo-blur`, `expo-font`, `expo`'s lens check), until their Bloom modules land,
+/// and `expo-video`, over the standard library's `BloomVideo`.
 const SHIM_FILES: &[(&str, &str)] = &[
     ("expo.js", include_str!("shims/expo.js")),
     ("expo-modules-core.js", include_str!("shims/expo-modules-core.js")),
     ("expo-blur.js", include_str!("shims/expo-blur.js")),
     ("expo-font.js", include_str!("shims/expo-font.js")),
+    ("expo-video.js", include_str!("shims/expo-video.js")),
     ("url.js", include_str!("shims/url.js")),
 ];
 
@@ -42,6 +44,7 @@ const SHIMMED: &[(&str, &str)] = &[
     ("expo-modules-core", "expo-modules-core.js"),
     ("expo-blur", "expo-blur.js"),
     ("expo-font", "expo-font.js"),
+    ("expo-video", "expo-video.js"),
 ];
 
 /// Expo packages whose JS a Bloom build keeps, over the shims: none since the Bloom router
@@ -404,9 +407,10 @@ react {{
 
 dependencies {{
   implementation("com.facebook.react:react-android")
-}}
+{extra}}}
 "#,
             kotlin = quote(&native.kotlin.to_string_lossy()),
+            extra = native_dependencies(&native.kotlin)?,
         ),
     )?;
     write(
@@ -423,6 +427,21 @@ dependencies {{
         component_descriptors: native.module.component_descriptors(),
         cmake_lists: android.join("build/generated/source/codegen/jni/CMakeLists.txt"),
     })
+}
+
+/// The libraries a native module links besides React Native: its `android/dependencies.gradle`
+/// (Gradle `dependencies { }` lines, such as `implementation("androidx.media3:…")`), when it
+/// has one, indented into the module's `dependencies` block.
+fn native_dependencies(android: &Path) -> Result<String, String> {
+    let file = android.join("dependencies.gradle");
+    if !file.is_file() {
+        return Ok(String::new());
+    }
+    let text = std::fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))?;
+    Ok(text
+        .lines()
+        .map(|line| if line.is_empty() { "\n".to_string() } else { format!("  {line}\n") })
+        .collect())
 }
 
 // ---- the Gradle project --------------------------------------------------------
@@ -1027,6 +1046,39 @@ mod tests {
         let _ = std::fs::remove_dir_all(&package.root);
     }
 
+    /// The video module links androidx media3 from its `dependencies.gradle`, and a Bloom
+    /// build answers `expo-video` with the shim over it.
+    #[test]
+    fn the_video_module_links_media3_behind_the_expo_video_shim() {
+        let package = package(
+            "video",
+            "let package = Package(name: \"Shop\", platforms: [.android(26)], targets: [.app(\"Shop\")])",
+            &[("Sources/Shop/App.bloom", APP)],
+        );
+        let natives = native_modules(&package).unwrap();
+        let video = natives.iter().find(|n| n.module.name == "BloomVideo").unwrap();
+        let build = package.build_dir();
+        let lib = write_native_library(&build, video).unwrap();
+        assert_eq!(lib.import, "import so.oxy.bloom.video.BloomVideoPackage;");
+        assert_eq!(lib.component_descriptors, ["BloomVideoViewComponentDescriptor"]);
+        let gradle = std::fs::read_to_string(build.join("native/BloomVideo/android/build.gradle")).unwrap();
+        assert!(
+            gradle.contains("  implementation(\"com.facebook.react:react-android\")\n  // The libraries"),
+            "{gradle}"
+        );
+        assert!(
+            gradle.contains("  implementation(\"androidx.media3:media3-exoplayer:1.9.1\")\n"),
+            "{gradle}"
+        );
+        let spec = std::fs::read_to_string(build.join("native/BloomVideo/js/NativeBloomVideo.ts")).unwrap();
+        assert!(spec.contains("readonly onStatus: CodegenTypes.EventEmitter<"), "{spec}");
+        write_js(&package, "").unwrap();
+        let metro = std::fs::read_to_string(build.join("metro.config.js")).unwrap();
+        assert!(metro.contains("\"expo-video\": \"expo-video.js\""), "{metro}");
+        let shim = std::fs::read_to_string(build.join("shims/expo-video.js")).unwrap();
+        assert!(shim.contains("TurboModuleRegistry.get('BloomVideo')"), "{shim}");
+    }
+
     /// The standard library's storage module is linked: its Kotlin sources, its codegen
     /// spec (from the Bloom interface) and its package for the app's package list.
     #[test]
@@ -1039,7 +1091,7 @@ mod tests {
         let natives = native_modules(&package).unwrap();
         assert_eq!(
             natives.iter().map(|n| n.module.name.as_str()).collect::<Vec<_>>(),
-            ["BloomStorage", "BloomImage"]
+            ["BloomStorage", "BloomImage", "BloomVideo"]
         );
         assert!(
             natives[0].kotlin.join("so/oxy/bloom/storage/BloomStorageModule.kt").is_file(),

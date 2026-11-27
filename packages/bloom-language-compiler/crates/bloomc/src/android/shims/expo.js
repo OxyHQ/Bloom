@@ -9,9 +9,33 @@ function registerRootComponent(component) {
   AppRegistry.registerComponent('main', () => component);
 }
 
+/** The latest payload of `object`'s `event` (expo's `useEvent`), `initial` until it fires. */
+function useEvent(object, event, initial = null) {
+  const React = require('react');
+  const [payload, setPayload] = React.useState(initial);
+  React.useEffect(() => {
+    const subscription = object?.addListener?.(event, (value) => setPayload(value));
+    return () => subscription?.remove();
+  }, [object, event]);
+  return payload;
+}
+
+/** Runs `listener` on each of `object`'s `event` (expo's `useEventListener`), always the latest. */
+function useEventListener(object, event, listener) {
+  const React = require('react');
+  const latest = React.useRef(listener);
+  latest.current = listener;
+  React.useEffect(() => {
+    const subscription = object?.addListener?.(event, (...args) => latest.current(...args));
+    return () => subscription?.remove();
+  }, [object, event]);
+}
+
 module.exports = {
   ...core,
   registerRootComponent,
+  useEvent,
+  useEventListener,
   isRunningInExpoGo: () => false,
   getExpoGoProjectConfig: () => null,
 };

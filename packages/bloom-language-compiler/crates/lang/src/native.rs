@@ -58,6 +58,24 @@
 //! - The bridge's function returns the view as an embedded element. It takes the space it
 //!   is offered (as a SwiftUI representable does), so a `.frame()` sizes it. Where the
 //!   build does not link it (the web, a test), it draws nothing.
+//!
+//! ## Module events
+//!
+//! A function named `on…` whose one parameter is an event closure and which returns
+//! `() -> Void` is an event the module sends: a player's status, a download's progress.
+//!
+//! ```swift
+//! extern native "BloomVideo" {
+//!   func onStatus(_ listener: ({ player: Int, status: String }) -> Void) -> () -> Void
+//! }
+//! ```
+//!
+//! - The spec declares it as codegen's `EventEmitter` (`readonly onStatus:
+//!   CodegenTypes.EventEmitter<…>`), so the Java spec the Kotlin module extends has
+//!   `emitOnStatus(ReadableMap)`.
+//! - The bridge's function adds the listener and returns what removes it.
+//! - Its fields are an event prop's (a record of String, Bool, numbers, and arrays and
+//!   optionals of them).
 
 use crate::ast::*;
 
@@ -195,18 +213,27 @@ pub struct NativeView {
     pub props: Vec<Prop>,
 }
 
+/// An event a module sends (`func onX(_ listener: ({ … }) -> Void) -> () -> Void`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModuleEvent {
+    /// The emitter's name (`@extern("…")`, else the function's): `on…`.
+    pub name: String,
+    pub fields: Vec<(String, Type)>,
+}
+
 /// One `extern native` block.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Module {
     pub name: String,
     pub functions: Vec<Function>,
+    pub events: Vec<ModuleEvent>,
     pub views: Vec<NativeView>,
 }
 
 impl Module {
     /// codegen's library type: `modules`, `components` or `all`.
     pub fn codegen_type(&self) -> &'static str {
-        match (self.functions.is_empty(), self.views.is_empty()) {
+        match (!self.has_spec(), self.views.is_empty()) {
             (false, true) | (true, true) => "modules",
             (true, false) => "components",
             (false, false) => "all",
@@ -218,11 +245,16 @@ impl Module {
         self.views.iter().map(|v| format!("{}ComponentDescriptor", v.name)).collect()
     }
 
-    /// codegen's inputs: the module spec (when it declares functions) and each view's
-    /// component spec, as (file name, contents).
+    /// Whether the module has a TurboModule spec: it declares functions or events.
+    pub fn has_spec(&self) -> bool {
+        !self.functions.is_empty() || !self.events.is_empty()
+    }
+
+    /// codegen's inputs: the module spec (when it declares functions or events) and each
+    /// view's component spec, as (file name, contents).
     pub fn specs(&self) -> Vec<(String, String)> {
         let mut out = Vec::new();
-        if !self.functions.is_empty() {
+        if self.has_spec() {
             out.push((spec_file(&self.name), spec(self)));
         }
         for view in &self.views {
@@ -372,11 +404,16 @@ pub fn modules(source: &str) -> Result<Vec<Module>, String> {
             continue;
         }
         let mut functions = Vec::new();
+        let mut events = Vec::new();
         let mut views = Vec::new();
         for inner in &block.items {
             let ItemKind::Fn(f) = &inner.kind else { continue };
             if f.ret.as_ref().is_some_and(is_view) {
                 views.push(view_of(block, extern_name(inner, &f.name.name), f)?);
+                continue;
+            }
+            if let Some(event) = module_event(block, inner, f)? {
+                events.push(event);
                 continue;
             }
             let what = |e: String| {
@@ -404,9 +441,37 @@ pub fn modules(source: &str) -> Result<Vec<Module>, String> {
                 is_async: f.is_async,
             });
         }
-        out.push(Module { name: block.package.name.clone(), functions, views });
+        out.push(Module { name: block.package.name.clone(), functions, events, views });
     }
     Ok(out)
+}
+
+/// Whether `t` is `() -> Void`: what removes a listener.
+fn is_remover(t: &TypeExpr) -> bool {
+    let TypeKind::Fn { params, ret, is_async } = &t.kind else { return false };
+    !*is_async
+        && params.is_empty()
+        && (matches!(&ret.kind, TypeKind::Named { name, args } if args.is_empty() && name.name == "Void")
+            || matches!(&ret.kind, TypeKind::Tuple(items) if items.is_empty()))
+}
+
+/// The module event `f` declares: an `on…` function of one event closure that returns
+/// `() -> Void`. `None` for any other function.
+fn module_event(block: &ExternModule, item: &Item, f: &FnDecl) -> Result<Option<ModuleEvent>, String> {
+    let [only] = f.params.as_slice() else { return Ok(None) };
+    let Some(fields) = event_of(&only.ty) else { return Ok(None) };
+    let what = |e: String| format!("the module event `{}.{}`: {e}", block.package.name, f.name.name);
+    let name = extern_name(item, &f.name.name);
+    if !name.starts_with("on") || f.is_async || !f.ret.as_ref().is_some_and(is_remover) {
+        return Err(what(
+            "an event is `func on…(_ listener: ({ … }) -> Void) -> () -> Void` (it returns what removes the listener)"
+                .into(),
+        ));
+    }
+    if matches!(&only.ty.kind, TypeKind::Optional(_)) {
+        return Err(what("its listener is not optional".into()));
+    }
+    Ok(Some(ModuleEvent { name, fields: fields.map_err(what)? }))
 }
 
 const HEADER: &str =
@@ -422,14 +487,26 @@ fn spec_ret(f: &Function) -> String {
     }
 }
 
-/// React Native's codegen input for `module`'s functions.
+/// React Native's codegen input for `module`'s functions and events.
 pub fn spec(module: &Module) -> String {
     let mut out = String::from(HEADER);
-    out.push_str("import type { TurboModule } from 'react-native';\nimport { TurboModuleRegistry } from 'react-native';\n\n");
+    if module.events.is_empty() {
+        out.push_str("import type { TurboModule } from 'react-native';\n");
+    } else {
+        out.push_str("import type { CodegenTypes, TurboModule } from 'react-native';\n");
+    }
+    out.push_str("import { TurboModuleRegistry } from 'react-native';\n\n");
     out.push_str("export interface Spec extends TurboModule {\n");
     for f in &module.functions {
         let params: Vec<String> = f.params.iter().map(|(n, t)| format!("{n}: {}", t.ts())).collect();
         out.push_str(&format!("  {}({}): {};\n", f.name, params.join(", "), spec_ret(f)));
+    }
+    for event in &module.events {
+        out.push_str(&format!(
+            "  readonly {}: CodegenTypes.EventEmitter<{}>;\n",
+            event.name,
+            event_payload(&event.fields)
+        ));
     }
     out.push_str("}\n\n");
     out.push_str(&format!("export default TurboModuleRegistry.get<Spec>('{}');\n", module.name));
@@ -518,11 +595,11 @@ pub fn bridge(module: &Module) -> String {
     if !module.views.is_empty() {
         out.push_str("import { type ComponentType, createElement } from 'react';\nimport { type Child, Embed } from '@oxy.so/bloom-language';\n");
     }
-    if !module.functions.is_empty() {
+    if module.has_spec() {
         out.push_str(&format!("import type {{ Spec }} from './Native{name}';\n"));
     }
     out.push_str("\ndeclare const require: (id: string) => unknown;\n");
-    if !module.functions.is_empty() {
+    if module.has_spec() {
         out.push_str(&format!(
             "\nlet native: Spec | undefined;\n\n/** The TurboModule, loaded on first use (a web bundle or a Node test never loads it). */\nfunction module(): Spec {{\n  if (!native) {{\n    const found = (require('./Native{name}') as {{ default: Spec | null }}).default;\n    if (!found) throw new Error('Bloom: the native module {name} is not in this build (bloom build android links it)');\n    native = found;\n  }}\n  return native;\n}}\n\n/** The native module is linked (always true in a `bloom build`; false on the web and in tests). */\nexport function isAvailable(): boolean {{\n  if (native) return true;\n  try {{\n    return module() !== undefined;\n  }} catch {{\n    return false;\n  }}\n}}\n"
         ));
@@ -556,6 +633,22 @@ pub fn bridge(module: &Module) -> String {
             "\nexport function {}({}): {ret} {{\n  {body}\n}}\n",
             f.name,
             params.join(", ")
+        ));
+    }
+    for event in &module.events {
+        let fields: Vec<String> = event
+            .fields
+            .iter()
+            .map(|(n, t)| match t {
+                Type::Optional(_) => format!("readonly {n}?: {}", t.bloom_ts()),
+                _ => format!("readonly {n}: {}", t.bloom_ts()),
+            })
+            .collect();
+        let arg =
+            if fields.is_empty() { String::new() } else { format!("event: {{ {} }}", fields.join("; ")) };
+        out.push_str(&format!(
+            "\n/** Adds `listener` to the module's `{0}` events; returns what removes it. */\nexport function {0}(listener: ({arg}) => void): () => void {{\n  const subscription = module().{0}(listener as Parameters<Spec['{0}']>[0]);\n  return () => subscription.remove();\n}}\n",
+            event.name
         ));
     }
     if !module.views.is_empty() {
@@ -707,6 +800,68 @@ mod tests {
     fn a_type_the_bridge_cannot_carry_is_named() {
         let error = modules("extern native \"X\" {\n  func f(_ a: Post) -> String\n}\n").unwrap_err();
         assert!(error.contains("`X.f`: `Post` does not cross a native bridge"), "{error}");
+    }
+
+    const PLAYER: &str = r#"extern native "BloomVideo" {
+  func create() -> Int
+  func onStatus(_ listener: ({ player: Int, status: String, error: String? }) -> Void) -> () -> Void
+  @extern("onEnd") func onPlayToEnd(_ listener: () -> Void) -> () -> Void
+}
+"#;
+
+    #[test]
+    fn a_module_event_is_codegen_s_event_emitter() {
+        let module = &modules(PLAYER).unwrap()[0];
+        assert_eq!(module.functions.len(), 1);
+        assert_eq!(module.events.len(), 2);
+        assert_eq!(module.codegen_type(), "modules");
+        let spec = spec(module);
+        assert!(
+            spec.starts_with(&format!(
+                "{HEADER}import type {{ CodegenTypes, TurboModule }} from 'react-native';"
+            )),
+            "{spec}"
+        );
+        assert!(
+            spec.contains("  readonly onStatus: CodegenTypes.EventEmitter<Readonly<{ player: CodegenTypes.Int32; status: string; error?: string }>>;"),
+            "{spec}"
+        );
+        assert!(spec.contains("  readonly onEnd: CodegenTypes.EventEmitter<Readonly<{}>>;"), "{spec}");
+        let bridge = bridge(module);
+        assert!(
+            bridge.contains("export function onStatus(listener: (event: { readonly player: number; readonly status: string; readonly error?: string | undefined }) => void): () => void {"),
+            "{bridge}"
+        );
+        assert!(
+            bridge.contains(
+                "const subscription = module().onStatus(listener as Parameters<Spec['onStatus']>[0]);"
+            ),
+            "{bridge}"
+        );
+        assert!(bridge.contains("export function onEnd(listener: () => void): () => void {"), "{bridge}");
+        assert!(bridge.contains("return () => subscription.remove();"), "{bridge}");
+    }
+
+    #[test]
+    fn a_module_of_events_alone_has_a_spec() {
+        let module =
+            &modules("extern native \"X\" {\n  func onTick(_ l: ({ n: Int }) -> Void) -> () -> Void\n}\n")
+                .unwrap()[0];
+        assert!(module.functions.is_empty());
+        assert_eq!(module.specs().len(), 1);
+        assert!(bridge(module).contains("function module(): Spec"));
+    }
+
+    #[test]
+    fn a_module_event_s_shape_is_named() {
+        for source in [
+            "extern native \"X\" {\n  func onTick(_ l: ({ n: Int }) -> Void)\n}\n",
+            "extern native \"X\" {\n  func tick(_ l: ({ n: Int }) -> Void) -> () -> Void\n}\n",
+            "extern native \"X\" {\n  func onTick(_ l: (({ n: Int }) -> Void)?) -> () -> Void\n}\n",
+        ] {
+            let error = modules(source).unwrap_err();
+            assert!(error.contains("the module event `X."), "{source}: {error}");
+        }
     }
 
     const IMAGE: &str = r#"extern native "BloomImage" {

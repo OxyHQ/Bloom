@@ -25,6 +25,7 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("HTTP.bloom", include_str!("../../../stdlib/Bloom/HTTP.bloom")),
     ("Storage.bloom", include_str!("../../../stdlib/Bloom/Storage.bloom")),
     ("Image.bloom", include_str!("../../../stdlib/Bloom/Image.bloom")),
+    ("Video.bloom", include_str!("../../../stdlib/Bloom/Video.bloom")),
     ("Concurrency.bloom", include_str!("../../../stdlib/Bloom/Concurrency.bloom")),
     ("Regex.bloom", include_str!("../../../stdlib/Bloom/Regex.bloom")),
     ("Logger.bloom", include_str!("../../../stdlib/Bloom/Logger.bloom")),
@@ -84,6 +85,40 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     (
         "Native/BloomImage/android/so/oxy/bloom/image/Pipeline.kt",
         include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/Pipeline.kt"),
+    ),
+    (
+        "Native/BloomVideo/android/dependencies.gradle",
+        include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/dependencies.gradle"),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoModule.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoModule.kt"
+        ),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoPackage.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoPackage.kt"
+        ),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/Startup.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/Startup.kt"),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoView.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoView.kt"),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoViewManager.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoViewManager.kt"
+        ),
+    ),
+    (
+        "Native/BloomVideo/android/so/oxy/bloom/video/Players.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/Players.kt"),
     ),
 ];
 
