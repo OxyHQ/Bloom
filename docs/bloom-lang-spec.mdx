@@ -800,6 +800,9 @@ fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are th
 is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+A prop's default is written on it (`var isNested: Bool = false`, emitted `const { isNested =
+false } = props`, TS's own default); a member of a stored property's name (`let isNested =
+isNested ?? false`) declares it twice and is B0217.
 A `struct X: Screen` (or `Layout`) is the file's default export only in a route, a file under the
 app's router folder (`app/`), as Expo Router takes it; anywhere else it is its named export, so a
 route that renders it imports it by name (`import { WelcomeScreen }`).
