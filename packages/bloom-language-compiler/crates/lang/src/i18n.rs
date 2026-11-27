@@ -14,7 +14,9 @@
 //! catalogs, `String(localized:)` still lowers (its key is shown) and `Text` is unchanged.
 
 use std::cell::RefCell;
+use std::collections::hash_map::DefaultHasher;
 use std::collections::{BTreeMap, BTreeSet};
+use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -38,7 +40,18 @@ pub struct Catalogs {
     pub keys: BTreeMap<String, BTreeSet<String>>,
 }
 
-type Stamp = Vec<(PathBuf, Option<std::time::SystemTime>)>;
+/// What a cache entry was read from: each catalog's path and a hash of its text. Not the
+/// modified time: file times come from the kernel's coarse clock, a tick of a few
+/// milliseconds, so a catalog rewritten within a tick of the read kept its time and its new
+/// keys went unseen until the next unrelated change (the route table's bug, `routes.rs`).
+/// A catalog is a few kilobytes, so reading it to hash costs what its `stat` did.
+type Stamp = Vec<(PathBuf, u64)>;
+
+fn content_hash(text: &str) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    text.hash(&mut hasher);
+    hasher.finish()
+}
 
 thread_local! {
     static LOADED: RefCell<BTreeMap<PathBuf, (Stamp, Rc<Catalogs>)>> = const { RefCell::new(BTreeMap::new()) };
@@ -56,18 +69,23 @@ pub fn catalogs(root: &Path) -> Rc<Catalogs> {
         })
         .unwrap_or_default();
     files.sort();
-    let stamp: Stamp =
-        files.iter().map(|p| (p.clone(), std::fs::metadata(p).and_then(|m| m.modified()).ok())).collect();
+    let texts: Vec<(PathBuf, String)> = files
+        .into_iter()
+        .map(|path| {
+            let text = std::fs::read_to_string(&path).unwrap_or_default();
+            (path, text)
+        })
+        .collect();
+    let stamp: Stamp = texts.iter().map(|(path, text)| (path.clone(), content_hash(text))).collect();
     if let Some(found) =
         LOADED.with(|l| l.borrow().get(&dir).filter(|(s, _)| *s == stamp).map(|(_, c)| c.clone()))
     {
         return found;
     }
     let mut out = Catalogs::default();
-    for path in &files {
+    for (path, text) in &texts {
         let locale = path.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
-        let text = std::fs::read_to_string(path).unwrap_or_default();
-        out.keys.insert(locale, top_level_keys(&text));
+        out.keys.insert(locale, top_level_keys(text));
     }
     out.base = if out.keys.contains_key("en") {
         "en".into()
@@ -77,6 +95,11 @@ pub fn catalogs(root: &Path) -> Rc<Catalogs> {
     let out = Rc::new(out);
     LOADED.with(|l| l.borrow_mut().insert(dir, (stamp, out.clone())));
     out
+}
+
+/// Forgets every package's catalogs (an editor's `clear_caches`).
+pub fn clear() {
+    LOADED.with(|l| l.borrow_mut().clear());
 }
 
 /// The keys of the JSON object `text` (its top level only).

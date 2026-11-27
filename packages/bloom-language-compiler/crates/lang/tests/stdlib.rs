@@ -319,6 +319,35 @@ fn localized_strings_are_checked_against_the_catalogs() {
     assert_eq!(warnings, ["B0841"]);
 }
 
+/// A catalog rewritten without its modified time changing (two writes within one tick of
+/// the kernel's coarse file clock, as on Seldon's CI VMs) is read again: the catalogs are
+/// cached on their content, never on their modified time.
+#[test]
+fn a_catalog_rewritten_with_the_same_modified_time_is_read_again() {
+    let source = "public func label() -> String {\n  String(localized: \"feed.bbbb\")\n}\n";
+    let root = package(
+        "i18n-rewritten",
+        &[
+            ("Resources/Localizable/en.json", r#"{ "feed.aaaa": "A" }"#),
+            ("Sources/Model/Label.bloom", source),
+        ],
+    );
+    let catalog = root.join("Resources/Localizable/en.json");
+    let path = root.join("Sources/Model/Label.bloom");
+    let before = compile(source, &path.to_string_lossy(), &Options::default());
+    let codes: Vec<&str> = before.diagnostics.iter().map(|d| d.code).collect();
+    assert_eq!(codes, ["B0840"], "feed.bbbb is not in the catalog yet: {}", rendered(&before));
+
+    // The same length and the same modified time: only the content says it changed.
+    let modified = std::fs::metadata(&catalog).unwrap().modified().unwrap();
+    std::fs::write(&catalog, r#"{ "feed.bbbb": "B" }"#).unwrap();
+    std::fs::File::options().write(true).open(&catalog).unwrap().set_modified(modified).unwrap();
+    assert_eq!(std::fs::metadata(&catalog).unwrap().modified().unwrap(), modified);
+
+    let after = compile(source, &path.to_string_lossy(), &Options::default());
+    assert!(after.diagnostics.is_empty(), "the rewritten catalog is read: {}", rendered(&after));
+}
+
 #[test]
 fn the_reference_is_generated_from_the_sources() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../docs/bloom-stdlib.mdx");

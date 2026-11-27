@@ -209,6 +209,7 @@ pub fn invalidate(path: &std::path::Path) {
 pub fn clear_caches() {
     ts::clear_caches();
     routes::clear();
+    i18n::clear();
     modules::clear();
     check::forget(None);
 }
