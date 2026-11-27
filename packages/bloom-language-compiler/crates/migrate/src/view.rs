@@ -1463,6 +1463,14 @@ impl Tr<'_> {
     }
 
     /// The return type left unwritten: UI, nothing, or a refusal.
+    /// The imported TS function `e` calls (`f(…)`), when it is one.
+    fn ts_call_of(&self, e: &Expression) -> Option<String> {
+        let Expression::CallExpression(call) = e.without_parentheses() else { return None };
+        let Expression::Identifier(id) = &call.callee else { return None };
+        (self.imported.contains(id.name.as_str()) && !self.lang.contains_key(id.name.as_str()))
+            .then(|| id.name.to_string())
+    }
+
     fn infer_ret(&mut self, body: Body) -> Option<String> {
         match body {
             Body::Expr(e) => {
@@ -1496,6 +1504,11 @@ impl Tr<'_> {
                     value_type(values[0]).filter(|t| values.iter().all(|v| value_type(v) == Some(t)))
                 {
                     Some(ty.to_string())
+                } else if let Some(callee) = self.ts_call_of(values[0])
+                    && values.iter().all(|v| self.ts_call_of(v).as_deref() == Some(callee.as_str()))
+                {
+                    // Every return is a call of one imported TS function: its result type.
+                    Some(format!("Foreign<\"ReturnType<typeof {callee}>\">"))
                 } else {
                     let _ = end;
                     Some(INFERRED.into())
