@@ -12,7 +12,18 @@ use crate::ui::{self, ParamKind};
 
 impl Checker<'_> {
     pub(super) fn call(&mut self, expr: &Expr, call: &Call, expected: Option<&Ty>) -> Ty {
-        let hook_allowed = std::mem::take(&mut self.hook_allowed);
+        let hook_allowed = std::mem::take(&mut self.hook_allowed) | self.hook_args.remove(&expr.id);
+        // A hook given as an argument of a call that may call one is unconditional too.
+        if hook_allowed && !call.optional {
+            for arg in &call.args {
+                if let ExprKind::Call(inner) = &arg.value.kind
+                    && !inner.optional
+                    && matches!(&inner.callee.kind, ExprKind::Name(name) if super::is_hook_name(name))
+                {
+                    self.hook_args.insert(arg.value.id);
+                }
+            }
+        }
         let task_allowed = std::mem::take(&mut self.task_allowed);
         if call.optional {
             // `f?.(…)`: the call of `f`'s value when it is not `none`.
