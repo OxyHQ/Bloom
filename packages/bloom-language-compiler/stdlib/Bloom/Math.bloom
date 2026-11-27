@@ -6,6 +6,8 @@
 extern module "./runtime" {
   private let PI: Double
   private let E: Double
+  private let INFINITY: Double
+  private let NAN: Double
   /// The square root of `x`.
   public func sqrt(_ x: Double) -> Double
   private func cbrt(_ x: Double) -> Double
@@ -46,6 +48,12 @@ extension Double {
 
   /// Euler's number.
   public static let e: Double = E
+
+  /// Positive infinity (JS's `Infinity`): greater than every finite value.
+  public static let infinity: Double = INFINITY
+
+  /// Not a number (JS's `NaN`): the result of an undefined operation, unequal to itself.
+  public static let nan: Double = NAN
 
   /// The square root.
   public var squareRoot: Double { sqrt(self) }

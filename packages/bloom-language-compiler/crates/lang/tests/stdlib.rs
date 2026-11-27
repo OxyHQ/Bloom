@@ -69,6 +69,18 @@ fn a_package_file_uses_the_standard_library_without_importing_it() {
     );
 }
 
+/// `Double.infinity` and `Double.nan`: JS's `Infinity` and `NaN`, without a "js" import.
+#[test]
+fn infinity_and_nan_are_doubles() {
+    let source = "public func limit(_ detail: Bool) -> Double { detail ? Double.infinity : 280 }\npublic func unknown() -> Double { Double.nan }\n";
+    let root = package("infinity", &[("Sources/Model/Limits.bloom", source)]);
+    let path = root.join("Sources/Model/Limits.bloom");
+    let out = compile(source, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("detail ? Double$$infinity : 280"), "{}", out.code);
+    assert!(out.code.contains("return Double$$nan;"), "{}", out.code);
+}
+
 #[test]
 fn a_package_name_shadows_the_standard_library() {
     let root = package(
