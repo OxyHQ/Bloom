@@ -65,6 +65,36 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                             .then(|| (left_end, left_end, ".toFloat()".to_string()))
                     })
             }
+            // A local `var` read by a closure (`task { await save(patch) }`) that nothing writes
+            // after it: the closure reads its value then, a `let` bound before the closure's line.
+            ("B0402", _) if text.chars().all(|c| c.is_alphanumeric() || c == '_') => {
+                // The statement holding the closure: the nearest line up at the `var`'s indent.
+                let decl = source[..start].rfind(&format!("var {text}"));
+                let decl_line = decl.map_or(0, |d| source[..d].rfind('\n').map_or(0, |i| i + 1));
+                let indent: String = source[decl_line..].chars().take_while(|c| *c == ' ').collect();
+                let mut line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                while line_start > decl_line
+                    && source[line_start..].chars().take_while(|c| *c == ' ').count() > indent.len()
+                {
+                    line_start = source[..line_start - 1].rfind('\n').map_or(0, |i| i + 1);
+                }
+                let written_after = source[start..]
+                    .lines()
+                    .skip(1)
+                    .take_while(|l| l.trim().is_empty() || l.len() - l.trim_start().len() >= indent.len())
+                    .any(|l| {
+                        let t = l.trim_start();
+                        t.starts_with(&format!("{text} =")) || t.starts_with(&format!("{text}.")) || t.starts_with(&format!("{text}["))
+                    });
+                let declared_var = decl.is_some_and(|d| d < line_start);
+                (!written_after && declared_var).then(|| {
+                    let snapshot = format!("{text}Now");
+                    if !edits.iter().any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot)) {
+                        edits.push((line_start, line_start, format!("{indent}let {snapshot} = {text}\n")));
+                    }
+                    (start, end, snapshot)
+                })
+            }
             // A promise-returning call JS let go unawaited: started as a task.
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // `await f()` of a call that is not async (TS awaited a plain value): the
@@ -267,6 +297,23 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 let close = start - 3;
                 subscript_open(source, close)
                     .map(|open| (open, close + 1, format!(".at({})", &source[open + 1..close])))
+            }
+            // `f?.(x)` on a function that is always there: `f(x)`.
+            ("B0201", _)
+                if d.message.starts_with("`?.` reads an optional") && source[end..].starts_with("?.(") =>
+            {
+                Some((end, end + 2, String::new()))
+            }
+            // `[..xs].sort((a, b) => a.n - b.n)`: JS's comparator as Bloom's order, `sorted { a, b in (…) < 0 }`.
+            ("B0209", "sort")
+                if receiver.is_some_and(|r| r.starts_with('[')) && source[end..].starts_with(" {") =>
+            {
+                block_end(source, end).and_then(|close| {
+                    let inner = source[end..close].trim().strip_prefix('{')?.strip_suffix('}')?.trim();
+                    let (params, body) = inner.split_once(" in ")?;
+                    (params.split(',').count() == 2 && !body.contains('\n'))
+                        .then(|| (start, close, format!("sorted {{ {params} in ({}) < 0 }}", body.trim())))
+                })
             }
             // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
             ("B0201", _)
@@ -675,23 +722,27 @@ fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize
         break;
     }
     let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
-    if !source[line_start..at].trim().is_empty() || at == start - 1 {
+    let lead = source[line_start..at].trim();
+    if !(lead.is_empty() || lead.ends_with('{')) || at == start - 1 {
         return None;
     }
     let receiver = source[at..start - 1].trim();
     let close = block_end(source, end)?;
     let closure = source[end..close].trim();
     let inner = closure.strip_prefix('{')?.strip_suffix('}')?.trim();
-    let (params, body) = inner.split_once(" in ")?;
-    let name = params.split(':').next()?.trim();
-    if !name.chars().all(|c| c.is_alphanumeric() || c == '_') || name.is_empty() {
+    let (name, body) = match inner.split_once(" in ") {
+        Some((params, body)) if !params.contains(['(', '{', '"']) => (params.split(':').next()?.trim(), body),
+        _ => ("", inner),
+    };
+    if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
         return None;
     }
+    let catch = if name.is_empty() { "catch".to_string() } else { format!("catch let {name}") };
     let after = source[close..].trim_start_matches([' ', '\t']);
     if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
         return None;
     }
-    Some((at, close, format!("task {{\ndo {{\ntry await {receiver}\n}} catch let {name} {{\n{body}\n}}\n}}")))
+    Some((at, close, format!("task {{\ndo {{\ntry await {receiver}\n}} {catch} {{\n{body}\n}}\n}}")))
 }
 
 /// The JS members the codemod renamed (`length` → `count`, `trim()` → `trimmed()`, …) put back
