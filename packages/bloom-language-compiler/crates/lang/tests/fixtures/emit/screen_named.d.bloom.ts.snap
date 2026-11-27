@@ -1,0 +1,4 @@
+export interface WelcomeScreenProps {
+  readonly name: string;
+}
+export declare const WelcomeScreen: import("react").ComponentType<WelcomeScreenProps>;

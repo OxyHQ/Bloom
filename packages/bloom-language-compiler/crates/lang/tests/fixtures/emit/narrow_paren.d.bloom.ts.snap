@@ -1,0 +1,4 @@
+export interface Room {
+  readonly status: ("scheduled" | "live") | undefined;
+}
+export declare function shown(room: Room | undefined): string;
