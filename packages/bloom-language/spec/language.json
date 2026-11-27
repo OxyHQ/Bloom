@@ -2680,7 +2680,11 @@
     "cardHeader": { "constructors": ["CardHeader"], "modifiers": [] },
     "cardBody": { "constructors": ["CardBody"], "modifiers": [] },
     "cardFooter": { "constructors": ["CardFooter"], "modifiers": [] },
-    "cardTitle": { "constructors": ["CardTitle"], "universal": false, "modifiers": ["lines", "id"] },
+    "cardTitle": {
+      "constructors": ["CardTitle"],
+      "universal": false,
+      "modifiers": ["lines", "id"]
+    },
     "cardDescription": {
       "constructors": ["CardDescription"],
       "universal": false,
