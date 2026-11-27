@@ -19,7 +19,7 @@ export interface FeedState {
 
 export function FeedState$merging(self: FeedState, page: FeedPage, refresh: boolean, now: Date): FeedState {
 const posts = refresh ? page.items : Array$uniqued(Array$appendingAll(self.posts, page.items), ($0: Post) => $0.id);
-return { posts: posts, cursor: page.nextCursor, hasMore: page.hasMore && (page.nextCursor != null), isLoading: false, failure: undefined, loadedAt: now };
+return { posts: posts, cursor: page.nextCursor, hasMore: page.hasMore && (page.nextCursor != null), isLoading: false, loadedAt: now };
 }
 
 export function FeedState$updating(self: FeedState, id: string, update: (p0: Post) => Post): FeedState {

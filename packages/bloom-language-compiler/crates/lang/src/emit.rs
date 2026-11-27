@@ -197,6 +197,9 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// Optional-chain links emitted as a guard (`(t == null ? undefined : …)`), not as JS's own
+    /// `?.`: a member read on one has to carry on with `?.`, as JS's chain would have.
+    guarded: HashSet<ExprId>,
     /// The last member cache pushed, which the next one on the same dependencies joins.
     memo_group: Option<MemoGroup>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
@@ -257,6 +260,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         names,
         enumerated: false,
         range_index: false,
+        guarded: HashSet::default(),
         memo_group: None,
         scope: None,
         body_span: None,
@@ -751,14 +755,19 @@ impl<'a> Emitter<'a> {
         // A field whose default is `none` may be left out (`readonly boosts?: number`), as a TS
         // caller that builds the record does; any other default is written by Bloom's own
         // construction, so it stays required.
-        let absent = match &field.default {
+        let optional = if self.may_be_absent(field) { "?" } else { "" };
+        format!("readonly {}{optional}: {};", prop_key(&field.name), self.ts_type(&field.ty))
+    }
+
+    /// A field whose default is `none` (or TS's absent): its interface key is optional, and a
+    /// construction that leaves it out leaves it out of the object.
+    fn may_be_absent(&self, field: &FieldDef) -> bool {
+        match &field.default {
             FieldDefault::Undefined => true,
             FieldDefault::Literal(text) => text == "undefined",
             FieldDefault::Expr(id) => self.defaults.get(id).is_some_and(|e| matches!(e.kind, ExprKind::None)),
             FieldDefault::None => false,
-        };
-        let optional = if absent { "?" } else { "" };
-        format!("readonly {}{optional}: {};", prop_key(&field.name), self.ts_type(&field.ty))
+        }
     }
 
     // ---- names ------------------------------------------------------------
@@ -2382,8 +2391,7 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
-                let mut out = self.operand(object);
-                out.s("?.").s(&name.name);
+                let mut out = self.field(expr, object, name);
                 if self.ck.narrowed_paths.contains(&expr.id) {
                     out.s("!");
                 }
@@ -2608,14 +2616,77 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// `object.name` and `object?.name`. A member Bloom respells (`count` is `length`, an
+    /// extension's property is a call) keeps the chain: a suffix takes `?.` where the read
+    /// does, and a lowering that wraps the object reads it once and is `undefined` when it is
+    /// `none` (`xs?.isEmpty`, `a?.m.keys`), as Swift's chain is.
     fn field(&mut self, expr: &Expr, object: &Expr, name: &Ident) -> Frag {
-        match self.ck.fields.get(&expr.id).cloned() {
+        let opt = matches!(expr.kind, ExprKind::OptField(..));
+        let res = self.ck.fields.get(&expr.id).cloned();
+        let wraps = match &res {
+            Some(FieldRes::Extension(_) | FieldRes::Witness { .. }) => true,
+            Some(FieldRes::Prop { recv, name: prop }) => !matches!(
+                (recv, *prop),
+                (Recv::Str | Recv::List, "count")
+                    | (Recv::List, "first" | "last")
+                    | (Recv::JsMap | Recv::Set, "count")
+                    | (Recv::Result, _)
+            ),
+            _ => false,
+        };
+        // Whether the object may be `none` here: by this `?.`, or by the chain before it.
+        let maybe_none = opt || self.ck.chain_links.contains(&object.id);
+        if maybe_none && wraps {
+            let value = self.path_or_temp(object);
+            let lowered = self.field_lowered(res, Frag::of(value.clone()), name, ".");
+            let mut out = Frag::of(format!("({value} == null ? undefined : "));
+            out.f(lowered).s(")");
+            self.guarded.insert(expr.id);
+            return out;
+        }
+        let read = match &res {
+            Some(
+                FieldRes::EnumCase(..)
+                | FieldRes::TaskSignal
+                | FieldRes::Static(_)
+                | FieldRes::StaticGet(_)
+                | FieldRes::TaskCancelled,
+            ) => Frag::default(),
+            Some(FieldRes::Witness { witness: None, .. }) => Frag::of(self.path_or_temp(object)),
+            Some(FieldRes::Extension(_) | FieldRes::Witness { .. }) => self.expr(object),
+            _ => self.operand(object),
+        };
+        // `a?.b.c`: `b` is optional only by the chain, and JS's `?.` already stops at `a`; a
+        // guarded link does not, so the next one carries the `?.`.
+        let dot = if opt || self.guarded.contains(&object.id) { "?." } else { "." };
+        self.field_lowered(res, read, name, dot)
+    }
+
+    /// A member read on an object already emitted as `object`, joined with `dot`.
+    fn field_lowered(&mut self, res: Option<FieldRes>, object: Frag, name: &Ident, dot: &str) -> Frag {
+        let suffix = |object: Frag, text: &str| -> Frag {
+            if dot == "." {
+                return member(object, text);
+            }
+            let mut out = object;
+            if is_ident(text) {
+                out.s("?.").s(text);
+            } else {
+                out.s(&format!("?.[{text:?}]"));
+            }
+            out
+        };
+        let index = |object: Frag, index: &str| -> Frag {
+            let mut out = object;
+            out.s(if dot == "." { "" } else { "?." }).s(&format!("[{index}]"));
+            out
+        };
+        match res {
             Some(FieldRes::EnumCase(def, index)) => {
                 Frag::of(string_literal(&self.ck.defs[def].variants()[index].name))
             }
             Some(FieldRes::TaskSignal) => Frag::of(self.signal.clone().unwrap_or_else(|| "undefined".into())),
             Some(FieldRes::Extension(func)) => {
-                let object = self.expr(object);
                 let mut out = Frag::of(func.to_string());
                 out.f(object.wrap("(", ")"));
                 out
@@ -2623,13 +2694,12 @@ impl<'a> Emitter<'a> {
             Some(FieldRes::Static(func)) => Frag::of(func.to_string()),
             Some(FieldRes::Witness { witness, member: name }) => match witness {
                 Some(w) => {
-                    let object = self.expr(object);
                     let mut out = Frag::of(member_path(&w, &name));
                     out.f(object.wrap("(", ")"));
                     out
                 }
                 None => {
-                    let value = self.path_or_temp(object);
+                    let value = object.text;
                     Frag::of(format!("{value}.w.{name}({value}.self)"))
                 }
             },
@@ -2637,44 +2707,30 @@ impl<'a> Emitter<'a> {
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
             }
-            Some(FieldRes::Index(index)) => {
-                let mut out = self.operand(object);
-                out.s(&format!("[{index}]"));
-                out
-            }
-            Some(FieldRes::Prop { recv, name: prop }) => {
-                let object = self.operand(object);
-                match (recv, prop) {
-                    (Recv::Str | Recv::List, "count") => member(object, "length"),
-                    (Recv::Str | Recv::List, "isEmpty") => member(object, "length").wrap("(", " === 0)"),
-                    (Recv::List, "first") => {
-                        let mut out = object;
-                        out.s("[0]");
-                        out
-                    }
-                    (Recv::List, "last") => {
-                        let mut out = object;
-                        out.s(".at(-1)");
-                        out
-                    }
-                    (Recv::Map, "count") => object.wrap("Object.keys(", ").length"),
-                    (Recv::Map, "isEmpty") => object.wrap("(Object.keys(", ").length === 0)"),
-                    (Recv::Map, "keys") => object.wrap("Object.keys(", ")"),
-                    (Recv::Map, "values") => object.wrap("Object.values(", ")"),
-                    (Recv::Map, "entries") => object.wrap("Object.entries(", ")"),
-                    (Recv::JsMap | Recv::Set, "count") => member(object, "size"),
-                    (Recv::JsMap | Recv::Set, "isEmpty") => member(object, "size").wrap("(", " === 0)"),
-                    (Recv::JsMap | Recv::Set, "keys" | "values" | "entries") => {
-                        object.wrap("[...", &format!(".{prop}()]"))
-                    }
-                    (Recv::Result, _) => member(object, "ok"),
-                    _ => member(object, prop),
+            Some(FieldRes::Index(i)) => index(object, &i.to_string()),
+            Some(FieldRes::Prop { recv, name: prop }) => match (recv, prop) {
+                (Recv::Str | Recv::List, "count") => suffix(object, "length"),
+                (Recv::Str | Recv::List, "isEmpty") => suffix(object, "length").wrap("(", " === 0)"),
+                (Recv::List, "first") => index(object, "0"),
+                (Recv::List, "last") => {
+                    let mut out = object;
+                    out.s(&format!("{dot}at(-1)"));
+                    out
                 }
-            }
-            _ => {
-                let object = self.operand(object);
-                member(object, &name.name)
-            }
+                (Recv::Map, "count") => object.wrap("Object.keys(", ").length"),
+                (Recv::Map, "isEmpty") => object.wrap("(Object.keys(", ").length === 0)"),
+                (Recv::Map, "keys") => object.wrap("Object.keys(", ")"),
+                (Recv::Map, "values") => object.wrap("Object.values(", ")"),
+                (Recv::Map, "entries") => object.wrap("Object.entries(", ")"),
+                (Recv::JsMap | Recv::Set, "count") => suffix(object, "size"),
+                (Recv::JsMap | Recv::Set, "isEmpty") => suffix(object, "size").wrap("(", " === 0)"),
+                (Recv::JsMap | Recv::Set, "keys" | "values" | "entries") => {
+                    object.wrap("[...", &format!(".{prop}()]"))
+                }
+                (Recv::Result, _) => suffix(object, "ok"),
+                _ => suffix(object, prop),
+            },
+            _ => suffix(object, &name.name),
         }
     }
 
@@ -3308,7 +3364,7 @@ impl<'a> Emitter<'a> {
                     element.wrap("Embed(", ")")
                 }
             }
-            CallRes::Method { recv, name } => self.method(call, recv, name),
+            CallRes::Method { recv, name } => self.method(expr, call, recv, name),
             CallRes::Ok | CallRes::Err => {
                 self.uses_result = true;
                 let value = call.args.first().map_or(Frag::of("undefined"), |a| self.expr(&a.value));
@@ -3521,6 +3577,13 @@ impl<'a> Emitter<'a> {
                 if given.contains_key(field.name.as_str()) {
                     continue;
                 }
+                // `QueryOptions(queryKey:, queryFn:)`: an option left out is not in the object,
+                // as TS's `x?: T` is not. `{ staleTime: undefined }` would override a library's
+                // own default where it merges `{ ...defaults, ...options }` (TanStack's
+                // QueryClient), which a missing key does not.
+                if spreads.is_empty() && self.may_be_absent(field) {
+                    continue;
+                }
                 let mut value = match &field.default {
                     FieldDefault::Expr(id) => self.default_expr(*id),
                     FieldDefault::Literal(text) => Some(Frag::of(text.clone())),
@@ -3546,6 +3609,13 @@ impl<'a> Emitter<'a> {
         }
         for arg in &call.args {
             if let Some(label) = &arg.label {
+                // `enabled: none` given for a field that may be absent is left out, as a field
+                // not given is.
+                if matches!(arg.value.kind, ExprKind::None)
+                    && fields.iter().any(|f| f.name == label.name && self.may_be_absent(f))
+                {
+                    continue;
+                }
                 let mut entry = Frag::of(format!("{}: ", prop_key(&label.name)));
                 let saved = if literal { self.field_value.replace(arg.value.id) } else { self.field_value };
                 let value = self.expr(&arg.value);
@@ -3563,12 +3633,14 @@ impl<'a> Emitter<'a> {
         Some(self.expr(expr))
     }
 
-    fn method(&mut self, call: &Call, recv: Recv, name: &str) -> Frag {
+    fn method(&mut self, expr: &Expr, call: &Call, recv: Recv, name: &str) -> Frag {
         let (receiver, optional) = match &call.callee.kind {
             ExprKind::Field(receiver, _) => (receiver, false),
             ExprKind::OptField(receiver, _) => (receiver, true),
             _ => unreachable!("a method's callee is a member"),
         };
+        // `a?.s.toInt()`: `s` is `none` when `a` is, by the chain, so it is guarded as `?.` is.
+        let chained = !optional && self.ck.chain_links.contains(&receiver.id);
         // `x?.m(…)`: a JS method is `x?.m(…)`; any other lowering reads `x` once, then
         // runs only when it is not `none`.
         let direct = match recv {
@@ -3632,16 +3704,18 @@ impl<'a> Emitter<'a> {
             receiver = list;
             self.enumerated = true;
         }
-        let guard = (optional && !direct).then(|| self.path_or_temp(receiver));
+        let guard = ((optional || chained) && !direct).then(|| self.path_or_temp(receiver));
         let object = match &guard {
             Some(name) => Frag::of(name.clone()),
             None => self.operand(receiver),
         };
-        let lowered = self.method_lowered(call, recv, name, object, optional && direct);
+        let dot = (optional || self.guarded.contains(&receiver.id)) && direct;
+        let lowered = self.method_lowered(call, recv, name, object, dot);
         match guard {
             Some(name) => {
                 let mut out = Frag::of(format!("({name} == null ? undefined : "));
                 out.f(lowered).s(")");
+                self.guarded.insert(expr.id);
                 out
             }
             None => lowered,
@@ -4516,7 +4590,12 @@ impl<'a> Emitter<'a> {
             {
                 self.dep_path(object).map(|p| format!("{p}.{}", name.name))
             }
-            ExprKind::OptField(object, name) if is_ident(&name.name) => {
+            // `query.data?.count` is `length` in JS: a respelled member is no path, and its
+            // object is the dependency (the raw `?.count` would never change).
+            ExprKind::OptField(object, name)
+                if is_ident(&name.name)
+                    && matches!(self.ck.fields.get(&expr.id), None | Some(FieldRes::Field)) =>
+            {
                 self.dep_path(object).map(|p| format!("{p}?.{}", name.name))
             }
             ExprKind::Paren(inner) => self.dep_path(inner),

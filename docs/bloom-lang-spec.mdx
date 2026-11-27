@@ -288,7 +288,11 @@ A field without a default is required at construction. `Partial<S>` is the struc
 field optional (a patch), built with `S.patch(field: v, …)`. Construction compiles to an object
 literal (no function call). A spread `..p` of a `Partial<S>` fills only the fields `p` has: an
 absent or `undefined` field keeps the default (compiled per field, `p?.likes ?? true`), unlike a
-JS object spread; an optional patch (`Partial<S>?`) spreads the same way. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+JS object spread; an optional patch (`Partial<S>?`) spreads the same way. A field whose
+default is `none` that a construction leaves out (or gives as `none`) is left out of the
+object, as TS's `x?: T` is: `QueryOptions(queryKey: k, queryFn: f)` is `{ queryKey: k,
+queryFn: f }`, never `{ staleTime: undefined, … }`, which overrides a library's default where
+it merges `{ ...defaults, ...options }`. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
 exhaustive `match` on a fieldless enum maps a key to a field.
 
 ### 4.5 Enums, Option and Result
@@ -312,7 +316,12 @@ fn area(s: Shape) -> Float {
 link whose own type is optional is not read through (`b?.note.trimmed()` with `note: String?`
 is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
-is not `none`. An optional call of a Unit function is Unit.
+is not `none`. A member Bloom respells keeps its spelling through `?.` and the chain after it,
+whatever the generic it came through: `query.data?.count` with `data: T?` and `T = [Post]` is
+`query.data?.length`, `xs?.first` is `xs?.[0]`. A member that wraps its object (`isEmpty`, a
+dictionary's `keys`, an extension's property, `a?.s.toInt()`) reads it once and is `none` when
+it is, so `feed?.items.isEmpty ?? true` is `true` for no feed; a cache depends on the object,
+not on the respelled member. An optional call of a Unit function is Unit.
 `x!` (2.0, Swift's force unwrap, written against its operand) is the value of an optional;
 `none` there is a trap. A dev build checks it (`$unwrap(x)`, a `TypeError`); a release build
 emits TS's `x!`, so it costs nothing. `!` on a value that is never `none` is B0201.
