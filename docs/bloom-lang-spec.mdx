@@ -532,6 +532,8 @@ parses). Visibility is `public` (other modules), `internal` (unwritten: the modu
 modules (resolved by the module graph). A file compiled on its own is its own module, so its
 `internal` names are not exported; inside a directory module they are. **In a call to a TS function, named arguments form one
 object passed last**: `t("key", defaultValue: "General")` is `t("key", { defaultValue: "General" })`.
+react-i18next's `useTranslation()` (declared with a conditional type) is read as what it gives,
+`{ t: (String, options?) -> String, i18n, ready: Bool }`: `t(…)` is a `String`.
 
 ## 6. Expressions and control flow
 

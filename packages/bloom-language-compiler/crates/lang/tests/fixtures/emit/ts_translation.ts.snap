@@ -1,0 +1,26 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { useTranslation } from "react-i18next";
+
+interface Tab {
+  readonly label: string;
+  readonly count: number;
+}
+
+export const Tabs = view(function Tabs() {
+"use no memo";
+const $ = $c(2);
+const { t } = useTranslation();
+let $t0;
+if ($[0] !== t) {
+const tabs: readonly Tab[] = [{ label: t("tabs.posts", { defaultValue: "Posts" }), count: 1 }, { label: t("tabs.replies"), count: 2 }];
+$t0 = VStack(...tabs.map((tab) => Text(tab.label.toUpperCase()).id(tab.label)));
+$[0] = t;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

@@ -997,7 +997,43 @@ impl Mapper<'_> {
                 }
             }
         };
+        if local == "useTranslation" && file.path.to_string_lossy().contains("react-i18next") {
+            return Some(Mapped {
+                value: Some(self.use_translation(file, path, depth)),
+                ..Mapped::default()
+            });
+        }
         self.local(file, &local, path, depth)
+    }
+
+    /// react-i18next's `useTranslation`, whose declared type is conditional (a selector
+    /// mode) and its result a tuple intersected with a record: Bloom reads it as what it gives,
+    /// `{ t: (String, options?) -> String, i18n, ready: Bool }`; TS checks the rest.
+    fn use_translation(&mut self, file: &Rc<TsFile>, path: &str, depth: usize) -> Ty {
+        let param = |name: &str, ty: TsType, optional: bool| TsParam {
+            name: name.into(),
+            ty: Some(ty),
+            optional,
+            rest: false,
+        };
+        let t = TsFn {
+            type_params: Vec::new(),
+            params: vec![param("key", TsType::String, false), param("options", TsType::Other, true)],
+            ret: Some(TsType::String),
+            inferred: None,
+        };
+        let member = |name: &str, ty: TsType| TsMember { name: name.into(), optional: false, ty };
+        let hook = TsFn {
+            type_params: Vec::new(),
+            params: vec![param("ns", TsType::Other, true), param("options", TsType::Other, true)],
+            ret: Some(TsType::Object(vec![
+                member("t", TsType::Fn(Box::new(t))),
+                member("i18n", TsType::Other),
+                member("ready", TsType::Boolean),
+            ])),
+            inferred: None,
+        };
+        self.function(file, &hook, &Vec::new(), &format!("typeof {path}"), depth)
     }
 
     fn local(&mut self, file: &Rc<TsFile>, name: &str, path: &str, depth: usize) -> Option<Mapped> {
