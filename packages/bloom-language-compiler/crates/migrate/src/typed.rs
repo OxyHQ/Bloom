@@ -651,6 +651,64 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     rest[at..].starts_with(own).then(|| (start - 1, end + at + own.len(), text.to_string()))
                 })
             }
+            // `d[k?.lowercased()]`: a subscript takes a key, not an optional one, so the read is
+            // narrowed, `(k != none ? d[k.lowercased()] : none)`.
+            ("B0201", _)
+                if d.message.starts_with("expected `")
+                    && d.message.ends_with("?`")
+                    && source[..start].ends_with('[')
+                    && source[end..].starts_with(']')
+                    && text.matches("?.").count() == 1 =>
+            {
+                let (key_root, _) = text.split_once("?.").unwrap_or_default();
+                let dict_end = start - 1;
+                let dict_from = source[..dict_end]
+                    .rfind(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+                    .map_or(0, |i| i + 1);
+                let dict = &source[dict_from..dict_end];
+                let simple = |t: &str| {
+                    !t.is_empty()
+                        && t.starts_with(|c: char| c.is_alphabetic() || c == '_')
+                        && t.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                };
+                (simple(key_root) && simple(dict)).then(|| {
+                    let key = text.replacen("?.", ".", 1);
+                    (dict_from, end + 1, format!("({key_root} != none ? {dict}[{key}] : none)"))
+                })
+            }
+            // `engagement?.likes`, `pollData.options ?? []`, `f?.(x)` on a field, parameter or prop the
+            // codemod declared from TS's type (`engagement: Engagement`): the source guards it, so the
+            // declaration is written optional (`Engagement?`) and the guard stays. One TS declared
+            // optional that bloomc has narrowed present (`if onRate { … onRate?.(x) }`) is read as it.
+            ("B0201", _)
+                if d.message.starts_with("`?.` reads an optional, and this is `")
+                    || d.message.starts_with("`??` gives a fallback for an optional, and this is `") =>
+            {
+                let shown = d.message.split_once("this is `").map(|(_, t)| t.trim_end_matches('`')).unwrap_or("");
+                let fallback = d.message.starts_with("`??`");
+                let (receiver, guard) = if fallback {
+                    (text, None)
+                } else if source[..start].ends_with("?.") {
+                    let before = &source[..start - 2];
+                    let from = before
+                        .rfind(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+                        .map_or(0, |i| i + 1);
+                    (&before[from..], Some((start - 2, start, ".")))
+                } else if source[end..].starts_with("?.(") {
+                    (text, Some((end, end + 2, "")))
+                } else {
+                    ("", None)
+                };
+                let simple = !receiver.is_empty()
+                    && receiver.starts_with(|c: char| c.is_alphabetic() || c == '_')
+                    && receiver.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
+                let name = receiver.rsplit('.').next().unwrap_or("");
+                match simple.then(|| guarded_decl(source, name, shown)).flatten() {
+                    Some(Decl::Present(at)) => Some((at.0, at.1, at.2)),
+                    Some(Decl::Narrowed) => guard.map(|(a, b, t)| (a, b, t.to_string())),
+                    None => None,
+                }
+            }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
             ("B0201", _) => {
                 let found = d.message.split("found `").nth(1).unwrap_or_default();
@@ -1344,4 +1402,68 @@ pub fn casts(source: &str, diagnostics: &[Diagnostic], casts: &HashMap<String, S
         out.replace_range(start..end, &text);
     }
     Some(out)
+}
+
+/// What a guarded name's one declaration in the draft says.
+enum Decl {
+    /// Declared with TS's type, present: the edit that writes it optional.
+    Present((usize, usize, String)),
+    /// Declared optional already: bloomc narrowed it, so the guard reads a present value.
+    Narrowed,
+}
+
+/// The one declaration `name: T` in `source` (a stored property, a field of a record type or
+/// struct, a parameter) whose type is bloomc's `shown`, or `shown` made optional.
+fn guarded_decl(source: &str, name: &str, shown: &str) -> Option<Decl> {
+    if name.is_empty() || shown.is_empty() || shown.ends_with('?') {
+        return None;
+    }
+    // bloomc shows a record's optional field as `x?: T?`; the codemod writes `x: T?`.
+    let shown = shown.replace("?: ", ": ");
+    let needle = format!("{name}: ");
+    let mut found = Vec::new();
+    let mut from = 0;
+    while let Some(i) = source[from..].find(&needle) {
+        let at = from + i;
+        from = at + needle.len();
+        let boundary = source[..at].chars().next_back().is_none_or(|c| !(c.is_alphanumeric() || c == '_'));
+        if !boundary {
+            continue;
+        }
+        let start = at + needle.len();
+        let end = type_end(source, start);
+        let ty = source[start..end].trim_end();
+        let compound = ty.contains("->") || ty.contains(" | ");
+        if ty == shown {
+            let edit = if compound {
+                (start, start + ty.len(), format!("({ty})?"))
+            } else {
+                (start + ty.len(), start + ty.len(), "?".to_string())
+            };
+            found.push(Decl::Present(edit));
+        } else if ty == format!("{shown}?") || ty == format!("({shown})?") {
+            found.push(Decl::Narrowed);
+        }
+    }
+    (found.len() == 1).then(|| found.pop()).flatten()
+}
+
+/// Where a type written at `start` ends: a `,`, `)`, `]`, `}`, `=`, a line end or ` in ` outside
+/// brackets and strings.
+fn type_end(source: &str, start: usize) -> usize {
+    let mut depth = 0i32;
+    let mut quoted = false;
+    for (i, c) in source[start..].char_indices() {
+        let at = start + i;
+        match c {
+            '"' => quoted = !quoted,
+            _ if quoted => {}
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth > 0 => depth -= 1,
+            ',' | ')' | ']' | '}' | '=' | '\n' if depth == 0 => return at,
+            ' ' if depth == 0 && source[at..].starts_with(" in ") => return at,
+            _ => {}
+        }
+    }
+    source.len()
 }
