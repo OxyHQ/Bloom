@@ -915,7 +915,11 @@ A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
 
 ### `extension String`
 
-- `static func localized(_ key: String, args: [String: String] = [:], count: Double? = none) -> String`: The string for `key` in the current locale, `{name}`s replaced from `args` and the plural form chosen by `count` (`{count}` replaced too); `key` itself when missing. `count` is a `Double` (an `Int` widens to it): CLDR plural rules take decimals too (`1.5` is `other` in English). `String(localized: "…")` is this, checked against the catalogs.
+- `static func localized(_ key: String, args: [String: String] = [:], count: Double? = none, locale: String? = none) -> String`: The string for `key` in the current locale, `{name}`s replaced from `args` and the plural form chosen by `count` (`{count}` replaced too); `key` itself when missing. `count` is a `Double` (an `Int` widens to it): CLDR plural rules take decimals too (`1.5` is `other` in English). `String(localized: "…")` is this, checked against the catalogs. In a view, it is looked up in the `locale` the view read with `useLocalization()` (the compiler passes it), so `Locale.prefer` re-draws the view.
+
+### `func useLocalization() -> String`
+
+The preferred locale's identifier, read so the view re-draws when `Locale.prefer` changes it. A view that shows localized strings reads it once; the compiler writes the read.
 
 ### `func registerLocalizations(_ locale: String, _ catalog: JSONValue)`
 
