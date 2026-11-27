@@ -302,16 +302,28 @@ impl Checker<'_> {
             ExprKind::Field(object, member) => {
                 // `Skeleton.Region(…) { … }` on `import * as Skeleton`: a member the module
                 // exports as a component is drawn as one (its builder its `children`).
+                // `Button.Group(…) { … }`: an UpperCamel static of a TS component is one too
+                // (`Button: … & { Group: typeof Group }`); TS checks its props.
                 if let ExprKind::Name(ns) = &object.kind
                     && member.name.starts_with(|c: char| c.is_ascii_uppercase())
-                    && let Some(file) = self.ts_namespaces.get(ns).cloned()
-                    && self
-                        .lookup(ns)
-                        .is_some_and(|l| matches!(self.out.locals[l].kind, LocalKind::Import { .. }))
-                    && let Some(props) = self.namespace_component(&file, ns, &member.name)
+                    && let Some(local) = self.lookup(ns)
                 {
-                    self.expr(&call.callee, None);
-                    return self.component_call(expr, call, &props);
+                    let props = match self.out.locals[local].kind {
+                        LocalKind::Import { .. } => match self.ts_namespaces.get(ns).cloned() {
+                            Some(file) => self.namespace_component(&file, ns, &member.name),
+                            None => None,
+                        },
+                        LocalKind::Component { .. } => Some(Ty::Foreign("".into())),
+                        _ => None,
+                    };
+                    if let Some(props) = props {
+                        // The callee is a TS path (`Button.Group`), read as is.
+                        self.out.names.insert(object.id, NameRes::Local(local));
+                        self.out.types.insert(object.id, self.out.locals[local].ty.clone());
+                        self.out.fields.insert(call.callee.id, FieldRes::Field);
+                        self.out.types.insert(call.callee.id, Ty::Foreign("".into()));
+                        return self.component_call(expr, call, &props);
+                    }
                 }
                 // `Type.m(…)`: an extension's static function.
                 if let ExprKind::Name(type_name) = &object.kind
