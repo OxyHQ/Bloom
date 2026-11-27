@@ -95,7 +95,12 @@ impl Tr<'_> {
     /// `<C a={x} b>…</C>` as `C(a: x, b: true) { … }`.
     pub fn component(&mut self, el: &JSXElement) -> String {
         let name = match &el.opening_element.name {
-            JSXElementName::IdentifierReference(id) => self.import_name(&id.name, id.span),
+            JSXElementName::IdentifierReference(id) => {
+                // A local memo alias draws its view (`Tr::view_aliases`).
+                let name =
+                    self.view_aliases.get(id.name.as_str()).cloned().unwrap_or_else(|| id.name.to_string());
+                self.import_name(&name, id.span)
+            }
             JSXElementName::MemberExpression(m) => {
                 let mut parts = vec![m.property.name.to_string()];
                 let mut object = &m.object;
