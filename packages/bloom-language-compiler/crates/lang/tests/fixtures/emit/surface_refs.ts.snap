@@ -26,7 +26,7 @@ if ($[0] !== query || $[1] !== onDone) {
 submit = (): void => {
 ticks.count = ticks.count + (1);
 ticks.last = query;
-if ((field.current ?? undefined) !== undefined) {
+if ((field.current ?? undefined) != null) {
 onDone();
 }
 };

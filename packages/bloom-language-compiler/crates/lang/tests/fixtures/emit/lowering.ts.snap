@@ -99,7 +99,7 @@ const { load, label } = props;
 let $t11;
 if ($[0] !== label || $[1] !== load) {
 let $t9: Child;
-if (label !== undefined) {
+if (label != null) {
 const shown = label.toUpperCase();
 $t9 = Text(shown);
 } else {

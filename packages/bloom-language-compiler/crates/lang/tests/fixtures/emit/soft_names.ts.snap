@@ -6,7 +6,7 @@ import { useState } from "react";
 interface Notice {
   readonly type: string;
   readonly body: string;
-  readonly from: string | undefined;
+  readonly from?: string | undefined;
 }
 
 function line(notice: Notice): string {

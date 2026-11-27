@@ -1394,10 +1394,11 @@ impl Mapper<'_> {
         } else {
             return Ty::Foreign(path.into());
         };
-        // `null` is not `undefined`: a nullable TS value is foreign until checked. So is an
-        // optional of a TS type Bloom does not map (`Foreign`, not `Foreign?`): TS checks the
-        // whole where it lands, as a TS field's (`server?.robots` beside a `String?`).
-        if members.iter().any(|m| matches!(m, TsType::Null)) || matches!(inner, Ty::Foreign(_)) {
+        // `T | null` crosses in as `T?`: Bloom tests every optional loosely (`!= null`), so a TS
+        // `null` is `none`. An optional of a TS type Bloom does not map stays `Foreign` (not
+        // `Foreign?`): TS checks the whole where it lands, as a TS field's (`server?.robots`
+        // beside a `String?`).
+        if matches!(inner, Ty::Foreign(_)) {
             return Ty::Foreign(path.into());
         }
         if nullable { Ty::Option(Box::new(inner)) } else { inner }

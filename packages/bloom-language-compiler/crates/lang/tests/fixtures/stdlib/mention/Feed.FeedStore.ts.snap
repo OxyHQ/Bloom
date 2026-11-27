@@ -7,8 +7,8 @@ import { type Source, type SourcePage, type Mutation, useQuery, useSource, Model
 import { percentEncoded } from "../../.bloom/std/Bloom/URL.bloom";
 import { type MentionAPI, MentionAPI$delete, MentionAPI$get, MentionAPI$post } from "../API/MentionAPI.bloom";
 import { type Post, type FeedPage, FeedPage$$self, Post$$store, Post$liked } from "../Posts/Post.bloom";
-function $mapOption<T, U>(value: T | undefined, f: (value: T) => U): U | undefined {
-  return value === undefined ? undefined : f(value);
+function $mapOption<T, U>(value: T | null | undefined, f: (value: T) => U): U | undefined {
+  return value == null ? undefined : f(value);
 }
 
 export function homeFeed(api: MentionAPI): Source<Post> {

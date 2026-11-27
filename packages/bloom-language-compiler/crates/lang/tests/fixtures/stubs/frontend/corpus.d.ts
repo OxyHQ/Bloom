@@ -11,3 +11,8 @@ export type Tab = 'videos' | 'following';
 export interface Selected {
   label?: string;
 }
+/** An API's figures: an absent one is `null` (Mention's API types). */
+export interface Stats {
+  boosts: number | null;
+}
+export declare function useStats(): Stats;

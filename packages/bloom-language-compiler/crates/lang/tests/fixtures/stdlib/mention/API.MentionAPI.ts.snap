@@ -37,7 +37,7 @@ export interface MentionAPI {
 
 export function MentionAPI$$make(baseURL: URL, token: string | undefined, language: Locale = Locale$$get$current()): MentionAPI {
 const base = HTTPClient$adding(HTTPClient$timeout({ headers: {}, timeoutSeconds: 30, baseURL: baseURL }, Duration$$seconds(15.0)), "Accept-Language", language.identifier);
-if (!(token !== undefined)) {
+if (!(token != null)) {
 return { http: base };
 }
 return { http: HTTPClient$adding(base, "Authorization", `Bearer ${token}`) };
@@ -59,7 +59,7 @@ export function normalized(error: Error): APIFailure {
 if (isCancelled(error)) {
 return { status: undefined, code: "CANCELLED", message: "The request was cancelled" };
 }
-if (!(Error$httpStatus(error) !== undefined)) {
+if (!(Error$httpStatus(error) != null)) {
 Logger$warning(log, `network failure: ${Error$localizedDescription(error)}`);
 return { status: undefined, code: "NETWORK", message: Error$localizedDescription(error) };
 }

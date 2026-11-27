@@ -70,7 +70,7 @@ FeedModel$load(model);
 let $t1;
 if ($[2] !== model.isLoading || $[3] !== model.posts || $[4] !== $t0) {
 $t1 = VStack((model.isLoading) ? $view1 : null, ($[0] !== model.posts ? ($[0] = model.posts, $[1] = Text(`${model.posts.length} posts`)) : $[1]), $view2.onPress(() => {
-if (model.posts[0] !== undefined) {
+if (model.posts[0] != null) {
 FeedModel$like(model, model.posts[0]);
 }
 }));

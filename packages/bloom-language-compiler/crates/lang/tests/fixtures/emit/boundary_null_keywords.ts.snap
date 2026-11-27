@@ -1,0 +1,46 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { useStats } from "@/corpus";
+
+export interface Engagement {
+  readonly likes: number | undefined;
+  readonly boosts?: number | undefined;
+  readonly shares: number;
+}
+
+export interface Copy {
+  readonly none: string;
+  readonly some: string;
+}
+
+export function total(e: Engagement): number {
+if (e.boosts != null) {
+return e.boosts + (e.likes ?? 0);
+}
+return e.likes ?? 0;
+}
+
+export interface BarProps {
+  readonly engagement: Engagement;
+  readonly copy: Copy;
+}
+export const Bar = view(function Bar(props: BarProps) {
+"use no memo";
+const $ = $c(11);
+const { engagement, copy } = props;
+const stats = useStats();
+let $t0;
+if ($[6] !== copy.none || $[7] !== stats.boosts || $[8] !== engagement.likes || $[9] !== copy.some) {
+$t0 = VStack(($[0] !== copy.none ? ($[0] = copy.none, $[1] = Text(copy.none)) : $[1]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? ($[2] !== copy.some ? ($[2] = copy.some, $[3] = Text(copy.some)) : $[3]) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[4] !== stats.boosts ? ($[4] = stats.boosts, $[5] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[5]));
+$[6] = copy.none;
+$[7] = stats.boosts;
+$[8] = engagement.likes;
+$[9] = copy.some;
+$[10] = $t0;
+} else {
+$t0 = $[10];
+}
+return $t0;
+});
+

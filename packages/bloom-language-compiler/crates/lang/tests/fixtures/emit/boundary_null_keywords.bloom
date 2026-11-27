@@ -1,0 +1,37 @@
+// A data struct's field defaulted to `none` may be left out by TS (`boosts?: number`); a TS
+// value typed `T | null` crosses in as `T?`, and every test of an optional is loose (`!= null`),
+// so a TS `null` is `none`; and a keyword names a field (`copy.none`, a TS record's own name).
+import { useStats } from "@/corpus"
+
+public struct Engagement {
+  public let likes: Float?
+  public var boosts: Float? = none
+  public var shares: Int = 0
+}
+
+public struct Copy {
+  public let none: String
+  public let some: String
+}
+
+public func total(_ e: Engagement) -> Float {
+  if let boosts = e.boosts { return boosts + (e.likes ?? 0) }
+  return e.likes ?? 0
+}
+
+public struct Bar: View {
+  let engagement: Engagement
+  let copy: Copy
+  let stats = useStats()
+
+  var body: some View {
+    VStack {
+      Text(copy.none)
+      if let boosts = stats.boosts { Text("\(boosts)") }
+      if engagement.likes == none { Text(copy.some) }
+      Text("\(total(Engagement(likes: 1)))")
+      // A TS `null` passed where Bloom's `Float?` is taken: `?? none` makes it `undefined`.
+      Text("\(total(Engagement(likes: stats.boosts ?? none)))")
+    }
+  }
+}

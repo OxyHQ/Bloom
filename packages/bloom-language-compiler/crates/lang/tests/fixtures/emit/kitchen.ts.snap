@@ -40,7 +40,7 @@ return `${load._0} items`;
 
 function parse(text: string): $Result<number, string> {
 const $t0 = $toInt(text);
-if ($t0 !== undefined) {
+if ($t0 != null) {
 return { ok: true as const, value: $t0 };
 } else {
 return { ok: false as const, error: `not a number: ${text}` };
@@ -126,7 +126,7 @@ if ($[21] !== draft.text || $[22] !== draft.sensitive || $[23] !== left || $[24]
 const $t3 = first(draft.tags);
 $t4 = VStack(($[5] !== draft.text ? ($[5] = draft.text, $[6] = TextField([draft.text, (value: string) => setDraft((draft) => ({ ...draft, text: value }))] as const, "What is new?")) : $[6]), ($[14] !== draft.sensitive || $[15] !== left || $[16] !== canSend || $[17] !== send ? ($[14] = draft.sensitive, $[15] = left, $[16] = canSend, $[17] = send, $[18] = HStack(($[7] !== draft.sensitive ? ($[7] = draft.sensitive, $[8] = Toggle([draft.sensitive, (value: boolean) => setDraft((draft) => ({ ...draft, sensitive: value }))] as const).label("Sensitive")) : $[8]), $view0, ($[9] !== left ? ($[9] = left, $[10] = Text(`${left}`).foreground((left < 0) ? "error" : "muted")) : $[10]), ($[11] !== canSend || $[12] !== send ? ($[11] = canSend, $[12] = send, $[13] = $view1.disabled(!canSend).onPress(() => void (async () => {
 await (send());
-})())) : $[13])).spacing("sm")) : $[18]), ($t3 !== undefined) ? Text($t3).foreground("muted") : null, draft.tags.map((tag) => Text(tag)), ($[19] !== tone ? ($[19] = tone, $[20] = Text(`${loudness(tone)}`)) : $[20])).spacing("md").padding("lg");
+})())) : $[13])).spacing("sm")) : $[18]), ($t3 != null) ? Text($t3).foreground("muted") : null, draft.tags.map((tag) => Text(tag)), ($[19] !== tone ? ($[19] = tone, $[20] = Text(`${loudness(tone)}`)) : $[20])).spacing("md").padding("lg");
 $[21] = draft.text;
 $[22] = draft.sensitive;
 $[23] = left;

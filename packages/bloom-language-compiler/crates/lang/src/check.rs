@@ -4830,6 +4830,17 @@ impl<'o> Checker<'o> {
                     }
                     return right;
                 }
+                // `title || "Untitled"` of an optional that is not a `Bool` (a TS `string | null`
+                // reads as `String?`): JS's value `||` too, the other side when it is absent or
+                // falsy, as the TS it came from wrote it.
+                if op == BinaryOp::Or
+                    && let Ty::Option(inner) = self.resolve(&left)
+                    && !matches!(self.resolve(&inner), Ty::Bool)
+                    && !matches!(expected.map(|e| self.resolve(e)), Some(Ty::Bool))
+                {
+                    let right = self.expr(rhs, Some(&inner));
+                    return self.join(&inner, &right, expr.span);
+                }
                 // As `expr(lhs, Some(Bool))` would have.
                 if let Some(recorded) = &mut self.expected {
                     recorded.push((lhs.span, Ty::Bool));

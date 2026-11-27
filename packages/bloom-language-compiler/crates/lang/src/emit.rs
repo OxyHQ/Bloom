@@ -404,7 +404,7 @@ fn helper_text(name: &str) -> &'static str {
             "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
         }
         "unwrap" => {
-            "function $unwrap<T>(value: T | undefined): T {\n  if (value === undefined) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
+            "function $unwrap<T>(value: T | null | undefined): T {\n  if (value == null) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
         }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
@@ -434,7 +434,7 @@ fn helper_text(name: &str) -> &'static str {
             "function $without<V>(map: Readonly<Record<string, V>>, key: string): Readonly<Record<string, V>> {\n  const { [key]: _, ...rest } = map;\n  return rest;\n}"
         }
         "mapOption" => {
-            "function $mapOption<T, U>(value: T | undefined, f: (value: T) => U): U | undefined {\n  return value === undefined ? undefined : f(value);\n}"
+            "function $mapOption<T, U>(value: T | null | undefined, f: (value: T) => U): U | undefined {\n  return value == null ? undefined : f(value);\n}"
         }
         "mapResult" => {
             "function $mapResult<T, U, E>(result: $Result<T, E>, f: (value: T) => U): $Result<U, E> {\n  return result.ok ? { ok: true, value: f(result.value) } : result;\n}"
@@ -449,7 +449,7 @@ fn helper_text(name: &str) -> &'static str {
             "function $okValue<T, E>(result: $Result<T, E>): T | undefined {\n  return result.ok ? result.value : undefined;\n}"
         }
         "compact" => {
-            "function $compact<T>(items: readonly (T | undefined)[]): readonly T[] {\n  return items.filter((item): item is T => item !== undefined);\n}"
+            "function $compact<T>(items: readonly (T | null | undefined)[]): readonly T[] {\n  return items.filter((item): item is T => item != null);\n}"
         }
         _ => "",
     }
@@ -717,7 +717,17 @@ impl<'a> Emitter<'a> {
 
     /// The emitted type of a field: optional fields are written `name?:`.
     fn ts_field(&mut self, field: &FieldDef) -> String {
-        format!("readonly {}: {};", prop_key(&field.name), self.ts_type(&field.ty))
+        // A field whose default is `none` may be left out (`readonly boosts?: number`), as a TS
+        // caller that builds the record does; any other default is written by Bloom's own
+        // construction, so it stays required.
+        let absent = match &field.default {
+            FieldDefault::Undefined => true,
+            FieldDefault::Literal(text) => text == "undefined",
+            FieldDefault::Expr(id) => self.defaults.get(id).is_some_and(|e| matches!(e.kind, ExprKind::None)),
+            FieldDefault::None => false,
+        };
+        let optional = if absent { "?" } else { "" };
+        format!("readonly {}{optional}: {};", prop_key(&field.name), self.ts_type(&field.ty))
     }
 
     // ---- names ------------------------------------------------------------
@@ -1695,7 +1705,7 @@ impl<'a> Emitter<'a> {
                 // `if let v = optional` unwraps; any other pattern matches.
                 if let (PatternKind::Bind(name), Ty::Option(_)) = (&pattern.kind, &value_ty) {
                     self.alias(name, &subject);
-                    return Frag::of(format!("{subject} !== undefined"));
+                    return Frag::of(format!("{subject} != null"));
                 }
                 let tests = self.pattern_test(pattern, &subject);
                 Frag::of(if tests.is_empty() { "true".to_string() } else { tests.join(" && ") })
@@ -1808,7 +1818,7 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(expr).text;
                 tests.push(format!("{subject} === {value}"));
             }
-            PatternKind::None => tests.push(format!("{subject} === undefined")),
+            PatternKind::None => tests.push(format!("{subject} == null")),
             PatternKind::Tuple(items) => {
                 for (i, item) in items.iter().enumerate() {
                     tests.extend(self.pattern_test(item, &format!("{subject}[{i}]")));
@@ -1843,9 +1853,9 @@ impl<'a> Emitter<'a> {
                 // An awaited promise settled in place: no error is `ok`, its value the value temp.
                 let split = self.splits.get(subject).cloned();
                 match (&ty, name.name.as_str()) {
-                    (Ty::Option(_), "none") => tests.push(format!("{subject} === undefined")),
+                    (Ty::Option(_), "none") => tests.push(format!("{subject} == null")),
                     (Ty::Option(_), _) => {
-                        tests.push(format!("{subject} !== undefined"));
+                        tests.push(format!("{subject} != null"));
                         sub(self, 0, subject.to_string(), &mut tests);
                     }
                     (Ty::Result(..), "ok") => match split {
@@ -2344,12 +2354,12 @@ impl<'a> Emitter<'a> {
             out.f(a).s(", ").f(b).s(")");
             return out;
         }
-        // A TS value against `none`: TS's absence may be `null` too (`text.match(re) != none`).
+        // A value against `none` is tested loosely: a TS value's absence may be `null` too
+        // (`text.match(re) != none`, an API's `number | null`), and Bloom's own is `undefined`.
         if matches!(op, BinaryOp::Eq | BinaryOp::Ne) {
-            let foreign = |e: &Expr| matches!(self.ck.types.get(&e.id), Some(Ty::Foreign(_)));
             let value = match (&lhs.kind, &rhs.kind) {
-                (_, ExprKind::None) if foreign(lhs) => Some(lhs),
-                (ExprKind::None, _) if foreign(rhs) => Some(rhs),
+                (_, ExprKind::None) => Some(lhs),
+                (ExprKind::None, _) => Some(rhs),
                 _ => None,
             };
             if let Some(value) = value {
@@ -2384,7 +2394,7 @@ impl<'a> Emitter<'a> {
                 let test = match op {
                     BinaryOp::And => name.clone(),
                     BinaryOp::Or => format!("!{name}"),
-                    _ => format!("{name} === undefined"),
+                    _ => format!("{name} == null"),
                 };
                 let mut line = Frag::of(format!("if ({test}) {{\n"));
                 for s in stmts {
@@ -2467,7 +2477,7 @@ impl<'a> Emitter<'a> {
         self.push_stmt(line);
         match self.ck.tries.get(&expr.id) {
             Some(TryRes::Option) => {
-                self.push_stmt(Frag::of(format!("if ({name} === undefined) return undefined;")));
+                self.push_stmt(Frag::of(format!("if ({name} == null) return undefined;")));
                 Frag::of(name)
             }
             _ => {
@@ -3823,7 +3833,7 @@ impl Emitter<'_> {
         match ty {
             Ty::Option(inner) => {
                 let inner = self.equal(a, b, inner, seen);
-                format!("{a} === undefined || {b} === undefined ? {a} === {b} : {inner}")
+                format!("{a} == null || {b} == null ? ({a} == null) === ({b} == null) : {inner}")
             }
             Ty::Tuple(items) => {
                 let parts = items
