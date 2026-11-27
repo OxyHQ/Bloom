@@ -49,8 +49,12 @@ pub fn migrate(source: &str, filename: &str) -> Result<(String, Vec<String>), Ve
     // left (each round can expose the types a newly public one names).
     let mut publicize: Vec<String> = Vec::new();
     let (out, notes) = loop {
-        let migration =
-            Migration { labels: labels(&file), publicize: publicize.clone(), notes: Vec::new(), refs: Vec::new() };
+        let migration = Migration {
+            labels: labels(&file),
+            publicize: publicize.clone(),
+            notes: Vec::new(),
+            refs: Vec::new(),
+        };
         let mut formatter = format::Formatter::migrating(source, &comments, migration);
         let doc = formatter.file(&file);
         let notes = formatter.into_notes();
@@ -103,14 +107,26 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
             })
             .collect();
         let [Stmt { kind: StmtKind::Expr(root), .. }] = v.body.stmts.as_slice() else { continue };
-        if effects.is_empty() || effects.iter().any(|e| e.id.is_none()) {
+        // An effect without an `id:` that resets state when a value changes (`if seen != v {
+        // seen = v; … }`, TS's adjust-state-while-drawing) is an `.onChange(of: v)`: the test
+        // holds only after `v` changed.
+        let watched = |e: &EffectDecl| -> Option<Span> {
+            let [Stmt { kind: StmtKind::Expr(only), .. }] = e.body.stmts.as_slice() else { return None };
+            let ExprKind::If(i) = &only.kind else { return None };
+            let Cond::Expr(cond) = &i.cond else { return None };
+            let ExprKind::Binary(BinaryOp::Ne, seen, value) = &cond.kind else { return None };
+            let ExprKind::Name(seen) = &seen.kind else { return None };
+            let assigns = i.then.stmts.iter().any(|s| slice(s.span).starts_with(&format!("{seen} = ")));
+            (i.otherwise.is_none() && assigns).then_some(value.span)
+        };
+        if effects.is_empty() || effects.iter().any(|e| e.id.is_none() && watched(e).is_none()) {
             continue;
         }
         // A view that stays 0.x for another reason keeps its effects as written.
         let stays = v.params.iter().flatten().any(|p| p.spread || p.rest)
-            || v.members.iter().any(|m| {
-                matches!(m, Member::State(s) if matches!(s.attr, StateAttr::Ref | StateAttr::List | StateAttr::Record))
-            });
+            || v.members.iter().any(
+                |m| matches!(m, Member::State(s) if matches!(s.attr, StateAttr::List | StateAttr::Record)),
+            );
         if stays {
             continue;
         }
@@ -118,7 +134,15 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
         let mut modifiers = String::new();
         let mut once = String::new();
         for effect in &effects {
-            let id = effect.id.as_ref().expect("an id");
+            let Some(id) = effect.id.as_ref() else {
+                let value = watched(effect).expect("a watched value");
+                modifiers.push_str(&format!(
+                    "\n.onChange(of: {}) {{ _, _ in\n{}\n}}",
+                    slice(value),
+                    slice(effect.body.stmts[0].span)
+                ));
+                continue;
+            };
             let runs_once = matches!(id.kind, ExprKind::Unit | ExprKind::Int(_))
                 || matches!(&id.kind, ExprKind::Tuple(values) if values.is_empty());
             if !runs_once {

@@ -752,7 +752,9 @@ impl<'a> Formatter<'a> {
             .members
             .iter()
             .filter_map(|m| match m {
-                Member::State(state) if state.attr == StateAttr::Ref && host_ref(state, view_text).is_none() => {
+                Member::State(state)
+                    if state.attr == StateAttr::Ref && host_ref(state, view_text).is_none() =>
+                {
                     Some(state.name.name.clone())
                 }
                 _ => None,
@@ -1657,9 +1659,8 @@ fn host_ref(state: &StateDecl, view: &str) -> Option<Span> {
         _ => return None,
     };
     let name = &state.name.name;
-    let handed = [format!(".ref({name})"), format!(".inputRef({name})"), format!("ref: {name}")]
-        .iter()
-        .any(|form| {
+    let handed =
+        [format!(".ref({name})"), format!(".inputRef({name})"), format!("ref: {name}")].iter().any(|form| {
             view.match_indices(form.as_str()).any(|(i, _)| {
                 let after = view[i + form.len()..].chars().next();
                 after.is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
