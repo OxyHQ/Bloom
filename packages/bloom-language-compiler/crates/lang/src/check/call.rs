@@ -1928,26 +1928,29 @@ impl Checker<'_> {
                     if trailing.params.is_empty()
                         && !matches!(line.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
                 {
+                    // Typed on its own first; anything but text is read again as a child, as
+                    // any builder line is (what the first reading reported is dropped).
+                    let mark = self.out.diagnostics.len();
                     self.push();
                     let ty = self.expr(line, None);
                     self.pop();
                     if matches!(self.resolve(&ty), Ty::Str | Ty::Strings(_)) {
                         self.out.text_children.insert(trailing.span);
+                        self.out.closures.insert(
+                            trailing.span,
+                            ClosureInfo {
+                                params: Vec::new(),
+                                is_async: false,
+                                ret: Ty::View(None),
+                                builder: true,
+                            },
+                        );
                     } else {
-                        let child = Ty::Option(Box::new(Ty::View(None)));
-                        if !self.coerce(&ty, &child) {
-                            self.mismatch(line.span, &ty, &child);
+                        for diagnostic in self.out.diagnostics.split_off(mark) {
+                            self.reported.remove(&diagnostic.span);
                         }
+                        self.builder_closure(trailing);
                     }
-                    self.out.closures.insert(
-                        trailing.span,
-                        ClosureInfo {
-                            params: Vec::new(),
-                            is_async: false,
-                            ret: Ty::View(None),
-                            builder: true,
-                        },
-                    );
                 }
                 _ => self.builder_closure(trailing),
             }
