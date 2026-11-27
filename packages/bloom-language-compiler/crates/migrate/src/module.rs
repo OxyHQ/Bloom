@@ -146,6 +146,9 @@ pub struct Tr<'s> {
     /// Views whose written-out props took TS destructure defaults (`Scope::field_defaults`): a
     /// view that hands its props to one on whole takes the same defaults, so the forward fits.
     pub view_defaults: HashMap<String, Vec<(String, String)>>,
+    /// `const X = memo(Named, compare)` of a local view: the file's own reads of `X` name the
+    /// view (`Named`), since a module `let` is in scope only below it and the view is above.
+    pub view_aliases: HashMap<String, String>,
     /// Review notes for the statement being translated (`Tr::review`).
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
@@ -373,6 +376,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         rest_views: HashMap::new(),
         tanstack: HashSet::new(),
         view_defaults: HashMap::new(),
+        view_aliases: HashMap::new(),
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
@@ -1072,6 +1076,13 @@ impl<'s> Tr<'s> {
             };
             let Some(Declaration::VariableDeclaration(v)) = declaration else { continue };
             for d in &v.declarations {
+                if let Some(init) = &d.init
+                    && let Some((named, _)) = memo_alias(init, &self.react)
+                    && self.views.contains(named.as_str())
+                    && let BindingPattern::BindingIdentifier(alias) = &d.id
+                {
+                    self.view_aliases.insert(alias.name.to_string(), named.clone());
+                }
                 if let Some(init) = &d.init
                     && let Some((named, Some(compare))) = memo_alias(init, &self.react)
                     && self.views.contains(named.as_str())
@@ -1861,12 +1872,21 @@ fn hoist_lets(items: Vec<String>) -> Vec<String> {
         let end = name.find(|c: char| !(c.is_alphanumeric() || c == '_')).unwrap_or(name.len());
         (end > 0).then(|| &name[..end])
     }
+    // Whether a `let` reads a declaration between `first` and itself while the module loads:
+    // a value that is not a closure (`let X = View`; a closure reads it when it runs).
+    let reads_later = |items: &[String], first: usize, i: usize| {
+        let item = &items[i];
+        let code =
+            item.lines().find(|l| !l.trim_start().starts_with("//") && !l.trim().is_empty()).unwrap_or("");
+        let closure = code.split_once(" = ").is_some_and(|(_, v)| v.trim_start().starts_with('{'));
+        !closure && (first..i).any(|j| decl_name(&items[j]).is_some_and(|d| mentions(item, d)))
+    };
     let Some(first) = items.iter().position(|item| let_name(item).is_none()) else { return items };
     // A `let` that reads a declaration between `first` and itself stays: a view or function
     // is a JS `const` too, so the hoisted value would read it before it is defined.
     let late: Vec<usize> = (first..items.len())
         .filter(|&i| let_name(&items[i]).is_some_and(|n| items[..i].iter().any(|it| mentions(it, n))))
-        .filter(|&i| !(first..i).any(|j| decl_name(&items[j]).is_some_and(|d| mentions(&items[i], d))))
+        .filter(|&i| !reads_later(&items, first, i))
         .collect();
     if late.is_empty() {
         return items;
@@ -1878,7 +1898,7 @@ fn hoist_lets(items: Vec<String>) -> Vec<String> {
             if !moved.contains(&j)
                 && let Some(n) = let_name(&items[j])
                 && mentions(&items[i], n)
-                && !(first..j).any(|k| decl_name(&items[k]).is_some_and(|d| mentions(&items[j], d)))
+                && !reads_later(&items, first, j)
             {
                 moved.push(j);
             }
