@@ -83,6 +83,17 @@ impl Tr<'_> {
             Some("layout") => "layout",
             _ => "view",
         };
+        // A `screen()` beside the file's default export (the route, `export default function
+        // X()` drawing it) is a view: a file has one route.
+        let kind = if kind != "view"
+            && !vis.contains("default")
+            && body.iter().any(|s| matches!(s, Statement::ExportDefaultDeclaration(d)
+                if !matches!(&d.declaration, oxc_ast::ast::ExportDefaultDeclarationKind::Identifier(i) if i.name == name)))
+        {
+            "view"
+        } else {
+            kind
+        };
         if call.arguments.len() != 1 {
             return self.refuse("view:options", format!("`{}(…)` with options", callee.name), call.span);
         }
