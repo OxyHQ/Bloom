@@ -1296,7 +1296,17 @@ impl Tr<'_> {
         // `const f = <T,>(…) => …`: a generic `fn f<T>(…)` (a closure `let` takes no type parameters).
         match arrow.type_parameters.as_deref() {
             Some(p) if !p.params.is_empty() => {
-                let names: Vec<&str> = p.params.iter().map(|t| t.name.name.as_str()).collect();
+                // `T extends string` (or `number`): compared with `==`, so `T: Equatable`.
+                let names: Vec<String> = p
+                    .params
+                    .iter()
+                    .map(|t| match &t.constraint {
+                        Some(TSType::TSStringKeyword(_) | TSType::TSNumberKeyword(_)) => {
+                            format!("{}: Equatable", t.name.name)
+                        }
+                        _ => t.name.name.to_string(),
+                    })
+                    .collect();
                 let head = format!("fn {}(", self.name(name, Span::default()));
                 match text.find(&head) {
                     Some(at) => {
