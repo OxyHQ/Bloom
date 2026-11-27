@@ -18,10 +18,12 @@
 mod comments;
 mod expr;
 mod i18n;
+mod importers;
 mod jsx;
 mod module;
 mod props;
 pub mod report;
+pub use importers::draw_views_as_nodes;
 mod stdlib;
 mod swiftui;
 mod tokens;
