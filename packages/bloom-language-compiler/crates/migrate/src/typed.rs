@@ -815,7 +815,10 @@ fn promise_then(source: &str, start: usize, end: usize) -> Option<(usize, usize,
     if name.is_empty() || !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
         return None;
     }
-    Some((at, close, format!("task {{\nlet {name} = await {receiver}\n{body}\n}}")))
+    let awaited = source[at..].starts_with("await");
+    // `then` runs on success only: a rejection is not caught here (TS left it unhandled).
+    let steps = format!("do {{\nlet {name} = try await {receiver}\n{body}\n}} catch {{}}");
+    Some((at, close, if awaited { steps } else { format!("task {{\n{steps}\n}}") }))
 }
 
 /// A statement `receiver.m { … }` (`start..end` is `m`): where it starts and ends, its receiver
@@ -824,7 +827,7 @@ fn promise_statement(source: &str, start: usize, end: usize) -> Option<(usize, u
     let at = receiver_start(source, start)?;
     let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
     let lead = source[line_start..at].trim();
-    if !(lead.is_empty() || lead.ends_with('{')) || at == start - 1 {
+    if !(lead.is_empty() || lead.ends_with('{') || lead == "await") || at == start - 1 {
         return None;
     }
     let close = block_end(source, end)?;
@@ -833,7 +836,10 @@ fn promise_statement(source: &str, start: usize, end: usize) -> Option<(usize, u
     if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
         return None;
     }
-    Some((at, close, source[at..start - 1].trim().to_string(), inner))
+    // `await p.then(f)`: the statement starts at its `await`.
+    let receiver = source[at..start - 1].trim().to_string();
+    let at = if lead == "await" { source[..at].trim_end().len() - "await".len() } else { at };
+    Some((at, close, receiver, inner))
 }
 
 /// Where the receiver of the member at `start` (just after its `.`) begins: `a.b(…)`, back
