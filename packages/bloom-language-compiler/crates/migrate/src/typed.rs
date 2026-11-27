@@ -237,7 +237,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // `d.at(k)` on a dictionary (the codemod read a key as an index): `d[k]`, optional already.
             ("B0209", "at")
-                if receiver.is_some_and(|r| r.starts_with('[') && r.contains(": "))
+                if receiver.is_some_and(|r| r.starts_with('[') && r.contains(": ") || r == "_")
                     && source[..start].ends_with('.')
                     && source[end..].starts_with('(') =>
             {
@@ -267,11 +267,111 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     && d.message.ends_with("?`")
                     && is_subscript(text)
                     && {
-                        let (want, found) = d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
-                        found.strip_suffix("?`") == Some(want)
+                        let (want, found) =
+                            d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
+                        !want.ends_with('?') && want != "Bool" && found.ends_with("?`")
                     } =>
             {
                 Some((end, end, "!".to_string()))
+            }
+            // A value of a Bloom type TS had narrowed to present (`if (!params) return …;` before,
+            // an `else` of the test), passed where it is required: `params!`.
+            ("B0201", _)
+                if d.message.starts_with("expected `")
+                    && crate::expr::is_postfix_text(text)
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                    && {
+                        let (want, found) =
+                            d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
+                        want.starts_with(|c: char| c.is_ascii_uppercase())
+                            && want.chars().all(|c| c.is_alphanumeric() || c == '_')
+                            && !["String", "Float", "Int", "Double", "Bool", "View"].contains(&want)
+                            && found.strip_suffix("?`") == Some(want)
+                    } =>
+            {
+                Some((end, end, "!".to_string()))
+            }
+            // An optional interpolated (JS printed `undefined`): its text or nothing, under review.
+            ("B0201", _) if d.message == "an optional is interpolated" => {
+                let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                let indent: String = source[line_start..].chars().take_while(|c| *c == ' ').collect();
+                let note = format!(
+                    "{indent}// {}: an optional interpolated as `?? \"\"`: JS printed `undefined` for it\n",
+                    crate::REVIEW_MARKER
+                );
+                let value =
+                    if crate::expr::is_postfix_text(text) { text.to_string() } else { format!("({text})") };
+                if !edits.iter().any(|(a, b, _)| *a <= line_start && line_start < (*b).max(*a + 1)) {
+                    edits.push((line_start, line_start, note));
+                }
+                Some((start, end, format!("{value} ?? \"\"")))
+            }
+            // The `?? ""` above on a number: its digits when it is there, `x != none ? "${x!}" : ""`.
+            ("B0201", "\"\"")
+                if (d.message == "expected `Float?`, found `String`"
+                    || d.message == "expected `Int?`, found `String`")
+                    && source[..start].ends_with(" ?? ") =>
+            {
+                let open = source[..start].rfind("${").map(|i| i + 2);
+                open.and_then(|open| {
+                    let operand = &source[open..start - " ?? ".len()];
+                    crate::expr::is_postfix_text(operand)
+                        .then(|| (open, end, format!("{operand} != none ? \"${{{operand}!}}\" : \"\"")))
+                })
+            }
+            // `i < 0` on an index Bloom gives as `Int?` (`indexOf`, `findIndex`: `none`, not `-1`).
+            ("B0201", _)
+                if (d.message == "`<` does not apply to `Int?`"
+                    || d.message == "`>=` does not apply to `Int?`"
+                    || d.message == "`>` does not apply to `Int?`")
+                    && crate::expr::is_postfix_text(text) =>
+            {
+                let rest = &source[end..];
+                [(" < 0", "== none"), (" >= 0", "!= none"), (" > -1", "!= none"), (" <= -1", "== none")]
+                    .iter()
+                    .find(|(op, _)| {
+                        rest.starts_with(op)
+                            && rest[op.len()..].chars().next().is_none_or(|c| !c.is_ascii_digit() && c != '.')
+                    })
+                    .map(|(op, test)| (start, end + op.len(), format!("{text} {test}")))
+            }
+            // Arithmetic on a `Record<K, number>` read TS typed present: `d[k]!`.
+            ("B0201", _)
+                if d.message.contains("` does not apply to `")
+                    && d.message.ends_with("?`")
+                    && is_subscript(text) =>
+            {
+                Some((end, end, "!".to_string()))
+            }
+            // A test of an optional TS read for its truthiness (`if (members.find(…))`): an object
+            // or a non-empty literal is truthy, so it is whether it is there; a `Bool?` whether it is `true`.
+            ("B0201", _)
+                if d.message.starts_with("expected `Bool`, found `") && d.message.ends_with("?`") =>
+            {
+                let found = &d.message["expected `Bool`, found `".len()..d.message.len() - 2];
+                let literals = found.starts_with('"') && !found.contains("\"\"");
+                let object =
+                    !["String", "Float", "Int", "Double", "_", "["].iter().any(|p| found.starts_with(p))
+                        && !found.starts_with('"')
+                        && found != "Bool";
+                let test = if found == "Bool" { "== true" } else { "!= none" };
+                let head = source[..start].ends_with("if ") && source[end..].starts_with(" {");
+                (literals || object || found == "Bool").then(|| {
+                    let spelled = if head || crate::expr::is_postfix_text(text) && head {
+                        format!("{text} {test}")
+                    } else {
+                        format!("({text} {test})")
+                    };
+                    (start, end, spelled)
+                })
+            }
+            // A string drawn as a child (`{description}`): its text.
+            ("B0201", _)
+                if (d.message == "expected `View?`, found `String`"
+                    || d.message == "expected `View`, found `String`")
+                    && (line_is(source, start, end) || braced(source, start, end)) =>
+            {
+                Some((start, end, format!("RawText({text})")))
             }
             // An unwrap the codemod wrote before bloomc narrowed the value (a test spelled later): gone.
             ("B0201", _) if d.message.starts_with("`!` unwraps an optional") => {
@@ -433,7 +533,8 @@ fn subscript_open(source: &str, close: usize) -> Option<usize> {
                 depth -= 1;
                 if depth == 0 {
                     let receiver = i > 0
-                        && (bytes[i - 1].is_ascii_alphanumeric() || matches!(bytes[i - 1], b'_' | b')' | b']'));
+                        && (bytes[i - 1].is_ascii_alphanumeric()
+                            || matches!(bytes[i - 1], b'_' | b')' | b']'));
                     return (bytes[i] == b'[' && receiver).then_some(i);
                 }
             }

@@ -240,6 +240,8 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             compiled = again;
         }
     }
+    // The fixes after the draft may add review notes of their own.
+    let reviews = bloom.matches(REVIEW_MARKER).count();
     let status = if reviews > 0 { Status::NeedsReview } else { Status::Migrated };
     Migration { status, bloom: Some(bloom), reasons: Vec::new(), reviews, dts: compiled.dts, default_export }
 }

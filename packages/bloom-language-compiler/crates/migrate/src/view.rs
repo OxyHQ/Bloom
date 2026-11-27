@@ -718,13 +718,15 @@ impl Tr<'_> {
                 if let Some(Some(BindingPattern::BindingIdentifier(setter))) = pattern.elements.get(1) {
                     self.scope.setters.insert(setter.name.to_string(), Setter { state: value.clone() });
                 }
+                let empty = call.arguments.is_empty();
                 let ty = call.type_arguments.as_ref().and_then(|a| a.params.first()).map(|t| {
                     if let TSType::TSTypeReference(r) = t
                         && let TSTypeName::IdentifierReference(id) = &r.type_name
                     {
                         self.scope.types.insert(value.clone(), id.name.to_string());
                     }
-                    self.ty(t)
+                    // `useState<T>()`: a `T | undefined`, `none` until it is set.
+                    if empty { optional_ty(&self.ty(t)) } else { self.ty(t) }
                 });
                 let init = match call.arguments.first().and_then(|a| a.as_expression()) {
                     Some(Expression::ArrowFunctionExpression(arrow)) if arrow.params.items.is_empty() => {
