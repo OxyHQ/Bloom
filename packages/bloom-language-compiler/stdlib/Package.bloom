@@ -9,5 +9,8 @@ let package = Package(
     // `extern native "BloomImage"` in Bloom/Image.bloom: the image view behind `Image`
     // and its cache, in Kotlin over React Native's image pipeline.
     .native("BloomImage", path: "Bloom/Native/BloomImage"),
+    // `extern native "BloomVideo"` in Bloom/Video.bloom: the video player behind a Bloom
+    // build's `expo-video`, in Kotlin over androidx media3.
+    .native("BloomVideo", path: "Bloom/Native/BloomVideo"),
   ]
 )

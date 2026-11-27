@@ -690,6 +690,15 @@ The cache `Image` draws from: the decoded pictures in memory, the downloaded byt
 - `static func size(of url: String) async throws -> [Double]`: The pixel size of the image at `url`, read through the cache.
 - `static func clear(memory: Bool = true, disk: Bool = true) async`: Empties the memory cache, the disk cache or both (nothing off a native build).
 
+## Video
+
+Bloom (media): the native video player and its view, behind `expo-video` in a Bloom build.
+
+A `bloom build` answers `expo-video` with a shim over this module (crates/bloomc's
+`shims/expo-video.js`): `useVideoPlayer`, `createVideoPlayer` and `VideoView` keep their
+API, so an app's call sites need no edits. Underneath is androidx media3 (ExoPlayer), the
+library expo-video ships, without Expo's module core.
+
 ## Concurrency
 
 Bloom (concurrency): `Task`, `TaskGroup`, `sleep(for:)` and `AsyncStream`.
