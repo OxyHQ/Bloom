@@ -137,9 +137,8 @@ impl Tr<'_> {
                 self.expr(&a.expression)
             }
             Expression::TSSatisfiesExpression(s) => self.expr(&s.expression),
-            Expression::TSNonNullExpression(n) => {
-                self.refuse("ts:non-null", "a non-null assertion `!` (use `if let`)", n.span)
-            }
+            // `x!`: Swift's force unwrap (a dev build traps on `none`, a release one is TS's `x!`).
+            Expression::TSNonNullExpression(n) => self.forced(&n.expression),
             Expression::ArrayExpression(array) => {
                 let pairs = std::mem::replace(&mut self.pairs, false);
                 let mut items = Vec::new();
@@ -187,9 +186,7 @@ impl Tr<'_> {
                         format!("{object}[{}]", self.expr(&m.expression))
                     }
                 }
-                ChainElement::TSNonNullExpression(n) => {
-                    self.refuse("ts:non-null", "a non-null assertion `!`", n.span)
-                }
+                ChainElement::TSNonNullExpression(n) => self.forced(&n.expression),
                 ChainElement::PrivateFieldExpression(p) => self.refuse("class", "a private field", p.span),
             },
             Expression::StaticMemberExpression(m) => {
@@ -282,7 +279,11 @@ impl Tr<'_> {
                     }
                     return acc;
                 }
-                let left = self.expr(&l.left);
+                let left = if l.operator == LogicalOperator::Coalesce {
+                    self.optional_read(&l.left)
+                } else {
+                    self.expr(&l.left)
+                };
                 let right = self.expr(&l.right);
                 format!("{left} {op} {right}")
             }
@@ -464,7 +465,7 @@ impl Tr<'_> {
             return self.name(&id.name, id.span);
         }
         let dot = if optional || has_optional(object) { "?." } else { "." };
-        let object_text = self.expr(object);
+        let object_text = if optional { self.optional_read(object) } else { self.expr(object) };
         let property = if property == "length" { "count" } else { property };
         format!("{object_text}{dot}{property}")
     }
@@ -552,9 +553,34 @@ impl Tr<'_> {
                 return format!("{call} {} none", if found { "!=" } else { "==" });
             }
         }
+        // `xs[i] === undefined`: whether the element is there, `xs.at(i) == none`.
+        if matches!(op, "==" | "!=") && (is_nothing(&b.right) || is_nothing(&b.left)) {
+            let (value, _) = if is_nothing(&b.right) { (&b.left, &b.right) } else { (&b.right, &b.left) };
+            if index_read(value).is_some() {
+                return format!("{} {op} none", self.optional_read(value));
+            }
+        }
         let left = self.operand(&b.left, &b.right);
         let right = self.operand(&b.right, &b.left);
         format!("{left} {op} {right}")
+    }
+
+    /// `x!`, kept against its operand.
+    fn forced(&mut self, e: &Expression) -> String {
+        let text = self.expr(e);
+        if is_postfix_text(&text) { format!("{text}!") } else { format!("({text})!") }
+    }
+
+    /// A value read where TS allows `undefined` (`?.`, `??`, a test): a list's element by
+    /// index is `xs.at(i)`, since `xs[i]` is the element itself and out of range a trap. A
+    /// dictionary's `d[k]` is optional already; `crate::typed` puts back one bloomc types so.
+    pub fn optional_read(&mut self, e: &Expression) -> String {
+        if let Some((object, key)) = index_read(e) {
+            let object = self.expr(object);
+            let key = self.expr(key);
+            return format!("{object}.at({key})");
+        }
+        self.expr(e)
     }
 
     /// One side of a comparison: a string literal against a local union is its case.
@@ -680,7 +706,7 @@ impl Tr<'_> {
     /// A condition operand the codemod cannot type: written as is, and recorded,
     /// so that bloomc's types spell its truthiness (`crate::truthiness`).
     fn condition(&mut self, e: &Expression) -> String {
-        let text = self.expr(e);
+        let text = self.optional_read(e);
         if !is_boolean_shaped(e) {
             self.conditions.insert(text.clone());
         }
@@ -1388,8 +1414,16 @@ impl Tr<'_> {
                         let BindingPattern::BindingIdentifier(id) = &param.pattern else { unreachable!() };
                         let list = self.head_expr(&member.object);
                         let item = self.bind(&id.name, id.span);
+                        // `xs.map((x: T) => …)`: TS reads each element as `T` (a wider record,
+                        // `count?: number` among its fields), and so does the loop.
+                        let typed = match &param.type_annotation {
+                            Some(ann) if matches!(ann.type_annotation, oxc_ast::ast::TSType::TSTypeLiteral(_)) => {
+                                format!("let {item}: {} = {item}\n", self.ty(&ann.type_annotation))
+                            }
+                            _ => String::new(),
+                        };
                         let body = self.arrow_view_lines(arrow);
-                        format!("for {item} in {list} {{\n{body}\n}}")
+                        format!("for {item} in {list} {{\n{typed}{body}\n}}")
                     }
                     _ => self.expr(e),
                 }
@@ -1852,4 +1886,26 @@ pub fn strip_parens(text: &str) -> &str {
         }
     }
     if depth == 0 { inner } else { text }
+}
+
+/// `xs[i]` read by an index (a number, or arithmetic, or a name that says it is one):
+/// its list and index. A key read (`labels[kind]`) is not one.
+pub fn index_read<'b, 'a>(e: &'b Expression<'a>) -> Option<(&'b Expression<'a>, &'b Expression<'a>)> {
+    let Expression::ComputedMemberExpression(m) = e.without_parentheses() else { return None };
+    if m.optional {
+        return None;
+    }
+    let indexish = match m.expression.without_parentheses() {
+        Expression::NumericLiteral(_) => true,
+        Expression::BinaryExpression(b) => {
+            matches!(b.operator, BinaryOperator::Addition | BinaryOperator::Subtraction)
+                && matches!(b.right.without_parentheses(), Expression::NumericLiteral(_))
+        }
+        Expression::Identifier(id) => {
+            let n = id.name.as_str();
+            n == "i" || n == "j" || n == "idx" || n == "index" || n.ends_with("Index") || n.ends_with("Idx")
+        }
+        _ => false,
+    };
+    indexish.then_some((&m.object, &m.expression))
 }

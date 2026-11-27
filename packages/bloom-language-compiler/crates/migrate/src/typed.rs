@@ -209,11 +209,69 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((start, end, format!("{text} ?? \"\"")))
             }
+            // `xs[i]?.x`: TS reads past the end as `undefined`; a list's `xs[i]` is the element
+            // (out of range a trap), so the optional read is `xs.at(i)?.x`.
+            ("B0201", _)
+                if d.message.starts_with("`?.` reads an optional")
+                    && source[..start].ends_with("]?.")
+                    && subscript_open(source, start - 3).is_some() =>
+            {
+                let close = start - 3;
+                subscript_open(source, close)
+                    .map(|open| (open, close + 1, format!(".at({})", &source[open + 1..close])))
+            }
             // TS lets `?.` read a value that is never `none`; Bloom reads it with `.`.
             ("B0201", _)
                 if d.message.starts_with("`?.` reads an optional") && source[..start].ends_with("?.") =>
             {
                 Some((start - 2, start, ".".to_string()))
+            }
+            // `xs[i] ?? d`: the element when it is there, `xs.at(i) ?? d`.
+            ("B0201", _)
+                if d.message.starts_with("`??` gives a fallback")
+                    && text.ends_with(']')
+                    && subscript_open(source, end - 1).is_some_and(|o| o > start) =>
+            {
+                subscript_open(source, end - 1)
+                    .map(|open| (open, end, format!(".at({})", &source[open + 1..end - 1])))
+            }
+            // `d.at(k)` on a dictionary (the codemod read a key as an index): `d[k]`, optional already.
+            ("B0209", "at")
+                if receiver.is_some_and(|r| r.starts_with('[') && r.contains(": "))
+                    && source[..start].ends_with('.')
+                    && source[end..].starts_with('(') =>
+            {
+                matching_paren(source, end)
+                    .map(|close| (start - 1, close, format!("[{}]", &source[end + 1..close - 1])))
+            }
+            // A member of an optional TS had narrowed to present (`if (!p) return; p.x`, a
+            // `p?.x` test before): TS's flow said it is there, so it is read as `p!.x` (a
+            // release build emits `p.x`, as TS did; JS would have thrown on `undefined`).
+            ("B0201", _)
+                if d.message.ends_with("` may be `none`")
+                    && source[..start].ends_with('.')
+                    && !source[..start].ends_with("?.") =>
+            {
+                Some((start - 1, start - 1, "!".to_string()))
+            }
+            ("B0209" | "B0205", _)
+                if receiver.is_some_and(|r| r.ends_with('?'))
+                    && source[..start].ends_with('.')
+                    && !source[..start].ends_with("?.") =>
+            {
+                Some((start - 1, start - 1, "!".to_string()))
+            }
+            // `labels[kind]` where TS typed the value present (`Record<Kind, string>`): `labels[kind]!`.
+            ("B0201", _)
+                if d.message.starts_with("expected `")
+                    && d.message.ends_with("?`")
+                    && is_subscript(text)
+                    && {
+                        let (want, found) = d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
+                        found.strip_suffix("?`") == Some(want)
+                    } =>
+            {
+                Some((end, end, "!".to_string()))
             }
             // `x ?? fallback` where `x` is never `none`: `x`.
             ("B0201", _) if d.message.starts_with("`??` gives a fallback") => {
@@ -346,6 +404,38 @@ fn call_args(source: &str, start: usize, end: usize) -> Option<(usize, usize)> {
         }
     }
     None
+}
+
+/// The `[` of the subscript whose `]` is at `close` (strings skipped crudely), when what
+/// precedes it is a receiver (`xs[`, `a.b[`, `f()[`), not a list literal.
+fn subscript_open(source: &str, close: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    if bytes.get(close) != Some(&b']') {
+        return None;
+    }
+    let mut depth = 0i32;
+    let mut quoted = false;
+    for i in (0..=close).rev() {
+        match bytes[i] {
+            b'"' => quoted = !quoted,
+            b']' | b')' | b'}' if !quoted => depth += 1,
+            b'[' | b'(' | b'{' if !quoted => {
+                depth -= 1;
+                if depth == 0 {
+                    let receiver = i > 0
+                        && (bytes[i - 1].is_ascii_alphanumeric() || matches!(bytes[i - 1], b'_' | b')' | b']'));
+                    return (bytes[i] == b'[' && receiver).then_some(i);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+/// Whether `text` is a subscript read, `d[k]` (a receiver, then one bracket to the end).
+fn is_subscript(text: &str) -> bool {
+    text.ends_with(']') && subscript_open(text, text.len() - 1).is_some_and(|o| o > 0)
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
