@@ -26,6 +26,13 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             // `xs.some(f)`, `xs.every(f)`: a Bloom list's `any` and `all`.
             ("B0209", "some") if list => Some((start, end, "any".to_string())),
             ("B0209", "every") if list => Some((start, end, "all".to_string())),
+            // `p.catch((e) => …)` as a statement, on a promise bloomc types: a task that awaits it,
+            // `task { do { try await p } catch let e { … } }`.
+            ("B0209", "catch")
+                if receiver.is_some_and(|r| r.starts_with("Promise<")) && source[..start].ends_with('.') =>
+            {
+                promise_catch(source, start, end)
+            }
             // A promise-returning call JS let go unawaited: started as a task.
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // `await f()` of a call that is not async (TS awaited a plain value): the
@@ -597,6 +604,62 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
     let start = a + parts[first].0;
     let lead = if first == 0 { "" } else { " " };
     Some((start, b, format!("{lead}{{ {} }}", fields.join(", "))))
+}
+
+/// `receiver.catch { e: T in body }` as a statement (`start..end` is `catch`): the task that
+/// awaits the receiver and catches its error.
+fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize, String)> {
+    let bytes = source.as_bytes();
+    // The receiver: `a.b(…)`, back from the dot (over whitespace and line breaks).
+    let mut at = source[..start - 1].trim_end().len();
+    loop {
+        if at > 0 && bytes[at - 1] == b')' {
+            let mut depth = 0i32;
+            let mut i = at;
+            while i > 0 {
+                i -= 1;
+                match bytes[i] {
+                    b')' => depth += 1,
+                    b'(' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            at = i;
+        }
+        let ident = source[..at].trim_end_matches(|c: char| c.is_alphanumeric() || c == '_');
+        if ident.len() == at {
+            break;
+        }
+        at = ident.len();
+        if at > 0 && bytes[at - 1] == b'.' {
+            at -= 1;
+            continue;
+        }
+        break;
+    }
+    let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
+    if !source[line_start..at].trim().is_empty() || at == start - 1 {
+        return None;
+    }
+    let receiver = source[at..start - 1].trim();
+    let close = block_end(source, end)?;
+    let closure = source[end..close].trim();
+    let inner = closure.strip_prefix('{')?.strip_suffix('}')?.trim();
+    let (params, body) = inner.split_once(" in ")?;
+    let name = params.split(':').next()?.trim();
+    if !name.chars().all(|c| c.is_alphanumeric() || c == '_') || name.is_empty() {
+        return None;
+    }
+    let after = source[close..].trim_start_matches([' ', '\t']);
+    if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
+        return None;
+    }
+    Some((at, close, format!("task {{\ndo {{\ntry await {receiver}\n}} catch let {name} {{\n{body}\n}}\n}}")))
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
