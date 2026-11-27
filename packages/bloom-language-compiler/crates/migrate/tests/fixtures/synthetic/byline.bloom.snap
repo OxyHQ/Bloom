@@ -28,3 +28,27 @@ public struct Byline: View {
     }
   }
 }
+
+public struct Variant {
+  let label: String
+  let rendered: Bool
+}
+
+// A ternary item: of two strings, its text; of a string and a node, the string branch's.
+public struct Variants: View {
+  let variants: [Variant]
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    RawText(
+      variants
+        .enumerated()
+        .flatMap {
+          (index, variant) in
+          [
+            RawText(index > 0 ? " · " : ""),
+            variant.rendered ? RawText(variant.label) : Text(variant.label).foreground(.muted),
+          ]
+        },
+    )
+  }
+}
