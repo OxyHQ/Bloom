@@ -1615,7 +1615,7 @@ impl<'o> Checker<'o> {
                     self.fn_body(f, false);
                 }
                 ItemKind::View(v) => {
-                    if v.kind != ViewKind::View {
+                    if matches!(v.kind, ViewKind::Screen | ViewKind::Layout) {
                         screens += 1;
                         if screens > 1 {
                             self.report(
@@ -2187,9 +2187,15 @@ impl<'o> Checker<'o> {
             self.out.shapes.insert(v.span, shaped);
         }
         self.generics = outer;
+        // A menu's actions (`.actions(…)`) or content (a `Menu`'s child) is that node, not a view.
+        let node = match v.kind {
+            ViewKind::MenuActions => "menuActions",
+            ViewKind::MenuContent => "menuContent",
+            _ => "view",
+        };
         Ty::Fn(Rc::new(FnTy {
             params,
-            ret: Ty::View(Some("view")),
+            ret: Ty::View(Some(node)),
             is_async: false,
             generics: v.generics.len() as u32,
             ts: false,
@@ -2414,7 +2420,29 @@ impl<'o> Checker<'o> {
             info.members.push(locals);
         }
         self.out.views.insert(index, info);
-        self.body(&v.body);
+        match v.kind {
+            // The tag → action table a chosen row runs (`MenuActionTable`).
+            ViewKind::MenuActions => {
+                let action = Ty::Fn(Rc::new(FnTy {
+                    params: Vec::new(),
+                    ret: Ty::Unit,
+                    is_async: false,
+                    generics: 0,
+                    ts: false,
+                    throws: false,
+                    bounds: Vec::new(),
+                    shapes: Vec::new(),
+                }));
+                self.block(&v.body, Some(&Ty::Map(Box::new(action))));
+            }
+            // A menu's rows: builder lines, as a container's children.
+            ViewKind::MenuContent => {
+                self.push();
+                self.builder(&v.body.stmts);
+                self.pop();
+            }
+            _ => self.body(&v.body),
+        }
         self.frames.pop();
         self.pop();
         self.view = None;
@@ -2770,7 +2798,7 @@ impl<'o> Checker<'o> {
                     let ty = self.fn_signature(f);
                     self.declare(&f.name, ty, LocalKind::ModuleFn);
                 }
-                ItemKind::View(v) if v.kind == ViewKind::View => {
+                ItemKind::View(v) if v.kind == ViewKind::View || v.kind.is_menu() => {
                     let ty = self.view_type(v);
                     self.declare(&v.name, ty, LocalKind::View);
                 }

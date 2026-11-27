@@ -374,6 +374,19 @@ pub enum ViewKind {
     Screen,
     /// A route layout, through `layout()`.
     Layout,
+    /// `struct X: MenuActions` (2.0): what a menu's tagged rows do, through `actions()`. Its
+    /// `body` is the tag → action table; it runs only when a row is chosen.
+    MenuActions,
+    /// `struct X: MenuContent` (2.0): a menu's rows, through `menu()`, built only while it is open.
+    MenuContent,
+}
+
+impl ViewKind {
+    /// A menu's actions or content: a body run by the menu (`actions()`, `menu()`), with no memo
+    /// cache, and no fiber of its own.
+    pub fn is_menu(self) -> bool {
+        matches!(self, ViewKind::MenuActions | ViewKind::MenuContent)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

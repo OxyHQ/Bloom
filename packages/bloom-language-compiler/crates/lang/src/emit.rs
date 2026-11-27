@@ -151,6 +151,9 @@ struct ViewState {
     /// Each `@Observable` model the view holds → its subscription's version, which stands
     /// for the model where a cache depends on all of it (a member it calls).
     versions: HashMap<LocalId, String>,
+    /// A menu's actions or content (`actions()`, `menu()`): a body the menu runs, as the TS
+    /// wrote it, with no memo cache (the content's runs inside the component presenting it).
+    menu: bool,
 }
 
 struct Emitter<'a> {
@@ -5314,8 +5317,13 @@ impl<'a> Emitter<'a> {
                 mutated.insert(self.ck.locals[*local].span);
             }
         }
-        self.view =
-            Some(ViewState { slots: 0, reactive, setters: HashMap::default(), versions: HashMap::default() });
+        self.view = Some(ViewState {
+            slots: 0,
+            reactive,
+            setters: HashMap::default(),
+            versions: HashMap::default(),
+            menu: false,
+        });
         self.memo_group = None;
         self.hook_fn = Some(HookFn { depth: 0, mutated });
         let out = self.function(f, None);
@@ -5414,6 +5422,69 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// `struct X: MenuActions` / `struct X: MenuContent` (2.0), once its props and members are
+    /// in the buffer: `actions(function X(props) { …; return { tag: action } })` or
+    /// `menu(function X(props) { …; return rows })`, as the TS wrote them. The stored `let`s
+    /// are the props, a member may call a hook, and `body` is the result.
+    fn menu_decl(
+        &mut self,
+        item: &Item,
+        v: &ViewDecl,
+        props_decl: Frag,
+        props_name: &str,
+        no_props: bool,
+    ) -> Frag {
+        match v.kind {
+            ViewKind::MenuActions => self.stmts(&v.body.stmts, Tail::Return, None),
+            _ => {
+                let mut rows = Vec::new();
+                for stmt in &v.body.stmts {
+                    match &stmt.kind {
+                        StmtKind::Let(_) | StmtKind::Var(_) => self.stmt(stmt),
+                        _ => rows.extend(self.children(std::slice::from_ref(stmt))),
+                    }
+                }
+                let value = match rows.len() {
+                    1 if !rows[0].text.starts_with("...") => rows.pop().expect("one row"),
+                    _ => Frag::join(rows, ", ").wrap("[", "]"),
+                };
+                let mut line = Frag::of("return ");
+                line.f(value).s(";");
+                self.push_stmt(line);
+            }
+        }
+        let lines = self.bufs.pop().expect("the menu's body");
+        self.view = None;
+        let plain = if v.kind == ViewKind::MenuActions { "actions" } else { "menu" };
+        // `let actions = usePostActions(post)` beside it is the module's name too: renamed.
+        let wrapper = if self.names.contains(plain) { format!("${plain}") } else { plain.to_string() };
+        if wrapper == plain {
+            self.import_name(LANGUAGE, plain);
+        } else {
+            self.import_name(LANGUAGE, &format!("{plain} as {wrapper}"));
+        }
+        let mut body = Frag::default();
+        body.reserve_lines(&lines);
+        for line in lines {
+            body.f(line).s("\n");
+        }
+        let param = if no_props {
+            String::new()
+        } else {
+            format!("props: {props_name}{}", self.generics(&v.generics))
+        };
+        let generics = self.shaped_generics(&v.generics, v.span);
+        let export = if item.visibility.exported(self.options.modules) { "export " } else { "" };
+        let name = &v.name.name;
+        let mut out = props_decl;
+        out.mark(item.span)
+            .s(&format!("{export}const {name} = {wrapper}(function {name}{generics}({param}) {{\n"))
+            .f(body)
+            .s("});\n");
+        self.view_generics.clear();
+        out
+    }
+
     fn view_decl(&mut self, index: usize, item: &Item, v: &ViewDecl) -> Frag {
         let info = self.ck.views.get(&index).cloned().unwrap_or_default();
         let mut setters = HashMap::default();
@@ -5428,11 +5499,14 @@ impl<'a> Emitter<'a> {
         }
         // The props, and a name for their whole value (`..props: P`), are what a render reads.
         let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
-        self.view = Some(ViewState { slots: 0, reactive, setters, versions: HashMap::default() });
+        let menu = v.kind.is_menu();
+        self.view = Some(ViewState { slots: 0, reactive, setters, versions: HashMap::default(), menu });
         self.memo_group = None;
         self.bufs.push(Vec::new());
         // Props.
-        let export = if !item.visibility.exported(self.options.modules) || v.kind != ViewKind::View {
+        let export = if !item.visibility.exported(self.options.modules)
+            || matches!(v.kind, ViewKind::Screen | ViewKind::Layout)
+        {
             ""
         } else {
             "export "
@@ -5549,6 +5623,15 @@ impl<'a> Emitter<'a> {
             self.member(member, locals);
             self.subscribe(&observed, locals);
         }
+        if menu {
+            return self.menu_decl(
+                item,
+                v,
+                props_decl,
+                &props_name,
+                info.props.is_empty() && witness_props.is_empty(),
+            );
+        }
         // Tasks: one effect each, with an `AbortController`.
         let root = v
             .body
@@ -5625,6 +5708,7 @@ impl<'a> Emitter<'a> {
             ),
             ViewKind::Screen => ("screen", ROUTER, "export default ".to_string()),
             ViewKind::Layout => ("layout", ROUTER, "export default ".to_string()),
+            ViewKind::MenuActions | ViewKind::MenuContent => unreachable!("emitted by `menu_decl`"),
         };
         self.import_name(module, wrapper);
         let mut out = props_decl;
@@ -5856,7 +5940,8 @@ impl<'a> Emitter<'a> {
                 let deps = self.expr_deps(&l.value);
                 let hook = kind == Some(LocalKind::Hook) || self.ck.hook_lets.contains(&l.span);
                 let target = self.binding_target(&l.pattern);
-                if hook || trivial(&l.value) {
+                let menu = self.view.as_ref().is_some_and(|v| v.menu);
+                if hook || menu || trivial(&l.value) {
                     let value = self.expr(&l.value);
                     let annotation =
                         annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
@@ -5916,6 +6001,13 @@ impl<'a> Emitter<'a> {
                 }
                 let ty = self.ck.locals[local].ty.clone();
                 let ts = self.ts_type(&ty);
+                if self.view.as_ref().is_some_and(|v| v.menu) {
+                    let mut line = Frag::of(format!("const {name}: {ts} = "));
+                    line.f(function).s(";");
+                    self.push_stmt(line);
+                    self.view.as_mut().expect("a view").reactive.insert(local);
+                    return;
+                }
                 self.push_memo(name, Some(ts), &deps, Vec::new(), function);
                 if !deps.is_empty() {
                     self.view.as_mut().expect("a view").reactive.insert(local);
@@ -6078,6 +6170,15 @@ impl<'a> Emitter<'a> {
                     out.push_str(&format!("export default {};\n", v.name.name));
                 }
             }
+            ViewKind::MenuActions | ViewKind::MenuContent => {
+                let node =
+                    if v.kind == ViewKind::MenuActions { "MenuActionsView" } else { "MenuContentView" };
+                self.type_imports.entry(LANGUAGE.into()).or_default().insert(node.into());
+                out.push_str(&format!(
+                    "export declare const {}: {generics}({props}) => {node};\n",
+                    v.name.name
+                ));
+            }
             _ => {
                 let props_ty = if fn_ty.params.is_empty() { "{}".to_string() } else { props_name };
                 if v.surface.is_some() && self.named_screens {
@@ -6097,7 +6198,7 @@ impl<'a> Emitter<'a> {
         let mut uses_composed = false;
         for (index, item) in file.items.iter().enumerate() {
             if !item.visibility.exported(self.options.modules)
-                && !matches!(&item.kind, ItemKind::View(v) if v.kind != ViewKind::View)
+                && !matches!(&item.kind, ItemKind::View(v) if matches!(v.kind, ViewKind::Screen | ViewKind::Layout))
             {
                 continue;
             }

@@ -822,6 +822,15 @@ not read.
 A prop's default is written on it (`var isNested: Bool = false`, emitted `const { isNested =
 false } = props`, TS's own default); a member of a stored property's name (`let isNested =
 isNested ?? false`) declares it twice and is B0217.
+A menu's actions and content conform to `MenuActions` and `MenuContent`, as a view conforms to
+`View`. Their stored `let`s are the props, their members may call hooks, and `body` is the result.
+`struct PostMenuActions: MenuActions { let post: Post; let router = useRouter(); var body: [String:
+() -> Unit] { ["open": { router.push("/p/\\(post.id)") }] } }` is the embedded language's
+`actions(function PostMenuActions(props) { … })`: the tag → action table a chosen row runs, given
+as `Menu(…) { Item("Open").tag("open") }.actions(PostMenuActions(post: post))`. A `struct PostMenu:
+MenuContent` is `menu(function PostMenu(props) { … })`: its `body` is the rows (builder lines), built
+only while the menu is open, given as a `Menu`'s child. Neither has a memo cache or a fiber of its
+own, and neither takes a view's modifiers (B0501).
 A `struct X: Screen` (or `Layout`) is the file's default export only in a route, a file under the
 app's router folder (`app/`), as Expo Router takes it; anywhere else it is its named export, so a
 route that renders it imports it by name (`import { WelcomeScreen }`).
