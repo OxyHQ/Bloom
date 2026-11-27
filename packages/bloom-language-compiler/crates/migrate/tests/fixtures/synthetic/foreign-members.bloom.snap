@@ -1,0 +1,13 @@
+// JS members on a value Bloom types `Foreign` stay TS's own (`length`, `trim()`, `join`);
+// on a Bloom list they are Bloom's (`count`, `joined`).
+
+import { thing } from "./untyped"
+
+public func label() -> String {
+  let x = thing()
+  let s = x.name.trim()
+  let xs: [String] = ["a"]
+  "\(x.items.length) \(s) \(xs.count) \(xs.joined(",")) \(x.tags.join(","))"
+}
+
+public func Label() -> View { Text(label()) }
