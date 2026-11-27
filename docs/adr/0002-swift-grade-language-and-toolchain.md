@@ -511,13 +511,68 @@ A first session gave expo-video its default `surfaceView`, over 3 passes. It dre
 72.8% of them janky, where Bloom's `textureView` drew 257 and 84.0%. That comparison is not like
 for like: a SurfaceView composes outside the app's frames.
 
+**Image first load, second round.** The sessions below use the same keep-alive bench and
+rotated order.
+
+- **What was left was traced.** The server's log was aligned to the device clock through
+  reused connections.
+  - React Native's image client reads cookies through `ForwardingCookieHandler`, which loads
+    the WebView's `CookieManager` (Chromium) on first use. The first image calls waited
+    60-120 ms for it before connecting.
+  - 16 requests per host only split the bandwidth over more connections, which delayed every
+    photo of the screen.
+- **#1036 now:**
+  - the start-up thread loads the cookie store before OkHttp's call path;
+  - the clients keep OkHttp's default of 5 requests per host, which React Native apps
+    already run with.
+
+| Rotated passes | expo-image | Bloom + #1036 |
+|---|---|---|
+| 10 passes: first / median / 45th photo | 392 / 1,022 / 1,625 ms | **337 / 772 / 1,404 ms** |
+| 8 passes: first / median / 45th photo | 423 / 1,006 / 1,633 ms | **313 / 801 / 1,527 ms** |
+
+- **Per pass,** Bloom was equal or better in 11 of 18 passes at the first photo, 16 of 18
+  at the median and 15 of 18 at the 45th. The first photo is the closest.
+- **The steps, from the other sessions:**
+  - At 4 per host, the cookie warm-up moved the first photo from 543 to 427 ms (8 passes).
+  - 4 per host gave 543 / 957 / 1,619 ms in the 8-pass session above.
+  - 16 per host gave 465 / 882 / 1,688 ms, against expo-image's 261 / 891 / 1,422 in
+    that session.
+- **What still dominates the first photo is the network.** A new connection's response
+  reaches the app ~370 ms after the server wrote it, and on a reused connection ~15 ms.
+  Fresco over HttpURLConnection showed the same delay. It looks like the emulator's network,
+  so the first photo should be read again on a device.
+
+**Video first frame, second round.** Traced on the emulator, the main thread is free: all 8
+players are made and their views attached within 60 ms of the list's mount. The first frame
+comes when the first player reaches `readyToPlay` (1 s of buffer), and the 8 players share
+the network until then. Two changes were measured and neither closed the gap:
+
+- **Making the ExoPlayers off the main thread,** as expo-video does on the JS thread. Traced
+  twice, the first frames came at 1,082 and 803 ms, against 854 and 832 ms on the main thread.
+- **expo-video's data path:** media3's OkHttp data source over React Native's client, plus
+  asynchronous codec queueing. Six rotated passes:
+
+| | expo-video | Bloom (#1034) | Bloom, OkHttp data source |
+|---|---|---|---|
+| First video: ready / first frame | **575 / 640 ms** | 764 / 776 ms | 771 / 772 ms |
+| 8th video's first frame | 1,113 ms | 1,002 ms | **978 ms** |
+| Memory (PSS) with 8 players | 190 MB | **174 MB** | 192 MB |
+| Frames while scrolling: rendered / janky | 242 / 84.8% | 259 / 85.9% | **289 / 79.8%** |
+
+The OkHttp data source renders more frames but costs ~18 MB, and it does not move the first
+frame, so #1034 keeps the platform's HTTP data source. The first frame still trails
+expo-video's by ~135 ms.
+
 Next for these two:
 
-1. The first photo and the 45th against expo-image. 5 requests per host with the warm-up is
-   the first lead (#1036's handoff).
-2. `BloomVideo`'s first frame.
-3. Then Mention's `expo-image` call sites, and a Bloom build of Mention's videos tab over the
-   shim.
+1. Mention's `expo-image` call sites, now that the image bench is equal or better on all
+   three measures.
+2. `BloomVideo`'s first frame:
+   - trace expo-video's first player the same way, to see when its first bytes arrive;
+   - then order the first buffering of the players, so the first view's player buffers
+     ahead of the rest (media3's `PriorityTaskManager` and `ExoPlayer.setPriority`).
+3. Then a Bloom build of Mention's videos tab over the shim.
 
 ## Consequences
 
