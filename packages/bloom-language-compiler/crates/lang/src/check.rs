@@ -2965,7 +2965,7 @@ impl<'o> Checker<'o> {
             Ty::Set(elem) => *elem,
             Ty::Unknown => Ty::Unknown,
             // A TS iterable: its items are TS's too.
-            Ty::Foreign(text) => Ty::Foreign(format!("{text}[number]").into()),
+            Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[number]")),
             Ty::Var(_) => {
                 let elem = self.fresh();
                 self.unify(&ty, &Ty::List(Box::new(elem.clone())));
@@ -3462,7 +3462,7 @@ impl<'o> Checker<'o> {
                                 }
                             }
                         }
-                        Ty::Foreign(text) => Ty::Foreign(format!("{text}[\"{}\"]", name.name).into()),
+                        Ty::Foreign(text) => foreign_of(text, |t| format!("{t}[\"{}\"]", name.name)),
                         Ty::Unknown => Ty::Unknown,
                         _ => {
                             self.pattern_mismatch(pattern, "a struct", &resolved);
@@ -4522,7 +4522,7 @@ impl<'o> Checker<'o> {
                         let field = self.member(expr, &inner, name, object.span);
                         self.rechain(expr, field)
                     }
-                    Ty::Foreign(text) => Ty::Foreign(format!("{text}[\"{}\"]", name.name).into()),
+                    Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[\"{}\"]", name.name)),
                     Ty::Unknown => Ty::Unknown,
                     other => {
                         self.report(
@@ -4618,7 +4618,7 @@ impl<'o> Checker<'o> {
                     }
                     Ty::Foreign(text) => {
                         self.boundary(index, None);
-                        Ty::Foreign(format!("{text}[number]").into())
+                        foreign_of(&text, |t| format!("{t}[number]"))
                     }
                     Ty::Unknown => Ty::Unknown,
                     other => {
@@ -5565,7 +5565,7 @@ impl<'o> Checker<'o> {
             }
             Ty::Foreign(text) => {
                 self.out.awaits.insert(expr.id, AwaitRes::Ts);
-                Ty::Result(Box::new(Ty::Foreign(format!("Awaited<{text}>").into())), Box::new(Ty::JsError))
+                Ty::Result(Box::new(foreign_of(&text, |t| format!("Awaited<{t}>"))), Box::new(Ty::JsError))
             }
             Ty::Unknown => Ty::Unknown,
             other => {
@@ -6055,7 +6055,7 @@ impl<'o> Checker<'o> {
             }
             (Ty::Foreign(text), _) => {
                 self.out.fields.insert(expr.id, FieldRes::Field);
-                Ty::Foreign(format!("{text}[\"{}\"]", name.name).into())
+                foreign_of(text, |t| format!("{t}[\"{}\"]", name.name))
             }
             (Ty::Unknown, _) => Ty::Unknown,
             (Ty::Option(_), _) => {

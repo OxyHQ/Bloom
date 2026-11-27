@@ -91,6 +91,38 @@ fn emit_fixtures() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
+/// An untyped `Foreign` (TS's `unknown`) stays untyped through a call, a member and an index:
+/// `setOpen(none)` with `setOpen: Foreign` was `ReturnType<>` in the hook's inferred return type,
+/// which Babel refuses ("Type argument list cannot be empty"). Not a golden: tsc refuses any use
+/// of an `unknown`, which is why such a value is typed (`Foreign<"…">`) where TS checks it.
+#[test]
+fn an_untyped_foreign_stays_untyped() {
+    let source = r#"import { useCallback, useState } from "react"
+
+public func useModel() {
+  let (open, setOpen): (String?, Foreign) = useState(none)
+  let close = useCallback({ setOpen(none) }, [])
+  return { open: open, close: close }
+}
+
+public func useRead(_ value: Foreign) {
+  return { name: value.name, first: value[0] }
+}
+"#;
+    let output = compile(source, "emit/foreign_untyped.bloom", &options());
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let dts = output.dts.unwrap_or_default();
+    for code in [&output.code, &dts] {
+        assert!(!code.contains("<>") && !code.contains(": [\""), "{code}");
+    }
+    assert!(
+        output.code.contains("useModel(): { open: string | undefined; close: () => unknown }"),
+        "{}",
+        output.code
+    );
+    assert!(dts.contains("useRead(value: unknown): { name: unknown; first: unknown }"), "{dts}");
+}
+
 #[test]
 fn check_fixtures() {
     let mut failures = Vec::new();
