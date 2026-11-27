@@ -1,0 +1,8 @@
+import type { FeedPost } from "@/corpus";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface CardProps {
+  readonly post: FeedPost;
+  readonly name: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Card())`), or from TSX as `toElement(Card())`. */
+export declare const Card: (props: CardProps) => ComposedView;

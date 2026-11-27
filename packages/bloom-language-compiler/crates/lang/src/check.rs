@@ -6443,10 +6443,17 @@ impl<'o> Checker<'o> {
         // as one.
         if is_element(&ret_resolved)
             && let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last()
-            && let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
-            && matches!(self.resolve(&tail_ty), Ty::View(_))
         {
-            self.out.elements.insert(tail.id);
+            // `{ nested in (Row(post: nested)) }`: the view inside the parentheses.
+            let mut tail: &Expr = tail;
+            while let ExprKind::Paren(inner) = &tail.kind {
+                tail = inner;
+            }
+            if let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
+                && matches!(self.resolve(&tail_ty), Ty::View(_))
+            {
+                self.out.elements.insert(tail.id);
+            }
         }
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
