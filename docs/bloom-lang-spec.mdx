@@ -594,6 +594,11 @@ let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
 xs.map { p in p.title }                  // trailing closure
 ```
 
+A `let` or `var` may shadow a parameter, a view's prop or an outer local, as in Swift (`let
+isNested = isNested ?? false`): its initializer reads the outer one, and the new binding takes
+a JS name of its own (`isNested$1`), since JS has one scope for a function's parameters and body
+and `const x = x` reads the new `x` before it is set.
+
 A rest parameter `..xs: [T]` comes last, has no default, and takes any number of `T`s after
 the other positional arguments; in the body it is a `[T]`. A call spreads a list into a rest
 parameter (Bloom's or a TS function's `...args`) with `..`: `total(1, ..xs)`,

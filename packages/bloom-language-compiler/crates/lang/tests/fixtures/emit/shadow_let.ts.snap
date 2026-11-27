@@ -1,0 +1,45 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+export function f(x: number | undefined = undefined): number {
+const x$1 = x ?? 0;
+return x$1;
+}
+
+export function g(items: readonly number[], limit: number): readonly number[] {
+let limit$1 = limit;
+if (limit$1 > items.length) {
+limit$1 = items.length;
+}
+return items.map((item: number) => {
+const item$1 = item * 2;
+return item$1;
+}).slice(0, limit$1);
+}
+
+export function pair(point: (readonly [number, number]) | undefined): number {
+const point$1 = point ?? ([0, 0] as const);
+const [x, y] = point$1;
+return x + y;
+}
+
+export interface RowProps {
+  readonly isNested?: boolean | undefined;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(2);
+const { isNested = undefined } = props;
+let $t0;
+if ($[0] !== isNested) {
+const isNested$1 = isNested ?? false;
+$t0 = Text(isNested$1 ? "nested" : "top");
+$[0] = isNested;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
