@@ -13,6 +13,7 @@
     "./metro-transformer": "./js/metro-transformer.js",
     "./jest": "./js/jest.js",
     "./compile": "./js/compile.js",
+    "./eslint": "./js/eslint.js",
     "./package.json": "./package.json"
   },
   "bin": {
@@ -28,7 +29,7 @@
     "build:addon": "./scripts/build-addon.sh",
     "build:cli": "./scripts/build-cli.sh",
     "typescript": "tsc --noEmit -p .",
-    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs test/worker-exit.test.cjs test/import-cache.test.cjs test/cli.test.cjs && jest",
+    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs test/doc-links.test.cjs test/react-compiler.test.cjs test/worker-exit.test.cjs test/import-cache.test.cjs test/cli.test.cjs test/eslint.test.cjs && jest",
     "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
@@ -53,7 +54,9 @@
     "@napi-rs/wasm-runtime": "1.2.7",
     "babel-jest": "30.5.2",
     "babel-plugin-react-compiler": "1.0.0",
-    "emnapi": "2.0.0-beta.3"
+    "emnapi": "2.0.0-beta.3",
+    "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "7.1.1"
   },
   "napi": {
     "binaryName": "bloom-language-compiler",
