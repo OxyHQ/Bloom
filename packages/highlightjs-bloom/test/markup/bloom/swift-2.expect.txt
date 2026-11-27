@@ -18,6 +18,6 @@
 }
 
 <span class="hljs-keyword">func</span> <span class="hljs-title function_">firstIndex</span><span class="hljs-operator">&lt;</span><span class="hljs-type">T</span>: <span class="hljs-type">Equatable</span> <span class="hljs-operator">&amp;</span> <span class="hljs-type">Hashable</span><span class="hljs-operator">&gt;</span>(_ xs: [<span class="hljs-type">T</span>], of x: <span class="hljs-type">T</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span><span class="hljs-operator">?</span> {
-  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span><span class="hljs-operator">..&lt;</span>xs.count <span class="hljs-keyword">where</span> xs[i] <span class="hljs-operator">==</span> x { <span class="hljs-keyword">return</span> i }
+  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span><span class="hljs-operator">..&lt;</span>xs.count { <span class="hljs-keyword">if</span> xs[i] <span class="hljs-operator">==</span> x { <span class="hljs-keyword">return</span> i } }
   <span class="hljs-keyword">return</span> <span class="hljs-literal">none</span>
 }

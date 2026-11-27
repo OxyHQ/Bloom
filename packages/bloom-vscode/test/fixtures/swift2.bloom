@@ -68,7 +68,7 @@ func firstIndex<T: Equatable & Hashable>(_ xs: [T], of x: T) -> Int? where T: Se
 //                                                  ^^ entity.name.label.bloom
 //                                                     ^ variable.parameter.bloom
 //                                                                   ^^^^^ keyword.control.bloom
-  for i in 0..<xs.count where xs[i] == x { return i }
+  for i in 0..<xs.count { if xs[i] == x { return i } }
 //          ^^^ keyword.operator.range.bloom
   for i in 1...3 { log(i) }
 //          ^^^ keyword.operator.range.bloom

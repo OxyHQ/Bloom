@@ -1,19 +1,21 @@
-<span class="hljs-keyword">switch</span> load {
-<span class="hljs-keyword">case</span> <span class="hljs-symbol">.loading</span>:
-  <span class="hljs-type">ProgressView</span>()
-<span class="hljs-keyword">case</span> <span class="hljs-keyword">let</span> <span class="hljs-symbol">.failed</span>(message):
-  <span class="hljs-type">Text</span>(message)
-<span class="hljs-keyword">default</span>:
-  <span class="hljs-keyword">break</span>
-}
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">render</span>(load: <span class="hljs-type">Load</span>, raw: <span class="hljs-type">String</span>) <span class="hljs-keyword">throws</span> {
+  <span class="hljs-keyword">switch</span> load {
+  <span class="hljs-keyword">case</span> <span class="hljs-symbol">.loading</span>:
+    <span class="hljs-type">ProgressView</span>()
+  <span class="hljs-keyword">case</span> <span class="hljs-keyword">let</span> <span class="hljs-symbol">.failed</span>(message):
+    <span class="hljs-type">Text</span>(message)
+  <span class="hljs-keyword">default</span>:
+    <span class="hljs-keyword">break</span>
+  }
 
-<span class="hljs-keyword">do</span> {
-  <span class="hljs-keyword">let</span> ok <span class="hljs-operator">=</span> <span class="hljs-keyword">try</span> <span class="hljs-title function_ invoke__">check</span>(code: code)
-} <span class="hljs-keyword">catch</span> <span class="hljs-keyword">let</span> error <span class="hljs-keyword">as</span> <span class="hljs-type">APIError</span> {
-  <span class="hljs-keyword">throw</span> error
+  <span class="hljs-keyword">do</span> {
+    <span class="hljs-keyword">let</span> ok <span class="hljs-operator">=</span> <span class="hljs-keyword">try</span> <span class="hljs-title function_ invoke__">check</span>(code: code)
+  } <span class="hljs-keyword">catch</span> <span class="hljs-keyword">let</span> error <span class="hljs-keyword">as</span> <span class="hljs-type">APIError</span> {
+    <span class="hljs-keyword">throw</span> error
+  }
+  <span class="hljs-keyword">let</span> value <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-title function_ invoke__">check</span>(code: <span class="hljs-number">1</span>)
+  <span class="hljs-keyword">let</span> tab <span class="hljs-operator">=</span> raw <span class="hljs-keyword">as!</span> <span class="hljs-type">Tab</span>
 }
-<span class="hljs-keyword">let</span> value <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-title function_ invoke__">check</span>(code: <span class="hljs-number">1</span>)
-<span class="hljs-keyword">let</span> tab <span class="hljs-operator">=</span> raw <span class="hljs-keyword">as!</span> <span class="hljs-type">Tab</span>
 
 <span class="hljs-keyword">extern</span> <span class="hljs-keyword">module</span> <span class="hljs-string">&quot;./runtime&quot;</span> {
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">sleepMs</span>(_ ms: <span class="hljs-type">Double</span>) <span class="hljs-keyword">async</span> <span class="hljs-keyword">throws</span>

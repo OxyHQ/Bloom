@@ -1,19 +1,21 @@
-switch load {
-case .loading:
-  ProgressView()
-case let .failed(message):
-  Text(message)
-default:
-  break
-}
+func render(load: Load, raw: String) throws {
+  switch load {
+  case .loading:
+    ProgressView()
+  case let .failed(message):
+    Text(message)
+  default:
+    break
+  }
 
-do {
-  let ok = try check(code: code)
-} catch let error as APIError {
-  throw error
+  do {
+    let ok = try check(code: code)
+  } catch let error as APIError {
+    throw error
+  }
+  let value = try? check(code: 1)
+  let tab = raw as! Tab
 }
-let value = try? check(code: 1)
-let tab = raw as! Tab
 
 extern module "./runtime" {
   private func sleepMs(_ ms: Double) async throws
@@ -25,6 +27,58 @@ test("a like counts once") {
 
 ----------------------------------------------------
 [
+	[
+		"keyword",
+		"func"
+	],
+	[
+		"function-definition",
+		"render"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"argument-label",
+		"load"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Load"
+	],
+	[
+		"punctuation",
+		","
+	],
+	[
+		"argument-label",
+		"raw"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"String"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"throws"
+	],
+	[
+		"punctuation",
+		"{"
+	],
 	[
 		"keyword",
 		"switch"
@@ -183,7 +237,7 @@ test("a like counts once") {
 		"keyword",
 		"throw"
 	],
-	" error\n",
+	" error\n  ",
 	[
 		"punctuation",
 		"}"
@@ -242,6 +296,10 @@ test("a like counts once") {
 	[
 		"class-name-reference",
 		"Tab"
+	],
+	[
+		"punctuation",
+		"}"
 	],
 	[
 		"keyword",

@@ -18,6 +18,6 @@ public struct PostRow: View {
 }
 
 func firstIndex<T: Equatable & Hashable>(_ xs: [T], of x: T) -> Int? {
-  for i in 0..<xs.count where xs[i] == x { return i }
+  for i in 0..<xs.count { if xs[i] == x { return i } }
   return none
 }
