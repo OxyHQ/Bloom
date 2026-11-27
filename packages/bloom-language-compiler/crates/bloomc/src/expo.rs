@@ -14,7 +14,7 @@ use bloom_lang::package::{Platform, TargetKind};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
 /// The Bloom release this toolchain builds against (`bloom new` writes it).
-pub const BLOOM_VERSION: &str = "23.10.0";
+pub const BLOOM_VERSION: &str = "23.10.1";
 
 /// The runtime under a Bloom app, pinned as Bloom's own repository pins it
 /// (a test keeps this table equal to Bloom's `package.json` files).
