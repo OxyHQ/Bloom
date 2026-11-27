@@ -1,0 +1,27 @@
+// `Array.from({ length })` as a range: with an index callback, with none, mapped after,
+// and a `number` bound (truncated, as `Array.from` truncates it). A set added to and
+// assigned back is `inserting`.
+
+public struct Dots: View {
+  let count: Float
+  @State private var seen = Set<String>()
+  let rows = (0..<count.truncated()).map { index in Text("Row \(index)").id(index) }
+  let blanks = (0..<3).map { i in Text("Blank \(i)").id(i) }
+  let slots = (0..<4)
+  func mark(_ id: String) {
+    var next = seen
+    next = next.inserting(id)
+    seen = next
+  }
+
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    VStack {
+      for v in rows { v }
+      for v in blanks { v }
+      Text("\(slots.count) slots")
+      Button("Mark").onPress { mark("a") }
+    }
+  }
+}
