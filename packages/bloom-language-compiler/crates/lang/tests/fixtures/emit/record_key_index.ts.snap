@@ -1,0 +1,7 @@
+
+export function dot(size: "small" | "medium" | "large", tab: "rate" | "notes"): string {
+const SIZES = { small: "8", medium: "10", large: "12" };
+const title = ({ rate: "Rate", notes: "Notes" })[tab];
+return `${SIZES[size]} ${title}`;
+}
+

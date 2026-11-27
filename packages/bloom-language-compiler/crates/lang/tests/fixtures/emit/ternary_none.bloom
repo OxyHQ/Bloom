@@ -16,3 +16,16 @@ public struct Badge: View {
     }
   }
 }
+
+// A chain of three ending in `none`, and list items of `c ? x : none` beside `String`s.
+public func salary(a: Int?, b: Int?) -> String {
+  let amount = a != none && b != none ? "\(a)–\(b)" : a != none ? "\(a)+" : b != none ? "Up to \(b)" : none
+  amount ?? ""
+}
+
+func place(_ s: String) -> String { s.uppercased() }
+
+public func parts(location: String?, title: String) -> [String] {
+  let items = [location != none ? place(location) : none, title]
+  items.compactMap { $0 }
+}

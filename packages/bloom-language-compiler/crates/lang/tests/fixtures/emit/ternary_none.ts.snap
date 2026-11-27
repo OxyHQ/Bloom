@@ -1,6 +1,9 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
 import { Text, VStack, view } from "@oxy.so/bloom-language";
+function $compact<T>(items: readonly (T | undefined)[]): readonly T[] {
+  return items.filter((item): item is T => item !== undefined);
+}
 
 export interface BadgeProps {
   readonly c: boolean;
@@ -27,4 +30,18 @@ $t0 = $[3];
 }
 return $t0;
 });
+
+export function salary(a: number | undefined, b: number | undefined): string {
+const amount = ((a !== undefined) && (b !== undefined)) ? `${a}–${b}` : ((a !== undefined) ? `${a}+` : ((b !== undefined) ? `Up to ${b}` : undefined));
+return amount ?? "";
+}
+
+function place(s: string): string {
+return s.toUpperCase();
+}
+
+export function parts(location: string | undefined, title: string): readonly string[] {
+const items = [(location !== undefined) ? place(location) : undefined, title];
+return $compact(items.map(($0: string | undefined) => $0));
+}
 

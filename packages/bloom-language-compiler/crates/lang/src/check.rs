@@ -4050,6 +4050,19 @@ impl<'o> Checker<'o> {
             },
             ExprKind::Binary(op, lhs, rhs) => self.binary(expr, *op, lhs, rhs, expected_resolved.as_ref()),
             ExprKind::Ternary(cond, then, otherwise) => {
+                // An item of a list literal (an open type): a chain that ends in `none` is the
+                // optional of its branches, so they are not held to the first one's type.
+                let open = expected.filter(|e| {
+                    matches!(self.resolve(e), Ty::Var(_)) && (ends_in_none(then) || ends_in_none(otherwise))
+                });
+                if let Some(var) = open {
+                    let var = var.clone();
+                    let joined = self.infer(expr, None);
+                    if !self.coerce(&joined, &var) {
+                        self.mismatch(expr.span, &joined, &var);
+                    }
+                    return joined;
+                }
                 self.expr(cond, Some(&Ty::Bool));
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
@@ -4066,11 +4079,16 @@ impl<'o> Checker<'o> {
                 // An `Int` branch does not hold a `Float` one to `Int` (`c ? 0 : 0.5` is `Float`).
                 let int = Ty::Int == self.resolve(&a);
                 let else_lit = expected.is_none().then(|| string_literal(otherwise)).flatten();
+                // `c ? x : d ? y : none` (R3): the rest of the chain ends in `none`, so it is held
+                // to `x`'s optional, not to `x`'s type.
+                let optional_a =
+                    (expected.is_none() && ends_in_none(otherwise)).then(|| Ty::Option(Box::new(a.clone())));
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
                     ExprKind::None => expected,
                     _ if int => expected,
+                    _ if optional_a.is_some() => optional_a.as_ref(),
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
                 self.push();
@@ -4162,8 +4180,53 @@ impl<'o> Checker<'o> {
                             other => (other.clone(), false),
                         };
                         let value = self.fresh();
-                        let key = Ty::KeyPath(Box::new(base), Box::new(value.clone()));
-                        self.expr(index, Some(&key));
+                        let key = Ty::KeyPath(Box::new(base.clone()), Box::new(value.clone()));
+                        match &index.kind {
+                            ExprKind::KeyPath { .. } => {
+                                self.expr(index, Some(&key));
+                            }
+                            // `SIZES[size]` with `size: "small" | "large"`, TS's `T[K]`: the
+                            // fields those keys name, joined.
+                            _ => {
+                                let given = self.expr(index, None);
+                                match self.resolve(&given) {
+                                    Ty::Strings(set) if !set.values.is_empty() => {
+                                        let fields = match &base {
+                                            Ty::Adt(def, args) => self.out.defs[*def]
+                                                .fields()
+                                                .iter()
+                                                .map(|f| (f.name.clone(), substitute(&f.ty, args)))
+                                                .collect::<Vec<_>>(),
+                                            _ => Vec::new(),
+                                        };
+                                        let mut joined: Option<Ty> = None;
+                                        for key_name in &set.values {
+                                            match fields.iter().find(|(n, _)| n == key_name) {
+                                                Some((_, ty)) => {
+                                                    joined = Some(match joined {
+                                                        Some(j) => self.join(&j, ty, expr.span),
+                                                        None => ty.clone(),
+                                                    });
+                                                }
+                                                None => {
+                                                    let name =
+                                                        Ident { name: key_name.clone(), span: index.span };
+                                                    self.unknown_field(&name, &base);
+                                                }
+                                            }
+                                        }
+                                        if let Some(joined) = joined {
+                                            self.unify(&value, &joined);
+                                        }
+                                    }
+                                    other => {
+                                        if !self.coerce(&other, &key) {
+                                            self.mismatch(index.span, &other, &key);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         let value = self.resolve(&value);
                         match value {
                             Ty::Option(_) => value,
@@ -6187,6 +6250,16 @@ fn exits(stmt: &Stmt) -> bool {
             ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
             _ => false,
         },
+        _ => false,
+    }
+}
+
+/// Whether a conditional chain gives `none` in one of its branches (`d ? y : none`).
+fn ends_in_none(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::None => true,
+        ExprKind::Paren(inner) => ends_in_none(inner),
+        ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
         _ => false,
     }
 }

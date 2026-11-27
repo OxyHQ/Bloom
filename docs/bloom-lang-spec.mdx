@@ -248,7 +248,8 @@ is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditi
 Branches that end in `none` join to the optional of the others, nested or not, as TS's
 `string | null`: `c ? "x" : d ? "y" : none` is `("x" | "y")?`, `c ? 1 : d ? 2.5 : none` is
 `Float?`, `c ? none : d ? n + 1 : n` is `Int?`; the branches besides `none` still share one
-type (`c ? "x" : d ? 1 : none` is B0201). A literal's optional falls back to any string
+type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)" : b ?
+"\(y)" : none`), and so does a list item (`[c ? f(x) : none, title]` is a `[String?]`). A literal's optional falls back to any string
 (`label ?? ""` is a `String`), as TS's `"x" | ""`.
 
 ### 4.3 Soundness rules
@@ -400,6 +401,10 @@ one type whichever name reaches it. An unannotated `const` of plain data (`expor
 `const MAX = 4`); any other stays `Foreign`. The optional of a TS type Bloom does not map
 (`T | undefined`, `x?: T`, a member read through `?.`, `server?.robots`) is `Foreign`, not
 `Foreign?`, as its parts are TS's to check; so is `x ?? foreign`.
+
+A record indexed by a union of its keys is the fields they name, joined, as TS's `T[K]`
+(`let SIZES = { small: "8", large: "12" }` then `SIZES[size]` with `size: "small" | "large"`
+is a `String`; `{ rate: "Rate", notes: "Notes" }[tab]` too); a key it does not have is B0205.
 
 A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
 is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it

@@ -1,0 +1,5 @@
+// A key the record does not have is B0205.
+public func dot(_ size: "small" | "huge") -> String {
+  let SIZES = { small: "8" }
+  SIZES[size]
+}
