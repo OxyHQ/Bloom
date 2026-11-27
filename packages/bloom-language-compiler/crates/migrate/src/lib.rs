@@ -263,10 +263,10 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     Migration { status, bloom: Some(bloom), reasons: Vec::new(), reviews, dts: compiled.dts, default_export }
 }
 
-/// A default-exported view or function (`pub default view X`) as a named one: 2.0 has no
+/// A default-exported view or function (`pub default view X`, or a closure `let`) as a named one: 2.0 has no
 /// default exports but a route's screen or layout. Returns its name.
 fn named_default(text: &mut String) -> Option<String> {
-    for kind in ["view ", "fn "] {
+    for kind in ["view ", "fn ", "let "] {
         let marker = format!("pub default {kind}");
         let Some(at) = text.find(&marker) else { continue };
         let at_line = at == 0 || text.as_bytes()[at - 1] == b'\n';
