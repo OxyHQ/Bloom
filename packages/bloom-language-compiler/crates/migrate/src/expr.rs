@@ -427,6 +427,11 @@ impl Tr<'_> {
                 span,
             );
         }
+        // JS's `Infinity` and `NaN` are the stdlib's `Double.infinity` and `Double.nan` (2.0 has no
+        // "js" import in app code).
+        if matches!(name, "Infinity" | "NaN") && !self.imported.contains(name) && !self.scope.decl.contains_key(name) {
+            return if name == "NaN" { "Double.nan" } else { "Double.infinity" }.to_string();
+        }
         // A prop named like a JS global (`location`) is the prop.
         if GLOBALS.contains(&name) && !self.imported.contains(name) && !self.scope.decl.contains_key(name) {
             if matches!(name, "Map" | "Set") {
