@@ -1644,7 +1644,8 @@ impl<'a> Emitter<'a> {
                 // The place's segments from its root: fields, and elements (each index once).
                 enum Seg {
                     Field(String),
-                    Index(String),
+                    /// An element: its index (or key), and whether it is a dictionary's.
+                    Index(String, bool),
                 }
                 let mut parts = Vec::new();
                 let mut target = &a.target;
@@ -1665,7 +1666,9 @@ impl<'a> Emitter<'a> {
                 let segs: Vec<Seg> = parts
                     .into_iter()
                     .map(|(index, field)| match (index, field) {
-                        (Some(index), _) => Seg::Index(self.path_or_temp(index)),
+                        (Some(index), _) => {
+                            Seg::Index(self.path_or_temp(index), self.ck.map_writes.contains(&index.id))
+                        }
                         (_, Some(field)) => Seg::Field(field),
                         _ => unreachable!(),
                     })
@@ -1674,7 +1677,7 @@ impl<'a> Emitter<'a> {
                 let path = |base: &str, seg: &Seg| match seg {
                     Seg::Field(f) => member_path(base, f),
                     // The element is there (Swift traps when it is not): TS reads it non-null.
-                    Seg::Index(i) => format!("{base}[{i}]!"),
+                    Seg::Index(i, _) => format!("{base}[{i}]!"),
                 };
                 let mut current = root.clone();
                 for seg in &segs {
@@ -1700,7 +1703,12 @@ impl<'a> Emitter<'a> {
                             out.f(built).s(" }");
                             out
                         }
-                        Seg::Index(i) => {
+                        Seg::Index(i, true) => {
+                            let mut out = Frag::of(format!("{{ ...{at}, [{i}]: "));
+                            out.f(built).s(" }");
+                            out
+                        }
+                        Seg::Index(i, false) => {
                             self.helpers.insert("at");
                             let mut out = Frag::of(format!("$at({at}, {i}, "));
                             out.f(built).s(")");

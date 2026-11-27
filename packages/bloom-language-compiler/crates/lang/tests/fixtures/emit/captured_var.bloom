@@ -1,0 +1,36 @@
+// A closure may capture, read and write a function's own `var`, as Swift's does (lang-mention-9's
+// captured-table, PostMenu's `postMenuRows`): JS's closure keeps the `let` binding, so the
+// function reads every write after the closure ran. A write is a new value (`$at`), as any `var`
+// write is: values stay values.
+public struct Tagged {
+  let tags: [String]
+  let actions: [String: () -> Unit]
+}
+
+public func tagged(_ tags: [String], run: (String) -> Unit) -> Tagged {
+  var handlers: [String: () -> Unit] = [:]
+  let add = { tag: String in
+    handlers[tag] = { run(tag) }
+    return tag
+  }
+  let rows = tags.map { t in add(t) }
+  return { tags: rows, actions: handlers }
+}
+
+public func total(_ tags: [String]) -> Int {
+  var count = 0
+  let _ = tags.map { t in count += t.count }
+  return count
+}
+
+// A handler's own `var` too: it is the handler's, made again on each call.
+public struct Counter: View {
+  let tags: [String]
+  let onCount: (Int) -> Unit
+  func tap() {
+    var seen = 0
+    let _ = tags.map { t in seen += 1 }
+    onCount(seen)
+  }
+  var body: some View { Button(Text("Count")).onPress { tap() } }
+}

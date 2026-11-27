@@ -1,0 +1,15 @@
+/// A closure that records into a table it captured (PostMenu's `postMenuRows`).
+public struct Tagged {
+  let tags: [String]
+  let actions: [String: () -> Unit]
+}
+
+public func tagged(_ tags: [String], run: (String) -> Unit) -> Tagged {
+  var handlers: [String: () -> Unit] = [:]
+  let add = { tag: String in
+    handlers[tag] = { run(tag) }
+    return "row:\(tag)"
+  }
+  let rows = tags.map { t in add(t) }
+  return { tags: rows, actions: handlers }
+}

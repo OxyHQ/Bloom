@@ -259,8 +259,12 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
 - No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
   `.floor()`, `.ceil()` or `.truncated()` (B0201). `Int` → `Float` widens implicitly (4.2).
 - Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
-- Values are immutable. `var` exists only as a function-local; it cannot be captured by a
-  closure (B0402), so no closure observes a mutation.
+- Values are immutable. `var` exists only as a local. A closure may capture, read and write a
+  function's (or a closure's, a handler's) own `var`, as Swift's does: `handlers[tag] = run` in a
+  closure is seen by the function once it ran, and each write is a new value (a `var` holding
+  another name's list or dictionary never changes it). A `var` of a view's render or of a hook
+  function is not capturable (B0402): their closures are cached across renders, and would keep a
+  stale binding.
 - Equality `==` is defined on `Int`, `Float`, `Bool`, `String`, fieldless enums and `none`
   checks; on structs and payload enums it is structural and compiled to a field comparison
   (phase 1; phase 0 rejects it with B0210). `x == none` / `x != none` tests presence on any
@@ -599,7 +603,7 @@ A class declared in another file of the module is imported with its `init` (`Box
 
 ```bloom
 let x = 1                  // immutable
-var total = 0              // function-local, mutable, not capturable
+var total = 0              // local, mutable; a closure of its function may write it
 fn double(x: Int) -> Int { x * 2 }       // the last expression is the result
 async fn load(id: String) -> Result<Post, String> { … }
 let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
