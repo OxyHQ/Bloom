@@ -8,16 +8,16 @@ export interface BadgeProps {
 }
 export const Badge = view(function Badge(props: BadgeProps) {
 "use no memo";
-const $ = $c(7);
+const $ = $c(5);
 const { title, detail } = props;
 let $t0;
-if ($[4] !== title || $[5] !== detail) {
-$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title).font("headline").foreground("primary")) : $[1]), ($[2] !== detail ? ($[2] = detail, $[3] = Text(detail).font("caption-1").foreground("muted/10")) : $[3])).spacing("2xl").padding("md");
-$[4] = title;
-$[5] = detail;
-$[6] = $t0;
+if ($[2] !== title || $[3] !== detail) {
+$t0 = VStack(Text(title).font("headline").foreground("primary"), ($[0] !== detail ? ($[0] = detail, $[1] = Text(detail).font("caption-1").foreground("muted/10")) : $[1])).spacing("2xl").padding("md");
+$[2] = title;
+$[3] = detail;
+$[4] = $t0;
 } else {
-$t0 = $[6];
+$t0 = $[4];
 }
 return $t0;
 });

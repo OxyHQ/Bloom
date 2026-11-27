@@ -116,6 +116,24 @@ enum Tail {
     Bind(String),
 }
 
+/// A run of member `let`s (and `fn`s) cached on the same dependencies: one test, one
+/// branch, each value in its own slot. `index`: its statement in the buffer at `depth`.
+struct MemoGroup {
+    deps: Vec<String>,
+    base: usize,
+    entries: Vec<MemoEntry>,
+    depth: usize,
+    index: usize,
+}
+
+struct MemoEntry {
+    name: String,
+    ty: Option<String>,
+    prelude: Vec<Frag>,
+    value: Frag,
+    slot: usize,
+}
+
 struct ViewState {
     slots: usize,
     /// Members whose value can change between renders.
@@ -176,6 +194,8 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// The last member cache pushed, which the next one on the same dependencies joins.
+    memo_group: Option<MemoGroup>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -233,6 +253,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         names,
         enumerated: false,
         range_index: false,
+        memo_group: None,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -4206,6 +4227,48 @@ fn covers(outer: &str, inner: &str) -> bool {
         || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
 }
 
+/// A member cache group: its declarations, then one test of its dependencies.
+fn render_memo(group: &MemoGroup) -> Frag {
+    let first = group.entries[0].slot;
+    let cond = if group.deps.is_empty() {
+        format!("$[{first}] === Symbol.for(\"react.memo_cache_sentinel\")")
+    } else {
+        group
+            .deps
+            .iter()
+            .enumerate()
+            .map(|(i, d)| format!("$[{}] !== {d}", group.base + i))
+            .collect::<Vec<_>>()
+            .join(" || ")
+    };
+    let mut out = Frag::default();
+    for entry in &group.entries {
+        out.s(&match &entry.ty {
+            Some(ty) => format!("let {}: {ty};\n", entry.name),
+            None => format!("let {};\n", entry.name),
+        });
+    }
+    out.s(&format!("if ({cond}) {{\n"));
+    for entry in &group.entries {
+        for line in &entry.prelude {
+            out.f(line.clone()).s("\n");
+        }
+        out.s(&format!("{} = ", entry.name)).f(entry.value.clone()).s(";\n");
+    }
+    for (i, d) in group.deps.iter().enumerate() {
+        out.s(&format!("$[{}] = {d};\n", group.base + i));
+    }
+    for entry in &group.entries {
+        out.s(&format!("$[{}] = {};\n", entry.slot, entry.name));
+    }
+    out.s("} else {\n");
+    for entry in &group.entries {
+        out.s(&format!("{} = $[{}];\n", entry.name, entry.slot));
+    }
+    out.s("}");
+    out
+}
+
 /// `a..<b` or `a...b` (in parentheses or not): its bounds, and whether it is closed.
 fn range_of(expr: &Expr) -> Option<(&Expr, &Expr, bool)> {
     match &expr.kind {
@@ -4565,7 +4628,9 @@ impl<'a> Emitter<'a> {
         let narrower = !deps.is_empty()
             && deps.iter().all(|d| parent.iter().any(|p| covers(p, d)))
             && !(deps.len() == parent.len() && deps.iter().all(|d| parent.contains(d)));
-        if !narrower {
+        // A leaf (a node and its modifiers, no child view) that reads its one dependency once
+        // costs about what its test does: built with its parent, it takes no slots.
+        if !narrower || (deps.len() == 1 && self.leaf_node(expr) && self.reactive_reads(expr) == 1) {
             return self.child(expr);
         }
         self.scope = Some(deps.clone());
@@ -4586,6 +4651,58 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::of(format!("({cond} ? ({stores}$[{slot}] = "));
         out.f(value).s(&format!(") : $[{slot}])"));
         out
+    }
+
+    /// A node and its modifiers with no view among their arguments, no builder and no closure.
+    fn leaf_node(&self, expr: &Expr) -> bool {
+        let ExprKind::Call(call) = &expr.kind else { return false };
+        // Its arguments are cheap to compute again: reads, literals and operators, no call.
+        let plain = call.trailing.is_none()
+            && call.args.iter().all(|a| {
+                let mut cheap = !matches!(self.ck.types.get(&a.value.id), Some(Ty::View(_)));
+                crate::analysis::walk_expr(&a.value, &mut |node| {
+                    let crate::analysis::Node::Expr(e) = node else { return };
+                    // A computed property (an extension's, a witness's) is a call too.
+                    let computed = matches!(e.kind, ExprKind::Field(..) | ExprKind::OptField(..))
+                        && !matches!(
+                            self.ck.fields.get(&e.id),
+                            None | Some(
+                                FieldRes::Field
+                                    | FieldRes::Index(_)
+                                    | FieldRes::EnumCase(..)
+                                    | FieldRes::Prop { .. }
+                            )
+                        );
+                    if computed
+                        || matches!(e.kind, ExprKind::Call(_) | ExprKind::Closure(_) | ExprKind::Await(_))
+                    {
+                        cheap = false;
+                    }
+                });
+                cheap
+            });
+        match self.ck.calls.get(&expr.id) {
+            Some(CallRes::Node(_)) => plain,
+            Some(CallRes::Modifier { .. }) => match &call.callee.kind {
+                ExprKind::Field(receiver, _) => plain && self.leaf_node(receiver),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// How many times `expr` reads a value that can change between renders.
+    fn reactive_reads(&self, expr: &Expr) -> usize {
+        let Some(view) = self.view.as_ref() else { return 0 };
+        let mut count = 0;
+        crate::check::walk_names(expr, &mut |_, id| {
+            if let Some(NameRes::Local(local)) = self.ck.names.get(&id)
+                && view.reactive.contains(local)
+            {
+                count += 1;
+            }
+        });
+        count
     }
 
     /// The expressions of `item` that are the same value on every evaluation:
@@ -4733,6 +4850,49 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// A member's cache: `name` computed by `prelude; value`, again only when a dependency
+    /// changed. Right after another on the same dependencies, it joins that one's test (three
+    /// `t(…)` strings keyed on `t` are one `if`, not three).
+    fn push_memo(
+        &mut self,
+        name: String,
+        ty: Option<String>,
+        deps: &[String],
+        prelude: Vec<Frag>,
+        value: Frag,
+    ) {
+        let depth = self.bufs.len();
+        let len = self.bufs.last().map_or(0, Vec::len);
+        let joins = self.memo_group.as_ref().is_some_and(|g| {
+            g.deps == deps
+                && g.depth == depth
+                && g.index + 1 == len
+                && self.bufs.last().and_then(|b| b.last()).map(|f| &f.text) == Some(&render_memo(g).text)
+        });
+        let view = self.view.as_mut().expect("a view");
+        if joins {
+            let slot = view.slots;
+            view.slots += 1;
+            let group = self.memo_group.as_mut().expect("joins");
+            group.entries.push(MemoEntry { name, ty, prelude, value, slot });
+            let rendered = render_memo(group);
+            let index = group.index;
+            self.bufs.last_mut().expect("a buffer")[index] = rendered;
+            return;
+        }
+        let base = view.slots;
+        view.slots += deps.len() + 1;
+        let group = MemoGroup {
+            deps: deps.to_vec(),
+            base,
+            entries: vec![MemoEntry { name, ty, prelude, value, slot: base + deps.len() }],
+            depth,
+            index: len,
+        };
+        self.push_stmt(render_memo(&group));
+        self.memo_group = Some(group);
+    }
+
     /// `name` computed by `prelude; value`, again only when a dependency changed.
     fn memo(
         &mut self,
@@ -4788,6 +4948,7 @@ impl<'a> Emitter<'a> {
         // The props, and a name for their whole value (`..props: P`), are what a render reads.
         let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
         self.view = Some(ViewState { slots: 0, reactive, setters, versions: HashMap::default() });
+        self.memo_group = None;
         self.bufs.push(Vec::new());
         // Props.
         let export = if !item.visibility.exported(self.options.modules) || v.kind != ViewKind::View {
@@ -5236,8 +5397,7 @@ impl<'a> Emitter<'a> {
                     .map(|l| self.ck.locals[*l].ty.clone())
                     .or(annotation);
                 let ty = ty.map(|t| self.ts_type(&t));
-                let memo = self.memo(&name, ty, &deps, prelude, value);
-                self.push_stmt(memo);
+                self.push_memo(name.clone(), ty, &deps, prelude, value);
                 if destructure && l.pattern.kind != PatternKind::Wildcard {
                     self.push_stmt(Frag::of(format!("const {target} = {name};")));
                 }
@@ -5267,8 +5427,7 @@ impl<'a> Emitter<'a> {
                 }
                 let ty = self.ck.locals[local].ty.clone();
                 let ts = self.ts_type(&ty);
-                let memo = self.memo(&name, Some(ts), &deps, Vec::new(), function);
-                self.push_stmt(memo);
+                self.push_memo(name, Some(ts), &deps, Vec::new(), function);
                 if !deps.is_empty() {
                     self.view.as_mut().expect("a view").reactive.insert(local);
                 }

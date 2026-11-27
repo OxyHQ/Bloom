@@ -1,0 +1,50 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Icon, RawText, VStack, view } from "@oxy.so/bloom-language";
+import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine";
+import { useTranslation } from "react-i18next";
+
+const $view0 = Icon(RiAlertLine).size("13").foreground("muted");
+const $view1 = VStack(Icon(RiAlertLine).size("18").foreground("muted")).frame({ width: "36", height: "36" }).background("background").corner("infinite").align("center").justify("center");
+export interface ContentWarningProps {
+  readonly text: string;
+  readonly revealed: boolean;
+  readonly onToggle: () => void;
+}
+export const ContentWarning = view(function ContentWarning(props: ContentWarningProps) {
+"use no memo";
+const $ = $c(27);
+const { text, revealed, onToggle } = props;
+const { t } = useTranslation();
+let label: string;
+let show: string;
+let hide: string;
+if ($[0] !== t) {
+label = t("post.contentWarning", { defaultValue: "Content warning" });
+show = t("post.contentWarningShow", { defaultValue: "Show" });
+hide = t("post.contentWarningHide", { defaultValue: "Hide" });
+$[0] = t;
+$[1] = label;
+$[2] = show;
+$[3] = hide;
+} else {
+label = $[1];
+show = $[2];
+hide = $[3];
+}
+let $t0;
+if ($[20] !== revealed || $[21] !== text || $[22] !== label || $[23] !== hide || $[24] !== onToggle || $[25] !== show) {
+$t0 = (revealed) ? ($[10] !== text || $[11] !== label || $[12] !== hide || $[13] !== onToggle ? ($[10] = text, $[11] = label, $[12] = hide, $[13] = onToggle, $[14] = HStack($view0, ($[4] !== text || $[5] !== label ? ($[4] = text, $[5] = label, $[6] = RawText((!(text.length === 0)) ? `${label} · ${text}` : label).foreground("muted").shrink("normal").font("sm").lines(1)) : $[6]), ($[7] !== hide || $[8] !== onToggle ? ($[7] = hide, $[8] = onToggle, $[9] = VStack(RawText(hide).foreground("primary").font("sm").weight("semibold")).onPress(onToggle).hitSlop("md").role("button").label(hide)) : $[9])).margin("bottom", "6").align("center").spacing("6")) : $[14]) : HStack($view1, ($[15] !== label || $[16] !== text ? ($[15] = label, $[16] = text, $[17] = VStack(RawText(label).foreground("muted").font("xs").weight("semibold").textCase("uppercase").tracking("wide"), (!(text.length === 0)) ? RawText(text).foreground("foreground").font("md").weight("semibold").lines(3) : null).flex("1").shrink("normal").spacing("2xs")) : $[17]), ($[18] !== show ? ($[18] = show, $[19] = VStack(RawText(show).foreground("onPrimary").font("sm").weight("semibold")).padding("horizontal", "14").padding("vertical", "6").background("primary").corner("infinite")) : $[19])).padding("horizontal", "md").padding("vertical", "md").background("mutedFill").border("border", "thin").corner("lg").margin("top", "2xs").align("center").spacing("md").when("pressed", (v) => v.opacity("80")).onPress(onToggle).role("button").label((!(text.length === 0)) ? `${label}: ${text}. ${show}` : `${label}. ${show}`);
+$[20] = revealed;
+$[21] = text;
+$[22] = label;
+$[23] = hide;
+$[24] = onToggle;
+$[25] = show;
+$[26] = $t0;
+} else {
+$t0 = $[26];
+}
+return $t0;
+});
+

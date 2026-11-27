@@ -875,6 +875,13 @@ are immutable, a dependency is the value itself (no mutation analysis, no proxie
 subscriptions at runtime). Static subtrees are hoisted to module scope by the existing language
 compiler pass, which runs on bloomc's output in the same process.
 
+The cache is kept small. Members written one after another on the same dependencies share one
+test (`let label = t("a")`, `let show = t("b")` and `let hide = t("c")` are one `if ($[0] !== t)`
+with three value slots, not three tests). A child view is cached on its own when it reads less
+than its parent, except a leaf (a node and its modifiers, with no child view, closure or call
+among its arguments) that reads its one dependency once (`RawText(hide).font("sm")`): building it
+costs about what its test does, so it is built with its parent and takes no slots.
+
 **Writes.** Assigning a state member in a closure is `setX(v)`; when the right side reads the
 state (`count += 1`, `count = count + 1`) it is the functional update `setX(count => count + 1)`.
 Reading a state member after assigning it in the same closure is B0410 (it would read the
