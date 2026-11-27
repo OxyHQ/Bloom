@@ -14,3 +14,5 @@ section: Fixed
 - A view member of a stored property's name (`var isNested: Bool? = none` and `let isNested = isNested ?? false`) is B0217, where it emitted a second `const isNested` beside the props' destructuring, which Babel refuses. The stored property takes the default itself (`var isNested: Bool = false`).
 - An unannotated `.tsx` function that returns an embedded-language `view()`'s node, or `null` (Mention's `AccountBadge`), is called as TS called it, where it was mounted as a React component and React got the node object ("Objects are not valid as a React child").
 - In a `.d.bloom.ts`, a view's `T?` prop and a function's `T?` parameter also take TS's `null` (`T | undefined | null`), which Bloom reads as `none`, so a TS caller passing `OpenPostPanel | null` type-checks.
+- A closure where TS takes a function returning a React node returns its view as an element inside parentheses too (`{ p in (Row(post: p)) }` is `toElement(Row(…))`), where React got the node object.
+- A list given where a node takes its rest children (`Text(runs)`, `RawText(parts)`) is spread into them (`Text(...runs)`), where the list as one child drew nothing.

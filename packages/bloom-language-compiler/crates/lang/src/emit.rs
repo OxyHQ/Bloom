@@ -3290,7 +3290,19 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Node(ctor) => {
                 self.import_name(bloom_language_compiler::entries::module_of(ctor), ctor);
-                let mut values: Vec<Frag> = call.args.iter().map(|a| self.node_arg(&a.value)).collect();
+                // A list given where the node takes its rest (`Text(runs)`, `RawText(parts)`):
+                // its items are the children, spread as TS's `Text(...runs)` was. A list as one
+                // child draws nothing.
+                let signature = crate::ui::signature(ctor);
+                let rest_at = signature.iter().position(|p| p.starts_with("..."));
+                let mut values: Vec<Frag> = Vec::new();
+                for (index, arg) in call.args.iter().enumerate() {
+                    let value = self.node_arg(&arg.value);
+                    let spread = arg.label.is_none()
+                        && rest_at.is_some_and(|at| index >= at)
+                        && matches!(self.expr_ty(&arg.value), Ty::List(_));
+                    values.push(if spread { value.wrap("...", "") } else { value });
+                }
                 if let Some(trailing) = &call.trailing {
                     // A trailing `for` fills a rest parameter as its parent's own children.
                     let rest = crate::ui::signature(ctor).last().is_some_and(|p| p.starts_with("..."));
