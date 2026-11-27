@@ -1007,6 +1007,11 @@ fn display(path: &Path, root: &Path) -> String {
     path.strip_prefix(root).unwrap_or(path).display().to_string()
 }
 
+/// A built-in type whose codec a `<T: Codable>` call may pass without naming it.
+fn builtin_codec(owner: &str) -> Option<()> {
+    matches!(owner, "String" | "Int" | "Double" | "Bool" | "Array" | "Optional" | "Dictionary").then_some(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1030,9 +1035,4 @@ mod tests {
             .collect();
         assert_eq!(names, ["A", "Text", "post"]);
     }
-}
-
-/// A built-in type whose codec a `<T: Codable>` call may pass without naming it.
-fn builtin_codec(owner: &str) -> Option<()> {
-    matches!(owner, "String" | "Int" | "Double" | "Bool" | "Array" | "Optional" | "Dictionary").then_some(())
 }
