@@ -10,3 +10,7 @@ export declare function userId(id: string, post: FeedPost): string | undefined;
 export declare function authorCount(post: FeedPost): number;
 export declare function metadata(viewPost: FeedPost | undefined): FeedMeta;
 export declare function lane(viewPost: FeedPost | undefined): string;
+export declare function spoiler(viewPost: FeedPost | undefined): string;
+export declare function isAbout(): boolean;
+export declare function pick(onSelect: (p0: FeedMeta) => void): void;
+export declare function usePick(): void;
