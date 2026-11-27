@@ -33,7 +33,7 @@ const stats = useStats();
 const user = useAuthUser();
 let $t0;
 if ($[6] !== copy.none || $[7] !== user.id || $[8] !== user.avatar || $[9] !== user.name.displayName || $[10] !== stats.boosts || $[11] !== engagement.likes || $[12] !== copy.some) {
-$t0 = VStack(Text(copy.none), ($[0] !== user.id || $[1] !== user.avatar || $[2] !== user.name.displayName ? ($[0] = user.id, $[1] = user.avatar, $[2] = user.name.displayName, $[3] = Text(authorLabel({ id: user.id, avatar: (user.avatar satisfies string | undefined | null), name: { displayName: (user.name.displayName satisfies string | undefined | null) } }))) : $[3]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? Text(copy.some) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[4] !== stats.boosts ? ($[4] = stats.boosts, $[5] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[5]));
+$t0 = VStack(Text(copy.none), ($[0] !== user.id || $[1] !== user.avatar || $[2] !== user.name.displayName ? ($[0] = user.id, $[1] = user.avatar, $[2] = user.name.displayName, $[3] = Text(authorLabel({ id: user.id, avatar: (((user.avatar) ?? undefined) satisfies string | undefined), name: { displayName: (((user.name.displayName) ?? undefined) satisfies string | undefined) } }))) : $[3]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? Text(copy.some) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[4] !== stats.boosts ? ($[4] = stats.boosts, $[5] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[5]));
 $[6] = copy.none;
 $[7] = user.id;
 $[8] = user.avatar;
