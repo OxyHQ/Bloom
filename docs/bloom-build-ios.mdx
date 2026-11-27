@@ -1,0 +1,224 @@
+---
+title: bloom build ios (design)
+description: How bloom generates and drives the Xcode project, signs, and links Swift native modules without Expo (ADR 0002, section 7, phase F step 6). A design for the Mac lane; not built yet.
+---
+
+# `bloom build ios` (design)
+
+Status: design, 2026-11-27. Nothing here is built yet. It is the last step of phase F
+([ADR 0002, section 7](./adr/0002-swift-grade-language-and-toolchain.md)) and is
+written for the Mac lane to build. It mirrors `bloom build android`
+([the toolchain](./bloom-toolchain.mdx#android-without-expo)): same manifest, same
+`autolinking.json`, same Metro driver, same native-module interfaces, so the two
+platforms differ only where the platforms do.
+
+## Goals
+
+- `bloom build ios` writes `.bloom/build/ios/` from `Package.bloom` and drives it, with no
+  Expo prebuild, CLI, EAS, config plugins or Expo modules.
+- `bloom run ios` builds, installs and starts the app on a simulator or a device, with Metro
+  for debug builds.
+- Bloom native modules (`extern native`) get their Swift side checked by `swiftc` against the
+  same interface Kotlin is checked against.
+- Signing never puts a certificate, key or password in the package or the generated project.
+- `--with-expo` keeps the Expo path (`expo prebuild` + `xcodebuild`) as the baseline until
+  every module is replaced, exactly as on Android.
+
+Not goals: a Bloom-owned renderer (React Native's Fabric stays), CocoaPods-free third-party
+libraries that have no Swift package yet (see "Libraries").
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `bloom build ios` | Debug build for the booted simulator (`.bloom/dist/ios/<Name>.app`) |
+| `bloom build ios --release` | Archive and export an `.ipa` (`.bloom/dist/ios/<Name>.ipa`) |
+| `bloom build ios --device` | Debug build for a connected device (signed) |
+| `bloom build ios --generate` | Write `.bloom/build/ios/` and stop (open it in Xcode) |
+| `bloom run ios [--release] [--device <udid>]` | Build, install (`xcrun simctl` / `xcrun devicectl`), start; Metro for debug |
+| `bloom build ios --with-expo` | The Expo path, for the baseline measurements |
+
+## The generated project
+
+Everything lives in `.bloom/build/ios/`, regenerated on every build and git-ignored, like
+`.bloom/build/android/`:
+
+```
+.bloom/build/ios/
+  <Name>.xcodeproj/          project.pbxproj and one shared scheme, written by bloom
+  <Name>/
+    AppDelegate.swift        RCTReactNativeFactory, module "main"
+    Info.plist               from app: App(…)
+    <Name>.entitlements      from app: App(…) capabilities
+    LaunchScreen.storyboard  from splash: / splashImage:
+    Assets.xcassets          AppIcon (one 1024 px image) and the splash image
+  Bloom.xcconfig             the React Native build settings, the team, the bundle id
+  Packages/                  the Bloom native modules, one Swift package each
+```
+
+- **`project.pbxproj` is written by `bloom`**, not by a template copy and not by a Ruby gem.
+  Object identifiers are a hash of each object's path in the project, so the same
+  `Package.bloom` writes a byte-identical project (reviewable diffs, cacheable builds).
+  The Rust side gets a small pbxproj writer (`crates/bloomc/src/ios/pbxproj.rs`): one app
+  target, one scheme, the build phases below, and package references. Nothing reads a
+  pbxproj back.
+- **Info.plist** comes from `app: App(id:version:build:displayName:schemes:icon:splash:splashImage:permissions:)`:
+  - `CFBundleIdentifier` (`id`), `CFBundleShortVersionString` (`version`), `CFBundleVersion`
+    (`build`), `CFBundleDisplayName`;
+  - `CFBundleURLTypes` from `schemes:` (the deep links the Bloom router opens);
+  - one `NS…UsageDescription` per permission (`.camera` is `NSCameraUsageDescription`), its text
+    from the package's string catalog (`Resources/Localizable/<locale>.json`, key
+    `permission.camera`), with an English default, and `InfoPlist.strings` per locale;
+  - `UILaunchStoryboardName`, `UIRequiredDeviceCapabilities` (arm64),
+    `UIApplicationSupportsIndirectInputEvents`, and the scene manifest.
+- **Entitlements** come from a new `capabilities:` field of `App(…)`: `.pushNotifications`
+  (`aps-environment`), `.associatedDomains(["applinks:mention.earth"])` (universal links, the
+  web URLs the router already parses), `.appGroups([…])`, `.keychainGroups([…])`. Android
+  reads the same field (App Links for associated domains), so the field is shared.
+- **The icon** is one 1024 px PNG (`icon:`), which Xcode 14+ scales itself; **the launch
+  screen** is a storyboard with the `splash:` colour and the centred `splashImage:`.
+- **`AppDelegate.swift`** uses React Native's `RCTReactNativeFactory` with a
+  `RCTDefaultReactNativeFactoryDelegate` subclass: module name `main` (what the Bloom entry
+  registers), `bundleURL` from Metro in debug (`RCTBundleURLProvider`) and `main.jsbundle` in
+  release. New Architecture only (Fabric, TurboModules, bridgeless), Hermes.
+
+### Build phases
+
+1. **Bundle.** A script phase runs `node ../bloom-metro.js bundle --platform ios --dev <debug>
+   --entry-file index.js --bundle-output "$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/main.jsbundle"
+   --assets-dest …` in release (debug loads from Metro). It replaces React Native's
+   `react-native-xcode.sh`, which assumes the community CLI; `bloom-metro.js` already
+   implements `bundle` for Gradle. Hermes bytecode: the phase then runs `hermesc` from
+   `react-native/sdks/hermesc/osx-bin/` (`-O -emit-binary`), as the Gradle plugin does.
+2. **Codegen.** React Native's codegen runs once at generation time (not per build), from
+   `node_modules/react-native/scripts/generate-codegen-artifacts.js` over the app's
+   libraries and the Bloom native modules (each has a `package.json` with `codegenConfig`,
+   as on Android). Its `ios.modulesProvider` entry registers each Bloom module with
+   `RCTModuleProviders`, so `AppDelegate` needs no list.
+3. **Sign** (Xcode's own) and **embed** the frameworks.
+
+## Libraries: Swift Package Manager first
+
+React Native 0.88 ships Swift Package Manager support with prebuilt XCFrameworks
+(`react-native/scripts/setup-apple-spm.js`, `scripts/spm/`): React core, Hermes and
+ReactNativeDependencies come as binary frameworks, so a clean build compiles the app and
+its libraries, not React Native. `bloom` uses that pipeline, not CocoaPods:
+
+- `bloom` writes the project with the SPM package references and the generated
+  xcconfig in place (what `setup-apple-spm.js add` injects into an existing project), from
+  the same `autolinking.json` it writes for Android (its `platforms.ios` entries: each
+  library's podspec path and source directory).
+- A library that ships a `Package.swift` is a package reference. One that only ships a
+  podspec (today: react-native-screens, reanimated, worklets, gesture-handler, svg,
+  safe-area-context, pager-view) gets a generated `Package.swift` from its podspec
+  (`setup-apple-spm.js scaffold`, `scripts/spm/read-podspec.js`), written under
+  `.bloom/build/ios/Packages/vendor/<name>/`, never into `node_modules`.
+- **Fallback: CocoaPods.** If a library's podspec does something the scaffold cannot express
+  (script phases, vendored static libraries, custom compiler flags it cannot map), `bloom`
+  writes a `Podfile` instead (`use_react_native!`, `use_native_modules!` fed by
+  `cat autolinking.json` as its config command, `RCT_USE_PREBUILT_RNCORE=1` and
+  `RCT_USE_RN_DEP=1` for the prebuilt core) and runs `pod install` itself. The choice is per
+  build and printed; the measurements below record which one built.
+
+Measure, on the Mac lane, before choosing the default: clean and incremental build times,
+`.ipa` size, and cold start for SPM and CocoaPods on the Demo.
+
+## Swift native modules
+
+`extern native "BloomStorage" { … }` already writes the TurboModule spec
+(`NativeBloomStorage.ts`) and the lazy bridge; Android's codegen checks Kotlin against it.
+On iOS, React Native's codegen writes the Objective-C++ protocol `NativeBloomStorageSpec` and
+its JSI glue from the same spec. Swift cannot conform to that protocol's C++ side directly,
+so `bloom` writes two small files per module and the author writes only Swift:
+
+1. **A Swift protocol**, `BloomStorageSpec.swift`, generated from the `extern native`
+   block: one requirement per function, with the bridge's types (`String`, `Bool`, `Int`,
+   `Double`, arrays and optionals of them; `async throws` functions are `async throws`).
+   The author's class conforms to it, so `swiftc` checks the module against the interface,
+   as the Kotlin compiler does on Android:
+
+   ```swift
+   // Native/BloomStorage/ios/BloomStorageModule.swift (written by the author)
+   @objc(BloomStorageModule)
+   public final class BloomStorageModule: NSObject, BloomStorageSpec {
+     public func set(_ kind: String, _ name: String, _ key: String, _ value: String) -> Bool { … }
+     public func get(_ kind: String, _ name: String, _ key: String) -> String? { … }
+   }
+   ```
+
+2. **An Objective-C++ adapter**, `BloomStorageModule+Turbo.mm`, generated: it implements
+   `RCTTurboModule` and `NativeBloomStorageSpec`, returns
+   `std::make_shared<facebook::react::NativeBloomStorageSpecJSI>(params)` from
+   `getTurboModule:`, and forwards each method to the Swift class through its `@objc`
+   surface, converting `NSString`/`NSNumber`/`NSArray`/`nil`. Synchronous functions stay
+   synchronous (`RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD` semantics of the codegen), and a
+   function without a result crosses as one returning `Bool`, the same rule as on Android.
+
+Each module is a Swift package under `.bloom/build/ios/Packages/<Name>/` (its Swift sources
+from the `.native(…, swift:)` path, the two generated files, and a `package.json` with its
+`codegenConfig` and `ios.modulesProvider`). The standard library's `Package.bloom` adds
+`swift: "Native/BloomStorage/ios"` to its `.native("BloomStorage")` target.
+
+### `BloomStorage` in Swift
+
+The first Swift module, matching the Kotlin one behind the same interface:
+
+- `kv`: SQLite through the system `libsqlite3` (`import SQLite3`), WAL, statements compiled once.
+- `secure`: the Keychain (`kSecClassGenericPassword`, service = app id + store name,
+  `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), no extra crypto layer: the Keychain is
+  the hardware-backed store Android emulates with a Keystore key over AES-GCM.
+- `file`: the app's `Application Support/` directory, excluded from backup unless asked.
+
+Measure it like Android: the storage bench bundle (`bench.js`) through Metro on debug builds,
+Bloom against `--with-expo` (expo-sqlite, expo-secure-store, expo-file-system).
+
+## Signing
+
+Nothing secret is ever written into the package, `.bloom/build/` or the repository.
+
+- **Simulator builds** are unsigned (`CODE_SIGNING_ALLOWED=NO`).
+- **Device and release builds** use Xcode's automatic signing with the team from
+  `BLOOM_APPLE_TEAM_ID`, else `~/.bloom/apple.json` (`{ "team": "ABCDE12345" }`), written
+  into `Bloom.xcconfig` as `DEVELOPMENT_TEAM`. Certificates and profiles stay in the
+  keychain and Xcode's own store.
+- **CI and headless release** use an App Store Connect API key: `BLOOM_ASC_KEY_ID`,
+  `BLOOM_ASC_ISSUER_ID`, `BLOOM_ASC_KEY_PATH` (the `.p8`, outside the repository).
+  `bloom` passes them to `xcodebuild -allowProvisioningUpdates -authenticationKeyPath …
+  -authenticationKeyID … -authenticationKeyIssuerID …` (cloud-managed signing), so no
+  certificate is exported or stored.
+- **Export.** `xcodebuild -exportArchive` with a generated `ExportOptions.plist`:
+  `--release` exports for App Store Connect (`method: app-store-connect`), `--ad-hoc` for
+  registered devices, and `bloom build ios --release --upload` uploads with
+  `xcrun altool --upload-package` (or the API key's Transporter path). This replaces EAS
+  Build and EAS Submit.
+
+## Navigation on iOS
+
+The Bloom router (`stdlib/Bloom/router.ts`) runs unchanged on iOS: react-native-screens'
+`ScreenStack` is a `UINavigationController` (edge-swipe back for free), and a `sheets:`
+route's `formSheet` is a `UISheetPresentationController` sized to its content. One
+difference to decide on the Mac lane: `tabs:` on iOS should be the system tab bar
+(react-native-screens' native tabs, the iOS 26 glass bar), as the language's expo-router
+layer already does (`router/tabs.ios.tsx`), rather than Android's swipe pager. The spec the
+entry passes is the same; only `router.ts`'s tab view branches on the platform.
+
+## Order on the Mac lane
+
+1. `bloom build ios --generate` writes a project that opens and builds in Xcode for the
+   simulator, the Demo's JS from Metro (no native modules, SPM pipeline).
+2. Release bundle phase and Hermes bytecode; the Demo checks pass on the simulator (tabs,
+   push, sheet, `demo://post/2`, a relaunch).
+3. `BloomStorage` in Swift, the generated protocol and adapter; the storage bench.
+4. Signing: device builds, then an archive and an `.ipa` with the API key.
+5. Measurements against `--with-expo`: `.ipa` size, cold start (median of 10 launches after
+   terminate: `xcrun simctl launch` to the "Running main" log line), the storage bench, and
+   clean and incremental build times; results in ADR 0002, section 7.
+6. Mention: `bloom build ios` on Mention's language line, module by module, as on Android.
+
+## Open questions
+
+- SPM or CocoaPods as the default, by the measurements in "Libraries".
+- Whether the `capabilities:` field also needs per-configuration values (a staging
+  `aps-environment`).
+- Where the permission strings default from when a package has no catalog entry: a Bloom
+  default in English, or a build error (App Review rejects vague strings).
