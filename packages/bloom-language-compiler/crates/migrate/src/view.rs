@@ -778,6 +778,37 @@ impl Tr<'_> {
                     None => format!("@ref {name} = {init}"),
                 }
             }
+            // `const { a, b } = useMemo(() => …, deps)`: the value destructured (bloomc memoises).
+            "useMemo"
+                if let BindingPattern::ObjectPattern(pattern) = &d.id
+                    && let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() =>
+            {
+                let value = match arrow.get_expression() {
+                    Some(e) => Some(e),
+                    None => match crate::view::arrow_statements(arrow) {
+                        [Statement::ReturnStatement(r)] => r.argument.as_ref(),
+                        _ => None,
+                    },
+                };
+                let value = match value {
+                    Some(value) => {
+                        let text = self.expr(value);
+                        if crate::expr::is_postfix_text(&text) { text } else { format!("({text})") }
+                    }
+                    None => {
+                        let saved = self.scope.clone();
+                        let body = self.block_stmts(arrow_statements(arrow), arrow_end(arrow), true);
+                        self.scope = saved;
+                        format!("{{\n{body}\n}}()")
+                    }
+                };
+                let destructure = self.record_pattern(pattern);
+                if let Some(deps) = call.arguments.get(1) {
+                    let span = deps.span();
+                    self.comments.skip_within(span.start, span.end);
+                }
+                format!("let {destructure} = {value}")
+            }
             "useMemo" | "useCallback" => {
                 let BindingPattern::BindingIdentifier(id) = &d.id else {
                     return self.refuse(&format!("react:{hook}"), format!("a destructured `{hook}`"), d.span);
