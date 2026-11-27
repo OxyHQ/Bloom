@@ -2,8 +2,8 @@ export interface Event {
   readonly revision: number;
   readonly title: string | undefined;
 }
-export declare function revision(event: Event | undefined): number;
+export declare function revision(event: Event | undefined | null): number;
 export declare function title(event: Event): string;
-export declare function sum(a: number | undefined, b: number | undefined): number;
-export declare function not(flag: boolean | undefined): boolean;
-export declare function differs(a: number | undefined, b: number): boolean;
+export declare function sum(a: number | undefined | null, b: number | undefined | null): number;
+export declare function not(flag: boolean | undefined | null): boolean;
+export declare function differs(a: number | undefined | null, b: number): boolean;

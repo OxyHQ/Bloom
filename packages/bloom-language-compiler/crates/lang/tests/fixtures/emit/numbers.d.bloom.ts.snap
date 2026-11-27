@@ -5,5 +5,5 @@ export declare function pick(on: boolean, x: number): number;
 export declare function mixed(i: number, x: number): number;
 export declare function half(i: number, j: number): number;
 export declare function widths(xs: readonly number[]): readonly number[];
-export declare function maybe(i: number | undefined): number | undefined;
+export declare function maybe(i: number | undefined | null): number | undefined;
 export declare function stops(): readonly number[];

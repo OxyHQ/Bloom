@@ -763,6 +763,13 @@ impl<'a> Emitter<'a> {
         format!("readonly {}{optional}: {};", prop_key(&field.name), self.ts_type(&field.ty))
     }
 
+    /// A declared input's TS type (a view's prop, a function's parameter): a `T?` also takes
+    /// TS's `null`, which Bloom reads as `none` (`openPostEngagement: OpenPostPanel | null`).
+    fn ts_input(&mut self, ty: &Ty) -> String {
+        let text = self.ts_type(ty);
+        if matches!(ty, Ty::Option(_)) { format!("{text} | null") } else { text }
+    }
+
     /// A field whose default is `none` (or TS's absent): its interface key is optional, and a
     /// construction that leaves it out leaves it out of the object.
     fn may_be_absent(&self, field: &FieldDef) -> bool {
@@ -5743,7 +5750,7 @@ impl<'a> Emitter<'a> {
                         "  readonly {}{}: {};",
                         prop_key(p.name.as_deref().unwrap_or_default()),
                         if p.optional { "?" } else { "" },
-                        self.ts_type(&p.ty)
+                        self.ts_input(&p.ty)
                     )
                 })
                 .collect();
@@ -5855,7 +5862,7 @@ impl<'a> Emitter<'a> {
                                 "{}{}: {}",
                                 js_name(&p.name.name),
                                 if p.default.is_some() { "?" } else { "" },
-                                self.ts_type(&t.ty)
+                                self.ts_input(&t.ty)
                             )
                         })
                         .collect();

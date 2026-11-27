@@ -22,13 +22,13 @@ export interface Feed {
   readonly name: string;
 }
 export declare function count(result: QueryResult<readonly Post[]>): number;
-export declare function empty(feed: Feed | undefined): boolean;
-export declare function tagCount(feed: Feed | undefined): number;
-export declare function lastId(feed: Feed | undefined): string | undefined;
-export declare function shout(post: Post | undefined): string | undefined;
-export declare function number(feed: Feed | undefined): number | undefined;
-export declare function isEmpty(posts: (readonly Post[]) | undefined): boolean | undefined;
-export declare function firstId(posts: (readonly Post[]) | undefined): string | undefined;
+export declare function empty(feed: Feed | undefined | null): boolean;
+export declare function tagCount(feed: Feed | undefined | null): number;
+export declare function lastId(feed: Feed | undefined | null): string | undefined;
+export declare function shout(post: Post | undefined | null): string | undefined;
+export declare function number(feed: Feed | undefined | null): number | undefined;
+export declare function isEmpty(posts: (readonly Post[]) | undefined | null): boolean | undefined;
+export declare function firstId(posts: (readonly Post[]) | undefined | null): string | undefined;
 export interface QueryCountProps {
   readonly id: string;
 }

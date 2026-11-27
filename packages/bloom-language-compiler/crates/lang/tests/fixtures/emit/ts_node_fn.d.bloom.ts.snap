@@ -1,6 +1,6 @@
 import type { ComposedView } from "@oxy.so/bloom-language";
 export interface BylineProps {
-  readonly kind: string | undefined;
+  readonly kind: string | undefined | null;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Byline())`), or from TSX as `toElement(Byline())`. */
 export declare const Byline: (props: BylineProps) => ComposedView;
