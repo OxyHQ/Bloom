@@ -160,6 +160,10 @@ impl Tr<'_> {
                 }
                 match (name.as_str(), args.as_slice()) {
                     ("Array" | "ReadonlyArray", [element]) => format!("[{element}]"),
+                    // `Readonly<T>`: a Bloom value is not written through a `let`, so it is `T`.
+                    ("Readonly", [inner]) if !self.objects.contains(&name) && !self.imported.contains("Readonly") => {
+                        inner.clone()
+                    }
                     ("Record", [key, value]) if key == "String" => format!("[String: {value}]"),
                     // Keyed by a union of strings: a `[String: V]`, whose keys bloomc no longer checks.
                     ("Record", [key, value]) if key != "Float" && key != "Int" && !key.starts_with('[') => {
