@@ -274,6 +274,66 @@ Bloom becomes one language and platform for everything. Expo leaves completely; 
 | `expo-clipboard`, `expo-web-browser` | all | `Bloom.Clipboard`, `Bloom.WebSession` (in-app browser, auth sessions) |
 | `expo-symbols`, `@expo/vector-icons`, `expo-checkbox` | Allo / Mention, Inbox / Inbox | `BloomUI.Icon` (Bloom icons, SF Symbols on iOS), `Toggle(.checkbox)` |
 
+#### Phase F, steps 1 and 2 (measured 2026-11-27)
+
+- **`bloom build android` without Expo.** `bloom` writes and drives the Gradle project in
+  `.bloom/build/android/` (`crates/bloomc/src/android/`), with no Expo prebuild, CLI, EAS or
+  Expo module:
+  - **Project.** Settings and the root build run over React Native's Gradle plugin, with the
+    versions from React Native's own catalog.
+  - **App module.** It is written from `Package.bloom`'s `app: App(id:version:build:displayName:schemes:icon:splash:splashImage:permissions:)`.
+  - **Signing.** Keystores live under `~/.bloom/keystores/` (or the `BLOOM_ANDROID_KEYSTORE*`
+    variables), never in the package.
+  - **Libraries.** React Native core (Fabric, Hermes). The libraries come from `autolinking.json`, which `bloom`
+    writes itself and which matches Expo's for the Demo, plus the Bloom native modules.
+  - **Metro.** `bloom-metro.js` runs Metro over React Native's own config and Babel preset.
+  - **Expo JS that remains.** expo-router stays until step 3, over shims of the small Expo
+    surface it reads (`android/shims/`). Any other `expo*` request does not resolve: an
+    optional `require` falls back and an import fails the build.
+  - **Fallback.** `--with-expo` keeps the Expo path. `--generate` writes the project for
+    Android Studio.
+- **Native modules.** `extern native "Name" { … }` is a module's interface, written once. The
+  compiler generates from it React Native's TurboModule spec and a lazy bridge. Gradle's codegen turns the
+  spec into the Java spec class that the Kotlin module extends, so both sides are checked against
+  the same interface. `.native("Name", kotlin:, swift:)` targets declare the implementations,
+  and the standard library has its own `Package.bloom` declaring `.native("BloomStorage")`.
+  A synchronous function without a result crosses as one returning a boolean, so a write
+  blocks: TurboModules run `void` methods asynchronously.
+- **`BloomStorage`.** It is in Kotlin:
+  - `kv`: SQLite with compiled statements and WAL.
+  - `secure`: AES-256-GCM under a key held by the Android Keystore.
+  - `file`: the app's files.
+  `KeyValueStore`, `SecureStore` and `FileStore` use it whenever it is linked, behind the same interface. Swift
+  (SQLite and the Keychain) follows with `bloom build ios`, conforming to the protocol
+  generated from the same spec.
+
+Measured on the emulator (hangar-test-36, x86_64):
+
+- The Demo checks passed on the release APK: tab bar taps, swipes, a `KeyValueStore` value
+  surviving a relaunch, the sheet, and the `demo://post/2` deep link.
+- **APK size and cold start** (release, Hermes) were measured against the Expo path's
+  release APK of the same Demo.
+  - Cold start is the median of 10 launches after force-stop: `am start -W` total time, and the
+    time from launch to React Native running `main`.
+- **Storage** was measured on debug APKs, with the same benchmark bundle served by Metro to both.
+  - The stopgap is expo-sqlite, expo-secure-store and expo-file-system through `runtime.ts`.
+  - Each figure is the median over 4 launches of each launch's median or p95.
+  - Each launch ran a warm-up, then 1,000 `kv`, 200 `secure` and 300 `file` operations.
+  - Release numbers may differ.
+
+| | Bloom (no Expo) | Expo path |
+|---|---|---|
+| APK, release | **42.7 MB** (native libraries 19.6, JS 17.7, dex 4.4) | 54.2 MB (26.9, 20.8, 7.1) |
+| Cold start: window / JS `main` | 256 ms / **201 ms** | 258 ms / 316 ms |
+| `kv` write: median / p95 | **30 µs / 149 µs** | 1,066 µs / 2,321 µs |
+| `kv` read: median / p95 | **22 µs / 49 µs** | 111 µs / 171 µs |
+| `kv` first call (opens the store) | **15 ms** | 51 ms |
+| `secure` write: median / p95 | **1.85 ms / 3.39 ms** | 5.31 ms / 9.45 ms |
+| `secure` read: median / p95 | **0.50 ms / 1.30 ms** | 1.08 ms / 1.68 ms |
+| `file` write / read (median) | **55 µs / 72 µs** | 987 µs / 571 µs |
+
+Next in this track: the Bloom router (step 3), which removes expo-router and the shims with it.
+
 ## Consequences
 
 - **Kept:** the lexer, parser, recovery, checker, inference, the memo emitter, source maps,

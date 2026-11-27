@@ -300,7 +300,7 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         derived.insert(crate::i18n::LOOKUP.to_string());
     }
     let target = &graph.manifest.targets[index];
-    let bindings = matches!(target.kind, TargetKind::Bindings { .. });
+    let bindings = matches!(target.kind, TargetKind::Bindings { .. } | TargetKind::Native { .. });
     let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();
 
     // What the file imports, by module.

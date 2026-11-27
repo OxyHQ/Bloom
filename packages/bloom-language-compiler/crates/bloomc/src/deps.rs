@@ -213,6 +213,7 @@ pub fn package_json(package: &Package) -> Result<String, String> {
         .chain(STDLIB_DATA)
         .chain(ROUTER_NATIVE)
         .map(|(n, v)| (n.to_string(), v.to_string()))
+        .chain(crate::android::tools())
         .collect();
     let resolved = Resolved::read(package).unwrap_or_default();
     for dep in &package.manifest.dependencies {

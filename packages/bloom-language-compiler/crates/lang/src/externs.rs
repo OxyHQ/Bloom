@@ -129,6 +129,23 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                     };
                     used = true;
                 }
+                ItemKind::Const(_)
+                | ItemKind::Struct(_)
+                | ItemKind::Enum(_)
+                | ItemKind::Alias(_)
+                | ItemKind::Protocol(_)
+                    if module.native =>
+                {
+                    diagnostics.push(
+                        Diagnostic::error("B0824", span, "a native module declares functions")
+                            .label(
+                                "its bridge carries strings, numbers, booleans, arrays of them and optionals",
+                            )
+                            .help("declare a `func` here, and the types over it outside `extern native`")
+                            .toolchain("native-modules"),
+                    );
+                    continue;
+                }
                 ItemKind::Const(c) => {
                     if matches!(&c.value.kind, ExprKind::Name(n) if *n == c.name.name) {
                         if c.ty.is_none() {
@@ -167,9 +184,16 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
             items.push(inner);
         }
         if used {
+            // A native module is reached through its generated bridge, beside the file
+            // (`crate::native`): the TurboModule, its values in Bloom's forms.
+            let source = if module.native {
+                crate::native::bridge_import(&module.package.name)
+            } else {
+                module.package.name.clone()
+            };
             file.imports.push(Import {
                 kind: ImportKind::Namespace(Ident { name: ns, span: module.package.span }),
-                source: module.package.name.clone(),
+                source,
                 source_span: module.package.span,
                 span: module.package.span,
             });

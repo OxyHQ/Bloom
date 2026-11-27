@@ -1587,13 +1587,19 @@ impl<'s, 'i> Parser<'s, 'i> {
         TestDecl { name, body }
     }
 
-    /// `extern module "pkg" { declarations }`.
+    /// `extern module "pkg" { declarations }`, or `extern native "Name" { declarations }`.
     fn extern_decl(&mut self) -> ExternModule {
         self.bump();
+        let mut native = false;
         if matches!(self.tok(), Tok::Ident(w) if w == "module") {
             self.bump();
+        } else if matches!(self.tok(), Tok::Ident(w) if w == "native") {
+            self.bump();
+            native = true;
         } else {
-            self.unexpected("`module` (`extern module \"package\" { … }`)");
+            self.unexpected(
+                "`module` or `native` (`extern module \"package\" { … }`, `extern native \"Name\" { … }`)",
+            );
         }
         let package = match self.tok().clone() {
             Tok::Str { parts, .. } => {
@@ -1632,7 +1638,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.in_extern = outer;
             self.expect_close(P::RBrace, open);
         }
-        ExternModule { package, items }
+        ExternModule { package, items, native }
     }
 
     fn fn_decl(&mut self) -> FnDecl {

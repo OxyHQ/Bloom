@@ -1,0 +1,10 @@
+let package = Package(
+  name: "Bloom",
+  platforms: [.iOS(17), .android(26), .web],
+  targets: [
+    .module("Bloom", path: "Bloom"),
+    // Its interface is `extern native "BloomStorage"` in Bloom/Storage.bloom; Kotlin in
+    // Native/BloomStorage/android (Swift comes with `bloom build ios`).
+    .native("BloomStorage", path: "Bloom/Native/BloomStorage"),
+  ]
+)

@@ -25,6 +25,7 @@ pub mod icons;
 mod lexer;
 mod model;
 pub mod modules;
+pub mod native;
 pub mod package;
 mod parser;
 mod routes;
