@@ -624,6 +624,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((start, end, format!("RawText({text})")))
             }
+            // A list of a string and nodes (`[separator, Link(…) { … }]`, TS's `[s, Embed(<Link/>)]`
+            // spread into a text): bloomc types it from the string, so its strings are text nodes.
+            ("B0201", _)
+                if d.message.ends_with(", found `View`")
+                    && (d.message.starts_with("expected `String`")
+                        || d.message.starts_with("expected `\"")) =>
+            {
+                texts_beside_nodes(source, start)
+            }
             // An unwrap the codemod wrote before bloomc narrowed the value (a test spelled later): gone.
             ("B0201", _) if d.message.starts_with("`!` unwraps an optional") => {
                 if source[end..].starts_with('!') {
@@ -1124,6 +1133,115 @@ fn tuple_arity(inner: &str) -> usize {
         prev = c;
     }
     commas + 1
+}
+
+/// The list literal holding the node at `at`, with each of its string items (a literal, or
+/// a lowercase name or member path) written `RawText(item)`; `None` when it has none.
+fn texts_beside_nodes(source: &str, at: usize) -> Option<(usize, usize, String)> {
+    // The innermost `[` open at `at`.
+    let bytes = source.as_bytes();
+    let mut depth = 0i32;
+    let mut open = None;
+    for i in (0..at).rev() {
+        match bytes[i] {
+            b')' | b']' | b'}' => depth += 1,
+            b'(' | b'{' if depth == 0 => return None,
+            b'(' | b'{' => depth -= 1,
+            b'[' if depth == 0 => {
+                open = Some(i);
+                break;
+            }
+            b'[' => depth -= 1,
+            _ => {}
+        }
+    }
+    let open = open?;
+    // A list literal, not a subscript: nothing that ends a value right before it.
+    let before = source[..open].trim_end();
+    let word = before.rsplit(|c: char| !(c.is_alphanumeric() || c == '_')).next().unwrap_or("");
+    let keyword = matches!(word, "return" | "in" | "else" | "yield" | "await");
+    if !keyword
+        && before.ends_with(|c: char| c.is_alphanumeric() || matches!(c, '_' | ')' | ']' | '?' | '!' | '"'))
+    {
+        return None;
+    }
+    let close = subscript_close(source, open)?;
+    let inner = &source[open + 1..close];
+    let mut items: Vec<(usize, usize)> = Vec::new();
+    let (mut depth, mut quote, mut from, mut prev) = (0i32, false, 0usize, ' ');
+    for (i, c) in inner.char_indices() {
+        if quote {
+            if c == '"' && prev != '\\' {
+                quote = false;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' => quote = true,
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => depth -= 1,
+            ',' if depth == 0 => {
+                items.push((from, i));
+                from = i + 1;
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    items.push((from, inner.len()));
+    let text_item = |item: &str| {
+        let literal = item.len() >= 2 && item.starts_with('"') && item.ends_with('"');
+        let path = item.starts_with(|c: char| c.is_lowercase() || c == '_')
+            && item.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.'));
+        literal || path
+    };
+    let mut out = String::with_capacity(inner.len() + 16);
+    let mut wrapped = false;
+    let mut last = 0;
+    for (a, b) in items {
+        let raw = &inner[a..b];
+        let item = raw.trim();
+        if item.is_empty() || !text_item(item) {
+            continue;
+        }
+        let lead = a + (raw.len() - raw.trim_start().len());
+        out.push_str(&inner[last..lead]);
+        out.push_str(&format!("RawText({item})"));
+        last = lead + item.len();
+        wrapped = true;
+    }
+    out.push_str(&inner[last..]);
+    wrapped.then(|| (open + 1, close, out))
+}
+
+/// The `]` matching the `[` at `open` (strings skipped).
+fn subscript_close(source: &str, open: usize) -> Option<usize> {
+    let mut depth = 0i32;
+    let mut quote = false;
+    let mut prev = ' ';
+    for (i, c) in source[open..].char_indices() {
+        if quote {
+            if c == '"' && prev != '\\' {
+                quote = false;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' => quote = true,
+            '[' | '(' | '{' => depth += 1,
+            ']' | ')' | '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return (c == ']').then_some(open + i);
+                }
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    None
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
