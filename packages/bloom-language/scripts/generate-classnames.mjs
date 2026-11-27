@@ -801,7 +801,13 @@ const json = `${JSON.stringify(
   1,
 )}\n`;
 
-const cell = (text) => String(text).replace(/\|/g, '\\|');
+/**
+ * A table cell's text: `|` would end the cell; in MDX `{` `}` open a JavaScript
+ * expression (`.frame({ width: 'full' })` failed oxy.so's docs build) and `<`
+ * a tag (`ring-offset-<colour>`). Escaped, each renders as itself in MDX and
+ * in plain Markdown alike.
+ */
+const cell = (text) => String(text).replace(/[|{}<]/g, '\\$&');
 const table = (list, columns) =>
   [
     `| ${columns.map(([title]) => title).join(' | ')} |`,
