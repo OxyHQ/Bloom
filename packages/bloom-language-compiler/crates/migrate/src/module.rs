@@ -1669,8 +1669,24 @@ pub fn props_used_whole(src: &str, span: Span, name: &str) -> bool {
             seen_param = true;
             return false;
         }
+        // `const { a, b } = props`: field reads, not the whole value (a `...rest` is).
+        if let Some(pattern) = destructured_from(&text[..i]) {
+            return pattern.contains("...");
+        }
         !(after.starts_with('.') || after.starts_with("?.") || after.starts_with(':'))
     })
+}
+
+/// The object pattern of `const { … } = ` that `before` ends with, or `None`.
+fn destructured_from(before: &str) -> Option<&str> {
+    let before = before.trim_end().strip_suffix('=')?;
+    if before.ends_with(['=', '!', '<', '>', '+', '-', '*', '/', '|', '&', '?']) {
+        return None;
+    }
+    let before = before.trim_end().strip_suffix('}')?;
+    let open = before.rfind('{')?;
+    let head = before[..open].trim_end();
+    (head.ends_with("const") || head.ends_with("let")).then(|| &before[open + 1..])
 }
 
 /// `export { a, b }` (no renames, no source): the names.
