@@ -198,6 +198,12 @@ pub struct Tr<'s> {
     pub pattern_defaults: Vec<String>,
     /// The `equal(old, new) { … }` member of the view being declared (a memo comparator).
     pub pending_equal: Option<String>,
+    /// The module constant initialiser being translated (`Tr::constant`): an `as const` list
+    /// that is one is the module constant itself.
+    pub module_init: Option<Span>,
+    /// Module constants an expression inside a function needs (`(['a', 'b'] as const).map(…)`):
+    /// written above the item being translated, in order (`Tr::hoist_const_list`).
+    pub hoisted: Vec<(String, String)>,
 }
 
 impl<'s> Tr<'s> {
@@ -395,6 +401,8 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
+        module_init: None,
+        hoisted: Vec::new(),
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
@@ -492,6 +500,10 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         let comments = tr.comments.before(statement.span().start, true);
         let item = tr.item(statement, &defaults, &program.body);
         let item = if item.is_empty() { item } else { tr.take_reviews() + &item };
+        // A list an expression inside the item took as a module constant goes above it.
+        for (name, list) in std::mem::take(&mut tr.hoisted) {
+            items.push(format!("let {name} = {list}"));
+        }
         if item.is_empty() {
             pending.push_str(&undoc(&comments));
             pending.push_str(&undoc(&tr.comments.before(statement.span().end, false)));
@@ -1727,6 +1739,51 @@ impl<'s> Tr<'s> {
     }
 
     fn constant(
+        &mut self,
+        name: &str,
+        annotation: Option<&oxc_ast::ast::TSTypeAnnotation>,
+        init: &Expression,
+        vis: &'static str,
+        body: &[Statement],
+    ) -> String {
+        let outer = self.module_init.replace(init.without_parentheses().span());
+        let out = self.constant_item(name, annotation, init, vis, body);
+        self.module_init = outer;
+        out
+    }
+
+    /// A list of string literals written `as const` inside a function (`(['videos',
+    /// 'following'] as const).map(…)`, TS's tab lists): a module constant of its own, which
+    /// Bloom types as a list of the literals' union (spec 6.4), named after its values. The
+    /// same list twice in a file is one constant.
+    pub fn hoist_const_list(&mut self, values: &[String], text: String) -> String {
+        if let Some((name, _)) = self.hoisted.iter().find(|(_, list)| *list == text) {
+            return name.clone();
+        }
+        let mut base: String = values
+            .iter()
+            .map(|v| {
+                v.chars()
+                    .map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_uppercase() } else { '_' })
+                    .collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join("_");
+        if base.len() > 32 || base.is_empty() || base.starts_with(|c: char| c.is_ascii_digit()) {
+            base = "VALUES".into();
+        }
+        let mut name = base.clone();
+        let mut n = 2;
+        while self.src.contains(name.as_str()) || self.hoisted.iter().any(|(h, _)| *h == name) {
+            name = format!("{base}_{n}");
+            n += 1;
+        }
+        self.hoisted.push((name.clone(), text));
+        self.used.insert(name.clone());
+        name
+    }
+
+    fn constant_item(
         &mut self,
         name: &str,
         annotation: Option<&oxc_ast::ast::TSTypeAnnotation>,
