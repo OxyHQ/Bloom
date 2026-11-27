@@ -57,15 +57,7 @@ self.$set("enabled", Dictionary$merging(self.enabled, { [PrefKey$id(key)]: on })
 const $view0 = Loading();
 export const SettingsSkeleton = view(function SettingsSkeleton() {
 "use no memo";
-const $ = $c(1);
-let $t0;
-if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t0 = $view0;
-$[0] = $t0;
-} else {
-$t0 = $[0];
-}
-return $t0;
+return $view0;
 });
 
 export function SignInPrompt(message: string): Child {
@@ -80,15 +72,15 @@ export const SettingsSection = view(function SettingsSection(props: SettingsSect
 "use no memo";
 const $ = $c(7);
 const { title, rows } = props;
-let $t1;
+let $t0;
 if ($[4] !== title || $[5] !== rows) {
-$t1 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title).font("headline")) : $[1]), ($[2] !== rows ? ($[2] = rows, $[3] = rows()) : $[3])).spacing("sm");
+$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title).font("headline")) : $[1]), ($[2] !== rows ? ($[2] = rows, $[3] = rows()) : $[3])).spacing("sm");
 $[4] = title;
 $[5] = rows;
-$[6] = $t1;
+$[6] = $t0;
 } else {
-$t1 = $[6];
+$t0 = $[6];
 }
-return $t1;
+return $t0;
 });
 
