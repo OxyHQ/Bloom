@@ -4,4 +4,4 @@ bump: patch
 section: Changed
 ---
 
-- A Bloom app's generated `MainApplication` loads OkHttp's call path on a background thread at start, so the first images of a cold app do not each wait ~50 ms for it, and the HTTP clients React Native makes share one `okhttp3.Cache` (OkHttp allows one per directory).
+- A Bloom app's generated `MainApplication` loads, on a background thread at start, the WebView cookie store React Native's HTTP clients read (~100 ms, which the first images waited on) and OkHttp's call path (~50 ms). The HTTP clients React Native makes share one `okhttp3.Cache` (OkHttp allows one per directory), and they keep OkHttp's 5 requests per host instead of 16.
