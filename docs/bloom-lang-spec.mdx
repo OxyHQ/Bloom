@@ -964,6 +964,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
+| data (BloomData) | `@Model` stores, `@Query`, `Source`, `Realtime`, and `Mutation.make(name, optimistic:) { … }` with `run(input)`, an optimistic change (named as Services' `run`; `Action` is BloomUI's action-bar node) |
 
 `[k: v]` is the dictionary literal (string keys). `Map` and `Set` are the prelude's JS
 collections: a method that changes one gives a new one (`setting`, `inserting`, `removing`

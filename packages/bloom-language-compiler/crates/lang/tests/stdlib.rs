@@ -203,6 +203,33 @@ fn bloom_ui_types_and_recipes_need_no_import() {
 }
 
 #[test]
+fn bloom_uis_action_is_the_action_bars_node_and_bloomdatas_a_mutation() {
+    // R1: the standard library's optimistic change is `Mutation`, so `Action` in an
+    // `ActionBar` is BloomUI's node, not a struct of the standard library.
+    const BAR: &str = r#"func send(_ id: String) async -> Int { id.count }
+
+public struct Bar: View {
+  let like = Mutation.make("like") { (id: String) in await send(id) }
+  var body: some View {
+    ActionBar {
+      ActionGroup {
+        Action(.close, "Close").onPress { Task { await like.run("a") } }
+      }
+    }
+  }
+}
+"#;
+    let root = package("ui-action", &[("Sources/App/Bar.bloom", BAR)]);
+    let path = root.join("Sources/App/Bar.bloom");
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../..");
+    let options = Options { root: Some(repo), ..Options::default() };
+    let out = compile(BAR, &path.to_string_lossy(), &options);
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("Action(RiCloseLine, \"Close\")"), "{}", out.code);
+    assert!(out.code.contains("Mutation$$make(\"like\""), "{}", out.code);
+}
+
+#[test]
 fn a_plural_count_is_a_double() {
     // M4: a TS number is a `Double`, and CLDR plural rules take decimals, so `count:` does;
     // an `Int` widens to it.

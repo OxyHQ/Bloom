@@ -3,7 +3,7 @@ import { c as $c } from "react/compiler-runtime";
 import { Button, HStack, ScrollView, Text, VStack, view } from "@oxy.so/bloom-language";
 import { useState } from "react";
 import { refreshAction } from "../../.bloom/std/Bloom/Concurrency.bloom";
-import { type Source, type SourcePage, type Action, useQuery, useSource, Action$$make, Action$run, ModelStore$insert, ModelStore$update, Source$$make, Source$refresh } from "../../.bloom/std/Bloom/Data.bloom";
+import { type Source, type SourcePage, type Mutation, useQuery, useSource, ModelStore$insert, ModelStore$update, Mutation$$make, Mutation$run, Source$$make, Source$refresh } from "../../.bloom/std/Bloom/Data.bloom";
 import { percentEncoded } from "../../.bloom/std/Bloom/URL.bloom";
 import { type MentionAPI, MentionAPI$delete, MentionAPI$get, MentionAPI$post } from "../API/MentionAPI.bloom";
 import { type Post, type FeedPage, FeedPage$$self, Post$$store, Post$liked } from "../Posts/Post.bloom";
@@ -19,8 +19,8 @@ return { items: page.items, next: page.hasMore ? page.nextCursor : undefined };
 });
 }
 
-export function likeAction(api: MentionAPI): Action<Post, undefined> {
-return Action$$make("post.like", (post: Post) => {
+export function likeMutation(api: MentionAPI): Mutation<Post, undefined> {
+return Mutation$$make("post.like", (post: Post) => {
 const changed = ModelStore$update(Post$$store, post.id, ($0: Post) => Post$liked($0, !post.isLiked));
 if (!changed) {
 ModelStore$insert(Post$$store, Post$liked(post, !post.isLiked));
@@ -56,7 +56,7 @@ return $t0;
 
 export interface HomeFeedProps {
   readonly feed: Source<Post>;
-  readonly like: Action<Post, undefined>;
+  readonly like: Mutation<Post, undefined>;
 }
 export const HomeFeed = view(function HomeFeed(props: HomeFeedProps) {
 "use no memo";
@@ -67,7 +67,7 @@ const [__refreshing0, set__refreshing0] = useState<boolean>(false);
 let $t1;
 if ($[0] !== posts || $[1] !== like || $[2] !== __refreshing0 || $[3] !== feed) {
 $t1 = ScrollView(VStack(...posts.map((post) => HStack(Text(post.text), Button(Text(`${post.stats.likes}`)).onPress(() => void (async () => {
-await (Action$run(like, post));
+await (Mutation$run(like, post));
 })())).spacing("sm")))).refreshable(refreshAction([__refreshing0, set__refreshing0] as const, async () => await (Source$refresh(feed))));
 $[0] = posts;
 $[1] = like;
