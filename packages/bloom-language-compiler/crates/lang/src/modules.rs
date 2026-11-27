@@ -448,8 +448,13 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     }
 
     import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
-    // Two files of a module declaring one name.
+    // Two files of a module declaring one name. A `private` declaration is its file's only,
+    // as TS's file scope is: it shadows a sibling's internal or public name inside this file
+    // (the sibling's is never imported here), and the sibling never sees it.
     for item in &file.items {
+        if item.visibility == Visibility::Private {
+            continue;
+        }
         let name = &item.kind.name().name;
         if let Some(offers) = offered.get(name)
             && let Some(Offer::Bloom { file: other, .. }) =

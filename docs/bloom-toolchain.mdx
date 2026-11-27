@@ -319,7 +319,7 @@ target is an error (B0823).
 | B0804 | a name `private` to another file |
 | B0805 | a dependency cycle |
 | B0806 | a string-path import (or an `extern module`) in an app module |
-| B0807 | one name declared twice in a module, or offered by two imports |
+| B0807 | one name declared twice in a module (a `private` one is its file's own), or offered by two imports |
 | B0810, B0811, B0812 | a manifest that does not evaluate: syntax, an unknown or mistyped argument, a missing one |
 | B0813, B0814, B0815, B0816 | a manifest name, version, unknown package or unknown target |
 | B0820, B0821 | an extern function with a body; an async extern function not declared `throws` |
