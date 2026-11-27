@@ -9,8 +9,8 @@
 //! After `--write`, every TS module under the working directory that imports a
 //! migrated module by an extensionless path (relative, or `@/`) imports it as
 //! `X.bloom` (spec 10), `jest.mock` paths included; the modules that draw a
-//! migrated component as JSX (`<X …/>`) are listed, since a view is drawn as
-//! `toElement(X({ … }))`.
+//! migrated component as JSX (`<X …/>`) draw it as `toElement(X({ … }))` (a view is a node
+//! factory), and the ones it cannot rewrite (a view with children) are listed.
 
 use std::path::{Path, PathBuf};
 
@@ -319,9 +319,16 @@ pub(crate) fn rewrite_importers(
         }
         out.push_str(rest);
         if changed {
+            // `<X …/>` of a migrated view: `toElement(X({ … }))`.
+            let names: Vec<String> = drawn.iter().cloned().collect();
+            let redrawn = bloom_migrate::draw_views_as_nodes(&out, &file.to_string_lossy(), &names);
+            let out = redrawn.clone().unwrap_or(out);
             std::fs::write(&file, &out).map_err(|e| format!("{}: {e}", file.display()))?;
             let shown = file.strip_prefix(root).unwrap_or(&file).display().to_string();
             notes.push(format!("{shown}: imports the .bloom module(s)"));
+            if redrawn.is_some() {
+                notes.push("  draws the migrated views as toElement(X({ … }))".to_string());
+            }
             for name in drawn {
                 let tag = format!("<{name}");
                 let drawn_as_jsx = out.match_indices(&tag).any(|(i, _)| {
