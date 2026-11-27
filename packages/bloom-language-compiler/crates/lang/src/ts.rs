@@ -1230,6 +1230,15 @@ impl Mapper<'_> {
                         Some(self.declared_fn(file, name, &function, &format!("typeof {path}"), depth));
                 }
             }
+            // `const List = (props: ListProps) => <Text … />` in a `.tsx`: a component, as the
+            // function declaration would be (`memo(List, eq)` then names it).
+            TsDecl::Var(Some(TsType::Fn(function))) if is_component_fn(file, name, &function) => {
+                let props = function.params.first().and_then(|p| p.ty.clone());
+                let props = props.map_or(Ty::Unit, |props| {
+                    self.ty(file, &props, &Vec::new(), &format!("Parameters<typeof {path}>[0]"), depth)
+                });
+                mapped.component = Some(props);
+            }
             TsDecl::Var(Some(ty)) => {
                 if let TsType::Ref(reference, args) = &ty
                     && COMPONENT_TYPES.contains(&reference.as_str())
@@ -1330,6 +1339,9 @@ impl Mapper<'_> {
     fn memo_props(&mut self, file: &Rc<TsFile>, inner: &str, path: &str, depth: usize) -> Ty {
         let props = match file.decls.get(inner) {
             Some(TsDecl::Fn(function)) => function.params.first().and_then(|p| p.ty.clone()),
+            Some(TsDecl::Var(Some(TsType::Fn(function)))) => {
+                function.params.first().and_then(|p| p.ty.clone())
+            }
             _ => None,
         };
         match props {

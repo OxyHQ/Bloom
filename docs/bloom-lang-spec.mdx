@@ -475,7 +475,9 @@ to a prop of a TS component whose props Bloom cannot read (`ScreenProps extends 
 as an element too, as a React component's props take one; `import("./types.js").ScreenProps` in a
 declaration names that module's type. A TS `view(function X(props: P) { … })` of the embedded
 language is a node factory, a function from `P` to a view: `Badge(label: "a")` is
-`Badge({ label: "a" })`, not a mounted component.
+`Badge({ label: "a" })`, not a mounted component. An UpperCamel arrow in a `.tsx`
+(`const List = (props: ListProps) => <… />`) is a component as a function declaration is, and so
+is its `memo(List, eq)`.
 
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
