@@ -42,6 +42,20 @@
         "default": "./lib/commonjs/router/index.js"
       }
     },
+    "./screen-host": {
+      "react-native": {
+        "types": "./lib/typescript/module/screen-host.d.ts",
+        "default": "./src/screen-host.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/screen-host.d.ts",
+        "default": "./lib/module/screen-host.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/screen-host.d.ts",
+        "default": "./lib/commonjs/screen-host.js"
+      }
+    },
     "./accordion": {
       "react-native": {
         "types": "./lib/typescript/module/entries/accordion.d.ts",

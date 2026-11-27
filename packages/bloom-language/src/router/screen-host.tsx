@@ -5,6 +5,12 @@
  * bar), a header node of the screen's own, or none; each `.sheet()` is a
  * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
  * sheet on iOS).
+ *
+ * Nothing it reaches imports expo-router (iOS's header asks for it lazily, in a
+ * `try`, as the language's root does): it is also
+ * `@oxy.so/bloom-language/screen-host`, for a navigator that is not
+ * expo-router's (the Bloom router of a Bloom build). A test walks its imports
+ * (__tests__/screen-host.test.tsx).
  */
 import {
   type ComponentProps,
@@ -65,7 +71,7 @@ interface ScreenChrome {
 }
 
 /** The chrome a body's root declares. */
-function chromeOf(root: Child): ScreenChrome {
+function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
   const chrome: ScreenChrome = {
     header: null,
     custom: false,
@@ -112,6 +118,7 @@ function chromeOf(root: Child): ScreenChrome {
     composed = composed.toolbarLeading(...(values.toolbarLeading as Child[]));
   if ('onBack' in values)
     composed = composed.onBack(values.onBack as (() => void) | null | undefined);
+  else if (back) composed = composed.onBack(back);
   if (values.backLabel !== undefined) composed = composed.backLabel(values.backLabel as string);
   if (values.headingLevel !== undefined) {
     composed = composed.headingLevel(values.headingLevel as HeadingLevel);
@@ -122,14 +129,34 @@ function chromeOf(root: Child): ScreenChrome {
   return chrome;
 }
 
+/** What the navigator drawing a screen hands it, beyond the screen's own view. */
+export interface ScreenHostOptions {
+  /**
+   * The Back the screen's header offers when its root says none
+   * (`.onBack()`): the navigator's own, for a screen pushed over another.
+   * Omitted, the header's Back is Bloom's (`BloomProvider back`, a panel's
+   * history) as it is for any Screen. A root's `.onBack()` wins, and
+   * `.onBack(null)` shows none.
+   */
+  readonly back?: () => void;
+}
+
 /**
  * What a `screen()` body's branch draws: a Bloom `Screen` around its root, or
  * the root as it is when it is a surface of its own (`.ownScreen()`), or
  * nothing for `null`.
+ *
+ * ```ts
+ * // a navigator of its own: each route's view as a Bloom screen
+ * function Route({ route }) {
+ *   return drawScreen(destination(route), { back: depth > 0 ? pop : undefined });
+ * }
+ * ```
  */
-export function drawScreen(root: Child): ReactNode {
+export function drawScreen(root: Child, options?: ScreenHostOptions): ReactNode {
   if (root === null || root === undefined || root === false) return null;
-  if (!isNode(root) || valuesOf(root).ownScreen !== true) return <ScreenHost root={root} />;
+  if (!isNode(root) || valuesOf(root).ownScreen !== true)
+    return <ScreenHost root={root} back={options?.back} />;
   const sheets: Extract<Modifier, { kind: 'sheet' }>[] = [];
   for (const modifier of root.modifiers) if (modifier.kind === 'sheet') sheets.push(modifier);
   // The root is the surface: what the Screen would take is dropped, what it would sit in is drawn.
@@ -159,8 +186,13 @@ const AROUND_A_SCREEN: ReadonlySet<string> = new Set(
   GROUP_MODIFIERS.filter((name) => name !== 'id' && name !== 'testID'),
 );
 
-export function ScreenHost({ root }: { root: Child }) {
-  const chrome = chromeOf(root);
+/**
+ * A screen's view as a Bloom `Screen`: its root's chrome (title, toolbar,
+ * header, footer, sheets, …) drawn around its content. `drawScreen` is the
+ * same with `.ownScreen()` and `null` roots answered first.
+ */
+export function ScreenHost({ root, back }: { root: Child } & ScreenHostOptions) {
+  const chrome = chromeOf(root, back);
   // Undecided (the navigator is read after the first render): no header yet, in the page or the bar.
   const bar = useSystemBar();
   const system = bar === true && chrome.header !== null && !chrome.custom;

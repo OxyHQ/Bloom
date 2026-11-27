@@ -43,6 +43,10 @@ module.exports = {
       __dirname,
       '../bloom-language/src/router/index.ts',
     ),
+    '^@oxy.so/bloom-language/screen-host$': path.join(
+      __dirname,
+      '../bloom-language/src/screen-host.ts',
+    ),
     '^@oxy.so/bloom-language/([a-z-]+)$': path.join(
       __dirname,
       '../bloom-language/src/entries/$1.ts',

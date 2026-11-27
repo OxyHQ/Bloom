@@ -1963,6 +1963,42 @@ Screen's header in the page on every platform),
 and kept while it closes. The root's `.testID` names the Screen itself, not a
 box around the content.
 
+### The screen host, without the router
+
+`@oxy.so/bloom-language/screen-host` is what `screen()` draws its body with,
+for a navigator that is not expo-router's: the Bloom router of a Bloom build
+(`bloom build android`, which has no expo-router) draws each route with it, and
+any other navigator of an app's own can. Nothing it reaches imports
+expo-router. On iOS the header asks for expo-router lazily, inside a `try`, to
+be the system navigation bar in expo-router's native stack. Without
+expo-router it is Bloom's `PageHeader`, as it is on Android and the web. That
+is the same file the language's root reaches.
+
+```ts
+import type { Child } from '@oxy.so/bloom-language';
+import { drawScreen } from '@oxy.so/bloom-language/screen-host';
+
+// One route of a navigator of the app's own: its view, with its chrome.
+function Route({ view, depth, pop }: { view: Child; depth: number; pop: () => void }) {
+  return drawScreen(view, { back: depth > 0 ? pop : undefined });
+}
+```
+
+- **`drawScreen(root, { back }?)`.** It is what `screen()` returns for a
+  branch: a Bloom `Screen` with the root's chrome (the modifiers above:
+  `.title`, `.toolbar`, `.header`, `.footer`, `.sheet`, …). A root with
+  `.ownScreen()` is drawn as it is, and `null` draws nothing.
+- **`ScreenHost`.** The component behind it, `<ScreenHost root={view} back={pop} />`,
+  for a root that is always a Screen.
+- **`back`.** The Back the header offers when the root names none: the
+  navigator's own, for a screen pushed over another. A root's `.onBack(fn)`
+  wins, and `.onBack(null)` shows none. Without `back`, the header's Back is
+  Bloom's own (`BloomProvider back`, a panel's history), as for any `Screen`.
+
+It sets no navigator for `navigate()`. In a Bloom build, `push()` and
+`dismiss()` are the standard library's. A host of an app's own provides one, as
+`layout()` and `screen()` do with expo-router's.
+
 ## Overlays and feedback
 
 What a view presents is a modifier on it, as in SwiftUI: a binding
