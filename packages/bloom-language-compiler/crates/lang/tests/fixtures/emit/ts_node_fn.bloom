@@ -1,0 +1,15 @@
+// A TS function (no annotation, in a `.tsx`) that returns an embedded-language view's node,
+// or `null`, is called, as TS called it, not mounted as a React component: mounted, React
+// got the node object ("Objects are not valid as a React child", Mention's AccountBadge).
+import { AccountBadge } from "@/elements/AccountBadge"
+
+public struct Byline: View {
+  let kind: String?
+  var body: some View {
+    let badge = AccountBadge(kind: kind)
+    HStack {
+      Text("by")
+      badge
+    }
+  }
+}

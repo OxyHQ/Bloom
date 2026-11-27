@@ -2069,7 +2069,30 @@ fn is_component_fn(file: &TsFile, name: &str, function: &TsFn) -> bool {
             matches!(m, TsType::Null)
                 || matches!(m, TsType::Ref(r, _) if REACT_ELEMENTS.contains(&r.as_str()))
         }),
-        None => file.tsx,
+        // An unannotated `.tsx` function is a component, unless what it returns is an
+        // embedded-language view's node (or nothing): `return AccountBadgeMarker(props)` with
+        // `AccountBadgeMarker = view(…)`. That is a node factory, called as TS calls it.
+        None => file.tsx && !function.inferred.as_ref().is_some_and(|ret| returns_view_node(file, ret)),
         _ => false,
+    }
+}
+
+/// Whether an inferred result is a view node: a call of the file's `view()` factory, or
+/// `null` beside one.
+fn returns_view_node(file: &TsFile, ret: &TsType) -> bool {
+    let node = |ty: &TsType| match ty {
+        TsType::Ref(name, _) => name == "ViewNode",
+        TsType::Returns(inner) => matches!(&**inner, TsType::Query(name) if matches!(
+            file.decls.get(name),
+            Some(TsDecl::Fn(f)) if matches!(&f.ret, Some(TsType::Ref(r, _)) if r == "ViewNode")
+        )),
+        _ => false,
+    };
+    match ret {
+        TsType::Union(members) => {
+            members.iter().any(node)
+                && members.iter().all(|m| node(m) || matches!(m, TsType::Null | TsType::Undefined))
+        }
+        other => node(other),
     }
 }
