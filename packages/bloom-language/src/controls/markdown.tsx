@@ -82,13 +82,13 @@ const MARKDOWN: Record<MarkdownKind, ControlRenderer> = {
     Object.assign(props, typeof source === 'string' ? { source } : { nodes: source }, {
       streaming: d.own('streaming')?.value,
       onLinkPress: d.own('onLinkPress')?.value,
-      renderText: plainRun === undefined ? undefined : (text: string) => d.runs(plainRun(text)),
+      renderText: plainRun === undefined ? undefined : (text: string) => d.lateRuns(plainRun(text)),
       renderLink:
         linkView === undefined
           ? undefined
           : (link: InlineMarkdownLink) => {
               const runs = linkView(link);
-              return runs === undefined ? undefined : d.runs(runs);
+              return runs === undefined ? undefined : d.lateRuns(runs);
             },
       suffix: suffix === undefined ? undefined : d.runs(suffix),
     });

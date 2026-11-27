@@ -173,7 +173,7 @@ import {
   type VariantStyles,
 } from './style';
 import { Reporting, ReportedState, StateHost } from './state-host';
-import { type ControlDraw, type ControlRenderer, controlOf } from './controls/draw';
+import { type ControlDraw, type ControlRenderer, controlOf, lastOf } from './controls/draw';
 import { drawDialog, presentAround } from './controls/overlays';
 import {
   STATES,
@@ -3256,9 +3256,15 @@ function renderHost(
             : element,
         pressAround: (drawn) => pressAround(palette, p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
-        runs: (runs) => {
-          const drawn = renderRuns(Array.isArray(runs) ? runs : [runs as TextRun], ctx);
-          return drawn.length === 1 ? drawn[0] : draw(Fragment, null, ...drawn);
+        runs: (runs) => drawnRuns(Array.isArray(runs) ? runs : [runs as TextRun], ctx),
+        lateRuns: (runs) => {
+          const list: readonly TextRun[] = Array.isArray(runs) ? runs : [runs as TextRun];
+          let takes = 0;
+          for (const run of list) if (isNode(run)) takes |= readsOf(run);
+          const unread =
+            (takes & READS_ENVIRONMENT && ctx.env === ROOT_ENV ? READS_ENVIRONMENT : 0) |
+            (takes & READS_THEME && ctx.palette === NO_PALETTE ? READS_THEME : 0);
+          return unread === 0 ? drawnRuns(list, ctx) : draw(LateRuns, { runs: list, ctx, unread });
         },
         embed: (content) => drawEmbedded(content, ctx),
         tree: (child) => renderTree(child, ctx),
@@ -3859,6 +3865,38 @@ function renderRuns(runs: readonly TextRun[], ctx: Context): ReactNode[] {
   return out;
 }
 
+/** Runs as one element, drawn as runs of the text they are in. */
+function drawnRuns(runs: readonly TextRun[], ctx: Context): ReactNode {
+  const drawn = renderRuns(runs, ctx);
+  return drawn.length === 1 ? drawn[0] : draw(Fragment, null, ...drawn);
+}
+
+/**
+ * Runs made after their tree was read (`lateRuns`) that take what it did not
+ * read: the environment, the theme or both, read here, where they are drawn.
+ */
+function LateRuns({
+  runs,
+  ctx,
+  unread,
+}: {
+  runs: readonly TextRun[];
+  ctx: Context;
+  unread: number;
+}): ReactNode {
+  const env = unread & READS_ENVIRONMENT ? use(EnvContext) : ctx.env;
+  const palette = unread & READS_THEME ? readPalette() : ctx.palette;
+  return drawnRuns(runs, {
+    ...ctx,
+    env,
+    provided: env,
+    animation: env.animation,
+    scoped: env.animation,
+    palette,
+  });
+}
+LateRuns.displayName = 'BloomLanguage';
+
 /**
  * A language child as a tree of its own: drawn in `ctx`, but painted from the
  * palette read where it is drawn. What a Bloom component that re-themes what
@@ -4037,6 +4075,16 @@ function nodeReads(node: Node): number {
     case 'avatarGroup':
       // Bloom's own component, handed its props as they are (`OWN_READS_NOTHING`).
       break;
+    case 'inlineMarkdown': {
+      // Bloom's InlineMarkdown paints its own runs; a suffix is runs drawn here, and
+      // what its functions make (`plainRun`, `linkView`) reads what it takes where
+      // it is drawn (`lateRuns`).
+      let reads = modifierReads(node.kind, node.modifiers);
+      const suffix = lastOf(node, 'suffix')?.value as TextRun | readonly TextRun[] | undefined;
+      for (const run of Array.isArray(suffix) ? suffix : [suffix])
+        if (isNode(run)) reads |= readsOf(run);
+      return reads;
+    }
     default:
       return READS_BOTH;
   }
@@ -4073,6 +4121,7 @@ const HOST_VIEW_KINDS: ReadonlySet<string> = new Set(HOST_VIEWS);
  * and a link's ink still read.
  */
 const OWN_READS_NOTHING: Readonly<Record<string, ReadonlySet<string>>> = {
+  inlineMarkdown: new Set(['streaming', 'onLinkPress', 'plainRun', 'linkView', 'suffix']),
   avatar: new Set([
     'motion',
     'size',
