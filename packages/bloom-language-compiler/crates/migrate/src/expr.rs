@@ -480,6 +480,18 @@ impl Tr<'_> {
             let class = self.name(&class.name, class.span);
             return format!("{value} is {class}");
         }
+        // `"k" in x` (TS narrowing a union by a key): whether `x.k` is there, under review
+        // (JS's `in` holds for a key set to `undefined` too).
+        if b.operator == BinaryOperator::In
+            && let Expression::StringLiteral(key) = b.left.without_parentheses()
+            && crate::module::is_identifier(key.value.as_str().unwrap_or_default())
+        {
+            let key = key.value.as_str().unwrap_or_default();
+            let value = self.expr(&b.right);
+            let value = if is_postfix_text(&value) { value } else { format!("({value})") };
+            self.review(format!("`\"{key}\" in …` is whether `.{key}` is there (JS also counts a key set to `undefined`)"));
+            return format!("{value}.{key} != none");
+        }
         let op = match b.operator {
             BinaryOperator::StrictEquality | BinaryOperator::Equality => "==",
             BinaryOperator::StrictInequality | BinaryOperator::Inequality => "!=",
