@@ -8,5 +8,5 @@ section: Changed
 - `xs?[i]` is Swift's optional subscript, emitted `xs?.[i]` (it read as `xs?` then `[i]`, an early return).
 - `{}` is the empty record where a struct's optional is expected too (`viewPost?.metadata ?? {}`), where it was read as a closure.
 - `ts.state ?? {}` where the TS type has required fields is TS's `State | {}`: a `Partial<State>`, whose fields read as optional (emitted `{} as Partial<State>`).
-- A `let` keeps the claim of the TS value it holds (`let path = usePathname(); path?.endsWith(…)`).
+- A `let`, and a view's `let` member, keep the claim of the TS value they hold (`let path = usePathname(); path?.endsWith(…)`).
 - A closure's parameter may be wider than the one expected (`{ file: File? in … }` where `(File) -> Unit` is taken), as Swift's `(T?) -> U` fits `(T) -> U`.

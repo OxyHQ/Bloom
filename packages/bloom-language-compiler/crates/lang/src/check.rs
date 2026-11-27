@@ -2386,7 +2386,14 @@ impl<'o> Checker<'o> {
                     if let PatternKind::Bind(name) = &stmt.pattern.kind {
                         self.member_beside_prop(name);
                     }
-                    self.bind_irrefutable(&stmt.pattern, &ty, kind)
+                    let locals = self.bind_irrefutable(&stmt.pattern, &ty, kind);
+                    // `let path = usePathname()`: the member keeps the TS value's claim.
+                    if let ([local], PatternKind::Bind(_)) = (locals.as_slice(), &stmt.pattern.kind)
+                        && self.ts_claimed(&stmt.value, &ty)
+                    {
+                        self.ts_claimed_locals.insert(*local);
+                    }
+                    locals
                 }
                 Member::Fn(f) => {
                     let ty = self.fn_signature(f);

@@ -1,4 +1,5 @@
 import type { FeedMeta, FeedPost } from "@/corpus";
+import type { ComposedView } from "@oxy.so/bloom-language";
 export declare function authorIds(viewPost: FeedPost | undefined): readonly string[];
 export declare function names(post: FeedPost): readonly string[];
 export declare function count(post: FeedPost): number;
@@ -14,3 +15,5 @@ export declare function spoiler(viewPost: FeedPost | undefined): string;
 export declare function isAbout(): boolean;
 export declare function pick(onSelect: (p0: FeedMeta) => void): void;
 export declare function usePick(): void;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Frame())`), or from TSX as `toElement(Frame())`. */
+export declare const Frame: () => ComposedView;

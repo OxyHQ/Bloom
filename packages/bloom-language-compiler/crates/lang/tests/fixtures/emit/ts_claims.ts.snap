@@ -1,3 +1,6 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
 import { type FeedMeta, type FeedPost, currentPath, lookupPost, useViewPost } from "@/corpus";
 
 export function authorIds(viewPost: FeedPost | undefined): readonly string[] {
@@ -70,4 +73,24 @@ return;
 }
 });
 }
+
+export const Frame = view(function Frame() {
+"use no memo";
+const $ = $c(2);
+let path: string;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+path = currentPath();
+$[0] = path;
+} else {
+path = $[0];
+}
+let $t0;
+if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
+$t0 = Text((path?.endsWith("/about") ?? false) ? "about" : "other");
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
 
