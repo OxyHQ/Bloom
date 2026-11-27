@@ -84,6 +84,8 @@ pub struct Mode {
     pub release: bool,
     /// Android through Expo's prebuild and modules (`--with-expo`), not Bloom's own project.
     pub with_expo: bool,
+    /// Write the native project and stop, without building it (`--generate`).
+    pub generate: bool,
     pub device: Option<String>,
     pub jobs: usize,
     pub allow_ts_imports: bool,
@@ -94,6 +96,7 @@ impl Mode {
         Mode {
             release: args.release,
             with_expo: args.with_expo,
+            generate: args.generate,
             device: args.device.clone(),
             jobs: check.jobs,
             allow_ts_imports: check.allow_ts_imports,

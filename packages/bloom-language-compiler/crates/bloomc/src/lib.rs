@@ -4,7 +4,7 @@
 //! bloom new <name> [--template app|module]
 //! bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
 //! bloom fmt [--check] [--jobs N] [paths…]
-//! bloom build web|android|ios [--release] [--with-expo]
+//! bloom build web|android|ios [--release] [--with-expo] [--generate]
 //! bloom run web|android|ios [--release] [--device <serial>] [--with-expo]
 //! bloom test [filter]
 //! bloom add <package> [--from <version>] [--npm <npm-package>]
@@ -46,7 +46,7 @@ const USAGE: &str = "usage:
   bloom new <name> [--template app|module]
   bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
   bloom fmt [--check] [--jobs N] [paths…]
-  bloom build web|android|ios [--release] [--with-expo]
+  bloom build web|android|ios [--release] [--with-expo] [--generate]
   bloom run web|android|ios [--release] [--device <serial>] [--with-expo]
   bloom test [filter]
   bloom add <package> [--from <version>] [--npm <npm-package>]
@@ -69,6 +69,8 @@ struct Args {
     /// `build`/`run android --with-expo`: Expo's prebuild and modules underneath (the
     /// fallback while phase F replaces them, ADR 0002 section 7).
     with_expo: bool,
+    /// `build android --generate`: write the Gradle project (for Android Studio) and stop.
+    generate: bool,
     tsc: bool,
     /// `check --tsc --project <dir>` outside a package: the tsconfig project to check against.
     project: Option<PathBuf>,
@@ -93,6 +95,7 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--dev" => args.dev = true,
             "--release" => args.release = true,
             "--with-expo" => args.with_expo = true,
+            "--generate" => args.generate = true,
             "--tsc" => args.tsc = true,
             "--project" | "-p" => args.project = Some(value(&mut raw, "--project", "a directory")?.into()),
             "--allow-ts-imports" => args.allow_ts_imports = true,

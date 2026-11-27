@@ -134,14 +134,30 @@ fn configs(build: &Path, names: &[String]) -> Result<BTreeMap<String, Value>, St
     }
 }
 
-/// The libraries of the generated app's `package.json` dependencies with Android code.
-pub fn libraries(build: &Path) -> Result<Vec<Library>, String> {
-    let manifest = json::parse(&std::fs::read_to_string(build.join("package.json")).map_err(|e| e.to_string())?)
-        .map_err(|e| format!("package.json: {e}"))?;
-    let mut names: Vec<String> = match manifest.get("dependencies") {
+fn dependencies(manifest: &Value) -> Vec<String> {
+    match manifest.get("dependencies") {
         Value::Object(fields) => fields.keys().cloned().collect(),
         _ => Vec::new(),
-    };
+    }
+}
+
+/// The libraries with Android code among the generated app's `package.json` dependencies,
+/// and among the dependencies of the Expo packages whose JS a Bloom build keeps (`kept`:
+/// their JS draws with them).
+pub fn libraries(build: &Path, kept: &[&str]) -> Result<Vec<Library>, String> {
+    let manifest = json::parse(&std::fs::read_to_string(build.join("package.json")).map_err(|e| e.to_string())?)
+        .map_err(|e| format!("package.json: {e}"))?;
+    let mut names = dependencies(&manifest);
+    for pkg in kept {
+        let path = build.join("node_modules").join(pkg).join("package.json");
+        if let Ok(Ok(kept)) = std::fs::read_to_string(path).map(|t| json::parse(&t)) {
+            for name in dependencies(&kept) {
+                if !names.contains(&name) && build.join("node_modules").join(&name).is_dir() {
+                    names.push(name);
+                }
+            }
+        }
+    }
     names.retain(|n| !is_expo(n) && n != "react-native" && n != "react" && n != "react-dom");
     names.sort();
     let configs = configs(build, &names)?;
@@ -154,7 +170,7 @@ pub fn libraries(build: &Path) -> Result<Vec<Library>, String> {
         }
         let field = |key: &str| config.map(|c| c.get(key)).and_then(|v| v.as_str()).map(str::to_string);
         let source_dir = match field("sourceDir") {
-            Some(dir) => root.join(dir),
+            Some(dir) => crate::files::normalize(&root.join(dir)),
             None => root.join("android"),
         };
         if !source_dir.join("build.gradle").is_file() && !source_dir.join("build.gradle.kts").is_file() {
@@ -173,7 +189,7 @@ pub fn libraries(build: &Path) -> Result<Vec<Library>, String> {
             .unwrap_or(Value::Null);
         let library_name = field("libraryName").or_else(|| pkg.get("codegenConfig").get("name").as_str().map(str::to_string));
         let cmake_lists = match field("cmakeListsPath") {
-            Some(path) => source_dir.join(path),
+            Some(path) => crate::files::normalize(&source_dir.join(path)),
             None => source_dir.join("build/generated/source/codegen/jni/CMakeLists.txt"),
         };
         let descriptors = match config.map(|c| c.get("componentDescriptors")) {

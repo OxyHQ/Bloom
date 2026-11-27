@@ -65,6 +65,9 @@ const KEPT: &[&str] = &["expo-router", "expo-status-bar", "expo-glass-effect"];
 pub fn tools() -> Vec<(String, String)> {
     let rn = crate::expo::RUNTIME.iter().find(|(n, _)| *n == "react-native").map_or("*", |(_, v)| v);
     vec![
+        // Bloom's packages ship their TS sources to React Native (`react-native` in their
+        // package.json), which write `export * as tokens from …`.
+        ("@babel/plugin-transform-export-namespace-from".to_string(), "7.29.7".to_string()),
         ("@react-native/babel-preset".to_string(), rn.to_string()),
         ("@react-native/metro-config".to_string(), rn.to_string()),
     ]
@@ -182,8 +185,8 @@ module.exports = withBloomLanguage(config);
     write(
         &build.join("babel.config.js"),
         &format!(
-            r#"{header}// React Native's preset, Reanimated's worklets, and the one build-time constant the
-// Expo packages that remain read (`process.env.EXPO_OS`, the platform).
+            r#"{header}// React Native's preset, Reanimated's worklets, `export * as` (Bloom's TS sources), and the
+// one build-time constant the Expo packages that remain read (`process.env.EXPO_OS`).
 function inlinePlatform({{ types: t }}) {{
   return {{
     visitor: {{
@@ -199,7 +202,11 @@ module.exports = function (api) {{
   api.cache.using(() => platform);
   return {{
     presets: ['module:@react-native/babel-preset'],
-    plugins: [[inlinePlatform, {{ platform }}], 'react-native-worklets/plugin'],
+    plugins: [
+      [inlinePlatform, {{ platform }}],
+      '@babel/plugin-transform-export-namespace-from',
+      'react-native-worklets/plugin',
+    ],
   }};
 }};
 "#
@@ -454,6 +461,8 @@ fn versions(build: &Path) -> BTreeMap<String, String> {
 /// `.bloom/` (which is regenerated).
 struct Signing {
     store: PathBuf,
+    /// The password as Gradle reads it (a Groovy expression): from the environment or the
+    /// owner-only file beside the keystore, so it is never written into the generated project.
     password: String,
     alias: String,
 }
@@ -480,8 +489,11 @@ fn signing(package: &Package, release: bool) -> Result<Signing, String> {
     if release && let Some(store) = std::env::var_os("BLOOM_ANDROID_KEYSTORE") {
         return Ok(Signing {
             store: PathBuf::from(store),
-            password: std::env::var("BLOOM_ANDROID_KEYSTORE_PASSWORD")
-                .map_err(|_| "BLOOM_ANDROID_KEYSTORE needs BLOOM_ANDROID_KEYSTORE_PASSWORD")?,
+            password: {
+                std::env::var("BLOOM_ANDROID_KEYSTORE_PASSWORD")
+                    .map_err(|_| "BLOOM_ANDROID_KEYSTORE needs BLOOM_ANDROID_KEYSTORE_PASSWORD")?;
+                "System.getenv(\"BLOOM_ANDROID_KEYSTORE_PASSWORD\")".into()
+            },
             alias: std::env::var("BLOOM_ANDROID_KEY_ALIAS").unwrap_or_else(|_| "upload".into()),
         });
     }
@@ -491,7 +503,7 @@ fn signing(package: &Package, release: bool) -> Result<Signing, String> {
         if !store.is_file() {
             keytool(&store, "androiddebugkey", "android", "CN=Android Debug,O=Android,C=US")?;
         }
-        return Ok(Signing { store, password: "android".into(), alias: "androiddebugkey".into() });
+        return Ok(Signing { store, password: quote("android"), alias: "androiddebugkey".into() });
     }
     let id = app_id(package);
     let store = dir.join(format!("{id}.keystore"));
@@ -514,8 +526,11 @@ fn signing(package: &Package, release: bool) -> Result<Signing, String> {
         }
         println!("bloom: created the release key {} (keep it: updates are signed with it)", store.display());
     }
-    let password = std::fs::read_to_string(&secret).map_err(|e| format!("{}: {e}", secret.display()))?;
-    Ok(Signing { store, password: password.trim().to_string(), alias: "upload".into() })
+    if !secret.is_file() {
+        return Err(format!("{}: the release key's password is missing", secret.display()));
+    }
+    let password = format!("new File({}).text.trim()", quote(&secret.to_string_lossy()));
+    Ok(Signing { store, password, alias: "upload".into() })
 }
 
 /// The launcher icon: the package's PNG, else Bloom's (an adaptive vector).
@@ -646,9 +661,9 @@ fn write_gradle(package: &Package, libraries: &[autolink::Library], release: boo
         format!(
             "    {name} {{\n      storeFile file({})\n      storePassword {}\n      keyAlias {}\n      keyPassword {}\n    }}\n",
             quote(&s.store.to_string_lossy()),
-            quote(&s.password),
+            s.password,
             quote(&s.alias),
-            quote(&s.password)
+            s.password
         )
     };
     let mut signing_configs = signing_block("debug", &debug);
@@ -811,7 +826,7 @@ fn prepare(package: &Package, mode: &Mode) -> Result<bool, String> {
     crate::deps::install(package)?;
     let build = package.build_dir();
     let natives = native_modules(package)?;
-    let mut libraries = autolink::libraries(&build)?;
+    let mut libraries = autolink::libraries(&build, KEPT)?;
     for native in &natives {
         libraries.push(write_native_library(&build, native)?);
     }
@@ -826,6 +841,10 @@ pub fn build(package: &Package, mode: &Mode) -> Result<Option<PathBuf>, String> 
         return Ok(None);
     }
     let android = package.build_dir().join("android");
+    if mode.generate {
+        println!("bloom: the Gradle project is in {} (open it in Android Studio)", shown_rel(package, &android));
+        return Ok(Some(android));
+    }
     let variant = if mode.release { "Release" } else { "Debug" };
     let abis = std::env::var("BLOOM_ANDROID_ABIS").unwrap_or_else(|_| "x86_64".into());
     run_in(&android, "./gradlew", &[&format!("assemble{variant}"), &format!("-PreactNativeArchitectures={abis}")])?;
