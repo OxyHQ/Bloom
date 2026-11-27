@@ -1,0 +1,13 @@
+// A hook in a branch or on the right of `||`/`&&`/`??` runs only on some renders (B0420), even
+// as a view member's value; one given as a member call's argument runs on every render.
+import { useAccountOf, useRoutedName } from "@/corpus"
+
+public struct Shop: View {
+  let picked = true ? useAccountOf("a") : useAccountOf("b")
+  let loading = useAccountOf("c").loading || useAccountOf("d").loading
+  let account = useAccountOf(useRoutedName())
+
+  var body: some View {
+    Text(account.name)
+  }
+}
