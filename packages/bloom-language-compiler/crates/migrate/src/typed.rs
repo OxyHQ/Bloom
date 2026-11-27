@@ -11,8 +11,9 @@
 use bloom_lang::Diagnostic;
 use std::collections::HashMap;
 
-/// `source` with each member bloomc named respelled, or `None` when there is none.
-pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
+/// `source` with each member bloomc named respelled, or `None` when there is none. `ts` is the
+/// file's TS text: a fallback the codemod wrote itself is told from the source's by it.
+pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String> {
     let mut edits: Vec<(usize, usize, String)> = Vec::new();
     for d in diagnostics {
         let (start, end) = (d.span.start as usize, d.span.end as usize);
@@ -634,6 +635,21 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 } else {
                     None
                 }
+            }
+            // `(x ?? 0) > 0`, `(x ?? "") != ""`: a fallback the codemod wrote itself for a test of an
+            // optional, where bloomc has since narrowed `x` present. The source had no `x ??`, so
+            // nothing it guarded is dropped: the read is `x`.
+            ("B0201", _)
+                if d.message.starts_with("`??` gives a fallback")
+                    && crate::expr::is_postfix_text(text)
+                    && source[..start].ends_with('(')
+                    && !ts.contains(&format!("{text} ??")) =>
+            {
+                let rest = &source[end..];
+                ["?? 0)", "?? \"\")"].iter().find_map(|own| {
+                    let at = rest.len() - rest.trim_start().len();
+                    rest[at..].starts_with(own).then(|| (start - 1, end + at + own.len(), text.to_string()))
+                })
             }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
             ("B0201", _) => {
