@@ -1,0 +1,3 @@
+export declare function handle(username: string | undefined, handle: string | undefined): string | undefined;
+export declare function link(apply: string | undefined, source: string | undefined, canonical: string, alt: string): string;
+export declare function label(name: string | undefined, nick: string | undefined): string;
