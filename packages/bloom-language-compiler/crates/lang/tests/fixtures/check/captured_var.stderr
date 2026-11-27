@@ -1,0 +1,23 @@
+error[B0402]: `seen` is a `var`, and a closure cannot capture it
+ --> check/captured_var.bloom:6:5
+  |
+4 |   var seen = 0
+  |       ---- declared here
+  |
+6 |     seen += 1
+  |     ^^^^ captured here
+  |
+help: bind its value to a `let` before the closure, or make it `@state` (a function's own `var` may be captured; a view's render and a hook function's may not)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0402]: `seen` is a `var`, and a closure cannot capture it
+ --> check/captured_var.bloom:7:12
+  |
+4 |   var seen = 0
+  |       ---- declared here
+  |
+7 |     return seen
+  |            ^^^^ captured here
+  |
+help: bind its value to a `let` before the closure, or make it `@state` (a function's own `var` may be captured; a view's render and a hook function's may not)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
