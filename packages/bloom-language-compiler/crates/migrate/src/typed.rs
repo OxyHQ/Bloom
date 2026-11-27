@@ -662,6 +662,53 @@ fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize
     Some((at, close, format!("task {{\ndo {{\ntry await {receiver}\n}} catch let {name} {{\n{body}\n}}\n}}")))
 }
 
+/// The JS members the codemod renamed (`length` → `count`, `trim()` → `trimmed()`, …) put back
+/// where bloomc types the receiver `Foreign`: there the member is TS's own, emitted as written.
+pub fn foreign_js_names(source: &str, filename: &str, options: &bloom_lang::Options) -> Option<String> {
+    const NAMES: &[(&str, &str)] = &[
+        ("count", "length"),
+        ("trimmed", "trim"),
+        ("contains", "includes"),
+        ("joined", "join"),
+        ("lowercased", "toLowerCase"),
+        ("uppercased", "toUpperCase"),
+    ];
+    let checked = bloom_lang::check(source, filename, options);
+    let mut ends: std::collections::HashMap<usize, &str> = std::collections::HashMap::new();
+    for (span, ty) in &checked.types {
+        let end = span.end as usize;
+        // The widest expression ending there is the receiver.
+        ends.entry(end).or_insert(ty.as_str());
+        if ty.starts_with("Foreign") {
+            ends.insert(end, ty.as_str());
+        }
+    }
+    let mut edits: Vec<(usize, usize, &str)> = Vec::new();
+    for (bloom, js) in NAMES {
+        for (at, _) in source.match_indices(&format!(".{bloom}")) {
+            let name_start = at + 1;
+            let name_end = name_start + bloom.len();
+            let next = source[name_end..].chars().next();
+            if next.is_some_and(|c| c.is_alphanumeric() || c == '_') {
+                continue;
+            }
+            let receiver_end = if source[..at].ends_with('?') { at - 1 } else { at };
+            if ends.get(&receiver_end).is_some_and(|ty| ty.starts_with("Foreign")) {
+                edits.push((name_start, name_end, js));
+            }
+        }
+    }
+    if edits.is_empty() {
+        return None;
+    }
+    edits.sort_by_key(|(start, ..)| std::cmp::Reverse(*start));
+    let mut out = source.to_string();
+    for (start, end, text) in edits {
+        out.replace_range(start..end, text);
+    }
+    Some(out)
+}
+
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
 fn braced(source: &str, start: usize, end: usize) -> bool {
     source[..start].trim_end().ends_with('{') && source[end..].trim_start().starts_with('}')

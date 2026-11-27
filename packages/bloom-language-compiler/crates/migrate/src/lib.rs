@@ -162,6 +162,17 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
         formatted = reformatted;
         compiled = bloom_lang::compile(&formatted, &target, options);
     }
+    // A renamed JS member on a `Foreign` receiver is TS's own: written back as JS wrote it.
+    if compiled.diagnostics.is_empty()
+        && let Some(js) = typed::foreign_js_names(&formatted, &target, options)
+        && let Ok(reformatted) = bloom_fmt::format(&js, &target)
+    {
+        let again = bloom_lang::compile(&reformatted, &target, options);
+        if again.diagnostics.is_empty() {
+            formatted = reformatted;
+            compiled = again;
+        }
+    }
     if !compiled.diagnostics.is_empty() {
         let reasons = compiled
             .diagnostics
