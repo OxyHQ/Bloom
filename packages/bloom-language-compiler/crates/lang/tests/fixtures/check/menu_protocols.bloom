@@ -1,0 +1,23 @@
+// A menu's actions are a tag → action table, and neither they nor a menu's content take a
+// view's modifiers.
+public struct Actions: MenuActions {
+  let id: String
+  var body: [String: () -> Unit] {
+    ["open": id]
+  }
+}
+
+public struct Rows: MenuContent {
+  var body: some View {
+    Item("Open").tag("open")
+  }
+}
+
+public struct Row: View {
+  var body: some View {
+    Menu(Text("More")) {
+      Rows().padding("md")
+    }
+    .actions(Actions(id: "a"))
+  }
+}

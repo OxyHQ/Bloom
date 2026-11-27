@@ -2112,7 +2112,7 @@ impl Checker<'_> {
             .and_then(|slot| f.params[slot].name.clone());
         self.witnesses_of(expr, call.callee.span, &f);
         self.out.calls.insert(expr.id, CallRes::View { params, trailing, witnesses });
-        Ty::View(Some("view"))
+        f.ret.clone()
     }
 
     /// `.name(…)` on a view: the node takes it, with that many arguments, each
@@ -2145,7 +2145,11 @@ impl Checker<'_> {
         }
         let kind = kind.unwrap_or("view");
         let Some(spec) = ui::node(kind) else { return recv.clone() };
-        let ctor = spec.constructors.first().copied().unwrap_or("A view");
+        let ctor = spec.constructors.first().copied().unwrap_or(match kind {
+            "menuActions" => "MenuActions",
+            "menuContent" => "MenuContent",
+            _ => "A view",
+        });
         let Some(params) = ui::modifier_params(spec, &name.name) else {
             let takers = ui::takers(&name.name);
             let help = match closest(&name.name, spec.modifiers.iter().copied()) {
