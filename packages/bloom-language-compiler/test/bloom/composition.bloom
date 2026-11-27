@@ -1,0 +1,16 @@
+/// Protocol composition in constraints: `<T: P & Q>`, `where T: P & Q`, `type PQ = P & Q`.
+public protocol Named {
+  var name: String { get }
+}
+public protocol Counted {
+  var count: Int { get }
+}
+public type NamedCounted = Named & Counted
+public struct Tag: Named, Counted {
+  let name: String
+  let count: Int
+}
+func label<T: Named & Counted>(_ x: T) -> String { "\(x.name) \(x.count)" }
+func label2<T>(_ x: T) -> String where T: Named & Counted { "\(x.name) \(x.count)" }
+func label3<T: NamedCounted>(_ x: T) -> String { "\(x.name) \(x.count)" }
+public func all() -> String { label(Tag(name: "a", count: 1)) + label2(Tag(name: "b", count: 2)) + label3(Tag(name: "c", count: 3)) }

@@ -355,7 +355,9 @@ other arguments, so `T` is what a typed argument says (a TS literal union) and t
 checked against it; alone, they make it a `String`.
 
 A type parameter may be constrained (2.0): `func firstIndex<T: Equatable>(_ xs: [T], of x: T)`,
-`<T: Titled & Equatable>`, `where T: Titled`. Inside the function, a `T: P` value reads `P`'s
+`<T: Titled & Equatable>`, `where T: Titled & Equatable`, or a module's `type TitledValue =
+Titled & Equatable` named in one (`<T: TitledValue>`): a composition is one constraint per
+protocol, and only a constraint (B0232 as a value's type; `any P & Q` is not yet). Inside the function, a `T: P` value reads `P`'s
 requirements (section 4.8) and a `T: Equatable` value compares with `==`. Dispatch is static:
 each constraint is one more parameter, a *witness* (`$w_T_P`), which the call site fills for
 the type it inferred: the conformance's witness object `Post$$Titled`, or for `Equatable` the

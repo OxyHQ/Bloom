@@ -106,6 +106,7 @@ fn names<'a>(ty: &'a TypeExpr, f: &mut impl FnMut(&'a Ident)) {
             names(ret, f);
         }
         TypeKind::Record(fields) => fields.iter().for_each(|(_, ty)| names(ty, f)),
+        TypeKind::Composition(parts) => parts.iter().for_each(|p| names(p, f)),
         TypeKind::Strings(_) | TypeKind::Error => {}
     }
 }
