@@ -229,6 +229,8 @@ impl Tr<'_> {
             return Some(format!("..{name}: {ty}"));
         }
         let mut spread = None;
+        // Fields of a props type written in another TS file, written out (2.0 has no `..Props`).
+        let mut external: Vec<crate::props::Field> = Vec::new();
         let members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
             TSType::TSTypeReference(reference) => {
@@ -242,14 +244,21 @@ impl Tr<'_> {
                         && self.imported.contains(base.as_str())
                         && reference.type_arguments.is_none() =>
                     {
-                        spread = Some(self.name(&base, id.span));
+                        match self.external_props(&base) {
+                            Some(fields) => external = fields,
+                            None => spread = Some(self.name(&base, id.span)),
+                        }
                         members
                     }
-                    // Props typed elsewhere (`X.types.ts`): their fields spread in (`..XProps`).
+                    // Props typed elsewhere (`X.types.ts`): their fields written out when the
+                    // codemod can read them, else spread in (`..XProps`, which stays 0.x).
                     None if self.imported.contains(id.name.as_str())
                         && reference.type_arguments.is_none() =>
                     {
-                        spread = Some(self.name(&id.name, id.span));
+                        match self.external_props(&id.name) {
+                            Some(fields) => external = fields,
+                            None => spread = Some(self.name(&id.name, id.span)),
+                        }
                         Vec::new()
                     }
                     None => {
@@ -418,7 +427,36 @@ impl Tr<'_> {
             };
             out.push(text);
         }
+        for field in external {
+            let default = defaults.iter().find(|(k, _)| *k == field.name).map(|(_, e)| *e);
+            let ty = field.ty;
+            let declared = if field.optional && default.is_none() { optional_ty(&ty) } else { ty.clone() };
+            self.scope.decl.insert(field.name.clone(), declared);
+            let name = field.name;
+            out.push(match (default, field.optional) {
+                (Some(value), _) => {
+                    let value = self.expr(value);
+                    format!("{name}: {ty} = {value}")
+                }
+                (None, true) => format!("{name}: {} = none", optional_ty(&ty)),
+                (None, false) => format!("{name}: {ty}"),
+            });
+        }
         Some(out.join(", "))
+    }
+
+    /// The fields of a props type imported from another TS file, with the types they
+    /// name imported here (`None`: they cannot be written out).
+    fn external_props(&mut self, name: &str) -> Option<Vec<crate::props::Field>> {
+        let specifier = self.import_sources.get(name)?.clone();
+        let (fields, imports) = crate::props::external_fields(&self.filename, &specifier, name)?;
+        for (source, ty) in imports {
+            self.used.insert(ty.clone());
+            if !self.imported.contains(&ty) && !self.extra_imports.contains(&(source.clone(), ty.clone())) {
+                self.extra_imports.push((source, ty));
+            }
+        }
+        Some(fields)
     }
 
     /// A value where a local union is expected: its string literal is the case.

@@ -58,15 +58,22 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     && !source[..start].trim_end().ends_with("==") =>
             {
                 let before = source[..start].trim_end().trim_end_matches('=').trim_end();
-                let name_start = before.rfind(|c: char| !(c.is_alphanumeric() || c == '_')).map_or(0, |i| i + 1);
+                let name_start =
+                    before.rfind(|c: char| !(c.is_alphanumeric() || c == '_')).map_or(0, |i| i + 1);
                 let name = &before[name_start..];
                 let decl = format!("@state {name} = ");
                 source.find(&decl).filter(|_| !name.is_empty()).and_then(|at| {
                     let value_at = at + decl.len();
-                    let literal: String = source[value_at..].chars().take_while(|c| c.is_ascii_digit()).collect();
+                    let literal: String =
+                        source[value_at..].chars().take_while(|c| c.is_ascii_digit()).collect();
                     let after = source[value_at + literal.len()..].chars().next();
-                    (!literal.is_empty() && after.is_none_or(|c| c == '\n' || c == ' '))
-                        .then(|| (at + "@state ".len() + name.len(), at + "@state ".len() + name.len(), ": Float".to_string()))
+                    (!literal.is_empty() && after.is_none_or(|c| c == '\n' || c == ' ')).then(|| {
+                        (
+                            at + "@state ".len() + name.len(),
+                            at + "@state ".len() + name.len(),
+                            ": Float".to_string(),
+                        )
+                    })
                 })
             }
             // `xs.count < max` with a `Float` max (a TS `number`): JS compared numbers, so the
@@ -725,8 +732,18 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
     let mut parts: Vec<(usize, usize)> = Vec::new();
     let (mut depth, mut quoted, mut from) = (0i32, false, 0usize);
     let mut prev = ' ';
+    let mut comment = false;
     for (i, c) in inner.char_indices() {
+        // A line comment among the arguments (`a: x, // why`) is skipped to its line's end.
+        if comment {
+            if c == '\n' {
+                comment = false;
+            }
+            prev = c;
+            continue;
+        }
         match c {
+            '/' if !quoted && inner[i..].starts_with("//") => comment = true,
             '"' if prev != '\\' => quoted = !quoted,
             '(' | '[' | '{' if !quoted => depth += 1,
             ')' | ']' | '}' if !quoted => depth -= 1,
@@ -741,12 +758,28 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
     if !inner[from..].trim().is_empty() {
         parts.push((from, inner.len()));
     }
+    // A part's code without the comment lines before it.
+    let code = |s: usize, e: usize| -> &str {
+        let mut part = inner[s..e].trim();
+        while part.starts_with("//") {
+            part = part.split_once('\n').map_or("", |(_, rest)| rest).trim();
+        }
+        part
+    };
     let named = |&(s, e): &(usize, usize)| {
-        let part = inner[s..e].trim();
+        let part = code(s, e);
         part.split_once(':').is_some_and(|(k, _)| {
             let k = k.trim();
             !k.is_empty() && k.chars().all(|c| c.is_alphanumeric() || c == '_')
         })
+    };
+    // A trailing comment after the last comma is not an argument.
+    let trailing_comment = parts.last().is_some_and(|&(s, e)| code(s, e).is_empty());
+    let (parts, tail) = if trailing_comment {
+        let (&last, rest) = parts.split_last()?;
+        (rest.to_vec(), inner[last.0..last.1].trim().to_string())
+    } else {
+        (parts, String::new())
     };
     let first = parts.iter().position(named)?;
     if !parts[first..].iter().all(named) {
@@ -755,7 +788,14 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
     let fields: Vec<&str> = parts[first..].iter().map(|&(s, e)| inner[s..e].trim()).collect();
     let start = a + parts[first].0;
     let lead = if first == 0 { "" } else { " " };
-    Some((start, b, format!("{lead}{{ {} }}", fields.join(", "))))
+    // With comments among them, one field a line (a `//` would swallow the rest of a line).
+    let commented = !tail.is_empty() || fields.iter().any(|f| f.contains("//"));
+    let record = if commented {
+        format!("{lead}{{\n{},\n{tail}\n}}", fields.join(",\n"))
+    } else {
+        format!("{lead}{{ {} }}", fields.join(", "))
+    };
+    Some((start, b, record))
 }
 
 /// `receiver.then { v in body }` as a statement: the task that awaits it, then runs `body`.
