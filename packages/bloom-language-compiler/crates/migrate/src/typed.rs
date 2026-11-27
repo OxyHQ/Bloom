@@ -18,6 +18,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         let edit = match (d.code, text) {
             // `s.has(x)`, `m.size`: a Bloom `Set`/`Map` has `contains` and `count`.
             ("B0209", "has") if collection => Some((start, end, "contains".to_string())),
+            // `xs?[0]` from JS's `xs?.[0]`, where TS typed `xs` present (a TS value, `Foreign`):
+            // there is nothing to unwrap, so the read is `xs[0]`, as JS read it.
+            ("B0214", _)
+                if d.message.starts_with("`?` unwraps a `Result` or an optional, and this is `Foreign(")
+                    && text.ends_with('?')
+                    && source[end..].starts_with('[') =>
+            {
+                Some((end - 1, end, String::new()))
+            }
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
             // `m.values()`, `m.keys()`, `m.entries()`: a Bloom `Map`/`Set`'s lists.
             ("B0209", "values" | "keys" | "entries") if collection && source[end..].starts_with("()") => {
