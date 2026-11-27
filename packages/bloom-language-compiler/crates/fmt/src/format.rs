@@ -784,7 +784,7 @@ impl<'a> Formatter<'a> {
                 // any other `@ref x = v`: a `Ref(v)`, read as `x.value`.
                 Entry::Member(Member::State(state)) if state.attr == StateAttr::Ref => {
                     let name = state.name.name.clone();
-                    let value = match host_ref(state, &view_text) {
+                    let value = match host_ref(state, view_text) {
                         Some(inner) => text(format!("ViewRef<{}>()", this.slice(inner))),
                         None => {
                             let ty = state.ty.as_ref().map(|t| format!("<{}>", this.slice(t.span)));
