@@ -23,6 +23,7 @@ pub mod i18n;
 #[path = "icons.generated.rs"]
 pub mod icons;
 mod lexer;
+mod memo;
 mod model;
 pub mod modules;
 pub mod native;
@@ -263,6 +264,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
 fn lowered(source: &str) -> (Ast, Vec<Diagnostic>) {
     let (mut file, _, syntax) = parser::parse(source);
     extensions::lower(&mut file);
+    memo::lower(&mut file);
     (file, syntax)
 }
 
