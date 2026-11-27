@@ -49,7 +49,8 @@ pub fn migrate(source: &str, filename: &str) -> Result<(String, Vec<String>), Ve
     // left (each round can expose the types a newly public one names).
     let mut publicize: Vec<String> = Vec::new();
     let (out, notes) = loop {
-        let migration = Migration { labels: labels(&file), publicize: publicize.clone(), notes: Vec::new() };
+        let migration =
+            Migration { labels: labels(&file), publicize: publicize.clone(), notes: Vec::new(), refs: Vec::new() };
         let mut formatter = format::Formatter::migrating(source, &comments, migration);
         let doc = formatter.file(&file);
         let notes = formatter.into_notes();
