@@ -5682,6 +5682,77 @@ impl<'a> Emitter<'a> {
     // ---- declarations -----------------------------------------------------------
 
     /// `Name.d.bloom.ts`: what TypeScript importers of the module see.
+    /// A view's declarations: its props interface (`export` or not) and its factory.
+    fn view_dts(
+        &mut self,
+        index: usize,
+        v: &ViewDecl,
+        visibility: Visibility,
+        export: &str,
+        out: &mut String,
+        uses_composed: &mut bool,
+    ) {
+        let local = self.ck.items[&index];
+        let Ty::Fn(fn_ty) = self.ck.locals[local].ty.clone() else { return };
+        let mut props_name = format!("{}Props", v.name.name);
+        let spreads = self.ck.views.get(&index).map(|i| i.spreads.clone()).unwrap_or_default();
+        if spreads.iter().any(|(ty, _)| self.ts_type(ty) == props_name) {
+            // `view PostCard(..PostCardProps)`: its own name is taken.
+            props_name = format!("{}ViewProps", v.name.name);
+        }
+        let witness_props = self.witness_params(v.span, &v.generics);
+        let generics = self.shaped_generics(&v.generics, v.span);
+        let has_props = !fn_ty.params.is_empty() || !witness_props.is_empty();
+        if has_props {
+            let mut fields: Vec<String> = fn_ty
+                .params
+                .iter()
+                .map(|p| {
+                    format!(
+                        "  readonly {}{}: {};",
+                        prop_key(p.name.as_deref().unwrap_or_default()),
+                        if p.optional { "?" } else { "" },
+                        self.ts_type(&p.ty)
+                    )
+                })
+                .collect();
+            fields.extend(witness_props.iter().map(|w| format!("  readonly {w};")));
+            out.push_str(&format!(
+                "{export}interface {props_name}{generics} {{\n{}\n}}\n",
+                fields.join("\n")
+            ));
+        }
+        let own_props = format!("{props_name}{}", self.generics(&v.generics));
+        let props = if has_props { format!("props: {own_props}") } else { String::new() };
+        match v.kind {
+            ViewKind::View => {
+                *uses_composed = true;
+                out.push_str(&format!(
+                        "/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack({}())`), or from TSX as `toElement({}())`. */\n",
+                        v.name.name, v.name.name
+                    ));
+                out.push_str(&format!(
+                    "export declare const {}: {generics}({props}) => ComposedView;\n",
+                    v.name.name
+                ));
+                if visibility == Visibility::PubDefault {
+                    out.push_str(&format!("export default {};\n", v.name.name));
+                }
+            }
+            _ => {
+                let props_ty = if fn_ty.params.is_empty() { "{}".to_string() } else { props_name };
+                if v.surface.is_some() && self.named_screens {
+                    out.push_str(&format!(
+                        "export declare const {}: import(\"react\").ComponentType<{props_ty}>;\n",
+                        v.name.name
+                    ));
+                } else {
+                    out.push_str(&format!("declare const _default: import(\"react\").ComponentType<{props_ty}>;\nexport default _default;\n"));
+                }
+            }
+        }
+    }
+
     fn dts(&mut self, file: &File) -> String {
         let mut out = String::new();
         let mut uses_composed = false;
@@ -5699,6 +5770,37 @@ impl<'a> Emitter<'a> {
                 ItemKind::Protocol(p) => out.push_str(&self.protocol_decl(p, "export ").text),
                 ItemKind::Extension(_) | ItemKind::Extern(_) | ItemKind::Test(_) => {}
                 ItemKind::Const(c) => {
+                    // `public let PostItem = PostItemContent` (TS's `memo(PostItemContent, eq)`):
+                    // the view itself, not a function of its fields. A private view's props
+                    // are declared beside it, unexported.
+                    if let ExprKind::Name(target) = &c.value.kind
+                        && let Some((view_index, ItemKind::View(v))) = file
+                            .items
+                            .iter()
+                            .enumerate()
+                            .find(|(_, i)| i.kind.name().name == *target)
+                            .map(|(i, item)| (i, &item.kind))
+                        && v.kind == ViewKind::View
+                    {
+                        // A private view is declared here, unexported: `typeof` names it.
+                        if !file.items[view_index].visibility.exported(self.options.modules) {
+                            let mut private = String::new();
+                            self.view_dts(
+                                view_index,
+                                v,
+                                Visibility::Private,
+                                "",
+                                &mut private,
+                                &mut uses_composed,
+                            );
+                            out.push_str(&private.replace("export declare const ", "declare const "));
+                        }
+                        out.push_str(&format!(
+                            "export declare const {}: typeof {target};\n",
+                            js_name(&c.name.name)
+                        ));
+                        continue;
+                    }
                     let local = self.ck.items[&index];
                     let ty = self.ck.locals[local].ty.clone();
                     out.push_str(&format!(
@@ -5737,66 +5839,7 @@ impl<'a> Emitter<'a> {
                     ));
                 }
                 ItemKind::View(v) => {
-                    let local = self.ck.items[&index];
-                    let Ty::Fn(fn_ty) = self.ck.locals[local].ty.clone() else { continue };
-                    let mut props_name = format!("{}Props", v.name.name);
-                    let spreads = self.ck.views.get(&index).map(|i| i.spreads.clone()).unwrap_or_default();
-                    if spreads.iter().any(|(ty, _)| self.ts_type(ty) == props_name) {
-                        // `view PostCard(..PostCardProps)`: its own name is taken.
-                        props_name = format!("{}ViewProps", v.name.name);
-                    }
-                    let witness_props = self.witness_params(v.span, &v.generics);
-                    let generics = self.shaped_generics(&v.generics, v.span);
-                    let has_props = !fn_ty.params.is_empty() || !witness_props.is_empty();
-                    if has_props {
-                        let mut fields: Vec<String> = fn_ty
-                            .params
-                            .iter()
-                            .map(|p| {
-                                format!(
-                                    "  readonly {}{}: {};",
-                                    prop_key(p.name.as_deref().unwrap_or_default()),
-                                    if p.optional { "?" } else { "" },
-                                    self.ts_type(&p.ty)
-                                )
-                            })
-                            .collect();
-                        fields.extend(witness_props.iter().map(|w| format!("  readonly {w};")));
-                        out.push_str(&format!(
-                            "export interface {props_name}{generics} {{\n{}\n}}\n",
-                            fields.join("\n")
-                        ));
-                    }
-                    let own_props = format!("{props_name}{}", self.generics(&v.generics));
-                    let props = if has_props { format!("props: {own_props}") } else { String::new() };
-                    match v.kind {
-                        ViewKind::View => {
-                            uses_composed = true;
-                            out.push_str(&format!(
-                                "/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack({}())`), or from TSX as `toElement({}())`. */\n",
-                                v.name.name, v.name.name
-                            ));
-                            out.push_str(&format!(
-                                "export declare const {}: {generics}({props}) => ComposedView;\n",
-                                v.name.name
-                            ));
-                            if item.visibility == Visibility::PubDefault {
-                                out.push_str(&format!("export default {};\n", v.name.name));
-                            }
-                        }
-                        _ => {
-                            let props_ty =
-                                if fn_ty.params.is_empty() { "{}".to_string() } else { props_name };
-                            if v.surface.is_some() && self.named_screens {
-                                out.push_str(&format!(
-                                    "export declare const {}: import(\"react\").ComponentType<{props_ty}>;\n",
-                                    v.name.name
-                                ));
-                            } else {
-                                out.push_str(&format!("declare const _default: import(\"react\").ComponentType<{props_ty}>;\nexport default _default;\n"));
-                            }
-                        }
-                    }
+                    self.view_dts(index, v, item.visibility, "export ", &mut out, &mut uses_composed);
                 }
             }
         }
