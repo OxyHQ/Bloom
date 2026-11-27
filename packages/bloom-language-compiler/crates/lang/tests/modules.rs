@@ -107,6 +107,46 @@ fn two_files_of_a_module_share_one_namespace() {
     assert!(out.diagnostics[0].message.contains("Sources/Feed/Row.bloom"));
 }
 
+/// A `private` declaration is its file's only, as TS's file scope is: it shadows a sibling's
+/// public name inside its own file, the sibling keeps its own, and a third file reads the
+/// public one. Two internal or public declarations of one name stay B0807.
+#[test]
+fn a_private_declaration_shadows_a_sibling_in_its_own_file() {
+    let public = "public struct PostActions: View {\n  let count: Int\n  var body: some View { Text(\"\\(count)\") }\n}\n";
+    let local = "private struct PostActions: View {\n  let label: String\n  var body: some View { Text(label) }\n}\n\npublic struct PostItem: View {\n  var body: some View { PostActions(label: \"row\") }\n}\n";
+    let third = "public struct Detail: View {\n  var body: some View { PostActions(count: 2) }\n}\n";
+    let root = package(
+        "private-shadow",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/PostActions.bloom", public),
+            ("Sources/Feed/PostItem.bloom", local),
+            ("Sources/Feed/Detail.bloom", third),
+        ],
+    );
+    let item = build(&root, "Sources/Feed/PostItem.bloom", &Options::default());
+    assert!(item.diagnostics.is_empty(), "{:?}", item.diagnostics);
+    assert!(!item.code.contains("./PostActions.bloom"), "{}", item.code);
+    assert!(item.code.contains("PostActions({ label: \"row\" })"), "{}", item.code);
+    for file in ["Sources/Feed/PostActions.bloom", "Sources/Feed/Detail.bloom"] {
+        let out = build(&root, file, &Options::default());
+        assert!(out.diagnostics.is_empty(), "{file}: {:?}", out.diagnostics);
+    }
+    let detail = build(&root, "Sources/Feed/Detail.bloom", &Options::default());
+    assert!(detail.code.contains("import { PostActions } from \"./PostActions.bloom\";"), "{}", detail.code);
+    // An internal one beside the public one is still two declarations of the module's name.
+    let internal = local.replace("private struct", "struct");
+    let root = package(
+        "internal-twice",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/PostActions.bloom", public),
+            ("Sources/Feed/PostItem.bloom", &internal),
+        ],
+    );
+    assert_eq!(codes(&build(&root, "Sources/Feed/PostItem.bloom", &Options::default())), ["B0807"]);
+}
+
 const INTERNAL_ROW: &str = "view Line(title: String) {\n  body {\n    Text(title)\n  }\n}\n";
 const USES_ROW: &str =
     "public view Lines {\n  body {\n    VStack {\n      Line(title: \"One\")\n    }\n  }\n}\n";

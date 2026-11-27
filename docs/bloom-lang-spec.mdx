@@ -1049,6 +1049,11 @@ so a wrong path is a compile error.
   per platform as Metro picks them, not siblings: they declare the same names without B0807. The
   module's other files import them by the base name (`./X`), which the checker reads from the
   first of `native`, `ios`, `android`, `web` that exists.
+- **File scope (2.0):** a directory module's files share one namespace, so two `internal` or
+  `public` declarations of one name are B0807. A `private` declaration is its file's only, as
+  TS's file scope is: it may share a sibling's name, which it shadows inside its own file (the
+  sibling's is not imported there), and every other file of the module reads the sibling's.
+  `bloom migrate` writes a TS file's non-exported declarations `private`.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
