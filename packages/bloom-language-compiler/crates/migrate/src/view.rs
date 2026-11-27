@@ -1449,6 +1449,7 @@ impl Tr<'_> {
             // `const x = await tsCall()` outside a `try`: the rest of the block runs on
             // `.ok(x)`; a rejection stops it (TS: an unhandled rejection).
             if !self.propagate
+                && !self.in_do
                 && let Some(start @ (AwaitStart::Let(..) | AwaitStart::Pattern(..))) =
                     awaited_start(statement)
                 && !self.awaits_bloom(start.value())
@@ -1471,6 +1472,7 @@ impl Tr<'_> {
             // `if (!(await tsCall())) …` outside a `try`: the same, the `if` and the rest
             // of the block on `.ok(value)`.
             if !self.propagate
+                && !self.in_do
                 && let Statement::IfStatement(s) = statement
                 && let Some(awaited) = awaited_test(&s.test)
                 && !self.awaits_bloom(awaited)
