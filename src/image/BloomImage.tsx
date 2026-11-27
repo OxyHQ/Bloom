@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { Image as NativeImage, type ImageResizeMode } from 'react-native';
+import { Image as NativeImage, processColor, type ImageResizeMode } from 'react-native';
+import { loadBloomImageModule, loadBloomImageView } from './bloom-image-view';
 import { loadExpoImage } from './expo-image-module';
-import type { BloomImageContentFit, BloomImageProps } from './types';
+import type { BloomImageContentFit, BloomImageProps, BloomImageSource } from './types';
 
 /**
  * react-native's nearest `resizeMode` for each fit. `none` and `scale-down` both
@@ -20,11 +21,18 @@ const RESIZE_MODE: Record<BloomImageContentFit, ImageResizeMode> = {
 /**
  * The ONE way Bloom draws a raster image.
  *
- * On iOS and Android it renders `expo-image`, so no image Bloom draws depends on
- * react-native's GIF/WebP decoders and an app may switch them off
- * (`expo-build-properties` `android.gifEnabled`/`webpEnabled: false`). On web,
- * and wherever expo-image cannot be loaded, it renders react-native's `Image`.
- * Why the split and why expo-image is `require`d: `expo-image-module.ts`.
+ * On a device it renders, in order of preference:
+ *
+ * 1. Bloom's own native image view, `BloomImageView`, in a build that links it
+ *    (`bloom build android`): Kotlin over React Native's own image pipeline, its
+ *    memory and disk caches (`bloom-image-view.ts`).
+ * 2. `expo-image` (an Expo build), so no image Bloom draws depends on
+ *    react-native's GIF/WebP decoders and an app may switch them off
+ *    (`expo-build-properties` `android.gifEnabled`/`webpEnabled: false`).
+ * 3. react-native's `Image`, wherever neither can be loaded, and on web.
+ *
+ * Why the split and why each is `require`d: `bloom-image-view.ts` and
+ * `expo-image-module.ts`.
  *
  * One vocabulary for both renderers: `contentFit` (expo-image's) and a plain
  * `{ width, height }` / `{ error }` for `onLoad` / `onError`, so a caller never
@@ -39,6 +47,30 @@ export function BloomImage({
   onError,
   ...rest
 }: BloomImageProps) {
+  const BloomImageView = loadBloomImageView();
+  if (BloomImageView) {
+    const { source, tintColor, blurRadius, alt, ...viewRest } = rest;
+    const { uri, headers } = sourceOf(source);
+    const tint = tintColor === undefined ? null : processColor(tintColor);
+    return (
+      <BloomImageView
+        {...viewRest}
+        // `alt` is the image's name, as expo-image reads it.
+        accessibilityLabel={rest.accessibilityLabel ?? alt}
+        source={uri}
+        headers={headers}
+        contentFit={contentFit}
+        transition={transition ?? 0}
+        cachePolicy={cachePolicy}
+        recyclingKey={recyclingKey ?? undefined}
+        tint={typeof tint === 'number' ? tint : 0}
+        blurRadius={blurRadius ?? 0}
+        onLoad={onLoad ? (event) => onLoad(event.nativeEvent) : undefined}
+        onError={onError ? (event) => onError(event.nativeEvent) : undefined}
+      />
+    );
+  }
+
   const ExpoImage = loadExpoImage();
   if (ExpoImage) {
     return (
@@ -67,6 +99,33 @@ export function BloomImage({
       onError={onError}
     />
   );
+}
+
+const NO_HEADERS: readonly string[] = [];
+
+/**
+ * The native view's source: a URI and its request headers as `[name, value, …]`. A
+ * bundled image (`require()`) is the URI React Native's asset resolver gives it (Metro's
+ * URL in development, the drawable's name in a release build); of several sources, the
+ * first.
+ */
+function sourceOf(source: BloomImageSource | null | undefined): {
+  uri: string | undefined;
+  headers: readonly string[];
+} {
+  if (source == null) return { uri: undefined, headers: NO_HEADERS };
+  if (typeof source === 'string') return { uri: source, headers: NO_HEADERS };
+  const descriptor =
+    typeof source === 'number'
+      ? NativeImage.resolveAssetSource?.(source)
+      : Array.isArray(source)
+        ? source[0]
+        : source;
+  if (!descriptor?.uri) return { uri: undefined, headers: NO_HEADERS };
+  const headers = descriptor.headers
+    ? Object.entries(descriptor.headers).flatMap(([name, value]) => [name, String(value)])
+    : NO_HEADERS;
+  return { uri: descriptor.uri, headers };
 }
 
 /**
@@ -183,10 +242,12 @@ function FallbackImage({
 
 /**
  * Warm the cache for a remote image the user is about to see, in the cache
- * {@link BloomImage} will read from — expo-image's on a device, the browser's
- * on web. Resolves `false` instead of rejecting.
+ * {@link BloomImage} will read from — Bloom's image view's or expo-image's on a
+ * device, the browser's on web. Resolves `false` instead of rejecting.
  */
 export function prefetchImage(uri: string): Promise<boolean> {
+  const bloom = loadBloomImageModule();
+  if (bloom) return bloom.prefetch([uri], false).catch(() => false);
   const ExpoImage = loadExpoImage();
   const prefetch = ExpoImage?.prefetch
     ? ExpoImage.prefetch.bind(ExpoImage)
@@ -201,6 +262,8 @@ export function prefetchImage(uri: string): Promise<boolean> {
  * needs CORS headers an `<img>` does not.
  */
 export function getImageSize(uri: string): Promise<{ width: number; height: number }> {
+  const bloom = loadBloomImageModule();
+  if (bloom) return bloom.size(uri).then(([width = 0, height = 0]) => ({ width, height }));
   const ExpoImage = loadExpoImage();
   if (ExpoImage?.loadAsync) {
     return ExpoImage.loadAsync(uri).then((ref) => {

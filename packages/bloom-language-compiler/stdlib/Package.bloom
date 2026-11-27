@@ -6,5 +6,8 @@ let package = Package(
     // Its interface is `extern native "BloomStorage"` in Bloom/Storage.bloom; Kotlin in
     // Native/BloomStorage/android (Swift comes with `bloom build ios`).
     .native("BloomStorage", path: "Bloom/Native/BloomStorage"),
+    // `extern native "BloomImage"` in Bloom/Image.bloom: the image view behind `Image`
+    // and its cache, in Kotlin over React Native's image pipeline.
+    .native("BloomImage", path: "Bloom/Native/BloomImage"),
   ]
 )

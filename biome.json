@@ -19,6 +19,8 @@
       "!src/**/index.web.ts",
       "!src/design-tokens/theme.css",
       "!src/design-tokens/tokens.json",
+      "!src/image/BloomImageViewNativeComponent.ts",
+      "!src/image/NativeBloomImage.ts",
       "!src/phone-input/countries.ts",
       "!src/phone-input/flags.ts",
       "!src/icons/remix",
