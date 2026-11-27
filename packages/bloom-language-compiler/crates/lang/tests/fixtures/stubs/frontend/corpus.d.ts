@@ -85,7 +85,13 @@ export interface FeedPost {
   authors: FeedAuthor[];
   tags: string[];
   user: { id: string };
+  metadata?: FeedMeta;
   onOpen: () => void;
+}
+/** Every field optional: `{}` is one. */
+export interface FeedMeta {
+  spoiler?: string;
+  lane?: string;
 }
 export declare function useViewPost(): FeedPost | undefined;
 export declare function lookupPost(id: string): FeedPost | undefined;

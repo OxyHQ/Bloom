@@ -1,4 +1,4 @@
-import type { FeedPost } from "@/corpus";
+import type { FeedMeta, FeedPost } from "@/corpus";
 export declare function authorIds(viewPost: FeedPost | undefined): readonly string[];
 export declare function names(post: FeedPost): readonly string[];
 export declare function count(post: FeedPost): number;
@@ -8,3 +8,5 @@ export declare function useFirstAuthor(): string;
 export declare function firstTag(post: FeedPost): string;
 export declare function userId(id: string, post: FeedPost): string | undefined;
 export declare function authorCount(post: FeedPost): number;
+export declare function metadata(viewPost: FeedPost | undefined): FeedMeta;
+export declare function lane(viewPost: FeedPost | undefined): string;
