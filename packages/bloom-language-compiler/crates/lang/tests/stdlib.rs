@@ -230,6 +230,49 @@ public struct Bar: View {
 }
 
 #[test]
+fn a_caught_error_casts_to_an_http_error() {
+    // R6: `catch let err` is an `Error`; `catch let err as HTTPError` tests it (through
+    // `HTTPError.cast`), and so does `err as? HTTPError`, whose `response` is the reply's.
+    const STATUS: &str = r#"public func status(_ api: HTTPClient) async -> String {
+  do {
+    try await api.perform(.delete, "posts/1")
+    return "ok"
+  } catch let error as HTTPError {
+    return "\(error.response.status) \(error.body)"
+  } catch {
+    if let http = error as? HTTPError { return http.message }
+    return "offline"
+  }
+}
+
+public func code(_ error: Error) -> Int { (error as? HTTPError)?.response.status ?? 0 }
+"#;
+    let root = package("http-cast", &[("Sources/Model/Status.bloom", STATUS)]);
+    let path = root.join("Sources/Model/Status.bloom");
+    let out = compile(STATUS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    for line in [
+        "import { type HTTPClient, type HTTPError, HTTPClient$perform, HTTPError$$cast } from \"../../.bloom/std/Bloom/HTTP.bloom\";",
+        "if (HTTPError$$cast($error) !== undefined) {\nconst error = HTTPError$$cast($error)!;",
+        "const $t0 = HTTPError$$cast(error);",
+        "(HTTPError$$cast(error))?.response.status ?? 0",
+    ] {
+        assert!(out.code.contains(line), "{line}\n{}", out.code);
+    }
+    // A type that does not say how is B0213, and an `Error` has no `response` of its own.
+    const WRONG: &str = r#"public func wrong(_ error: Error) -> Int {
+  let n = error as? Int
+  error.response.status
+}
+"#;
+    let root = package("http-cast-wrong", &[("Sources/Model/Wrong.bloom", WRONG)]);
+    let path = root.join("Sources/Model/Wrong.bloom");
+    let out = compile(WRONG, &path.to_string_lossy(), &Options::default());
+    let codes: Vec<&str> = out.diagnostics.iter().map(|d| d.code).collect();
+    assert_eq!(codes, ["B0213", "B0205"], "{}", rendered(&out));
+}
+
+#[test]
 fn a_plural_count_is_a_double() {
     // M4: a TS number is a `Double`, and CLDR plural rules take decimals, so `count:` does;
     // an `Int` widens to it.

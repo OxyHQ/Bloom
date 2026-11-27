@@ -556,11 +556,16 @@ A response: its status, headers (lower-cased names) and body.
 
 ### `struct HTTPError: Equatable`
 
-A response whose status is outside 200–299.
+A response whose status is outside 200–299.  do { try await api.post("posts", json: draft) } catch let error as HTTPError { toast(error.response.status == 409 ? "Already posted" : error.message) }  `error as? HTTPError` reads one from any error (a TS client's too, as Axios throws it).
 
 - `let status: Int`
 - `let body: String`: The response's body (often the server's error JSON).
 - `let message: String`: "GET https://…: 404".
+- `let response: HTTPResponse`: The response itself: its status, headers and body.
+
+### `extension HTTPError`
+
+- `static func cast(_ error: Error) -> HTTPError?`: The `HTTPError` an error is, or `none`: one `HTTPClient` threw, or a TS client's whose `response` has a status (Axios's), its body as text. `as? HTTPError` and `catch let e as HTTPError` call it.
 
 ### `extension HTTPResponse`
 
