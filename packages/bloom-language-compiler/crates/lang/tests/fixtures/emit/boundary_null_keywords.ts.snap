@@ -27,23 +27,23 @@ export interface BarProps {
 }
 export const Bar = view(function Bar(props: BarProps) {
 "use no memo";
-const $ = $c(18);
+const $ = $c(14);
 const { engagement, copy } = props;
 const stats = useStats();
 const user = useAuthUser();
 let $t0;
-if ($[10] !== copy.none || $[11] !== user.id || $[12] !== user.avatar || $[13] !== user.name.displayName || $[14] !== stats.boosts || $[15] !== engagement.likes || $[16] !== copy.some) {
-$t0 = VStack(($[0] !== copy.none ? ($[0] = copy.none, $[1] = Text(copy.none)) : $[1]), ($[2] !== user.id || $[3] !== user.avatar || $[4] !== user.name.displayName ? ($[2] = user.id, $[3] = user.avatar, $[4] = user.name.displayName, $[5] = Text(authorLabel({ id: user.id, avatar: (user.avatar satisfies string | undefined | null), name: { displayName: (user.name.displayName satisfies string | undefined | null) } }))) : $[5]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? ($[6] !== copy.some ? ($[6] = copy.some, $[7] = Text(copy.some)) : $[7]) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[8] !== stats.boosts ? ($[8] = stats.boosts, $[9] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[9]));
-$[10] = copy.none;
-$[11] = user.id;
-$[12] = user.avatar;
-$[13] = user.name.displayName;
-$[14] = stats.boosts;
-$[15] = engagement.likes;
-$[16] = copy.some;
-$[17] = $t0;
+if ($[6] !== copy.none || $[7] !== user.id || $[8] !== user.avatar || $[9] !== user.name.displayName || $[10] !== stats.boosts || $[11] !== engagement.likes || $[12] !== copy.some) {
+$t0 = VStack(Text(copy.none), ($[0] !== user.id || $[1] !== user.avatar || $[2] !== user.name.displayName ? ($[0] = user.id, $[1] = user.avatar, $[2] = user.name.displayName, $[3] = Text(authorLabel({ id: user.id, avatar: (user.avatar satisfies string | undefined | null), name: { displayName: (user.name.displayName satisfies string | undefined | null) } }))) : $[3]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? Text(copy.some) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[4] !== stats.boosts ? ($[4] = stats.boosts, $[5] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[5]));
+$[6] = copy.none;
+$[7] = user.id;
+$[8] = user.avatar;
+$[9] = user.name.displayName;
+$[10] = stats.boosts;
+$[11] = engagement.likes;
+$[12] = copy.some;
+$[13] = $t0;
 } else {
-$t0 = $[17];
+$t0 = $[13];
 }
 return $t0;
 });

@@ -9,16 +9,16 @@ export interface CardProps {
 }
 export const Card = view(function Card(props: CardProps) {
 "use no memo";
-const $ = $c(5);
+const $ = $c(3);
 const { title, children = undefined } = props;
 let $t0;
-if ($[2] !== title || $[3] !== children) {
-$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), (children != null) ? children : null);
-$[2] = title;
-$[3] = children;
-$[4] = $t0;
+if ($[0] !== title || $[1] !== children) {
+$t0 = VStack(Text(title), (children != null) ? children : null);
+$[0] = title;
+$[1] = children;
+$[2] = $t0;
 } else {
-$t0 = $[4];
+$t0 = $[2];
 }
 return $t0;
 });

@@ -13,18 +13,18 @@ export interface PostCardViewProps extends PostCardProps {
 }
 export const PostCard = view(function PostCard(props: PostCardViewProps) {
 "use no memo";
-const $ = $c(11);
+const $ = $c(5);
 const { title, likes, subtitle, onOpen, dense = false } = props;
 let $t0;
-if ($[6] !== title || $[7] !== subtitle || $[8] !== likes || $[9] !== dense) {
-$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), ($[2] !== subtitle ? ($[2] = subtitle, $[3] = Text(subtitle ?? "")) : $[3]), ($[4] !== likes ? ($[4] = likes, $[5] = Text(`${likes}`)) : $[5])).padding(dense ? 4 : 8);
-$[6] = title;
-$[7] = subtitle;
-$[8] = likes;
-$[9] = dense;
-$[10] = $t0;
+if ($[0] !== title || $[1] !== subtitle || $[2] !== likes || $[3] !== dense) {
+$t0 = VStack(Text(title), Text(subtitle ?? ""), Text(`${likes}`)).padding(dense ? 4 : 8);
+$[0] = title;
+$[1] = subtitle;
+$[2] = likes;
+$[3] = dense;
+$[4] = $t0;
 } else {
-$t0 = $[10];
+$t0 = $[4];
 }
 return $t0;
 });

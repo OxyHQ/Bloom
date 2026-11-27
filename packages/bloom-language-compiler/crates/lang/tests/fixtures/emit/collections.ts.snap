@@ -51,19 +51,19 @@ export interface TagsProps {
 }
 export const Tags = view(function Tags(props: TagsProps) {
 "use no memo";
-const $ = $c(5);
+const $ = $c(3);
 const { seen } = props;
 const [picked, setPicked] = useState<ReadonlySet<string>>(() => new Set<string>());
 let $t0;
-if ($[2] !== seen.ids || $[3] !== picked) {
+if ($[0] !== seen.ids || $[1] !== picked) {
 $t0 = VStack([...seen.ids].map((id) => Button(Text(id)).onPress(() => {
 setPicked((picked) => new Set(picked).add(id));
-})), ($[0] !== picked ? ($[0] = picked, $[1] = Text(`${picked.size}`)) : $[1]));
-$[2] = seen.ids;
-$[3] = picked;
-$[4] = $t0;
+})), Text(`${picked.size}`));
+$[0] = seen.ids;
+$[1] = picked;
+$[2] = $t0;
 } else {
-$t0 = $[4];
+$t0 = $[2];
 }
 return $t0;
 });
