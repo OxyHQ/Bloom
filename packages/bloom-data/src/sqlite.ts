@@ -78,6 +78,8 @@ const READ_LIST = `SELECT l.ids AS ids, l.json AS json, r.id AS id, r.json AS re
   LEFT JOIN json_each(l.ids) AS j
   LEFT JOIN bloom_records r ON r.type = ? AND r.id = j.value
   WHERE l.type = ? AND l.key = ?`;
+/** A list's own row, for a SQLite without JSON functions (`json: false`). */
+const READ_LIST_ROW = 'SELECT ids, json FROM bloom_lists WHERE type = ? AND key = ?';
 const readRecordsSql = (count: number) =>
   `SELECT id, json FROM bloom_records WHERE type = ? AND id IN (${Array.from({ length: count }, () => '?').join(', ')})`;
 
@@ -97,25 +99,36 @@ function changedVersions(
   return Object.entries(versions).filter(([type, version]) => known.get(type) !== version);
 }
 
-function parseList(rows: readonly ListRow[]): StoredList | null {
-  const [first] = rows;
-  if (!first) return null;
+/** A list row's ids, or `null` when they are not a JSON array. */
+function parseIds(text: string): string[] | null {
   let ids: unknown;
   try {
-    ids = JSON.parse(first.ids);
+    ids = JSON.parse(text);
   } catch {
     return null;
   }
-  if (!Array.isArray(ids)) return null;
+  return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : null;
+}
+
+function parseList(rows: readonly ListRow[]): StoredList | null {
+  const [first] = rows;
+  if (!first) return null;
+  const ids = parseIds(first.ids);
+  if (!ids) return null;
   const records: StoredRecord[] = [];
   for (const row of rows) {
     if (row.id !== null && row.record !== null) records.push({ id: row.id, json: row.record });
   }
-  return {
-    ids: ids.filter((id): id is string => typeof id === 'string'),
-    json: first.json,
-    records,
-  };
+  return { ids, json: first.json, records };
+}
+
+export interface SqliteOptions {
+  /**
+   * Whether the SQLite has its JSON functions (`json_each`), as expo-sqlite's does (the
+   * default). Without them (Android's own SQLite before API 34), a list is read as its row
+   * and then its records by id, and the prune lists the kept types as parameters.
+   */
+  readonly json?: boolean;
 }
 
 /**
@@ -137,13 +150,14 @@ export function sqlitePersister(
   open: () => AsyncDatabase | SyncDatabase | Promise<AsyncDatabase>,
   /** Deletes the database file (`() => SQLite.deleteDatabaseAsync(name)`); without it, `destroy` empties it. */
   remove?: () => Promise<void>,
+  { json = true }: SqliteOptions = {},
 ): Persister {
   let database: Promise<AsyncDatabase> | undefined;
   let syncDatabase: SyncDatabase | undefined;
   /** Rows older than this go with the first write, so opening stays short. */
   let pruneBefore: number | undefined;
-  /** The types the prune spares, as a JSON array. */
-  let keep = '[]';
+  /** The types the prune spares. */
+  let keep: readonly string[] = [];
   /** The most rows each bounded type keeps. */
   let limits: Readonly<Record<string, number>> = {};
   const db = () => {
@@ -160,6 +174,26 @@ export function sqlitePersister(
     return syncDatabase;
   };
 
+  const readRecords = async (type: string, ids: readonly string[]) => {
+    const handle = await db();
+    const out: StoredRecord[] = [];
+    for (const chunk of chunks(ids)) {
+      out.push(
+        ...(await handle.getAllAsync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk)),
+      );
+    }
+    return out;
+  };
+  const readRecordsNow = (type: string, ids: readonly string[]) => {
+    const handle = dbNow();
+    if (!handle) return [];
+    const out: StoredRecord[] = [];
+    for (const chunk of chunks(ids)) {
+      out.push(...handle.getAllSync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk));
+    }
+    return out;
+  };
+
   return {
     async open({ versions, maxAgeMs, keep: kept, limits: bounds = {} }: OpenOptions) {
       const handle = await db();
@@ -174,7 +208,7 @@ export function sqlitePersister(
         });
       }
       pruneBefore = Date.now() - maxAgeMs;
-      keep = JSON.stringify(kept);
+      keep = kept;
       limits = bounds;
     },
 
@@ -197,42 +231,36 @@ export function sqlitePersister(
         }
       }
       pruneBefore = Date.now() - maxAgeMs;
-      keep = JSON.stringify(kept);
+      keep = kept;
       limits = bounds;
       return true;
     },
 
-    async readRecords(type, ids) {
-      const handle = await db();
-      const out: StoredRecord[] = [];
-      for (const chunk of chunks(ids)) {
-        out.push(
-          ...(await handle.getAllAsync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk)),
-        );
-      }
-      return out;
-    },
-
-    readRecordsNow(type, ids) {
-      const handle = dbNow();
-      if (!handle) return [];
-      const out: StoredRecord[] = [];
-      for (const chunk of chunks(ids)) {
-        out.push(...handle.getAllSync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk));
-      }
-      return out;
-    },
+    readRecords,
+    readRecordsNow,
 
     async readList(type, key, recordType) {
       const handle = await db();
-      return parseList(await handle.getAllAsync<ListRow>(READ_LIST, recordType, type, key));
+      if (json)
+        return parseList(await handle.getAllAsync<ListRow>(READ_LIST, recordType, type, key));
+      const [row] = await handle.getAllAsync<{ ids: string; json: string }>(
+        READ_LIST_ROW,
+        type,
+        key,
+      );
+      const ids = row ? parseIds(row.ids) : null;
+      if (!row || !ids) return null;
+      return { ids, json: row.json, records: await readRecords(recordType, ids) };
     },
 
     readListNow(type, key, recordType) {
       const handle = dbNow();
-      return handle
-        ? parseList(handle.getAllSync<ListRow>(READ_LIST, recordType, type, key))
-        : null;
+      if (!handle) return null;
+      if (json) return parseList(handle.getAllSync<ListRow>(READ_LIST, recordType, type, key));
+      const [row] = handle.getAllSync<{ ids: string; json: string }>(READ_LIST_ROW, type, key);
+      const ids = row ? parseIds(row.ids) : null;
+      if (!row || !ids) return null;
+      return { ids, json: row.json, records: readRecordsNow(recordType, ids) };
     },
 
     async write(batch: PersistBatch) {
@@ -252,9 +280,11 @@ export function sqlitePersister(
         if (cutoff !== undefined) {
           pruneBefore = undefined;
           await handle.runAsync(
-            'DELETE FROM bloom_records WHERE updated_at < ? AND type NOT IN (SELECT value FROM json_each(?))',
+            json
+              ? 'DELETE FROM bloom_records WHERE updated_at < ? AND type NOT IN (SELECT value FROM json_each(?))'
+              : `DELETE FROM bloom_records WHERE updated_at < ? AND type NOT IN (${keep.map(() => '?').join(', ')})`,
             cutoff,
-            keep,
+            ...(json ? [JSON.stringify(keep)] : keep),
           );
           await handle.runAsync('DELETE FROM bloom_lists WHERE updated_at < ?', cutoff);
         }

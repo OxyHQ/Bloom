@@ -41,13 +41,127 @@ function onNative(): boolean {
 }
 
 type SQLiteModule = { openDatabaseSync(name: string): unknown };
-type SQLitePersisterModule = { sqlitePersister(open: () => unknown): Persister };
+type SQLitePersisterModule = {
+  sqlitePersister(
+    open: () => unknown,
+    remove?: () => Promise<void>,
+    options?: { json?: boolean },
+  ): Persister;
+};
+type Param = string | number | null;
+/** The `sql…` functions of `extern native "BloomStorage"` (Storage.bloom), as its bridge exports them. */
+type SqlBridge = {
+  isAvailable(): boolean;
+  sqlOpen(name: string): number;
+  sqlExec(db: number, source: string): void;
+  sqlRun(db: number, source: string, params: string): number;
+  sqlAll(db: number, source: string, params: string): string;
+  sqlClose(db: number): void;
+  sqlDelete(name: string): void;
+};
+
+/**
+ * The rows of `sqlAll`, framed by the Kotlin side (`Databases.rows`): `<columns>;`, the
+ * names as `<length>:<name>`, then each cell as `s<length>:<text>`, `i<integer>;`,
+ * `f<real>;` or `n`. Lengths count UTF-16 units, as both sides' strings do.
+ */
+export function decodeRows<T>(text: string): T[] {
+  let at = text.indexOf(';');
+  const count = Number(text.slice(0, at));
+  at += 1;
+  const names: string[] = [];
+  for (let c = 0; c < count; c++) {
+    const colon = text.indexOf(':', at);
+    const length = Number(text.slice(at, colon));
+    names.push(text.slice(colon + 1, colon + 1 + length));
+    at = colon + 1 + length;
+  }
+  const rows: T[] = [];
+  while (at < text.length) {
+    const row: Record<string, unknown> = {};
+    for (let c = 0; c < count; c++) {
+      const tag = text.charCodeAt(at);
+      if (tag === 110 /* n */) {
+        row[names[c] as string] = null;
+        at += 1;
+      } else if (tag === 115 /* s */) {
+        const colon = text.indexOf(':', at);
+        const length = Number(text.slice(at + 1, colon));
+        row[names[c] as string] = text.slice(colon + 1, colon + 1 + length);
+        at = colon + 1 + length;
+      } else {
+        const end = text.indexOf(';', at);
+        row[names[c] as string] = Number(text.slice(at + 1, end));
+        at = end + 1;
+      }
+    }
+    rows.push(row as T);
+  }
+  return rows;
+}
+
+/**
+ * The database file `name` in Bloom's native storage module, with the part of expo-sqlite's
+ * API the persister uses (`@oxy.so/bloom-data/sqlite`'s `SyncDatabase`). Every call is one
+ * synchronous call on the JS thread; the asynchronous forms resolve with its result.
+ */
+export function nativeDatabase(bridge: SqlBridge, name: string) {
+  let handle: number | undefined;
+  const db = () => {
+    if (handle === undefined) handle = bridge.sqlOpen(name);
+    return handle;
+  };
+  const execSync = (source: string) => bridge.sqlExec(db(), source);
+  const runSync = (source: string, ...params: Param[]) => ({
+    changes: bridge.sqlRun(db(), source, JSON.stringify(params)),
+  });
+  const getAllSync = <T>(source: string, ...params: Param[]): T[] =>
+    decodeRows<T>(bridge.sqlAll(db(), source, JSON.stringify(params)));
+  return {
+    execSync,
+    runSync,
+    getAllSync,
+    execAsync: async (source: string) => execSync(source),
+    runAsync: async (source: string, ...params: Param[]) => runSync(source, ...params),
+    getAllAsync: async <T>(source: string, ...params: Param[]) => getAllSync<T>(source, ...params),
+    async withTransactionAsync(task: () => Promise<void>) {
+      execSync('BEGIN');
+      try {
+        await task();
+      } catch (error) {
+        execSync('ROLLBACK');
+        throw error;
+      }
+      execSync('COMMIT');
+    },
+    async closeAsync() {
+      if (handle !== undefined) bridge.sqlClose(handle);
+      handle = undefined;
+    },
+    /** Deletes the file (closing it first). */
+    async deleteAsync() {
+      handle = undefined;
+      bridge.sqlDelete(name);
+    },
+  };
+}
+
+/** Bloom's native storage module, when this build links it (a `bloom build` without `--with-expo`). */
+function sqlBridge(): SqlBridge | undefined {
+  try {
+    const bridge = require('./NativeBloomStorageBridge') as SqlBridge;
+    return bridge.isAvailable() ? bridge : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 let opened = false;
 
 /**
  * Opens the app's durable store once, before the first model registers: SQLite on
- * Android and iOS (`bloom-data.db`), memory on the web and in tests. An app that opened
+ * Android and iOS (`bloom-data.db`; Bloom's native storage module in a `bloom build`,
+ * expo-sqlite with `--with-expo`), memory on the web and in tests. An app that opened
  * its own store first (one per account) keeps it.
  */
 function ensureStore(): void {
@@ -55,8 +169,23 @@ function ensureStore(): void {
   opened = true;
   if (activeStore() || !onNative()) return;
   try {
-    const sqlite = require('expo-sqlite') as SQLiteModule;
     const { sqlitePersister } = require('@oxy.so/bloom-data/sqlite') as SQLitePersisterModule;
+    const bridge = sqlBridge();
+    if (bridge) {
+      // Android's own SQLite has no JSON functions before API 34.
+      const database = nativeDatabase(bridge, 'bloom-data.db');
+      setActiveStore(
+        new Store({
+          persister: sqlitePersister(
+            () => database,
+            () => database.deleteAsync(),
+            { json: false },
+          ),
+        }),
+      );
+      return;
+    }
+    const sqlite = require('expo-sqlite') as SQLiteModule;
     setActiveStore(
       new Store({
         persister: sqlitePersister(() => sqlite.openDatabaseSync('bloom-data.db')),

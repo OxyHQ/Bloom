@@ -21,6 +21,8 @@ class BloomStorageModule(context: ReactApplicationContext) : NativeBloomStorageS
   private val kv by kvStore
   private val secure by lazy { SecureStore(context) }
   private val files by lazy { FileStore(context) }
+  private val databasesStore = lazy { Databases(context) }
+  private val databases by databasesStore
 
   private fun store(kind: String): Store =
     when (kind) {
@@ -43,8 +45,33 @@ class BloomStorageModule(context: ReactApplicationContext) : NativeBloomStorageS
     return out
   }
 
+  // ---- `@Model`'s SQLite: a database by handle (a number in the spec) ----
+
+  override fun sqlOpen(name: String): Double = databases.open(name).toDouble()
+
+  override fun sqlExec(db: Double, source: String): Boolean {
+    databases.exec(db.toInt(), source)
+    return true
+  }
+
+  override fun sqlRun(db: Double, source: String, params: String): Double =
+    databases.run(db.toInt(), source, params).toDouble()
+
+  override fun sqlAll(db: Double, source: String, params: String): String = databases.all(db.toInt(), source, params)
+
+  override fun sqlClose(db: Double): Boolean {
+    databases.close(db.toInt())
+    return true
+  }
+
+  override fun sqlDelete(name: String): Boolean {
+    databases.delete(name)
+    return true
+  }
+
   override fun invalidate() {
     super.invalidate()
     if (kvStore.isInitialized()) kv.close()
+    if (databasesStore.isInitialized()) databases.closeAll()
   }
 }
