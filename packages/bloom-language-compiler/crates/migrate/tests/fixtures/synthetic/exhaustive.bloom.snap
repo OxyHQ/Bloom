@@ -1,0 +1,20 @@
+// A `switch` whose every case returns a value, with no `default`, is TS's exhaustive
+// `switch` on a literal union: a `match` with no `case _`.
+
+public type Severity = "suspend" | "silence"
+
+private func label(_ severity: Severity) -> String {
+  switch severity {
+  case "suspend":
+    return "Suspended"
+  case "silence":
+    return "Silenced"
+  }
+}
+
+public struct Badge: View {
+  let severity: Severity
+  var body: some View {
+    Text(label(severity))
+  }
+}

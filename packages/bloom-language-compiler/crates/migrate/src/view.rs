@@ -2069,12 +2069,20 @@ impl Tr<'_> {
             let values: Vec<String> = tests.iter().map(|t| self.expr(t)).collect();
             arms.push((values, text));
         }
+        // Every case returns a value and there is no `default`: TS's exhaustive `switch` on a
+        // literal union (a function that returns from it), so no `case _` (bloomc checks it).
+        let exhaustive = fallback.is_none()
+            && groups.iter().all(|(_, _, body)| {
+                matches!(body.last(), Some(Statement::ReturnStatement(r)) if r.argument.is_some())
+            });
         if all_literal {
             let mut lines: Vec<String> = arms
                 .into_iter()
                 .map(|(v, text)| format!("case {} => {{\n{text}\n}}", v.join(" | ")))
                 .collect();
-            lines.push(format!("case _ => {{\n{}\n}}", fallback.unwrap_or_default()));
+            if !exhaustive {
+                lines.push(format!("case _ => {{\n{}\n}}", fallback.unwrap_or_default()));
+            }
             return format!("match {subject} {{\n{}\n}}", lines.join("\n"));
         }
         // Cases of TS values: an `if` chain on `==` (the `switch`'s `===`).
