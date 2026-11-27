@@ -10,7 +10,7 @@
 //! of them again (bun's `overrides`), so a fresh checkout builds what was locked.
 
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use bloom_lang::package::{self, KNOWN_PACKAGES, Requirement, Version, known_package};
@@ -138,16 +138,71 @@ pub fn read_bun_lock(text: &str) -> Vec<Locked> {
 }
 
 /// `BLOOM_LINK=name=path,…`: first-party packages from a checkout (developing Bloom itself).
-fn links() -> BTreeMap<String, String> {
-    std::env::var("BLOOM_LINK")
-        .unwrap_or_default()
-        .split(',')
-        .filter_map(|pair| pair.split_once('='))
-        .map(|(name, path)| {
-            let path = std::path::absolute(path).unwrap_or_else(|_| PathBuf::from(path));
-            (name.to_string(), format!("file:{}", path.display()))
-        })
-        .collect()
+///
+/// A `.tgz` is installed as it is. A directory is installed as it would be packed, never
+/// copied: bun installs a `file:` directory by copying all of it, and a checkout holds its
+/// own examples' `.bloom/build/`, each with the last linked copy inside, so every build
+/// nested one more level (until the tree was too deep to delete). See [`pack_link`].
+fn links(build: &Path) -> Result<BTreeMap<String, String>, String> {
+    let mut out = BTreeMap::new();
+    for (name, path) in
+        std::env::var("BLOOM_LINK").unwrap_or_default().split(',').filter_map(|p| p.split_once('='))
+    {
+        let path = std::path::absolute(path).unwrap_or_else(|_| PathBuf::from(path));
+        let tarball = if path.is_dir() { pack_link(name, &path, &build.join(".links"))? } else { path };
+        out.insert(name.to_string(), format!("file:{}", tarball.display()));
+    }
+    Ok(out)
+}
+
+/// Packs the checkout `dir` of the package `name` into `out`, as an app installs it: through
+/// its `pack:local` script when it has one (the compiler's carries the addon this checkout
+/// built, which its `files` leave to the platform packages), else `bun pm pack` (its `files`).
+/// The tarball is named by its content, so a rebuilt checkout is installed again.
+pub(crate) fn pack_link(name: &str, dir: &Path, out: &Path) -> Result<PathBuf, String> {
+    let manifest = std::fs::read_to_string(dir.join("package.json"))
+        .map_err(|e| format!("BLOOM_LINK {name}: {}: {e}", dir.display()))?;
+    let local = crate::json::parse(&manifest)
+        .ok()
+        .is_some_and(|m| m.get("scripts").get("pack:local").as_str().is_some());
+    let stage = out.join(".stage");
+    let _ = std::fs::remove_dir_all(&stage);
+    std::fs::create_dir_all(&stage).map_err(|e| format!("{}: {e}", stage.display()))?;
+    let stage_arg = stage.to_string_lossy().into_owned();
+    let (program, args): (&str, Vec<&str>) = if local {
+        ("bun", vec!["run", "pack:local", &stage_arg])
+    } else {
+        ("bun", vec!["pm", "pack", "--destination", &stage_arg, "--quiet"])
+    };
+    crate::expo::run_in(dir, program, &args).map_err(|e| format!("BLOOM_LINK {name}: {e}"))?;
+    let packed = std::fs::read_dir(&stage)
+        .map_err(|e| format!("{}: {e}", stage.display()))?
+        .flatten()
+        .map(|entry| entry.path())
+        .find(|p| p.extension().is_some_and(|e| e == "tgz"))
+        .ok_or_else(|| format!("BLOOM_LINK {name}: packing {} wrote no tarball", dir.display()))?;
+    let entries = Command::new("tar").arg("-tzf").arg(&packed).output().map_err(|e| format!("tar: {e}"))?;
+    let listing = String::from_utf8_lossy(&entries.stdout);
+    if let Some(nested) = listing.lines().find(|entry| entry.split('/').any(|part| part == ".bloom")) {
+        return Err(format!(
+            "BLOOM_LINK {name}: the package {} packs a `.bloom` build ({nested}); give it a `files` list",
+            dir.display()
+        ));
+    }
+    let bytes = std::fs::read(&packed).map_err(|e| format!("{}: {e}", packed.display()))?;
+    let slug: String = name.chars().map(|c| if c.is_ascii_alphanumeric() { c } else { '-' }).collect();
+    let tarball = out.join(format!("{slug}-{:016x}.tgz", crate::build::hash(&[&bytes]) as u64));
+    // Only the current pack of each link is kept.
+    for old in std::fs::read_dir(out).into_iter().flatten().flatten() {
+        let old = old.path();
+        let stale = old.file_name().is_some_and(|n| n.to_string_lossy().starts_with(&format!("{slug}-")));
+        if stale && old != tarball {
+            let _ = std::fs::remove_file(&old);
+        }
+    }
+    std::fs::rename(&packed, &tarball).map_err(|e| format!("{}: {e}", tarball.display()))?;
+    let _ = std::fs::remove_dir_all(&stage);
+    Ok(tarball)
 }
 
 /// The generated app's `package.json`.
@@ -186,7 +241,7 @@ pub fn package_json(package: &Package) -> Result<String, String> {
             deps.insert(npm.to_string(), version.to_string());
         }
     }
-    deps.extend(links());
+    deps.extend(links(&package.build_dir())?);
     let dev: BTreeMap<String, String> = TOOLS.iter().map(|(n, v)| (n.to_string(), v.to_string())).collect();
     // Everything locked is pinned again, transitive packages too.
     let overrides: BTreeMap<String, String> = if package.build_dir().join("bun.lock").is_file() {
@@ -409,5 +464,37 @@ mod tests {
     fn iso_times() {
         assert_eq!(parse_iso_seconds("1970-01-02T00:00:00.000Z"), Some(86_400));
         assert_eq!(parse_iso_seconds("2026-11-26T12:30:15Z"), Some(1_795_696_215));
+    }
+
+    /// A linked checkout is installed as it packs: its examples' `.bloom/build/` (where the
+    /// last linked copy of it lies) never reaches the app's build, which nested once per build.
+    #[test]
+    fn a_linked_checkout_installs_what_it_packs_and_no_bloom_build() {
+        let root = std::env::temp_dir().join(format!("bloom-link-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let checkout = root.join("checkout");
+        let nested = checkout.join("examples/Demo/.bloom/build/node_modules/@oxy.so/linked");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(nested.join("index.js"), "module.exports = 1;\n").unwrap();
+        std::fs::write(checkout.join("index.js"), "module.exports = 0;\n").unwrap();
+        let manifest = |files: &str| {
+            format!(r#"{{ "name": "@oxy.so/linked", "version": "1.0.0", "main": "index.js"{files} }}"#)
+        };
+        std::fs::write(checkout.join("package.json"), manifest(r#", "files": ["index.js"]"#)).unwrap();
+        let out = root.join("build/.links");
+
+        let tarball = pack_link("@oxy.so/linked", &checkout, &out).expect("the checkout packs");
+        let listing = Command::new("tar").arg("-tzf").arg(&tarball).output().unwrap();
+        let listing = String::from_utf8_lossy(&listing.stdout).into_owned();
+        assert!(listing.lines().any(|l| l.ends_with("index.js")), "{listing}");
+        assert!(!listing.contains(".bloom") && !listing.contains("examples"), "{listing}");
+        // Packed again unchanged, it is the same file: the install stamp holds.
+        assert_eq!(pack_link("@oxy.so/linked", &checkout, &out).unwrap(), tarball);
+
+        // A package whose pack would carry a `.bloom` build is refused, not installed.
+        std::fs::write(checkout.join("package.json"), manifest("")).unwrap();
+        let refused = pack_link("@oxy.so/linked", &checkout, &out).unwrap_err();
+        let _ = std::fs::remove_dir_all(&root);
+        assert!(refused.contains("packs a `.bloom` build"), "{refused}");
     }
 }
