@@ -2,6 +2,7 @@
 //!
 //! ```text
 //! bloom new <name> [--template app|module]
+//! bloom init --adopt
 //! bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
 //! bloom fmt [--check] [--jobs N] [paths…]
 //! bloom build web|android|ios [--release] [--with-expo] [--generate]
@@ -22,6 +23,7 @@
 //! parallelism by default); output and diagnostics come out in path order, so a
 //! run is deterministic.
 
+mod adopt;
 mod android;
 mod bind;
 mod build;
@@ -44,6 +46,7 @@ use std::process::ExitCode;
 
 const USAGE: &str = "usage:
   bloom new <name> [--template app|module]
+  bloom init --adopt
   bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
   bloom fmt [--check] [--jobs N] [paths…]
   bloom build web|android|ios [--release] [--with-expo] [--generate]
@@ -72,6 +75,8 @@ struct Args {
     /// `build android --generate`: write the Gradle project (for Android Studio) and stop.
     generate: bool,
     tsc: bool,
+    /// `init --adopt`: an existing Expo app becomes a Bloom package.
+    adopt: bool,
     /// `check --tsc --project <dir>` outside a package: the tsconfig project to check against.
     project: Option<PathBuf>,
     allow_ts_imports: bool,
@@ -97,6 +102,7 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--with-expo" => args.with_expo = true,
             "--generate" => args.generate = true,
             "--tsc" => args.tsc = true,
+            "--adopt" => args.adopt = true,
             "--project" | "-p" => args.project = Some(value(&mut raw, "--project", "a directory")?.into()),
             "--allow-ts-imports" => args.allow_ts_imports = true,
             "--out" => args.out = Some(value(&mut raw, "--out", "a directory")?.into()),
@@ -165,6 +171,10 @@ fn run(args: &Args, jobs: usize) -> Result<bool, String> {
     let check_options =
         project::CheckOptions { jobs, tsc: args.tsc, allow_ts_imports: args.allow_ts_imports };
     match args.command.as_str() {
+        "init" if args.adopt => adopt::adopt(&std::env::current_dir().map_err(|e| e.to_string())?),
+        "init" => {
+            Err("init takes --adopt (an existing Expo app); a new package is `bloom new <Name>`".into())
+        }
         "new" => scaffold::new(&one(args, "a package name")?, args.template.as_deref().unwrap_or("app")),
         "check" => match project::find(&args.paths)? {
             Some(package) if args.paths.is_empty() => project::check(&package, &check_options),

@@ -47,6 +47,37 @@ pub struct Manifest {
     /// Where a new `.package(…)` goes: the `dependencies:` array's `]`, or,
     /// without one, the `Package(` call's `)`.
     pub insert_dependency_at: InsertAt,
+    /// `adopt: Expo(…)`: the package is an existing Expo app, adopted by `bloom init --adopt`.
+    /// Its JS stays where it is and builds as it did; `bloom` generates and drives the native
+    /// project (ADR 0002, sections 2 and 7).
+    pub adopt: Option<Adopt>,
+    /// `stopgaps: [.expo("expo-image", until: "BloomUI.Image"), …]`: the Expo packages a
+    /// `bloom build` still links (hybrid mode), each until its Bloom module replaces it. Every
+    /// other Expo package is left out of the build, so this list is the Expo surface that remains.
+    pub stopgaps: Vec<Stopgap>,
+}
+
+/// `adopt: Expo(entry: "expo-router/entry", overrides: "Native")`: an Expo app that `bloom`
+/// builds. `bloom init --adopt` writes it from the app's `package.json` and app config.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Adopt {
+    /// The JS entry, as the app's `package.json` `main` names it.
+    pub entry: String,
+    /// The app's own native config, kept as a layer over the project `bloom` generates
+    /// (`<overrides>/android/`: `AndroidManifest.xml`, `res/`, `gradle.properties`); by default
+    /// `Native`. `bloom init --adopt` writes it from the app config's evaluated plugins.
+    pub overrides: String,
+}
+
+/// `.expo("expo-image", until: "BloomUI.Image")`: an Expo package still linked, through Expo
+/// Modules autolinking limited to the listed ones, until the named Bloom module replaces it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Stopgap {
+    /// The npm package (`expo-image`, or an app's own Expo module such as `mention-widgets`).
+    pub name: String,
+    /// What replaces it, when that is known.
+    pub until: Option<String>,
+    pub span: Span,
 }
 
 /// `app: App(id: "so.oxy.mention", version: "1.2.0", build: 42, displayName: "Mention",
@@ -72,6 +103,9 @@ pub struct AppSettings {
     /// An image centered on the launch background, relative to the package root.
     pub splash_image: Option<String>,
     pub permissions: Vec<Permission>,
+    /// `reactNativeFromSource: true`: React Native's Android libraries built from the app's
+    /// installed `react-native` (its patches included) rather than taken prebuilt.
+    pub react_native_from_source: bool,
 }
 
 /// A permission the app asks for. Each names the platforms' own: `.camera` is Android's
@@ -382,6 +416,7 @@ pub fn parse(source: &str, filename: &str) -> Result<Manifest, Vec<Diagnostic>> 
 enum Value {
     Str(String),
     Int(i64),
+    Bool(bool),
     Array(Vec<Spanned>, Span),
     /// `Package(…)` or `.app(…)` (`member` is true for the leading dot); `.web` has no arguments.
     Call {
@@ -491,6 +526,11 @@ impl Reader<'_> {
             Tok::Int(n) => {
                 self.bump();
                 Value::Int(*n)
+            }
+            Tok::Kw(kw) if matches!(kw.word(), "true" | "false") => {
+                let value = kw.word() == "true";
+                self.bump();
+                Value::Bool(value)
             }
             Tok::P(P::LBracket) => {
                 self.bump();
@@ -775,8 +815,12 @@ impl Eval<'_> {
             );
             return None;
         }
-        let mut args =
-            self.labeled(value, "Package", None, &["name", "platforms", "dependencies", "targets", "app"])?;
+        let mut args = self.labeled(
+            value,
+            "Package",
+            None,
+            &["name", "platforms", "dependencies", "targets", "app", "adopt", "stopgaps"],
+        )?;
         let name = self.required(&mut args, "name", "Package").and_then(|v| self.string(v, "`name:`"));
         let platforms = match self.take(&mut args, "platforms") {
             Some(v) => {
@@ -810,10 +854,30 @@ impl Eval<'_> {
             Some(v) => self.app(v).unwrap_or_default(),
             None => AppSettings::default(),
         };
+        let adopt = self.take(&mut args, "adopt").and_then(|v| self.adopt(v));
+        let mut stopgaps = Vec::new();
+        if let Some(v) = self.take(&mut args, "stopgaps")
+            && let Some((items, _)) = self.array(v, "`stopgaps:`")
+        {
+            for item in items {
+                if let Some(stopgap) = self.stopgap(item) {
+                    stopgaps.push(stopgap);
+                }
+            }
+        }
         let (name, name_span) = name?;
         self.module_name(&name, name_span, "package");
-        let manifest =
-            Manifest { name, name_span, platforms, dependencies, targets, app, insert_dependency_at: insert };
+        let manifest = Manifest {
+            name,
+            name_span,
+            platforms,
+            dependencies,
+            targets,
+            app,
+            insert_dependency_at: insert,
+            adopt,
+            stopgaps,
+        };
         self.validate(&manifest);
         Some(manifest)
     }
@@ -838,6 +902,7 @@ impl Eval<'_> {
             "splash",
             "splashImage",
             "permissions",
+            "reactNativeFromSource",
         ];
         let mut args = self.labeled(value, "App", None, &labels)?;
         let mut text = |eval: &mut Self, label: &str| {
@@ -851,6 +916,9 @@ impl Eval<'_> {
         let splash_image = text(self, "splashImage");
         let mut settings =
             AppSettings { id, version, display_name, icon, splash, splash_image, ..AppSettings::default() };
+        if let Some(v) = self.take(&mut args, "reactNativeFromSource") {
+            settings.react_native_from_source = self.boolean(v, "`reactNativeFromSource:`").unwrap_or(false);
+        }
         if let Some(v) = self.take(&mut args, "build") {
             match v.value {
                 Value::Int(n) if n > 0 && n <= i64::from(u32::MAX) => settings.build = Some(n as u32),
@@ -914,6 +982,62 @@ impl Eval<'_> {
             }
         }
         Some(settings)
+    }
+
+    fn boolean(&mut self, value: Spanned, what: &str) -> Option<bool> {
+        match value.value {
+            Value::Bool(b) => Some(b),
+            _ => {
+                self.error(
+                    Diagnostic::error("B0811", value.span, format!("{what} is `true` or `false`"))
+                        .label("expected a boolean")
+                        .toolchain(SPEC),
+                );
+                None
+            }
+        }
+    }
+
+    /// `Expo(entry: "expo-router/entry", overrides: "Native")`.
+    fn adopt(&mut self, value: Spanned) -> Option<Adopt> {
+        if !matches!(&value.value, Value::Call { name, member: false, .. } if name == "Expo") {
+            self.error(
+                Diagnostic::error("B0811", value.span, "`adopt:` is an `Expo(…)`")
+                    .label("expected `Expo(entry: \"expo-router/entry\")`")
+                    .help("`bloom init --adopt` writes it from an Expo app's package.json and app config")
+                    .toolchain(SPEC),
+            );
+            return None;
+        }
+        let mut args = self.labeled(value, "Expo", None, &["entry", "overrides"])?;
+        let entry = self.required(&mut args, "entry", "Expo").and_then(|v| self.string(v, "`entry:`"))?.0;
+        let overrides = self
+            .take(&mut args, "overrides")
+            .and_then(|v| self.string(v, "`overrides:`"))
+            .map_or_else(|| "Native".to_string(), |(s, _)| s);
+        Some(Adopt { entry, overrides })
+    }
+
+    /// `.expo("expo-image", until: "BloomUI.Image")`.
+    fn stopgap(&mut self, value: Spanned) -> Option<Stopgap> {
+        let span = value.span;
+        self.member(&value, "stopgap", &["expo"])?;
+        let mut args = self.labeled(value, ".expo", Some("name"), &["name", "until"])?;
+        let (name, name_span) =
+            self.required(&mut args, "name", ".expo").and_then(|v| self.string(v, "the npm package"))?;
+        if name.is_empty()
+            || name.contains(char::is_whitespace)
+            || name.contains('@') && !name.starts_with('@')
+        {
+            self.error(
+                Diagnostic::error("B0811", name_span, format!("\"{name}\" is not an npm package name"))
+                    .label("such as \"expo-image\" (its version is the app's package.json's)")
+                    .toolchain(SPEC),
+            );
+            return None;
+        }
+        let until = self.take(&mut args, "until").and_then(|v| self.string(v, "`until:`")).map(|(s, _)| s);
+        Some(Stopgap { name, until, span })
     }
 
     fn member(&mut self, value: &Spanned, what: &str, members: &[&str]) -> Option<String> {
@@ -1139,7 +1263,8 @@ impl Eval<'_> {
                 );
             }
         }
-        if !manifest.targets.iter().any(|t| t.kind == TargetKind::App)
+        if manifest.adopt.is_none()
+            && !manifest.targets.iter().any(|t| t.kind == TargetKind::App)
             && manifest.targets.iter().all(|t| t.kind != TargetKind::Module)
         {
             self.error(
@@ -1151,6 +1276,15 @@ impl Eval<'_> {
                 .label("add `.app(\"Name\")` or `.module(\"Name\")` to `targets:`")
                 .toolchain(SPEC),
             );
+        }
+        for (i, stopgap) in manifest.stopgaps.iter().enumerate() {
+            if manifest.stopgaps[..i].iter().any(|s| s.name == stopgap.name) {
+                self.error(
+                    Diagnostic::error("B0813", stopgap.span, format!("`{}` is listed twice", stopgap.name))
+                        .label("remove one")
+                        .toolchain(SPEC),
+                );
+            }
         }
         for target in &manifest.targets {
             for (dep, span) in &target.dependencies {
@@ -1484,6 +1618,40 @@ let package = Package(
         );
         assert!(e.iter().any(|e| e.contains("\"Demo\" is not a URL scheme")), "{e:?}");
         assert!(e.iter().any(|e| e.contains("\"white\" is not a colour")), "{e:?}");
+    }
+
+    /// An adopted Expo app: no targets of its own, its entry and overrides, and the stopgaps.
+    #[test]
+    fn reads_an_adopted_expo_app_and_its_stopgaps() {
+        let m = parse(
+            r##"let package = Package(
+  name: "Mention",
+  app: App(id: "org.mention.app", reactNativeFromSource: true),
+  adopt: Expo(entry: "expo-router/entry"),
+  stopgaps: [.expo("expo-image", until: "BloomUI.Image"), .expo("@oxy.so/services")],
+  targets: []
+)"##,
+            "Package.bloom",
+        )
+        .unwrap();
+        assert_eq!(m.adopt, Some(Adopt { entry: "expo-router/entry".into(), overrides: "Native".into() }));
+        assert!(m.app.react_native_from_source);
+        assert_eq!(
+            m.stopgaps.iter().map(|s| s.name.as_str()).collect::<Vec<_>>(),
+            ["expo-image", "@oxy.so/services"]
+        );
+        assert_eq!(m.stopgaps[0].until.as_deref(), Some("BloomUI.Image"));
+        // Without `adopt:`, a package still needs an app or a module.
+        let e = errors("let package = Package(name: \"A\", stopgaps: [.expo(\"expo-image\")], targets: [])");
+        assert!(e.iter().any(|e| e.contains("no `.app` or `.module` target")), "{e:?}");
+        let e = errors(
+            "let package = Package(name: \"A\", adopt: Expo(entry: \"index.js\"), stopgaps: [.expo(\"x\"), .expo(\"x\"), .npm(\"y\")], app: App(reactNativeFromSource: 1), targets: [])",
+        );
+        assert!(e.iter().any(|e| e.contains("`x` is listed twice")), "{e:?}");
+        assert!(e.iter().any(|e| e.contains("`.npm` is not a stopgap")), "{e:?}");
+        assert!(e.iter().any(|e| e.contains("`reactNativeFromSource:` is `true` or `false`")), "{e:?}");
+        let e = errors("let package = Package(name: \"A\", adopt: Expo(), targets: [])");
+        assert!(e.iter().any(|e| e.contains("`Expo` needs `entry:`")), "{e:?}");
     }
 
     #[test]
