@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface CounterProps {
+  readonly step?: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Counter())`), or from TSX as `toElement(Counter())`. */
+export declare const Counter: (props: CounterProps) => ComposedView;

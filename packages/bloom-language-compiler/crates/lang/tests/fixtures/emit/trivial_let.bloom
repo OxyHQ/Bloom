@@ -1,0 +1,17 @@
+/// A member `let` that is a short string of names is recomputed, not cached: the
+/// concatenation costs less than the cache, and a string keeps no identity.
+pub view Counter(step: Int = 1) {
+  @state count = 0
+
+  let label = "Count ${count}"
+  let long = "${count} of ${step} by ${count + step}"
+  let banner: View = Text(label)
+
+  body {
+    VStack {
+      banner
+      Text(long)
+      Button(Text("Add")).onPress { count += step }
+    }
+  }
+}

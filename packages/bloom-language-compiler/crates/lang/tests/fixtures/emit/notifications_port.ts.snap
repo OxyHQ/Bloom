@@ -28,11 +28,11 @@ interface Prefs {
 type PrefKey = "pushEnabled" | "likes" | "boosts" | "follows" | "mentions" | "replies" | "quotes";
 
 function isOn(prefs: Prefs, key: PrefKey): boolean {
-return ((key === "pushEnabled") ? prefs.pushEnabled : (key === "likes") ? prefs.likes : (key === "boosts") ? prefs.boosts : (key === "follows") ? prefs.follows : (key === "mentions") ? prefs.mentions : (key === "replies") ? prefs.replies : prefs.quotes);
+return prefs[key];
 }
 
 function patch(key: PrefKey, value: boolean): Partial<Prefs> {
-return ((key === "pushEnabled") ? { pushEnabled: value } : (key === "likes") ? { likes: value } : (key === "boosts") ? { boosts: value } : (key === "follows") ? { follows: value } : (key === "mentions") ? { mentions: value } : (key === "replies") ? { replies: value } : { quotes: value });
+return ({ [key]: value } as Partial<Prefs>);
 }
 
 const $view0 = VStack(Embed($jsx(SettingsSkeleton, {} satisfies ComponentProps<typeof SettingsSkeleton>))).spacing("lg");

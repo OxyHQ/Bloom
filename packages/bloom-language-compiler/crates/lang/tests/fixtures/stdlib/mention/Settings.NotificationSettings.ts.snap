@@ -42,7 +42,7 @@ return ((self === "likes") ? String$$localized("settings.notifications.likes") :
 }
 
 export function NotificationPrefs$isOn(self: NotificationPrefs, key: PrefKey): boolean {
-return ((key === "likes") ? self.likes : (key === "boosts") ? self.boosts : (key === "replies") ? self.replies : (key === "mentions") ? self.mentions : self.follows);
+return self[key];
 }
 
 export function NotificationPrefs$setting(self: NotificationPrefs, key: PrefKey, on: boolean): NotificationPrefs {
