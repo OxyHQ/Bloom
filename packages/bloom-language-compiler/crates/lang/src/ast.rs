@@ -947,6 +947,10 @@ pub enum TypeKind {
     Strings(Vec<String>),
     /// `{ a: Int, b: String? }`: a structural record type (an optional field may be absent).
     Record(Vec<(Ident, TypeExpr)>),
+    /// `P & Q` (2.0): a composition of protocols, Swift's. A constraint only (`<T: P & Q>`, `where
+    /// T: P & Q`, `type PQ = P & Q` named in one); `crate::composition` spreads it into one
+    /// constraint per protocol before checking.
+    Composition(Vec<TypeExpr>),
     /// What the parser put where it could not read a type.
     Error,
 }

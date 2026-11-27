@@ -141,6 +141,8 @@ extern module "@sentry/react-native" {
 | memoisation | none written: the compiler decides; a view that conforms to `Equatable` uses its `==` as the comparator | the memo cache of 0001 |
 | code splitting | automatic per module; `LazyView(Settings.Screen.self)` for an explicit split | dynamic `import()` |
 
+**Deferred** (decided, not built): `any P & Q`, an existential of a protocol composition (it would carry a witness per protocol). A composition constrains a type parameter today: `<T: P & Q>`, `where T: P & Q`, and a module's `type PQ = P & Q` named in one; a composition alias imported from another module is deferred with it. There is no general intersection type: a TS intersection a props type is written as becomes a struct of all its fields (the codemod writes them).
+
 **Retired** (TS-flavoured): `view X(..p: Props)` (props are stored properties); `memo`/`equal(old, new)` (`Equatable`); `lazy` (automatic splitting, `LazyView`); `@ref` (a `class` held in `@State`, as in Swift); the `effect` member (`.task`/`.onChange`/`.onAppear`); `match` (`switch`); `fn`/`pub` (`func`/`public`); `${}` (`\()`); `Foreign` and `"js"` in app code (binding modules); string-literal tokens (typed members).
 
 ### 6. Speed

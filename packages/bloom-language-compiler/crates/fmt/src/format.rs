@@ -1418,6 +1418,10 @@ impl<'a> Formatter<'a> {
             TypeKind::Strings(values) => {
                 text(values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | "))
             }
+            TypeKind::Composition(parts) => {
+                let parts = parts.iter().map(|p| self.ty(p)).collect();
+                join(parts, || text(" & "))
+            }
             TypeKind::Record(fields) => {
                 let fields: Vec<Doc> = fields
                     .iter()
