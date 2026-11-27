@@ -134,6 +134,10 @@ pub struct Tr<'s> {
     /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
     /// name and the own props; a call's other fields are the rest's record.
     pub rest_views: HashMap<String, (String, Vec<String>)>,
+    /// `useQuery({ … })` calls drawn with Mention's `TanStackQuery` binding module (their
+    /// span starts): every `useQuery` of the file, each with options and result reads the
+    /// binding declares (`Tr::scan_tanstack`).
+    pub tanstack: HashSet<u32>,
     /// Review notes for the statement being translated (`Tr::review`).
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
@@ -359,6 +363,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
         rest_views: HashMap::new(),
+        tanstack: HashSet::new(),
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
@@ -462,6 +467,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         }
     }
     tr.scan_labelled(&program.body);
+    tr.scan_tanstack(&program.body);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -775,6 +781,9 @@ impl<'s> Tr<'s> {
     /// The `import` lines for the names the output uses.
     fn imports_text(&self, imports: &Imports) -> String {
         let mut out = String::new();
+        if !self.tanstack.is_empty() {
+            out.push_str("import TanStackQuery\n");
+        }
         if !self.lang_values.is_empty() {
             let names: Vec<String> = self
                 .lang_values
@@ -946,6 +955,104 @@ impl<'s> Tr<'s> {
                 self.labelled.insert(name.to_string(), params);
             }
         }
+    }
+
+    /// [`Tr::tanstack`]. The binding (Mention's `Bindings/TanStackQuery`) declares these
+    /// options and result fields; a file that reads others keeps TanStack's TS declarations.
+    fn scan_tanstack(&mut self, body: &[Statement]) {
+        use oxc_ast_visit::Visit;
+        const OPTIONS: &[&str] =
+            &["queryKey", "queryFn", "enabled", "staleTime", "gcTime", "refetchInterval"];
+        const RESULT: &[&str] = &["data", "isLoading", "isPending", "isFetching", "isError", "refetch"];
+        if self.import_sources.get("useQuery").map(String::as_str) != Some("@tanstack/react-query")
+            || self.import_renames.contains_key("useQuery")
+        {
+            return;
+        }
+        #[derive(Default)]
+        struct Calls<'s> {
+            src: &'s str,
+            all: usize,
+            bound: Vec<(u32, Option<String>, bool)>,
+        }
+        fn options_ok(call: &oxc_ast::ast::CallExpression) -> bool {
+            let [Argument::ObjectExpression(o)] = call.arguments.as_slice() else { return false };
+            let mut has_fn = false;
+            for p in &o.properties {
+                let oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) = p else { return false };
+                let Some(key) = crate::view::key_name(&p.key) else { return false };
+                if !OPTIONS.contains(&key.as_str()) || p.computed {
+                    return false;
+                }
+                if key == "queryFn" {
+                    // `() => call()`: its promise is awaited in the binding's async closure.
+                    let Expression::ArrowFunctionExpression(a) = &p.value else { return false };
+                    if a.get_expression().is_none() || !a.params.items.is_empty() {
+                        return false;
+                    }
+                    has_fn = true;
+                }
+            }
+            has_fn
+        }
+        impl<'a> Visit<'a> for Calls<'_> {
+            fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
+                if matches!(&call.callee, Expression::Identifier(id) if id.name == "useQuery") {
+                    self.all += 1;
+                }
+                oxc_ast_visit::walk::walk_call_expression(self, call);
+            }
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let Some(Expression::CallExpression(call)) = &d.init
+                    && matches!(&call.callee, Expression::Identifier(id) if id.name == "useQuery")
+                {
+                    let ok = options_ok(call);
+                    let reads = match &d.id {
+                        BindingPattern::BindingIdentifier(id) => Some(id.name.to_string()),
+                        BindingPattern::ObjectPattern(p) => {
+                            let fields = p.rest.is_none()
+                                && p.properties.iter().all(|f| {
+                                    crate::view::key_name(&f.key)
+                                        .is_some_and(|k| RESULT.contains(&k.as_str()))
+                                        && matches!(f.value, BindingPattern::BindingIdentifier(_))
+                                });
+                            self.bound.push((call.span.start, None, ok && fields));
+                            oxc_ast_visit::walk::walk_variable_declarator(self, d);
+                            return;
+                        }
+                        _ => None,
+                    };
+                    let ok = ok && reads.as_deref().is_some_and(|n| reads_only(self.src, n, d.span.end));
+                    self.bound.push((call.span.start, reads, ok));
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+        }
+        /// Every read of `name` after `from` is `name.f` / `name?.f` of a declared field.
+        fn reads_only(src: &str, name: &str, from: u32) -> bool {
+            let text = &src[from as usize..];
+            text.match_indices(name).all(|(i, _)| {
+                let before = text[..i].chars().next_back();
+                let after = &text[i + name.len()..];
+                let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$');
+                if word(before) || before == Some('.') || word(after.chars().next()) {
+                    return true;
+                }
+                let field = after.strip_prefix("?.").or_else(|| after.strip_prefix('.'));
+                field.is_some_and(|f| {
+                    let f: String = f.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                    RESULT.contains(&f.as_str())
+                })
+            })
+        }
+        let mut calls = Calls { src: self.src, ..Default::default() };
+        for statement in body {
+            calls.visit_statement(statement);
+        }
+        if calls.all == 0 || calls.bound.len() != calls.all || calls.bound.iter().any(|(_, _, ok)| !ok) {
+            return;
+        }
+        self.tanstack = calls.bound.iter().map(|(at, ..)| *at).collect();
     }
 
     fn scan_memo_aliases(&mut self, body: &[Statement]) {

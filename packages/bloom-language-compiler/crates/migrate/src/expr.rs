@@ -1200,6 +1200,30 @@ impl Tr<'_> {
 
     /// A call by TypeScript's convention: a trailing object literal is named arguments.
     fn ts_call(&mut self, call: &CallExpression) -> String {
+        // `useQuery({ queryKey, queryFn: () => f() })`: the `TanStackQuery` binding's
+        // `useQuery(QueryOptions(queryKey:, queryFn: { try await f() }))` (`Tr::tanstack`).
+        if self.tanstack.contains(&call.span.start)
+            && let [Argument::ObjectExpression(o)] = call.arguments.as_slice()
+        {
+            let mut fields = Vec::new();
+            for property in &o.properties {
+                let ObjectPropertyKind::ObjectProperty(p) = property else { unreachable!() };
+                let PropertyKey::StaticIdentifier(key) = &p.key else { unreachable!() };
+                let value = match &p.value {
+                    Expression::ArrowFunctionExpression(arrow) if key.name == "queryFn" => {
+                        let Some(body) = arrow.get_expression() else { unreachable!() };
+                        let value = match body.without_parentheses() {
+                            Expression::AwaitExpression(a) => &a.argument,
+                            other => other,
+                        };
+                        format!("{{ try await {} }}", self.expr(value))
+                    }
+                    value => self.expr(value),
+                };
+                fields.push(format!("{}: {value}", key.name));
+            }
+            return format!("useQuery(QueryOptions({}))", fields.join(", "));
+        }
         let callee = match &call.callee {
             Expression::StaticMemberExpression(m) => {
                 let method = m.property.name.as_str();
