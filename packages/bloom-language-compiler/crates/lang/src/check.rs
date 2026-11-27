@@ -4194,7 +4194,10 @@ impl<'o> Checker<'o> {
             self.element(expr);
         }
         if let Some(hint) = hint {
-            let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
+            // `merge<T extends Holder>(actor: T)` given a TS value: `T` is that value's type, so
+            // the result is one too (it was left unsolved, `_`).
+            let fits = (matches!(hint, Ty::Var(_)) && self.coerce(&ty, &hint))
+                || matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
                 // A `Foreign?` where TS takes an optional (`account: account`): TS checks it.
                 || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
