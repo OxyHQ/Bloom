@@ -323,8 +323,21 @@ The gate is **more than 80%**.
 |---|---|---|---|
 | 2026-11-26 | the 0.x codemod alone, on the 2.0 stack | 324 files (fd8a4290f) | 35.5% (0.x output, not 2.0) |
 | 2026-11-26 | #1007: 2.0 forms, typed tokens, SwiftUI names, effects as `.onAppear`/`.task(id:)`, `do`/`catch`, `String(localized:)`, `private` | 324 files (fd8a4290f) | 27.8% (+4.0% review) = **31.8%** |
+| 2026-11-27 | #1007 on phase A + the M1–M9 compiler fixes (#1016) | 324 files (fd8a4290f) | 28.4% (+4.0% review) = 32.4% |
+| 2026-11-27 | #1007: `xs.at(i)`, `x!`, narrowed reads as `x!`, `@ref` → `Ref(v)`/`ViewRef<T>()`, state-reset effects as `.onChange(of:)`, options records, React's stale reads as snapshots, JS names kept on `Foreign` | 324 files (fd8a4290f) | 29.3% (+7.7% review) = 37.0% |
+| 2026-11-27 | the same, with the compiler's R2–R4 and R7 (`fix/bloom-lang-2-core2` 7b9e701f5) | 324 files (fd8a4290f) | 30.2% (+8.6% review) = **38.9%** |
 
-Most refusals come from bloomc's errors on the draft: 133 of 221 refused files. The largest
-single cause is an indexed array read typing as `T?` where Swift's is `T` (repro M1). The other
-88 files hit codemod gaps, a long tail with at most 10 files per reason. The repros are in
-`~/.local/share/bloom-lang/repros/mention1.md`, and PR #1007's handoff keeps the list.
+Most refusals come from bloomc's errors on the draft. On 2026-11-26 that was 133 of 221
+refused files, and the largest single cause was an indexed array read typing as `T?` where
+Swift's is `T` (repro M1, since fixed). The second round of repros (R1–R7, in
+`~/.local/share/bloom-lang/repros/mention2.md`) is led by these:
+
+- the standard library's BloomData `Action`, which shadows BloomUI's `Action` node (R1, blocking
+  PostItem);
+- TS optional parameters (R2);
+- nested conditionals (R3);
+- `.id` (R4);
+- `Foreign` from TS inference (R7).
+
+The rest is a long tail of codemod gaps, with at most 10 files per reason. PR #1007's handoff
+keeps the list.
