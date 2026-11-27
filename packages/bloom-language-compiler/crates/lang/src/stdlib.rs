@@ -35,6 +35,47 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("models.ts", include_str!("../../../stdlib/Bloom/models.ts")),
 ];
 
+/// The standard library's own manifest: its module and its native modules (`.native`).
+pub const MANIFEST: &str = include_str!("../../../stdlib/Package.bloom");
+
+/// The native modules' implementations, by path under the standard library's directory.
+pub const NATIVE_SOURCES: &[(&str, &str)] = &[
+    (
+        "Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt"),
+    ),
+    (
+        "Native/BloomStorage/android/so/oxy/bloom/storage/BloomStoragePackage.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStoragePackage.kt"),
+    ),
+    (
+        "Native/BloomStorage/android/so/oxy/bloom/storage/Stores.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/Stores.kt"),
+    ),
+];
+
+/// The `extern native` interfaces the standard library declares.
+pub fn native_modules() -> Vec<crate::native::Module> {
+    SOURCES
+        .iter()
+        .filter(|(n, _)| n.ends_with(".bloom"))
+        .flat_map(|(_, text)| crate::native::modules(text).unwrap_or_default())
+        .collect()
+}
+
+/// The generated files beside the sources: each native interface's codegen spec and bridge.
+fn generated() -> Vec<(String, String)> {
+    native_modules()
+        .iter()
+        .flat_map(|m| {
+            [
+                (crate::native::spec_file(&m.name), crate::native::spec(m)),
+                (crate::native::bridge_file(&m.name), crate::native::bridge(m)),
+            ]
+        })
+        .collect()
+}
+
 thread_local! {
     static WRITTEN: RefCell<BTreeSet<PathBuf>> = const { RefCell::new(BTreeSet::new()) };
 }
@@ -51,13 +92,26 @@ pub fn ensure(root: &Path) -> Vec<PathBuf> {
     let first = WRITTEN.with(|w| w.borrow_mut().insert(dir.clone()));
     if first {
         let _ = std::fs::create_dir_all(&dir);
-        for (name, contents) in SOURCES {
+        let generated = generated();
+        let files = SOURCES
+            .iter()
+            .chain(NATIVE_SOURCES)
+            .map(|(n, c)| (*n, *c))
+            .chain(generated.iter().map(|(n, c)| (n.as_str(), c.as_str())));
+        for (name, contents) in files {
             let path = dir.join(name);
+            if let Some(parent) = path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
             if std::fs::read_to_string(&path).ok().as_deref() == Some(contents) {
                 continue;
             }
             // Written whole, then renamed: a bundler's workers may read it meanwhile.
-            let tmp = dir.join(format!(".{name}.{}.tmp", std::process::id()));
+            let tmp = path.with_file_name(format!(
+                ".{}.{}.tmp",
+                path.file_name().unwrap_or_default().to_string_lossy(),
+                std::process::id()
+            ));
             if std::fs::write(&tmp, contents).is_ok() {
                 let _ = std::fs::rename(&tmp, &path);
             }

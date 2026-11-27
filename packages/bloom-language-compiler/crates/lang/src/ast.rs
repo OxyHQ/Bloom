@@ -217,9 +217,13 @@ pub struct ExtensionDecl {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExternModule {
-    /// The npm package, as written (without quotes), and its span.
+    /// The npm package, as written (without quotes), and its span; for `extern native`,
+    /// the native module's name (`"BloomStorage"`).
     pub package: Ident,
     pub items: Vec<Item>,
+    /// `extern native "Name" { … }`: a Bloom native module's interface (ADR 0002, section 7),
+    /// implemented in Kotlin and Swift and reached through a generated TurboModule bridge.
+    pub native: bool,
 }
 
 impl ItemKind {

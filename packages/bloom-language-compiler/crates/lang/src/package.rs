@@ -41,9 +41,74 @@ pub struct Manifest {
     pub platforms: Vec<Platform>,
     pub dependencies: Vec<PackageDependency>,
     pub targets: Vec<Target>,
+    /// `app: App(…)`: what the platform builds say about the app (its id, version, icon,
+    /// splash, URL schemes and permissions). Every field has a default.
+    pub app: AppSettings,
     /// Where a new `.package(…)` goes: the `dependencies:` array's `]`, or,
     /// without one, the `Package(` call's `)`.
     pub insert_dependency_at: InsertAt,
+}
+
+/// `app: App(id: "so.oxy.mention", version: "1.2.0", build: 42, displayName: "Mention",
+/// schemes: ["mention"], icon: "Resources/AppIcon.png", splash: "#FFFFFF",
+/// splashImage: "Resources/Splash.png", permissions: [.camera, .notifications])`.
+/// `bloom build` writes the native projects' manifests from it (ADR 0002, section 7).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct AppSettings {
+    /// The application id (bundle identifier); by default `so.bloom.<name>`.
+    pub id: Option<String>,
+    /// The version people see; by default "1.0.0".
+    pub version: Option<String>,
+    /// The build number (Android's version code); by default 1.
+    pub build: Option<u32>,
+    /// The name under the icon; by default the package's name.
+    pub display_name: Option<String>,
+    /// The URL schemes deep links use (`demo://post/2`); by default the package's name, lowercased.
+    pub schemes: Vec<String>,
+    /// A square PNG, relative to the package root; by default Bloom's icon.
+    pub icon: Option<String>,
+    /// The launch background, `#RRGGBB`; by default white.
+    pub splash: Option<String>,
+    /// An image centered on the launch background, relative to the package root.
+    pub splash_image: Option<String>,
+    pub permissions: Vec<Permission>,
+}
+
+/// A permission the app asks for. Each names the platforms' own: `.camera` is Android's
+/// `CAMERA` and iOS's camera usage; a string is an Android permission as written.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Permission {
+    Camera,
+    Microphone,
+    Location,
+    Notifications,
+    Contacts,
+    Photos,
+    Biometrics,
+    Vibrate,
+    Android(String),
+}
+
+/// The leading-dot permissions, by name.
+pub const PERMISSIONS: &[&str] =
+    &["camera", "microphone", "location", "notifications", "contacts", "photos", "biometrics", "vibrate"];
+
+impl Permission {
+    /// The Android permissions it is.
+    pub fn android(&self) -> Vec<String> {
+        let names: &[&str] = match self {
+            Permission::Camera => &["CAMERA"],
+            Permission::Microphone => &["RECORD_AUDIO"],
+            Permission::Location => &["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+            Permission::Notifications => &["POST_NOTIFICATIONS"],
+            Permission::Contacts => &["READ_CONTACTS"],
+            Permission::Photos => &["READ_MEDIA_IMAGES", "READ_MEDIA_VIDEO"],
+            Permission::Biometrics => &["USE_BIOMETRIC"],
+            Permission::Vibrate => &["VIBRATE"],
+            Permission::Android(name) => return vec![name.clone()],
+        };
+        names.iter().map(|n| format!("android.permission.{n}")).collect()
+    }
 }
 
 /// A place in the manifest's source where `bloom add` inserts text.
@@ -184,6 +249,11 @@ pub enum TargetKind {
     Bindings { npm: String },
     /// `.tests`: test files, run by `bloom test`.
     Tests,
+    /// `.native("Haptics", kotlin: "…", swift: "…")`: a Bloom native module (ADR 0002,
+    /// section 7). Its Bloom interface is the target's `.bloom` files (an `extern native`
+    /// block); its implementations are Kotlin (Android) and Swift (iOS) sources, by
+    /// default `Native/<Name>/android` and `Native/<Name>/ios`.
+    Native { kotlin: Option<String>, swift: Option<String> },
 }
 
 impl TargetKind {
@@ -193,6 +263,7 @@ impl TargetKind {
             TargetKind::Module => "module",
             TargetKind::Bindings { .. } => "bindings",
             TargetKind::Tests => "tests",
+            TargetKind::Native { .. } => "native",
         }
     }
 }
@@ -221,8 +292,19 @@ impl Target {
             TargetKind::App | TargetKind::Module => "Sources",
             TargetKind::Bindings { .. } => "Bindings",
             TargetKind::Tests => "Tests",
+            TargetKind::Native { .. } => "Native",
         };
         PathBuf::from(base).join(&self.name)
+    }
+
+    /// A `.native` target's Kotlin and Swift source directories, relative to the package root.
+    pub fn native_sources(&self) -> Option<(PathBuf, PathBuf)> {
+        let TargetKind::Native { kotlin, swift } = &self.kind else { return None };
+        let dir = self.dir();
+        Some((
+            kotlin.as_ref().map(PathBuf::from).unwrap_or_else(|| dir.join("android")),
+            swift.as_ref().map(PathBuf::from).unwrap_or_else(|| dir.join("ios")),
+        ))
     }
 
     /// The npm package and version of a `.bindings` target.
@@ -694,7 +776,7 @@ impl Eval<'_> {
             return None;
         }
         let mut args =
-            self.labeled(value, "Package", None, &["name", "platforms", "dependencies", "targets"])?;
+            self.labeled(value, "Package", None, &["name", "platforms", "dependencies", "targets", "app"])?;
         let name = self.required(&mut args, "name", "Package").and_then(|v| self.string(v, "`name:`"));
         let platforms = match self.take(&mut args, "platforms") {
             Some(v) => {
@@ -724,12 +806,117 @@ impl Eval<'_> {
                 }
             }
         }
+        let app = match self.take(&mut args, "app") {
+            Some(v) => self.app(v).unwrap_or_default(),
+            None => AppSettings::default(),
+        };
         let (name, name_span) = name?;
         self.module_name(&name, name_span, "package");
-        let manifest =
-            Manifest { name, name_span, platforms, dependencies, targets, insert_dependency_at: insert };
+        let manifest = Manifest {
+            name,
+            name_span,
+            platforms,
+            dependencies,
+            targets,
+            app,
+            insert_dependency_at: insert,
+        };
         self.validate(&manifest);
         Some(manifest)
+    }
+
+    /// `App(id:version:build:displayName:schemes:icon:splash:splashImage:permissions:)`.
+    fn app(&mut self, value: Spanned) -> Option<AppSettings> {
+        if !matches!(&value.value, Value::Call { name, member: false, .. } if name == "App") {
+            self.error(
+                Diagnostic::error("B0811", value.span, "`app:` is an `App(…)`")
+                    .label("expected `App(id: \"so.example.app\", version: \"1.0.0\")`")
+                    .toolchain(SPEC),
+            );
+            return None;
+        }
+        let labels = [
+            "id",
+            "version",
+            "build",
+            "displayName",
+            "schemes",
+            "icon",
+            "splash",
+            "splashImage",
+            "permissions",
+        ];
+        let mut args = self.labeled(value, "App", None, &labels)?;
+        let mut text = |eval: &mut Self, label: &str| {
+            eval.take(&mut args, label).and_then(|v| eval.string(v, &format!("`{label}:`"))).map(|(s, _)| s)
+        };
+        let id = text(self, "id");
+        let version = text(self, "version");
+        let display_name = text(self, "displayName");
+        let icon = text(self, "icon");
+        let splash = text(self, "splash");
+        let splash_image = text(self, "splashImage");
+        let mut settings =
+            AppSettings { id, version, display_name, icon, splash, splash_image, ..AppSettings::default() };
+        if let Some(v) = self.take(&mut args, "build") {
+            match v.value {
+                Value::Int(n) if n > 0 && n <= i64::from(u32::MAX) => settings.build = Some(n as u32),
+                _ => self.error(
+                    Diagnostic::error("B0811", v.span, "`build:` is a positive integer")
+                        .label("such as `build: 42`")
+                        .toolchain(SPEC),
+                ),
+            }
+        }
+        if let Some(v) = self.take(&mut args, "schemes")
+            && let Some((items, _)) = self.array(v, "`schemes:`")
+        {
+            for item in items {
+                if let Some((scheme, span)) = self.string(item, "a URL scheme") {
+                    let valid = scheme.chars().next().is_some_and(|c| c.is_ascii_lowercase())
+                        && scheme.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || "+.-".contains(c));
+                    if !valid {
+                        self.error(
+                            Diagnostic::error("B0811", span, format!("\"{scheme}\" is not a URL scheme"))
+                                .label("a scheme is lowercase letters, digits, `+`, `.` and `-`, starting with a letter")
+                                .toolchain(SPEC),
+                        );
+                    }
+                    settings.schemes.push(scheme);
+                }
+            }
+        }
+        if let Some(splash) = &settings.splash
+            && !(splash.len() == 7 && splash.starts_with('#') && splash[1..].chars().all(|c| c.is_ascii_hexdigit()))
+        {
+            self.error(
+                Diagnostic::error("B0811", args.span, format!("`splash:` \"{splash}\" is not a colour"))
+                    .label("expected \"#RRGGBB\"")
+                    .toolchain(SPEC),
+            );
+        }
+        if let Some(v) = self.take(&mut args, "permissions")
+            && let Some((items, _)) = self.array(v, "`permissions:`")
+        {
+            for item in items {
+                if let Value::Str(name) = &item.value {
+                    settings.permissions.push(Permission::Android(name.clone()));
+                    continue;
+                }
+                let Some(name) = self.member(&item, "permission", PERMISSIONS) else { continue };
+                settings.permissions.push(match name.as_str() {
+                    "camera" => Permission::Camera,
+                    "microphone" => Permission::Microphone,
+                    "location" => Permission::Location,
+                    "notifications" => Permission::Notifications,
+                    "contacts" => Permission::Contacts,
+                    "photos" => Permission::Photos,
+                    "biometrics" => Permission::Biometrics,
+                    _ => Permission::Vibrate,
+                });
+            }
+        }
+        Some(settings)
     }
 
     fn member(&mut self, value: &Spanned, what: &str, members: &[&str]) -> Option<String> {
@@ -869,16 +1056,24 @@ impl Eval<'_> {
 
     fn target(&mut self, value: Spanned) -> Option<Target> {
         let span = value.span;
-        let kind = self.member(&value, "target", &["app", "module", "bindings", "tests"])?;
+        let kind = self.member(&value, "target", &["app", "module", "bindings", "tests", "native"])?;
         let what = format!(".{kind}");
-        let labels: &[&str] =
-            if kind == "bindings" { &["name", "npm", "path"] } else { &["name", "dependencies", "path"] };
+        let labels: &[&str] = match kind.as_str() {
+            "bindings" => &["name", "npm", "path"],
+            "native" => &["name", "dependencies", "path", "kotlin", "swift"],
+            _ => &["name", "dependencies", "path"],
+        };
         let mut args = self.labeled(value, &what, Some("name"), labels)?;
         let name = self.required(&mut args, "name", &what).and_then(|v| self.string(v, "the target name"));
         let kind = match kind.as_str() {
             "app" => TargetKind::App,
             "module" => TargetKind::Module,
             "tests" => TargetKind::Tests,
+            "native" => {
+                let kotlin = self.take(&mut args, "kotlin").and_then(|v| self.string(v, "`kotlin:`")).map(|(s, _)| s);
+                let swift = self.take(&mut args, "swift").and_then(|v| self.string(v, "`swift:`")).map(|(s, _)| s);
+                TargetKind::Native { kotlin, swift }
+            }
             _ => {
                 let (npm, npm_span) =
                     self.required(&mut args, "npm", &what).and_then(|v| self.string(v, "`npm:`"))?;
@@ -1262,6 +1457,29 @@ let package = Package(
         assert_eq!(levels[1], ["Posts"]);
         assert_eq!(levels[2], ["Feed", "PostsTests"]);
         assert_eq!(levels[3], ["Mention"]);
+    }
+
+    #[test]
+    fn reads_the_app_settings_and_native_targets() {
+        let m = parse(
+            r##"let package = Package(
+  name: "Demo",
+  app: App(id: "so.oxy.demo", version: "2.1.0", build: 7, schemes: ["demo"], splash: "#101820", permissions: [.camera, "android.permission.NFC"]),
+  targets: [.app("Demo"), .native("Haptics", kotlin: "Native/Haptics/kt")]
+)"##,
+            "Package.bloom",
+        )
+        .unwrap();
+        assert_eq!(m.app.id.as_deref(), Some("so.oxy.demo"));
+        assert_eq!(m.app.build, Some(7));
+        assert_eq!(m.app.schemes, ["demo"]);
+        assert_eq!(m.app.permissions[0].android(), ["android.permission.CAMERA"]);
+        assert_eq!(m.app.permissions[1], Permission::Android("android.permission.NFC".into()));
+        let (kotlin, swift) = m.targets[1].native_sources().unwrap();
+        assert_eq!((kotlin, swift), (PathBuf::from("Native/Haptics/kt"), PathBuf::from("Native/Haptics/ios")));
+        let e = errors("let package = Package(name: \"A\", app: App(splash: \"white\", schemes: [\"Demo\"]), targets: [.app(\"A\")])");
+        assert!(e.iter().any(|e| e.contains("\"Demo\" is not a URL scheme")), "{e:?}");
+        assert!(e.iter().any(|e| e.contains("\"white\" is not a colour")), "{e:?}");
     }
 
     #[test]

@@ -789,11 +789,12 @@ function memoryStorage(): StorageBackend {
 
 // ---- native store backends ---------------------------------------------------
 //
-// On Android and iOS the stores persist through the Expo modules the app already ships:
-// `kv` in SQLite, `secure` in the keystore/keychain, `file` in the app's documents. This
-// file is the only place that names them (phase F swaps them for Bloom native modules);
-// the generated build lists them and resolves them to nothing on the web. Every call is
-// synchronous, as the stores' interface is.
+// On Android and iOS the stores persist through Bloom's native module, `BloomStorage`
+// (`Storage.bloom`'s `extern native` interface, reached through its generated bridge):
+// `kv` in SQLite, `secure` in the keystore/keychain, `file` in the app's files. A build
+// with `--with-expo` has no Bloom native modules; there they persist through the Expo
+// modules that build lists (below), which this file alone names and the generated build
+// resolves to nothing on the web. Every call is synchronous, as the stores' interface is.
 
 declare const require: (id: string) => unknown;
 
@@ -994,6 +995,30 @@ export function storageSet(
 
 export function storageKeys(kind: string, name: string): readonly string[] {
   return backend(kind).keys(name);
+}
+
+const nativeKinds: Record<string, boolean> = {};
+
+/**
+ * `kind` is kept by the native module: on Android or iOS, in a build that links it (a
+ * `bloom build` without `--with-expo`), and with no backend installed for it
+ * (`setStorageBackend`, a test's or an app's own, wins).
+ */
+export function storageIsNative(kind: string): boolean {
+  if (kind in backends) return false;
+  let native = nativeKinds[kind];
+  if (native === undefined) {
+    native = false;
+    if (onNative()) {
+      try {
+        native = (require('./NativeBloomStorageBridge') as { isAvailable(): boolean }).isAvailable();
+      } catch {
+        native = false;
+      }
+    }
+    nativeKinds[kind] = native;
+  }
+  return native;
 }
 
 // ---- actors -------------------------------------------------------------------

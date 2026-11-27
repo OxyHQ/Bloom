@@ -24,6 +24,7 @@ pub mod i18n;
 pub mod icons;
 mod lexer;
 mod model;
+pub mod native;
 pub mod modules;
 pub mod package;
 mod parser;
