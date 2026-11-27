@@ -841,10 +841,16 @@ fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize
     }
     let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
     let lead = source[line_start..at].trim();
-    if !(lead.is_empty() || lead.ends_with('{')) || at == start - 1 {
+    // `await p.catch(…)` in async code: awaited where it is, no task of its own.
+    let awaited = lead.ends_with("await") && {
+        let before = lead.trim_end_matches("await").trim_end();
+        before.is_empty() || before.ends_with('{')
+    };
+    if !(lead.is_empty() || lead.ends_with('{') || awaited) || at == start - 1 {
         return None;
     }
     let receiver = source[at..start - 1].trim();
+    let at = if awaited { source[..at].trim_end().len() - "await".len() } else { at };
     let close = block_end(source, end)?;
     let closure = source[end..close].trim();
     let inner = closure.strip_prefix('{')?.strip_suffix('}')?.trim();
@@ -860,7 +866,8 @@ fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize
     if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
         return None;
     }
-    Some((at, close, format!("task {{\ndo {{\ntry await {receiver}\n}} {catch} {{\n{body}\n}}\n}}")))
+    let handled = format!("do {{\ntry await {receiver}\n}} {catch} {{\n{body}\n}}");
+    Some((at, close, if awaited { handled } else { format!("task {{\n{handled}\n}}") }))
 }
 
 /// The JS members the codemod renamed (`length` → `count`, `trim()` → `trimmed()`, …) put back
