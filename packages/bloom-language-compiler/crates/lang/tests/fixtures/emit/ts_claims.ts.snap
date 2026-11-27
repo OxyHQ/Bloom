@@ -1,4 +1,4 @@
-import { type FeedPost, lookupPost, useViewPost } from "@/corpus";
+import { type FeedMeta, type FeedPost, lookupPost, useViewPost } from "@/corpus";
 
 export function authorIds(viewPost: FeedPost | undefined): readonly string[] {
 return viewPost?.authors?.map((author: FeedPost["authors"][number]) => author.id) ?? [];
@@ -37,5 +37,15 @@ return p?.user?.id;
 
 export function authorCount(post: FeedPost): number {
 return (post.authors ?? []).length;
+}
+
+export function metadata(viewPost: FeedPost | undefined): FeedMeta {
+const meta: FeedMeta = viewPost?.metadata ?? ({});
+return meta;
+}
+
+export function lane(viewPost: FeedPost | undefined): string {
+const meta = viewPost?.metadata ?? ({});
+return meta.lane ?? "";
 }
 

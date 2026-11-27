@@ -4747,13 +4747,24 @@ impl<'o> Checker<'o> {
                 }
             }
             ExprKind::Call(call) => self.call(expr, call, expected_resolved.as_ref()),
-            // `{}` where a struct (or a patch) is expected is an empty record, not a closure.
+            // `{}` where a struct (or a patch) is expected is an empty record, not a closure;
+            // where its optional is expected too (`viewPost?.metadata ?? {}`, a TS type whose
+            // fields are all optional).
             ExprKind::Closure(c)
                 if c.params.is_empty()
                     && c.body.is_empty()
                     && matches!(&expected_resolved, Some(Ty::Adt(..) | Ty::Partial(_))) =>
             {
                 self.record_literal(expr, &[], expected)
+            }
+            ExprKind::Closure(c)
+                if c.params.is_empty()
+                    && c.body.is_empty()
+                    && let Some(Ty::Option(inner)) = &expected_resolved
+                    && matches!(self.resolve(inner), Ty::Adt(..) | Ty::Partial(_)) =>
+            {
+                let inner = self.resolve(inner);
+                self.record_literal(expr, &[], Some(&inner))
             }
             ExprKind::Closure(c) => self.closure(c, expected_resolved.as_ref(), false),
             ExprKind::If(if_expr) => self.if_expr(if_expr, expected, expr.span),
