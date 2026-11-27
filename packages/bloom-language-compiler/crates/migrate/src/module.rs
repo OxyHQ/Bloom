@@ -28,6 +28,9 @@ pub struct Translated {
     /// `a || b` as a value, left → right: JS's default for a falsy `a`, spelled
     /// from bloomc's type of `a` (`crate::truthiness::defaults`).
     pub defaults: HashMap<String, Vec<String>>,
+    /// TS casts `x as T` the codemod dropped, by the text of `x`: where bloomc finds a `String`
+    /// for a string literal union, the cast is Bloom's `x as! T` (`crate::typed::casts`).
+    pub casts: HashMap<String, String>,
 }
 
 /// One kept TS import, by module, in source order.
@@ -172,6 +175,8 @@ pub struct Tr<'s> {
     /// Condition operands of unknown type (see [`Translated::conditions`]).
     pub defaults: HashMap<String, Vec<String>>,
     pub conditions: HashSet<String>,
+    /// See [`Translated::casts`].
+    pub casts: HashMap<String, String>,
     /// Calls whose one type argument types the binding they initialise.
     pub typed_calls: HashSet<u32>,
     /// `let x = x ?? d` lines a pattern's defaults leave for after its `let`.
@@ -375,6 +380,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
+        casts: HashMap::new(),
         defaults: HashMap::new(),
     }
 }
@@ -402,6 +408,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         return Translated {
             conditions: HashSet::new(),
             defaults: HashMap::new(),
+            casts: HashMap::new(),
             text: String::new(),
             reasons: vec![Reason {
                 code: "parse".into(),
@@ -493,7 +500,13 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         .collect::<Vec<_>>()
         .join("\n\n")
         + "\n";
-    Translated { text: out, reasons: tr.reasons, conditions: tr.conditions, defaults: tr.defaults }
+    Translated {
+        text: out,
+        reasons: tr.reasons,
+        conditions: tr.conditions,
+        defaults: tr.defaults,
+        casts: tr.casts,
+    }
 }
 
 /// Doc comments as plain comments: what they documented is not in the output.
