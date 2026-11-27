@@ -1,0 +1,373 @@
+switch load {
+case .loading:
+  ProgressView()
+case let .failed(message):
+  Text(message)
+default:
+  break
+}
+
+do {
+  let ok = try check(code: code)
+} catch let error as APIError {
+  throw error
+}
+let value = try? check(code: 1)
+let tab = raw as! Tab
+
+extern module "./runtime" {
+  private func sleepMs(_ ms: Double) async throws
+}
+
+test("a like counts once") {
+  #expect(once.likes == post.likes + 1)
+}
+
+----------------------------------------------------
+[
+	[
+		"keyword",
+		"switch"
+	],
+	" load ",
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"case"
+	],
+	[
+		"implicit-member",
+		".loading"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"ProgressView"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"case"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	[
+		"implicit-member",
+		".failed"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"message",
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Text"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"message",
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"default"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"keyword",
+		"break"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"do"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" ok ",
+	[
+		"operator",
+		"="
+	],
+	[
+		"keyword",
+		"try"
+	],
+	[
+		"function",
+		"check"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"argument-label",
+		"code"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	" code",
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"catch"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" error ",
+	[
+		"keyword",
+		"as"
+	],
+	[
+		"class-name-reference",
+		"APIError"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"throw"
+	],
+	" error\n",
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" value ",
+	[
+		"operator",
+		"="
+	],
+	[
+		"keyword",
+		"try?"
+	],
+	[
+		"function",
+		"check"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"argument-label",
+		"code"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"number",
+		"1"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" tab ",
+	[
+		"operator",
+		"="
+	],
+	" raw ",
+	[
+		"keyword",
+		"as!"
+	],
+	[
+		"class-name-reference",
+		"Tab"
+	],
+	[
+		"keyword",
+		"extern module"
+	],
+	[
+		"string-literal",
+		[
+			[
+				"string",
+				"\"./runtime\""
+			]
+		]
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"private"
+	],
+	[
+		"keyword",
+		"func"
+	],
+	[
+		"function-definition",
+		"sleepMs"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"_ ",
+	[
+		"argument-label",
+		"ms"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Double"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"async"
+	],
+	[
+		"keyword",
+		"throws"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"test"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"string-literal",
+		[
+			[
+				"string",
+				"\"a like counts once\""
+			]
+		]
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"macro",
+		"#expect"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"once",
+	[
+		"punctuation",
+		"."
+	],
+	"likes ",
+	[
+		"operator",
+		"=="
+	],
+	" post",
+	[
+		"punctuation",
+		"."
+	],
+	"likes ",
+	[
+		"operator",
+		"+"
+	],
+	[
+		"number",
+		"1"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		"}"
+	]
+]

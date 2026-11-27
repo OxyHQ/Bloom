@@ -3,23 +3,30 @@
   "name": "Bloom",
   "scopeName": "source.bloom",
   "fileTypes": ["bloom"],
+  "comment": "Bloom, the language by Oxy (.bloom files, compiled by bloomc): https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx. This file is the one source of Bloom's TextMate grammar; packages/bloom-tmlanguage is generated from it.",
   "patterns": [{ "include": "#code" }],
   "repository": {
     "code": {
       "patterns": [
         { "include": "#comments" },
         { "include": "#strings" },
-        { "include": "#declarations" },
         { "include": "#attributes" },
+        { "include": "#macros" },
+        { "include": "#key-path" },
+        { "include": "#declarations" },
         { "include": "#case-arm" },
+        { "include": "#parameter-label" },
         { "include": "#named-argument" },
+        { "include": "#accessors" },
         { "include": "#keywords" },
         { "include": "#constants" },
         { "include": "#numbers" },
+        { "include": "#closure-argument" },
         { "include": "#binding" },
         { "include": "#enum-member" },
         { "include": "#modifier-call" },
         { "include": "#member" },
+        { "include": "#generic-arguments" },
         { "include": "#types" },
         { "include": "#function-call" },
         { "include": "#operators" },
@@ -55,12 +62,17 @@
     "strings": {
       "patterns": [
         {
+          "comment": "A raw multi-line string: interpolation kept, indentation stripped to the closing delimiter.",
           "name": "string.quoted.triple.bloom",
           "begin": "\"\"\"",
           "end": "\"\"\"",
           "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.bloom" } },
           "endCaptures": { "0": { "name": "punctuation.definition.string.end.bloom" } },
-          "patterns": [{ "include": "#string-escape" }, { "include": "#interpolation" }]
+          "patterns": [
+            { "include": "#string-escape" },
+            { "include": "#interpolation" },
+            { "include": "#legacy-interpolation" }
+          ]
         },
         {
           "name": "string.quoted.double.bloom",
@@ -68,7 +80,11 @@
           "end": "\"|$",
           "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.bloom" } },
           "endCaptures": { "0": { "name": "punctuation.definition.string.end.bloom" } },
-          "patterns": [{ "include": "#string-escape" }, { "include": "#interpolation" }]
+          "patterns": [
+            { "include": "#string-escape" },
+            { "include": "#interpolation" },
+            { "include": "#legacy-interpolation" }
+          ]
         }
       ]
     },
@@ -79,10 +95,21 @@
           "match": "\\\\u\\{[0-9A-Fa-f]{1,6}\\}"
         },
         { "name": "constant.character.escape.bloom", "match": "\\\\[nt\"\\\\$]" },
-        { "name": "invalid.illegal.escape.bloom", "match": "\\\\." }
+        { "name": "invalid.illegal.escape.bloom", "match": "\\\\(?!\\()." }
       ]
     },
     "interpolation": {
+      "comment": "2.0's `\\(expr)`; strings, calls and parentheses nest inside it.",
+      "name": "meta.interpolation.bloom",
+      "contentName": "meta.embedded.line.bloom",
+      "begin": "\\\\\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.section.interpolation.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.section.interpolation.end.bloom" } },
+      "patterns": [{ "include": "#code" }]
+    },
+    "legacy-interpolation": {
+      "comment": "0.x's `${expr}`, which still parses.",
       "name": "meta.interpolation.bloom",
       "contentName": "meta.embedded.line.bloom",
       "begin": "\\$\\{",
@@ -101,10 +128,33 @@
         "3": { "name": "punctuation.definition.string.end.bloom" }
       }
     },
+    "attributes": {
+      "comment": "0.x `@state`, `@list`, `@record`, `@env`, `@ref`; 2.0 `@State`, `@Binding`, `@Environment(\\.k)`, `@Observable`, `@Query`, `@extern(\"name\")`, and any other.",
+      "match": "(@)([A-Za-z_][A-Za-z0-9_]*)\\b",
+      "name": "storage.modifier.attribute.bloom",
+      "captures": { "1": { "name": "punctuation.definition.attribute.bloom" } }
+    },
+    "macros": {
+      "comment": "A test macro: `#expect(…)`.",
+      "match": "(#)([A-Za-z_][A-Za-z0-9_]*)\\b",
+      "name": "entity.name.function.macro.bloom",
+      "captures": { "1": { "name": "punctuation.definition.macro.bloom" } }
+    },
+    "key-path": {
+      "comment": "A key path: `\\.likes`, `\\Post.title`.",
+      "match": "(\\\\)([A-Z][A-Za-z0-9_]*)?(\\.)([A-Za-z_][A-Za-z0-9_]*)",
+      "name": "meta.key-path.bloom",
+      "captures": {
+        "1": { "name": "keyword.operator.key-path.bloom" },
+        "2": { "name": "entity.name.type.bloom" },
+        "3": { "name": "punctuation.accessor.bloom" },
+        "4": { "name": "variable.other.property.bloom" }
+      }
+    },
     "declarations": {
       "patterns": [
         {
-          "match": "\\b(struct|enum|type)\\s+([A-Z][A-Za-z0-9_]*)",
+          "match": "\\b(struct|enum|class|actor|protocol|extension|type)\\s+([A-Z][A-Za-z0-9_]*)",
           "captures": {
             "1": { "name": "storage.type.$1.bloom" },
             "2": { "name": "entity.name.type.$1.bloom" }
@@ -118,17 +168,52 @@
           }
         },
         {
-          "match": "\\b(fn)\\s+([a-zA-Z_][A-Za-z0-9_]*)",
+          "comment": "0.x `fn name`, 2.0 `func name` and an operator's `static func ==`.",
+          "match": "\\b(fn|func)\\s+(?:([A-Za-z_][A-Za-z0-9_]*)|([-+*/%=<>!&|]+))",
           "captures": {
             "1": { "name": "storage.type.function.bloom" },
-            "2": { "name": "entity.name.function.bloom" }
+            "2": { "name": "entity.name.function.bloom" },
+            "3": { "name": "entity.name.function.operator.bloom" }
           }
         },
         {
-          "match": "\\b(let|var)\\s+([a-zA-Z_][A-Za-z0-9_]*)\\b",
+          "match": "\\b(init)\\s*(?=[(<])",
+          "captures": { "1": { "name": "storage.type.function.init.bloom" } }
+        },
+        {
+          "match": "\\b(let|var)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
           "captures": {
             "1": { "name": "storage.type.$1.bloom" },
             "2": { "name": "variable.other.declaration.bloom" }
+          }
+        },
+        {
+          "comment": "`extern module \"pkg\" { … }` and `extern native \"Name\" { … }`: declarations of what a TS or native module gives.",
+          "match": "\\b(extern)\\s+(module|native)\\b",
+          "captures": {
+            "1": { "name": "storage.modifier.extern.bloom" },
+            "2": { "name": "storage.type.$2.bloom" }
+          }
+        },
+        {
+          "comment": "`import Bloom`, `import Mention.Posts`: a module named by the module graph.",
+          "match": "\\b(import)\\s+([A-Z][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.import.bloom" },
+            "2": { "name": "entity.name.namespace.bloom" }
+          }
+        },
+        {
+          "comment": "`test(\"…\") { … }`: a test, run by `bloom test`.",
+          "match": "^\\s*(test)\\s*(?=\\(\\s*\")",
+          "captures": { "1": { "name": "keyword.other.test.bloom" } }
+        },
+        {
+          "comment": "The contextual view members `effect { … }`, `effect(id: x) { … }` and `equal(old, new) { … }`.",
+          "match": "^\\s*(effect)\\s*(?=[({])|^\\s*(equal)\\s*(?=\\(\\s*[a-z_][A-Za-z0-9_]*\\s*,\\s*[a-z_][A-Za-z0-9_]*\\s*\\)\\s*\\{)",
+          "captures": {
+            "1": { "name": "keyword.other.effect.bloom" },
+            "2": { "name": "keyword.other.equal.bloom" }
           }
         },
         {
@@ -137,34 +222,106 @@
         }
       ]
     },
-    "attributes": {
-      "match": "(@)(state|list|record|env)\\b",
-      "name": "storage.modifier.attribute.bloom",
-      "captures": { "1": { "name": "punctuation.definition.attribute.bloom" } }
-    },
     "case-arm": {
-      "match": "\\b(case)\\s+(?:([A-Z][A-Za-z0-9_]*)\\s*)?(\\.)([a-z_][A-Za-z0-9_]*)",
+      "patterns": [
+        {
+          "comment": "`case .ok(_) =>`, `case Load.failed(m) =>`, `case let .failed(m):`, `case .a, .b:`.",
+          "match": "\\b(case)\\s+(?:(let|var)\\s+)?(?:([A-Z][A-Za-z0-9_]*)\\s*)?(\\.)([a-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.control.case.bloom" },
+            "2": { "name": "storage.type.$2.bloom" },
+            "3": { "name": "entity.name.type.bloom" },
+            "4": { "name": "punctuation.accessor.bloom" },
+            "5": { "name": "variable.other.enummember.bloom" }
+          }
+        },
+        {
+          "comment": "An enum's cases written Swift's way: `case loading, failed(Error)`.",
+          "match": "\\b(case)\\s+(?!(?:let|var)\\b)([a-z_][A-Za-z0-9_]*)(?=\\s*(?:[,(]|//|$))",
+          "captures": {
+            "1": { "name": "keyword.control.case.bloom" },
+            "2": { "name": "variable.other.enummember.bloom" }
+          }
+        },
+        {
+          "comment": "`default:` in a `switch`.",
+          "match": "\\b(default)\\s*(:)(?!:)",
+          "captures": {
+            "1": { "name": "keyword.control.default.bloom" },
+            "2": { "name": "punctuation.separator.colon.bloom" }
+          }
+        }
+      ]
+    },
+    "parameter-label": {
+      "comment": "A `func` parameter with an argument label: `(_ xs: [T], of x: T)`.",
+      "match": "(?<=[(,])\\s*(?!(?:let|var|case|in|return|await|try|throw|some|any|inout)\\b)(?:(_)|([a-z_][A-Za-z0-9_]*))\\s+([a-z_][A-Za-z0-9_]*)(:)(?!:)",
       "captures": {
-        "1": { "name": "keyword.control.case.bloom" },
-        "2": { "name": "entity.name.type.bloom" },
-        "3": { "name": "punctuation.accessor.bloom" },
-        "4": { "name": "variable.other.enummember.bloom" }
+        "1": { "name": "variable.language.wildcard.bloom" },
+        "2": { "name": "entity.name.label.bloom" },
+        "3": { "name": "variable.parameter.bloom" },
+        "4": { "name": "punctuation.separator.colon.bloom" }
+      }
+    },
+    "named-argument": {
+      "comment": "`label:` in an argument list, a parameter or a field, written against its colon; never `::`, and never a ternary's ` : `.",
+      "match": "\\b([a-z_][A-Za-z0-9_]*)(:)(?!:)",
+      "captures": {
+        "1": { "name": "variable.parameter.bloom" },
+        "2": { "name": "punctuation.separator.colon.bloom" }
+      }
+    },
+    "accessors": {
+      "comment": "A protocol property's `{ get }` or `{ get set }`.",
+      "match": "(\\{)\\s*(get)(?:\\s+(set))?\\s*(\\})",
+      "captures": {
+        "1": { "name": "punctuation.section.block.begin.bloom" },
+        "2": { "name": "storage.modifier.accessor.bloom" },
+        "3": { "name": "storage.modifier.accessor.bloom" },
+        "4": { "name": "punctuation.section.block.end.bloom" }
       }
     },
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.bloom",
-          "match": "\\b(if|else|match|case|for|in|while|return|await|defer|task)\\b"
+          "comment": "`private(set)`: who may assign.",
+          "match": "\\b(public|internal|private|fileprivate)\\s*(\\()\\s*(set)\\s*(\\))",
+          "captures": {
+            "1": { "name": "storage.modifier.bloom" },
+            "2": { "name": "punctuation.section.parens.begin.bloom" },
+            "3": { "name": "storage.modifier.bloom" },
+            "4": { "name": "punctuation.section.parens.end.bloom" }
+          }
         },
-        { "name": "keyword.control.import.bloom", "match": "\\b(import|from|as)\\b" },
+        {
+          "name": "keyword.control.exception.bloom",
+          "match": "\\btry[?!]|\\b(?:try|throw|do|catch)\\b"
+        },
+        { "name": "keyword.operator.cast.bloom", "match": "\\bas[?!]" },
+        { "name": "keyword.operator.type.is.bloom", "match": "\\bis\\b(?=\\s+[A-Z\\[(])" },
+        {
+          "name": "keyword.control.bloom",
+          "match": "\\b(if|else|guard|switch|match|case|where|for|in|while|repeat|break|continue|fallthrough|return|await|defer|task)\\b"
+        },
+        { "name": "keyword.control.import.bloom", "match": "\\b(import|from)\\b" },
+        { "name": "keyword.control.as.bloom", "match": "\\bas\\b" },
+        {
+          "name": "keyword.other.type.$1.bloom",
+          "match": "\\b(some|any)\\b(?=\\s+[A-Z(\\[])"
+        },
         {
           "name": "storage.modifier.bloom",
-          "match": "\\b(pub|default|async)\\b"
+          "match": "\\b(pub|public|internal|private|fileprivate|static|mutating|default|async|nonisolated)\\b"
         },
         {
+          "comment": "`open` and `final` are modifiers only before a declaration (`open` is often a value's name).",
+          "name": "storage.modifier.bloom",
+          "match": "\\b(open|final)\\b(?=\\s+(?:public|private|static|final|class|actor|func|var|let|init)\\b)"
+        },
+        { "name": "storage.modifier.throws.bloom", "match": "\\b(throws|rethrows)\\b" },
+        {
           "name": "storage.type.bloom",
-          "match": "\\b(let|var|fn|struct|enum|type|view|screen|layout)\\b"
+          "match": "\\b(let|var|fn|func|struct|enum|class|protocol|extension|type|view|screen|layout)\\b"
         },
         { "name": "keyword.other.body.bloom", "match": "\\bbody\\b" }
       ]
@@ -173,6 +330,7 @@
       "patterns": [
         { "name": "constant.language.boolean.bloom", "match": "\\b(true|false)\\b" },
         { "name": "constant.language.none.bloom", "match": "\\bnone\\b" },
+        { "name": "variable.language.self.bloom", "match": "\\b(self|Self)\\b" },
         { "name": "variable.language.wildcard.bloom", "match": "\\b_\\b" }
       ]
     },
@@ -186,7 +344,14 @@
         { "name": "constant.numeric.integer.bloom", "match": "\\b[0-9](?:_?[0-9])*\\b" }
       ]
     },
+    "closure-argument": {
+      "comment": "A closure's unnamed arguments: `$0`, `$1`.",
+      "match": "(\\$)[0-9]+\\b",
+      "name": "variable.language.closure-argument.bloom",
+      "captures": { "1": { "name": "punctuation.definition.variable.bloom" } }
+    },
     "binding": {
+      "comment": "A binding projection: `$draft`, `$draft.text`.",
       "match": "(\\$)([a-zA-Z_][A-Za-z0-9_]*)",
       "name": "variable.other.binding.bloom",
       "captures": { "1": { "name": "punctuation.definition.binding.bloom" } }
@@ -215,8 +380,8 @@
           }
         },
         {
-          "comment": "An implicit case where a value is expected: `= .loading`, `(.ready(x))`.",
-          "match": "(?<=[=(,:?]|=>|\\breturn)\\s*(\\.)([a-z_][A-Za-z0-9_]*)\\b",
+          "comment": "An implicit member where a value is expected: `= .loading`, `(.ready(x))`, `.padding(.md)`, `[.iOS(17), .web]`, `c ? .danger : .neutral`, `catch .offline`.",
+          "match": "(?<=[=(,:?\\[!]|=>|&&|\\|\\||\\breturn|\\bcase|\\bcatch|\\bthrow|\\bin)\\s*(\\.)([a-z_][A-Za-z0-9_]*)\\b",
           "captures": {
             "1": { "name": "punctuation.accessor.bloom" },
             "2": { "name": "variable.other.enummember.bloom" }
@@ -243,11 +408,35 @@
         }
       ]
     },
+    "generic-arguments": {
+      "comment": "`<…>` against a name: `Load<T>`, `func first<T: Equatable>`, `Result<Unit, String>`, `useState<T>(x)`. A comparison is written with spaces (`a < b`), as bloom fmt writes it.",
+      "name": "meta.generic.bloom",
+      "begin": "(?<=[A-Za-z0-9_])(<)(?=[^=<].*>)",
+      "end": ">",
+      "beginCaptures": { "1": { "name": "punctuation.definition.generic.begin.bloom" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.generic.end.bloom" } },
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#generic-arguments" },
+        { "include": "#types" },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#parens" },
+        { "include": "#brackets" }
+      ]
+    },
     "types": {
       "patterns": [
         {
           "name": "support.type.primitive.bloom",
-          "match": "\\b(Int|Float|Bool|String|Unit|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error)\\b"
+          "match": "\\b(Int|Float|Double|Bool|String|Unit|Void|Never|Any|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error)\\b"
+        },
+        {
+          "name": "support.type.protocol.bloom",
+          "match": "\\b(Equatable|Hashable|Comparable|Identifiable|Codable|Decodable|Encodable|Sendable|CaseIterable)\\b"
         },
         { "name": "entity.name.type.bloom", "match": "\\b[A-Z][A-Za-z0-9_]*\\b" }
       ]
@@ -256,25 +445,27 @@
       "match": "\\b([a-z_][A-Za-z0-9_]*)(?=\\s*\\()",
       "captures": { "1": { "name": "entity.name.function.call.bloom" } }
     },
-    "named-argument": {
-      "comment": "`label:` in an argument list or parameter, never `::`.",
-      "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
-      "captures": {
-        "1": { "name": "variable.parameter.bloom" },
-        "2": { "name": "punctuation.separator.colon.bloom" }
-      }
-    },
     "operators": {
       "patterns": [
         { "name": "keyword.operator.arrow.bloom", "match": "=>|->" },
         { "name": "keyword.operator.range.bloom", "match": "\\.\\.<|\\.\\.\\." },
         { "name": "keyword.operator.spread.bloom", "match": "\\.\\." },
         { "name": "keyword.operator.optional.bloom", "match": "\\?\\?|\\?" },
+        {
+          "comment": "A force unwrap, written against its operand: `x!`, `f()!`.",
+          "name": "keyword.operator.unwrap.bloom",
+          "match": "(?<=[A-Za-z0-9_)\\]])!(?!=)"
+        },
         { "name": "keyword.operator.logical.bloom", "match": "&&|\\|\\||!(?!=)" },
         { "name": "keyword.operator.comparison.bloom", "match": "==|!=|<=|>=|<|>" },
         { "name": "keyword.operator.assignment.compound.bloom", "match": "\\+=|-=|\\*=" },
         { "name": "keyword.operator.assignment.bloom", "match": "=" },
         { "name": "keyword.operator.arithmetic.bloom", "match": "[+\\-*/%]" },
+        {
+          "comment": "A protocol composition: `T: Titled & Equatable`.",
+          "name": "keyword.operator.type.composition.bloom",
+          "match": "&"
+        },
         { "name": "keyword.operator.pattern.bloom", "match": "\\|" }
       ]
     },
@@ -307,8 +498,8 @@
       "patterns": [{ "include": "#closure-params" }, { "include": "#code" }]
     },
     "closure-params": {
-      "comment": "`{ old, new in` at the start of a closure.",
-      "match": "\\G\\s*([a-z_][A-Za-z0-9_]*(?:\\s*,\\s*[a-z_][A-Za-z0-9_]*)*)\\s+(in)\\b",
+      "comment": "`{ old, new in`, `{ file: File? in`, `{ (a, b) in` at the start of a closure.",
+      "match": "\\G\\s*(\\(?[a-z_][A-Za-z0-9_]*(?:\\s*:\\s*[A-Z][A-Za-z0-9_<>, ]*\\??)?(?:\\s*,\\s*[a-z_][A-Za-z0-9_]*(?:\\s*:\\s*[A-Z][A-Za-z0-9_<>, ]*\\??)?)*\\)?)\\s+(in)\\b",
       "captures": {
         "1": { "name": "variable.parameter.closure.bloom" },
         "2": { "name": "keyword.control.in.bloom" }

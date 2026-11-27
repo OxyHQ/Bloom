@@ -1,0 +1,23 @@
+<span class="hljs-meta">@Observable</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FeedModel</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">private(set)</span> <span class="hljs-keyword">var</span> posts: [<span class="hljs-type">Post</span>] <span class="hljs-operator">=</span> []
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">init</span>(api: <span class="hljs-type">MentionAPI</span>) { <span class="hljs-variable language_">self</span>.api <span class="hljs-operator">=</span> api }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">like</span>(_ post: <span class="hljs-type">Post</span>) <span class="hljs-keyword">async</span> <span class="hljs-keyword">throws</span> {
+    <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> i <span class="hljs-operator">=</span> posts.<span class="hljs-title function_ invoke__">firstIndex</span>(where: { <span class="hljs-variable language_">$0</span>.id <span class="hljs-operator">==</span> post.id }) <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> }
+    posts[i].likes <span class="hljs-operator">+=</span> <span class="hljs-number">1</span>
+  }
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">PostRow</span>: <span class="hljs-type">View</span> {
+  <span class="hljs-meta">@Environment</span>(<span class="hljs-operator">\</span><span class="hljs-property">.locale</span>) <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> locale
+  <span class="hljs-keyword">var</span> body: <span class="hljs-keyword">some</span> <span class="hljs-type">View</span> {
+    <span class="hljs-type">Text</span>(<span class="hljs-string">&quot;<span class="hljs-subst">\(post.author.name)</span> wrote <span class="hljs-subst">\(post.likes)</span> likes&quot;</span>)
+      .<span class="hljs-title function_ invoke__">padding</span>(<span class="hljs-symbol">.md</span>)
+  }
+}
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">firstIndex</span><span class="hljs-operator">&lt;</span><span class="hljs-type">T</span>: <span class="hljs-type">Equatable</span> <span class="hljs-operator">&amp;</span> <span class="hljs-type">Hashable</span><span class="hljs-operator">&gt;</span>(_ xs: [<span class="hljs-type">T</span>], of x: <span class="hljs-type">T</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span><span class="hljs-operator">?</span> {
+  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span><span class="hljs-operator">..&lt;</span>xs.count <span class="hljs-keyword">where</span> xs[i] <span class="hljs-operator">==</span> x { <span class="hljs-keyword">return</span> i }
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">none</span>
+}

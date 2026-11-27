@@ -1,0 +1,23 @@
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  public init(api: MentionAPI) { self.api = api }
+
+  public func like(_ post: Post) async throws {
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return }
+    posts[i].likes += 1
+  }
+}
+
+public struct PostRow: View {
+  @Environment(\.locale) private var locale
+  var body: some View {
+    Text("\(post.author.name) wrote \(post.likes) likes")
+      .padding(.md)
+  }
+}
+
+func firstIndex<T: Equatable & Hashable>(_ xs: [T], of x: T) -> Int? {
+  for i in 0..<xs.count where xs[i] == x { return i }
+  return none
+}

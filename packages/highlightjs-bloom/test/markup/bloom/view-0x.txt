@@ -1,0 +1,27 @@
+import { useTranslation } from "react-i18next"
+
+/// A draft, as the composer holds it.
+struct Draft {
+  text: String = ""
+  count: Int = 1_000
+}
+
+pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, String>) {
+  @state draft = Draft()
+  let left = maxLength - draft.text.count
+
+  async fn send() {
+    match await onSend(draft) {
+      case .ok(_) => draft = Draft()
+      case .err(message) => toast(message, type: "error")
+    }
+  }
+
+  body {
+    VStack {
+      TextField($draft.text, "Say \"hi\"\n")
+      Text("${left}").foreground(left < 0 ? "error" : "muted")
+    }
+    .padding("lg")
+  }
+}

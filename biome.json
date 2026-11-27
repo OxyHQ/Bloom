@@ -29,7 +29,9 @@
       "!src/agent-avatar/__tests__/artwork-golden.json",
       "!packages/bloom-lens/src/menu",
       "!packages/bloom-lens/src/chrome",
-      "!packages/tree-sitter-bloom/src"
+      "!packages/tree-sitter-bloom/src",
+      "!packages/bloom-tmlanguage/bloom.tmLanguage.json",
+      "!packages/bloom-tmlanguage/index.js"
     ]
   },
   "formatter": {

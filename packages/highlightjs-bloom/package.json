@@ -1,0 +1,47 @@
+{
+  "name": "highlightjs-bloom",
+  "version": "0.1.0",
+  "private": true,
+  "description": "highlight.js grammar for Bloom, the language by Oxy (.bloom files): Bloom 0.x and 2.0.",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Oxy (https://oxy.so)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/highlightjs-bloom"
+  },
+  "homepage": "https://github.com/OxyHQ/Bloom/tree/main/packages/highlightjs-bloom",
+  "keywords": [
+    "highlight.js",
+    "highlightjs",
+    "hljs",
+    "bloom",
+    "oxy",
+    "syntax-highlighting"
+  ],
+  "type": "module",
+  "main": "./dist/bloom.cjs",
+  "module": "./src/languages/bloom.js",
+  "exports": {
+    ".": {
+      "import": "./src/languages/bloom.js",
+      "require": "./dist/bloom.cjs"
+    },
+    "./dist/bloom.min.js": "./dist/bloom.min.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs --check && node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.7",
+    "highlight.js": "11.12.0"
+  }
+}

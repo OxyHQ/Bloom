@@ -1,0 +1,47 @@
+{
+  "name": "@oxy.so/bloom-tmlanguage",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The TextMate grammar of Bloom, the language by Oxy (.bloom files), as a Shiki language registration: highlight Bloom with Shiki, VitePress, Astro, rehype-pretty-code or any TextMate engine.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-tmlanguage"
+  },
+  "homepage": "https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx",
+  "keywords": [
+    "bloom",
+    "oxy",
+    "textmate",
+    "tmlanguage",
+    "shiki",
+    "syntax-highlighting",
+    "grammar"
+  ],
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./bloom.tmLanguage.json": "./bloom.tmLanguage.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "bloom.tmLanguage.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "test": "node scripts/generate.mjs --check && node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "shiki": "4.6.0"
+  }
+}
