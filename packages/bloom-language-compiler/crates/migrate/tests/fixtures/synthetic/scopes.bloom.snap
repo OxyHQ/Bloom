@@ -1,0 +1,47 @@
+// Scopes TS has and 2.0 spells: a bare block, an optional unwrapped where its branch writes it,
+// a `catch` beside an `error` state, a type predicate, and a local function of one object
+// called with labelled arguments.
+
+private struct Draft {
+  let name: String
+}
+
+private struct Options {
+  let title: String
+  var loud: Bool? = none
+}
+
+private type Tone = "calm" | "loud"
+
+private func isTone(_ value: String) -> Bool { value == "calm" || value == "loud" }
+
+private func shout(title: String, loud givenLoud: Bool? = none) -> String {
+  let loud = givenLoud ?? false
+  let mark = loud ? "!" : ""
+  "\(title)\(mark)"
+}
+
+private func load() async -> String { "ok" }
+
+public struct Editor: View {
+  let title: String
+  @State private var editing: Draft? = none
+  @State private var error: String? = none
+  func reload() async {
+    do {
+      await load()
+      error = none
+    } catch let caught { error = "failed" }
+  }
+
+  var body: some View {
+    VStack {
+      Text(shout(title: title, loud: isTone(title)))
+      Button("Edit").onPress { editing = { name: title } }
+      if let editingValue = editing {
+        Button(editingValue.name).onPress { editing = { ..editingValue, name: "b" } }
+      }
+      Button("Reload").onPress { task { await reload() } }
+    }
+  }
+}
