@@ -4573,6 +4573,11 @@ impl<'o> Checker<'o> {
                     }
                     Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[\"{}\"]", name.name)),
                     Ty::Unknown => Ty::Unknown,
+                    // `viewPost?.authors` where TS says `viewPost` is always there: kept, as a guard.
+                    other if self.ts_claimed(object, &ty) => {
+                        let field = self.member(expr, &other, name, object.span);
+                        self.rechain(expr, field)
+                    }
                     other => {
                         self.report(
                             Diagnostic::error(
@@ -4586,6 +4591,63 @@ impl<'o> Checker<'o> {
                             .spec("45-enums-option-and-result"),
                         );
                         self.member(expr, &other, name, object.span)
+                    }
+                }
+            }
+            ExprKind::OptIndex(object, index) => {
+                let ty = self.expr(object, None);
+                let inner = match self.resolve(&ty) {
+                    Ty::Option(inner) => Some(self.resolve(&inner)),
+                    Ty::Foreign(_) | Ty::Unknown => None,
+                    // `post.tags?[0]` where TS says `tags` is always there: kept, as a guard.
+                    other if self.ts_claimed(object, &ty) => Some(other),
+                    other => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0201",
+                                index.span,
+                                format!("`?[…]` reads an optional, and this is {}", self.show(&other)),
+                            )
+                            .label("never `none`")
+                            .help("write `[…]`")
+                            .spec("45-enums-option-and-result"),
+                        );
+                        Some(other)
+                    }
+                };
+                match inner {
+                    Some(Ty::List(elem)) => {
+                        self.expr(index, Some(&Ty::Int));
+                        self.rechain(expr, *elem)
+                    }
+                    Some(Ty::Map(value)) => {
+                        self.expr(index, Some(&Ty::Str));
+                        self.rechain(expr, Ty::Option(value))
+                    }
+                    Some(Ty::Foreign(text)) => {
+                        self.boundary(index, None);
+                        foreign_of(&text, |t| format!("{t}[number]"))
+                    }
+                    None => {
+                        self.boundary(index, None);
+                        match self.resolve(&ty) {
+                            Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[number]")),
+                            _ => Ty::Unknown,
+                        }
+                    }
+                    Some(Ty::Unknown) => Ty::Unknown,
+                    Some(other) => {
+                        self.expr(index, None);
+                        self.report(
+                            Diagnostic::error(
+                                "B0205",
+                                index.span,
+                                format!("{} has no subscript", self.show(&other)),
+                            )
+                            .label("not a list or a dictionary")
+                            .spec("12-standard-library-surface-draft"),
+                        );
+                        Ty::Unknown
                     }
                 }
             }
@@ -5174,6 +5236,13 @@ impl<'o> Checker<'o> {
                 let left = self.expr(lhs, None);
                 // A hook on the right runs only sometimes (B0420).
                 self.hook_allowed = false;
+                // `ts.authors ?? []` where TS says `authors` is always there: TS's claim, so the
+                // fallback is kept, as for an optional.
+                let left = match self.resolve(&left) {
+                    Ty::Option(_) | Ty::Unknown | Ty::Foreign(_) | Ty::Var(_) => left,
+                    other if self.ts_claimed(lhs, &left) => Ty::Option(Box::new(other)),
+                    _ => left,
+                };
                 match self.resolve(&left) {
                     Ty::Option(inner) => {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
@@ -5801,6 +5870,41 @@ impl<'o> Checker<'o> {
             _ => {}
         }
         out
+    }
+
+    /// Whether `expr`'s type is TS's claim, not Bloom's guarantee: a TS value, a value of a type
+    /// read from a `.d.ts`, or what is read from one (`viewPost.authors`, a TS call's result).
+    /// TS says `authors` is always there; the data at run time may lack it, so a `?.` or `??`
+    /// written on it is kept (lead decision, 2026-11-27).
+    pub(super) fn ts_claimed(&self, expr: &Expr, ty: &Ty) -> bool {
+        let from_ts = |checker: &Self, ty: &Ty| {
+            let ty = match checker.resolve(ty) {
+                Ty::Option(inner) => checker.resolve(&inner),
+                other => other,
+            };
+            match ty {
+                Ty::Foreign(_) => true,
+                Ty::Adt(def, _) => matches!(checker.out.defs[def].origin, Origin::Ts { .. }),
+                _ => false,
+            }
+        };
+        if from_ts(self, ty) {
+            return true;
+        }
+        let ty_of = |e: &Expr| self.out.types.get(&e.id).cloned().unwrap_or(Ty::Unknown);
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.ts_claimed(inner, &ty_of(inner)),
+            ExprKind::Field(object, _)
+            | ExprKind::OptField(object, _)
+            | ExprKind::Index(object, _)
+            | ExprKind::OptIndex(object, _) => self.ts_claimed(object, &ty_of(object)),
+            ExprKind::Call(_) => matches!(self.out.calls.get(&expr.id), Some(CallRes::Ts)),
+            ExprKind::Name(_) => matches!(
+                self.out.names.get(&expr.id),
+                Some(NameRes::Local(l)) if matches!(self.out.locals[*l].kind, LocalKind::Import { .. })
+            ),
+            _ => false,
+        }
     }
 
     /// The value an optional chain carries on, when `object` is optional only by a `?.` in it.
@@ -6761,7 +6865,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             walk_names(k, f);
             walk_names(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
             walk_names(a, f);
             walk_names(b, f);
         }
@@ -6896,8 +7000,10 @@ pub(crate) fn is_element(ty: &Ty) -> bool {
 /// gives `none` when what it reads through is.
 fn optional_chain(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::OptField(..) => true,
-        ExprKind::Paren(inner) | ExprKind::Field(inner, _) => optional_chain(inner),
+        ExprKind::OptField(..) | ExprKind::OptIndex(..) => true,
+        ExprKind::Paren(inner) | ExprKind::Field(inner, _) | ExprKind::Index(inner, _) => {
+            optional_chain(inner)
+        }
         ExprKind::Call(call) => call.optional || optional_chain(&call.callee),
         _ => false,
     }
