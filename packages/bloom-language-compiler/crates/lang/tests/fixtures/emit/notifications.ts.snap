@@ -40,7 +40,7 @@ const router = useSettingsRouter();
 const auth = useAuth();
 const section = useViewerSettingsSection("notificationPreferences");
 const [saving, setSaving] = useState<boolean>(false);
-const stored: Partial<NotificationPreferences> | undefined = (section.value satisfies Partial<NotificationPreferences> | undefined);
+const stored: Partial<NotificationPreferences> | undefined = (section.value satisfies Partial<NotificationPreferences> | undefined | null);
 const loading: boolean = section.isLoading;
 let prefs: NotificationPreferences;
 if ($[0] !== stored) {

@@ -1,7 +1,7 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
 import { Text, VStack, view } from "@oxy.so/bloom-language";
-import { useStats } from "@/corpus";
+import { authorLabel, useAuthUser, useStats } from "@/corpus";
 
 export interface Engagement {
   readonly likes: number | undefined;
@@ -27,19 +27,23 @@ export interface BarProps {
 }
 export const Bar = view(function Bar(props: BarProps) {
 "use no memo";
-const $ = $c(11);
+const $ = $c(18);
 const { engagement, copy } = props;
 const stats = useStats();
+const user = useAuthUser();
 let $t0;
-if ($[6] !== copy.none || $[7] !== stats.boosts || $[8] !== engagement.likes || $[9] !== copy.some) {
-$t0 = VStack(($[0] !== copy.none ? ($[0] = copy.none, $[1] = Text(copy.none)) : $[1]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? ($[2] !== copy.some ? ($[2] = copy.some, $[3] = Text(copy.some)) : $[3]) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[4] !== stats.boosts ? ($[4] = stats.boosts, $[5] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[5]));
-$[6] = copy.none;
-$[7] = stats.boosts;
-$[8] = engagement.likes;
-$[9] = copy.some;
-$[10] = $t0;
+if ($[10] !== copy.none || $[11] !== user.id || $[12] !== user.avatar || $[13] !== user.name.displayName || $[14] !== stats.boosts || $[15] !== engagement.likes || $[16] !== copy.some) {
+$t0 = VStack(($[0] !== copy.none ? ($[0] = copy.none, $[1] = Text(copy.none)) : $[1]), ($[2] !== user.id || $[3] !== user.avatar || $[4] !== user.name.displayName ? ($[2] = user.id, $[3] = user.avatar, $[4] = user.name.displayName, $[5] = Text(authorLabel({ id: user.id, avatar: (user.avatar satisfies string | undefined | null), name: { displayName: (user.name.displayName satisfies string | undefined | null) } }))) : $[5]), (stats.boosts != null) ? Text(`${stats.boosts}`) : null, (engagement.likes == null) ? ($[6] !== copy.some ? ($[6] = copy.some, $[7] = Text(copy.some)) : $[7]) : null, Text(`${total({ boosts: undefined, shares: 0, likes: 1 })}`), ($[8] !== stats.boosts ? ($[8] = stats.boosts, $[9] = Text(`${total({ boosts: undefined, shares: 0, likes: stats.boosts ?? undefined })}`)) : $[9]));
+$[10] = copy.none;
+$[11] = user.id;
+$[12] = user.avatar;
+$[13] = user.name.displayName;
+$[14] = stats.boosts;
+$[15] = engagement.likes;
+$[16] = copy.some;
+$[17] = $t0;
 } else {
-$t0 = $[10];
+$t0 = $[17];
 }
 return $t0;
 });

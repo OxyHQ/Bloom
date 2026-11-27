@@ -884,7 +884,9 @@ impl<'o> Checker<'o> {
         want.iter().all(|w| match have.iter().find(|h| h.name == w.name) {
             Some(h) => {
                 let (a, e) = (substitute(&h.ty, actual_args), substitute(&w.ty, expected_args));
-                self.coerce(&a, &e)
+                // A TS value in a field (`avatar: user.avatar`) fits any field type: TS checks
+                // the record where it lands, as it checks a TS value passed as an argument.
+                matches!(self.resolve(&a), Ty::Foreign(_)) || self.coerce(&a, &e)
             }
             None => w.default == FieldDefault::Undefined,
         })
