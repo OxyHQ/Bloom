@@ -3068,8 +3068,10 @@ impl<'a> Emitter<'a> {
         };
         self.conditional = saved_conditional;
         // A closure that reads no local of its surroundings is built once, at module scope;
-        // one typed by a generic view's parameters declares them there.
-        let hoist = self.view.is_some() && !contextual && self.reads_only_module(c);
+        // one typed by a generic view's parameters declares them there. Not in a hook function:
+        // what it builds is each caller's own (`useState({ ({}) })`, an owner token per row), and
+        // its cache keeps it per caller.
+        let hoist = self.view.is_some() && self.hook_fn.is_none() && !contextual && self.reads_only_module(c);
         let generics = if hoist && info.params.iter().any(|l| mentions_param(&self.ck.locals[*l].ty)) {
             self.view_generics.clone()
         } else {
@@ -5291,14 +5293,7 @@ impl<'a> Emitter<'a> {
                 None => Some(self.ck.locals[locals[0]].ty.clone()),
             };
             let ty = ty.map(|t| self.ts_type(&t)).filter(|t| t != "unknown");
-            if deps.is_empty() && prelude.is_empty() && is_ident(&value.text) && !destructure {
-                // A module constant already (a closure that reads only module names, `$fn0`).
-                let mut line = Frag::at(stmt.span, format!("const {name} = "));
-                line.f(value).s(";");
-                self.push_stmt(line);
-            } else {
-                self.push_memo(name.clone(), ty, &deps, prelude, value);
-            }
+            self.push_memo(name.clone(), ty, &deps, prelude, value);
             if destructure {
                 let target = self.binding_target(&l.pattern);
                 self.push_stmt(Frag::at(stmt.span, format!("const {target} = {name};")));
