@@ -45,9 +45,8 @@ const $view8 = Text("loading");
 const $view9 = Embed(($render) => $jsx(Skeleton.Region, { children: $render([$view7, $view8]) } satisfies ComponentProps<typeof Skeleton.Region>));
 const $view10 = Text("tools");
 const $view11 = Embed(($render) => $jsx(Toolbar.Group, { children: $render($view10) } satisfies ComponentProps<typeof Toolbar.Group>));
-const $view12 = Embed(($render) => $jsx(Box, { testID: "box", children: $render([$view9, $view11]) } satisfies ComponentProps<typeof Box>));
-const $view13 = Header("Loading");
-const $view14 = Text("open");
+const $view12 = Header("Loading");
+const $view13 = Text("open");
 export interface PlaceholderProps {
   readonly open: boolean;
 }
@@ -59,11 +58,11 @@ let $t2;
 if ($[0] !== open) {
 let $t1: Child;
 if (open) {
-$t1 = $view14;
+$t1 = $view13;
 } else {
 $t1 = undefined;
 }
-$t2 = $view12.header($view13.accessory($t1));
+$t2 = Embed(($render) => $jsx(Box, { testID: "box", children: $render([$view9, $view11, Embed($jsx(EngagementBar, { children: open ? "open" : "closed" } satisfies ComponentProps<typeof EngagementBar>))]) } satisfies ComponentProps<typeof Box>)).header($view12.accessory($t1));
 $[0] = open;
 $[1] = $t2;
 } else {

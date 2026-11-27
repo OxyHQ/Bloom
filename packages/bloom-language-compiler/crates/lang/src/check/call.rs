@@ -311,7 +311,15 @@ impl Checker<'_> {
                     let props = match self.out.locals[local].kind {
                         LocalKind::Import { .. } => match self.ts_namespaces.get(ns).cloned() {
                             Some(file) => self.namespace_component(&file, ns, &member.name),
-                            None => None,
+                            // An UpperCamel TS value Bloom could not type is a component (as
+                            // `Button(…)` is), and so is its UpperCamel static.
+                            None => (ns.starts_with(|c: char| c.is_ascii_uppercase())
+                                && matches!(
+                                    self.resolve(&self.out.locals[local].ty.clone()),
+                                    Ty::Foreign(_)
+                                )
+                                && !self.out.constructors.contains(&local))
+                            .then(|| Ty::Foreign("".into())),
                         },
                         LocalKind::Component { .. } => Some(Ty::Foreign("".into())),
                         _ => None,
@@ -1913,7 +1921,36 @@ impl Checker<'_> {
         }
         if let Some(trailing) = &call.trailing {
             self.component_builder(call.callee.span, trailing, fields.as_deref(), &given);
-            self.builder_closure(trailing);
+            // `TextFieldLabel { label }`: one line of text is the component's text children,
+            // as JSX's `<TextFieldLabel>{label}</TextFieldLabel>` (a builder line is a view).
+            match trailing.body.as_slice() {
+                [Stmt { kind: StmtKind::Expr(line), .. }]
+                    if trailing.params.is_empty()
+                        && !matches!(line.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
+                {
+                    self.push();
+                    let ty = self.expr(line, None);
+                    self.pop();
+                    if matches!(self.resolve(&ty), Ty::Str | Ty::Strings(_)) {
+                        self.out.text_children.insert(trailing.span);
+                    } else {
+                        let child = Ty::Option(Box::new(Ty::View(None)));
+                        if !self.coerce(&ty, &child) {
+                            self.mismatch(line.span, &ty, &child);
+                        }
+                    }
+                    self.out.closures.insert(
+                        trailing.span,
+                        ClosureInfo {
+                            params: Vec::new(),
+                            is_async: false,
+                            ret: Ty::View(None),
+                            builder: true,
+                        },
+                    );
+                }
+                _ => self.builder_closure(trailing),
+            }
         }
         Ty::View(Some("embed"))
     }

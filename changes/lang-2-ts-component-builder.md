@@ -17,3 +17,5 @@ section: Fixed
   (`Button.Group { … }`) are components too, their builders their
   children. An `if` without `else` passed where a modifier takes a value
   (`.accessory(if open { row })`) is an optional child.
+- One line of text in a TS component's builder (`TextFieldLabel { label }`) is its text children,
+  as JSX's `<TextFieldLabel>{label}</TextFieldLabel>`.
