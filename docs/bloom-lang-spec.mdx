@@ -375,6 +375,20 @@ TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
 `Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
 and the emitted TS names the type as written, so TS checks every use.
 
+A TS function with no annotated result (a hook in a `.ts` source, `export function useJobForm()
+{ … return { title, setTitle, skills, … } }`) returns what its body returns, read as TS infers
+it for the shapes hooks are written in: a `useState<T>(x)` pair is a `T` and a `(T) -> Unit`
+setter (`T` is `x`'s type without a type argument), a `useCallback(fn, …)` is `fn`, a
+`useMemo(() => x, …)` is `x`; literals, comparisons, `Boolean(…)`, `!`, `&&`/`||` of `Bool`s,
+arithmetic, ternaries and `??` join as TS's do (`c ? n : undefined` is `Float?`), and an object
+literal is a record of them. A name or a call of the module is its declaration's type or result.
+Anything else (a generic call, a spread, a method's result) is `Foreign`, named by its TS path
+(`ReturnType<typeof useJobForm>["x"]`). A generic function's result is read per use, as TS's.
+`ReturnType<typeof f>` (and `typeof x`) in a TS type is that function's result (that value's
+type), whether `f` is TS or a `.bloom` hook (through the declarations bloomc writes,
+`X.d.bloom.ts`): `type JobForm = ReturnType<typeof useJobForm>` is the record the hook returns,
+one type whichever name reaches it.
+
 A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
 is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it
 (`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,

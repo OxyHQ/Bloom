@@ -2,7 +2,7 @@ import { useViewerSettingsSection } from "@/hooks/useViewerSettings"
 
 view Settings {
   let section = useViewerSettingsSection("notificationPreferences")
-  let count = section.isLoading + 1
+  let count = section.isLoading ? 1 : 0
 
   async fn save() {
     await section.update(section.value)

@@ -1,0 +1,15 @@
+error[B0201]: expected `Int`, found `String`
+ --> check/ts_inferred_hooks.bloom:6:19
+  |
+6 |   let size: Int = form.title
+  |                   ^^^^^^^^^^ this is `String`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: `+` does not apply to `Bool`
+ --> check/ts_inferred_hooks.bloom:9:44
+  |
+9 |     Text(form.skills.first ?? "").disabled(form.isComplete + 1)
+  |                                            ^^^^^^^^^^^^^^^ this is `Bool`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#61-precedence-high-to-low

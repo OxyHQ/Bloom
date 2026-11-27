@@ -20,6 +20,8 @@ use oxc_span::SourceType;
 use crate::Options;
 use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Ty};
 
+mod infer;
+
 // ---- the summary of a TS file ---------------------------------------------
 
 #[derive(Debug, Clone)]
@@ -45,6 +47,10 @@ pub enum TsType {
     /// `A & B`: foreign, but a component may be one of its members (react-native's
     /// `TextInput` is a function from props to a node with statics beside it).
     Intersection(Vec<TsType>),
+    /// `typeof x`: the type of the module's value `x` (a declaration or an import).
+    Query(String),
+    /// `ReturnType<F>`: what the function type `F` returns.
+    Returns(Box<TsType>),
     /// Anything else: foreign.
     Other,
 }
@@ -61,6 +67,9 @@ pub struct TsFn {
     pub type_params: Vec<String>,
     pub params: Vec<TsParam>,
     pub ret: Option<TsType>,
+    /// What an unannotated function returns, read from its body (`infer`): mapped where `ret`
+    /// is absent, but not a component's mark (an unannotated `.tsx` function still is one).
+    pub inferred: Option<TsType>,
 }
 
 #[derive(Debug, Clone)]
@@ -318,14 +327,13 @@ impl Reader {
             Statement::ExportDefaultDeclaration(export) => match &export.declaration {
                 ExportDefaultDeclarationKind::FunctionDeclaration(function) => {
                     let name = function.id.as_ref().map_or("default".to_string(), |id| id.name.to_string());
-                    file.decls.insert(
-                        name.clone(),
-                        TsDecl::Fn(self.function(
-                            &function.type_parameters,
-                            &function.params,
-                            function.return_type.as_ref().map(|t| &t.type_annotation),
-                        )),
+                    let mut decl = self.function(
+                        &function.type_parameters,
+                        &function.params,
+                        function.return_type.as_ref().map(|t| &t.type_annotation),
                     );
+                    decl.inferred = self.infer_function(function);
+                    file.decls.insert(name.clone(), TsDecl::Fn(decl));
                     file.exports.insert("default".into(), Export::Local(name));
                 }
                 ExportDefaultDeclarationKind::Identifier(identifier) => {
@@ -369,12 +377,13 @@ impl Reader {
         match declaration {
             Declaration::FunctionDeclaration(function) => {
                 if let Some(id) = &function.id {
-                    let decl = TsDecl::Fn(self.function(
+                    let mut decl = self.function(
                         &function.type_parameters,
                         &function.params,
                         function.return_type.as_ref().map(|t| &t.type_annotation),
-                    ));
-                    add(file, id.name.to_string(), decl);
+                    );
+                    decl.inferred = self.infer_function(function);
+                    add(file, id.name.to_string(), TsDecl::Fn(decl));
                 }
             }
             Declaration::VariableDeclaration(variables) => {
@@ -403,11 +412,13 @@ impl Reader {
                                     // `export const X = function/arrow` with typed parameters: read the arrow.
                                     match declarator.init.as_ref() {
                                         Some(oxc_ast::ast::Expression::ArrowFunctionExpression(arrow)) => {
-                                            Some(TsType::Fn(Box::new(self.function(
+                                            let mut function = self.function(
                                                 &arrow.type_parameters,
                                                 &arrow.params,
                                                 arrow.return_type.as_ref().map(|t| &t.type_annotation),
-                                            ))))
+                                            );
+                                            function.inferred = self.infer_arrow(arrow);
+                                            Some(TsType::Fn(Box::new(function)))
                                         }
                                         _ => None,
                                     }
@@ -559,7 +570,12 @@ impl Reader {
                 rest: true,
             });
         }
-        TsFn { type_params: fn_type_params(type_parameters), params: out, ret: ret.map(|t| self.ty(t)) }
+        TsFn {
+            type_params: fn_type_params(type_parameters),
+            params: out,
+            ret: ret.map(|t| self.ty(t)),
+            inferred: None,
+        }
     }
 
     fn members(&self, signatures: &[TSSignature]) -> Vec<TsMember> {
@@ -663,6 +679,13 @@ impl Reader {
                 }
                 TsType::Object(members)
             }
+            // `typeof useX`: the value's type, read where the summary is mapped.
+            TSType::TSTypeQuery(query) if query.type_arguments.is_none() => match &query.expr_name {
+                oxc_ast::ast::TSTypeQueryExprName::IdentifierReference(id) => {
+                    TsType::Query(id.name.to_string())
+                }
+                _ => self.other(),
+            },
             TSType::TSFunctionType(function) => TsType::Fn(Box::new(self.function(
                 &function.type_parameters,
                 &function.params,
@@ -993,7 +1016,7 @@ impl Mapper<'_> {
                     mapped.component = Some(props);
                 } else {
                     mapped.value =
-                        Some(self.function(file, &function, &Vec::new(), &format!("typeof {path}"), depth));
+                        Some(self.declared_fn(file, name, &function, &format!("typeof {path}"), depth));
                 }
             }
             TsDecl::Var(Some(ty)) => {
@@ -1200,7 +1223,7 @@ impl Mapper<'_> {
             });
         }
         let ret_path = format!("ReturnType<{fn_path}>");
-        let ret = match &function.ret {
+        let ret = match function.ret.as_ref().or(function.inferred.as_ref()) {
             Some(TsType::Ref(promise, args)) if promise == "Promise" && args.len() == 1 => {
                 Ty::Promise(Box::new(self.ty(file, &args[0], &scope, &format!("Awaited<{ret_path}>"), depth)))
             }
@@ -1265,6 +1288,8 @@ impl Mapper<'_> {
             TsType::Fn(function) => self.function(file, function, scope, path, depth),
             TsType::Object(members) => self.object(file, members, scope, path, "{…}", depth),
             TsType::Ref(name, args) => self.reference(file, name, args, scope, path, depth),
+            TsType::Query(name) => self.value_ty(file, name, path, depth + 1),
+            TsType::Returns(function) => self.returns(file, function, scope, path, depth + 1),
             TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
                 Ty::Foreign(path.into())
             }
@@ -1351,6 +1376,8 @@ impl Mapper<'_> {
                     Ty::Foreign(path.into())
                 };
             }
+            // `ReturnType<typeof useX>` (R7): what the hook returns, inferred or annotated.
+            "ReturnType" if args.len() == 1 => return self.returns(file, &args[0], scope, path, depth + 1),
             "Error" => return Ty::JsError,
             "AbortSignal" => return Ty::Foreign("AbortSignal".into()),
             _ => {}
@@ -1371,6 +1398,152 @@ impl Mapper<'_> {
             return self.named(&target, &local, &mapped, path, depth + 1);
         }
         Ty::Foreign(path.into())
+    }
+
+    /// The type of the module value `name` (`typeof name`), named `path` in emitted TS: a
+    /// declaration of `file`, or an import followed to its module (a `.bloom` one through the
+    /// declarations bloomc writes beside it, `X.d.bloom.ts`).
+    fn value_ty(&mut self, file: &Rc<TsFile>, name: &str, path: &str, depth: usize) -> Ty {
+        if depth > 12 {
+            return Ty::Foreign(path.into());
+        }
+        let Some((file, local, decl)) = self.value_decl(file, name, depth) else {
+            return Ty::Foreign(path.into());
+        };
+        match decl {
+            TsDecl::Fn(function) => self.declared_fn(&file, &local, &function, path, depth),
+            TsDecl::Var(Some(ty)) => self.ty(&file, &ty, &Vec::new(), path, depth),
+            _ => Ty::Foreign(path.into()),
+        }
+    }
+
+    /// A declared function's type; what it returns, when that is inferred from its body, is
+    /// mapped once per declaration (its result is one type, whichever name reaches it).
+    fn declared_fn(
+        &mut self,
+        file: &Rc<TsFile>,
+        name: &str,
+        function: &TsFn,
+        path: &str,
+        depth: usize,
+    ) -> Ty {
+        let fn_path = if path.starts_with("typeof ") { path.to_string() } else { format!("({path})") };
+        let Some(ret) = self.inferred_ret(file, name, function, &format!("ReturnType<{fn_path}>"), depth)
+        else {
+            return self.function(file, function, &Vec::new(), path, depth);
+        };
+        let bare = TsFn { inferred: None, ..function.clone() };
+        match self.function(file, &bare, &Vec::new(), path, depth) {
+            Ty::Fn(f) => Ty::Fn(Rc::new(FnTy { ret, ..(*f).clone() })),
+            other => other,
+        }
+    }
+
+    /// What the function `name` of `file` returns when that is read from its body (not
+    /// annotated, not generic), named `path`; mapped once per declaration.
+    fn inferred_ret(
+        &mut self,
+        file: &Rc<TsFile>,
+        name: &str,
+        function: &TsFn,
+        path: &str,
+        depth: usize,
+    ) -> Option<Ty> {
+        if function.ret.is_some() || !function.type_params.is_empty() {
+            return None;
+        }
+        let inferred = function.inferred.as_ref()?;
+        let key = (file.path.clone(), format!("{name}\0returns"));
+        if let Some(ty) = self.named.get(&key) {
+            return Some(ty.clone());
+        }
+        let ty = match inferred {
+            TsType::Ref(promise, args) if promise == "Promise" && args.len() == 1 => Ty::Promise(Box::new(
+                self.ty(file, &args[0], &Vec::new(), &format!("Awaited<{path}>"), depth),
+            )),
+            ret => self.ty(file, ret, &Vec::new(), path, depth),
+        };
+        self.named.insert(key, ty.clone());
+        Some(ty)
+    }
+
+    /// `ReturnType<F>`, named `path`: what `F` returns when it is a function Bloom reads (not
+    /// a generic one, whose result depends on its use).
+    fn returns(
+        &mut self,
+        file: &Rc<TsFile>,
+        function: &TsType,
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Ty {
+        if depth > 12 {
+            return Ty::Foreign(path.into());
+        }
+        let (file, function) = match function {
+            TsType::Query(name) => match self.value_decl(file, name, depth) {
+                Some((file, local, TsDecl::Fn(function))) => {
+                    if let Some(ret) = self.inferred_ret(&file, &local, &function, path, depth) {
+                        return ret;
+                    }
+                    (file, function)
+                }
+                Some((file, _, TsDecl::Var(Some(TsType::Fn(function))))) => (file, *function),
+                _ => return Ty::Foreign(path.into()),
+            },
+            TsType::Fn(function) => (file.clone(), (**function).clone()),
+            _ => return Ty::Foreign(path.into()),
+        };
+        if !function.type_params.is_empty() {
+            return Ty::Foreign(path.into());
+        }
+        match function.ret.as_ref().or(function.inferred.as_ref()) {
+            Some(TsType::Ref(promise, args)) if promise == "Promise" && args.len() == 1 => {
+                Ty::Promise(Box::new(self.ty(&file, &args[0], scope, &format!("Awaited<{path}>"), depth)))
+            }
+            Some(ret) => self.ty(&file, ret, scope, path, depth),
+            None => Ty::Foreign(path.into()),
+        }
+    }
+
+    /// The value declaration `name` names in `file` (its file, local name and declaration),
+    /// following imports and re-exports.
+    fn value_decl(
+        &mut self,
+        file: &Rc<TsFile>,
+        name: &str,
+        depth: usize,
+    ) -> Option<(Rc<TsFile>, String, TsDecl)> {
+        if depth > 12 {
+            return None;
+        }
+        if let Some(decl) = file.decls.get(name) {
+            return Some((file.clone(), name.to_string(), decl.clone()));
+        }
+        let (specifier, imported) = file.imports.get(name)?.clone();
+        let target = match self.open(&file.path, &specifier) {
+            Some(target) => target,
+            None => {
+                // A `.bloom` module: its declarations, as TS reads them.
+                let path = resolve(&file.path, &specifier, self.options)?;
+                let declarations = path.with_extension("d.bloom.ts");
+                let target = read(&declarations)?;
+                self.reads.insert(declarations);
+                target
+            }
+        };
+        match target.exports.get(&imported).cloned() {
+            Some(Export::Local(local)) => self.value_decl(&target, &local, depth + 1),
+            Some(Export::From(specifier, imported)) => {
+                let next = self.open(&target.path, &specifier)?;
+                let local = match next.exports.get(&imported) {
+                    Some(Export::Local(local)) => local.clone(),
+                    _ => imported,
+                };
+                self.value_decl(&next, &local, depth + 1)
+            }
+            None => target.decls.get(&imported).map(|decl| (target.clone(), imported.clone(), decl.clone())),
+        }
     }
 
     /// An interface or alias, mapped once per declaration (generic ones per use).

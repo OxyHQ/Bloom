@@ -1,0 +1,26 @@
+// A TS hook with no annotated result (R7): Bloom reads what it returns from its body, as TS
+// infers it, and `ReturnType<typeof useX>` is that result, for a TS hook and a `.bloom` one.
+import { useJobForm } from "@/jobs/jobForm"
+import { JobFormFields, type RowHeader } from "@/jobs/JobFormFields"
+
+public struct JobEditor: View {
+  let form = useJobForm()
+
+  var body: some View {
+    VStack {
+      TextField(Binding(get: form.title, set: { value in form.setTitle(value) }), "Title")
+      if form.skills.count > 0 {
+        Text("\(form.skills.count) skills")
+      }
+      if let salary = form.salary {
+        Text("\(salary.min ?? 0) \(salary.currency)")
+      }
+      Button("Save").disabled(!form.isComplete)
+      JobFormFields(form: form)
+    }
+  }
+}
+
+public func headerLine(header: RowHeader) -> String {
+  "\(header.title) (\(header.count))"
+}

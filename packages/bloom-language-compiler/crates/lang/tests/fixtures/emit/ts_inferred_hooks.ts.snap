@@ -1,0 +1,29 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { TextField } from "@oxy.so/bloom-language/inputs";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { useJobForm } from "@/jobs/jobForm";
+import { JobFormFields, type RowHeader } from "@/jobs/JobFormFields";
+
+const $view0 = Button("Save");
+export const JobEditor = view(function JobEditor() {
+"use no memo";
+const $ = $c(6);
+const form = useJobForm();
+let $t0;
+if ($[4] !== form) {
+$t0 = VStack(TextField([form.title, (value: string) => form.setTitle(value)] as const, "Title"), (form.skills.length > 0) ? ($[0] !== form.skills ? ($[0] = form.skills, $[1] = Text(`${form.skills.length} skills`)) : $[1]) : null, (form.salary !== undefined) ? Text(`${form.salary.min ?? 0} ${form.salary.currency}`) : null, ($[2] !== form.isComplete ? ($[2] = form.isComplete, $[3] = $view0.disabled(!form.isComplete)) : $[3]), Embed($jsx(JobFormFields, { form: form } satisfies ComponentProps<typeof JobFormFields>)));
+$[4] = form;
+$[5] = $t0;
+} else {
+$t0 = $[5];
+}
+return $t0;
+});
+
+export function headerLine(header: RowHeader): string {
+return `${header.title} (${header.count})`;
+}
+
