@@ -1,0 +1,16 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function total(n: number): number;
+export declare function squares(n: number): readonly number[];
+export declare function indices(n: number): readonly number[];
+export declare function window(xs: readonly number[], from: number): readonly number[];
+export declare function countdown(n: number): number;
+export interface DotsProps {
+  readonly count: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Dots())`), or from TSX as `toElement(Dots())`. */
+export declare const Dots: (props: DotsProps) => ComposedView;
+export interface StarsProps {
+  readonly rating: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Stars())`), or from TSX as `toElement(Stars())`. */
+export declare const Stars: (props: StarsProps) => ComposedView;

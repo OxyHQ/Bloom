@@ -636,6 +636,10 @@ pub enum BinaryOp {
     And,
     Or,
     Default,
+    /// `a..<b`: the `Int`s from `a` up to, not including, `b`.
+    HalfOpen,
+    /// `a...b`: the `Int`s from `a` up to and including `b`.
+    Closed,
 }
 
 impl BinaryOp {
@@ -655,14 +659,23 @@ impl BinaryOp {
             BinaryOp::And => "&&",
             BinaryOp::Or => "||",
             BinaryOp::Default => "??",
+            BinaryOp::HalfOpen => "..<",
+            BinaryOp::Closed => "...",
         }
+    }
+
+    /// Whether it forms a range (`..<`, `...`).
+    pub fn is_range(self) -> bool {
+        matches!(self, BinaryOp::HalfOpen | BinaryOp::Closed)
     }
 
     /// Binding power: higher binds tighter (section 6.1).
     pub fn precedence(self) -> u8 {
         match self {
-            BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => 7,
-            BinaryOp::Add | BinaryOp::Sub => 6,
+            BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => 8,
+            BinaryOp::Add | BinaryOp::Sub => 7,
+            // Swift's `RangeFormationPrecedence`: below `+`, above the comparisons.
+            BinaryOp::HalfOpen | BinaryOp::Closed => 6,
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => 5,
             BinaryOp::Eq | BinaryOp::Ne => 4,
             BinaryOp::And => 3,

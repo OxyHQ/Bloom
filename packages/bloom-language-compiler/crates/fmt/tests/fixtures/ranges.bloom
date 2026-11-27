@@ -1,0 +1,7 @@
+// Ranges print as Swift writes them: no spaces around `..<` and `...`.
+func f(n: Int) -> [Int] {
+  for i in 0 ..< n + 1 {
+    print(i)
+  }
+  return (1 ... n).map { $0 * 2 }
+}

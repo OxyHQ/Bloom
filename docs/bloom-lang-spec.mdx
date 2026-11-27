@@ -586,6 +586,7 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | prefix | `!` `-` `await` | right |
 | multiplicative | `*` `/` `%` | left |
 | additive | `+` `-` (`+` also joins `String`s) | left |
+| range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
 | equality | `==` `!=` | none |
 | and | `&&` | left |
@@ -650,6 +651,34 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
 
 ## 7. Views
+
+### 6.3 Ranges
+
+Swift's ranges: `a..<b` holds the `Int`s from `a` up to, not including, `b`; `a...b` includes `b`.
+Both bounds are `Int`s (B0201 otherwise), and a range is a collection of them, typed `[Int]`: every
+list method reads it (`(0..<n).filter { … }`, `.count`, `.contains(i)`). Ranges bind below `+`
+and above the comparisons, so `0..<n + 1` is `0..<(n + 1)`, and they do not chain (B0101).
+`bloom fmt` writes them with no spaces.
+
+```bloom
+for i in 0..<count { total += i }          // for (let i = 0; i < count; i++)
+let squares = (0..<n).map { i in i * i }   // Array.from({ length: n }, ($_, i) => i * i)
+let all = Array(1...n)                     // Array.from({ length: n }, ($_, i) => 1 + i)
+HStack { for _ in 1...rating { Star() } }  // Array.from({ length: rating }, ($_) => …)
+```
+
+No range builds an array it does not return:
+
+- a `for` statement over a range is a counting loop; its bound is read once, as Swift builds the
+  range once (a literal or a `let` inline, anything else into a temp);
+- `(0..<n).map { … }` and a builder's `for i in 0..<n` (or `for _ in a..<b`) are one
+  `Array.from({ length })`, the array they return;
+- `Array(r)` is the range's array, and `Array(xs)` / `Array(set)` copy a list's or a set's
+  elements;
+- a range read as any other value is its array, `Array.from({ length: b - a }, ($_, i) => a + i)`.
+
+A reversed range (`5..<3`) traps when its array is built, as Swift's does (JS's `RangeError` for a
+negative length); a `for` over one runs no times.
 
 ### 7.1 A view
 
