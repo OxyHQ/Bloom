@@ -1,0 +1,26 @@
+/// A view that calls a hook function whose `useMemo`/`useCallback`s (TS the codemod kept) are
+/// plain `let`s in its one memo cache: no hook slot each, as the React Compiler's cache for a
+/// custom hook did (PostItem's `usePostRowModel`).
+import { useCallback, useMemo } from "react"
+
+func useTagged(title: String, tags: [String], onOpen: (String) -> Unit) {
+  let label = useMemo({ "\(title) (\(tags.count))" }, [title, tags])
+  let summary = useMemo({ tags.joined(separator: ", ") }, [tags])
+  let open = useCallback({ onOpen(title) }, [onOpen, title])
+  { label: label, summary: summary, open: open }
+}
+
+public struct Tagged: View {
+  let title: String
+  let tags: [String]
+  let onOpen: (String) -> Unit
+  let row = useTagged(title: title, tags: tags, onOpen: onOpen)
+
+  var body: some View {
+    VStack {
+      Button(Text(row.label)).onPress(row.open)
+      Text(row.summary)
+    }
+    .spacing(.sm)
+  }
+}

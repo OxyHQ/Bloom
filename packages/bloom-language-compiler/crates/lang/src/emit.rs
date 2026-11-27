@@ -134,6 +134,15 @@ struct MemoEntry {
     slot: usize,
 }
 
+/// A hook function being emitted (`func useX`): its top-level `let`s are memoised in one cache,
+/// as a view's members are. `depth`: its body's statement buffer.
+struct HookFn {
+    depth: usize,
+    /// Locals a top-level statement writes in place (`m.set(k, v)`, `o.x = 1`), by their
+    /// declaration's span: never cached.
+    mutated: HashSet<Span>,
+}
+
 struct ViewState {
     slots: usize,
     /// Members whose value can change between renders.
@@ -202,6 +211,7 @@ struct Emitter<'a> {
     guarded: HashSet<ExprId>,
     /// The last member cache pushed, which the next one on the same dependencies joins.
     memo_group: Option<MemoGroup>,
+    hook_fn: Option<HookFn>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -262,6 +272,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         range_index: false,
         guarded: HashSet::default(),
         memo_group: None,
+        hook_fn: None,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -877,7 +888,12 @@ impl<'a> Emitter<'a> {
             }
             ItemKind::Fn(f) => {
                 let mut out = Frag::at(item.span, export);
-                out.f(self.function(f, None));
+                let function = if crate::check::is_hook_name(&f.name.name) && !f.is_async {
+                    self.hook_function(f)
+                } else {
+                    self.function(f, None)
+                };
+                out.f(function);
                 out.s("\n");
                 out
             }
@@ -1226,7 +1242,13 @@ impl<'a> Emitter<'a> {
             out
         } else {
             let tail = if ret_ty == Ty::Unit { Tail::Discard } else { Tail::Return };
-            self.block_body(&f.body.stmts, tail, None)
+            match self.hook_fn.as_mut() {
+                Some(hook) => {
+                    hook.depth = self.bufs.len() + 1;
+                    self.hook_body(&f.body.stmts, tail)
+                }
+                None => self.block_body(&f.body.stmts, tail, None),
+            }
         };
         let mut out = Frag::at(f.span, "");
         match as_arrow {
@@ -1295,6 +1317,11 @@ impl<'a> Emitter<'a> {
             }
             match (&stmt.kind, last) {
                 (StmtKind::Expr(expr), true) => self.tail_expr(expr, &tail),
+                (StmtKind::Let(l), _)
+                    if !l.is_async && self.hook_fn.as_ref().is_some_and(|h| h.depth == self.bufs.len()) =>
+                {
+                    self.hook_let(stmt, l)
+                }
                 _ => self.stmt(stmt),
             }
             if let Some(signal) = signal
@@ -5125,6 +5152,160 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// A hook function (`func useX`): its top-level `let`s are memoised in one `$c` cache on
+    /// their exact dependencies, as a view's members are, so the `useMemo`s and `useCallback`s
+    /// the codemod kept (plain `let`s after `crate::memo`) cost no hook slot each, as the React
+    /// Compiler's own cache for a custom hook did. A `let` that calls a hook, and one cheap
+    /// enough to compute again, stay plain; a function with nothing to cache has no cache.
+    fn hook_function(&mut self, f: &FnDecl) -> Frag {
+        let within = |outer: Span, inner: Span| outer.start <= inner.start && inner.end <= outer.end;
+        let values: Vec<Span> = f
+            .body
+            .stmts
+            .iter()
+            .filter_map(|s| if let StmtKind::Let(l) = &s.kind { Some(l.value.span) } else { None })
+            .collect();
+        // A module function's own frame is the one inside the module's (0): its closures' are deeper.
+        let own: Vec<LocalId> = (0..self.ck.locals.len())
+            .filter(|l| self.ck.locals[*l].frame == 1 && within(f.span, self.ck.locals[*l].span))
+            .collect();
+        // What can change between calls: the parameters and what the body binds. Not a value's
+        // own locals (a branch's `let`, a match arm's binding), out of scope at the cache's test,
+        // and not a closure's.
+        let reactive = own
+            .into_iter()
+            .filter(|l| {
+                let local = &self.ck.locals[*l];
+                !values.iter().any(|v| within(*v, local.span))
+            })
+            .collect();
+        // A value a statement then writes in place (`m.set(k, v)`, `o.x = 1`) is a new one on
+        // every call, as written: never cached.
+        let mut mutated = HashSet::default();
+        for stmt in &f.body.stmts {
+            let target = match &stmt.kind {
+                StmtKind::Assign(a) => &a.target,
+                StmtKind::Expr(Expr { kind: ExprKind::Call(call), .. }) => match &call.callee.kind {
+                    ExprKind::Field(receiver, _) | ExprKind::OptField(receiver, _) => &**receiver,
+                    _ => continue,
+                },
+                _ => continue,
+            };
+            let mut root = target;
+            while let ExprKind::Field(inner, _)
+            | ExprKind::OptField(inner, _)
+            | ExprKind::Index(inner, _)
+            | ExprKind::OptIndex(inner, _)
+            | ExprKind::Paren(inner)
+            | ExprKind::Force(inner) = &root.kind
+            {
+                root = inner;
+            }
+            if let Some(NameRes::Local(local)) = self.ck.names.get(&root.id) {
+                mutated.insert(self.ck.locals[*local].span);
+            }
+        }
+        self.view =
+            Some(ViewState { slots: 0, reactive, setters: HashMap::default(), versions: HashMap::default() });
+        self.memo_group = None;
+        self.hook_fn = Some(HookFn { depth: 0, mutated });
+        let out = self.function(f, None);
+        self.hook_fn = None;
+        self.view = None;
+        self.memo_group = None;
+        out
+    }
+
+    /// A hook function's body: its cache, when a `let` took a slot, then its statements.
+    fn hook_body(&mut self, stmts: &[Stmt], tail: Tail) -> Frag {
+        self.bufs.push(Vec::new());
+        self.stmts(stmts, tail, None);
+        let lines = self.bufs.pop().expect("the hook function's body");
+        let slots = self.view.as_ref().map_or(0, |v| v.slots);
+        let mut out = Frag::of("{\n");
+        if slots > 0 {
+            self.import_name("react/compiler-runtime", "c");
+            out.s(&format!("\"use no memo\";\nconst $ = $c({slots});\n"));
+        }
+        out.reserve_lines(&lines);
+        for line in lines {
+            out.f(line).s("\n");
+        }
+        out.s("}");
+        out
+    }
+
+    /// A hook function's top-level `let`: cached on its dependencies, as a view's `let` member.
+    fn hook_let(&mut self, stmt: &Stmt, l: &LetStmt) {
+        let mut spans = Vec::new();
+        bound_spans(&l.pattern, &mut spans);
+        let locals: Vec<LocalId> = spans
+            .iter()
+            .filter_map(|span| self.ck.locals.iter().position(|x| x.span == *span))
+            .collect();
+        let hook = self.ck.hook_lets.contains(&l.span);
+        let deps = self.expr_deps(&l.value);
+        let mutated = self.hook_fn.as_ref().is_some_and(|h| spans.iter().any(|s| h.mutated.contains(s)));
+        // A model (a class) is written in place: one is never cached, and a value that reads a
+        // whole one (`model.total()`) is computed again on every call. A closure reads it when called.
+        let class = locals.iter().any(|x| self.is_class(&self.ck.locals[*x].ty));
+        let view = self.view.as_ref().expect("a hook function");
+        let reads_model = !matches!(l.value.kind, ExprKind::Closure(_))
+            && view.reactive.iter().any(|x| {
+                self.is_class(&self.ck.locals[*x].ty) && deps.contains(&self.local_name(*x))
+            });
+        let constant = !hook && deps.is_empty() && !mutated && !class;
+        if hook
+            || trivial(&l.value)
+            || mutated
+            || class
+            || reads_model
+            || locals.is_empty()
+            || l.pattern.kind == PatternKind::Wildcard
+        {
+            self.stmt(stmt);
+        } else {
+            self.bufs.push(Vec::new());
+            let value = self.value_expr(&l.value);
+            let prelude = self.bufs.pop().expect("the value");
+            let (name, destructure) = match &l.pattern.kind {
+                PatternKind::Bind(name) => (self.bound_name(name), false),
+                _ => (self.temp(), true),
+            };
+            let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
+            // Typed as declared, else as the checker typed it. Not an untyped TS value (`unknown`
+            // in TS) nor a closure, whose Bloom type TS's can be narrower than (`() => void` for
+            // `() -> Unit?`): the assignments type those.
+            let closure = matches!(l.value.kind, ExprKind::Closure(_));
+            let ty = match annotation {
+                Some(ty) => Some(ty),
+                None if destructure || closure => None,
+                None => Some(self.ck.locals[locals[0]].ty.clone()),
+            };
+            let ty = ty.map(|t| self.ts_type(&t)).filter(|t| t != "unknown");
+            self.push_memo(name.clone(), ty, &deps, prelude, value);
+            if destructure {
+                let target = self.binding_target(&l.pattern);
+                self.push_stmt(Frag::at(stmt.span, format!("const {target} = {name};")));
+            }
+        }
+        // The same value on every call: what reads it does not depend on it.
+        if constant {
+            let view = self.view.as_mut().expect("a hook function");
+            let all = &self.ck.locals;
+            view.reactive.retain(|x| !spans.contains(&all[*x].span));
+        }
+    }
+
+    /// Whether `ty` is a class's instance (a reference, written in place), or an optional one.
+    fn is_class(&self, ty: &Ty) -> bool {
+        match ty {
+            Ty::Adt(def, _) => self.ck.defs[*def].class.is_some(),
+            Ty::Option(inner) => self.is_class(inner),
+            _ => false,
+        }
+    }
+
     fn view_decl(&mut self, index: usize, item: &Item, v: &ViewDecl) -> Frag {
         let info = self.ck.views.get(&index).cloned().unwrap_or_default();
         let mut setters = HashMap::default();
@@ -5969,6 +6150,20 @@ impl<'a> Emitter<'a> {
             header.push_str(KEY_PATH);
         }
         header + &out
+    }
+}
+
+/// The spans of the names `pattern` binds.
+fn bound_spans(pattern: &Pattern, out: &mut Vec<Span>) {
+    match &pattern.kind {
+        PatternKind::Bind(name) => out.push(name.span),
+        PatternKind::Tuple(items) | PatternKind::Or(items) => items.iter().for_each(|p| bound_spans(p, out)),
+        PatternKind::Record(fields) => fields.iter().for_each(|(name, sub)| match sub {
+            Some(sub) => bound_spans(sub, out),
+            None => out.push(name.span),
+        }),
+        PatternKind::Case { args: Some(args), .. } => args.iter().for_each(|p| bound_spans(p, out)),
+        _ => {}
     }
 }
 
