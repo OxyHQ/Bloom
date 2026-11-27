@@ -326,6 +326,8 @@ pub struct CheckResult {
     /// its name's span: its JS name (`x$1`). JS has one scope for a function's parameters and
     /// body, and `const x = x` reads the new `x` before it is set.
     pub renamed: HashMap<Span, String>,
+    /// `ts.state ?? {}` with a TS type of required fields: the `{}`, a patch typed as one in TS.
+    pub partial_fallbacks: HashSet<ExprId>,
     /// Item index → its locals: a fn's parameters, a view's info.
     pub fn_params: HashMap<Span, Vec<LocalId>>,
     pub views: HashMap<usize, ViewInfo>,
@@ -531,6 +533,8 @@ pub struct Checker<'o> {
     literal_record: bool,
     /// Declaring a `let`/`var` statement's names: one that shadows is renamed (`renamed`).
     binding_stmt: bool,
+    /// `let path = pathOf()` with a TS value: the local holds TS's claim (`ts_claimed`).
+    ts_claimed_locals: HashSet<LocalId>,
     /// Calls of a shape-bounded generic, checked once their type arguments are known: each
     /// type argument, its shape, where, and the shapes in scope there.
     pending_shapes: Vec<PendingShape>,
@@ -632,6 +636,7 @@ impl<'o> Checker<'o> {
             shapes_in_scope: Vec::new(),
             literal_record: false,
             binding_stmt: false,
+            ts_claimed_locals: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
@@ -2850,8 +2855,13 @@ impl<'o> Checker<'o> {
                 let ty = self.expr(&l.value, declared.as_ref());
                 self.hook_allowed = false;
                 self.binding_stmt = true;
-                self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
+                let locals = self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
                 self.binding_stmt = false;
+                if let ([local], PatternKind::Bind(_)) = (locals.as_slice(), &l.pattern.kind)
+                    && self.ts_claimed(&l.value, &ty)
+                {
+                    self.ts_claimed_locals.insert(*local);
+                }
             }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
@@ -5255,6 +5265,22 @@ impl<'o> Checker<'o> {
                     _ => left,
                 };
                 match self.resolve(&left) {
+                    // `viewPost?.metadata ?? {}` where TS's type has required fields: TS's
+                    // `State | {}`, every field optional, so it is a `Partial<State>`.
+                    Ty::Option(inner)
+                        if is_empty_braces(rhs)
+                            && expected.is_none_or(|e| matches!(self.resolve(e), Ty::Var(_)))
+                            && self.ts_claimed(lhs, &left)
+                            && matches!(self.resolve(&inner), Ty::Adt(def, _)
+                                if matches!(self.out.defs[def].kind, DefKind::Struct(_))
+                                    && self.out.defs[def].fields().iter().any(|f| f.default == FieldDefault::None
+                                        && !matches!(f.ty, Ty::Option(_)))) =>
+                    {
+                        let partial = Ty::Partial(inner.clone());
+                        self.expr(rhs, Some(&partial));
+                        self.out.partial_fallbacks.insert(rhs.id);
+                        partial
+                    }
                     Ty::Option(inner) => {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
                         // `"x" | ""`: the two are joined (R3).
@@ -5912,7 +5938,9 @@ impl<'o> Checker<'o> {
             ExprKind::Call(_) => matches!(self.out.calls.get(&expr.id), Some(CallRes::Ts)),
             ExprKind::Name(_) => matches!(
                 self.out.names.get(&expr.id),
-                Some(NameRes::Local(l)) if matches!(self.out.locals[*l].kind, LocalKind::Import { .. })
+                Some(NameRes::Local(l))
+                    if matches!(self.out.locals[*l].kind, LocalKind::Import { .. })
+                        || self.ts_claimed_locals.contains(l)
             ),
             _ => false,
         }
@@ -6327,7 +6355,12 @@ impl<'o> Checker<'o> {
             let ty = match (&param.ty, expected_param) {
                 (Some(te), Some(want)) => {
                     let ty = self.resolve_type(te);
-                    if !self.unify(&ty, &want) {
+                    // `{ file: File? in … }` where `(File) -> …` is expected: a parameter may
+                    // take more than it is given, as Swift's `(T?) -> U` fits `(T) -> U`.
+                    let wider = matches!(self.resolve(&ty), Ty::Option(_))
+                        && !matches!(self.resolve(&want), Ty::Option(_) | Ty::Var(_))
+                        && self.coerce(&want, &ty);
+                    if !wider && !self.unify(&ty, &want) {
                         self.mismatch(te.span, &ty, &want);
                     }
                     ty
@@ -7009,6 +7042,11 @@ pub(crate) fn is_element(ty: &Ty) -> bool {
 
 /// Whether `expr` is an optional chain (`selected?.label`, `user?.name.count`, `f?()`), which
 /// gives `none` when what it reads through is.
+/// `{}`: an empty record where a struct is expected (else a closure of nothing).
+fn is_empty_braces(expr: &Expr) -> bool {
+    matches!(&expr.kind, ExprKind::Closure(c) if c.params.is_empty() && c.body.is_empty())
+}
+
 fn optional_chain(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::OptField(..) | ExprKind::OptIndex(..) => true,

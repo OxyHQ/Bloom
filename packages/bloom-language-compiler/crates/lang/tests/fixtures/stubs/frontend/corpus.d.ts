@@ -86,8 +86,17 @@ export interface FeedPost {
   tags: string[];
   user: { id: string };
   metadata?: FeedMeta;
+  state?: FeedState;
   onOpen: () => void;
 }
+/** Required fields: `post.state ?? {}` is TS's `FeedState | {}`. */
+export interface FeedState {
+  visibility: string;
+  createdAt: string;
+  spoiler?: string;
+  sensitive?: boolean;
+}
+export declare function currentPath(): string;
 /** Every field optional: `{}` is one. */
 export interface FeedMeta {
   spoiler?: string;

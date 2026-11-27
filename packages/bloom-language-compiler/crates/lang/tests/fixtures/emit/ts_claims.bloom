@@ -2,7 +2,7 @@
 // written on a value whose type comes from TS keeps its runtime form even where TS says the
 // value is always there: Mention's `viewPost?.authors?.map(…) ?? []` (PostItem) became
 // `viewPost.authors.map(…)`, and the row crashed on data without `authors`.
-import { FeedMeta, FeedPost, lookupPost, useViewPost } from "@/corpus"
+import { FeedMeta, FeedPost, currentPath, lookupPost, useViewPost } from "@/corpus"
 
 // The exact case: `authors` is `FeedAuthor[]` in TS, and the guard stays.
 public func authorIds(_ viewPost: FeedPost?) -> [String] {
@@ -56,4 +56,27 @@ public func metadata(_ viewPost: FeedPost?) -> FeedMeta {
 public func lane(_ viewPost: FeedPost?) -> String {
   let meta = viewPost?.metadata ?? {}
   return meta.lane ?? ""
+}
+
+// A TS type with required fields: `{}` there is TS's `FeedState | {}`, read as a
+// `Partial<FeedState>` whose fields are optional.
+public func spoiler(_ viewPost: FeedPost?) -> String {
+  let state = viewPost?.state ?? {}
+  let sensitive = state.sensitive == true
+  return sensitive ? (state.spoiler ?? "") : ""
+}
+
+// A local keeps the claim of the TS value it holds.
+public func isAbout() -> Bool {
+  let path = currentPath()
+  return path?.endsWith("/about") ?? false
+}
+
+// A closure's parameter may take more than it is given, as Swift's `(T?) -> U` fits `(T) -> U`.
+public func pick(_ onSelect: (FeedMeta) -> Unit) {}
+
+public func usePick() {
+  pick { meta: FeedMeta? in
+    if meta?.lane == none { return }
+  }
 }
