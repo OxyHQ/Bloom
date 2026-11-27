@@ -11,4 +11,4 @@ section: Added
   - React's stale reads as snapshots;
   - JS's member names kept on `Foreign` values.
 - `bloom migrate --from 0.x` writes a `pub default view X` as the named `public struct X`, and the TS files that import or `jest.mock` it take it by name.
-- The migration mode in a build: `@oxy.so/bloom-language-compiler/jest` takes `{ allowTsImports: true }` and `withBloomLanguage(config, { allowTsImports: true })` passes it to Metro, so an app with a `Package.bloom` can run `bloom migrate`'s output (which still imports TS by path) while its port is under way.
+- The migration mode in a build: `@oxy.so/bloom-language-compiler/jest` takes `{ allowTsImports: true }` and `withBloomLanguage(config, { allowTsImports: true })` passes it to Metro (`bloom-lang-dts --allow-ts-imports` for the declarations), so an app with a `Package.bloom` can run `bloom migrate`'s output (which still imports TS by path) while its port is under way.
