@@ -570,14 +570,17 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                         && found != "Bool";
                 let test = if found == "Bool" { "== true" } else { "!= none" };
                 let head = source[..start].ends_with("if ") && source[end..].starts_with(" {");
-                (literals || object || found == "Bool").then(|| {
-                    let spelled = if head || crate::expr::is_postfix_text(text) && head {
-                        format!("{text} {test}")
-                    } else {
-                        format!("({text} {test})")
-                    };
-                    (start, end, spelled)
-                })
+                let plain = text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '!' | '?'));
+                if found == "String" && plain {
+                    // A `String?` is truthy when it is there and not empty.
+                    Some((start, end, format!("(({text} ?? \"\") != \"\")")))
+                } else {
+                    (literals || object || found == "Bool").then(|| {
+                        let spelled =
+                            if head { format!("{text} {test}") } else { format!("({text} {test})") };
+                        (start, end, spelled)
+                    })
+                }
             }
             // A string drawn as a child (`{description}`): its text.
             ("B0201", _)
