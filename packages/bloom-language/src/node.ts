@@ -5410,6 +5410,8 @@ export interface MenuView extends ViewModifiers<MenuView> {
 export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | DividerView;
 export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
 export interface MenuItemView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): MenuItemView;
   icon(value: IconComponent): MenuItemView;
   /**
    * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
@@ -5440,6 +5442,8 @@ export interface MenuItemView extends ViewNode {
   testID(value: string): MenuItemView;
 }
 export interface MenuSubmenuView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): MenuSubmenuView;
   icon(value: IconComponent): MenuSubmenuView;
   /**
    * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
@@ -5457,6 +5461,8 @@ export interface MenuSubmenuView extends ViewNode {
   testID(value: string): MenuSubmenuView;
 }
 export interface MenuSectionView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): MenuSectionView;
   /** A quiet heading above the section's rows. */
   title(value: string): MenuSectionView;
   /**
@@ -5520,6 +5526,8 @@ export type MenuActionsView = ViewNode;
  * it meets the scrolled content.
  */
 export interface HeaderView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): HeaderView;
   /** `large`: the title at the ramp's title step; `inline` (default): the bar's own. */
   titleDisplay(value: TitleDisplay): HeaderView;
   /** A line under the title: a text, or a view drawn there as it is. */
@@ -5560,6 +5568,8 @@ export interface HeaderView extends ViewNode {
 }
 /** The bottom bar: its tabs, the selected one, and its action (a `FAB`). */
 export interface BottomBarView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): BottomBarView;
   /** The `id` of the selected tab: a binding, a tab's press writing it. */
   selection(value: Binding<string>): BottomBarView;
   /** The action beside the tabs: a `FAB`. */
@@ -5708,6 +5718,8 @@ export interface ScrollContentView
  * its body, which scrolls inside it unless `.scrollable(false)`.
  */
 export interface BottomSheetView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): BottomSheetView;
   /** Inset from the screen's edges with every corner rounded; full width with a rounded top by default. */
   detached(value?: boolean): BottomSheetView;
   /** The drag handle at its top: `visible` (default) or `hidden`. */
@@ -5738,6 +5750,8 @@ export interface BottomSheetView extends ViewNode {
  * (Bloom's tree: `TreeFolder`s and `TreeItem`s, nested).
  */
 export interface SidebarView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): SidebarView;
   /**
    * The id of the selected row, a destination or a tree row: a binding, a
    * pressed tree row writing it, and a destination that links (Bloom's
@@ -5888,6 +5902,8 @@ export interface TreeItemView extends ViewNode {
 }
 /** Bloom `Rail`: a narrow column of destinations, each a `RailItem`. */
 export interface RailView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): RailView;
   /** The id of the active item: a binding, an item's press writing it. */
   selection(value: Binding<string>): RailView;
   /** Pinned above the items (a brand mark). */
@@ -5906,6 +5922,8 @@ export interface RailItemView extends ViewNode {
 }
 /** Bloom `PageFooter`: a page's foot, its actions on a scrim over the content. */
 export interface PageFooterView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): PageFooterView;
   /** The controls row. */
   toolbar(...value: Child[]): PageFooterView;
   /** `absolute` (default) over the page, `sticky` or `document` in the web's flow, or `inline`. */
@@ -5923,6 +5941,8 @@ export interface PageFooterView extends ViewNode {
  * its title.
  */
 export interface CommandView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): CommandView;
   presented(value: Binding<boolean>): CommandView;
   /** Told `false` when the reader closes it (Escape, the backdrop, a choice). */
   placeholder(value: string): CommandView;
@@ -5948,13 +5968,18 @@ export interface CommandItemView extends ViewNode {
   onPress(value: Press | undefined): CommandItemView;
 }
 /** Commands under a title. */
-export type CommandGroupView = ViewNode;
+export interface CommandGroupView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): CommandGroupView;
+}
 /**
  * Bloom `SettingsModal`: the settings, over the app while `presented`; its
  * navigation is its `SettingsGroup`s of `SettingsItem`s, each item's
  * `.content` its page.
  */
 export interface SettingsModalView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): SettingsModalView;
   /** Presented: a binding, told `false` when the reader closes it. */
   presented(value: Binding<boolean>): SettingsModalView;
   /** The id of the page shown: a binding, its navigation writing it. */
@@ -5988,6 +6013,8 @@ export interface SettingsItemView extends ViewNode {
  * its actions kept in reach at its end, an accessory row under it.
  */
 export interface ToolbarView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ToolbarView;
   /** Controls kept in reach at its end (Bloom's `actions`). */
   trailing(...value: Child[]): ToolbarView;
   /** A second row under the tools. */
@@ -5998,6 +6025,8 @@ export interface ToolbarView extends ViewNode {
 }
 /** Bloom `StickySection`: a section that docks under the header as the page scrolls past it. */
 export interface StickySectionView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): StickySectionView;
   testID(value: string): StickySectionView;
 }
 
@@ -6073,6 +6102,8 @@ export interface ScrollSurfaceView extends ScrollAreaModifiers<ScrollSurfaceView
  * is the bar, the rest its body.
  */
 export interface AutoHideBarView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): AutoHideBarView;
   /** What the collapsed strip shows; a string is drawn muted. */
   summary(value: Child | string): AutoHideBarView;
   /** The owner's decision that the bar steps aside (a page scrolled down). */
@@ -6106,6 +6137,8 @@ export interface AutoHideBarView extends ViewNode {
  * the resize axis from where the drag started.
  */
 export interface ResizeHandleView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ResizeHandleView;
   /** `vertical` (default) resizes widths; `horizontal` heights. */
   axis(value: Axis): ResizeHandleView;
   /** `grip` (default), a panel edge's grip; `pill`, a bar centred on the gap. */
@@ -6123,6 +6156,8 @@ export interface ResizeHandleView extends ViewNode {
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
 export interface AppLayoutView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): AppLayoutView;
   /**
    * The prominent action: the bar's FAB and the sidebar's first row on
    * Android, OxyOS and the web; on iOS, `destination`'s tab, drawn on its own
@@ -6147,6 +6182,8 @@ export interface AppLayoutView extends ViewNode {
 }
 /** A panel of the app's shell: the navigator, or a view beside it (a detail, an inspector). */
 export interface PanelView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): PanelView;
   /** What the panel is: `main`, `collection`, `detail`, `inspector`, `context` or `canvas` (each with Bloom's widths). */
   panelRole(value: PanelRole): PanelView;
   /** Its name; an inspector's must have one. */
@@ -6166,6 +6203,8 @@ export interface PanelView extends ViewNode {
 }
 /** A destination of the app: a route the pager, the bar and the sidebar know by its name. */
 export interface DestinationView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): DestinationView;
   label(value: string | undefined): DestinationView;
   icon(value: IconComponent): DestinationView;
   activeIcon(value: IconComponent): DestinationView;
@@ -6184,11 +6223,20 @@ export interface DestinationView extends ViewNode {
   onLongPress(value: (() => void) | undefined): DestinationView;
 }
 /** A stack of routes: the system's on iOS, the predictive-back stack on Android, the document on the web. */
-export type NavStackView = ViewNode;
+export interface NavStackView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): NavStackView;
+}
 /** A stack's route presented as a sheet. */
-export type RouteView = ViewNode;
+export interface RouteView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): RouteView;
+}
 /** The tabs group's navigator: the system tab bar on iOS, Bloom's pager elsewhere. */
-export type TabNavigatorView = ViewNode;
+export interface TabNavigatorView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): TabNavigatorView;
+}
 
 export function isNode(value: unknown): value is Node {
   return value instanceof Node;

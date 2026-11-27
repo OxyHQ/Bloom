@@ -17,6 +17,8 @@ export type TitleVisibility = (typeof ENUMS.titleVisibility)[number];
  * Escape, or the system's own cancel) is its cancel.
  */
 export interface ConfirmationDialogView extends PresentedNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): ConfirmationDialogView;
   /** The text under the title. */
   message(value: string): ConfirmationDialogView;
   /** Whether the title shows: `automatic` (the platform's choice), `visible` or `hidden`. */

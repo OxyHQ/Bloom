@@ -1,0 +1,47 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { GroupedSection, GroupedSectionItem } from "@oxy.so/bloom-language/containers";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { JobFormFields } from "@/jobs/JobFormFields";
+import { useJobForm } from "@/jobs/jobForm";
+
+interface LineProps {
+  readonly title: string;
+}
+const Line = view(function Line(props: LineProps) {
+"use no memo";
+const $ = $c(2);
+const { title } = props;
+let $t0;
+if ($[0] !== title) {
+$t0 = Text(title);
+$[0] = title;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+export interface IdsProps {
+  readonly ids: readonly string[];
+}
+export const Ids = view(function Ids(props: IdsProps) {
+"use no memo";
+const $ = $c(3);
+const { ids } = props;
+const form = useJobForm();
+let $t1;
+if ($[0] !== ids || $[1] !== form) {
+$t1 = VStack(GroupedSection(...ids.map((id) => GroupedSectionItem(id).id(id))), ids.map((id) => Line({ title: id }).id(id)), ...ids.map((id) => Embed($jsx(JobFormFields, { form: form } satisfies ComponentProps<typeof JobFormFields>)).id(id)));
+$[0] = ids;
+$[1] = form;
+$[2] = $t1;
+} else {
+$t1 = $[2];
+}
+return $t1;
+});
+

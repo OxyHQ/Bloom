@@ -28,6 +28,8 @@ export type GalleryIndicator = NonNullable<ZoomableMediaGalleryProps['indicatorV
  * Only `.fullScreenCover()` presents it; it is never placed in a stack.
  */
 export interface GalleryView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): GalleryView;
   /** The page shown: where it opens, and what swiping sets (the first by default). */
   page(value: Binding<number>): GalleryView;
   /** `overlay` (default) or `page`. */
