@@ -905,6 +905,24 @@ impl Tr<'_> {
                 self.bind(&id.name, id.span)
             }
             BindingPattern::ObjectPattern(pattern) if immutable => self.record_pattern(pattern),
+            // `const [x] = xs.splice(i, 1)`: the element, then the list without it.
+            BindingPattern::ArrayPattern(p)
+                if immutable
+                    && p.rest.is_none()
+                    && let [Some(BindingPattern::BindingIdentifier(id))] = p.elements.as_slice()
+                    && let Expression::CallExpression(call) = init.without_parentheses()
+                    && let Expression::StaticMemberExpression(m) = &call.callee
+                    && m.property.name == "splice"
+                    && let Expression::Identifier(list) = &m.object
+                    && self.scope.collections.get(list.name.as_str()).is_some_and(|k| k == "Array")
+                    && let [index, count] = call.arguments.as_slice()
+                    && matches!(count.as_expression(), Some(Expression::NumericLiteral(n)) if n.value == 1.0) =>
+            {
+                let item = self.bind(&id.name, id.span);
+                let name = self.name(&list.name, list.span);
+                let index = index.as_expression().map_or_else(String::new, |e| self.expr(e));
+                return format!("let {item} = {name}[{index}]\n{name} = {name}.removing(at: {index})");
+            }
             BindingPattern::ArrayPattern(p) if immutable => {
                 // `const [a, b] = f()`: a tuple pattern (a TS tuple is a Bloom tuple).
                 if p.rest.is_some() {
@@ -1825,8 +1843,8 @@ impl Tr<'_> {
                 if let Expression::StaticMemberExpression(m) = &call.callee
                     && let Expression::Identifier(object) = &m.object
                     && let Some(kind) = self.scope.collections.get(object.name.as_str())
-                    && (kind == "Array") == (m.property.name == "push")
-                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear" | "push") =>
+                    && (kind == "Array") == matches!(m.property.name.as_str(), "push" | "unshift" | "splice")
+                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear" | "push" | "unshift" | "splice") =>
             {
                 // `s.add(x)` changes `s` in place; a Bloom `Set` is a value, so it is reassigned.
                 let name = self.name(&object.name, object.span);
@@ -1838,6 +1856,12 @@ impl Tr<'_> {
                 let method = match m.property.name.as_str() {
                     // `xs.push(a, b)`: a Bloom list is a value too.
                     "push" => return format!("{name} = [..{name}, {}]", args.join(", ")),
+                    "unshift" => return format!("{name} = [{}, ..{name}]", args.join(", ")),
+                    // `xs.splice(i, 1)`: the list without its `i`th element.
+                    "splice" if args.len() == 2 && args[1] == "1" => {
+                        return format!("{name} = {name}.removing(at: {})", args[0]);
+                    }
+                    "splice" => return self.refuse("mutation", "`splice` other than `(i, 1)`", call.span),
                     "add" => "inserting",
                     "set" => "setting",
                     "delete" => "removing",
@@ -2332,9 +2356,11 @@ fn field_writes(src: &str, name: &str) -> Option<bool> {
 
 /// Whether `name.push(` occurs in `src` (as a name of its own, not `a.name.push(`).
 fn pushes(src: &str, name: &str) -> bool {
-    let needle = format!("{name}.push(");
-    src.match_indices(&needle)
-        .any(|(i, _)| !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.'))
+    ["push", "unshift", "splice"].iter().any(|m| {
+        let needle = format!("{name}.{m}(");
+        src.match_indices(&needle)
+            .any(|(i, _)| !src[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '.'))
+    })
 }
 
 fn mutates(src: &str, name: &str) -> bool {

@@ -456,6 +456,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((end, end, "!".to_string()))
             }
+            // An `Int?` index (`indexOf`, `findIndex`) TS's test had found (`if (i > 0)`), used
+            // where the index is required (`xs[i]`, `removing(at: i)`): `i!`.
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Int?`"
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    && (source[..start].ends_with('[') || source[..start].ends_with("at: ")) =>
+            {
+                Some((end, end, "!".to_string()))
+            }
             // A test of an optional TS read for its truthiness (`if (members.find(…))`): an object
             // or a non-empty literal is truthy, so it is whether it is there; a `Bool?` whether it is `true`.
             ("B0201", _)
