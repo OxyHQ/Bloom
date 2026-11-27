@@ -1,0 +1,24 @@
+// A list of views is a child (spec 7.2): in a conditional's branch (`c ? Text(…) : xs.map(f)`),
+// a node's argument and `Embed`'s (a React node: `toElement(…)`), and as a builder's last line,
+// whose items are then the parent's own children (`...rows`), as a last `for` is.
+public func row(_ name: String) -> View {
+  Text(name)
+}
+
+public struct Names: View {
+  let names: [String]
+  let loading: Bool
+
+  var body: some View {
+    let rows = names.map(row)
+    VStack {
+      loading ? Text("Loading") : names.map(row)
+      Embed(names.isEmpty ? Text("Nobody") : rows)
+      HStack(names.isEmpty ? Text("Nobody") : rows)
+      HStack {
+        Text("Names")
+        rows
+      }
+    }
+  }
+}

@@ -30,3 +30,11 @@ export declare function useAuthUser(): {
   name: { displayName: Nullable };
 };
 export declare function authorLabel(author: PostAuthor): string;
+/** An item type Bloom does not read (a conditional type), as `useQuery`'s data is `Foreign`. */
+type Opaque<T> = object extends string ? never : T;
+export interface Account {
+  id: string;
+  name: string;
+}
+export declare function useAccounts(): { data: Opaque<Account>[] | undefined };
+export declare function AccountList(props: { accounts: Account[] }): ReactNode;
