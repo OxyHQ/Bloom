@@ -1,0 +1,38 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Action, EngagementBar } from "@/ui/bars";
+import { Slot } from "@/ui/bars";
+
+const $view0 = Embed($jsx(Action, { label: "a" } satisfies ComponentProps<typeof Action>));
+const $view1 = Text("b");
+const $view2 = Text("liked");
+const $view3 = Embed($jsx(Action, { label: "one" } satisfies ComponentProps<typeof Action>));
+const $view4 = Embed(($render) => $jsx(EngagementBar, { children: $render($view3) } satisfies ComponentProps<typeof EngagementBar>));
+export interface BarProps {
+  readonly liked: boolean;
+}
+export const Bar = view(function Bar(props: BarProps) {
+"use no memo";
+const $ = $c(2);
+const { liked } = props;
+let $t0;
+if ($[0] !== liked) {
+$t0 = VStack(Embed(($render) => $jsx(EngagementBar, { size: "md", children: $render([$view0, $view1, (liked) ? $view2 : null]) } satisfies ComponentProps<typeof EngagementBar>)), $view4);
+$[0] = liked;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+const $view5 = Text("inside");
+const $view6 = Embed(($render) => $jsx(Slot, { title: "t", content: $render($view5) } satisfies ComponentProps<typeof Slot>));
+export const Slotted = view(function Slotted() {
+"use no memo";
+return $view6;
+});
+
