@@ -1,0 +1,41 @@
+import { type FeedPost, lookupPost, useViewPost } from "@/corpus";
+
+export function authorIds(viewPost: FeedPost | undefined): readonly string[] {
+return viewPost?.authors?.map((author: FeedPost["authors"][number]) => author.id) ?? [];
+}
+
+export function names(post: FeedPost): readonly string[] {
+return post.authors?.map((author: FeedPost["authors"][number]) => author.name) ?? [];
+}
+
+export function count(post: FeedPost): number {
+return post?.authors.length ?? 0;
+}
+
+export function authors(post: FeedPost): readonly string[] {
+const list = post.authors ?? [];
+return list.map((author: FeedPost["authors"][number]) => author.id);
+}
+
+export function open(post: FeedPost): void {
+post.onOpen?.();
+}
+
+export function useFirstAuthor(): string {
+const viewPost = useViewPost();
+return viewPost?.authors?.[0]?.name ?? "";
+}
+
+export function firstTag(post: FeedPost): string {
+return post?.tags?.[0] ?? "";
+}
+
+export function userId(id: string, post: FeedPost): string | undefined {
+const p = lookupPost(id) ?? post;
+return p?.user?.id;
+}
+
+export function authorCount(post: FeedPost): number {
+return (post.authors ?? []).length;
+}
+

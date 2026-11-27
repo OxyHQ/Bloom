@@ -1,0 +1,10 @@
+import type { FeedPost } from "@/corpus";
+export declare function authorIds(viewPost: FeedPost | undefined): readonly string[];
+export declare function names(post: FeedPost): readonly string[];
+export declare function count(post: FeedPost): number;
+export declare function authors(post: FeedPost): readonly string[];
+export declare function open(post: FeedPost): void;
+export declare function useFirstAuthor(): string;
+export declare function firstTag(post: FeedPost): string;
+export declare function userId(id: string, post: FeedPost): string | undefined;
+export declare function authorCount(post: FeedPost): number;

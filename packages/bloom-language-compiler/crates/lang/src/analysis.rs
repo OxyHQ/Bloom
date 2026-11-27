@@ -1001,7 +1001,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
             walk_expr(k, f);
             walk_expr(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
             walk_expr(a, f);
             walk_expr(b, f);
         }

@@ -1,0 +1,26 @@
+error[B0201]: `??` gives a fallback for an optional, and this is `[String]`
+ --> check/bloom_guarantees.bloom:7:40
+  |
+7 | func names(_ post: Post) -> [String] { post.authors ?? [] }
+  |                                        ^^^^^^^^^^^^ never `none`
+  |
+help: remove `?? …`: the value is always there
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+
+error[B0201]: `?.` reads an optional, and this is `Post`
+ --> check/bloom_guarantees.bloom:9:45
+  |
+9 | func first(_ post: Post) -> String? { post?.authors.first }
+  |                                             ^^^^^^^ never `none`
+  |
+help: write `.authors`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+
+error[B0201]: `?[…]` reads an optional, and this is `[String]`
+  --> check/bloom_guarantees.bloom:11:46
+   |
+11 | func tag(_ tags: [String]) -> String { tags?[0] ?? "" }
+   |                                              ^ never `none`
+   |
+help: write `[…]`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
