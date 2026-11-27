@@ -207,6 +207,8 @@ impl Tr<'_> {
             },
             TSType::TSIntersectionType(i) => self.refuse("type:intersection", "an intersection type", i.span),
             TSType::TSAnyKeyword(_) => self.foreign_ty("any"),
+            // `object`: a TS value Bloom passes on as it is.
+            TSType::TSObjectKeyword(_) => self.foreign_ty("object"),
             // `unknown` is exactly a `Foreign` (bloomc writes it back as `unknown`).
             TSType::TSUnknownKeyword(_) => "Foreign".into(),
             TSType::TSNullKeyword(t) => self.refuse("type:null", "`null` alone", t.span),
