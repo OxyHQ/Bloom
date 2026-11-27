@@ -1761,7 +1761,20 @@ impl Checker<'_> {
                 );
             }
             let param = fixed.get(index).map_or("...", |p| p.trim_end_matches('?'));
+            // A child's place: a list of views is a child there (`Embed(c ? a : xs.map(f))`).
+            if param == "..." || param == "view" || ctor == "Embed" {
+                self.child_slots.insert(arg.value.id);
+            }
             self.node_arg(&arg.value, param);
+            // `Embed(c ? Text(…) : rows)`: Embed takes a React node, so Bloom views (one, or a
+            // list of them) cross as one, `toElement(…)`, as where any TS takes an element.
+            if ctor == "Embed"
+                && let Some(ty) = self.out.types.get(&arg.value.id).cloned()
+                && !matches!(self.resolve(&ty), Ty::View(Some("embed")))
+                && (self.is_view(&ty) || self.is_view_list(&ty))
+            {
+                self.out.elements.insert(arg.value.id);
+            }
         }
         if let Some(trailing) = &call.trailing {
             self.builder_closure(trailing);
