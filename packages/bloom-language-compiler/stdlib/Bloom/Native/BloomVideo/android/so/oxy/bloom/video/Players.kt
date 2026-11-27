@@ -15,8 +15,10 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 
 /** What a player tells JS: the module's events (it emits them). */
 internal interface PlayerEvents {
@@ -34,9 +36,14 @@ internal interface PlayerEvents {
 @OptIn(UnstableApi::class)
 internal class BloomPlayer(context: Context, val id: Int, private val events: PlayerEvents) : Player.Listener {
   private val http = DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
+  private val data = DefaultDataSource.Factory(context, http)
+  /** A progressive source (an `.mp4`) asks every [Startup.CHECK_BYTES] whether to go on loading. */
+  private val progressive =
+    ProgressiveMediaSource.Factory(data).setContinueLoadingCheckIntervalBytes(Startup.CHECK_BYTES)
   val exo: ExoPlayer =
     ExoPlayer.Builder(context)
-      .setMediaSourceFactory(DefaultMediaSourceFactory(DefaultDataSource.Factory(context, http)))
+      .setMediaSourceFactory(DefaultMediaSourceFactory(data))
+      .setLoadControl(StartupLoadControl(id))
       .build()
       .also { it.addListener(this) }
   private val handler = Handler(Looper.getMainLooper())
@@ -66,11 +73,16 @@ internal class BloomPlayer(context: Context, val id: Int, private val events: Pl
     http.setDefaultRequestProperties(map)
     sourceSent = false
     if (source.isNullOrEmpty()) {
+      Startup.end(id)
       exo.clearMediaItems()
       events.status(id, "idle", null)
       return
     }
-    exo.setMediaItem(MediaItem.fromUri(Uri.parse(source)))
+    val uri = Uri.parse(source)
+    val item = MediaItem.fromUri(uri)
+    Startup.begin(id)
+    if (Util.inferContentType(uri) == C.CONTENT_TYPE_OTHER) exo.setMediaSource(progressive.createMediaSource(item))
+    else exo.setMediaItem(item)
     exo.prepare()
     events.status(id, "loading", null)
   }
@@ -96,6 +108,7 @@ internal class BloomPlayer(context: Context, val id: Int, private val events: Pl
   }
 
   fun release() {
+    Startup.end(id)
     handler.removeCallbacks(tick)
     view?.detach(this)
     view = null
@@ -108,6 +121,7 @@ internal class BloomPlayer(context: Context, val id: Int, private val events: Pl
       Player.STATE_IDLE -> events.status(id, "idle", null)
       Player.STATE_BUFFERING -> events.status(id, "loading", null)
       Player.STATE_READY -> {
+        Startup.end(id)
         events.status(id, "readyToPlay", null)
         sendSource()
       }
@@ -116,6 +130,7 @@ internal class BloomPlayer(context: Context, val id: Int, private val events: Pl
   }
 
   override fun onPlayerError(error: PlaybackException) {
+    Startup.end(id)
     events.status(id, "error", error.message ?: error.errorCodeName)
   }
 

@@ -103,6 +103,10 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
         ),
     ),
     (
+        "Native/BloomVideo/android/so/oxy/bloom/video/Startup.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/Startup.kt"),
+    ),
+    (
         "Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoView.kt",
         include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/BloomVideoView.kt"),
     ),
