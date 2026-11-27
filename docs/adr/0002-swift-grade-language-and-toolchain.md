@@ -564,15 +564,90 @@ The OkHttp data source renders more frames but costs ~18 MB, and it does not mov
 frame, so #1034 keeps the platform's HTTP data source. The first frame still trails
 expo-video's by ~135 ms.
 
-Next for these two:
+**Video first frame, third round.** The bench now also logs two more origins: the launch (`am start`) and the first player's creation (media3's own `ExoPlayerImpl: Init` line, the same in both builds). Times are medians over 5 rotated passes, each a cold launch.
 
-1. Mention's `expo-image` call sites, now that the image bench is equal or better on all
-   three measures.
-2. `BloomVideo`'s first frame:
-   - trace expo-video's first player the same way, to see when its first bytes arrive;
-   - then order the first buffering of the players, so the first view's player buffers
-     ahead of the rest (media3's `PriorityTaskManager` and `ExoPlayer.setPriority`).
-3. Then a Bloom build of Mention's videos tab over the shim.
+- **The mount origin favours expo-video.** Both shims make their players while React renders, before the list mounts.
+  - expo-video's players are made 150-170 ms before the mount (518 against 668 ms after launch in the session below), because its views take that long to mount.
+  - Bloom's are made 8-23 ms before (404 against 427 ms).
+  - So expo-video's players have been loading for ~140 ms more when the clock starts.
+- **Ordering the first buffering** (#1034, `Startup.kt`). Until a player first has enough to play:
+  - at most 3 starting players load at once, in the order they were made;
+  - the players already playing load only the 2 s that keep them playing.
+
+  Every player still reads its header at once (media3 asks every 64 KiB whether to go on), so all eight make their decoders together. A player that has not started within 1.5 s of its turn no longer holds the others back.
+- **The variants,** measured in one session:
+
+  | Players loading at once | First video, from mount | 8th video, from mount |
+  |---|---|---|
+  | All (#1034 before) | 703 ms | 1,036 ms |
+  | 1 | ~730 ms | ~1,700 ms (2 passes, a noisier session) |
+  | 2 | 687 ms | 1,206 ms |
+  | **3** | **637 ms** | **970 ms** |
+  | 4 | 699 ms | 1,008 ms |
+
+The table below is #1034's code as pushed, against expo-video, over 5 rotated passes in one session.
+
+| 5 rotated passes | Bloom (#1034, 3 at once) | expo-video |
+|---|---|---|
+| First video's first frame: from launch | **1,153 ms** | 1,378 ms |
+| First video's first frame: from the first player's creation | **749 ms** | 909 ms |
+| First video's first frame: from the list's mount | **738 ms** | 744 ms |
+| 8th video's first frame: from launch / creation | **1,435 / 1,031 ms** | 1,764 / 1,246 ms |
+| 8th video's first frame: from mount | **1,008 ms** | 1,088 ms |
+| Memory (PSS) with 8 players | **169 MB** | 193 MB |
+| Frames while scrolling: rendered / janky | **262 / 84.7%** | 221 / 87.8% |
+| Playback errors | 0 | 0 |
+
+- **The sessions differ by more than the builds.** In the variants' session above, expo-video's first frame from mount was 578 ms. In this one it was 744 ms.
+- **Pooled over both sessions** (10 passes each, the same 3-at-once code), from the list's mount:
+  - first video: Bloom 719 ms, expo-video 662 ms;
+  - 8th video: Bloom 1,004 ms, expo-video 1,029 ms.
+
+- **From the launch and from the player's creation,** Bloom is ahead at the first and the 8th video in every session.
+- **From the list's mount,** the first video is equal in this session and ~55 ms behind pooled. That comes from expo-video's views mounting later, not from the player. The origin stays in the table, but it does not measure the player.
+
+Not measured here:
+- One decoder failure (`c2.goldfish.h264.decoder`, `queueInputBuffer`) was seen in one traced Bloom launch out of 6, 6.5 s into playback. None recurred in the 41 bench launches of Bloom builds since, which count playback errors.
+- expo-video turns on asynchronous codec queueing, and #1034 does not.
+
+**BloomData's SQLite** (#1039). In a `bloom build`, `models.ts` asked for `expo-sqlite`, which does not resolve there, so `@Model` records stayed in memory.
+
+- `BloomStorage` now has `sql…` functions over Android's own SQLite:
+  - WAL;
+  - compiled statements;
+  - one shared cursor window per database;
+  - rows returned as one string framed by lengths, so no text is escaped.
+- BloomData's persister runs over them unchanged, except for `json: false`. Android's SQLite has no JSON functions before API 34, so a list is read as its row and then its records.
+
+The bench is the same file in both builds: BloomData's persister over a feed of 50 post-sized records (~1.6 KB each). There were 4 rotated passes on release APKs. Each pass filled the file once, then made 3 cold launches. Times are medians, with p95 after the slash where shown.
+
+| | Bloom (`BloomStorage`) | expo-sqlite |
+|---|---|---|
+| Launch to the boot read done | **326 ms** | 396 ms |
+| Open: filled file / new file | **5.0 / 17.8 ms** | 30.3 / 68.7 ms |
+| Boot read (synchronous, cold) | 1.29 ms | **0.93 ms** |
+| Write: 50 records and a list | **1.29** / 18.4 ms | 6.29 / **15.1** ms |
+| Write: 1 record | **0.105 / 2.1 ms** | 2.0 / 12.7 ms |
+| Read the list: async / sync | **0.51 / 0.44 ms** | 1.61 / 0.63 ms |
+| SQLite in the APK (x86_64) | **~3 KB of dex** | 1.77 MB `libexpo-sqlite.so`, plus expo-modules-core |
+
+- The cold boot read is the one figure behind, by ~0.35 ms: it takes two statements where expo-sqlite takes one `json_each` join. Open plus the boot read is still 6.3 against 31 ms.
+- The synchronous read's p95 is 3.4 against 1.8 ms.
+
+**Mention's `expo-image` call sites, not switched.** `bloom build android` builds a `Package.bloom` package, and Mention's frontend is still an Expo Router app. A Bloom build of it needs, first:
+
+1. **A `Package.bloom`** for `packages/frontend`, with `app.config.js` as `App(...)` settings, its config plugins included.
+2. **Its route tree.** There are 157 files under `app/`. The Bloom router covers a `Routable` enum, and the language router's `Stack`/`TabView`/`Sheet` nodes over it are not written yet.
+3. **The `expo*` packages without a Bloom module.** A Bloom build fails on their imports. 36 are listed in its `package.json`, among them `expo-camera`, `-location`, `-notifications`, `-audio`, `-clipboard`, `-web-browser`, `-image-picker`, `-haptics`, `-updates` and `@expo/ui`.
+4. **Its own Expo modules** (`modules/`: `mention-widgets`, `pip-transport`) as Bloom native modules.
+
+Switching the call sites in the Expo build would change nothing native: `BloomImage` draws the Bloom view only in a Bloom build. So the feed was not measured before and after.
+
+Next for this track:
+
+1. A device check, through the coordinator, of the first photo and the first video frame. The emulator's new connections cost ~370 ms.
+2. The bloom-data release with `json: false`, and the stdlib's pin moved to it.
+3. Mention's `Package.bloom` and the language router's nodes (2 above). Then the call sites can switch, and the feed can be measured.
 
 ## Consequences
 
