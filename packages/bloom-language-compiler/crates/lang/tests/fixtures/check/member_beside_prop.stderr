@@ -1,0 +1,8 @@
+error[B0217]: `isNested` is a stored property already
+ --> check/member_beside_prop.bloom:5:7
+  |
+5 |   let isNested = isNested ?? false
+  |       ^^^^^^^^ a second declaration in the struct
+  |
+help: give the stored property its default (`var isNested: T = …`): a prop left out takes it, as TS's `{ isNested = … } = props` does
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#71a-a-view-the-20-way
