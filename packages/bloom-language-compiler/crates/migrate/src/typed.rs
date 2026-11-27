@@ -298,6 +298,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 subscript_open(source, close)
                     .map(|open| (open, close + 1, format!(".at({})", &source[open + 1..close])))
             }
+            // `s?.startsWith?.(x)`: a method a Bloom type has is always there, `s?.startsWith(x)`.
+            ("B0205", _) if d.message.contains("has no member") && source[end..].starts_with("?.(") => {
+                Some((end, end + 2, String::new()))
+            }
+            // `p.then((v) => …)` as a statement, on a promise bloomc types: `task { let v = await p; … }`.
+            ("B0209", "then")
+                if receiver.is_some_and(|r| r.starts_with("Promise<")) && source[..start].ends_with('.') =>
+            {
+                promise_then(source, start, end)
+            }
             // `f?.(x)` on a function that is always there: `f(x)`.
             ("B0201", _)
                 if d.message.starts_with("`?.` reads an optional") && source[end..].starts_with("?.(") =>
@@ -683,6 +693,73 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
     let start = a + parts[first].0;
     let lead = if first == 0 { "" } else { " " };
     Some((start, b, format!("{lead}{{ {} }}", fields.join(", "))))
+}
+
+/// `receiver.then { v in body }` as a statement: the task that awaits it, then runs `body`.
+fn promise_then(source: &str, start: usize, end: usize) -> Option<(usize, usize, String)> {
+    let (at, close, receiver, inner) = promise_statement(source, start, end)?;
+    let (params, body) = inner.split_once(" in ")?;
+    let name = params.split(':').next()?.trim();
+    if name.is_empty() || !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        return None;
+    }
+    Some((at, close, format!("task {{\nlet {name} = await {receiver}\n{body}\n}}")))
+}
+
+/// A statement `receiver.m { … }` (`start..end` is `m`): where it starts and ends, its receiver
+/// and the closure's inside.
+fn promise_statement(source: &str, start: usize, end: usize) -> Option<(usize, usize, String, String)> {
+    let at = receiver_start(source, start)?;
+    let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
+    let lead = source[line_start..at].trim();
+    if !(lead.is_empty() || lead.ends_with('{')) || at == start - 1 {
+        return None;
+    }
+    let close = block_end(source, end)?;
+    let inner = source[end..close].trim().strip_prefix('{')?.strip_suffix('}')?.trim().to_string();
+    let after = source[close..].trim_start_matches([' ', '\t']);
+    if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
+        return None;
+    }
+    Some((at, close, source[at..start - 1].trim().to_string(), inner))
+}
+
+/// Where the receiver of the member at `start` (just after its `.`) begins: `a.b(…)`, back
+/// over whitespace and line breaks.
+fn receiver_start(source: &str, start: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let mut at = source[..start - 1].trim_end().len();
+    loop {
+        if at > 0 && bytes[at - 1] == b')' {
+            let mut depth = 0i32;
+            let mut i = at;
+            while i > 0 {
+                i -= 1;
+                match bytes[i] {
+                    b')' => depth += 1,
+                    b'(' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            at = i;
+        }
+        let ident = source[..at].trim_end_matches(|c: char| c.is_alphanumeric() || c == '_');
+        if ident.len() == at {
+            break;
+        }
+        at = ident.len();
+        if at > 0 && bytes[at - 1] == b'.' {
+            at -= 1;
+            continue;
+        }
+        break;
+    }
+    Some(at)
 }
 
 /// `receiver.catch { e: T in body }` as a statement (`start..end` is `catch`): the task that
