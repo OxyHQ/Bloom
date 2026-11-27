@@ -12,7 +12,7 @@ if [ ! -f "$std/Core.ts" ]; then
 fi
 out="$here/out-stdlib"
 rm -rf "$out" && mkdir -p "$out"
-# The runtime files (runtime.ts, routing.ts) as written, the emitted files beside them.
+# The runtime files (runtime.ts, routing.ts, router.ts, …) as written, the emitted files beside them.
 cp "$compiler"/stdlib/Bloom/*.ts "$out/"
 # The language's runtime, as far as the standard library names it.
 cat > "$out/bloom-language.d.ts" <<'TS'
@@ -20,6 +20,36 @@ declare module '@oxy.so/bloom-language' {
   export type Child = { readonly kind: string } | string | number | null | undefined;
   export type Binding<T> = readonly [value: T, set: (value: T) => void];
   export function Embed(content: unknown): Child;
+  export function toElement(view: Child): import('react').ReactElement | null;
+}
+TS
+# What the Bloom router (router.ts) draws with beyond React and React Native, as far as it
+# names it.
+cat > "$out/router-deps.d.ts" <<'TS'
+declare module 'react-native-pager-view' {
+  import { Component } from 'react';
+  export default class PagerView extends Component<Record<string, unknown>> {
+    setPage(index: number): void;
+  }
+}
+declare module 'react-native-reanimated' {
+  export function useSharedValue<T>(initial: T): { value: T };
+}
+declare module 'react-native-screens' {
+  import type { ComponentType } from 'react';
+  export const ScreenStack: ComponentType<Record<string, unknown>>;
+  export const ScreenStackItem: ComponentType<Record<string, unknown>>;
+}
+declare module '@oxy.so/bloom/bottom-bar' {
+  import type { ComponentType } from 'react';
+  export const BottomBar: ComponentType<Record<string, unknown>>;
+}
+declare module '@oxy.so/bloom/screen' {
+  import type { ComponentType, ReactNode } from 'react';
+  export const Screen: ComponentType<{ children?: ReactNode }>;
+}
+declare module '@oxy.so/bloom/theme' {
+  export function useThemeColor(key: string): string;
 }
 TS
 for ts in "$std"/*.ts; do

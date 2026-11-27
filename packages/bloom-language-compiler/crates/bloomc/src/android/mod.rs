@@ -9,9 +9,9 @@
 //! and the package's Bloom native modules (`.native` targets, the standard library's
 //! among them), each a Gradle library whose TurboModule spec React Native's codegen reads.
 //! Metro is driven by `bloom` too (`bloom-metro.js`, which the Gradle plugin calls to
-//! bundle). No Expo prebuild, CLI, EAS or Expo module is involved: the JS of an Expo
-//! package that remains under Bloom (expo-router, until the Bloom router replaces it) runs
-//! over small shims of the Expo surface it reads (`shims/`). `--with-expo` keeps the Expo
+//! bundle). No Expo prebuild, CLI, EAS or Expo module is involved: navigation is the Bloom
+//! router (`stdlib/Bloom/router.ts`, see `routed_entry`), and the few Expo imports Bloom's own
+//! components still make are answered by small shims (`shims/`). `--with-expo` keeps the Expo
 //! path (`crate::expo`) until every module is replaced.
 
 mod autolink;
@@ -26,18 +26,13 @@ use crate::expo::{Mode, application_id, run_in, shown_rel};
 use crate::json::{self, Value};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
-/// The shims of the Expo surface a Bloom build answers, by file.
+/// The shims of the Expo surface a Bloom build answers, by file: what Bloom's own components
+/// still read (`expo-blur`, `expo-font`, `expo`'s lens check), until their Bloom modules land.
 const SHIM_FILES: &[(&str, &str)] = &[
     ("expo.js", include_str!("shims/expo.js")),
     ("expo-modules-core.js", include_str!("shims/expo-modules-core.js")),
-    ("expo-constants.js", include_str!("shims/expo-constants.js")),
-    ("expo-linking.js", include_str!("shims/expo-linking.js")),
     ("expo-blur.js", include_str!("shims/expo-blur.js")),
     ("expo-font.js", include_str!("shims/expo-font.js")),
-    ("expo-splash-screen.js", include_str!("shims/expo-splash-screen.js")),
-    ("expo-dom.js", include_str!("shims/expo-dom.js")),
-    ("expo-dom-global.js", include_str!("shims/expo-dom-global.js")),
-    ("empty.js", include_str!("shims/empty.js")),
     ("url.js", include_str!("shims/url.js")),
 ];
 
@@ -45,21 +40,14 @@ const SHIM_FILES: &[(&str, &str)] = &[
 const SHIMMED: &[(&str, &str)] = &[
     ("expo", "expo.js"),
     ("expo-modules-core", "expo-modules-core.js"),
-    ("expo-constants", "expo-constants.js"),
-    ("expo-linking", "expo-linking.js"),
     ("expo-blur", "expo-blur.js"),
     ("expo-font", "expo-font.js"),
-    ("expo-splash-screen", "expo-splash-screen.js"),
-    ("expo/dom", "expo-dom.js"),
-    ("expo/dom/global", "expo-dom-global.js"),
-    ("@expo/metro-runtime", "empty.js"),
 ];
 
-/// Expo packages whose JS a Bloom build keeps, over the shims, until their Bloom
-/// replacement lands: expo-router (the Bloom router, phase F step 3) and the two it draws
-/// with. Every other `expo*` request does not resolve: an optional `require` falls back,
-/// an import fails the build, naming the way out.
-const KEPT: &[&str] = &["expo-router", "expo-status-bar", "expo-glass-effect"];
+/// Expo packages whose JS a Bloom build keeps, over the shims: none since the Bloom router
+/// replaced expo-router (phase F step 3). Every `expo*` request that no shim answers does not
+/// resolve: an optional `require` falls back, an import fails the build, naming the way out.
+const KEPT: &[&str] = &[];
 
 /// React Native's own Metro config and Babel preset: what a Bloom build bundles with
 /// (React Native's version, as React Native pins them).
@@ -82,49 +70,32 @@ fn quote(s: &str) -> String {
     json::write(&Value::String(s.to_string()))
 }
 
-/// The app's config as the shims read it (`expo-constants`' `expoConfig`, the scheme).
-fn app_config(package: &Package) -> String {
-    let m = &package.manifest;
-    let schemes = schemes(package);
-    json::write(&json::object([
-        ("name", Value::String(display_name(package))),
-        ("slug", Value::String(slug(&m.name))),
-        ("version", Value::String(version(package))),
-        ("scheme", Value::String(schemes.first().cloned().unwrap_or_default())),
-        ("schemes", Value::Array(schemes.into_iter().map(Value::String).collect())),
-        ("android", json::object([("package", Value::String(app_id(package)))])),
-    ]))
+/// What the entry of an app with a `NavigationStack` is written from.
+pub struct RoutedEntry<'a> {
+    /// The standard library's directory, from the build directory.
+    pub std: &'a str,
+    pub entry_name: &'a str,
+    pub entry: &'a str,
+    pub catalogs: &'a str,
+    pub table: &'a crate::navigation::Table,
 }
 
-/// The root of an app with a `NavigationStack`: today's router over the route files under
-/// `app/`, whose context `bloom` writes (no `require.context`, no Expo entry).
-pub fn routed_entry(header: &str, app: &Path) -> Result<String, String> {
-    let mut files = Vec::new();
-    list_js(app, app, &mut files);
-    files.sort();
-    if files.is_empty() {
-        return Err(format!("{}: no route files", app.display()));
+/// The entry of an app with a `NavigationStack`: the Bloom router (`stdlib/Bloom/router.ts`)
+/// installed with the app's routes, and the root view (whose `NavigationStack` draws it)
+/// under Bloom's provider, registered as `main`. No expo-router, no file routes.
+pub fn routed_entry(header: &str, r: &RoutedEntry) -> String {
+    let (icons, spec) = crate::navigation::router_spec(r.table);
+    let mut imports = String::new();
+    for icon in &icons {
+        imports.push_str(&format!("import {{ {icon} }} from '@oxy.so/bloom/icons/{icon}';\n"));
     }
-    let modules: Vec<String> = files
-        .iter()
-        .map(|f| format!("  {}: require({}),", quote(&format!("./{f}")), quote(&format!("./app/{f}"))))
-        .collect();
-    Ok(format!(
-        "{header}import './shims/url';\nimport {{ createElement }} from 'react';\nimport {{ AppRegistry }} from 'react-native';\nimport {{ ExpoRoot }} from 'expo-router';\n\n// The route files (written from the app's routes enum), as the router's context.\nconst modules = {{\n{}\n}};\nfunction context(key) {{\n  return modules[key];\n}}\ncontext.keys = () => Object.keys(modules);\ncontext.resolve = (key) => key;\ncontext.id = './app';\n\nfunction Root() {{\n  return createElement(ExpoRoot, {{ context }});\n}}\n\nAppRegistry.registerComponent('main', () => Root);\n",
-        modules.join("\n")
-    ))
-}
-
-fn list_js(root: &Path, dir: &Path, out: &mut Vec<String>) {
-    let Ok(entries) = std::fs::read_dir(dir) else { return };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_dir() {
-            list_js(root, &path, out);
-        } else if path.extension().is_some_and(|e| e == "js") {
-            out.push(path.strip_prefix(root).unwrap_or(&path).to_string_lossy().replace('\\', "/"));
-        }
-    }
+    format!(
+        "{header}import './shims/url';\nimport {{ createElement }} from 'react';\nimport {{ AppRegistry }} from 'react-native';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\n{imports}import {{ registerCatalog }} from '{std}/runtime';\nimport {{ registerNavigation }} from '{std}/routing';\nimport {{ bloomRouter }} from '{std}/router';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The Bloom router, over the routes of `NavigationStack` (the app's routes enum).\nregisterNavigation(bloomRouter({spec}));\n\n// The app's root view, whose `NavigationStack` draws the router. Each route is a Bloom\n// screen, drawn edge to edge. Bloom's tab bar and sheets take their taps and drags through\n// the gesture handler's root (without it, Android delivers none).\nfunction Root() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(SafeAreaProvider, null, createElement(BloomProvider, null, toElement({entry_name}()))),\n  );\n}}\n\nAppRegistry.registerComponent('main', () => Root);\n",
+        std = r.std,
+        entry_name = r.entry_name,
+        entry = r.entry,
+        catalogs = r.catalogs,
+    )
 }
 
 /// Metro and Babel config, the shims and `bloom-metro.js`: a Bloom build's JS layer.
@@ -134,7 +105,6 @@ pub fn write_js(package: &Package, header: &str) -> Result<(), String> {
     for (name, text) in SHIM_FILES {
         write(&shims.join(name), text)?;
     }
-    write(&shims.join("app-config.json"), &app_config(package))?;
     let shimmed: Vec<String> =
         SHIMMED.iter().map(|(n, f)| format!("  {}: {},", quote(n), quote(f))).collect();
     let kept: Vec<String> = KEPT.iter().map(|n| quote(n)).collect();
@@ -1010,31 +980,45 @@ mod tests {
         let metro = read("metro.config.js");
         assert!(metro.contains("require('@react-native/metro-config')"), "{metro}");
         assert!(!metro.contains("expo/metro-config"), "{metro}");
-        assert!(metro.contains("\"expo-linking\": \"expo-linking.js\""), "{metro}");
+        assert!(metro.contains("\"expo-blur\": \"expo-blur.js\""), "{metro}");
+        assert!(!metro.contains("expo-linking"), "{metro}");
         let babel = read("babel.config.js");
         assert!(
             babel.contains("module:@react-native/babel-preset")
                 && babel.contains("react-native-worklets/plugin")
         );
-        let config = json::parse(&read("shims/app-config.json")).unwrap();
-        assert_eq!(config.get("scheme").as_str(), Some("shop"));
         assert!(read("bloom-metro.js").contains("bundleCommand"));
         let _ = std::fs::remove_dir_all(&package.root);
     }
 
+    /// A routed app's entry installs the Bloom router with its routes enum as the spec: no
+    /// file routes, no expo-router, each case's reader typing its parameters.
     #[test]
-    fn a_routed_app_gets_its_route_context() {
-        let dir = std::env::temp_dir().join(format!("bloom-android-routes-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        for f in ["_layout.js", "(tabs)/index.js", "post/[id].js"] {
-            std::fs::create_dir_all(dir.join(f).parent().unwrap()).unwrap();
-            std::fs::write(dir.join(f), "").unwrap();
-        }
-        let entry = routed_entry("", &dir).unwrap();
-        assert!(entry.contains("\"./(tabs)/index.js\": require(\"./app/(tabs)/index.js\"),"), "{entry}");
-        assert!(entry.contains("\"./post/[id].js\": require(\"./app/post/[id].js\"),"), "{entry}");
-        assert!(entry.contains("createElement(ExpoRoot, { context })"), "{entry}");
-        let _ = std::fs::remove_dir_all(&dir);
+    fn a_routed_app_gets_the_bloom_router() {
+        let package = crate::navigation::tests::package("bloom-router", crate::navigation::tests::APP);
+        crate::expo::generate_for(&package, true).unwrap();
+        let build = package.build_dir();
+        assert!(!build.join("app").exists(), "a Bloom build writes no file routes");
+        let index = std::fs::read_to_string(build.join("index.js")).unwrap();
+        assert!(
+            index.contains("import { bloomRouter } from './../std/Bloom/router';")
+                || index.contains("std/Bloom/router'"),
+            "{index}"
+        );
+        assert!(index.contains("registerNavigation(bloomRouter({"), "{index}");
+        assert!(index.contains("sheets: [\"compose\"]"), "{index}");
+        assert!(
+            index.contains("\"post\": (p) => ({ tag: \"post\", \"id\": (p[\"id\"] ?? ''), \"page\": Number(p[\"page\"]) }),"),
+            "{index}"
+        );
+        assert!(
+            index.contains("{ route: \"feed\", title: \"Home\", icon: RiHomeLine, activeIcon: RiHomeFill },"),
+            "{index}"
+        );
+        assert!(index.contains("import { RiHomeLine } from '@oxy.so/bloom/icons/RiHomeLine';"), "{index}");
+        assert!(index.contains("AppRegistry.registerComponent('main', () => Root);"), "{index}");
+        assert!(!index.contains("expo"), "{index}");
+        let _ = std::fs::remove_dir_all(&package.root);
     }
 
     /// The standard library's storage module is linked: its Kotlin sources, its codegen
