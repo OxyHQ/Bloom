@@ -139,6 +139,11 @@ struct Emitter<'a> {
     helpers: BTreeSet<&'static str>,
     /// Module constants hoisted out of the current item.
     hoisted: Vec<Frag>,
+    /// A generic view's type parameters as TS writes them (`<T extends ProfileGridEntry>`):
+    /// what a function or closure hoisted out of it and typed by them declares itself.
+    view_generics: String,
+    /// The type parameters the next arrow function [`Self::function`] writes declares.
+    arrow_generics: Option<String>,
     hoisted_names: HashMap<Span, String>,
     /// Static trees hoisted to module scope, by their text.
     hoisted_trees: HashMap<String, String>,
@@ -203,6 +208,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         type_imports: BTreeMap::new(),
         helpers: BTreeSet::new(),
         hoisted: Vec::new(),
+        view_generics: String::new(),
+        arrow_generics: None,
         hoisted_names: HashMap::default(),
         hoisted_trees: HashMap::default(),
         statics: HashSet::default(),
@@ -949,6 +956,53 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// A generic function's or view's type parameters, a shape-bounded one as TS's
+    /// `T extends ProfileGridEntry` (by the declaration's span).
+    fn shaped_generics(&mut self, generics: &[Ident], span: Span) -> String {
+        if generics.is_empty() {
+            return String::new();
+        }
+        let shapes = self.ck.shapes.get(&span).cloned().unwrap_or_default();
+        let params: Vec<String> = generics
+            .iter()
+            .enumerate()
+            .map(|(index, g)| {
+                let bounds: Vec<String> = shapes
+                    .iter()
+                    .filter(|(i, _)| *i as usize == index)
+                    .map(|(_, s)| self.ts_type(s))
+                    .collect();
+                if bounds.is_empty() {
+                    g.name.clone()
+                } else {
+                    format!("{} extends {}", g.name, bounds.join(" & "))
+                }
+            })
+            .collect();
+        format!("<{}>", params.join(", "))
+    }
+
+    /// A generic view's props type outside its function (its `==` comparator): each type
+    /// parameter as its shape, or `unknown` (`ProfileGridListProps<ProfileGridEntry>`), which
+    /// is what `view()` erases the generic body to.
+    fn erased_props(&mut self, props_name: &str, generics: &[Ident], span: Span) -> String {
+        if generics.is_empty() {
+            return props_name.to_string();
+        }
+        let shapes = self.ck.shapes.get(&span).cloned().unwrap_or_default();
+        let args: Vec<String> = (0..generics.len())
+            .map(|index| {
+                let bounds: Vec<String> = shapes
+                    .iter()
+                    .filter(|(i, _)| *i as usize == index)
+                    .map(|(_, s)| self.ts_type(s))
+                    .collect();
+                if bounds.is_empty() { "unknown".to_string() } else { bounds.join(" & ") }
+            })
+            .collect();
+        format!("{props_name}<{}>", args.join(", "))
+    }
+
     fn def_of(&self, name: &str) -> Option<DefId> {
         self.ck.defs.iter().position(|d| d.name == name && d.origin == Origin::Local)
     }
@@ -1025,7 +1079,10 @@ impl<'a> Emitter<'a> {
             .or_else(|| self.ck.fn_rets.get(&f.span).cloned())
             .unwrap_or(Ty::Unit);
         let ret = self.ts_return(&ret_ty, f.is_async);
-        let generics = self.generics(&f.generics);
+        let generics = match self.arrow_generics.take() {
+            Some(generics) if f.generics.is_empty() => generics,
+            _ => self.shaped_generics(&f.generics, f.span),
+        };
         // A class's `init` (`T$$init`): makes `self`, runs, and returns it.
         let body = if f.name.name.ends_with("$$init") {
             let class = self.ts_type(&ret_ty);
@@ -2681,10 +2738,17 @@ impl<'a> Emitter<'a> {
             _ => self.block_body(&c.body, tail, None),
         };
         self.conditional = saved_conditional;
+        // A closure that reads no local of its surroundings is built once, at module scope;
+        // one typed by a generic view's parameters declares them there.
+        let hoist = self.view.is_some() && !contextual && self.reads_only_module(c);
+        let generics = if hoist && info.params.iter().any(|l| mentions_param(&self.ck.locals[*l].ty)) {
+            self.view_generics.clone()
+        } else {
+            String::new()
+        };
         let mut out = Frag::at(c.span, if info.is_async { "async " } else { "" });
-        out.s(&format!("({}) => ", params.join(", "))).f(body);
-        // A closure that reads no local of its surroundings is built once, at module scope.
-        if self.view.is_some() && !contextual && self.reads_only_module(c) {
+        out.s(&format!("{generics}({}) => ", params.join(", "))).f(body);
+        if hoist {
             let name = format!("$fn{}", self.hoisted.len() + self.hoisted_names.len());
             let mut decl = Frag::of(format!("const {name} = "));
             decl.f(out).s(";");
@@ -2971,8 +3035,17 @@ impl<'a> Emitter<'a> {
                 let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
                 self.expr(receiver)
             }
-            CallRes::View { params, trailing } => {
-                let order = self.view_order(call, &params, trailing.as_deref());
+            CallRes::View { params, trailing, witnesses } => {
+                let mut order = self.view_order(call, &params, trailing.as_deref());
+                // A generic view's protocol bounds: their witnesses, as props.
+                let values = self.ck.witness_args.get(&expr.id).cloned().unwrap_or_default();
+                for (name, value) in witnesses.iter().zip(values) {
+                    let text = match value {
+                        Some(w) => self.witness_value(&w),
+                        None => "undefined".into(),
+                    };
+                    order.push((name.clone(), Frag::of(text)));
+                }
                 let entries: Vec<Frag> = order
                     .into_iter()
                     .map(|(name, arg)| {
@@ -4464,7 +4537,12 @@ impl<'a> Emitter<'a> {
         };
         let mut props_name = format!("{}Props", v.name.name);
         let mut props_decl = Frag::default();
-        if !info.props.is_empty() {
+        // A generic view (`struct ProfileGridList<T: ProfileGridEntry>: View`): a generic body
+        // and props type, and a witness prop for each protocol bound.
+        let generic = !v.generics.is_empty();
+        let witness_props = self.witness_params(v.span, &v.generics);
+        self.view_generics = self.shaped_generics(&v.generics, v.span);
+        if !info.props.is_empty() || !witness_props.is_empty() {
             let params = v.params.as_deref().unwrap_or_default();
             let mut fields = Vec::new();
             let mut targets = Vec::new();
@@ -4535,6 +4613,11 @@ impl<'a> Emitter<'a> {
                 }
                 targets.push(target);
             }
+            for witness in &witness_props {
+                fields.push(format!("  readonly {witness};"));
+                let name = witness.split(':').next().unwrap_or_default();
+                targets.push(Frag::of(name));
+            }
             if fields.is_empty() && !extends.is_empty() {
                 // Only spreads: the props are their type, under the name it has.
                 props_name = extends.join(" & ");
@@ -4548,8 +4631,9 @@ impl<'a> Emitter<'a> {
                 } else {
                     format!(" extends {}", extends.join(", "))
                 };
+                let generics = self.shaped_generics(&v.generics, v.span);
                 props_decl = Frag::of(format!(
-                    "{export}interface {props_name}{extends} {{\n{}\n}}\n",
+                    "{export}interface {props_name}{generics}{extends} {{\n{}\n}}\n",
                     fields.join("\n")
                 ));
             }
@@ -4615,7 +4699,10 @@ impl<'a> Emitter<'a> {
         for line in lines {
             body.f(line).s("\n");
         }
-        let param = if info.props.is_empty() { String::new() } else { format!("props: {props_name}") };
+        let has_props = !info.props.is_empty() || !witness_props.is_empty();
+        let own_props = format!("{props_name}{}", self.generics(&v.generics));
+        let param = if has_props { format!("props: {own_props}") } else { String::new() };
+        let generics = self.shaped_generics(&v.generics, v.span);
         let name = &v.name.name;
         let (wrapper, module, prefix) = match v.kind {
             ViewKind::View => (
@@ -4631,7 +4718,11 @@ impl<'a> Emitter<'a> {
         };
         self.import_name(module, wrapper);
         let mut out = props_decl;
-        out.mark(item.span).s(&format!("{prefix}{wrapper}(function {name}({param}) {{\n")).f(body).s("}");
+        out.mark(item.span)
+            .s(&format!("{prefix}{wrapper}(function {name}{generics}({param}) {{\n"))
+            .f(body)
+            .s("}");
+        let props_name = self.erased_props(&props_name, &v.generics, v.span);
         if let Some(equal) =
             v.members.iter().find_map(|m| if let Member::Equal(e) = m { Some(e) } else { None })
             && v.kind == ViewKind::View
@@ -4644,7 +4735,15 @@ impl<'a> Emitter<'a> {
             ));
             out.f(body);
         }
-        out.s(");\n");
+        out.s(")");
+        // `view()` erases a generic body to its bounds: the factory is cast back to generic
+        // (a type only; one component, as for any view).
+        if generic && v.kind == ViewKind::View {
+            self.type_imports.entry(LANGUAGE.into()).or_default().insert("ComposedView".into());
+            out.s(&format!(" as {generics}({param}) => ComposedView"));
+        }
+        out.s(";\n");
+        self.view_generics.clear();
         // `pub default view`: the module's default export too.
         if v.kind == ViewKind::View && item.visibility == Visibility::PubDefault {
             out.s(&format!("export default {name};\n"));
@@ -4890,7 +4989,12 @@ impl<'a> Emitter<'a> {
                 let local = locals[0];
                 let deps = self.deps(&f.body.stmts);
                 let reads_view = self.fn_reads_view(f);
+                if !reads_view && mentions_param(&self.ck.locals[local].ty) {
+                    // Hoisted out of a generic view: it declares the view's type parameters.
+                    self.arrow_generics = Some(self.view_generics.clone());
+                }
                 let function = self.function(f, Some(()));
+                self.arrow_generics = None;
                 let name = js_name(&f.name.name);
                 if !reads_view {
                     // A handler that reads nothing of its view is a module function.
@@ -5056,10 +5160,10 @@ impl<'a> Emitter<'a> {
                     let mut params = params;
                     params.extend(self.witness_params(f.span, &f.generics));
                     let ret = self.ts_return(&fn_ty.ret, fn_ty.is_async);
+                    let generics = self.shaped_generics(&f.generics, f.span);
                     out.push_str(&format!(
-                        "export declare function {}{}({}): {ret};\n",
+                        "export declare function {}{generics}({}): {ret};\n",
                         js_name(&f.name.name),
-                        self.generics(&f.generics),
                         params.join(", ")
                     ));
                 }
@@ -5072,8 +5176,11 @@ impl<'a> Emitter<'a> {
                         // `view PostCard(..PostCardProps)`: its own name is taken.
                         props_name = format!("{}ViewProps", v.name.name);
                     }
-                    if !fn_ty.params.is_empty() {
-                        let fields: Vec<String> = fn_ty
+                    let witness_props = self.witness_params(v.span, &v.generics);
+                    let generics = self.shaped_generics(&v.generics, v.span);
+                    let has_props = !fn_ty.params.is_empty() || !witness_props.is_empty();
+                    if has_props {
+                        let mut fields: Vec<String> = fn_ty
                             .params
                             .iter()
                             .map(|p| {
@@ -5085,13 +5192,14 @@ impl<'a> Emitter<'a> {
                                 )
                             })
                             .collect();
+                        fields.extend(witness_props.iter().map(|w| format!("  readonly {w};")));
                         out.push_str(&format!(
-                            "export interface {props_name} {{\n{}\n}}\n",
+                            "export interface {props_name}{generics} {{\n{}\n}}\n",
                             fields.join("\n")
                         ));
                     }
-                    let props =
-                        if fn_ty.params.is_empty() { String::new() } else { format!("props: {props_name}") };
+                    let own_props = format!("{props_name}{}", self.generics(&v.generics));
+                    let props = if has_props { format!("props: {own_props}") } else { String::new() };
                     match v.kind {
                         ViewKind::View => {
                             uses_composed = true;
@@ -5100,7 +5208,7 @@ impl<'a> Emitter<'a> {
                                 v.name.name, v.name.name
                             ));
                             out.push_str(&format!(
-                                "export declare const {}: ({props}) => ComposedView;\n",
+                                "export declare const {}: {generics}({props}) => ComposedView;\n",
                                 v.name.name
                             ));
                             if item.visibility == Visibility::PubDefault {
@@ -5232,4 +5340,16 @@ fn plain_item(expr: &Expr) -> bool {
         ExprKind::Field(receiver, _) => plain_item(receiver),
         _ => true,
     }
+}
+
+/// Whether `ty` names a type parameter (`T`).
+fn mentions_param(ty: &Ty) -> bool {
+    let mut found = false;
+    map_ty(ty, &mut |t| {
+        if matches!(t, Ty::Param(..)) {
+            found = true;
+        }
+        None
+    });
+    found
 }

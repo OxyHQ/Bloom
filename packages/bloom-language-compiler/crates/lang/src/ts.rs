@@ -1306,6 +1306,7 @@ impl Mapper<'_> {
             ts: true,
             throws: false,
             bounds: Vec::new(),
+            shapes: Vec::new(),
         }))
     }
 

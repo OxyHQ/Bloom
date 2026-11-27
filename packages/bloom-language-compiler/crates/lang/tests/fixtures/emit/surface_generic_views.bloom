@@ -1,0 +1,72 @@
+// Bloom 2.0's generic views: `struct X<T: Bound>: View` with props typed by `T`. A shape bound
+// (a TS interface, a struct or a record type) is TS's `T extends Bound`: its fields are read
+// from the value itself, so the view is one fiber with the same hooks and passes nothing extra.
+// A protocol bound passes its witness, as a generic function's does, in a prop.
+import { ProfileGridEntry, useMedia } from "@/profile"
+
+public struct ProfileGridList<T: ProfileGridEntry>: View {
+  let data: [T]
+  let renderCell: (T, Double) -> View
+  var columns: Double = 3
+  @State private var width = 360.0
+
+  func key(_ item: T) -> String { "\(item.postId):\(item.mediaIndex)" }
+
+  var body: some View {
+    VStack {
+      for item in data {
+        VStack { renderCell(item, width / columns) }.id(key(item))
+      }
+    }
+  }
+}
+
+public struct Tag {
+  public let id: String
+  public let label: String
+}
+
+public struct Chips<T>: View where T: Tag {
+  let tags: [T]
+  var body: some View {
+    HStack {
+      for tag in tags { Text(tag.label).id(tag.id) }
+    }
+  }
+}
+
+public protocol Titled {
+  var title: String { get }
+}
+
+public struct Post {
+  public let id: String
+  public let text: String
+}
+
+extension Post: Titled {
+  public var title: String { text }
+}
+
+public struct TitledList<T: Titled>: View {
+  let items: [T]
+  var body: some View {
+    VStack {
+      for item in items { Text(item.title) }
+    }
+  }
+}
+
+public struct Profile: View {
+  let posts: [Post]
+  let tags: [Tag]
+  let media = useMedia()
+
+  var body: some View {
+    VStack {
+      ProfileGridList(data: media, renderCell: { entry, size in Text("\(entry.thumbnail) \(size)") })
+      Chips(tags: tags)
+      TitledList(items: posts)
+    }
+  }
+}

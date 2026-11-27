@@ -16,8 +16,10 @@ const { Counter } = require('./bloom/counter.bloom') as Pick<Views, 'Counter'>;
 const { Row } = require('./bloom/row.bloom') as Pick<Views, 'Row'>;
 const { Banner } = require('./bloom/static.bloom') as Pick<Views, 'Banner'>;
 const { Titled } = require('./bloom/list.bloom') as Pick<Views, 'Titled'>;
+const { Grid } = require('./bloom/grid.bloom') as Pick<Views, 'Grid'>;
 
 const TITLES = ['one', 'two', 'three', 'four', 'five'];
+const ENTRIES = TITLES.map((label) => ({ id: label, label, extra: label.length }));
 
 const CASES = [
   {
@@ -35,6 +37,11 @@ const CASES = [
     name: 'a builder `for` as the last child of its stack',
     bloom: () => Titled({ titles: TITLES }),
     hand: () => Hand.Titled({ titles: TITLES }),
+  },
+  {
+    name: 'a generic view bounded by a shape (no witness)',
+    bloom: () => Grid({ entries: ENTRIES }),
+    hand: () => Hand.Grid({ entries: ENTRIES }),
   },
 ];
 

@@ -1538,6 +1538,7 @@ impl Checker<'_> {
             ts: false,
             throws: false,
             bounds: Vec::new(),
+            shapes: Vec::new(),
         }));
         let labels: Vec<Option<&str>> =
             call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.as_str())).collect();
@@ -1828,14 +1829,25 @@ impl Checker<'_> {
     }
 
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
-        let Ty::Fn(f) = ty else { return Ty::Unknown };
+        let Ty::Fn(generic) = ty else { return Ty::Unknown };
+        // A generic view's witness props, by its type parameters' names (`$w_T_Titled`).
+        let witnesses: Vec<String> = generic
+            .bounds
+            .iter()
+            .filter_map(|(param, protocol)| match param {
+                Ty::Param(_, name) => Some(super::witness_param(name, protocol)),
+                _ => None,
+            })
+            .collect();
+        let Ty::Fn(f) = self.instantiate(ty) else { return Ty::Unknown };
         let params: Vec<String> = f.params.iter().filter_map(|p| p.name.clone()).collect();
-        let (order, _) = self.bloom_args(call, f, true);
+        let (order, _) = self.bloom_args(call, &f, true);
         let trailing = order
             .iter()
             .position(|o| *o == Some(call.args.len()))
             .and_then(|slot| f.params[slot].name.clone());
-        self.out.calls.insert(expr.id, CallRes::View { params, trailing });
+        self.witnesses_of(expr, call.callee.span, &f);
+        self.out.calls.insert(expr.id, CallRes::View { params, trailing, witnesses });
         Ty::View(Some("view"))
     }
 
@@ -2189,6 +2201,7 @@ impl Checker<'_> {
                         ts: false,
                         throws: false,
                         bounds: Vec::new(),
+                        shapes: Vec::new(),
                     }))),
                     false,
                 );
@@ -2281,6 +2294,7 @@ impl Checker<'_> {
                     ts: false,
                     throws: false,
                     bounds: Vec::new(),
+                    shapes: Vec::new(),
                 }));
                 self.closure(trailing, Some(&handler), false);
             }
@@ -2406,6 +2420,7 @@ impl Checker<'_> {
                 ts: false,
                 throws: false,
                 bounds: Vec::new(),
+                shapes: Vec::new(),
             }))
         };
         let opt = |t: Ty| Ty::Option(Box::new(t));

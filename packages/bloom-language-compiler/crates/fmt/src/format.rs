@@ -349,8 +349,9 @@ impl<'a> Formatter<'a> {
             ItemKind::Struct(StructDecl { name, generics: g, surface: Some(body), .. }) => {
                 self.type_body("struct ", name, g, body, item.span)
             }
-            ItemKind::View(ViewDecl { name, surface: Some(body), .. }) => {
-                self.type_body("struct ", name, &[], body, item.span)
+            ItemKind::View(ViewDecl { name, generics: g, constraints, surface: Some(body), .. }) => {
+                let g = self.constrained_generics(g, constraints);
+                self.type_body_with("struct ", name, g, body, item.span)
             }
             ItemKind::View(v) if self.migrating_now() && self.view_migrates(v) => {
                 self.view_as_struct(v, item.span)
@@ -447,8 +448,19 @@ impl<'a> Formatter<'a> {
         body: &TypeBody,
         span: Span,
     ) -> Doc {
+        self.type_body_with(keyword, name, generics(g), body, span)
+    }
+
+    fn type_body_with(
+        &mut self,
+        keyword: &'static str,
+        name: &Ident,
+        g: Doc,
+        body: &TypeBody,
+        span: Span,
+    ) -> Doc {
         let conformances = self.conformances(&body.conformances);
-        let head = concat(vec![text(keyword), text(name.name.clone()), generics(g), conformances, text(" ")]);
+        let head = concat(vec![text(keyword), text(name.name.clone()), g, conformances, text(" ")]);
         let members = self.lines(&body.members, |m| m.span, Self::type_member);
         concat(vec![head, self.braced(members, span.end)])
     }

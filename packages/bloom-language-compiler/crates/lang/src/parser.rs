@@ -749,8 +749,10 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn struct_item(&mut self) -> ItemKind {
         let keyword = self.bump();
         let name = self.ident("the struct's name");
-        let generics = self.generics();
+        // `<T: ProfileGridEntry>` and `where T: P`: a generic view's constraints.
+        let (generics, mut constraints) = self.constrained_generics();
         let conformances = self.conformances();
+        constraints.extend(self.where_clause());
         let mut fields = Vec::new();
         let mut members = Vec::new();
         let body_start = self.span();
@@ -789,6 +791,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.expect_close(P::RBrace, open);
         }
         if members.is_empty() && conformances.is_empty() {
+            self.unconstrained(&constraints);
             return ItemKind::Struct(StructDecl { name, generics, fields, surface: None });
         }
         let surface = TypeBody {
@@ -806,8 +809,12 @@ impl<'s, 'i> Parser<'s, 'i> {
             _ => None,
         });
         if let Some(kind) = view_kind {
-            return ItemKind::View(self.lower_view(kind, keyword, name, surface));
+            let mut view = self.lower_view(kind, keyword, name, surface);
+            view.generics = generics;
+            view.constraints = constraints;
+            return ItemKind::View(view);
         }
+        self.unconstrained(&constraints);
         // A data struct: its stored properties are its fields.
         for member in &surface.members {
             match &member.kind {
@@ -838,6 +845,22 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
         }
         ItemKind::Struct(StructDecl { name, generics, fields, surface: Some(Box::new(surface)) })
+    }
+
+    /// A data struct's type parameters are not constrained (a view's are).
+    fn unconstrained(&mut self, constraints: &[(Ident, TypeExpr)]) {
+        if let Some((param, ty)) = constraints.first() {
+            self.error(
+                Diagnostic::error(
+                    "B0106",
+                    param.span.to(ty.span),
+                    "a struct's type parameters take no constraints",
+                )
+                .label("only a view's (`struct X<T: P>: View`) and a function's are constrained")
+                .help(format!("write `<{}>`, and constrain the functions that need it", param.name))
+                .spec("46-generics"),
+            );
+        }
     }
 
     /// A 2.0 member: `[@Attr] [modifiers] let|var name[: T][ = v]`, `var name: T { … }`, or a
@@ -1157,6 +1180,8 @@ impl<'s, 'i> Parser<'s, 'i> {
         ViewDecl {
             kind,
             name,
+            generics: Vec::new(),
+            constraints: Vec::new(),
             params: Some(params),
             members,
             body_keyword,
@@ -1918,7 +1943,18 @@ impl<'s, 'i> Parser<'s, 'i> {
             );
             (span, Block { stmts: Vec::new(), span: end })
         });
-        ViewDecl { kind, name, params, members, body_keyword, body, span: start.to(end), surface: None }
+        ViewDecl {
+            kind,
+            name,
+            generics: Vec::new(),
+            constraints: Vec::new(),
+            params,
+            members,
+            body_keyword,
+            body,
+            span: start.to(end),
+            surface: None,
+        }
     }
 
     fn member(&mut self) -> Option<Member> {

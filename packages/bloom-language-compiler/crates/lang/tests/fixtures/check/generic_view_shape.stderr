@@ -1,0 +1,8 @@
+error[B0232]: `Tag` does not have the shape of `ProfileGridEntry`
+  --> check/generic_view_shape.bloom:19:25
+   |
+19 |   var body: some View { Grid(data: tags) }
+   |                         ^^^^ a constraint of the view or function called
+   |
+help: it lacks `postId`, `mediaIndex`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#46-generics

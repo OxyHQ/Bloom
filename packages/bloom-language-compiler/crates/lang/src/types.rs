@@ -71,6 +71,10 @@ pub struct FnTy {
     /// (`Ty::Param`, then what a call instantiates it with) and its protocol's name
     /// (`Equatable`, `Codable`, or a protocol of a `.bloom` module).
     pub bounds: Vec<(Ty, Rc<str>)>,
+    /// Its type parameters bounded by a shape (`<T: ProfileGridEntry>`, a struct, a record type
+    /// or a TS interface): each one's type (`Ty::Param`, then what a call instantiates it with)
+    /// and the shape it has. Structural, so a call passes nothing for them.
+    pub shapes: Vec<(Ty, Ty)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -267,6 +271,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             ts: fn_ty.ts,
             throws: fn_ty.throws,
             bounds: fn_ty.bounds.iter().map(|(t, p)| (map_ty(t, f), p.clone())).collect(),
+            shapes: fn_ty.shapes.iter().map(|(t, s)| (map_ty(t, f), map_ty(s, f))).collect(),
         })),
         other => other.clone(),
     }

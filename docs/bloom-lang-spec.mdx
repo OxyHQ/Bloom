@@ -338,6 +338,13 @@ or a generic type's `T.codec(…)` of its arguments' codecs (`Page$$codec(Post$$
 `Array$$codec(…)`), so `let page: Page<Post> = try await api.get("/feeds/home")` decodes with no
 codec written. `Sendable` and other built-in protocols with nothing a body reads pass no witness.
 
+A type parameter may instead be bounded by a **shape**: a struct, a record type or a TS
+interface (`<T: ProfileGridEntry>`). A shape is structural, as TS's `T extends ProfileGridEntry`
+is, which is what it compiles to: a `T` value reads the shape's fields from itself and passes
+where the shape is expected, and a call passes nothing for it. A call's type argument that
+lacks one of the shape's fields (or has it with another type) is B0232. A data struct's own type
+parameters take no constraints (B0106); a function's and a view's do.
+
 ### 4.7 The foreign boundary
 
 A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map (primitives,
@@ -704,6 +711,16 @@ trailing builder when no function parameter does, as Swift's `@ViewBuilder let c
 does: `Card(title: "Hi") { Text("inside") }` passes the builder's lines as the prop's value (one
 child, or the list of them), built in the caller's render, not a closure. The last such
 property not given by label takes it.
+A view is generic as a function is (section 4.6): `struct ProfileGridList<T: ProfileGridEntry>:
+View { let data: [T]; let renderCell: (T, Double) -> View; … }`, or `where T: P`. It is still
+one `view()` fiber with the same hooks: its body is the generic function `function
+ProfileGridList<T extends ProfileGridEntry>(props: ProfileGridListProps<T>)`, the factory is cast
+back to `<T extends ProfileGridEntry>(props: ProfileGridListProps<T>) => ComposedView` (a type
+only), and the `.d.bloom.ts` declares the same, so a TS caller infers `T` too. A shape bound costs
+nothing at runtime. A protocol bound (`<T: Titled>`) passes its witness as a prop
+(`$w_T_Titled: Post$$Titled`, filled by the call site, a module constant, so it never breaks the
+memo); a member function or closure hoisted out of a generic view declares the view's type
+parameters itself.
 A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
