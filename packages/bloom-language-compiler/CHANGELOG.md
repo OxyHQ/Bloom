@@ -27,6 +27,7 @@
 - The WASI `bloomc` (the fallback on a platform with no prebuilt one) starts in the working directory again, and on Windows, where Node's WASI cannot list a directory, `check` and `fmt` are handed the `.bloom` files under one.
 - A route added within a clock tick of the last read is seen: the route table is read again for a folder modified within 2 seconds of the read, as git treats a racily clean file.
 - `BLOOM_LINK` installs a linked checkout as it packs (its `pack:local` script when it has one, else `bun pm pack`), never as a copy of the directory. bun copied all of a `file:` directory, the checkout's examples and their `.bloom/build/` included, each holding the last linked copy, so every build nested one level deeper until the tree was too deep to delete. A pack that would carry a `.bloom` build is refused, and a rebuilt checkout is installed again on the next build (the tarball is named by its content), with no `.installed` stamp to delete.
+- A native release bundle builds again with `withBloomLanguage`. 1.7.0 wrapped each Metro cache store with `Object.create(store)`, and Expo's `BinaryFileStore` keeps its state in private fields, so Metro's reset before a release bundle (`clear()` on the wrapper) threw "Cannot write private member #prepare to an object whose class did not declare it". The wrapper now hands every call (`get`, `set`, `clear`) to the store itself. The web export, which resets no cache, was not affected. (Mention's Android release bundle on 1.7.0.)
 
 ## 1.7.0
 
