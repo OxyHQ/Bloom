@@ -1104,6 +1104,18 @@ impl Tr<'_> {
                     [Argument::ObjectExpression(o)] => format!("{callee}({})", self.named_args(o)),
                     // `X(props)` in a view whose props are written out: each one, by name.
                     [Argument::Identifier(v)] if let Some(fields) = self.whole_props_fields(&v.name) => {
+                        // The callee's TS defaults are this view's too (`Tr::view_defaults`).
+                        if let Expression::Identifier(id) = &call.callee
+                            && let Some(defaults) = self.view_defaults.get(id.name.as_str()).cloned()
+                        {
+                            for (key, value) in defaults {
+                                if fields.contains(&key)
+                                    && !self.scope.field_defaults.iter().any(|(k, _)| *k == key)
+                                {
+                                    self.scope.field_defaults.push((key, value));
+                                }
+                            }
+                        }
                         let args: Vec<String> =
                             fields.iter().map(|f| format!("{f}: {}", self.name(f, v.span))).collect();
                         format!("{callee}({})", args.join(", "))

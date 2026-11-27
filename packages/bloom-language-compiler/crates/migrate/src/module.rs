@@ -81,6 +81,11 @@ pub struct Scope {
     pub whole_props: bool,
     /// The props of a view that hands them on whole, written out: `X(props)` passes each.
     pub props_fields: Vec<String>,
+    /// Those props' types (name, type, optional), for [`Scope::field_defaults`].
+    pub props_field_types: Vec<(String, String, bool)>,
+    /// `const { isNested = false } = props` of written-out props: the stored property's own
+    /// default (`var isNested: Bool = false`), which is TS's destructure default exactly.
+    pub field_defaults: Vec<(String, String)>,
 }
 
 pub struct Tr<'s> {
@@ -138,6 +143,9 @@ pub struct Tr<'s> {
     /// span starts): every `useQuery` of the file, each with options and result reads the
     /// binding declares (`Tr::scan_tanstack`).
     pub tanstack: HashSet<u32>,
+    /// Views whose written-out props took TS destructure defaults (`Scope::field_defaults`): a
+    /// view that hands its props to one on whole takes the same defaults, so the forward fits.
+    pub view_defaults: HashMap<String, Vec<(String, String)>>,
     /// Review notes for the statement being translated (`Tr::review`).
     pub reviews: Vec<String>,
     /// While set, comments stay queued (a `defineModifier` read ahead of its place).
@@ -364,6 +372,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         labelled: HashMap::new(),
         rest_views: HashMap::new(),
         tanstack: HashSet::new(),
+        view_defaults: HashMap::new(),
         reviews: Vec::new(),
         quiet: false,
         propagate: false,
