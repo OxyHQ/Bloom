@@ -508,7 +508,7 @@ impl Lowering<'_> {
             | ExprKind::Field(x, _)
             | ExprKind::OptField(x, _)
             | ExprKind::Is(x, _)
-            | ExprKind::CastAs(x, _) => self.expr(x),
+            | ExprKind::CastAs(x, ..) => self.expr(x),
             ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
                 self.expr(a);
                 self.expr(b);

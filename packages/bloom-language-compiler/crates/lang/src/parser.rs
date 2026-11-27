@@ -2637,16 +2637,17 @@ impl<'s, 'i> Parser<'s, 'i> {
                 lhs = self.expr_node(ExprKind::Is(Box::new(lhs), ty), span);
                 continue;
             }
-            // `x as? T`, at the comparisons' level too.
+            // `x as? T` and `x as! T`, at the comparisons' level too.
             if min <= BinaryOp::Eq.precedence()
                 && matches!(self.tok(), Tok::Kw(Kw::As))
-                && matches!(self.nth(1), Tok::P(P::Question))
+                && matches!(self.nth(1), Tok::P(P::Question | P::Bang))
             {
                 self.bump();
+                let forced = matches!(self.tok(), Tok::P(P::Bang));
                 self.bump();
                 let ty = self.type_expr();
                 let span = lhs.span.to(ty.span);
-                lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty), span);
+                lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty, forced), span);
                 continue;
             }
             let Some(op) = self.binary_op() else { break };

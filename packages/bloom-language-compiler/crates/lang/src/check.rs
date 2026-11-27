@@ -297,6 +297,9 @@ pub struct CheckResult {
     pub is_tests: HashMap<ExprId, Ty>,
     /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
     pub casts: HashMap<ExprId, Rc<str>>,
+    /// `x as? Tab` / `x as! Tab` with `Tab` a string literal union: its values, tested at run
+    /// time (`as!` only in a dev build).
+    pub union_casts: HashMap<ExprId, Rc<StrSet>>,
     /// `catch let e as T` with a `T` that casts (keyed by the catch's span): its `cast`, which
     /// tests the error (a catch of any other `T` types it, as a typed `throws(T)` does).
     pub catch_casts: HashMap<Span, Rc<str>>,
@@ -1623,6 +1626,29 @@ impl<'o> Checker<'o> {
     /// literals' types (`let SIZES = { small: "8", large: "12" }` is `{ small: "8", large:
     /// "12" }`), as TS's `as const` does, so a field read is a token where one is taken (R6).
     fn const_value(&mut self, value: &Expr, declared: Option<&Ty>) -> Ty {
+        // `let TABS = ["videos", "following"]`: a list of string literals is a list of their
+        // union (`["videos", "following"] as const`), so `TABS[i]` and `for tab in TABS` are
+        // a `"videos" | "following"`, as TS's `as const` tab lists are.
+        if declared.is_none()
+            && let ExprKind::List(items) = &value.kind
+            && !items.is_empty()
+            && let Some(literals) = items.iter().map(string_literal).collect::<Option<Vec<_>>>()
+        {
+            let mut values: Vec<String> = Vec::new();
+            for ty in literals {
+                if let Ty::Strings(set) = ty
+                    && !values.contains(&set.values[0])
+                {
+                    values.push(set.values[0].clone());
+                }
+            }
+            let name = values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+            let elem = Ty::Strings(Rc::new(StrSet { name, values, token: false }));
+            let list = Ty::List(Box::new(elem));
+            let ty = self.expr(value, Some(&list));
+            self.out.literal_consts.insert(value.id);
+            return ty;
+        }
         let literal = declared.is_none() && matches!(value.kind, ExprKind::Record(_));
         let outer = std::mem::replace(&mut self.literal_record, literal);
         let ty = self.expr(value, declared);
@@ -4297,9 +4323,30 @@ impl<'o> Checker<'o> {
                 self.out.is_tests.insert(expr.id, ty);
                 Ty::Bool
             }
-            ExprKind::CastAs(subject, te) => {
+            ExprKind::CastAs(subject, te, forced) => {
                 let target = self.resolve_type(te);
                 let value = self.expr(subject, None);
+                if let Ty::Strings(set) = self.resolve(&target)
+                    && !set.token
+                {
+                    return self.union_cast(expr, subject, &value, &target, set, *forced);
+                }
+                if *forced {
+                    self.report(
+                        Diagnostic::error(
+                            "B0213",
+                            te.span,
+                            format!(
+                                "`as!` casts to a string literal union, and {} is not one",
+                                self.show(&target)
+                            ),
+                        )
+                        .label("not a literal union")
+                        .help("write `as?` and handle `none`, or `x!` on an optional")
+                        .spec("62-control-flow-and-errors-20"),
+                    );
+                    return target;
+                }
                 match self.cast_fn(&target) {
                     Some((func, f)) => {
                         if let Some(param) = f.params.first()
@@ -5806,6 +5853,42 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `x as? Tab`: `x` (a `String`, a `String?`, another literal union or a TS value) when it is
+    /// one of `Tab`'s values, else `none`. `x as! Tab`: `x` as a `Tab`, a trap in a dev build
+    /// when it is not one (a plain cast in a release build, as `x!` is).
+    fn union_cast(
+        &mut self,
+        expr: &Expr,
+        subject: &Expr,
+        value: &Ty,
+        target: &Ty,
+        set: Rc<StrSet>,
+        forced: bool,
+    ) -> Ty {
+        let inner = match self.resolve(value) {
+            Ty::Option(inner) => self.resolve(&inner),
+            other => other,
+        };
+        if !matches!(inner, Ty::Str | Ty::Strings(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.report(
+                Diagnostic::error(
+                    "B0213",
+                    subject.span,
+                    format!(
+                        "a cast to {} tests a string, and this is {}",
+                        self.show(target),
+                        self.show(value)
+                    ),
+                )
+                .label("not a string")
+                .help("cast a `String` (or a `String?`)")
+                .spec("62-control-flow-and-errors-20"),
+            );
+        }
+        self.out.union_casts.insert(expr.id, set);
+        if forced { target.clone() } else { Ty::Option(Box::new(target.clone())) }
+    }
+
     fn no_cast(&mut self, span: Span, ty: &Ty) {
         let shown = self.show(ty);
         self.report(
@@ -6612,7 +6695,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
-        | ExprKind::CastAs(e, _)
+        | ExprKind::CastAs(e, ..)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
