@@ -322,7 +322,7 @@ one, `viewPost.authors`), TS may say it is always there while the data at run ti
 `viewPost?.authors?.map { … } ?? []` keeps each guard as written, silently, and a guarded link
 is optional from there on. `{}` is the empty record where a struct, or its optional, is
 expected (`viewPost?.metadata ?? {}`); where a TS type with required fields is expected, `ts.state
-?? {}` is TS's `State | {}`, a `Partial<State>` whose fields read as optional. A `let` keeps the
+?? {}` is TS's `State | {}`, a `Partial<State>` whose fields read as optional. A `let` (a view member too) keeps the
 claim of the TS value it holds. A closure's parameter may be wider than the one expected (`{ file:
 File? in … }` for `(File) -> Unit`), as Swift's `(T?) -> U` fits `(T) -> U`. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it

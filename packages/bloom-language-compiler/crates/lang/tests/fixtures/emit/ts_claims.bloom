@@ -80,3 +80,11 @@ public func usePick() {
     if meta?.lane == none { return }
   }
 }
+
+// A view member keeps the claim too (expo-router's `usePathname()`, ProfileChromeFrame).
+public struct Frame: View {
+  let path = currentPath()
+  var body: some View {
+    Text(path?.endsWith("/about") ?? false ? "about" : "other")
+  }
+}
