@@ -255,9 +255,13 @@ fn summarise(path: &Path, text: &str) -> TsFile {
     };
     let parsed = Parser::new(&allocator, text, source_type).parse();
     let mut file = TsFile { path: path.to_path_buf(), tsx: name.ends_with(".tsx"), ..TsFile::default() };
-    let reader = Reader;
+    let reader = Reader::default();
     for statement in &parsed.program.body {
         reader.statement(statement, &mut file, false);
+    }
+    // `import("./types.js").ScreenProps` in a type: read as an import of that name.
+    for (local, specifier, imported) in reader.imported.take() {
+        file.imports.entry(local).or_insert((specifier, imported));
     }
     if let Some(members) = file.export_equals.as_ref().and_then(|n| file.namespaces.get(n)).cloned() {
         for member in members {
@@ -267,7 +271,11 @@ fn summarise(path: &Path, text: &str) -> TsFile {
     file
 }
 
-struct Reader;
+#[derive(Default)]
+struct Reader {
+    /// The names `import("…").X` types read, as imports: (local name, specifier, name).
+    imported: RefCell<Vec<(String, String, String)>>,
+}
 
 impl Reader {
     fn statement(&self, statement: &Statement, file: &mut TsFile, exported: bool) {
@@ -396,6 +404,15 @@ impl Reader {
             }
             Declaration::VariableDeclaration(variables) => {
                 for declarator in &variables.declarations {
+                    // `const Badge = view(function Badge(props: P) { … })`: a node factory, called
+                    // as a function of its props (not mounted as a React component).
+                    if let BindingPattern::BindingIdentifier(id) = &declarator.id
+                        && declarator.type_annotation.is_none()
+                        && let Some(function) = self.view_factory(declarator.init.as_ref(), file)
+                    {
+                        add(file, id.name.to_string(), TsDecl::Fn(function));
+                        continue;
+                    }
                     if let BindingPattern::BindingIdentifier(id) = &declarator.id
                         && declarator.type_annotation.is_none()
                         && let Some(decl) = self.memo(declarator.init.as_ref())
@@ -516,6 +533,29 @@ impl Reader {
             }
             _ => {}
         }
+    }
+
+    /// `view(function X(props: P) { … })` or `view((props: P) => …)`, with the embedded
+    /// language's `view`: a function from `P` to a view node.
+    fn view_factory(&self, init: Option<&oxc_ast::ast::Expression>, file: &TsFile) -> Option<TsFn> {
+        use oxc_ast::ast::{Argument, Expression};
+        let Some(Expression::CallExpression(call)) = init else { return None };
+        let Expression::Identifier(callee) = &call.callee else { return None };
+        let (specifier, imported) = file.imports.get(callee.name.as_str())?;
+        if specifier != "@oxy.so/bloom-language" || imported != "view" {
+            return None;
+        }
+        let mut function = match call.arguments.first()? {
+            Argument::FunctionExpression(function) => {
+                self.function(&function.type_parameters, &function.params, None)
+            }
+            Argument::ArrowFunctionExpression(arrow) => {
+                self.function(&arrow.type_parameters, &arrow.params, None)
+            }
+            _ => return None,
+        };
+        function.ret = Some(TsType::Ref("ViewNode".into(), Vec::new()));
+        Some(function)
     }
 
     /// `memo(Inner)`, `memo(function Inner(props: P) { … })`, `memo((props: P) => …)` (also
@@ -702,6 +742,21 @@ impl Reader {
                 }
                 None => self.other(),
             },
+            // `import("./types.js").ScreenProps`, as emitted declarations name another module's
+            // type: that module's declaration, as an `import type` of it would be.
+            TSType::TSImportType(import)
+                if let Some(oxc_ast::ast::TSImportTypeQualifier::Identifier(name)) = &import.qualifier =>
+            {
+                let specifier = import.source.value.as_str().unwrap_or_default().to_string();
+                let local = format!("import(\"{specifier}\").{}", name.name);
+                self.imported.borrow_mut().push((local.clone(), specifier, name.name.to_string()));
+                let args = import
+                    .type_arguments
+                    .as_ref()
+                    .map(|a| a.params.iter().map(|t| self.ty(t)).collect())
+                    .unwrap_or_default();
+                TsType::Ref(local, args)
+            }
             // `typeof useX`: the value's type, read where the summary is mapped.
             TSType::TSTypeQuery(query) if query.type_arguments.is_none() => match &query.expr_name {
                 oxc_ast::ast::TSTypeQueryExprName::IdentifierReference(id) => {

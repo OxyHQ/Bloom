@@ -234,7 +234,7 @@ onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
 p.x : d`, `p == none ? d : p.x`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
-block. Values are immutable, so a member chain of such a name narrows the same way
+block. A test in parentheses narrows as one without (`(p.x != none) ? p.x : d`). Values are immutable, so a member chain of such a name narrows the same way
 (`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
 since TS does not keep a property's narrowing inside a closure.
 
@@ -469,7 +469,13 @@ one fits another when its fields do (a `PostUser` where a `ProfileCardData` is e
 `Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
 `AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
 `JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
-… }` does) crosses as one: the emitter writes `toElement(view)`.
+… }` does) crosses as one: the emitter writes `toElement(view)`. An optional one crosses branch
+by branch (`footer: bare ? none : Text("foot")` is `bare ? undefined : toElement(…)`). A view given
+to a prop of a TS component whose props Bloom cannot read (`ScreenProps extends ViewProps`) crosses
+as an element too, as a React component's props take one; `import("./types.js").ScreenProps` in a
+declaration names that module's type. A TS `view(function X(props: P) { … })` of the embedded
+language is a node factory, a function from `P` to a view: `Badge(label: "a")` is
+`Badge({ label: "a" })`, not a mounted component.
 
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
@@ -765,6 +771,9 @@ fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are th
 is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+A `struct X: Screen` (or `Layout`) is the file's default export only in a route, a file under the
+app's router folder (`app/`), as Expo Router takes it; anywhere else it is its named export, so a
+route that renders it imports it by name (`import { WelcomeScreen }`).
 A data `struct` takes Swift's members too (`public let id: String`, `public var likes: Int`):
 they are its fields (one whose default is `none` is optional in the emitted TS, `readonly
 boosts?: number`, so a TS caller may leave it out; any other default stays required, since

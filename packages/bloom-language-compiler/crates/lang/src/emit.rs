@@ -146,6 +146,9 @@ struct ViewState {
 
 struct Emitter<'a> {
     ck: &'a CheckResult,
+    /// The file is not a route (outside the app's router folder): a 2.0 `struct X: Screen`
+    /// is its named export, not the default one Expo Router takes from a route.
+    named_screens: bool,
     /// Field defaults of the module's structs, emitted where a struct is built.
     defaults: HashMap<ExprId, &'a Expr>,
     options: &'a Options,
@@ -203,7 +206,7 @@ struct Emitter<'a> {
     item_start: u32,
 }
 
-pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, options: &Options) -> Emitted {
+pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, options: &Options) -> Emitted {
     let names: HashSet<String> = ck.locals.iter().map(|l| l.name.clone()).collect();
     let mut defaults = HashMap::default();
     for item in &file.items {
@@ -224,6 +227,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
     }
     let mut emitter = Emitter {
         ck,
+        named_screens: !crate::routes::is_route_file(filename, options),
         defaults,
         options,
         bufs: vec![Vec::new()],
@@ -5160,6 +5164,14 @@ impl<'a> Emitter<'a> {
                     if !item.visibility.exported(self.options.modules) { "" } else { "export " }
                 ),
             ),
+            ViewKind::Screen | ViewKind::Layout if v.surface.is_some() && self.named_screens => (
+                if v.kind == ViewKind::Screen { "screen" } else { "layout" },
+                ROUTER,
+                format!(
+                    "{}const {name} = ",
+                    if !item.visibility.exported(self.options.modules) { "" } else { "export " }
+                ),
+            ),
             ViewKind::Screen => ("screen", ROUTER, "export default ".to_string()),
             ViewKind::Layout => ("layout", ROUTER, "export default ".to_string()),
         };
@@ -5663,7 +5675,14 @@ impl<'a> Emitter<'a> {
                         _ => {
                             let props_ty =
                                 if fn_ty.params.is_empty() { "{}".to_string() } else { props_name };
-                            out.push_str(&format!("declare const _default: import(\"react\").ComponentType<{props_ty}>;\nexport default _default;\n"));
+                            if v.surface.is_some() && self.named_screens {
+                                out.push_str(&format!(
+                                    "export declare const {}: import(\"react\").ComponentType<{props_ty}>;\n",
+                                    v.name.name
+                                ));
+                            } else {
+                                out.push_str(&format!("declare const _default: import(\"react\").ComponentType<{props_ty}>;\nexport default _default;\n"));
+                            }
                         }
                     }
                 }
