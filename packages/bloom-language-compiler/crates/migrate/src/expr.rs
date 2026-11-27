@@ -1440,7 +1440,10 @@ impl Tr<'_> {
                 format!("if {test} {{\n{otherwise}\n}}")
             }
             Expression::ConditionalExpression(c)
-                if self.is_view(&c.consequent) || self.is_view(&c.alternate) =>
+                if self.is_view(&c.consequent)
+                    || self.is_view(&c.alternate)
+                    || is_mapped(&c.consequent)
+                    || is_mapped(&c.alternate) =>
             {
                 let then = |tr: &mut Self| tr.child(&c.consequent);
                 let otherwise = |tr: &mut Self| tr.child(&c.alternate);
@@ -1964,4 +1967,9 @@ pub fn index_read<'b, 'a>(e: &'b Expression<'a>) -> Option<(&'b Expression<'a>, 
         _ => false,
     };
     indexish.then_some((&m.object, &m.expression))
+}
+
+/// `xs.map(…)` (a mapped list drawn as children).
+fn is_mapped(e: &Expression) -> bool {
+    matches!(e.without_parentheses(), Expression::CallExpression(call) if is_map(call))
 }

@@ -33,6 +33,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 promise_catch(source, start, end)
             }
+            // A state read after the handler wrote it: React's closure reads the value of its
+            // render, so the read is a snapshot taken before the first write.
+            ("B0410", _) if text.chars().all(|c| c.is_alphanumeric() || c == '_') => {
+                first_write(source, start, text).map(|line_start| {
+                    let snapshot = format!("{text}Before");
+                    let indent: String = source[line_start..].chars().take_while(|c| *c == ' ').collect();
+                    let already = source[..line_start].trim_end().ends_with(&format!("let {snapshot} = {text}"))
+                        || edits.iter().any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot));
+                    if !already {
+                        edits.push((line_start, line_start, format!("{indent}let {snapshot} = {text}\n")));
+                    }
+                    (start, end, snapshot)
+                })
+            }
             // A promise-returning call JS let go unawaited: started as a task.
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // `await f()` of a call that is not async (TS awaited a plain value): the
@@ -707,6 +721,43 @@ pub fn foreign_js_names(source: &str, filename: &str, options: &bloom_lang::Opti
         out.replace_range(start..end, text);
     }
     Some(out)
+}
+
+/// The start of the line of the first write `name = …` before `read`, in the closure or
+/// function holding it (scanned back to its head line).
+fn first_write(source: &str, read: usize, name: &str) -> Option<usize> {
+    let mut found = None;
+    let mut depth = 0i32;
+    let mut line_end = source[read..].find('\n').map_or(source.len(), |i| read + i);
+    loop {
+        let line_start = source[..line_end].rfind('\n').map_or(0, |i| i + 1);
+        let line = &source[line_start..line_end];
+        let scanned = if line_start <= read && read <= line_end { &source[line_start..read] } else { line };
+        let opens = scanned.matches('{').count() as i32;
+        let closes = scanned.matches('}').count() as i32;
+        depth += closes - opens;
+        let trimmed = line.trim_start();
+        for op in [" = ", " += ", " -= "] {
+            if trimmed.starts_with(&format!("{name}{op}")) && line_start < read {
+                found = Some(line_start);
+            }
+        }
+        if depth < 0 {
+            let head = trimmed.trim_end();
+            let closure = head.ends_with(" in") || head.contains(".on") || head.starts_with("task")
+                || head.starts_with("fn ") || head.starts_with("func ") || head.contains(" fn ")
+                || head.contains(" func ") || head.contains(" in ");
+            if closure {
+                break;
+            }
+            depth = 0;
+        }
+        if line_start == 0 || trimmed.starts_with("body ") || trimmed.starts_with("var body") {
+            break;
+        }
+        line_end = line_start - 1;
+    }
+    found
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
