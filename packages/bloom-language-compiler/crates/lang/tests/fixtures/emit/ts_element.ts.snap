@@ -1,0 +1,71 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, toElement, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx, jsxs as $jsxs } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Suspense } from "react";
+import { Frame } from "@/elements/Frame";
+import { Panel } from "@/elements/Panel";
+import { presentSheet } from "@/sheet";
+type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
+
+export async function openPanel(label: string): Promise<void> {
+let $t0: $Result<unknown, Error>;
+try {
+$t0 = { ok: true, value: await presentSheet((surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => ($jsx(Suspense, { fallback: undefined, children: $jsx(Panel, { title: label, onClose: () => surface.dismiss() } satisfies ComponentProps<typeof Panel>) } satisfies ComponentProps<typeof Suspense>))) };
+} catch ($error) {
+$t0 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t0;
+}
+
+export async function openPanels(label: string): Promise<void> {
+let $t1: $Result<unknown, Error>;
+try {
+$t1 = { ok: true, value: await presentSheet((surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => $jsxs(Frame, { children: [$jsx(Panel, { title: label, onClose: () => surface.dismiss() } satisfies ComponentProps<typeof Panel>), $jsx(Panel, { title: `${label} 2`, onClose: () => surface.dismiss() } satisfies ComponentProps<typeof Panel>)] } satisfies ComponentProps<typeof Frame>)) };
+} catch ($error) {
+$t1 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t1;
+}
+
+export async function openMixed(label: string): Promise<void> {
+let $t2: $Result<unknown, Error>;
+try {
+$t2 = { ok: true, value: await presentSheet((surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => toElement(Embed(($render) => $jsx(Frame, { children: $render([Text(label), Embed($jsx(Panel, { title: label, onClose: () => surface.dismiss() } satisfies ComponentProps<typeof Panel>))]) } satisfies ComponentProps<typeof Frame>)))) };
+} catch ($error) {
+$t2 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t2;
+}
+
+export async function openModified(label: string): Promise<void> {
+let $t3: $Result<unknown, Error>;
+try {
+$t3 = { ok: true, value: await presentSheet((surface: Parameters<(Parameters<typeof presentSheet>[0])>[0]) => toElement(Embed($jsx(Panel, { title: label, onClose: () => surface.dismiss() } satisfies ComponentProps<typeof Panel>)).padding("md"))) };
+} catch ($error) {
+$t3 = { ok: false, error: $error instanceof Error ? $error : new Error(String($error)) };
+}
+$t3;
+}
+
+const $fn0 = () => {
+};
+export interface SheetProps {
+  readonly label: string;
+}
+export const Sheet = view(function Sheet(props: SheetProps) {
+"use no memo";
+const $ = $c(2);
+const { label } = props;
+let $t4;
+if ($[0] !== label) {
+$t4 = VStack(Text(label), Embed($jsx(Suspense, { fallback: undefined, children: $jsx(Panel, { title: label, onClose: $fn0 } satisfies ComponentProps<typeof Panel>) } satisfies ComponentProps<typeof Suspense>)));
+$[0] = label;
+$[1] = $t4;
+} else {
+$t4 = $[1];
+}
+return $t4;
+});
+

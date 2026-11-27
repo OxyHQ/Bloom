@@ -1,0 +1,8 @@
+import { Suspense } from "react"
+import { capture, Panel } from "./capture"
+
+/// A tree of TS components alone, where TS takes an element: the TS element itself
+/// (lang-mention-9's ts-element, PostItem's sheets).
+public func panelElement(label: String) -> Foreign {
+  capture { (Suspense(fallback: none) { Panel(title: label, onClose: {}) }) }
+}

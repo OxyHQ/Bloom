@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function openPanel(label: string): Promise<void>;
+export declare function openPanels(label: string): Promise<void>;
+export declare function openMixed(label: string): Promise<void>;
+export declare function openModified(label: string): Promise<void>;
+export interface SheetProps {
+  readonly label: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Sheet())`), or from TSX as `toElement(Sheet())`. */
+export declare const Sheet: (props: SheetProps) => ComposedView;
