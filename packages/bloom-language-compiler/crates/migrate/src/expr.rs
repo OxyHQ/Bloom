@@ -261,6 +261,23 @@ impl Tr<'_> {
                     LogicalOperator::Or => "||",
                     LogicalOperator::Coalesce => "??",
                 };
+                // `name && "@${name}"` as a value: JS gives the string when `name` is truthy and
+                // `name` itself (`""` or `undefined`) when it is not. `left` is read twice, so only
+                // a name or a member chain.
+                if l.operator == LogicalOperator::And
+                    && !self.head
+                    && matches!(
+                        l.right.without_parentheses(),
+                        Expression::StringLiteral(_) | Expression::TemplateLiteral(_)
+                    )
+                    && is_member_chain(&l.left)
+                {
+                    let test = self.test(&l.left, false);
+                    let test = strip_parens(&test).to_string();
+                    let value = self.expr(&l.right);
+                    let fallback = self.expr(&l.left);
+                    return format!("({test} ? {value} : {fallback})");
+                }
                 // `x ?? undefined` is `x`.
                 if l.operator == LogicalOperator::Coalesce && is_nothing(&l.right) {
                     return self.expr(&l.left);
@@ -2423,4 +2440,17 @@ fn writes_name(code: &str, name: &str, setters: &[String]) -> bool {
     let mut finder = Finder { name, setters, found: false };
     finder.visit_program(&parsed.program);
     finder.found
+}
+
+/// A name or a chain of member reads (`a`, `a.b`, `a?.b.c`): reading it twice reads the same.
+fn is_member_chain(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::Identifier(_) => true,
+        Expression::StaticMemberExpression(m) => is_member_chain(&m.object),
+        Expression::ChainExpression(c) => match &c.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(m) => is_member_chain(&m.object),
+            _ => false,
+        },
+        _ => false,
+    }
 }
