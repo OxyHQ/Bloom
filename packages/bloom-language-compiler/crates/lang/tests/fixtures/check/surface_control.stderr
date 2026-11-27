@@ -1,0 +1,18 @@
+error[B0301]: this switch does not cover `.ready(_)`
+ --> check/surface_control.bloom:9:10
+  |
+9 |   switch load {
+  |          ^^^^ `Load` is not matched by every value
+  |
+help: add the missing arm(s), or `case _ =>` for the rest:
+      case .ready(_) => …
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0110]: a `guard`'s `else` must leave
+  --> check/surface_control.bloom:18:37
+   |
+18 |   guard let name = names.first else {
+   |                                     ^ this block falls through
+   |
+help: end it with `return`, `throw`, `break` or `continue`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow

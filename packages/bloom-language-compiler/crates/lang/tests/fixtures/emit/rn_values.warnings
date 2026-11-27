@@ -1,0 +1,35 @@
+warning[B0950]: `pub` is Bloom 0.x (2 times in this file)
+ --> emit/rn_values.bloom:8:1
+  |
+8 | pub fn web() -> Bool { Platform.OS == "web" }
+  | ^^^ retired in 2.0
+  |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+ --> emit/rn_values.bloom:8:5
+  |
+8 | pub fn web() -> Bool { Platform.OS == "web" }
+  |     ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+  --> emit/rn_values.bloom:10:5
+   |
+10 | pub view Field(value: String) {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `@ref` is Bloom 0.x (once in this file)
+  --> emit/rn_values.bloom:11:3
+   |
+11 |   @ref input: TextInput? = none
+   |   ^^^^ retired in 2.0
+   |
+help: hold a `class` in `@State`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -61,6 +61,9 @@ pub enum ImportKind {
     Named(Vec<ImportSpec>),
     /// `import * as ns from "…"`
     Namespace(Ident),
+    /// `import Bloom`, `import Mention.Posts` (2.0): a module by name, its segments in order.
+    /// The import's `source` is the dotted text and `source_span` the path's span.
+    Module(Vec<Ident>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -80,15 +83,53 @@ impl ImportSpec {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Visibility {
+    /// `private` (or `fileprivate`): this file only.
     Private,
-    Pub,
-    /// `pub default`: the module's default export.
+    /// Unwritten, or `internal`: the whole module (the default).
+    Internal,
+    /// `public` (0.x `pub`): other modules too.
+    Public,
+    /// 0.x `pub default`: the module's default export.
     PubDefault,
+}
+
+impl Visibility {
+    /// Visible outside its file, so exported by the emitted module. `internal` is exported
+    /// when the file is compiled as part of a directory module (`modules`); a file compiled
+    /// on its own is its own module, so its internal names stay in it.
+    pub fn exported(self, modules: bool) -> bool {
+        match self {
+            Visibility::Private => false,
+            Visibility::Internal => modules,
+            Visibility::Public | Visibility::PubDefault => true,
+        }
+    }
+}
+
+/// `@Name` or `@Name(args)` before a declaration (`@Observable`, `@State`, `@extern("init")`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Attr {
+    pub name: Ident,
+    pub args: Vec<Arg>,
+    pub span: Span,
+}
+
+/// A declaration's written modifiers: its visibility, and the attributes before it.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Modifiers {
+    pub attrs: Vec<Attr>,
+    /// `None`: unwritten (internal).
+    pub visibility_span: Option<Span>,
+    /// `private(set)`, `internal(set)`: who may assign it, when narrower than who reads it.
+    pub setter: Option<(Visibility, Span)>,
+    pub is_static: bool,
+    pub is_final: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Item {
     pub visibility: Visibility,
+    pub modifiers: Modifiers,
     pub kind: ItemKind,
     pub span: Span,
 }
@@ -101,6 +142,82 @@ pub enum ItemKind {
     Fn(FnDecl),
     View(ViewDecl),
     Const(ConstDecl),
+    /// `extension String { func … }`: methods, computed properties and static members of
+    /// a type declared elsewhere (a built-in, or a struct or enum). Lowered before checking
+    /// (`crate::extensions::lower`) to free functions the checker finds by the receiver's type.
+    Extension(ExtensionDecl),
+    /// `@Observable final class Model { … }` (2.0): a reference type. Its stored properties
+    /// are its fields, its `init` and members are lowered like a struct's (`crate::extensions`).
+    Class(ClassDecl),
+    /// `protocol P: Q { var id: String { get }; func f() -> Int }` (2.0): requirements a
+    /// conforming type meets with fields, computed properties or methods.
+    Protocol(ProtocolDecl),
+    /// `extern module "pkg" { … }`: a binding module's declarations of a JS
+    /// package's API (ADR 0002, section 4). Lowered before checking
+    /// (`crate::modules::lower_externs`): its functions have no body.
+    Extern(ExternModule),
+    /// `test("name") { … }`: a test of a `.tests` target (`bloom test`), lowered
+    /// before checking (`crate::testing::lower`).
+    Test(TestDecl),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TestDecl {
+    /// The test's name, as written in the string, and the string's span.
+    pub name: Ident,
+    pub body: Block,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ClassDecl {
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    /// `@Observable`: its fields are a store a view subscribes to, field by field.
+    pub observable: bool,
+    /// Its conformances and members as written.
+    pub body: TypeBody,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProtocolDecl {
+    pub name: Ident,
+    /// `: Q, R`: the protocols it refines.
+    pub inherits: Vec<TypeExpr>,
+    pub requirements: Vec<Requirement>,
+    pub span: Span,
+}
+
+/// A protocol's requirement: `var id: String { get }` (`{ get set }`), or a `func`'s
+/// signature (its body is empty).
+#[derive(Debug, Clone, PartialEq)]
+pub enum Requirement {
+    Property { name: Ident, ty: TypeExpr, settable: bool, is_static: bool, span: Span },
+    Func { decl: FnDecl, is_static: bool },
+}
+
+impl Requirement {
+    pub fn name(&self) -> &Ident {
+        match self {
+            Requirement::Property { name, .. } => name,
+            Requirement::Func { decl, .. } => &decl.name,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExtensionDecl {
+    /// The extended type, as written (`String`, `Array`, `Post`).
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    /// Its conformances and members as written.
+    pub body: TypeBody,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExternModule {
+    /// The npm package, as written (without quotes), and its span.
+    pub package: Ident,
+    pub items: Vec<Item>,
 }
 
 impl ItemKind {
@@ -112,6 +229,11 @@ impl ItemKind {
             ItemKind::Fn(f) => &f.name,
             ItemKind::View(v) => &v.name,
             ItemKind::Const(c) => &c.name,
+            ItemKind::Extension(e) => &e.name,
+            ItemKind::Class(c) => &c.name,
+            ItemKind::Protocol(p) => &p.name,
+            ItemKind::Extern(e) => &e.package,
+            ItemKind::Test(t) => &t.name,
         }
     }
 }
@@ -121,6 +243,38 @@ pub struct StructDecl {
     pub name: Ident,
     pub generics: Vec<Ident>,
     pub fields: Vec<Field>,
+    /// Written Swift's way (2.0): its conformances and members as written, for the
+    /// formatter; `fields` are its stored properties.
+    pub surface: Option<Box<TypeBody>>,
+}
+
+/// A 2.0 type's declaration as written (`struct X: View, Equatable { … }`): what the
+/// formatter prints. The checker and emitter read the declaration it was lowered to.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypeBody {
+    pub conformances: Vec<TypeExpr>,
+    pub members: Vec<TypeMember>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypeMember {
+    pub visibility: Visibility,
+    pub modifiers: Modifiers,
+    pub kind: TypeMemberKind,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TypeMemberKind {
+    /// `let name: T`, `var name: T = v`, `var name = v`.
+    Stored { mutable: bool, name: Ident, ty: Option<TypeExpr>, value: Option<Expr> },
+    /// `var body: some View { … }`: a computed property.
+    Computed { name: Ident, ty: TypeExpr, body: Block },
+    /// `func`, `static func ==`, `init(…)`.
+    Func(FnDecl),
+    /// `let { t } = useTranslation()`: a destructuring constant, per render (a view's).
+    Let(LetStmt),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -135,7 +289,14 @@ pub struct Field {
 pub struct EnumDecl {
     pub name: Ident,
     pub generics: Vec<Ident>,
+    /// `: Equatable, CaseIterable` (2.0).
+    pub conformances: Vec<TypeExpr>,
+    /// Written with Swift's `case` before its cases (2.0).
+    pub swift: bool,
     pub variants: Vec<Variant>,
+    /// Its other members as written (2.0): computed properties, methods, `static let`s.
+    /// Lowered like a struct's (`crate::extensions`).
+    pub members: Vec<TypeMember>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -162,16 +323,31 @@ pub struct AliasDecl {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FnDecl {
     pub is_async: bool,
+    /// Spelled `func` (2.0): its parameters are labelled unless written `_`.
+    pub func: bool,
     pub name: Ident,
     pub generics: Vec<Ident>,
+    /// `<T: Equatable>`, `where T: P`: the protocols a type parameter conforms to.
+    pub constraints: Vec<(Ident, TypeExpr)>,
     pub params: Vec<Param>,
+    /// `throws`, or `throws(E)` with the error type it throws.
+    pub throws: Option<Throws>,
     pub ret: Option<TypeExpr>,
     pub body: Block,
     pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Throws {
+    pub span: Span,
+    pub ty: Option<TypeExpr>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Param {
+    /// `to x: Int`: the argument label a call writes (`move(to: 1)`); `_` for none.
+    /// Unwritten in a `func`, the label is the name.
+    pub label: Option<Ident>,
     pub name: Ident,
     /// `..name: [T]`: a rest parameter, the last one; it takes any number of `T`.
     pub rest: bool,
@@ -205,6 +381,10 @@ pub struct ViewDecl {
     pub body_keyword: Span,
     pub body: Block,
     pub span: Span,
+    /// `struct X: View { … }` (2.0): the declaration as written, which the formatter prints.
+    /// Its stored `let`s are the props, `@State` the states, `var body` the body, and
+    /// `.task`, `.onAppear`, `.onDisappear` and `.onChange` on the body its effects.
+    pub surface: Option<Box<TypeBody>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -312,7 +492,38 @@ pub enum StmtKind {
     Defer(Block),
     While(WhileStmt),
     For(ForStmt),
+    /// `guard cond else { … }` (2.0): the block runs and leaves when `cond` fails; the names
+    /// an `if let`-style condition binds are in scope after it.
+    Guard(GuardStmt),
+    /// `throw error` (2.0): a JS `throw`.
+    Throw(Expr),
+    /// `do { … } catch … { … }` (2.0): a JS `try`/`catch`.
+    Do(DoStmt),
     Expr(Expr),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GuardStmt {
+    pub cond: Cond,
+    pub otherwise: Block,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DoStmt {
+    pub body: Block,
+    pub catches: Vec<Catch>,
+}
+
+/// `catch { … }` (binds `error`), `catch let e { … }`, `catch let e as APIError { … }`, or
+/// `catch .offline { … }` (a pattern over a typed error).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Catch {
+    pub keyword: Span,
+    pub name: Option<Ident>,
+    pub ty: Option<TypeExpr>,
+    pub pattern: Option<Pattern>,
+    pub body: Block,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -495,6 +706,8 @@ pub enum ExprKind {
     Await(Box<Expr>),
     /// `expr?`: return the error (or `none`) early.
     Try(Box<Expr>),
+    /// `try f()`, `try? f()`, `try! f()` (2.0): a call that throws.
+    Throwing(TryKind, Box<Expr>),
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
@@ -608,6 +821,18 @@ pub enum Cond {
 pub struct MatchExpr {
     pub scrutinee: Box<Expr>,
     pub arms: Vec<Arm>,
+    /// Written `switch x { case .a: … }` (2.0) rather than 0.x `match x { case .a => … }`.
+    pub switch: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TryKind {
+    /// `try f()`: the error propagates.
+    Plain,
+    /// `try? f()`: `none` when it throws.
+    Optional,
+    /// `try! f()`: the error is a crash.
+    Force,
 }
 
 #[derive(Debug, Clone, PartialEq)]

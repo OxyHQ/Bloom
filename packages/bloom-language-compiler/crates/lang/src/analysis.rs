@@ -264,6 +264,7 @@ impl Analysis {
                     ty: Some(format!("Partial<{}>", d.name)),
                 }]
             }
+            DefKind::Protocol(_) => Vec::new(),
         }
     }
 }
@@ -367,7 +368,13 @@ impl Builder<'_> {
                         }
                     }
                 }
-                ItemKind::Alias(_) | ItemKind::Const(_) => {}
+                ItemKind::Alias(_)
+                | ItemKind::Const(_)
+                | ItemKind::Extension(_)
+                | ItemKind::Class(_)
+                | ItemKind::Protocol(_)
+                | ItemKind::Extern(_)
+                | ItemKind::Test(_) => {}
             }
         }
         // Every block, closure, arm and `for` is a scope.
@@ -810,6 +817,36 @@ pub fn walk_item<'a>(item: &'a Item, f: &mut dyn FnMut(Node<'a>)) {
             }
             walk_expr(&c.value, f);
         }
+        ItemKind::Extern(e) => {
+            for item in &e.items {
+                walk_item(item, f);
+            }
+        }
+        ItemKind::Test(t) => walk_block(&t.body, f),
+        ItemKind::Class(c) => walk_members(&c.body.members, f),
+        ItemKind::Protocol(_) => {}
+        ItemKind::Extension(e) => walk_members(&e.body.members, f),
+    }
+}
+
+fn walk_members<'a>(members: &'a [TypeMember], f: &mut dyn FnMut(Node<'a>)) {
+    for member in members {
+        match &member.kind {
+            TypeMemberKind::Func(func) => walk_fn(func, f),
+            TypeMemberKind::Computed { ty, body, .. } => {
+                walk_type(ty, f);
+                walk_block(body, f);
+            }
+            TypeMemberKind::Stored { ty, value, .. } => {
+                if let Some(t) = ty {
+                    walk_type(t, f);
+                }
+                if let Some(v) = value {
+                    walk_expr(v, f);
+                }
+            }
+            TypeMemberKind::Let(l) => walk_let(l, f),
+        }
     }
 }
 
@@ -872,6 +909,26 @@ pub fn walk_stmt<'a>(stmt: &'a Stmt, f: &mut dyn FnMut(Node<'a>)) {
             walk_expr(&fs.iter, f);
             walk_block(&fs.body, f);
         }
+        StmtKind::Guard(g) => {
+            match &g.cond {
+                Cond::Expr(e) => walk_expr(e, f),
+                Cond::Let(p, e) => {
+                    walk_pattern(p, f);
+                    walk_expr(e, f);
+                }
+            }
+            walk_block(&g.otherwise, f);
+        }
+        StmtKind::Throw(e) => walk_expr(e, f),
+        StmtKind::Do(d) => {
+            walk_block(&d.body, f);
+            for catch in &d.catches {
+                if let Some(p) = &catch.pattern {
+                    walk_pattern(p, f);
+                }
+                walk_block(&catch.body, f);
+            }
+        }
         StmtKind::Expr(e) => walk_expr(e, f),
     }
 }
@@ -933,6 +990,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         | ExprKind::Unary(_, a)
         | ExprKind::Await(a)
         | ExprKind::Try(a)
+        | ExprKind::Throwing(_, a)
         | ExprKind::Field(a, _)
         | ExprKind::OptField(a, _) => walk_expr(a, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|a| walk_expr(a, f)),

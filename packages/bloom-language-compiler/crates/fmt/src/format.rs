@@ -11,6 +11,8 @@
 //! Literals (numbers, strings) are written as the source wrote them, so a
 //! string keeps its escapes and a raw string its indentation.
 
+use std::collections::HashMap;
+
 use bloom_lang::ast::*;
 
 use crate::doc::{Doc, concat, group, if_break, indent, join, text};
@@ -19,6 +21,18 @@ pub struct Formatter<'a> {
     source: &'a str,
     comments: &'a [Comment],
     next: usize,
+    /// `bloom migrate --from 0.x`: print 0.x forms as 2.0's.
+    migrate: Option<Migration>,
+}
+
+/// What a 0.x-to-2.0 print needs: each local function's parameter labels (`Some(name)` when a
+/// call names it, so it stays labelled; `None` prints `_`), and the notes on what stays 0.x.
+#[derive(Debug, Default)]
+pub struct Migration {
+    pub labels: HashMap<String, Vec<Option<String>>>,
+    /// Types a `public` declaration names: they become `public` too (0.x `pub` could name them).
+    pub publicize: Vec<String>,
+    pub notes: Vec<(Span, String)>,
 }
 
 fn line() -> Doc {
@@ -66,7 +80,27 @@ impl Commas {
 
 impl<'a> Formatter<'a> {
     pub fn new(source: &'a str, comments: &'a Comments) -> Self {
-        Self { source, comments: &comments.comments, next: 0 }
+        Self { source, comments: &comments.comments, next: 0, migrate: None }
+    }
+
+    /// A formatter that prints 0.x forms as 2.0's (`bloom migrate --from 0.x`).
+    pub fn migrating(source: &'a str, comments: &'a Comments, migration: Migration) -> Self {
+        Self { source, comments: &comments.comments, next: 0, migrate: Some(migration) }
+    }
+
+    /// The migration's notes: what it left in 0.x form, and why.
+    pub fn into_notes(self) -> Vec<(Span, String)> {
+        self.migrate.map(|m| m.notes).unwrap_or_default()
+    }
+
+    fn migrating_now(&self) -> bool {
+        self.migrate.is_some()
+    }
+
+    fn note(&mut self, span: Span, text: impl Into<String>) {
+        if let Some(m) = &mut self.migrate {
+            m.notes.push((span, text.into()));
+        }
     }
 
     fn slice(&self, span: Span) -> &'a str {
@@ -275,6 +309,7 @@ impl<'a> Formatter<'a> {
     fn import(&mut self, import: &Import) -> Doc {
         let source = text(self.slice(import.source_span).to_string());
         match &import.kind {
+            ImportKind::Module(_) => concat(vec![text("import "), source]),
             ImportKind::Namespace(name) => {
                 concat(vec![text(format!("import * as {} from ", name.name)), source])
             }
@@ -304,12 +339,22 @@ impl<'a> Formatter<'a> {
     // ----- items -----
 
     fn item(&mut self, item: &Item) -> Doc {
-        let visibility = match item.visibility {
-            Visibility::Private => "",
-            Visibility::Pub => "pub ",
-            Visibility::PubDefault => "pub default ",
-        };
+        let publicize = self.migrate.as_ref().is_some_and(|m| m.publicize.contains(&item.kind.name().name))
+            && item.modifiers.visibility_span.is_none();
+        let modifiers = concat(vec![
+            if publicize { text("public ") } else { Doc::Nil },
+            self.modifiers(item.visibility, &item.modifiers, false),
+        ]);
         let kind = match &item.kind {
+            ItemKind::Struct(StructDecl { name, generics: g, surface: Some(body), .. }) => {
+                self.type_body("struct ", name, g, body, item.span)
+            }
+            ItemKind::View(ViewDecl { name, surface: Some(body), .. }) => {
+                self.type_body("struct ", name, &[], body, item.span)
+            }
+            ItemKind::View(v) if self.migrating_now() && self.view_migrates(v) => {
+                self.view_as_struct(v, item.span)
+            }
             ItemKind::Struct(s) => self.struct_decl(s, item.span),
             ItemKind::Enum(e) => self.enum_decl(e, item.span),
             ItemKind::Alias(a) => concat(vec![
@@ -324,8 +369,46 @@ impl<'a> Formatter<'a> {
             ItemKind::Const(c) => {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
+            ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
+            ItemKind::Class(c) => self.type_body("class ", &c.name, &c.generics, &c.body, item.span),
+            ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
+            // A binding module's declarations stay as written (they are curated by hand).
+            ItemKind::Extern(_) => return text(self.slice(item.span).trim_end().to_string()),
+            ItemKind::Test(t) => concat(vec![
+                text("test("),
+                text(self.slice(t.name.span).to_string()),
+                text(") "),
+                self.block(&t.body, Layout::Broken),
+            ]),
         };
-        concat(vec![text(visibility), kind])
+        concat(vec![modifiers, kind])
+    }
+
+    /// `@Observable` (a line each), then `public private(set) static final `, as written.
+    fn modifiers(&mut self, visibility: Visibility, modifiers: &Modifiers, inline: bool) -> Doc {
+        let mut parts = Vec::new();
+        for attr in &modifiers.attrs {
+            parts.push(text(self.slice(attr.span).to_string()));
+            parts.push(if inline { text(" ") } else { hardline() });
+        }
+        if let Some(span) = modifiers.visibility_span {
+            let word = match visibility {
+                Visibility::PubDefault => "pub default",
+                Visibility::Public if self.migrating_now() => "public",
+                _ => self.slice(span),
+            };
+            parts.push(text(format!("{word} ")));
+        }
+        if let Some((_, span)) = modifiers.setter {
+            parts.push(text(format!("{} ", self.slice(span))));
+        }
+        if modifiers.is_static {
+            parts.push(text("static "));
+        }
+        if modifiers.is_final {
+            parts.push(text("final "));
+        }
+        concat(parts)
     }
 
     fn struct_decl(&mut self, s: &StructDecl, span: Span) -> Doc {
@@ -334,7 +417,14 @@ impl<'a> Formatter<'a> {
             &s.fields,
             |f| f.span,
             |this, field| {
-                let mut parts = vec![text(field.name.name.clone()), text(": "), this.ty(&field.ty)];
+                // Migrating: `let x: T`, or `var x: T = d` (a default is a `var`'s, as in Swift).
+                let keyword = match (this.migrating_now(), field.default.is_some()) {
+                    (false, _) => "",
+                    (true, false) => "let ",
+                    (true, true) => "var ",
+                };
+                let mut parts =
+                    vec![text(keyword), text(field.name.name.clone()), text(": "), this.ty(&field.ty)];
                 if let Some(default) = &field.default {
                     parts.push(text(" = "));
                     parts.push(this.expr(default));
@@ -345,11 +435,113 @@ impl<'a> Formatter<'a> {
         concat(vec![head, self.braced(fields, span.end)])
     }
 
+    /// A 2.0 type as written: `struct Name<T>: P, Q {`, its members one per line, `}`.
+    fn type_body(
+        &mut self,
+        keyword: &'static str,
+        name: &Ident,
+        g: &[Ident],
+        body: &TypeBody,
+        span: Span,
+    ) -> Doc {
+        let conformances = self.conformances(&body.conformances);
+        let head = concat(vec![text(keyword), text(name.name.clone()), generics(g), conformances, text(" ")]);
+        let members = self.lines(&body.members, |m| m.span, Self::type_member);
+        concat(vec![head, self.braced(members, span.end)])
+    }
+
+    fn type_member(&mut self, member: &TypeMember) -> Doc {
+        let modifiers = self.modifiers(member.visibility, &member.modifiers, true);
+        let kind = match &member.kind {
+            TypeMemberKind::Stored { mutable, name, ty, value } => {
+                let mut parts = vec![text(if *mutable { "var " } else { "let " }), text(name.name.clone())];
+                if let Some(ty) = ty {
+                    parts.push(text(": "));
+                    parts.push(self.ty(ty));
+                }
+                if let Some(value) = value {
+                    parts.push(text(" = "));
+                    parts.push(self.expr(value));
+                }
+                concat(parts)
+            }
+            TypeMemberKind::Computed { name, ty, body } => concat(vec![
+                text(format!("var {}: ", name.name)),
+                self.ty(ty),
+                text(" "),
+                self.block(body, Layout::Broken),
+            ]),
+            TypeMemberKind::Func(f) if f.name.name == "init" => concat(vec![
+                text("init"),
+                self.params(&f.params),
+                text(" "),
+                self.block(&f.body, Layout::Own),
+            ]),
+            TypeMemberKind::Func(f) => self.fn_decl(f),
+            TypeMemberKind::Let(l) => self.let_stmt(l),
+        };
+        // An attribute with arguments on a property stays on its line (`@Environment(\.x) var`).
+        concat(vec![modifiers, kind])
+    }
+
     fn enum_decl(&mut self, e: &EnumDecl, span: Span) -> Doc {
-        let head = concat(vec![text("enum "), text(e.name.name.clone()), generics(&e.generics), text(" ")]);
-        // One variant per line, as a struct's fields.
-        let variants = self.lines(&e.variants, |v| v.span, Self::variant);
+        let conformances = self.conformances(&e.conformances);
+        let head = concat(vec![
+            text("enum "),
+            text(e.name.name.clone()),
+            generics(&e.generics),
+            conformances,
+            text(" "),
+        ]);
+        // One variant per line, as a struct's fields; members (2.0) where they were written.
+        let case = if e.swift || self.migrating_now() { "case " } else { "" };
+        let mut entries: Vec<(Span, Result<&Variant, &TypeMember>)> =
+            e.variants.iter().map(|v| (v.span, Ok(v))).collect();
+        entries.extend(e.members.iter().map(|m| (m.span, Err(m))));
+        entries.sort_by_key(|(span, _)| span.start);
+        let variants = self.lines(
+            &entries,
+            |(span, _)| *span,
+            |this, (_, entry)| match entry {
+                Ok(v) => concat(vec![text(case), this.variant(v)]),
+                Err(m) => this.type_member(m),
+            },
+        );
         concat(vec![head, self.braced(variants, span.end)])
+    }
+
+    /// `protocol P: Q { requirements }`.
+    fn protocol_decl(&mut self, p: &ProtocolDecl, span: Span) -> Doc {
+        let inherits = self.conformances(&p.inherits);
+        let head = concat(vec![text("protocol "), text(p.name.name.clone()), inherits, text(" ")]);
+        let lines = self.lines(
+            &p.requirements,
+            |r| match r {
+                Requirement::Property { span, .. } => *span,
+                Requirement::Func { decl, .. } => decl.span,
+            },
+            |this, r| match r {
+                Requirement::Property { name, ty, settable, is_static, .. } => concat(vec![
+                    text(if *is_static { "static var " } else { "var " }),
+                    text(format!("{}: ", name.name)),
+                    this.ty(ty),
+                    text(if *settable { " { get set }" } else { " { get }" }),
+                ]),
+                Requirement::Func { decl, is_static } => {
+                    concat(vec![text(if *is_static { "static " } else { "" }), this.fn_signature(decl)])
+                }
+            },
+        );
+        concat(vec![head, self.braced(lines, span.end)])
+    }
+
+    /// `: View, Equatable`.
+    fn conformances(&mut self, types: &[TypeExpr]) -> Doc {
+        if types.is_empty() {
+            return Doc::Nil;
+        }
+        let docs = types.iter().map(|t| self.ty(t)).collect();
+        concat(vec![text(": "), join(docs, || text(", "))])
     }
 
     fn variant(&mut self, variant: &Variant) -> Doc {
@@ -368,24 +560,53 @@ impl<'a> Formatter<'a> {
     }
 
     fn fn_decl(&mut self, f: &FnDecl) -> Doc {
+        let signature = self.fn_signature(f);
+        concat(vec![signature, text(" "), self.block(&f.body, Layout::Own)])
+    }
+
+    /// `func name<T>(params) async throws -> R`, without the body.
+    fn fn_signature(&mut self, f: &FnDecl) -> Doc {
         let mut parts = Vec::new();
-        if f.is_async {
+        let func = f.func || self.migrating_now();
+        if f.is_async && !func {
             parts.push(text("async "));
         }
-        parts.push(text("fn "));
-        parts.push(text(f.name.name.clone()));
-        parts.push(generics(&f.generics));
-        parts.push(self.params(&f.params));
+        parts.push(text(if func { "func " } else { "fn " }));
+        parts.push(text(if f.name.name == "==" { "== ".to_string() } else { f.name.name.clone() }));
+        parts.push(self.constrained_generics(&f.generics, &f.constraints));
+        let labels = self.migrate.as_ref().and_then(|m| m.labels.get(&f.name.name)).cloned();
+        parts.push(self.params_labelled(&f.params, labels.as_deref()));
+        if f.is_async && func {
+            parts.push(text(" async"));
+        }
+        if let Some(throws) = &f.throws {
+            parts.push(text(" throws"));
+            if let Some(ty) = &throws.ty {
+                parts.push(concat(vec![text("("), self.ty(ty), text(")")]));
+            }
+        }
         if let Some(ret) = &f.ret {
             parts.push(text(" -> "));
             parts.push(self.ty(ret));
         }
-        parts.push(text(" "));
-        parts.push(self.block(&f.body, Layout::Own));
         concat(parts)
     }
 
     fn params(&mut self, params: &[Param]) -> Doc {
+        self.params_labelled(params, None)
+    }
+
+    /// A 0.x `fn`'s parameters as a `func`'s: `_ name` unless a call labels it.
+    fn params_labelled(&mut self, params: &[Param], labels: Option<&[Option<String>]>) -> Doc {
+        let unlabelled: Vec<Span> = match labels {
+            Some(labels) => params
+                .iter()
+                .zip(labels)
+                .filter(|(p, label)| label.is_none() && p.label.is_none() && !p.rest && !p.spread)
+                .map(|(p, _)| p.span)
+                .collect(),
+            None => Vec::new(),
+        };
         let params = self.commas(
             params,
             |p| p.span,
@@ -394,8 +615,13 @@ impl<'a> Formatter<'a> {
                     let whole = param.whole.as_ref().map_or(String::new(), |w| format!("{}: ", w.name));
                     return concat(vec![text(format!("..{whole}")), this.ty(&param.ty)]);
                 }
-                let name =
+                let mut name =
                     if param.rest { format!("..{}", param.name.name) } else { param.name.name.clone() };
+                if let Some(label) = &param.label {
+                    name = format!("{} {name}", label.name);
+                } else if unlabelled.contains(&param.span) {
+                    name = format!("_ {name}");
+                }
                 let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
@@ -437,6 +663,108 @@ impl<'a> Formatter<'a> {
         inner.push(self.trailing(v.body.span.end));
         inner.push(self.dangling(v.span.end));
         concat(vec![concat(head), indent(concat(vec![hardline(), concat(inner)])), hardline(), text("}")])
+    }
+
+    /// A 0.x view 2.0 can say: no `..Props` or rest props, `effect`, `@ref`, `@list` or `@record`.
+    fn view_migrates(&mut self, v: &ViewDecl) -> bool {
+        let mut why = None;
+        if v.params.iter().flatten().any(|p| p.spread || p.rest) {
+            why = Some("its `..Props` spread becomes stored properties by hand");
+        }
+        for member in &v.members {
+            match member {
+                Member::Effect(_) => {
+                    why = Some("an `effect` becomes `.task(id:)`, `.onChange(of:)` or `.onAppear` by hand")
+                }
+                Member::State(state) if state.attr == StateAttr::Ref => {
+                    why = Some("an `@ref` becomes a `class` held in `@State` by hand")
+                }
+                Member::State(state) if matches!(state.attr, StateAttr::List | StateAttr::Record) => {
+                    why = Some("`@list`/`@record` wait for BloomData's 2.0 `@Model`")
+                }
+                _ => {}
+            }
+        }
+        match why {
+            Some(why) => {
+                self.note(v.name.span, format!("view `{}` stays 0.x: {why}", v.name.name));
+                false
+            }
+            None => true,
+        }
+    }
+
+    /// `view X(p: T) { @state s = v; body { … } }` as `struct X: View { let p: T; @State private
+    /// var s = v; var body: some View { … } }`.
+    fn view_as_struct(&mut self, v: &ViewDecl, span: Span) -> Doc {
+        enum Entry<'v> {
+            Prop(&'v Param),
+            Member(&'v Member),
+            Body,
+        }
+        let mut entries: Vec<(Span, Entry)> =
+            v.params.iter().flatten().map(|p| (p.span, Entry::Prop(p))).collect();
+        entries.extend(v.members.iter().map(|m| (m.span(), Entry::Member(m))));
+        entries.push((v.body_keyword.to(v.body.span), Entry::Body));
+        let protocol = match v.kind {
+            ViewKind::View => "View",
+            ViewKind::Screen => "Screen",
+            ViewKind::Layout => "Layout",
+        };
+        let equatable =
+            if v.members.iter().any(|m| matches!(m, Member::Equal(_))) { ", Equatable" } else { "" };
+        let head = text(format!("struct {}: {protocol}{equatable} ", v.name.name));
+        let lines = self.lines(
+            &entries,
+            |e| e.0,
+            |this, (_, entry)| match entry {
+                Entry::Prop(p) => {
+                    let mut parts = vec![
+                        text(if p.default.is_some() { "var " } else { "let " }),
+                        text(p.name.name.clone()),
+                        text(": "),
+                        this.ty(&p.ty),
+                    ];
+                    if let Some(default) = &p.default {
+                        parts.push(text(" = "));
+                        parts.push(this.expr(default));
+                    }
+                    concat(parts)
+                }
+                Entry::Member(Member::State(state)) => {
+                    let (attr, value) = match state.attr {
+                        StateAttr::Env => (
+                            concat(vec![
+                                text("@Environment("),
+                                this.expr(&state.value),
+                                text(") private var "),
+                            ]),
+                            None,
+                        ),
+                        _ => (text("@State private var "), Some(&state.value)),
+                    };
+                    let mut parts = vec![attr, text(state.name.name.clone())];
+                    if let Some(ty) = &state.ty {
+                        parts.push(text(": "));
+                        parts.push(this.ty(ty));
+                    }
+                    if let Some(value) = value {
+                        parts.push(text(" = "));
+                        parts.push(this.expr(value));
+                    }
+                    concat(parts)
+                }
+                Entry::Member(Member::Equal(e)) => concat(vec![
+                    text(format!("static func == ({}: Self, {}: Self) -> Bool ", e.old.name, e.new.name)),
+                    this.block(&e.body, Layout::Own),
+                ]),
+                Entry::Member(member) => this.member(member),
+                Entry::Body => {
+                    concat(vec![text("var body: some View "), this.block(&v.body, Layout::Broken)])
+                }
+            },
+        );
+        concat(vec![head, self.braced(lines, span.end)])
     }
 
     fn member(&mut self, member: &Member) -> Doc {
@@ -550,6 +878,30 @@ impl<'a> Formatter<'a> {
                 self.block(&f.body, Layout::Own),
             ]),
             StmtKind::Defer(b) => concat(vec![text("defer "), self.block(b, Layout::Own)]),
+            StmtKind::Guard(g) => {
+                let cond = self.cond(&g.cond);
+                concat(vec![text("guard "), cond, text(" else "), self.block(&g.otherwise, Layout::Own)])
+            }
+            StmtKind::Throw(e) => concat(vec![text("throw "), self.expr(e)]),
+            StmtKind::Do(d) => {
+                let mut parts = vec![text("do "), self.block(&d.body, Layout::Own)];
+                for catch in &d.catches {
+                    parts.push(text(" catch "));
+                    if let Some(name) = &catch.name {
+                        parts.push(text(format!("let {}", name.name)));
+                        if let Some(ty) = &catch.ty {
+                            parts.push(text(" as "));
+                            parts.push(self.ty(ty));
+                        }
+                        parts.push(text(" "));
+                    } else if let Some(pattern) = &catch.pattern {
+                        parts.push(self.pattern(pattern));
+                        parts.push(text(" "));
+                    }
+                    parts.push(self.block(&catch.body, Layout::Own));
+                }
+                concat(parts)
+            }
             StmtKind::Expr(e) => self.expr_in(e, Context::Statement),
         }
     }
@@ -567,6 +919,7 @@ impl<'a> Formatter<'a> {
 
     fn expr_in(&mut self, e: &Expr, context: Context) -> Doc {
         match &e.kind {
+            ExprKind::Str { .. } if self.migrating_now() => text(swift_interpolation(self.slice(e.span))),
             ExprKind::Int(_) | ExprKind::Float(_) | ExprKind::Str { .. } => {
                 text(self.slice(e.span).to_string())
             }
@@ -589,6 +942,14 @@ impl<'a> Formatter<'a> {
                 concat(vec![text(name.name.clone()), text("<"), join(args, || text(", ")), text(">")])
             }
             ExprKind::Paren(inner) => concat(vec![text("("), self.expr(inner), text(")")]),
+            ExprKind::Throwing(kind, inner) => {
+                let word = match kind {
+                    TryKind::Plain => "try ",
+                    TryKind::Optional => "try? ",
+                    TryKind::Force => "try! ",
+                };
+                concat(vec![text(word), self.expr(inner)])
+            }
             ExprKind::Tuple(items) => self.commas(items, |i| i.span, Self::expr).bracketed("(", ")"),
             ExprKind::List(items) => self.commas(items, |i| i.span, Self::expr).bracketed("[", "]"),
             ExprKind::Spread(inner) => concat(vec![text(".."), self.expr(inner)]),
@@ -757,16 +1118,23 @@ impl<'a> Formatter<'a> {
         if call.optional {
             parts.push(text("?."));
         }
+        // `label: { … }` after the trailing closure (2.0): written after it, so printed there.
+        let after = call.trailing.as_ref().map_or(u32::MAX, |t| t.span.end);
+        let (inside, outside): (Vec<Arg>, Vec<Arg>) =
+            call.args.iter().cloned().partition(|a| a.span.start < after);
         if call.parens {
+            let inserted = self.inserted_labels(call);
             let args = self.commas(
-                &call.args,
+                &inside,
                 |a| a.span,
                 |this, arg| {
                     let value = this.expr(&arg.value);
-                    match (&arg.label, arg.spread) {
-                        (_, true) => concat(vec![text(".."), value]),
-                        (Some(label), false) => concat(vec![text(format!("{}: ", label.name)), value]),
-                        (None, false) => value,
+                    let inserted = inserted.iter().find(|(span, _)| *span == arg.span).map(|(_, l)| l);
+                    match (&arg.label, arg.spread, inserted) {
+                        (_, true, _) => concat(vec![text(".."), value]),
+                        (Some(label), false, _) => concat(vec![text(format!("{}: ", label.name)), value]),
+                        (None, false, Some(label)) => concat(vec![text(format!("{label}: ")), value]),
+                        (None, false, None) => value,
                     }
                 },
             );
@@ -776,7 +1144,37 @@ impl<'a> Formatter<'a> {
             parts.push(text(" "));
             parts.push(self.closure(trailing));
         }
+        for arg in &outside {
+            let ExprKind::Closure(closure) = &arg.value.kind else { continue };
+            let label = arg.label.as_ref().map_or("", |l| l.name.as_str());
+            parts.push(text(format!(" {label}: ")));
+            parts.push(self.closure(closure));
+        }
         concat(parts)
+    }
+
+    /// Migrating, a positional argument to a parameter that stays labelled gets its label.
+    fn inserted_labels(&self, call: &Call) -> Vec<(Span, String)> {
+        let Some(m) = &self.migrate else { return Vec::new() };
+        let ExprKind::Name(name) = &call.callee.kind else { return Vec::new() };
+        let Some(labels) = m.labels.get(name) else { return Vec::new() };
+        let mut filled: Vec<bool> = labels
+            .iter()
+            .map(|label| {
+                label
+                    .as_ref()
+                    .is_some_and(|l| call.args.iter().any(|a| a.label.as_ref().is_some_and(|x| &x.name == l)))
+            })
+            .collect();
+        let mut out = Vec::new();
+        for arg in call.args.iter().filter(|a| a.label.is_none() && !a.spread) {
+            let Some(slot) = filled.iter().position(|f| !f) else { break };
+            filled[slot] = true;
+            if let Some(label) = &labels[slot] {
+                out.push((arg.span, label.clone()));
+            }
+        }
+        out
     }
 
     fn closure(&mut self, closure: &Closure) -> Doc {
@@ -803,13 +1201,17 @@ impl<'a> Formatter<'a> {
         group(self.if_chain(i))
     }
 
-    fn if_chain(&mut self, i: &IfExpr) -> Doc {
-        let cond = match &i.cond {
+    fn cond(&mut self, cond: &Cond) -> Doc {
+        match cond {
             Cond::Expr(e) => self.expr(e),
             Cond::Let(pattern, value) => {
                 concat(vec![text("let "), self.pattern(pattern), text(" = "), self.expr(value)])
             }
-        };
+        }
+    }
+
+    fn if_chain(&mut self, i: &IfExpr) -> Doc {
+        let cond = self.cond(&i.cond);
         let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, Layout::Shared)];
         if let Some(otherwise) = &i.otherwise {
             parts.push(text(" else "));
@@ -822,7 +1224,58 @@ impl<'a> Formatter<'a> {
         concat(parts)
     }
 
+    /// `switch x {` then `case .a, .b:`, `case let .c(v) where v > 0:`, `default:`, each
+    /// with its statements indented under it.
+    fn switch_expr(&mut self, m: &MatchExpr, span: Span) -> Doc {
+        let scrutinee = self.expr(&m.scrutinee);
+        let arms = self.lines(
+            &m.arms,
+            |a| a.span,
+            |this, arm| {
+                let mut parts = Vec::new();
+                if arm.pattern.kind == PatternKind::Wildcard && this.slice(arm.pattern.span) == "default" {
+                    parts.push(text("default"));
+                } else {
+                    parts.push(text(if binds(&arm.pattern) { "case let " } else { "case " }));
+                    let alternatives = match &arm.pattern.kind {
+                        PatternKind::Or(alternatives) => alternatives.iter().collect(),
+                        _ => vec![&arm.pattern],
+                    };
+                    let docs: Vec<Doc> = alternatives.into_iter().map(|p| this.pattern(p)).collect();
+                    parts.push(join(docs, || text(", ")));
+                }
+                if let Some(guard) = &arm.guard {
+                    parts.push(text(" where "));
+                    parts.push(this.expr(guard));
+                }
+                parts.push(text(":"));
+                let body = match &arm.body {
+                    ArmBody::Expr(e) => this.expr_in(e, Context::Statement),
+                    ArmBody::Block(b) if b.stmts.is_empty() => text("break"),
+                    ArmBody::Block(b) => this.lines(&b.stmts, |s| s.span, |this, stmt| this.stmt(stmt)),
+                };
+                parts.push(indent(concat(vec![hardline(), body])));
+                concat(parts)
+            },
+        );
+        // Swift's layout: the cases at the switch's own indentation.
+        let dangling = self.dangling(span.end);
+        concat(vec![
+            text("switch "),
+            scrutinee,
+            text(" {"),
+            hardline(),
+            arms,
+            dangling,
+            hardline(),
+            text("}"),
+        ])
+    }
+
     fn match_expr(&mut self, m: &MatchExpr, span: Span) -> Doc {
+        if m.switch || self.migrating_now() {
+            return self.switch_expr(m, span);
+        }
         let scrutinee = self.expr(&m.scrutinee);
         let arms = self.lines(
             &m.arms,
@@ -897,6 +1350,22 @@ impl<'a> Formatter<'a> {
     }
 
     fn ty(&mut self, t: &TypeExpr) -> Doc {
+        // `any P`: an existential, read as `any` applied to `P`.
+        if let TypeKind::Named { name, args } = &t.kind
+            && name.name == "any"
+            && let [inner] = args.as_slice()
+        {
+            return concat(vec![text("any "), self.ty(inner)]);
+        }
+        // `some View`: the word, then the type it was read as.
+        let word = "some ";
+        if self.slice(t.span).starts_with(word) {
+            let inner = TypeExpr {
+                kind: t.kind.clone(),
+                span: Span::new(t.span.start + word.len() as u32, t.span.end),
+            };
+            return concat(vec![text(word), self.ty(&inner)]);
+        }
         match &t.kind {
             TypeKind::Named { name, args } if args.is_empty() => text(name.name.clone()),
             TypeKind::Named { name, args } => {
@@ -979,6 +1448,30 @@ fn is_member(callee: &Expr) -> bool {
     matches!(callee.kind, ExprKind::Field(..) | ExprKind::OptField(..))
 }
 
+impl Formatter<'_> {
+    /// `<T, U: Equatable & Hashable>`.
+    fn constrained_generics(&mut self, names: &[Ident], constraints: &[(Ident, TypeExpr)]) -> Doc {
+        if constraints.is_empty() {
+            return generics(names);
+        }
+        let mut parts = vec![text("<")];
+        for (index, name) in names.iter().enumerate() {
+            if index > 0 {
+                parts.push(text(", "));
+            }
+            parts.push(text(name.name.clone()));
+            let bounds: Vec<&TypeExpr> =
+                constraints.iter().filter(|(n, _)| n.name == name.name).map(|(_, ty)| ty).collect();
+            for (k, ty) in bounds.into_iter().enumerate() {
+                parts.push(text(if k == 0 { ": " } else { " & " }));
+                parts.push(self.ty(ty));
+            }
+        }
+        parts.push(text(">"));
+        concat(parts)
+    }
+}
+
 fn generics(names: &[Ident]) -> Doc {
     if names.is_empty() {
         return Doc::Nil;
@@ -998,4 +1491,52 @@ fn record_key_is_name(key: &str) -> bool {
     let mut chars = key.chars();
     chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
         && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+/// A pattern that binds a name (`case let` in a `switch`).
+fn binds(p: &Pattern) -> bool {
+    match &p.kind {
+        PatternKind::Bind(_) => true,
+        PatternKind::Case { args, .. } => args.iter().flatten().any(binds),
+        PatternKind::Tuple(items) | PatternKind::Or(items) => items.iter().any(binds),
+        PatternKind::Record(fields) => fields.iter().any(|(_, p)| p.as_ref().is_none_or(binds)),
+        PatternKind::Wildcard | PatternKind::Literal(_) | PatternKind::None => false,
+    }
+}
+
+/// A string literal's 0.x `${x}` interpolations as 2.0's `\(x)`.
+fn swift_interpolation(literal: &str) -> String {
+    let bytes = literal.as_bytes();
+    let mut out = String::with_capacity(literal.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'\\' && i + 1 < bytes.len() {
+            out.push_str(&literal[i..i + 2]);
+            i += 2;
+            continue;
+        }
+        if bytes[i] == b'$' && bytes.get(i + 1) == Some(&b'{') {
+            let mut depth = 1;
+            let mut j = i + 2;
+            while j < bytes.len() && depth > 0 {
+                match bytes[j] {
+                    b'{' => depth += 1,
+                    b'}' => depth -= 1,
+                    _ => {}
+                }
+                if depth > 0 {
+                    j += 1;
+                }
+            }
+            out.push_str("\\(");
+            out.push_str(&swift_interpolation(&literal[i + 2..j.min(bytes.len())]));
+            out.push(')');
+            i = j + 1;
+            continue;
+        }
+        let ch = literal[i..].chars().next().expect("a char");
+        out.push(ch);
+        i += ch.len_utf8();
+    }
+    out
 }

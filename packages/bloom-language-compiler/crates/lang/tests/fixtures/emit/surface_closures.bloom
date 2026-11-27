@@ -1,0 +1,51 @@
+// 2.0's closures and environment: labelled trailing closures (`row { } label: { }`), `Task { }`,
+// and `@Environment(\.disabled)` reading a built-in environment value.
+func row(action: () -> Void, label: () -> String) -> String { label() }
+
+public struct Pane: View {
+  @Environment(\.disabled) private var disabled
+  let onTap: () async -> Void
+
+  var body: some View {
+    VStack {
+      Text(row { } label: { "Go" })
+      Button(Text(disabled ? "Off" : "On")).onPress { Task { await onTap() } }
+    }
+  }
+}
+
+// An app's own environment value, and a view reading it under the same name.
+public enum Session { case signedOut, signedIn }
+
+public let session = EnvironmentKey("session", default: Session.signedOut)
+
+public struct Account: View {
+  @Environment(\.session) private var session
+
+  var body: some View {
+    switch session {
+    case .signedOut: Text("Sign in")
+    case .signedIn: Text("Welcome")
+    }
+  }
+}
+
+// A `() -> View` closure of several lines is a builder (`@ViewBuilder`): its children.
+public struct Section: View {
+  let title: String
+  let rows: () -> View
+
+  var body: some View {
+    VStack {
+      Text(title)
+      rows()
+    }
+  }
+}
+
+func names(_ xs: [String]) -> View {
+  Section(title: "Names") {
+    Text("First")
+    for x in xs { Text(x) }
+  }
+}

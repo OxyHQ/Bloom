@@ -15,3 +15,12 @@ error[B0213]: `is` tests for a string, a number, a bool or a list, not `Post`
    |
 help: a Bloom type's cases are an enum's: `match` on it
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
+
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+ --> check/is_tests.bloom:9:1
+  |
+9 | fn known(n: Int) -> Bool {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

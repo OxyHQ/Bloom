@@ -1,0 +1,95 @@
+// ADR 0002, example 2: Settings → Notifications.
+// Stand-ins (phase A has no protocols, `@Observable` or BloomUI's SwiftUI names):
+// `PrefKey.allCases` is an explicit list, `key.title` a function, the model a value.
+
+public enum LoadState {
+  case loading
+  case signedOut
+  case ready
+}
+
+public enum PrefKey {
+  case likes
+  case boosts
+  case mentions
+}
+
+let allKeys: [PrefKey] = [.likes, .boosts, .mentions]
+
+func title(_ key: PrefKey) -> String {
+  switch key {
+  case .likes:
+    "Likes"
+  case .boosts:
+    "Boosts"
+  case .mentions:
+    "Mentions"
+  }
+}
+
+public struct Prefs: Equatable {
+  public var likes: Bool = true
+  public var boosts: Bool = false
+  public var mentions: Bool = true
+}
+
+func isOn(_ prefs: Prefs, _ key: PrefKey) -> Bool {
+  switch key {
+  case .likes:
+    prefs.likes
+  case .boosts:
+    prefs.boosts
+  case .mentions:
+    prefs.mentions
+  }
+}
+
+func set(_ prefs: Prefs, _ key: PrefKey, _ on: Bool) -> Prefs {
+  switch key {
+  case .likes:
+    Prefs(likes: on, boosts: prefs.boosts, mentions: prefs.mentions)
+  case .boosts:
+    Prefs(likes: prefs.likes, boosts: on, mentions: prefs.mentions)
+  case .mentions:
+    Prefs(likes: prefs.likes, boosts: prefs.boosts, mentions: on)
+  }
+}
+
+public struct NotificationSettings: View {
+  @State private var state = LoadState.loading
+  @State private var prefs = Prefs()
+  @State private var isSaving = false
+
+  func save(_ key: PrefKey, _ on: Bool) async {
+    isSaving = true
+    prefs = set(prefs, key, on)
+    isSaving = false
+  }
+
+  var body: some View {
+    VStack {
+      Text("Notifications").font(.title2)
+      switch state {
+      case .loading:
+        Loading()
+      case .signedOut:
+        Text("Sign in to manage notifications")
+      case .ready:
+        VStack {
+          if isSaving { Loading().style("inline").size("sm") }
+          for key in allKeys {
+            HStack {
+              Text(title(key))
+              Spacer()
+              Toggle(Binding(get: isOn(prefs, key), set: { on in task { await save(key, on) } }))
+              .label(title(key))
+            }
+          }
+        }
+        .spacing(.sm)
+      }
+    }
+    .spacing(.lg)
+    .task { state = .ready }
+  }
+}

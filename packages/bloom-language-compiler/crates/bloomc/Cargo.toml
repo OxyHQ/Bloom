@@ -5,6 +5,13 @@ edition.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "bloom"
+path = "src/bin/bloom.rs"
+
 [[bin]]
 name = "bloomc"
 path = "src/main.rs"

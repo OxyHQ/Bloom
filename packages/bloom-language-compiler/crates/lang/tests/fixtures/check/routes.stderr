@@ -33,3 +33,12 @@ error[B0701]: no route `/about` in the app
    |
 help: the app's routes: /, /posts/[id], /settings, /settings/notifications
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#9-navigation
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> check/routes.bloom:3:1
+  |
+3 | view Links(postId: Int, slug: String) {
+  | ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -1,0 +1,62 @@
+
+export type Load = "loading" | { readonly tag: "failed"; readonly message: string } | { readonly tag: "ready"; readonly count: number };
+
+type APIError = "offline" | { readonly tag: "status"; readonly code: number };
+
+export function describe(load: Load): string {
+if (load === "loading") {
+return "…";
+} else if (typeof load === "object" && load.tag === "failed") {
+return `failed: ${load.message}`;
+} else if (typeof load === "object" && load.tag === "ready" && (load.count === 0)) {
+return "empty";
+} else {
+return `${load.count} items`;
+}
+}
+
+export function first(names: readonly string[]): string {
+if (!(names[0] !== undefined)) {
+return "nobody";
+}
+return names[0];
+}
+
+export function total(counts: readonly number[]): number {
+let sum = 0;
+for (const count of counts) {
+sum = sum + (count);
+}
+let left = 3;
+while (left > 0) {
+left = left - (1);
+}
+return sum;
+}
+
+function check(code: number): number {
+if (code >= 500) {
+throw { tag: "status" as const, code: code };
+}
+return code;
+}
+
+export function status(code: number): string {
+try {
+const ok = check(code);
+return `ok ${ok}`;
+} catch (error) {
+return "failed";
+}
+}
+
+export function maybe(code: number): number | undefined {
+return (() => {
+try {
+return check(code);
+} catch {
+return undefined;
+}
+})();
+}
+

@@ -80,7 +80,7 @@ pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, St
   let match none pub return screen layout struct task true type var view while`. Attribute words after `@`:
   `state list record env`.
 - **Literals:** `42`, `1_000`, `0xff` (Int); `1.5`, `2e3` (Float); `true`/`false`; `none`;
-  strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `${expr}`;
+  strings `"…"` with escapes `\n \t \" \\ \$ \u{1F600}` and interpolation `\(expr)` (2.0; 0.x `${expr}`);
   raw multi-line strings `"""…"""` (interpolation kept, indentation stripped to the closing
   delimiter).
 - **Binding projection:** `$name` (a binding to `@state name`, see 7.2).
@@ -104,6 +104,15 @@ field         = IDENT ":" type [ "=" expr ] ;
 enum          = "enum" TYPE_NAME [ generics ] "{" { variant ( NL | "," ) } "}" ;
 variant       = IDENT [ "(" payload { "," payload } ")" ] ;
 payload       = [ IDENT ":" ] type ;
+(* 2.0 type declarations (sections 4.8, 4.9, 7.1a): *)
+class         = { "@" TYPE_NAME } [ "final" ] "class" TYPE_NAME [ generics ] [ conforms ]
+                "{" { member NL } "}" ;
+protocol      = "protocol" TYPE_NAME [ conforms ] "{" { requirement NL } "}" ;
+requirement   = [ "static" ] "var" IDENT ":" type "{" "get" [ "set" ] "}" | [ "static" ] func_sig ;
+extension     = "extension" TYPE_NAME [ generics ] [ conforms ] "{" { member NL } "}" ;
+conforms      = ":" type { "," type } ;
+member        = { attr } [ visibility ] [ "static" ] ( ( "let" | "var" ) IDENT [ ":" type ] [ "=" expr ]
+              | "var" IDENT ":" type block | func | "init" params block ) ;
 alias         = "type" TYPE_NAME [ generics ] "=" type ;
 generics      = "<" TYPE_NAME { "," TYPE_NAME } ">" ;
 
@@ -301,8 +310,19 @@ TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). M
 ### 4.6 Generics
 
 `fn first<T>(xs: [T]) -> T?`, `struct Page<T> { items: [T], cursor: String? }`,
-`enum Load<T>`. Type parameters are inferred at call sites; no bounds in phase 0 (phase 1:
-`<T: Equatable>`-style protocol bounds compiled away by monomorphising the comparison).
+`enum Load<T>`. Type parameters are inferred at call sites.
+
+A type parameter may be constrained (2.0): `func firstIndex<T: Equatable>(_ xs: [T], of x: T)`,
+`<T: Titled & Equatable>`, `where T: Titled`. Inside the function, a `T: P` value reads `P`'s
+requirements (section 4.8) and a `T: Equatable` value compares with `==`. Dispatch is static:
+each constraint is one more parameter, a *witness* (`$w_T_P`), which the call site fills for
+the type it inferred: the conformance's witness object `Post$$Titled`, or for `Equatable` the
+type's `==` (field by field for a struct). A type argument that does not conform is B0232.
+`T: Codable` (`Decodable`, `Encodable`) passes `T`'s codec, which the body reads as `T.self`: a
+type's `T$$self` (derived for a `Codable` struct, the standard library's for `String`, `Int`, …),
+or a generic type's `T.codec(…)` of its arguments' codecs (`Page$$codec(Post$$self)`,
+`Array$$codec(…)`), so `let page: Page<Post> = try await api.get("/feeds/home")` decodes with no
+codec written. `Sendable` and other built-in protocols with nothing a body reads pass no witness.
 
 ### 4.7 The foreign boundary
 
@@ -361,6 +381,74 @@ to a node is a component (`TextInput(value: v)`). As a type, such a component is
 as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
 `ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
 
+### 4.8 Protocols
+
+```swift
+public protocol Titled {
+  var id: String { get }
+  var title: String { get }
+  func badge(_ count: Int) -> String
+}
+
+extension Post: Titled {
+  public var title: String { text }                   // `id` is a stored property already
+  public func badge(_ count: Int) -> String { "\(title) (\(count))" }
+}
+
+func describe(_ item: any Titled) -> String { "\(item.id): \(item.title)" }
+```
+
+A protocol lists requirements: properties (`{ get }`, `{ get set }`) and `func` signatures.
+A type conforms where it is declared (`struct Post: Titled`) or in an extension
+(`extension Post: Titled { … }`); each requirement is met by a stored property, a computed
+property or a method, and a missing one is B0231. Structs stay structural at runtime: a
+conformance compiles to one witness object (`const Post$$Titled = { id: (self) => self.id,
+title: Post$title, badge: Post$badge }`), exported with its type. The built-in protocols are
+checked as such: `Identifiable` needs an `id`, `CaseIterable` an enum whose cases carry nothing
+(and gives `T.allCases`, in order), `Equatable` and `Hashable` a type `==` compares.
+
+`any P` is an existential, its witness passed with it, written explicitly: a `Post` passed where
+`any Titled` is expected becomes `{ self: post, w: Post$$Titled }` (TS type `Titled`), and `item.title` reads
+`item.w.title(item.self)`. A protocol written bare as a type (`Titled`) means `any Titled`.
+
+Members and extensions (section 5) are statically dispatched: an instance member `m` of `T`
+compiles to the function `T$m(self, …)`, a static one to `T$$m`, and inside a member a name of
+one of `T`'s members that the body binds nowhere itself reads `self` (Swift's implicit `self`).
+
+### 4.9 Classes and observable models
+
+```swift
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  public private(set) var isLoading = false
+  private let api: MentionAPI
+
+  public init(api: MentionAPI) { self.api = api }
+
+  public func like(_ post: Post) async {
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return }
+    posts[i].isLiked = true      // rebuilds `posts` (value semantics) and writes it once
+    posts[i].likes += 1
+  }
+}
+```
+
+A `class` is a reference type: a TS class with its stored properties as fields (a property
+written without a type takes its literal's), `init` (lowered to `T$$init`, which makes `self`
+and returns it; without one, `T()` is `new T()`), and members lowered as a struct's. A `let`
+property is assigned only in `init` (B0403); a `private(set)` or `private` one only in the
+class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`,
+also on a `var`'s list) rebuilds the path with fresh objects, so values stay values.
+
+`@Observable` makes the class a store with field-level subscriptions and no proxies: writes go
+through `$set(field, value)` (a write of the same value notifies nobody), and bloomc computes at
+compile time which fields each view reads of each model it holds (as `@State`, a prop or a
+`let`), including what the model's own members it calls read. The view subscribes to those
+fields only (`useObserved(model, ["isLoading", "posts"])`) and draws again only when one of them
+changes; a cache that reads the model as a whole (a member call) depends on the subscription's
+version. A class compares by identity (`==` is `===`).
+
 ## 5. Values, functions and closures
 
 ```bloom
@@ -380,7 +468,19 @@ parameter takes it is B0207 (outside a construction, where `..s` spreads a struc
 props, never a rest parameter.
 
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
-in any order after the positional ones. **In a call to a TS function, named arguments form one
+in any order after the positional ones.
+
+**2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
+unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
+is called `move(p, to: q)`. A positional argument where a label is due is B0207 ("missing
+argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. A closure without
+`in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
+outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
+parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
+`private` (the file), plus `private(set)` for who assigns; a `public` declaration that names an
+`internal` or `private` type of its file is B0108. `import Bloom` and `import Mention.Posts` name
+modules (resolved by the module graph). A file compiled on its own is its own module, so its
+`internal` names are not exported; inside a directory module they are. **In a call to a TS function, named arguments form one
 object passed last**: `t("key", defaultValue: "General")` is `t("key", { defaultValue: "General" })`.
 
 ## 6. Expressions and control flow
@@ -402,6 +502,54 @@ object passed last**: `t("key", defaultValue: "General")` is `t("key", { default
 
 `if`/`else` and `match` are expressions; every branch has the same type (an `if` without
 `else` in a builder yields an optional child).
+
+### 6.2 Control flow and errors (2.0)
+
+```bloom
+switch load {
+case .loading:
+  ProgressView()
+case let .failed(message):
+  Text(message)
+case .ready(let count) where count == 0:
+  Text("empty")
+case .ready(let count):
+  Text("\(count) items")
+}
+
+guard let name = names.first else { return "nobody" }   // `name` is in scope after it
+
+func check(code: Int) throws(APIError) -> Int {
+  if code >= 500 { throw APIError.status(code: code) }
+  code
+}
+
+do {
+  let ok = try check(code: code)
+} catch let error as APIError {
+  …
+}
+let value = try? check(code: 1)                       // Int?: `none` when it throws
+```
+
+- `switch` replaces 0.x `match` (which still parses). Each `case` runs to the next one, with no
+  fallthrough; `case .a, .b:` matches either, `case let .x(v)` and `.x(let v)` bind (a Bloom
+  pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
+  rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
+- `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
+  `return`, `throw`, `break`, `continue` or `fatalError(…)` (B0110), and what the condition binds
+  is in scope after it. It compiles to `if (!(cond)) { … }`.
+- An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
+- Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
+  call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
+  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error`, `catch let e as T`
+  types it, and catches with patterns (`catch .offline`) test it in order and rethrow what none
+  matches. A function's last statement may be a `do` whose body and catches all return.
+  A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
+  `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
+  `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
+  elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
+  `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
 
 ## 7. Views
 
@@ -441,6 +589,52 @@ pub view PostRow(post: Post, compact: Bool = false) {
   (`screen()` from `@oxy.so/bloom-language/router`); `layout Name { … }` the same for `layout()`.
 - `pub` exports; `pub default` makes it the default export.
 
+### 7.1a A view, the 2.0 way
+
+```bloom
+public struct PostRow: View, Equatable {
+  let post: Post                       // a prop
+  var dense: Bool = false              // a prop with a default
+  let onLike: () -> Void
+  @Binding var isOn: Bool              // a prop holding a `Binding<Bool>`
+  @State private var draft = ""        // a state: `useState`
+  @Environment(\.locale) private var locale
+  let title = "Compose"                // a constant, per render
+
+  func send() { draft = "" }           // a member
+
+  var body: some View {
+    HStack { Text(post.text) }
+      .onAppear { … }                  // once, after the first render
+      .onDisappear { … }               // its cleanup
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post }   // the memo comparator
+}
+```
+
+A `struct` that conforms to `View` (or `Screen`, `Layout`) compiles to the same memoised `view()`
+fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are the props; `@State`,
+`@Environment(\.key)` and `func` members are 0.x's `@state`, `@env` and `fn` members; `var body`
+is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
+`.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
+`.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+A data `struct` takes Swift's members too (`public let id: String`, `public var likes: Int`):
+they are its fields; its methods, computed properties and `static` members, and an `enum`'s,
+are statically dispatched functions (section 4.8). A `@Binding var isOn: Bool` is read as a
+`Bool` (`isOn`, compiled `isOn[0]`), assigned as one (`isOn = false`, compiled `isOn[1](false)`),
+and passed on as the binding with `$isOn`. `@Environment(\.k)` reads the built-in value `k` (`disabled`, `controlSize`, `buttonStyle`) or the
+environment key named `k` that the file declares or imports, typed by the key's default: an app
+declares one at module level as `public let session = EnvironmentKey("session", default: Session.signedOut)`. A call takes more trailing closures
+after the first, each labelled on the same line (`Button { … } label: { … }`, Swift's form); they
+are labelled arguments. `Task { … }` starts async work without awaiting it (0.x `task { … }`). A closure passed where a
+`() -> View` is expected and written over several lines is a builder (Swift's `@ViewBuilder`):
+each line, `if` and `for` a child, compiled to the list of them, which the stack it lands in
+flattens (`let rows: () -> View` called as `rows()` in a `VStack`).
+A view holding an `@Observable` model subscribes to
+the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
+other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
+
 ### 7.2 Builders, modifiers and tokens
 
 - A trailing closure passed to a parameter of type `Children` is a **builder**: each line is a
@@ -475,6 +669,23 @@ pub view PostRow(post: Post, compact: Bool = false) {
   (`.onEndReached(more ? load : none, 0.5)`, `.footerContent(none)`); a parameter marked `?`
   in its signature may be left out. `c ? a : none` is `A?` wherever it is written, so the
   `none` branch is never held to the other's type.
+
+#### Typed tokens (2.0)
+
+A token is written by its Swift name, an implicit member of the parameter's token set:
+`.padding(.md)`, `.spacing(.xxl)`, `.font(.caption1)`, `.foreground(.muted)`, and a colour role at an
+opacity `.foreground(.primary.opacity(0.1))`. Each compiles to today's token string (`"md"`, `"2xl"`,
+`"caption-1"`, `"muted"`, `"primary/10"`), so the cost is the string literal's. The names come from
+a table GENERATED over `spec/language.json`'s token sets
+(`packages/bloom-language-compiler/scripts/generate-swift-tokens.mjs`, output
+`crates/lang/src/swift_tokens.generated.rs`, checked by the package's `test`): `Nxl`/`Nxs` become
+N `x`s (`2xl` → `.xxl`), kebab-case becomes camelCase (`caption-1` → `.caption1`,
+`top-leading` → `.topLeading`), and a token with no Swift name (a number, a CSS value) stays a
+number or a string. SwiftUI's own names of a set's tokens are aliases in the table (alignment:
+`.top`/`.leading` are `start`, `.bottom`/`.trailing` `end`, `.firstTextBaseline` `baseline`), and a
+condition may choose between two tokens (`.tint(isLiked ? .danger : .neutral)`). A name not in the
+set is B0502 with the closest name; an opacity not on the scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
+`.background(_:)` as a style) are BloomUI's, phase B.
 
 ### 7.3 Reactivity (compile-time)
 
@@ -691,8 +902,10 @@ help: did you mean `"md"`?
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
-`==`), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
-(captured `var`), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
+`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0231 (a
+requirement of a conformance not met), B0232 (a type argument or `any P` value that does not
+conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
+(captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
 outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
@@ -709,6 +922,24 @@ builder line's chain breaks one modifier per line once its builder spans lines; 
 expression breaks only with two or more calls. A binary expression breaks after its operator, but
 before `<` and `>` (a line ending in `>` may close a type's arguments; one ending in `<` goes on).
 Formatting is idempotent and preserves comments.
+
+### 14.1 `bloomc migrate --from 0.x` (2.0)
+
+`bloomc migrate --from 0.x [--check] <paths…>` rewrites 0.x files in 2.0's forms, mechanically:
+`fn` → `func` (a parameter a call in the file labels keeps its label, the others become `_ name`,
+and a positional argument to a labelled one gets the label), `pub` → `public` (and the file's
+types a `public` declaration names become `public`), `${x}` → `\(x)`, `match … =>` → `switch …:`,
+enum cases → `case`, struct fields → `let` / `var` (a field with a default), and
+`view X(p: T) { @state s = v; body { … } }` → `struct X: View { let p: T; @State private var s = v;
+var body: some View { … } }` (`@env` → `@Environment(…)`, `equal(a, b)` → `static func ==`). What
+2.0 cannot say mechanically stays 0.x, with a note: a view with `..Props`, an `effect`, an `@ref`,
+`@list` or `@record`. The output is formatted and re-parsed (never written when it does not parse).
+Its test (`crates/fmt/tests/migrate.rs`) migrates every 0.x emit fixture, Mention's Notifications
+screen among them, and requires the same TypeScript (exports aside); the migrated Notifications is
+itself a golden (`emit/surface_mention_notifications.bloom`). The `bloom` CLI exposes it as
+`bloom migrate`. The 0.x forms keep parsing for it, each with one warning per file (B0950, at its
+first use, with how often the file uses it): `fn`, `pub`, `${…}`, `match`, `view`/`screen`/`layout`,
+the `effect` member, `@ref`, `equal(old, new)` and `..Props`.
 
 ## 15. Cheat sheet for agents
 

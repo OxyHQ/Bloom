@@ -51,3 +51,12 @@ error[B0205]: `Post` has no field `like`
    |
 help: did you mean `likes`?
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+warning[B0950]: `fn` is Bloom 0.x (5 times in this file)
+ --> check/types.bloom:6:1
+  |
+6 | fn ratio(a: Int, b: Float) -> Int {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

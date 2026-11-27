@@ -1,0 +1,16 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export interface PaneProps {
+  readonly onTap: () => Promise<void>;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Pane())`), or from TSX as `toElement(Pane())`. */
+export declare const Pane: (props: PaneProps) => ComposedView;
+export type Session = "signedOut" | "signedIn";
+export declare const session: import("@oxy.so/bloom-language").EnvironmentKey<Session>;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Account())`), or from TSX as `toElement(Account())`. */
+export declare const Account: () => ComposedView;
+export interface SectionProps {
+  readonly title: string;
+  readonly rows: () => Child;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Section())`), or from TSX as `toElement(Section())`. */
+export declare const Section: (props: SectionProps) => ComposedView;

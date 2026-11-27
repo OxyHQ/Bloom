@@ -1,0 +1,12 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface BadgeProps {
+  readonly title: string;
+  readonly detail: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Badge())`), or from TSX as `toElement(Badge())`. */
+export declare const Badge: (props: BadgeProps) => ComposedView;
+export interface LikeButtonProps {
+  readonly liked: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(LikeButton())`), or from TSX as `toElement(LikeButton())`. */
+export declare const LikeButton: (props: LikeButtonProps) => ComposedView;

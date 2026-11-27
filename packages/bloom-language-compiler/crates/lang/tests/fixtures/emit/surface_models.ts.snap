@@ -1,0 +1,117 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Observable, Text, VStack, useObserved, view } from "@oxy.so/bloom-language";
+import { useEffect, useState } from "react";
+function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {
+  const out = items.slice();
+  out[at] = item;
+  return out;
+}
+
+export interface Post {
+  readonly id: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+
+export class FeedModel extends Observable {
+  posts: readonly Post[] = [];
+  isLoading: boolean = false;
+  filter: string = "";
+  cursor: string | undefined = undefined;
+  source!: string;
+}
+
+export function FeedModel$$init(source: string): FeedModel {
+const self: FeedModel = new FeedModel();
+self.source = source;
+return self;
+}
+
+export function FeedModel$isEmpty(self: FeedModel): boolean {
+return (self.posts.length === 0);
+}
+
+export function FeedModel$load(self: FeedModel): void {
+self.$set("isLoading", true);
+self.$set("posts", [{ id: "1", likes: 0, isLiked: false }]);
+self.$set("cursor", self.source);
+self.$set("isLoading", false);
+}
+
+export function FeedModel$like(self: FeedModel, post: Post): void {
+for (const [i, p] of self.posts.entries()) {
+if (p.id === post.id) {
+self.$set("posts", $at(self.posts, i, { ...self.posts[i]!, isLiked: true }));
+self.$set("posts", $at(self.posts, i, { ...self.posts[i]!, likes: self.posts[i]!.likes + (1) }));
+}
+}
+}
+
+class Counter {
+  count: number = 0;
+}
+
+function Counter$bump(self: Counter): void {
+self.count = self.count + (1);
+}
+
+const $fields0 = ["isLoading", "posts", "source"] as const;
+const $view1 = Text("Loading");
+const $view2 = Button(Text("Like"));
+export const FeedScreen = view(function FeedScreen() {
+"use no memo";
+const $ = $c(6);
+const [model, setModel] = useState<FeedModel>(() => FeedModel$$init("home"));
+const $t0 = useObserved(model, $fields0);
+useEffect(() => {
+FeedModel$load(model);
+}, []);
+let $t1;
+if ($[2] !== model.isLoading || $[3] !== model.posts || $[4] !== $t0) {
+$t1 = VStack((model.isLoading) ? $view1 : null, ($[0] !== model.posts ? ($[0] = model.posts, $[1] = Text(`${model.posts.length} posts`)) : $[1]), $view2.onPress(() => {
+if (model.posts[0] !== undefined) {
+FeedModel$like(model, model.posts[0]);
+}
+}));
+$[2] = model.isLoading;
+$[3] = model.posts;
+$[4] = $t0;
+$[5] = $t1;
+} else {
+$t1 = $[5];
+}
+return $t1;
+});
+
+const $fields3 = ["filter", "posts"] as const;
+const $view4 = Button(Text("Clear"));
+const $view5 = Text("Nothing yet");
+export interface FilterBarProps {
+  readonly model: FeedModel;
+}
+export const FilterBar = view(function FilterBar(props: FilterBarProps) {
+"use no memo";
+const $ = $c(5);
+const { model } = props;
+const $t2 = useObserved(model, $fields3);
+let $t3;
+if ($[2] !== model.filter || $[3] !== $t2) {
+$t3 = HStack(($[0] !== model.filter ? ($[0] = model.filter, $[1] = Text(model.filter)) : $[1]), $view4.onPress(() => {
+model.$set("filter", "");
+}), (FeedModel$isEmpty(model)) ? $view5 : null);
+$[2] = model.filter;
+$[3] = $t2;
+$[4] = $t3;
+} else {
+$t3 = $[4];
+}
+return $t3;
+});
+
+export function tally(): number {
+const counter = new Counter();
+Counter$bump(counter);
+return counter.count;
+}
+

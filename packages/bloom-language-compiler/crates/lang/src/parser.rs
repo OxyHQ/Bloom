@@ -13,7 +13,8 @@ pub fn parse(source: &str) -> (File, Comments, Vec<Diagnostic>) {
     let mut parser = Parser::new(source, lexed.tokens, &mut next_id);
     parser.diagnostics = lexed.diagnostics;
     let file = parser.file();
-    let diagnostics = parser.diagnostics;
+    let mut diagnostics = parser.diagnostics;
+    diagnostics.extend(deprecations(&parser.deprecated));
     let mut comments = lexed.comments;
     comments.extend(parser.sub_comments);
     comments.sort_by_key(|c| c.span.start);
@@ -30,6 +31,63 @@ struct Parser<'s, 'i> {
     panicking: bool,
     /// Comments found inside interpolations.
     sub_comments: Vec<Comment>,
+    /// Per closure being read, how many `$0`, `$1`… shorthand parameters it uses.
+    shorthand: Vec<u32>,
+    /// The 0.x forms 2.0 retires, each with where it first appears and how often.
+    deprecated: Vec<(Deprecated, Span, u32)>,
+    /// Inside `extern module "…" { … }`: functions have no body, constants no value.
+    in_extern: bool,
+}
+
+/// A 0.x form that 2.0 retires; it parses, with one warning per form per file, until
+/// `bloomc migrate --from 0.x` no longer needs it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Deprecated {
+    Fn,
+    Pub,
+    Interpolation,
+    Match,
+    View,
+    Effect,
+    Ref,
+    Equal,
+    SpreadProps,
+}
+
+impl Deprecated {
+    fn texts(self) -> (&'static str, &'static str) {
+        match self {
+            Deprecated::Fn => ("`fn`", "write `func` (its parameters are labelled; `_` for none)"),
+            Deprecated::Pub => ("`pub`", "write `public`"),
+            Deprecated::Interpolation => ("`${…}` interpolation", "write `\\(…)`"),
+            Deprecated::Match => ("`match`", "write `switch x { case .a: … }`"),
+            Deprecated::View => (
+                "`view`/`screen`/`layout` declarations",
+                "write `struct X: View { … var body: some View { … } }`",
+            ),
+            Deprecated::Effect => {
+                ("the `effect` member", "use `.task(id:)`, `.onChange(of:)` or `.onAppear` on the body")
+            }
+            Deprecated::Ref => ("`@ref`", "hold a `class` in `@State`"),
+            Deprecated::Equal => ("`equal(old, new)`", "conform to `Equatable` with `static func ==`"),
+            Deprecated::SpreadProps => ("`..Props` spread props", "declare the props as stored properties"),
+        }
+    }
+}
+
+/// One warning per retired form the file uses (B0950), at its first use.
+fn deprecations(found: &[(Deprecated, Span, u32)]) -> Vec<Diagnostic> {
+    found
+        .iter()
+        .map(|&(form, span, count)| {
+            let (what, help) = form.texts();
+            let times = if count == 1 { "once".to_string() } else { format!("{count} times") };
+            Diagnostic::warning("B0950", span, format!("{what} is Bloom 0.x ({times} in this file)"))
+                .label("retired in 2.0")
+                .help(format!("{help}, or run `bloomc migrate --from 0.x` on the file"))
+                .spec("141-bloomc-migrate---from-0x-20")
+        })
+        .collect()
 }
 
 /// Where an expression is read: a head (`if x {`) never takes a trailing closure.
@@ -52,6 +110,36 @@ fn describe(tok: &Tok) -> String {
     }
 }
 
+/// `public`, `internal`, `private`, `fileprivate`.
+fn visibility_word(word: &str) -> Option<Visibility> {
+    Some(match word {
+        "public" | "open" => Visibility::Public,
+        "internal" => Visibility::Internal,
+        "private" | "fileprivate" => Visibility::Private,
+        _ => return None,
+    })
+}
+
+/// A word that starts a declaration or is one of its modifiers (2.0's contextual keywords).
+fn is_decl_word(word: &str) -> bool {
+    matches!(
+        word,
+        "func"
+            | "class"
+            | "protocol"
+            | "extension"
+            | "static"
+            | "final"
+            | "public"
+            | "internal"
+            | "private"
+            | "fileprivate"
+            | "open"
+            | "mutating"
+            | "init"
+    )
+}
+
 fn is_upper(name: &str) -> bool {
     name.chars().next().is_some_and(|c| c.is_ascii_uppercase())
 }
@@ -66,6 +154,9 @@ impl<'s, 'i> Parser<'s, 'i> {
             diagnostics: Vec::new(),
             panicking: false,
             sub_comments: Vec::new(),
+            shorthand: Vec::new(),
+            deprecated: Vec::new(),
+            in_extern: false,
         }
     }
 
@@ -412,6 +503,23 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn import(&mut self) -> Option<Import> {
         let start = self.bump();
+        // `import Bloom`, `import Mention.Posts`: a module by name (2.0).
+        if matches!(self.tok(), Tok::Ident(_)) && !matches!(self.nth(1), Tok::Kw(Kw::From) | Tok::P(P::Comma))
+        {
+            let mut path = vec![self.ident("a module name")];
+            while self.at(P::Dot) && matches!(self.nth(1), Tok::Ident(_)) {
+                self.bump();
+                path.push(self.ident("a module name"));
+            }
+            let source_span = path[0].span.to(path[path.len() - 1].span);
+            let source = path.iter().map(|segment| segment.name.as_str()).collect::<Vec<_>>().join(".");
+            return Some(Import {
+                kind: ImportKind::Module(path),
+                source,
+                source_span,
+                span: start.to(source_span),
+            });
+        }
         let kind = if self.eat(P::Star) {
             if !self.eat_kw(Kw::As) {
                 self.unexpected("`as` (`import * as name from \"…\"`)");
@@ -474,21 +582,100 @@ impl<'s, 'i> Parser<'s, 'i> {
         Some(Import { kind, source, source_span, span: start.to(source_span) })
     }
 
-    fn item(&mut self) -> Option<Item> {
-        let start = self.span();
-        let mut visibility = Visibility::Private;
-        if self.eat_kw(Kw::Pub) {
-            visibility = Visibility::Pub;
-            if self.at_kw(Kw::Default) {
-                self.bump();
-                visibility = Visibility::PubDefault;
+    /// The attributes and modifiers before a declaration: `@Observable public final`,
+    /// `public private(set)`, `static`, 0.x `pub` and `pub default`.
+    fn modifiers(&mut self) -> (Visibility, Modifiers) {
+        let mut visibility = Visibility::Internal;
+        let mut modifiers = Modifiers::default();
+        loop {
+            match self.tok().clone() {
+                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern") => {
+                    let start = self.bump();
+                    let name = self.ident("an attribute");
+                    let args = if self.at(P::LParen) && !self.token().space_before {
+                        self.args().0
+                    } else {
+                        Vec::new()
+                    };
+                    let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                    modifiers.attrs.push(Attr { name, args, span });
+                    self.skip_newlines();
+                }
+                Tok::Kw(Kw::Pub) => {
+                    let span = self.bump();
+                    self.deprecate(Deprecated::Pub, span);
+                    visibility = Visibility::Public;
+                    modifiers.visibility_span = Some(span);
+                    if self.at_kw(Kw::Default) {
+                        let end = self.bump();
+                        visibility = Visibility::PubDefault;
+                        modifiers.visibility_span = Some(span.to(end));
+                    }
+                }
+                Tok::Ident(word) if visibility_word(&word).is_some() && self.modifier_follows() => {
+                    let level = visibility_word(&word).expect("a visibility");
+                    let span = self.bump();
+                    // `private(set)`: who may assign, after who may read.
+                    if self.at(P::LParen)
+                        && matches!(self.nth(1), Tok::Ident(n) if n == "set")
+                        && matches!(self.nth(2), Tok::P(P::RParen))
+                    {
+                        self.bump();
+                        self.bump();
+                        let end = self.bump();
+                        modifiers.setter = Some((level, span.to(end)));
+                    } else {
+                        visibility = level;
+                        modifiers.visibility_span = Some(span);
+                    }
+                }
+                Tok::Ident(word) if word == "static" && self.modifier_follows() => {
+                    self.bump();
+                    modifiers.is_static = true;
+                }
+                Tok::Ident(word) if word == "final" && self.modifier_follows() => {
+                    self.bump();
+                    modifiers.is_final = true;
+                }
+                _ => break,
             }
         }
+        (visibility, modifiers)
+    }
+
+    /// After a modifier word: a declaration (or another modifier), not a value named so.
+    fn modifier_follows(&self) -> bool {
+        match self.nth(1) {
+            Tok::Kw(_) => true,
+            Tok::P(P::LParen) => matches!(self.nth(2), Tok::Ident(n) if n == "set"),
+            Tok::Ident(n) => is_decl_word(n),
+            _ => false,
+        }
+    }
+
+    fn item(&mut self) -> Option<Item> {
+        let start = self.span();
+        let (visibility, modifiers) = self.modifiers();
         let kind = match self.tok() {
-            Tok::Kw(Kw::Struct) => ItemKind::Struct(self.struct_decl()),
+            Tok::Kw(Kw::Struct) => self.struct_item(),
             Tok::Kw(Kw::Enum) => ItemKind::Enum(self.enum_decl()),
             Tok::Kw(Kw::Type) => ItemKind::Alias(self.alias_decl()),
             Tok::Kw(Kw::Fn | Kw::Async) => ItemKind::Fn(self.fn_decl()),
+            Tok::Ident(word) if word == "func" => ItemKind::Fn(self.fn_decl()),
+            Tok::Ident(word) if word == "extern" && !self.in_extern => ItemKind::Extern(self.extern_decl()),
+            Tok::Ident(word) if word == "extension" && matches!(self.nth(1), Tok::Ident(_)) => {
+                ItemKind::Extension(self.extension_decl())
+            }
+            Tok::Ident(word) if word == "class" && matches!(self.nth(1), Tok::Ident(_)) => {
+                let observable = modifiers.attrs.iter().any(|a| a.name.name == "Observable");
+                ItemKind::Class(self.class_decl(observable))
+            }
+            Tok::Ident(word) if word == "protocol" && matches!(self.nth(1), Tok::Ident(_)) => {
+                ItemKind::Protocol(self.protocol_decl())
+            }
+            Tok::Ident(word) if word == "test" && *self.nth(1) == Tok::P(P::LParen) => {
+                ItemKind::Test(self.test_decl())
+            }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
             Tok::Kw(Kw::Var) => {
@@ -520,7 +707,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                 return None;
             }
         };
-        Some(Item { visibility, kind, span: start.to(Span::new(self.prev_end(), self.prev_end())) })
+        Some(Item {
+            visibility,
+            modifiers,
+            kind,
+            span: start.to(Span::new(self.prev_end(), self.prev_end())),
+        })
     }
 
     fn generics(&mut self) -> Vec<Ident> {
@@ -537,31 +729,392 @@ impl<'s, 'i> Parser<'s, 'i> {
         generics
     }
 
-    fn struct_decl(&mut self) -> StructDecl {
-        self.bump();
+    /// `struct X { a: Int = 0 }` (0.x fields), or 2.0's `struct X: P { let a: Int; func f() … }`.
+    /// A struct that conforms to `View` (or `Screen`, `Layout`) is a view.
+    fn struct_item(&mut self) -> ItemKind {
+        let keyword = self.bump();
         let name = self.ident("the struct's name");
         let generics = self.generics();
+        let conformances = self.conformances();
         let mut fields = Vec::new();
-        if let Some(open) = self.expect(P::LBrace, "`{` and the struct's fields") {
+        let mut members = Vec::new();
+        let body_start = self.span();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the struct's members") {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
-                let field_name = self.soft_name("a field name");
-                self.expect(P::Colon, "`:` and the field's type");
-                let ty = self.type_expr();
-                let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
-                fields.push(Field {
-                    name: field_name,
-                    ty,
-                    default,
-                    span: start.to(Span::new(self.prev_end(), self.prev_end())),
-                });
+                // 0.x: `name: Type = default`.
+                if matches!(self.tok(), Tok::Ident(_) | Tok::Kw(_))
+                    && matches!(self.nth(1), Tok::P(P::Colon))
+                    && !matches!(self.tok(), Tok::Kw(Kw::Let | Kw::Var))
+                {
+                    let field_name = self.soft_name("a field name");
+                    self.bump();
+                    let ty = self.type_expr();
+                    let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
+                    fields.push(Field {
+                        name: field_name,
+                        ty,
+                        default,
+                        span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                    });
+                } else if let Some(member) = self.type_member() {
+                    members.push(member);
+                }
                 self.eat(P::Comma);
                 self.member_end();
+                self.skip_newlines();
             }
             self.expect_close(P::RBrace, open);
         }
-        StructDecl { name, generics, fields }
+        if members.is_empty() && conformances.is_empty() {
+            return ItemKind::Struct(StructDecl { name, generics, fields, surface: None });
+        }
+        let surface = TypeBody {
+            conformances,
+            members,
+            span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
+        };
+        let view_kind = surface.conformances.iter().find_map(|c| match &c.kind {
+            TypeKind::Named { name, .. } => match name.name.as_str() {
+                "View" => Some(ViewKind::View),
+                "Screen" => Some(ViewKind::Screen),
+                "Layout" => Some(ViewKind::Layout),
+                _ => None,
+            },
+            _ => None,
+        });
+        if let Some(kind) = view_kind {
+            return ItemKind::View(self.lower_view(kind, keyword, name, surface));
+        }
+        // A data struct: its stored properties are its fields.
+        for member in &surface.members {
+            match &member.kind {
+                TypeMemberKind::Stored { name, ty: Some(ty), value, .. } => fields.push(Field {
+                    name: name.clone(),
+                    ty: ty.clone(),
+                    default: value.clone(),
+                    span: member.span,
+                }),
+                TypeMemberKind::Stored { name, ty: None, .. } => self.error(
+                    Diagnostic::error(
+                        "B0101",
+                        name.span,
+                        format!("stored property `{}` needs a type", name.name),
+                    )
+                    .label("expected `:` and a type")
+                    .help(format!("write `let {}: String`", name.name))
+                    .spec("44-structs"),
+                ),
+                // Methods and computed properties are lowered to functions with the
+                // struct's own (`crate::extensions`).
+                TypeMemberKind::Func(_) | TypeMemberKind::Computed { .. } => {}
+                TypeMemberKind::Let(l) => self.error(
+                    Diagnostic::error("B0106", l.span, "a struct's stored properties are named")
+                        .label("a destructuring `let` is a view's, computed each render")
+                        .spec("44-structs"),
+                ),
+            }
+        }
+        ItemKind::Struct(StructDecl { name, generics, fields, surface: Some(Box::new(surface)) })
+    }
+
+    /// A 2.0 member: `[@Attr] [modifiers] let|var name[: T][ = v]`, `var name: T { … }`, or a
+    /// `func` / `init`.
+    fn type_member(&mut self) -> Option<TypeMember> {
+        let start = self.span();
+        let (visibility, modifiers) = self.modifiers();
+        let kind = match self.tok() {
+            Tok::Kw(Kw::Let) if matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
+                TypeMemberKind::Let(self.let_stmt())
+            }
+            Tok::Kw(Kw::Let | Kw::Var) => {
+                let mutable = self.at_kw(Kw::Var);
+                self.bump();
+                let name = self.soft_name("the property's name");
+                let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
+                if let Some(ty) = ty.clone().filter(|_| mutable && self.at(P::LBrace)) {
+                    let body = self.block();
+                    TypeMemberKind::Computed { name, ty, body }
+                } else {
+                    let value = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
+                    TypeMemberKind::Stored { mutable, name, ty, value }
+                }
+            }
+            Tok::Kw(Kw::Fn | Kw::Async) => TypeMemberKind::Func(self.fn_decl()),
+            Tok::Ident(word) if word == "func" => TypeMemberKind::Func(self.fn_decl()),
+            Tok::Ident(word) if word == "init" && matches!(self.nth(1), Tok::P(P::LParen)) => {
+                let init_start = self.span();
+                let name = self.ident("`init`");
+                let params = self.params();
+                let throws = self.throws_clause();
+                let body = self.block();
+                TypeMemberKind::Func(FnDecl {
+                    is_async: false,
+                    func: true,
+                    name,
+                    generics: Vec::new(),
+                    constraints: Vec::new(),
+                    params,
+                    throws,
+                    ret: None,
+                    span: init_start.to(body.span),
+                    body,
+                })
+            }
+            _ => {
+                let found = describe(self.tok());
+                let span = self.span();
+                self.error(
+                    Diagnostic::error("B0106", span, format!("expected a member, found {found}"))
+                        .label("a type holds `let`/`var` properties, `var body`, `func`s and `init`")
+                        .spec("44-structs"),
+                );
+                return None;
+            }
+        };
+        Some(TypeMember {
+            visibility,
+            modifiers,
+            kind,
+            span: start.to(Span::new(self.prev_end(), self.prev_end())),
+        })
+    }
+
+    /// `struct X: View { … }` as the view it compiles to: stored `let`s (and `var`s with a
+    /// default) are props, `@State` states, `@Environment(\.k)` environment reads, `@Binding`
+    /// a prop holding a `Binding<T>`, `func`s members, `static func ==` the memo comparator,
+    /// and the effect modifiers on `var body` its effects.
+    fn lower_view(&mut self, kind: ViewKind, keyword: Span, name: Ident, surface: TypeBody) -> ViewDecl {
+        let mut params = Vec::new();
+        let mut members = Vec::new();
+        let mut body: Option<(Span, Block)> = None;
+        for member in &surface.members {
+            let attr = member.modifiers.attrs.first();
+            let attr_name = attr.map(|a| a.name.name.as_str());
+            match &member.kind {
+                TypeMemberKind::Stored { mutable, name: prop, ty, value } => match (attr_name, value) {
+                    (Some("State"), _) => {
+                        let attr = attr.expect("an attribute");
+                        let Some(value) = value.clone() else {
+                            self.error(
+                                Diagnostic::error(
+                                    "B0101",
+                                    prop.span,
+                                    format!("`@State var {}` needs its initial value", prop.name),
+                                )
+                                .label("expected `= value`")
+                                .help(format!("write `@State private var {} = …`", prop.name))
+                                .spec("73-reactivity-compile-time"),
+                            );
+                            continue;
+                        };
+                        members.push(Member::State(StateDecl {
+                            attr: StateAttr::State,
+                            attr_span: attr.span,
+                            name: prop.clone(),
+                            ty: ty.clone(),
+                            span: member.span,
+                            value,
+                        }));
+                    }
+                    (Some("Environment"), _) => {
+                        let attr = attr.expect("an attribute");
+                        let Some(key) = attr.args.first().map(|a| a.value.clone()) else {
+                            self.error(
+                                Diagnostic::error("B0101", attr.span, "`@Environment` names its key")
+                                    .label("expected `(\\.key)`")
+                                    .help("write `@Environment(\\.locale) private var locale`")
+                                    .spec("74-environment"),
+                            );
+                            continue;
+                        };
+                        members.push(Member::State(StateDecl {
+                            attr: StateAttr::Env,
+                            attr_span: attr.span,
+                            name: prop.clone(),
+                            ty: ty.clone(),
+                            span: member.span,
+                            value: key,
+                        }));
+                    }
+                    (Some("Binding"), _) => {
+                        let Some(ty) = ty.clone() else {
+                            self.missing_prop_type(prop);
+                            continue;
+                        };
+                        let span = ty.span;
+                        let binding = Ident { name: "Binding".into(), span };
+                        params.push(Param {
+                            label: None,
+                            name: prop.clone(),
+                            rest: false,
+                            spread: false,
+                            whole: None,
+                            ty: TypeExpr { kind: TypeKind::Named { name: binding, args: vec![ty] }, span },
+                            default: None,
+                            span: member.span,
+                        });
+                    }
+                    (Some(other), _) => {
+                        let attr = attr.expect("an attribute");
+                        self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                attr.span,
+                                format!("unknown property wrapper `@{other}`"),
+                            )
+                            .label("a view's properties take `@State`, `@Binding` or `@Environment`")
+                            .spec("73-reactivity-compile-time"),
+                        );
+                    }
+                    // `let x = v`: a constant, computed per render.
+                    (None, Some(value)) if !mutable => members.push(Member::Let(LetStmt {
+                        pattern: Pattern {
+                            kind: if prop.name == "_" {
+                                PatternKind::Wildcard
+                            } else {
+                                PatternKind::Bind(prop.clone())
+                            },
+                            span: prop.span,
+                        },
+                        ty: ty.clone(),
+                        value: value.clone(),
+                        span: member.span,
+                    })),
+                    // `let x: T` and `var x: T = default`: a prop.
+                    (None, default) => {
+                        let Some(ty) = ty.clone() else {
+                            self.missing_prop_type(prop);
+                            continue;
+                        };
+                        params.push(Param {
+                            label: None,
+                            name: prop.clone(),
+                            rest: false,
+                            spread: false,
+                            whole: None,
+                            ty,
+                            default: default.clone(),
+                            span: member.span,
+                        });
+                    }
+                },
+                TypeMemberKind::Computed { name: prop, body: block, .. } if prop.name == "body" => {
+                    body = Some((prop.span, block.clone()));
+                }
+                TypeMemberKind::Computed { name: prop, .. } => self.error(
+                    Diagnostic::error(
+                        "B0106",
+                        prop.span,
+                        "a view's computed properties are not supported yet",
+                    )
+                    .label("only `var body` is computed in phase A")
+                    .help("write a `func` member, or a `let` computed each render")
+                    .spec("71-a-view"),
+                ),
+                TypeMemberKind::Func(f) if member.modifiers.is_static && f.name.name == "==" => {
+                    match f.params.as_slice() {
+                        [old, new] => members.push(Member::Equal(EqualDecl {
+                            keyword: f.name.span,
+                            old: old.name.clone(),
+                            new: new.name.clone(),
+                            body: f.body.clone(),
+                            span: f.span,
+                        })),
+                        _ => self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                f.name.span,
+                                "`==` takes two views: `(a: Self, b: Self)`",
+                            )
+                            .label("wrong number of parameters")
+                            .spec("73-reactivity-compile-time"),
+                        ),
+                    }
+                }
+                TypeMemberKind::Func(f) => members.push(Member::Fn(f.clone())),
+                TypeMemberKind::Let(l) => members.push(Member::Let(l.clone())),
+            }
+        }
+        let (body_keyword, mut body) = body.unwrap_or_else(|| {
+            self.error(
+                Diagnostic::error("B0106", name.span, format!("view `{}` has no body", name.name))
+                    .label("this view draws nothing")
+                    .help("add `var body: some View { … }`")
+                    .spec("71-a-view"),
+            );
+            (name.span, Block { stmts: Vec::new(), span: name.span })
+        });
+        members.extend(self.peel_effects(&mut body).into_iter().map(Member::Effect));
+        let span = keyword.to(surface.span);
+        ViewDecl {
+            kind,
+            name,
+            params: Some(params),
+            members,
+            body_keyword,
+            body,
+            span,
+            surface: Some(Box::new(surface)),
+        }
+    }
+
+    fn missing_prop_type(&mut self, prop: &Ident) {
+        self.error(
+            Diagnostic::error("B0101", prop.span, format!("prop `{}` needs a type", prop.name))
+                .label("expected `:` and a type")
+                .help(format!("write `let {}: String`", prop.name))
+                .spec("71-a-view"),
+        );
+    }
+
+    /// `.onAppear { }` and `.onDisappear { }` at the end of a view's body: its effects, in
+    /// order. `.onAppear` runs once after the first render (its id is `()`) and `.onDisappear`
+    /// is that effect's cleanup. (`.task`, `.task(id:)` and `.onChange(of:)` are modifiers of
+    /// any node already.)
+    fn peel_effects(&mut self, body: &mut Block) -> Vec<EffectDecl> {
+        let mut effects = Vec::new();
+        let Some(Stmt { kind: StmtKind::Expr(last), .. }) = body.stmts.last_mut() else { return effects };
+        while let ExprKind::Call(call) = &last.kind {
+            let ExprKind::Field(_, modifier) = &call.callee.kind else { break };
+            if !matches!(modifier.name.as_str(), "onAppear" | "onDisappear") || !call.args.is_empty() {
+                break;
+            }
+            let Some(closure) = call.trailing.as_deref() else { break };
+            let keyword = modifier.span;
+            // Once, after the first render: an effect whose id never changes.
+            let id = self.expr_node(ExprKind::Unit, keyword);
+            if !closure.params.is_empty() {
+                self.error(
+                    Diagnostic::error(
+                        "B0101",
+                        closure.span,
+                        format!("`.{}`'s closure takes no parameters yet", modifier.name),
+                    )
+                    .label("phase A passes neither the old nor the new value")
+                    .help("read the value itself in the closure")
+                    .spec("8-effects-tasks-and-concurrency"),
+                );
+            }
+            let block = Block { stmts: closure.body.clone(), span: closure.span };
+            let body = if modifier.name == "onDisappear" {
+                Block {
+                    stmts: vec![Stmt { kind: StmtKind::Defer(block), span: closure.span }],
+                    span: closure.span,
+                }
+            } else {
+                block
+            };
+            effects.push(EffectDecl { keyword, id: Some(id), span: keyword.to(closure.span), body });
+            let ExprKind::Call(call) = std::mem::replace(&mut last.kind, ExprKind::Error) else {
+                unreachable!()
+            };
+            let ExprKind::Field(inner, _) = call.callee.kind else { unreachable!() };
+            *last = *inner;
+        }
+        effects.reverse();
+        effects
     }
 
     /// The end of a field, variant or member: a line break, or recovery to one.
@@ -577,21 +1130,26 @@ impl<'s, 'i> Parser<'s, 'i> {
         self.bump();
         let name = self.ident("the enum's name");
         let generics = self.generics();
+        let conformances = self.conformances();
         let mut variants = Vec::new();
+        let mut members = Vec::new();
+        let mut swift = false;
         if let Some(open) = self.expect(P::LBrace, "`{` and the enum's cases") {
             self.skip_newlines();
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
                 let start = self.span();
-                if self.at_kw(Kw::Case) {
-                    let span = self.span();
-                    self.error(
-                        Diagnostic::error("B0101", span, "an enum's cases are written without `case`")
-                            .label("remove this")
-                            .help("write each case on its own line: `loading`, `failed(message: String)`")
-                            .fix(span, "")
-                            .spec("45-enums-option-and-result"),
-                    );
-                    self.bump();
+                // A member (2.0): `var title: String { … }`, `func`, `static let`.
+                if self.member_ahead() {
+                    if let Some(member) = self.type_member() {
+                        members.push(member);
+                    }
+                    self.member_end();
+                    self.skip_newlines();
+                    continue;
+                }
+                // `case loading, failed(Error)` (2.0): Swift's cases.
+                if self.eat_kw(Kw::Case) {
+                    swift = true;
                 }
                 let variant_name = self.ident("a case name");
                 let mut payload = Vec::new();
@@ -634,7 +1192,21 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             self.expect_close(P::RBrace, open);
         }
-        EnumDecl { name, generics, variants }
+        EnumDecl { name, generics, conformances, variants, swift, members }
+    }
+
+    /// `: View, Equatable`: the protocols a type conforms to (2.0).
+    fn conformances(&mut self) -> Vec<TypeExpr> {
+        let mut out = Vec::new();
+        if self.eat(P::Colon) {
+            loop {
+                out.push(self.base_type());
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+        }
+        out
     }
 
     fn alias_decl(&mut self) -> AliasDecl {
@@ -650,28 +1222,395 @@ impl<'s, 'i> Parser<'s, 'i> {
         let start = self.bump();
         let name = self.ident("the constant's name");
         let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
+        if self.in_extern && !self.at(P::Eq) {
+            // `let version: String` in an extern module: the package's value of that name.
+            let value = Expr { id: self.id(), kind: ExprKind::Name(name.name.clone()), span: name.span };
+            return ConstDecl {
+                span: start.to(Span::new(self.prev_end(), self.prev_end())),
+                name,
+                ty,
+                value,
+            };
+        }
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
         ConstDecl { name, ty, span: start.to(value.span), value }
     }
 
-    fn fn_decl(&mut self) -> FnDecl {
-        let start = self.span();
-        let is_async = self.eat_kw(Kw::Async);
-        if !self.eat_kw(Kw::Fn) {
-            self.unexpected("`fn` after `async`");
-        }
-        let name = self.ident("the function's name");
+    /// `extension Name[<T>][: P] { members }`.
+    fn extension_decl(&mut self) -> ExtensionDecl {
+        self.bump();
+        let name = self.ident("the extended type's name");
         let generics = self.generics();
+        let conformances = self.conformances();
+        let mut members = Vec::new();
+        let body_start = self.span();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the extension's members") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(member) = self.type_member() {
+                    match &member.kind {
+                        TypeMemberKind::Stored { name, .. } if !member.modifiers.is_static => self.error(
+                            Diagnostic::error("B0106", name.span, "an extension adds no stored properties")
+                                .label("a value's stored properties are its type's")
+                                .help("make it a computed property (`var x: T { … }`), or `static let`")
+                                .spec("44-structs"),
+                        ),
+                        TypeMemberKind::Let(l) => self.error(
+                            Diagnostic::error("B0106", l.span, "an extension's properties are named")
+                                .label("a destructuring `let` is a view's")
+                                .spec("44-structs"),
+                        ),
+                        _ => {}
+                    }
+                    members.push(member);
+                }
+                self.eat(P::Comma);
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let body = TypeBody {
+            conformances,
+            members,
+            span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
+        };
+        ExtensionDecl { name, generics, body }
+    }
+
+    /// Whether a type member (not an enum case) starts here: a modifier, `@`, `func`,
+    /// `var`, `let`, `init`.
+    fn member_ahead(&self) -> bool {
+        match self.tok() {
+            Tok::P(P::At) => true,
+            Tok::Kw(Kw::Let | Kw::Var | Kw::Fn | Kw::Async) => true,
+            Tok::Ident(w) => {
+                matches!(w.as_str(), "func" | "init")
+                    || (visibility_word(w).is_some() || w == "static") && self.modifier_follows()
+            }
+            _ => false,
+        }
+    }
+
+    /// `[@Observable] [final] class Name[<T>][: P] { members }`.
+    fn class_decl(&mut self, observable: bool) -> ClassDecl {
+        self.bump();
+        let name = self.ident("the class's name");
+        let generics = self.generics();
+        let conformances = self.conformances();
+        let mut members = Vec::new();
+        let body_start = self.span();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the class's members") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(member) = self.type_member() {
+                    if let TypeMemberKind::Stored { name, ty: None, value: None, .. } = &member.kind {
+                        self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                name.span,
+                                format!("stored property `{}` needs a type", name.name),
+                            )
+                            .label("expected `:` and a type, or `= value`")
+                            .spec("44-structs"),
+                        );
+                    }
+                    members.push(member);
+                }
+                self.eat(P::Comma);
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let body = TypeBody {
+            conformances,
+            members,
+            span: body_start.to(Span::new(self.prev_end(), self.prev_end())),
+        };
+        ClassDecl { name, generics, observable, body }
+    }
+
+    /// `protocol Name[: Q] { var x: T { get [set] }; func f(…) -> R }`.
+    fn protocol_decl(&mut self) -> ProtocolDecl {
+        let start = self.bump();
+        let name = self.ident("the protocol's name");
+        let inherits = self.conformances();
+        let mut requirements = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the protocol's requirements") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                let member_start = self.span();
+                let (_, modifiers) = self.modifiers();
+                let is_static = modifiers.is_static;
+                match self.tok() {
+                    Tok::Kw(Kw::Var | Kw::Let) => {
+                        self.bump();
+                        let prop = self.soft_name("the property's name");
+                        self.expect(P::Colon, "`:` and the property's type");
+                        let ty = self.type_expr();
+                        let mut settable = false;
+                        if let Some(open) = self.at(P::LBrace).then(|| self.bump()) {
+                            while matches!(self.tok(), Tok::Ident(_) | Tok::Newline) {
+                                if matches!(self.tok(), Tok::Ident(w) if w == "set") {
+                                    settable = true;
+                                }
+                                self.bump();
+                            }
+                            self.expect_close(P::RBrace, open);
+                        }
+                        let span = member_start.to(Span::new(self.prev_end(), self.prev_end()));
+                        requirements.push(Requirement::Property {
+                            name: prop,
+                            ty,
+                            settable,
+                            is_static,
+                            span,
+                        });
+                    }
+                    Tok::Ident(w) if w == "func" => {
+                        let decl = self.fn_signature_decl();
+                        requirements.push(Requirement::Func { decl, is_static });
+                    }
+                    _ => {
+                        let found = describe(self.tok());
+                        let span = self.span();
+                        self.error(
+                            Diagnostic::error(
+                                "B0106",
+                                span,
+                                format!("expected a requirement, found {found}"),
+                            )
+                            .label("a protocol holds `var x: T { get }` and `func` signatures")
+                            .spec("48-protocols"),
+                        );
+                        self.recover_line();
+                    }
+                }
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        ProtocolDecl {
+            name,
+            inherits,
+            requirements,
+            span: start.to(Span::new(self.prev_end(), self.prev_end())),
+        }
+    }
+
+    /// A `func`'s signature without a body (a protocol's requirement).
+    fn fn_signature_decl(&mut self) -> FnDecl {
+        let start = self.bump();
+        let name = self.ident("the function's name");
+        let (generics, mut constraints) = self.constrained_generics();
         let params = if self.at(P::LParen) {
             self.params()
         } else {
             self.unexpected("`(` and the parameters");
             Vec::new()
         };
+        let is_async = self.eat_kw(Kw::Async);
+        let throws = self.throws_clause();
         let ret = if self.eat(P::Arrow) { Some(self.type_expr()) } else { None };
+        constraints.extend(self.where_clause());
+        let end = Span::new(self.prev_end(), self.prev_end());
+        FnDecl {
+            is_async,
+            func: true,
+            name,
+            generics,
+            constraints,
+            params,
+            throws,
+            ret,
+            body: Block { stmts: Vec::new(), span: end },
+            span: start.to(end),
+        }
+    }
+
+    /// `test("name") { … }`.
+    fn test_decl(&mut self) -> TestDecl {
+        self.bump();
+        self.expect(P::LParen, "`(` and the test's name");
+        let name = match self.tok().clone() {
+            Tok::Str { parts, .. } => {
+                let span = self.bump();
+                let name = parts
+                    .iter()
+                    .map(|p| match p {
+                        RawPart::Text(t) => t.as_str(),
+                        RawPart::Interp(_) => "",
+                    })
+                    .collect::<String>();
+                Ident { name, span }
+            }
+            _ => {
+                self.unexpected("the test's name, as a string");
+                Ident { name: String::new(), span: self.span() }
+            }
+        };
+        self.expect(P::RParen, "`)` after the test's name");
         let body = self.block();
-        FnDecl { is_async, name, generics, params, ret, span: start.to(body.span), body }
+        TestDecl { name, body }
+    }
+
+    /// `extern module "pkg" { declarations }`.
+    fn extern_decl(&mut self) -> ExternModule {
+        self.bump();
+        if matches!(self.tok(), Tok::Ident(w) if w == "module") {
+            self.bump();
+        } else {
+            self.unexpected("`module` (`extern module \"package\" { … }`)");
+        }
+        let package = match self.tok().clone() {
+            Tok::Str { parts, .. } => {
+                let span = self.bump();
+                let name = parts
+                    .iter()
+                    .map(|p| match p {
+                        RawPart::Text(t) => t.as_str(),
+                        RawPart::Interp(_) => "",
+                    })
+                    .collect::<String>();
+                Ident { name, span }
+            }
+            _ => {
+                self.unexpected("the npm package's name, as a string");
+                Ident { name: String::new(), span: self.span() }
+            }
+        };
+        let mut items = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the package's declarations") {
+            let outer = std::mem::replace(&mut self.in_extern, true);
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                if let Some(item) = self.item() {
+                    items.push(item);
+                }
+                self.member_end();
+                self.skip_newlines();
+            }
+            self.in_extern = outer;
+            self.expect_close(P::RBrace, open);
+        }
+        ExternModule { package, items }
+    }
+
+    fn fn_decl(&mut self) -> FnDecl {
+        let start = self.span();
+        let mut is_async = self.eat_kw(Kw::Async);
+        let func = matches!(self.tok(), Tok::Ident(w) if w == "func");
+        if func {
+            self.bump();
+        } else if self.at_kw(Kw::Fn) {
+            let span = self.bump();
+            self.deprecate(Deprecated::Fn, span);
+        } else {
+            self.unexpected("`func`");
+        }
+        // `static func == (a: Self, b: Self)`: an operator's name.
+        let name = match self.tok() {
+            Tok::P(P::EqEq) => {
+                let span = self.bump();
+                Ident { name: "==".into(), span }
+            }
+            _ => self.ident("the function's name"),
+        };
+        let (generics, mut constraints) = self.constrained_generics();
+        let params = if self.at(P::LParen) {
+            self.params()
+        } else {
+            self.unexpected("`(` and the parameters");
+            Vec::new()
+        };
+        // `async throws(E)` after the parameters, as Swift writes them.
+        if self.eat_kw(Kw::Async) {
+            is_async = true;
+        }
+        let throws = self.throws_clause();
+        let ret = if self.eat(P::Arrow) { Some(self.type_expr()) } else { None };
+        constraints.extend(self.where_clause());
+        let body = if self.in_extern && !self.at(P::LBrace) {
+            // An extern function: the package's, called by the binding module's lowering.
+            let end = Span::new(self.prev_end(), self.prev_end());
+            Block { stmts: Vec::new(), span: end }
+        } else {
+            self.block()
+        };
+        FnDecl {
+            is_async,
+            func,
+            name,
+            generics,
+            constraints,
+            params,
+            throws,
+            ret,
+            span: start.to(body.span),
+            body,
+        }
+    }
+
+    /// `throws` or `throws(E)`.
+    fn throws_clause(&mut self) -> Option<Throws> {
+        if !matches!(self.tok(), Tok::Ident(w) if w == "throws" || w == "rethrows") {
+            return None;
+        }
+        let span = self.bump();
+        let ty = if self.at(P::LParen) && !self.token().space_before {
+            let open = self.bump();
+            let ty = self.type_expr();
+            self.expect_close(P::RParen, open);
+            Some(ty)
+        } else {
+            None
+        };
+        Some(Throws { span: span.to(Span::new(self.prev_end(), self.prev_end())), ty })
+    }
+
+    /// `<T, U: Equatable>`: the type parameters and the protocols each conforms to.
+    fn constrained_generics(&mut self) -> (Vec<Ident>, Vec<(Ident, TypeExpr)>) {
+        let mut generics = Vec::new();
+        let mut constraints = Vec::new();
+        if self.eat(P::Lt) {
+            loop {
+                let name = self.ident("a type parameter");
+                if self.eat(P::Colon) {
+                    loop {
+                        constraints.push((name.clone(), self.base_type()));
+                        if !self.eat(P::Amp) {
+                            break;
+                        }
+                    }
+                }
+                generics.push(name);
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+            self.expect(P::Gt, "`>` to close the type parameters");
+        }
+        (generics, constraints)
+    }
+
+    /// `where T: Equatable, U: P`.
+    fn where_clause(&mut self) -> Vec<(Ident, TypeExpr)> {
+        let mut constraints = Vec::new();
+        if matches!(self.tok(), Tok::Ident(w) if w == "where") {
+            self.bump();
+            loop {
+                let name = self.ident("a type parameter");
+                self.expect(P::Colon, "`:` and a protocol");
+                constraints.push((name, self.base_type()));
+                if !self.eat(P::Comma) {
+                    break;
+                }
+            }
+        }
+        constraints
     }
 
     fn params(&mut self) -> Vec<Param> {
@@ -689,12 +1628,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                 && !matches!(self.nth(1), Tok::P(P::Colon))
             {
                 // `..Props`: a type's fields as props.
+                self.deprecate(Deprecated::SpreadProps, start);
                 let ty = self.type_expr();
                 let name = match &ty.kind {
                     TypeKind::Named { name, .. } => name.clone(),
                     _ => Ident { name: String::new(), span: ty.span },
                 };
                 params.push(Param {
+                    label: None,
                     name,
                     rest: false,
                     spread: true,
@@ -708,6 +1649,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 continue;
             }
+            // `to x: Int`: the label a call writes, then the name the body uses (`_`: none).
+            let label = if matches!(self.tok(), Tok::Ident(_) | Tok::Kw(_))
+                && (matches!(self.nth(1), Tok::Ident(_))
+                    || matches!(self.nth(1), Tok::Kw(kw) if is_soft(*kw)))
+                && matches!(self.nth(2), Tok::P(P::Colon))
+            {
+                Some(self.name_or_keyword("an argument label"))
+            } else {
+                None
+            };
             let name = self.soft_name("a parameter name");
             if !self.at(P::Colon) {
                 let span = name.span;
@@ -728,7 +1679,9 @@ impl<'s, 'i> Parser<'s, 'i> {
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
             // `..props: Props`, a named type and not a list: the props spread, their whole named.
             if rest && let TypeKind::Named { name: type_name, .. } = &ty.kind {
+                self.deprecate(Deprecated::SpreadProps, start);
                 params.push(Param {
+                    label: None,
                     name: type_name.clone(),
                     rest: false,
                     spread: true,
@@ -743,6 +1696,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 continue;
             }
             params.push(Param {
+                label,
                 name,
                 rest,
                 spread: false,
@@ -761,6 +1715,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn view_decl(&mut self) -> ViewDecl {
         let start = self.span();
+        self.deprecate(Deprecated::View, start);
         let kind = match self.tok() {
             Tok::Kw(Kw::Screen) => ViewKind::Screen,
             Tok::Kw(Kw::Layout) => ViewKind::Layout,
@@ -821,7 +1776,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             );
             (span, Block { stmts: Vec::new(), span: end })
         });
-        ViewDecl { kind, name, params, members, body_keyword, body, span: start.to(end) }
+        ViewDecl { kind, name, params, members, body_keyword, body, span: start.to(end), surface: None }
     }
 
     fn member(&mut self) -> Option<Member> {
@@ -834,7 +1789,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                     "list" => StateAttr::List,
                     "record" => StateAttr::Record,
                     "env" => StateAttr::Env,
-                    "ref" => StateAttr::Ref,
+                    "ref" => {
+                        self.deprecate(Deprecated::Ref, start.to(word.span));
+                        StateAttr::Ref
+                    }
                     other => {
                         let help =
                             crate::diagnostic::closest(other, ["state", "list", "record", "env", "ref"])
@@ -870,8 +1828,10 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Let) => Some(Member::Let(self.let_stmt())),
             Tok::Kw(Kw::Fn | Kw::Async) => Some(Member::Fn(self.fn_decl())),
+            Tok::Ident(word) if word == "func" => Some(Member::Fn(self.fn_decl())),
             Tok::Ident(word) if word == "equal" && matches!(self.nth(1), Tok::P(P::LParen)) => {
                 let keyword = self.bump();
+                self.deprecate(Deprecated::Equal, keyword);
                 let open = self.bump();
                 let old = self.ident("the old props' name");
                 self.expect(P::Comma, "`,` and the new props' name");
@@ -882,6 +1842,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Ident(word) if word == "effect" && matches!(self.nth(1), Tok::P(P::LBrace | P::LParen)) => {
                 let keyword = self.bump();
+                self.deprecate(Deprecated::Effect, keyword);
                 let id = if self.at(P::LParen) {
                     let open = self.bump();
                     let label = self.name_or_keyword("`id`");
@@ -952,6 +1913,27 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn base_type(&mut self) -> TypeExpr {
         let start = self.span();
         match self.tok().clone() {
+            // `some View`, `any Identifiable` (2.0): the protocol's type, statically (an
+            // existential's witness is explicit, phase A follow-up).
+            // `any P`: an existential, its witness passed with it (`Named { any, [P] }`).
+            Tok::Ident(word) if word == "any" && matches!(self.nth(1), Tok::Ident(_)) => {
+                let keyword = self.bump();
+                let inner = self.base_type();
+                let span = start.to(inner.span);
+                TypeExpr {
+                    kind: TypeKind::Named {
+                        name: Ident { name: "any".into(), span: keyword },
+                        args: vec![inner],
+                    },
+                    span,
+                }
+            }
+            Tok::Ident(word) if word == "some" && matches!(self.nth(1), Tok::Ident(_)) => {
+                self.bump();
+                let mut inner = self.base_type();
+                inner.span = start.to(inner.span);
+                inner
+            }
             Tok::Ident(_) => {
                 let name = self.ident("a type");
                 let mut args = Vec::new();
@@ -996,6 +1978,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                     }
                 }
                 self.expect_close(P::RParen, open);
+                // `() async throws -> T` (2.0).
+                let is_async = is_async || self.eat_kw(Kw::Async);
+                if matches!(self.tok(), Tok::Ident(w) if w == "throws")
+                    && matches!(self.nth(1), Tok::P(P::Arrow))
+                {
+                    self.bump();
+                }
                 if self.eat(P::Arrow) {
                     let ret = self.type_expr();
                     return TypeExpr {
@@ -1160,6 +2149,54 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let body = self.block();
                 StmtKind::While(WhileStmt { cond, body })
             }
+            // `guard let x = v else { return }`, `guard ok else { … }` (2.0).
+            Tok::Ident(word) if word == "guard" && self.statement_word() => {
+                self.bump();
+                let cond = if self.eat_kw(Kw::Let) {
+                    let pattern = self.pattern();
+                    self.expect(P::Eq, "`=` and the value to unwrap");
+                    Cond::Let(pattern, Box::new(self.expr(Ctx::Head)))
+                } else {
+                    Cond::Expr(Box::new(self.expr(Ctx::Head)))
+                };
+                if !self.eat_kw(Kw::Else) {
+                    self.unexpected("`else` and the block that leaves (`guard … else { return }`)");
+                }
+                let otherwise = self.block();
+                StmtKind::Guard(GuardStmt { cond, otherwise })
+            }
+            // `throw .offline`: an implicit member after a space, not `throw.offline`.
+            Tok::Ident(word)
+                if word == "throw"
+                    && (self.statement_word()
+                        || matches!(self.nth(1), Tok::P(P::Dot))
+                            && self.tokens[(self.pos + 1).min(self.tokens.len() - 1)].space_before) =>
+            {
+                self.bump();
+                StmtKind::Throw(self.expr(Ctx::Normal))
+            }
+            Tok::Ident(word) if word == "do" && matches!(self.nth(1), Tok::P(P::LBrace)) => {
+                self.bump();
+                let body = self.block();
+                let mut catches = Vec::new();
+                while matches!(self.tok(), Tok::Ident(w) if w == "catch") || (self.next_line_word("catch")) {
+                    self.skip_newlines();
+                    let keyword = self.bump();
+                    let (mut name, mut ty, mut pattern) = (None, None, None);
+                    if self.eat_kw(Kw::Let) {
+                        name = Some(self.ident("the error's name"));
+                        if self.eat_kw(Kw::As) {
+                            ty = Some(self.type_expr());
+                        }
+                    } else if !self.at(P::LBrace) {
+                        pattern = Some(self.pattern());
+                    }
+                    let body = self.block();
+                    let span = keyword.to(body.span);
+                    catches.push(Catch { keyword, name, ty, pattern, body, span });
+                }
+                StmtKind::Do(DoStmt { body, catches })
+            }
             Tok::Kw(Kw::For) => {
                 self.bump();
                 let pattern = self.pattern();
@@ -1211,7 +2248,30 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     // ---- patterns -----------------------------------------------------
 
+    /// A statement word (`guard`, `throw`) followed by what it takes, not a value named so.
+    fn statement_word(&self) -> bool {
+        !matches!(
+            self.nth(1),
+            Tok::P(P::Eq | P::Dot | P::LParen | P::PlusEq | P::MinusEq | P::StarEq | P::QuestionDot)
+                | Tok::Newline
+                | Tok::Eof
+        )
+    }
+
+    /// The next non-blank line starts with the word `word` (a `catch` after `}`).
+    fn next_line_word(&self, word: &str) -> bool {
+        let mut at = self.pos;
+        while matches!(self.tokens[at].tok, Tok::Newline) {
+            at += 1;
+        }
+        at > self.pos && matches!(&self.tokens[at].tok, Tok::Ident(w) if w == word)
+    }
+
     fn pattern(&mut self) -> Pattern {
+        // `case let .ready(x)`, `.ready(let x)`: Swift's `let` binds what Bloom's names bind.
+        if self.at_kw(Kw::Let) || self.at_kw(Kw::Var) {
+            self.bump();
+        }
         let first = self.single_pattern();
         if !self.at(P::Pipe) {
             return first;
@@ -1428,6 +2488,22 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Unary(UnaryOp::Neg, Box::new(operand)), span)
             }
+            // `try f()`, `try? f()`, `try! f()` (2.0).
+            Tok::Ident(word) if word == "try" && self.try_ahead() => {
+                self.bump();
+                let kind = if self.at(P::Question) && !self.token().space_before {
+                    self.bump();
+                    TryKind::Optional
+                } else if self.at(P::Bang) && !self.token().space_before {
+                    self.bump();
+                    TryKind::Force
+                } else {
+                    TryKind::Plain
+                };
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span)
+            }
             Tok::Kw(Kw::Await) => {
                 self.bump();
                 let primary = self.primary(ctx);
@@ -1446,9 +2522,135 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
     }
 
+    fn deprecate(&mut self, form: Deprecated, span: Span) {
+        match self.deprecated.iter_mut().find(|(f, _, _)| *f == form) {
+            Some((_, _, count)) => *count += 1,
+            None => self.deprecated.push((form, span, 1)),
+        }
+    }
+
+    /// `try` starts a throwing expression, not a value named `try`.
+    fn try_ahead(&self) -> bool {
+        let next = &self.tokens[self.pos + 1];
+        match &next.tok {
+            Tok::P(P::Question | P::Bang) => !next.space_before,
+            Tok::Ident(_) | Tok::Kw(Kw::Await) | Tok::P(P::Dot | P::LParen | P::LBracket) => {
+                next.space_before
+            }
+            _ => false,
+        }
+    }
+
+    /// `switch x { case .a, .b: … case let .c(v) where v > 0: … default: … }` (2.0): a
+    /// `match` whose arms run to the next `case`.
+    fn switch_expr(&mut self) -> Expr {
+        let start = self.bump();
+        let scrutinee = self.expr(Ctx::Head);
+        let mut arms = Vec::new();
+        if let Some(open) = self.expect(P::LBrace, "`{` and the switch's `case`s") {
+            self.skip_newlines();
+            while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                let arm_start = self.span();
+                let pattern = if self.at_kw(Kw::Default) {
+                    let span = self.bump();
+                    Pattern { kind: PatternKind::Wildcard, span }
+                } else if self.eat_kw(Kw::Case) {
+                    // `case .a, .b:`: either.
+                    let first = self.pattern();
+                    let mut alternatives = vec![first];
+                    while self.eat(P::Comma) {
+                        self.skip_newlines();
+                        alternatives.push(self.pattern());
+                    }
+                    if alternatives.len() == 1 {
+                        alternatives.pop().expect("one")
+                    } else {
+                        let span = alternatives[0].span.to(alternatives.last().expect("two").span);
+                        Pattern { kind: PatternKind::Or(alternatives), span }
+                    }
+                } else {
+                    let span = self.span();
+                    self.error(
+                        Diagnostic::error(
+                            "B0101",
+                            span,
+                            format!("expected `case` or `default`, found {}", describe(self.tok())),
+                        )
+                        .label("a switch's arm starts with `case`")
+                        .help("write `case .ready(let value):`")
+                        .spec("3-grammar-ebnf"),
+                    );
+                    self.recover_line();
+                    continue;
+                };
+                let guard = if matches!(self.tok(), Tok::Ident(w) if w == "where") {
+                    self.bump();
+                    Some(self.expr(Ctx::Head))
+                } else {
+                    None
+                };
+                self.expect(P::Colon, "`:` and the case's statements");
+                let body_start = self.span();
+                let mut stmts = Vec::new();
+                self.skip_newlines();
+                while !self.at(P::RBrace) && !self.at_kw(Kw::Case) && !self.at_kw(Kw::Default) {
+                    if matches!(self.tok(), Tok::Eof) {
+                        break;
+                    }
+                    let before = self.pos;
+                    if let Some(stmt) = self.stmt() {
+                        stmts.push(stmt);
+                    }
+                    self.member_end();
+                    if self.pos == before {
+                        self.bump();
+                    }
+                    self.skip_newlines();
+                }
+                let end = Span::new(self.prev_end(), self.prev_end());
+                // `break`: an empty case.
+                stmts.retain(|s| !matches!(&s.kind, StmtKind::Expr(Expr { kind: ExprKind::Name(n), .. }) if n == "break"));
+                let body = match stmts.as_slice() {
+                    [Stmt { kind: StmtKind::Expr(_), .. }] => {
+                        let Some(Stmt { kind: StmtKind::Expr(expr), .. }) = stmts.pop() else {
+                            unreachable!()
+                        };
+                        ArmBody::Expr(expr)
+                    }
+                    _ => ArmBody::Block(Block { stmts, span: body_start.to(end) }),
+                };
+                arms.push(Arm { pattern, guard, body, span: arm_start.to(end) });
+            }
+            self.expect_close(P::RBrace, open);
+        }
+        let end = Span::new(self.prev_end(), self.prev_end());
+        let kind = ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms, switch: true });
+        self.expr_node(kind, start.to(end))
+    }
+
     /// Calls, members, indexing, `?` and trailing closures after `expr`.
     /// Under `await`, the first `?` applies to the awaited value:
     /// `await f()?` is `(await f())?`.
+    /// `Button { … } label: { … }` (2.0): the trailing closures after the first, each a
+    /// labelled argument written after it (on the same line). Gives the last one's span.
+    fn labelled_trailing(&mut self, args: &mut Vec<Arg>) -> Option<Span> {
+        let mut end = None;
+        while matches!(self.tok(), Tok::Ident(_))
+            && matches!(self.nth(1), Tok::P(P::Colon))
+            && matches!(self.nth(2), Tok::P(P::LBrace))
+            && !self.at_line_start()
+        {
+            let label = self.ident("a closure's label");
+            self.bump();
+            let closure = self.closure();
+            let (span, closure_span) = (label.span.to(closure.span), closure.span);
+            let value = self.expr_node(ExprKind::Closure(closure), closure_span);
+            args.push(Arg { label: Some(label), spread: false, value, span });
+            end = Some(span);
+        }
+        end
+    }
+
     fn postfix_loop(&mut self, mut expr: Expr, ctx: Ctx, mut awaiting: Option<Span>) -> Expr {
         loop {
             match self.tok() {
@@ -1456,13 +2658,18 @@ impl<'s, 'i> Parser<'s, 'i> {
                     if !self.token().space_before
                         || matches!(expr.kind, ExprKind::Name(_) | ExprKind::Field(..)) =>
                 {
-                    let (args, end) = self.args();
+                    let (mut args, end) = self.args();
                     let trailing = if ctx == Ctx::Normal && self.at(P::LBrace) {
                         Some(Box::new(self.closure()))
                     } else {
                         None
                     };
                     let end = trailing.as_ref().map_or(end, |c| c.span);
+                    let end = if trailing.is_some() {
+                        self.labelled_trailing(&mut args).unwrap_or(end)
+                    } else {
+                        end
+                    };
                     let span = expr.span.to(end);
                     expr = self.expr_node(
                         ExprKind::Call(Call {
@@ -1477,11 +2684,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 Tok::P(P::LBrace) if ctx == Ctx::Normal && is_callee(&expr) => {
                     let closure = self.closure();
-                    let span = expr.span.to(closure.span);
+                    let mut args = Vec::new();
+                    let end = self.labelled_trailing(&mut args).unwrap_or(closure.span);
+                    let span = expr.span.to(end);
                     expr = self.expr_node(
                         ExprKind::Call(Call {
                             callee: Box::new(expr),
-                            args: Vec::new(),
+                            args,
                             parens: false,
                             trailing: Some(Box::new(closure)),
                             optional: false,
@@ -1697,7 +2906,15 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.diagnostics.truncate(quiet);
             self.panicking = was_panicking;
         }
+        self.shorthand.push(0);
         let body = self.stmts_until_close();
+        let shorthand = self.shorthand.pop().unwrap_or(0);
+        if !has_in {
+            // `{ $0.id == id }`: the parameters it names, `$0` up to the last.
+            params = (0..shorthand)
+                .map(|n| ClosureParam { name: Ident { name: format!("${n}"), span: open }, ty: None })
+                .collect();
+        }
         self.expect_close(P::RBrace, open);
         Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
     }
@@ -1730,6 +2947,7 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn match_expr(&mut self) -> Expr {
         let start = self.bump();
+        self.deprecate(Deprecated::Match, start);
         let scrutinee = self.expr(Ctx::Head);
         let mut arms = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the match's `case` arms") {
@@ -1776,12 +2994,21 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.expect_close(P::RBrace, open);
         }
         let end = Span::new(self.prev_end(), self.prev_end());
-        self.expr_node(ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms }), start.to(end))
+        self.expr_node(
+            ExprKind::Match(MatchExpr { scrutinee: Box::new(scrutinee), arms, switch: false }),
+            start.to(end),
+        )
     }
 
     fn primary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok().clone() {
+            Tok::Ident(word)
+                if word == "switch"
+                    && !matches!(self.nth(1), Tok::P(P::Eq | P::Dot | P::LParen | P::Comma | P::RParen)) =>
+            {
+                self.switch_expr()
+            }
             // `import("./X")`: a dynamic import, a call TS types (`lazy(() => import("./X"))`).
             Tok::Kw(Kw::Import) if matches!(self.nth(1), Tok::P(P::LParen)) => {
                 self.bump();
@@ -1875,6 +3102,26 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 let span = start.to(Span::new(self.prev_end(), self.prev_end()));
                 self.expr_node(ExprKind::KeyPath { root, path }, span)
+            }
+            // `$0`: a closure's shorthand parameter.
+            Tok::P(P::Dollar)
+                if matches!(self.nth(1), Tok::Int(_)) && !self.tokens[self.pos + 1].space_before =>
+            {
+                self.bump();
+                let Tok::Int(n) = *self.tok() else { unreachable!("an Int") };
+                let start = start.to(self.bump());
+                let n = u32::try_from(n).unwrap_or(u32::MAX);
+                match self.shorthand.last_mut() {
+                    Some(count) => *count = (*count).max(n.saturating_add(1)),
+                    None => self.error(
+                        Diagnostic::error("B0101", start, format!("`${n}` outside a closure"))
+                            .label("a shorthand parameter names a closure's argument")
+                            .help("write it inside `{ … }`, or name the parameter: `{ x in … }`")
+                            .spec("3-grammar-ebnf"),
+                    ),
+                }
+                let span = start.to(Span::new(self.prev_end(), self.prev_end()));
+                self.expr_node(ExprKind::Name(format!("${n}")), span)
             }
             Tok::P(P::Dollar) => {
                 self.bump();
@@ -2005,10 +3252,18 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     fn interpolation(&mut self, span: Span) -> Expr {
+        let open = (span.start as usize).saturating_sub(2);
+        if self.source.get(open..span.start as usize) == Some("${") {
+            self.deprecate(Deprecated::Interpolation, Span::new(open as u32, span.start));
+        }
         let lexed = lex(self.source, span.start as usize, span.end as usize);
         self.sub_comments.extend(lexed.comments);
         let mut sub = Parser::new(self.source, lexed.tokens, self.next_id);
         sub.diagnostics = lexed.diagnostics;
+        // `"\($0)"` inside a closure: the closure's shorthand parameter.
+        if !self.shorthand.is_empty() {
+            sub.shorthand.push(0);
+        }
         sub.skip_newlines();
         let expr = if matches!(sub.tok(), Tok::Eof) {
             sub.error(
@@ -2030,7 +3285,11 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         let diagnostics = std::mem::take(&mut sub.diagnostics);
         let comments = std::mem::take(&mut sub.sub_comments);
+        let used = sub.shorthand.pop().unwrap_or(0);
         drop(sub);
+        if let Some(count) = self.shorthand.last_mut() {
+            *count = (*count).max(used);
+        }
         if !self.panicking {
             self.panicking = !diagnostics.is_empty();
             self.diagnostics.extend(diagnostics);
@@ -2066,6 +3325,8 @@ fn is_place(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::Name(name) => !is_upper(name),
         ExprKind::Field(inner, _) => is_place(inner),
+        // `posts[i].likes += 1` (2.0): an element, rebuilt with value semantics.
+        ExprKind::Index(inner, _) => is_place(inner),
         _ => false,
     }
 }
@@ -2095,8 +3356,15 @@ fn is_soft(kw: Kw) -> bool {
 mod tests {
     use super::*;
 
+    /// The syntax errors (a 0.x form's deprecation is a warning).
+    fn errors(source: &str) -> (File, Vec<Diagnostic>) {
+        let (file, _, mut diagnostics) = parse(source);
+        diagnostics.retain(|d| d.severity == crate::diagnostic::Severity::Error);
+        (file, diagnostics)
+    }
+
     fn parse_ok(source: &str) -> File {
-        let (file, _, diagnostics) = parse(source);
+        let (file, diagnostics) = errors(source);
         assert!(diagnostics.is_empty(), "{:#?}", diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
         file
     }
@@ -2136,7 +3404,21 @@ mod tests {
 
     #[test]
     fn one_typo_one_error() {
-        let (_, _, diagnostics) = parse("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
+        let (_, diagnostics) = errors("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
         assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+    }
+
+    #[test]
+    fn a_retired_form_warns_once_per_file() {
+        let (_, _, diagnostics) = parse("pub fn f() { \"${1}\" }\nfn g() { 1 }\nfunc h() -> Int { 1 }\n");
+        let messages: Vec<&str> = diagnostics.iter().map(|d| d.message.as_str()).collect();
+        assert_eq!(
+            messages,
+            [
+                "`pub` is Bloom 0.x (once in this file)",
+                "`fn` is Bloom 0.x (2 times in this file)",
+                "`${…}` interpolation is Bloom 0.x (once in this file)",
+            ]
+        );
     }
 }

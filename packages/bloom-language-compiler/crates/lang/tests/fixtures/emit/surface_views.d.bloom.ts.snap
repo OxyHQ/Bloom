@@ -1,0 +1,24 @@
+import type { Binding, ComposedView } from "@oxy.so/bloom-language";
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+  readonly likes: number;
+  readonly isLiked: boolean;
+}
+export interface PostRowProps {
+  readonly post: Post;
+  readonly dense?: boolean;
+  readonly onLike: () => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostRow())`), or from TSX as `toElement(PostRow())`. */
+export declare const PostRow: (props: PostRowProps) => ComposedView;
+export interface ComposerProps {
+  readonly isOn: Binding<boolean>;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Composer())`), or from TSX as `toElement(Composer())`. */
+export declare const Composer: (props: ComposerProps) => ComposedView;
+export interface Feed {
+  readonly count: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(FeedScreen())`), or from TSX as `toElement(FeedScreen())`. */
+export declare const FeedScreen: () => ComposedView;

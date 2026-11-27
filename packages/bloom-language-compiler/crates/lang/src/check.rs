@@ -5,6 +5,7 @@
 
 pub(crate) mod call;
 mod exhaust;
+mod members;
 
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::collections::BTreeSet;
@@ -19,6 +20,7 @@ use crate::types::*;
 use crate::ui;
 
 pub use exhaust::Pat;
+pub use members::{Bound, Conformance, Read, WitnessArg, Witnessed, witness_param};
 
 pub type LocalId = usize;
 
@@ -29,6 +31,9 @@ pub enum LocalKind {
     Param,
     /// A view's parameter: one of its props.
     Prop,
+    /// `@Binding var x: T` (2.0): a prop holding a `Binding<T>`, read and written as a `T`
+    /// (`x[0]`, `x[1](v)`); `$x` is the binding itself.
+    Bound,
     /// `@state`; written through its setter.
     State,
     /// `@ref`: read and written as `x.current`, outside the render.
@@ -68,6 +73,13 @@ pub struct Local {
 /// How a call is emitted.
 #[derive(Debug, Clone, PartialEq)]
 pub enum CallRes {
+    /// `x.m(…)` with `m` an extension method (`crate::extensions`): the lowered function
+    /// `func`, called with `x` first, then the arguments as [`CallRes::Bloom`] orders them.
+    Extension {
+        func: Rc<str>,
+        order: Vec<Option<usize>>,
+        rest: Vec<usize>,
+    },
     /// A Bloom function: argument index for each parameter, in order (`None`: its default).
     Bloom {
         order: Vec<Option<usize>>,
@@ -131,6 +143,20 @@ pub enum CallRes {
     Race,
     /// `.onChange(of: v) { old, new in … }` on the body's root: the watched value's type.
     OnChange(Ty),
+    /// `Task { … }`: the closure's work, started and not awaited.
+    Spawn,
+    /// `EnvironmentKey(name, default: v)`: `defineEnvironment(name, v)`.
+    EnvironmentKey,
+    /// `T()` for a class without an `init`: `new T()`.
+    New(DefId),
+    /// `x.m(…)` with `x` a constrained type parameter's value (`witness` its parameter) or
+    /// an `any P` (`None`: the existential's own witness), and `m` a requirement.
+    Witness {
+        witness: Option<String>,
+        member: String,
+        order: Vec<Option<usize>>,
+        rest: Vec<usize>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -165,6 +191,16 @@ pub enum FieldRes {
     TaskSignal,
     /// `Task.isCancelled`.
     TaskCancelled,
+    /// `x.p`, an extension's computed property: `func(x)`.
+    Extension(Rc<str>),
+    /// `T.m`, an extension's static member: the lowered name.
+    Static(Rc<str>),
+    /// `x.p` with `x` a constrained type parameter's value or an `any P`, and `p` a
+    /// requirement: read through the witness (see [`CallRes::Witness`]).
+    Witness {
+        witness: Option<String>,
+        member: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -181,6 +217,18 @@ pub enum AssignRes {
     },
     /// A field of a TS value (`player.loop = true`): TS's own write, which tsc checks.
     Foreign,
+    /// A place the emitter rebuilds from the target (2.0): a field of a class (`model`
+    /// `Some(observable)`: written in place, through its store when observable, `raw` in
+    /// its `init`), or an element of a `var`'s list (`xs[i].done = true`).
+    Place {
+        local: LocalId,
+        model: Option<bool>,
+        raw: bool,
+    },
+    /// `isOn = v` with `isOn` a `@Binding`: `isOn[1](v)`.
+    Bound {
+        local: LocalId,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -229,6 +277,9 @@ pub struct CheckResult {
     pub types: HashMap<ExprId, Ty>,
     pub spans: Vec<(Span, Ty)>,
     pub names: HashMap<ExprId, NameRes>,
+    /// `.xxl`, `.caption1`, `.primary.opacity(0.1)` where a token goes (2.0): the token string
+    /// each compiles to (`"2xl"`, `"caption-1"`, `"primary/10"`).
+    pub swift_tokens: HashMap<ExprId, String>,
     pub calls: HashMap<ExprId, CallRes>,
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
@@ -279,6 +330,22 @@ pub struct CheckResult {
     pub hook_lets: HashSet<Span>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
+    /// `a == b` on a type parameter constrained `Equatable`: its witness parameter.
+    pub witness_eq: HashMap<ExprId, String>,
+    /// The module's declared conformances to protocols, with how each requirement is met.
+    pub conformances: Vec<Conformance>,
+    /// A view's index → each `@Observable` model it holds and the fields it reads of it.
+    pub observed: HashMap<usize, Vec<(LocalId, Vec<String>)>>,
+    /// A value passed as `any P`: its type and the protocol (`{ self, w: T$$P }`).
+    pub packs: HashMap<ExprId, (DefId, DefId)>,
+    /// A generic call's witnesses, after its arguments, for its constraints in order.
+    pub witness_args: HashMap<ExprId, Vec<Option<WitnessArg>>>,
+    /// `@Environment(\.k)` (by the state's span): the environment key `k` in scope, or
+    /// `None` for a built-in one (`environmentValues.k`).
+    pub env_keys: HashMap<Span, Option<LocalId>>,
+    /// A generic function's witness parameters (by the function's span): each one's name
+    /// and what it witnesses.
+    pub witness_params: HashMap<Span, Vec<(String, u32, Bound)>>,
 }
 
 impl CheckResult {
@@ -312,7 +379,15 @@ struct Frame {
     /// A closure TS calls, or `catching { … }`'s block: `?` on a `Result` throws its
     /// error (rejecting the promise, or caught), and does not change the result.
     throws: bool,
+    /// A `func … throws(E)`: what a `throw` here throws (`Unknown` for an untyped `throws`).
+    raises: Option<Ty>,
+    /// The `do { … } catch` blocks around this point of the frame: a `try` here is caught.
+    handled: u32,
 }
+
+/// A generic call waiting for its witnesses: the call, its type arguments, its constraints,
+/// where it is, and the constrained type parameters in scope there.
+type PendingWitnesses = (ExprId, Vec<(Ty, Rc<str>)>, Span, Vec<(String, Bound)>);
 
 /// A TS type that is a React ref: a `@ref` passed there is the ref, not its value.
 fn is_ref_type(text: &str) -> bool {
@@ -373,6 +448,25 @@ pub struct Checker<'o> {
     /// Member chains of immutable values narrowed present (`u.name != none`): the
     /// scope depth, the root local, the path (`?.` marked) and the present type.
     paths: Vec<(usize, LocalId, FieldPath, Ty)>,
+    /// Inside `try …`: a call of a throwing function here is marked.
+    trying: bool,
+    /// Reads of `@Observable` models by views: the view, the local holding the model, the read.
+    view_reads: Vec<(usize, LocalId, Read)>,
+    /// The member function of a type being checked (`FeedModel$like`), and what each
+    /// member of an `@Observable` class reads of its `self`.
+    member_fn: Option<String>,
+    member_reads: HashMap<String, HashSet<Read>>,
+    /// The constrained type parameters in scope: each one's name and bound.
+    bounds_in_scope: Vec<(String, Bound)>,
+    /// Inside a class's `init`: its fields are set directly, its `let`s too.
+    in_init: bool,
+    /// `EnvironmentKey(…, default: v)` calls → `v`'s type, and the module constants that
+    /// hold one → that type: what a key of this file holds.
+    env_values: HashMap<ExprId, Ty>,
+    key_values: HashMap<LocalId, Ty>,
+    /// Generic calls whose witnesses are found once their type arguments are known: the
+    /// call, its type arguments, its constraints, where, and the bounds in scope there.
+    pending_witnesses: Vec<PendingWitnesses>,
     /// When analysing for an editor: each checked expression's expected type.
     pub expected: Option<Vec<(Span, Ty)>>,
     /// Whether every typed span is kept (for hover and analysis; a compile does not read them).
@@ -435,6 +529,8 @@ impl<'o> Checker<'o> {
                 spawn: false,
                 cleanup: false,
                 throws: false,
+                raises: None,
+                handled: 0,
             }],
             ts_named: HashMap::default(),
             view: None,
@@ -447,6 +543,15 @@ impl<'o> Checker<'o> {
             ref_object: false,
             closure_throws: false,
             paths: Vec::new(),
+            trying: false,
+            view_reads: Vec::new(),
+            member_fn: None,
+            member_reads: HashMap::default(),
+            bounds_in_scope: Vec::new(),
+            in_init: false,
+            env_values: HashMap::default(),
+            key_values: HashMap::default(),
+            pending_witnesses: Vec::new(),
             expected: None,
             spans: true,
         }
@@ -490,6 +595,9 @@ impl<'o> Checker<'o> {
                 DefKind::Struct(fields) => fields.iter_mut().for_each(|f| f.ty = self.zonk(&f.ty)),
                 DefKind::Enum(variants) => {
                     variants.iter_mut().for_each(|v| v.payload.iter_mut().for_each(|p| p.1 = self.zonk(&p.1)))
+                }
+                DefKind::Protocol(requirements) => {
+                    requirements.iter_mut().for_each(|r| r.ty = self.zonk(&r.ty))
                 }
             }
             self.out.defs[def] = d;
@@ -690,6 +798,7 @@ impl<'o> Checker<'o> {
             generics: Vec::new(),
             kind: DefKind::Struct(fields),
             origin: Origin::Record,
+            class: None,
         });
         let def = self.out.defs.len() - 1;
         self.records.insert(name, def);
@@ -887,10 +996,25 @@ impl<'o> Checker<'o> {
             TypeKind::Fn { is_async, params, ret } => {
                 let params = params
                     .iter()
-                    .map(|p| ParamTy { name: None, ty: self.resolve_type(p), optional: false, rest: false })
+                    .map(|p| ParamTy {
+                        labelled: false,
+                        positional: false,
+                        name: None,
+                        ty: self.resolve_type(p),
+                        optional: false,
+                        rest: false,
+                    })
                     .collect();
                 let ret = self.resolve_type(ret);
-                Ty::Fn(Rc::new(FnTy { params, ret, is_async: *is_async, generics: 0, ts: false }))
+                Ty::Fn(Rc::new(FnTy {
+                    params,
+                    ret,
+                    is_async: *is_async,
+                    generics: 0,
+                    ts: false,
+                    throws: false,
+                    bounds: Vec::new(),
+                }))
             }
             TypeKind::Optional(inner) => {
                 let inner_ty = self.resolve_type(inner);
@@ -935,12 +1059,35 @@ impl<'o> Checker<'o> {
         {
             return Ty::Foreign(text.as_str().into());
         }
+        // `any P`: a value of some type conforming to `P`, with its witness.
+        if name.name == "any"
+            && let [inner] = args
+        {
+            return match self.resolve_type(inner) {
+                any @ Ty::Any(_) => any,
+                Ty::Unknown => Ty::Unknown,
+                other => {
+                    let shown = self.show(&other);
+                    self.report(
+                        Diagnostic::error(
+                            "B0204",
+                            inner.span,
+                            format!("`any` takes a protocol, and {shown} is not one"),
+                        )
+                        .label("not a protocol")
+                        .spec("48-protocols"),
+                    );
+                    Ty::Unknown
+                }
+            };
+        }
         let simple = match name.name.as_str() {
             "Int" => Some(Ty::Int),
             "Float" => Some(Ty::Float),
             "Bool" => Some(Ty::Bool),
             "String" => Some(Ty::Str),
-            "Unit" => Some(Ty::Unit),
+            "Unit" | "Void" => Some(Ty::Unit),
+            "Double" => Some(Ty::Float),
             "View" => Some(Ty::View(None)),
             "Error" => Some(Ty::JsError),
             "Foreign" => Some(Ty::Foreign("".into())),
@@ -1041,6 +1188,8 @@ impl<'o> Checker<'o> {
         }
         if let Some(found) = self.type_names.get(&name.name).cloned() {
             return match found {
+                // A protocol written as a type is its existential (`any P`).
+                TypeName::Def(def) if matches!(self.out.defs[def].kind, DefKind::Protocol(_)) => Ty::Any(def),
                 TypeName::Def(def) => {
                     let want = self.out.defs[def].generics.len();
                     if !arity(self, want) {
@@ -1094,10 +1243,13 @@ impl<'o> Checker<'o> {
         }
         // Types first (so fields can name any of them), then their bodies.
         let mut pending = Vec::new();
+        let no_generics: Vec<Ident> = Vec::new();
         for (index, item) in file.items.iter().enumerate() {
             let (name, generics) = match &item.kind {
                 ItemKind::Struct(s) => (&s.name, &s.generics),
                 ItemKind::Enum(e) => (&e.name, &e.generics),
+                ItemKind::Class(c) => (&c.name, &c.generics),
+                ItemKind::Protocol(p) => (&p.name, &no_generics),
                 ItemKind::Alias(_) => {
                     pending.push(index);
                     continue;
@@ -1109,16 +1261,21 @@ impl<'o> Checker<'o> {
                 continue;
             }
             let def = self.out.defs.len();
-            let kind = if matches!(item.kind, ItemKind::Struct(_)) {
-                DefKind::Struct(Vec::new())
-            } else {
-                DefKind::Enum(Vec::new())
+            let kind = match &item.kind {
+                ItemKind::Struct(_) | ItemKind::Class(_) => DefKind::Struct(Vec::new()),
+                ItemKind::Protocol(_) => DefKind::Protocol(Vec::new()),
+                _ => DefKind::Enum(Vec::new()),
+            };
+            let class = match &item.kind {
+                ItemKind::Class(c) => Some(ClassDef { observable: c.observable, ..ClassDef::default() }),
+                _ => None,
             };
             self.out.defs.push(Def {
                 name: name.name.clone(),
                 generics: generics.iter().map(|g| g.name.clone()).collect(),
                 kind,
                 origin: Origin::Local,
+                class,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
             self.span_type((name.span, Ty::Adt(def, Vec::new())));
@@ -1135,7 +1292,13 @@ impl<'o> Checker<'o> {
             match &item.kind {
                 ItemKind::Struct(s) => self.struct_fields(s),
                 ItemKind::Enum(e) => self.enum_variants(e),
+                ItemKind::Class(c) => self.class_fields(c),
                 _ => {}
+            }
+        }
+        for item in &file.items {
+            if let ItemKind::Protocol(p) = &item.kind {
+                self.protocol_requirements(p);
             }
         }
         // Values: functions and views are visible everywhere; constants in order.
@@ -1143,6 +1306,21 @@ impl<'o> Checker<'o> {
             let local = match &item.kind {
                 ItemKind::Fn(f) => {
                     let ty = self.fn_signature(f);
+                    if let Ty::Fn(fn_ty) = &ty
+                        && !fn_ty.bounds.is_empty()
+                    {
+                        let params = fn_ty
+                            .bounds
+                            .iter()
+                            .filter_map(|(param, protocol)| match param {
+                                Ty::Param(index, name) => {
+                                    Some((witness_param(name, protocol), *index, Bound::of(protocol)))
+                                }
+                                _ => None,
+                            })
+                            .collect();
+                        self.out.witness_params.insert(f.span, params);
+                    }
                     Some(self.declare_unique(&f.name, ty, LocalKind::ModuleFn))
                 }
                 ItemKind::View(v) => {
@@ -1153,6 +1331,8 @@ impl<'o> Checker<'o> {
                         is_async: false,
                         generics: 0,
                         ts: false,
+                        throws: false,
+                        bounds: Vec::new(),
                     }));
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
@@ -1162,6 +1342,7 @@ impl<'o> Checker<'o> {
                 self.out.items.insert(index, local);
             }
         }
+        self.conformances(file);
         let mut screens = 0;
         for (index, item) in file.items.iter().enumerate() {
             match &item.kind {
@@ -1177,9 +1358,13 @@ impl<'o> Checker<'o> {
                         ),
                         None => self.declare_unique(&c.name, ty, LocalKind::ModuleConst),
                     };
+                    if let Some(value) = self.env_values.get(&c.value.id).cloned() {
+                        self.key_values.insert(local, value);
+                    }
                     self.out.items.insert(index, local);
                 }
                 ItemKind::Struct(s) => self.struct_defaults(s),
+                ItemKind::Class(c) => self.class_defaults(c),
                 ItemKind::Fn(f) => {
                     self.fn_body(f, false);
                 }
@@ -1203,6 +1388,16 @@ impl<'o> Checker<'o> {
                 }
                 _ => {}
             }
+        }
+        self.observed();
+        for (id, bounds, span, scope) in std::mem::take(&mut self.pending_witnesses) {
+            let outer = std::mem::replace(&mut self.bounds_in_scope, scope);
+            let witnesses = bounds
+                .iter()
+                .map(|(ty, protocol)| self.witness_for(ty, &Bound::of(protocol), span))
+                .collect();
+            self.bounds_in_scope = outer;
+            self.out.witness_args.insert(id, witnesses);
         }
     }
 
@@ -1284,7 +1479,13 @@ impl<'o> Checker<'o> {
                     (true, Ty::List(element)) => (*element, true),
                     _ => (ty, false),
                 };
-                ParamTy { name: Some(p.name.name.clone()), ty, optional: p.default.is_some(), rest }
+                // A `func`'s parameter is called by its label (its name unless written), `_` by position.
+                let (labelled, positional, name) = match (&p.label, f.func) {
+                    (Some(label), _) if label.name == "_" => (false, true, Some(p.name.name.clone())),
+                    (Some(label), _) => (true, false, Some(label.name.clone())),
+                    (None, func) => (func && !rest, false, Some(p.name.name.clone())),
+                };
+                ParamTy { labelled, positional, name, ty, optional: p.default.is_some(), rest }
             })
             .collect();
         let ret = match &f.ret {
@@ -1300,6 +1501,11 @@ impl<'o> Checker<'o> {
             },
             None => Ty::Unit,
         };
+        let bounds = self
+            .bounds(f)
+            .into_iter()
+            .map(|(index, name, bound)| (Ty::Param(index, name.as_str().into()), bound.name()))
+            .collect();
         self.generics.clear();
         Ty::Fn(Rc::new(FnTy {
             params,
@@ -1307,7 +1513,131 @@ impl<'o> Checker<'o> {
             is_async: f.is_async,
             generics: f.generics.len() as u32,
             ts: false,
+            throws: f.throws.is_some(),
+            bounds,
         }))
+    }
+
+    /// `@Environment(\.k)`: the built-in value `k` (`disabled`, `controlSize`,
+    /// `buttonStyle`), or the environment key named `k` in scope (an app's own value).
+    fn environment_key(&mut self, state: &StateDecl, key: &Ident, declared: Option<Ty>) -> Ty {
+        let builtin = match key.name.as_str() {
+            "disabled" => Some(Ty::Bool),
+            "controlSize" | "buttonStyle" => Some(Ty::Foreign(
+                format!(
+                    "(typeof import(\"@oxy.so/bloom-language\").environmentValues)[\"{}\"][\"defaultValue\"]",
+                    key.name
+                )
+                .into(),
+            )),
+            _ => None,
+        };
+        if let Some(ty) = builtin {
+            self.out.env_keys.insert(state.span, None);
+            return declared.unwrap_or(ty);
+        }
+        match self.lookup(&key.name) {
+            Some(local) => {
+                self.out.env_keys.insert(state.span, Some(local));
+                // A key of this file: the type of its default; another module's: its TS type's.
+                let value = self.key_values.get(&local).cloned().or_else(|| {
+                    match self.resolve(&self.out.locals[local].ty.clone()) {
+                        Ty::Foreign(text) => text
+                            .strip_prefix("import(\"@oxy.so/bloom-language\").EnvironmentKey<")
+                            .and_then(|t| t.strip_suffix('>'))
+                            .map(|t| self.named_ts(t)),
+                        _ => None,
+                    }
+                });
+                declared.or(value).unwrap_or_else(|| Ty::Foreign("".into()))
+            }
+            None => {
+                self.report(
+                    Diagnostic::error("B0202", key.span, format!("no environment value `\\.{}` in scope", key.name))
+                        .label("not a built-in value, nor a key declared or imported here")
+                        .help("import the module that declares it, or use `disabled`, `controlSize` or `buttonStyle`")
+                        .spec("74-environment"),
+                );
+                self.out.env_keys.insert(state.span, None);
+                Ty::Unknown
+            }
+        }
+    }
+
+    /// A TS type's text that names a Bloom type in scope (`Session`, `string`), as the
+    /// type; else the TS type itself.
+    fn named_ts(&self, text: &str) -> Ty {
+        match text {
+            "number" => Ty::Float,
+            "string" => Ty::Str,
+            "boolean" => Ty::Bool,
+            name => match self.type_names.get(name) {
+                Some(TypeName::Def(def)) => Ty::Adt(*def, Vec::new()),
+                _ => Ty::Foreign(name.into()),
+            },
+        }
+    }
+
+    /// `task { … }` / `Task { … }`: work started without being awaited (its own async frame).
+    pub(super) fn spawn(&mut self, stmts: &[Stmt], span: Span) {
+        let task = self.frames.last().is_some_and(|f| f.task);
+        self.frames.push(Frame {
+            ret: Ty::Unit,
+            is_async: true,
+            closure: true,
+            written: HashSet::default(),
+            task,
+            render: false,
+            spawn: true,
+            cleanup: false,
+            throws: false,
+            raises: None,
+            handled: 0,
+        });
+        self.push();
+        let trying = std::mem::take(&mut self.trying);
+        self.stmts(stmts, Some(&Ty::Unit), span);
+        self.trying = trying;
+        self.pop();
+        self.frames.pop();
+    }
+
+    /// A call of a generic function whose constraints take witnesses: found once its
+    /// type arguments are known (at the module's end).
+    pub(super) fn witnesses_of(&mut self, expr: &Expr, span: Span, f: &FnTy) {
+        if f.bounds.is_empty() {
+            return;
+        }
+        let scope = self.bounds_in_scope.clone();
+        self.pending_witnesses.push((expr.id, f.bounds.clone(), span, scope));
+    }
+
+    /// A call of a function that throws: written in a `try`.
+    pub(super) fn throwing_call(&mut self, span: Span, f: &FnTy) {
+        if f.throws && !self.trying {
+            self.report(
+                Diagnostic::error("B0223", span, "this call can throw, and it is not marked with `try`")
+                    .label("a throwing call")
+                    .help("write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)")
+                    .fix(Span::new(span.start, span.start), "try ")
+                    .spec("6-expressions-and-control-flow"),
+            );
+        }
+    }
+
+    /// `try f()` where nothing catches what it throws: a function that does not throw,
+    /// outside a `do { … } catch`.
+    fn unhandled_try(&mut self, span: Span) {
+        let Some(frame) = self.frames.last() else { return };
+        if frame.closure || frame.raises.is_some() || frame.handled > 0 || frame.throws {
+            return;
+        }
+        self.report(
+            Diagnostic::error("B0224", span, "errors thrown from here are not handled")
+                .label("this function does not throw")
+                .help("mark the function `throws`, catch it in `do { … } catch { … }`, or write `try?`")
+                .spec("6-expressions-and-control-flow"),
+        );
     }
 
     /// A function's body; `member`: a view's `fn` (it reads the view's members).
@@ -1316,6 +1646,11 @@ impl<'o> Checker<'o> {
         let Ty::Fn(fn_ty) = &signature else { unreachable!("a signature is a function") };
         let outer_generics =
             std::mem::replace(&mut self.generics, f.generics.iter().map(|g| g.name.clone()).collect());
+        let raises = match f.throws.as_ref().map(|t| t.ty.as_ref()) {
+            Some(Some(ty)) => Some(self.resolve_type(ty)),
+            Some(None) => Some(Ty::Unknown),
+            None => None,
+        };
         self.push();
         self.frames.push(Frame {
             ret: fn_ty.ret.clone(),
@@ -1327,7 +1662,28 @@ impl<'o> Checker<'o> {
             spawn: false,
             cleanup: false,
             throws: false,
+            raises,
+            handled: 0,
         });
+        // A type's member (`T$m`): what an observable `self` it reads; an `init` makes `self`.
+        let outer_member =
+            std::mem::replace(&mut self.member_fn, f.name.name.contains('$').then(|| f.name.name.clone()));
+        let init = f.name.name.ends_with("$$init");
+        let outer_init = std::mem::replace(&mut self.in_init, init);
+        if init {
+            let self_ty = fn_ty.ret.clone();
+            self.declare(&Ident { name: "self".into(), span: f.name.span }, self_ty, LocalKind::Let);
+            self.frames.last_mut().expect("a frame").ret = Ty::Unit;
+        }
+        let bounds: Vec<(String, Bound)> = fn_ty
+            .bounds
+            .iter()
+            .filter_map(|(param, protocol)| match param {
+                Ty::Param(_, name) => Some((name.to_string(), Bound::of(protocol))),
+                _ => None,
+            })
+            .collect();
+        let outer_bounds = std::mem::replace(&mut self.bounds_in_scope, bounds);
         let mut params = Vec::new();
         for (index, (param, ty)) in f.params.iter().zip(&fn_ty.params).enumerate() {
             if let Some(default) = &param.default {
@@ -1340,13 +1696,16 @@ impl<'o> Checker<'o> {
             params.push(self.declare(&param.name, local_ty, LocalKind::Param));
         }
         self.out.fn_params.insert(f.span, params);
-        let ret = fn_ty.ret.clone();
+        let ret = if init { Ty::Unit } else { fn_ty.ret.clone() };
         let hook = is_hook_name(&f.name.name).then_some(self.scopes.len() + 1);
         let outer_hook = std::mem::replace(&mut self.hook_body, hook);
         self.block(&f.body, Some(&ret));
         self.hook_body = outer_hook;
         self.frames.pop();
         self.pop();
+        self.bounds_in_scope = outer_bounds;
+        self.in_init = outer_init;
+        self.member_fn = outer_member;
         self.generics = outer_generics;
         let _ = member;
         signature
@@ -1398,6 +1757,8 @@ impl<'o> Checker<'o> {
             spawn: false,
             cleanup: false,
             throws: false,
+            raises: None,
+            handled: 0,
         });
         self.declare(&e.old, props.clone(), LocalKind::Param);
         self.declare(&e.new, props, LocalKind::Param);
@@ -1424,6 +1785,8 @@ impl<'o> Checker<'o> {
             spawn: false,
             cleanup: false,
             throws: false,
+            raises: None,
+            handled: 0,
         });
         for stmt in &e.body.stmts {
             if let StmtKind::Defer(block) = &stmt.kind {
@@ -1469,6 +1832,8 @@ impl<'o> Checker<'o> {
                 continue;
             }
             out.push(ParamTy {
+                labelled: false,
+                positional: false,
                 name: Some(p.name.name.clone()),
                 ty: self.resolve_type(&p.ty),
                 optional: p.default.is_some(),
@@ -1490,6 +1855,8 @@ impl<'o> Checker<'o> {
             .fields()
             .iter()
             .map(|f| ParamTy {
+                labelled: false,
+                positional: false,
                 name: Some(f.name.clone()),
                 ty: substitute(&f.ty, &targs),
                 optional: f.default != FieldDefault::None,
@@ -1512,6 +1879,8 @@ impl<'o> Checker<'o> {
             spawn: false,
             cleanup: false,
             throws: false,
+            raises: None,
+            handled: 0,
         });
         let mut info = ViewInfo::default();
         let mut params = self.view_params(v).into_iter();
@@ -1561,13 +1930,31 @@ impl<'o> Checker<'o> {
                         .spec("5-values-functions-and-closures"),
                 );
             }
-            info.props.push(self.declare(&param.name, ty.ty, LocalKind::Prop));
+            // `@Binding var isOn: Bool`: read and written as a `Bool`, `$isOn` the binding.
+            let bound = v.surface.as_ref().is_some_and(|body| {
+                body.members.iter().any(|m| {
+                    m.modifiers.attrs.first().is_some_and(|a| a.name.name == "Binding")
+                        && matches!(&m.kind, TypeMemberKind::Stored { name, .. } if name.name == param.name.name)
+                })
+            });
+            let local = match (bound, self.resolve(&ty.ty)) {
+                (true, Ty::Binding(inner)) => self.declare(&param.name, *inner, LocalKind::Bound),
+                _ => self.declare(&param.name, ty.ty, LocalKind::Prop),
+            };
+            info.props.push(local);
         }
         for member in &v.members {
             let locals = match member {
                 Member::State(state) => {
                     let declared = state.ty.as_ref().map(|t| self.resolve_type(t));
+                    let ty = match (&state.attr, &state.value.kind) {
+                        (StateAttr::Env, ExprKind::KeyPath { root: None, path }) if path.len() == 1 => {
+                            self.environment_key(state, &path[0], declared.clone())
+                        }
+                        _ => Ty::Unknown,
+                    };
                     let ty = match state.attr {
+                        _ if ty != Ty::Unknown || self.out.env_keys.contains_key(&state.span) => ty,
                         StateAttr::State | StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
@@ -1656,6 +2043,11 @@ impl<'o> Checker<'o> {
     // ---- imports --------------------------------------------------------
 
     fn import(&mut self, import: &Import) {
+        // `import Bloom`, `import Mention.Posts`: modules by name, resolved by the module graph
+        // (crates/lang/src/modules.rs); `Bloom` is the implicit core.
+        if matches!(import.kind, ImportKind::Module(_)) {
+            return;
+        }
         let specifier = match import.source.as_str() {
             "bloom/data" => "@oxy.so/bloom-data",
             "bloom/router" => "@oxy.so/bloom-language/router",
@@ -1733,6 +2125,7 @@ impl<'o> Checker<'o> {
             );
         }
         match &import.kind {
+            ImportKind::Module(_) => {}
             ImportKind::Namespace(name) => {
                 self.declare_unique(
                     name,
@@ -1876,11 +2269,18 @@ impl<'o> Checker<'o> {
             }
         }
         let first = self.out.defs.len();
+        let no_generics: Vec<Ident> = Vec::new();
         for item in &file.items {
             let (name, generics, kind) = match &item.kind {
                 ItemKind::Struct(s) => (&s.name, &s.generics, DefKind::Struct(Vec::new())),
                 ItemKind::Enum(e) => (&e.name, &e.generics, DefKind::Enum(Vec::new())),
+                ItemKind::Class(c) => (&c.name, &c.generics, DefKind::Struct(Vec::new())),
+                ItemKind::Protocol(p) => (&p.name, &no_generics, DefKind::Protocol(Vec::new())),
                 _ => continue,
+            };
+            let class = match &item.kind {
+                ItemKind::Class(c) => Some(ClassDef { observable: c.observable, ..ClassDef::default() }),
+                _ => None,
             };
             let def = self.out.defs.len();
             self.out.defs.push(Def {
@@ -1888,6 +2288,7 @@ impl<'o> Checker<'o> {
                 generics: generics.iter().map(|g| g.name.clone()).collect(),
                 kind,
                 origin: Origin::Bloom { specifier: specifier.to_string() },
+                class,
             });
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
         }
@@ -1910,6 +2311,7 @@ impl<'o> Checker<'o> {
                     }
                 }
                 ItemKind::Enum(e) => self.enum_variants(e),
+                ItemKind::Class(c) => self.class_fields(c),
                 ItemKind::Alias(a) => {
                     let ty = self.resolve_type(&a.ty);
                     self.type_names.insert(a.name.name.clone(), TypeName::Alias(ty, a.generics.len()));
@@ -1917,9 +2319,14 @@ impl<'o> Checker<'o> {
                 _ => {}
             }
         }
+        for item in &file.items {
+            if let ItemKind::Protocol(p) = &item.kind {
+                self.protocol_requirements(p);
+            }
+        }
         let _ = first;
         for item in &file.items {
-            if item.visibility == Visibility::Private {
+            if !item.visibility.exported(self.options.modules) {
                 continue;
             }
             match &item.kind {
@@ -1935,6 +2342,8 @@ impl<'o> Checker<'o> {
                         is_async: false,
                         generics: 0,
                         ts: false,
+                        throws: false,
+                        bounds: Vec::new(),
                     }));
                     self.declare(&v.name, ty, LocalKind::View);
                 }
@@ -1996,6 +2405,7 @@ impl<'o> Checker<'o> {
         if let Some(expected) = expected
             && !discard
             && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
+            && !stmts.last().is_some_and(always_exits)
         {
             let expected = expected.clone();
             if !self.coerce(&Ty::Unit, &expected) {
@@ -2078,6 +2488,63 @@ impl<'o> Checker<'o> {
             StmtKind::Defer(block) => {
                 self.block(block, Some(&Ty::Unit));
             }
+            // The else block first, without the names the condition binds; they are in
+            // scope for the statements after the guard.
+            StmtKind::Guard(g) => {
+                self.block(&g.otherwise, Some(&Ty::Unit));
+                if !g.otherwise.stmts.last().is_some_and(exits) {
+                    self.report(
+                        Diagnostic::error("B0110", g.otherwise.span, "a `guard`'s `else` must leave")
+                            .label("this block falls through")
+                            .help("end it with `return`, `throw`, `break` or `continue`")
+                            .spec("6-expressions-and-control-flow"),
+                    );
+                }
+                self.cond(&g.cond);
+            }
+            StmtKind::Throw(value) => {
+                // `throw e` in a `func … throws(E)`: `e` is an `E`.
+                let raises = self.frames.last().and_then(|f| f.raises.clone()).filter(|t| *t != Ty::Unknown);
+                let handled = self.frames.last().is_some_and(|f| f.handled > 0);
+                match raises {
+                    Some(ty) if !handled => {
+                        self.expr(value, Some(&ty));
+                    }
+                    _ => {
+                        self.expr(value, None);
+                    }
+                }
+            }
+            StmtKind::Do(d) => {
+                let catches = !d.catches.is_empty();
+                if catches {
+                    self.frames.last_mut().expect("a frame").handled += 1;
+                }
+                self.block(&d.body, Some(&Ty::Unit));
+                if catches {
+                    self.frames.last_mut().expect("a frame").handled -= 1;
+                }
+                for catch in &d.catches {
+                    self.push();
+                    let ty = catch.ty.as_ref().map_or(Ty::JsError, |t| self.resolve_type(t));
+                    match (&catch.pattern, &catch.name) {
+                        (Some(pattern), _) => {
+                            let mut locals = Vec::new();
+                            self.bind(pattern, &ty, &LocalKind::Let, &mut locals);
+                        }
+                        (None, Some(name)) => {
+                            self.declare(name, ty, LocalKind::Let);
+                        }
+                        // `catch { … }`: the error is `error`.
+                        (None, None) => {
+                            let name = Ident { name: "error".into(), span: catch.keyword };
+                            self.declare(&name, ty, LocalKind::Let);
+                        }
+                    }
+                    self.stmts(&catch.body.stmts, Some(&Ty::Unit), catch.body.span);
+                    self.pop();
+                }
+            }
             StmtKind::Expr(expr) => {
                 let ty = self.expr(expr, None);
                 if matches!(self.resolve(&ty), Ty::Async(_) | Ty::Promise(_))
@@ -2129,7 +2596,174 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// 2.0's places (`true` when `a` is one): `isOn = v` on a `@Binding`, a field of a
+    /// class (written in place), and an element of a list (`posts[i].likes += 1`), rebuilt
+    /// with value semantics.
+    fn assign_place(&mut self, a: &AssignStmt) -> bool {
+        enum Seg<'e> {
+            Field(&'e Ident),
+            Index(&'e Expr),
+        }
+        let mut segs = Vec::new();
+        let mut root = &a.target;
+        loop {
+            match &root.kind {
+                ExprKind::Field(inner, name) => {
+                    segs.push(Seg::Field(name));
+                    root = inner;
+                }
+                ExprKind::Index(inner, index) => {
+                    segs.push(Seg::Index(index));
+                    root = inner;
+                }
+                _ => break,
+            }
+        }
+        segs.reverse();
+        let ExprKind::Name(name) = &root.kind else { return false };
+        let Some(local) = self.lookup(name) else { return false };
+        let info = self.out.locals[local].clone();
+        let class = match self.resolve(&info.ty) {
+            Ty::Adt(def, _) => self.out.defs[def].class.clone().map(|c| (def, c)),
+            _ => None,
+        };
+        let indexed = segs.iter().any(|s| matches!(s, Seg::Index(_)));
+        let bound = info.kind == LocalKind::Bound && segs.is_empty();
+        let model = class.is_some() && !segs.is_empty();
+        if !bound && !model && !indexed {
+            return false;
+        }
+        self.out.assign_targets.insert(root.id);
+        self.out.names.insert(root.id, NameRes::Local(local));
+        if !bound && !model && info.kind != LocalKind::Var {
+            self.report(
+                Diagnostic::error(
+                    "B0403",
+                    a.target.span,
+                    format!("an element of `{name}` is assigned only in a `var`"),
+                )
+                .label("not a `var`")
+                .with_label(info.span, "declared here")
+                .help(format!("copy it first: `var next = {name}`, then assign into `next`"))
+                .spec("43-soundness-rules"),
+            );
+        }
+        if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+            self.var_captured(&info, a.target.span);
+        }
+        // The place's type, segment by segment.
+        let mut ty = info.ty.clone();
+        for (index, seg) in segs.iter().enumerate() {
+            ty = match (seg, self.resolve(&ty)) {
+                (Seg::Field(field), Ty::Adt(def, args))
+                    if matches!(self.out.defs[def].kind, DefKind::Struct(_)) =>
+                {
+                    match self.out.defs[def].fields().iter().find(|f| f.name == field.name) {
+                        Some(f) => {
+                            let found = substitute(&f.ty, &args);
+                            if index == 0
+                                && let Some((class_def, class)) = &class
+                            {
+                                self.model_write(*class_def, class, field, name == "self");
+                            }
+                            found
+                        }
+                        None => {
+                            self.unknown_field(field, &Ty::Adt(def, args));
+                            Ty::Unknown
+                        }
+                    }
+                }
+                (Seg::Index(i), Ty::List(element)) => {
+                    self.expr(i, Some(&Ty::Int));
+                    *element
+                }
+                (Seg::Index(i), Ty::Map(value)) => {
+                    self.expr(i, Some(&Ty::Str));
+                    *value
+                }
+                (_, Ty::Unknown) => Ty::Unknown,
+                (_, other) => {
+                    let shown = self.show(&other);
+                    self.report(
+                        Diagnostic::error(
+                            "B0205",
+                            a.target.span,
+                            format!("{shown} has no place to assign here"),
+                        )
+                        .label("not a struct's field, nor a list's element")
+                        .spec("43-soundness-rules"),
+                    );
+                    Ty::Unknown
+                }
+            };
+        }
+        match a.op {
+            AssignOp::Set => {
+                self.expr(&a.value, Some(&ty));
+            }
+            op => {
+                let value = self.expr(&a.value, Some(&ty));
+                let numeric = matches!(self.resolve(&ty), Ty::Int | Ty::Float | Ty::Unknown);
+                let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str);
+                if !numeric && !text {
+                    self.report(
+                        Diagnostic::error(
+                            "B0201",
+                            a.span,
+                            format!("`{}` needs a number, found {}", op.text(), self.show(&value)),
+                        )
+                        .label("not a number")
+                        .spec("61-precedence-high-to-low"),
+                    );
+                }
+            }
+        }
+        let res = if bound {
+            AssignRes::Bound { local }
+        } else {
+            let observable = class.as_ref().map(|(_, c)| c.observable);
+            let raw = !model || self.in_init || observable == Some(false);
+            AssignRes::Place { local, model: model.then_some(observable.unwrap_or(false)), raw }
+        };
+        self.out.assigns.insert(a.span, res);
+        true
+    }
+
+    /// A write to a class's field: a `let` only in its `init`, a `private(set)` only in
+    /// the class's own members.
+    fn model_write(&mut self, def: DefId, class: &ClassDef, field: &Ident, through_self: bool) {
+        let owner = &self.out.defs[def].name;
+        let inside = self.member_fn.as_ref().is_some_and(|f| f.split('$').next() == Some(owner.as_str()));
+        if class.constants.contains(&field.name) && !(self.in_init && through_self) {
+            self.report(
+                Diagnostic::error(
+                    "B0403",
+                    field.span,
+                    format!("cannot assign to `{}`: it is a `let`", field.name),
+                )
+                .label("set once, in `init`")
+                .help(format!("declare it `var {}`", field.name))
+                .spec("49-classes-and-observable-models"),
+            );
+        } else if class.sealed.contains(&field.name) && !inside {
+            self.report(
+                Diagnostic::error(
+                    "B0404",
+                    field.span,
+                    format!("`{}` is assigned only inside `{owner}`", field.name),
+                )
+                .label("`private(set)` (or `private`)")
+                .help(format!("call a method of `{owner}` that changes it"))
+                .spec("49-classes-and-observable-models"),
+            );
+        }
+    }
+
     fn assign(&mut self, a: &AssignStmt) {
+        if self.assign_place(a) {
+            return;
+        }
         let mut fields = Vec::new();
         let mut root = &a.target;
         while let ExprKind::Field(inner, name) = &root.kind {
@@ -2958,10 +3592,14 @@ impl<'o> Checker<'o> {
                 let list = missing.iter().map(|m| format!("`{m}`")).collect::<Vec<_>>().join(", ");
                 let arms: String = missing.iter().map(|m| format!("\n      case {m} => …")).collect();
                 self.report(
-                    Diagnostic::error("B0301", m.scrutinee.span, format!("this match does not cover {list}"))
-                        .label(format!("{} is not matched by every value", self.show(&zonked)))
-                        .help(format!("add the missing arm(s), or `case _ =>` for the rest:{arms}"))
-                        .spec("43-soundness-rules"),
+                    Diagnostic::error(
+                        "B0301",
+                        m.scrutinee.span,
+                        format!("this {} does not cover {list}", if m.switch { "switch" } else { "match" }),
+                    )
+                    .label(format!("{} is not matched by every value", self.show(&zonked)))
+                    .help(format!("add the missing arm(s), or `case _ =>` for the rest:{arms}"))
+                    .spec("43-soundness-rules"),
                 );
             }
         }
@@ -2995,6 +3633,24 @@ impl<'o> Checker<'o> {
         }
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));
+        // A value passed as `any P`: packed with its conformance's witness.
+        if let Some(Ty::Any(protocol)) = expected.map(|e| self.resolve(e))
+            && let Ty::Adt(def, _) = self.resolve(&ty)
+        {
+            let declared = self.out.conformances.iter().any(|c| c.def == def && c.protocol == protocol)
+                || self.out.defs[def].origin != Origin::Local;
+            if !declared {
+                let (shown, name) = (self.show(&ty), self.out.defs[protocol].name.clone());
+                self.report(
+                    Diagnostic::error("B0232", expr.span, format!("{shown} does not conform to `{name}`"))
+                        .label(format!("passed as `any {name}`"))
+                        .help(format!("declare it: `extension {}: {name} {{ … }}`", self.out.defs[def].name))
+                        .spec("48-protocols"),
+                );
+            }
+            self.out.packs.insert(expr.id, (def, protocol));
+            return Ty::Any(protocol);
+        }
         match expected {
             Some(expected) => {
                 // A TS value Bloom could not type is accepted where a type is
@@ -3129,22 +3785,7 @@ impl<'o> Checker<'o> {
             ExprKind::Float(_) => Ty::Float,
             ExprKind::Unit => Ty::Unit,
             ExprKind::Task(block) => {
-                let task = self.frames.last().is_some_and(|f| f.task);
-                self.frames.push(Frame {
-                    ret: Ty::Unit,
-                    is_async: true,
-                    closure: true,
-                    written: HashSet::default(),
-                    task,
-                    render: false,
-                    spawn: true,
-                    cleanup: false,
-                    throws: false,
-                });
-                self.push();
-                self.stmts(&block.stmts, Some(&Ty::Unit), block.span);
-                self.pop();
-                self.frames.pop();
+                self.spawn(&block.stmts, block.span);
                 Ty::Unit
             }
             ExprKind::Bool(_) => Ty::Bool,
@@ -3311,6 +3952,26 @@ impl<'o> Checker<'o> {
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // `try f()`: a JS exception propagates; `try? f()` is `none` when it throws.
+            ExprKind::Throwing(kind, inner) => {
+                let expected_inner = match (kind, expected.map(|e| self.resolve(e))) {
+                    (TryKind::Optional, Some(Ty::Option(inner))) => Some(*inner),
+                    (TryKind::Optional, _) => None,
+                    (_, want) => want,
+                };
+                if *kind == TryKind::Plain {
+                    self.unhandled_try(expr.span);
+                }
+                let outer = std::mem::replace(&mut self.trying, true);
+                let ty = self.expr(inner, expected_inner.as_ref());
+                self.trying = outer;
+                match (kind, self.resolve(&ty)) {
+                    (TryKind::Optional, Ty::Option(_)) => ty,
+                    (TryKind::Optional, Ty::Unit) => Ty::Unit,
+                    (TryKind::Optional, _) => Ty::Option(Box::new(ty)),
+                    _ => ty,
+                }
+            }
             ExprKind::Field(object, name) => self.field(expr, object, name),
             ExprKind::OptField(object, name) => {
                 let ty = self.expr(object, None);
@@ -3584,7 +4245,14 @@ impl<'o> Checker<'o> {
                 let args: Vec<Ty> = (0..f.generics).map(|_| self.fresh()).collect();
                 let params =
                     f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
-                Ty::Fn(Rc::new(FnTy { params, ret: substitute(&f.ret, &args), generics: 0, ..(**f).clone() }))
+                let bounds = f.bounds.iter().map(|(t, p)| (substitute(t, &args), p.clone())).collect();
+                Ty::Fn(Rc::new(FnTy {
+                    params,
+                    ret: substitute(&f.ret, &args),
+                    bounds,
+                    generics: 0,
+                    ..(**f).clone()
+                }))
             }
             _ => ty.clone(),
         }
@@ -3712,6 +4380,10 @@ impl<'o> Checker<'o> {
             return Ty::Unknown;
         };
         let info = self.out.locals[local].clone();
+        if info.kind == LocalKind::Bound && path.len() == 1 {
+            self.out.bindings.insert(expr.id, (local, Vec::new()));
+            return Ty::Binding(Box::new(info.ty.clone()));
+        }
         if info.kind != LocalKind::State {
             self.report(
                 Diagnostic::error(
@@ -3875,6 +4547,10 @@ impl<'o> Checker<'o> {
                 let ty = if optional { self.zonk(&hint) } else { self.zonk(&left) };
                 // `x != none` tests presence, whatever `x` holds.
                 let presence = matches!(lhs.kind, ExprKind::None) || matches!(rhs.kind, ExprKind::None);
+                if let Some(witness) = self.equatable_param(&ty) {
+                    self.out.witness_eq.insert(expr.id, witness);
+                    return Ty::Bool;
+                }
                 match if presence { Equality::Identity } else { equality(&self.out.defs, &ty) } {
                     Equality::Identity => {}
                     Equality::Structural => {
@@ -4150,6 +4826,14 @@ impl<'o> Checker<'o> {
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());
             }
+            if name.name == "self"
+                && let Some(ty) = self.codec_param(expr, type_name)
+            {
+                return ty;
+            }
+            if let Some(ty) = self.static_member(expr, type_name, name) {
+                return ty;
+            }
             if let Some(TypeName::Def(def)) = self.type_names.get(type_name).cloned() {
                 return self.enum_case_value(expr, def, name, Vec::new());
             }
@@ -4161,13 +4845,19 @@ impl<'o> Checker<'o> {
             return self.enum_case_value(expr, def, name, args);
         }
         let ty = self.expr(object, None);
-        match self.unchain(object, &ty) {
+        let out = match self.unchain(object, &ty) {
             Some(inner) => {
                 let field = self.member(expr, &inner, name, object.span);
                 self.rechain(expr, field)
             }
             None => self.member(expr, &ty, name, object.span),
+        };
+        match self.out.fields.get(&expr.id).cloned() {
+            Some(FieldRes::Field) => self.observe(object, Read::Field(name.name.clone())),
+            Some(FieldRes::Extension(func)) => self.observe(object, Read::Member(func.to_string())),
+            _ => {}
         }
+        out
     }
 
     /// The value an optional chain carries on, when `object` is optional only by a `?.` in it.
@@ -4226,9 +4916,88 @@ impl<'o> Checker<'o> {
         Ty::Adt(def, args)
     }
 
+    /// The type an extension of `ty` is keyed by (`crate::extensions`).
+    pub(super) fn extension_owner(&self, ty: &Ty) -> Option<String> {
+        Some(match ty {
+            Ty::Str | Ty::Strings(_) => "String".into(),
+            Ty::Int => "Int".into(),
+            Ty::Float => "Double".into(),
+            Ty::Bool => "Bool".into(),
+            Ty::List(_) => "Array".into(),
+            Ty::Map(_) => "Dictionary".into(),
+            Ty::Set(_) => "Set".into(),
+            Ty::Option(_) => "Optional".into(),
+            Ty::Result(..) => "Result".into(),
+            Ty::JsError => "Error".into(),
+            Ty::Adt(def, _) => self.out.defs[*def].name.clone(),
+            _ => return None,
+        })
+    }
+
+    /// The lowered function of `ty`'s extension member `name`, when there is one in scope.
+    pub(super) fn extension_fn(&self, ty: &Ty, name: &str, is_static: bool) -> Option<(Rc<str>, LocalId)> {
+        let owner = self.extension_owner(ty)?;
+        let func = crate::extensions::mangle(&owner, name, is_static);
+        let local = self.lookup(&func)?;
+        Some((func.into(), local))
+    }
+
+    /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
+    fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
+        let owner = crate::extensions::key(type_name);
+        let func = crate::extensions::mangle(owner, &name.name, true);
+        let local = self.lookup(&func)?;
+        self.out.fields.insert(expr.id, FieldRes::Static(func.into()));
+        let ty = self.out.locals[local].ty.clone();
+        Some(self.instantiate(&ty))
+    }
+
+    /// `x.p` with `p` a computed property of an extension of `x`'s type: its function's result.
+    fn extension_property(&mut self, expr: &Expr, ty: &Ty, name: &Ident) -> Option<Ty> {
+        let (func, local) = self.extension_fn(ty, &name.name, false)?;
+        let fn_ty = self.out.locals[local].ty.clone();
+        let Ty::Fn(f) = self.instantiate(&fn_ty) else { return None };
+        if f.params.len() != 1 {
+            return None;
+        }
+        if !self.unify(&f.params[0].ty, ty) {
+            self.mismatch(name.span, ty, &f.params[0].ty);
+        }
+        self.out.fields.insert(expr.id, FieldRes::Extension(func));
+        Some(f.ret.clone())
+    }
+
     /// `value.name` on a value of type `ty`.
     fn member(&mut self, expr: &Expr, ty: &Ty, name: &Ident, object_span: Span) -> Ty {
         let resolved = self.resolve(ty);
+        let builtin = matches!(
+            (&resolved, name.name.as_str()),
+            (
+                Ty::Str | Ty::Strings(_) | Ty::List(_) | Ty::Map(_) | Ty::JsMap(..) | Ty::Set(_),
+                "count" | "isEmpty"
+            ) | (Ty::List(_), "first" | "last")
+                | (Ty::Map(_) | Ty::JsMap(..), "keys" | "values" | "entries")
+                | (Ty::Set(_), "values")
+                | (Ty::Result(..), "isOk")
+                | (Ty::JsError, "message" | "name")
+        );
+        let field = match &resolved {
+            Ty::Adt(def, _) => self.out.defs[*def].fields().iter().any(|f| f.name == name.name),
+            _ => false,
+        };
+        if !builtin
+            && !field
+            && let Some(ty) = self.extension_property(expr, &resolved, name)
+        {
+            return ty;
+        }
+        if matches!(resolved, Ty::Param(..) | Ty::Any(_))
+            && let Some((witness, requirement)) = self.requirement(&resolved, &name.name)
+            && !requirement.method
+        {
+            self.out.fields.insert(expr.id, FieldRes::Witness { witness, member: name.name.clone() });
+            return requirement.ty;
+        }
         let prop = |checker: &mut Self, recv: Recv, n: &'static str, ty: Ty| {
             checker.out.fields.insert(expr.id, FieldRes::Prop { recv, name: n });
             ty
@@ -4363,6 +5132,21 @@ impl<'o> Checker<'o> {
             Some(Ty::Fn(f)) => Some(f),
             _ => None,
         };
+        // A `() -> View` closure of several lines (Swift's `@ViewBuilder`): each line a child.
+        if let Some(f) = &expected_fn
+            && f.params.is_empty()
+            && !f.is_async
+            && c.params.is_empty()
+            && matches!(self.resolve(&f.ret), Ty::View(_))
+            && !matches!(c.body.as_slice(), [Stmt { kind: StmtKind::Expr(_), .. }])
+        {
+            self.builder(&c.body);
+            self.out.closures.insert(
+                c.span,
+                ClosureInfo { params: Vec::new(), is_async: false, ret: Ty::View(None), builder: true },
+            );
+            return Ty::Fn(f.clone());
+        }
         self.push();
         let mut params = Vec::new();
         let mut param_tys = Vec::new();
@@ -4410,6 +5194,8 @@ impl<'o> Checker<'o> {
                 (None, None) => self.fresh(),
             };
             param_tys.push(ParamTy {
+                labelled: false,
+                positional: false,
                 name: Some(param.name.name.clone()),
                 ty: ty.clone(),
                 optional: false,
@@ -4419,7 +5205,14 @@ impl<'o> Checker<'o> {
         }
         if c.tuple {
             let tuple = Ty::Tuple(param_tys.iter().map(|p| p.ty.clone()).collect());
-            param_tys = vec![ParamTy { name: None, ty: tuple, optional: false, rest: false }];
+            param_tys = vec![ParamTy {
+                labelled: false,
+                positional: false,
+                name: None,
+                ty: tuple,
+                optional: false,
+                rest: false,
+            }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
         // TS's `() => Promise<T>` taking a closure that awaits: the closure's result is `T`.
@@ -4442,13 +5235,17 @@ impl<'o> Checker<'o> {
             spawn: false,
             cleanup: false,
             throws,
+            raises: expected_fn.as_ref().filter(|f| f.throws).map(|_| Ty::Unknown),
+            handled: 0,
         });
         let mut locals = Vec::new();
         for (param, ty) in params {
             locals.push(self.declare(&param.name, ty, LocalKind::Param));
         }
         let ret_resolved = self.resolve(&ret);
+        let trying = std::mem::take(&mut self.trying);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
+        self.trying = trying;
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
             (self.resolve(&body_ty), c.body.last())
@@ -4471,7 +5268,15 @@ impl<'o> Checker<'o> {
         self.pop();
         let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
-        Ty::Fn(Rc::new(FnTy { params: param_tys, ret, is_async: frame.is_async, generics: 0, ts: false }))
+        Ty::Fn(Rc::new(FnTy {
+            params: param_tys,
+            ret,
+            is_async: frame.is_async,
+            generics: 0,
+            ts: false,
+            throws: false,
+            bounds: Vec::new(),
+        }))
     }
 }
 
@@ -4515,7 +5320,10 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         return Some(sig);
     }
     let source = std::fs::read_to_string(path).ok()?;
-    let (file, _, _) = crate::parser::parse(&source);
+    let (mut file, _, _) = crate::parser::parse(&source);
+    crate::extensions::lower(&mut file);
+    // Its module imports, as the names its signatures use (`crate::modules`).
+    crate::modules::prepare(&mut file, &source, &path.to_string_lossy(), options);
     let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
     sub.declare_signatures(&file, specifier);
     let types = sub
@@ -4550,6 +5358,129 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
     Some(sig)
 }
 
+/// What other files see of the `.bloom` file `file` (at `path`, its module imports
+/// prepared): the types and signatures [`signatures`] reads for an import, as text,
+/// one declaration per line, sorted. Each line starts with who sees it: `public`
+/// (the modules that import its module; every importer outside a package) or
+/// `internal` (the other files of its module). Bodies, comments and private items
+/// are not in it, except a private type a visible signature names, so a build keys
+/// a file's importers on the lines they see.
+pub fn interface(file: &File, source: &str, path: &Path, options: &Options) -> String {
+    let mut sub = Checker::new(source, &path.to_string_lossy(), options);
+    sub.declare_signatures(file, "");
+    // Who sees a name: 2 other modules, 1 its module, 0 its file only.
+    let mut items: std::collections::BTreeMap<&str, u8> = Default::default();
+    for item in &file.items {
+        let seen = match item.visibility {
+            v if !v.exported(options.modules) => 0,
+            Visibility::Internal => 1,
+            _ => 2,
+        };
+        let entry = items.entry(item.kind.name().name.as_str()).or_default();
+        *entry = (*entry).max(seen);
+    }
+    let defs: Vec<Def> =
+        sub.out.defs.iter().map(|d| Def { kind: zonk_kind(&sub, &d.kind), ..d.clone() }).collect();
+    let field_types = |kind: &DefKind| -> Vec<Ty> {
+        match kind {
+            DefKind::Struct(fields) => fields.iter().map(|f| f.ty.clone()).collect(),
+            DefKind::Enum(variants) => {
+                variants.iter().flat_map(|v| v.payload.iter().map(|(_, t)| t.clone())).collect()
+            }
+            DefKind::Protocol(requirements) => requirements.iter().map(|r| r.ty.clone()).collect(),
+        }
+    };
+    // A type is seen as widely as the widest visible declaration that names it.
+    let mut seen = vec![0u8; defs.len()];
+    let mut work: Vec<(Ty, u8)> = Vec::new();
+    for (&name, &level) in &items {
+        if level == 0 {
+            continue;
+        }
+        if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
+            work.push((Ty::Adt(*def, Vec::new()), level));
+        }
+        if let Some(id) = sub.scopes[0].get(name) {
+            work.push((sub.zonk(&sub.out.locals[*id].ty), level));
+        }
+    }
+    while let Some((ty, level)) = work.pop() {
+        map_ty(&ty, &mut |t| {
+            if let Ty::Adt(def, _) | Ty::Any(def) = t
+                && seen[*def] < level
+            {
+                seen[*def] = level;
+                work.extend(field_types(&defs[*def].kind).into_iter().map(|t| (t, level)));
+            }
+            None
+        });
+    }
+    // Types by name, not by number, so a new private type leaves the others' lines alone.
+    let keys: Vec<String> = defs
+        .iter()
+        .map(|d| match &d.origin {
+            Origin::Bloom { specifier } if specifier.is_empty() => d.name.clone(),
+            origin => format!("{}@{origin:?}", d.name),
+        })
+        .collect();
+    fn named(ty: &Ty, keys: &[String]) -> Ty {
+        map_ty(ty, &mut |t| match t {
+            Ty::Adt(def, args) => {
+                let args: Vec<Ty> = args.iter().map(|a| named(a, keys)).collect();
+                Some(Ty::Foreign(format!("{}{args:?}", keys[*def]).into()))
+            }
+            Ty::Any(def) => Some(Ty::Foreign(format!("any {}", keys[*def]).into())),
+            _ => None,
+        })
+    }
+    let who = |level: u8| if level == 2 { "public" } else { "internal" };
+    let mut lines = Vec::new();
+    for (&name, &level) in &items {
+        if level == 0 {
+            continue;
+        }
+        let mut line = format!("{} {name}", who(level));
+        if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
+            line.push_str(&format!(" type {}", keys[*def]));
+        }
+        if let Some(id) = sub.scopes[0].get(name) {
+            let local = &sub.out.locals[*id];
+            line.push_str(&format!(" value {:?} {:?}", named(&sub.zonk(&local.ty), &keys), local.kind));
+        }
+        lines.push(line);
+    }
+    for (def, d) in defs.iter().enumerate() {
+        if seen[def] == 0 {
+            continue;
+        }
+        let kind = match &d.kind {
+            DefKind::Struct(fields) => DefKind::Struct(
+                fields.iter().map(|f| FieldDef { ty: named(&f.ty, &keys), ..f.clone() }).collect(),
+            ),
+            DefKind::Enum(variants) => DefKind::Enum(
+                variants
+                    .iter()
+                    .map(|v| VariantDef {
+                        payload: v.payload.iter().map(|(n, t)| (n.clone(), named(t, &keys))).collect(),
+                        ..v.clone()
+                    })
+                    .collect(),
+            ),
+            DefKind::Protocol(requirements) => DefKind::Protocol(
+                requirements
+                    .iter()
+                    .map(|r| RequirementDef { ty: named(&r.ty, &keys), ..r.clone() })
+                    .collect(),
+            ),
+        };
+        lines.push(format!("{} def {} {:?} {kind:?}", who(seen[def]), keys[def], d.generics));
+    }
+    lines.sort();
+    let mut text = lines.join("\n");
+    text.push('\n');
+    text
+}
+
 fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
     match kind {
         DefKind::Struct(fields) => DefKind::Struct(
@@ -4564,6 +5495,9 @@ fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
                 })
                 .collect(),
         ),
+        DefKind::Protocol(requirements) => DefKind::Protocol(
+            requirements.iter().map(|r| RequirementDef { ty: checker.zonk(&r.ty), ..r.clone() }).collect(),
+        ),
     }
 }
 
@@ -4574,6 +5508,7 @@ fn shift(ty: &Ty, offset: usize) -> Ty {
     }
     map_ty(ty, &mut |t| match t {
         Ty::Adt(def, args) => Some(Ty::Adt(def + offset, args.iter().map(|a| shift(a, offset)).collect())),
+        Ty::Any(def) => Some(Ty::Any(def + offset)),
         _ => None,
     })
 }
@@ -4591,6 +5526,9 @@ fn shift_def(def: &Def, offset: usize) -> Def {
                     ..v.clone()
                 })
                 .collect(),
+        ),
+        DefKind::Protocol(requirements) => DefKind::Protocol(
+            requirements.iter().map(|r| RequirementDef { ty: shift(&r.ty, offset), ..r.clone() }).collect(),
         ),
     };
     Def { kind, ..def.clone() }
@@ -4638,6 +5576,9 @@ fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
             Equality::Identity => Equality::Identity,
             other => other,
         },
+        // A class is compared by identity, as Swift's `===`; an existential has no `==`.
+        Ty::Adt(def, _) if defs[*def].class.is_some() => Equality::Identity,
+        Ty::Any(_) => Equality::None(ty.clone()),
         Ty::Adt(def, args) => {
             if defs[*def].is_fieldless() {
                 return Equality::Identity;
@@ -4651,6 +5592,7 @@ fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
                 DefKind::Enum(variants) => {
                     variants.iter().flat_map(|v| v.payload.iter().map(|(_, t)| substitute(t, args))).collect()
                 }
+                DefKind::Protocol(_) => Vec::new(),
             };
             let out = all(&mut parts.into_iter(), seen);
             seen.pop();
@@ -4728,6 +5670,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
+        | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_names(e, f),
         ExprKind::Tuple(items) | ExprKind::List(items) => items.iter().for_each(|e| walk_names(e, f)),
@@ -4825,11 +5768,47 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
                 walk_names(&w.cond, f);
                 walk_stmts(&w.body.stmts, f);
             }
+            StmtKind::Guard(g) => {
+                match &g.cond {
+                    Cond::Expr(e) | Cond::Let(_, e) => walk_names(e, f),
+                }
+                walk_stmts(&g.otherwise.stmts, f);
+            }
+            StmtKind::Throw(e) => walk_names(e, f),
+            StmtKind::Do(d) => {
+                walk_stmts(&d.body.stmts, f);
+                d.catches.iter().for_each(|c| walk_stmts(&c.body.stmts, f));
+            }
             StmtKind::For(fs) => {
                 walk_names(&fs.iter, f);
                 walk_stmts(&fs.body.stmts, f);
             }
         }
+    }
+}
+
+/// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
+fn exits(stmt: &Stmt) -> bool {
+    match &stmt.kind {
+        StmtKind::Return(_) | StmtKind::Throw(_) => true,
+        StmtKind::Expr(e) => match &e.kind {
+            ExprKind::Name(n) => n == "break" || n == "continue",
+            ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+/// A statement no path falls out of: an exit, or a `do` whose body and catches all exit.
+fn always_exits(stmt: &Stmt) -> bool {
+    match &stmt.kind {
+        StmtKind::Do(d) => {
+            d.body.stmts.last().is_some_and(always_exits)
+                && !d.catches.is_empty()
+                && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(always_exits))
+        }
+        _ => exits(stmt),
     }
 }
 

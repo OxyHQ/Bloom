@@ -112,6 +112,7 @@ fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
         paths: options.paths.unwrap_or_default().into_iter().collect(),
         dev: options.dev.unwrap_or(false),
         app: options.app.map(Into::into),
+        ..bloom_lang::Options::default()
     }
 }
 

@@ -1,0 +1,43 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Text, VStack, view } from "@oxy.so/bloom-language";
+
+export interface BadgeProps {
+  readonly title: string;
+  readonly detail: string;
+}
+export const Badge = view(function Badge(props: BadgeProps) {
+"use no memo";
+const $ = $c(7);
+const { title, detail } = props;
+let $t0;
+if ($[4] !== title || $[5] !== detail) {
+$t0 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title).font("headline").foreground("primary")) : $[1]), ($[2] !== detail ? ($[2] = detail, $[3] = Text(detail).font("caption-1").foreground("muted/10")) : $[3])).spacing("2xl").padding("md");
+$[4] = title;
+$[5] = detail;
+$[6] = $t0;
+} else {
+$t0 = $[6];
+}
+return $t0;
+});
+
+const $view0 = Button(Text("Like"));
+export interface LikeButtonProps {
+  readonly liked: boolean;
+}
+export const LikeButton = view(function LikeButton(props: LikeButtonProps) {
+"use no memo";
+const $ = $c(2);
+const { liked } = props;
+let $t1;
+if ($[0] !== liked) {
+$t1 = HStack($view0.tint(liked ? ("danger") : ("neutral"))).align("start");
+$[0] = liked;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

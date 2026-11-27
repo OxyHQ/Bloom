@@ -27,7 +27,8 @@ test('npx bloomc runs the checkout’s bloomc with its arguments and exit code',
   });
   const help = node(BLOOMC, ['--help']);
   assert.equal(help.status, 0, help.stderr);
-  assert.match(help.stdout, /bloomc check \[--tsc\]/);
+  // `bloom` is the CLI (ADR 0002); `bloomc` its alias, whose help is the same.
+  assert.match(help.stdout, /bloom check \[--tsc\]/);
   const checked = node(BLOOMC, ['check', '.'], BLOOM);
   assert.equal(checked.status, 0, checked.stderr);
   assert.match(checked.stderr, /bloomc: checked \d+ files \(0 errors/);
@@ -42,7 +43,8 @@ test('bloom-lang-check --tsc reports a planted boundary error at its .bloom span
     /error\[B0620\]: TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'\./,
   );
   assert.match(run.stderr, /--> \S*tsc-project\/src\/screens\/stamp\.bloom:4:33\n/);
-  assert.match(run.stderr, /checked 5 files with tsc \(1 error, 0 warnings\)/);
+  // The fixtures' 0.x forms warn (B0950); the one error is tsc's.
+  assert.match(run.stderr, /checked 5 files with tsc \(1 error, \d+ warnings?\)/);
 });
 
 test('the WASI bloomc checks the same files from the working directory', {

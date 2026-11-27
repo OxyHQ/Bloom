@@ -28,8 +28,10 @@ pub enum Ty {
     Tuple(Vec<Ty>),
     Option(Box<Ty>),
     Result(Box<Ty>, Box<Ty>),
-    /// A struct or enum, with its type arguments.
+    /// A struct, enum or class, with its type arguments.
     Adt(DefId, Vec<Ty>),
+    /// `any P` (2.0): a value of a type conforming to the protocol `P`, with its witness.
+    Any(DefId),
     /// `Partial<S>`: the struct with every field optional.
     Partial(Box<Ty>),
     Fn(Rc<FnTy>),
@@ -63,10 +65,20 @@ pub struct FnTy {
     pub generics: u32,
     /// A TS function: named arguments form one options object, passed last.
     pub ts: bool,
+    /// `throws` (2.0): a call of it is written `try`.
+    pub throws: bool,
+    /// Its constrained type parameters that take a witness (2.0): each one's type
+    /// (`Ty::Param`, then what a call instantiates it with) and its protocol's name
+    /// (`Equatable`, `Codable`, or a protocol of a `.bloom` module).
+    pub bounds: Vec<(Ty, Rc<str>)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParamTy {
+    /// A `func`'s labelled parameter: a call names it (`move(to: 1)`), never by position.
+    pub labelled: bool,
+    /// A `func`'s `_ name` parameter: called by position only (its name is the body's).
+    pub positional: bool,
     pub name: Option<String>,
     pub ty: Ty,
     /// Has a default (Bloom) or is optional (TS `?`).
@@ -131,8 +143,31 @@ impl VariantDef {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DefKind {
+    /// A struct's fields, or a class's stored properties.
     Struct(Vec<FieldDef>),
     Enum(Vec<VariantDef>),
+    /// A protocol's requirements.
+    Protocol(Vec<RequirementDef>),
+}
+
+/// A protocol's requirement: a property (`ty` its type) or a method (`ty` its function type,
+/// without `self`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct RequirementDef {
+    pub name: String,
+    pub ty: Ty,
+    pub method: bool,
+}
+
+/// What a class adds to its fields (2.0).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ClassDef {
+    /// `@Observable`: writes notify the views that read the field.
+    pub observable: bool,
+    /// Fields only the class's own members assign (`private(set)`, `private`).
+    pub sealed: Vec<String>,
+    /// `let` fields: assigned in `init` only.
+    pub constants: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -141,20 +176,29 @@ pub struct Def {
     pub generics: Vec<String>,
     pub kind: DefKind,
     pub origin: Origin,
+    /// A class (a reference type): its fields are written in place.
+    pub class: Option<ClassDef>,
 }
 
 impl Def {
     pub fn fields(&self) -> &[FieldDef] {
         match &self.kind {
             DefKind::Struct(fields) => fields,
-            DefKind::Enum(_) => &[],
+            DefKind::Enum(_) | DefKind::Protocol(_) => &[],
         }
     }
 
     pub fn variants(&self) -> &[VariantDef] {
         match &self.kind {
             DefKind::Enum(variants) => variants,
-            DefKind::Struct(_) => &[],
+            DefKind::Struct(_) | DefKind::Protocol(_) => &[],
+        }
+    }
+
+    pub fn requirements(&self) -> &[RequirementDef] {
+        match &self.kind {
+            DefKind::Protocol(requirements) => requirements,
+            _ => &[],
         }
     }
 
@@ -209,6 +253,8 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
                 .params
                 .iter()
                 .map(|p| ParamTy {
+                    labelled: p.labelled,
+                    positional: p.positional,
                     name: p.name.clone(),
                     ty: map_ty(&p.ty, f),
                     optional: p.optional,
@@ -219,6 +265,8 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             is_async: fn_ty.is_async,
             generics: fn_ty.generics,
             ts: fn_ty.ts,
+            throws: fn_ty.throws,
+            bounds: fn_ty.bounds.iter().map(|(t, p)| (map_ty(t, f), p.clone())).collect(),
         })),
         other => other.clone(),
     }
@@ -282,6 +330,7 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
             Ok(())
         }
         Ty::Partial(t) => write!(f, "Partial<{}>", Display { ty: t, defs }),
+        Ty::Any(def) => write!(f, "any {}", defs.get(*def).map_or("?", |d| d.name.as_str())),
         Ty::Fn(fn_ty) => {
             if fn_ty.is_async {
                 f.write_str("async ")?;

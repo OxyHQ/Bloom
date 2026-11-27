@@ -1,0 +1,26 @@
+import API
+import Posts
+
+// ADR 0002, example 3 (the screen): the list of rows over the model.
+
+public struct FeedScreen: View {
+  @State private var state = FeedState()
+
+  func like(_ post: Post) async {
+    let next = optimistic(state, post)
+    state = next
+    let ok = await sendLike(post.id)
+    state = settled(next, post, ok)
+  }
+
+  var body: some View {
+    VStack {
+      Text("Home").font(.title2)
+      if state.failed != "" { Text(state.failed).foreground(.muted) }
+      // Stand-in (phase B, BloomUI): `List(model.posts) { … }.refreshable { … }`.
+      for post in state.posts { PostRow(post: post, onLike: { task { await like(post) } }) }
+    }
+    .spacing(.sm)
+    .task { state = await refresh(state) }
+  }
+}

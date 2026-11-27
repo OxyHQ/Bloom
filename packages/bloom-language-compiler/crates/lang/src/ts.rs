@@ -1191,6 +1191,8 @@ impl Mapper<'_> {
                 None => Ty::Foreign("unknown".into()),
             };
             params.push(ParamTy {
+                labelled: false,
+                positional: false,
                 name: Some(param.name.clone()),
                 ty,
                 optional: param.optional,
@@ -1205,7 +1207,15 @@ impl Mapper<'_> {
             Some(ret) => self.ty(file, ret, &scope, &ret_path, depth),
             None => Ty::Foreign(ret_path.into()),
         };
-        Ty::Fn(Rc::new(FnTy { params, ret, is_async: false, generics, ts: true }))
+        Ty::Fn(Rc::new(FnTy {
+            params,
+            ret,
+            is_async: false,
+            generics,
+            ts: true,
+            throws: false,
+            bounds: Vec::new(),
+        }))
     }
 
     /// A TS type as a Bloom type; `path` names it in emitted TS.
@@ -1404,6 +1414,7 @@ impl Mapper<'_> {
                     generics: Vec::new(),
                     kind: DefKind::Struct(Vec::new()),
                     origin: Origin::Ts { path: path.to_string() },
+                    class: None,
                 });
                 let ty = Ty::Adt(id, Vec::new());
                 if args.is_empty() {
@@ -1453,6 +1464,7 @@ impl Mapper<'_> {
             generics: Vec::new(),
             kind: DefKind::Struct(Vec::new()),
             origin: Origin::Ts { path: path.to_string() },
+            class: None,
         });
         let fields = self.fields(file, members, scope, path, depth);
         self.defs[id].kind = DefKind::Struct(fields);

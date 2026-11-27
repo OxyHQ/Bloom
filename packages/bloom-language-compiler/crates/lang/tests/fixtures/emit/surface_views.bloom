@@ -1,0 +1,62 @@
+// Bloom 2.0's views: `struct X: View`, its stored `let`s are props, `@State`, `@Binding`,
+// `@Environment`, `var body`, `.onAppear`, and `Equatable`'s `==` as the memo comparator.
+public struct Post: Equatable {
+  public let id: String
+  public let text: String
+  public var likes: Int
+  public var isLiked: Bool
+}
+
+public struct PostRow: View, Equatable {
+  let post: Post
+  var dense: Bool = false
+  let onLike: () -> Void
+
+  var body: some View {
+    HStack {
+      Text(post.text)
+      Button(Text("\(post.likes)")).onPress { onLike() }
+    }
+    .spacing(dense ? "xs" : "sm")
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post && a.dense == b.dense }
+}
+
+public struct Composer: View {
+  @Binding var isOn: Bool
+  @State private var draft = ""
+  @State private var sent = 0
+  let title = "Compose"
+
+  func send() {
+    sent += 1
+    draft = ""
+    isOn = false
+  }
+
+  var body: some View {
+    VStack {
+      Text("\(title): \(sent)")
+      TextField($draft, "Write")
+      Toggle($isOn)
+      Text(isOn ? "On" : "Off")
+      Button(Text("Send")).onPress { send() }
+    }
+    .onAppear { sent = 0 }
+  }
+}
+
+public struct Feed {
+  var count: Int = 0
+}
+
+func refresh(_ feed: Feed) async -> Feed { Feed(count: feed.count + 1) }
+
+public struct FeedScreen: View {
+  @State private var feed = Feed()
+
+  var body: some View {
+    Text("\(feed.count)").task { feed = await refresh(feed) }
+  }
+}

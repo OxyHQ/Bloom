@@ -1,0 +1,44 @@
+warning[B0950]: `pub` is Bloom 0.x (3 times in this file)
+  --> emit/kitchen.bloom:17:1
+   |
+17 | pub fn first<T>(items: [T]) -> T? {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (7 times in this file)
+  --> emit/kitchen.bloom:17:5
+   |
+17 | pub fn first<T>(items: [T]) -> T? {
+   |     ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (4 times in this file)
+  --> emit/kitchen.bloom:22:3
+   |
+22 |   match load {
+   |   ^^^^^ retired in 2.0
+   |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (5 times in this file)
+  --> emit/kitchen.bloom:24:39
+   |
+24 |     case .failed(message) => "Failed: ${message}"
+   |                                       ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (2 times in this file)
+  --> emit/kitchen.bloom:57:5
+   |
+57 | pub view Composer(maxLength: Int = 280, onSend: async (Draft) -> Result<Unit, String>) {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

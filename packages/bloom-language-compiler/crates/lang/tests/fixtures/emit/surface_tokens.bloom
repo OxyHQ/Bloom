@@ -1,0 +1,28 @@
+// Bloom 2.0's typed tokens: a token set's Swift names (generated from spec/language.json),
+// compiled to the token strings: `.xxl` is "2xl", `.caption1` "caption-1", and
+// `.muted.opacity(0.1)` "muted/10".
+public struct Badge: View {
+  let title: String
+  let detail: String
+
+  var body: some View {
+    VStack {
+      Text(title).font(.headline).foreground(.primary)
+      Text(detail).font(.caption1).foreground(.muted.opacity(0.1))
+    }
+    .spacing(.xxl)
+    .padding(.md)
+  }
+}
+
+// SwiftUI's alignment names (`.top`, `.leading`), and a token each way of a condition.
+public struct LikeButton: View {
+  let liked: Bool
+
+  var body: some View {
+    HStack {
+      Button(Text("Like")).tint(liked ? .danger : .neutral)
+    }
+    .align(.top)
+  }
+}

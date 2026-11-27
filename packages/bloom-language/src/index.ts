@@ -63,6 +63,7 @@ export {
 } from './primitives';
 export type { SidebarRow, TreeRow } from './primitives';
 export { view } from './view';
+export { Observable, useObserved } from './observable';
 export { clear, identity, regular, GlassValue } from './glass';
 export {
   defineEnvironment,

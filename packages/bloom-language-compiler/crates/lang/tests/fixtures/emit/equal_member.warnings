@@ -1,0 +1,35 @@
+warning[B0950]: `pub` is Bloom 0.x (once in this file)
+ --> emit/equal_member.bloom:9:1
+  |
+9 | pub view PostRow(post: Post, seen: Int, compact: Bool = false) {
+  | ^^^ retired in 2.0
+  |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+ --> emit/equal_member.bloom:9:5
+  |
+9 | pub view PostRow(post: Post, seen: Int, compact: Bool = false) {
+  |     ^^^^ retired in 2.0
+  |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `equal(old, new)` is Bloom 0.x (once in this file)
+  --> emit/equal_member.bloom:10:3
+   |
+10 |   equal(old, new) {
+   |   ^^^^^ retired in 2.0
+   |
+help: conform to `Equatable` with `static func ==`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (3 times in this file)
+  --> emit/equal_member.bloom:15:11
+   |
+15 |     Text("${post.id}: ${post.likes} (${seen})")
+   |           ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

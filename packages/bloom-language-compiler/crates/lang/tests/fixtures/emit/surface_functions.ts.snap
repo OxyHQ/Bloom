@@ -1,0 +1,27 @@
+
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+export function move(point: Point, target: Point, step: number = 1): Point {
+return { x: point.x + ((target.x - point.x) * step), y: point.y + ((target.y - point.y) * step) };
+}
+
+function describe(point: Point): string {
+return `(${point.x}, ${point.y})`;
+}
+
+function label(point: Point): string {
+return `at ${describe(point)}`;
+}
+
+export function farthest(points: readonly Point[]): readonly string[] {
+const moved = points.map(($0: Point) => move($0, { x: 0, y: 0 }));
+return moved.filter(($0: Point) => $0.x > 1).map(($0: Point) => label($0));
+}
+
+export function total(points: readonly Point[]): number {
+return points.map((p: Point) => p.x + p.y).reduce(($0: number, $1: number) => $0 + $1, 0);
+}
+

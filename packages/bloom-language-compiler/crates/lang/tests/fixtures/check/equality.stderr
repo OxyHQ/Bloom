@@ -24,3 +24,12 @@ error[B0210]: `==` cannot compare `T?` (it holds `T`)
    |
 help: compare a field of it, or take a comparison function: `(T, T) -> Bool`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+warning[B0950]: `fn` is Bloom 0.x (3 times in this file)
+ --> check/equality.bloom:5:1
+  |
+5 | fn sameHandler(a: Handler, b: Handler) -> Bool {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

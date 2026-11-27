@@ -1,0 +1,44 @@
+warning[B0950]: `pub` is Bloom 0.x (4 times in this file)
+  --> emit/spread_props.bloom:10:1
+   |
+10 | pub view PostCard(..PostCardProps, dense: Bool = false) {
+   | ^^^ retired in 2.0
+   |
+help: write `public`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `view`/`screen`/`layout` declarations is Bloom 0.x (5 times in this file)
+  --> emit/spread_props.bloom:10:5
+   |
+10 | pub view PostCard(..PostCardProps, dense: Bool = false) {
+   |     ^^^^ retired in 2.0
+   |
+help: write `struct X: View { … var body: some View { … } }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `..Props` spread props is Bloom 0.x (3 times in this file)
+  --> emit/spread_props.bloom:10:19
+   |
+10 | pub view PostCard(..PostCardProps, dense: Bool = false) {
+   |                   ^^ retired in 2.0
+   |
+help: declare the props as stored properties, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `${…}` interpolation is Bloom 0.x (5 times in this file)
+  --> emit/spread_props.bloom:15:13
+   |
+15 |       Text("${likes}")
+   |             ^^ retired in 2.0
+   |
+help: write `\(…)`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `fn` is Bloom 0.x (once in this file)
+  --> emit/spread_props.bloom:38:1
+   |
+38 | fn summary(card: PostCardProps) -> String { "${card.title} (${card.likes})" }
+   | ^^ retired in 2.0
+   |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

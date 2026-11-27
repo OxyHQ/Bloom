@@ -1,0 +1,29 @@
+// ADR 0002, example 3: a row of the feed. `Equatable`'s `==` is its memo comparator.
+
+public struct PostRow: View, Equatable {
+  let post: Post
+  let onLike: () -> Void
+
+  var body: some View {
+    HStack {
+      Avatar(post.author.initials)
+      VStack {
+        HStack {
+          Text(post.author.name).font(.headline)
+          if post.author.isVerified { Text("✓").foreground(.primary) }
+          Spacer()
+          Text(post.createdAt).foreground(.muted)
+        }
+        .spacing(.xs)
+        Text(post.text)
+        // Stand-in (phase B, BloomUI): `Button { } label: { Label(…, icon:) }`.
+        Button(Text(post.isLiked ? "♥ \(post.likes)" : "♡ \(post.likes)")).onPress { onLike() }
+      }
+      .spacing(.xs)
+    }
+    .spacing(.sm)
+    .padding(.md)
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post }
+}

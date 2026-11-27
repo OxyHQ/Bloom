@@ -15,3 +15,21 @@ error[B0502]: `"quiet"` is not a `"calm" | "loud"`
    |          ^^^^^^^ expected one of: calm loud
    |
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
+
+warning[B0950]: `fn` is Bloom 0.x (2 times in this file)
+ --> check/literal_unions.bloom:5:1
+  |
+5 | fn volume(tone: Tone) -> Int {
+  | ^^ retired in 2.0
+  |
+help: write `func` (its parameters are labelled; `_` for none), or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20
+
+warning[B0950]: `match` is Bloom 0.x (once in this file)
+ --> check/literal_unions.bloom:6:3
+  |
+6 |   match tone {
+  |   ^^^^^ retired in 2.0
+  |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

@@ -1,0 +1,17 @@
+import Bloom
+import Feed
+import Settings
+
+/// The app's root view: `bloom build` starts here.
+public struct App: View {
+  var body: some View {
+    ScrollView {
+      VStack {
+        NotificationSettings()
+        FeedScreen()
+      }
+      .spacing(.xl)
+      .padding(.lg)
+    }
+  }
+}

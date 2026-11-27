@@ -550,6 +550,12 @@ mod tests {
         assert!(out[2].get("result").is_null());
     }
 
+    /// A publication's errors: the 0.x forms these fixtures use warn (B0950), and are not errors.
+    fn errors(publication: &Value) -> Vec<Value> {
+        let diagnostics = publication.get("params").get("diagnostics").as_array();
+        diagnostics.iter().filter(|d| d.get("severity") == &Value::Number(1.0)).cloned().collect()
+    }
+
     const PANEL: &str = "enum Tone {\n  plain\n  loud\n}\n\nstruct Draft {\n  text: String = \"\"\n  tone: Tone = .plain\n}\n\npub view Panel(title: String) {\n  @state draft = Draft()\n\n  body {\n    Text(title)\n  }\n}\n";
 
     #[test]
@@ -566,7 +572,7 @@ mod tests {
             r#"{"jsonrpc":"2.0","id":7,"method":"textDocument/formatting","params":{"textDocument":{"uri":"file:///tmp/bloomc-lsp-sync.bloom"},"options":{}}}"#.into(),
         ]);
         assert!(!out[0].get("params").get("diagnostics").as_array().is_empty(), "the open call is an error");
-        assert_eq!(out[1].get("params").get("diagnostics").as_array(), &[], "{:?}", out[1]);
+        assert_eq!(errors(&out[1]), Vec::<Value>::new(), "{:?}", out[1]);
         // Formatted already: the text is exactly the edited one.
         assert_eq!(result(&out, 7), Value::Array(Vec::new()));
         let mut text = broken.to_string();
@@ -627,7 +633,7 @@ mod tests {
             request(1, "textDocument/definition", &uri, line, column),
             request(2, "textDocument/definition", &uri, line, 5),
         ]);
-        assert_eq!(out[0].get("params").get("diagnostics").as_array(), &[], "{:?}", out[0]);
+        assert_eq!(errors(&out[0]), Vec::<Value>::new(), "{:?}", out[0]);
         let ts = result(&out, 1);
         assert_eq!(ts.get("uri").as_str(), Some(uri_of(&dir.join("names.ts")).as_str()));
         assert_eq!(ts.get("range").get("start"), &json::parse(r#"{"line":1,"character":16}"#).unwrap());
@@ -664,7 +670,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).unwrap();
         assert_eq!(first.len(), 2, "{first:?}");
         assert_eq!(first[1].get("params").get("uri").as_str(), Some(screen_uri.as_str()));
-        assert_eq!(first[1].get("params").get("diagnostics").as_array(), &[]);
+        assert_eq!(errors(&first[1]), Vec::<Value>::new());
         assert!(!second[1].get("params").get("diagnostics").as_array().is_empty(), "{second:?}");
         // A save of a file nothing open imports republishes nothing.
         assert_eq!(second.len(), 2, "{second:?}");
