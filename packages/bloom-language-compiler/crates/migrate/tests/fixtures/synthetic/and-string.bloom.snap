@@ -1,0 +1,17 @@
+// `name && "@${name}"` as a value: the string when `name` is truthy, else `name` itself.
+
+private func handleOf(_ name: String?, _ fallback: String) -> String { name ?? fallback }
+
+public struct Handle: View {
+  var profile: { username: String? }? = none
+  var body: some View {
+    Text(
+      handleOf(
+        (profile?.username != none &&
+          !profile?.username.isEmpty ? "@\((profile!.username) ?? "")" : profile?.username),
+        // bloom: review: an optional interpolated as `?? ""`: JS printed `undefined` for it
+        "nobody",
+      ),
+    )
+  }
+}
