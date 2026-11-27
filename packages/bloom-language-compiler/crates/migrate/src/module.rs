@@ -350,7 +350,8 @@ const LANG_HANDLED: &[&str] = &[
 ];
 
 /// Types the language exports that `.bloom` writes as `View`.
-const LANG_VIEW_TYPES: &[&str] = &["Child", "ViewNode"];
+/// `MenuView` is a `Menu(…)` chain: in Bloom, a `View` like any node.
+const LANG_VIEW_TYPES: &[&str] = &["Child", "ViewNode", "MenuView"];
 
 /// A translator for `source` (`filename`), before its imports are read.
 pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s> {

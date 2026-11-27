@@ -1,0 +1,20 @@
+// `.selection([value, onValueChange])` of a prop pair is a `Binding(get:set:)`, and a function
+// typed `MenuView` returns a `View`.
+
+public type Audience = "public" | "direct"
+
+public func AudienceMenu(
+  _ trigger: View,
+  _ arg1: { audience: Audience, onAudienceChange: (Audience) -> Unit },
+) -> View {
+  let { audience, onAudienceChange } = arg1
+  Menu(
+    trigger,
+    Section {
+      Item("Everyone").tag("public")
+      Item("Private").tag("direct")
+    }
+      .title("Who can see this post")
+      .selection(Binding(get: audience, set: onAudienceChange)),
+  )
+}
