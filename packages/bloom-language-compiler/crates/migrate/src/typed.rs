@@ -648,11 +648,27 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 let at = rest.len() - rest.trim_start().len();
                 if source[..start].ends_with('(') {
                     ["?? 0)", "?? \"\")"].iter().find_map(|own| {
-                        rest[at..].starts_with(own).then(|| (start - 1, end + at + own.len(), text.to_string()))
+                        rest[at..]
+                            .starts_with(own)
+                            .then(|| (start - 1, end + at + own.len(), text.to_string()))
                     })
                 } else if source[..start].ends_with("${") && rest[at..].starts_with("?? \"\"}") {
-                    // `"${x ?? ""}"`, the codemod's own for an interpolated optional: `"${x}"`.
-                    Some((start, end + at + "?? \"\"".len(), text.to_string()))
+                    // `"${x ?? ""}"`, the codemod's own for an interpolated optional: `"${x}"`, and
+                    // its review note above the line goes with it.
+                    let cut = end + at + "?? \"\"".len();
+                    let line = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                    let note = source[..line.saturating_sub(1)].rfind('\n').map_or(0, |i| i + 1);
+                    let noted = line > 0
+                        && source[note..line]
+                            .trim()
+                            .starts_with("// bloom: review: an optional interpolated as")
+                        && source[line..start].matches("${").count() == 1
+                        && !source[cut..].split('\n').next().unwrap_or("").contains("${");
+                    if noted {
+                        Some((note, cut, format!("{}{text}", &source[line..start])))
+                    } else {
+                        Some((start, cut, text.to_string()))
+                    }
                 } else {
                     None
                 }
@@ -690,7 +706,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 if d.message.starts_with("`?.` reads an optional, and this is `")
                     || d.message.starts_with("`??` gives a fallback for an optional, and this is `") =>
             {
-                let shown = d.message.split_once("this is `").map(|(_, t)| t.trim_end_matches('`')).unwrap_or("");
+                let shown =
+                    d.message.split_once("this is `").map(|(_, t)| t.trim_end_matches('`')).unwrap_or("");
                 let fallback = d.message.starts_with("`??`");
                 let (receiver, guard) = if fallback {
                     (text, None)
