@@ -456,6 +456,9 @@ pub struct Checker<'o> {
     chained: HashSet<ExprId>,
     /// Checking `.ref(x)`'s argument: a `@ref` there is the ref itself.
     ref_object: bool,
+    /// The argument being checked is for a TS optional parameter (`locale?: string`): it
+    /// also takes an optional, as TS's `undefined` is `none` (R2).
+    optional_param: bool,
     /// The next closure checked is `catching { … }`'s block (its frame throws).
     pub(super) closure_throws: bool,
     /// Member chains of immutable values narrowed present (`u.name != none`): the
@@ -555,6 +558,7 @@ impl<'o> Checker<'o> {
             reported: HashSet::default(),
             chained: HashSet::default(),
             ref_object: false,
+            optional_param: false,
             closure_throws: false,
             paths: Vec::new(),
             trying: false,
@@ -3779,6 +3783,7 @@ impl<'o> Checker<'o> {
     /// An argument TS checks: `Foreign` and Bloom values alike, an `Int` where
     /// a TS `number` is, a closure whose untyped parameters TS infers.
     pub fn boundary(&mut self, expr: &Expr, ts_ty: Option<&Ty>) -> Ty {
+        let optional_param = std::mem::take(&mut self.optional_param);
         let hint = ts_ty.map(|t| self.resolve(t));
         // A `@ref` where TS takes a ref (`RefObject<…>`, `Ref<…>`): the ref itself. While the
         // view draws, where TS's type is not known to Bloom, too (its value would be B0411;
@@ -3825,7 +3830,8 @@ impl<'o> Checker<'o> {
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
-                || self.coerce(&ty, &hint);
+                || self.coerce(&ty, &hint)
+                || (optional_param && self.coerce(&ty, &Ty::Option(Box::new(hint.clone()))));
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
             }

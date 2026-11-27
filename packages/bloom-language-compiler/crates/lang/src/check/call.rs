@@ -1026,7 +1026,9 @@ impl Checker<'_> {
             match param {
                 Some(param) => {
                     let ty = param.ty.clone();
+                    self.optional_param = param.optional && !param.rest;
                     self.boundary(&arg.value, Some(&ty));
+                    self.optional_param = false;
                 }
                 None => {
                     self.report(

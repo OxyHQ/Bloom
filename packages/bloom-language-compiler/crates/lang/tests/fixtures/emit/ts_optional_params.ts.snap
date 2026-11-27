@@ -1,0 +1,25 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { formatRelativeTime, useBloomLocale } from "@/locale";
+
+export interface StampProps {
+  readonly at: number;
+}
+export const Stamp = view(function Stamp(props: StampProps) {
+"use no memo";
+const $ = $c(7);
+const { at } = props;
+const locale = useBloomLocale();
+let $t0;
+if ($[4] !== at || $[5] !== locale) {
+$t0 = VStack(Text(formatRelativeTime(at, locale)), ($[0] !== at ? ($[0] = at, $[1] = Text(formatRelativeTime(at, "en"))) : $[1]), ($[2] !== at ? ($[2] = at, $[3] = Text(formatRelativeTime(at))) : $[3]));
+$[4] = at;
+$[5] = locale;
+$[6] = $t0;
+} else {
+$t0 = $[6];
+}
+return $t0;
+});
+

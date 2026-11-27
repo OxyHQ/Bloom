@@ -1,0 +1,16 @@
+// A TS optional parameter (`locale?: string`) takes an optional (R2): TS's `undefined` is
+// `none`, so `String?` passes as it is.
+import { formatRelativeTime, useBloomLocale } from "@/locale"
+
+public struct Stamp: View {
+  let at: Float
+  let locale = useBloomLocale()
+
+  var body: some View {
+    VStack {
+      Text(formatRelativeTime(at, locale))
+      Text(formatRelativeTime(at, "en"))
+      Text(formatRelativeTime(at))
+    }
+  }
+}

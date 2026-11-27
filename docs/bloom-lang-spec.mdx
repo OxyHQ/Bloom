@@ -357,7 +357,9 @@ of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
-`undefined` (`SettingsSection(none, …)`). A TS
+`undefined` (`SettingsSection(none, …)`), and a TS function's optional parameter (`locale?: string`) takes
+an optional as well as its type (`formatRelativeTime(at, locale)` with `locale: String?`), as
+TS's `undefined` is `none`; a required one does not. A TS
 class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
