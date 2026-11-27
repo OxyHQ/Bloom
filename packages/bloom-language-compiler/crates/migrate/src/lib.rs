@@ -20,6 +20,7 @@ mod expr;
 mod i18n;
 mod jsx;
 mod module;
+mod props;
 pub mod report;
 mod stdlib;
 mod swiftui;
