@@ -18,6 +18,7 @@ pub fn options() -> Options {
     paths.insert("react-i18next".to_string(), vec!["stubs/react-i18next.d.ts".to_string()]);
     paths.insert("@oxy.so/services/ui/client".to_string(), vec!["stubs/oxy-services.d.ts".to_string()]);
     paths.insert("@oxy.so/core/logger".to_string(), vec!["stubs/oxy-logger.d.ts".to_string()]);
+    paths.insert("@tanstack/react-query".to_string(), vec!["stubs/tanstack-query.d.ts".to_string()]);
     Options { root: Some(fixtures()), paths, dev: false, ..Default::default() }
 }
 

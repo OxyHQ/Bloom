@@ -1,0 +1,20 @@
+// A generic view's shape bound is checked where it is called.
+import { ProfileGridEntry } from "@/profile"
+
+public struct Grid<T: ProfileGridEntry>: View {
+  let data: [T]
+  var body: some View {
+    VStack {
+      for item in data { Text(item.postId) }
+    }
+  }
+}
+
+public struct Tag {
+  public let id: String
+}
+
+public struct Page: View {
+  let tags: [Tag]
+  var body: some View { Grid(data: tags) }
+}

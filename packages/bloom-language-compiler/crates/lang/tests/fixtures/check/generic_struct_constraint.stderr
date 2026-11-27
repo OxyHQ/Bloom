@@ -1,0 +1,8 @@
+error[B0106]: a struct's type parameters take no constraints
+ --> check/generic_struct_constraint.bloom:6:19
+  |
+6 | public struct Box<T: Tag> {
+  |                   ^^^^^^ only a view's (`struct X<T: P>: View`) and a function's are constrained
+  |
+help: write `<T>`, and constrain the functions that need it
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#46-generics

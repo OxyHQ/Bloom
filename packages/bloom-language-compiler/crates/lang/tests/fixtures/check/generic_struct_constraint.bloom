@@ -1,0 +1,8 @@
+// A data struct's type parameters take no constraints (a view's and a function's do).
+public struct Tag {
+  public let id: String
+}
+
+public struct Box<T: Tag> {
+  public let value: T
+}

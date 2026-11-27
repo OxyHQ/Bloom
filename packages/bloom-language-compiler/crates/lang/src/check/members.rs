@@ -389,11 +389,15 @@ impl Checker<'_> {
         }
     }
 
-    /// The constraints of `f`'s type parameters that pass a witness.
-    pub(super) fn bounds(&mut self, f: &FnDecl) -> Vec<(u32, String, Bound)> {
+    /// The constraints of a function's (or a view's) type parameters that pass a witness.
+    pub(super) fn bounds(
+        &mut self,
+        generics: &[Ident],
+        constraints: &[(Ident, TypeExpr)],
+    ) -> Vec<(u32, String, Bound)> {
         let mut out = Vec::new();
-        for (param, protocol) in &f.constraints {
-            let Some(index) = f.generics.iter().position(|g| g.name == param.name) else {
+        for (param, protocol) in constraints {
+            let Some(index) = generics.iter().position(|g| g.name == param.name) else {
                 self.report(
                     Diagnostic::error(
                         "B0202",
@@ -420,6 +424,103 @@ impl Checker<'_> {
             out.push((index as u32, param.name.clone(), bound));
         }
         out
+    }
+
+    /// The constraints of a function's (or a view's) type parameters that are shapes: a
+    /// struct, a record type or a TS interface (`<T: ProfileGridEntry>`). A shape is
+    /// structural, as TS's `T extends ProfileGridEntry` is: its fields are read from the value
+    /// itself, and a call passes no witness for it. (A parameter not declared in `<…>` is
+    /// reported by [`Self::bounds`].)
+    pub(super) fn shapes(&mut self, generics: &[Ident], constraints: &[(Ident, TypeExpr)]) -> Vec<(u32, Ty)> {
+        let mut out = Vec::new();
+        for (param, bound) in constraints {
+            let Some(index) = generics.iter().position(|g| g.name == param.name) else { continue };
+            let shape = match &bound.kind {
+                TypeKind::Named { name, .. } => match self.type_names.get(&name.name).cloned() {
+                    Some(TypeName::Def(def)) if matches!(self.out.defs[def].kind, DefKind::Struct(_)) => true,
+                    Some(TypeName::Alias(..) | TypeName::Ty(_)) => true,
+                    // A protocol, `Equatable`, `Codable` or a built-in one (`Sendable`).
+                    _ => false,
+                },
+                TypeKind::Record(_) => true,
+                _ => false,
+            };
+            if !shape {
+                continue;
+            }
+            let ty = self.resolve_type(bound);
+            match self.resolve(&ty) {
+                Ty::Adt(def, _) if matches!(self.out.defs[def].kind, DefKind::Struct(_)) => {
+                    out.push((index as u32, ty));
+                }
+                Ty::Unknown => {}
+                other => {
+                    let shown = self.show(&other);
+                    self.report(
+                        Diagnostic::error("B0232", bound.span, format!("{shown} is not a protocol or a shape"))
+                            .label("a type parameter is constrained by a protocol, a struct, a record type or a TS interface")
+                            .spec("46-generics"),
+                    );
+                }
+            }
+        }
+        out
+    }
+
+    /// The shape a type parameter in scope has (`<T: ProfileGridEntry>`), if it has one.
+    pub(super) fn shape_of(&self, ty: &Ty) -> Option<Ty> {
+        let Ty::Param(_, name) = ty else { return None };
+        self.shapes_in_scope.iter().rev().find(|(n, _)| n == &**name).map(|(_, shape)| shape.clone())
+    }
+
+    /// Whether `ty` has the fields of `shape` (each fitting): a call's check of a
+    /// shape-bounded type parameter, once its type argument is known.
+    pub(super) fn has_shape(&mut self, ty: &Ty, shape: &Ty, span: Span) {
+        let ty = self.zonk(ty);
+        let actual = match (&ty, self.shape_of(&ty)) {
+            (Ty::Unknown | Ty::Var(_) | Ty::Foreign(_), _) => return,
+            (Ty::Param(..), Some(inner)) => inner,
+            _ => ty.clone(),
+        };
+        let fits = match (self.resolve(&actual), self.resolve(shape)) {
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if matches!(self.out.defs[d1].kind, DefKind::Struct(_))
+                    && matches!(self.out.defs[d2].kind, DefKind::Struct(_)) =>
+            {
+                d1 == d2 || self.fits_record(d1, &x, d2, &y)
+            }
+            (a, e) => self.coerce(&a, &e),
+        };
+        if fits {
+            return;
+        }
+        let shown = self.show(&ty);
+        let wanted = self.show(shape);
+        let missing: Vec<String> = match (self.resolve(&actual), self.resolve(shape)) {
+            (Ty::Adt(d1, _), Ty::Adt(d2, _)) => {
+                let have = self.out.defs[d1].fields().to_vec();
+                self.out.defs[d2]
+                    .fields()
+                    .iter()
+                    .filter(|w| {
+                        w.default != FieldDefault::Undefined && !have.iter().any(|h| h.name == w.name)
+                    })
+                    .map(|w| format!("`{}`", w.name))
+                    .collect()
+            }
+            _ => Vec::new(),
+        };
+        let help = if missing.is_empty() {
+            format!("give it {wanted}'s fields, each of its type")
+        } else {
+            format!("it lacks {}", missing.join(", "))
+        };
+        self.report(
+            Diagnostic::error("B0232", span, format!("{shown} does not have the shape of {wanted}"))
+                .label("a constraint of the view or function called")
+                .help(help)
+                .spec("46-generics"),
+        );
     }
 
     /// The witness a constraint is met with at a call, once its type argument is known.

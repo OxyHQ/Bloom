@@ -1,0 +1,24 @@
+import type { Selected } from "@/corpus";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface QueryResult<T> {
+  readonly data: T | undefined;
+  readonly isLoading: boolean;
+}
+export interface QueryOptions<T> {
+  readonly queryKey: readonly string[];
+  readonly queryFn: () => Promise<T>;
+  readonly enabled: boolean;
+}
+export declare function useQuery<T>(options: QueryOptions<T>): QueryResult<T>;
+export interface Post {
+  readonly id: string;
+}
+export declare function label(c: boolean, name: string, selected: Selected | undefined): string | undefined;
+export interface FollowupsProps {
+  readonly value: ("videos" | "following") | undefined;
+  readonly support: boolean;
+  readonly size: "small" | "medium" | "large";
+  readonly tabs: readonly string[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Followups())`), or from TSX as `toElement(Followups())`. */
+export declare const Followups: (props: FollowupsProps) => ComposedView;

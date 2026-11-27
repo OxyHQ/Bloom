@@ -338,6 +338,13 @@ or a generic type's `T.codec(…)` of its arguments' codecs (`Page$$codec(Post$$
 `Array$$codec(…)`), so `let page: Page<Post> = try await api.get("/feeds/home")` decodes with no
 codec written. `Sendable` and other built-in protocols with nothing a body reads pass no witness.
 
+A type parameter may instead be bounded by a **shape**: a struct, a record type or a TS
+interface (`<T: ProfileGridEntry>`). A shape is structural, as TS's `T extends ProfileGridEntry`
+is, which is what it compiles to: a `T` value reads the shape's fields from itself and passes
+where the shape is expected, and a call passes nothing for it. A call's type argument that
+lacks one of the shape's fields (or has it with another type) is B0232. A data struct's own type
+parameters take no constraints (B0106); a function's and a view's do.
+
 ### 4.7 The foreign boundary
 
 A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map (primitives,
@@ -366,7 +373,15 @@ of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
 `undefined` (`SettingsSection(none, …)`), and a TS function's optional parameter (`locale?: string`) takes
 an optional as well as its type (`formatRelativeTime(at, locale)` with `locale: String?`), as
-TS's `undefined` is `none`; a required one does not. A TS
+TS's `undefined` is `none`; a required one does not. A TS callback typed `() => Promise<void> |
+void` (read as `Promise<Unit>?`) takes a closure that returns nothing or one that awaits, as TS
+discards its result (`Retry(onRetry: { task { await refetch() } })`). A TS literal union compares
+with any `String` (`value == tab` with `value: Tab?` and `tab` from a list), as TS's `===` does; a
+string literal compared with it is still held to its values. A TS function whose overloads take
+mapped option types Bloom cannot read (TanStack Query's `useQuery`) is `Foreign`, so what it
+returns says nothing of its data; a binding module gives it a generic signature
+(`public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>` with `queryFn: () async
+-> T`), and `T` is then the `queryFn` closure's result. A TS
 class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
@@ -704,6 +719,16 @@ trailing builder when no function parameter does, as Swift's `@ViewBuilder let c
 does: `Card(title: "Hi") { Text("inside") }` passes the builder's lines as the prop's value (one
 child, or the list of them), built in the caller's render, not a closure. The last such
 property not given by label takes it.
+A view is generic as a function is (section 4.6): `struct ProfileGridList<T: ProfileGridEntry>:
+View { let data: [T]; let renderCell: (T, Double) -> View; … }`, or `where T: P`. It is still
+one `view()` fiber with the same hooks: its body is the generic function `function
+ProfileGridList<T extends ProfileGridEntry>(props: ProfileGridListProps<T>)`, the factory is cast
+back to `<T extends ProfileGridEntry>(props: ProfileGridListProps<T>) => ComposedView` (a type
+only), and the `.d.bloom.ts` declares the same, so a TS caller infers `T` too. A shape bound costs
+nothing at runtime. A protocol bound (`<T: Titled>`) passes its witness as a prop
+(`$w_T_Titled: Post$$Titled`, filled by the call site, a module constant, so it never breaks the
+memo); a member function or closure hoisted out of a generic view declares the view's type
+parameters itself.
 A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
@@ -717,7 +742,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
 - **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
-  (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
+  (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing. A token modifier whose
+  TS value takes `undefined` (`spec/language.json`'s `noneModifiers`, read from `Node`'s
+  methods) takes `none` and a token optional too (`.tint(support ? "success" : none)`), which
+  leaves it unapplied; any other is B0502 for a `none`.
 - **`.id(x)` is on every node** (2.0, 0.x's `key=`), the ones that chain no universal
   modifiers too (`GroupedSectionItem(id).id(id)`), a view and a TS component as well: in a
   `for`, it is the repeated child's identity (`x` a `String` or a number).
@@ -731,7 +759,11 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
   with nothing expected, a conditional of string literals is their literal union (`let side =
   card ? "96" : "48"`, as TS's `const` infers) and a literal beside a literal union joins it
-  (`c ? "md" : gutter`), so either fits a token set. `defineModifier { v in … }` reads `v` as a
+  (`c ? "md" : gutter`), so either fits a token set. A module constant's record literal written
+  without a type keeps its string literals' types (`let SIDES = { small: "fit", large: "full" }`
+  is `{ small: "fit", large: "full" }`, emitted `as const`), so `SIDES[size]` fits a token set.
+  With nothing expected, `c ? s : opt?.x` is the optional of `s`'s type: an optional chain may be
+  `none`, as a branch written `none` is. `defineModifier { v in … }` reads `v` as a
   `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
 - **Events take closures**: `.onPress { saving = true }`; an `async` closure
   (`.onPress { await save() }`) runs as a task (section 8).

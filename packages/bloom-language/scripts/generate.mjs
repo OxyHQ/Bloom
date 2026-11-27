@@ -661,6 +661,10 @@ ${Object.entries(withoutComment(spec.signatures ?? {}))
   .join('\n')}
 ];
 
+/// The modifiers whose value TS takes as \`undefined\` (a \`.bloom\` token argument may be
+/// \`none\` there), read from \`Node\`'s methods by \`generate-signatures.mjs\`.
+pub const NONE_MODIFIERS: &[&str] = ${rustList(spec.noneModifiers ?? [])};
+
 /// A glass value's methods (\`regular.tint('primary', 'subtle')\`) → their parameter types.
 pub const GLASS_VALUE: &[(&str, &[&str])] = &[
 ${Object.entries(glassValue)

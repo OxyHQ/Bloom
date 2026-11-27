@@ -1,0 +1,114 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+import { type ProfileGridEntry, useMedia } from "@/profile";
+
+const $key = <T extends ProfileGridEntry>(item: T): string => {
+return `${item.postId}:${item.mediaIndex}`;
+};
+export interface ProfileGridListProps<T extends ProfileGridEntry> {
+  readonly data: readonly T[];
+  readonly renderCell: (p0: T, p1: number) => Child;
+  readonly columns?: number;
+}
+export const ProfileGridList = view(function ProfileGridList<T extends ProfileGridEntry>(props: ProfileGridListProps<T>) {
+"use no memo";
+const $ = $c(5);
+const { data, renderCell, columns = 3 } = props;
+const [width, setWidth] = useState<number>(360.0);
+let $t0;
+if ($[0] !== data || $[1] !== renderCell || $[2] !== width || $[3] !== columns) {
+$t0 = VStack(...data.map((item) => VStack(renderCell(item, width / columns)).id($key(item))));
+$[0] = data;
+$[1] = renderCell;
+$[2] = width;
+$[3] = columns;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+}) as <T extends ProfileGridEntry>(props: ProfileGridListProps<T>) => ComposedView;
+
+export interface Tag {
+  readonly id: string;
+  readonly label: string;
+}
+
+export interface ChipsProps<T extends Tag> {
+  readonly tags: readonly T[];
+}
+export const Chips = view(function Chips<T extends Tag>(props: ChipsProps<T>) {
+"use no memo";
+const $ = $c(2);
+const { tags } = props;
+let $t1;
+if ($[0] !== tags) {
+$t1 = HStack(...tags.map((tag) => Text(tag.label).id(tag.id)));
+$[0] = tags;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+}) as <T extends Tag>(props: ChipsProps<T>) => ComposedView;
+
+export interface Titled$Witness<Self> {
+  title(self: Self): string;
+}
+export type Titled = { readonly self: unknown; readonly w: Titled$Witness<unknown> };
+
+export interface Post {
+  readonly id: string;
+  readonly text: string;
+}
+
+export function Post$title(self: Post): string {
+return self.text;
+}
+
+export interface TitledListProps<T> {
+  readonly items: readonly T[];
+  readonly $w_T_Titled: Titled$Witness<T>;
+}
+export const TitledList = view(function TitledList<T>(props: TitledListProps<T>) {
+"use no memo";
+const $ = $c(2);
+const { items, $w_T_Titled } = props;
+let $t2;
+if ($[0] !== items) {
+$t2 = VStack(...items.map((item) => Text($w_T_Titled.title(item))));
+$[0] = items;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+}) as <T>(props: TitledListProps<T>) => ComposedView;
+
+const $fn1 = (entry: ReturnType<typeof useMedia>[number], size: number) => Text(`${entry.thumbnail} ${size}`);
+export interface ProfileProps {
+  readonly posts: readonly Post[];
+  readonly tags: readonly Tag[];
+}
+export const Profile = view(function Profile(props: ProfileProps) {
+"use no memo";
+const $ = $c(8);
+const { posts, tags } = props;
+const media = useMedia();
+let $t3;
+if ($[4] !== media || $[5] !== tags || $[6] !== posts) {
+$t3 = VStack(ProfileGridList({ data: media, renderCell: $fn1 }), ($[0] !== tags ? ($[0] = tags, $[1] = Chips({ tags: tags })) : $[1]), ($[2] !== posts ? ($[2] = posts, $[3] = TitledList({ items: posts, $w_T_Titled: Post$$Titled })) : $[3]));
+$[4] = media;
+$[5] = tags;
+$[6] = posts;
+$[7] = $t3;
+} else {
+$t3 = $[7];
+}
+return $t3;
+});
+
+export const Post$$Titled: Titled$Witness<Post> = { title: Post$title };

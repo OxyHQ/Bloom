@@ -3,7 +3,7 @@
  * what a careful author writes in TypeScript, for the cost gate to compare.
  */
 import { useState } from 'react';
-import { Button, HStack, Text, VStack, view } from '@oxy.so/bloom-language';
+import { Button, type ComposedView, HStack, Text, VStack, view } from '@oxy.so/bloom-language';
 
 export const Counter = view(function Counter({ step = 1 }: { step?: number }) {
   const [count, setCount] = useState(0);
@@ -36,3 +36,12 @@ export const Titled = view(function Titled({ titles }: { titles: readonly string
     ...titles.map((title) => Text(title).id(title)),
   ).spacing('sm');
 });
+
+export interface Entry {
+  readonly id: string;
+  readonly label: string;
+}
+
+export const Grid = view(function Grid<T extends Entry>({ entries }: { entries: readonly T[] }) {
+  return VStack(...entries.map((entry) => Text(entry.label).id(entry.id))).spacing('sm');
+}) as <T extends Entry>(props: { entries: readonly T[] }) => ComposedView;

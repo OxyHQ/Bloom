@@ -1,0 +1,19 @@
+/// A generic view (`<T: Entry>`, a shape): one fiber, the same hooks and no witness, as a
+/// hand-written `view(function Grid<T extends Entry>(…))` is.
+public struct Entry {
+  public let id: String
+  public let label: String
+}
+
+public struct Grid<T: Entry>: View {
+  let entries: [T]
+
+  var body: some View {
+    VStack {
+      for entry in entries {
+        Text(entry.label).id(entry.id)
+      }
+    }
+    .spacing(.sm)
+  }
+}

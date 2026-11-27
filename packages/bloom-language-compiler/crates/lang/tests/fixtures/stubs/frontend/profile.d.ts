@@ -25,3 +25,12 @@ export declare function ProfileCard(props: {
   subtitle?: ViewNode;
   footer?: React.ReactNode;
 }): React.JSX.Element;
+/** Every profile-grid entry's shape (Mention's `ProfileGridEntry`). */
+export interface ProfileGridEntry {
+  postId: string;
+  mediaIndex: number;
+}
+export interface MediaGridEntry extends ProfileGridEntry {
+  thumbnail: string;
+}
+export declare function useMedia(): MediaGridEntry[];

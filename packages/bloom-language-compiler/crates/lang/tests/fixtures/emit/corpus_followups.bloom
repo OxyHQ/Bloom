@@ -1,0 +1,62 @@
+// Phase D's corpus follow-ups (Mention, lang-mention-2's R1–R6).
+import { Retry, Selected, Tab, refetch } from "@/corpus"
+
+// R5: TanStack Query through a binding module, whose generic `useQuery<T>` takes its data's
+// type from `queryFn` (the package's own overloads take mapped types Bloom does not read).
+extern module "@tanstack/react-query" {
+  public struct QueryResult<T> {
+    public let data: T?
+    public let isLoading: Bool
+  }
+  public struct QueryOptions<T> {
+    public let queryKey: [String]
+    public let queryFn: () async -> T
+    public var enabled: Bool = true
+  }
+  public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>
+}
+
+// R6: a module constant's record keeps its literals' types, as TS's `as const`.
+private let SIDES = { small: "fit", medium: "1/2", large: "full" }
+
+public struct Post {
+  public let id: String
+}
+
+private async func top() -> [Post] { [] }
+
+private func count(_ posts: [Post]) -> Int { posts.count }
+
+// R2: `c ? s : opt?.x` is `String?`.
+public func label(_ c: Bool, _ name: String, _ selected: Selected?) -> String? {
+  let label = c ? "\(name)" : selected?.label
+  return label
+}
+
+public struct Followups: View {
+  let value: Tab?
+  let support: Bool
+  let size: "small" | "medium" | "large"
+  let tabs: [String]
+  let query = useQuery(QueryOptions(queryKey: ["top"], queryFn: {
+    let posts: [Post] = await top()
+    return { topPosts: posts, total: 1 }
+  }))
+  let topPosts = query.data?.topPosts ?? []
+
+  var body: some View {
+    let side = SIDES[size]
+    VStack {
+      // R1: a closure where TS takes `() => Promise<void> | void`.
+      Retry(onRetry: { task { await refetch() } })
+      // R3: a TS literal union compared with a `String`.
+      for tab in tabs {
+        Text(tab).foreground(value == tab ? .foreground : .muted)
+      }
+      // R4: `none` where TS takes `undefined` leaves the modifier unapplied.
+      Chip { Text("x") }.tint(support ? "success" : none)
+      Text("\(count(topPosts))")
+    }
+    .frame(width: side, height: side)
+  }
+}

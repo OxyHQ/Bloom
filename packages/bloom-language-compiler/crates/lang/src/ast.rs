@@ -380,6 +380,10 @@ pub enum ViewKind {
 pub struct ViewDecl {
     pub kind: ViewKind,
     pub name: Ident,
+    /// `struct ProfileGridList<T: ProfileGridEntry>: View` (2.0): its type parameters.
+    pub generics: Vec<Ident>,
+    /// `<T: P>`, `where T: P`: what each type parameter conforms to or has the shape of.
+    pub constraints: Vec<(Ident, TypeExpr)>,
     /// `None` when written without parentheses (`screen Settings { … }`).
     pub params: Option<Vec<Param>>,
     pub members: Vec<Member>,

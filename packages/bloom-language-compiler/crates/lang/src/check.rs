@@ -121,6 +121,9 @@ pub enum CallRes {
         params: Vec<String>,
         /// The prop the trailing closure fills.
         trailing: Option<String>,
+        /// A generic view's witness props (`$w_T_Titled`), for its protocol bounds in order:
+        /// their values are the call's [`CheckResult::witness_args`].
+        witnesses: Vec<String>,
     },
     /// A TS component: `Embed(jsx(C, props))`.
     Component,
@@ -349,6 +352,9 @@ pub struct CheckResult {
     pub hook_lets: HashSet<Span>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
+    /// Module constants whose record literal keeps its string literals' types (`let SIZES =
+    /// { small: "8" }` is `{ small: "8" }`), by the value's id: TS's `as const`.
+    pub literal_consts: HashSet<ExprId>,
     /// `a == b` on a type parameter constrained `Equatable`: its witness parameter.
     pub witness_eq: HashMap<ExprId, String>,
     /// The module's declared conformances to protocols, with how each requirement is met.
@@ -365,6 +371,9 @@ pub struct CheckResult {
     /// A generic function's witness parameters (by the function's span): each one's name
     /// and what it witnesses.
     pub witness_params: HashMap<Span, Vec<(String, u32, Bound)>>,
+    /// A generic function's or view's shape-bounded type parameters (by its span): each
+    /// one's index and shape, which TS writes `T extends Shape`.
+    pub shapes: HashMap<Span, Vec<(u32, Ty)>>,
 }
 
 impl CheckResult {
@@ -407,6 +416,10 @@ struct Frame {
 /// A generic call waiting for its witnesses: the call, its type arguments, its constraints,
 /// where it is, and the constrained type parameters in scope there.
 type PendingWitnesses = (ExprId, Vec<(Ty, Rc<str>)>, Span, Vec<(String, Bound)>);
+
+/// A shape-bounded type argument waiting for its check: it, its shape, where, and the shapes
+/// in scope there.
+type PendingShape = (Ty, Ty, Span, Vec<(String, Ty)>);
 
 /// A TS type that is a React ref: a `@ref` passed there is the ref, not its value.
 fn is_ref_type(text: &str) -> bool {
@@ -482,6 +495,14 @@ pub struct Checker<'o> {
     member_reads: HashMap<String, HashSet<Read>>,
     /// The constrained type parameters in scope: each one's name and bound.
     bounds_in_scope: Vec<(String, Bound)>,
+    /// The type parameters in scope bounded by a shape (`<T: ProfileGridEntry>`): each one's
+    /// name and shape, whose fields a value of it has.
+    shapes_in_scope: Vec<(String, Ty)>,
+    /// Checking a module constant's record literal: its string literal fields keep their types.
+    literal_record: bool,
+    /// Calls of a shape-bounded generic, checked once their type arguments are known: each
+    /// type argument, its shape, where, and the shapes in scope there.
+    pending_shapes: Vec<PendingShape>,
     /// Inside a class's `init`: its fields are set directly, its `let`s too.
     in_init: bool,
     /// `EnvironmentKey(…, default: v)` calls → `v`'s type, and the module constants that
@@ -574,6 +595,9 @@ impl<'o> Checker<'o> {
             member_fn: None,
             member_reads: HashMap::default(),
             bounds_in_scope: Vec::new(),
+            shapes_in_scope: Vec::new(),
+            literal_record: false,
+            pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
             key_values: HashMap::default(),
@@ -873,6 +897,11 @@ impl<'o> Checker<'o> {
             (Ty::Never | Ty::Unknown, _) | (_, Ty::Unknown) => true,
             (Ty::Var(_), _) | (_, Ty::Var(_)) => self.unify(&a, &e),
             (_, Ty::Foreign(_)) => true,
+            // A value of `T: ProfileGridEntry` is a `ProfileGridEntry` (and fits what one fits).
+            (Ty::Param(..), _) if !matches!(e, Ty::Param(..)) && self.shape_of(&a).is_some() => {
+                let shape = self.shape_of(&a).expect("checked");
+                self.coerce(&shape, &e)
+            }
             (Ty::Foreign(_), _) => false,
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
@@ -929,7 +958,19 @@ impl<'o> Checker<'o> {
                     return false;
                 }
                 let params_ok = f.params.iter().zip(&g.params).all(|(p, q)| self.coerce(&q.ty, &p.ty));
-                let ret = self.resolve(&g.ret);
+                let mut ret = self.resolve(&g.ret);
+                // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): its result may be
+                // discarded, so a function returning nothing fits it, and an async one its promise (R1).
+                if let Ty::Option(inner) = &ret {
+                    let inner = self.resolve(inner);
+                    let void_promise =
+                        matches!(&inner, Ty::Promise(value) if self.resolve(value) == Ty::Unit);
+                    if inner == Ty::Unit || (void_promise && !f.is_async) {
+                        ret = Ty::Unit;
+                    } else if void_promise {
+                        ret = inner;
+                    }
+                }
                 let ret_ok = if ret == Ty::Unit {
                     // The result is discarded; an async function's promise too.
                     let _ = self.unify(&f.ret, &Ty::Unit) || true;
@@ -1091,6 +1132,7 @@ impl<'o> Checker<'o> {
                     ts: false,
                     throws: false,
                     bounds: Vec::new(),
+                    shapes: Vec::new(),
                 }))
             }
             TypeKind::Optional(inner) => {
@@ -1404,16 +1446,7 @@ impl<'o> Checker<'o> {
                     Some(self.declare_unique(&f.name, ty, LocalKind::ModuleFn))
                 }
                 ItemKind::View(v) => {
-                    let params = self.view_params(v);
-                    let ty = Ty::Fn(Rc::new(FnTy {
-                        params,
-                        ret: Ty::View(Some("view")),
-                        is_async: false,
-                        generics: 0,
-                        ts: false,
-                        throws: false,
-                        bounds: Vec::new(),
-                    }));
+                    let ty = self.view_type(v);
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
                 _ => None,
@@ -1428,7 +1461,7 @@ impl<'o> Checker<'o> {
             match &item.kind {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
-                    let ty = self.expr(&c.value, declared.as_ref());
+                    let ty = self.const_value(&c.value, declared.as_ref());
                     let local = match self.lazy_props(&c.value) {
                         // `let X = lazy(() => import("./X"))`: a component, with the module's props.
                         Some(props) => self.declare_unique(
@@ -1479,6 +1512,25 @@ impl<'o> Checker<'o> {
             self.bounds_in_scope = outer;
             self.out.witness_args.insert(id, witnesses);
         }
+        for (ty, shape, span, scope) in std::mem::take(&mut self.pending_shapes) {
+            let outer = std::mem::replace(&mut self.shapes_in_scope, scope);
+            self.has_shape(&ty, &shape, span);
+            self.shapes_in_scope = outer;
+        }
+    }
+
+    /// A module constant's value. A record literal written without a type keeps its string
+    /// literals' types (`let SIZES = { small: "8", large: "12" }` is `{ small: "8", large:
+    /// "12" }`), as TS's `as const` does, so a field read is a token where one is taken (R6).
+    fn const_value(&mut self, value: &Expr, declared: Option<&Ty>) -> Ty {
+        let literal = declared.is_none() && matches!(value.kind, ExprKind::Record(_));
+        let outer = std::mem::replace(&mut self.literal_record, literal);
+        let ty = self.expr(value, declared);
+        self.literal_record = outer;
+        if literal {
+            self.out.literal_consts.insert(value.id);
+        }
+        ty
     }
 
     fn duplicate(&mut self, name: &Ident) {
@@ -1548,7 +1600,11 @@ impl<'o> Checker<'o> {
     }
 
     fn fn_signature(&mut self, f: &FnDecl) -> Ty {
-        self.generics = f.generics.iter().map(|g| g.name.clone()).collect();
+        // A function of its own type parameters; a member of a generic view's sees the view's.
+        let outer_generics = self.generics.clone();
+        if !f.generics.is_empty() {
+            self.generics = f.generics.iter().map(|g| g.name.clone()).collect();
+        }
         let params = f
             .params
             .iter()
@@ -1582,11 +1638,21 @@ impl<'o> Checker<'o> {
             None => Ty::Unit,
         };
         let bounds = self
-            .bounds(f)
+            .bounds(&f.generics, &f.constraints)
             .into_iter()
             .map(|(index, name, bound)| (Ty::Param(index, name.as_str().into()), bound.name()))
             .collect();
-        self.generics.clear();
+        let shaped = self.shapes(&f.generics, &f.constraints);
+        let shapes = shaped
+            .iter()
+            .map(|(index, shape)| {
+                (Ty::Param(*index, f.generics[*index as usize].name.as_str().into()), shape.clone())
+            })
+            .collect();
+        if !shaped.is_empty() {
+            self.out.shapes.insert(f.span, shaped);
+        }
+        self.generics = outer_generics;
         Ty::Fn(Rc::new(FnTy {
             params,
             ret,
@@ -1595,6 +1661,7 @@ impl<'o> Checker<'o> {
             ts: false,
             throws: f.throws.is_some(),
             bounds,
+            shapes,
         }))
     }
 
@@ -1685,6 +1752,9 @@ impl<'o> Checker<'o> {
     /// A call of a generic function whose constraints take witnesses: found once its
     /// type arguments are known (at the module's end).
     pub(super) fn witnesses_of(&mut self, expr: &Expr, span: Span, f: &FnTy) {
+        for (ty, shape) in &f.shapes {
+            self.pending_shapes.push((ty.clone(), shape.clone(), span, self.shapes_in_scope.clone()));
+        }
         if f.bounds.is_empty() {
             return;
         }
@@ -1724,8 +1794,10 @@ impl<'o> Checker<'o> {
     fn fn_body(&mut self, f: &FnDecl, member: bool) -> Ty {
         let signature = self.fn_signature(f);
         let Ty::Fn(fn_ty) = &signature else { unreachable!("a signature is a function") };
-        let outer_generics =
-            std::mem::replace(&mut self.generics, f.generics.iter().map(|g| g.name.clone()).collect());
+        let outer_generics = self.generics.clone();
+        if !f.generics.is_empty() {
+            self.generics = f.generics.iter().map(|g| g.name.clone()).collect();
+        }
         let raises = match f.throws.as_ref().map(|t| t.ty.as_ref()) {
             Some(Some(ty)) => Some(self.resolve_type(ty)),
             Some(None) => Some(Ty::Unknown),
@@ -1755,15 +1827,21 @@ impl<'o> Checker<'o> {
             self.declare(&Ident { name: "self".into(), span: f.name.span }, self_ty, LocalKind::Let);
             self.frames.last_mut().expect("a frame").ret = Ty::Unit;
         }
-        let bounds: Vec<(String, Bound)> = fn_ty
-            .bounds
-            .iter()
-            .filter_map(|(param, protocol)| match param {
-                Ty::Param(_, name) => Some((name.to_string(), Bound::of(protocol))),
-                _ => None,
-            })
-            .collect();
+        // A generic view's member also sees the view's own bounds (its witnesses are props).
+        let mut bounds: Vec<(String, Bound)> =
+            if f.generics.is_empty() { self.bounds_in_scope.clone() } else { Vec::new() };
+        bounds.extend(fn_ty.bounds.iter().filter_map(|(param, protocol)| match param {
+            Ty::Param(_, name) => Some((name.to_string(), Bound::of(protocol))),
+            _ => None,
+        }));
         let outer_bounds = std::mem::replace(&mut self.bounds_in_scope, bounds);
+        let mut shapes: Vec<(String, Ty)> =
+            if f.generics.is_empty() { self.shapes_in_scope.clone() } else { Vec::new() };
+        shapes.extend(fn_ty.shapes.iter().filter_map(|(param, shape)| match param {
+            Ty::Param(_, name) => Some((name.to_string(), shape.clone())),
+            _ => None,
+        }));
+        let outer_shapes = std::mem::replace(&mut self.shapes_in_scope, shapes);
         let mut params = Vec::new();
         for (index, (param, ty)) in f.params.iter().zip(&fn_ty.params).enumerate() {
             if let Some(default) = &param.default {
@@ -1784,6 +1862,7 @@ impl<'o> Checker<'o> {
         self.frames.pop();
         self.pop();
         self.bounds_in_scope = outer_bounds;
+        self.shapes_in_scope = outer_shapes;
         self.in_init = outer_init;
         self.member_fn = outer_member;
         self.generics = outer_generics;
@@ -1904,7 +1983,57 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// A view's type: a function of its props, generic over its type parameters
+    /// (`struct ProfileGridList<T: ProfileGridEntry>: View`), whose protocol bounds take a
+    /// witness (passed as a prop) and whose shapes take none.
+    fn view_type(&mut self, v: &ViewDecl) -> Ty {
+        let params = self.view_params(v);
+        let outer =
+            std::mem::replace(&mut self.generics, v.generics.iter().map(|g| g.name.clone()).collect());
+        let bounded = self.bounds(&v.generics, &v.constraints);
+        let witnesses: Vec<(String, u32, Bound)> = bounded
+            .iter()
+            .map(|(index, name, bound)| (witness_param(name, &bound.name()), *index, bound.clone()))
+            .collect();
+        if !witnesses.is_empty() {
+            self.out.witness_params.insert(v.span, witnesses);
+        }
+        let bounds = bounded
+            .into_iter()
+            .map(|(index, name, bound)| (Ty::Param(index, name.as_str().into()), bound.name()))
+            .collect();
+        let shaped = self.shapes(&v.generics, &v.constraints);
+        let shapes = shaped
+            .iter()
+            .map(|(index, shape)| {
+                (Ty::Param(*index, v.generics[*index as usize].name.as_str().into()), shape.clone())
+            })
+            .collect();
+        if !shaped.is_empty() {
+            self.out.shapes.insert(v.span, shaped);
+        }
+        self.generics = outer;
+        Ty::Fn(Rc::new(FnTy {
+            params,
+            ret: Ty::View(Some("view")),
+            is_async: false,
+            generics: v.generics.len() as u32,
+            ts: false,
+            throws: false,
+            bounds,
+            shapes,
+        }))
+    }
+
     fn view_params(&mut self, v: &ViewDecl) -> Vec<ParamTy> {
+        let outer =
+            std::mem::replace(&mut self.generics, v.generics.iter().map(|g| g.name.clone()).collect());
+        let out = self.view_params_in_scope(v);
+        self.generics = outer;
+        out
+    }
+
+    fn view_params_in_scope(&mut self, v: &ViewDecl) -> Vec<ParamTy> {
         let mut out = Vec::new();
         for p in v.params.iter().flatten() {
             if p.spread {
@@ -1948,6 +2077,28 @@ impl<'o> Checker<'o> {
 
     fn view_decl(&mut self, index: usize, v: &ViewDecl) {
         self.view = Some(index);
+        // A generic view's type parameters, protocol bounds and shapes are in scope in it.
+        let outer_generics =
+            std::mem::replace(&mut self.generics, v.generics.iter().map(|g| g.name.clone()).collect());
+        let bounds: Vec<(String, Bound)> = self
+            .bounds(&v.generics, &v.constraints)
+            .into_iter()
+            .map(|(_, name, bound)| (name, bound))
+            .collect();
+        let outer_bounds = std::mem::replace(&mut self.bounds_in_scope, bounds);
+        let shapes: Vec<(String, Ty)> = self
+            .shapes(&v.generics, &v.constraints)
+            .into_iter()
+            .map(|(index, shape)| (v.generics[index as usize].name.clone(), shape))
+            .collect();
+        let outer_shapes = std::mem::replace(&mut self.shapes_in_scope, shapes);
+        self.view_decl_in_scope(index, v);
+        self.generics = outer_generics;
+        self.bounds_in_scope = outer_bounds;
+        self.shapes_in_scope = outer_shapes;
+    }
+
+    fn view_decl_in_scope(&mut self, index: usize, v: &ViewDecl) {
         self.push();
         self.frames.push(Frame {
             ret: Ty::View(None),
@@ -2433,22 +2584,13 @@ impl<'o> Checker<'o> {
                     self.declare(&f.name, ty, LocalKind::ModuleFn);
                 }
                 ItemKind::View(v) if v.kind == ViewKind::View => {
-                    let params = self.view_params(v);
-                    let ty = Ty::Fn(Rc::new(FnTy {
-                        params,
-                        ret: Ty::View(Some("view")),
-                        is_async: false,
-                        generics: 0,
-                        ts: false,
-                        throws: false,
-                        bounds: Vec::new(),
-                    }));
+                    let ty = self.view_type(v);
                     self.declare(&v.name, ty, LocalKind::View);
                 }
                 ItemKind::Const(c) => {
                     let ty = match &c.ty {
                         Some(t) => self.resolve_type(t),
-                        None => self.expr(&c.value, None),
+                        None => self.const_value(&c.value, None),
                     };
                     self.declare(&c.name, ty, LocalKind::ModuleConst);
                 }
@@ -4087,8 +4229,11 @@ impl<'o> Checker<'o> {
                 let else_lit = expected.is_none().then(|| string_literal(otherwise)).flatten();
                 // `c ? x : d ? y : none` (R3): the rest of the chain ends in `none`, so it is held
                 // to `x`'s optional, not to `x`'s type.
-                let optional_a =
-                    (expected.is_none() && ends_in_none(otherwise)).then(|| Ty::Option(Box::new(a.clone())));
+                // `c ? s : opt?.x`: the other branch may be `none` too (an optional chain), so it
+                // is held to `s`'s optional and the two join to it.
+                let optional_a = (expected.is_none()
+                    && (ends_in_none(otherwise) || optional_chain(otherwise)))
+                .then(|| Ty::Option(Box::new(a.clone())));
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
@@ -4473,10 +4618,16 @@ impl<'o> Checker<'o> {
                 let params =
                     f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
                 let bounds = f.bounds.iter().map(|(t, p)| (substitute(t, &args), p.clone())).collect();
+                let shapes = f
+                    .shapes
+                    .iter()
+                    .map(|(t, shape)| (substitute(t, &args), substitute(shape, &args)))
+                    .collect();
                 Ty::Fn(Rc::new(FnTy {
                     params,
                     ret: substitute(&f.ret, &args),
                     bounds,
+                    shapes,
                     generics: 0,
                     ..(**f).clone()
                 }))
@@ -4775,6 +4926,17 @@ impl<'o> Checker<'o> {
                 let hint = match self.resolve(&left) {
                     Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never => left.clone(),
                     other => Ty::Option(Box::new(other)),
+                };
+                // A literal union (`Tab?`, TS's `'videos' | 'following'`) compares with any
+                // `String`, as TS's does; a string literal is still held to its values (R3).
+                let hint = match self.resolve(&hint) {
+                    Ty::Option(inner)
+                        if matches!(self.resolve(&inner), Ty::Strings(_))
+                            && string_literal(rhs).is_none() =>
+                    {
+                        Ty::Option(Box::new(Ty::Str))
+                    }
+                    _ => hint,
                 };
                 self.expr(rhs, Some(&hint));
                 // The right side's own type (`expr` gives back the expected one).
@@ -5419,6 +5581,11 @@ impl<'o> Checker<'o> {
             self.out.fields.insert(expr.id, FieldRes::Witness { witness, member: name.name.clone() });
             return requirement.ty;
         }
+        // `item.postId` where `item: T` and `T: ProfileGridEntry`: the shape's field, read
+        // from the value itself.
+        if let Some(shape) = self.shape_of(&resolved) {
+            return self.member(expr, &shape, name, object_span);
+        }
         let prop = |checker: &mut Self, recv: Recv, n: &'static str, ty: Ty| {
             checker.out.fields.insert(expr.id, FieldRes::Prop { recv, name: n });
             ty
@@ -5641,6 +5808,15 @@ impl<'o> Checker<'o> {
             }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
+        // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): a closure that returns
+        // nothing, or one that awaits (its promise), fits it (R1).
+        if let Ty::Option(inner) = self.resolve(&ret) {
+            let inner = self.resolve(&inner);
+            if inner == Ty::Unit || matches!(&inner, Ty::Promise(value) if self.resolve(value) == Ty::Unit) {
+                let awaits = c.body.iter().any(crate::emit::stmt_awaits);
+                ret = if awaits { Ty::Promise(Box::new(Ty::Unit)) } else { Ty::Unit };
+            }
+        }
         // TS's `() => Promise<T>` taking a closure that awaits: the closure's result is `T`.
         let promised = match self.resolve(&ret) {
             Ty::Promise(inner) if c.body.iter().any(crate::emit::stmt_awaits) => Some(*inner),
@@ -5711,6 +5887,7 @@ impl<'o> Checker<'o> {
             ts: false,
             throws: false,
             bounds: Vec::new(),
+            shapes: Vec::new(),
         }))
     }
 }
@@ -6275,6 +6452,17 @@ pub(crate) fn is_element(ty: &Ty) -> bool {
     match ty {
         Ty::Foreign(text) => text.starts_with("import(\"react\")."),
         Ty::Option(inner) => is_element(inner),
+        _ => false,
+    }
+}
+
+/// Whether `expr` is an optional chain (`selected?.label`, `user?.name.count`, `f?()`), which
+/// gives `none` when what it reads through is.
+fn optional_chain(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::OptField(..) => true,
+        ExprKind::Paren(inner) | ExprKind::Field(inner, _) => optional_chain(inner),
+        ExprKind::Call(call) => call.optional || optional_chain(&call.callee),
         _ => false,
     }
 }
