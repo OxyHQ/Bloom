@@ -1845,8 +1845,12 @@ impl Tr<'_> {
                 if let Expression::StaticMemberExpression(m) = &call.callee
                     && let Expression::Identifier(object) = &m.object
                     && let Some(kind) = self.scope.collections.get(object.name.as_str())
-                    && (kind == "Array") == matches!(m.property.name.as_str(), "push" | "unshift" | "splice")
-                    && matches!(m.property.name.as_str(), "add" | "set" | "delete" | "clear" | "push" | "unshift" | "splice") =>
+                    && (kind == "Array")
+                        == matches!(m.property.name.as_str(), "push" | "unshift" | "splice")
+                    && matches!(
+                        m.property.name.as_str(),
+                        "add" | "set" | "delete" | "clear" | "push" | "unshift" | "splice"
+                    ) =>
             {
                 // `s.add(x)` changes `s` in place; a Bloom `Set` is a value, so it is reassigned.
                 let name = self.name(&object.name, object.span);

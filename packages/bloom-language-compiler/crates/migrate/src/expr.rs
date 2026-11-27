@@ -489,7 +489,9 @@ impl Tr<'_> {
             let key = key.value.as_str().unwrap_or_default();
             let value = self.expr(&b.right);
             let value = if is_postfix_text(&value) { value } else { format!("({value})") };
-            self.review(format!("`\"{key}\" in …` is whether `.{key}` is there (JS also counts a key set to `undefined`)"));
+            self.review(format!(
+                "`\"{key}\" in …` is whether `.{key}` is there (JS also counts a key set to `undefined`)"
+            ));
             return format!("{value}.{key} != none");
         }
         let op = match b.operator {
