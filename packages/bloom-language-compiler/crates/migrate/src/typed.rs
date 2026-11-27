@@ -47,6 +47,24 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     (start, end, snapshot)
                 })
             }
+            // `xs.count < max` with a `Float` max (a TS `number`): JS compared numbers, so the
+            // count is read as one, `xs.count.toFloat() < max`.
+            ("B0201", _) if d.message == "expected `Int`, found `Float`" => {
+                let before = &source[..start];
+                [" < ", " <= ", " > ", " >= ", " == ", " != "]
+                    .iter()
+                    .find(|op| before.ends_with(**op))
+                    .and_then(|op| {
+                        let left_end = start - op.len();
+                        let left = &source[..left_end];
+                        let left_start = left
+                            .rfind(|c: char| !(c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '!')))
+                            .map_or(0, |i| i + 1);
+                        let operand = &source[left_start..left_end];
+                        (!operand.is_empty() && operand.starts_with(|c: char| c.is_alphabetic()))
+                            .then(|| (left_end, left_end, ".toFloat()".to_string()))
+                    })
+            }
             // A promise-returning call JS let go unawaited: started as a task.
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // `await f()` of a call that is not async (TS awaited a plain value): the
