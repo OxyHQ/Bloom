@@ -1,0 +1,348 @@
+========================
+Bindings and assignments
+========================
+
+fn f() {
+  let x = 1
+  let (a, b) = pair
+  async let page = load()
+  var total = 0
+  total += x
+  total -= 1
+  total *= 2
+  draft.text = ""
+  posts[i].likes = 1
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (let_declaration
+        (identifier)
+        (integer_literal))
+      (let_declaration
+        (tuple_pattern
+          (identifier)
+          (identifier))
+        (identifier))
+      (let_declaration
+        (identifier)
+        (call_expression
+          (identifier)
+          (value_arguments)))
+      (var_declaration
+        (identifier)
+        (integer_literal))
+      (assignment
+        (identifier)
+        (identifier))
+      (assignment
+        (identifier)
+        (integer_literal))
+      (assignment
+        (identifier)
+        (integer_literal))
+      (assignment
+        (navigation_expression
+          (identifier)
+          (identifier))
+        (string_literal))
+      (assignment
+        (navigation_expression
+          (subscript_expression
+            (identifier)
+            (identifier))
+          (identifier))
+        (integer_literal)))))
+
+====================
+Control flow
+====================
+
+fn f() -> Int {
+  while i < n { i = i + 1 }
+  for (i, x) in xs.enumerated() { total += i }
+  for i in 0..<n { }
+  for i in 1...n { }
+  defer { cleanup() }
+  if let v = maybe { return v }
+  guard let name = names.first else { return 0 }
+  guard ok else { throw .offline }
+  return
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (user_type
+      (type_identifier))
+    (block
+      (while_statement
+        (binary_expression
+          (identifier)
+          (identifier))
+        (block
+          (assignment
+            (identifier)
+            (binary_expression
+              (identifier)
+              (integer_literal)))))
+      (for_statement
+        (tuple_pattern
+          (identifier)
+          (identifier))
+        (call_expression
+          (navigation_expression
+            (identifier)
+            (identifier))
+          (value_arguments))
+        (block
+          (assignment
+            (identifier)
+            (identifier))))
+      (for_statement
+        (identifier)
+        (binary_expression
+          (integer_literal)
+          (identifier))
+        (block))
+      (for_statement
+        (identifier)
+        (binary_expression
+          (integer_literal)
+          (identifier))
+        (block))
+      (defer_statement
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments))))
+      (if_expression
+        (optional_binding
+          (identifier)
+          (identifier))
+        (block
+          (return_statement
+            (identifier))))
+      (guard_statement
+        (optional_binding
+          (identifier)
+          (navigation_expression
+            (identifier)
+            (identifier)))
+        (block
+          (return_statement
+            (integer_literal))))
+      (guard_statement
+        (identifier)
+        (block
+          (throw_statement
+            (implicit_member_expression
+              (identifier)))))
+      (return_statement))))
+
+====================
+Do and catch
+====================
+
+func f() {
+  do {
+    let ok = try check(code: code)
+  } catch let error as APIError {
+    log(error)
+  } catch .offline {
+    retry()
+  }
+  catch {
+    fail(error)
+  }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (do_statement
+        (block
+          (let_declaration
+            (identifier)
+            (try_expression
+              (call_expression
+                (identifier)
+                (value_arguments
+                  (value_argument
+                    (identifier)
+                    (identifier)))))))
+        (catch_clause
+          (value_binding_pattern
+            (identifier))
+          (user_type
+            (type_identifier))
+          (block
+            (call_expression
+              (identifier)
+              (value_arguments
+                (value_argument
+                  (identifier))))))
+        (catch_clause
+          (case_pattern
+            (identifier))
+          (block
+            (call_expression
+              (identifier)
+              (value_arguments))))
+        (catch_clause
+          (block
+            (call_expression
+              (identifier)
+              (value_arguments
+                (value_argument
+                  (identifier))))))))))
+
+====================
+Switch
+====================
+
+func f() {
+  switch load {
+  case .loading:
+    ProgressView()
+  case let .failed(message), .gone:
+    Text(message)
+  case .ready(let count) where count == 0:
+    break
+  case .ready(let count):
+    Text("\(count) items")
+  default:
+    continue
+  }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (switch_expression
+        (identifier)
+        (switch_entry
+          (case_pattern
+            (identifier))
+          (call_expression
+            (identifier)
+            (value_arguments)))
+        (switch_entry
+          (value_binding_pattern
+            (case_pattern
+              (identifier)
+              (pattern_arguments
+                (identifier))))
+          (case_pattern
+            (identifier))
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (identifier)))))
+        (switch_entry
+          (case_pattern
+            (identifier)
+            (pattern_arguments
+              (value_binding_pattern
+                (identifier))))
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (control_transfer_statement))
+        (switch_entry
+          (case_pattern
+            (identifier)
+            (pattern_arguments
+              (value_binding_pattern
+                (identifier))))
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (interpolation
+                    (identifier))
+                  (string_content))))))
+        (switch_entry
+          (control_transfer_statement))))))
+
+====================
+Match (0.x)
+====================
+
+fn area(s: Shape) -> Float {
+  match s {
+    case .circle(r) => 3.14159 * r * r
+    case .rect(w, h) if w > 0 => { w * h }
+    case Shape.dot => 0.0
+    case _ => draft = Draft()
+  }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier))
+    (block
+      (match_expression
+        (identifier)
+        (match_arm
+          (case_pattern
+            (identifier)
+            (pattern_arguments
+              (identifier)))
+          (binary_expression
+            (binary_expression
+              (float_literal)
+              (identifier))
+            (identifier)))
+        (match_arm
+          (case_pattern
+            (identifier)
+            (pattern_arguments
+              (identifier)
+              (identifier)))
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (closure_expression
+            (binary_expression
+              (identifier)
+              (identifier))))
+        (match_arm
+          (case_pattern
+            (type_identifier)
+            (identifier))
+          (float_literal))
+        (match_arm
+          (identifier)
+          (assignment
+            (identifier)
+            (call_expression
+              (identifier)
+              (value_arguments))))))))

@@ -1,0 +1,487 @@
+====================
+Operator precedence
+====================
+
+let a = 1 + 2 * 3 - 4 / 5 % 6
+let b = x < y && y >= z || !done
+let c = a ?? b ?? c
+let d = p == q ? 1 : r != s ? 2 : 3
+let e = -n + 1
+let r = 0..<count
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (integer_literal)
+        (binary_expression
+          (integer_literal)
+          (integer_literal)))
+      (binary_expression
+        (binary_expression
+          (integer_literal)
+          (integer_literal))
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (prefix_expression
+        (identifier))))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (binary_expression
+        (identifier)
+        (identifier))))
+  (property_declaration
+    (identifier)
+    (ternary_expression
+      (binary_expression
+        (identifier)
+        (identifier))
+      (integer_literal)
+      (ternary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (integer_literal)
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (prefix_expression
+        (identifier))
+      (integer_literal)))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (identifier))))
+
+====================
+Casts and type tests
+====================
+
+let a = x is String
+let b = error as? HTTPError
+let c = value as! Int
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (is_expression
+      (identifier)
+      (user_type
+        (type_identifier))))
+  (property_declaration
+    (identifier)
+    (cast_expression
+      (identifier)
+      (user_type
+        (type_identifier))))
+  (property_declaration
+    (identifier)
+    (cast_expression
+      (identifier)
+      (user_type
+        (type_identifier)))))
+
+========================
+Optionals, try and await
+========================
+
+let a = b?.label.uppercased()
+let c = onEnd?.()
+let d = await f()?
+let e = try? check(code: 1)
+let f = try! load()
+let g = try await api.get("x")
+let h = x!
+let i = xs?[0]
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (navigation_expression
+          (identifier)
+          (identifier))
+        (identifier))
+      (value_arguments)))
+  (property_declaration
+    (identifier)
+    (optional_call_expression
+      (identifier)
+      (value_arguments)))
+  (property_declaration
+    (identifier)
+    (await_expression
+      (postfix_try_expression
+        (call_expression
+          (identifier)
+          (value_arguments)))))
+  (property_declaration
+    (identifier)
+    (try_expression
+      (call_expression
+        (identifier)
+        (value_arguments
+          (value_argument
+            (identifier)
+            (integer_literal))))))
+  (property_declaration
+    (identifier)
+    (try_expression
+      (call_expression
+        (identifier)
+        (value_arguments))))
+  (property_declaration
+    (identifier)
+    (try_expression
+      (await_expression
+        (call_expression
+          (navigation_expression
+            (identifier)
+            (identifier))
+          (value_arguments
+            (value_argument
+              (string_literal
+                (string_content))))))))
+  (property_declaration
+    (identifier)
+    (force_unwrap_expression
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (subscript_expression
+      (postfix_try_expression
+        (identifier))
+      (integer_literal))))
+
+============================================
+Calls, labels, spreads and trailing closures
+============================================
+
+let a = f(1, label: "x", ..rest)
+let b = xs.map { p in p.title }
+let c = xs.filter { $0 > 1 }.reduce(0) { $0 + $1 }
+let d = items.map { (i, x) in i }
+let e = Binding(get: v, set: { (v: Bool) in save(v) })
+let f = W(..p, b: 2)
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (integer_literal))
+        (value_argument
+          (identifier)
+          (string_literal
+            (string_content)))
+        (value_argument
+          (spread_element
+            (identifier))))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (closure_expression
+        (closure_parameters
+          (identifier))
+        (navigation_expression
+          (identifier)
+          (identifier)))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (call_expression
+          (navigation_expression
+            (identifier)
+            (identifier))
+          (closure_expression
+            (binary_expression
+              (shorthand_argument)
+              (integer_literal))))
+        (identifier))
+      (value_arguments
+        (value_argument
+          (integer_literal)))
+      (closure_expression
+        (binary_expression
+          (shorthand_argument)
+          (shorthand_argument)))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (closure_expression
+        (closure_parameters
+          (identifier)
+          (identifier))
+        (identifier))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (identifier)
+          (identifier))
+        (value_argument
+          (identifier)
+          (closure_expression
+            (closure_parameters
+              (identifier)
+              (user_type
+                (type_identifier)))
+            (call_expression
+              (identifier)
+              (value_arguments
+                (value_argument
+                  (identifier)))))))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (spread_element
+            (identifier)))
+        (value_argument
+          (identifier)
+          (integer_literal))))))
+
+=================================================
+Members, implicit members, key paths and bindings
+=================================================
+
+let a = t.0.1
+let b = .md
+let c = .primary.opacity(0.1)
+let d = \.likes
+let e = \Prefs.likes
+let f = $draft.text
+let g = Load.ready(x)
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (navigation_expression
+      (navigation_expression
+        (identifier)
+        (integer_literal))
+      (integer_literal)))
+  (property_declaration
+    (identifier)
+    (implicit_member_expression
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (implicit_member_expression
+          (identifier))
+        (identifier))
+      (value_arguments
+        (value_argument
+          (float_literal)))))
+  (property_declaration
+    (identifier)
+    (key_path_expression
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (key_path_expression
+      (type_identifier)
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (navigation_expression
+      (binding_expression
+        (identifier))
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (value_arguments
+        (value_argument
+          (identifier))))))
+
+=======================
+Collections and records
+=======================
+
+let a = [1, 2, ..xs]
+let b = [:]
+let c = ["a": 1, "b": 2]
+let d = { name: "x", "quoted-key": 1, ..base }
+let e = ()
+let f = (1, "two")
+let g = (x)
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (array_literal
+      (integer_literal)
+      (integer_literal)
+      (spread_element
+        (identifier))))
+  (property_declaration
+    (identifier)
+    (dictionary_literal))
+  (property_declaration
+    (identifier)
+    (dictionary_literal
+      (dictionary_entry
+        (string_literal
+          (string_content))
+        (integer_literal))
+      (dictionary_entry
+        (string_literal
+          (string_content))
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (record_literal
+      (record_field
+        (identifier)
+        (string_literal
+          (string_content)))
+      (record_field
+        (string_literal
+          (string_content))
+        (integer_literal))
+      (spread_element
+        (identifier))))
+  (property_declaration
+    (identifier)
+    (unit))
+  (property_declaration
+    (identifier)
+    (tuple_expression
+      (integer_literal)
+      (string_literal
+        (string_content))))
+  (property_declaration
+    (identifier)
+    (parenthesized_expression
+      (identifier))))
+
+=================================
+Type applications and comparisons
+=================================
+
+let a = Map<String, Int>()
+let b = ViewRef<ViewInstance>()
+let c = a < b
+let d = Foreign<"string | number">.self
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (type_application
+        (type_identifier)
+        (type_arguments
+          (user_type
+            (type_identifier))
+          (user_type
+            (type_identifier))))
+      (value_arguments)))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (type_application
+        (type_identifier)
+        (type_arguments
+          (user_type
+            (type_identifier))))
+      (value_arguments)))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (property_declaration
+    (identifier)
+    (navigation_expression
+      (type_application
+        (type_identifier)
+        (type_arguments
+          (literal_union_type
+            (string_literal
+              (string_content)))))
+      (identifier))))
+
+============================
+If, match and task as values
+============================
+
+let a = if on { 1 } else { 2 }
+let b = task { await save() }
+let c = Task { await save() }
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (if_expression
+      (identifier)
+      (block
+        (integer_literal))
+      (block
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (task_expression
+      (block
+        (await_expression
+          (call_expression
+            (identifier)
+            (value_arguments))))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (closure_expression
+        (await_expression
+          (call_expression
+            (identifier)
+            (value_arguments)))))))

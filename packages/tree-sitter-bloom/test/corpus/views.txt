@@ -1,0 +1,470 @@
+==================================
+A 0.x view with members and a body
+==================================
+
+pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, String>) {
+  let { t } = useTranslation()
+  @state draft = Draft()
+  @state sending: Bool = false
+  @env scheme = Env.colorScheme
+
+  let left = maxLength - draft.text.count
+
+  async fn send() {
+    sending = true
+  }
+
+  effect(id: draft.text) {
+    defer { sending = false }
+  }
+
+  equal(old, new) { old.maxLength == new.maxLength }
+
+  body {
+    VStack {
+      TextField($draft.text, t("compose.placeholder"))
+      Text("${left}").foreground(left < 0 ? "error" : "muted")
+    }
+    .spacing("md")
+    .padding("lg")
+  }
+}
+
+---
+
+(source_file
+  (view_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))
+        (integer_literal))
+      (parameter
+        (identifier)
+        (function_type
+          (user_type
+            (type_identifier))
+          (user_type
+            (type_identifier)
+            (type_arguments
+              (user_type
+                (type_identifier))
+              (user_type
+                (type_identifier)))))))
+    (view_body
+      (let_declaration
+        (record_pattern
+          (record_pattern_field
+            (identifier)))
+        (call_expression
+          (identifier)
+          (value_arguments)))
+      (state_declaration
+        (attribute_name)
+        (identifier)
+        (call_expression
+          (identifier)
+          (value_arguments)))
+      (state_declaration
+        (attribute_name)
+        (identifier)
+        (user_type
+          (type_identifier))
+        (boolean_literal))
+      (state_declaration
+        (attribute_name)
+        (identifier)
+        (navigation_expression
+          (identifier)
+          (identifier)))
+      (let_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (navigation_expression
+            (navigation_expression
+              (identifier)
+              (identifier))
+            (identifier))))
+      (function_declaration
+        (identifier)
+        (parameters)
+        (block
+          (assignment
+            (identifier)
+            (boolean_literal))))
+      (effect_declaration
+        (identifier)
+        (navigation_expression
+          (identifier)
+          (identifier))
+        (block
+          (defer_statement
+            (block
+              (assignment
+                (identifier)
+                (boolean_literal))))))
+      (equal_declaration
+        (identifier)
+        (identifier)
+        (block
+          (binary_expression
+            (navigation_expression
+              (identifier)
+              (identifier))
+            (navigation_expression
+              (identifier)
+              (identifier)))))
+      (body_declaration
+        (block
+          (call_expression
+            (navigation_expression
+              (call_expression
+                (navigation_expression
+                  (call_expression
+                    (identifier)
+                    (closure_expression
+                      (call_expression
+                        (identifier)
+                        (value_arguments
+                          (value_argument
+                            (navigation_expression
+                              (binding_expression
+                                (identifier))
+                              (identifier)))
+                          (value_argument
+                            (call_expression
+                              (identifier)
+                              (value_arguments
+                                (value_argument
+                                  (string_literal
+                                    (string_content))))))))
+                      (call_expression
+                        (navigation_expression
+                          (call_expression
+                            (identifier)
+                            (value_arguments
+                              (value_argument
+                                (string_literal
+                                  (interpolation
+                                    (identifier))))))
+                          (identifier))
+                        (value_arguments
+                          (value_argument
+                            (ternary_expression
+                              (binary_expression
+                                (identifier)
+                                (integer_literal))
+                              (string_literal
+                                (string_content))
+                              (string_literal
+                                (string_content))))))))
+                  (identifier))
+                (value_arguments
+                  (value_argument
+                    (string_literal
+                      (string_content)))))
+              (identifier))
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (string_content))))))))))
+
+=====================
+A screen and a layout
+=====================
+
+screen Settings {
+  body { Text("Settings") }
+}
+
+pub layout AppLayout {
+  body { Stack() }
+}
+
+---
+
+(source_file
+  (view_declaration
+    (type_identifier)
+    (view_body
+      (body_declaration
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (string_content)))))))))
+  (view_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (view_body
+      (body_declaration
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments)))))))
+
+==========================
+A 0.x view spreading props
+==========================
+
+view PostCard(..PostCardProps, dense: Bool = false) {
+  body { Text(title) }
+}
+
+---
+
+(source_file
+  (view_declaration
+    (type_identifier)
+    (parameters
+      (parameter
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))
+        (boolean_literal)))
+    (view_body
+      (body_declaration
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (identifier)))))))))
+
+====================
+A 2.0 view
+====================
+
+public struct PostRow: View, Equatable {
+  let post: Post
+  var dense: Bool = false
+  let onLike: () -> Void
+  @Binding var isOn: Bool
+  @State private var draft = ""
+  @Environment(\.locale) private var locale
+  @Query(Post.self, sort: \.createdAt, order: .reverse) var posts: [Post]
+
+  func send() { draft = "" }
+
+  var body: some View {
+    HStack { Text(post.text) }
+      .padding(.md)
+      .foreground(.primary.opacity(0.1))
+      .onAppear { send() }
+  }
+}
+
+---
+
+(source_file
+  (struct_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (inheritance_clause
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (struct_body
+      (property_declaration
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (property_declaration
+        (identifier)
+        (user_type
+          (type_identifier))
+        (boolean_literal))
+      (property_declaration
+        (identifier)
+        (function_type
+          (user_type
+            (type_identifier))))
+      (property_declaration
+        (modifiers
+          (attribute
+            (identifier)))
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (property_declaration
+        (modifiers
+          (attribute
+            (identifier))
+          (visibility_modifier))
+        (identifier)
+        (string_literal))
+      (property_declaration
+        (modifiers
+          (attribute
+            (identifier)
+            (value_arguments
+              (value_argument
+                (key_path_expression
+                  (identifier)))))
+          (visibility_modifier))
+        (identifier))
+      (property_declaration
+        (modifiers
+          (attribute
+            (identifier)
+            (value_arguments
+              (value_argument
+                (navigation_expression
+                  (identifier)
+                  (identifier)))
+              (value_argument
+                (identifier)
+                (key_path_expression
+                  (identifier)))
+              (value_argument
+                (identifier)
+                (implicit_member_expression
+                  (identifier))))))
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier))))
+      (function_declaration
+        (identifier)
+        (parameters)
+        (block
+          (assignment
+            (identifier)
+            (string_literal))))
+      (property_declaration
+        (identifier)
+        (opaque_type
+          (user_type
+            (type_identifier)))
+        (block
+          (call_expression
+            (navigation_expression
+              (call_expression
+                (navigation_expression
+                  (call_expression
+                    (navigation_expression
+                      (call_expression
+                        (identifier)
+                        (closure_expression
+                          (call_expression
+                            (identifier)
+                            (value_arguments
+                              (value_argument
+                                (navigation_expression
+                                  (identifier)
+                                  (identifier)))))))
+                      (identifier))
+                    (value_arguments
+                      (value_argument
+                        (implicit_member_expression
+                          (identifier)))))
+                  (identifier))
+                (value_arguments
+                  (value_argument
+                    (call_expression
+                      (navigation_expression
+                        (implicit_member_expression
+                          (identifier))
+                        (identifier))
+                      (value_arguments
+                        (value_argument
+                          (float_literal)))))))
+              (identifier))
+            (closure_expression
+              (call_expression
+                (identifier)
+                (value_arguments)))))))))
+
+===========================================
+Builders with conditions, loops and matches
+===========================================
+
+view Feed(posts: [Post]) {
+  body {
+    VStack {
+      if posts.isEmpty {
+        Text("Nothing yet")
+      } else {
+        for post in posts {
+          PostRow(post: post).id(post.id)
+        }
+      }
+      Button { refresh() } label: { Text("Refresh") }
+    }
+  }
+}
+
+---
+
+(source_file
+  (view_declaration
+    (type_identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier)))))
+    (view_body
+      (body_declaration
+        (block
+          (call_expression
+            (identifier)
+            (closure_expression
+              (if_expression
+                (navigation_expression
+                  (identifier)
+                  (identifier))
+                (block
+                  (call_expression
+                    (identifier)
+                    (value_arguments
+                      (value_argument
+                        (string_literal
+                          (string_content))))))
+                (block
+                  (for_statement
+                    (identifier)
+                    (identifier)
+                    (block
+                      (call_expression
+                        (navigation_expression
+                          (call_expression
+                            (identifier)
+                            (value_arguments
+                              (value_argument
+                                (identifier)
+                                (identifier))))
+                          (identifier))
+                        (value_arguments
+                          (value_argument
+                            (navigation_expression
+                              (identifier)
+                              (identifier)))))))))
+              (call_expression
+                (identifier)
+                (closure_expression
+                  (call_expression
+                    (identifier)
+                    (value_arguments)))
+                (identifier)
+                (closure_expression
+                  (call_expression
+                    (identifier)
+                    (value_arguments
+                      (value_argument
+                        (string_literal
+                          (string_content))))))))))))))

@@ -1,0 +1,88 @@
+@Observable
+// <- attribute
+public final class FeedModel: Equatable {
+// <- keyword.modifier
+//     ^ keyword.modifier
+//           ^ keyword.type
+//                            ^ type.builtin
+  public private(set) var posts: [Post] = []
+//       ^ keyword.modifier
+//               ^ keyword.modifier
+//                    ^ keyword
+//                        ^ property
+  public init(api: MentionAPI) { self.api = api }
+//       ^ constructor
+//                               ^ variable.builtin
+  public func like(_ post: Post) async throws -> Int {
+//       ^ keyword.function
+//            ^ function
+//                 ^ variable.builtin
+//                   ^ variable.parameter
+//                                     ^ keyword.exception
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return 0 }
+//  ^ keyword.conditional
+//                      ^ function.method.call
+//                                 ^ variable.parameter
+//                                          ^ variable.builtin
+//                                                                     ^ keyword.return
+    for i in 0..<count { total += i }
+//  ^ keyword.repeat
+//        ^ keyword.repeat
+//            ^ operator
+    switch load {
+//  ^ keyword.conditional
+    case let .failed(message):
+//  ^ keyword.conditional
+//       ^ keyword
+//            ^ constant
+      Text("\(message)")
+//          ^ punctuation.special
+    default:
+//  ^ keyword.conditional
+      break
+//    ^ keyword.repeat
+    }
+    do {
+//  ^ keyword.exception
+      let ok = try await check(code: code)
+//             ^ keyword.exception
+//                       ^ function.call
+//                             ^ variable.parameter
+    } catch let error as APIError {
+//    ^ keyword.exception
+//                    ^ keyword.operator
+//                       ^ type
+      throw .offline
+//    ^ keyword.exception
+//           ^ constant
+    }
+    return Duration.minutes(5.0)
+//         ^ type
+//                  ^ function.method.call
+//                          ^ number.float
+  }
+}
+public struct PostRow: View {
+//     ^ keyword.type
+//                     ^ type.builtin
+  @Environment(\.locale) private var locale
+// ^ attribute
+//             ^ punctuation.special
+//               ^ property
+  var body: some View {
+//    ^ property
+//          ^ keyword.modifier
+    #expect(true)
+//  ^ function.macro
+//          ^ boolean
+  }
+}
+extern module "./runtime" {
+// <- keyword.modifier
+//     ^ keyword.modifier
+//            ^ string.special.path
+}
+test("doubles") {
+// <- keyword
+//   ^ string.special
+}

@@ -4114,7 +4114,8 @@
   ],
   "workspaces": [
     "packages/*",
-    "packages/bloom-language-compiler/npm/*"
+    "packages/bloom-language-compiler/npm/*",
+    "!packages/tree-sitter-bloom"
   ],
   "keywords": [
     "react-native",
