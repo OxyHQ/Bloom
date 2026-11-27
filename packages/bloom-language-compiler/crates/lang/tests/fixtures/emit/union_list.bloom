@@ -1,0 +1,18 @@
+// A list literal where a `[T]?` is expected is a `[T]`: its string literals take `T`, a TS string
+// literal union, as one literal does (lang-mention-9's ts-union-list-fallback, PostMenu's
+// `post.metadata?.replyPermission ?? ["anyone"]`).
+import { type PermissionPost, type ReplyPermission } from "@/types/permission"
+
+public func permission(_ post: PermissionPost) -> [ReplyPermission] {
+  post.metadata?.replyPermission ?? ["anyone"]
+}
+
+public func canReply(_ post: PermissionPost) -> Bool {
+  let permission = post.metadata?.replyPermission ?? ["anyone", "followers"]
+  return permission.contains("anyone")
+}
+
+// A `[T]?` parameter, given a list literal.
+func first(_ permissions: [ReplyPermission]?) -> ReplyPermission? { permissions?.first }
+
+public func nobody() -> ReplyPermission? { first(["nobody"]) }
