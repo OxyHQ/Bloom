@@ -1452,7 +1452,7 @@ fn guarded_decl(source: &str, name: &str, shown: &str) -> Option<Decl> {
     (found.len() == 1).then(|| found.pop()).flatten()
 }
 
-/// Where a type written at `start` ends: a `,`, `)`, `]`, `}`, `=`, a line end or ` in ` outside
+/// Where a type written at `start` ends: a `,`, `)`, `]`, `}`, `=`, a line end or ` in` outside
 /// brackets and strings.
 fn type_end(source: &str, start: usize) -> usize {
     let mut depth = 0i32;
@@ -1465,7 +1465,9 @@ fn type_end(source: &str, start: usize) -> usize {
             '(' | '[' | '{' => depth += 1,
             ')' | ']' | '}' if depth > 0 => depth -= 1,
             ',' | ')' | ']' | '}' | '=' | '\n' if depth == 0 => return at,
-            ' ' if depth == 0 && source[at..].starts_with(" in ") => return at,
+            ' ' if depth == 0 && (source[at..].starts_with(" in ") || source[at..].starts_with(" in\n")) => {
+                return at;
+            }
             _ => {}
         }
     }
