@@ -205,7 +205,7 @@ impl Walker<'_> {
                 self.expr(k);
                 self.expr(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
                 self.expr(a);
                 self.expr(b);
             }

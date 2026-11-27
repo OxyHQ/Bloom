@@ -1,0 +1,47 @@
+// TS's types are claims, Bloom's are guarantees (lead decision, 2026-11-27). A `?.` or `??`
+// written on a value whose type comes from TS keeps its runtime form even where TS says the
+// value is always there: Mention's `viewPost?.authors?.map(…) ?? []` (PostItem) became
+// `viewPost.authors.map(…)`, and the row crashed on data without `authors`.
+import { FeedPost, lookupPost, useViewPost } from "@/corpus"
+
+// The exact case: `authors` is `FeedAuthor[]` in TS, and the guard stays.
+public func authorIds(_ viewPost: FeedPost?) -> [String] {
+  viewPost?.authors?.map { author in author.id } ?? []
+}
+
+public func names(_ post: FeedPost) -> [String] {
+  post.authors?.map { author in author.name } ?? []
+}
+
+public func count(_ post: FeedPost) -> Int {
+  post?.authors.count ?? 0
+}
+
+public func authors(_ post: FeedPost) -> [String] {
+  let list = post.authors ?? []
+  return list.map { author in author.id }
+}
+
+public func open(_ post: FeedPost) {
+  post.onOpen?.()
+}
+
+public func useFirstAuthor() -> String {
+  let viewPost = useViewPost()
+  return viewPost?.authors?.first?.name ?? ""
+}
+
+// `?[i]` is Swift's optional subscript (JS's `?.[i]`), kept on a TS list as `?.` is.
+public func firstTag(_ post: FeedPost) -> String {
+  post?.tags?[0] ?? ""
+}
+
+// A guarded link is optional from there through the chain.
+public func userId(_ id: String, _ post: FeedPost) -> String? {
+  let p = lookupPost(id) ?? post
+  return p?.user?.id
+}
+
+public func authorCount(_ post: FeedPost) -> Int {
+  (post.authors ?? []).count
+}

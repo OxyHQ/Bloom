@@ -314,7 +314,13 @@ fn area(s: Shape) -> Float {
 `if let v = x { … }`. A `?.` short-circuits the rest of its chain, as in JS: in
 `b?.label.uppercased()` the `.uppercased()` reads `b`'s label and the whole is `String?`. A
 link whose own type is optional is not read through (`b?.note.trimmed()` with `note: String?`
-is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
+is B0209; write `b?.note?.trimmed()`). `xs?[i]` is Swift's optional subscript (JS's
+`xs?.[i]`), `none` from there through the chain. `?.`, `?[…]` and `??` on a value that is never
+`none` are B0201, for a Bloom type: **Bloom's types are guarantees, TS's are claims.** On a
+value whose type comes from TS (a `Foreign`, a type read from a `.d.ts`, or what is read from
+one, `viewPost.authors`), TS may say it is always there while the data at run time lacks it, so
+`viewPost?.authors?.map { … } ?? []` keeps each guard as written, silently, and a guarded link
+is optional from there on. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
 is not `none`. A member Bloom respells keeps its spelling through `?.` and the chain after it,
 whatever the generic it came through: `query.data?.count` with `data: T?` and `T = [Post]` is

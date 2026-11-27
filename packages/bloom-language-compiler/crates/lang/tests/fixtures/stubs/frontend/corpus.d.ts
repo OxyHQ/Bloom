@@ -75,3 +75,17 @@ export declare function mergeIdentity<T extends IdentityHolder>(
   actor: T,
   entry: { id: string } | undefined,
 ): T;
+export interface FeedAuthor {
+  id: string;
+  name: string;
+}
+/** TS says `authors` and `onOpen` are always there; the data at run time may lack them. */
+export interface FeedPost {
+  id: string;
+  authors: FeedAuthor[];
+  tags: string[];
+  user: { id: string };
+  onOpen: () => void;
+}
+export declare function useViewPost(): FeedPost | undefined;
+export declare function lookupPost(id: string): FeedPost | undefined;

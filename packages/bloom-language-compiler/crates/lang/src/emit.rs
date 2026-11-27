@@ -424,6 +424,7 @@ fn is_atom(expr: &Expr) -> bool {
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
             | ExprKind::Index(..)
+            | ExprKind::OptIndex(..)
             | ExprKind::Force(_)
             | ExprKind::List(_)
             | ExprKind::Binding(_)
@@ -2459,6 +2460,11 @@ impl<'a> Emitter<'a> {
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
                 out.s("[").f(self.expr(index)).s("]");
+                out
+            }
+            ExprKind::OptIndex(object, index) => {
+                let mut out = self.operand(object);
+                out.s("?.[").f(self.expr(index)).s("]");
                 out
             }
             ExprKind::Call(call) => self.call(expr, call),
@@ -4501,7 +4507,9 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => expr_awaits(a) || expr_awaits(b),
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+            expr_awaits(a) || expr_awaits(b)
+        }
         ExprKind::Ternary(a, b, c) => expr_awaits(a) || expr_awaits(b) || expr_awaits(c),
         ExprKind::Call(call) => expr_awaits(&call.callee) || call.args.iter().any(|a| expr_awaits(&a.value)),
         ExprKind::If(i) => {
@@ -4690,7 +4698,7 @@ impl<'a> Emitter<'a> {
                 go(k);
                 go(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
                 go(a);
                 go(b);
             }

@@ -2974,6 +2974,19 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let span = expr.span.to(end);
                     expr = self.expr_node(ExprKind::Force(Box::new(expr)), span);
                 }
+                // `xs?[i]`: an optional subscript, as Swift's (not `xs?` then `[i]`).
+                Tok::P(P::Question)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::P(P::LBracket))
+                        && self.tokens.get(self.pos + 1).is_some_and(|t| !t.space_before) =>
+                {
+                    self.bump();
+                    let open = self.bump();
+                    let index = self.expr(Ctx::Normal);
+                    self.expect_close(P::RBracket, open);
+                    let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
+                    expr = self.expr_node(ExprKind::OptIndex(Box::new(expr), Box::new(index)), span);
+                }
                 Tok::P(P::Question) if !self.token().space_before => {
                     let end = self.bump();
                     if let Some(keyword) = awaiting.take() {
@@ -3548,7 +3561,8 @@ fn contains_await_marker(expr: &Expr) -> bool {
         | ExprKind::OptField(inner, _)
         | ExprKind::Try(inner)
         | ExprKind::Force(inner)
-        | ExprKind::Index(inner, _) => contains_await_marker(inner),
+        | ExprKind::Index(inner, _)
+        | ExprKind::OptIndex(inner, _) => contains_await_marker(inner),
         ExprKind::Call(call) => contains_await_marker(&call.callee),
         _ => false,
     }
