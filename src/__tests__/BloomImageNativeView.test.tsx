@@ -13,6 +13,10 @@ jest.mock('../image/bloom-image-view', () => ({
   loadBloomImageModule: jest.fn(() => null),
 }));
 jest.mock('../image/expo-image-module', () => ({ loadExpoImage: jest.fn(() => null) }));
+// Jest resolves the web/default files; the native view is drawn by the native one.
+jest.mock('../image/bloom-image-view-draw', () =>
+  jest.requireActual('../image/bloom-image-view-draw.native'),
+);
 
 const NativeView = ({ testID }: BloomImageViewProps) => <View testID={testID} />;
 

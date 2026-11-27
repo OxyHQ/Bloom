@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Image as NativeImage, processColor, type ImageResizeMode } from 'react-native';
+import { Image as NativeImage, type ImageResizeMode } from 'react-native';
 import { loadBloomImageModule, loadBloomImageView } from './bloom-image-view';
+import { drawBloomImageView } from './bloom-image-view-draw';
 import { loadExpoImage } from './expo-image-module';
-import type { BloomImageContentFit, BloomImageProps, BloomImageSource } from './types';
+import type { BloomImageContentFit, BloomImageProps } from './types';
 
 /**
  * react-native's nearest `resizeMode` for each fit. `none` and `scale-down` both
@@ -25,13 +26,13 @@ const RESIZE_MODE: Record<BloomImageContentFit, ImageResizeMode> = {
  *
  * 1. Bloom's own native image view, `BloomImageView`, in a build that links it
  *    (`bloom build android`): Kotlin over React Native's own image pipeline, its
- *    memory and disk caches (`bloom-image-view.ts`).
+ *    memory and disk caches (`bloom-image-view.native.ts`).
  * 2. `expo-image` (an Expo build), so no image Bloom draws depends on
  *    react-native's GIF/WebP decoders and an app may switch them off
  *    (`expo-build-properties` `android.gifEnabled`/`webpEnabled: false`).
  * 3. react-native's `Image`, wherever neither can be loaded, and on web.
  *
- * Why the split and why each is `require`d: `bloom-image-view.ts` and
+ * Why the split and why each is `require`d: `bloom-image-view.native.ts` and
  * `expo-image-module.ts`.
  *
  * One vocabulary for both renderers: `contentFit` (expo-image's) and a plain
@@ -49,26 +50,15 @@ export function BloomImage({
 }: BloomImageProps) {
   const BloomImageView = loadBloomImageView();
   if (BloomImageView) {
-    const { source, tintColor, blurRadius, alt, ...viewRest } = rest;
-    const { uri, headers } = sourceOf(source);
-    const tint = tintColor === undefined ? null : processColor(tintColor);
-    return (
-      <BloomImageView
-        {...viewRest}
-        // `alt` is the image's name, as expo-image reads it.
-        accessibilityLabel={rest.accessibilityLabel ?? alt}
-        source={uri}
-        headers={headers}
-        contentFit={contentFit}
-        transition={transition ?? 0}
-        cachePolicy={cachePolicy}
-        recyclingKey={recyclingKey ?? undefined}
-        tint={typeof tint === 'number' ? tint : 0}
-        blurRadius={blurRadius ?? 0}
-        onLoad={onLoad ? (event) => onLoad(event.nativeEvent) : undefined}
-        onError={onError ? (event) => onError(event.nativeEvent) : undefined}
-      />
-    );
+    return drawBloomImageView(BloomImageView, {
+      contentFit,
+      transition,
+      cachePolicy,
+      recyclingKey,
+      onLoad,
+      onError,
+      ...rest,
+    });
   }
 
   const ExpoImage = loadExpoImage();
@@ -99,33 +89,6 @@ export function BloomImage({
       onError={onError}
     />
   );
-}
-
-const NO_HEADERS: readonly string[] = [];
-
-/**
- * The native view's source: a URI and its request headers as `[name, value, …]`. A
- * bundled image (`require()`) is the URI React Native's asset resolver gives it (Metro's
- * URL in development, the drawable's name in a release build); of several sources, the
- * first.
- */
-function sourceOf(source: BloomImageSource | null | undefined): {
-  uri: string | undefined;
-  headers: readonly string[];
-} {
-  if (source == null) return { uri: undefined, headers: NO_HEADERS };
-  if (typeof source === 'string') return { uri: source, headers: NO_HEADERS };
-  const descriptor =
-    typeof source === 'number'
-      ? NativeImage.resolveAssetSource?.(source)
-      : Array.isArray(source)
-        ? source[0]
-        : source;
-  if (!descriptor?.uri) return { uri: undefined, headers: NO_HEADERS };
-  const headers = descriptor.headers
-    ? Object.entries(descriptor.headers).flatMap(([name, value]) => [name, String(value)])
-    : NO_HEADERS;
-  return { uri: descriptor.uri, headers };
 }
 
 /**
