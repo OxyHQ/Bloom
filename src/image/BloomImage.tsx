@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Image as NativeImage, type ImageResizeMode } from 'react-native';
+import { loadBloomImageModule, loadBloomImageView } from './bloom-image-view';
+import { drawBloomImageView } from './bloom-image-view-draw';
 import { loadExpoImage } from './expo-image-module';
 import type { BloomImageContentFit, BloomImageProps } from './types';
 
@@ -20,11 +22,18 @@ const RESIZE_MODE: Record<BloomImageContentFit, ImageResizeMode> = {
 /**
  * The ONE way Bloom draws a raster image.
  *
- * On iOS and Android it renders `expo-image`, so no image Bloom draws depends on
- * react-native's GIF/WebP decoders and an app may switch them off
- * (`expo-build-properties` `android.gifEnabled`/`webpEnabled: false`). On web,
- * and wherever expo-image cannot be loaded, it renders react-native's `Image`.
- * Why the split and why expo-image is `require`d: `expo-image-module.ts`.
+ * On a device it renders, in order of preference:
+ *
+ * 1. Bloom's own native image view, `BloomImageView`, in a build that links it
+ *    (`bloom build android`): Kotlin over React Native's own image pipeline, its
+ *    memory and disk caches (`bloom-image-view.native.ts`).
+ * 2. `expo-image` (an Expo build), so no image Bloom draws depends on
+ *    react-native's GIF/WebP decoders and an app may switch them off
+ *    (`expo-build-properties` `android.gifEnabled`/`webpEnabled: false`).
+ * 3. react-native's `Image`, wherever neither can be loaded, and on web.
+ *
+ * Why the split and why each is `require`d: `bloom-image-view.native.ts` and
+ * `expo-image-module.ts`.
  *
  * One vocabulary for both renderers: `contentFit` (expo-image's) and a plain
  * `{ width, height }` / `{ error }` for `onLoad` / `onError`, so a caller never
@@ -39,6 +48,19 @@ export function BloomImage({
   onError,
   ...rest
 }: BloomImageProps) {
+  const BloomImageView = loadBloomImageView();
+  if (BloomImageView) {
+    return drawBloomImageView(BloomImageView, {
+      contentFit,
+      transition,
+      cachePolicy,
+      recyclingKey,
+      onLoad,
+      onError,
+      ...rest,
+    });
+  }
+
   const ExpoImage = loadExpoImage();
   if (ExpoImage) {
     return (
@@ -183,10 +205,12 @@ function FallbackImage({
 
 /**
  * Warm the cache for a remote image the user is about to see, in the cache
- * {@link BloomImage} will read from — expo-image's on a device, the browser's
- * on web. Resolves `false` instead of rejecting.
+ * {@link BloomImage} will read from — Bloom's image view's or expo-image's on a
+ * device, the browser's on web. Resolves `false` instead of rejecting.
  */
 export function prefetchImage(uri: string): Promise<boolean> {
+  const bloom = loadBloomImageModule();
+  if (bloom) return bloom.prefetch([uri], false).catch(() => false);
   const ExpoImage = loadExpoImage();
   const prefetch = ExpoImage?.prefetch
     ? ExpoImage.prefetch.bind(ExpoImage)
@@ -201,6 +225,8 @@ export function prefetchImage(uri: string): Promise<boolean> {
  * needs CORS headers an `<img>` does not.
  */
 export function getImageSize(uri: string): Promise<{ width: number; height: number }> {
+  const bloom = loadBloomImageModule();
+  if (bloom) return bloom.size(uri).then(([width = 0, height = 0]) => ({ width, height }));
   const ExpoImage = loadExpoImage();
   if (ExpoImage?.loadAsync) {
     return ExpoImage.loadAsync(uri).then((ref) => {

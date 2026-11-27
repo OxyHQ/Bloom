@@ -1,0 +1,68 @@
+// Bloom (UI): the native image view behind `Image`, and its cache.
+//
+//     Image(post.avatar).contentFit(.cover).frame(width: 40, height: 40)
+//
+//     let warmed = await ImageCache.prefetch(feed.map { $0.imageURL })
+//
+// `Image(url)` draws through Bloom's `BloomImage`. In a `bloom build` that is Bloom's own
+// native image view, `BloomImageView` below (Kotlin on Android, over the image pipeline React
+// Native already ships: its memory and disk caches, decoded at the view's size); a
+// `bloom build --with-expo` draws with expo-image, and the web with an `<img>`. The view's
+// API is `Image`'s: a source, `contentFit`, a cross-fade, a placeholder, a cache policy and
+// a recycling key.
+
+/// The native image view and its cache (ADR 0002, section 7). The Kotlin side
+/// (`Native/BloomImage/android`) conforms to the specs the toolchain generates from this
+/// interface; Bloom's `BloomImage` (`@oxy.so/bloom/image`) draws the view through the same
+/// component spec, which `BLOOM_BLESS=1 cargo test -p bloom_lang --test stdlib image`
+/// writes into it.
+extern native "BloomImage" {
+  /// The view. `source` is a URL (`https:`, `file:`, `content:`, `data:`) or a bundled
+  /// image's resource name; `headers` are the request's, as `[name, value, …]`;
+  /// `placeholder` is drawn until the source arrives. `transition` is the cross-fade in
+  /// ms, `tint` an ARGB colour (0 for none) and `blurRadius` in points (Android 12+).
+  @extern("BloomImageView")
+  private func imageView(
+    source: String?,
+    headers: [String],
+    placeholder: String?,
+    contentFit: "cover" | "contain" | "fill" | "none" | "scale-down" = "cover",
+    transition: Int = 0,
+    cachePolicy: "memory-disk" | "memory" | "disk" | "none" = "memory-disk",
+    recyclingKey: String?,
+    tint: Int = 0,
+    blurRadius: Double = 0,
+    onLoad: (({ width: Double, height: Double }) -> Void)?,
+    onError: (({ error: String }) -> Void)?
+  ) -> View
+  @extern("prefetch") private func nativePrefetch(_ urls: [String], _ memory: Bool) async throws -> Bool
+  @extern("size") private func nativeSize(_ url: String) async throws -> [Double]
+  @extern("clear") private func nativeClear(_ memory: Bool, _ disk: Bool) async throws -> Bool
+}
+
+/// The cache `Image` draws from: the decoded pictures in memory, the downloaded bytes on disk.
+public enum ImageCache {
+  /// Downloads `urls` into the disk cache (and decodes them into memory with `memory`), so
+  /// an `Image` of one paints at once. `false` when one failed, and off a native build
+  /// (the web, tests), which has no cache of its own.
+  public static func prefetch(_ urls: [String], memory: Bool = false) async -> Bool {
+    if urls.isEmpty { return false }
+    do {
+      return try await nativePrefetch(urls, memory)
+    } catch {
+      return false
+    }
+  }
+
+  /// The pixel size of the image at `url`, read through the cache.
+  public static func size(of url: String) async throws -> [Double] {
+    try await nativeSize(url)
+  }
+
+  /// Empties the memory cache, the disk cache or both (nothing off a native build).
+  public static func clear(memory: Bool = true, disk: Bool = true) async {
+    do {
+      try await nativeClear(memory, disk)
+    } catch {}
+  }
+}

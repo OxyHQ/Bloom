@@ -21,6 +21,8 @@ import ts from 'typescript';
 const ALLOWED: Record<string, string> = {
   'image/BloomImage.tsx':
     'the renderer itself: react-native `Image` is its web renderer and its fallback when expo-image cannot load',
+  'image/bloom-image-view-draw.native.tsx':
+    "the renderer's native half: it reads only `Image.resolveAssetSource`, to give Bloom's native image view a bundled image's URI",
 };
 
 const SRC = join(__dirname, '..');

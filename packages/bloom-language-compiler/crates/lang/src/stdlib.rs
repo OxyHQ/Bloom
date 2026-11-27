@@ -24,6 +24,7 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("JSON.bloom", include_str!("../../../stdlib/Bloom/JSON.bloom")),
     ("HTTP.bloom", include_str!("../../../stdlib/Bloom/HTTP.bloom")),
     ("Storage.bloom", include_str!("../../../stdlib/Bloom/Storage.bloom")),
+    ("Image.bloom", include_str!("../../../stdlib/Bloom/Image.bloom")),
     ("Concurrency.bloom", include_str!("../../../stdlib/Bloom/Concurrency.bloom")),
     ("Regex.bloom", include_str!("../../../stdlib/Bloom/Regex.bloom")),
     ("Logger.bloom", include_str!("../../../stdlib/Bloom/Logger.bloom")),
@@ -58,6 +59,32 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
         "Native/BloomStorage/android/so/oxy/bloom/storage/Stores.kt",
         include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/Stores.kt"),
     ),
+    (
+        "Native/BloomImage/android/so/oxy/bloom/image/BloomImageModule.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageModule.kt"
+        ),
+    ),
+    (
+        "Native/BloomImage/android/so/oxy/bloom/image/BloomImagePackage.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImagePackage.kt"
+        ),
+    ),
+    (
+        "Native/BloomImage/android/so/oxy/bloom/image/BloomImageView.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageView.kt"),
+    ),
+    (
+        "Native/BloomImage/android/so/oxy/bloom/image/BloomImageViewManager.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageViewManager.kt"
+        ),
+    ),
+    (
+        "Native/BloomImage/android/so/oxy/bloom/image/Pipeline.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/Pipeline.kt"),
+    ),
 ];
 
 /// The `extern native` interfaces the standard library declares.
@@ -69,17 +96,9 @@ pub fn native_modules() -> Vec<crate::native::Module> {
         .collect()
 }
 
-/// The generated files beside the sources: each native interface's codegen spec and bridge.
+/// The generated files beside the sources: each native interface's codegen specs and bridge.
 fn generated() -> Vec<(String, String)> {
-    native_modules()
-        .iter()
-        .flat_map(|m| {
-            [
-                (crate::native::spec_file(&m.name), crate::native::spec(m)),
-                (crate::native::bridge_file(&m.name), crate::native::bridge(m)),
-            ]
-        })
-        .collect()
+    native_modules().iter().flat_map(crate::native::Module::generated).collect()
 }
 
 thread_local! {

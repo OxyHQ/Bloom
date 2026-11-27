@@ -305,14 +305,9 @@ pub fn native_modules(package: &Package) -> Result<Vec<NativeModule>, String> {
             for module in bloom_lang::native::modules(&source)? {
                 // The bridge and the spec sit beside the interface, where its import finds them.
                 let dir = file.parent().unwrap_or(&package.root);
-                write(
-                    &dir.join(bloom_lang::native::spec_file(&module.name)),
-                    &bloom_lang::native::spec(&module),
-                )?;
-                write(
-                    &dir.join(bloom_lang::native::bridge_file(&module.name)),
-                    &bloom_lang::native::bridge(&module),
-                )?;
+                for (file, text) in module.generated() {
+                    write(&dir.join(file), &text)?;
+                }
                 if module.name == target.name {
                     found = Some(module);
                 }
@@ -367,17 +362,16 @@ fn write_native_library(build: &Path, native: &NativeModule) -> Result<autolink:
                 "codegenConfig",
                 json::object([
                     ("name", Value::String(name.clone())),
-                    ("type", Value::String("modules".into())),
+                    ("type", Value::String(native.module.codegen_type().into())),
                     ("jsSrcsDir", Value::String("js".into())),
                     ("android", json::object([("javaPackageName", Value::String(java_package.clone()))])),
                 ]),
             ),
         ])),
     )?;
-    write(
-        &root.join("js").join(bloom_lang::native::spec_file(name)),
-        &bloom_lang::native::spec(&native.module),
-    )?;
+    for (file, text) in native.module.specs() {
+        write(&root.join("js").join(file), &text)?;
+    }
     let android = root.join("android");
     write(
         &android.join("build.gradle"),
@@ -426,7 +420,7 @@ dependencies {{
         import: format!("import {java_package}.{name}Package;"),
         instance: format!("new {name}Package()"),
         library_name: Some(name.clone()),
-        component_descriptors: Vec::new(),
+        component_descriptors: native.module.component_descriptors(),
         cmake_lists: android.join("build/generated/source/codegen/jni/CMakeLists.txt"),
     })
 }
@@ -802,7 +796,7 @@ dependencies {{
     write(
         &kotlin_dir.join("MainApplication.kt"),
         &format!(
-            "{header}package {id}\n\nimport android.app.Application\nimport com.facebook.react.PackageList\nimport com.facebook.react.ReactApplication\nimport com.facebook.react.ReactHost\nimport com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative\nimport com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost\n\nclass MainApplication : Application(), ReactApplication {{\n  override val reactHost: ReactHost by lazy {{\n    getDefaultReactHost(context = applicationContext, packageList = PackageList(this).packages)\n  }}\n\n  override fun onCreate() {{\n    super.onCreate()\n    loadReactNative(this)\n  }}\n}}\n"
+            "{header}package {id}\n\nimport android.app.Application\nimport com.facebook.react.PackageList\nimport com.facebook.react.ReactApplication\nimport com.facebook.react.ReactHost\nimport com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative\nimport com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost\nimport com.facebook.react.modules.network.OkHttpClientFactory\nimport com.facebook.react.modules.network.OkHttpClientProvider\nimport okhttp3.Dispatcher\n\nclass MainApplication : Application(), ReactApplication {{\n  override val reactHost: ReactHost by lazy {{\n    getDefaultReactHost(context = applicationContext, packageList = PackageList(this).packages)\n  }}\n\n  override fun onCreate() {{\n    super.onCreate()\n    // The app's HTTP clients (fetch's and the image pipeline's): React Native's, with 16\n    // requests in flight per host rather than OkHttp's 5, so a screen of images loads\n    // as fast as the platform's image loaders load it.\n    OkHttpClientProvider.setOkHttpClientFactory(\n      OkHttpClientFactory {{\n        OkHttpClientProvider.createClientBuilder(this)\n          .dispatcher(Dispatcher().apply {{ maxRequestsPerHost = 16 }})\n          .build()\n      }}\n    )\n    loadReactNative(this)\n  }}\n}}\n"
         ),
     )?;
     write(
@@ -1043,7 +1037,10 @@ mod tests {
             &[("Sources/Shop/App.bloom", APP)],
         );
         let natives = native_modules(&package).unwrap();
-        assert_eq!(natives.iter().map(|n| n.module.name.as_str()).collect::<Vec<_>>(), ["BloomStorage"]);
+        assert_eq!(
+            natives.iter().map(|n| n.module.name.as_str()).collect::<Vec<_>>(),
+            ["BloomStorage", "BloomImage"]
+        );
         assert!(
             natives[0].kotlin.join("so/oxy/bloom/storage/BloomStorageModule.kt").is_file(),
             "{:?}",
@@ -1064,6 +1061,34 @@ mod tests {
             pkg.get("codegenConfig").get("android").get("javaPackageName").as_str(),
             Some("so.oxy.bloom.storage")
         );
+        assert_eq!(pkg.get("codegenConfig").get("type").as_str(), Some("modules"));
+        assert!(lib.component_descriptors.is_empty());
+        let _ = std::fs::remove_dir_all(&package.root);
+    }
+
+    #[test]
+    fn a_native_view_is_a_fabric_component_library() {
+        let package = package(
+            "native-view",
+            "let package = Package(name: \"Shop\", platforms: [.android(26)], targets: [.app(\"Shop\")])",
+            &[("Sources/Shop/App.bloom", APP)],
+        );
+        let natives = native_modules(&package).unwrap();
+        let image = natives.iter().find(|n| n.module.name == "BloomImage").unwrap();
+        let build = package.build_dir();
+        let lib = write_native_library(&build, image).unwrap();
+        assert_eq!(lib.import, "import so.oxy.bloom.image.BloomImagePackage;");
+        // The app registers the view's component descriptor (autolinking.json).
+        assert_eq!(lib.component_descriptors, ["BloomImageViewComponentDescriptor"]);
+        let js = build.join("native/BloomImage/js");
+        let component = std::fs::read_to_string(js.join("BloomImageViewNativeComponent.ts")).unwrap();
+        assert!(component.contains("codegenNativeComponent<NativeProps>('BloomImageView')"), "{component}");
+        assert!(js.join("NativeBloomImage.ts").is_file());
+        let pkg =
+            json::parse(&std::fs::read_to_string(build.join("native/BloomImage/package.json")).unwrap())
+                .unwrap();
+        // A module with functions and a view: codegen writes both.
+        assert_eq!(pkg.get("codegenConfig").get("type").as_str(), Some("all"));
         let _ = std::fs::remove_dir_all(&package.root);
     }
 }

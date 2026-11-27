@@ -713,3 +713,22 @@ fn an_actor_serialises_its_methods() {
     let out = compile(&sync, &path.to_string_lossy(), &Options::default());
     assert!(!out.diagnostics.is_empty(), "a call without await compiles:\n{}", out.code);
 }
+
+/// `BloomImage` (`src/image/`, the UI kit) draws the standard library's native image view
+/// through the same specs the toolchain generates from `extern native "BloomImage"`
+/// (`stdlib/Bloom/Image.bloom`): its copies are generated, never edited.
+#[test]
+fn the_ui_kits_image_specs_are_generated_from_the_image_interface() {
+    let image = stdlib::native_modules().into_iter().find(|m| m.name == "BloomImage").unwrap();
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../src/image");
+    for (file, text) in image.specs() {
+        let path = dir.join(&file);
+        if std::env::var_os("BLOOM_BLESS").is_some() {
+            std::fs::write(&path, &text).unwrap();
+        }
+        assert!(
+            std::fs::read_to_string(&path).unwrap_or_default() == text,
+            "src/image/{file} is stale: run BLOOM_BLESS=1 cargo test -p bloom_lang --test stdlib image_specs"
+        );
+    }
+}

@@ -664,6 +664,32 @@ Larger values (documents, caches of responses), by path within the app's storage
 - `func delete(_ path: String)`: Deletes the file at `path`.
 - `var paths: [String]`: The paths of every file, in no order.
 
+## Image
+
+Bloom (UI): the native image view behind `Image`, and its cache.
+
+```swift
+Image(post.avatar).contentFit(.cover).frame(width: 40, height: 40)
+
+let warmed = await ImageCache.prefetch(feed.map { $0.imageURL })
+
+```
+
+`Image(url)` draws through Bloom's `BloomImage`. In a `bloom build` that is Bloom's own
+native image view, `BloomImageView` below (Kotlin on Android, over the image pipeline React
+Native already ships: its memory and disk caches, decoded at the view's size); a
+`bloom build --with-expo` draws with expo-image, and the web with an `<img>`. The view's
+API is `Image`'s: a source, `contentFit`, a cross-fade, a placeholder, a cache policy and
+a recycling key.
+
+### `enum ImageCache`
+
+The cache `Image` draws from: the decoded pictures in memory, the downloaded bytes on disk.
+
+- `static func prefetch(_ urls: [String], memory: Bool = false) async -> Bool`: Downloads `urls` into the disk cache (and decodes them into memory with `memory`), so an `Image` of one paints at once. `false` when one failed, and off a native build (the web, tests), which has no cache of its own.
+- `static func size(of url: String) async throws -> [Double]`: The pixel size of the image at `url`, read through the cache.
+- `static func clear(memory: Bool = true, disk: Bool = true) async`: Empties the memory cache, the disk cache or both (nothing off a native build).
+
 ## Concurrency
 
 Bloom (concurrency): `Task`, `TaskGroup`, `sleep(for:)` and `AsyncStream`.
