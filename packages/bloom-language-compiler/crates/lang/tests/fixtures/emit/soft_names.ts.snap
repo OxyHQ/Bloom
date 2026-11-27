@@ -34,7 +34,7 @@ return $t0;
 });
 
 function make(type: string, body: string): Notice {
-return { from: undefined, type: type, body: body };
+return { type: type, body: body };
 }
 
 const $view0 = Button(Text("Clear"));
