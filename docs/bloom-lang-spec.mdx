@@ -1125,6 +1125,13 @@ copy it), so a `var` or `@state` holding one is assigned as any other value
 (`picked = picked.inserting(id)`), and they have no `==` (B0210). A TS `Map`/`ReadonlyMap`/
 `Set`/`ReadonlySet` reads as one.
 
+`String(localized:)` and `Text("key")` in a view look the key up in the locale the view read
+with `useLocalization()`, a hook the compiler adds to the view (`const bloom$locale =
+useLocalization()`) and passes to each lookup (`locale:`). The strings are then memoised on the
+locale, so `Locale.prefer` re-draws a mounted view in the new language. A plural lookup with
+a count of exactly 0 takes the catalog's `zero` form where it has one, in every language (as
+i18next's `_zero`), before the CLDR category.
+
 ## 13. Diagnostics
 
 Every error has a code, a primary span, a one-line message, labels on related spans, a
