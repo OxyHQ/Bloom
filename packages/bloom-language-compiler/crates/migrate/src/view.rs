@@ -12,7 +12,7 @@ use oxc_ast::ast::{
     Statement, TSSignature, TSType, TSTypeName, VariableDeclarationKind, VariableDeclarator,
 };
 use oxc_span::{GetSpan, Span};
-use oxc_syntax::operator::UnaryOperator;
+use oxc_syntax::operator::{LogicalOperator, UnaryOperator};
 
 use crate::REVIEW_MARKER;
 use crate::expr::is_nothing;
@@ -2107,6 +2107,20 @@ impl Tr<'_> {
     }
 
     /// An expression in statement position: a setter call is an assignment.
+    /// Whether `e` (a branch of a statement's `?:` or `&&`) calls a state setter.
+    fn writes_state(&self, e: &Expression) -> bool {
+        match e.without_parentheses() {
+            Expression::CallExpression(call) => matches!(
+                &call.callee,
+                Expression::Identifier(id) if self.scope.setters.contains_key(id.name.as_str())
+            ),
+            Expression::ConditionalExpression(c) => {
+                self.writes_state(&c.consequent) || self.writes_state(&c.alternate)
+            }
+            _ => false,
+        }
+    }
+
     pub fn stmt_expr(&mut self, e: &Expression) -> String {
         match e {
             Expression::CallExpression(call)
@@ -2188,6 +2202,34 @@ impl Tr<'_> {
                     return self.set_state(&setter.state, call);
                 }
                 self.expr(e)
+            }
+            // `() => (c ? setStep('edit') : back())`: the parentheses say nothing here.
+            Expression::ParenthesizedExpression(p)
+                if self.writes_state(&p.expression)
+                    || matches!(p.expression.without_parentheses(), Expression::LogicalExpression(l)
+                        if l.operator == LogicalOperator::And && self.writes_state(&l.right)) =>
+            {
+                self.stmt_expr(p.expression.without_parentheses())
+            }
+            // `c ? setStep('edit') : back?.()` as a statement (a handler's body): its value is
+            // unused, so it is an `if`, and each branch a statement (a setter writes the state).
+            Expression::ConditionalExpression(c)
+                if self.writes_state(&c.consequent) || self.writes_state(&c.alternate) =>
+            {
+                let test = self.test(&c.test, false);
+                let test = crate::expr::strip_parens(&test).to_string();
+                let then = self.stmt_expr(c.consequent.without_parentheses());
+                let otherwise = self.stmt_expr(c.alternate.without_parentheses());
+                format!("if {test} {{\n{then}\n}} else {{\n{otherwise}\n}}")
+            }
+            // `ready && setOpen(true)` as a statement: an `if`.
+            Expression::LogicalExpression(l)
+                if l.operator == LogicalOperator::And && self.writes_state(&l.right) =>
+            {
+                let test = self.test(&l.left, false);
+                let test = crate::expr::strip_parens(&test).to_string();
+                let then = self.stmt_expr(l.right.without_parentheses());
+                format!("if {test} {{\n{then}\n}}")
             }
             Expression::UnaryExpression(u) if u.operator == UnaryOperator::Void => match &u.argument {
                 Expression::CallExpression(_) => format!("task {{ await {} }}", self.expr(&u.argument)),
@@ -2899,7 +2941,7 @@ fn is_effect(e: &Expression) -> bool {
 
 /// The type a value's own shape gives it: a literal, a comparison, arithmetic.
 fn value_type(e: &Expression) -> Option<&'static str> {
-    use oxc_syntax::operator::{BinaryOperator as B, LogicalOperator};
+    use oxc_syntax::operator::BinaryOperator as B;
     match e.without_parentheses() {
         Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => Some("String"),
         Expression::BooleanLiteral(_) => Some("Bool"),
