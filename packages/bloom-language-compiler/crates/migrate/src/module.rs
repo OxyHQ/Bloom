@@ -428,6 +428,10 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
             }
         }
     }
+    // `React.ReactNode` in a file that does not import `React`: its global namespace.
+    if !tr.react.contains_key("React") && !tr.imported.contains("React") {
+        tr.react.insert("React".into(), "*".into());
+    }
     let header = tr.comments.before(first, false);
     tr.scan(&program.body);
     tr.scan_memo_aliases(&program.body);
@@ -1400,7 +1404,9 @@ impl<'s> Tr<'s> {
         let init = init.without_parentheses();
         // `memo(Named) as typeof Named`: the cast says nothing at run time.
         let init = match init {
-            Expression::TSAsExpression(a) if matches!(&a.type_annotation, oxc_ast::ast::TSType::TSTypeQuery(_)) => {
+            Expression::TSAsExpression(a)
+                if matches!(&a.type_annotation, oxc_ast::ast::TSType::TSTypeQuery(_)) =>
+            {
                 a.expression.without_parentheses()
             }
             other => other,

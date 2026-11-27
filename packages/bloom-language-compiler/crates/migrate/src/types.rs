@@ -161,7 +161,9 @@ impl Tr<'_> {
                 match (name.as_str(), args.as_slice()) {
                     ("Array" | "ReadonlyArray", [element]) => format!("[{element}]"),
                     // `Readonly<T>`: a Bloom value is not written through a `let`, so it is `T`.
-                    ("Readonly", [inner]) if !self.objects.contains(&name) && !self.imported.contains("Readonly") => {
+                    ("Readonly", [inner])
+                        if !self.objects.contains(&name) && !self.imported.contains("Readonly") =>
+                    {
                         inner.clone()
                     }
                     ("Record", [key, value]) if key == "String" => format!("[String: {value}]"),

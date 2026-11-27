@@ -774,12 +774,12 @@ impl Tr<'_> {
                     Some(Expression::ArrowFunctionExpression(arrow)) if arrow.params.items.is_empty() => {
                         match arrow.get_expression() {
                             Some(e) => self.typed_value(e, self.scope.types.get(&value).cloned()),
+                            // `useState(() => { … })`: its value, from a closure called in place.
                             None => {
-                                return self.refuse(
-                                    "react:useState",
-                                    "a lazy initialiser with statements",
-                                    arrow.span,
-                                );
+                                let saved = self.scope.clone();
+                                let body = self.block_stmts(arrow_statements(arrow), arrow_end(arrow), true);
+                                self.scope = saved;
+                                format!("{{\n{body}\n}}()")
                             }
                         }
                     }
