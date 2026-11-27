@@ -54,7 +54,7 @@ self.$set("isLoading", false);
 
 export async function FeedModel$like(self: FeedModel, post: Post): Promise<void> {
 const $t0 = Array$firstIndex(self.posts, ($0: Post) => $0.id === post.id);
-if (!($t0 !== undefined)) {
+if (!($t0 != null)) {
 return;
 }
 self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, isLiked: true }));
