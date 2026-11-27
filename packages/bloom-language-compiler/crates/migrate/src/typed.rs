@@ -725,7 +725,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             _ => None,
         };
         if let Some((s, e, t)) = edit
-            && !edits.iter().any(|(a, b, _)| s < *b && *a < e)
+            && !edits.iter().any(|(a, b, x)| s < *b && *a < e || (*a, *b, x) == (s, e, &t))
         {
             edits.push((s, e, t));
         }
@@ -1417,6 +1417,10 @@ enum Decl {
 fn guarded_decl(source: &str, name: &str, shown: &str) -> Option<Decl> {
     if name.is_empty() || shown.is_empty() || shown.ends_with('?') {
         return None;
+    }
+    // `if let onRate = onRate { … onRate?.(x) }`: bound present, whatever it was declared.
+    if source.contains(&format!("if let {name} = {name} ")) {
+        return Some(Decl::Narrowed);
     }
     // bloomc shows a record's optional field as `x?: T?`; the codemod writes `x: T?`.
     let shown = shown.replace("?: ", ": ");
