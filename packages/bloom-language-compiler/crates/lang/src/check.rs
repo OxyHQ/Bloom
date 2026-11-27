@@ -3357,6 +3357,15 @@ impl<'o> Checker<'o> {
                     foreign = true;
                     break;
                 }
+                // A TS-declared type Bloom reads (a TS call's inferred result): still TS's object.
+                // A prop stays its parent's, whatever its type.
+                Ty::Adt(def, _)
+                    if info.kind != LocalKind::Prop
+                        && matches!(self.out.defs[def].origin, Origin::Ts { .. }) =>
+                {
+                    foreign = true;
+                    break;
+                }
                 Ty::Adt(def, args) => match self.out.defs[def].fields().iter().find(|f| f.name == *field) {
                     Some(f) => through = substitute(&f.ty, &args),
                     None => break,
