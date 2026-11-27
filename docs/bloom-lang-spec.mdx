@@ -815,9 +815,10 @@ fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are th
 is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
-React's `useMemo`/`useCallback` written as a member (`let f = useCallback({ … }, [deps])`) is a
-plain member, memoised in the view's cache on its exact dependencies, with no hook slot; the
-written dependencies are not read.
+React's `useMemo`/`useCallback` written as a member (`let f = useCallback({ … }, [deps])`), or as
+a hook function's top-level `let` (section 7.3), is a plain member, memoised in the view's (or the
+hook function's) cache on its exact dependencies, with no hook slot; the written dependencies are
+not read.
 A prop's default is written on it (`var isNested: Bool = false`, emitted `const { isNested =
 false } = props`, TS's own default); a member of a stored property's name (`let isNested =
 isNested ?? false`) declares it twice and is B0217.
@@ -987,7 +988,12 @@ same order. One in a branch (`c ? useA() : useB()`) or on the right of `&&`, `||
 only some renders, and is B0420 even as a view member's value. A **hook function** is a `fn` named `use[A-Z]…`: its top-level `let`s and its
 result may call hooks (not a branch, a loop or a closure), and calling it is calling a hook. A
 `.bloom` module of `pub fn useX(…)` is a module of hooks. A hook function written without
-`-> T` has the type of its last line (nothing when that is not a value).
+`-> T` has the type of its last line (nothing when that is not a value). Its top-level `let`s are
+memoised in one cache on their exact dependencies, as a view's members are (its parameters, and
+what it binds, are what changes between calls); a `let` that calls a hook, a cheap read (a name,
+a field, a short string), a class instance and a value a later statement writes in place
+(`m.set(k, v)`) stay plain. So React's `useMemo`/`useCallback` there are plain `let`s too, with no
+hook slot, and the function holds no hook of its own for them.
 
 **Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
 and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
