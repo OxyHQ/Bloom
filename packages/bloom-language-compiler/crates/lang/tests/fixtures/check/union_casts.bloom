@@ -1,0 +1,7 @@
+type Tab = "videos" | "following"
+
+// A cast to a literal union tests a string.
+func count(_ n: Int) -> Tab? { n as? Tab }
+
+// `as!` casts only to a literal union.
+func forced(_ raw: String) -> Int { raw as! Int }

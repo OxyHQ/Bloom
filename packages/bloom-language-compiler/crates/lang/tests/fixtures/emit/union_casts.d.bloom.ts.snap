@@ -1,0 +1,15 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export type Tab = "videos" | "following" | "live";
+export declare function tab(raw: string): "videos" | "following" | "live";
+export declare function routed(params: Readonly<Record<string, string>>): ("videos" | "following" | "live") | undefined;
+export declare function forced(raw: string): "videos" | "following" | "live";
+export declare function first(): "videos" | "following" | "live";
+export declare function all(): readonly ("videos" | "following" | "live")[];
+export declare function price(amount: number): string;
+export declare function score(value: number | undefined): string | undefined;
+export interface TabsProps {
+  readonly selected: "videos" | "following" | "live";
+  readonly onSelect: (p0: "videos" | "following" | "live") => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Tabs())`), or from TSX as `toElement(Tabs())`. */
+export declare const Tabs: (props: TabsProps) => ComposedView;

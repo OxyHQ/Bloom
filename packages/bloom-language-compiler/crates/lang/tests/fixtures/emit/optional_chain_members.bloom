@@ -2,14 +2,14 @@
 // `query.data?.count` with `T = [Post]` is the list's `length` (it stayed `.count`, which is
 // `undefined` in JS). A lowering that wraps its object (`isEmpty`, a dictionary's `keys`, an
 // extension's property, a non-JS method) reads the object once and is `undefined` when it is
-// `none`, and the link after it carries the `?.`.
+// `none`, and the link after it carries the `?.`. Options left out are left out of the object:
+// TanStack merges `{ ...defaults, ...options }`, so `staleTime: undefined` would override the
+// QueryClient's default.
 extern module "@tanstack/react-query" {
   public struct QueryResult<T> {
     public let data: T?
     public let isLoading: Bool
   }
-  // Options left out are left out of the object: TanStack merges `{ ...defaults, ...options }`,
-  // so `staleTime: undefined` would override the QueryClient's default.
   public struct QueryOptions<T> {
     public let queryKey: [String]
     public let queryFn: () async -> T

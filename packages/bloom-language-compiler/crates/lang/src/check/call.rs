@@ -438,6 +438,21 @@ impl Checker<'_> {
         task_allowed: bool,
         optional: bool,
     ) -> Ty {
+        // `x.formatted(fractionDigits: 2)`: `x` with exactly that many decimals, as JS's
+        // `toFixed` writes it (`"3.14"`, never localized; `formatted(digits:)` is the
+        // localized one).
+        if matches!(self.resolve(recv), Ty::Int | Ty::Float)
+            && member.name == "formatted"
+            && call.trailing.is_none()
+            && let [arg] = call.args.as_slice()
+            && arg.label.as_ref().is_some_and(|l| l.name == "fractionDigits")
+            && !arg.spread
+        {
+            self.expr(&arg.value, Some(&Ty::Int));
+            let recv_kind = if self.resolve(recv) == Ty::Int { Recv::Int } else { Recv::Float };
+            self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: "toFixed" });
+            return Ty::Str;
+        }
         if let Some(ret) = self.extension_call(expr, call, recv, member) {
             if let (Some(CallRes::Extension { func, .. }), ExprKind::Field(object, _)) =
                 (self.out.calls.get(&expr.id).cloned(), &call.callee.kind)

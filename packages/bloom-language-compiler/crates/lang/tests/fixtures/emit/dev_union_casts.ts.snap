@@ -1,0 +1,17 @@
+function $cast<T extends string>(value: unknown, values: readonly T[]): T {
+  if ((values as readonly unknown[]).includes(value)) return value as T;
+  throw new TypeError(`${JSON.stringify(value)} is not one of ${values.map((v) => JSON.stringify(v)).join(", ")} (\`as!\`)`);
+}
+
+const TABS = Object.freeze(["videos", "following"] as const);
+
+export type Tab = "videos" | "following";
+
+export function forced(raw: string): "videos" | "following" {
+return $cast(raw, ["videos", "following"]);
+}
+
+export function all(): readonly ("videos" | "following")[] {
+return TABS;
+}
+

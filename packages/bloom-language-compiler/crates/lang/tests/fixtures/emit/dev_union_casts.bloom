@@ -1,0 +1,9 @@
+// `x as! Tab` in a dev build: a trap (a `TypeError`) when it is not one of the union's values.
+// A module constant's literal list is frozen, and keeps its union.
+private let TABS = ["videos", "following"]
+
+public type Tab = "videos" | "following"
+
+public func forced(_ raw: String) -> Tab { raw as! Tab }
+
+public func all() -> [Tab] { TABS }

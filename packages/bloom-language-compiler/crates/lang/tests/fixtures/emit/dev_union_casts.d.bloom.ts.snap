@@ -1,0 +1,3 @@
+export type Tab = "videos" | "following";
+export declare function forced(raw: string): "videos" | "following";
+export declare function all(): readonly ("videos" | "following")[];
