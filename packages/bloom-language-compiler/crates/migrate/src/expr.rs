@@ -1082,9 +1082,23 @@ impl Tr<'_> {
             ),
             Callee::View => {
                 let callee = self.expr(&call.callee);
+                let rest = match &call.callee {
+                    Expression::Identifier(id) => self.rest_views.get(id.name.as_str()).cloned(),
+                    _ => None,
+                };
                 match call.arguments.as_slice() {
                     [] => format!("{callee}()"),
+                    // `X({ label, post, … })` for `X({ label, ...menu })`: the other fields are `menu`.
+                    [Argument::ObjectExpression(o)] if let Some((rest, own)) = rest => {
+                        format!("{callee}({})", self.rest_args(o, &rest, &own))
+                    }
                     [Argument::ObjectExpression(o)] => format!("{callee}({})", self.named_args(o)),
+                    // `X(props)` in a view whose props are written out: each one, by name.
+                    [Argument::Identifier(v)] if let Some(fields) = self.whole_props_fields(&v.name) => {
+                        let args: Vec<String> =
+                            fields.iter().map(|f| format!("{f}: {}", self.name(f, v.span))).collect();
+                        format!("{callee}({})", args.join(", "))
+                    }
                     // `X(props)`: its fields as the arguments.
                     [arg] if arg.as_expression().is_some() => {
                         let value = self.expr(arg.to_expression());
@@ -1099,11 +1113,80 @@ impl Tr<'_> {
             }
             Callee::LocalFn => {
                 let callee = self.expr(&call.callee);
+                let labels = match &call.callee {
+                    Expression::Identifier(id) => self.labelled.get(id.name.as_str()).cloned(),
+                    _ => None,
+                };
+                // A function with labelled parameters (`Tr::labelled`): an object's fields,
+                // or a value's, by label.
+                if let Some(labels) = labels {
+                    match call.arguments.as_slice() {
+                        [Argument::ObjectExpression(o)] => {
+                            return format!("{callee}({})", self.named_args(o));
+                        }
+                        [Argument::Identifier(v)] => {
+                            let whole = self.whole_props_fields(&v.name).is_some();
+                            let value = if whole {
+                                String::new()
+                            } else {
+                                self.expr(call.arguments[0].to_expression())
+                            };
+                            let args: Vec<String> = labels
+                                .iter()
+                                .map(|(k, ..)| {
+                                    if whole {
+                                        format!("{k}: {}", self.name(k, v.span))
+                                    } else {
+                                        format!("{k}: {value}.{k}")
+                                    }
+                                })
+                                .collect();
+                            return format!("{callee}({})", args.join(", "));
+                        }
+                        _ => {}
+                    }
+                }
                 let args = self.positional(&call.arguments, true);
                 format!("{callee}({args})")
             }
             Callee::Ts => self.ts_call(call),
         }
+    }
+
+    /// The written-out props of the view's props parameter `name` (see [`Scope::props_fields`]).
+    fn whole_props_fields(&self, name: &str) -> Option<Vec<String>> {
+        (self.scope.props.as_deref() == Some(name) && !self.scope.props_fields.is_empty())
+            .then(|| self.scope.props_fields.clone())
+    }
+
+    /// A call's object for a view with rest props: its own props by name, the other fields
+    /// as one record, `rest: { … }`.
+    fn rest_args(&mut self, o: &ObjectExpression, rest: &str, own: &[String]) -> String {
+        let mut named = Vec::new();
+        let mut others = Vec::new();
+        for property in &o.properties {
+            let text = match property {
+                ObjectPropertyKind::ObjectProperty(p) => {
+                    let key = match &p.key {
+                        PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
+                        _ => None,
+                    };
+                    let value = self.expr(&p.value);
+                    match key {
+                        Some(k) if own.contains(&k) => {
+                            named.push(format!("{k}: {value}"));
+                            continue;
+                        }
+                        Some(k) => format!("{k}: {value}"),
+                        None => return self.named_args(o),
+                    }
+                }
+                ObjectPropertyKind::SpreadProperty(_) => return self.named_args(o),
+            };
+            others.push(text);
+        }
+        named.push(format!("{rest}: {{ {} }}", others.join(", ")));
+        named.join(", ")
     }
 
     /// A call by TypeScript's convention: a trailing object literal is named arguments.
