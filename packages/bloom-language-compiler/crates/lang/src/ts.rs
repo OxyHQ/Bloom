@@ -1193,6 +1193,34 @@ impl Mapper<'_> {
         None
     }
 
+    /// The file and declaration of the type a module exports as `name`, through re-exports
+    /// (`export type { SurfaceRenderFn } from './types'`), `import`/`export` pairs and
+    /// `export *` (R5).
+    fn exported_type(&mut self, file: &Rc<TsFile>, name: &str, depth: usize) -> Option<(Rc<TsFile>, String)> {
+        if depth > 12 {
+            return None;
+        }
+        match file.exports.get(name).cloned() {
+            Some(Export::Local(local)) if file.decls.contains_key(&local) => Some((file.clone(), local)),
+            Some(Export::Local(local)) => {
+                let (specifier, imported) = file.imports.get(&local)?.clone();
+                let target = self.open(&file.path, &specifier)?;
+                self.exported_type(&target, &imported, depth + 1)
+            }
+            Some(Export::From(specifier, imported)) => {
+                let target = self.open(&file.path, &specifier)?;
+                self.exported_type(&target, &imported, depth + 1)
+            }
+            None if file.exports.is_empty() && file.decls.contains_key(name) => {
+                Some((file.clone(), name.to_string()))
+            }
+            None => file.stars.clone().iter().find_map(|star| {
+                let target = self.open(&file.path, star)?;
+                self.exported_type(&target, name, depth + 1)
+            }),
+        }
+    }
+
     fn function(
         &mut self,
         file: &Rc<TsFile>,
@@ -1395,7 +1423,7 @@ impl Mapper<'_> {
         }
         if let Some((specifier, imported)) = file.imports.get(name).cloned()
             && let Some(target) = self.open(&file.path, &specifier)
-            && let Some(local) = exported_local(&target, &imported)
+            && let Some(local) = self.exported_type(&target, &imported, depth)
         {
             let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
             let (target, local) = local;
@@ -1697,14 +1725,6 @@ pub fn bloom_export(
             follow(specifier, imported)
         }
         None => file.stars.iter().find_map(|star| follow(star, name)),
-    }
-}
-
-/// The file and local declaration an export names, following re-exports.
-fn exported_local(file: &Rc<TsFile>, name: &str) -> Option<(Rc<TsFile>, String)> {
-    match file.exports.get(name)? {
-        Export::Local(local) => Some((file.clone(), local.clone())),
-        Export::From(_, _) => None,
     }
 }
 

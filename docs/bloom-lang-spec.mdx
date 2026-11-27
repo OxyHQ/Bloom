@@ -405,6 +405,12 @@ is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary in
 (`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,
 fits a dictionary when each of its fields fits `V` (`let GAPS: [String: Float] = SPACING`).
 
+A TS type named through re-exports (`export type { SurfaceRenderFn } from './types'` in a
+module's index, an `import`/`export` pair, `export *`) is the declaration it names, so a
+callback alias types a closure's parameters: with `presentSheet(render: SurfaceRenderFn)` and
+`SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
+surface.dismiss() }` reads `surface` as a `SurfaceControls`.
+
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
 Platform: PlatformType; declare type Platform = typeof Platform`) are both read, the value
