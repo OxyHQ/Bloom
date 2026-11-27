@@ -348,6 +348,9 @@ pub struct CheckResult {
     pub elements: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
+    /// Objects a member or method reads through an optional chain (`a?.b` in `a?.b.c`): `none`
+    /// at run time when an earlier `?.` was.
+    pub chain_links: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
     pub builder_props: HashSet<Span>,
     /// Trailing builders of a TS component that fill a node prop other than `children`
@@ -5707,7 +5710,10 @@ impl<'o> Checker<'o> {
             return None;
         }
         match self.resolve(ty) {
-            Ty::Option(inner) => Some(self.resolve(&inner)),
+            Ty::Option(inner) => {
+                self.out.chain_links.insert(object.id);
+                Some(self.resolve(&inner))
+            }
             _ => None,
         }
     }

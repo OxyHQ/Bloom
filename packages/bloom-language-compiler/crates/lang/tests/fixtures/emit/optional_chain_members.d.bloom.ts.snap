@@ -1,0 +1,36 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface QueryResult<T> {
+  readonly data: T | undefined;
+  readonly isLoading: boolean;
+}
+export interface QueryOptions<T> {
+  readonly queryKey: readonly string[];
+  readonly queryFn: () => Promise<T>;
+  readonly enabled?: boolean | undefined;
+  readonly staleTime?: number | undefined;
+  readonly retry: number;
+}
+export declare function useQuery<T>(options: QueryOptions<T>): QueryResult<T>;
+export interface Post {
+  readonly id: string;
+  readonly title: string;
+}
+export declare function Post$shout(self: Post): string;
+export interface Feed {
+  readonly items: readonly Post[];
+  readonly tags: Readonly<Record<string, number>>;
+  readonly name: string;
+}
+export declare function count(result: QueryResult<readonly Post[]>): number;
+export declare function empty(feed: Feed | undefined): boolean;
+export declare function tagCount(feed: Feed | undefined): number;
+export declare function lastId(feed: Feed | undefined): string | undefined;
+export declare function shout(post: Post | undefined): string | undefined;
+export declare function number(feed: Feed | undefined): number | undefined;
+export declare function isEmpty(posts: (readonly Post[]) | undefined): boolean | undefined;
+export declare function firstId(posts: (readonly Post[]) | undefined): string | undefined;
+export interface QueryCountProps {
+  readonly id: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(QueryCount())`), or from TSX as `toElement(QueryCount())`. */
+export declare const QueryCount: (props: QueryCountProps) => ComposedView;
