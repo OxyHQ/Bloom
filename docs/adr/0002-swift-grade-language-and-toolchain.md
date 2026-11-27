@@ -333,11 +333,17 @@ The gate is **more than 80%**.
 | 2026-11-27 | the same, with #1021 (on #1017: generic views, the corpus follow-ups) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
 | 2026-11-27 | #1007 rebased on main 7742f55fe (#1017, #1019 merged); `--from 0.x` names a default export and rewrites its importers; with #1021 (1caebfbb1) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
 | 2026-11-27 | the same, with #1026 (on #1021: none-defaulted fields optional, TS `T \| null` as `T?`, keyword field names, a `Foreign` value fits a record field) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = **53.7%** |
+| 2026-11-27 | #1007 on main b448b98c4 (#1021 merged): `Array.from({ length })` as a range, `xs = xs.add(x)` on a `Set` as `inserting`; with #1028 (38b9fff4f, on #1026: a TS component's trailing builder is its children, ranges, memo bytes) | 324 files (fd8a4290f) | 39.5% (+13.9% review) = **53.4%** (see below) |
 
-The rate counts a file the compiler accepts. One emit bug found on 2026-11-27 (a TS function
-component drawn with a trailing builder is called as a function, and its builder's nodes are
-dropped; Mention's PostActions) means some "migrated" files may still draw wrongly. The
-port's measurements (pixels, tests) are what catch that, not the rate.
+The rate counts a file the compiler accepts, so a miscompile can hide in it. One was found on
+2026-11-27: a TS function component drawn with a trailing builder was called as a plain function,
+and its builder's nodes were dropped (Mention's PostActions drew an empty bar). #1028 fixes it.
+Its re-check of every migrated and review file (an emit diff) found 13 files that had been
+counted while drawing wrongly: 9 had dropped nodes and 4 ran a component as a plain call. All 13
+now compile to components. Only PostActions has been render-checked so far (Mention #2049,
+PostActionsShape 4/4). The other 12 count in the 53.4% line but are not verified until each one
+renders correctly in Mention's harness. The port's measurements (pixels, tests) catch this kind
+of bug; the rate does not.
 
 Most refusals come from bloomc's errors on the draft. On 2026-11-26 that was 133 of 221
 refused files, and the largest single cause was an indexed array read typing as `T?` where
