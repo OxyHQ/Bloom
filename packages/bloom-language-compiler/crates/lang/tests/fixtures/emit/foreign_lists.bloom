@@ -1,0 +1,27 @@
+// A list of TS values where a typed list is expected (`[Account]`, `[String]`), and a function
+// given a TS value where it takes a typed one (`accounts.map(row)`): accepted as a single TS
+// value is, with a `satisfies` so tsc checks them (spec 4.7).
+import { AccountList, useAccounts, type Account } from "@/corpus"
+
+public func names(_ accounts: [Account]) -> [String] {
+  accounts.map { a in a.name }
+}
+
+public func row(_ account: Account) -> View {
+  Text(account.name)
+}
+
+public struct Accounts: View {
+  let query = useAccounts()
+
+  var body: some View {
+    let accounts = query.data ?? []
+    VStack {
+      Text("\(names(accounts).count)")
+      AccountList(accounts: accounts)
+      let ids = Set<String>(accounts.map { a in a.id })
+      Text("\(ids.count)")
+      for item in accounts.map(row) { item }
+    }
+  }
+}

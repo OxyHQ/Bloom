@@ -2096,8 +2096,11 @@ impl<'a> Emitter<'a> {
             // checks the record where it lands (a TS type's `T | null` field).
             let optional = matches!(ty, Ty::Option(_));
             let field = optional && self.field_value == Some(expr.id);
+            let function = matches!(ty, Ty::Fn(_));
             let ty = self.ts_type(&ty);
-            if ty != "unknown" {
+            // A function is checked only when its TS type is written out: an `unknown`
+            // parameter would refuse the typed one it is given (TS checks where it lands).
+            if ty != "unknown" && !(function && ty.contains("unknown")) {
                 // An operand already `T | undefined` (a checked optional, or a `??` chain ending
                 // in one) is not `?? undefined` again: TS calls that always nullish (TS2871).
                 if optional && !field && !self.ends_undefined(expr) {
@@ -3844,6 +3847,15 @@ impl<'a> Emitter<'a> {
         for (index, stmt) in stmts.iter().enumerate() {
             match &stmt.kind {
                 StmtKind::Let(_) => self.stmt(stmt),
+                // A last line that is a list of views (`Menu { glyph; rows }`) fills the rest
+                // parameter as its items, `...rows`, as a last `for` does: siblings, no slot.
+                StmtKind::Expr(expr)
+                    if rest && last == Some(index) && self.ck.view_lists.contains(&expr.id) =>
+                {
+                    let mut line = Frag::of("...");
+                    line.f(self.scoped_child(expr));
+                    out.push(line);
+                }
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);

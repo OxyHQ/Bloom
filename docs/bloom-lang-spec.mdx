@@ -359,7 +359,11 @@ return), and there the emitter writes a checked boundary, `(expr satisfies T)`, 
 TypeScript checker verifies it against the real `.d.ts` and its diagnostic maps back to the
 `.bloom` span. Where nothing is expected (`let x = foreignCall()`) the value stays `Foreign`,
 and using it as a Bloom value with no expected type (an operator, a `match`, a member of a Bloom
-type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
+type) is B0601 with the fix "annotate it: `let x: T = …`". A list of TS values where a typed
+list is expected (`accounts: data ?? []` for an `[Account]`, `Set<String>(ids)`), and a function
+whose parameter is typed where the expected one is a TS value (`bans.map(renderBan)` with
+`renderBan(_ ban: CommunityBan)`) are accepted too, each checked by `satisfies` (`readonly Account[]`, the
+function's TS type when TS's is written out). Nothing crosses unchecked: Bloom code
 is checked by bloomc, and every crossing by `tsc`.
 
 **`null` (2.0).** Bloom's `T?` is `T | undefined`, and Bloom code never makes a `null`. A TS
@@ -784,7 +788,12 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
 - A trailing closure passed to a parameter of type `Children` is a **builder**: each line is a
   child (`View`, `View?` or `[View]`); `if`/`else`, `match` and `for … in` lines build
   conditional and repeated children; `let` lines bind locals. `VStack { a; b }` is
-  `VStack(a, b)`. A conditional keeps its slot (structural identity, as SwiftUI does).
+  `VStack(a, b)`. A conditional keeps its slot (structural identity, as SwiftUI does). A
+  `[View]` line that is a builder's last fills the rest parameter as its items, as a last `for`
+  does (`HStack { title; rows }` is `HStack(title, ...rows)`: siblings, no wrapper); elsewhere
+  it is one child, a list. A `[View]` is a child wherever one goes: a conditional's branch
+  (`loading ? Text("…") : names.map(row)`), a node's children argument, and `Embed`'s value,
+  which takes a React node (`toElement(…)`).
 - **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
