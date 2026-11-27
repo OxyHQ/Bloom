@@ -1,0 +1,4 @@
+import type { PermissionPost } from "@/types/permission";
+export declare function permission(post: PermissionPost): readonly ("anyone" | "followers" | "following" | "mentioned" | "nobody")[];
+export declare function canReply(post: PermissionPost): boolean;
+export declare function nobody(): ("anyone" | "followers" | "following" | "mentioned" | "nobody") | undefined;

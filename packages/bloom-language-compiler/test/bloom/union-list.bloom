@@ -1,0 +1,6 @@
+import { type PermissionPost, type ReplyPermission } from "./permission"
+
+/// `?? ["anyone"]` beside a TS list of a literal union (PostMenu's `replySettingsRows`).
+public func permission(_ post: PermissionPost) -> [ReplyPermission] {
+  post.metadata?.replyPermission ?? ["anyone"]
+}

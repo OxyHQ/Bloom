@@ -4402,8 +4402,14 @@ impl<'o> Checker<'o> {
                 )
             }
             ExprKind::List(items) => {
+                // Where a `[T]?` is expected (`xs ?? ["anyone"]` beside a TS `ReplyPermission[]`), the
+                // list is a `[T]`: its literals take `T` (a string literal union) as one would.
                 let elem = match &expected_resolved {
                     Some(Ty::List(elem)) => (**elem).clone(),
+                    Some(Ty::Option(inner)) => match self.resolve(inner) {
+                        Ty::List(elem) => *elem,
+                        _ => self.fresh(),
+                    },
                     _ => self.fresh(),
                 };
                 for item in items {
