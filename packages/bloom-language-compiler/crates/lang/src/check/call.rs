@@ -29,6 +29,12 @@ impl Checker<'_> {
             // `f?.(…)`: the call of `f`'s value when it is not `none`.
             let ty = self.expr(&call.callee, None);
             let end = call.callee.span.end;
+            // `props.onOpen?.()` where TS says `onOpen` is always there: kept.
+            let ty = match self.resolve(&ty) {
+                Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown => ty,
+                other if self.ts_claimed(&call.callee, &ty) => Ty::Option(Box::new(other)),
+                _ => ty,
+            };
             return match self.optional_target(&ty, call.callee.span, (Span::new(end, end + 2), "")) {
                 Some(inner) => {
                     let ret = self.value_call(expr, call, &inner);
@@ -45,6 +51,12 @@ impl Checker<'_> {
                 // `x?.m(…)`: the method of `x`'s value when it is not `none`.
                 let recv = self.expr(object, None);
                 let fix = (Span::new(member.span.start - 2, member.span.start), ".");
+                // `viewPost.authors?.map(…)` where TS says `authors` is always there: kept.
+                let recv = match self.resolve(&recv) {
+                    Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown => recv,
+                    other if self.ts_claimed(object, &recv) => Ty::Option(Box::new(other)),
+                    _ => recv,
+                };
                 match self.optional_target(&recv, member.span, fix) {
                     Some(inner) => {
                         let ret = self.member_call(expr, call, &inner, member, object.span, false, true);

@@ -1008,7 +1008,8 @@ impl<'a> Formatter<'a> {
             | ExprKind::Force(_)
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
-            | ExprKind::Index(..) => self.chain(e, context),
+            | ExprKind::Index(..)
+            | ExprKind::OptIndex(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1088,7 +1089,11 @@ impl<'a> Formatter<'a> {
                     current = inner;
                 }
                 ExprKind::Index(inner, index) => {
-                    links.push(Link::Index(index));
+                    links.push(Link::Index(index, false));
+                    current = inner;
+                }
+                ExprKind::OptIndex(inner, index) => {
+                    links.push(Link::Index(index, true));
                     current = inner;
                 }
                 ExprKind::Try(inner) => {
@@ -1120,9 +1125,10 @@ impl<'a> Formatter<'a> {
                         None => lines.last_mut().expect("head").push(dot),
                     }
                 }
-                Link::Index(index) => {
+                Link::Index(index, optional) => {
                     let index = self.expr(index);
-                    lines.last_mut().expect("head").extend([text("["), index, text("]")]);
+                    let open = if *optional { "?[" } else { "[" };
+                    lines.last_mut().expect("head").extend([text(open), index, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
                 Link::Force => lines.last_mut().expect("head").push(text("!")),
@@ -1471,8 +1477,13 @@ enum Context {
 }
 
 enum Link<'e> {
-    Member { name: &'e Ident, optional: bool, call: Option<&'e Call> },
-    Index(&'e Expr),
+    Member {
+        name: &'e Ident,
+        optional: bool,
+        call: Option<&'e Call>,
+    },
+    /// `[i]`, or `?[i]` (optional).
+    Index(&'e Expr, bool),
     Try,
     Force,
 }
