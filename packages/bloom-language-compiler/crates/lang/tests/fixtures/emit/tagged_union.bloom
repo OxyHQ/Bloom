@@ -1,0 +1,66 @@
+// A `match` on a TS discriminated union's tag narrows the value as a Bloom enum's cases would
+// (lang-mention-9's match-ts-union, PostMenu's `submenuRows`): the cases are the members' tags,
+// each arm reads its member's own fields (`rows.sources`, a list: `.count` is `.length`), and a
+// missing tag is B0301. It is JS's tests on the tag, which TS narrows the same way.
+import { type SubmenuRows } from "@/types/rows"
+
+public func count(_ rows: SubmenuRows) -> Int {
+  switch rows.kind {
+  case "sources":
+    return rows.sources.count
+  case "replySettings":
+    return rows.postId.count
+  case "lane":
+    return (rows.label ?? rows.laneId).count
+  }
+}
+
+public func describe(_ rows: SubmenuRows) -> String {
+  match rows.kind {
+    case "sources" => rows.sources.map { s in s.url }.joined(separator: ", ")
+    case _ => rows.kind
+  }
+}
+
+// An `if` on the tag narrows its block, and a test that returns early narrows the rest, as TS's.
+public func firstSource(_ rows: SubmenuRows) -> String? {
+  if rows.kind == "sources" {
+    return rows.sources.first?.url
+  }
+  return none
+}
+
+public func lane(_ rows: SubmenuRows) -> String {
+  if rows.kind != "lane" {
+    return ""
+  }
+  return rows.laneId
+}
+
+// A field every member has is the union's: read without narrowing (lang-mention-9's
+// fediverse/transparency regression).
+import { type Block, type Variant, type Prefs, PREF_KEYS } from "@/types/rows"
+
+public func domain(_ block: Block) -> String { block.domain }
+
+// A member chain narrows on its tag as a name does (VariantEditor's `item.media`).
+public func ownMedia(_ item: Variant) -> [String]? {
+  item.media.mode == "override" ? item.media.media : none
+}
+
+public func alt(_ item: Variant, _ id: String) -> String? {
+  switch item.media.mode {
+  case "inherit":
+    return item.media.alt[id]
+  case "override":
+    return none
+  }
+}
+
+// An element of a TS value Bloom does not map, written in place as TS writes it
+// (EmbedConsentDialog's `patch[key] = "show"`).
+public func showAll() -> Prefs {
+  var patch: Prefs = {}
+  for key in PREF_KEYS { patch[key] = "show" }
+  return patch
+}

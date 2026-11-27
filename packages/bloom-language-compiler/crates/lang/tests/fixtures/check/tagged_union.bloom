@@ -1,0 +1,12 @@
+// A `match` on a TS discriminated union's tag is exhaustive over its members' tags, and a member's
+// own field is read only in its arm.
+import { type SubmenuRows } from "@/types/rows"
+
+public func count(_ rows: SubmenuRows) -> Int {
+  switch rows.kind {
+  case "sources":
+    return rows.laneId.count
+  case "replySettings":
+    return 1
+  }
+}
