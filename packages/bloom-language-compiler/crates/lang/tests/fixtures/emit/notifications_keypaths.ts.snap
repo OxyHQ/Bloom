@@ -36,8 +36,8 @@ const router = useSettingsRouter();
 const { canUsePrivateApi, isPrivateApiPending } = useAuth();
 const section = useViewerSettingsSection("notificationPreferences");
 const stored: Partial<Prefs> = (section.value satisfies Partial<Prefs>);
-const loading: boolean = (section.isLoading satisfies boolean);
-const update: (p0: Partial<Prefs>) => Promise<void> = (section.update satisfies (p0: Partial<Prefs>) => Promise<void>);
+const loading: boolean = section.isLoading;
+const update: (p0: Partial<Prefs>) => Promise<void> = section.update;
 const [saving, setSaving] = useState<boolean>(false);
 let prefs: Prefs;
 if ($[0] !== stored) {

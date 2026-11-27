@@ -1,8 +1,17 @@
-// A test stub of react-i18next's surface the fixtures use (the real
-// TFunction is a conditional type, which Bloom reads as Foreign).
-export type TFunction = (key: string, options?: { defaultValue?: string }) => string;
-export interface UseTranslationResponse {
-  t: TFunction;
-  ready: boolean;
+// A test stub of react-i18next's surface, shaped as the real one: `useTranslation` is a const
+// of a conditional type, and its result a tuple intersected with a record. Bloom reads it as
+// `{ t: (String, options?) -> String, i18n, ready: Bool }`.
+type Namespace = string | readonly string[];
+type SelectorMode = true | 'optimize' | 'strict';
+type EnableSelector = false;
+export interface TFunction<_Ns = Namespace> {
+  (key: string, options?: { defaultValue?: string; [option: string]: unknown }): string;
 }
-export declare function useTranslation(): UseTranslationResponse;
+export type UseTranslationResponse<Ns> = [t: TFunction<Ns>, i18n: unknown, ready: boolean] & {
+  t: TFunction<Ns>;
+  i18n: unknown;
+  ready: boolean;
+};
+export declare const useTranslation: EnableSelector extends SelectorMode
+  ? <Ns extends Namespace>(ns?: Ns) => UseTranslationResponse<Ns>
+  : <Ns extends Namespace>(ns?: Ns) => UseTranslationResponse<Ns>;

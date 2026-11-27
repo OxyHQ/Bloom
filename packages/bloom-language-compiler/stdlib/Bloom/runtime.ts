@@ -441,6 +441,48 @@ export function errorBody(error: unknown): string | undefined {
   return typeof body === 'string' ? body : undefined;
 }
 
+/** The response of an `HTTPError` (the standard library's, or a TS client's). */
+interface ErrorResponse {
+  readonly status: number;
+  readonly headers: Record<string, string>;
+  readonly text: string;
+}
+
+/**
+ * The `HTTPError` an error is (`as? HTTPError`): one `HTTPClient` threw, or a TS client's
+ * whose `response` has a numeric status (Axios's: `response.data`, `response.headers`), its
+ * body as text; else `undefined`.
+ */
+export function httpErrorFrom(
+  error: unknown,
+): { status: number; body: string; message: string; response: ErrorResponse } | undefined {
+  if (error === null || typeof error !== 'object') return undefined;
+  const e = error as {
+    status?: unknown;
+    body?: unknown;
+    message?: unknown;
+    response?: { status?: unknown; data?: unknown; headers?: unknown; text?: unknown };
+  };
+  const message = typeof e.message === 'string' ? e.message : '';
+  const response = e.response;
+  if (typeof e.status === 'number' && typeof e.body === 'string' && response !== undefined) {
+    return e as { status: number; body: string; message: string; response: ErrorResponse };
+  }
+  if (response === null || typeof response !== 'object' || typeof response.status !== 'number') {
+    return undefined;
+  }
+  const data = response.data ?? response.text;
+  const text = typeof data === 'string' ? data : data === undefined ? '' : JSON.stringify(data);
+  const headers: Record<string, string> = {};
+  if (response.headers !== null && typeof response.headers === 'object') {
+    for (const [name, value] of Object.entries(response.headers as Record<string, unknown>)) {
+      if (typeof value === 'string') headers[name.toLowerCase()] = value;
+    }
+  }
+  const status = response.status;
+  return { status, body: text, message, response: { status, headers, text } };
+}
+
 // ---- concurrency --------------------------------------------------------------
 
 /** Resolves after `ms`; rejects with a `CancellationError` when `signal` aborts first. */

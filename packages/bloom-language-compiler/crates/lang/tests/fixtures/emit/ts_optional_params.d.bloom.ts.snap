@@ -1,0 +1,7 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface StampProps {
+  readonly at: number;
+  readonly english: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Stamp())`), or from TSX as `toElement(Stamp())`. */
+export declare const Stamp: (props: StampProps) => ComposedView;

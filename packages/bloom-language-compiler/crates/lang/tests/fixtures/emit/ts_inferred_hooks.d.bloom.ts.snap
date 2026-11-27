@@ -1,0 +1,5 @@
+import type { RowHeader } from "@/jobs/JobFormFields";
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(JobEditor())`), or from TSX as `toElement(JobEditor())`. */
+export declare const JobEditor: () => ComposedView;
+export declare function headerLine(header: RowHeader): string;

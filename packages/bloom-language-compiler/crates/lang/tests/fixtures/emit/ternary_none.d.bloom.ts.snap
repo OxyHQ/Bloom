@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface BadgeProps {
+  readonly c: boolean;
+  readonly d: boolean;
+  readonly page: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Badge())`), or from TSX as `toElement(Badge())`. */
+export declare const Badge: (props: BadgeProps) => ComposedView;
+export declare function salary(a: number | undefined, b: number | undefined): string;
+export declare function parts(location: string | undefined, title: string): readonly string[];

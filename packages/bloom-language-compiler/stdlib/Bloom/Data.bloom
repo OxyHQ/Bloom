@@ -1,5 +1,5 @@
 // Bloom (data): `@Model` types held by key, read by `@Query`, filled by a `Source`,
-// changed optimistically by an `Action`, and fed by `Realtime` events.
+// changed optimistically by a `Mutation`, and fed by `Realtime` events.
 //
 //     @Model public struct Post: Codable {
 //       @Attribute(.unique) public let id: String
@@ -35,8 +35,8 @@ extern module "./models" {
   private func sourceRefresh<T>(_ source: SourceHandle<T>) async throws
   private func sourceMore<T>(_ source: SourceHandle<T>) async throws
   private func useSourceQuery<T>(_ source: SourceHandle<T>) -> [T]
-  private func actionMake<A, R>(_ name: String, _ optimistic: ((A) -> Unit)?, _ perform: (A) async throws -> R) -> ActionHandle<A, R>
-  private func actionRun<A, R>(_ action: ActionHandle<A, R>, _ argument: A) async throws -> R?
+  private func actionMake<A, R>(_ name: String, _ optimistic: ((A) -> Unit)?, _ perform: (A) async throws -> R) -> MutationHandle<A, R>
+  private func actionRun<A, R>(_ mutation: MutationHandle<A, R>, _ argument: A) async throws -> R?
   private func keyName<T, V>(_ path: KeyPath<T, V>?) -> String?
   private func realtimeListen(_ socket: EventSocket, _ handlers: [String: (JSONValue) -> Unit]) -> () -> Unit
 }
@@ -47,8 +47,8 @@ public type ModelHandle<T> = Foreign<"any">
 /// The data layer's server list.
 public type SourceHandle<T> = Foreign<"any">
 
-/// The data layer's action.
-public type ActionHandle<A, R> = Foreign<"any">
+/// The data layer's mutation (its `action`).
+public type MutationHandle<A, R> = Foreign<"any">
 
 /// What `Realtime` listens on: a socket with `on(event, listener)` and `off` (socket.io's).
 public type EventSocket = Foreign<"import('@oxy.so/bloom-data').EventSocket">
@@ -81,7 +81,7 @@ extension ModelStore {
   /// Stores every one of `records`.
   public func insertAll(_ records: [T]) { modelInsert(self.handle, records) }
 
-  /// Replaces the record `id` by `change` of it. Inside an `Action`'s `optimistic`, the
+  /// Replaces the record `id` by `change` of it. Inside a `Mutation`'s `optimistic`, the
   /// change is the action's, rolled back when it fails. Whether `id` was held.
   public func update(_ id: String, _ change: (T) -> T) -> Bool { modelUpdate(self.handle, id, change) }
 
@@ -154,27 +154,28 @@ extension Source {
 public func useSource<T>(_ source: Source<T>) -> [T] { useSourceQuery(source.handle) }
 
 /// A change shown at once (`optimistic`, on `@Model` stores) and settled by `perform`: when
-/// it throws, the optimistic change is rolled back.
+/// it throws, the optimistic change is rolled back. (Named as Services' `run`; BloomUI's
+/// `Action` is the action bar's node.)
 ///
-///     let like = Action.make("like", optimistic: { (post: Post) in
+///     let like = Mutation.make("like", optimistic: { (post: Post) in
 ///       _ = Post.store.update(post.id) { $0.liked(!post.isLiked) }
 ///     }) { post in try await api.post("posts/\(post.id)/like") }
 ///     await like.run(post)
-public struct Action<Input, Output> {
+public struct Mutation<Input, Output> {
   public let name: String
-  let handle: ActionHandle<Input, Output>
+  let handle: MutationHandle<Input, Output>
 }
 
-extension Action {
+extension Mutation {
   public static func make(
     _ name: String,
     optimistic: ((Input) -> Unit)? = none,
     _ perform: (Input) async throws -> Output,
-  ) -> Action<Input, Output> {
-    Action(name: name, handle: actionMake(name, optimistic, perform))
+  ) -> Mutation<Input, Output> {
+    Mutation(name: name, handle: actionMake(name, optimistic, perform))
   }
 
-  /// Runs the action: its result, or `none` when it failed (and was rolled back).
+  /// Runs the mutation: its result, or `none` when it failed (and was rolled back).
   public func run(_ input: Input) async -> Output? {
     do {
       return try await actionRun(self.handle, input)

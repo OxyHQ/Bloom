@@ -1,0 +1,4 @@
+/// A hook in another module whose result TS names with `ReturnType`.
+pub fn useRowHeader(title: String) {
+  { title: title, count: 1 }
+}

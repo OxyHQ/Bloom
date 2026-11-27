@@ -1,0 +1,31 @@
+// A nested conditional ending in `none` (R3): `c ? "x" : d ? "y" : none` is the optional of
+// the branches joined, as TS's `c ? "x" : d ? "y" : null` is `"x" | "y" | null`.
+public struct Badge: View {
+  let c: Bool
+  let d: Bool
+  let page: Int
+
+  var body: some View {
+    let label = c ? "x" : d ? "y" : none
+    let size = c ? 1 : d ? 2.5 : none
+    let next = c ? none : d ? page + 1 : page
+    let named: String? = c ? "a" : d ? "b" : none
+    VStack {
+      Text(label ?? "")
+      Text("\(size ?? 0) \(next ?? 0) \(named ?? "")")
+    }
+  }
+}
+
+// A chain of three ending in `none`, and list items of `c ? x : none` beside `String`s.
+public func salary(a: Int?, b: Int?) -> String {
+  let amount = a != none && b != none ? "\(a)–\(b)" : a != none ? "\(a)+" : b != none ? "Up to \(b)" : none
+  amount ?? ""
+}
+
+func place(_ s: String) -> String { s.uppercased() }
+
+public func parts(location: String?, title: String) -> [String] {
+  let items = [location != none ? place(location) : none, title]
+  items.compactMap { $0 }
+}

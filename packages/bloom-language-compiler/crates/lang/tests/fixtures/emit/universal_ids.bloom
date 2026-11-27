@@ -1,0 +1,30 @@
+// `.id()` on any node in a `for` (R4): a node that chains no universal modifiers
+// (`GroupedSectionItem`), a view, and a TS component, as 0.x's `key=`.
+import { JobFormFields } from "@/jobs/JobFormFields"
+import { useJobForm } from "@/jobs/jobForm"
+
+struct Line: View {
+  let title: String
+  var body: some View { Text(title) }
+}
+
+public struct Ids: View {
+  let ids: [String]
+  let form = useJobForm()
+
+  var body: some View {
+    VStack {
+      GroupedSection {
+        for id in ids {
+          GroupedSectionItem(id).id(id)
+        }
+      }
+      for id in ids {
+        Line(title: id).id(id)
+      }
+      for id in ids {
+        JobFormFields(form: form).id(id)
+      }
+    }
+  }
+}

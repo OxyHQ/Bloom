@@ -290,6 +290,11 @@ pub struct CheckResult {
     pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
     pub is_tests: HashMap<ExprId, Ty>,
+    /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
+    pub casts: HashMap<ExprId, Rc<str>>,
+    /// `catch let e as T` with a `T` that casts (keyed by the catch's span): its `cast`, which
+    /// tests the error (a catch of any other `T` types it, as a typed `throws(T)` does).
+    pub catch_casts: HashMap<Span, Rc<str>>,
     /// `if x is T`: the narrowed local and the one it narrows.
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
@@ -330,6 +335,9 @@ pub struct CheckResult {
     pub dependencies: BTreeSet<PathBuf>,
     /// Struct constructions passed as a record type with fewer fields (emitted through a temp).
     pub widened: HashSet<ExprId>,
+    /// Bloom views where TS takes a React element (a prop, an argument, what a TS callback
+    /// returns): emitted as `toElement(view)`.
+    pub elements: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
@@ -456,6 +464,9 @@ pub struct Checker<'o> {
     chained: HashSet<ExprId>,
     /// Checking `.ref(x)`'s argument: a `@ref` there is the ref itself.
     ref_object: bool,
+    /// The pairs of TS object types being compared field by field (a recursive interface
+    /// fits itself while it is compared).
+    structural: Vec<(DefId, DefId)>,
     /// The next closure checked is `catching { … }`'s block (its frame throws).
     pub(super) closure_throws: bool,
     /// Member chains of immutable values narrowed present (`u.name != none`): the
@@ -555,6 +566,7 @@ impl<'o> Checker<'o> {
             reported: HashSet::default(),
             chained: HashSet::default(),
             ref_object: false,
+            structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
             trying: false,
@@ -885,6 +897,24 @@ impl<'o> Checker<'o> {
             {
                 let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
                 self.fits_record(d1, &x, d2, &y)
+            }
+            // Two TS object types (`PostUser` where `ProfileCardData` is expected): TS's types
+            // are structural, so one fits the other when its fields do.
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if d1 != d2
+                    && matches!(self.out.defs[*d1].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d2].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d1].kind, DefKind::Struct(_))
+                    && matches!(self.out.defs[*d2].kind, DefKind::Struct(_)) =>
+            {
+                let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
+                if self.structural.contains(&(d1, d2)) {
+                    return true;
+                }
+                self.structural.push((d1, d2));
+                let fits = self.fits_record(d1, &x, d2, &y);
+                self.structural.pop();
+                fits
             }
             (Ty::Strings(x), Ty::Strings(y)) => {
                 Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
@@ -2596,6 +2626,13 @@ impl<'o> Checker<'o> {
                 for catch in &d.catches {
                     self.push();
                     let ty = catch.ty.as_ref().map_or(Ty::JsError, |t| self.resolve_type(t));
+                    // `catch let e as HTTPError`: a type that casts is tested (R6).
+                    if catch.ty.is_some()
+                        && catch.pattern.is_none()
+                        && let Some((func, _)) = self.cast_fn(&ty)
+                    {
+                        self.out.catch_casts.insert(catch.span, func);
+                    }
                     match (&catch.pattern, &catch.name) {
                         (Some(pattern), _) => {
                             let mut locals = Vec::new();
@@ -3587,6 +3624,11 @@ impl<'o> Checker<'o> {
                 let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
                 Ty::Strings(Rc::new(StrSet { name, values, token: false }))
             }
+            // An optional beside another type (`c ? "x" : d ? "y" : none`, R3): the optional of
+            // the two joined, as TS's `"x" | "y" | null`.
+            (Ty::Option(x), Ty::Option(y)) => Ty::Option(Box::new(self.join(x, y, span))),
+            (Ty::Option(x), _) => Ty::Option(Box::new(self.join(x, &rb, span))),
+            (_, Ty::Option(y)) => Ty::Option(Box::new(self.join(&ra, y, span))),
             _ => {
                 if !self.coerce(&rb, &ra) {
                     self.report(
@@ -3822,9 +3864,14 @@ impl<'o> Checker<'o> {
         };
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));
+        if hint.as_ref().is_some_and(is_element) && matches!(self.resolve(&ty), Ty::View(_)) {
+            self.out.elements.insert(expr.id);
+        }
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
+                // A `Foreign?` where TS takes an optional (`account: account`): TS checks it.
+                || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
                 || self.coerce(&ty, &hint);
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
@@ -3948,6 +3995,25 @@ impl<'o> Checker<'o> {
                 self.out.is_tests.insert(expr.id, ty);
                 Ty::Bool
             }
+            ExprKind::CastAs(subject, te) => {
+                let target = self.resolve_type(te);
+                let value = self.expr(subject, None);
+                match self.cast_fn(&target) {
+                    Some((func, f)) => {
+                        if let Some(param) = f.params.first()
+                            && !self.coerce(&value, &param.ty)
+                        {
+                            self.mismatch(subject.span, &value, &param.ty);
+                        }
+                        self.out.casts.insert(expr.id, func);
+                        Ty::Option(Box::new(target))
+                    }
+                    None => {
+                        self.no_cast(te.span, &target);
+                        Ty::Option(Box::new(target))
+                    }
+                }
+            }
             ExprKind::Spread(inner) => {
                 self.report(
                     Diagnostic::error("B0207", expr.span, "`..` spreads a list into a list literal")
@@ -3990,6 +4056,19 @@ impl<'o> Checker<'o> {
             },
             ExprKind::Binary(op, lhs, rhs) => self.binary(expr, *op, lhs, rhs, expected_resolved.as_ref()),
             ExprKind::Ternary(cond, then, otherwise) => {
+                // An item of a list literal (an open type): a chain that ends in `none` is the
+                // optional of its branches, so they are not held to the first one's type.
+                let open = expected.filter(|e| {
+                    matches!(self.resolve(e), Ty::Var(_)) && (ends_in_none(then) || ends_in_none(otherwise))
+                });
+                if let Some(var) = open {
+                    let var = var.clone();
+                    let joined = self.infer(expr, None);
+                    if !self.coerce(&joined, &var) {
+                        self.mismatch(expr.span, &joined, &var);
+                    }
+                    return joined;
+                }
                 self.expr(cond, Some(&Ty::Bool));
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
@@ -4006,11 +4085,16 @@ impl<'o> Checker<'o> {
                 // An `Int` branch does not hold a `Float` one to `Int` (`c ? 0 : 0.5` is `Float`).
                 let int = Ty::Int == self.resolve(&a);
                 let else_lit = expected.is_none().then(|| string_literal(otherwise)).flatten();
+                // `c ? x : d ? y : none` (R3): the rest of the chain ends in `none`, so it is held
+                // to `x`'s optional, not to `x`'s type.
+                let optional_a =
+                    (expected.is_none() && ends_in_none(otherwise)).then(|| Ty::Option(Box::new(a.clone())));
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
                     ExprKind::None => expected,
                     _ if int => expected,
+                    _ if optional_a.is_some() => optional_a.as_ref(),
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
                 self.push();
@@ -4102,8 +4186,53 @@ impl<'o> Checker<'o> {
                             other => (other.clone(), false),
                         };
                         let value = self.fresh();
-                        let key = Ty::KeyPath(Box::new(base), Box::new(value.clone()));
-                        self.expr(index, Some(&key));
+                        let key = Ty::KeyPath(Box::new(base.clone()), Box::new(value.clone()));
+                        match &index.kind {
+                            ExprKind::KeyPath { .. } => {
+                                self.expr(index, Some(&key));
+                            }
+                            // `SIZES[size]` with `size: "small" | "large"`, TS's `T[K]`: the
+                            // fields those keys name, joined.
+                            _ => {
+                                let given = self.expr(index, None);
+                                match self.resolve(&given) {
+                                    Ty::Strings(set) if !set.values.is_empty() => {
+                                        let fields = match &base {
+                                            Ty::Adt(def, args) => self.out.defs[*def]
+                                                .fields()
+                                                .iter()
+                                                .map(|f| (f.name.clone(), substitute(&f.ty, args)))
+                                                .collect::<Vec<_>>(),
+                                            _ => Vec::new(),
+                                        };
+                                        let mut joined: Option<Ty> = None;
+                                        for key_name in &set.values {
+                                            match fields.iter().find(|(n, _)| n == key_name) {
+                                                Some((_, ty)) => {
+                                                    joined = Some(match joined {
+                                                        Some(j) => self.join(&j, ty, expr.span),
+                                                        None => ty.clone(),
+                                                    });
+                                                }
+                                                None => {
+                                                    let name =
+                                                        Ident { name: key_name.clone(), span: index.span };
+                                                    self.unknown_field(&name, &base);
+                                                }
+                                            }
+                                        }
+                                        if let Some(joined) = joined {
+                                            self.unify(&value, &joined);
+                                        }
+                                    }
+                                    other => {
+                                        if !self.coerce(&other, &key) {
+                                            self.mismatch(index.span, &other, &key);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         let value = self.resolve(&value);
                         match value {
                             Ty::Option(_) => value,
@@ -4575,13 +4704,23 @@ impl<'o> Checker<'o> {
                 let left = self.expr(lhs, None);
                 match self.resolve(&left) {
                     Ty::Option(inner) => {
-                        let hint = expected.cloned().unwrap_or((*inner).clone());
+                        // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
+                        // `"x" | ""`: the two are joined (R3).
+                        let literal = matches!(self.resolve(&inner), Ty::Strings(set) if !set.token);
+                        let hint = match expected {
+                            Some(e) => e.clone(),
+                            None if literal => Ty::Str,
+                            None => (*inner).clone(),
+                        };
                         let right = self.expr(rhs, Some(&Ty::Option(Box::new(hint.clone()))));
                         let _ = right;
                         // `x ?? y` is optional only when `y` is.
                         let right_ty = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
                         match self.resolve(&right_ty) {
                             Ty::Option(_) => Ty::Option(inner),
+                            // `x ?? foreign` (`user.color ?? cached?.color`): TS's, checked where it lands.
+                            Ty::Foreign(_) => right_ty,
+                            Ty::Str | Ty::Strings(_) if literal => self.join(&inner, &right_ty, expr.span),
                             _ => {
                                 if !self.coerce(&right_ty, &inner) {
                                     self.mismatch(rhs.span, &right_ty, &inner);
@@ -5121,6 +5260,12 @@ impl<'o> Checker<'o> {
     pub(super) fn rechain(&mut self, expr: &Expr, ty: Ty) -> Ty {
         match self.resolve(&ty) {
             Ty::Option(_) | Ty::Unit | Ty::Unknown | Ty::Never => ty,
+            // A TS member read through `?.` stays `Foreign` (not `Foreign?`): TS's absence is
+            // its own, checked where the value lands (`server?.robots` beside a `String?`).
+            Ty::Foreign(_) => {
+                self.chained.insert(expr.id);
+                ty
+            }
             other => {
                 self.chained.insert(expr.id);
                 Ty::Option(Box::new(other))
@@ -5185,6 +5330,29 @@ impl<'o> Checker<'o> {
         let func = crate::extensions::mangle(&owner, name, is_static);
         let local = self.lookup(&func)?;
         Some((func.into(), local))
+    }
+
+    /// The lowered `static func cast(_ error: Error) -> T?` of `ty`'s extension, which `as? T`
+    /// and `catch let e as T` call (`HTTPError$$cast`).
+    pub(super) fn cast_fn(&mut self, ty: &Ty) -> Option<(Rc<str>, Rc<FnTy>)> {
+        let (func, local) = self.extension_fn(ty, "cast", true)?;
+        let fn_ty = self.out.locals[local].ty.clone();
+        match self.instantiate(&fn_ty) {
+            Ty::Fn(f) if f.params.len() == 1 => Some((func, f)),
+            _ => None,
+        }
+    }
+
+    fn no_cast(&mut self, span: Span, ty: &Ty) {
+        let shown = self.show(ty);
+        self.report(
+            Diagnostic::error("B0213", span, format!("`as?` casts to a type that says how, and {shown} does not"))
+                .label("no `cast` in its extensions")
+                .help(format!(
+                    "declare `extension {shown} {{ static func cast(_ error: Error) -> {shown}? {{ … }} }}`, or test a TS value with `is`"
+                ))
+                .spec("62-control-flow-and-errors-20"),
+        );
     }
 
     /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
@@ -5504,6 +5672,15 @@ impl<'o> Checker<'o> {
         let trying = std::mem::take(&mut self.trying);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
+        // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
+        // as one.
+        if is_element(&ret_resolved)
+            && let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last()
+            && let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
+            && matches!(self.resolve(&tail_ty), Ty::View(_))
+        {
+            self.out.elements.insert(tail.id);
+        }
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
             (self.resolve(&body_ty), c.body.last())
@@ -5957,6 +6134,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
+        | ExprKind::CastAs(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
@@ -6087,6 +6265,26 @@ fn exits(stmt: &Stmt) -> bool {
             ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
             _ => false,
         },
+        _ => false,
+    }
+}
+
+/// Whether a TS type is a React element (`ReactNode`, `ReactElement`, `JSX.Element`), which a
+/// Bloom view crosses into as `toElement(view)`.
+pub(crate) fn is_element(ty: &Ty) -> bool {
+    match ty {
+        Ty::Foreign(text) => text.starts_with("import(\"react\")."),
+        Ty::Option(inner) => is_element(inner),
+        _ => false,
+    }
+}
+
+/// Whether a conditional chain gives `none` in one of its branches (`d ? y : none`).
+fn ends_in_none(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::None => true,
+        ExprKind::Paren(inner) => ends_in_none(inner),
+        ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
         _ => false,
     }
 }

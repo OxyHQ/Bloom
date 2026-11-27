@@ -1,0 +1,6 @@
+// A record indexed by a union of its keys is the fields they name (TS's `T[K]`).
+public func dot(_ size: "small" | "medium" | "large", tab: "rate" | "notes") -> String {
+  let SIZES = { small: "8", medium: "10", large: "12" }
+  let title = { rate: "Rate", notes: "Notes" }[tab]
+  "\(SIZES[size]) \(title)"
+}

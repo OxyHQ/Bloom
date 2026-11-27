@@ -987,6 +987,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         ExprKind::Paren(a)
         | ExprKind::Spread(a)
         | ExprKind::Is(a, _)
+        | ExprKind::CastAs(a, _)
         | ExprKind::Unary(_, a)
         | ExprKind::Await(a)
         | ExprKind::Try(a)

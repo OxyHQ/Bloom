@@ -17,8 +17,8 @@ public func homeFeed(_ api: MentionAPI) -> Source<Post> {
 
 /// `POST` / `DELETE /posts/:id/like`: the post's like and counter change before the
 /// server answers, and come back when it refuses.
-public func likeAction(_ api: MentionAPI) -> Action<Post, Unit> {
-  Action.make("post.like", optimistic: { (post: Post) in
+public func likeMutation(_ api: MentionAPI) -> Mutation<Post, Unit> {
+  Mutation.make("post.like", optimistic: { (post: Post) in
     let changed = Post.store.update(post.id) { $0.liked(!post.isLiked) }
     if !changed { Post.store.insert(post.liked(!post.isLiked)) }
   }) { (post: Post) in
@@ -47,7 +47,7 @@ public struct AuthorPosts: View {
 /// The home feed: its posts in the server's order, re-read when one of them changes.
 public struct HomeFeed: View {
   let feed: Source<Post>
-  let like: Action<Post, Unit>
+  let like: Mutation<Post, Unit>
   @Query(feed) var posts: [Post]
 
   var body: some View {

@@ -700,6 +700,9 @@ pub enum ExprKind {
     /// `x is String`: whether a TS value is of a Bloom type (`String`, `Int`, `Float`,
     /// `Bool`, `[T]`); `if x is T { … }` narrows `x` there.
     Is(Box<Expr>, TypeExpr),
+    /// `error as? HTTPError` (2.0, Swift's conditional cast): the value as a `T`, or `none`;
+    /// `T` says how (`static func cast(_ error: Error) -> T?`).
+    CastAs(Box<Expr>, TypeExpr),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
     /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.

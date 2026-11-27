@@ -5,7 +5,7 @@ import { useInsets } from "@/hooks/useInsets";
 
 export function useTopInset(extra: number): number {
 const insets = useInsets();
-return (insets.top satisfies number) + extra;
+return insets.top + extra;
 }
 
 export function usePadding(): number {

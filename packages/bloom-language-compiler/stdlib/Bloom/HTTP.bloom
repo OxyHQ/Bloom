@@ -21,6 +21,7 @@ extern module "./runtime" {
   private func parseJSON(_ text: String) -> JSONValue
   private func errorStatus(_ error: Error) -> Int?
   private func errorBody(_ error: Error) -> String?
+  private func httpErrorFrom(_ error: Error) -> HTTPError?
 }
 
 /// What the runtime answers for a request.
@@ -62,12 +63,26 @@ public struct HTTPResponse: Equatable {
 }
 
 /// A response whose status is outside 200–299.
+///
+///     do { try await api.post("posts", json: draft) }
+///     catch let error as HTTPError { toast(error.response.status == 409 ? "Already posted" : error.message) }
+///
+/// `error as? HTTPError` reads one from any error (a TS client's too, as Axios throws it).
 public struct HTTPError: Equatable {
   public let status: Int
   /// The response's body (often the server's error JSON).
   public let body: String
   /// "GET https://…: 404".
   public let message: String
+  /// The response itself: its status, headers and body.
+  public let response: HTTPResponse
+}
+
+extension HTTPError {
+  /// The `HTTPError` an error is, or `none`: one `HTTPClient` threw, or a TS client's whose
+  /// `response` has a status (Axios's), its body as text. `as? HTTPError` and
+  /// `catch let e as HTTPError` call it.
+  public static func cast(_ error: Error) -> HTTPError? { httpErrorFrom(error) }
 }
 
 extension HTTPResponse {
@@ -123,6 +138,7 @@ extension HTTPClient {
         status: reply.status,
         body: reply.text,
         message: "\(verb(method)) \(target.absoluteString): \(reply.status)",
+        response: response,
       )
     }
     return response

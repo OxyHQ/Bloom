@@ -24,7 +24,7 @@ $[1] = mods;
 } else {
 mods = $[1];
 }
-let names: readonly NonNullable<ReturnType<typeof useMods>["data"]>[number]["name"][];
+let names: readonly string[];
 if ($[2] !== mods) {
 names = mods.map((v0) => ($fn0)(v0));
 $[2] = mods;
@@ -34,7 +34,7 @@ names = $[3];
 }
 let $t0;
 if ($[4] !== names || $[5] !== insets.top) {
-$t0 = VStack(...names.map((name) => Text(name))).padding("top", (insets.top satisfies number) + OFFSET);
+$t0 = VStack(...names.map((name) => Text(name))).padding("top", insets.top + OFFSET);
 $[4] = names;
 $[5] = insets.top;
 $[6] = $t0;

@@ -1,0 +1,11 @@
+// A TS hook's inferred result is typed (R7): its members are what TS infers, not `Foreign`.
+import { useJobForm } from "@/jobs/jobForm"
+
+public struct JobTitle: View {
+  let form = useJobForm()
+  let size: Int = form.title
+
+  var body: some View {
+    Text(form.skills.first ?? "").disabled(form.isComplete + 1)
+  }
+}

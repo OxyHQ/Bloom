@@ -285,6 +285,8 @@ export interface PickerView extends ViewModifiers<PickerView> {
 
 /** One option of a `RadioGroup`, a `Segmented` or a `Picker`. */
 export interface OptionView<V extends string = string> extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): OptionView<V>;
   /** A line under the label (a radio option's). */
   description(value: string): OptionView<V>;
   disabled(value?: boolean): OptionView<V>;
@@ -297,7 +299,11 @@ export interface OptionView<V extends string = string> extends ViewNode {
   foreground(value: ColorName): OptionView<V>;
 }
 /** A picker's options under a heading (Bloom's `SelectGroup` and `SelectLabel`). */
-export type OptionGroupView<V extends string = string> = ViewNode & { readonly __options?: V };
+export type OptionGroupView<V extends string = string> = ViewNode & {
+  readonly __options?: V;
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): OptionGroupView<V>;
+};
 export type OptionChild<V extends string> =
   | OptionView<V>
   | OptionGroupView<V>

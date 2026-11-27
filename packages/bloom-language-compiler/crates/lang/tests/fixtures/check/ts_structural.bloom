@@ -1,0 +1,10 @@
+// A TS object type fits another only with its fields, and `ViewNode` takes a view.
+import { ProfileCard, type ProfileCardData } from "@/profile"
+
+public struct Card: View {
+  let data: ProfileCardData
+
+  var body: some View {
+    ProfileCard(profile: { id: data.id }, subtitle: 1)
+  }
+}

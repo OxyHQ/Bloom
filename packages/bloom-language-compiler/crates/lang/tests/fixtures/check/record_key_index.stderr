@@ -1,0 +1,8 @@
+error[B0205]: `{ small: String }` has no field `huge`
+ --> check/record_key_index.bloom:4:9
+  |
+4 |   SIZES[size]
+  |         ^^^^ no such field
+  |
+help: its fields are `small`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

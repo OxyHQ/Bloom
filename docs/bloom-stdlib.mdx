@@ -556,11 +556,16 @@ A response: its status, headers (lower-cased names) and body.
 
 ### `struct HTTPError: Equatable`
 
-A response whose status is outside 200–299.
+A response whose status is outside 200–299.  do { try await api.post("posts", json: draft) } catch let error as HTTPError { toast(error.response.status == 409 ? "Already posted" : error.message) }  `error as? HTTPError` reads one from any error (a TS client's too, as Axios throws it).
 
 - `let status: Int`
 - `let body: String`: The response's body (often the server's error JSON).
 - `let message: String`: "GET https://…: 404".
+- `let response: HTTPResponse`: The response itself: its status, headers and body.
+
+### `extension HTTPError`
+
+- `static func cast(_ error: Error) -> HTTPError?`: The `HTTPError` an error is, or `none`: one `HTTPClient` threw, or a TS client's whose `response` has a status (Axios's), its body as text. `as? HTTPError` and `catch let e as HTTPError` call it.
 
 ### `extension HTTPResponse`
 
@@ -955,7 +960,7 @@ The address of `route` (`"/post/42"`): what a deep link or a web URL to it reads
 ## Data
 
 Bloom (data): `@Model` types held by key, read by `@Query`, filled by a `Source`,
-changed optimistically by an `Action`, and fed by `Realtime` events.
+changed optimistically by a `Mutation`, and fed by `Realtime` events.
 
 ```swift
 @Model public struct Post: Codable {
@@ -988,9 +993,9 @@ The data layer's records of one `@Model` type.
 
 The data layer's server list.
 
-### `type ActionHandle<A, R>`
+### `type MutationHandle<A, R>`
 
-The data layer's action.
+The data layer's mutation (its `action`).
 
 ### `type EventSocket`
 
@@ -1018,7 +1023,7 @@ What `@Model` writes for `T.store`: the records of `name`, keyed by `key`.
 - `func get(_ id: String) -> T?`: The record with key `id`, or `none`.
 - `func insert(_ record: T)`: Stores `record`, replacing the one with its key.
 - `func insertAll(_ records: [T])`: Stores every one of `records`.
-- `func update(_ id: String, _ change: (T) -> T) -> Bool`: Replaces the record `id` by `change` of it. Inside an `Action`'s `optimistic`, the change is the action's, rolled back when it fails. Whether `id` was held.
+- `func update(_ id: String, _ change: (T) -> T) -> Bool`: Replaces the record `id` by `change` of it. Inside a `Mutation`'s `optimistic`, the change is the action's, rolled back when it fails. Whether `id` was held.
 - `func delete(_ id: String) -> Bool`: Removes the record `id`, in memory and on disk. Whether it was held.
 - `var all: [T]`: Every record held, in the order they were first inserted.
 - `func load() async throws`: Reads the records from the device's copy (a `@Query` does this on its first read).
@@ -1054,16 +1059,16 @@ A server list of a `@Model` type's records, read a page at a time and kept on th
 
 What `@Query(source)` lowers onto: the source's records, in its order.
 
-### `struct Action<Input, Output>`
+### `struct Mutation<Input, Output>`
 
-A change shown at once (`optimistic`, on `@Model` stores) and settled by `perform`: when it throws, the optimistic change is rolled back.  let like = Action.make("like", optimistic: { (post: Post) in _ = Post.store.update(post.id) { $0.liked(!post.isLiked) } }) { post in try await api.post("posts/\(post.id)/like") } await like.run(post)
+A change shown at once (`optimistic`, on `@Model` stores) and settled by `perform`: when it throws, the optimistic change is rolled back. (Named as Services' `run`; BloomUI's `Action` is the action bar's node.)  let like = Mutation.make("like", optimistic: { (post: Post) in _ = Post.store.update(post.id) { $0.liked(!post.isLiked) } }) { post in try await api.post("posts/\(post.id)/like") } await like.run(post)
 
 - `let name: String`
 
-### `extension Action`
+### `extension Mutation`
 
-- `static func make(_ name: String, optimistic: ((Input) -> Unit)? = none, _ perform: (Input) async throws -> Output) -> Action<Input, Output>`
-- `func run(_ input: Input) async -> Output?`: Runs the action: its result, or `none` when it failed (and was rolled back).
+- `static func make(_ name: String, optimistic: ((Input) -> Unit)? = none, _ perform: (Input) async throws -> Output) -> Mutation<Input, Output>`
+- `func run(_ input: Input) async -> Output?`: Runs the mutation: its result, or `none` when it failed (and was rolled back).
 
 ### `struct Realtime`
 

@@ -126,6 +126,9 @@ const OWN_ICONS: &[&str] = &["Like", "LikeFill", "Reply", "Repost", "MediaAttach
 const ICON_ALIASES: &[(&str, &str)] = &[("verified", "verifiedBadge"), ("verifiedFill", "verifiedBadgeFill")];
 
 /// Whether `component` (`RiHeartLine`) is a glyph of Bloom's icon set.
+/// The nodes whose first parameter is an icon component, which take a glyph by name.
+const ICON_NODES: &[&str] = &["Icon", "IconCircle", "Action", "GroupedSectionIcon"];
+
 pub fn icon_exists(component: &str) -> bool {
     crate::icons::ICONS.binary_search(&component).is_ok()
 }
@@ -218,13 +221,15 @@ impl Lowering<'_> {
     fn rewrite(&mut self, e: &mut Expr) {
         let span = e.span;
         let ExprKind::Call(c) = &mut e.kind else { return };
-        // `Icon(.heart)`: the icon set's glyph.
-        if name_of(&c.callee) == Some("Icon")
-            && self.ours("Icon")
-            && let [only] = c.args.as_mut_slice()
-            && let Some(glyph) = self.glyph(&only.value)
+        // `Icon(.heart)`, `Action(.close, "Close")`: the icon set's glyph, in the nodes whose
+        // first parameter is an icon (R1).
+        if let Some(node) = name_of(&c.callee)
+            && ICON_NODES.contains(&node)
+            && self.ours(node)
+            && let Some(first) = c.args.first_mut().filter(|a| a.label.is_none())
+            && let Some(glyph) = self.glyph(&first.value)
         {
-            only.value = glyph;
+            first.value = glyph;
             return;
         }
         // `.foregroundStyle(x)` / `.lineLimit(n)`: renamed modifiers.
@@ -502,7 +507,8 @@ impl Lowering<'_> {
             | ExprKind::Throwing(_, x)
             | ExprKind::Field(x, _)
             | ExprKind::OptField(x, _)
-            | ExprKind::Is(x, _) => self.expr(x),
+            | ExprKind::Is(x, _)
+            | ExprKind::CastAs(x, _) => self.expr(x),
             ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
                 self.expr(a);
                 self.expr(b);

@@ -245,6 +245,13 @@ is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even whe
 is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
 `Int` and a `Float` branch is `Float`. A `Float` never narrows implicitly.
 
+Branches that end in `none` join to the optional of the others, nested or not, as TS's
+`string | null`: `c ? "x" : d ? "y" : none` is `("x" | "y")?`, `c ? 1 : d ? 2.5 : none` is
+`Float?`, `c ? none : d ? n + 1 : n` is `Int?`; the branches besides `none` still share one
+type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)" : b ?
+"\(y)" : none`), and so does a list item (`[c ? f(x) : none, title]` is a `[String?]`). A literal's optional falls back to any string
+(`label ?? ""` is a `String`), as TS's `"x" | ""`.
+
 ### 4.3 Soundness rules
 
 - No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
@@ -357,7 +364,9 @@ of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
-`undefined` (`SettingsSection(none, …)`). A TS
+`undefined` (`SettingsSection(none, …)`), and a TS function's optional parameter (`locale?: string`) takes
+an optional as well as its type (`formatRelativeTime(at, locale)` with `locale: String?`), as
+TS's `undefined` is `none`; a required one does not. A TS
 class that extends nothing (`ViewModifier`) is a value
 and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
 
@@ -375,10 +384,43 @@ TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
 `Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
 and the emitted TS names the type as written, so TS checks every use.
 
+A TS function with no annotated result (a hook in a `.ts` source, `export function useJobForm()
+{ … return { title, setTitle, skills, … } }`) returns what its body returns, read as TS infers
+it for the shapes hooks are written in: a `useState<T>(x)` pair is a `T` and a `(T) -> Unit`
+setter (`T` is `x`'s type without a type argument), a `useCallback(fn, …)` is `fn`, a
+`useMemo(() => x, …)` is `x`; literals, comparisons, `Boolean(…)`, `!`, `&&`/`||` of `Bool`s,
+arithmetic, ternaries and `??` join as TS's do (`c ? n : undefined` is `Float?`), and an object
+literal is a record of them. A name or a call of the module is its declaration's type or result.
+Anything else (a generic call, a spread, a method's result) is `Foreign`, named by its TS path
+(`ReturnType<typeof useJobForm>["x"]`). A generic function's result is read per use, as TS's.
+`ReturnType<typeof f>` (and `typeof x`) in a TS type is that function's result (that value's
+type), whether `f` is TS or a `.bloom` hook (through the declarations bloomc writes,
+`X.d.bloom.ts`): `type JobForm = ReturnType<typeof useJobForm>` is the record the hook returns,
+one type whichever name reaches it. An unannotated `const` of plain data (`export const GAP =
+12`, a record or list of literals) is its initializer's type (an integer literal's is an `Int`,
+`const MAX = 4`); any other stays `Foreign`. The optional of a TS type Bloom does not map
+(`T | undefined`, `x?: T`, a member read through `?.`, `server?.robots`) is `Foreign`, not
+`Foreign?`, as its parts are TS's to check; so is `x ?? foreign`.
+
+A record indexed by a union of its keys is the fields they name, joined, as TS's `T[K]`
+(`let SIZES = { small: "8", large: "12" }` then `SIZES[size]` with `size: "small" | "large"`
+is a `String`; `{ rate: "Rate", notes: "Notes" }[tab]` too); a key it does not have is B0205.
+
 A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
 is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it
 (`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,
 fits a dictionary when each of its fields fits `V` (`let GAPS: [String: Float] = SPACING`).
+
+A TS type named through re-exports (`export type { SurfaceRenderFn } from './types'` in a
+module's index, an `import`/`export` pair, `export *`) is the declaration it names, so a
+callback alias types a closure's parameters: with `presentSheet(render: SurfaceRenderFn)` and
+`SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
+surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
+one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
+`Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
+`AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
+`JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
+… }` does) crosses as one: the emitter writes `toElement(view)`.
 
 TS declarations as libraries write them (react-native's): `export * as X from "…"` is a
 namespace, `Foreign` (`StyleSheet.create({ … })`); a value and a type of one name (`declare const
@@ -501,6 +543,8 @@ parses). Visibility is `public` (other modules), `internal` (unwritten: the modu
 modules (resolved by the module graph). A file compiled on its own is its own module, so its
 `internal` names are not exported; inside a directory module they are. **In a call to a TS function, named arguments form one
 object passed last**: `t("key", defaultValue: "General")` is `t("key", { defaultValue: "General" })`.
+react-i18next's `useTranslation()` (declared with a conditional type) is read as what it gives,
+`{ t: (String, options?) -> String, i18n, ready: Bool }`: `t(…)` is a `String`.
 
 ## 6. Expressions and control flow
 
@@ -561,9 +605,14 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
 - An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
 - Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
   call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
-  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error`, `catch let e as T`
-  types it, and catches with patterns (`catch .offline`) test it in order and rethrow what none
-  matches. A function's last statement may be a `do` whose body and catches all return.
+  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error` (an `Error`),
+  `catch let e as T` types it, and catches with patterns (`catch .offline`) test it in order and
+  rethrow what none matches. A `T` that says how to read one from any error (an extension's
+  `static func cast(_ error: Error) -> T?`, as the standard library's `HTTPError` has) is tested:
+  `catch let e as HTTPError { … e.response.status … }` runs for an `HTTPError` only (one
+  `HTTPClient` threw, or a TS client's, as Axios throws it), and `error as? HTTPError` is the
+  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). `as?` to a type
+  with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
   `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
@@ -669,7 +718,11 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
   (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
-- **Icons by name (BloomUI, 2.0):** `Icon(.close)` names a glyph of Bloom's icon set; the
+- **`.id(x)` is on every node** (2.0, 0.x's `key=`), the ones that chain no universal
+  modifiers too (`GroupedSectionItem(id).id(id)`), a view and a TS component as well: in a
+  `for`, it is the repeated child's identity (`x` a `String` or a number).
+- **Icons by name (BloomUI, 2.0):** `Icon(.close)` (and the first argument of `IconCircle`,
+  `GroupedSectionIcon` and the action bar's `Action(.close, "Close")`) names a glyph of Bloom's icon set; the
   compiler imports its component (`RiCloseLine` from `@oxy.so/bloom/icons/RiCloseLine`). A file
   that also imports that component itself, from that path, keeps its one import: the two are the
   same glyph, not two declarations.
@@ -926,6 +979,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
+| data (BloomData) | `@Model` stores, `@Query`, `Source`, `Realtime`, and `Mutation.make(name, optimistic:) { … }` with `run(input)`, an optimistic change (named as Services' `run`; `Action` is BloomUI's action-bar node) |
 
 `[k: v]` is the dictionary literal (string keys). `Map` and `Set` are the prelude's JS
 collections: a method that changes one gives a new one (`setting`, `inserting`, `removing`

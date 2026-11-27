@@ -1,0 +1,24 @@
+// react-i18next's `t` gives a `String` (its declared type is conditional, read at the
+// boundary as what it gives): a record of its results is a Bloom record, not a `Foreign` one.
+import { useTranslation } from "react-i18next"
+
+struct Tab {
+  let label: String
+  let count: Int
+}
+
+public struct Tabs: View {
+  let { t } = useTranslation()
+
+  var body: some View {
+    let tabs: [Tab] = [
+      { label: t("tabs.posts", defaultValue: "Posts"), count: 1 },
+      { label: t("tabs.replies"), count: 2 },
+    ]
+    VStack {
+      for tab in tabs {
+        Text(tab.label.uppercased()).id(tab.label)
+      }
+    }
+  }
+}

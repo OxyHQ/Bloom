@@ -124,6 +124,8 @@ struct Emitter<'a> {
     statics: HashSet<ExprId>,
     /// Emitting a hoisted tree: what is inside it is not hoisted again.
     in_static: bool,
+    /// The static chain being hoisted: its `toElement` is written where it is used.
+    hoisting: Option<ExprId>,
     diagnostics: Vec<Diagnostic>,
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
@@ -183,6 +185,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         hoisted_trees: HashMap::default(),
         statics: HashSet::default(),
         in_static: false,
+        hoisting: None,
         diagnostics: Vec::new(),
         view: None,
         signal: None,
@@ -479,6 +482,8 @@ impl<'a> Emitter<'a> {
                         }
                         _ => None,
                     }))
+                    // `e as? T` and `catch let e as T`: `T$$cast`.
+                    .chain(self.ck.casts.values().chain(self.ck.catch_casts.values()).map(|f| &**f))
                     // `Box(0)`: the class's `init` (`Box$$init`).
                     .chain(self.ck.names.values().filter_map(|n| match n {
                         NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
@@ -1238,7 +1243,7 @@ impl<'a> Emitter<'a> {
             [] => {
                 line.s(" finally {}");
             }
-            [only] if only.pattern.is_none() => {
+            [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
                 line.s(&format!(" catch ({name}) ")).f(body);
@@ -1247,17 +1252,24 @@ impl<'a> Emitter<'a> {
                 line.s(" catch ($error) {\n");
                 let mut caught_all = false;
                 for (index, catch) in catches.iter().enumerate() {
-                    let test = match &catch.pattern {
-                        Some(pattern) => {
+                    // `catch let e as HTTPError`: what `HTTPError$$cast` makes of the error, when
+                    // it is one.
+                    let cast = self.ck.catch_casts.get(&catch.span).cloned();
+                    let test = match (&catch.pattern, &cast) {
+                        (Some(pattern), _) => {
                             let tests = self.pattern_test(pattern, "$error");
                             if tests.is_empty() { None } else { Some(tests.join(" && ")) }
                         }
-                        None => None,
+                        (None, Some(cast)) => Some(format!("{cast}($error) !== undefined")),
+                        (None, None) => None,
                     };
                     let mut lines = Vec::new();
                     if catch.pattern.is_none() {
                         let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
-                        lines.push(format!("const {name} = $error;"));
+                        match &cast {
+                            Some(cast) => lines.push(format!("const {name} = {cast}($error)!;")),
+                            None => lines.push(format!("const {name} = $error;")),
+                        }
                     }
                     let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
                     let head = match (&test, index) {
@@ -1869,6 +1881,11 @@ impl<'a> Emitter<'a> {
             return out;
         }
         out.f(self.expr_inner(expr));
+        // A Bloom view where TS takes a React element.
+        if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
+            self.import_name(LANGUAGE, "toElement");
+            return out.wrap("toElement(", ")");
+        }
         // A value passed as `any P`: with its conformance's witness.
         if let Some((def, protocol)) = self.ck.packs.get(&expr.id).copied() {
             let witness =
@@ -1979,6 +1996,14 @@ impl<'a> Emitter<'a> {
                 Frag::join(items, ", ").wrap("[", "] as const")
             }
             ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
+            // `x as? T`: `T`'s cast of it (`HTTPError$$cast(x)`), `undefined` when it is not one.
+            ExprKind::CastAs(subject, _) => {
+                let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
+                let value = self.expr(subject);
+                let mut out = Frag::of(func);
+                out.f(value.wrap("(", ")"));
+                out
+            }
             ExprKind::Is(subject, _) => {
                 let value = self.operand(subject);
                 if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
@@ -3812,6 +3837,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
+        | ExprKind::CastAs(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Force(e)
@@ -3988,6 +4014,7 @@ impl<'a> Emitter<'a> {
             ExprKind::Paren(e)
             | ExprKind::Spread(e)
             | ExprKind::Is(e, _)
+            | ExprKind::CastAs(e, _)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
@@ -4232,7 +4259,9 @@ impl<'a> Emitter<'a> {
     /// `expr` (a static chain) as a module constant; the same tree twice is one constant.
     fn hoist(&mut self, expr: &Expr) -> Frag {
         self.in_static = true;
+        let outer = self.hoisting.replace(expr.id);
         let value = self.child(expr);
+        self.hoisting = outer;
         self.in_static = false;
         if let Some(name) = self.hoisted_trees.get(&value.text) {
             return Frag::of(name.clone());

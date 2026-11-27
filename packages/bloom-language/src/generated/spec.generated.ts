@@ -7808,18 +7808,21 @@ export type NodeModifiers = {
     "onPress",
     "testID",
     "tag",
-    "shortcut"
+    "shortcut",
+    "id"
   ],
   "menuSubmenu": [
     "icon",
     "iconSize",
     "iconForeground",
     "disabled",
-    "testID"
+    "testID",
+    "id"
   ],
   "menuSection": [
     "title",
-    "selection"
+    "selection",
+    "id"
   ],
   "divider": [
     "padding",
@@ -7959,7 +7962,8 @@ export type NodeModifiers = {
     "defaultAction",
     "dismissible",
     "testID",
-    "icon"
+    "icon",
+    "id"
   ],
   "dialog": [
     "title",
@@ -7981,7 +7985,8 @@ export type NodeModifiers = {
     "presented",
     "control",
     "detached",
-    "panelFrame"
+    "panelFrame",
+    "id"
   ],
   "popover": [
     "label",
@@ -7989,14 +7994,16 @@ export type NodeModifiers = {
     "testID",
     "sideOffset",
     "alignOffset",
-    "frame"
+    "frame",
+    "id"
   ],
   "connectionStatus": [
     "offlineMessage",
     "reconnectingMessage",
     "restoredMessage",
     "reconnectingDelay",
-    "restoredDuration"
+    "restoredDuration",
+    "id"
   ],
   "menuContent": [],
   "menuActions": [],
@@ -8019,7 +8026,8 @@ export type NodeModifiers = {
     "tone",
     "scrimColor",
     "scrimFalloff",
-    "titleReveal"
+    "titleReveal",
+    "id"
   ],
   "bottomBar": [
     "selection",
@@ -8027,7 +8035,8 @@ export type NodeModifiers = {
     "minimize",
     "progress",
     "hide",
-    "testID"
+    "testID",
+    "id"
   ],
   "tab": [
     "activeIcon",
@@ -9034,10 +9043,12 @@ export type NodeModifiers = {
     "phases"
   ],
   "cardTitle": [
-    "lines"
+    "lines",
+    "id"
   ],
   "cardDescription": [
-    "lines"
+    "lines",
+    "id"
   ],
   "row": [
     "padding",
@@ -9320,7 +9331,8 @@ export type NodeModifiers = {
     "background",
     "border",
     "corner",
-    "opacity"
+    "opacity",
+    "id"
   ],
   "chip": [
     "padding",
@@ -9847,7 +9859,8 @@ export type NodeModifiers = {
     "padding",
     "font",
     "leading",
-    "weight"
+    "weight",
+    "id"
   ],
   "kbd": [
     "padding",
@@ -9988,7 +10001,8 @@ export type NodeModifiers = {
     "background",
     "border",
     "corner",
-    "opacity"
+    "opacity",
+    "id"
   ],
   "embed": [
     "padding",
@@ -10280,11 +10294,18 @@ export type NodeModifiers = {
     "shellPresentation",
     "panels",
     "destinations",
-    "onReselect"
+    "onReselect",
+    "id"
   ],
-  "navStack": [],
-  "route": [],
-  "tabView": [],
+  "navStack": [
+    "id"
+  ],
+  "route": [
+    "id"
+  ],
+  "tabView": [
+    "id"
+  ],
   "textField": [
     "padding",
     "safeAreaPadding",
@@ -11454,7 +11475,8 @@ export type NodeModifiers = {
     "testID",
     "leadingView",
     "tint",
-    "foreground"
+    "foreground",
+    "id"
   ],
   "search": [
     "padding",
@@ -11598,7 +11620,9 @@ export type NodeModifiers = {
     "focused",
     "editable"
   ],
-  "optionGroup": [],
+  "optionGroup": [
+    "id"
+  ],
   "chipRow": [
     "padding",
     "safeAreaPadding",
@@ -11852,13 +11876,16 @@ export type NodeModifiers = {
   ],
   "groupedSectionIcon": [
     "tint",
-    "testID"
+    "testID",
+    "id"
   ],
   "groupedSectionDivider": [
-    "inset"
+    "inset",
+    "id"
   ],
   "groupedSectionCollapse": [
-    "testID"
+    "testID",
+    "id"
   ],
   "tabContent": [
     "padding",
@@ -12259,7 +12286,8 @@ export type NodeModifiers = {
     "manualActivation",
     "footer",
     "progress",
-    "label"
+    "label",
+    "id"
   ],
   "sidebar": [
     "selection",
@@ -12284,7 +12312,8 @@ export type NodeModifiers = {
     "plan",
     "onboarding",
     "query",
-    "onDrop"
+    "onDrop",
+    "id"
   ],
   "navItem": [
     "id",
@@ -12332,7 +12361,8 @@ export type NodeModifiers = {
     "header",
     "footer",
     "width",
-    "testID"
+    "testID",
+    "id"
   ],
   "railItem": [
     "id",
@@ -12344,7 +12374,8 @@ export type NodeModifiers = {
     "emptyLabel",
     "query",
     "filter",
-    "testID"
+    "testID",
+    "id"
   ],
   "commandItem": [
     "id",
@@ -12355,13 +12386,16 @@ export type NodeModifiers = {
     "disabled",
     "onPress"
   ],
-  "commandGroup": [],
+  "commandGroup": [
+    "id"
+  ],
   "settings": [
     "presented",
     "selection",
     "initialView",
     "presentation",
-    "testID"
+    "testID",
+    "id"
   ],
   "settingsGroup": [
     "id"
@@ -12384,7 +12418,8 @@ export type NodeModifiers = {
     "hidden",
     "keepMounted",
     "presented",
-    "testID"
+    "testID",
+    "id"
   ],
   "destination": [
     "label",
@@ -12397,23 +12432,27 @@ export type NodeModifiers = {
     "sidebar",
     "sidebarAfter",
     "onPress",
-    "onLongPress"
+    "onLongPress",
+    "id"
   ],
   "toolbarView": [
     "trailing",
     "accessory",
     "size",
-    "testID"
+    "testID",
+    "id"
   ],
   "stickySection": [
-    "testID"
+    "testID",
+    "id"
   ],
   "pageFooter": [
     "toolbar",
     "pinning",
     "scrollEdge",
     "ignoresSafeArea",
-    "testID"
+    "testID",
+    "id"
   ],
   "scrollArea": [
     "padding",
@@ -12701,7 +12740,8 @@ export type NodeModifiers = {
     "hideMotion",
     "showMotion",
     "label",
-    "testID"
+    "testID",
+    "id"
   ],
   "resizeHandle": [
     "axis",
@@ -12711,7 +12751,8 @@ export type NodeModifiers = {
     "onResizeEnd",
     "onNudge",
     "label",
-    "testID"
+    "testID",
+    "id"
   ],
   "sidebarMode": [
     "id",
@@ -13098,14 +13139,16 @@ export type NodeModifiers = {
     "contentType",
     "disabled",
     "savedToast",
-    "testID"
+    "testID",
+    "id"
   ],
   "settingsDateField": [
     "minDate",
     "maxDate",
     "dateFormat",
     "savedToast",
-    "testID"
+    "testID",
+    "id"
   ],
   "datePicker": [
     "padding",
@@ -20417,10 +20460,15 @@ export type NodeModifiers = {
     "optionBox"
   ],
   "videoPlayback": [
-    "autoplay"
+    "autoplay",
+    "id"
   ],
-  "videoViewability": [],
-  "videoViewabilityScope": [],
+  "videoViewability": [
+    "id"
+  ],
+  "videoViewabilityScope": [
+    "id"
+  ],
   "hoverCard": [
     "padding",
     "safeAreaPadding",
@@ -21184,7 +21232,9 @@ export type NodeModifiers = {
     "trailingIcon",
     "labels"
   ],
-  "mediaFlightLayer": [],
+  "mediaFlightLayer": [
+    "id"
+  ],
   "mediaFlightHost": [
     "padding",
     "safeAreaPadding",
@@ -21806,7 +21856,9 @@ export type NodeModifiers = {
     "confirmationDialog",
     "phases"
   ],
-  "avatarFlightLayer": [],
+  "avatarFlightLayer": [
+    "id"
+  ],
   "inputGroup": [
     "padding",
     "safeAreaPadding",
@@ -22448,7 +22500,8 @@ export type NodeModifiers = {
     "nativeControls",
     "videoOverlay",
     "sourceAnchors",
-    "labels"
+    "labels",
+    "id"
   ],
   "meetingScheduler": [
     "padding",
@@ -23349,7 +23402,8 @@ export type NodeModifiers = {
   ],
   "sortableChip": [],
   "viewport": [
-    "root"
+    "root",
+    "id"
   ],
   "glassGroup": [
     "padding",
@@ -23596,14 +23650,19 @@ export type NodeModifiers = {
     "confirmationDialog",
     "phases"
   ],
-  "toolbarGroup": [],
-  "toolbarSpacer": [],
+  "toolbarGroup": [
+    "id"
+  ],
+  "toolbarSpacer": [
+    "id"
+  ],
   "confirmationDialog": [
     "message",
     "titleVisibility",
     "actions",
     "cancelLabel",
-    "testID"
+    "testID",
+    "id"
   ],
   "agentAvatar": [
     "padding",

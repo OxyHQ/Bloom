@@ -61,6 +61,8 @@ export interface SettingsSelectView extends ViewModifiers<SettingsSelectView> {
 }
 /** Bloom `SettingsTextField`: it edits a draft and commits it on submit or blur. */
 export interface SettingsTextFieldView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): SettingsTextFieldView;
   icon(value: IconComponent): SettingsTextFieldView;
   placeholder(value: string): SettingsTextFieldView;
   keyboard(value: Keyboard): SettingsTextFieldView;
@@ -73,6 +75,8 @@ export interface SettingsTextFieldView extends ViewNode {
 }
 /** Bloom `SettingsDateField`: a date, picked in a calendar. */
 export interface SettingsDateFieldView extends ViewNode {
+  /** Keys the view among its siblings (a list's item, a branch): its identity. */
+  id(value: string | number): SettingsDateFieldView;
   minDate(value: Date): SettingsDateFieldView;
   maxDate(value: Date): SettingsDateFieldView;
   /** How the date reads; the locale's long date by default. */

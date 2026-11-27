@@ -2511,18 +2511,19 @@
         "onPress",
         "testID",
         "tag",
-        "shortcut"
+        "shortcut",
+        "id"
       ]
     },
     "menuSubmenu": {
       "constructors": ["Submenu"],
       "universal": false,
-      "modifiers": ["icon", "iconSize", "iconForeground", "disabled", "testID"]
+      "modifiers": ["icon", "iconSize", "iconForeground", "disabled", "testID", "id"]
     },
     "menuSection": {
       "constructors": ["Section"],
       "universal": false,
-      "modifiers": ["title", "selection"]
+      "modifiers": ["title", "selection", "id"]
     },
     "divider": {
       "constructors": ["Divider"],
@@ -2544,7 +2545,8 @@
         "defaultAction",
         "dismissible",
         "testID",
-        "icon"
+        "icon",
+        "id"
       ]
     },
     "dialog": {
@@ -2570,14 +2572,15 @@
         "presented",
         "control",
         "detached",
-        "panelFrame"
+        "panelFrame",
+        "id"
       ],
       "params": { "padding": ["space"] }
     },
     "popover": {
       "constructors": ["Popover"],
       "universal": false,
-      "modifiers": ["label", "side", "testID", "sideOffset", "alignOffset", "frame"]
+      "modifiers": ["label", "side", "testID", "sideOffset", "alignOffset", "frame", "id"]
     },
     "connectionStatus": {
       "constructors": ["ConnectionStatus"],
@@ -2587,7 +2590,8 @@
         "reconnectingMessage",
         "restoredMessage",
         "reconnectingDelay",
-        "restoredDuration"
+        "restoredDuration",
+        "id"
       ]
     },
     "menuContent": {
@@ -2622,13 +2626,14 @@
         "tone",
         "scrimColor",
         "scrimFalloff",
-        "titleReveal"
+        "titleReveal",
+        "id"
       ]
     },
     "bottomBar": {
       "constructors": ["BottomBar"],
       "universal": false,
-      "modifiers": ["selection", "action", "minimize", "progress", "hide", "testID"]
+      "modifiers": ["selection", "action", "minimize", "progress", "hide", "testID", "id"]
     },
     "tab": {
       "constructors": ["Tab"],
@@ -2675,11 +2680,15 @@
     "cardHeader": { "constructors": ["CardHeader"], "modifiers": [] },
     "cardBody": { "constructors": ["CardBody"], "modifiers": [] },
     "cardFooter": { "constructors": ["CardFooter"], "modifiers": [] },
-    "cardTitle": { "constructors": ["CardTitle"], "universal": false, "modifiers": ["lines"] },
+    "cardTitle": {
+      "constructors": ["CardTitle"],
+      "universal": false,
+      "modifiers": ["lines", "id"]
+    },
     "cardDescription": {
       "constructors": ["CardDescription"],
       "universal": false,
-      "modifiers": ["lines"]
+      "modifiers": ["lines", "id"]
     },
     "row": {
       "constructors": ["Row"],
@@ -2732,7 +2741,8 @@
         "background",
         "border",
         "corner",
-        "opacity"
+        "opacity",
+        "id"
       ]
     },
     "chip": {
@@ -2785,7 +2795,8 @@
         "padding",
         "font",
         "leading",
-        "weight"
+        "weight",
+        "id"
       ],
       "params": { "font": ["labelFont"], "onLongPress": ["value"] }
     },
@@ -2813,7 +2824,8 @@
         "background",
         "border",
         "corner",
-        "opacity"
+        "opacity",
+        "id"
       ]
     },
     "embed": {
@@ -2877,23 +2889,24 @@
         "shellPresentation",
         "panels",
         "destinations",
-        "onReselect"
+        "onReselect",
+        "id"
       ]
     },
     "navStack": {
       "constructors": ["Stack"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "route": {
       "constructors": ["Sheet"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "tabView": {
       "constructors": ["TabView"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "textField": {
       "constructors": ["TextField", "SecureField"],
@@ -2994,7 +3007,7 @@
     "option": {
       "constructors": ["Option"],
       "universal": false,
-      "modifiers": ["description", "disabled", "testID", "leadingView", "tint", "foreground"],
+      "modifiers": ["description", "disabled", "testID", "leadingView", "tint", "foreground", "id"],
       "tint": "colorRole",
       "params": { "foreground": ["colorRole"] }
     },
@@ -3028,7 +3041,7 @@
     "optionGroup": {
       "constructors": ["OptionGroup"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "chipRow": {
       "constructors": ["ChipRow"],
@@ -3041,18 +3054,18 @@
     "groupedSectionIcon": {
       "constructors": ["GroupedSectionIcon"],
       "universal": false,
-      "modifiers": ["tint", "testID"],
+      "modifiers": ["tint", "testID", "id"],
       "tint": "accentTone"
     },
     "groupedSectionDivider": {
       "constructors": ["GroupedSectionDivider"],
       "universal": false,
-      "modifiers": ["inset"]
+      "modifiers": ["inset", "id"]
     },
     "groupedSectionCollapse": {
       "constructors": ["GroupedSectionCollapse"],
       "universal": false,
-      "modifiers": ["testID"]
+      "modifiers": ["testID", "id"]
     },
     "tabContent": {
       "constructors": ["TabContent"],
@@ -3106,7 +3119,8 @@
         "manualActivation",
         "footer",
         "progress",
-        "label"
+        "label",
+        "id"
       ],
       "params": { "material": ["sheetMaterial"] }
     },
@@ -3136,7 +3150,8 @@
         "plan",
         "onboarding",
         "query",
-        "onDrop"
+        "onDrop",
+        "id"
       ],
       "size": "sidebarSize"
     },
@@ -3198,7 +3213,7 @@
     "rail": {
       "constructors": ["Rail"],
       "universal": false,
-      "modifiers": ["selection", "header", "footer", "width", "testID"],
+      "modifiers": ["selection", "header", "footer", "width", "testID", "id"],
       "params": { "width": ["space"] }
     },
     "railItem": {
@@ -3209,7 +3224,7 @@
     "command": {
       "constructors": ["Command"],
       "universal": false,
-      "modifiers": ["presented", "placeholder", "emptyLabel", "query", "filter", "testID"]
+      "modifiers": ["presented", "placeholder", "emptyLabel", "query", "filter", "testID", "id"]
     },
     "commandItem": {
       "constructors": ["CommandItem"],
@@ -3219,12 +3234,12 @@
     "commandGroup": {
       "constructors": ["CommandGroup"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "settings": {
       "constructors": ["SettingsModal"],
       "universal": false,
-      "modifiers": ["presented", "selection", "initialView", "presentation", "testID"],
+      "modifiers": ["presented", "selection", "initialView", "presentation", "testID", "id"],
       "params": { "presentation": ["settingsPresentation"] }
     },
     "settingsGroup": {
@@ -3250,7 +3265,8 @@
         "hidden",
         "keepMounted",
         "presented",
-        "testID"
+        "testID",
+        "id"
       ],
       "params": { "width": ["space"] }
     },
@@ -3268,25 +3284,26 @@
         "sidebar",
         "sidebarAfter",
         "onPress",
-        "onLongPress"
+        "onLongPress",
+        "id"
       ],
       "params": { "onLongPress": ["value"] }
     },
     "toolbarView": {
       "constructors": ["Toolbar"],
       "universal": false,
-      "modifiers": ["trailing", "accessory", "size", "testID"],
+      "modifiers": ["trailing", "accessory", "size", "testID", "id"],
       "size": "controlSize"
     },
     "stickySection": {
       "constructors": ["StickySection"],
       "universal": false,
-      "modifiers": ["testID"]
+      "modifiers": ["testID", "id"]
     },
     "pageFooter": {
       "constructors": ["PageFooter"],
       "universal": false,
-      "modifiers": ["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"]
+      "modifiers": ["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID", "id"]
     },
     "scrollArea": {
       "constructors": ["ScrollArea"],
@@ -3346,7 +3363,8 @@
         "hideMotion",
         "showMotion",
         "label",
-        "testID"
+        "testID",
+        "id"
       ]
     },
     "resizeHandle": {
@@ -3360,7 +3378,8 @@
         "onResizeEnd",
         "onNudge",
         "label",
-        "testID"
+        "testID",
+        "id"
       ],
       "style": "resizeHandleStyle"
     },
@@ -3393,13 +3412,14 @@
         "contentType",
         "disabled",
         "savedToast",
-        "testID"
+        "testID",
+        "id"
       ]
     },
     "settingsDateField": {
       "constructors": ["SettingsDateField"],
       "universal": false,
-      "modifiers": ["minDate", "maxDate", "dateFormat", "savedToast", "testID"]
+      "modifiers": ["minDate", "maxDate", "dateFormat", "savedToast", "testID", "id"]
     },
     "datePicker": {
       "constructors": ["DatePicker"],
@@ -3936,17 +3956,17 @@
     "videoPlayback": {
       "constructors": ["VideoPlayback"],
       "universal": false,
-      "modifiers": ["autoplay"]
+      "modifiers": ["autoplay", "id"]
     },
     "videoViewability": {
       "constructors": ["VideoViewability"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "videoViewabilityScope": {
       "constructors": ["VideoViewabilityScope"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "hoverCard": {
       "constructors": ["HoverCard"],
@@ -3992,7 +4012,7 @@
     "mediaFlightLayer": {
       "constructors": ["MediaFlightLayer"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "mediaFlightHost": {
       "constructors": ["MediaFlightHost"],
@@ -4014,7 +4034,7 @@
     "avatarFlightLayer": {
       "constructors": ["AvatarFlightLayer"],
       "universal": false,
-      "modifiers": []
+      "modifiers": ["id"]
     },
     "inputGroup": {
       "constructors": ["InputGroup"],
@@ -4057,7 +4077,8 @@
         "nativeControls",
         "videoOverlay",
         "sourceAnchors",
-        "labels"
+        "labels",
+        "id"
       ],
       "style": "galleryStyle",
       "params": { "mediaCorner": ["cornerRadius"] }
@@ -4131,15 +4152,15 @@
       "modifiers": ["onReorder", "onDragChange", "trailing", "disabled"]
     },
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
-    "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
+    "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root", "id"] },
     "glassGroup": { "constructors": ["GlassGroup"], "modifiers": ["blend"], "blend": "space" },
     "viewThatFits": { "constructors": ["ViewThatFits"], "modifiers": [] },
-    "toolbarGroup": { "constructors": ["ToolbarGroup"], "universal": false, "modifiers": [] },
-    "toolbarSpacer": { "constructors": ["ToolbarSpacer"], "universal": false, "modifiers": [] },
+    "toolbarGroup": { "constructors": ["ToolbarGroup"], "universal": false, "modifiers": ["id"] },
+    "toolbarSpacer": { "constructors": ["ToolbarSpacer"], "universal": false, "modifiers": ["id"] },
     "confirmationDialog": {
       "constructors": ["ConfirmationDialog"],
       "universal": false,
-      "modifiers": ["message", "titleVisibility", "actions", "cancelLabel", "testID"]
+      "modifiers": ["message", "titleVisibility", "actions", "cancelLabel", "testID", "id"]
     },
     "agentAvatar": {
       "constructors": ["AgentAvatar"],

@@ -1,0 +1,19 @@
+// A TS object type fits another of its shape (TS's types are structural), a `Foreign?` passes
+// where TS takes an optional, `ViewNode` is a view, and a view where TS takes a `ReactNode`
+// crosses as `toElement(view)`.
+import { ProfileCard, useAccount, useWriters } from "@/profile"
+
+public struct Writers: View {
+  let writers = useWriters()
+  // A TS type written out, as the codemod writes one it names.
+  let account: Foreign<"{ id: string }">? = useAccount()
+
+  var body: some View {
+    VStack {
+      for entry in writers {
+        ProfileCard(profile: entry.writer, account: account, subtitle: HStack { Text(entry.writer.name) }, footer: Text("Writer"))
+          .id(entry.writer.id)
+      }
+    }
+  }
+}

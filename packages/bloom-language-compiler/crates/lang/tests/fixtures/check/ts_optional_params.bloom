@@ -1,0 +1,14 @@
+// A required TS parameter does not take an optional; an optional one does not take another type.
+import { formatDay, formatRelativeTime, useBloomLocale } from "@/locale"
+
+public struct Day: View {
+  let at: Float
+  let locale = useBloomLocale()
+
+  var body: some View {
+    VStack {
+      Text(formatDay(at, locale))
+      Text(formatRelativeTime(at, 1))
+    }
+  }
+}
