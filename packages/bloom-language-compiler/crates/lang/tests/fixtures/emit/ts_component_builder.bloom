@@ -29,3 +29,22 @@ public struct Slotted: View {
     }
   }
 }
+
+// react-native's `View` (`declare const $$View: typeof View`), a namespace's components
+// (`import * as Skeleton`), and an `if` without `else` where a `View?` is taken.
+import { Box } from "@/ui/rn"
+import * as Skeleton from "@/ui/skeleton"
+
+public struct Placeholder: View {
+  let open: Bool
+
+  var body: some View {
+    Box(testID: "box") {
+      Skeleton.Region {
+        Skeleton.Circle(size: 36)
+        Text("loading")
+      }
+    }
+    .header(Header("Loading").accessory(if open { Text("open") }))
+  }
+}

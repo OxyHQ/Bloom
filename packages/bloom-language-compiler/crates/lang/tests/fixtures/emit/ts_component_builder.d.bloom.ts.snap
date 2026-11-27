@@ -6,3 +6,8 @@ export interface BarProps {
 export declare const Bar: (props: BarProps) => ComposedView;
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Slotted())`), or from TSX as `toElement(Slotted())`. */
 export declare const Slotted: () => ComposedView;
+export interface PlaceholderProps {
+  readonly open: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Placeholder())`), or from TSX as `toElement(Placeholder())`. */
+export declare const Placeholder: (props: PlaceholderProps) => ComposedView;
