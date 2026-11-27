@@ -24,15 +24,14 @@ pub struct Field {
     pub optional: bool,
 }
 
+/// A type the written fields name: (module specifier from the view's file, name).
+pub type TypeImport = (String, String);
+
 /// The fields of `name` as declared in the module `specifier` imports from `from` (the
 /// view's file), and the types they name: (specifier relative to `from`, name). `None` when
 /// the interface is not a plain object type the codemod can write out (generics, methods,
 /// index signatures, a base it cannot read, a type with no Bloom form).
-pub fn external_fields(
-    from: &str,
-    specifier: &str,
-    name: &str,
-) -> Option<(Vec<Field>, Vec<(String, String)>)> {
+pub fn external_fields(from: &str, specifier: &str, name: &str) -> Option<(Vec<Field>, Vec<TypeImport>)> {
     let file = resolve(Path::new(from), specifier)?;
     let mut imports = Vec::new();
     let fields = fields_in(&file, from, specifier, name, &mut imports, 0)?;
