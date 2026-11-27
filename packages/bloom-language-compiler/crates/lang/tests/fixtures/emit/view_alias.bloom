@@ -1,0 +1,24 @@
+// A module constant that names a view is that view (TS's `const PostItem =
+// memo(PostItemContent, eq)`, migrated as `public let PostItem = PostItemContent`). Its
+// declaration is the view's own type, `typeof RowContent`, not a function of the view's fields.
+public struct RowContent: View {
+  let title: String
+  var dense: Bool? = none
+
+  var body: some View {
+    Text(title)
+  }
+}
+
+public let Row = RowContent
+
+// A private view is declared beside it, unexported, so `typeof` names it.
+private struct CardContent: View {
+  let label: String
+  static func == (old: Self, new: Self) -> Bool { old.label == new.label }
+  var body: some View {
+    Text(label)
+  }
+}
+
+public let Card = CardContent
