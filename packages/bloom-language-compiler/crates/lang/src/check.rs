@@ -4339,6 +4339,11 @@ impl<'o> Checker<'o> {
                     };
                     let ty = self.expr(operand, hint.as_ref());
                     let ty = self.resolve(&ty);
+                    // A TS value negated is a number (`-event.translationY`), checked by TS.
+                    if let Ty::Foreign(_) = ty {
+                        self.out.foreign_checks.insert(operand.id, Ty::Float);
+                        return Ty::Float;
+                    }
                     if !matches!(ty, Ty::Int | Ty::Float | Ty::Unknown) {
                         self.operand_error(operand.span, "`-`", &ty);
                     }
@@ -5174,6 +5179,25 @@ impl<'o> Checker<'o> {
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => {
                 let left = self.expr(lhs, None);
                 let left = self.resolve(&left);
+                // A TS value compared with a number (or a string) is one (`item.pokeCount > 1`):
+                // the emitted `satisfies` lets TS check it, as in arithmetic. Two TS values are
+                // compared as TS compares them.
+                if let Ty::Foreign(_) = left {
+                    let right = self.expr(rhs, None);
+                    let checked = match self.actual(rhs, &right) {
+                        Ty::Int | Ty::Float => Some(Ty::Float),
+                        Ty::Str | Ty::Strings(_) => Some(Ty::Str),
+                        Ty::Foreign(_) | Ty::Unknown | Ty::Never | Ty::Var(_) => None,
+                        other => {
+                            self.operand_error(rhs.span, &format!("`{}`", op.text()), &other);
+                            None
+                        }
+                    };
+                    if let Some(ty) = checked {
+                        self.out.foreign_checks.insert(lhs.id, ty);
+                    }
+                    return Ty::Bool;
+                }
                 if !matches!(left, Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Unknown | Ty::Var(_))
                 {
                     self.operand_error(lhs.span, &format!("`{}`", op.text()), &left);
@@ -5217,6 +5241,11 @@ impl<'o> Checker<'o> {
                             Ty::Var(_) => {
                                 self.unify(&right, &Ty::Int);
                                 Ty::Int
+                            }
+                            // A TS value beside an `Int` is a number (`2 * Math.PI`).
+                            Ty::Foreign(_) => {
+                                self.out.foreign_checks.insert(rhs.id, Ty::Float);
+                                Ty::Float
                             }
                             other => {
                                 self.mismatch(rhs.span, &other, &Ty::Int);

@@ -390,7 +390,9 @@ TS checks the whole where it lands; a TS value compared with `none` is compared 
 (`!= null`), as TS's absence may be `null`. Where `e` says less than TS knows (`data ?? []`), its items
 are the TS value's (`NonNullable<…>[number]`), so `.map { m in m.name }` reads TS members. A TS
 value beside a number in arithmetic is a number (`insets.top + 4` is a `Float`; for `+` beside
-a string, a `String`), and the emitter writes `(insets.top satisfies number)`. So does a TS value beside `none` or a Bloom value in a
+a string, a `String`), and the emitter writes `(insets.top satisfies number)`; so is one beside
+an `Int` (`2 * Math.PI` is a `Float`), negated (`-event.translationY`), or compared with a number or
+a string (`item.pokeCount > 1`, checked as a `number`; two TS values compare as TS compares them). So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
 of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by

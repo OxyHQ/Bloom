@@ -1,0 +1,4 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare const CIRCUMFERENCE: number;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Pager())`), or from TSX as `toElement(Pager())`. */
+export declare const Pager: () => ComposedView;
