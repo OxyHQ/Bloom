@@ -184,6 +184,14 @@ impl<'s, 'i> Parser<'s, 'i> {
     }
 
     /// Moves past the current token; its span.
+    /// Whether a loop over a block's lines is at the token its last turn started at (it made
+    /// no progress); records where this turn starts.
+    fn stalled(&mut self, last: &mut usize) -> bool {
+        let stuck = self.pos == *last;
+        *last = self.pos;
+        stuck
+    }
+
     fn bump(&mut self) -> Span {
         let token = self.tokens[self.pos].span;
         if self.pos < self.tokens.len() - 1 {
@@ -748,7 +756,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let body_start = self.span();
         if let Some(open) = self.expect(P::LBrace, "`{` and the struct's members") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let start = self.span();
                 // 0.x: `name: Type = default`.
                 if matches!(self.tok(), Tok::Ident(_) | Tok::Kw(_))
@@ -1228,7 +1242,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut swift = false;
         if let Some(open) = self.expect(P::LBrace, "`{` and the enum's cases") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let start = self.span();
                 // A member (2.0): `var title: String { … }`, `func`, `static let`.
                 if self.member_ahead() {
@@ -1339,7 +1359,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let body_start = self.span();
         if let Some(open) = self.expect(P::LBrace, "`{` and the extension's members") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 if let Some(member) = self.type_member() {
                     match &member.kind {
                         TypeMemberKind::Stored { name, .. } if !member.modifiers.is_static => self.error(
@@ -1395,7 +1421,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let body_start = self.span();
         if let Some(open) = self.expect(P::LBrace, "`{` and the class's members") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 if let Some(member) = self.type_member() {
                     if let TypeMemberKind::Stored { name, ty: None, value: None, .. } = &member.kind {
                         self.error(
@@ -1432,7 +1464,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut requirements = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the protocol's requirements") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let member_start = self.span();
                 let (_, modifiers) = self.modifiers();
                 let is_static = modifiers.is_static;
@@ -1578,7 +1616,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         if let Some(open) = self.expect(P::LBrace, "`{` and the package's declarations") {
             let outer = std::mem::replace(&mut self.in_extern, true);
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 if let Some(item) = self.item() {
                     items.push(item);
                 }
@@ -1820,7 +1864,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut body: Option<(Span, Block)> = None;
         if let Some(open) = self.expect(P::LBrace, "`{`, the members and `body { … }`") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let at = self.span();
                 match self.tok() {
                     Tok::Kw(Kw::Body) => {
@@ -2661,7 +2711,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut arms = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the switch's `case`s") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let arm_start = self.span();
                 let pattern = if self.at_kw(Kw::Default) {
                     let span = self.bump();
@@ -3071,7 +3127,13 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut arms = Vec::new();
         if let Some(open) = self.expect(P::LBrace, "`{` and the match's `case` arms") {
             self.skip_newlines();
+            let mut last = usize::MAX;
             while !self.at(P::RBrace) && !matches!(self.tok(), Tok::Eof) {
+                // A member refused without consuming a token is skipped, not retried forever.
+                if self.stalled(&mut last) {
+                    self.bump();
+                    continue;
+                }
                 let arm_start = self.span();
                 if !self.eat_kw(Kw::Case) {
                     let span = self.span();
@@ -3526,6 +3588,17 @@ mod tests {
     fn one_typo_one_error() {
         let (_, diagnostics) = errors("fn f() {\n  let x = (1 +\n  g(x)\n}\nfn g() { 1 }\n");
         assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+    }
+
+    #[test]
+    fn a_refused_member_at_a_line_start_is_skipped() {
+        // A view's `var` after a comment was refused at the same token forever: recovery stops
+        // at a line-start `var`, and each retry pushed another diagnostic (12 GB in 10 s on a
+        // corpus file).
+        let (_, diagnostics) =
+            errors("view P {\n  // a note\n  var s = 1\n  body {\n    Text(\"x\")\n  }\n}\n");
+        assert_eq!(diagnostics[0].message, "a view has no `var` members", "{diagnostics:#?}");
+        assert!(diagnostics.len() <= 3, "{diagnostics:#?}");
     }
 
     #[test]
