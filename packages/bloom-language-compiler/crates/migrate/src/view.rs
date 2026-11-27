@@ -769,7 +769,22 @@ impl Tr<'_> {
         } else {
             format!("useState as {state}")
         });
-        format!("let ({name}, {}): ({ty}, Foreign) = {state}({init})", names[1])
+        // The setter is TS's `Dispatch<SetStateAction<T>>`, written so tsc can check its calls.
+        let ts = match call.type_arguments.as_ref().and_then(|a| a.params.first()) {
+            Some(t) if arg.is_none() => Some(format!("{} | undefined", self.slice(t.span()))),
+            Some(t) => Some(self.slice(t.span()).to_string()),
+            None => match ty.as_str() {
+                "Bool" => Some("boolean".into()),
+                "String" => Some("string".into()),
+                "Float" => Some("number".into()),
+                _ => None,
+            },
+        };
+        let setter = match ts.filter(|t| !t.contains(['"', '\n', '\\'])) {
+            Some(t) => format!("Foreign<\"import('react').Dispatch<import('react').SetStateAction<{t}>>\">"),
+            None => "Foreign".to_string(),
+        };
+        format!("let ({name}, {}): ({ty}, {setter}) = {state}({init})", names[1])
     }
 
     fn react_member(&mut self, d: &VariableDeclarator, call: &CallExpression, hook: &str) -> String {
