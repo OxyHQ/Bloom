@@ -1,6 +1,6 @@
 // Mention's ContentWarning: three `t(…)` strings keyed on `t` share one test, and a leaf that
-// reads its one dependency once is built with its parent, in no slots of its own.
-import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine"
+// reads its one dependency once is built with its parent, in no slots of its own. (Its icons are text
+// here, so the golden does not depend on an installed `@oxy.so/bloom`.)
 import { useTranslation } from "react-i18next"
 
 public struct ContentWarning: View {
@@ -15,7 +15,7 @@ public struct ContentWarning: View {
   var body: some View {
     if revealed {
       HStack {
-        Icon(RiAlertLine).size("13").foreground("muted")
+        Text("!").font("sm").foreground("muted")
         RawText(!text.isEmpty ? "\(label) · \(text)" : label)
         .foreground("muted")
         .shrink("normal")
@@ -32,7 +32,7 @@ public struct ContentWarning: View {
       .spacing("6")
     } else {
       HStack {
-        VStack { Icon(RiAlertLine).size("18").foreground("muted") }
+        VStack { Text("!").font("md").foreground("muted") }
         .frame(width: "36", height: "36")
         .background("background")
         .corner("infinite")
