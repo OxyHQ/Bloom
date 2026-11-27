@@ -175,6 +175,8 @@ struct Emitter<'a> {
     /// The type parameters the next arrow function [`Self::function`] writes declares.
     arrow_generics: Option<String>,
     hoisted_names: HashMap<Span, String>,
+    /// The `$fn` numbers taken by closures hoisted to module scope.
+    hoisted_fns: HashSet<usize>,
     /// Static trees hoisted to module scope, by their text.
     hoisted_trees: HashMap<String, String>,
     /// The item's expressions that are the same value on every evaluation (`mark_static`).
@@ -252,6 +254,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         view_generics: String::new(),
         arrow_generics: None,
         hoisted_names: HashMap::default(),
+        hoisted_fns: HashSet::default(),
         hoisted_trees: HashMap::default(),
         statics: HashSet::default(),
         in_static: false,
@@ -3075,7 +3078,13 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::at(c.span, if info.is_async { "async " } else { "" });
         out.s(&format!("{generics}({}) => ", params.join(", "))).f(body);
         if hoist {
-            let name = format!("$fn{}", self.hoisted.len() + self.hoisted_names.len());
+            // Unique in the module: `hoisted` is emitted (and emptied) after each item.
+            let mut index = self.hoisted.len() + self.hoisted_names.len();
+            while self.hoisted_fns.contains(&index) {
+                index += 1;
+            }
+            self.hoisted_fns.insert(index);
+            let name = format!("$fn{index}");
             let mut decl = Frag::of(format!("const {name} = "));
             decl.f(out).s(";");
             self.hoisted.push(decl);
@@ -5239,10 +5248,8 @@ impl<'a> Emitter<'a> {
     fn hook_let(&mut self, stmt: &Stmt, l: &LetStmt) {
         let mut spans = Vec::new();
         bound_spans(&l.pattern, &mut spans);
-        let locals: Vec<LocalId> = spans
-            .iter()
-            .filter_map(|span| self.ck.locals.iter().position(|x| x.span == *span))
-            .collect();
+        let locals: Vec<LocalId> =
+            spans.iter().filter_map(|span| self.ck.locals.iter().position(|x| x.span == *span)).collect();
         let hook = self.ck.hook_lets.contains(&l.span);
         let deps = self.expr_deps(&l.value);
         let mutated = self.hook_fn.as_ref().is_some_and(|h| spans.iter().any(|s| h.mutated.contains(s)));
@@ -5251,9 +5258,10 @@ impl<'a> Emitter<'a> {
         let class = locals.iter().any(|x| self.is_class(&self.ck.locals[*x].ty));
         let view = self.view.as_ref().expect("a hook function");
         let reads_model = !matches!(l.value.kind, ExprKind::Closure(_))
-            && view.reactive.iter().any(|x| {
-                self.is_class(&self.ck.locals[*x].ty) && deps.contains(&self.local_name(*x))
-            });
+            && view
+                .reactive
+                .iter()
+                .any(|x| self.is_class(&self.ck.locals[*x].ty) && deps.contains(&self.local_name(*x)));
         let constant = !hook && deps.is_empty() && !mutated && !class;
         if hook
             || trivial(&l.value)
@@ -5283,7 +5291,14 @@ impl<'a> Emitter<'a> {
                 None => Some(self.ck.locals[locals[0]].ty.clone()),
             };
             let ty = ty.map(|t| self.ts_type(&t)).filter(|t| t != "unknown");
-            self.push_memo(name.clone(), ty, &deps, prelude, value);
+            if deps.is_empty() && prelude.is_empty() && is_ident(&value.text) && !destructure {
+                // A module constant already (a closure that reads only module names, `$fn0`).
+                let mut line = Frag::at(stmt.span, format!("const {name} = "));
+                line.f(value).s(";");
+                self.push_stmt(line);
+            } else {
+                self.push_memo(name.clone(), ty, &deps, prelude, value);
+            }
             if destructure {
                 let target = self.binding_target(&l.pattern);
                 self.push_stmt(Frag::at(stmt.span, format!("const {target} = {name};")));
