@@ -48,6 +48,12 @@ fn migrated_fixtures_compile_to_the_same_typescript() {
             Ok(formatted) if formatted == migrated => {}
             _ => failures.push(format!("{name}: the migration is not formatted")),
         }
+        // A value `@ref` becomes the standard library's `Ref(v)` in `@State` (one hook, no
+        // render, as `useRef`): its TypeScript differs, and the fixture tree has no package for
+        // the standard library. `refs_become_ref_and_view_ref` checks its text.
+        if migrated.contains("= Ref(") {
+            continue;
+        }
         // Against the formatted 0.x source: formatting alone sorts the imports.
         let formatted = bloom_fmt::format(&source, &name).expect("the fixture formats");
         let before = bloom_lang::compile(&formatted, &name, &options());
@@ -104,4 +110,17 @@ fn effects_become_body_modifiers() {
     let compiled = bloom_lang::compile(&migrated, "search.bloom", &options());
     assert!(compiled.diagnostics.is_empty(), "{:?}", compiled.diagnostics);
     assert!(compiled.warnings.iter().all(|w| w.code != "B0950"), "{:?}", compiled.warnings);
+}
+
+/// A value `@ref x = v` is `@State private var x = Ref(v)`, read and written as `x.value`; a
+/// ref handed to a host view (`.ref(field)`) with `T? = none` is `ViewRef<T>()`.
+#[test]
+fn refs_become_ref_and_view_ref() {
+    let source = std::fs::read_to_string(fixtures().join("emit/refs.bloom")).expect("the fixture");
+    let (migrated, _) = bloom_fmt::migrate(&source, "emit/refs.bloom").expect("it migrates");
+    assert!(migrated.contains("@State private var timer = Ref(0)"), "{migrated}");
+    assert!(migrated.contains("@State private var field = ViewRef<ViewInstance>()"), "{migrated}");
+    assert!(migrated.contains("timer.value = field == none ? 0 : timer.value + 1"), "{migrated}");
+    assert!(migrated.contains(".ref(field)"), "{migrated}");
+    assert!(!migrated.lines().any(|l| l.trim_start().starts_with("@ref")), "{migrated}");
 }
