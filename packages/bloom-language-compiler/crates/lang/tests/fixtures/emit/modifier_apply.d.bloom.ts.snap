@@ -3,7 +3,7 @@ import type { ComposedView } from "@oxy.so/bloom-language";
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Panel())`), or from TSX as `toElement(Panel())`. */
 export declare const Panel: () => ComposedView;
 export interface FramedProps {
-  readonly look?: ViewModifier | undefined;
+  readonly look?: ViewModifier | undefined | null;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Framed())`), or from TSX as `toElement(Framed())`. */
 export declare const Framed: (props: FramedProps) => ComposedView;

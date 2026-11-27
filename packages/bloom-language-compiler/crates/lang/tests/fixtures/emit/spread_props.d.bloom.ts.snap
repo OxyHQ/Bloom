@@ -6,8 +6,8 @@ interface Badge {
 export interface PostCardViewProps {
   readonly title: string;
   readonly likes: number;
-  readonly subtitle?: string | undefined;
-  readonly onOpen?: (() => void) | undefined;
+  readonly subtitle?: string | undefined | null;
+  readonly onOpen?: (() => void) | undefined | null;
   readonly dense?: boolean;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostCard())`), or from TSX as `toElement(PostCard())`. */
@@ -17,8 +17,8 @@ export declare const Feed: () => ComposedView;
 export interface PostShellProps {
   readonly title: string;
   readonly likes: number;
-  readonly subtitle?: string | undefined;
-  readonly onOpen?: (() => void) | undefined;
+  readonly subtitle?: string | undefined | null;
+  readonly onOpen?: (() => void) | undefined | null;
   readonly pinned?: boolean;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostShell())`), or from TSX as `toElement(PostShell())`. */

@@ -1,1 +1,1 @@
-export declare function pages(data: { pages: readonly (readonly string[])[] } | undefined): readonly string[];
+export declare function pages(data: { pages: readonly (readonly string[])[] } | undefined | null): readonly string[];
