@@ -1279,7 +1279,19 @@ impl Tr<'_> {
             let note = self.note(arg.span().start);
             let value = match arg {
                 Argument::SpreadElement(s) => self.spread_child(&s.argument),
-                Argument::ArrayExpression(array) if array.elements.len() == 2 => self.binding(array),
+                // `[value, setValue]` a node takes; a two-item list of values (options) is a list.
+                Argument::ArrayExpression(array)
+                    if array.elements.len() == 2
+                        && !array.elements.iter().any(|e| {
+                            e.is_spread()
+                                || matches!(
+                                    e.as_expression().map(|e| e.without_parentheses()),
+                                    Some(Expression::ObjectExpression(_))
+                                )
+                        }) =>
+                {
+                    self.binding(array)
+                }
                 other => self.expr(other.to_expression()),
             };
             values.push(format!("{note}{value}"));
@@ -1417,7 +1429,9 @@ impl Tr<'_> {
                         // `xs.map((x: T) => …)`: TS reads each element as `T` (a wider record,
                         // `count?: number` among its fields), and so does the loop.
                         let typed = match &param.type_annotation {
-                            Some(ann) if matches!(ann.type_annotation, oxc_ast::ast::TSType::TSTypeLiteral(_)) => {
+                            Some(ann)
+                                if matches!(ann.type_annotation, oxc_ast::ast::TSType::TSTypeLiteral(_)) =>
+                            {
                                 format!("let {item}: {} = {item}\n", self.ty(&ann.type_annotation))
                             }
                             _ => String::new(),
