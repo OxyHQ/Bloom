@@ -509,6 +509,8 @@ as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, el
 An untyped `Foreign` is TS's `unknown`, and so is what a call, a member read or an index of one
 gives (never `ReturnType<>`); TS refuses to use an `unknown`, so a value TS checks is typed
 (`Foreign<"(value: string | undefined) => void">`).
+An unannotated `.tsx` function is a component, unless what it returns is an embedded-language
+`view()`'s node (or `null` beside one): that is a node factory, called as TS calls it.
 A TS value given where a TS generic takes its type parameter (`mergeIdentity<T extends
 IdentityHolder>(actor: T, …): T` called with a `Foreign` actor) makes `T` that value's type, so
 the result is one too and its members are read as TS's.
