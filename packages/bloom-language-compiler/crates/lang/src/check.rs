@@ -290,6 +290,11 @@ pub struct CheckResult {
     pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
     pub is_tests: HashMap<ExprId, Ty>,
+    /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
+    pub casts: HashMap<ExprId, Rc<str>>,
+    /// `catch let e as T` with a `T` that casts (keyed by the catch's span): its `cast`, which
+    /// tests the error (a catch of any other `T` types it, as a typed `throws(T)` does).
+    pub catch_casts: HashMap<Span, Rc<str>>,
     /// `if x is T`: the narrowed local and the one it narrows.
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
@@ -2618,6 +2623,13 @@ impl<'o> Checker<'o> {
                 for catch in &d.catches {
                     self.push();
                     let ty = catch.ty.as_ref().map_or(Ty::JsError, |t| self.resolve_type(t));
+                    // `catch let e as HTTPError`: a type that casts is tested (R6).
+                    if catch.ty.is_some()
+                        && catch.pattern.is_none()
+                        && let Some((func, _)) = self.cast_fn(&ty)
+                    {
+                        self.out.catch_casts.insert(catch.span, func);
+                    }
                     match (&catch.pattern, &catch.name) {
                         (Some(pattern), _) => {
                             let mut locals = Vec::new();
@@ -3977,6 +3989,25 @@ impl<'o> Checker<'o> {
                 self.out.is_tests.insert(expr.id, ty);
                 Ty::Bool
             }
+            ExprKind::CastAs(subject, te) => {
+                let target = self.resolve_type(te);
+                let value = self.expr(subject, None);
+                match self.cast_fn(&target) {
+                    Some((func, f)) => {
+                        if let Some(param) = f.params.first()
+                            && !self.coerce(&value, &param.ty)
+                        {
+                            self.mismatch(subject.span, &value, &param.ty);
+                        }
+                        self.out.casts.insert(expr.id, func);
+                        Ty::Option(Box::new(target))
+                    }
+                    None => {
+                        self.no_cast(te.span, &target);
+                        Ty::Option(Box::new(target))
+                    }
+                }
+            }
             ExprKind::Spread(inner) => {
                 self.report(
                     Diagnostic::error("B0207", expr.span, "`..` spreads a list into a list literal")
@@ -5232,6 +5263,29 @@ impl<'o> Checker<'o> {
         Some((func.into(), local))
     }
 
+    /// The lowered `static func cast(_ error: Error) -> T?` of `ty`'s extension, which `as? T`
+    /// and `catch let e as T` call (`HTTPError$$cast`).
+    pub(super) fn cast_fn(&mut self, ty: &Ty) -> Option<(Rc<str>, Rc<FnTy>)> {
+        let (func, local) = self.extension_fn(ty, "cast", true)?;
+        let fn_ty = self.out.locals[local].ty.clone();
+        match self.instantiate(&fn_ty) {
+            Ty::Fn(f) if f.params.len() == 1 => Some((func, f)),
+            _ => None,
+        }
+    }
+
+    fn no_cast(&mut self, span: Span, ty: &Ty) {
+        let shown = self.show(ty);
+        self.report(
+            Diagnostic::error("B0213", span, format!("`as?` casts to a type that says how, and {shown} does not"))
+                .label("no `cast` in its extensions")
+                .help(format!(
+                    "declare `extension {shown} {{ static func cast(_ error: Error) -> {shown}? {{ … }} }}`, or test a TS value with `is`"
+                ))
+                .spec("62-control-flow-and-errors-20"),
+        );
+    }
+
     /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
     fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
         let owner = crate::extensions::key(type_name);
@@ -6002,6 +6056,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
+        | ExprKind::CastAs(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)

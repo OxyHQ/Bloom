@@ -692,6 +692,7 @@ fn walk_expr(expr: &mut Expr, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
+        | ExprKind::CastAs(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)

@@ -598,9 +598,14 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
 - An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
 - Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
   call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
-  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error`, `catch let e as T`
-  types it, and catches with patterns (`catch .offline`) test it in order and rethrow what none
-  matches. A function's last statement may be a `do` whose body and catches all return.
+  `do { } catch { }` is one JS `try`, where an unnamed catch binds `error` (an `Error`),
+  `catch let e as T` types it, and catches with patterns (`catch .offline`) test it in order and
+  rethrow what none matches. A `T` that says how to read one from any error (an extension's
+  `static func cast(_ error: Error) -> T?`, as the standard library's `HTTPError` has) is tested:
+  `catch let e as HTTPError { … e.response.status … }` runs for an `HTTPError` only (one
+  `HTTPClient` threw, or a TS client's, as Axios throws it), and `error as? HTTPError` is the
+  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). `as?` to a type
+  with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
   `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;

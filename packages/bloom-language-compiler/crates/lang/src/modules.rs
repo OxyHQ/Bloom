@@ -493,6 +493,7 @@ fn import_uses(
     // What derived code (`Codable`) names, as if written at the start.
     uses.extend(derived.iter().map(|n| (n.clone(), crate::codable::synthetic(Span::new(0, 0)))));
     let members = member_names(source);
+    let casts = cast_targets(source);
     // `Box(0)` calls the class's `init` (`Box$$init`), declared beside it.
     let called: BTreeMap<String, Span> = uses.iter().map(|(n, s)| (n.clone(), *s)).collect();
     for name in offered.keys() {
@@ -503,6 +504,14 @@ fn import_uses(
             && let Some(span) = called.get(owner)
         {
             // Its own span: the class may be imported as a type only, its `init` never is.
+            uses.push((name.clone(), crate::codable::synthetic(*span)));
+            continue;
+        }
+        // `e as? HTTPError` and `catch let e as HTTPError` call its `cast` (`HTTPError$$cast`).
+        if let Some((owner, "cast", true)) = crate::extensions::demangle(name)
+            && let Some(span) = casts.get(owner)
+        {
+            // Its own span: the type is named where a type goes, its `cast` is a value.
             uses.push((name.clone(), crate::codable::synthetic(*span)));
             continue;
         }
@@ -838,6 +847,25 @@ fn member_names(source: &str) -> BTreeMap<String, Span> {
     }
     let mut out = BTreeMap::new();
     scan(source, 0, source.len(), &mut out);
+    out
+}
+
+/// The types named after `as` (`e as? HTTPError`, `catch let e as HTTPError`), at their first.
+fn cast_targets(source: &str) -> BTreeMap<String, Span> {
+    let tokens = lexer::lex(source, 0, source.len()).tokens;
+    let mut out = BTreeMap::new();
+    for (i, token) in tokens.iter().enumerate() {
+        if !matches!(&token.tok, Tok::Kw(kw) if kw.word() == "as") {
+            continue;
+        }
+        let next = match tokens.get(i + 1).map(|t| &t.tok) {
+            Some(Tok::P(P::Question)) => tokens.get(i + 2),
+            _ => tokens.get(i + 1),
+        };
+        if let Some(lexer::Token { tok: Tok::Ident(name), span, .. }) = next {
+            out.entry(name.clone()).or_insert(*span);
+        }
+    }
     out
 }
 

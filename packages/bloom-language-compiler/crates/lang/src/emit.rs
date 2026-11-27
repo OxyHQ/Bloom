@@ -479,6 +479,8 @@ impl<'a> Emitter<'a> {
                         }
                         _ => None,
                     }))
+                    // `e as? T` and `catch let e as T`: `T$$cast`.
+                    .chain(self.ck.casts.values().chain(self.ck.catch_casts.values()).map(|f| &**f))
                     // `Box(0)`: the class's `init` (`Box$$init`).
                     .chain(self.ck.names.values().filter_map(|n| match n {
                         NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
@@ -1238,7 +1240,7 @@ impl<'a> Emitter<'a> {
             [] => {
                 line.s(" finally {}");
             }
-            [only] if only.pattern.is_none() => {
+            [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
                 line.s(&format!(" catch ({name}) ")).f(body);
@@ -1247,17 +1249,24 @@ impl<'a> Emitter<'a> {
                 line.s(" catch ($error) {\n");
                 let mut caught_all = false;
                 for (index, catch) in catches.iter().enumerate() {
-                    let test = match &catch.pattern {
-                        Some(pattern) => {
+                    // `catch let e as HTTPError`: what `HTTPError$$cast` makes of the error, when
+                    // it is one.
+                    let cast = self.ck.catch_casts.get(&catch.span).cloned();
+                    let test = match (&catch.pattern, &cast) {
+                        (Some(pattern), _) => {
                             let tests = self.pattern_test(pattern, "$error");
                             if tests.is_empty() { None } else { Some(tests.join(" && ")) }
                         }
-                        None => None,
+                        (None, Some(cast)) => Some(format!("{cast}($error) !== undefined")),
+                        (None, None) => None,
                     };
                     let mut lines = Vec::new();
                     if catch.pattern.is_none() {
                         let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
-                        lines.push(format!("const {name} = $error;"));
+                        match &cast {
+                            Some(cast) => lines.push(format!("const {name} = {cast}($error)!;")),
+                            None => lines.push(format!("const {name} = $error;")),
+                        }
                     }
                     let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
                     let head = match (&test, index) {
@@ -1979,6 +1988,14 @@ impl<'a> Emitter<'a> {
                 Frag::join(items, ", ").wrap("[", "] as const")
             }
             ExprKind::Spread(inner) => self.operand(inner).wrap("...", ""),
+            // `x as? T`: `T`'s cast of it (`HTTPError$$cast(x)`), `undefined` when it is not one.
+            ExprKind::CastAs(subject, _) => {
+                let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
+                let value = self.expr(subject);
+                let mut out = Frag::of(func);
+                out.f(value.wrap("(", ")"));
+                out
+            }
             ExprKind::Is(subject, _) => {
                 let value = self.operand(subject);
                 if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
@@ -3812,6 +3829,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
+        | ExprKind::CastAs(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
         | ExprKind::Force(e)
@@ -3988,6 +4006,7 @@ impl<'a> Emitter<'a> {
             ExprKind::Paren(e)
             | ExprKind::Spread(e)
             | ExprKind::Is(e, _)
+            | ExprKind::CastAs(e, _)
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
