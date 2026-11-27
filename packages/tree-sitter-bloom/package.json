@@ -1,0 +1,67 @@
+{
+  "name": "tree-sitter-bloom",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bloom, the language by Oxy: the tree-sitter grammar for .bloom files, with highlight, locals, indent, fold, injection and tag queries.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/tree-sitter-bloom"
+  },
+  "homepage": "https://github.com/OxyHQ/Bloom/tree/main/packages/tree-sitter-bloom",
+  "bugs": "https://github.com/OxyHQ/Bloom/issues",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Oxy",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "keywords": [
+    "incremental",
+    "parsing",
+    "tree-sitter",
+    "bloom",
+    "oxy"
+  ],
+  "files": [
+    "grammar.js",
+    "tree-sitter.json",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "queries/*",
+    "src/**",
+    "*.wasm",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "node-addon-api": "^8.5.0",
+    "node-gyp-build": "^4.8.4"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.25.0"
+  },
+  "peerDependenciesMeta": {
+    "tree-sitter": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "install": "node-gyp-build",
+    "generate": "npx --yes tree-sitter-cli@0.27.2 generate",
+    "test": "npx --yes tree-sitter-cli@0.27.2 test && node scripts/parse-repo.mjs",
+    "parse:repo": "node scripts/parse-repo.mjs"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.bloom",
+      "file-types": [
+        "bloom"
+      ],
+      "injection-regex": "^bloom$",
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm",
+      "injections": "queries/injections.scm",
+      "tags": "queries/tags.scm"
+    }
+  ]
+}

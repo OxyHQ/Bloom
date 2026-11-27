@@ -1,0 +1,248 @@
+============================================
+A leading dot or operator continues the line
+============================================
+
+fn f() {
+  Text("a")
+    .padding("md")
+  let s = p
+    && q
+    || r
+  let t = c
+    ? 1
+    : 2
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (call_expression
+        (navigation_expression
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (string_content)))))
+          (identifier))
+        (value_arguments
+          (value_argument
+            (string_literal
+              (string_content)))))
+      (let_declaration
+        (identifier)
+        (binary_expression
+          (binary_expression
+            (identifier)
+            (identifier))
+          (identifier)))
+      (let_declaration
+        (identifier)
+        (ternary_expression
+          (identifier)
+          (integer_literal)
+          (integer_literal))))))
+
+=======================================================
+A leading minus, spread or range starts a new statement
+=======================================================
+
+fn f() {
+  a
+  -b
+  x = 1; y = 2
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (identifier)
+      (prefix_expression
+        (identifier))
+      (assignment
+        (identifier)
+        (integer_literal))
+      (assignment
+        (identifier)
+        (integer_literal)))))
+
+===============================
+Else and catch on the next line
+===============================
+
+fn f() {
+  if a {
+    b()
+  }
+  else {
+    c()
+  }
+  do {
+    try d()
+  }
+  catch {
+    e()
+  }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (if_expression
+        (identifier)
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments)))
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments))))
+      (do_statement
+        (block
+          (try_expression
+            (call_expression
+              (identifier)
+              (value_arguments))))
+        (catch_clause
+          (block
+            (call_expression
+              (identifier)
+              (value_arguments))))))))
+
+======================================
+A comment line inside a modifier chain
+======================================
+
+fn f() {
+  Text("a")
+    // why the padding
+    .padding("md")
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (call_expression
+        (navigation_expression
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (string_content)))))
+          (comment)
+          (identifier))
+        (value_arguments
+          (value_argument
+            (string_literal
+              (string_content))))))))
+
+===========================================================
+A line ending in an operator, a comma or an arrow continues
+===========================================================
+
+fn f(
+  a: Int,
+  b: Int,
+) -> Int {
+  let s = a +
+    b
+  return s
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier))
+    (block
+      (let_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (return_statement
+        (identifier)))))
+
+=============================
+No trailing closure in a head
+=============================
+
+fn f() {
+  if xs.isEmpty { a() }
+  while running { tick() }
+  for x in items.filter({ $0.ok }) { use(x) }
+  switch x { default: none }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (if_expression
+        (navigation_expression
+          (identifier)
+          (identifier))
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments))))
+      (while_statement
+        (identifier)
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments))))
+      (for_statement
+        (identifier)
+        (call_expression
+          (navigation_expression
+            (identifier)
+            (identifier))
+          (value_arguments
+            (value_argument
+              (closure_expression
+                (navigation_expression
+                  (shorthand_argument)
+                  (identifier))))))
+        (block
+          (call_expression
+            (identifier)
+            (value_arguments
+              (value_argument
+                (identifier))))))
+      (switch_expression
+        (identifier)
+        (switch_entry
+          (none_literal))))))

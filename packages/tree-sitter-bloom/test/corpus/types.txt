@@ -1,0 +1,108 @@
+====================
+Every kind of type
+====================
+
+let a: [String: [Int]]? = none
+let b: (Int, String) = pair
+let c: async (Draft) -> Result<Unit, String> = send
+let d: () async throws -> Void = load
+let e: some View = Text("")
+let f: any Titled = post
+let g: "small" | "large" = "small"
+let h: { name: String, "x-y": Int } = r
+let i: Int?? = none
+let j: Foreign<"ReturnType<typeof setTimeout>"> = t
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (optional_type
+      (dictionary_type
+        (user_type
+          (type_identifier))
+        (array_type
+          (user_type
+            (type_identifier)))))
+    (none_literal))
+  (property_declaration
+    (identifier)
+    (tuple_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (identifier))
+  (property_declaration
+    (identifier)
+    (function_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)
+        (type_arguments
+          (user_type
+            (type_identifier))
+          (user_type
+            (type_identifier)))))
+    (identifier))
+  (property_declaration
+    (identifier)
+    (function_type
+      (user_type
+        (type_identifier)))
+    (identifier))
+  (property_declaration
+    (identifier)
+    (opaque_type
+      (user_type
+        (type_identifier)))
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (string_literal)))))
+  (property_declaration
+    (identifier)
+    (existential_type
+      (user_type
+        (type_identifier)))
+    (identifier))
+  (property_declaration
+    (identifier)
+    (literal_union_type
+      (string_literal
+        (string_content))
+      (string_literal
+        (string_content)))
+    (string_literal
+      (string_content)))
+  (property_declaration
+    (identifier)
+    (record_type
+      (record_type_field
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (record_type_field
+        (string_literal
+          (string_content))
+        (user_type
+          (type_identifier))))
+    (identifier))
+  (property_declaration
+    (identifier)
+    (optional_type
+      (user_type
+        (type_identifier)))
+    (none_literal))
+  (property_declaration
+    (identifier)
+    (user_type
+      (type_identifier)
+      (type_arguments
+        (literal_union_type
+          (string_literal
+            (string_content)))))
+    (identifier)))

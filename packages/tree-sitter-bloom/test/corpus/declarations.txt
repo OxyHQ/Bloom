@@ -1,0 +1,863 @@
+================================
+A 0.x struct with field defaults
+================================
+
+pub struct Draft {
+  text: String = ""
+  sensitive: Bool = false,
+  type: String
+}
+
+---
+
+(source_file
+  (struct_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (struct_body
+      (field_declaration
+        (identifier)
+        (user_type
+          (type_identifier))
+        (string_literal))
+      (field_declaration
+        (identifier)
+        (user_type
+          (type_identifier))
+        (boolean_literal))
+      (field_declaration
+        (identifier)
+        (user_type
+          (type_identifier))))))
+
+================================================
+A 2.0 struct with stored and computed properties
+================================================
+
+public struct Post: Codable, Equatable {
+  public let id: String
+  public var likes: Int = 0
+  @CodingKey("avatar") public let avatarURL: URL?
+  public var title: String { text }
+}
+
+---
+
+(source_file
+  (struct_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (inheritance_clause
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (struct_body
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier))
+        (integer_literal))
+      (property_declaration
+        (modifiers
+          (attribute
+            (identifier)
+            (value_arguments
+              (value_argument
+                (string_literal
+                  (string_content)))))
+          (visibility_modifier))
+        (identifier)
+        (optional_type
+          (user_type
+            (type_identifier))))
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier))
+        (block
+          (identifier))))))
+
+========================
+A 0.x enum with payloads
+========================
+
+enum Load<T> {
+  loading
+  failed(message: String)
+  ready(T)
+}
+
+---
+
+(source_file
+  (enum_declaration
+    (type_identifier)
+    (type_parameters
+      (type_parameter
+        (type_identifier)))
+    (enum_body
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier)
+        (enum_case_payload
+          (enum_case_payload_item
+            (identifier)
+            (user_type
+              (type_identifier)))))
+      (enum_case
+        (identifier)
+        (enum_case_payload
+          (enum_case_payload_item
+            (user_type
+              (type_identifier))))))))
+
+======================================
+A 2.0 enum with case lists and members
+======================================
+
+public enum PrefKey: Codable, CaseIterable {
+  case likes, boosts
+  case replies(count: Int)
+
+  public var title: String {
+    "x"
+  }
+}
+
+---
+
+(source_file
+  (enum_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (inheritance_clause
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (enum_body
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier)
+        (enum_case_payload
+          (enum_case_payload_item
+            (identifier)
+            (user_type
+              (type_identifier)))))
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier))
+        (block
+          (string_literal
+            (string_content)))))))
+
+====================
+An observable class
+====================
+
+@Observable
+public final class FeedModel {
+  public private(set) var posts: [Post] = []
+  private let api: MentionAPI
+
+  public init(api: MentionAPI) { self.api = api }
+
+  public func like(_ post: Post) async {
+    posts[i].likes += 1
+  }
+}
+
+---
+
+(source_file
+  (class_declaration
+    (modifiers
+      (attribute
+        (identifier))
+      (visibility_modifier)
+      (member_modifier))
+    (type_identifier)
+    (class_body
+      (property_declaration
+        (modifiers
+          (visibility_modifier)
+          (visibility_modifier))
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier)))
+        (array_literal))
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (init_declaration
+        (modifiers
+          (visibility_modifier))
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (assignment
+            (navigation_expression
+              (identifier)
+              (identifier))
+            (identifier))))
+      (function_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (parameters
+          (parameter
+            (identifier)
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (assignment
+            (navigation_expression
+              (subscript_expression
+                (identifier)
+                (identifier))
+              (identifier))
+            (integer_literal)))))))
+
+====================
+An actor
+====================
+
+actor Counter {
+  var count = 0
+  func increment() -> Int { count += 1; count }
+}
+
+---
+
+(source_file
+  (class_declaration
+    (type_identifier)
+    (class_body
+      (property_declaration
+        (identifier)
+        (integer_literal))
+      (function_declaration
+        (identifier)
+        (parameters)
+        (user_type
+          (type_identifier))
+        (block
+          (assignment
+            (identifier)
+            (integer_literal))
+          (identifier))))))
+
+==================================================
+A protocol with property and function requirements
+==================================================
+
+public protocol Titled: Identifiable {
+  var id: String { get }
+  var title: String { get set }
+  static func make() -> Self
+  func badge(_ count: Int) -> String
+}
+
+---
+
+(source_file
+  (protocol_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (inheritance_clause
+      (user_type
+        (type_identifier)))
+    (protocol_body
+      (protocol_property_requirement
+        (identifier)
+        (user_type
+          (type_identifier))
+        (accessors))
+      (protocol_property_requirement
+        (identifier)
+        (user_type
+          (type_identifier))
+        (accessors))
+      (function_declaration
+        (modifiers
+          (member_modifier))
+        (identifier)
+        (parameters)
+        (user_type
+          (type_identifier)))
+      (function_declaration
+        (identifier)
+        (parameters
+          (parameter
+            (identifier)
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (user_type
+          (type_identifier))))))
+
+=================================
+An extension adding a conformance
+=================================
+
+extension Post: Titled {
+  public var title: String { text }
+  public func badge(_ count: Int) -> String { "\(title) (\(count))" }
+  static func == (a: Self, b: Self) -> Bool { a.id == b.id }
+}
+
+---
+
+(source_file
+  (extension_declaration
+    (type_identifier)
+    (inheritance_clause
+      (user_type
+        (type_identifier)))
+    (class_body
+      (property_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (user_type
+          (type_identifier))
+        (block
+          (identifier)))
+      (function_declaration
+        (modifiers
+          (visibility_modifier))
+        (identifier)
+        (parameters
+          (parameter
+            (identifier)
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (user_type
+          (type_identifier))
+        (block
+          (string_literal
+            (interpolation
+              (identifier))
+            (string_content)
+            (interpolation
+              (identifier))
+            (string_content))))
+      (function_declaration
+        (modifiers
+          (member_modifier))
+        (operator)
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier)))
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (user_type
+          (type_identifier))
+        (block
+          (binary_expression
+            (navigation_expression
+              (identifier)
+              (identifier))
+            (navigation_expression
+              (identifier)
+              (identifier))))))))
+
+====================
+Type aliases
+====================
+
+type Handler = (String) -> Unit
+public type Character = String
+type Page<T> = { items: [T], cursor: String? }
+
+---
+
+(source_file
+  (typealias_declaration
+    (type_identifier)
+    (function_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier))))
+  (typealias_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (user_type
+      (type_identifier)))
+  (typealias_declaration
+    (type_identifier)
+    (type_parameters
+      (type_parameter
+        (type_identifier)))
+    (record_type
+      (record_type_field
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier))))
+      (record_type_field
+        (identifier)
+        (optional_type
+          (user_type
+            (type_identifier)))))))
+
+================================
+0.x functions, async and generic
+================================
+
+fn double(x: Int) -> Int { x * 2 }
+async fn load(id: String) -> Result<Post, String> { ok(post) }
+pub fn first<T>(xs: [T]) -> T? { xs.first }
+fn total(base: Int, step: Int = 1, ..xs: [Int]) -> Int { base }
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier))
+    (block
+      (binary_expression
+        (identifier)
+        (integer_literal))))
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier)
+      (type_arguments
+        (user_type
+          (type_identifier))
+        (user_type
+          (type_identifier))))
+    (block
+      (call_expression
+        (identifier)
+        (value_arguments
+          (value_argument
+            (identifier))))))
+  (function_declaration
+    (modifiers
+      (visibility_modifier))
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (type_identifier)))
+    (parameters
+      (parameter
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier)))))
+    (optional_type
+      (user_type
+        (type_identifier)))
+    (block
+      (navigation_expression
+        (identifier)
+        (identifier))))
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))
+        (integer_literal))
+      (parameter
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier)))))
+    (user_type
+      (type_identifier))
+    (block
+      (identifier))))
+
+==================================================
+2.0 functions with labels, effects and constraints
+==================================================
+
+public func move(_ p: Point, to target: Point, by step: Int = 1) -> Point { target }
+func check(code: Int) throws(APIError) -> Int { code }
+func load() async throws -> Feed { try await api.get() }
+func firstIndex<T: Equatable>(_ xs: [T], of x: T) -> Int? { none }
+func describe<T>(_ item: T) -> String where T: Titled & Equatable { item.title }
+
+---
+
+(source_file
+  (function_declaration
+    (modifiers
+      (visibility_modifier))
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier))
+        (integer_literal)))
+    (user_type
+      (type_identifier))
+    (block
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (throws_clause
+      (user_type
+        (type_identifier)))
+    (user_type
+      (type_identifier))
+    (block
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameters)
+    (throws_clause)
+    (user_type
+      (type_identifier))
+    (block
+      (try_expression
+        (await_expression
+          (call_expression
+            (navigation_expression
+              (identifier)
+              (identifier))
+            (value_arguments))))))
+  (function_declaration
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (type_identifier)
+        (user_type
+          (type_identifier))))
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (optional_type
+      (user_type
+        (type_identifier)))
+    (block
+      (none_literal)))
+  (function_declaration
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (type_identifier)))
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier))
+    (where_clause
+      (type_identifier)
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (block
+      (navigation_expression
+        (identifier)
+        (identifier)))))
+
+====================
+Module constants
+====================
+
+let maxLength = 500
+public let allPrefKeys: [PrefKey] = [.likes, .boosts]
+pub default let x = 1
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (integer_literal))
+  (property_declaration
+    (modifiers
+      (visibility_modifier))
+    (identifier)
+    (array_type
+      (user_type
+        (type_identifier)))
+    (array_literal
+      (implicit_member_expression
+        (identifier))
+      (implicit_member_expression
+        (identifier))))
+  (property_declaration
+    (modifiers
+      (visibility_modifier)
+      (default_modifier))
+    (identifier)
+    (integer_literal)))
+
+===========================================
+An extern module and an extern native block
+===========================================
+
+extern module "./runtime" {
+  @extern("characters") private func graphemes(_ s: String) -> [String]
+  public let SDK_VERSION: String
+}
+
+extern native "BloomStorage" {
+  @extern("get") private func nativeGet(_ key: String) -> String?
+}
+
+---
+
+(source_file
+  (extern_declaration
+    (string_literal
+      (string_content))
+    (function_declaration
+      (modifiers
+        (attribute
+          (identifier)
+          (value_arguments
+            (value_argument
+              (string_literal
+                (string_content)))))
+        (visibility_modifier))
+      (identifier)
+      (parameters
+        (parameter
+          (identifier)
+          (identifier)
+          (user_type
+            (type_identifier))))
+      (array_type
+        (user_type
+          (type_identifier))))
+    (property_declaration
+      (modifiers
+        (visibility_modifier))
+      (identifier)
+      (user_type
+        (type_identifier))))
+  (extern_declaration
+    (string_literal
+      (string_content))
+    (function_declaration
+      (modifiers
+        (attribute
+          (identifier)
+          (value_arguments
+            (value_argument
+              (string_literal
+                (string_content)))))
+        (visibility_modifier))
+      (identifier)
+      (parameters
+        (parameter
+          (identifier)
+          (identifier)
+          (user_type
+            (type_identifier))))
+      (optional_type
+        (user_type
+          (type_identifier))))))
+
+====================
+A test
+====================
+
+test("a like counts once") {
+  let page = try await homeFeed()
+  #expect(page.items.count == 3)
+}
+
+---
+
+(source_file
+  (test_declaration
+    (string_literal
+      (string_content))
+    (block
+      (let_declaration
+        (identifier)
+        (try_expression
+          (await_expression
+            (call_expression
+              (identifier)
+              (value_arguments)))))
+      (call_expression
+        (identifier)
+        (value_arguments
+          (value_argument
+            (binary_expression
+              (navigation_expression
+                (navigation_expression
+                  (identifier)
+                  (identifier))
+                (identifier))
+              (integer_literal))))))))
+
+=====================================
+Contextual words as names
+=====================================
+
+public enum Visibility {
+  case public, followers, private
+  case open(since: Date)
+  static func parse(_ s: String) -> Visibility? { none }
+}
+
+func names(_ actors: [Actor]) -> [String] {
+  let type = "x"
+  return actors.map { actor in actor.name }.filter { (open, get) in open }
+}
+
+---
+
+(source_file
+  (enum_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (enum_body
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier))
+      (enum_case
+        (identifier)
+        (enum_case_payload
+          (enum_case_payload_item
+            (identifier)
+            (user_type
+              (type_identifier)))))
+      (function_declaration
+        (modifiers
+          (member_modifier))
+        (identifier)
+        (parameters
+          (parameter
+            (identifier)
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (optional_type
+          (user_type
+            (type_identifier)))
+        (block
+          (none_literal)))))
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier)))))
+    (array_type
+      (user_type
+        (type_identifier)))
+    (block
+      (let_declaration
+        (identifier)
+        (string_literal
+          (string_content)))
+      (return_statement
+        (call_expression
+          (navigation_expression
+            (call_expression
+              (navigation_expression
+                (identifier)
+                (identifier))
+              (closure_expression
+                (closure_parameters
+                  (identifier))
+                (navigation_expression
+                  (identifier)
+                  (identifier))))
+            (identifier))
+          (closure_expression
+            (closure_parameters
+              (identifier)
+              (identifier))
+            (identifier)))))))

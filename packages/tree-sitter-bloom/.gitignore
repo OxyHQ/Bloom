@@ -1,0 +1,10 @@
+build/
+prebuilds/
+target/
+node_modules/
+*.wasm
+*.node
+*.egg-info
+.venv/
+dist/
+Cargo.lock

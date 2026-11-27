@@ -1,0 +1,88 @@
+=======================================
+Named imports, type imports and aliases
+=======================================
+
+import { useTranslation } from "react-i18next"
+import { type ComponentType, lazy, memo as m } from "react"
+import {
+  PostRow,
+  type Post,
+} from "./PostRow.bloom"
+
+---
+
+(source_file
+  (import_declaration
+    (import_specifier
+      (identifier))
+    (string_literal
+      (string_content)))
+  (import_declaration
+    (import_specifier
+      (identifier))
+    (import_specifier
+      (identifier))
+    (import_specifier
+      (identifier)
+      (identifier))
+    (string_literal
+      (string_content)))
+  (import_declaration
+    (import_specifier
+      (identifier))
+    (import_specifier
+      (identifier))
+    (string_literal
+      (string_content))))
+
+====================
+Namespace import
+====================
+
+import * as Linking from "expo-linking"
+
+---
+
+(source_file
+  (import_declaration
+    (identifier)
+    (string_literal
+      (string_content))))
+
+====================
+Module imports (2.0)
+====================
+
+import Bloom
+import Mention.Posts
+
+---
+
+(source_file
+  (import_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (module_path
+      (identifier)
+      (identifier))))
+
+====================
+A dynamic import
+====================
+
+let Panel = lazy { import("./Panel") }
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (closure_expression
+        (dynamic_import
+          (value_arguments
+            (value_argument
+              (string_literal
+                (string_content)))))))))

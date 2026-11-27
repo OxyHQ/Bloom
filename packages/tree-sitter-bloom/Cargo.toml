@@ -1,0 +1,28 @@
+[package]
+authors = [ "Oxy" ]
+autoexamples = false
+categories = [ "parser-implementations", "parsing", "text-editors" ]
+description = "Bloom, the language by Oxy: a tree-sitter grammar for .bloom files"
+edition = "2024"
+keywords = [ "incremental", "parsing", "tree-sitter", "bloom" ]
+license-file = "LICENSE"
+name = "tree-sitter-bloom"
+readme = "README.md"
+repository = "https://github.com/OxyHQ/Bloom"
+homepage = "https://github.com/OxyHQ/Bloom/tree/main/packages/tree-sitter-bloom"
+version = "0.1.0"
+
+build = "bindings/rust/build.rs"
+include = [ "bindings/rust/*", "grammar.js", "queries/*", "src/*", "tree-sitter.json", "/LICENSE", "/README.md" ]
+
+[lib]
+path = "bindings/rust/lib.rs"
+
+[dependencies]
+tree-sitter-language = "0.1"
+
+[build-dependencies]
+cc = "1.2"
+
+[dev-dependencies]
+tree-sitter = "0.27.2"

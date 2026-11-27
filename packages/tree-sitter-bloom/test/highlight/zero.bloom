@@ -1,0 +1,66 @@
+import { useTranslation } from "react-i18next"
+// <- keyword.import
+//       ^ variable
+//                        ^ keyword.import
+//                             ^ string.special.path
+/// A draft.
+// <- comment.documentation
+pub struct Draft {
+// <- keyword.modifier
+//  ^ keyword.type
+//         ^ type
+  text: String = ""
+//^ property
+//      ^ type.builtin
+//               ^ string
+}
+enum Load<T> {
+// <- keyword.type
+//   ^ type
+//        ^ type
+  failed(message: String)
+//^ constant
+//       ^ variable.parameter
+}
+pub view Composer(maxLength: Int = 500) {
+//  ^ keyword.type
+//       ^ type
+//                ^ variable.parameter
+//                                 ^ number
+  @state draft = Draft()
+//^ attribute
+// ^ attribute
+//       ^ variable
+//               ^ constructor
+  async fn send() {
+//^ keyword.coroutine
+//      ^ keyword.function
+//         ^ function
+    match await onSend(draft) {
+//  ^ keyword.conditional
+//        ^ keyword.coroutine
+//              ^ function.call
+      case .ok(_) => draft = Draft()
+//    ^ keyword.conditional
+//          ^ constant
+//             ^ variable.builtin
+//                ^ operator
+      case .err(message) => toast(message, type: "error")
+//                          ^ function.call
+//                                         ^ variable.parameter
+    }
+  }
+  body {
+//^ keyword
+    TextField($draft.text, t("x"))
+//  ^ constructor
+//            ^ punctuation.special
+//                   ^ property
+      .padding("md")
+//     ^ function.method.call
+    Text("${left} left").foreground(left < 0 ? "error" : none)
+//        ^ punctuation.special
+//                       ^ function.method.call
+//                                                       ^ constant.builtin
+  }
+}

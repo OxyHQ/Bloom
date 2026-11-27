@@ -1,0 +1,26 @@
+===================================
+Line, doc and nested block comments
+===================================
+
+/// The draft a composer edits.
+// A plain comment.
+/* a block /* nested */ still the block */
+struct Draft {
+  text: String = "" // trailing
+}
+
+---
+
+(source_file
+  (comment)
+  (comment)
+  (block_comment)
+  (struct_declaration
+    (type_identifier)
+    (struct_body
+      (field_declaration
+        (identifier)
+        (user_type
+          (type_identifier))
+        (string_literal))
+      (comment))))

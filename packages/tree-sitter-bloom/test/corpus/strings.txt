@@ -1,0 +1,87 @@
+===============================
+Escapes and both interpolations
+===============================
+
+let a = "line\n\t\"quoted\" \\ \$ \u{1F600}"
+let b = "at \(p.x), \(p.y)"
+let c = "old ${count} form"
+let d = "nested \(a ? "x" : "y")"
+let e = "a // not a comment /* nor this */"
+let f = "$ alone"
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content)
+      (escape_sequence)
+      (escape_sequence)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)))
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content)
+      (interpolation
+        (navigation_expression
+          (identifier)
+          (identifier)))
+      (string_content)
+      (interpolation
+        (navigation_expression
+          (identifier)
+          (identifier)))))
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content)))
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content)
+      (interpolation
+        (ternary_expression
+          (identifier)
+          (string_literal
+            (string_content))
+          (string_literal
+            (string_content))))))
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content)))
+  (property_declaration
+    (identifier)
+    (string_literal
+      (string_content))))
+
+======================
+Raw multi-line strings
+======================
+
+let json = """
+  {"name": "\(name)", "tags": [""]}
+  """
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (raw_string_literal
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content))))

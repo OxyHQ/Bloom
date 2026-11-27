@@ -280,6 +280,12 @@ jobs:
       # expanded, through the compiler's addon built above.
       - name: Bloom VS Code grammar and snippets
         run: cd packages/bloom-vscode && bun run test
+      # The tree-sitter grammar: the committed parser is what grammar.js generates (the
+      # "Generated sources are committed" step below fails otherwise), its corpus and
+      # highlight assertions pass, and every .bloom file in the repository parses with no
+      # ERROR or MISSING node, so a construct bloomc gains that the grammar lacks fails here.
+      - name: Bloom tree-sitter grammar
+        run: cd packages/tree-sitter-bloom && bun run generate && bun run test
       # The extension as an installable .vsix, kept as this run's artifact
       # (Extensions: Install from VSIX...). vscode-extension-release.yml publishes
       # it once its version is new on main.

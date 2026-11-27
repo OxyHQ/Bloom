@@ -1,0 +1,42 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "bloom",
+      "camelcase": "Bloom",
+      "title": "Bloom",
+      "scope": "source.bloom",
+      "file-types": ["bloom"],
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
+      "locals": "queries/locals.scm",
+      "injection-regex": "^bloom$",
+      "class-name": "TreeSitterBloom",
+      "tags": "queries/tags.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "description": "Bloom, the language by Oxy: a tree-sitter grammar for .bloom files",
+    "authors": [
+      {
+        "name": "Oxy"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/OxyHQ/Bloom",
+      "homepage": "https://github.com/OxyHQ/Bloom/tree/main/packages/tree-sitter-bloom"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "java": false,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": false,
+    "zig": false
+  }
+}
