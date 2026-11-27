@@ -53,6 +53,8 @@ pub enum TsType {
     Query(String),
     /// `ReturnType<F>`: what the function type `F` returns.
     Returns(Box<TsType>),
+    /// `X["k"]`: the member `k` of the object type `X`, as TS's indexed access reads it.
+    Index(Box<TsType>, String),
     /// Anything else: foreign.
     Other,
 }
@@ -707,6 +709,17 @@ impl Reader {
                 }
                 _ => self.other(),
             },
+            // `FeedPostSlice['socialContext']`: that member's type, read where it is mapped.
+            TSType::TSIndexedAccessType(access) => match &access.index_type {
+                TSType::TSLiteralType(literal) => match &literal.literal {
+                    TSLiteral::StringLiteral(key) => TsType::Index(
+                        Box::new(self.ty(&access.object_type)),
+                        key.value.as_str().unwrap_or_default().to_string(),
+                    ),
+                    _ => self.other(),
+                },
+                _ => self.other(),
+            },
             TSType::TSFunctionType(function) => TsType::Fn(Box::new(self.function(
                 &function.type_parameters,
                 &function.params,
@@ -1316,6 +1329,42 @@ impl Mapper<'_> {
     }
 
     /// The type declaration a local name means in `file`, through its imports.
+    /// `X["k"]`'s member `k`, with the file its type's names resolve in: `X` an interface (or
+    /// one it extends), an alias of an object type, an object type, or itself `Y["j"]`.
+    fn index_member(
+        &mut self,
+        file: &Rc<TsFile>,
+        ty: &TsType,
+        key: &str,
+        depth: usize,
+    ) -> Option<(Rc<TsFile>, TsMember)> {
+        if depth > 12 {
+            return None;
+        }
+        match ty {
+            TsType::Object(members) => {
+                members.iter().find(|m| m.name == key).map(|m| (file.clone(), m.clone()))
+            }
+            TsType::Ref(name, args) if args.is_empty() => match self.type_decl(file, name, depth + 1)? {
+                (at, TsDecl::Interface { params, members, extends }) if params.is_empty() => {
+                    if let Some(member) = members.iter().find(|m| m.name == key) {
+                        return Some((at, member.clone()));
+                    }
+                    extends.iter().find_map(|parent| self.index_member(&at, parent, key, depth + 1))
+                }
+                (at, TsDecl::Alias { params, ty }) if params.is_empty() => {
+                    self.index_member(&at, &ty, key, depth + 1)
+                }
+                _ => None,
+            },
+            TsType::Index(object, inner) => {
+                let (at, member) = self.index_member(file, object, inner, depth + 1)?;
+                self.index_member(&at, &member.ty, key, depth + 1)
+            }
+            _ => None,
+        }
+    }
+
     fn type_decl(&mut self, file: &Rc<TsFile>, name: &str, depth: usize) -> Option<(Rc<TsFile>, TsDecl)> {
         if depth > 8 {
             return None;
@@ -1470,6 +1519,19 @@ impl Mapper<'_> {
             TsType::Ref(name, args) => self.reference(file, name, args, scope, path, depth),
             TsType::Query(name) => self.value_ty(file, name, path, depth + 1),
             TsType::Returns(function) => self.returns(file, function, scope, path, depth + 1),
+            TsType::Index(object, key) => match self.index_member(file, object, key, depth + 1) {
+                Some((at, member)) => {
+                    // An inline object's member is in this scope; a declaration's is its own.
+                    let scope =
+                        if matches!(**object, TsType::Object(_)) { scope.clone() } else { Vec::new() };
+                    let mut ty = self.optional_member(&at, &member, &scope, path, depth + 1);
+                    if member.optional && !matches!(ty, Ty::Option(_) | Ty::Foreign(_)) {
+                        ty = Ty::Option(Box::new(ty));
+                    }
+                    ty
+                }
+                None => Ty::Foreign(path.into()),
+            },
             TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
                 Ty::Foreign(path.into())
             }
@@ -1834,6 +1896,27 @@ impl Mapper<'_> {
         Ty::Adt(id, Vec::new())
     }
 
+    /// A member's type; `path` names the member. An optional one's parts are named through
+    /// `NonNullable<…>` (`NonNullable<T["context"]>["actors"]`), as TS indexes only a present
+    /// value; a `Foreign` one is the member as TS has it, `undefined` and all.
+    fn optional_member(
+        &mut self,
+        file: &Rc<TsFile>,
+        member: &TsMember,
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Ty {
+        if !member.optional {
+            return self.ty(file, &member.ty, scope, path, depth);
+        }
+        let present = format!("NonNullable<{path}>");
+        match self.ty(file, &member.ty, scope, &present, depth) {
+            Ty::Foreign(text) if *text == *present => Ty::Foreign(path.into()),
+            ty => ty,
+        }
+    }
+
     fn fields(
         &mut self,
         file: &Rc<TsFile>,
@@ -1846,7 +1929,7 @@ impl Mapper<'_> {
             .iter()
             .map(|member| {
                 let field_path = format!("{path}[\"{}\"]", member.name);
-                let mut ty = self.ty(file, &member.ty, scope, &field_path, depth);
+                let mut ty = self.optional_member(file, member, scope, &field_path, depth);
                 if member.optional && !matches!(ty, Ty::Option(_) | Ty::Foreign(_)) {
                     ty = Ty::Option(Box::new(ty));
                 }

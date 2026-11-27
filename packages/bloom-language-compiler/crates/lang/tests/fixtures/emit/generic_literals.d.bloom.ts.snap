@@ -1,0 +1,7 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface PickerProps {
+  readonly decision: "available" | "pending";
+  readonly onDecision: (p0: "available" | "pending") => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Picker())`), or from TSX as `toElement(Picker())`. */
+export declare const Picker: (props: PickerProps) => ComposedView;

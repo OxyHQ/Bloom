@@ -326,7 +326,10 @@ TS awaits rejects (`queryFn: { let page = (await api.list())?; page.items }`). M
 ### 4.6 Generics
 
 `fn first<T>(xs: [T]) -> T?`, `struct Page<T> { items: [T], cursor: String? }`,
-`enum Load<T>`. Type parameters are inferred at call sites.
+`enum Load<T>`. Type parameters are inferred at call sites. String literals given for a
+parameter that names one (`choices(["a", "b"], chosen, onChoose)`) are read after the call's
+other arguments, so `T` is what a typed argument says (a TS literal union) and the literals are
+checked against it; alone, they make it a `String`.
 
 A type parameter may be constrained (2.0): `func firstIndex<T: Equatable>(_ xs: [T], of x: T)`,
 `<T: Titled & Equatable>`, `where T: Titled`. Inside the function, a `T: P` value reads `P`'s
@@ -378,6 +381,9 @@ lands, and a `T?` field's check takes TS's `null` (`satisfies T | undefined | nu
 else a `Foreign` value checked as a `T?` reads TS's `null` as `none`: `((x) ?? undefined)
 satisfies T | undefined`, written once (a `??` chain whose last operand is already so checked is
 not given a second `?? undefined`, which TS calls always nullish).
+
+`x ?? e` whose two sides both fit what is expected is that type (`authors ?? []` where a
+`[Person]` is taken and `authors: [Author]?`, `Author` extending `Person`).
 
 `foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
 TS checks the whole where it lands; a TS value compared with `none` is compared loosely
@@ -444,6 +450,11 @@ A record literal where a dictionary `[String: V]` is expected is a dictionary li
 is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it
 (`let ICONS: [String: BloomIcon] = { mixed: RiGitMergeLine }`). A record, or a TS object type,
 fits a dictionary when each of its fields fits `V` (`let GAPS: [String: Float] = SPACING`).
+
+A TS indexed access type (`socialContext?: FeedPostSlice['socialContext']`) is the member it
+names, through interfaces (and those they extend), object type aliases and chains
+(`X['a']['b']`); an optional member is its type's optional, and its parts are named through
+`NonNullable<…>` in emitted TS. A member it cannot find is `Foreign`.
 
 A TS type named through re-exports (`export type { SurfaceRenderFn } from './types'` in a
 module's index, an `import`/`export` pair, `export *`) is the declaration it names, so a
@@ -793,7 +804,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   does (`HStack { title; rows }` is `HStack(title, ...rows)`: siblings, no wrapper); elsewhere
   it is one child, a list. A `[View]` is a child wherever one goes: a conditional's branch
   (`loading ? Text("…") : names.map(row)`), a node's children argument, and `Embed`'s value,
-  which takes a React node (`toElement(…)`).
+  which takes a React node (`toElement(…)`). So is a list of TS values (`Menu { glyph; rows }`
+  with `rows` from a TS function: TS checks its items where they land), an optional list (`c ?
+  rows : none`, one child, never spread), and a list literal line (`[row, c ? sheet : none]`,
+  its items `View?`).
 - **Modifiers are methods on `View`**, typed from `spec/language.json`: each node accepts its
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too

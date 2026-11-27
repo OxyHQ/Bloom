@@ -2,6 +2,7 @@
 import { c as $c } from "react/compiler-runtime";
 import { Embed, HStack, Text, VStack, toElement, view } from "@oxy.so/bloom-language";
 import type { Child } from "@oxy.so/bloom-language";
+import { badges } from "@/corpus";
 
 export function row(name: string): Child {
 return Text(name);
@@ -10,23 +11,26 @@ return Text(name);
 const $view0 = Text("Loading");
 const $view1 = Text("Nobody");
 const $view2 = Text("Names");
+const $view3 = Text("More");
+const $view4 = Text("First");
+const $view5 = Text("Last");
 export interface NamesProps {
   readonly names: readonly string[];
   readonly loading: boolean;
 }
 export const Names = view(function Names(props: NamesProps) {
 "use no memo";
-const $ = $c(3);
+const $ = $c(5);
 const { names, loading } = props;
 let $t0;
-if ($[0] !== names || $[1] !== loading) {
+if ($[2] !== names || $[3] !== loading) {
 const rows = names.map((v0) => (row)(v0));
-$t0 = VStack(loading ? $view0 : names.map((v0) => (row)(v0)), Embed(toElement((names.length === 0) ? $view1 : rows)), HStack((names.length === 0) ? $view1 : rows), HStack($view2, ...rows));
-$[0] = names;
-$[1] = loading;
-$[2] = $t0;
+$t0 = VStack(loading ? $view0 : names.map((v0) => (row)(v0)), Embed(toElement((names.length === 0) ? $view1 : rows)), HStack((names.length === 0) ? $view1 : rows), HStack($view2, ...rows), HStack(loading ? rows : undefined, $view3), HStack(...badges()), ($[0] !== loading ? ($[0] = loading, $[1] = [$view4, loading ? $view5 : undefined]) : $[1]));
+$[2] = names;
+$[3] = loading;
+$[4] = $t0;
 } else {
-$t0 = $[2];
+$t0 = $[4];
 }
 return $t0;
 });
