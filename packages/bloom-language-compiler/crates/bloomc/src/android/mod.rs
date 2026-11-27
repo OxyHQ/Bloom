@@ -1084,8 +1084,9 @@ mod tests {
         let component = std::fs::read_to_string(js.join("BloomImageViewNativeComponent.ts")).unwrap();
         assert!(component.contains("codegenNativeComponent<NativeProps>('BloomImageView')"), "{component}");
         assert!(js.join("NativeBloomImage.ts").is_file());
-        let pkg = json::parse(&std::fs::read_to_string(build.join("native/BloomImage/package.json")).unwrap())
-            .unwrap();
+        let pkg =
+            json::parse(&std::fs::read_to_string(build.join("native/BloomImage/package.json")).unwrap())
+                .unwrap();
         // A module with functions and a view: codegen writes both.
         assert_eq!(pkg.get("codegenConfig").get("type").as_str(), Some("all"));
         let _ = std::fs::remove_dir_all(&package.root);

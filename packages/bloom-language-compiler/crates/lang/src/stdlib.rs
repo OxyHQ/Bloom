@@ -61,11 +61,15 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     ),
     (
         "Native/BloomImage/android/so/oxy/bloom/image/BloomImageModule.kt",
-        include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageModule.kt"),
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageModule.kt"
+        ),
     ),
     (
         "Native/BloomImage/android/so/oxy/bloom/image/BloomImagePackage.kt",
-        include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImagePackage.kt"),
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImagePackage.kt"
+        ),
     ),
     (
         "Native/BloomImage/android/so/oxy/bloom/image/BloomImageView.kt",
@@ -73,7 +77,9 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     ),
     (
         "Native/BloomImage/android/so/oxy/bloom/image/BloomImageViewManager.kt",
-        include_str!("../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageViewManager.kt"),
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomImage/android/so/oxy/bloom/image/BloomImageViewManager.kt"
+        ),
     ),
     (
         "Native/BloomImage/android/so/oxy/bloom/image/Pipeline.kt",

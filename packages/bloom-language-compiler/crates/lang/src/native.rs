@@ -309,16 +309,23 @@ fn event_of(t: &TypeExpr) -> Option<Result<Vec<(String, Type)>, String>> {
             TypeKind::Record(fields) => fields
                 .iter()
                 .map(|(name, ty)| match type_of(ty) {
-                    Ok(Type::Void) | Ok(Type::Strings(_)) => {
-                        Err(format!("the event field `{}` is a String, Bool, number or an array or optional of them", name.name))
-                    }
+                    Ok(Type::Void) | Ok(Type::Strings(_)) => Err(format!(
+                        "the event field `{}` is a String, Bool, number or an array or optional of them",
+                        name.name
+                    )),
                     Ok(t) => Ok((name.name.clone(), t)),
                     Err(e) => Err(format!("the event field `{}`: {e}", name.name)),
                 })
                 .collect(),
-            _ => Err("an event's one parameter is a record of its fields (`({ width: Double }) -> Void`)".into()),
+            _ => {
+                Err("an event's one parameter is a record of its fields (`({ width: Double }) -> Void`)"
+                    .into())
+            }
         },
-        _ => Err("an event takes one record of its fields (`({ width: Double, height: Double }) -> Void`)".into()),
+        _ => {
+            Err("an event takes one record of its fields (`({ width: Double, height: Double }) -> Void`)"
+                .into())
+        }
     })
 }
 
@@ -466,7 +473,12 @@ pub fn component_spec(view: &NativeView) -> String {
             }
             PropType::Value(t) => match (&prop.default, t) {
                 (Some(default), Type::Bool | Type::Int | Type::Number | Type::Float | Type::String) => {
-                    format!("{}?: CodegenTypes.WithDefault<{}, {}>", prop.name, t.component_ts(), default.ts())
+                    format!(
+                        "{}?: CodegenTypes.WithDefault<{}, {}>",
+                        prop.name,
+                        t.component_ts(),
+                        default.ts()
+                    )
                 }
                 (_, Type::Optional(_)) => format!("{}?: {}", prop.name, t.component_ts()),
                 _ => format!("{}: {}", prop.name, t.component_ts()),
@@ -729,7 +741,9 @@ mod tests {
         assert!(spec.contains("export interface NativeProps extends ViewProps {"), "{spec}");
         assert!(spec.contains("  source?: string;"), "{spec}");
         assert!(
-            spec.contains("  contentFit?: CodegenTypes.WithDefault<'cover' | 'contain' | 'fill', 'contain'>;"),
+            spec.contains(
+                "  contentFit?: CodegenTypes.WithDefault<'cover' | 'contain' | 'fill', 'contain'>;"
+            ),
             "{spec}"
         );
         assert!(spec.contains("  transition?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;"), "{spec}");
@@ -762,19 +776,29 @@ mod tests {
             "{bridge}"
         );
         assert!(bridge.contains("    onLoad: onLoad === undefined ? undefined : (e: { nativeEvent: { width: number; height: number } }) => onLoad(e.nativeEvent),"), "{bridge}");
-        assert!(bridge.contains("    onDone: onDone === undefined ? undefined : () => onDone(),"), "{bridge}");
+        assert!(
+            bridge.contains("    onDone: onDone === undefined ? undefined : () => onDone(),"),
+            "{bridge}"
+        );
         // The module's functions still cross the TurboModule.
-        assert!(bridge.contains("export function prefetch(urls: readonly string[]): Promise<boolean> {"), "{bridge}");
+        assert!(
+            bridge.contains("export function prefetch(urls: readonly string[]): Promise<boolean> {"),
+            "{bridge}"
+        );
         assert!(bridge.contains("return module().prefetch(urls as Array<string>);"), "{bridge}");
     }
 
     #[test]
     fn what_a_view_cannot_carry_is_named() {
         let error = modules("extern native \"X\" {\n  func v(post: Post) -> View\n}\n").unwrap_err();
-        assert!(error.contains("the native view `X.v`: the prop `post`: `Post` is not a view prop"), "{error}");
+        assert!(
+            error.contains("the native view `X.v`: the prop `post`: `Post` is not a view prop"),
+            "{error}"
+        );
         let error = modules("extern native \"X\" {\n  func v(loaded: () -> Void) -> View\n}\n").unwrap_err();
         assert!(error.contains("the event `loaded` is named `on…`"), "{error}");
-        let error = modules("extern native \"X\" {\n  func v(onLoad: (Double) -> Void) -> View\n}\n").unwrap_err();
+        let error =
+            modules("extern native \"X\" {\n  func v(onLoad: (Double) -> Void) -> View\n}\n").unwrap_err();
         assert!(error.contains("an event's one parameter is a record of its fields"), "{error}");
         let error = modules("extern native \"X\" {\n  func f(_ fit: \"a\" | \"b\")\n}\n").unwrap_err();
         assert!(error.contains("`X.f`: a union of strings does not cross"), "{error}");
