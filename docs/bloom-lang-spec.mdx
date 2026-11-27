@@ -1091,7 +1091,9 @@ so a wrong path is a compile error.
   `bloom-lang-dts --root . <dirs>` writes them beside the sources (`bloomc build --out` writes
   them into its out directory). A `view` is a node factory, as in the embedded language: TSX draws it with
   `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
-  is a node like any other.
+  is a node like any other. A module constant that names a view (`public let PostItem =
+  PostItemContent`, TS's `memo(PostItemContent, eq)`) is declared as that view, `typeof
+  PostItemContent`, and a private view it names is declared beside it, unexported.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
