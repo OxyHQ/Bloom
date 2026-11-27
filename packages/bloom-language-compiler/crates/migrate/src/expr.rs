@@ -1088,6 +1088,41 @@ impl Tr<'_> {
     }
 
     /// `{ a: 1, b, 'x-y': 2, ...rest }` as the record `{ a: 1, b: b, "x-y": 2, ..rest }`.
+    /// `c ? { k: v, … } : {}` (or `c ? {} : { … }`) spread into a record: its fields,
+    /// each `k: c ? v : none`. `None` for any other spread.
+    fn conditional_fields(&mut self, e: &Expression) -> Option<String> {
+        let Expression::ConditionalExpression(c) = e.without_parentheses() else { return None };
+        fn object<'b, 'a>(e: &'b Expression<'a>) -> Option<&'b ObjectExpression<'a>> {
+            match e.without_parentheses() {
+                Expression::ObjectExpression(o) => Some(o),
+                _ => None,
+            }
+        }
+        let (fields, negate) = match (object(&c.consequent), object(&c.alternate)) {
+            (Some(f), Some(empty)) if empty.properties.is_empty() && !f.properties.is_empty() => (f, false),
+            (Some(empty), Some(f)) if empty.properties.is_empty() && !f.properties.is_empty() => (f, true),
+            _ => return None,
+        };
+        let mut pairs = Vec::new();
+        for property in &fields.properties {
+            let ObjectPropertyKind::ObjectProperty(p) = property else { return None };
+            let PropertyKey::StaticIdentifier(id) = &p.key else { return None };
+            if p.method || p.kind != oxc_ast::ast::PropertyKind::Init {
+                return None;
+            }
+            pairs.push((id.name.to_string(), &p.value));
+        }
+        let test = if negate { self.test_negated(&c.test) } else { self.test(&c.test, false) };
+        let out: Vec<String> = pairs
+            .into_iter()
+            .map(|(key, value)| {
+                let value = self.expr(value);
+                format!("{key}: {test} ? {value} : none")
+            })
+            .collect();
+        Some(out.join(", "))
+    }
+
     pub fn record(&mut self, object: &ObjectExpression) -> String {
         if let Some(dictionary) = self.dictionary(object) {
             return dictionary;
@@ -1096,6 +1131,13 @@ impl Tr<'_> {
         for property in &object.properties {
             let note = self.note(property.span().start);
             match property {
+                // `...(c ? { k: v } : {})`: the field when `c` holds, `k: c ? v : none` (a
+                // record's absent field is `none`).
+                ObjectPropertyKind::SpreadProperty(s)
+                    if let Some(fields) = self.conditional_fields(&s.argument) =>
+                {
+                    out.push(format!("{note}{fields}"))
+                }
                 ObjectPropertyKind::SpreadProperty(s) => {
                     out.push(format!("{note}..{}", self.expr(&s.argument)))
                 }

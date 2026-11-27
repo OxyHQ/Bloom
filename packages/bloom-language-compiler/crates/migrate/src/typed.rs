@@ -86,6 +86,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             }
             // Named arguments to a function whose one parameter is unnamed (a TS
             // options object, `(data: { text: string }) => void`): the record itself.
+            // `t("k", defaultValue: "x")`, `f(id, kind: k)` to a TS function whose last parameter
+            // is an options object: the trailing named arguments are that record.
+            ("B0207", _)
+                if d.message.starts_with("no parameter is named `")
+                    || (d.message.starts_with("missing argument(s): the ")
+                        && d.message.ends_with("(unlabelled)")) =>
+            {
+                call_args(source, start, end).and_then(|(a, b)| options_record(source, a, b))
+            }
             ("B0207", _) if d.message == "missing argument(s): ``" => call_args(source, start, end)
                 .filter(|(a, b)| {
                     let inner = &source[*a..*b];
@@ -547,6 +556,47 @@ fn subscript_open(source: &str, close: usize) -> Option<usize> {
 /// Whether `text` is a subscript read, `d[k]` (a receiver, then one bracket to the end).
 fn is_subscript(text: &str) -> bool {
     text.ends_with(']') && subscript_open(text, text.len() - 1).is_some_and(|o| o > 0)
+}
+
+/// The arguments `a..b` with their trailing named ones (`k: v`, all of them to the end) as
+/// one record: `x, k: v, l: w` → `x, { k: v, l: w }`. `None` when none is named or a
+/// positional one follows a named one.
+fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, String)> {
+    let inner = &source[a..b];
+    let mut parts: Vec<(usize, usize)> = Vec::new();
+    let (mut depth, mut quoted, mut from) = (0i32, false, 0usize);
+    let mut prev = ' ';
+    for (i, c) in inner.char_indices() {
+        match c {
+            '"' if prev != '\\' => quoted = !quoted,
+            '(' | '[' | '{' if !quoted => depth += 1,
+            ')' | ']' | '}' if !quoted => depth -= 1,
+            ',' if !quoted && depth == 0 => {
+                parts.push((from, i));
+                from = i + 1;
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    if !inner[from..].trim().is_empty() {
+        parts.push((from, inner.len()));
+    }
+    let named = |&(s, e): &(usize, usize)| {
+        let part = inner[s..e].trim();
+        part.split_once(':').is_some_and(|(k, _)| {
+            let k = k.trim();
+            !k.is_empty() && k.chars().all(|c| c.is_alphanumeric() || c == '_')
+        })
+    };
+    let first = parts.iter().position(named)?;
+    if !parts[first..].iter().all(named) {
+        return None;
+    }
+    let fields: Vec<&str> = parts[first..].iter().map(|&(s, e)| inner[s..e].trim()).collect();
+    let start = a + parts[first].0;
+    let lead = if first == 0 { "" } else { " " };
+    Some((start, b, format!("{lead}{{ {} }}", fields.join(", "))))
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
