@@ -107,7 +107,12 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             default_export: None,
         };
     }
-    let mut translated = module::translate(source, filename);
+    // A relative `filename` is read from `options.root` (the props files it opens, too).
+    let path = match &options.root {
+        Some(root) if Path::new(filename).is_relative() => root.join(filename).to_string_lossy().into_owned(),
+        _ => filename.to_string(),
+    };
+    let mut translated = module::translate(source, filename, &path);
     let default_export = named_default(&mut translated.text);
     let reviews = translated.text.matches(REVIEW_MARKER).count();
     if !translated.reasons.is_empty() {

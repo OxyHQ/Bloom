@@ -113,6 +113,8 @@ pub struct Tr<'s> {
     pub react_types: std::collections::BTreeSet<String>,
     /// Every imported local name (a JS global is only one when not imported).
     pub imported: HashSet<String>,
+    /// The file on disk (`filename` under the root): where its relative imports are read from.
+    pub path: String,
     /// Each imported local name's module specifier.
     pub import_sources: HashMap<String, String>,
     /// TS types the output names that the file did not import (a props type's fields
@@ -336,6 +338,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         used: HashSet::new(),
         js: Default::default(),
         imported: HashSet::new(),
+        path: filename.to_string(),
         import_sources: HashMap::new(),
         extra_imports: Vec::new(),
         react_types: Default::default(),
@@ -366,7 +369,22 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
     }
 }
 
-pub fn translate(source: &str, filename: &str) -> Translated {
+/// Reads `body`'s imports into `tr` (where names come from), for a file read only for its
+/// types (a props interface's): a file that does not import `React` names its global
+/// namespace.
+pub fn read_imports(tr: &mut Tr, body: &[Statement]) {
+    let mut imports = Imports::default();
+    for statement in body {
+        if let Statement::ImportDeclaration(import) = statement {
+            tr.import(import, &mut imports);
+        }
+    }
+    if !tr.react.contains_key("React") && !tr.imported.contains("React") {
+        tr.react.insert("React".into(), "*".into());
+    }
+}
+
+pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(filename).unwrap_or_default();
     let parsed = Parser::new(&allocator, source, source_type).parse();
@@ -384,6 +402,7 @@ pub fn translate(source: &str, filename: &str) -> Translated {
     }
     let program = parsed.program;
     let mut tr = new_tr(source, filename, Comments::new(source, &program.comments));
+    tr.path = path.to_string();
 
     // The imports first: every later decision depends on where a name comes from.
     let mut imports = Imports::default();
