@@ -789,7 +789,15 @@ impl<'a> Emitter<'a> {
         if info.kind == LocalKind::Ref {
             return format!("{}.current", js_name(&info.name));
         }
+        if let Some(renamed) = self.ck.renamed.get(&info.span) {
+            return renamed.clone();
+        }
         js_name(&info.name)
+    }
+
+    /// The JS name a binding declares: its own, or the one it takes where it shadows (`x$1`).
+    fn bound_name(&self, name: &Ident) -> String {
+        self.ck.renamed.get(&name.span).cloned().unwrap_or_else(|| js_name(&name.name))
     }
 
     /// A `@ref` passed to `.ref(x)`: a host view fills it, so it holds `null` when empty.
@@ -1358,7 +1366,8 @@ impl<'a> Emitter<'a> {
                 let annotation = v.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
                 let value = self.value_expr(&v.value);
-                let mut line = Frag::at(stmt.span, format!("let {}{annotation} = ", js_name(&v.name.name)));
+                let mut line =
+                    Frag::at(stmt.span, format!("let {}{annotation} = ", self.bound_name(&v.name)));
                 line.f(value).s(";");
                 self.push_stmt(line);
             }
@@ -1513,7 +1522,7 @@ impl<'a> Emitter<'a> {
     /// The JS binding a `let` pattern writes (`x`, `{ a, b: c }`, `[a, b]`).
     fn binding_target(&self, pattern: &Pattern) -> String {
         match &pattern.kind {
-            PatternKind::Bind(name) => js_name(&name.name),
+            PatternKind::Bind(name) => self.bound_name(name),
             PatternKind::Wildcard => "_".into(),
             PatternKind::Tuple(items) => {
                 // `(_, b)`: a hole, `[, b]`.
@@ -1535,6 +1544,9 @@ impl<'a> Emitter<'a> {
                     .iter()
                     .map(|(name, sub)| match sub {
                         Some(sub) => format!("{}: {}", prop_key(&name.name), self.binding_target(sub)),
+                        None if self.ck.renamed.contains_key(&name.span) => {
+                            format!("{}: {}", prop_key(&name.name), self.bound_name(name))
+                        }
                         None => js_name(&name.name),
                     })
                     .collect();
