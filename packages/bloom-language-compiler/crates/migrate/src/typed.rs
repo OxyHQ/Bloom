@@ -419,7 +419,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 }
                 Some((start, end, format!("{value} ?? \"\"")))
             }
-            // The `?? ""` above on a number: its digits when it is there, `x != none ? "${x!}" : ""`.
+            // The `?? ""` above on a number: its digits when it is there, `x != none ? "${x}" : ""` (narrowed).
             ("B0201", "\"\"")
                 if (d.message == "expected `Float?`, found `String`"
                     || d.message == "expected `Int?`, found `String`")
@@ -429,7 +429,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                 open.and_then(|open| {
                     let operand = &source[open..start - " ?? ".len()];
                     crate::expr::is_postfix_text(operand)
-                        .then(|| (open, end, format!("{operand} != none ? \"${{{operand}!}}\" : \"\"")))
+                        .then(|| (open, end, format!("{operand} != none ? \"${{{operand}}}\" : \"\"")))
                 })
             }
             // `i < 0` on an index Bloom gives as `Int?` (`indexOf`, `findIndex`: `none`, not `-1`).

@@ -1498,6 +1498,13 @@ impl Tr<'_> {
                         let body = self.arrow_view_lines(arrow);
                         format!("for {item} in {list} {{\n{typed}{body}\n}}")
                     }
+                    // `xs.map(({ a, b }) => …)`: each item, destructured first.
+                    ([param], true) if let BindingPattern::ObjectPattern(pattern) = &param.pattern => {
+                        let list = self.head_expr(&member.object);
+                        let destructure = self.record_pattern(pattern);
+                        let body = self.arrow_view_lines(arrow);
+                        format!("for item in {list} {{\nlet {destructure} = item\n{body}\n}}")
+                    }
                     _ => self.expr(e),
                 }
             }
