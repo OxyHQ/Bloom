@@ -1,7 +1,7 @@
 import type { Child, ComposedView } from "@oxy.so/bloom-language";
 export interface CardProps {
   readonly title: string;
-  readonly children?: Child | undefined;
+  readonly children?: Child | undefined | null;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Card())`), or from TSX as `toElement(Card())`. */
 export declare const Card: (props: CardProps) => ComposedView;

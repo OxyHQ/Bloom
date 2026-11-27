@@ -11,19 +11,19 @@ export interface ModsProps {
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Mods())`), or from TSX as `toElement(Mods())`. */
 export declare const Mods: (props: ModsProps) => ComposedView;
-export declare function end(onEnd: (() => void) | undefined, label: string | undefined): string;
+export declare function end(onEnd: (() => void) | undefined | null, label: string | undefined | null): string;
 export interface RowProps {
   readonly title: string;
   readonly active: boolean;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Row())`), or from TSX as `toElement(Row())`. */
 export declare const Row: (props: RowProps) => ComposedView;
-export declare function shown(name: string | undefined, bio: string | undefined): string;
-export declare function initial(name: string | undefined, fallback: string): string;
+export declare function shown(name: string | undefined | null, bio: string | undefined | null): string;
+export declare function initial(name: string | undefined | null, fallback: string): string;
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ListTitle())`), or from TSX as `toElement(ListTitle())`. */
 export declare const ListTitle: () => ComposedView;
 export declare function named(u: Author): number;
-export declare function present(u: Author | undefined): number;
+export declare function present(u: Author | undefined | null): number;
 export declare function pictured(u: Author): number;
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Player())`), or from TSX as `toElement(Player())`. */
 export declare const Player: () => ComposedView;

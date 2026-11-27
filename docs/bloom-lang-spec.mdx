@@ -1116,7 +1116,9 @@ so a wrong path is a compile error.
   `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
   is a node like any other. A module constant that names a view (`public let PostItem =
   PostItemContent`, TS's `memo(PostItemContent, eq)`) is declared as that view, `typeof
-  PostItemContent`, and a private view it names is declared beside it, unexported.
+  PostItemContent`, and a private view it names is declared beside it, unexported. A view's
+  `T?` prop and a function's `T?` parameter are declared `T | undefined | null`: TS's `null`
+  is `none` to Bloom, so a TS caller may pass either.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
