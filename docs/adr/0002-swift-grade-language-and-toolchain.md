@@ -331,7 +331,8 @@ The gate is **more than 80%**.
 | 2026-11-27 | #1007: props typed in another TS file written out as stored properties (2.0 has no `..Props`), barrels' re-exports, `then`/`catch` in place, `useMemo`/`useState` closures, `Readonly<T>`; with #1017 | 324 files (fd8a4290f) | 38.6% (+11.7% review) = 50.3% (42.9% without #1017) |
 | 2026-11-27 | #1007: TS's nominal-incompatible annotations of TS call results dropped, optional strings' truthiness; with #1017 | 324 files (fd8a4290f) | 38.9% (+12.0% review) = 50.9% |
 | 2026-11-27 | the same, with #1021 (on #1017: generic views, the corpus follow-ups) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
-| 2026-11-27 | #1007 rebased on main 7742f55fe (#1017, #1019 merged); `--from 0.x` names a default export and rewrites its importers; with #1021 (1caebfbb1) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = **52.8%** |
+| 2026-11-27 | #1007 rebased on main 7742f55fe (#1017, #1019 merged); `--from 0.x` names a default export and rewrites its importers; with #1021 (1caebfbb1) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
+| 2026-11-27 | the same, with #1026 (on #1021: none-defaulted fields optional, TS `T \| null` as `T?`, keyword field names, a `Foreign` value fits a record field) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = **53.7%** |
 
 The rate counts a file the compiler accepts. One emit bug found on 2026-11-27 (a TS function
 component drawn with a trailing builder is called as a function, and its builder's nodes are
