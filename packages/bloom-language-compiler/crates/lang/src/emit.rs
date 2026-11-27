@@ -2142,12 +2142,115 @@ impl<'a> Emitter<'a> {
         self.push_stmt(line);
     }
 
+    /// A TS component call's props: its labelled arguments and spreads, then its text children
+    /// (`TextFieldLabel { label }`), passed as they are.
+    fn component_props(&mut self, call: &Call) -> Vec<Frag> {
+        let mut props: Vec<Frag> = call
+            .args
+            .iter()
+            .filter(|a| a.label.is_some() || a.spread)
+            .map(|a| {
+                let mut entry = match &a.label {
+                    Some(label) => Frag::of(format!("{}: ", prop_key(&label.name))),
+                    None => Frag::of("..."),
+                };
+                entry.f(self.expr(&a.value));
+                entry
+            })
+            .collect();
+        if let Some(trailing) = call.trailing.as_ref().filter(|t| self.ck.text_children.contains(&t.span))
+            && let [Stmt { kind: StmtKind::Expr(line), .. }] = trailing.body.as_slice()
+        {
+            let slot = self.ck.component_slots.get(&trailing.span).map_or("children", String::as_str);
+            let mut entry = Frag::of(format!("{}: ", prop_key(slot)));
+            entry.f(self.expr(line));
+            props.push(entry);
+        }
+        props
+    }
+
+    /// Whether `expr` is a tree of TS components alone (`Suspense(fallback: none) { Panel(…) }`):
+    /// no modifier, no Bloom node and no branch in it, so it is a React element as TS writes it.
+    fn ts_tree(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.ts_tree(inner),
+            ExprKind::Call(call) if self.ck.calls.get(&expr.id) == Some(&CallRes::Component) => {
+                call.args.iter().all(|a| a.label.is_some() || a.spread)
+                    && match &call.trailing {
+                        None => true,
+                        Some(t) if self.ck.text_children.contains(&t.span) => true,
+                        Some(t) => {
+                            // Several lines are an array only as `children` (`jsxs`).
+                            let slot = self.ck.component_slots.contains_key(&t.span);
+                            !t.body.is_empty()
+                                && (t.body.len() == 1 || !slot)
+                                && t.body
+                                    .iter()
+                                    .all(|line| matches!(&line.kind, StmtKind::Expr(e) if self.ts_tree(e)))
+                        }
+                    }
+            }
+            _ => false,
+        }
+    }
+
+    /// A [`Self::ts_tree`] as the TS element it is: `$jsx(Suspense, { fallback: …, children:
+    /// $jsx(Panel, { … }) })`.
+    fn ts_element(&mut self, expr: &Expr) -> Frag {
+        let call = match &expr.kind {
+            ExprKind::Paren(inner) => return self.ts_element(inner),
+            ExprKind::Call(call) => call,
+            _ => unreachable!("a TS tree is a component call"),
+        };
+        self.type_imports.entry("react".into()).or_default().insert("ComponentProps".into());
+        let component = self.expr(&call.callee);
+        let mut props = self.component_props(call);
+        let mut many = false;
+        if let Some(trailing) = call.trailing.as_ref().filter(|t| !self.ck.text_children.contains(&t.span)) {
+            let children: Vec<Frag> = trailing
+                .body
+                .iter()
+                .filter_map(
+                    |line| if let StmtKind::Expr(e) = &line.kind { Some(self.ts_element(e)) } else { None },
+                )
+                .collect();
+            let slot = self.ck.component_slots.get(&trailing.span).map_or("children", String::as_str);
+            many = children.len() > 1;
+            let rendered =
+                if many { Frag::join(children, ", ").wrap("[", "]") } else { Frag::join(children, "") };
+            props.push(rendered.wrap(&format!("{}: ", prop_key(slot)), ""));
+        }
+        let jsx = if many {
+            self.import_name("react/jsx-runtime", "jsxs as $jsxs");
+            "$jsxs("
+        } else {
+            self.import_name("react/jsx-runtime", "jsx as $jsx");
+            "$jsx("
+        };
+        let object = if props.is_empty() { Frag::of("{}") } else { Frag::join(props, ", ").wrap("{ ", " }") };
+        let mut element = Frag::of(jsx);
+        element
+            .f(component.clone())
+            .s(", ")
+            .f(object)
+            .s(" satisfies ComponentProps<typeof ")
+            .f(component)
+            .s(">)");
+        element
+    }
+
     fn expr(&mut self, expr: &Expr) -> Frag {
         let mut out = Frag::default();
         out.mark(expr.span);
         // `.xxl` where a token goes: the token string.
         if let Some(token) = self.ck.swift_tokens.get(&expr.id) {
             out.s(&string_literal(token));
+            return out;
+        }
+        // A tree of TS components alone where TS takes a React element: the TS element itself,
+        // as the TS wrote it (no `LanguageRoot`, no `Embed` layers).
+        if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) && self.ts_tree(expr) {
+            out.f(self.ts_element(expr));
             return out;
         }
         out.f(self.expr_inner(expr));
@@ -3420,34 +3523,19 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Component => {
                 self.import_name(LANGUAGE, "Embed");
+                // TS components all the way down: one `Embed` of the TS element, with no render
+                // function and no `Embed` per child.
+                if call.trailing.as_ref().is_some_and(|t| !self.ck.text_children.contains(&t.span))
+                    && self.ts_tree(expr)
+                {
+                    return self.ts_element(expr).wrap("Embed(", ")");
+                }
                 self.import_name("react/jsx-runtime", "jsx as $jsx");
                 self.type_imports.entry("react".into()).or_default().insert("ComponentProps".into());
                 let component = self.expr(&call.callee);
-                let mut props: Vec<Frag> = call
-                    .args
-                    .iter()
-                    .filter(|a| a.label.is_some() || a.spread)
-                    .map(|a| {
-                        let mut entry = match &a.label {
-                            Some(label) => Frag::of(format!("{}: ", prop_key(&label.name))),
-                            None => Frag::of("..."),
-                        };
-                        entry.f(self.expr(&a.value));
-                        entry
-                    })
-                    .collect();
                 // The children are built inside the render function, so a static one is hoisted on
                 // its own even when the whole component is (the embedded pass would hoist it out).
-                // Text children (`TextFieldLabel { label }`) are passed as they are.
-                if let Some(trailing) =
-                    call.trailing.as_ref().filter(|t| self.ck.text_children.contains(&t.span))
-                    && let [Stmt { kind: StmtKind::Expr(line), .. }] = trailing.body.as_slice()
-                {
-                    let slot = self.ck.component_slots.get(&trailing.span).map_or("children", String::as_str);
-                    let mut entry = Frag::of(format!("{}: ", prop_key(slot)));
-                    entry.f(self.expr(line));
-                    props.push(entry);
-                }
+                let mut props = self.component_props(call);
                 let was_static = std::mem::replace(&mut self.in_static, false);
                 let children = call
                     .trailing
