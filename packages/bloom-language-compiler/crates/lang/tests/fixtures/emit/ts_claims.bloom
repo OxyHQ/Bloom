@@ -2,7 +2,7 @@
 // written on a value whose type comes from TS keeps its runtime form even where TS says the
 // value is always there: Mention's `viewPost?.authors?.map(…) ?? []` (PostItem) became
 // `viewPost.authors.map(…)`, and the row crashed on data without `authors`.
-import { FeedPost, lookupPost, useViewPost } from "@/corpus"
+import { FeedMeta, FeedPost, lookupPost, useViewPost } from "@/corpus"
 
 // The exact case: `authors` is `FeedAuthor[]` in TS, and the guard stays.
 public func authorIds(_ viewPost: FeedPost?) -> [String] {
@@ -44,4 +44,16 @@ public func userId(_ id: String, _ post: FeedPost) -> String? {
 
 public func authorCount(_ post: FeedPost) -> Int {
   (post.authors ?? []).count
+}
+
+// `{}` is the empty record where a struct's optional is expected too: PostItem's
+// `viewPost?.metadata ?? {}`, typed and not.
+public func metadata(_ viewPost: FeedPost?) -> FeedMeta {
+  let meta: FeedMeta = viewPost?.metadata ?? {}
+  return meta
+}
+
+public func lane(_ viewPost: FeedPost?) -> String {
+  let meta = viewPost?.metadata ?? {}
+  return meta.lane ?? ""
 }
