@@ -1,6 +1,5 @@
-// ADR 0002, example 2: Settings → Notifications.
-// Stand-ins (phase A has no protocols, `@Observable` or BloomUI's SwiftUI names):
-// `PrefKey.allCases` is an explicit list, `key.title` a function, the model a value.
+// ADR 0002, example 2: Settings → Notifications, cached on the device (KeyValueStore)
+// and titled in the reader's language (Resources/Localizable, checked at compile time).
 
 public enum LoadState {
   case loading
@@ -8,7 +7,7 @@ public enum LoadState {
   case ready
 }
 
-public enum PrefKey {
+public enum PrefKey: Codable {
   case likes
   case boosts
   case mentions
@@ -16,44 +15,47 @@ public enum PrefKey {
 
 let allKeys: [PrefKey] = [.likes, .boosts, .mentions]
 
-func title(_ key: PrefKey) -> String {
-  switch key {
-  case .likes:
-    "Likes"
-  case .boosts:
-    "Boosts"
-  case .mentions:
-    "Mentions"
+extension PrefKey {
+  var title: String {
+    switch self {
+    case .likes:
+      String(localized: "settings.likes")
+    case .boosts:
+      String(localized: "settings.boosts")
+    case .mentions:
+      String(localized: "settings.mentions")
+    }
   }
 }
 
-public struct Prefs: Equatable {
+public struct Prefs: Codable, Equatable {
   public var likes: Bool = true
   public var boosts: Bool = false
   public var mentions: Bool = true
 }
 
-func isOn(_ prefs: Prefs, _ key: PrefKey) -> Bool {
-  switch key {
-  case .likes:
-    prefs.likes
-  case .boosts:
-    prefs.boosts
-  case .mentions:
-    prefs.mentions
+extension Prefs {
+  func isOn(_ key: PrefKey) -> Bool {
+    switch key {
+    case .likes:
+      self.likes
+    case .boosts:
+      self.boosts
+    case .mentions:
+      self.mentions
+    }
+  }
+
+  func setting(_ key: PrefKey, _ on: Bool) -> Prefs {
+    Prefs(
+      likes: key == .likes ? on : self.likes,
+      boosts: key == .boosts ? on : self.boosts,
+      mentions: key == .mentions ? on : self.mentions,
+    )
   }
 }
 
-func set(_ prefs: Prefs, _ key: PrefKey, _ on: Bool) -> Prefs {
-  switch key {
-  case .likes:
-    Prefs(likes: on, boosts: prefs.boosts, mentions: prefs.mentions)
-  case .boosts:
-    Prefs(likes: prefs.likes, boosts: on, mentions: prefs.mentions)
-  case .mentions:
-    Prefs(likes: prefs.likes, boosts: prefs.boosts, mentions: on)
-  }
-}
+let store = KeyValueStore(name: "demo.settings")
 
 public struct NotificationSettings: View {
   @State private var state = LoadState.loading
@@ -62,34 +64,32 @@ public struct NotificationSettings: View {
 
   func save(_ key: PrefKey, _ on: Bool) async {
     isSaving = true
-    prefs = set(prefs, key, on)
+    let next = prefs.setting(key, on)
+    prefs = next
+    store.setValue(Prefs.self, next, for: "notifications")
     isSaving = false
   }
 
   var body: some View {
-    VStack {
-      Text("Notifications").font(.title2)
+    VStack(spacing: .lg) {
+      Text("settings.title").font(.title2)
       switch state {
       case .loading:
-        Loading()
+        ProgressView()
       case .signedOut:
         Text("Sign in to manage notifications")
       case .ready:
-        VStack {
-          if isSaving { Loading().style("inline").size("sm") }
-          for key in allKeys {
-            HStack {
-              Text(title(key))
-              Spacer()
-              Toggle(Binding(get: isOn(prefs, key), set: { on in task { await save(key, on) } }))
-              .label(title(key))
-            }
+        VStack(spacing: .sm) {
+          if isSaving { ProgressView().controlSize(.sm) }
+          ForEach(allKeys) { key in
+            Toggle(key.title, isOn: Binding(get: prefs.isOn(key), set: { on in task { await save(key, on) } }))
           }
         }
-        .spacing(.sm)
       }
     }
-    .spacing(.lg)
-    .task { state = .ready }
+    .task {
+      prefs = store.value(Prefs.self, for: "notifications") ?? Prefs()
+      state = .ready
+    }
   }
 }

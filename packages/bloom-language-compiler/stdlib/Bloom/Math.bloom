@@ -1,0 +1,84 @@
+// Bloom (math): constants and functions over `Double` and `Int`.
+//
+// `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
+// (`rounded()`, `clamped(…)`, …) are the compiler's; these complete them.
+
+extern module "./runtime" {
+  private let PI: Double
+  private let E: Double
+  /// The square root of `x`.
+  public func sqrt(_ x: Double) -> Double
+  private func cbrt(_ x: Double) -> Double
+  /// `x` to the power `y`.
+  public func pow(_ x: Double, _ y: Double) -> Double
+  /// `e` to the power `x`.
+  public func exp(_ x: Double) -> Double
+  /// The natural logarithm of `x`.
+  public func log(_ x: Double) -> Double
+  /// The base-2 logarithm of `x`.
+  public func log2(_ x: Double) -> Double
+  /// The base-10 logarithm of `x`.
+  public func log10(_ x: Double) -> Double
+  /// The sine of `x` (radians).
+  public func sin(_ x: Double) -> Double
+  /// The cosine of `x` (radians).
+  public func cos(_ x: Double) -> Double
+  /// The tangent of `x` (radians).
+  public func tan(_ x: Double) -> Double
+  private func asin(_ x: Double) -> Double
+  private func acos(_ x: Double) -> Double
+  private func atan(_ x: Double) -> Double
+  /// The angle of the point (`x`, `y`) from the x axis (radians).
+  public func atan2(_ y: Double, _ x: Double) -> Double
+  /// The length of the vector (`a`, `b`).
+  public func hypot(_ a: Double, _ b: Double) -> Double
+  private func random() -> Double
+  private func randomInt(_ from: Int, _ to: Int) -> Int
+  private func isFiniteNumber(_ n: Double) -> Bool
+  private func isNaNNumber(_ n: Double) -> Bool
+  private func formatNumber(_ n: Double, _ locale: String, _ minFraction: Int, _ maxFraction: Int) -> String
+  private func formatCompact(_ n: Double, _ locale: String) -> String
+}
+
+extension Double {
+  /// π.
+  public static let pi: Double = PI
+
+  /// Euler's number.
+  public static let e: Double = E
+
+  /// The square root.
+  public var squareRoot: Double { sqrt(self) }
+
+  /// Whether the value is neither infinite nor NaN.
+  public var isFinite: Bool { isFiniteNumber(self) }
+
+  /// Whether the value is NaN.
+  public var isNaN: Bool { isNaNNumber(self) }
+
+  /// The value with `digits` decimal places, as a person in `locale` writes it
+  /// (`""`: the device's locale): `1234.5.formatted(digits: 1)` is `1,234.5` in English.
+  public func formatted(digits: Int = 0, locale: String = "") -> String {
+    formatNumber(self, locale, digits, digits)
+  }
+
+  /// Compact (`1.2K`, `3.4M`), as a person in `locale` writes it.
+  public func compact(locale: String = "") -> String { formatCompact(self, locale) }
+
+  /// A uniformly distributed value in `from..<to`.
+  public static func random(in from: Double, to: Double) -> Double { from + random() * (to - from) }
+}
+
+extension Int {
+  /// The value as a person in `locale` writes it (`1234` is `1,234` in English).
+  public func formatted(locale: String = "") -> String { formatNumber(self.toFloat(), locale, 0, 0) }
+
+  /// Compact (`1.2K`, `3.4M`): how Mention shows counts.
+  public func compact(locale: String = "") -> String { formatCompact(self.toFloat(), locale) }
+
+  /// Whether the value is even.
+  public var isEven: Bool { self % 2 == 0 }
+
+  /// A uniformly distributed integer in `from..<to`.
+  public static func random(in from: Int, to: Int) -> Int { randomInt(from, to) }
+}

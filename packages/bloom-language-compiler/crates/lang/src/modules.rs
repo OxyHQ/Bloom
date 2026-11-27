@@ -192,6 +192,7 @@ pub fn summary(path: &Path) -> Rc<Summary> {
     crate::externs::lower(&mut file);
     // Its members as the functions other files call (`T$m`).
     crate::extensions::lower(&mut file);
+    crate::codable::lower(&mut file, &mut Vec::new());
     let summary = Rc::new(summarize(&file));
     SUMMARIES.with(|s| s.borrow_mut().insert(path.to_path_buf(), (stamp, summary.clone())));
     summary
@@ -237,9 +238,35 @@ enum Hidden {
 /// string imports. Without a package above `filename`, does nothing.
 pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options) -> Resolution {
     let mut out = Resolution { diagnostics: crate::externs::lower(file), ..Resolution::default() };
+    let mut derived = crate::codable::lower(file, &mut out.diagnostics);
+    derived.extend(crate::model::query_names(file));
+    derived.extend(crate::extensions::actor_runners(file));
     let path = absolute(Path::new(filename));
     let tests_allowed = in_tests(&path, options);
     out.diagnostics.extend(crate::testing::lower(file, source, tests_allowed));
+    if crate::stdlib::contains(&path) {
+        // The standard library's files see one another's names, as one module's files do.
+        let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();
+        let own: BTreeSet<String> = file.items.iter().map(|i| i.kind.name().name.clone()).collect();
+        let mut offered: BTreeMap<String, Vec<Offer>> = BTreeMap::new();
+        for (name, _) in crate::stdlib::SOURCES.iter().filter(|(n, _)| n.ends_with(".bloom")) {
+            let sibling = dir.join(name);
+            if sibling == path {
+                continue;
+            }
+            for (item, access, _) in &summary(&sibling).items {
+                if *access != Access::Private {
+                    offered.entry(item.clone()).or_default().push(Offer::Bloom {
+                        file: sibling.clone(),
+                        module: crate::stdlib::MODULE.to_string(),
+                        own: true,
+                    });
+                }
+            }
+        }
+        import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
+        return out;
+    }
     let Some(root) = options.package.clone().or_else(|| find_root(&path)) else {
         return out;
     };
@@ -268,6 +295,10 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         return out;
     };
     out.in_module = true;
+    derived.extend(crate::bloomui::lower(file, &mut out.diagnostics));
+    if crate::i18n::lower(file, &absolute(&root), &mut out.diagnostics) {
+        derived.insert(crate::i18n::LOOKUP.to_string());
+    }
     let target = &graph.manifest.targets[index];
     let bindings = matches!(target.kind, TargetKind::Bindings { .. });
     let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();
@@ -282,7 +313,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             continue;
         }
         let bloom_file = import.source.ends_with(".bloom") || import.source == crate::testing::RUNTIME;
-        if !bindings && !options.allow_ts_imports && !bloom_file {
+        if !bindings
+            && !options.allow_ts_imports
+            && !bloom_file
+            && !crate::codable::is_synthetic(import.source_span)
+        {
             out.diagnostics.push(string_import(&import));
         }
         kept.push(import);
@@ -310,11 +345,12 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     }
 
     // Every name the file's module and imports offer: (name → where).
-    let own: BTreeSet<&str> = file.items.iter().map(|i| i.kind.name().name.as_str()).collect();
+    let own: BTreeSet<String> = file.items.iter().map(|i| i.kind.name().name.clone()).collect();
     let mut offered: BTreeMap<String, Vec<Offer>> = BTreeMap::new();
     let mut hidden = HashMap::new();
     for sibling in graph.files(index) {
-        if sibling == path {
+        // `X.native.bloom` and `X.web.bloom` are alternatives (one per platform), not siblings.
+        if sibling == path || alternatives(&sibling, &path) {
             continue;
         }
         out.reads.push(sibling.clone());
@@ -322,11 +358,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             if *access == Access::Private {
                 hidden.insert(name.clone(), Hidden::Private { file: sibling.clone() });
             } else {
-                offered.entry(name.clone()).or_default().push(Offer::Bloom {
-                    file: sibling.clone(),
-                    module: target.name.clone(),
-                    own: true,
-                });
+                offer(
+                    &mut offered,
+                    name,
+                    Offer::Bloom { file: sibling.clone(), module: target.name.clone(), own: true },
+                );
             }
         }
     }
@@ -337,11 +373,15 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                     out.reads.push(file_path.clone());
                     for (name, access, _) in &summary(&file_path).items {
                         if *access == Access::Public {
-                            offered.entry(name.clone()).or_default().push(Offer::Bloom {
-                                file: file_path.clone(),
-                                module: import.name.clone(),
-                                own: false,
-                            });
+                            offer(
+                                &mut offered,
+                                name,
+                                Offer::Bloom {
+                                    file: file_path.clone(),
+                                    module: import.name.clone(),
+                                    own: false,
+                                },
+                            );
                         } else {
                             hidden.entry(name.clone()).or_insert(Hidden::Internal {
                                 module: import.name.clone(),
@@ -384,48 +424,30 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         }
     }
 
-    // The names the file uses, at their first use.
-    let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
-    for (name, span) in free_names(source) {
-        if own.contains(name.as_str()) {
-            continue;
-        }
-        let Some(offers) = offered.get(&name) else {
-            continue;
-        };
-        // This module's own names shadow imported ones.
-        let mine: Vec<&Offer> =
-            offers.iter().filter(|o| matches!(o, Offer::Bloom { own: true, .. })).collect();
-        let chosen: Vec<&Offer> = if mine.is_empty() { offers.iter().collect() } else { mine };
-        if chosen.len() > 1 {
-            let modules: Vec<String> = chosen.iter().map(|o| format!("`{}`", o.module())).collect();
-            out.diagnostics.push(
-                Diagnostic::error("B0807", span, format!("`{name}` is declared in more than one place"))
-                    .label(format!("in {}", modules.join(" and ")))
-                    .help("rename one of them: a module's names are one namespace, and so are its imports")
-                    .toolchain(SPEC),
-            );
-            continue;
-        }
-        let (key, specifier) = match chosen[0] {
-            Offer::Bloom { file: target_file, .. } => {
-                (target_file.to_string_lossy().into_owned(), relative_specifier(&dir, target_file))
+    // The standard library, implicitly (`crate::stdlib`): every module's names shadow it.
+    for std_file in crate::stdlib::ensure(&absolute(&root)) {
+        out.reads.push(std_file.clone());
+        for (name, access, _) in &summary(&std_file).items {
+            if *access == Access::Public {
+                offered.entry(name.clone()).or_default().push(Offer::Bloom {
+                    file: std_file.clone(),
+                    module: crate::stdlib::MODULE.to_string(),
+                    own: false,
+                });
             }
-            Offer::Runtime { specifier, .. } => (specifier.to_string(), specifier.to_string()),
-        };
-        let spec =
-            ImportSpec { type_only: false, name: Ident { name: name.clone(), span }, alias: None, span };
-        synthesized.entry(key).or_insert_with(|| (specifier, Vec::new())).1.push(spec);
+        }
     }
-    for (_, (specifier, specs)) in synthesized {
-        let span = specs[0].span;
-        file.imports.push(Import {
-            kind: ImportKind::Named(specs),
-            source: specifier,
-            source_span: span,
-            span,
+
+    // BloomUI's types and recipes that are the embedded language's own (M8): a package file
+    // names them without importing `@oxy.so/bloom-language`, as it names `VStack`.
+    for name in BLOOM_UI_NAMES {
+        offered.entry((*name).to_string()).or_default().push(Offer::Runtime {
+            specifier: "@oxy.so/bloom-language",
+            module: crate::stdlib::MODULE.to_string(),
         });
     }
+
+    import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
     // Two files of a module declaring one name.
     for item in &file.items {
         let name = &item.kind.name().name;
@@ -447,6 +469,108 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     }
     out.hidden = hidden;
     out
+}
+
+/// The embedded language's names a package file uses as BloomUI's, without an import.
+pub const BLOOM_UI_NAMES: &[&str] = &["IconComponent", "ViewModifier", "defineModifier", "defineTokens"];
+/// Those of [`BLOOM_UI_NAMES`] that are TS types only (imported `type`).
+const BLOOM_UI_TYPES: &[&str] = &["IconComponent", "ViewModifier"];
+
+/// Imports, into `file`, each name it uses (`free_names`, and the extension members
+/// written after a dot) from the one place `offered` has it.
+fn import_uses(
+    file: &mut File,
+    source: &str,
+    dir: &Path,
+    own: &BTreeSet<String>,
+    offered: &BTreeMap<String, Vec<Offer>>,
+    derived: &BTreeSet<String>,
+    out: &mut Resolution,
+) {
+    // The names the file uses, at their first use; an extension's member (`T$m`, `T$$m`)
+    // where `.m` is written.
+    let mut uses = free_names(source);
+    // What derived code (`Codable`) names, as if written at the start.
+    uses.extend(derived.iter().map(|n| (n.clone(), crate::codable::synthetic(Span::new(0, 0)))));
+    let members = member_names(source);
+    // `Box(0)` calls the class's `init` (`Box$$init`), declared beside it.
+    let called: BTreeMap<String, Span> = uses.iter().map(|(n, s)| (n.clone(), *s)).collect();
+    for name in offered.keys() {
+        if own.contains(name) {
+            continue;
+        }
+        if let Some((owner, "init", true)) = crate::extensions::demangle(name)
+            && let Some(span) = called.get(owner)
+        {
+            // Its own span: the class may be imported as a type only, its `init` never is.
+            uses.push((name.clone(), crate::codable::synthetic(*span)));
+            continue;
+        }
+        if let Some((_, member, _)) = crate::extensions::demangle(name)
+            && let Some(span) = members.get(member)
+        {
+            uses.push((name.clone(), *span));
+        }
+    }
+    let mut seen = BTreeSet::new();
+    uses.retain(|(name, _)| seen.insert(name.clone()));
+    let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
+    // A name the file imports itself (a TS import kept in the migration mode) is that import.
+    let written: BTreeSet<String> = file
+        .imports
+        .iter()
+        .flat_map(|i| match &i.kind {
+            ImportKind::Named(specs) => specs.iter().map(|s| s.local().name.clone()).collect(),
+            ImportKind::Namespace(name) => vec![name.name.clone()],
+            ImportKind::Module(_) => Vec::new(),
+        })
+        .collect();
+    for (name, span) in uses {
+        if own.contains(&name) || written.contains(&name) {
+            continue;
+        }
+        let Some(offers) = offered.get(&name) else {
+            continue;
+        };
+        // This module's own names shadow imported ones.
+        let mine: Vec<&Offer> =
+            offers.iter().filter(|o| matches!(o, Offer::Bloom { own: true, .. })).collect();
+        let mut chosen: Vec<&Offer> = if mine.is_empty() { offers.iter().collect() } else { mine };
+        if chosen.iter().any(|o| !o.is_std()) {
+            chosen.retain(|o| !o.is_std());
+        }
+        if chosen.len() > 1 {
+            let modules: Vec<String> = chosen.iter().map(|o| format!("`{}`", o.module())).collect();
+            out.diagnostics.push(
+                Diagnostic::error("B0807", span, format!("`{name}` is declared in more than one place"))
+                    .label(format!("in {}", modules.join(" and ")))
+                    .help("rename one of them: a module's names are one namespace, and so are its imports")
+                    .toolchain(SPEC),
+            );
+            continue;
+        }
+        let (key, specifier) = match chosen[0] {
+            // A platform alternative is imported by its base name (`./X`): Metro picks the
+            // platform's file, and the checker reads one of them.
+            Offer::Bloom { file: target_file, .. } => match platform_base(target_file) {
+                Some(base) => (base.to_string_lossy().into_owned(), relative_specifier(dir, &base)),
+                None => (target_file.to_string_lossy().into_owned(), relative_specifier(dir, target_file)),
+            },
+            Offer::Runtime { specifier, .. } => (specifier.to_string(), specifier.to_string()),
+        };
+        let type_only = BLOOM_UI_TYPES.contains(&name.as_str()) && matches!(chosen[0], Offer::Runtime { .. });
+        let spec = ImportSpec { type_only, name: Ident { name: name.clone(), span }, alias: None, span };
+        synthesized.entry(key).or_insert_with(|| (specifier, Vec::new())).1.push(spec);
+    }
+    for (_, (specifier, specs)) in synthesized {
+        let span = specs[0].span;
+        file.imports.push(Import {
+            kind: ImportKind::Named(specs),
+            source: specifier,
+            source_span: span,
+            span,
+        });
+    }
 }
 
 /// Whether tests may be written in the file at `path`: in a `.tests` target, or outside a package.
@@ -513,6 +637,13 @@ enum Offer {
 }
 
 impl Offer {
+    fn is_std(&self) -> bool {
+        match self {
+            Offer::Bloom { file, .. } => crate::stdlib::contains(file),
+            Offer::Runtime { module, .. } => module == crate::stdlib::MODULE,
+        }
+    }
+
     fn module(&self) -> &str {
         match self {
             Offer::Bloom { module, .. } | Offer::Runtime { module, .. } => module,
@@ -683,6 +814,33 @@ fn string_import(import: &Import) -> Diagnostic {
 
 /// Every name the file reads, with the span of its first use: an identifier
 /// that is not a member (`.name`), a label (`name:`) or a declaration's name.
+/// The member names written after `.` or `?.` (`x.padded(…)`, `T.m`), at their first use.
+fn member_names(source: &str) -> BTreeMap<String, Span> {
+    fn scan(source: &str, start: usize, end: usize, out: &mut BTreeMap<String, Span>) {
+        let tokens = lexer::lex(source, start, end).tokens;
+        for (i, token) in tokens.iter().enumerate() {
+            match &token.tok {
+                Tok::Ident(name)
+                    if i > 0 && matches!(tokens[i - 1].tok, Tok::P(P::Dot) | Tok::P(P::QuestionDot)) =>
+                {
+                    out.entry(name.clone()).or_insert(token.span);
+                }
+                Tok::Str { parts, .. } => {
+                    for part in parts {
+                        if let lexer::RawPart::Interp(span) = part {
+                            scan(source, span.start as usize, span.end as usize, out);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut out = BTreeMap::new();
+    scan(source, 0, source.len(), &mut out);
+    out
+}
+
 pub fn free_names(source: &str) -> Vec<(String, Span)> {
     let mut seen = BTreeSet::new();
     let mut out = Vec::new();
@@ -753,6 +911,34 @@ pub(crate) fn exports_of(from: &Path, specifier: &str, options: &Options) -> Vec
         }
     }
     out.into_iter().collect()
+}
+
+/// The platforms a file may be written for (`X.native.bloom`, Metro's platform extensions).
+pub const PLATFORMS: &[&str] = &["native", "ios", "android", "web"];
+
+/// `dir/X` for a platform file `dir/X.<platform>.bloom`.
+pub fn platform_base(path: &Path) -> Option<PathBuf> {
+    let stem = path.file_name()?.to_str()?.strip_suffix(".bloom")?;
+    let (base, platform) = stem.rsplit_once('.')?;
+    (PLATFORMS.contains(&platform) && !base.is_empty()).then(|| path.with_file_name(base))
+}
+
+/// Whether `a` and `b` are one module's alternatives for different platforms
+/// (`X.native.bloom` and `X.web.bloom`, or either beside the default `X.bloom`).
+fn alternatives(a: &Path, b: &Path) -> bool {
+    let key = |p: &Path| platform_base(p).or_else(|| p.to_str()?.strip_suffix(".bloom").map(PathBuf::from));
+    (platform_base(a).is_some() || platform_base(b).is_some()) && key(a).is_some() && key(a) == key(b)
+}
+
+/// Adds `offer` for `name`, once for a set of platform alternatives.
+fn offer(offered: &mut BTreeMap<String, Vec<Offer>>, name: &str, offer: Offer) {
+    let offers = offered.entry(name.to_string()).or_default();
+    if let Offer::Bloom { file, .. } = &offer
+        && offers.iter().any(|o| matches!(o, Offer::Bloom { file: other, .. } if alternatives(file, other)))
+    {
+        return;
+    }
+    offers.push(offer);
 }
 
 /// `./Row.bloom` or `../Posts/Row.bloom`: `to` from the directory `from`.

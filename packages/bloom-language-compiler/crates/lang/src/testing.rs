@@ -92,7 +92,8 @@ pub fn lower(file: &mut File, source: &str, allowed: bool) -> Vec<Diagnostic> {
                 generics: Vec::new(),
                 constraints: Vec::new(),
                 params: Vec::new(),
-                throws: None,
+                // A test may `try`: what it throws fails it (as a Swift test function).
+                throws: Some(Throws { span: item.span, ty: None }),
                 ret: None,
                 span: item.span,
                 body: test.body,
@@ -194,7 +195,9 @@ fn expect_in(e: &mut Expr, source: &str) {
                 expect_in_stmt(stmt, source);
             }
         }
-        ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Paren(inner) => expect_in(inner, source),
+        ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Force(inner) | ExprKind::Paren(inner) => {
+            expect_in(inner, source)
+        }
         ExprKind::If(i) => {
             expect_in_block(&mut i.then, source);
             match i.otherwise.as_deref_mut() {

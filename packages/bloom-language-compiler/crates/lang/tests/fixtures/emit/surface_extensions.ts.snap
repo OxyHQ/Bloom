@@ -36,7 +36,7 @@ return out;
 export const String$$separator: string = " · ";
 
 export function Array$second<Element>(self: readonly Element[]): Element | undefined {
-return (self.length > 1) ? self[1] : undefined;
+return (self.length > 1) ? self[1]! : undefined;
 }
 
 export function Int$doubled(self: number): number {

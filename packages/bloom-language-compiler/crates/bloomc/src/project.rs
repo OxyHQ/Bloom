@@ -343,6 +343,10 @@ mod tests {
     fn copy(from: &Path, to: &Path) {
         std::fs::create_dir_all(to).unwrap();
         for entry in std::fs::read_dir(from).unwrap().flatten() {
+            // A local build's `.bloom/` (its installed runtime) is not the package.
+            if entry.file_name() == ".bloom" {
+                continue;
+            }
             let target = to.join(entry.file_name());
             if entry.path().is_dir() {
                 copy(&entry.path(), &target);

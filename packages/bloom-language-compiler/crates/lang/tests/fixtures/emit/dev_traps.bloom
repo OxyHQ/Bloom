@@ -1,0 +1,9 @@
+// A dev build checks Swift's traps, with a clear message: `xs[i]` against the array's
+// bounds, and `x!` against `none`. A release build emits neither check.
+public func first(_ xs: [String]) -> String { xs[0] }
+
+public func maybe(_ xs: [String], _ i: Int) -> String? { xs.at(i) }
+
+public func holes(_ xs: [Int?]) -> Int { xs[0] ?? -1 }
+
+public func forced(_ name: String?) -> Int { name!.count }

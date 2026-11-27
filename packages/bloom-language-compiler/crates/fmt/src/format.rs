@@ -370,7 +370,10 @@ impl<'a> Formatter<'a> {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
-            ItemKind::Class(c) => self.type_body("class ", &c.name, &c.generics, &c.body, item.span),
+            ItemKind::Class(c) => {
+                let keyword = if c.actor { "actor " } else { "class " };
+                self.type_body(keyword, &c.name, &c.generics, &c.body, item.span)
+            }
             ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
             // A binding module's declarations stay as written (they are curated by hand).
             ItemKind::Extern(_) => return text(self.slice(item.span).trim_end().to_string()),
@@ -908,7 +911,8 @@ impl<'a> Formatter<'a> {
 
     fn let_stmt(&mut self, l: &LetStmt) -> Doc {
         let pattern = self.pattern(&l.pattern);
-        self.binding_decl("let ", pattern, l.ty.as_ref(), &l.value)
+        let keyword = if l.is_async { "async let " } else { "let " };
+        self.binding_decl(keyword, pattern, l.ty.as_ref(), &l.value)
     }
 
     // ----- expressions -----
@@ -985,9 +989,11 @@ impl<'a> Formatter<'a> {
                 concat(vec![self.expr(c), text(" ? "), self.expr(a), text(" : "), self.expr(b)])
             }
             ExprKind::Await(inner) => concat(vec![text("await "), self.expr(inner)]),
-            ExprKind::Try(_) | ExprKind::Field(..) | ExprKind::OptField(..) | ExprKind::Index(..) => {
-                self.chain(e, context)
-            }
+            ExprKind::Try(_)
+            | ExprKind::Force(_)
+            | ExprKind::Field(..)
+            | ExprKind::OptField(..)
+            | ExprKind::Index(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1068,6 +1074,10 @@ impl<'a> Formatter<'a> {
                     links.push(Link::Try);
                     current = inner;
                 }
+                ExprKind::Force(inner) => {
+                    links.push(Link::Force);
+                    current = inner;
+                }
                 _ => break,
             }
         }
@@ -1094,6 +1104,7 @@ impl<'a> Formatter<'a> {
                     lines.last_mut().expect("head").extend([text("["), index, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
+                Link::Force => lines.last_mut().expect("head").push(text("!")),
             }
         }
         let mut lines = lines.into_iter().map(concat);
@@ -1442,6 +1453,7 @@ enum Link<'e> {
     Member { name: &'e Ident, optional: bool, call: Option<&'e Call> },
     Index(&'e Expr),
     Try,
+    Force,
 }
 
 fn is_member(callee: &Expr) -> bool {

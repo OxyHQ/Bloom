@@ -1,0 +1,50 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { TextField } from "@oxy.so/bloom-language/inputs";
+import { useRef, useState } from "react";
+import { type ViewInstance } from "@/types/views";
+
+class Ticks {
+  count: number = 0;
+  last: string | undefined = undefined;
+}
+
+const $view0 = Button(Text("Go"));
+export interface SearchProps {
+  readonly onDone: () => void;
+}
+export const Search = view(function Search(props: SearchProps) {
+"use no memo";
+const $ = $c(10);
+const { onDone } = props;
+const [ticks, setTicks] = useState<Ticks>(() => new Ticks());
+const field = useRef<ViewInstance | null>(null);
+const [query, setQuery] = useState<string>("");
+let submit: () => void;
+if ($[0] !== query || $[1] !== onDone) {
+submit = (): void => {
+ticks.count = ticks.count + (1);
+ticks.last = query;
+if ((field.current ?? undefined) !== undefined) {
+onDone();
+}
+};
+$[0] = query;
+$[1] = onDone;
+$[2] = submit;
+} else {
+submit = $[2];
+}
+let $t0;
+if ($[7] !== query || $[8] !== submit) {
+$t0 = VStack(($[3] !== query ? ($[3] = query, $[4] = TextField([query, setQuery] as const, "Search").ref(field)) : $[4]), ($[5] !== submit ? ($[5] = submit, $[6] = $view0.onPress(() => submit())) : $[6]));
+$[7] = query;
+$[8] = submit;
+$[9] = $t0;
+} else {
+$t0 = $[9];
+}
+return $t0;
+});
+

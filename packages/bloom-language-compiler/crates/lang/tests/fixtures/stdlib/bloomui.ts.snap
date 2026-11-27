@@ -1,0 +1,41 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, Icon, Loading, ScrollView, Spacer, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Toggle } from "@oxy.so/bloom-language/inputs";
+import { useState } from "react";
+import { LikeIcon } from "@oxy.so/bloom/icons/LikeIcon";
+import { RiBookmarkLine } from "@oxy.so/bloom/icons/RiBookmarkLine";
+import { type Date, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
+
+const $view0 = Icon(LikeIcon);
+const $view1 = HStack(Icon(RiBookmarkLine), Text("Saved")).spacing("xs");
+const $view2 = Text("Likes");
+const $view3 = Spacer();
+const $view4 = VStack(Text("Reposts"), Text("When someone reposts you").foreground("muted").font("body-2")).align("start");
+const $view5 = Loading();
+export interface RowProps {
+  readonly names: readonly string[];
+  readonly likes: number;
+  readonly createdAt: Date;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(20);
+const { names, likes, createdAt } = props;
+const [on, setOn] = useState<boolean>(true);
+let $t0;
+if ($[15] !== names || $[16] !== likes || $[17] !== on || $[18] !== createdAt) {
+$t0 = VStack(names.map((name) => Text(name).foreground("muted").lines(1)), ($[11] !== likes || $[12] !== on || $[13] !== createdAt ? ($[11] = likes, $[12] = on, $[13] = createdAt, $[14] = HStack(($[2] !== likes || $[3] !== on ? ($[2] = likes, $[3] = on, $[4] = Button($view0, ($[0] !== likes ? ($[0] = likes, $[1] = Text(`${likes}`)) : $[1])).style("plain").size("sm").onPress(() => {
+setOn((on) => !on);
+})) : $[4]), $view1, ($[5] !== createdAt ? ($[5] = createdAt, $[6] = Text(Date$formatted(createdAt, "relative"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = HStack($view2, $view3, Toggle([on, setOn] as const).label("Likes"))) : $[8]), ($[9] !== on ? ($[9] = on, $[10] = HStack($view4, $view3, Toggle([on, setOn] as const).label("Reposts"))) : $[10])).align("center").spacing("xs")) : $[14]), ScrollView(VStack(...names.map((name) => Text(name)))), $view5).spacing("sm");
+$[15] = names;
+$[16] = likes;
+$[17] = on;
+$[18] = createdAt;
+$[19] = $t0;
+} else {
+$t0 = $[19];
+}
+return $t0;
+});
+

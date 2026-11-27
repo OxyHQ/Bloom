@@ -194,6 +194,7 @@ impl Walker<'_> {
             | ExprKind::Unary(_, a)
             | ExprKind::Await(a)
             | ExprKind::Try(a)
+            | ExprKind::Force(a)
             | ExprKind::Throwing(_, a)
             | ExprKind::Field(a, _)
             | ExprKind::OptField(a, _) => self.expr(a),

@@ -1,0 +1,13 @@
+let package = Package(
+  name: "MentionPort",
+  platforms: [.iOS(17), .android(26), .web],
+  dependencies: [
+    .package("Bloom", from: "23.9.1"),
+  ],
+  targets: [
+    .module("API"),
+    .module("Posts"),
+    .module("Feed", dependencies: ["API", "Posts"]),
+    .module("Settings", dependencies: ["API"]),
+  ]
+)

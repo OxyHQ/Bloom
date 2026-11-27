@@ -1,0 +1,38 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { ScrollView, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { sleep, refreshAction } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { type Duration, Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
+
+export async function reload(): Promise<void> {
+(await (async () => {
+try {
+return await (sleep(Duration$$milliseconds(10)));
+} catch {
+return undefined;
+}
+})());
+}
+
+const $fn0 = async () => await (reload());
+export interface FeedProps {
+  readonly names: readonly string[];
+}
+export const Feed = view(function Feed(props: FeedProps) {
+"use no memo";
+const $ = $c(3);
+const { names } = props;
+const [__refreshing0, set__refreshing0] = useState<boolean>(false);
+let $t0;
+if ($[0] !== names || $[1] !== __refreshing0) {
+$t0 = ScrollView(VStack(...names.map((name) => Text(name)))).refreshable(refreshAction([__refreshing0, set__refreshing0] as const, $fn0));
+$[0] = names;
+$[1] = __refreshing0;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+

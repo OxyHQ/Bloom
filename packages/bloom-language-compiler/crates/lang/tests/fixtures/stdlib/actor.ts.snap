@@ -1,0 +1,32 @@
+import { sleep, actorIsolated, actorIsolatedAsyncThrowing } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { type Duration, Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
+
+export class Counter {
+  count: number = 0;
+}
+
+function Counter$increment$isolated(self: Counter): number {
+self.count = self.count + (1);
+return self.count;
+}
+
+async function Counter$add$isolated(self: Counter, n: number): Promise<number> {
+await (sleep(Duration$$milliseconds(1.0)));
+self.count = self.count + (n);
+return Counter$increment$isolated(self);
+}
+
+export async function Counter$increment(self: Counter): Promise<number> {
+return await (actorIsolated(self, () => Counter$increment$isolated(self)));
+}
+
+export async function Counter$add(self: Counter, n: number): Promise<number> {
+return await (actorIsolatedAsyncThrowing(self, async () => await (Counter$add$isolated(self, n))));
+}
+
+export async function tick(counter: Counter): Promise<number> {
+const a = await (Counter$increment(counter));
+const b = await (Counter$add(counter, 2));
+return a + b;
+}
+

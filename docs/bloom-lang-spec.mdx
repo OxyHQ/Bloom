@@ -258,6 +258,10 @@ is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditi
   optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
   Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
+- An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
+  programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
+  `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
+  `xs.at(i)`, `first` and `last` are the optional reads; a dictionary's `d[k]` stays `V?`.
 
 ### 4.4 Structs
 
@@ -300,6 +304,9 @@ link whose own type is optional is not read through (`b?.note.trimmed()` with `n
 is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
 is not `none`. An optional call of a Unit function is Unit.
+`x!` (2.0, Swift's force unwrap, written against its operand) is the value of an optional;
+`none` there is a trap. A dev build checks it (`$unwrap(x)`, a `TypeError`); a release build
+emits TS's `x!`, so it costs nothing. `!` on a value that is never `none` is B0201.
 `Result<T, E>` has cases `ok(T)` and `err(E)`; `expr?` in a function returning
 `Result<_, E>` returns the error early (in one returning `T?`, a `none` early). Inside
 `catching { … }` and in a closure TS calls (a TS parameter's function, sync or async, or one of no Bloom type),
@@ -449,6 +456,18 @@ fields only (`useObserved(model, ["isLoading", "posts"])`) and draws again only 
 changes; a cache that reads the model as a whole (a member call) depends on the subscription's
 version. A class compares by identity (`==` is `===`).
 
+**A reference held by a view** (2.0, in place of 0.x's `@ref`) is a class in `@State`:
+`@State private var ticks = Ticks()` makes the object once (`useState(() => new Ticks())`) and
+keeps it across renders. Writing its fields (`ticks.count += 1`) changes the object in place and
+draws nothing, so it costs what `useRef` does: one hook, no render. Assigning the state a new
+object (`ticks = Ticks()`) draws again, as any `@State`. A host view's instance is
+`@State private var field = ViewRef<ViewInstance>()`: `.ref(field)` (or `.inputRef(field)`, a
+TS prop `ref: field`) gives the ref itself for the host view to fill, and `field` reads as
+`ViewInstance?` outside the body (`none` until it is mounted). It compiles to
+`useRef<ViewInstance | null>(null)`, as 0.x's `@ref field: ViewInstance? = none` did.
+A class declared in another file of the module is imported with its `init` (`Box(0)` is
+`Box$$init`), so a reference's class may live in its own file.
+
 ## 5. Values, functions and closures
 
 ```bloom
@@ -489,7 +508,7 @@ object passed last**: `t("key", defaultValue: "General")` is `t("key", { default
 
 | Level | Operators | Assoc. |
 |---|---|---|
-| postfix | call, `.x`, `?.x`, `[i]`, `?` | left |
+| postfix | call, `.x`, `?.x`, `[i]`, `?`, `!` (no space before it) | left |
 | prefix | `!` `-` `await` | right |
 | multiplicative | `*` `/` `%` | left |
 | additive | `+` `-` (`+` also joins `String`s) | left |
@@ -631,6 +650,11 @@ are labelled arguments. `Task { … }` starts async work without awaiting it (0.
 `() -> View` is expected and written over several lines is a builder (Swift's `@ViewBuilder`):
 each line, `if` and `for` a child, compiled to the list of them, which the stack it lands in
 flattens (`let rows: () -> View` called as `rows()` in a `VStack`).
+A view's stored `View` or `View?` (`var children: View? = none`, `let content: View`) takes the
+trailing builder when no function parameter does, as Swift's `@ViewBuilder let content: Content`
+does: `Card(title: "Hi") { Text("inside") }` passes the builder's lines as the prop's value (one
+child, or the list of them), built in the caller's render, not a closure. The last such
+property not given by label takes it.
 A view holding an `@Observable` model subscribes to
 the fields it reads (section 4.9). Phase A does not compile yet: computed properties of a view
 other than `body`, and `Button`'s trailing action (its label is the trailing block, as in 0.x).
@@ -645,6 +669,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
   (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
+- **Icons by name (BloomUI, 2.0):** `Icon(.close)` names a glyph of Bloom's icon set; the
+  compiler imports its component (`RiCloseLine` from `@oxy.so/bloom/icons/RiCloseLine`). A file
+  that also imports that component itself, from that path, keeps its one import: the two are the
+  same glyph, not two declarations.
 - **Tokens are string literals checked against the token set** the modifier takes:
   `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
   A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
@@ -780,6 +808,18 @@ in those closures throws the same way (4.5).
   navigating away; the state writes after unmount are no-ops.
 - **Structured concurrency:** `let (a, b) = await all(loadA(), loadB())` (both or the first error);
   `await race(…)`; `sleep(ms)`. A task's children are cancelled with it.
+- **`async let x = f()`** (2.0) starts the async call `f()` where it is declared, and `await x`
+  reads its result; `try await (a, b)` reads several together (`Promise.all`). A throwing call
+  is written without `try` in the declaration, and its error surfaces at `try await x`. Only in
+  an async function (B0215); `x` is read only with `await` (B0227), and it is awaited before its
+  block ends (B0227: an unread result would drop its error). Compiled to `const x = f();`, the
+  promise marked handled until it is awaited.
+- **`actor Name { … }`** (2.0) is a class whose instance methods run one at a time, in call
+  order: each method `m` is `async` from outside (a call is `await counter.increment()`) and
+  runs through the actor's queue (`actorIsolated`, the standard library's Concurrency), an
+  `async` one holding it until its end. The actor's own members call each other directly
+  (`m$isolated`), so a call from inside never waits on itself. Unlike Swift's, an actor is not
+  re-entrant at its `await`s.
 
 ## 9. Navigation
 
@@ -796,7 +836,17 @@ so a wrong path is a compile error.
 - **Prelude** (always in scope): the core types, `ok`/`err`/`none`, `all`/`race`/`sleep`, every
   node of `spec/language.json` (`VStack`, `Text`, `Button`, …) with its modifiers, `Embed`,
   `toast`, `navigate`.
+- **BloomUI's own types and recipes (2.0):** a package file names `ViewModifier`,
+  `IconComponent`, `defineModifier` and `defineTokens` without importing
+  `@oxy.so/bloom-language` (the types are imported `type`). A file that still imports one of
+  them (the migration mode) keeps its import, and a name a file imports itself is never
+  imported a second time. A class's `init` (`Box(0)`, `Box$$init`) is imported with the class.
 - **Bloom modules:** `import { PostRow } from "./PostRow.bloom"`.
+- **Platform files (2.0):** in a directory module, `X.native.bloom`, `X.ios.bloom`,
+  `X.android.bloom` and `X.web.bloom` (and `X.bloom` beside them) are alternatives, one compiled
+  per platform as Metro picks them, not siblings: they declare the same names without B0807. The
+  module's other files import them by the base name (`./X`), which the checker reads from the
+  first of `native`, `ios`, `android`, `web` that exists.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
@@ -868,7 +918,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 |---|---|
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
 | `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T?`; there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |

@@ -111,6 +111,60 @@ const INTERNAL_ROW: &str = "view Line(title: String) {\n  body {\n    Text(title
 const USES_ROW: &str =
     "public view Lines {\n  body {\n    VStack {\n      Line(title: \"One\")\n    }\n  }\n}\n";
 
+#[test]
+fn platform_files_are_alternatives_not_siblings() {
+    let list = |text: &str| {
+        format!(
+            "public struct NotificationsList: View {{\n  let count: Int\n  var body: some View {{ Text(\"{text}\") }}\n}}\nprivate func helper() -> Int {{ 1 }}\n"
+        )
+    };
+    let root = package(
+        "platforms",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/NotificationsList.native.bloom", &list("native")),
+            ("Sources/Feed/NotificationsList.web.bloom", &list("web")),
+            (
+                "Sources/Feed/Inbox.bloom",
+                "public struct Inbox: View {\n  var body: some View { NotificationsList(count: 3) }\n}\n",
+            ),
+        ],
+    );
+    // One is compiled per platform (Metro's `.native`/`.web`), so they declare the same names.
+    for file in ["Sources/Feed/NotificationsList.native.bloom", "Sources/Feed/NotificationsList.web.bloom"] {
+        let out = build(&root, file, &Options::default());
+        assert!(out.diagnostics.is_empty(), "{file}: {:?}", out.diagnostics);
+    }
+    // The module's other files import it by its base name, and Metro picks the platform's.
+    let out = build(&root, "Sources/Feed/Inbox.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { NotificationsList } from \"./NotificationsList\";"), "{}", out.code);
+}
+
+#[test]
+fn a_class_is_imported_with_its_init() {
+    // M9: a reference held in `@State` is often a class of another file; `Box(0)` is its
+    // `init` (`Box$$init`), imported as a value beside the type.
+    let root = package(
+        "class-init",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Box.bloom",
+                "public final class Box<T> {\n  public var value: T\n  public init(_ value: T) { self.value = value }\n}\n",
+            ),
+            (
+                "Sources/Feed/Ticker.bloom",
+                "public struct Ticker: View {\n  @State private var timer = Box(0)\n  var body: some View {\n    Button(Text(\"Tick\")).onPress { timer.value += 1 }\n  }\n}\n",
+            ),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Ticker.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("import { type Box, Box$$init } from \"./Box.bloom\";"), "{}", out.code);
+    assert!(out.code.contains("useState<Box<number>>(() => Box$$init(0))"), "{}", out.code);
+}
+
 fn app(imports: &str) -> String {
     format!("{imports}\n\npublic view Home {{\n  body {{\n    Lines()\n  }}\n}}\n")
 }

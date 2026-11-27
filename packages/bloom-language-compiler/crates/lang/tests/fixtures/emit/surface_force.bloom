@@ -1,0 +1,16 @@
+// `x!` (2.0): the value of an optional, as Swift's force unwrap. `none` is a trap: a dev
+// build checks it (`dev_traps`), a release build emits TS's `x!`.
+public struct Event {
+  let revision: Int
+  let title: String?
+}
+
+public func revision(_ event: Event?) -> Int { event!.revision }
+
+public func title(_ event: Event) -> String { event.title!.uppercased() }
+
+public func sum(_ a: Int?, _ b: Int?) -> Int { a! + b! }
+
+public func not(_ flag: Bool?) -> Bool { !flag! }
+
+public func differs(_ a: Int?, _ b: Int) -> Bool { a! != b }

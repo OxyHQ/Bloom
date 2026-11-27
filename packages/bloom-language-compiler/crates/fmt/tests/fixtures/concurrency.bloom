@@ -1,0 +1,14 @@
+// `actor` and `async let` (2.0 concurrency).
+public actor Counter {
+  public var count: Int = 0
+
+  public func increment() -> Int {
+    count += 1
+    return count
+  }
+}
+
+public func one(_ c: Counter) async -> Int {
+  async let posts = c.increment()
+  return await posts
+}

@@ -355,6 +355,7 @@ fn is_atom(expr: &Expr) -> bool {
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
             | ExprKind::Index(..)
+            | ExprKind::Force(_)
             | ExprKind::List(_)
             | ExprKind::Binding(_)
     )
@@ -364,6 +365,12 @@ fn helper_text(name: &str) -> &'static str {
     match name {
         "at" => {
             "function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {\n  const out = items.slice();\n  out[at] = item;\n  return out;\n}"
+        }
+        "get" => {
+            "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
+        }
+        "unwrap" => {
+            "function $unwrap<T>(value: T | undefined): T {\n  if (value === undefined) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
         }
         "toInt" => {
             "function $toInt(text: string): number | undefined {\n  const value = Number(text.trim());\n  return text.trim() !== \"\" && Number.isSafeInteger(value) ? value : undefined;\n}"
@@ -456,6 +463,41 @@ impl<'a> Emitter<'a> {
                 out.s(&format!("* as {}", js_name(&name.name)));
             }
             ImportKind::Named(specs) => {
+                // An extension member (`T$m`) is imported where `.m` is written; only the
+                // ones the checker resolved are kept.
+                let used: HashSet<&str> = self
+                    .ck
+                    .calls
+                    .values()
+                    .filter_map(|c| match c {
+                        CallRes::Extension { func, .. } => Some(&**func),
+                        _ => None,
+                    })
+                    .chain(self.ck.fields.values().filter_map(|f| match f {
+                        FieldRes::Extension(func) | FieldRes::Static(func) | FieldRes::StaticGet(func) => {
+                            Some(&**func)
+                        }
+                        _ => None,
+                    }))
+                    // `Box(0)`: the class's `init` (`Box$$init`).
+                    .chain(self.ck.names.values().filter_map(|n| match n {
+                        NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
+                            Some(self.ck.locals[*l].name.as_str())
+                        }
+                        _ => None,
+                    }))
+                    .collect();
+                let specs: Vec<&ImportSpec> = specs
+                    .iter()
+                    .filter(|spec| {
+                        !spec.name.name.contains('$')
+                            || used.contains(spec.name.name.as_str())
+                            || crate::codable::is_synthetic(spec.span)
+                    })
+                    .collect();
+                if specs.is_empty() {
+                    return Frag::default();
+                }
                 let parts: Vec<String> = specs
                     .iter()
                     .map(|spec| {
@@ -1098,6 +1140,15 @@ impl<'a> Emitter<'a> {
 
     fn stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
+            // `async let x = f()`: the promise, started now; marked handled, so an error it
+            // ends in before `await x` (which throws it) is not reported as unhandled.
+            StmtKind::Let(l) if l.is_async => {
+                let value = self.expr(&l.value);
+                let target = self.binding_target(&l.pattern);
+                let mut line = Frag::at(stmt.span, format!("const {target} = "));
+                line.f(value).s(&format!(";\n{target}.catch(() => {{}});"));
+                self.push_stmt(line);
+            }
             StmtKind::Let(l) => {
                 let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let value = self.value_expr(&l.value);
@@ -2012,6 +2063,18 @@ impl<'a> Emitter<'a> {
                     false,
                 )
             }
+            // `await (a, b)` of `async let`s: together.
+            ExprKind::Await(inner) if self.ck.await_all.contains(&expr.id) => {
+                let mut inner = inner.as_ref();
+                while let ExprKind::Paren(inside) = &inner.kind {
+                    inner = inside;
+                }
+                let items: Vec<Frag> = match &inner.kind {
+                    ExprKind::Tuple(items) => items.iter().map(|i| self.expr(i)).collect(),
+                    _ => vec![self.expr(inner)],
+                };
+                Frag::join(items, ", ").wrap("(await Promise.all([", "]))")
+            }
             ExprKind::Await(inner) => match self.ck.awaits.get(&expr.id) {
                 // A `Result` that escapes (bound, passed, returned): built in place.
                 Some(AwaitRes::Ts) => {
@@ -2032,6 +2095,19 @@ impl<'a> Emitter<'a> {
                 _ => self.expr(inner).wrap("await (", ")"),
             },
             ExprKind::Try(inner) => self.try_expr(expr, inner),
+            // `x!`: a dev build traps on `none` (Swift's check); a release build is TS's `x!`.
+            ExprKind::Force(inner) => {
+                if self.options.dev {
+                    self.helpers.insert("unwrap");
+                    let mut out = Frag::of("$unwrap(");
+                    out.f(self.expr(inner)).s(")");
+                    out
+                } else {
+                    let mut out = self.operand(inner);
+                    out.s("!");
+                    out
+                }
+            }
             ExprKind::Throwing(TryKind::Plain | TryKind::Force, inner) => self.expr(inner),
             // `try? f()`: its value, or `undefined` when it throws.
             ExprKind::Throwing(TryKind::Optional, inner) => {
@@ -2056,6 +2132,21 @@ impl<'a> Emitter<'a> {
                     out.s("!");
                 }
                 out
+            }
+            // `xs[i]`: the element. A dev build traps out of range (Swift's check); a
+            // release build reads it as is, and TS reads it present.
+            ExprKind::Index(object, index) if self.ck.list_reads.contains_key(&expr.id) => {
+                let optional = self.ck.list_reads[&expr.id];
+                if self.options.dev {
+                    self.helpers.insert("get");
+                    let mut out = Frag::of("$get(");
+                    out.f(self.expr(object)).s(", ").f(self.expr(index)).s(")");
+                    out
+                } else {
+                    let mut out = self.operand(object);
+                    out.s("[").f(self.expr(index)).s(if optional { "]" } else { "]!" });
+                    out
+                }
             }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
@@ -2263,6 +2354,7 @@ impl<'a> Emitter<'a> {
                     Frag::of(format!("{value}.w.{name}({value}.self)"))
                 }
             },
+            Some(FieldRes::StaticGet(func)) => Frag::of(format!("{func}()")),
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
             }
@@ -2440,7 +2532,9 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(e);
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
-                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) {
+                    // An object literal (also a `.setting(…)` spread) is not a block.
+                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) || value.text.starts_with('{')
+                    {
                         value.wrap("(", ")")
                     } else {
                         value
@@ -2966,7 +3060,16 @@ impl<'a> Emitter<'a> {
             && let Some(name) =
                 trailing.or_else(|| params.iter().rev().find(|p| !given.contains_key(*p)).map(|p| p.as_str()))
         {
-            let value = self.closure(closure);
+            let value = if self.ck.builder_props.contains(&closure.span) {
+                let children = self.children(&closure.body);
+                match children.len() {
+                    0 => Frag::of("null"),
+                    1 => children.into_iter().next().expect("one child"),
+                    _ => Frag::join(children, ", ").wrap("[", "]"),
+                }
+            } else {
+                self.closure(closure)
+            };
             if written {
                 out.push((name.to_string(), value));
                 return out;
@@ -3195,6 +3298,12 @@ impl<'a> Emitter<'a> {
                 call_on(object, if name == "any" { "some" } else { "every" }, vec![f])
             }
             (Recv::List, "slice") => call_on(object, "slice", args),
+            // `xs.at(i)`: the element or `none` (a negative index is `none`, unlike JS's `at`).
+            (Recv::List, "at") => {
+                let mut out = object;
+                out.s("[").f(args.into_iter().next().unwrap_or_default()).s("]");
+                out
+            }
             (Recv::List, "indexOf") => helper(self, "index", vec![call_on(object, "indexOf", args)]),
             (Recv::List, "enumerated") => call_on(object, "map", vec![Frag::of("(x, i) => [i, x] as const")]),
             (Recv::List, "compactMap") => {
@@ -3705,6 +3814,7 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Is(e, _)
         | ExprKind::Unary(_, e)
         | ExprKind::Try(e)
+        | ExprKind::Force(e)
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
@@ -3881,6 +3991,7 @@ impl<'a> Emitter<'a> {
             | ExprKind::Unary(_, e)
             | ExprKind::Await(e)
             | ExprKind::Try(e)
+            | ExprKind::Force(e)
             | ExprKind::Throwing(_, e)
             | ExprKind::Field(e, _)
             | ExprKind::OptField(e, _) => go(e),

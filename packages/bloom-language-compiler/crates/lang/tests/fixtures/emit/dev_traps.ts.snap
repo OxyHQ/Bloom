@@ -1,0 +1,25 @@
+function $get<T>(items: readonly T[], index: number): T {
+  if (index >= 0 && index < items.length) return items[index] as T;
+  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);
+}
+function $unwrap<T>(value: T | undefined): T {
+  if (value === undefined) throw new TypeError("Unexpectedly found none while unwrapping an optional (`!`)");
+  return value;
+}
+
+export function first(xs: readonly string[]): string {
+return $get(xs, 0);
+}
+
+export function maybe(xs: readonly string[], i: number): string | undefined {
+return xs[i];
+}
+
+export function holes(xs: readonly (number | undefined)[]): number {
+return $get(xs, 0) ?? (-1);
+}
+
+export function forced(name: string | undefined): number {
+return $unwrap(name).length;
+}
+

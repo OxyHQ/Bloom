@@ -1,0 +1,62 @@
+// Mention's home feed on the data layer (stores/feedQueryCache.ts, the like mutation):
+// pages from the API into `Post.store`, read by `@Query`, and a like shown at once that
+// rolls back when the server refuses it. The same post, liked here, is liked in every
+// list that shows it: it is held once, by id.
+
+import API
+import Posts
+
+/// `GET /feeds/home`, a page per cursor, kept on the device between launches.
+public func homeFeed(_ api: MentionAPI) -> Source<Post> {
+  Source.make(Post.store, name: "home") { cursor, signal in
+    let query: [String: String] = cursor.map { ["cursor": $0] } ?? [:]
+    let page = try await api.get("feeds/home", as: FeedPage.self, query: query, cancellation: signal)
+    return SourcePage(items: page.items, next: page.hasMore ? page.nextCursor : none)
+  }
+}
+
+/// `POST` / `DELETE /posts/:id/like`: the post's like and counter change before the
+/// server answers, and come back when it refuses.
+public func likeAction(_ api: MentionAPI) -> Action<Post, Unit> {
+  Action.make("post.like", optimistic: { (post: Post) in
+    let changed = Post.store.update(post.id) { $0.liked(!post.isLiked) }
+    if !changed { Post.store.insert(post.liked(!post.isLiked)) }
+  }) { (post: Post) in
+    if post.isLiked {
+      try await api.delete("posts/\(percentEncoded(post.id))/like")
+    } else {
+      try await api.post("posts/\(percentEncoded(post.id))/like")
+    }
+  }
+}
+
+/// The posts a profile's author wrote that this device holds, newest first.
+public struct AuthorPosts: View {
+  let authorID: String
+  @Query(Post.self, sort: \.createdAt, order: .reverse) var posts: [Post]
+
+  var body: some View {
+    VStack(spacing: .sm) {
+      ForEach(posts.filter { $0.author.id == authorID }) { post in
+        Text(post.text)
+      }
+    }
+  }
+}
+
+/// The home feed: its posts in the server's order, re-read when one of them changes.
+public struct HomeFeed: View {
+  let feed: Source<Post>
+  let like: Action<Post, Unit>
+  @Query(feed) var posts: [Post]
+
+  var body: some View {
+    List(posts) { post in
+      HStack(spacing: .sm) {
+        Text(post.text)
+        Button("\(post.stats.likes)") { task { await like.run(post) } }
+      }
+    }
+    .refreshable { await feed.refresh() }
+  }
+}

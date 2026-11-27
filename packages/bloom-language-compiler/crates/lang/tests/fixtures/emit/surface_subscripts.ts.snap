@@ -1,0 +1,53 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+export interface User {
+  readonly name: string;
+}
+
+export function first(xs: readonly string[]): string {
+return xs[0]!;
+}
+
+export function lastName(users: readonly User[]): string {
+if ((users.length === 0)) {
+return "";
+}
+return users[users.length - 1]!.name;
+}
+
+export function maybe(xs: readonly string[], i: number): string {
+return xs[i] ?? "none";
+}
+
+export function nested(grid: readonly (readonly number[])[]): number {
+return grid[0]![1]!;
+}
+
+export function holes(xs: readonly (number | undefined)[]): number {
+return xs[0] ?? (-1);
+}
+
+export function lookup(d: Readonly<Record<string, number>>, key: string): number {
+return d[key] ?? 0;
+}
+
+export interface RowProps {
+  readonly users: readonly User[];
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(2);
+const { users } = props;
+let $t0;
+if ($[0] !== users) {
+$t0 = (users.length > 0) ? Text(users[0]!.name) : null;
+$[0] = users;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

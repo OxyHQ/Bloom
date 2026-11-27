@@ -1,0 +1,2 @@
+// `!` unwraps an optional: on a value that is never `none` it is an error, as in Swift.
+func count(_ name: String) -> Int { name!.count }

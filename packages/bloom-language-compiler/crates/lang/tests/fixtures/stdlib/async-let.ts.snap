@@ -1,0 +1,27 @@
+import { sleep } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { type Duration, Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
+
+export async function profile(id: string): Promise<string> {
+await (sleep(Duration$$milliseconds(1.0)));
+return `profile ${id}`;
+}
+
+export async function count(id: string): Promise<number> {
+return id.length;
+}
+
+export async function header(id: string): Promise<string> {
+const name = profile(id);
+name.catch(() => {});
+const posts = count(id);
+posts.catch(() => {});
+const [n, p] = (await Promise.all([name, posts]));
+return `${n}: ${p}`;
+}
+
+export async function one(id: string): Promise<number> {
+const posts = count(id);
+posts.catch(() => {});
+return await (posts);
+}
+

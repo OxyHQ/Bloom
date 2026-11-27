@@ -10,7 +10,7 @@
 
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
 use rustc_hash::FxHashMap as HashMap;
 
@@ -23,6 +23,20 @@ pub struct Routes {
     pub patterns: Vec<String>,
     /// Every folder of the tree, with its modified time when read.
     pub folders: Vec<(PathBuf, Option<SystemTime>)>,
+    /// When the tree was read.
+    pub read_at: SystemTime,
+}
+
+/// How long after a folder changes its modified time may still not show the next change:
+/// file times come from the kernel's coarse clock, a tick of a few milliseconds, so two
+/// writes in one tick leave one time. A folder that changed this close to the read is read
+/// again (git's "racily clean" rule).
+const RACY: Duration = Duration::from_secs(2);
+
+/// Whether `folder` is as the read at `read_at` saw it, at `modified`.
+fn unchanged(folder: &Path, modified: Option<SystemTime>, read_at: SystemTime) -> bool {
+    let settled = modified.is_none_or(|m| read_at.duration_since(m).is_ok_and(|age| age >= RACY));
+    settled && modified_time(folder) == modified
 }
 
 thread_local! {
@@ -40,11 +54,11 @@ pub fn routes(options: &Options) -> Option<Rc<Routes>> {
     };
     let cached = TREES.with(|trees| trees.borrow().get(&dir).cloned());
     if let Some(routes) = cached
-        && routes.folders.iter().all(|(folder, modified)| modified_time(folder) == *modified)
+        && routes.folders.iter().all(|(folder, modified)| unchanged(folder, *modified, routes.read_at))
     {
         return Some(routes);
     }
-    let mut routes = Routes { patterns: Vec::new(), folders: Vec::new() };
+    let mut routes = Routes { patterns: Vec::new(), folders: Vec::new(), read_at: SystemTime::now() };
     scan(&dir, &mut Vec::new(), &mut routes);
     routes.patterns.sort();
     routes.patterns.dedup();
