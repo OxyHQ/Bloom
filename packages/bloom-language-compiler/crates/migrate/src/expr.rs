@@ -1113,9 +1113,11 @@ impl Tr<'_> {
                 _ => None,
             }
         }
+        // `{}`, `undefined` and `null` spread nothing.
+        let nothing = |e: &Expression| is_nothing(e) || object(e).is_some_and(|o| o.properties.is_empty());
         let (fields, negate) = match (object(&c.consequent), object(&c.alternate)) {
-            (Some(f), Some(empty)) if empty.properties.is_empty() && !f.properties.is_empty() => (f, false),
-            (Some(empty), Some(f)) if empty.properties.is_empty() && !f.properties.is_empty() => (f, true),
+            (Some(f), _) if nothing(&c.alternate) && !f.properties.is_empty() => (f, false),
+            (_, Some(f)) if nothing(&c.consequent) && !f.properties.is_empty() => (f, true),
             _ => return None,
         };
         let mut pairs = Vec::new();
