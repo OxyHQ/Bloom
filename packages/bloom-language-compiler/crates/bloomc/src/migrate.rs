@@ -320,7 +320,7 @@ pub(crate) fn rewrite_importers(
         out.push_str(rest);
         if changed {
             // `<X …/>` of a migrated view: `toElement(X({ … }))`.
-            let names: Vec<String> = drawn.iter().cloned().collect();
+            let names: Vec<String> = drawn.to_vec();
             let redrawn = bloom_migrate::draw_views_as_nodes(&out, &file.to_string_lossy(), &names);
             let out = redrawn.clone().unwrap_or(out);
             std::fs::write(&file, &out).map_err(|e| format!("{}: {e}", file.display()))?;
