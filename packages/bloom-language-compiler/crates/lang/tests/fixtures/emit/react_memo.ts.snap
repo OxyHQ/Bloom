@@ -1,0 +1,48 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useCallback, useMemo } from "react";
+
+export interface RowProps {
+  readonly title: string;
+  readonly count: number;
+  readonly onOpen: (p0: string) => void;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(12);
+const { title, count, onOpen } = props;
+const label = `${title} (${count})`;
+let total: number;
+if ($[0] !== count) {
+total = (() => {
+const doubled = count * 2;
+return doubled + 1;
+})();
+$[0] = count;
+$[1] = total;
+} else {
+total = $[1];
+}
+let open: () => void;
+if ($[2] !== onOpen || $[3] !== title) {
+open = () => onOpen(title);
+$[2] = onOpen;
+$[3] = title;
+$[4] = open;
+} else {
+open = $[4];
+}
+let $t0;
+if ($[8] !== label || $[9] !== open || $[10] !== total) {
+$t0 = VStack(($[5] !== label || $[6] !== open ? ($[5] = label, $[6] = open, $[7] = Button(Text(label)).onPress(open)) : $[7]), Text(`${total}`));
+$[8] = label;
+$[9] = open;
+$[10] = total;
+$[11] = $t0;
+} else {
+$t0 = $[11];
+}
+return $t0;
+});
+
