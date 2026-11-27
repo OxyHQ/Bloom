@@ -273,6 +273,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((end, end, "!".to_string()))
             }
+            // An unwrap the codemod wrote before bloomc narrowed the value (a test spelled later): gone.
+            ("B0201", _) if d.message.starts_with("`!` unwraps an optional") => {
+                if source[end..].starts_with('!') {
+                    Some((end, end + 1, String::new()))
+                } else if text.ends_with('!') {
+                    Some((end - 1, end, String::new()))
+                } else {
+                    None
+                }
+            }
             // `x ?? fallback` where `x` is never `none`: `x`.
             ("B0201", _) if d.message.starts_with("`??` gives a fallback") => {
                 let rest = &source[end..];
