@@ -1,0 +1,13 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface Tagged {
+  readonly id: string;
+  readonly title: string;
+  readonly tags: readonly string[];
+}
+export declare function useTaggedRow(item: Tagged, givenIsNested?: boolean | undefined | null, onOpen?: (() => void) | undefined | null): { heading: string; summary: string; label: string; open: () => undefined | undefined; longest: string; first: string; rest: number; top: number };
+export interface TaggedRowProps {
+  readonly item: Tagged;
+  readonly onOpen?: (() => void) | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(TaggedRow())`), or from TSX as `toElement(TaggedRow())`. */
+export declare const TaggedRow: (props: TaggedRowProps) => ComposedView;

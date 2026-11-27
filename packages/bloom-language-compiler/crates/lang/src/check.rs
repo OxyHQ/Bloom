@@ -371,7 +371,8 @@ pub struct CheckResult {
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,
-    /// A view's `let`s whose value calls a hook (drawn every render, never in a memo scope).
+    /// A view's `let`s, and a hook function's top-level ones, whose value calls a hook (drawn
+    /// every render, never in a memo scope).
     pub hook_lets: HashSet<Span>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
@@ -2858,9 +2859,16 @@ impl<'o> Checker<'o> {
             StmtKind::Let(l) => {
                 let declared = l.ty.as_ref().map(|t| self.resolve_type(t));
                 // A hook function's top-level `let` may call a hook, as a view member does.
-                self.hook_allowed = self.hook_body == Some(self.scopes.len());
+                let top = self.hook_body == Some(self.scopes.len());
+                self.hook_allowed = top;
+                let outer_hook = std::mem::take(&mut self.was_hook);
                 let ty = self.expr(&l.value, declared.as_ref());
                 self.hook_allowed = false;
+                // Drawn on every call, never in the hook function's memo cache.
+                if top && self.was_hook {
+                    self.out.hook_lets.insert(l.span);
+                }
+                self.was_hook |= outer_hook;
                 self.binding_stmt = true;
                 let locals = self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
                 self.binding_stmt = false;
@@ -7094,7 +7102,7 @@ fn always_exits(stmt: &Stmt) -> bool {
     }
 }
 
-fn is_hook_name(name: &str) -> bool {
+pub(crate) fn is_hook_name(name: &str) -> bool {
     name.strip_prefix("use").and_then(|rest| rest.chars().next()).is_some_and(|c| c.is_ascii_uppercase())
 }
 
