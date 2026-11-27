@@ -21,6 +21,9 @@ const { digest } = require('./native');
  * },
  * ```
  *
+ * `{ allowTsImports: true }` is the migration mode (`--allow-ts-imports`, ADR 0002
+ * section 4): an app module may import TS by path, as `bloom migrate` checks its output.
+ *
  * A `.bloom` module reaches the upstream transformer as the TypeScript it
  * compiles to, named `<file>.bloom.ts` so Babel's TypeScript preset parses
  * it, with the compiler's source map inline: Babel composes it into its own
@@ -45,9 +48,10 @@ function createTransformer(options = {}) {
    * parses it by. A `.bloom` module's TS imports resolve from the project's
    * root (Jest's `rootDir`: its tsconfig's `paths`, `node_modules`).
    */
+  const migration = options.allowTsImports ? { allowTsImports: true } : {};
   const bloomOptions = (transformOptions) => {
     const root = transformOptions?.config?.rootDir;
-    return root ? { root } : {};
+    return root ? { root, ...migration } : migration;
   };
   const prepared = (source, filename, transformOptions) => {
     if (!isBloomFile(filename)) {

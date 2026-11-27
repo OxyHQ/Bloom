@@ -10,9 +10,13 @@ const BLOOM = 'bloom';
  * stores refuse a cached `.bloom` transform once a file it imports has changed
  * (`./metro-cache`).
  *
+ * `allowTsImports` is the migration mode (`--allow-ts-imports`, ADR 0002 section 4):
+ * an app module may import TS by path, as `bloom migrate` checks its output.
+ *
  * @param {import('metro-config').MetroConfig} config
+ * @param {{ allowTsImports?: boolean }} [options]
  */
-function withBloomLanguage(config) {
+function withBloomLanguage(config, options = {}) {
   const sourceExts = config.resolver?.sourceExts ?? [];
   return {
     ...config,
@@ -24,7 +28,10 @@ function withBloomLanguage(config) {
     transformerPath: require.resolve('./metro-transformer'),
     transformer: {
       ...config.transformer,
-      bloomLanguage: { upstreamTransformerPath: config.transformerPath },
+      bloomLanguage: {
+        upstreamTransformerPath: config.transformerPath,
+        allowTsImports: options.allowTsImports === true,
+      },
     },
   };
 }

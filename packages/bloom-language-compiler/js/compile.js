@@ -51,7 +51,7 @@ const isBloomFile = (filename) => filename.endsWith(BLOOM_EXTENSION);
  *
  * @param {string} source
  * @param {string} filename
- * @param {{ root?: string, dev?: boolean, paths?: Record<string, string[]>, app?: string }} [options]
+ * @param {{ root?: string, dev?: boolean, paths?: Record<string, string[]>, app?: string, allowTsImports?: boolean }} [options]
  * @returns {{ code: string, map: string | null, dependencies: string[] }}
  */
 function compileBloomModule(source, filename, options = {}) {

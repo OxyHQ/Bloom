@@ -32,12 +32,14 @@ function upstream(config) {
  * path with the project as its root, where its TS imports resolve (the
  * tsconfig's `paths`, `node_modules`).
  */
-function compiled(projectRoot, filename, data) {
+function compiled(config, projectRoot, filename, data) {
   if (isBloomFile(filename)) {
     const { code, map, dependencies } = compileBloomModule(
       data.toString('utf8'),
       path.resolve(projectRoot, filename),
-      { root: projectRoot },
+      config.bloomLanguage.allowTsImports
+        ? { root: projectRoot, allowTsImports: true }
+        : { root: projectRoot },
     );
     return { filename: hostFilename(filename), code, map, dependencies };
   }
@@ -49,7 +51,7 @@ function compiled(projectRoot, filename, data) {
 }
 
 async function transform(config, projectRoot, filename, data, options) {
-  const module = compiled(projectRoot, filename, data);
+  const module = compiled(config, projectRoot, filename, data);
   if (!module) return upstream(config).transform(config, projectRoot, filename, data, options);
 
   const result = await upstream(config).transform(
