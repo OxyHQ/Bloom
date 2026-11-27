@@ -37,7 +37,9 @@ const SHIM_FILES: &[(&str, &str)] = &[
     ("expo-font.js", include_str!("shims/expo-font.js")),
     ("expo-splash-screen.js", include_str!("shims/expo-splash-screen.js")),
     ("expo-dom.js", include_str!("shims/expo-dom.js")),
+    ("expo-dom-global.js", include_str!("shims/expo-dom-global.js")),
     ("empty.js", include_str!("shims/empty.js")),
+    ("url.js", include_str!("shims/url.js")),
     ("unavailable.js", include_str!("shims/unavailable.js")),
 ];
 
@@ -51,7 +53,7 @@ const SHIMMED: &[(&str, &str)] = &[
     ("expo-font", "expo-font.js"),
     ("expo-splash-screen", "expo-splash-screen.js"),
     ("expo/dom", "expo-dom.js"),
-    ("expo/dom/global", "empty.js"),
+    ("expo/dom/global", "expo-dom-global.js"),
     ("@expo/metro-runtime", "empty.js"),
 ];
 
@@ -68,6 +70,8 @@ pub fn tools() -> Vec<(String, String)> {
         // Bloom's packages ship their TS sources to React Native (`react-native` in their
         // package.json), which write `export * as tokens from …`.
         ("@babel/plugin-transform-export-namespace-from".to_string(), "7.29.7".to_string()),
+        // The WHATWG URL a Bloom build installs (`shims/url.js`), as Expo's runtime did.
+        ("whatwg-url-minimum".to_string(), "0.2.0".to_string()),
         ("@react-native/babel-preset".to_string(), rn.to_string()),
         ("@react-native/metro-config".to_string(), rn.to_string()),
     ]
@@ -105,7 +109,7 @@ pub fn routed_entry(header: &str, app: &Path) -> Result<String, String> {
     let modules: Vec<String> =
         files.iter().map(|f| format!("  {}: require({}),", quote(&format!("./{f}")), quote(&format!("./app/{f}")))).collect();
     Ok(format!(
-        "{header}import {{ createElement }} from 'react';\nimport {{ AppRegistry }} from 'react-native';\nimport {{ ExpoRoot }} from 'expo-router';\n\n// The route files (written from the app's routes enum), as the router's context.\nconst modules = {{\n{}\n}};\nfunction context(key) {{\n  return modules[key];\n}}\ncontext.keys = () => Object.keys(modules);\ncontext.resolve = (key) => key;\ncontext.id = './app';\n\nfunction Root() {{\n  return createElement(ExpoRoot, {{ context }});\n}}\n\nAppRegistry.registerComponent('main', () => Root);\n",
+        "{header}import './shims/url';\nimport {{ createElement }} from 'react';\nimport {{ AppRegistry }} from 'react-native';\nimport {{ ExpoRoot }} from 'expo-router';\n\n// The route files (written from the app's routes enum), as the router's context.\nconst modules = {{\n{}\n}};\nfunction context(key) {{\n  return modules[key];\n}}\ncontext.keys = () => Object.keys(modules);\ncontext.resolve = (key) => key;\ncontext.id = './app';\n\nfunction Root() {{\n  return createElement(ExpoRoot, {{ context }});\n}}\n\nAppRegistry.registerComponent('main', () => Root);\n",
         modules.join("\n")
     ))
 }
@@ -222,7 +226,6 @@ const METRO_DRIVER: &str = r#"'use strict';
 // node bloom-metro.js bundle --platform android --dev false --entry-file … --bundle-output …
 // node bloom-metro.js start [--port 8081]
 const path = require('node:path');
-const { bundleCommand, startCommand } = require('@react-native/community-cli-plugin');
 
 const [command, ...rest] = process.argv.slice(2);
 const args = { config: path.join(__dirname, 'metro.config.js') };
@@ -238,20 +241,55 @@ for (let i = 0; i < rest.length; i++) {
     i++;
   }
 }
-if (typeof args.port === 'string') args.port = Number(args.port);
 if (typeof args.maxWorkers === 'string') args.maxWorkers = Number(args.maxWorkers);
-const ctx = {
-  root: __dirname,
-  reactNativePath: path.dirname(require.resolve('react-native/package.json')),
-  platforms: { android: {}, ios: {} },
-};
-const commands = { bundle: bundleCommand, start: startCommand };
+
+/** The release bundle (and its assets), as React Native's own `bundle` command writes it. */
+function bundle() {
+  const { bundleCommand } = require('@react-native/community-cli-plugin');
+  const ctx = {
+    root: __dirname,
+    reactNativePath: path.dirname(require.resolve('react-native/package.json')),
+    platforms: { android: {}, ios: {} },
+  };
+  args.dev = args.dev === true;
+  return bundleCommand.func([], ctx, args);
+}
+
+/** Metro's dev server, with React Native's dev middleware (the debugger's endpoints). */
+async function start() {
+  const Metro = require('metro');
+  const { createDevMiddleware } = require('@react-native/dev-middleware');
+  const port = Number(args.port ?? 8081);
+  const config = await Metro.loadConfig({
+    config: args.config,
+    port,
+    resetCache: args.resetCache === true,
+    maxWorkers: args.maxWorkers,
+  });
+  const { middleware, websocketEndpoints } = createDevMiddleware({
+    serverBaseUrl: `http://localhost:${port}`,
+    logger: console,
+  });
+  // The app asks whether a packager runs here before it loads its bundle from it.
+  const status = (req, res, next) => {
+    if (req.url !== '/status') return next();
+    res.setHeader('X-React-Native-Project-Root', __dirname);
+    res.end('packager-status:running');
+  };
+  await Metro.runServer(config, {
+    host: typeof args.host === 'string' ? args.host : undefined,
+    unstable_extraMiddleware: [status, middleware],
+    websocketEndpoints,
+  });
+  console.log(`bloom: Metro on http://localhost:${port}`);
+}
+
+const commands = { bundle, start };
 if (!commands[command]) {
   console.error(`bloom-metro: no command \`${command}\` (bundle, start)`);
   process.exit(2);
 }
-if (command === 'bundle') args.dev = args.dev === true;
-Promise.resolve(commands[command].func([], ctx, args)).catch((error) => {
+Promise.resolve(commands[command]()).catch((error) => {
   console.error(error);
   process.exit(1);
 });

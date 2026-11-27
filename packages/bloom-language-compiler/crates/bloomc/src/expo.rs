@@ -481,7 +481,10 @@ pub(crate) fn single_root(
     // Expo's `registerRootComponent`, or (a Bloom build) React Native's own registry under
     // the name the activity starts, `main`.
     let (register_import, register) = if bloom {
-        ("import { AppRegistry } from 'react-native';", "AppRegistry.registerComponent('main', () => Root);")
+        (
+            "import './shims/url';\nimport { AppRegistry } from 'react-native';",
+            "AppRegistry.registerComponent('main', () => Root);",
+        )
     } else {
         ("import { registerRootComponent } from 'expo';", "registerRootComponent(Root);")
     };

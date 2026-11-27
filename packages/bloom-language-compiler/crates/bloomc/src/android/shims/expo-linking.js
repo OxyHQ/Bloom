@@ -54,6 +54,8 @@ module.exports = {
   resolveScheme,
   useURL,
   useLinkingURL: useURL,
+  // A Bloom build has no dev-client launch URLs to unwrap.
+  unwrapDevLaunchURL: (url) => url,
   // React Native has no synchronous initial URL; expo-router reads it only on iOS.
   getLinkingURL: () => null,
   getInitialURL: () => Linking.getInitialURL(),
