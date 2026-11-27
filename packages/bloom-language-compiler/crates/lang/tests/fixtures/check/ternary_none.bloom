@@ -1,0 +1,5 @@
+// The branches of a nested conditional still share one type besides `none`.
+public func badge(c: Bool, d: Bool) -> String {
+  let label = c ? "x" : d ? 1 : none
+  "\(label ?? "")"
+}

@@ -3591,6 +3591,11 @@ impl<'o> Checker<'o> {
                 let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
                 Ty::Strings(Rc::new(StrSet { name, values, token: false }))
             }
+            // An optional beside another type (`c ? "x" : d ? "y" : none`, R3): the optional of
+            // the two joined, as TS's `"x" | "y" | null`.
+            (Ty::Option(x), Ty::Option(y)) => Ty::Option(Box::new(self.join(x, y, span))),
+            (Ty::Option(x), _) => Ty::Option(Box::new(self.join(x, &rb, span))),
+            (_, Ty::Option(y)) => Ty::Option(Box::new(self.join(&ra, y, span))),
             _ => {
                 if !self.coerce(&rb, &ra) {
                     self.report(
@@ -4581,13 +4586,21 @@ impl<'o> Checker<'o> {
                 let left = self.expr(lhs, None);
                 match self.resolve(&left) {
                     Ty::Option(inner) => {
-                        let hint = expected.cloned().unwrap_or((*inner).clone());
+                        // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
+                        // `"x" | ""`: the two are joined (R3).
+                        let literal = matches!(self.resolve(&inner), Ty::Strings(set) if !set.token);
+                        let hint = match expected {
+                            Some(e) => e.clone(),
+                            None if literal => Ty::Str,
+                            None => (*inner).clone(),
+                        };
                         let right = self.expr(rhs, Some(&Ty::Option(Box::new(hint.clone()))));
                         let _ = right;
                         // `x ?? y` is optional only when `y` is.
                         let right_ty = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
                         match self.resolve(&right_ty) {
                             Ty::Option(_) => Ty::Option(inner),
+                            Ty::Str | Ty::Strings(_) if literal => self.join(&inner, &right_ty, expr.span),
                             _ => {
                                 if !self.coerce(&right_ty, &inner) {
                                     self.mismatch(rhs.span, &right_ty, &inner);

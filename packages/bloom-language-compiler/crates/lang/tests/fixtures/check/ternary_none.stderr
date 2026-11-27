@@ -1,0 +1,7 @@
+error[B0201]: the branches give `"x"` and `Int`
+ --> check/ternary_none.bloom:3:15
+  |
+3 |   let label = c ? "x" : d ? 1 : none
+  |               ^^^^^^^^^^^^^^^^^^^^^^ every branch gives the same type
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow

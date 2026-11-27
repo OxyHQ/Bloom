@@ -245,6 +245,12 @@ is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even whe
 is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
 `Int` and a `Float` branch is `Float`. A `Float` never narrows implicitly.
 
+Branches that end in `none` join to the optional of the others, nested or not, as TS's
+`string | null`: `c ? "x" : d ? "y" : none` is `("x" | "y")?`, `c ? 1 : d ? 2.5 : none` is
+`Float?`, `c ? none : d ? n + 1 : n` is `Int?`; the branches besides `none` still share one
+type (`c ? "x" : d ? 1 : none` is B0201). A literal's optional falls back to any string
+(`label ?? ""` is a `String`), as TS's `"x" | ""`.
+
 ### 4.3 Soundness rules
 
 - No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
