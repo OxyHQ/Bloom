@@ -815,6 +815,9 @@ fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are th
 is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+React's `useMemo`/`useCallback` written as a member (`let f = useCallback({ … }, [deps])`) is a
+plain member, memoised in the view's cache on its exact dependencies, with no hook slot; the
+written dependencies are not read.
 A prop's default is written on it (`var isNested: Bool = false`, emitted `const { isNested =
 false } = props`, TS's own default); a member of a stored property's name (`let isNested =
 isNested ?? false`) declares it twice and is B0217.
