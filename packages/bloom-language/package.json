@@ -1540,6 +1540,20 @@
         "default": "./lib/commonjs/entries/zoomable-media-gallery.js"
       }
     },
+    "./testing": {
+      "react-native": {
+        "types": "./lib/typescript/module/testing/index.d.ts",
+        "default": "./src/testing/index.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/testing/index.d.ts",
+        "default": "./lib/module/testing/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/testing/index.d.ts",
+        "default": "./lib/commonjs/testing/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
