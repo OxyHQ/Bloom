@@ -1,0 +1,17 @@
+
+export function handle(username: string | undefined, handle: string | undefined): string | undefined {
+return username || handle;
+}
+
+function open(url: string): string {
+return url;
+}
+
+export function link(apply: string | undefined, source: string | undefined, canonical: string, alt: string): string {
+return open(apply || (source || ((canonical.length === 0) ? alt : canonical)));
+}
+
+export function label(name: string | undefined, nick: string | undefined): string {
+return (name || nick) ?? "anonymous";
+}
+
