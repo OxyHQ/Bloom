@@ -1933,6 +1933,11 @@ impl Checker<'_> {
             self.ref_object = ref_object;
             self.boundary(&arg.value, ty.as_ref());
             self.ref_object = false;
+            // Props Bloom cannot read (`ScreenProps extends ViewProps`) are a React component's:
+            // a Bloom view given to one is an element there (`header: toElement(Header(…))`).
+            if fields.is_none() {
+                self.element(&arg.value);
+            }
         }
         if let Some(fields) = fields.as_ref().filter(|_| !spread) {
             let missing: Vec<String> = fields

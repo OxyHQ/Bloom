@@ -215,6 +215,17 @@ fn routes_follow_the_app_tree() {
     assert!(after.diagnostics.is_empty(), "the new route is seen: {:?}", after.diagnostics);
 }
 
+/// A 2.0 screen is its route's default export under the app's router folder, and its named
+/// export anywhere else (`emit/screen_named`), so a route that renders it can import it.
+#[test]
+fn a_screen_is_default_only_in_a_route() {
+    let source = "public struct Welcome: Screen {\n  var body: some View { Text(\"hi\") }\n}\n";
+    let route = compile(source, "app/welcome.bloom", &options());
+    assert!(route.code.contains("export default screen(function Welcome"), "{}", route.code);
+    let elsewhere = compile(source, "components/Welcome.bloom", &options());
+    assert!(elsewhere.code.contains("export const Welcome = screen(function Welcome"), "{}", elsewhere.code);
+}
+
 /// A package's `exports` patterns (`"./icons/Ri*"`), resolved as Node and TS do: the longest
 /// matching prefix, its `*` replaced, `types` read before `react-native`, `import`, `default`.
 #[test]

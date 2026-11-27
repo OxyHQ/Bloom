@@ -1,0 +1,10 @@
+// A screen outside the app's router folder (`app/`) is the module's named export: a route that
+// renders it takes it by name (`import { WelcomeScreen }`). Only a route default-exports its
+// screen, as Expo Router takes it (spec 7.1a).
+public struct WelcomeScreen: Screen {
+  let name: String
+
+  var body: some View {
+    Text("Welcome, \(name)")
+  }
+}

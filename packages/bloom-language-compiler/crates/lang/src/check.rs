@@ -3704,6 +3704,10 @@ impl<'o> Checker<'o> {
     /// `test` (`!=` joined by `&&`, or `==` joined by `||` for a guard that exits) holding
     /// for `name … none`: the name is present after it.
     fn narrow(&mut self, expr: &Expr, test: BinaryOp, join: BinaryOp) {
+        // `(x != none) ? x : d`: through parentheses.
+        if let ExprKind::Paren(inner) = &expr.kind {
+            return self.narrow(inner, test, join);
+        }
         let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
         match op {
             op if *op == join => {
@@ -4157,8 +4161,8 @@ impl<'o> Checker<'o> {
         };
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));
-        if hint.as_ref().is_some_and(is_element) && matches!(self.resolve(&ty), Ty::View(_)) {
-            self.out.elements.insert(expr.id);
+        if hint.as_ref().is_some_and(is_element) {
+            self.element(expr);
         }
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
@@ -5310,6 +5314,31 @@ impl<'o> Checker<'o> {
                     }
                 }
             }
+        }
+    }
+
+    /// A Bloom view where TS takes a React element crosses as one (`toElement(view)`); an
+    /// optional one is, branch by branch (`bare ? none : Text("foot")`), and otherwise whole.
+    pub(super) fn element(&mut self, expr: &Expr) {
+        if matches!(expr.kind, ExprKind::None) {
+            return;
+        }
+        let Some(ty) = self.out.types.get(&expr.id).cloned() else { return };
+        match self.resolve(&ty) {
+            Ty::View(_) => {
+                self.out.elements.insert(expr.id);
+            }
+            Ty::Option(inner) if matches!(self.resolve(&inner), Ty::View(_)) => match &expr.kind {
+                ExprKind::Paren(inside) => self.element(inside),
+                ExprKind::Ternary(_, then, otherwise) => {
+                    self.element(then);
+                    self.element(otherwise);
+                }
+                _ => {
+                    self.out.elements.insert(expr.id);
+                }
+            },
+            _ => {}
         }
     }
 

@@ -1,0 +1,23 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text } from "@oxy.so/bloom-language";
+import { screen } from "@oxy.so/bloom-language/router";
+
+interface WelcomeScreenProps {
+  readonly name: string;
+}
+export const WelcomeScreen = screen(function WelcomeScreen(props: WelcomeScreenProps) {
+"use no memo";
+const $ = $c(2);
+const { name } = props;
+let $t0;
+if ($[0] !== name) {
+$t0 = Text(`Welcome, ${name}`);
+$[0] = name;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
