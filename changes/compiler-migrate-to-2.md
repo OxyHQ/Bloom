@@ -12,3 +12,6 @@ section: Added
   - JS's member names kept on `Foreign` values.
 - `bloom migrate --from 0.x` writes a `pub default view X` as the named `public struct X`, and the TS files that import or `jest.mock` it take it by name.
 - The migration mode in a build: `@oxy.so/bloom-language-compiler/jest` takes `{ allowTsImports: true }` and `withBloomLanguage(config, { allowTsImports: true })` passes it to Metro (`bloom-lang-dts --allow-ts-imports` for the declarations), so an app with a `Package.bloom` can run `bloom migrate`'s output (which still imports TS by path) while its port is under way.
+- `bloom migrate --write` draws a migrated view's JSX in the files that import it as `toElement(X({ … }))` (a `key` is `toElement`'s second argument), importing `toElement` where needed.
+- A view that hands its props on whole has them written out, and passes each one (`Row(post: post, …)`). Rest props (`{ label, ...menu }: P & { label }`) are one stored property of `P`. A local function of one destructured object takes labelled parameters.
+- TanStack's `useQuery({ queryKey, queryFn })` is drawn with an app's `TanStackQuery` binding module (`useQuery(QueryOptions(…))`) when the file reads only the options and result fields the binding declares.
