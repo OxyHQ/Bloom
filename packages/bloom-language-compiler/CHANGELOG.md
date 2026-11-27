@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.8.0
+
+### Compatibility
+
+- A `.bloom` module with an `@Observable` model needs `@oxy.so/bloom-language` 2.1.0 or newer, which has `Observable` and `useObserved`.
+
+### Breaking
+
+- The standard library's BloomData `Action` is now `Mutation` (`Mutation.make(name, optimistic:) { … }`, `run(input)`), so BloomUI's `Action` node in an `ActionBar` is no longer shadowed. The standard library's `HTTPError` gains `response` and `static func cast(_:)`, which also reads an Axios error.
+
+### Added
+
+- Bloom 2.0's surface (ADR 0002, phase A): views written as Swift writes them, `switch`, `guard`, `throw`, `try` and `do`/`catch`, typed errors, `@Observable` models whose views subscribe only to the fields they read (decided at compile time), protocols and extensions with static dispatch, constrained generics and `any P`, `@Binding` reads and writes, and `x!` (a trap on `none` in a dev build).
+- The Bloom toolchain: directory modules and `Package.bloom`, `extern` binding modules generated from a `.d.ts` (`bloom bind`), `test("…") { #expect(…) }` on the test runtime, and the `bloom` command line (`new`, `check`, `fmt`, `build`/`run` for web and Android, `test`, `add`, `bind`; `bloomc` is its alias). `bloom new` pins the Bloom, language and compiler versions this release ships with. `bloom check` caches each file on the interfaces of the files it reads.
+- The standard library (phase B), implicit in every package file: Core (`String`, `Array`, `Dictionary`, `Set`, `Optional`, `Result`, `Error`), `URL`, `Time`, localized strings checked against the catalogs, BloomData as `@Model`, `@Query`, `Source`, `Action` and `Realtime`, `async let` and actors, and `Ref<T>`.
+- Bloom 2.0, from the Mention corpus: an unannotated TS hook's result is read from its body, and `ReturnType<typeof useX>` resolves through it (for a `.bloom` hook too); a TS optional parameter takes `T?`; a conditional ending in `none` is the optional of its branches, at any depth and as a list item; `.id()` works on every node; a TS type named through re-exports is its declaration, so a callback alias types a closure's parameters; `catch let e as T` tests the error and `e as? T` casts it, through `T`'s `static func cast`; TS object types fit structurally; a record indexed by a union of its keys is the type of those fields; react-i18next's `t` gives a `String`; and a Bloom view where TS takes a React element is emitted as `toElement(view)`.
+
+### Changed
+
+- An array's subscript `xs[i]` is a `T`, as in Swift: a dev build traps out of range (`RangeError` naming the index and the count), a release build reads it as is; `xs.at(i)`, `first` and `last` are the optional reads. A dictionary's `d[k]` stays `V?`.
+- The Mention corpus' compiler gaps (M1–M9): platform files (`X.native.bloom`, `X.web.bloom`) are one module's alternatives, imported by their base name; a class of another file is imported with its `init`; a reference is a class in `@State`, and a host view's instance a `ViewRef<T>()`.
+
+### Fixed
+
+- The WASI `bloomc` (the fallback on a platform with no prebuilt one) starts in the working directory again, and on Windows, where Node's WASI cannot list a directory, `check` and `fmt` are handed the `.bloom` files under one.
+- A route added within a clock tick of the last read is seen: the route table is read again for a folder modified within 2 seconds of the read, as git treats a racily clean file.
+- `BLOOM_LINK` installs a linked checkout as it packs (its `pack:local` script when it has one, else `bun pm pack`), never as a copy of the directory. bun copied all of a `file:` directory, the checkout's examples and their `.bloom/build/` included, each holding the last linked copy, so every build nested one level deeper until the tree was too deep to delete. A pack that would carry a `.bloom` build is refused, and a rebuilt checkout is installed again on the next build (the tarball is named by its content), with no `.installed` stamp to delete.
+- A native release bundle builds again with `withBloomLanguage`. 1.7.0 wrapped each Metro cache store with `Object.create(store)`, and Expo's `BinaryFileStore` keeps its state in private fields, so Metro's reset before a release bundle (`clear()` on the wrapper) threw "Cannot write private member #prepare to an object whose class did not declare it". The wrapper now hands every call (`get`, `set`, `clear`) to the store itself. The web export, which resets no cache, was not affected. (Mention's Android release bundle on 1.7.0.)
+
 ## 1.7.0
 
 ### Compatibility
