@@ -886,15 +886,92 @@ fn in_package(dir: &Path, sub: &str) -> Option<PathBuf> {
         }
         return json_field(&manifest, "source").and_then(|path| with_extensions(&dir.join(path)));
     }
-    // `exports["./sub"].types`, read without a JSON parser: the first `types` after the key.
-    let key = format!("\"./{sub}\"");
-    if let Some(at) = manifest.find(&key)
-        && let Some(path) = json_field(&manifest[at..], "types")
+    // `exports["./sub"]`, or a pattern of it (`"./icons/Ri*"`), as Node and TS resolve it.
+    if let Some(path) = export_target(&manifest, sub)
         && let Some(found) = with_extensions(&dir.join(path))
     {
         return Some(found);
     }
     with_extensions(&dir.join(sub))
+}
+
+/// What a package's `exports` gives for `./{sub}`: the exact key, else the pattern whose
+/// prefix before its one `*` is longest (Node's order), its `*` replaced by what it matched.
+/// A conditions object is read `types` first, then `react-native`, `import`, `default`.
+fn export_target(manifest: &str, sub: &str) -> Option<String> {
+    use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
+    fn key_of(property: &ObjectPropertyKind) -> Option<String> {
+        match property {
+            ObjectPropertyKind::ObjectProperty(p) => match &p.key {
+                PropertyKey::StringLiteral(s) => Some(s.value.as_str().unwrap_or_default().to_string()),
+                _ => None,
+            },
+            ObjectPropertyKind::SpreadProperty(_) => None,
+        }
+    }
+    fn value_of<'e, 'a>(object: &'e ObjectExpression<'a>, name: &str) -> Option<&'e Expression<'a>> {
+        object.properties.iter().find_map(|property| match property {
+            ObjectPropertyKind::ObjectProperty(p) if key_of(property).as_deref() == Some(name) => {
+                Some(&p.value)
+            }
+            _ => None,
+        })
+    }
+    let allocator = Allocator::default();
+    let text = format!("({manifest})");
+    let Ok(Expression::ParenthesizedExpression(root)) =
+        Parser::new(&allocator, &text, SourceType::mjs()).parse_expression()
+    else {
+        return None;
+    };
+    let Expression::ObjectExpression(root) = &root.expression else { return None };
+    let Some(Expression::ObjectExpression(exports)) = value_of(root, "exports") else { return None };
+    let wanted = format!("./{sub}");
+    if let Some(target) = value_of(exports, &wanted) {
+        return condition(target);
+    }
+    let mut best: Option<(usize, &Expression, String)> = None;
+    for property in &exports.properties {
+        let (Some(key), ObjectPropertyKind::ObjectProperty(p)) = (key_of(property), property) else {
+            continue;
+        };
+        let Some((prefix, suffix)) = key.split_once('*') else { continue };
+        if wanted.len() >= prefix.len() + suffix.len()
+            && wanted.starts_with(prefix)
+            && wanted.ends_with(suffix)
+            && best.as_ref().is_none_or(|(length, _, _)| prefix.len() > *length)
+        {
+            let middle = wanted[prefix.len()..wanted.len() - suffix.len()].to_string();
+            best = Some((prefix.len(), &p.value, middle));
+        }
+    }
+    let (_, target, middle) = best?;
+    Some(condition(target)?.replace('*', &middle))
+}
+
+/// A target of `exports`: a path, the first of a list that resolves, or a conditions object.
+fn condition(target: &oxc_ast::ast::Expression) -> Option<String> {
+    use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKey};
+    match target {
+        Expression::StringLiteral(s) => Some(s.value.as_str().unwrap_or_default().to_string()),
+        Expression::ArrayExpression(items) => items.elements.iter().find_map(|item| match item {
+            ArrayExpressionElement::SpreadElement(_) | ArrayExpressionElement::Elision(_) => None,
+            other => other.as_expression().and_then(condition),
+        }),
+        Expression::ObjectExpression(object) => {
+            ["types", "react-native", "import", "default"].iter().find_map(|name| {
+                object.properties.iter().find_map(|property| match property {
+                ObjectPropertyKind::ObjectProperty(p)
+                    if matches!(&p.key, PropertyKey::StringLiteral(k) if k.value.as_str() == Some(*name)) =>
+                {
+                    condition(&p.value)
+                }
+                _ => None,
+            })
+            })
+        }
+        _ => None,
+    }
 }
 
 /// The string value of the first `"field": "…"` in `json`.

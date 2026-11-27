@@ -1,8 +1,0 @@
-warning[B0602]: cannot find TS declarations for "@oxy.so/bloom/icons/RiAlertLine"
- --> emit/memo_groups.bloom:3:29
-  |
-3 | import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine"
-  |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ its names are `Foreign`: annotate them before Bloom logic uses them
-  |
-help: check the path, the `paths` map or that the package is installed
-  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
