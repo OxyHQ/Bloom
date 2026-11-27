@@ -50,6 +50,25 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     (start, end, snapshot)
                 })
             }
+            // `n = value` where `@state n = 7` took an `Int` from its literal but TS's state is a
+            // `number`: the state is a `Float` (`@state n: Float = 7`).
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Float`"
+                    && source[..start].trim_end().ends_with(" =")
+                    && !source[..start].trim_end().ends_with("==") =>
+            {
+                let before = source[..start].trim_end().trim_end_matches('=').trim_end();
+                let name_start = before.rfind(|c: char| !(c.is_alphanumeric() || c == '_')).map_or(0, |i| i + 1);
+                let name = &before[name_start..];
+                let decl = format!("@state {name} = ");
+                source.find(&decl).filter(|_| !name.is_empty()).and_then(|at| {
+                    let value_at = at + decl.len();
+                    let literal: String = source[value_at..].chars().take_while(|c| c.is_ascii_digit()).collect();
+                    let after = source[value_at + literal.len()..].chars().next();
+                    (!literal.is_empty() && after.is_none_or(|c| c == '\n' || c == ' '))
+                        .then(|| (at + "@state ".len() + name.len(), at + "@state ".len() + name.len(), ": Float".to_string()))
+                })
+            }
             // `xs.count < max` with a `Float` max (a TS `number`): JS compared numbers, so the
             // count is read as one, `xs.count.toFloat() < max`.
             ("B0201", _) if d.message == "expected `Int`, found `Float`" => {
