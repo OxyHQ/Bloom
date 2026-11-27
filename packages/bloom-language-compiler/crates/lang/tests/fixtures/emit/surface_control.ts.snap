@@ -16,7 +16,7 @@ return `${load.count} items`;
 }
 
 export function first(names: readonly string[]): string {
-if (!(names[0] !== undefined)) {
+if (!(names[0] != null)) {
 return "nobody";
 }
 return names[0];

@@ -33,6 +33,6 @@ return text;
 }
 
 function delay(timer: ReturnType<typeof setTimeout> | undefined): boolean {
-return timer !== undefined;
+return timer != null;
 }
 

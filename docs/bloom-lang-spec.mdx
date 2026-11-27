@@ -180,8 +180,10 @@ Three grammar rules keep it unambiguous, as in Swift:
 
 A keyword that never starts an expression (`type`, `body`, `view`, `screen`, `layout`, `from`)
 may name a parameter, a struct field or a value, so a TS API's props and fields keep their
-names (`view NoticeRow(type: String, body: String)`, `Text(body)`). Record keys, labels and
-members after `.` may be any keyword.
+names (`view NoticeRow(type: String, body: String)`, `Text(body)`). Record keys, labels,
+members after `.` and the names of a struct's or a protocol's properties may be any keyword
+(`public let none: String`, read `copy.none`): a TS record's own field names cross unchanged.
+`none` is the literal only where an expression starts.
 
 1. **No trailing closure in a head.** `if x { … }`, `match x {`, `for p in xs {` and `while`
    never read the `{` as a trailing closure of `x`.
@@ -359,6 +361,19 @@ TypeScript checker verifies it against the real `.d.ts` and its diagnostic maps 
 and using it as a Bloom value with no expected type (an operator, a `match`, a member of a Bloom
 type) is B0601 with the fix "annotate it: `let x: T = …`". Nothing crosses unchecked: Bloom code
 is checked by bloomc, and every crossing by `tsc`.
+
+**`null` (2.0).** Bloom's `T?` is `T | undefined`, and Bloom code never makes a `null`. A TS
+value typed `T | null` (or `T | null | undefined`) crosses in as `T?`, and every test of an
+optional is loose: `if let`, `x == none`, `case .some`, `?`, `!`, `??` and optional equality
+compile to `!= null` / `== null`, so a TS `null` is `none` at run time. Where such a value goes
+on to a Bloom `T?` parameter, prop or field, TS's `null` is not its `undefined`: write
+`value ?? none` (`undefined` for a `null`). `title || "Untitled"` of an optional that is not a
+`Bool` is JS's value `||`, as for a TS value. A TS value in a record's field fits the field's
+type (`{ avatar: user.avatar }` where a `PostUser` is expected): TS checks the record where it
+lands, and a `T?` field's check takes TS's `null` (`satisfies T | undefined | null`). Anywhere
+else a `Foreign` value checked as a `T?` reads TS's `null` as `none`: `((x) ?? undefined)
+satisfies T | undefined`, written once (a `??` chain whose last operand is already so checked is
+not given a second `?? undefined`, which TS calls always nullish).
 
 `foreign ?? e` takes `e`'s type (the left side may be `null` in TS as well as `undefined`);
 TS checks the whole where it lands; a TS value compared with `none` is compared loosely
@@ -703,7 +718,9 @@ is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); an
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
 A data `struct` takes Swift's members too (`public let id: String`, `public var likes: Int`):
-they are its fields; its methods, computed properties and `static` members, and an `enum`'s,
+they are its fields (one whose default is `none` is optional in the emitted TS, `readonly
+boosts?: number`, so a TS caller may leave it out; any other default stays required, since
+Bloom's own construction writes it); its methods, computed properties and `static` members, and an `enum`'s,
 are statically dispatched functions (section 4.8). A `@Binding var isOn: Bool` is read as a
 `Bool` (`isOn`, compiled `isOn[0]`), assigned as one (`isOn = false`, compiled `isOn[1](false)`),
 and passed on as the binding with `$isOn`. `@Environment(\.k)` reads the built-in value `k` (`disabled`, `controlSize`, `buttonStyle`) or the

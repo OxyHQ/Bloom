@@ -884,7 +884,9 @@ impl<'o> Checker<'o> {
         want.iter().all(|w| match have.iter().find(|h| h.name == w.name) {
             Some(h) => {
                 let (a, e) = (substitute(&h.ty, actual_args), substitute(&w.ty, expected_args));
-                self.coerce(&a, &e)
+                // A TS value in a field (`avatar: user.avatar`) fits any field type: TS checks
+                // the record where it lands, as it checks a TS value passed as an argument.
+                matches!(self.resolve(&a), Ty::Foreign(_)) || self.coerce(&a, &e)
             }
             None => w.default == FieldDefault::Undefined,
         })
@@ -4829,6 +4831,17 @@ impl<'o> Checker<'o> {
                         }
                     }
                     return right;
+                }
+                // `title || "Untitled"` of an optional that is not a `Bool` (a TS `string | null`
+                // reads as `String?`): JS's value `||` too, the other side when it is absent or
+                // falsy, as the TS it came from wrote it.
+                if op == BinaryOp::Or
+                    && let Ty::Option(inner) = self.resolve(&left)
+                    && !matches!(self.resolve(&inner), Ty::Bool)
+                    && !matches!(expected.map(|e| self.resolve(e)), Some(Ty::Bool))
+                {
+                    let right = self.expr(rhs, Some(&inner));
+                    return self.join(&inner, &right, expr.span);
                 }
                 // As `expr(lhs, Some(Bool))` would have.
                 if let Some(recorded) = &mut self.expected {

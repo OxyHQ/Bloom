@@ -2,8 +2,8 @@ function $get<T>(items: readonly T[], index: number): T {
   if (index >= 0 && index < items.length) return items[index] as T;
   throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);
 }
-function $unwrap<T>(value: T | undefined): T {
-  if (value === undefined) throw new TypeError("Unexpectedly found none while unwrapping an optional (`!`)");
+function $unwrap<T>(value: T | null | undefined): T {
+  if (value == null) throw new TypeError("Unexpectedly found none while unwrapping an optional (`!`)");
   return value;
 }
 

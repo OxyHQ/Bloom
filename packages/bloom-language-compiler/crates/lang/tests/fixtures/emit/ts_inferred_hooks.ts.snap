@@ -13,7 +13,7 @@ export const JobEditor = view(function JobEditor() {
 const $ = $c(14);
 const form = useJobForm();
 const seo = useJobSeo();
-const robots: string | undefined = (seo.robots satisfies string | undefined);
+const robots: string | undefined = (((seo.robots) ?? undefined) satisfies string | undefined);
 let server: NonNullable<ReturnType<typeof seoServer>> | undefined;
 if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
 server = seoServer();
@@ -21,11 +21,11 @@ $[0] = server;
 } else {
 server = $[0];
 }
-const served: string | undefined = (server?.robots satisfies string | undefined);
-const currency: string | undefined = ((form.salary?.currency ?? (server?.robots satisfies (string | undefined) | undefined)) satisfies string | undefined);
+const served: string | undefined = (((server?.robots) ?? undefined) satisfies string | undefined);
+const currency: string | undefined = ((form.salary?.currency ?? (((server?.robots) ?? undefined) satisfies (string | undefined) | undefined)) satisfies string | undefined);
 let $t0;
 if ($[10] !== form || $[11] !== robots || $[12] !== currency) {
-$t0 = VStack(TextField([form.title, (value: string) => form.setTitle(value)] as const, "Title"), ((form.skills.length > 0) && (form.skills.length <= MAX_SKILLS)) ? ($[1] !== form.skills ? ($[1] = form.skills, $[2] = Text(`${form.skills.length} skills`)) : $[2]) : null, (form.salary !== undefined) ? Text(`${form.salary.min ?? 0} ${form.salary.currency}`) : null, ($[3] !== form.isComplete ? ($[3] = form.isComplete, $[4] = $view0.disabled(!form.isComplete)) : $[4]), ($[5] !== form ? ($[5] = form, $[6] = Embed($jsx(JobFormFields, { form: form } satisfies ComponentProps<typeof JobFormFields>))) : $[6]), ($[7] !== robots || $[8] !== currency ? ($[7] = robots, $[8] = currency, $[9] = Text(`${HEADER_CONTENT_GAP * 2} ${robots ?? ""} ${served ?? ""} ${currency ?? ""}`)) : $[9]));
+$t0 = VStack(TextField([form.title, (value: string) => form.setTitle(value)] as const, "Title"), ((form.skills.length > 0) && (form.skills.length <= MAX_SKILLS)) ? ($[1] !== form.skills ? ($[1] = form.skills, $[2] = Text(`${form.skills.length} skills`)) : $[2]) : null, (form.salary != null) ? Text(`${form.salary.min ?? 0} ${form.salary.currency}`) : null, ($[3] !== form.isComplete ? ($[3] = form.isComplete, $[4] = $view0.disabled(!form.isComplete)) : $[4]), ($[5] !== form ? ($[5] = form, $[6] = Embed($jsx(JobFormFields, { form: form } satisfies ComponentProps<typeof JobFormFields>))) : $[6]), ($[7] !== robots || $[8] !== currency ? ($[7] = robots, $[8] = currency, $[9] = Text(`${HEADER_CONTENT_GAP * 2} ${robots ?? ""} ${served ?? ""} ${currency ?? ""}`)) : $[9]));
 $[10] = form;
 $[11] = robots;
 $[12] = currency;

@@ -771,7 +771,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     && matches!(self.nth(1), Tok::P(P::Colon))
                     && !matches!(self.tok(), Tok::Kw(Kw::Let | Kw::Var))
                 {
-                    let field_name = self.soft_name("a field name");
+                    let field_name = self.name_or_keyword("a field name");
                     self.bump();
                     let ty = self.type_expr();
                     let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
@@ -875,7 +875,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::Kw(Kw::Let | Kw::Var) => {
                 let mutable = self.at_kw(Kw::Var);
                 self.bump();
-                let name = self.soft_name("the property's name");
+                let name = self.name_or_keyword("the property's name");
                 let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
                 if let Some(ty) = ty.clone().filter(|_| mutable && self.at(P::LBrace)) {
                     let body = self.block();
@@ -1502,7 +1502,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 match self.tok() {
                     Tok::Kw(Kw::Var | Kw::Let) => {
                         self.bump();
-                        let prop = self.soft_name("the property's name");
+                        let prop = self.name_or_keyword("the property's name");
                         self.expect(P::Colon, "`:` and the property's type");
                         let ty = self.type_expr();
                         let mut settable = false;

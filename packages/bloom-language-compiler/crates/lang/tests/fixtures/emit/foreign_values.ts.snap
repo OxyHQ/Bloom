@@ -45,7 +45,7 @@ return $t0;
 });
 
 export function end(onEnd: (() => void) | undefined, label: string | undefined): string {
-if ((onEnd !== undefined) && (label !== undefined)) {
+if ((onEnd != null) && (label != null)) {
 onEnd();
 return label;
 }
@@ -74,17 +74,17 @@ return $t1;
 });
 
 export function shown(name: string | undefined, bio: string | undefined): string {
-if ((name === undefined) || (bio === undefined)) {
+if ((name == null) || (bio == null)) {
 return "";
 }
-const full = ((name !== undefined) && (!(name.length === 0))) ? name : "?";
+const full = ((name != null) && (!(name.length === 0))) ? name : "?";
 return `${full}: ${bio}`;
 }
 
 export function initial(name: string | undefined, fallback: string): string {
-const first = (name !== undefined) ? name : fallback;
-const second = (name === undefined) ? fallback : name;
-const blank = (name === undefined) || (name.length === 0);
+const first = (name != null) ? name : fallback;
+const second = (name == null) ? fallback : name;
+const blank = (name == null) || (name.length === 0);
 return blank ? first : second;
 }
 
@@ -92,7 +92,7 @@ export const ListTitle = view(function ListTitle() {
 "use no memo";
 const $ = $c(2);
 const list = useList();
-const title = ((list.title || "Untitled") satisfies string);
+const title = list.title || "Untitled";
 let $t2;
 if ($[0] !== title) {
 $t2 = Text(title.toUpperCase());
@@ -118,21 +118,21 @@ return s.length;
 }
 
 export function named(u: Author): number {
-if ((u.name !== undefined) && (!(u.name!.length === 0))) {
+if ((u.name != null) && (!(u.name!.length === 0))) {
 return width(u.name!);
 }
 return 0;
 }
 
 export function present(u: Author | undefined): number {
-if (u?.name === undefined) {
+if (u?.name == null) {
 return 0;
 }
 return width(u?.name!);
 }
 
 export function pictured(u: Author): number {
-return (u.avatar?.url !== undefined) ? width(u.avatar?.url!) : 0;
+return (u.avatar?.url != null) ? width(u.avatar?.url!) : 0;
 }
 
 const $view1 = Button(Text("Loop"));
@@ -163,7 +163,7 @@ const $ = $c(2);
 const { tip } = props;
 let $t4;
 if ($[0] !== tip.name) {
-$t4 = VStack((tip.name !== undefined) ? RawText(tip.name!) : null);
+$t4 = VStack((tip.name != null) ? RawText(tip.name!) : null);
 $[0] = tip.name;
 $[1] = $t4;
 } else {

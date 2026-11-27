@@ -28,7 +28,7 @@ return a === b || typeof a === "object" && typeof b === "object" && (a.tag === "
 }
 
 function sameMaybe(a: Point | undefined, b: Point | undefined): boolean {
-return a === undefined || b === undefined ? a === b : a.x === b.x && a.y === b.y;
+return a == null || b == null ? (a == null) === (b == null) : a.x === b.x && a.y === b.y;
 }
 
 function samePair(a: readonly [number, Point], b: readonly [number, Point]): boolean {
@@ -53,7 +53,7 @@ return p.x === $t0.x && p.y === $t0.y;
 }
 
 function present(onPress: (() => void) | undefined): boolean {
-return onPress !== undefined;
+return onPress != null;
 }
 
 function sameId(a: number, b: number | undefined): boolean {
@@ -61,6 +61,6 @@ return a === b;
 }
 
 function samePointMaybe(a: Point, b: Point | undefined): boolean {
-return a === undefined || b === undefined ? a === b : a.x === b.x && a.y === b.y;
+return a == null || b == null ? (a == null) === (b == null) : a.x === b.x && a.y === b.y;
 }
 

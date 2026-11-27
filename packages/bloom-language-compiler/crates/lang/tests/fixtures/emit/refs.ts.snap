@@ -18,7 +18,7 @@ const timer = useRef<number>(0);
 const field = useRef<ViewInstance | null>(null);
 const [query, setQuery] = useState<string>("");
 useEffect(() => {
-timer.current = ((field.current ?? undefined) === undefined) ? 0 : (timer.current + 1);
+timer.current = ((field.current ?? undefined) == null) ? 0 : (timer.current + 1);
 }, [query]);
 let submit: () => void;
 if ($[0] !== onDone) {

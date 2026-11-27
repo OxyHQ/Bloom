@@ -11,3 +11,22 @@ export type Tab = 'videos' | 'following';
 export interface Selected {
   label?: string;
 }
+/** An API's figures: an absent one is `null` (Mention's API types). */
+export interface Stats {
+  boosts: number | null;
+}
+export declare function useStats(): Stats;
+/** A post's author (Mention's `PostUser`): its absent fields are `null`. */
+export interface PostAuthor {
+  id: string;
+  avatar: string | null;
+  name: { displayName: string | null };
+}
+/** A conditional type Bloom does not read (so a value of it is `Foreign`); TS's `string | null`. */
+type Nullable = object extends string ? never : string | null;
+export declare function useAuthUser(): {
+  id: string;
+  avatar: Nullable;
+  name: { displayName: Nullable };
+};
+export declare function authorLabel(author: PostAuthor): string;

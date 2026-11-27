@@ -21,7 +21,7 @@ const $ = $c(2);
 const { look = undefined } = props;
 let $t0;
 if ($[0] !== look) {
-$t0 = $view1.modifier(look ?? (card satisfies ViewModifier | undefined));
+$t0 = $view1.modifier(look ?? (((card) ?? undefined) satisfies ViewModifier | undefined));
 $[0] = look;
 $[1] = $t0;
 } else {
@@ -45,7 +45,7 @@ const $ = $c(2);
 const { look = undefined } = props;
 let $t1;
 if ($[0] !== look) {
-$t1 = VStack($view2.modifier(look ?? (framed satisfies ViewModifier | undefined)), $view3);
+$t1 = VStack($view2.modifier(look ?? (((framed) ?? undefined) satisfies ViewModifier | undefined)), $view3);
 $[0] = look;
 $[1] = $t1;
 } else {

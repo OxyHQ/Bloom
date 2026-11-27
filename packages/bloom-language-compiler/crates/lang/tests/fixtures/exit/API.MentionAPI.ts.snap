@@ -43,7 +43,7 @@ await (HTTPClient$perform(self.http, "post", path));
 
 export function MentionAPI$$live(): MentionAPI {
 const $t0 = URL$$parse("https://api.mention.earth");
-if (!($t0 !== undefined)) {
+if (!($t0 != null)) {
 return fatal("Mention's base URL");
 }
 return { http: { headers: {}, timeoutSeconds: 30, baseURL: $t0 } };

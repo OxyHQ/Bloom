@@ -5,8 +5,8 @@ import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, D
 import { type Regex, Regex$matches, RegexMatch$group } from "../../.bloom/std/Bloom/Regex.bloom";
 import { type Date, Date$$get$now, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
 import { type URL } from "../../.bloom/std/Bloom/URL.bloom";
-function $compact<T>(items: readonly (T | undefined)[]): readonly T[] {
-  return items.filter((item): item is T => item !== undefined);
+function $compact<T>(items: readonly (T | null | undefined)[]): readonly T[] {
+  return items.filter((item): item is T => item != null);
 }
 
 export interface Author {

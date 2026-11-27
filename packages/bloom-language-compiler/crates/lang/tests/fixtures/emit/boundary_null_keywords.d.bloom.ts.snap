@@ -1,0 +1,17 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface Engagement {
+  readonly likes: number | undefined;
+  readonly boosts?: number | undefined;
+  readonly shares: number;
+}
+export interface Copy {
+  readonly none: string;
+  readonly some: string;
+}
+export declare function total(e: Engagement): number;
+export interface BarProps {
+  readonly engagement: Engagement;
+  readonly copy: Copy;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Bar())`), or from TSX as `toElement(Bar())`. */
+export declare const Bar: (props: BarProps) => ComposedView;
