@@ -711,10 +711,23 @@ impl Tr<'_> {
 
     /// One side of `&&`/`||` in a condition, parenthesised when it is itself an `||`/`&&`.
     fn test_operand(&mut self, e: &Expression) -> String {
-        let text = self.test(e, false);
         match e.without_parentheses() {
-            Expression::LogicalExpression(_) => format!("({text})"),
-            _ => text,
+            Expression::LogicalExpression(_) => format!("({})", self.test(e, false)),
+            // A member path the codemod cannot type is `!!x`, as `Boolean(x)` is: bloomc types an
+            // `a || b` of optionals as a value (`String?`), so a bare `x` here would be read as
+            // JS's default, not as its truthiness. `crate::truthiness` spells `x` and drops `!!`.
+            // (A call keeps its own form: its text may be respelled before it is typed.)
+            inner
+                if self.declared(e).is_none()
+                    && !is_boolean_shaped(e)
+                    && !matches!(inner, Expression::UnaryExpression(_)) =>
+            {
+                let text = self.condition(e);
+                let path = text.starts_with(|c: char| c.is_alphabetic() || c == '_')
+                    && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '!'));
+                if path { format!("!!{text}") } else { text }
+            }
+            _ => self.test(e, false),
         }
     }
 
