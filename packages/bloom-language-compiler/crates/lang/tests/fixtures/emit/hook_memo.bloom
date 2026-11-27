@@ -51,3 +51,22 @@ public struct TaggedRow: View {
     .padding("top", row.top)
   }
 }
+
+// A closure that reads only module names is a module constant, as in a view: no slot. Each
+// hoisted closure has a name of its own in the module (PostItem: `$fn10` was declared twice).
+func log(_ s: String) {}
+
+public struct Hint: View {
+  var body: some View {
+    VStack {
+      Text("Static")
+      Button(Text("Go")).onPress { log("go") }
+    }
+  }
+}
+
+public func useHandlers(n: Int) {
+  let first = { log("a") }
+  let second = { log("b") }
+  { first: first, second: second, doubled: n * 2 }
+}
