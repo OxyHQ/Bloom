@@ -12,3 +12,5 @@ section: Changed
 - A Bloom view in an optional React-element prop (`footer: bare ? none : Text("foot")`) and in a prop of a TS component whose props Bloom cannot read (Bloom's `Screen(header:)`) crosses as `toElement(…)`; a declaration's `import("./types.js").T` names that module's type.
 - A `struct X: Screen` (or `Layout`) outside the app's router folder is its file's named export, not the default export only a route has.
 - A presence test in parentheses narrows as one without (`(room.status != none) ? room.status : "scheduled"`).
+- `String(localized:)` and `Text("key")` in a view read the locale through `useLocalization()` and are memoised on it, so `Locale.prefer` re-draws a mounted view in the new language.
+- A plural lookup with a count of 0 takes the catalog's `zero` form where it has one, in every language (i18next's `_zero`), before the CLDR category.
