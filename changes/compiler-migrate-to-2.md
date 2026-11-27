@@ -10,3 +10,4 @@ section: Added
   - `xs.at(i)` where TS read past the end, `x!` where TS's flow proved a value present, and `Ref(v)`/`ViewRef<T>()` for refs;
   - React's stale reads as snapshots;
   - JS's member names kept on `Foreign` values.
+- `bloom migrate --from 0.x` writes a `pub default view X` as the named `public struct X`, and the TS files that import or `jest.mock` it take it by name.

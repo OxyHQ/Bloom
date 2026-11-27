@@ -265,7 +265,7 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
 
 /// A default-exported view or function (`pub default view X`, or a closure `let`) as a named one: 2.0 has no
 /// default exports but a route's screen or layout. Returns its name.
-fn named_default(text: &mut String) -> Option<String> {
+pub fn named_default(text: &mut String) -> Option<String> {
     for kind in ["view ", "fn ", "let "] {
         let marker = format!("pub default {kind}");
         let Some(at) = text.find(&marker) else { continue };
