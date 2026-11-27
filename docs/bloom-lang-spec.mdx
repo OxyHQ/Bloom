@@ -827,7 +827,9 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   Action(…) }` draws the bar with the actions inside, built in the caller's render. A component
   whose props declare no `children` passes the builder to the one node prop (`ReactNode`, a
   `View`) it declares and the call does not give (`Slot(title:) { … }` is its `content`); with
-  none, or several, the builder is B0506, and `children:` given beside a builder is B0207. A
+  none, or several, the builder is B0506, and `children:` given beside a builder is B0207. One
+  line of text is the component's text children (`TextFieldLabel { label }`, JSX's
+  `<TextFieldLabel>{label}</TextFieldLabel>`); a builder line is otherwise a view. A
   builder's nodes are never dropped: a trailing closure past a TS function's parameters is B0207,
   and a node on a line of its own in a closure or function that is not a builder (`func f() {
   Text("x") }`) is B0506 (built and never drawn).

@@ -350,6 +350,9 @@ pub struct CheckResult {
     /// Trailing builders of a TS component that fill a node prop other than `children`
     /// (`content: ReactNode`), by the builder's span: the prop's name.
     pub component_slots: HashMap<Span, String>,
+    /// A TS component's one-line builder that is text (`TextFieldLabel { label }`): JSX text
+    /// children, passed as they are.
+    pub text_children: HashSet<Span>,
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,

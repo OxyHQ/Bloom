@@ -46,6 +46,8 @@ public struct Placeholder: View {
         Text("loading")
       }
       Toolbar.Group { Text("tools") }
+      // One line of text is the component's text children (JSX's `<X>{label}</X>`).
+      EngagementBar { open ? "open" : "closed" }
     }
     .header(Header("Loading").accessory(if open { Text("open") }))
   }
