@@ -1,6 +1,8 @@
 // A list of views is a child (spec 7.2): in a conditional's branch (`c ? Text(…) : xs.map(f)`),
 // a node's argument and `Embed`'s (a React node: `toElement(…)`), and as a builder's last line,
-// whose items are then the parent's own children (`...rows`), as a last `for` is.
+// whose items are then the parent's own children (`...rows`), as a last `for` is. An optional
+// list is one child (`on ? rows : none`), and so is a list of TS values (TS checks its items).
+import { badges } from "@/corpus"
 public func row(_ name: String) -> View {
   Text(name)
 }
@@ -19,6 +21,9 @@ public struct Names: View {
         Text("Names")
         rows
       }
+      HStack(loading ? rows : none) { Text("More") }
+      HStack { badges() }
+      [Text("First"), loading ? Text("Last") : none]
     }
   }
 }

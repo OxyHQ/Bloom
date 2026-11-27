@@ -1,0 +1,33 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Text, view } from "@oxy.so/bloom-language";
+import type { Child } from "@oxy.so/bloom-language";
+import { type Decision } from "@/corpus";
+function $eq0(a: "available" | "pending", b: "available" | "pending"): boolean {
+  return a === b;
+}
+
+function choices<T>(values: readonly T[], chosen: T, choose: (p0: T) => void, $w_T_Equatable: (a: T, b: T) => boolean): Child {
+return HStack(...values.map((value) => Text(($w_T_Equatable(chosen, value)) ? "*" : "-").onPress(() => choose(value))));
+}
+
+export interface PickerProps {
+  readonly decision: "available" | "pending";
+  readonly onDecision: (p0: "available" | "pending") => void;
+}
+export const Picker = view(function Picker(props: PickerProps) {
+"use no memo";
+const $ = $c(3);
+const { decision, onDecision } = props;
+let $t0;
+if ($[0] !== decision || $[1] !== onDecision) {
+$t0 = choices(["available", "pending"], decision, onDecision, $eq0);
+$[0] = decision;
+$[1] = onDecision;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+

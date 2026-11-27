@@ -1,0 +1,3 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Context())`), or from TSX as `toElement(Context())`. */
+export declare const Context: () => ComposedView;
