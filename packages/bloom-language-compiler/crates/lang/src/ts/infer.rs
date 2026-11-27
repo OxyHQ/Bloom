@@ -34,6 +34,13 @@ impl Reader {
     /// GAP = 12`, a record or list of literals); anything else (a call, a component, a
     /// function) stays the TS value it is.
     pub(super) fn infer_init(&self, init: &Expression) -> Option<TsType> {
+        // `const MAX = 4`: an `Int`, as Bloom writes it (it widens to `Float` where one is expected).
+        if let Expression::NumericLiteral(n) = init
+            && n.value.fract() == 0.0
+            && n.value.abs() < 9_007_199_254_740_992.0
+        {
+            return Some(TsType::Int);
+        }
         Some(self.expr(init, &Env::default())).filter(plain)
     }
 

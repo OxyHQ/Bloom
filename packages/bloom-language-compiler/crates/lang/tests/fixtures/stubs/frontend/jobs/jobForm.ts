@@ -47,3 +47,9 @@ type RobotsDirective = string & { readonly kind?: 'robots' };
 export function useJobSeo(robots?: RobotsDirective) {
   return { robots };
 }
+
+/** An integer constant: an `Int`. */
+export const MAX_SKILLS = 4;
+
+/** A record that may be absent, whose member Bloom does not map. */
+export declare function seoServer(): { robots: RobotsDirective } | undefined;

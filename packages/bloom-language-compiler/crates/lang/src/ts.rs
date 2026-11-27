@@ -27,6 +27,8 @@ mod infer;
 #[derive(Debug, Clone)]
 pub enum TsType {
     Number,
+    /// An integer literal's `const` (`export const MAX = 4`): an `Int`, which widens to `Float`.
+    Int,
     String,
     Boolean,
     Void,
@@ -1311,6 +1313,7 @@ impl Mapper<'_> {
     pub fn ty(&mut self, file: &Rc<TsFile>, ty: &TsType, scope: &Scope, path: &str, depth: usize) -> Ty {
         match ty {
             TsType::Number => Ty::Float,
+            TsType::Int => Ty::Int,
             TsType::String => Ty::Str,
             TsType::Boolean => Ty::Bool,
             TsType::Void | TsType::Undefined => Ty::Unit,

@@ -396,9 +396,10 @@ Anything else (a generic call, a spread, a method's result) is `Foreign`, named 
 type), whether `f` is TS or a `.bloom` hook (through the declarations bloomc writes,
 `X.d.bloom.ts`): `type JobForm = ReturnType<typeof useJobForm>` is the record the hook returns,
 one type whichever name reaches it. An unannotated `const` of plain data (`export const GAP =
-12`, a record or list of literals) is its initializer's type; any other stays `Foreign`. The
-optional of a TS type Bloom does not map (`T | undefined`, `x?: T`) is `Foreign`, not
-`Foreign?`, as its parts are TS's to check.
+12`, a record or list of literals) is its initializer's type (an integer literal's is an `Int`,
+`const MAX = 4`); any other stays `Foreign`. The optional of a TS type Bloom does not map
+(`T | undefined`, `x?: T`, a member read through `?.`, `server?.robots`) is `Foreign`, not
+`Foreign?`, as its parts are TS's to check; so is `x ?? foreign`.
 
 A record literal where a dictionary `[String: V]` is expected is a dictionary literal: each value
 is checked as a `V` (a TS value as any other), and `..d` spreads a dictionary into it

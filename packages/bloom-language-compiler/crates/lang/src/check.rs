@@ -4600,6 +4600,8 @@ impl<'o> Checker<'o> {
                         let right_ty = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
                         match self.resolve(&right_ty) {
                             Ty::Option(_) => Ty::Option(inner),
+                            // `x ?? foreign` (`user.color ?? cached?.color`): TS's, checked where it lands.
+                            Ty::Foreign(_) => right_ty,
                             Ty::Str | Ty::Strings(_) if literal => self.join(&inner, &right_ty, expr.span),
                             _ => {
                                 if !self.coerce(&right_ty, &inner) {
@@ -5140,6 +5142,12 @@ impl<'o> Checker<'o> {
     pub(super) fn rechain(&mut self, expr: &Expr, ty: Ty) -> Ty {
         match self.resolve(&ty) {
             Ty::Option(_) | Ty::Unit | Ty::Unknown | Ty::Never => ty,
+            // A TS member read through `?.` stays `Foreign` (not `Foreign?`): TS's absence is
+            // its own, checked where the value lands (`server?.robots` beside a `String?`).
+            Ty::Foreign(_) => {
+                self.chained.insert(expr.id);
+                ty
+            }
             other => {
                 self.chained.insert(expr.id);
                 Ty::Option(Box::new(other))
