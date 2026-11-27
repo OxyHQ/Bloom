@@ -159,6 +159,8 @@ struct Emitter<'a> {
     signal: Option<String>,
     /// Inside a conditional operand: `?` cannot return early from here.
     conditional: usize,
+    /// The value of a record literal's field being emitted: a `T?` check there takes TS's `null`.
+    field_value: Option<ExprId>,
     uses_result: bool,
     uses_key_path: bool,
     /// A pattern's bindings: each name is the path it binds (`post`, `$t0.value`), never a copy.
@@ -219,6 +221,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         view: None,
         signal: None,
         conditional: 0,
+        field_value: None,
         uses_result: false,
         uses_key_path: false,
         aliases: HashMap::default(),
@@ -2038,12 +2041,18 @@ impl<'a> Emitter<'a> {
         if let Some(ty) = self.ck.foreign_checks.get(&expr.id).cloned() {
             // A `T?` takes a TS `null` too (`T | null` reads as `T?`), and it reads as `none`:
             // `(x ?? undefined)` is the `T | undefined` Bloom's own optional is.
+            // A record literal's field keeps the `null` (`satisfies T | undefined | null`): TS
+            // checks the record where it lands (a TS type's `T | null` field).
             let optional = matches!(ty, Ty::Option(_));
+            let field = optional && self.field_value == Some(expr.id);
             let ty = self.ts_type(&ty);
             if ty != "unknown" {
-                if optional {
+                // An operand already `T | undefined` (a checked optional, or a `??` chain ending
+                // in one) is not `?? undefined` again: TS calls that always nullish (TS2871).
+                if optional && !field && !self.ends_undefined(expr) {
                     return out.wrap("(((", &format!(") ?? undefined) satisfies {ty})"));
                 }
+                let ty = if field { format!("{ty} | null") } else { ty };
                 // `satisfies` binds tighter than an operator: `((a || b) satisfies T)`.
                 if matches!(expr.kind, ExprKind::Binary(..) | ExprKind::Ternary(..)) {
                     return out.wrap("((", &format!(") satisfies {ty})"));
@@ -2052,6 +2061,24 @@ impl<'a> Emitter<'a> {
             }
         }
         out
+    }
+
+    /// `expr`'s value is never TS's `null`: a `??` chain whose last operand is a checked
+    /// optional (`(x ?? undefined) satisfies T | undefined`), as it is emitted.
+    fn ends_undefined(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.ends_undefined(inner),
+            ExprKind::Binary(BinaryOp::Default, _, right) => {
+                let right = match &right.kind {
+                    ExprKind::Paren(inner) => inner,
+                    _ => right,
+                };
+                let checked = matches!(self.ck.foreign_checks.get(&right.id), Some(Ty::Option(_)))
+                    && self.field_value != Some(right.id);
+                checked || self.ends_undefined(right)
+            }
+            _ => false,
+        }
     }
 
     fn expr_inner(&mut self, expr: &Expr) -> Frag {
@@ -2163,15 +2190,22 @@ impl<'a> Emitter<'a> {
                 if self.options.dev { list.wrap("Object.freeze(", ")") } else { list }
             }
             ExprKind::Record(entries) => match self.ck.calls.get(&expr.id) {
-                Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, entries), *def, false),
-                Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, entries), *def, true),
+                Some(CallRes::Struct(def)) => {
+                    self.construct(&record_call(expr.span, entries), *def, false, true)
+                }
+                Some(CallRes::Partial(def)) => {
+                    self.construct(&record_call(expr.span, entries), *def, true, true)
+                }
                 _ => {
                     let entries: Vec<Frag> = entries
                         .iter()
                         .map(|entry| match entry {
                             RecordEntry::Field { key, value } => {
                                 let mut out = Frag::at(key.span, prop_key(&key.name));
-                                out.s(": ").f(self.expr(value));
+                                let saved = self.field_value.replace(value.id);
+                                let value = self.expr(value);
+                                self.field_value = saved;
+                                out.s(": ").f(value);
                                 out
                             }
                             RecordEntry::Spread(value) => {
@@ -2322,8 +2356,12 @@ impl<'a> Emitter<'a> {
                 if matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_) | CallRes::Partial(_))) =>
             {
                 match self.ck.calls.get(&expr.id) {
-                    Some(CallRes::Struct(def)) => self.construct(&record_call(expr.span, &[]), *def, false),
-                    Some(CallRes::Partial(def)) => self.construct(&record_call(expr.span, &[]), *def, true),
+                    Some(CallRes::Struct(def)) => {
+                        self.construct(&record_call(expr.span, &[]), *def, false, false)
+                    }
+                    Some(CallRes::Partial(def)) => {
+                        self.construct(&record_call(expr.span, &[]), *def, true, false)
+                    }
                     _ => unreachable!("matched above"),
                 }
             }
@@ -2998,8 +3036,8 @@ impl<'a> Emitter<'a> {
                 out.s(")");
                 out
             }
-            CallRes::Struct(def) => self.construct(call, def, false),
-            CallRes::Partial(def) => self.construct(call, def, true),
+            CallRes::Struct(def) => self.construct(call, def, false, false),
+            CallRes::Partial(def) => self.construct(call, def, true, false),
             CallRes::Keyed { partial } => {
                 let mut out = Frag::of("{ ");
                 if !partial {
@@ -3343,7 +3381,9 @@ impl<'a> Emitter<'a> {
         out
     }
 
-    fn construct(&mut self, call: &Call, def: DefId, partial: bool) -> Frag {
+    /// `literal`: written as a record literal (`{ avatar: user.avatar }`), whose fields' `T?`
+    /// checks take TS's `null`.
+    fn construct(&mut self, call: &Call, def: DefId, partial: bool, literal: bool) -> Frag {
         let fields = self.ck.defs[def].fields().to_vec();
         let given: HashMap<&str, &Expr> =
             call.args.iter().filter_map(|a| a.label.as_ref().map(|l| (l.name.as_str(), &a.value))).collect();
@@ -3398,7 +3438,10 @@ impl<'a> Emitter<'a> {
         for arg in &call.args {
             if let Some(label) = &arg.label {
                 let mut entry = Frag::of(format!("{}: ", prop_key(&label.name)));
-                entry.f(self.expr(&arg.value));
+                let saved = if literal { self.field_value.replace(arg.value.id) } else { self.field_value };
+                let value = self.expr(&arg.value);
+                self.field_value = saved;
+                entry.f(value);
                 entries.push(entry);
             }
         }
