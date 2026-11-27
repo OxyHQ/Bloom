@@ -740,6 +740,17 @@ react {{
   autolinkLibrariesWithApp()
 }}
 
+// The bundle's inputs beyond the JS and TS files React Native's plugin tracks under `root`:
+// the package's `.bloom` sources, its string catalogs and the standard library, which live
+// outside the build directory. Without them an edited `.bloom` file leaves the bundle
+// UP-TO-DATE and the APK ships the old JS.
+tasks.matching {{ it.name.startsWith("createBundle") && it.name.endsWith("JsAndAssets") }}.configureEach {{
+  inputs.files(fileTree({package_root}) {{
+    include "**/*.bloom", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.json"
+    exclude ".bloom/build/**", ".bloom/cache/**", ".bloom/dist/**", ".bloom/modules/**", "**/node_modules/**"
+  }}).withPropertyName("bloomSources").withPathSensitivity(PathSensitivity.RELATIVE)
+}}
+
 android {{
   ndkVersion rootProject.ext.ndkVersion
   buildToolsVersion rootProject.ext.buildToolsVersion
@@ -778,6 +789,7 @@ dependencies {{
 }}
 "#,
             hermes = quote(&hermes.to_string_lossy()),
+            package_root = quote(&package.root.to_string_lossy()),
             id = quote(&id),
             version = quote(&version(package)),
         ),
