@@ -332,7 +332,117 @@ Measured on the emulator (hangar-test-36, x86_64):
 | `secure` read: median / p95 | **0.50 ms / 1.30 ms** | 1.08 ms / 1.68 ms |
 | `file` write / read (median) | **55 µs / 72 µs** | 987 µs / 571 µs |
 
-Next in this track: the Bloom router (step 3), which removes expo-router and the shims with it.
+#### Phase F, step 3: the Bloom router (measured 2026-11-27)
+
+In a Bloom build, `NavigationStack` is Bloom's own router (`stdlib/Bloom/router.ts`, #1022),
+and expo-router is gone from the build:
+
+- **Stack.** Each route is a native screen of react-native-screens' `ScreenStack`.
+- **Sheets.** `sheets:` routes are the platform's form sheet, sized to their content. Under
+  expo-router on Android they were pushed screens.
+- **Tabs.** `tabs:` are Bloom's swipe pager (`react-native-pager-view`) under Bloom's
+  `BottomBar`, whose highlight follows the pager.
+- **Back.** Android's back pops the route in front, then returns to the first tab, then
+  leaves the app.
+- **Deep links.** The manifest's schemes and the app's web URLs open the route their path
+  names (`routeOfPath`), over the root.
+- **The route table.** It is written into the entry from the app's `Routable` enum
+  (`navigation::router_spec`): each case's labels and a reader that types its parameters.
+  There are no file routes, and `routing.ts` names no router.
+- **The Expo path.** The web and `--with-expo` keep expo-router's file routes through
+  `routing-expo.ts`. Metro bundles every `require` it sees, so this split is what keeps
+  expo-router out of the Bloom bundle.
+- **Shims.** The shims only expo-router read are gone: `expo-linking`, `expo-constants`,
+  `expo-splash-screen`, `expo/dom*`, `@expo/metro-runtime`. `KEPT` is empty. Three shims
+  remain because Bloom's own components still import those packages: `expo-blur`,
+  `expo-font`, and `expo` with `expo-modules-core` for the lens check. Each goes when its
+  Bloom module lands.
+- **Found on the way.** React Native's Gradle plugin tracked only JS and TS files in the build
+  directory as the bundle's inputs. An edited `.bloom` file therefore left the release bundle
+  UP-TO-DATE, and the APK shipped the old JS. The generated app module now declares the
+  package's sources as inputs. The `--with-expo` project has the same gap; it is not fixed.
+
+Measured on the emulator (hangar-test-36, x86_64), on release APKs of the same Demo built three
+ways: Bloom with its router, Bloom over expo-router (#1018's compiler), and the Expo path.
+
+- The Demo checks passed on the Bloom router's APK and on the Expo path's APK. They covered
+  tab taps and swipes, a value surviving a relaunch, the sheet, and `demo://post/2` opening
+  the post.
+- **Cold start.** As before: the median of 10 launches after force-stop.
+- **Time to content.** From the activity's start to the feed screen's `.task` running, which
+  is after the feed mounted.
+- **Push.** From the button's handler calling `push(Route.post(id:))` to the post screen's
+  `.task`. These are 20 pushes, each followed by Android's back.
+
+| | Bloom router | Bloom over expo-router | Expo path |
+|---|---|---|---|
+| APK, release | **42.0 MB** (native libraries 19.6, JS 17.0, dex 4.4) | 42.7 MB (19.6, 17.7, 4.4) | 51.4 MB (26.9, 18.0, 7.1) |
+| Cold start: window / JS `main` | **239 ms** / 215 ms | 248 ms / **175 ms** | 242 ms / 286 ms |
+| Time to content (median) | **377 ms** | 393 ms | 482 ms |
+| Push to the pushed screen: median / p95 | **8 ms / 25 ms** | not instrumented | 15 ms / 26 ms |
+
+Notes on the measurements:
+
+- **JS `main` is later with the Bloom router** because the entry installs the route table
+  before `AppRegistry` runs `main`. Under expo-router, that work ran inside its root, after
+  `main`. Time to content is the number to compare.
+- **The first version drew every tab page in the first commit.** Its time to content was
+  525 ms, against 418 ms over expo-router in the same session. The router now draws the
+  page in front first and the others right after.
+- **Sessions.** The Bloom figures come from one emulator session, and the Expo path's from
+  the next.
+- **The Expo path's APK is smaller than in step 1's table** (51.4 against 54.2 MB). This build
+  is the same Demo, rebuilt with this compiler.
+- **Push latency.** The figure over expo-router was not measured: it needs the bench's
+  logging, and #1018's compiler did not rebuild the bundle when a `.bloom` file changed
+  (see above).
+
+#### Mention's `expo*` inventory (2026-11-27)
+
+Counted in Mention's `packages/frontend` on `feat/mention-on-language` (`ded0e84d2`):
+
+- **Files** are the files importing the package.
+- **Uses** are the uses of the names they import after the import.
+- The counting script and the per-file list are under the program's artifacts
+  (`native2/inventory/`).
+
+| Package | Files | Uses | Main names | Replacement, and what it needs first |
+|---|---|---|---|---|
+| `expo-image` | 18 | 38 | `Image` | `BloomUI.Image`. A native view: `extern native` needs views (Fabric component codegen) first |
+| `expo-router` | 12 | 34 | `Slot`, `createSeededNavigationState`, `Redirect`, `usePathname` | The Bloom router. Mention has 157 route files under `app/`, and 72 files import the language's router (`@oxy.so/bloom-language/router`). That needs the language router's `Stack`/`TabView`/`Sheet` nodes over the Bloom router, or Mention's routes as a `Routable` enum |
+| `expo-video` | 17 | 25 | `VideoPlayer`, `useVideoPlayer` | `BloomMedia.VideoPlayer`. A native view and a player module |
+| `expo` | 5 | 18 | `useEventListener`, `NativeModule`, `requireOptionalNativeModule` | Mention's own Expo modules (`mention-widgets`, `pip-transport`) as Bloom native modules. Their config plugin becomes `Package.bloom` settings |
+| `expo-sqlite` | 4 | 13 | `SQLite` | `BloomData`'s SQLite module: `BloomStorage`'s SQLite under a SQL interface |
+| `expo-constants` | 2 | 11 | `Constants` | `App.info`: build-time constants from `Package.bloom`, with no native code |
+| `expo-camera` | 1 | 10 | `CameraView`, permissions | `Camera`. A native view |
+| `expo-clipboard` | 5 | 8 | `Clipboard` | `Bloom.Clipboard` |
+| `expo-location` | 2 | 8 | `Location` | `Bloom.Location` |
+| `expo-web-browser` | 2 | 5 | `openBrowserAsync` | `Bloom.WebSession` |
+| `expo-audio` | 2 | 5 | `createAudioPlayer`, `setAudioModeAsync` | `BloomMedia.AudioPlayer` |
+| `expo-linear-gradient` | 2 | 3 | `LinearGradient` | `BloomUI.LinearGradient` |
+| `expo-file-system` | 1 | 2 | `File` | `FileStore` (`BloomStorage`, done) |
+| `expo-blur` | 1 | 2 | `BlurView` | Bloom's materials. Bloom's own components also import it |
+| `expo-keep-awake` | 1 | 2 | `activateKeepAwakeAsync` | `Screen.keepAwake` |
+| `expo-document-picker`, `expo-asset`, `expo-crypto`, `expo-share-intent`, `expo-notifications` | 1–3 each | 1 each | | `DocumentPicker`, typed resources, `Crypto.randomUUID`, incoming shares, `Bloom.Notifications` |
+
+By call count, the first three are not TurboModules:
+
+- `expo-image` and `expo-video` are native views, so `extern native` needs views first: a
+  Fabric component spec from a Bloom `View` interface, with its Kotlin and Swift view classes.
+  That is the next piece of this track.
+- `expo-router` is Mention's route tree. The router above covers apps whose routes are a
+  `Routable` enum.
+
+The first module-shaped replacements are Mention's own Expo modules (`expo`) and `expo-sqlite`.
+
+The iOS side of this track is designed in [`bloom build ios`](../bloom-build-ios.mdx), for the
+Mac lane.
+
+Next in this track:
+
+1. `extern native` views, then `expo-image` and `expo-video`.
+2. The language router's nodes over the Bloom router, for Mention's route tree.
+3. Then the inventory above, in order.
 
 ## Consequences
 
