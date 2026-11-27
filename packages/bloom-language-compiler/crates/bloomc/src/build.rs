@@ -101,21 +101,31 @@ pub fn migrate(paths: &[PathBuf], check: bool, jobs: usize) -> Result<bool, Stri
     let files = bloom_files(paths)?;
     let results = parallel::map(&files, jobs, |path| -> Result<_, String> {
         let source = read(path)?;
-        Ok(match bloom_fmt::migrate(&source, &shown(path)) {
+        // 2.0 has no default export but a route's: `pub default view X` is the named `X`,
+        // and its TS importers import it by name.
+        let mut named = source.clone();
+        let default = bloom_migrate::named_default(&mut named);
+        Ok(match bloom_fmt::migrate(&named, &shown(path)) {
             Ok((migrated, notes)) => {
                 let changed = migrated != source;
                 if changed && !check {
                     std::fs::write(path, migrated).map_err(|e| format!("{}: {e}", path.display()))?;
                 }
-                Ok((changed, notes))
+                Ok((changed, notes, default))
             }
             Err(diagnostics) => Err(diagnostics),
         })
     });
     let mut ok = true;
+    let mut renamed: Vec<(PathBuf, Option<String>)> = Vec::new();
     for (path, result) in files.iter().zip(results) {
         match result? {
-            Ok((changed, notes)) => {
+            Ok((changed, notes, default)) => {
+                if let Some(name) = default
+                    && !check
+                {
+                    renamed.push((path.clone(), Some(name)));
+                }
                 if changed {
                     println!("{} {}", if check { "would migrate" } else { "migrated" }, shown(path));
                     ok &= !check;
@@ -128,6 +138,17 @@ pub fn migrate(paths: &[PathBuf], check: bool, jobs: usize) -> Result<bool, Stri
                 report(&diagnostics);
                 ok = false;
             }
+        }
+    }
+    if !renamed.is_empty()
+        && let Ok(root) = std::env::current_dir()
+    {
+        let renamed: Vec<_> = renamed
+            .into_iter()
+            .map(|(p, n)| (p.strip_prefix(&root).unwrap_or(&p).to_path_buf(), n))
+            .collect();
+        for note in crate::migrate::rewrite_importers(&root, &renamed)? {
+            println!("{note}");
         }
     }
     Ok(ok)
