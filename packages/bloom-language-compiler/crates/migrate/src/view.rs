@@ -2684,6 +2684,16 @@ fn value_type(e: &Expression) -> Option<&'static str> {
         Expression::BooleanLiteral(_) => Some("Bool"),
         Expression::NumericLiteral(_) => Some("Float"),
         Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => Some("Bool"),
+        // `() => { … }` with no value returned: a Unit callback (`withHaptic(h) => () => { … }`).
+        Expression::ArrowFunctionExpression(a)
+            if a.params.items.is_empty()
+                && a.params.rest.is_none()
+                && !a.r#async
+                && a.get_expression().is_none()
+                && return_values(arrow_statements(a)).is_empty() =>
+        {
+            Some("() -> Unit")
+        }
         // `Boolean(x)`, `String(x)`: the JS conversions.
         Expression::CallExpression(c)
             if c.arguments.len() == 1
