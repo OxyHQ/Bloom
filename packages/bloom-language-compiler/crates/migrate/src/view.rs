@@ -1292,7 +1292,23 @@ impl Tr<'_> {
 
     fn arrow_fn(&mut self, name: &str, vis: &'static str, arrow: &ArrowFunctionExpression) -> String {
         let ret = arrow.return_type.as_deref().map(|t| &t.type_annotation);
-        self.fn_text(name, vis, arrow.r#async, &arrow.params, ret, Body::of_arrow(arrow))
+        let text = self.fn_text(name, vis, arrow.r#async, &arrow.params, ret, Body::of_arrow(arrow));
+        // `const f = <T,>(…) => …`: a generic `fn f<T>(…)` (a closure `let` takes no type parameters).
+        match arrow.type_parameters.as_deref() {
+            Some(p) if !p.params.is_empty() => {
+                let names: Vec<&str> = p.params.iter().map(|t| t.name.name.as_str()).collect();
+                let head = format!("fn {}(", self.name(name, Span::default()));
+                match text.find(&head) {
+                    Some(at) => {
+                        let mut text = text;
+                        text.insert_str(at + head.len() - 1, &format!("<{}>", names.join(", ")));
+                        text
+                    }
+                    None => self.refuse("fn:generic", "a generic arrow function without a return type", arrow.span),
+                }
+            }
+            _ => text,
+        }
     }
 
     pub fn fn_text(
