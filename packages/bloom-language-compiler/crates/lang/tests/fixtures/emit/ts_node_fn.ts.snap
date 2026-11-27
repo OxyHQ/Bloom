@@ -1,0 +1,25 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Text, view } from "@oxy.so/bloom-language";
+import { AccountBadge } from "@/elements/AccountBadge";
+
+const $view0 = Text("by");
+export interface BylineProps {
+  readonly kind: string | undefined;
+}
+export const Byline = view(function Byline(props: BylineProps) {
+"use no memo";
+const $ = $c(2);
+const { kind } = props;
+let $t0;
+if ($[0] !== kind) {
+const badge = AccountBadge({ kind: kind });
+$t0 = HStack($view0, badge);
+$[0] = kind;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
