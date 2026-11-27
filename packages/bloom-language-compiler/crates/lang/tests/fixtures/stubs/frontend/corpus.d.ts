@@ -64,3 +64,14 @@ export declare function useDrag(): Opaque<{ translationY: number }>;
 export declare function useRoutedName(): string;
 /** A hook that takes another's value (Mention's `useProfileAccount`). */
 export declare function useAccountOf(name: string): { loading: boolean; name: string };
+export interface IdentityHolder {
+  id: string;
+  name?: { displayName?: string };
+}
+export interface SocialContext {
+  actors: IdentityHolder[];
+}
+export declare function mergeIdentity<T extends IdentityHolder>(
+  actor: T,
+  entry: { id: string } | undefined,
+): T;
