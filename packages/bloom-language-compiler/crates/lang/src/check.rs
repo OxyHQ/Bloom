@@ -462,6 +462,8 @@ pub struct Checker<'o> {
     generics: Vec<String>,
     frames: Vec<Frame>,
     ts_named: HashMap<(PathBuf, String), Ty>,
+    /// `import * as ns from "…"`: the TS file each namespace names, for its members.
+    ts_namespaces: HashMap<String, Rc<ts::TsFile>>,
     /// The view being checked.
     view: Option<usize>,
     /// The `async let`s not yet awaited: whether the call throws, and the scope depth.
@@ -583,6 +585,7 @@ impl<'o> Checker<'o> {
                 handled: 0,
             }],
             ts_named: HashMap::default(),
+            ts_namespaces: HashMap::default(),
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
@@ -2377,6 +2380,9 @@ impl<'o> Checker<'o> {
         match &import.kind {
             ImportKind::Module(_) => {}
             ImportKind::Namespace(name) => {
+                if let Some(file) = &file {
+                    self.ts_namespaces.insert(name.name.clone(), file.clone());
+                }
                 self.declare_unique(
                     name,
                     Ty::Foreign(format!("typeof {}", name.name).into()),
@@ -3752,6 +3758,17 @@ impl<'o> Checker<'o> {
         self.push();
         self.cond(&if_expr.cond);
         let Some(otherwise) = if_expr.otherwise.as_deref() else {
+            // Where a `View?` is taken (`.accessory(if open { row })`), an `if` without `else`
+            // is the optional child it is in a builder.
+            let view = match expected.map(|e| self.resolve(e)) {
+                Some(Ty::Option(inner)) => Some(self.resolve(&inner)),
+                other => other,
+            };
+            if let Some(view @ Ty::View(_)) = view {
+                self.block(&if_expr.then, Some(&view));
+                self.pop();
+                return Ty::Option(Box::new(view));
+            }
             self.block(&if_expr.then, Some(&Ty::Unit));
             self.pop();
             return Ty::Unit;
