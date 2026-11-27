@@ -1,0 +1,17 @@
+/// A row whose child reads a narrowed prop beside another one (lang-mention-9's narrowed-dep):
+/// the child's cache depends on the prop it narrows, so a recycled row draws its new key.
+public struct ThreadRow: View {
+  var sliceKey: String? = none
+  let title: String
+
+  var body: some View {
+    VStack {
+      if sliceKey != none && !sliceKey.isEmpty {
+        VStack {
+          Text(sliceKey)
+          Text(title)
+        }
+      }
+    }
+  }
+}
