@@ -1,0 +1,34 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, VStack, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { AccountList, useAccounts, type Account } from "@/corpus";
+
+export function names(accounts: readonly Account[]): readonly string[] {
+return accounts.map((a: Account) => a.name);
+}
+
+export function row(account: Account): Child {
+return Text(account.name);
+}
+
+const $fn0 = (a: NonNullable<ReturnType<typeof useAccounts>["data"]>[number]) => a.id;
+export const Accounts = view(function Accounts() {
+"use no memo";
+const $ = $c(2);
+const query = useAccounts();
+let $t0;
+if ($[0] !== query.data) {
+const accounts = query.data ?? [];
+const ids = new Set<string>((accounts.map((v0) => ($fn0)(v0)) satisfies readonly string[]));
+$t0 = VStack(Text(`${names((accounts satisfies readonly Account[])).length}`), Embed($jsx(AccountList, { accounts: accounts } satisfies ComponentProps<typeof AccountList>)), Text(`${ids.size}`), ...accounts.map((row satisfies (p0: NonNullable<ReturnType<typeof useAccounts>["data"]>[number]) => Child)).map((item) => item));
+$[0] = query.data;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

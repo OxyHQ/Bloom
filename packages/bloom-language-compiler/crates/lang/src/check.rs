@@ -340,6 +340,9 @@ pub struct CheckResult {
     pub dependencies: BTreeSet<PathBuf>,
     /// Struct constructions passed as a record type with fewer fields (emitted through a temp).
     pub widened: HashSet<ExprId>,
+    /// Builder lines that are a list of views (`Menu { glyph; rows }`): their items are the
+    /// parent's children, spread as the embedded language's `...rows` where a `for` would be.
+    pub view_lists: HashSet<ExprId>,
     /// Bloom views where TS takes a React element (a prop, an argument, what a TS callback
     /// returns): emitted as `toElement(view)`.
     pub elements: HashSet<ExprId>,
@@ -487,6 +490,9 @@ pub struct Checker<'o> {
     chained: HashSet<ExprId>,
     /// Checking `.ref(x)`'s argument: a `@ref` there is the ref itself.
     ref_object: bool,
+    /// Expressions in a child's place (a builder line, a node's children, `Embed`'s value, and
+    /// the branches of a conditional there): a list of views is a child (TS's `Child` is).
+    child_slots: HashSet<ExprId>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -598,6 +604,7 @@ impl<'o> Checker<'o> {
             reported: HashSet::default(),
             chained: HashSet::default(),
             ref_object: false,
+            child_slots: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -897,10 +904,57 @@ impl<'o> Checker<'o> {
                 let (a, e) = (substitute(&h.ty, actual_args), substitute(&w.ty, expected_args));
                 // A TS value in a field (`avatar: user.avatar`) fits any field type: TS checks
                 // the record where it lands, as it checks a TS value passed as an argument.
-                matches!(self.resolve(&a), Ty::Foreign(_)) || self.coerce(&a, &e)
+                matches!(self.resolve(&a), Ty::Foreign(_))
+                    || self.fits_through_ts(&a, &e)
+                    || self.coerce(&a, &e)
             }
             None => w.default == FieldDefault::Undefined,
         })
+    }
+
+    /// `actual` fits `expected` only through TS values: a list (or dictionary, or optional)
+    /// whose items are `Foreign` where Bloom's items are typed, or a function whose parameter is
+    /// typed where the expected one is `Foreign` (TS passes it that value). `coerce` refuses
+    /// both; the caller writes a `satisfies` so TypeScript checks them.
+    /// A view, or an optional one.
+    fn is_view(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::View(_) => true,
+            Ty::Option(inner) => matches!(self.resolve(&inner), Ty::View(_)),
+            _ => false,
+        }
+    }
+
+    /// A list of views (`xs.map { x in Row(x) }`), its items optional or not.
+    fn is_view_list(&self, ty: &Ty) -> bool {
+        matches!(self.resolve(ty), Ty::List(item) if self.is_view(&item))
+    }
+
+    fn fits_through_ts(&mut self, actual: &Ty, expected: &Ty) -> bool {
+        let (a, e) = (self.resolve(actual), self.resolve(expected));
+        match (&a, &e) {
+            (Ty::Foreign(_), Ty::Unknown | Ty::Foreign(_) | Ty::Var(_)) => false,
+            (Ty::Foreign(_), _) => true,
+            (Ty::List(x), Ty::List(y)) | (Ty::Option(x), Ty::Option(y)) | (Ty::Map(x), Ty::Map(y)) => {
+                self.fits_through_ts(x, y)
+            }
+            (Ty::List(_), Ty::Option(inner)) => self.fits_through_ts(&a, inner),
+            (Ty::Fn(f), Ty::Fn(g)) if f.params.len() <= g.params.len() => {
+                let mut through = false;
+                let mut params = f.params.clone();
+                for (p, q) in params.iter_mut().zip(&g.params) {
+                    let (pt, qt) = (self.resolve(&p.ty), self.resolve(&q.ty));
+                    if matches!(qt, Ty::Foreign(_))
+                        && !matches!(pt, Ty::Foreign(_) | Ty::Unknown | Ty::Var(_))
+                    {
+                        p.ty = q.ty.clone();
+                        through = true;
+                    }
+                }
+                through && self.coerce(&Ty::Fn(Rc::new(FnTy { params, ..(**f).clone() })), &e)
+            }
+            _ => false,
+        }
     }
 
     fn coerce(&mut self, actual: &Ty, expected: &Ty) -> bool {
@@ -3263,6 +3317,7 @@ impl<'o> Checker<'o> {
             _ => {
                 // A child may be absent (`on ? Icon(i) : none`): nothing is drawn, as TS's `Child` allows.
                 let optional = Ty::Option(Box::new(Ty::View(None)));
+                self.child_slots.insert(expr.id);
                 self.expr(expr, Some(&optional));
             }
         }
@@ -3981,6 +4036,24 @@ impl<'o> Checker<'o> {
                     self.out.foreign_checks.insert(expr.id, expected.clone());
                     return expected;
                 }
+                // A list of views in a child's place (`Menu { glyph; rows }`): its items are
+                // children (spec 7.2).
+                if self.child_slots.contains(&expr.id) && self.is_view_list(&ty) && self.is_view(expected) {
+                    self.out.view_lists.insert(expr.id);
+                    return expected.clone();
+                }
+                // A list of TS values where `[T]` is expected (`accounts: data ?? []`), or a
+                // function given a TS value where it takes a `T` (`bans.map(renderBan)`): as a
+                // single TS value, accepted, and TypeScript checks the whole (spec 4.7).
+                if self.fits_through_ts(&ty, expected) {
+                    let expected = self.zonk(expected);
+                    let check = match (self.resolve(&ty), &expected) {
+                        (Ty::List(_), Ty::Option(inner)) => (**inner).clone(),
+                        _ => expected.clone(),
+                    };
+                    self.out.foreign_checks.insert(expr.id, check);
+                    return expected;
+                }
                 if !self.coerce(&ty, expected) {
                     self.mismatch(expr.span, &ty, expected);
                     return Ty::Unknown;
@@ -4054,6 +4127,8 @@ impl<'o> Checker<'o> {
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
                 // A `Foreign?` where TS takes an optional (`account: account`): TS checks it.
                 || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
+                // A list of TS values, or a function given one: TS checks it here too.
+                || self.fits_through_ts(&ty, &hint)
                 || self.coerce(&ty, &hint);
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
@@ -4251,6 +4326,11 @@ impl<'o> Checker<'o> {
                     }
                     return joined;
                 }
+                // In a child's place, so are its branches (`c ? Text(…) : xs.map(f)`).
+                let slot = self.child_slots.contains(&expr.id);
+                if slot {
+                    self.child_slots.extend([then.id, otherwise.id]);
+                }
                 self.expr(cond, Some(&Ty::Bool));
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
@@ -4286,6 +4366,13 @@ impl<'o> Checker<'o> {
                 self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
                 let b = self.expr(otherwise, hint);
                 self.pop();
+                // A view and a list of views, as a child: TS's `Child` is either.
+                if slot
+                    && (self.is_view_list(&a) || self.is_view_list(&b))
+                    && [&a, &b].iter().all(|t| self.is_view(t) || self.is_view_list(t))
+                {
+                    return Ty::View(None);
+                }
                 self.join(&a, &b, expr.span)
             }
             ExprKind::Await(inner) => self.await_expr(expr, inner),

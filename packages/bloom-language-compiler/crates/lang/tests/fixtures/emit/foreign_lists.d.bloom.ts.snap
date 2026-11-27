@@ -1,0 +1,6 @@
+import type { Account } from "@/corpus";
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export declare function names(accounts: readonly Account[]): readonly string[];
+export declare function row(account: Account): Child;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Accounts())`), or from TSX as `toElement(Accounts())`. */
+export declare const Accounts: () => ComposedView;
