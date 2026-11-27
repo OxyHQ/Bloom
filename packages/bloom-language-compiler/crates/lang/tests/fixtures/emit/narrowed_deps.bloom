@@ -1,0 +1,34 @@
+// A narrowed binding is its source's dependency (lang-mention-9's narrowed-dep, PostItem's
+// `ThreadHoverOverlay`): inside `if sliceKey != none`, `sliceKey` is a local of its own, and a
+// child cached on `owner` alone kept the first `sliceKey` it drew in a recycled row.
+import { Overlay } from "@/rows/Overlay"
+
+public struct ThreadRow: View {
+  var sliceKey: String? = none
+  let owner: Foreign<"object">
+  let title: String
+  let detail: Foreign
+  let badge = title.uppercased()
+  var body: some View {
+    VStack {
+      Text(title)
+      if sliceKey != none && !sliceKey.isEmpty {
+        Overlay(sliceKey: sliceKey, owner: owner)
+      }
+      // A member, narrowed: the same.
+      if sliceKey != none {
+        VStack {
+          Text(sliceKey)
+          Text(badge)
+        }
+      }
+      // `is`: the narrowed local stands for the prop too.
+      if detail is String {
+        VStack {
+          Text(detail.uppercased())
+          Text(badge)
+        }
+      }
+    }
+  }
+}
