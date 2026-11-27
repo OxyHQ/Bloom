@@ -1,0 +1,33 @@
+import { type SubmenuRows } from "./rows"
+
+/// A `match` on a TS discriminated union's tag, each arm reading its member (PostMenu's `submenuRows`).
+public func count(_ rows: SubmenuRows) -> Int {
+  switch rows.kind {
+  case "sources":
+    return rows.sources.count
+  case "replySettings":
+    return rows.postId.count
+  case "lane":
+    return (rows.label ?? rows.laneId).count
+  }
+}
+
+public func hasSources(_ rows: SubmenuRows) -> Bool {
+  rows.kind == "sources" && rows.sources.count > 0
+}
+
+import { type Block, type Prefs, type Variant, PREF_KEYS } from "./rows"
+
+/// A field every member has, read without narrowing; a member chain narrowed on its tag; an
+/// element of a TS value Bloom does not map, written in place.
+public func domain(_ block: Block) -> String { block.domain }
+
+public func ownMedia(_ item: Variant) -> [String]? {
+  item.media.mode == "override" ? item.media.media : none
+}
+
+public func showAll() -> Prefs {
+  var patch: Prefs = {}
+  for key in PREF_KEYS { patch[key] = "show" }
+  return patch
+}

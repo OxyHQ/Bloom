@@ -378,7 +378,12 @@ parameters take no constraints (B0106); a function's and a view's do.
 A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map (primitives,
 arrays, `T | undefined | null`, object types, interfaces, string-literal unions, function
 types, `Promise<T>`, generic functions and interfaces without conditional or mapped types)
-get Bloom types. Anything else is `Foreign`: a value you may pass back to TS, call, or read
+get Bloom types. A discriminated union of object types (`{ kind: "sources"; sources: … } | {
+kind: "lane"; … }`, a field every member has as a distinct string literal) is a type whose one
+field is the tag: a `match` on it (`switch rows.kind { case "sources": … }`) is exhaustive over
+the tags, and each arm reads its member's fields (`rows.sources`), as an `if rows.kind ==
+"sources"` block and the rest after `if rows.kind != "lane" { return … }` do, the way TS narrows
+it. Anything else is `Foreign`: a value you may pass back to TS, call, or read
 members from (each read is `Foreign` again). **A `Foreign` value is accepted wherever a Bloom
 type is expected** (an argument, a modifier, a condition, an annotated `let`, a field, a
 return), and there the emitter writes a checked boundary, `(expr satisfies T)`, so the

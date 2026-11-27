@@ -393,7 +393,7 @@ fn is_ident(name: &str) -> bool {
         && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
-fn prop_key(name: &str) -> String {
+pub(crate) fn prop_key(name: &str) -> String {
     if is_ident(name) { name.to_string() } else { format!("{name:?}") }
 }
 
@@ -2646,6 +2646,7 @@ impl<'a> Emitter<'a> {
                     _ => unreachable!("matched above"),
                 }
             }
+            ExprKind::Closure(_) if self.ck.empty_objects.contains(&expr.id) => Frag::of("{}"),
             ExprKind::Closure(c) => self.closure(c),
             ExprKind::If(if_expr) => self.if_value(expr, if_expr),
             ExprKind::Match(m) => self.match_value(expr, m),
