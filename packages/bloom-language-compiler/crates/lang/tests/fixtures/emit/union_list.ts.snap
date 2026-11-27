@@ -1,0 +1,19 @@
+import { type PermissionPost, type ReplyPermission } from "@/types/permission";
+
+export function permission(post: PermissionPost): readonly ("anyone" | "followers" | "following" | "mentioned" | "nobody")[] {
+return post.metadata?.replyPermission ?? ["anyone"];
+}
+
+export function canReply(post: PermissionPost): boolean {
+const permission = post.metadata?.replyPermission ?? ["anyone", "followers"];
+return permission.includes("anyone");
+}
+
+function first(permissions: (readonly ("anyone" | "followers" | "following" | "mentioned" | "nobody")[]) | undefined): ("anyone" | "followers" | "following" | "mentioned" | "nobody") | undefined {
+return permissions?.[0];
+}
+
+export function nobody(): ("anyone" | "followers" | "following" | "mentioned" | "nobody") | undefined {
+return first(["nobody"]);
+}
+
