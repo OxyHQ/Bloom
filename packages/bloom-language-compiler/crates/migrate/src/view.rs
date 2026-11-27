@@ -1314,7 +1314,11 @@ impl Tr<'_> {
                         text.insert_str(at + head.len() - 1, &format!("<{}>", names.join(", ")));
                         text
                     }
-                    None => self.refuse("fn:generic", "a generic arrow function without a return type", arrow.span),
+                    None => self.refuse(
+                        "fn:generic",
+                        "a generic arrow function without a return type",
+                        arrow.span,
+                    ),
                 }
             }
             _ => text,

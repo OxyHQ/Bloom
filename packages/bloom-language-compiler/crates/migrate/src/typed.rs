@@ -53,15 +53,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             // `xs = xs.add(x)` on a Bloom `Set`: TS's `add` mutates and returns the set, so the
             // assignment is the set with it inserted (`delete` is likewise `removing`).
             ("B0209", "add" | "delete")
-                if receiver.is_some_and(|r| r.starts_with("Set<"))
-                    && source[..start].ends_with('.')
-                    && {
-                        let before = &source[..start - 1];
-                        let line = &before[before.rfind('\n').map_or(0, |i| i + 1)..];
-                        let receiver_text = line.rsplit([' ', '(']).next().unwrap_or("");
-                        !receiver_text.is_empty()
-                            && line.trim_start().starts_with(&format!("{receiver_text} = "))
-                    } =>
+                if receiver.is_some_and(|r| r.starts_with("Set<")) && source[..start].ends_with('.') && {
+                    let before = &source[..start - 1];
+                    let line = &before[before.rfind('\n').map_or(0, |i| i + 1)..];
+                    let receiver_text = line.rsplit([' ', '(']).next().unwrap_or("");
+                    !receiver_text.is_empty() && line.trim_start().starts_with(&format!("{receiver_text} = "))
+                } =>
             {
                 Some((start, end, if text == "add" { "inserting" } else { "removing" }.to_string()))
             }
@@ -72,7 +69,11 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     && (source[..start].ends_with("..<") || source[..start].ends_with("..<(")) =>
             {
                 let simple = text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
-                Some((start, end, if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") }))
+                Some((
+                    start,
+                    end,
+                    if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") },
+                ))
             }
             // `n = value` where `@state n = 7` took an `Int` from its literal but TS's state is a
             // `number`: the state is a `Float` (`@state n: Float = 7`).
