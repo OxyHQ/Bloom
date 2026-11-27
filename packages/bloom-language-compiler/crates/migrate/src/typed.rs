@@ -642,14 +642,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             ("B0201", _)
                 if d.message.starts_with("`??` gives a fallback")
                     && crate::expr::is_postfix_text(text)
-                    && source[..start].ends_with('(')
                     && !ts.contains(&format!("{text} ??")) =>
             {
                 let rest = &source[end..];
-                ["?? 0)", "?? \"\")"].iter().find_map(|own| {
-                    let at = rest.len() - rest.trim_start().len();
-                    rest[at..].starts_with(own).then(|| (start - 1, end + at + own.len(), text.to_string()))
-                })
+                let at = rest.len() - rest.trim_start().len();
+                if source[..start].ends_with('(') {
+                    ["?? 0)", "?? \"\")"].iter().find_map(|own| {
+                        rest[at..].starts_with(own).then(|| (start - 1, end + at + own.len(), text.to_string()))
+                    })
+                } else if source[..start].ends_with("${") && rest[at..].starts_with("?? \"\"}") {
+                    // `"${x ?? ""}"`, the codemod's own for an interpolated optional: `"${x}"`.
+                    Some((start, end + at + "?? \"\"".len(), text.to_string()))
+                } else {
+                    None
+                }
             }
             // `d[k?.lowercased()]`: a subscript takes a key, not an optional one, so the read is
             // narrowed, `(k != none ? d[k.lowercased()] : none)`.
