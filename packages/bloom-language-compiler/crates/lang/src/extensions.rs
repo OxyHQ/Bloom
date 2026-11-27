@@ -103,6 +103,7 @@ fn replace_self(ty: &mut TypeExpr, with: &TypeExpr) {
             replace_self(ret, with);
         }
         TypeKind::Record(fields) => fields.iter_mut().for_each(|(_, t)| replace_self(t, with)),
+        TypeKind::Composition(parts) => parts.iter_mut().for_each(|t| replace_self(t, with)),
         TypeKind::Strings(_) | TypeKind::Error => {}
     }
 }

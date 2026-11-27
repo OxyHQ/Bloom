@@ -1,0 +1,15 @@
+export interface Named$Witness<Self> {
+  name(self: Self): string;
+}
+export type Named = { readonly self: unknown; readonly w: Named$Witness<unknown> };
+export interface Counted$Witness<Self> {
+  count(self: Self): number;
+}
+export type Counted = { readonly self: unknown; readonly w: Counted$Witness<unknown> };
+export interface Tag {
+  readonly name: string;
+  readonly count: number;
+}
+export declare function all(): string;
+export declare const Tag$$Named: Named$Witness<Tag>;
+export declare const Tag$$Counted: Counted$Witness<Tag>;

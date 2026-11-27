@@ -1354,6 +1354,15 @@ impl<'s, 'i> Parser<'s, 'i> {
         let generics = self.generics();
         self.expect(P::Eq, "`=` and the type");
         let ty = self.type_expr();
+        // `type PQ = P & Q`: a protocol composition, for constraints.
+        if self.at(P::Amp) {
+            let mut parts = vec![ty];
+            while self.eat(P::Amp) {
+                parts.push(self.base_type());
+            }
+            let span = parts[0].span.to(parts.last().expect("two parts").span);
+            return AliasDecl { name, generics, ty: TypeExpr { kind: TypeKind::Composition(parts), span } };
+        }
         AliasDecl { name, generics, ty }
     }
 
@@ -1773,7 +1782,13 @@ impl<'s, 'i> Parser<'s, 'i> {
             loop {
                 let name = self.ident("a type parameter");
                 self.expect(P::Colon, "`:` and a protocol");
-                constraints.push((name, self.base_type()));
+                // `where T: P & Q`: one constraint each, as `<T: P & Q>`.
+                loop {
+                    constraints.push((name.clone(), self.base_type()));
+                    if !self.eat(P::Amp) {
+                        break;
+                    }
+                }
                 if !self.eat(P::Comma) {
                     break;
                 }

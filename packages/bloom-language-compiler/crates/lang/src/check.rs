@@ -1215,6 +1215,15 @@ impl<'o> Checker<'o> {
     fn resolve_type_inner(&mut self, te: &TypeExpr) -> Ty {
         match &te.kind {
             TypeKind::Error => Ty::Unknown,
+            TypeKind::Composition(_) => {
+                self.report(
+                    Diagnostic::error("B0232", te.span, "a protocol composition is a constraint, not a type")
+                        .label("`P & Q` constrains a type parameter")
+                        .help("write `func f<T: P & Q>(_ x: T)`, or `where T: P & Q`")
+                        .spec("46-generics"),
+                );
+                Ty::Unknown
+            }
             TypeKind::List(t) => Ty::List(Box::new(self.resolve_type(t))),
             TypeKind::Map(k, v) => {
                 let key = self.resolve_type(k);
