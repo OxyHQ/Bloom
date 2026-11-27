@@ -1463,15 +1463,26 @@ impl Tr<'_> {
                 let label = self.bind_param(&key, property.span);
                 let bound = self.bind(&local.name, local.span);
                 let opt = optional_ty(&ty);
-                out.push(if optional || default.is_some() {
-                    format!("{label}: {opt} = none")
+                // A default re-binds the value; the parameter takes an inner name, so the JS
+                // has one binding of each (`isNested givenIsNested: Bool? = none`).
+                let given = if default.is_some() && bound == label {
+                    let mut chars = label.chars();
+                    let first =
+                        chars.next().map(|c| c.to_uppercase().collect::<String>()).unwrap_or_default();
+                    format!("given{first}{}", chars.as_str())
                 } else {
-                    format!("{label}: {ty}")
+                    label.clone()
+                };
+                let head = if given == label { label.clone() } else { format!("{label} {given}") };
+                out.push(if optional || default.is_some() {
+                    format!("{head}: {opt} = none")
+                } else {
+                    format!("{head}: {ty}")
                 });
                 match default {
                     Some(value) => {
                         let value = self.expr(value);
-                        prelude.push(format!("let {bound} = {label} ?? {value}"));
+                        prelude.push(format!("let {bound} = {given} ?? {value}"));
                         self.scope.decl.insert(bound.clone(), ty.clone());
                     }
                     None => {
