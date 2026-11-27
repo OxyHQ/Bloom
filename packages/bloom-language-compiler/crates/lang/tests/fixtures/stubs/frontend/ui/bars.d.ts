@@ -24,3 +24,9 @@ export interface LeafProps {
 }
 /** A component that takes no children at all. */
 export declare function Leaf({ title }: LeafProps): import("react").JSX.Element;
+
+/** A component with a component static (`Button.Group`), as Bloom's Button declares it. */
+declare function ToolbarGroup({ children }: { children?: ReactNode }): import("react").JSX.Element;
+export declare const Toolbar: ((props: { title: string }) => import("react").JSX.Element) & {
+  Group: typeof ToolbarGroup;
+};

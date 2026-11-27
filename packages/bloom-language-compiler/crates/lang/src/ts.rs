@@ -363,6 +363,10 @@ impl Reader {
             match file.decls.get(&name) {
                 // A function's first overload is the one Bloom reads.
                 Some(TsDecl::Fn(_)) if matches!(decl, TsDecl::Fn(_)) => {}
+                // `declare function Region(…)` and `declare namespace Region { … }` (a component
+                // with statics, as Bloom's own declare them): the function is the value.
+                Some(TsDecl::Fn(_) | TsDecl::Var(_) | TsDecl::Class { .. })
+                    if matches!(decl, TsDecl::Other) => {}
                 // A value and a type of one name: both are kept.
                 Some(TsDecl::Var(_) | TsDecl::Fn(_)) if is_type => {
                     file.types.insert(name, decl);

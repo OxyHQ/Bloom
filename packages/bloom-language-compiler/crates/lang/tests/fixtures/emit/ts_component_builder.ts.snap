@@ -7,6 +7,7 @@ import type { ComponentProps } from "react";
 import { Action, EngagementBar } from "@/ui/bars";
 import { Slot } from "@/ui/bars";
 import { Box } from "@/ui/rn";
+import { Toolbar } from "@/ui/bars";
 import * as Skeleton from "@/ui/skeleton";
 
 const $view0 = Embed($jsx(Action, { label: "a" } satisfies ComponentProps<typeof Action>));
@@ -42,9 +43,11 @@ return $view6;
 const $view7 = Embed($jsx(Skeleton.Circle, { size: 36 } satisfies ComponentProps<typeof Skeleton.Circle>));
 const $view8 = Text("loading");
 const $view9 = Embed(($render) => $jsx(Skeleton.Region, { children: $render([$view7, $view8]) } satisfies ComponentProps<typeof Skeleton.Region>));
-const $view10 = Embed(($render) => $jsx(Box, { testID: "box", children: $render($view9) } satisfies ComponentProps<typeof Box>));
-const $view11 = Header("Loading");
-const $view12 = Text("open");
+const $view10 = Text("tools");
+const $view11 = Embed(($render) => $jsx(Toolbar.Group, { children: $render($view10) } satisfies ComponentProps<typeof Toolbar.Group>));
+const $view12 = Embed(($render) => $jsx(Box, { testID: "box", children: $render([$view9, $view11]) } satisfies ComponentProps<typeof Box>));
+const $view13 = Header("Loading");
+const $view14 = Text("open");
 export interface PlaceholderProps {
   readonly open: boolean;
 }
@@ -56,11 +59,11 @@ let $t2;
 if ($[0] !== open) {
 let $t1: Child;
 if (open) {
-$t1 = $view12;
+$t1 = $view14;
 } else {
 $t1 = undefined;
 }
-$t2 = $view10.header($view11.accessory($t1));
+$t2 = $view12.header($view13.accessory($t1));
 $[0] = open;
 $[1] = $t2;
 } else {
