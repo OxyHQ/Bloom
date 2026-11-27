@@ -916,6 +916,16 @@ impl<'o> Checker<'o> {
     /// whose items are `Foreign` where Bloom's items are typed, or a function whose parameter is
     /// typed where the expected one is `Foreign` (TS passes it that value). `coerce` refuses
     /// both; the caller writes a `satisfies` so TypeScript checks them.
+    /// Whether `ty` still has an unsolved type variable (a generic's `T` at a call).
+    fn has_var(&self, ty: &Ty) -> bool {
+        let mut found = false;
+        map_ty(&self.zonk(ty), &mut |t| {
+            found |= matches!(t, Ty::Var(_));
+            None
+        });
+        found
+    }
+
     /// A view, or an optional one.
     fn is_view(&self, ty: &Ty) -> bool {
         match self.resolve(ty) {
@@ -925,9 +935,25 @@ impl<'o> Checker<'o> {
         }
     }
 
-    /// A list of views (`xs.map { x in Row(x) }`), its items optional or not.
-    fn is_view_list(&self, ty: &Ty) -> bool {
-        matches!(self.resolve(ty), Ty::List(item) if self.is_view(&item))
+    /// A list that is a child (`xs.map { x in Row(x) }`): of views, optional or not, or of TS
+    /// values (TS checks them where they land, `Menu(glyph, ...rows)`). `Some(true)` when its
+    /// items may be spread as siblings; an optional list (`c ? rows : none`) is one child.
+    fn child_list(&self, ty: &Ty) -> Option<bool> {
+        let items = |ty: &Ty| match self.resolve(ty) {
+            Ty::List(item) => {
+                let item = match self.resolve(&item) {
+                    Ty::Option(inner) => self.resolve(&inner),
+                    other => other,
+                };
+                matches!(item, Ty::View(_) | Ty::Foreign(_))
+            }
+            _ => false,
+        };
+        match self.resolve(ty) {
+            Ty::Option(inner) if items(&inner) => Some(false),
+            list if items(&list) => Some(true),
+            _ => None,
+        }
     }
 
     fn fits_through_ts(&mut self, actual: &Ty, expected: &Ty) -> bool {
@@ -3318,7 +3344,10 @@ impl<'o> Checker<'o> {
                 // A child may be absent (`on ? Icon(i) : none`): nothing is drawn, as TS's `Child` allows.
                 let optional = Ty::Option(Box::new(Ty::View(None)));
                 self.child_slots.insert(expr.id);
-                self.expr(expr, Some(&optional));
+                // `[rowView, c ? sheet : none]`: a list literal's items are children too.
+                let list = Ty::List(Box::new(optional.clone()));
+                let want = if matches!(expr.kind, ExprKind::List(_)) { list } else { optional };
+                self.expr(expr, Some(&want));
             }
         }
     }
@@ -4038,8 +4067,13 @@ impl<'o> Checker<'o> {
                 }
                 // A list of views in a child's place (`Menu { glyph; rows }`): its items are
                 // children (spec 7.2).
-                if self.child_slots.contains(&expr.id) && self.is_view_list(&ty) && self.is_view(expected) {
-                    self.out.view_lists.insert(expr.id);
+                if self.child_slots.contains(&expr.id)
+                    && let Some(spread) = self.child_list(&ty)
+                    && self.is_view(expected)
+                {
+                    if spread {
+                        self.out.view_lists.insert(expr.id);
+                    }
                     return expected.clone();
                 }
                 // A list of TS values where `[T]` is expected (`accounts: data ?? []`), or a
@@ -4368,8 +4402,10 @@ impl<'o> Checker<'o> {
                 self.pop();
                 // A view and a list of views, as a child: TS's `Child` is either.
                 if slot
-                    && (self.is_view_list(&a) || self.is_view_list(&b))
-                    && [&a, &b].iter().all(|t| self.is_view(t) || self.is_view_list(t))
+                    && (self.child_list(&a).is_some() || self.child_list(&b).is_some())
+                    && [(&a, then), (&b, otherwise)].iter().all(|(t, e)| {
+                        self.is_view(t) || self.child_list(t).is_some() || matches!(e.kind, ExprKind::None)
+                    })
                 {
                     return Ty::View(None);
                 }
@@ -5022,9 +5058,18 @@ impl<'o> Checker<'o> {
                             Ty::Foreign(_) => right_ty,
                             Ty::Str | Ty::Strings(_) if literal => self.join(&inner, &right_ty, expr.span),
                             _ => {
-                                if !self.coerce(&right_ty, &inner) {
-                                    self.mismatch(rhs.span, &right_ty, &inner);
+                                if self.coerce(&right_ty, &inner) {
+                                    return *inner;
                                 }
+                                // Both sides fit what is expected (`headerAuthors ?? []` where a
+                                // `[PostUser]` is taken, `HydratedAuthor` extending `PostUser`).
+                                if let Some(e) = expected
+                                    && self.coerce(&inner, e)
+                                    && self.coerce(&right_ty, e)
+                                {
+                                    return e.clone();
+                                }
+                                self.mismatch(rhs.span, &right_ty, &inner);
                                 *inner
                             }
                         }

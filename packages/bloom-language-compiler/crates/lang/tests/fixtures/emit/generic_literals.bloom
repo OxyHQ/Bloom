@@ -1,0 +1,20 @@
+// String literals given for a generic parameter are checked after the typed arguments: `T` is
+// the TS literal union `chosen` has, so a `(Decision) -> Unit` fits `(T) -> Unit`.
+import { type Decision } from "@/corpus"
+
+func choices<T: Equatable>(_ values: [T], _ chosen: T, _ choose: (T) -> Unit) -> View {
+  HStack {
+    for value in values {
+      Text(chosen == value ? "*" : "-").onPress { choose(value) }
+    }
+  }
+}
+
+public struct Picker: View {
+  let decision: Decision
+  let onDecision: (Decision) -> Unit
+
+  var body: some View {
+    choices(["available", "pending"], decision, onDecision)
+  }
+}
