@@ -793,6 +793,11 @@ impl<'a> Emitter<'a> {
         if let Some(renamed) = self.ck.renamed.get(&info.span) {
             return renamed.clone();
         }
+        // An import is its module's name as it is: no keyword can be one, and a JS global from
+        // "js" (`Infinity`, `NaN`, `undefined`) must not be renamed `Infinity_`.
+        if matches!(info.kind, LocalKind::Import { .. }) {
+            return info.name.clone();
+        }
         js_name(&info.name)
     }
 
