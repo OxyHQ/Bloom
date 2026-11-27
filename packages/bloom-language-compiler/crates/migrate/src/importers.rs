@@ -112,6 +112,18 @@ pub fn draw_views_as_nodes(source: &str, filename: &str, names: &[String]) -> Op
 /// `source` importing `toElement` from the language (beside its other names when it already
 /// imports from it). `program` is the module before the edits, whose imports come first.
 fn import_to_element(source: &str, program: &oxc_ast::ast::Program) -> String {
+    // Any of the module's imports may name it already (PostDetailScreen imports the language twice).
+    let imports_it = program.body.iter().any(|statement| {
+        let oxc_ast::ast::Statement::ImportDeclaration(import) = statement else { return false };
+        import.source.value.as_str() == Some(LANGUAGE)
+            && !import.import_kind.is_type()
+            && import.specifiers.iter().flatten().any(|s| {
+                matches!(s, oxc_ast::ast::ImportDeclarationSpecifier::ImportSpecifier(i) if i.local.name == "toElement")
+            })
+    });
+    if imports_it {
+        return source.to_string();
+    }
     let mut last_import_end = 0;
     for statement in &program.body {
         let oxc_ast::ast::Statement::ImportDeclaration(import) = statement else { continue };
