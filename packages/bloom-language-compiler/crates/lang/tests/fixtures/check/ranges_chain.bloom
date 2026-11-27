@@ -1,0 +1,4 @@
+// Ranges do not chain (Swift's range operators are not associative).
+func g(n: Int) -> [Int] {
+  0..<n..<4
+}

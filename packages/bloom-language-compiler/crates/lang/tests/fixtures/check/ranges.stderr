@@ -1,0 +1,16 @@
+error[B0201]: expected `Int`, found `Float`
+ --> check/ranges.bloom:3:16
+  |
+3 |   for i in 0..<x {
+  |                ^ this is `Float`
+  |
+help: convert it: `.rounded()`, `.floor()`, `.ceil()` or `.truncated()` (a `Float` never narrows implicitly)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: `Array` takes a range, a list or a set, not `String`
+ --> check/ranges.bloom:6:21
+  |
+6 |   let names = Array(name)
+  |                     ^^^^ not a collection
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#63-ranges

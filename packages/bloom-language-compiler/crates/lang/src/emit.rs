@@ -174,6 +174,8 @@ struct Emitter<'a> {
     names: HashSet<String>,
     /// The next closure maps an `.enumerated()` list: its `(i, x)` is `(x, i)`.
     enumerated: bool,
+    /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
+    range_index: bool,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -230,6 +232,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         eq_vars: 0,
         names,
         enumerated: false,
+        range_index: false,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -1325,6 +1328,33 @@ impl<'a> Emitter<'a> {
                 line.f(cond).s(") ").f(body);
                 self.push_stmt(line);
             }
+            // `for i in a..<b`: a counting loop, no array.
+            StmtKind::For(f) if let Some((lo, hi, closed)) = range_of(&f.iter) => {
+                let target = match self.binding_target(&f.pattern) {
+                    t if t == "_" => self.temp(),
+                    t => t,
+                };
+                let start = self.expr(lo);
+                // The bound is read once, as Swift's range is built once: a literal or a `let`
+                // inline, anything else into a temp.
+                let (bound, end) = if self.fixed_bound(hi) {
+                    (Frag::default(), self.operand(hi))
+                } else {
+                    let name = self.temp();
+                    let mut decl = Frag::of(format!(", {name} = "));
+                    decl.f(self.expr(hi));
+                    (decl, Frag::of(name))
+                };
+                let body = self.block_body(&f.body.stmts, Tail::Discard, self.signal.clone().as_deref());
+                let mut line = Frag::at(stmt.span, format!("for (let {target} = "));
+                line.f(start)
+                    .f(bound)
+                    .s(&format!("; {target} {} ", if closed { "<=" } else { "<" }))
+                    .f(end)
+                    .s(&format!("; {target}++) "))
+                    .f(body);
+                self.push_stmt(line);
+            }
             StmtKind::For(f) => {
                 let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
                 let mut iter = match self.enumerated_list(&f.iter) {
@@ -2391,6 +2421,25 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A range read as a value: its array, built once (`for` and `.map` build none).
+        if op.is_range() {
+            let closed = op == BinaryOp::Closed;
+            let mut out = Frag::at(expr.span, "Array.from({ length: ");
+            if is_zero(lhs) {
+                out.f(self.range_length(lhs, rhs, closed)).s(" }, ($_, i) => i)");
+            } else if let ExprKind::Int(low) = lhs.kind {
+                out.f(self.range_length(lhs, rhs, closed)).s(&format!(" }}, ($_, i) => {low} + i)"));
+            } else {
+                // The lower bound is read once per element: a path as is, anything else once.
+                let lo = self.path_or_temp(lhs);
+                out.f(self.operand(rhs)).s(&format!(" - {lo}"));
+                if closed {
+                    out.s(" + 1");
+                }
+                out.s(&format!(" }}, ($_, i) => {lo} + i)"));
+            }
+            return out;
+        }
         // `a == b` on a `T: Equatable`: its witness.
         if let Some(witness) = self.ck.witness_eq.get(&expr.id).cloned() {
             let (a, b) = (self.expr(lhs), self.expr(rhs));
@@ -2774,7 +2823,10 @@ impl<'a> Emitter<'a> {
             .collect();
         // A parameter without a TS type takes its type from where the closure is passed.
         let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
-        let params: Vec<String> = if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
+        let params: Vec<String> = if std::mem::take(&mut self.range_index) && !c.tuple && params.len() == 1 {
+            // `(0..<n).map { i in … }` is `Array.from({ length: n }, ($_, i) => …)`.
+            vec!["$_".into(), params[0].clone()]
+        } else if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
             // `xs.enumerated().map { (i, x) in … }` is `xs.map((x, i) => …)`.
             vec![params[1].clone(), params[0].clone()]
         } else if c.tuple {
@@ -3279,6 +3331,11 @@ impl<'a> Emitter<'a> {
                 }
                 out
             }
+            // `Array(0..<n)` is the range's array; a list or a set is copied.
+            CallRes::ArrayOf => {
+                let arg = &call.args[0].value;
+                if range_of(arg).is_some() { self.expr(arg) } else { self.expr(arg).wrap("[...", "]") }
+            }
             CallRes::Regex => {
                 let args: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
                 Frag::join(args, ", ").wrap("new RegExp(", ")")
@@ -3494,6 +3551,29 @@ impl<'a> Emitter<'a> {
             }
             _ => false,
         };
+        // `(0..<n).map { i in … }`: `Array.from({ length: n }, ($_, i) => …)`, one array.
+        if recv == Recv::List
+            && name == "map"
+            && !optional
+            && call.args.is_empty()
+            && let Some(closure) = call.trailing.as_deref()
+            && !closure.tuple
+            && closure.params.len() == 1
+            && let Some((lo, hi, closed)) = range_of(receiver)
+            && is_zero(lo)
+        {
+            let length = self.range_length(lo, hi, closed);
+            let f = match self.hoisted_names.get(&closure.span).cloned() {
+                Some(hoisted) => Frag::of(format!("($_, i) => {hoisted}(i)")),
+                None => {
+                    self.range_index = true;
+                    self.closure(closure)
+                }
+            };
+            let mut out = Frag::of("Array.from({ length: ");
+            out.f(length).s(" }, ").f(f).s(")");
+            return out;
+        }
         // `xs.enumerated().map { (i, x) in … }`: `xs.map((x, i) => …)`, no pairs built.
         let mut receiver = receiver;
         if recv == Recv::List
@@ -3732,16 +3812,25 @@ impl<'a> Emitter<'a> {
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                    // `for (i, x) in xs.enumerated()`: `xs.map((x, i) => …)`.
+                    // `for i in 0..<n`: `Array.from({ length: n }, ($_, i) => …)`, one array.
+                    // `for _ in 1...n` counts only: its lower bound is read for the length alone.
+                    let counted = range_of(&f.iter)
+                        .filter(|(lo, _, _)| is_zero(lo) || f.pattern.kind == PatternKind::Wildcard);
                     let swapped = match (self.enumerated_list(&f.iter), &f.pattern.kind) {
                         (Some(list), PatternKind::Tuple(items)) if items.len() == 2 => {
                             Some((list, [self.binding_target(&items[1]), self.binding_target(&items[0])]))
                         }
                         _ => None,
                     };
-                    let mut iter = match &swapped {
-                        Some((list, _)) => self.operand(list),
-                        None => self.operand(&f.iter),
+                    let mut iter = match (&swapped, counted) {
+                        (Some((list, _)), _) => self.operand(list),
+                        (None, Some((lo, hi, closed))) => {
+                            let length = self.range_length(lo, hi, closed);
+                            let mut out = Frag::of("Array.from({ length: ");
+                            out.f(length).s(" }");
+                            out
+                        }
+                        (None, None) => self.operand(&f.iter),
                     };
                     if matches!(iter_ty, Ty::Map(_)) {
                         iter = iter.wrap("Object.entries(", ")");
@@ -3751,6 +3840,10 @@ impl<'a> Emitter<'a> {
                     }
                     let target = match swapped {
                         Some((_, [x, i])) => format!("{x}, {i}"),
+                        None if counted.is_some() => match self.binding_target(&f.pattern) {
+                            t if t == "_" => "$_".into(),
+                            t => format!("$_, {t}"),
+                        },
                         None => self.binding_target(&f.pattern),
                     };
                     self.bufs.push(Vec::new());
@@ -3776,7 +3869,8 @@ impl<'a> Emitter<'a> {
                         && matches!(f.body.stmts.as_slice(), [.., Stmt { kind: StmtKind::Expr(e), .. }] if plain_item(e))
                         && f.body.stmts.iter().filter(|s| !matches!(s.kind, StmtKind::Let(_))).count() == 1;
                     let mut line = if spread { Frag::of("...") } else { Frag::default() };
-                    line.f(iter).mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
+                    let map = if counted.is_some() { ", " } else { ".map(" };
+                    line.f(iter).mark(stmt.span).s(&format!("{map}({target}) => ")).f(body).s(")");
                     out.push(line);
                 }
                 _ => {}
@@ -3856,6 +3950,48 @@ impl<'a> Emitter<'a> {
 }
 
 impl Emitter<'_> {
+    // ---- ranges (spec 6.3) ----------------------------------------------------
+
+    /// How many `Int`s `lo..<hi` (`lo...hi` when `closed`) holds: `hi - lo`, `hi` from 0.
+    /// A literal lower bound folds in: `1...n` holds `n`, `2..<n` holds `n - 2`.
+    fn range_length(&mut self, lo: &Expr, hi: &Expr, closed: bool) -> Frag {
+        if let ExprKind::Int(low) = lo.kind {
+            let less = low - i64::from(closed);
+            return match less {
+                0 => self.expr(hi),
+                k if k > 0 => {
+                    let mut out = self.operand(hi);
+                    out.s(&format!(" - {k}"));
+                    out
+                }
+                k => {
+                    let mut out = self.operand(hi);
+                    out.s(&format!(" + {}", -k));
+                    out
+                }
+            };
+        }
+        let mut out = self.operand(hi);
+        out.s(" - ").f(self.operand(lo));
+        if closed {
+            out.s(" + 1");
+        }
+        out
+    }
+
+    /// A loop bound that reads the same on every turn: a literal, or a name no one assigns.
+    fn fixed_bound(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Int(_) => true,
+            ExprKind::Paren(e) => self.fixed_bound(e),
+            ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
+                Some(NameRes::Local(local)) => !matches!(self.ck.locals[*local].kind, LocalKind::Var),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     // ---- structural equality (spec 4.3) ----------------------------------------
 
     /// `expr` as a path to read more than once: itself when it is one, else a temp.
@@ -4068,6 +4204,20 @@ fn mentions(text: &str, name: &str) -> bool {
 fn covers(outer: &str, inner: &str) -> bool {
     outer == inner
         || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
+}
+
+/// `a..<b` or `a...b` (in parentheses or not): its bounds, and whether it is closed.
+fn range_of(expr: &Expr) -> Option<(&Expr, &Expr, bool)> {
+    match &expr.kind {
+        ExprKind::Paren(inner) => range_of(inner),
+        ExprKind::Binary(op, lo, hi) if op.is_range() => Some((lo, hi, *op == BinaryOp::Closed)),
+        _ => None,
+    }
+}
+
+/// The literal `0`.
+fn is_zero(expr: &Expr) -> bool {
+    matches!(expr.kind, ExprKind::Int(0))
 }
 
 fn is_path(expr: &Expr) -> bool {

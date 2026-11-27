@@ -1,0 +1,78 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { HStack, Text, view } from "@oxy.so/bloom-language";
+
+export function total(n: number): number {
+let sum = 0;
+for (let i = 0; i < n; i++) {
+sum = sum + (i);
+}
+for (let i = 1; i <= n; i++) {
+sum = sum + (i);
+}
+for (let $t0 = 0; $t0 < 3; $t0++) {
+sum = sum + (1);
+}
+return sum;
+}
+
+export function squares(n: number): readonly number[] {
+return Array.from({ length: n }, ($_, i: number) => i * i);
+}
+
+export function indices(n: number): readonly number[] {
+return Array.from({ length: n }, ($_, i) => i);
+}
+
+export function window(xs: readonly number[], from: number): readonly number[] {
+const span = Array.from({ length: xs.length - from }, ($_, i) => from + i);
+return span.filter(($0: number) => ($0 % 2) === 0);
+}
+
+export function countdown(n: number): number {
+let left = n;
+let turns = 0;
+for (let $t1 = 0, $t2 = left; $t1 < $t2; $t1++) {
+left = left - (1);
+turns = turns + (1);
+}
+return turns;
+}
+
+export interface DotsProps {
+  readonly count: number;
+}
+export const Dots = view(function Dots(props: DotsProps) {
+"use no memo";
+const $ = $c(2);
+const { count } = props;
+let $t3;
+if ($[0] !== count) {
+$t3 = HStack(...Array.from({ length: count }, ($_, i) => Text(`${i}`)));
+$[0] = count;
+$[1] = $t3;
+} else {
+$t3 = $[1];
+}
+return $t3;
+});
+
+const $view0 = Text("*");
+export interface StarsProps {
+  readonly rating: number;
+}
+export const Stars = view(function Stars(props: StarsProps) {
+"use no memo";
+const $ = $c(2);
+const { rating } = props;
+let $t4;
+if ($[0] !== rating) {
+$t4 = HStack(...Array.from({ length: rating }, ($_) => $view0));
+$[0] = rating;
+$[1] = $t4;
+} else {
+$t4 = $[1];
+}
+return $t4;
+});
+

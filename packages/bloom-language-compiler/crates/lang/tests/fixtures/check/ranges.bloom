@@ -1,0 +1,8 @@
+// A range's bounds are `Int`s; `Array` takes a collection.
+func f(x: Float, name: String) -> Int {
+  for i in 0..<x {
+    let _ = i
+  }
+  let names = Array(name)
+  return names.count
+}
