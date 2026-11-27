@@ -1,2 +1,67 @@
-refused
-0: bloomc:B0201: this block gives no value; expected `String`
+// try shapes: state writes before the first await, a destructured await, and a
+// block of several awaits (a `Result` closure, each await propagating).
+
+import { confirm, load, save, saveLogger, unsave } from "./api"
+import { RegExp } from "js"
+
+private func resolveUrl(_ id: String) async -> String {
+  do {
+    let { data } = try await load(id)
+    return data.url
+  } catch { return id }
+}
+
+/// Outside a `try`, a rejection stops the block; a global regex is the `"js"` `RegExp`.
+private func warm(_ id: String) async {
+  // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+  switch await load(id) {
+  case let .ok(value):
+    let { data } = value
+    saveLogger.debug(data.url.replace(RegExp("^https?:\\/\\/", "g"), ""))
+  case .err(_):
+    break
+  }
+}
+
+private func confirmUnsave(_ id: String) async {
+  // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+  switch await confirm("Remove?") {
+  case let .ok(value):
+    if !value { return }
+    saveLogger.debug(id)
+  case .err(_):
+    break
+  }
+}
+
+public struct SaveToggle: View {
+  let id: String
+  let saved: Bool
+  @State private var busy = false
+  @State private var failed = false
+
+  func onToggle() async {
+    defer { busy = false }
+    do {
+      busy = true
+      saveLogger.debug("toggling")
+      if saved { try await unsave(id) } else { try await save(id) }
+      failed = false
+    } catch { failed = true }
+  }
+
+  func onLoad() async {
+    do {
+      busy = true
+      let url = await resolveUrl(id)
+      saveLogger.debug(url)
+    } catch { failed = true }
+  }
+
+  var body: some View {
+    Button(Text(failed ? "Retry" : saved ? "Saved" : "Save"))
+    .disabled(busy)
+    .onPress { task { await onToggle() } }
+    .onLongPress { task { await onLoad() } }
+  }
+}
