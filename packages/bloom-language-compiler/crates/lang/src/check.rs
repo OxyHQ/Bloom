@@ -1683,6 +1683,24 @@ impl<'o> Checker<'o> {
         ty
     }
 
+    /// `let isNested = isNested ?? false` beside a stored `var isNested: Bool? = none`: one name
+    /// declared twice in the struct (Swift's invalid redeclaration), not a shadow.
+    fn member_beside_prop(&mut self, name: &Ident) {
+        let Some(prop) = self.scopes.last().and_then(|s| s.get(&name.name)).copied() else { return };
+        if !matches!(self.out.locals[prop].kind, LocalKind::Prop | LocalKind::Bound) {
+            return;
+        }
+        self.report(
+            Diagnostic::error("B0217", name.span, format!("`{}` is a stored property already", name.name))
+                .label("a second declaration in the struct")
+                .help(format!(
+                    "give the stored property its default (`var {}: T = …`): a prop left out takes it, as TS's `{{ {} = … }} = props` does",
+                    name.name, name.name
+                ))
+                .spec("71a-a-view-the-20-way"),
+        );
+    }
+
     fn duplicate(&mut self, name: &Ident) {
         self.report(
             Diagnostic::error("B0217", name.span, format!("`{}` is declared twice", name.name))
@@ -2359,6 +2377,9 @@ impl<'o> Checker<'o> {
                     let kind = if self.was_hook { LocalKind::Hook } else { LocalKind::Derived };
                     if self.was_hook {
                         self.out.hook_lets.insert(stmt.span);
+                    }
+                    if let PatternKind::Bind(name) = &stmt.pattern.kind {
+                        self.member_beside_prop(name);
                     }
                     self.bind_irrefutable(&stmt.pattern, &ty, kind)
                 }

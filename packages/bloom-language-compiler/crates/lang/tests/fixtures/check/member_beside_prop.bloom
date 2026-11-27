@@ -1,0 +1,7 @@
+// A view member of a stored property's name declares it twice (Swift's invalid redeclaration):
+// the stored property takes the default itself (`var isNested: Bool = false`).
+public struct PostRowView: View {
+  var isNested: Bool? = none
+  let isNested = isNested ?? false
+  var body: some View { Text(isNested ? "nested" : "top") }
+}
