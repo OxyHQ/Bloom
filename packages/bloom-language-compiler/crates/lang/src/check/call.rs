@@ -804,6 +804,7 @@ impl Checker<'_> {
         let mut rest = Vec::new();
         let rest_slot = f.params.last().filter(|p| p.rest).map(|_| f.params.len() - 1);
         let mut next = 0;
+        let mut deferred = Vec::new();
         for (index, arg) in call.args.iter().enumerate() {
             if props && arg.spread && arg.label.is_none() {
                 self.spread_arg(arg, f, index, &mut order, &mut spread_given);
@@ -912,7 +913,17 @@ impl Checker<'_> {
             }
             order[slot] = Some(index);
             let ty = f.params[slot].ty.clone();
+            // String literals given for a generic parameter (`choices(["a", "b"], chosen, …)`)
+            // are checked after the other arguments: `T` is then what a typed one says (a TS
+            // literal union), not the `String` the literals alone would make it.
+            if literal_strings(&arg.value) && self.has_var(&ty) {
+                deferred.push((index, ty));
+                continue;
+            }
             self.expr(&arg.value, Some(&ty));
+        }
+        for (index, ty) in deferred {
+            self.expr(&call.args[index].value, Some(&ty));
         }
         if let Some(trailing) = &call.trailing {
             let slot = (0..order.len())
@@ -1771,7 +1782,7 @@ impl Checker<'_> {
             if ctor == "Embed"
                 && let Some(ty) = self.out.types.get(&arg.value.id).cloned()
                 && !matches!(self.resolve(&ty), Ty::View(Some("embed")))
-                && (self.is_view(&ty) || self.is_view_list(&ty))
+                && (self.is_view(&ty) || self.child_list(&ty).is_some())
             {
                 self.out.elements.insert(arg.value.id);
             }
@@ -2850,6 +2861,16 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
 
 /// `(key, value)`: two arguments without labels, the first of them a key path
 /// or not a field's value (a struct's fields are otherwise named).
+/// A string literal, or a list literal of them (`["a", "b"]`).
+fn literal_strings(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::List(items) => {
+            !items.is_empty() && items.iter().all(|i| super::string_literal(i).is_some())
+        }
+        _ => super::string_literal(expr).is_some(),
+    }
+}
+
 fn keyed(call: &Call) -> bool {
     call.trailing.is_none()
         && call.args.len() == 2
