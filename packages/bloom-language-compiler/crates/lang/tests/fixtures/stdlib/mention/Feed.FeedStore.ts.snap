@@ -1,0 +1,82 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, HStack, ScrollView, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { refreshAction } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { type Source, type SourcePage, type Action, useQuery, useSource, Action$$make, Action$run, ModelStore$insert, ModelStore$update, Source$$make, Source$refresh } from "../../.bloom/std/Bloom/Data.bloom";
+import { percentEncoded } from "../../.bloom/std/Bloom/URL.bloom";
+import { type MentionAPI, MentionAPI$delete, MentionAPI$get, MentionAPI$post } from "../API/MentionAPI.bloom";
+import { type Post, type FeedPage, FeedPage$$self, Post$$store, Post$liked } from "../Posts/Post.bloom";
+function $mapOption<T, U>(value: T | undefined, f: (value: T) => U): U | undefined {
+  return value === undefined ? undefined : f(value);
+}
+
+export function homeFeed(api: MentionAPI): Source<Post> {
+return Source$$make(Post$$store, "home", async (cursor: string | undefined, signal: AbortSignal) => {
+const query: Readonly<Record<string, string>> = $mapOption(cursor, ($0: string) => ({ "cursor": $0 })) ?? ({});
+const page = await (MentionAPI$get(api, "feeds/home", FeedPage$$self, query, (signal satisfies AbortSignal | undefined)));
+return { items: page.items, next: page.hasMore ? page.nextCursor : undefined };
+});
+}
+
+export function likeAction(api: MentionAPI): Action<Post, undefined> {
+return Action$$make("post.like", (post: Post) => {
+const changed = ModelStore$update(Post$$store, post.id, ($0: Post) => Post$liked($0, !post.isLiked));
+if (!changed) {
+ModelStore$insert(Post$$store, Post$liked(post, !post.isLiked));
+}
+}, async (post: Post) => {
+if (post.isLiked) {
+await (MentionAPI$delete(api, `posts/${percentEncoded(post.id)}/like`));
+} else {
+await (MentionAPI$post(api, `posts/${percentEncoded(post.id)}/like`));
+}
+});
+}
+
+export interface AuthorPostsProps {
+  readonly authorID: string;
+}
+export const AuthorPosts = view(function AuthorPosts(props: AuthorPostsProps) {
+"use no memo";
+const $ = $c(3);
+const { authorID } = props;
+const posts: readonly Post[] = useQuery(Post$$store, "createdAt", "reverse");
+let $t0;
+if ($[0] !== posts || $[1] !== authorID) {
+$t0 = VStack(...posts.filter(($0: Post) => $0.author.id === authorID).map((post) => Text(post.text))).spacing("sm");
+$[0] = posts;
+$[1] = authorID;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+
+export interface HomeFeedProps {
+  readonly feed: Source<Post>;
+  readonly like: Action<Post, undefined>;
+}
+export const HomeFeed = view(function HomeFeed(props: HomeFeedProps) {
+"use no memo";
+const $ = $c(5);
+const { feed, like } = props;
+const posts: readonly Post[] = useSource(feed);
+const [__refreshing0, set__refreshing0] = useState<boolean>(false);
+let $t1;
+if ($[0] !== posts || $[1] !== like || $[2] !== __refreshing0 || $[3] !== feed) {
+$t1 = ScrollView(VStack(...posts.map((post) => HStack(Text(post.text), Button(Text(`${post.stats.likes}`)).onPress(() => void (async () => {
+await (Action$run(like, post));
+})())).spacing("sm")))).refreshable(refreshAction([__refreshing0, set__refreshing0] as const, async () => await (Source$refresh(feed))));
+$[0] = posts;
+$[1] = like;
+$[2] = __refreshing0;
+$[3] = feed;
+$[4] = $t1;
+} else {
+$t1 = $[4];
+}
+return $t1;
+});
+

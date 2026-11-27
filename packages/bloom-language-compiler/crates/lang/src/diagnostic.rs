@@ -109,6 +109,20 @@ impl Diagnostic {
 
     /// Fills `line`, `column` and `rendered` against the file's source.
     pub fn render(&mut self, source: &str, filename: &str) {
+        // A span past the source (derived code's, unanchored) is shown at the file's start,
+        // never a panic.
+        let inside = |span: Span| {
+            let len = source.len() as u32;
+            if span.start > len || !source.is_char_boundary(span.start as usize) {
+                Span::new(0, 0)
+            } else {
+                Span::new(span.start, span.end.clamp(span.start, len))
+            }
+        };
+        self.span = inside(self.span);
+        for label in &mut self.labels {
+            label.span = inside(label.span);
+        }
         let (line, column) = line_column(source, self.span.start);
         self.line = line;
         self.column = column;

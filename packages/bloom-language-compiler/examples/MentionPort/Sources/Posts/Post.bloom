@@ -1,0 +1,67 @@
+// A post and its author as the API sends them (packages/shared-types), decoded by
+// derived Codable: no hand-written mapping. Posts are a `@Model`: held once by id
+// (`Post.store`), whichever feed or screen shows them, and kept on the device.
+
+public struct Author: Codable, Equatable {
+  public let id: String
+  public let username: String
+  public let name: String
+  @CodingKey("avatar") public let avatarURL: URL?
+  public var isVerified: Bool = false
+}
+
+public enum PostVisibility: Codable {
+  case everyone
+  case followers
+  case mentioned
+}
+
+public struct PostStats: Codable, Equatable {
+  public var likes: Int = 0
+  public var boosts: Int = 0
+  public var replies: Int = 0
+}
+
+@Model public struct Post: Codable, Equatable {
+  @Attribute(.unique) public let id: String
+  public let text: String
+  public let author: Author
+  public let createdAt: Date
+  public var stats: PostStats = PostStats()
+  public var isLiked: Bool = false
+  public let visibility: PostVisibility
+  public let hashtags: [String]
+}
+
+/// One page of a feed: its posts and the cursor of the next one.
+public struct FeedPage: Codable, Equatable {
+  public let items: [Post]
+  public let nextCursor: String?
+  public var hasMore: Bool = false
+}
+
+extension Post {
+  /// The post liked or unliked: what a like does to its counter.
+  public func liked(_ on: Bool) -> Post {
+    let delta = on == self.isLiked ? 0 : (on ? 1 : -1)
+    let stats = PostStats(likes: self.stats.likes + delta, boosts: self.stats.boosts, replies: self.stats.replies)
+    return Post(
+      id: self.id,
+      text: self.text,
+      author: self.author,
+      createdAt: self.createdAt,
+      stats: stats,
+      isLiked: on,
+      visibility: self.visibility,
+      hashtags: self.hashtags,
+    )
+  }
+
+  /// "2m", "3h": the timeline's time.
+  public func age(now: Date = Date.now) -> String { self.createdAt.formatted(.abbreviated, now: now) }
+
+  /// The handles the text mentions (`@ada`), in order, once each.
+  public var mentions: [String] {
+    uniqued(Regex(pattern: "@([A-Za-z0-9_]+)").matches(in: self.text).compactMap { $0.group(1) })
+  }
+}

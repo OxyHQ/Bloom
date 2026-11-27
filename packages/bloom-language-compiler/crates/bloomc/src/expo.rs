@@ -40,6 +40,23 @@ pub const RUNTIME: &[(&str, &str)] = &[
     ("react-native-worklets", "0.13.0"),
 ];
 
+/// The native backends of the standard library's stores (`KeyValueStore` on SQLite,
+/// `SecureStore` on the keystore, `FileStore` on the app's documents), required only by
+/// its runtime file (`stdlib/Bloom/runtime.ts`) and only on native platforms. They are
+/// the app's runtime, not Bloom's: Bloom's own `package.json` does not list them (phase F
+/// replaces them with Bloom native modules). Pinned as Mention pins them.
+pub const STDLIB_NATIVE: &[(&str, &str)] =
+    &[("expo-file-system", "~58.0.13"), ("expo-secure-store", "~58.0.2"), ("expo-sqlite", "~58.0.15")];
+
+/// The data layer under the standard library's `@Model`, `@Query`, `Source` and `Action`
+/// (`stdlib/Bloom/models.ts`), its SQLite copy on `expo-sqlite` above. Bloom's own package.
+pub const STDLIB_DATA: &[(&str, &str)] = &[("@oxy.so/bloom-data", "0.1.2")];
+
+/// The native modules of today's router under `NavigationStack`: Bloom's tab pager swipes
+/// and selects its pages on `react-native-pager-view` (Bloom's optional peer, which an app
+/// without it lacks: its tabs would not change). Pinned as Mention pins it.
+pub const ROUTER_NATIVE: &[(&str, &str)] = &[("react-native-pager-view", "9.0.11")];
+
 /// Build tools, not shipped in the app.
 pub const TOOLS: &[(&str, &str)] = &[
     ("typescript", "~6.0.3"),
@@ -292,13 +309,72 @@ pub fn generate(package: &Package) -> Result<(), String> {
         write(&build.join("index.js"), &format!("{header}// No `.app` target: nothing to start.\n"))?;
     } else {
         let (entry_file, entry_name) = entry(package)?;
-        write(
-            &build.join("index.js"),
-            &format!(
-                "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ {entry_name} }} from '{}';\n\n// The app's root view: a screen under Bloom's provider.\nfunction Root() {{\n  return createElement(BloomProvider, null, createElement(Screen, null, toElement({entry_name}())));\n}}\n\nregisterRootComponent(Root);\n",
-                rel(&entry_file)
-            ),
-        )?;
+        // The standard library, before Metro resolves the entry's imports of it.
+        let std_dir = bloom_lang::stdlib::dir(&package.root);
+        bloom_lang::stdlib::ensure(&package.root);
+        // The package's string catalogs (`Resources/Localizable/<locale>.json`), registered at startup.
+        let mut catalog_files: Vec<std::path::PathBuf> =
+            std::fs::read_dir(package.root.join(bloom_lang::i18n::DIR))
+                .map(|entries| {
+                    entries
+                        .filter_map(|e| e.ok().map(|e| e.path()))
+                        .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                        .collect()
+                })
+                .unwrap_or_default();
+        catalog_files.sort();
+        let catalogs_from = |base: &Path| -> String {
+            catalog_files
+                .iter()
+                .map(|file| {
+                    let locale =
+                        file.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+                    format!(
+                        "registerCatalog('{locale}', require('{}'));\n",
+                        crate::files::relative_url(base, file)
+                    )
+                })
+                .collect()
+        };
+        let catalogs = catalogs_from(&build);
+        let runtime = rel(&std_dir.join("runtime"));
+        let entry_rel = rel(&entry_file);
+        match crate::navigation::table(package)? {
+            None => {
+                let _ = std::fs::remove_dir_all(build.join("app"));
+                write(
+                    &build.join("index.js"),
+                    &single_root(header, &runtime, &entry_name, &entry_rel, &catalogs),
+                )?;
+            }
+            Some(table) => {
+                // Today's router: expo-router's file routes, written from the app's routes enum.
+                let routing = crate::files::relative_url(&build.join("app"), &std_dir.join("routing"));
+                let registration =
+                    crate::navigation::write_routes(&build, routing.trim_start_matches("./"), &table)?;
+                let (icons, destinations) = crate::navigation::destinations(&table);
+                write(
+                    &build.join("app/_layout.js"),
+                    &routed_root(
+                        header,
+                        &RoutedRoot {
+                            runtime: &crate::files::relative_url(
+                                &build.join("app"),
+                                &std_dir.join("runtime"),
+                            ),
+                            routing: &routing,
+                            entry_name: &entry_name,
+                            entry: &crate::files::relative_url(&build.join("app"), &entry_file),
+                            catalogs: &catalogs_from(&build.join("app")),
+                            registration: &registration,
+                            icons: &icons,
+                            destinations: (!table.tabs.is_empty()).then_some(destinations.as_str()),
+                        },
+                    ),
+                )?;
+                write(&build.join("index.js"), &format!("{header}import 'expo-router/entry';\n"))?;
+            }
+        }
     }
     write(
         &build.join("metro.config.js"),
@@ -315,10 +391,19 @@ config.watchFolders = [packageRoot];
 config.resolver.nodeModulesPaths = [path.join(projectRoot, 'node_modules')];
 config.resolver.disableHierarchicalLookup = true;
 config.resolver.blockList = [/\/\.bloom\/(cache|dist|modules)\//, /\/\.bloom\/build\/(android|ios)\//];
+// The standard library's native store backends never reach the web bundle (the web
+// keeps its stores in localStorage).
+const nativeOnly = new Set([{native_only}]);
+const upstreamResolve = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, name, platform) => {{
+  if (platform === 'web' && nativeOnly.has(name)) return {{ type: 'empty' }};
+  return (upstreamResolve ?? context.resolveRequest)(context, name, platform);
+}};
 
 module.exports = withBloomLanguage(config);
 "#,
             root = rel(&package.root),
+            native_only = STDLIB_NATIVE.iter().map(|(n, _)| format!("'{n}'")).collect::<Vec<_>>().join(", "),
         ),
     )?;
     write(
@@ -352,6 +437,57 @@ fn bunfig() -> String {
     )
 }
 
+/// The root of an app without a `NavigationStack`: its root view on one Bloom screen, drawn
+/// edge to edge (the screen's background under the status and navigation bars) with the
+/// content inside the window's safe area.
+fn single_root(header: &str, runtime: &str, entry_name: &str, entry: &str, catalogs: &str) -> String {
+    format!(
+        "{header}import {{ createElement }} from 'react';\nimport {{ registerRootComponent }} from 'expo';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider, SafeAreaView }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ Screen }} from '@oxy.so/bloom/screen';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ registerCatalog }} from '{runtime}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The app's root view on a screen under Bloom's provider. The screen draws edge to edge\n// (its background under the status bar and the navigation bar); the view sits inside the\n// window's safe area (the status bar, the notch, the navigation bar's edges). Bloom's bars\n// and sheets take their taps and drags through the gesture handler's root.\nfunction Root() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(\n      SafeAreaProvider,\n      null,\n      createElement(\n        BloomProvider,\n        null,\n        createElement(\n          Screen,\n          null,\n          createElement(SafeAreaView, {{ style: {{ flex: 1 }}, edges: ['top', 'left', 'right'] }}, toElement({entry_name}())),\n        ),\n      ),\n    ),\n  );\n}}\n\nregisterRootComponent(Root);\n"
+    )
+}
+
+struct RoutedRoot<'a> {
+    runtime: &'a str,
+    routing: &'a str,
+    entry_name: &'a str,
+    entry: &'a str,
+    catalogs: &'a str,
+    registration: &'a str,
+    icons: &'a [String],
+    destinations: Option<&'a str>,
+}
+
+/// `app/_layout.js` of an app with a `NavigationStack`: the providers, the route table, and
+/// the root view (whose `NavigationStack` draws the router's navigator).
+fn routed_root(header: &str, r: &RoutedRoot) -> String {
+    let mut imports = String::new();
+    for icon in r.icons {
+        imports.push_str(&format!("import {{ {icon} }} from '@oxy.so/bloom/icons/{icon}';\n"));
+    }
+    let (tab_import, root) = match r.destinations {
+        Some(destinations) => (
+            "import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';\n".to_string(),
+            format!(
+                "const destinations = {destinations};\n\nfunction Navigation() {{\n  return createElement(TabPagerProvider, {{ destinations }}, toElement({}()));\n}}\n",
+                r.entry_name
+            ),
+        ),
+        None => (
+            String::new(),
+            format!("function Navigation() {{\n  return toElement({}());\n}}\n", r.entry_name),
+        ),
+    };
+    format!(
+        "{header}import {{ createElement }} from 'react';\nimport {{ GestureHandlerRootView }} from 'react-native-gesture-handler';\nimport {{ SafeAreaProvider }} from 'react-native-safe-area-context';\nimport {{ BloomProvider }} from '@oxy.so/bloom/provider';\nimport {{ toElement }} from '@oxy.so/bloom-language';\nimport {{ layout, Sheet, Stack }} from '@oxy.so/bloom-language/router';\n{tab_import}{imports}import {{ registerCatalog }} from '{runtime}';\nimport {{ registerNavigation }} from '{routing}';\nimport {{ {entry_name} }} from '{entry}';\n\n{catalogs}\n// The routes of `NavigationStack`, from the app's routes enum.\n{registration}\n// The app's root view, whose `NavigationStack` draws the navigator. Each route is a Bloom\n// screen, drawn edge to edge. Bloom's tab bar takes its taps through the gesture handler's\n// root (without it, Android delivers none).\n{root}\nexport default function RootLayout() {{\n  return createElement(\n    GestureHandlerRootView,\n    {{ style: {{ flex: 1 }} }},\n    createElement(SafeAreaProvider, null, createElement(BloomProvider, null, createElement(Navigation))),\n  );\n}}\n",
+        runtime = r.runtime,
+        routing = r.routing,
+        entry_name = r.entry_name,
+        entry = r.entry,
+        catalogs = r.catalogs,
+        registration = r.registration,
+    )
+}
+
 fn app_json(package: &Package) -> String {
     let m = &package.manifest;
     let slug: String = m
@@ -380,6 +516,7 @@ fn app_json(package: &Package) -> String {
     "name": "{name}",
     "slug": "{slug}",
     "version": "1.0.0",
+    "scheme": "{slug}",
     "platforms": [{platforms}],
     "newArchEnabled": true,
     "android": {{ "package": "{id}", "minSdkVersion": {min_sdk} }},
@@ -397,6 +534,57 @@ fn app_json(package: &Package) -> String {
 mod tests {
     use super::*;
 
+    /// The stores' native backends are the generated app's dependencies (not Bloom's),
+    /// and its Metro config keeps them out of the web bundle.
+    #[test]
+    fn the_generated_app_ships_the_stores_native_backends() {
+        let root = std::env::temp_dir().join(format!("bloom-native-stores-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("Sources/Shop")).unwrap();
+        let source = "let package = Package(name: \"Shop\", platforms: [.web, .android(26)], targets: [.app(\"Shop\")])".to_string();
+        std::fs::write(
+            root.join("Sources/Shop/App.bloom"),
+            "public view App {\n  var body: View {\n    Text(\"hi\")\n  }\n}\n",
+        )
+        .unwrap();
+        let package = Package {
+            root: root.clone(),
+            manifest: bloom_lang::package::parse(&source, "x").unwrap(),
+            source,
+        };
+        generate(&package).unwrap();
+        let manifest =
+            crate::json::parse(&std::fs::read_to_string(package.build_dir().join("package.json")).unwrap())
+                .unwrap();
+        let metro = std::fs::read_to_string(package.build_dir().join("metro.config.js")).unwrap();
+        for (name, version) in STDLIB_NATIVE {
+            assert_eq!(manifest.get("dependencies").get(name).as_str(), Some(*version), "{name}");
+            assert!(
+                ROUTER_NATIVE.iter().chain(STDLIB_DATA).all(|(n, v)| manifest
+                    .get("dependencies")
+                    .get(n)
+                    .as_str()
+                    == Some(*v))
+            );
+            assert!(metro.contains(&format!("'{name}'")), "{name} reaches the web bundle:\n{metro}");
+            assert!(
+                bloom_lang::stdlib::SOURCES
+                    .iter()
+                    .any(|(f, text)| *f == "runtime.ts" && text.contains(&format!("require('{name}')")))
+            );
+        }
+        // Edge to edge: the screen (its background) is outermost, under the status bar; the
+        // safe area is inside it, so no band of the window's own colour shows above the app.
+        let index = std::fs::read_to_string(package.build_dir().join("index.js")).unwrap();
+        let screen = index.find("Screen,\n          null,").expect(&index);
+        let safe_area = index.find("createElement(SafeAreaView").expect(&index);
+        assert!(screen < safe_area, "{index}");
+        // Bloom's bars and sheets take their taps through the gesture handler's root, outermost.
+        let gestures = index.find("GestureHandlerRootView,\n").expect(&index);
+        assert!(gestures < index.find("SafeAreaProvider,\n").expect(&index), "{index}");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
     /// The runtime table pins what Bloom's own repository pins.
     #[test]
     fn the_runtime_matches_blooms_package_json() {
@@ -405,6 +593,14 @@ mod tests {
         let root = crate::json::parse(&read("package.json")).unwrap();
         assert_eq!(root.get("version").as_str(), Some(BLOOM_VERSION));
         let dev = root.get("devDependencies");
+        for (name, _) in STDLIB_NATIVE {
+            assert!(
+                dev.get(name).as_str().is_none() && root.get("dependencies").get(name).as_str().is_none(),
+                "{name} is the app's runtime, not Bloom's"
+            );
+        }
+        let data = crate::json::parse(&read("packages/bloom-data/package.json")).unwrap();
+        assert_eq!(Some(STDLIB_DATA[0].1), data.get("version").as_str(), "the data layer's version");
         for (name, version) in RUNTIME.iter().chain(TOOLS) {
             if name.starts_with("@oxy.so/") {
                 let dir = name.trim_start_matches("@oxy.so/");

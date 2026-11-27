@@ -1,0 +1,84 @@
+import { type TaskSignal } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { HTTPClient$perform } from "../../.bloom/std/Bloom/HTTP.bloom";
+import { Bool$$decode, Bool$$encode, type Codec, type JSONValue, Optional$$decode, decodeCase, encodeCase, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
+import { String$$localized } from "../../.bloom/std/Bloom/Localization.bloom";
+import { type KeyValueStore, KeyValueStore$setValue, KeyValueStore$value } from "../../.bloom/std/Bloom/Storage.bloom";
+import { type MentionAPI, MentionAPI$get } from "../API/MentionAPI.bloom";
+
+export type PrefKey = "likes" | "boosts" | "replies" | "mentions" | "follows";
+
+export function PrefKey$$decode(value: unknown, at: string): PrefKey {
+return decodeCase(value, at, ["likes", "boosts", "replies", "mentions", "follows"], "one of \"likes\", \"boosts\", \"replies\", \"mentions\", \"follows\"");
+}
+
+export function PrefKey$$encode(value: PrefKey): unknown {
+return encodeCase(value);
+}
+
+export const PrefKey$$self: Codec<PrefKey> = { decode: PrefKey$$decode, encode: PrefKey$$encode };
+
+export const allPrefKeys: readonly PrefKey[] = ["likes", "boosts", "replies", "mentions", "follows"];
+
+export interface NotificationPrefs {
+  readonly likes: boolean;
+  readonly boosts: boolean;
+  readonly replies: boolean;
+  readonly mentions: boolean;
+  readonly follows: boolean;
+}
+
+export function NotificationPrefs$$decode(value: unknown, at: string): NotificationPrefs {
+return { likes: (Optional$$decode(jsonField(value, "likes", at), "NotificationPrefs.likes", Bool$$decode)) ?? true, boosts: (Optional$$decode(jsonField(value, "boosts", at), "NotificationPrefs.boosts", Bool$$decode)) ?? true, replies: (Optional$$decode(jsonField(value, "replies", at), "NotificationPrefs.replies", Bool$$decode)) ?? true, mentions: (Optional$$decode(jsonField(value, "mentions", at), "NotificationPrefs.mentions", Bool$$decode)) ?? true, follows: (Optional$$decode(jsonField(value, "follows", at), "NotificationPrefs.follows", Bool$$decode)) ?? true };
+}
+
+export function NotificationPrefs$$encode(value: NotificationPrefs): unknown {
+return jsonObject({ "likes": Bool$$encode(value.likes), "boosts": Bool$$encode(value.boosts), "replies": Bool$$encode(value.replies), "mentions": Bool$$encode(value.mentions), "follows": Bool$$encode(value.follows) });
+}
+
+export const NotificationPrefs$$self: Codec<NotificationPrefs> = { decode: NotificationPrefs$$decode, encode: NotificationPrefs$$encode };
+
+export function PrefKey$title(self: PrefKey): string {
+return ((self === "likes") ? String$$localized("settings.notifications.likes") : (self === "boosts") ? String$$localized("settings.notifications.boosts") : (self === "replies") ? String$$localized("settings.notifications.replies") : (self === "mentions") ? String$$localized("settings.notifications.mentions") : String$$localized("settings.notifications.follows"));
+}
+
+export function NotificationPrefs$isOn(self: NotificationPrefs, key: PrefKey): boolean {
+return ((key === "likes") ? self.likes : (key === "boosts") ? self.boosts : (key === "replies") ? self.replies : (key === "mentions") ? self.mentions : self.follows);
+}
+
+export function NotificationPrefs$setting(self: NotificationPrefs, key: PrefKey, on: boolean): NotificationPrefs {
+return { likes: (key === ("likes")) ? on : self.likes, boosts: (key === ("boosts")) ? on : self.boosts, replies: (key === ("replies")) ? on : self.replies, mentions: (key === ("mentions")) ? on : self.mentions, follows: (key === ("follows")) ? on : self.follows };
+}
+
+export interface SettingsStore {
+  readonly api: MentionAPI;
+  readonly cache: KeyValueStore;
+}
+
+export const cacheKey = "notifications";
+
+export function SettingsStore$cached(self: SettingsStore): NotificationPrefs {
+return KeyValueStore$value(self.cache, NotificationPrefs$$self, cacheKey) ?? { likes: true, boosts: true, replies: true, mentions: true, follows: true };
+}
+
+export async function SettingsStore$load(self: SettingsStore, cancellation: AbortSignal | undefined = undefined): Promise<NotificationPrefs> {
+try {
+const prefs = await (MentionAPI$get(self.api, "settings/notifications", NotificationPrefs$$self, undefined, cancellation));
+KeyValueStore$setValue(self.cache, NotificationPrefs$$self, prefs, cacheKey);
+return prefs;
+} catch (error) {
+return SettingsStore$cached(self);
+}
+}
+
+export async function SettingsStore$set(self: SettingsStore, prefs: NotificationPrefs, key: PrefKey, on: boolean): Promise<NotificationPrefs> {
+const next = NotificationPrefs$setting(prefs, key, on);
+KeyValueStore$setValue(self.cache, NotificationPrefs$$self, next, cacheKey);
+try {
+await (HTTPClient$perform(self.api.http, "put", "settings/notifications", (NotificationPrefs$$encode(next) satisfies unknown | undefined)));
+return next;
+} catch (error) {
+KeyValueStore$setValue(self.cache, NotificationPrefs$$self, prefs, cacheKey);
+return prefs;
+}
+}
+

@@ -11,18 +11,25 @@
 pub mod analysis;
 pub mod ast;
 pub mod bindgen;
+pub mod bloomui;
 mod chains;
 mod check;
+mod codable;
 pub mod diagnostic;
 mod emit;
 mod extensions;
 mod externs;
+pub mod i18n;
+#[path = "icons.generated.rs"]
+pub mod icons;
 mod lexer;
+mod model;
 pub mod modules;
 pub mod package;
 mod parser;
 mod routes;
 mod sourcemap;
+pub mod stdlib;
 #[rustfmt::skip]
 #[path = "swift_tokens.generated.rs"]
 mod swift_tokens;
@@ -109,6 +116,7 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
     // The syntax errors; a 0.x form's deprecation (a warning) is the checker's to report.
     diagnostics.retain(|d| d.severity == Severity::Error);
     for diagnostic in &mut diagnostics {
+        codable::anchor(diagnostic);
         diagnostic.render(source, filename);
     }
     (file, comments, diagnostics)
@@ -117,6 +125,7 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 /// Parses and checks `source`, without emitting.
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     ts::next_epoch();
+    codable::reset();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
@@ -130,6 +139,7 @@ pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
+        codable::anchor(diagnostic);
         diagnostic.render(source, filename);
     }
     let dependencies = std::mem::take(&mut result.dependencies).into_iter().collect();
@@ -158,6 +168,7 @@ pub fn interface(source: &str, filename: &str, options: &Options) -> String {
 /// scopes, members and expected types, with the diagnostics of [`check`].
 pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     ts::next_epoch();
+    codable::reset();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
@@ -171,6 +182,7 @@ pub fn analyze(source: &str, filename: &str, options: &Options) -> Analysis {
     let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
     resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
+        codable::anchor(diagnostic);
         diagnostic.render(source, filename);
     }
     let mut analysis = analysis::build(&file, source, &result, expected, &path, options);
@@ -203,6 +215,7 @@ pub fn clear_caches() {
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     ts::next_epoch();
+    codable::reset();
     let (mut file, syntax) = lowered(source);
     let resolution = modules::prepare(&mut file, source, filename, options);
     let module_options = for_module(&resolution, options);
@@ -235,6 +248,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
     }
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         if diagnostic.rendered.is_empty() {
+            codable::anchor(diagnostic);
             diagnostic.render(source, filename);
         }
     }

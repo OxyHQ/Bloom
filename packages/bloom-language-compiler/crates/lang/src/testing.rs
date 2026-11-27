@@ -92,7 +92,8 @@ pub fn lower(file: &mut File, source: &str, allowed: bool) -> Vec<Diagnostic> {
                 generics: Vec::new(),
                 constraints: Vec::new(),
                 params: Vec::new(),
-                throws: None,
+                // A test may `try`: what it throws fails it (as a Swift test function).
+                throws: Some(Throws { span: item.span, ty: None }),
                 ret: None,
                 span: item.span,
                 body: test.body,

@@ -1,29 +1,30 @@
-// ADR 0002, example 1 (the data): a post and its author.
+// ADR 0002, example 1 (the data): a post and its author, decoded by derived Codable.
 
 public struct User: Codable, Equatable {
   public let name: String
   public let initials: String
-  public let isVerified: Bool
+  public var isVerified: Bool = false
 }
 
 public struct Post: Codable, Identifiable, Equatable {
   public let id: String
   public let text: String
   public let author: User
-  // Stand-in (phase B, `Date`): the time as the API formats it.
-  public let createdAt: String
-  public var likes: Int
-  public var isLiked: Bool
+  public let createdAt: Date
+  public var likes: Int = 0
+  public var isLiked: Bool = false
 }
 
-/// `post` liked or unliked: what a like does to the counter.
-public func liked(_ post: Post, _ on: Bool) -> Post {
-  Post(
-    id: post.id,
-    text: post.text,
-    author: post.author,
-    createdAt: post.createdAt,
-    likes: post.likes + (on ? 1 : -1),
-    isLiked: on,
-  )
+extension Post {
+  /// The post liked or unliked: what a like does to the counter.
+  public func liked(_ on: Bool) -> Post {
+    Post(
+      id: self.id,
+      text: self.text,
+      author: self.author,
+      createdAt: self.createdAt,
+      likes: self.likes + (on == self.isLiked ? 0 : (on ? 1 : -1)),
+      isLiked: on,
+    )
+  }
 }

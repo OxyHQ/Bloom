@@ -24,15 +24,20 @@ const WRAPPED = Symbol.for('@oxy.so/bloom-language-compiler/checks-imports');
 /** `store`, answering a cached `.bloom` transform whose imports changed as a miss. */
 function checkingImports(store) {
   if (store[WRAPPED]) return store;
-  const wrapped = Object.create(store);
-  wrapped[WRAPPED] = true;
-  wrapped.name = store.name ?? store.constructor?.name;
-  wrapped.get = async (key) => {
-    const value = await store.get(key);
-    const dependencies = value?.[DEPENDENCIES];
-    return dependencies && !isCurrent(dependencies) ? null : value;
+  // Every call goes to the store itself: a store with private fields (Expo's
+  // `BinaryFileStore`, behind its `VaryingCacheStore`) throws when its methods run on
+  // another object, as they would on an `Object.create(store)`.
+  return {
+    [WRAPPED]: true,
+    name: store.name ?? store.constructor?.name,
+    get: async (key) => {
+      const value = await store.get(key);
+      const dependencies = value?.[DEPENDENCIES];
+      return dependencies && !isCurrent(dependencies) ? null : value;
+    },
+    set: (key, value) => store.set(key, value),
+    clear: () => store.clear?.(),
   };
-  return wrapped;
 }
 
 /**

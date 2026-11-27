@@ -669,6 +669,10 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   own modifiers plus the universal ones (B0501 otherwise, with the closest name). Order is
   nesting, as in the embedded language. A modifier that takes a view takes a `View?` too
   (`.trailing(active ? Icon(i) : none)`): an absent one draws nothing.
+- **Icons by name (BloomUI, 2.0):** `Icon(.close)` names a glyph of Bloom's icon set; the
+  compiler imports its component (`RiCloseLine` from `@oxy.so/bloom/icons/RiCloseLine`). A file
+  that also imports that component itself, from that path, keeps its one import: the two are the
+  same glyph, not two declarations.
 - **Tokens are string literals checked against the token set** the modifier takes:
   `.padding("md")`, `.background("primary/10")`. A wrong token is B0502 with the valid set.
   A token in a variable has the token set's type (`let gap: Space = compact ? "sm" : "md"`);
@@ -804,6 +808,18 @@ in those closures throws the same way (4.5).
   navigating away; the state writes after unmount are no-ops.
 - **Structured concurrency:** `let (a, b) = await all(loadA(), loadB())` (both or the first error);
   `await race(…)`; `sleep(ms)`. A task's children are cancelled with it.
+- **`async let x = f()`** (2.0) starts the async call `f()` where it is declared, and `await x`
+  reads its result; `try await (a, b)` reads several together (`Promise.all`). A throwing call
+  is written without `try` in the declaration, and its error surfaces at `try await x`. Only in
+  an async function (B0215); `x` is read only with `await` (B0227), and it is awaited before its
+  block ends (B0227: an unread result would drop its error). Compiled to `const x = f();`, the
+  promise marked handled until it is awaited.
+- **`actor Name { … }`** (2.0) is a class whose instance methods run one at a time, in call
+  order: each method `m` is `async` from outside (a call is `await counter.increment()`) and
+  runs through the actor's queue (`actorIsolated`, the standard library's Concurrency), an
+  `async` one holding it until its end. The actor's own members call each other directly
+  (`m$isolated`), so a call from inside never waits on itself. Unlike Swift's, an actor is not
+  re-entrant at its `await`s.
 
 ## 9. Navigation
 
@@ -820,6 +836,11 @@ so a wrong path is a compile error.
 - **Prelude** (always in scope): the core types, `ok`/`err`/`none`, `all`/`race`/`sleep`, every
   node of `spec/language.json` (`VStack`, `Text`, `Button`, …) with its modifiers, `Embed`,
   `toast`, `navigate`.
+- **BloomUI's own types and recipes (2.0):** a package file names `ViewModifier`,
+  `IconComponent`, `defineModifier` and `defineTokens` without importing
+  `@oxy.so/bloom-language` (the types are imported `type`). A file that still imports one of
+  them (the migration mode) keeps its import, and a name a file imports itself is never
+  imported a second time. A class's `init` (`Box(0)`, `Box$$init`) is imported with the class.
 - **Bloom modules:** `import { PostRow } from "./PostRow.bloom"`.
 - **Platform files (2.0):** in a directory module, `X.native.bloom`, `X.ios.bloom`,
   `X.android.bloom` and `X.web.bloom` (and `X.bloom` beside them) are alternatives, one compiled

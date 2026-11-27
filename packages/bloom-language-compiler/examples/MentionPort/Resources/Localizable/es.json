@@ -1,0 +1,8 @@
+{
+  "settings.notifications.title": "Notificaciones",
+  "settings.notifications.likes": "Me gusta",
+  "settings.notifications.boosts": "Impulsos",
+  "settings.notifications.replies": "Respuestas",
+  "settings.notifications.mentions": "Menciones",
+  "settings.notifications.follows": "Nuevos seguidores"
+}

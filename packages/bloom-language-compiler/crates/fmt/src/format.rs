@@ -370,7 +370,10 @@ impl<'a> Formatter<'a> {
                 self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
-            ItemKind::Class(c) => self.type_body("class ", &c.name, &c.generics, &c.body, item.span),
+            ItemKind::Class(c) => {
+                let keyword = if c.actor { "actor " } else { "class " };
+                self.type_body(keyword, &c.name, &c.generics, &c.body, item.span)
+            }
             ItemKind::Protocol(p) => self.protocol_decl(p, item.span),
             // A binding module's declarations stay as written (they are curated by hand).
             ItemKind::Extern(_) => return text(self.slice(item.span).trim_end().to_string()),
@@ -908,7 +911,8 @@ impl<'a> Formatter<'a> {
 
     fn let_stmt(&mut self, l: &LetStmt) -> Doc {
         let pattern = self.pattern(&l.pattern);
-        self.binding_decl("let ", pattern, l.ty.as_ref(), &l.value)
+        let keyword = if l.is_async { "async let " } else { "let " };
+        self.binding_decl(keyword, pattern, l.ty.as_ref(), &l.value)
     }
 
     // ----- expressions -----

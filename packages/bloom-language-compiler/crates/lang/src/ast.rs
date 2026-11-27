@@ -174,6 +174,8 @@ pub struct ClassDecl {
     pub generics: Vec<Ident>,
     /// `@Observable`: its fields are a store a view subscribes to, field by field.
     pub observable: bool,
+    /// `actor` (2.0): a class whose methods run one at a time, awaited from outside.
+    pub actor: bool,
     /// Its conformances and members as written.
     pub body: TypeBody,
 }
@@ -532,6 +534,8 @@ pub struct LetStmt {
     pub ty: Option<TypeExpr>,
     pub value: Expr,
     pub span: Span,
+    /// `async let x = f()` (2.0): the call starts now, and `await x` reads its result.
+    pub is_async: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

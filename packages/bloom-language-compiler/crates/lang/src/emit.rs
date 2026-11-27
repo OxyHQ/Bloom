@@ -463,6 +463,41 @@ impl<'a> Emitter<'a> {
                 out.s(&format!("* as {}", js_name(&name.name)));
             }
             ImportKind::Named(specs) => {
+                // An extension member (`T$m`) is imported where `.m` is written; only the
+                // ones the checker resolved are kept.
+                let used: HashSet<&str> = self
+                    .ck
+                    .calls
+                    .values()
+                    .filter_map(|c| match c {
+                        CallRes::Extension { func, .. } => Some(&**func),
+                        _ => None,
+                    })
+                    .chain(self.ck.fields.values().filter_map(|f| match f {
+                        FieldRes::Extension(func) | FieldRes::Static(func) | FieldRes::StaticGet(func) => {
+                            Some(&**func)
+                        }
+                        _ => None,
+                    }))
+                    // `Box(0)`: the class's `init` (`Box$$init`).
+                    .chain(self.ck.names.values().filter_map(|n| match n {
+                        NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
+                            Some(self.ck.locals[*l].name.as_str())
+                        }
+                        _ => None,
+                    }))
+                    .collect();
+                let specs: Vec<&ImportSpec> = specs
+                    .iter()
+                    .filter(|spec| {
+                        !spec.name.name.contains('$')
+                            || used.contains(spec.name.name.as_str())
+                            || crate::codable::is_synthetic(spec.span)
+                    })
+                    .collect();
+                if specs.is_empty() {
+                    return Frag::default();
+                }
                 let parts: Vec<String> = specs
                     .iter()
                     .map(|spec| {
@@ -1105,6 +1140,15 @@ impl<'a> Emitter<'a> {
 
     fn stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
+            // `async let x = f()`: the promise, started now; marked handled, so an error it
+            // ends in before `await x` (which throws it) is not reported as unhandled.
+            StmtKind::Let(l) if l.is_async => {
+                let value = self.expr(&l.value);
+                let target = self.binding_target(&l.pattern);
+                let mut line = Frag::at(stmt.span, format!("const {target} = "));
+                line.f(value).s(&format!(";\n{target}.catch(() => {{}});"));
+                self.push_stmt(line);
+            }
             StmtKind::Let(l) => {
                 let annotation = l.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let value = self.value_expr(&l.value);
@@ -2019,6 +2063,18 @@ impl<'a> Emitter<'a> {
                     false,
                 )
             }
+            // `await (a, b)` of `async let`s: together.
+            ExprKind::Await(inner) if self.ck.await_all.contains(&expr.id) => {
+                let mut inner = inner.as_ref();
+                while let ExprKind::Paren(inside) = &inner.kind {
+                    inner = inside;
+                }
+                let items: Vec<Frag> = match &inner.kind {
+                    ExprKind::Tuple(items) => items.iter().map(|i| self.expr(i)).collect(),
+                    _ => vec![self.expr(inner)],
+                };
+                Frag::join(items, ", ").wrap("(await Promise.all([", "]))")
+            }
             ExprKind::Await(inner) => match self.ck.awaits.get(&expr.id) {
                 // A `Result` that escapes (bound, passed, returned): built in place.
                 Some(AwaitRes::Ts) => {
@@ -2298,6 +2354,7 @@ impl<'a> Emitter<'a> {
                     Frag::of(format!("{value}.w.{name}({value}.self)"))
                 }
             },
+            Some(FieldRes::StaticGet(func)) => Frag::of(format!("{func}()")),
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
             }
@@ -2475,7 +2532,9 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(e);
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
-                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) {
+                    // An object literal (also a `.setting(…)` spread) is not a block.
+                    if matches!(e.kind, ExprKind::Map(_) | ExprKind::Record(_)) || value.text.starts_with('{')
+                    {
                         value.wrap("(", ")")
                     } else {
                         value

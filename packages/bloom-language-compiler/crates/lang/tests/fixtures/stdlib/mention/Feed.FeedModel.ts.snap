@@ -1,0 +1,64 @@
+import { type TaskSignal } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { Array$appendingAll, Array$uniqued, Array$updating } from "../../.bloom/std/Bloom/Core.bloom";
+import { type Logger, Logger$debug, Logger$error } from "../../.bloom/std/Bloom/Logger.bloom";
+import { type Date, type Duration, Date$$get$now, Date$distance, Duration$$minutes } from "../../.bloom/std/Bloom/Time.bloom";
+import { percentEncoded } from "../../.bloom/std/Bloom/URL.bloom";
+import { type APIFailure, type MentionAPI, normalized, MentionAPI$delete, MentionAPI$get, MentionAPI$post } from "../API/MentionAPI.bloom";
+import { type Post, type FeedPage, FeedPage$$self, Post$liked } from "../Posts/Post.bloom";
+
+export const log = { subsystem: "mention", category: "feed" };
+
+export interface FeedState {
+  readonly posts: readonly Post[];
+  readonly cursor: string | undefined;
+  readonly hasMore: boolean;
+  readonly isLoading: boolean;
+  readonly failure: APIFailure | undefined;
+  readonly loadedAt: Date | undefined;
+}
+
+export function FeedState$merging(self: FeedState, page: FeedPage, refresh: boolean, now: Date): FeedState {
+const posts = refresh ? page.items : Array$uniqued(Array$appendingAll(self.posts, page.items), ($0: Post) => $0.id);
+return { posts: posts, cursor: page.nextCursor, hasMore: page.hasMore && (page.nextCursor !== undefined), isLoading: false, failure: undefined, loadedAt: now };
+}
+
+export function FeedState$updating(self: FeedState, id: string, update: (p0: Post) => Post): FeedState {
+return { posts: Array$updating(self.posts, ($0: Post) => $0.id === id, update), cursor: self.cursor, hasMore: self.hasMore, isLoading: self.isLoading, failure: self.failure, loadedAt: self.loadedAt };
+}
+
+export function FeedState$isStale(self: FeedState, now: Date, maxAge: Duration = Duration$$minutes(5.0)): boolean {
+if (!(self.loadedAt !== undefined)) {
+return true;
+}
+return Date$distance(self.loadedAt, now).seconds > maxAge.seconds;
+}
+
+export async function loadFeed(api: MentionAPI, state: FeedState, refresh: boolean, cancellation: AbortSignal | undefined = undefined): Promise<FeedState> {
+const query: Readonly<Record<string, string>> = refresh ? ({}) : ({ "cursor": state.cursor ?? "" });
+try {
+const page = await (MentionAPI$get(api, "feeds/home", FeedPage$$self, query, cancellation));
+Logger$debug(log, `loaded ${page.items.length} posts`);
+return FeedState$merging(state, page, refresh, Date$$get$now());
+} catch (error) {
+return { posts: state.posts, cursor: state.cursor, hasMore: state.hasMore, isLoading: false, failure: normalized(error), loadedAt: state.loadedAt };
+}
+}
+
+export function optimisticLike(state: FeedState, post: Post): FeedState {
+return FeedState$updating(state, post.id, ($0: Post) => Post$liked($0, !post.isLiked));
+}
+
+export async function sendLike(api: MentionAPI, state: FeedState, post: Post): Promise<FeedState> {
+try {
+if (post.isLiked) {
+await (MentionAPI$delete(api, `posts/${percentEncoded(post.id)}/like`));
+} else {
+await (MentionAPI$post(api, `posts/${percentEncoded(post.id)}/like`));
+}
+return state;
+} catch (error) {
+Logger$error(log, `like failed: ${normalized(error).message}`);
+return FeedState$updating(state, post.id, (_: Post) => post);
+}
+}
+

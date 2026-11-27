@@ -47,5 +47,7 @@ module.exports = {
       __dirname,
       '../bloom-language/src/entries/$1.ts',
     ),
+    // The data layer under the standard library's `@Model` (stdlib/Bloom/models.ts), from source.
+    '^@oxy.so/bloom-data$': path.join(__dirname, '../bloom-data/src/index.ts'),
   },
 };
