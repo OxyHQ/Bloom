@@ -2607,6 +2607,16 @@ fn value_type(e: &Expression) -> Option<&'static str> {
         Expression::BooleanLiteral(_) => Some("Bool"),
         Expression::NumericLiteral(_) => Some("Float"),
         Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => Some("Bool"),
+        // `Boolean(x)`, `String(x)`: the JS conversions.
+        Expression::CallExpression(c)
+            if c.arguments.len() == 1
+                && matches!(&c.callee, Expression::Identifier(id) if id.name == "Boolean" || id.name == "String") =>
+        {
+            match &c.callee {
+                Expression::Identifier(id) if id.name == "Boolean" => Some("Bool"),
+                _ => Some("String"),
+            }
+        }
         Expression::UnaryExpression(u) if u.operator == UnaryOperator::UnaryNegation => {
             value_type(&u.argument)
         }
