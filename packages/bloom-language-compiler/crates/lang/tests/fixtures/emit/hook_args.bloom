@@ -1,0 +1,11 @@
+// A hook given as an argument of a view member's hook (`useAccountOf(useRoutedName())`) runs on
+// every render in the same order, so it is a view member's hook too (spec 7.3).
+import { useAccountOf, useRoutedName } from "@/corpus"
+
+public struct Shop: View {
+  let account = useAccountOf(useRoutedName())
+
+  var body: some View {
+    Text(account.loading ? "…" : account.name)
+  }
+}

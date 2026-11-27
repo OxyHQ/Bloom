@@ -476,6 +476,9 @@ pub struct Checker<'o> {
     pending: HashMap<LocalId, (bool, usize)>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
+    /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
+    /// run on every render, in the same order, as the call does.
+    hook_args: HashSet<ExprId>,
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
     /// may call hooks.
     hook_body: Option<usize>,
@@ -598,6 +601,7 @@ impl<'o> Checker<'o> {
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
+            hook_args: HashSet::default(),
             hook_body: None,
             was_hook: false,
             task_allowed: false,
