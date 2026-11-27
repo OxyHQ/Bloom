@@ -375,7 +375,9 @@ optional is loose: `if let`, `x == none`, `case .some`, `?`, `!`, `??` and optio
 compile to `!= null` / `== null`, so a TS `null` is `none` at run time. Where such a value goes
 on to a Bloom `T?` parameter, prop or field, TS's `null` is not its `undefined`: write
 `value ?? none` (`undefined` for a `null`). `title || "Untitled"` of an optional that is not a
-`Bool` is JS's value `||`, as for a TS value. A TS value in a record's field fits the field's
+`Bool` is JS's value `||`, as for a TS value; when the other side may be absent too
+(`user.username || user.handle`), so may the whole, a `String?`, while a chain that ends in a
+present value is present (`a || (b || c)` with `c: String`). A TS value in a record's field fits the field's
 type (`{ avatar: user.avatar }` where a `PostUser` is expected): TS checks the record where it
 lands, and a `T?` field's check takes TS's `null` (`satisfies T | undefined | null`). Anywhere
 else a `Foreign` value checked as a `T?` reads TS's `null` as `none`: `((x) ?? undefined)
