@@ -524,23 +524,29 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             ("B0201", _)
                 if d.message.starts_with("expected `")
                     && {
-                        let (want, found) = d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
+                        let (want, found) =
+                            d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
                         let found = found.trim_end_matches('`');
-                        let named = |t: &str| t.starts_with(|c: char| c.is_ascii_uppercase())
-                            && t.chars().all(|c| c.is_alphanumeric() || c == '_')
-                            && !["String", "Float", "Int", "Bool", "View", "Foreign"].contains(&t);
+                        let named = |t: &str| {
+                            t.starts_with(|c: char| c.is_ascii_uppercase())
+                                && t.chars().all(|c| c.is_alphanumeric() || c == '_')
+                                && !["String", "Float", "Int", "Bool", "View", "Foreign"].contains(&t)
+                        };
                         named(want) && named(found)
                     }
                     && text.contains('(') =>
             {
                 let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
                 let head = &source[line_start..start];
-                let want = d.message["expected `".len()..].split_once('`').map(|(w, _)| w).unwrap_or_default();
+                let want =
+                    d.message["expected `".len()..].split_once('`').map(|(w, _)| w).unwrap_or_default();
                 let annotation = format!(": {want} = ");
-                head.trim_start().starts_with("let ").then_some(()).and_then(|_| head.find(&annotation)).map(|at| {
-                    let a = line_start + at;
-                    (a, a + annotation.len(), " = ".to_string())
-                })
+                head.trim_start().starts_with("let ").then_some(()).and_then(|_| head.find(&annotation)).map(
+                    |at| {
+                        let a = line_start + at;
+                        (a, a + annotation.len(), " = ".to_string())
+                    },
+                )
             }
             // A string tested for its truthiness (`user.handle ? … : …`): whether it is not empty.
             ("B0201", _)
