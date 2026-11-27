@@ -1,3 +1,73 @@
-refused
-0: 0.x:view: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
-0: 0.x:..Props: `..Props` spread props is Bloom 0.x (once in this file)
+// Module forms: a TS hook is a hook function, `lazy(() => import(…))` a lazy
+// component, `memo(Named, compare)` the view with its `equal`, an `export { … }`
+// list `pub`, a rest parameter `..xs`, and JSX children of a local view its prop;
+// React's `useState` in a hook function, a sync `try` (`catching`), rest props.
+
+import { type CardProps } from "./card"
+import { URL } from "js"
+import { lazy, useMemo, useState } from "react"
+
+public let Panel = lazy { import("./card") }
+
+private struct Row {
+  let id: String
+  var title: String? = none
+}
+
+private func useTitles(_ rows: [Row]) -> [String] {
+  useMemo({ rows.map { r in r.title ?? r.id } }, [rows])
+}
+
+private func useOpenFor(_ id: String) {
+  let (openFor, setOpenFor): (String?, Foreign<"import('react').Dispatch<import('react').SetStateAction<string | undefined>>">) = useState(
+    none,
+  )
+  { open: openFor == id, show: { setOpenFor(id) } }
+}
+
+private func hostOf(_ link: String) -> String {
+  do {
+    let url = URL(link)
+    if url.hostname == "" { return link }
+    return url.hostname
+  } catch { return link }
+}
+
+public struct Badge: View {
+  let label: String
+  let card: CardProps
+  var body: some View {
+    Text("\(label) \(card.title)")
+  }
+}
+
+public func joinAll(..parts: [String]) -> String {
+  var out = ""
+  for part in parts { if part != "" { out = "\(out)\(part)" } }
+  out
+}
+
+private struct Section: View {
+  let title: String
+  let children: View
+  var body: some View {
+    VStack(Text(title), children)
+  }
+}
+
+private struct ListBody: View, Equatable {
+  let rows: [Row]
+  static func == (old: Self, new: Self) -> Bool { sameRows(old, new) }
+
+  let titles = useTitles(rows)
+
+  var body: some View {
+    Section(title: joinAll("Rows", ":"), children: Text(titles.joined(", ")))
+  }
+}
+
+private func sameRows(_ a: { rows: [Row] }, _ b: { rows: [Row] }) -> Bool {
+  a.rows.count == b.rows.count
+}
+
+public let List = ListBody
