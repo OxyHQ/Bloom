@@ -1,0 +1,12 @@
+import { type SocialContext, mergeIdentity } from "@/corpus";
+
+export function names(context: SocialContext | undefined): readonly string[] {
+if (context != null) {
+return (context.actors.map((actor) => {
+const identity = mergeIdentity(actor, undefined);
+return identity.name?.displayName ?? "";
+}) satisfies readonly string[]);
+}
+return [];
+}
+

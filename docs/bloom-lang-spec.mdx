@@ -496,6 +496,10 @@ to a node is a component (`TextInput(value: v)`). As a type, such a component is
 as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
 `ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
 
+A TS value given where a TS generic takes its type parameter (`mergeIdentity<T extends
+IdentityHolder>(actor: T, …): T` called with a `Foreign` actor) makes `T` that value's type, so
+the result is one too and its members are read as TS's.
+
 ### 4.8 Protocols
 
 ```swift

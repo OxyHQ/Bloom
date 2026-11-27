@@ -1,0 +1,14 @@
+// A TS value given to a TS generic's `T` makes `T` that value's type, so the result is one
+// too: `mergeIdentity(actor, none)` is the actor's type, where `T` was left unsolved (`_`, and
+// `identity.name` was B0205). PostItem's social context (lang-mention-7).
+import { SocialContext, mergeIdentity } from "@/corpus"
+
+public func names(_ context: Foreign<"SocialContext">?) -> [String] {
+  if context != none {
+    return context.actors.map { actor in
+      let identity = mergeIdentity(actor, none)
+      return identity.name?.displayName ?? ""
+    }
+  }
+  return []
+}
