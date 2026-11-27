@@ -1994,6 +1994,13 @@ function Route({ view, depth, pop }: { view: Child; depth: number; pop: () => vo
   navigator's own, for a screen pushed over another. A root's `.onBack(fn)`
   wins, and `.onBack(null)` shows none. Without `back`, the header's Back is
   Bloom's own (`BloomProvider back`, a panel's history), as for any `Screen`.
+- **`throughViews`.** A root that is a `view()` is drawn through: its body
+  runs as the screen's component, and its body's root is the screen, with its
+  chrome. This matches SwiftUI, where a `navigationTitle` set in a view's
+  body is its stack's. Modifiers on the view itself come after its body's.
+  A Bloom build's screens are views (`struct PostScreen: View`), so the
+  Bloom router draws them this way. Without the option, a view is the
+  Screen's content, as under `screen()`.
 
 It sets no navigator for `navigate()`. In a Bloom build, `push()` and
 `dismiss()` are the standard library's. A host of an app's own provides one, as

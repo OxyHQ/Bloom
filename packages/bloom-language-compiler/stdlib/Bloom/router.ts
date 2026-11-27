@@ -6,7 +6,9 @@
 // - **Screens.** Each route's view is a Bloom `Screen` drawn by the language's screen host
 //   (`@oxy.so/bloom-language/screen-host`, which imports no expo-router): its `.title()`,
 //   `.toolbar()`, `.header()`, `.footer()` and `.sheet()` are its chrome, as under
-//   expo-router's `screen()`. A pushed route's header offers Back (the route in front pops).
+//   expo-router's `screen()`. A route's view is a `view()` (`struct PostScreen: View`): it is
+//   drawn through (`throughViews`), so the chrome its body's root declares is the screen's.
+//   A pushed route's header offers Back (the route in front pops).
 //   Android's back (the button and the predictive gesture) pops the route in front, then
 //   returns to the first tab, then leaves the app.
 // - **Tabs.** Bloom's look: the pages side by side (`react-native-pager-view`, swiped between)
@@ -169,6 +171,9 @@ function useRouterState(store: RouterStore): State {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
+const throughViews = true;
+const VIEWS = { throughViews } as const;
+
 /**
  * A route drawn as a Bloom screen, edge to edge: its root's chrome (title, toolbar, header,
  * footer, sheets) around its content, the header below the status bar (an empty one is the
@@ -177,7 +182,7 @@ function useRouterState(store: RouterStore): State {
  */
 function RouteScreen({ route, back }: { route: Route; back?: () => void }): ReactNode {
   const destination = useDestination();
-  return drawScreen(destination(route) as Child, back ? { back } : undefined);
+  return drawScreen(destination(route) as Child, back ? { back, throughViews } : VIEWS);
 }
 
 /** A sheet's route: its own height, on the page's background. */

@@ -47,7 +47,10 @@ declare module '@oxy.so/bloom/bottom-bar' {
 declare module '@oxy.so/bloom-language/screen-host' {
   import type { ReactNode } from 'react';
   import type { Child } from '@oxy.so/bloom-language';
-  export function drawScreen(root: Child, options?: { readonly back?: () => void }): ReactNode;
+  export function drawScreen(
+    root: Child,
+    options?: { readonly back?: () => void; readonly throughViews?: boolean },
+  ): ReactNode;
 }
 declare module '@oxy.so/bloom/theme' {
   export function useThemeColor(key: string): string;

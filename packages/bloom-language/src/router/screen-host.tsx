@@ -33,6 +33,7 @@ import {
   type ReselectTop,
   type ScreenFooter,
   type ScreenHeader,
+  type ViewNodeProps,
 } from '../node';
 import { valuesOf } from '../platform/values';
 import { GROUP_MODIFIERS } from '../generated/spec.generated';
@@ -139,6 +140,16 @@ export interface ScreenHostOptions {
    * `.onBack(null)` shows none.
    */
   readonly back?: () => void;
+  /**
+   * A root that is a `view()` is drawn through: its body runs as the screen's
+   * component and its body's root is the screen (its chrome the screen's), as
+   * a SwiftUI view's `navigationTitle` is its navigation stack's. Modifiers on
+   * the view itself come after its body's. A Bloom build's screens are views
+   * (`struct PostScreen: View`), so the Bloom router draws them so. Without
+   * it, a view is the Screen's content and its body's chrome draws nothing,
+   * as under `screen()`.
+   */
+  readonly throughViews?: boolean;
 }
 
 /**
@@ -155,6 +166,10 @@ export interface ScreenHostOptions {
  */
 export function drawScreen(root: Child, options?: ScreenHostOptions): ReactNode {
   if (root === null || root === undefined || root === false) return null;
+  if (options?.throughViews && isNode(root) && root.kind === 'view') {
+    const { body, props } = root.props as ViewNodeProps;
+    if (body) return <ViewScreen body={body} props={props} outer={root} options={options} />;
+  }
   if (!isNode(root) || valuesOf(root).ownScreen !== true)
     return <ScreenHost root={root} back={options?.back} />;
   const sheets: Extract<Modifier, { kind: 'sheet' }>[] = [];
@@ -175,6 +190,31 @@ export function drawScreen(root: Child, options?: ScreenHostOptions): ReactNode 
       {sheetsOf(sheets)}
     </>
   );
+}
+
+/**
+ * A `view()` drawn as a screen (`throughViews`): its body runs here, as the
+ * view's component would run it, and its root is drawn as the screen, the
+ * view's own modifiers after its body's.
+ */
+function ViewScreen({
+  body,
+  props,
+  outer,
+  options,
+}: {
+  body: NonNullable<ViewNodeProps['body']>;
+  props: object;
+  outer: Node;
+  options: ScreenHostOptions;
+}): ReactNode {
+  const built = body(props);
+  const root = typeof built === 'function' ? built() : built;
+  const drawn =
+    outer.modifiers.length > 0 && isNode(root)
+      ? new Node(root.kind, root.props, root.children, [...root.modifiers, ...outer.modifiers])
+      : root;
+  return drawScreen(drawn, options);
 }
 
 /**

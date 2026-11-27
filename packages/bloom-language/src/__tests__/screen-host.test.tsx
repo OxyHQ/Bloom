@@ -9,11 +9,12 @@
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
-import { createElement } from 'react';
+import { createElement, useState } from 'react';
 
 import { Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import { Button, Icon, Text, VStack } from '../primitives';
 import { drawScreen, ScreenHost } from '../screen-host';
+import { view } from '../view';
 
 jest.mock('../router/screen-header', () => jest.requireActual('../router/screen-header.tsx'));
 jest.mock('../router/sheet-host', () => jest.requireActual('../router/sheet-host.tsx'));
@@ -132,6 +133,30 @@ describe('@oxy.so/bloom-language/screen-host', () => {
       createElement(() => drawScreen(Text('post').title('Post').onBack(null), { back })),
     );
     expect(only(none, 'PageHeader').props.onBack).toBeNull();
+  });
+
+  it('throughViews: a view’s body’s chrome is the screen’s, its own modifiers after it', () => {
+    const back = jest.fn();
+    const Post = view(function Post({ id }: { id: string }) {
+      const [title] = useState(`Post ${id}`);
+      return VStack(Text(id))
+        .title(title)
+        .toolbar(Button(Icon(Glyph)).label('Share'));
+    });
+    const r = mount(
+      createElement(() => drawScreen(Post({ id: '7' }), { back, throughViews: true })),
+    );
+    const header = only(r, 'PageHeader');
+    expect(header.props).toMatchObject({ title: 'Post 7', onBack: back });
+    expect(header.props.actions).toBeTruthy();
+    // The view's own modifiers come after its body's.
+    const renamed = mount(
+      createElement(() => drawScreen(Post({ id: '7' }).title('Renamed'), { throughViews: true })),
+    );
+    expect(only(renamed, 'PageHeader').props.title).toBe('Renamed');
+    // Without it, the view is the Screen's content: its body's title draws nothing.
+    const plain = mount(createElement(() => drawScreen(Post({ id: '7' }))));
+    expect(only(plain, 'PageHeader').props.title).toBeUndefined();
   });
 
   it('a root that is its own surface, and null, as screen() draws them', () => {

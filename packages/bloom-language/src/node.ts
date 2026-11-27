@@ -2088,6 +2088,11 @@ export interface ViewNodeProps {
   readonly component: ComponentType<object>;
   /** The props object the view was called with, handed to its body as is. */
   readonly props: object;
+  /**
+   * The view's body, for a host that draws what it returns itself: the screen
+   * host's `throughViews`, which takes a screen's chrome from its body's root.
+   */
+  readonly body?: (props: object) => Child | (() => Child);
 }
 
 /**
