@@ -338,6 +338,7 @@ The gate is **more than 80%**.
 | 2026-11-27 | the same, with #1033 (d9fbcfc44, on #1030 and #1028: TS lists into typed lists, `[View]` as a child, generic literals, indexed access types) | 324 files (fd8a4290f) | 41.4% (+15.1% review) = 56.5% |
 | 2026-11-27 | the same, with #1035 (471ca249a, on #1033: TS values compared with numbers and strings, `a \|\| b` of optionals) | 324 files (fd8a4290f) | 42.0% (+15.4% review) = **57.4%**; 5 of the 12 render-checked files draw wrongly (below), so at most 55.9% is verified |
 | 2026-11-27 | #1007: the migration mode in Jest, Metro and `bloom-lang-dts`, `xs?.[i]` on a present TS value as `xs[i]`, untyped `&&`/`\|\|` operands in a condition as `Boolean(x)`; with #1035 (9cfa4eb89: R1–R5, locale-reactive `String(localized:)`, `k_zero` for a count of 0) | 324 files (fd8a4290f) | 42.3% (+15.7% review) = **58.0%**; 11 of the 12 render-checked files draw as the TS (WelcomeScreen does not) |
+| 2026-11-27 | #1007: a list's strings beside nodes (and a ternary's string branches) as `RawText`, props destructured from `props` read as fields; with #1035 (9cfa4eb89) | 324 files (fd8a4290f) | 42.3% (+16.0% review) = **58.3%** (PostCrosspostRow won); all 12 render-checked files draw as the TS |
 
 The rate counts a file the compiler accepts, so a miscompile can hide in it. One was found on
 2026-11-27: a TS function component drawn with a trailing builder was called as a plain function,
@@ -354,8 +355,11 @@ states. On #1033's stack, 7 files matched and 5 were miscompiled. The compiler f
 
 | Result on #1035 9cfa4eb89 | Files |
 |---|---|
-| Same tree in every state (23 of 24 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget, Error, ProfileSkeleton, SuggestedProfileCard, VideoReplies |
-| An element type is undefined inside the language's renderer (not located yet) | WelcomeScreen |
+| Same tree in every state (24 of 24 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget, Error, ProfileSkeleton, SuggestedProfileCard, VideoReplies, WelcomeScreen |
+
+WelcomeScreen's undefined element was neither the codemod nor the compiler. The language draws
+`.textStyle(.title)` with `@oxy.so/bloom/typography`'s `Title`, which Mention's Jest stand-in did
+not export, so its TS form failed too. The stand-in now has `Title` and `Subtitle`.
 
 The fixed emits were: a TS `view()` mounted as a component (R1), a conditional node, or a node
 for a Bloom component's `ReactNode` prop, not converted to an element (R2, R3), a `Screen` outside
