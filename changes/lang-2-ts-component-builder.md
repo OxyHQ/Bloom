@@ -13,6 +13,7 @@ section: Fixed
   left for the builder is B0506, `children:` beside a builder is B0207, a trailing closure past a
   TS function's parameters is B0207, and a node on a line of its own outside a builder is B0506.
 - react-native's `View` (`declare const $$View: typeof View`) and a namespace's components
-  (`import * as Skeleton`, `Skeleton.Region { … }`) are components too, their builders their
+  (`import * as Skeleton`, `Skeleton.Region { … }`) and a component's UpperCamel static
+  (`Button.Group { … }`) are components too, their builders their
   children. An `if` without `else` passed where a modifier takes a value
   (`.accessory(if open { row })`) is an optional child.
