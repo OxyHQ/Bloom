@@ -13,4 +13,9 @@ export interface TaggedRowProps {
 export declare const TaggedRow: (props: TaggedRowProps) => ComposedView;
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Hint())`), or from TSX as `toElement(Hint())`. */
 export declare const Hint: () => ComposedView;
+export interface Hint2Props {
+  readonly n: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Hint2())`), or from TSX as `toElement(Hint2())`. */
+export declare const Hint2: (props: Hint2Props) => ComposedView;
 export declare function useHandlers(n: number): { first: () => void; second: () => void; doubled: number };

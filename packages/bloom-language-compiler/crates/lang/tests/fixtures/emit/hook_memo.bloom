@@ -52,8 +52,9 @@ public struct TaggedRow: View {
   }
 }
 
-// A closure that reads only module names is a module constant, as in a view: no slot. Each
-// hoisted closure has a name of its own in the module (PostItem: `$fn10` was declared twice).
+// In a view, a closure that reads only module names is a module constant. Each one has a name of
+// its own in the module: `Hint2`'s first was `$fn2` again (the name counted the item's hoisted
+// pieces, which are emptied after each item).
 func log(_ s: String) {}
 
 public struct Hint: View {
@@ -65,6 +66,19 @@ public struct Hint: View {
   }
 }
 
+public struct Hint2: View {
+  let n: Int
+  var body: some View {
+    VStack {
+      Text("Two")
+      Button(Text("\(n)")).onPress { log("a") }
+    }
+  }
+}
+
+// In a hook function it is each caller's own, built once in the caller's cache: what it builds can
+// be an identity (`useState({ ({}) })`, PostItem's per-row hover owner), which a module constant
+// would share between rows.
 public func useHandlers(n: Int) {
   let first = { log("a") }
   let second = { log("b") }

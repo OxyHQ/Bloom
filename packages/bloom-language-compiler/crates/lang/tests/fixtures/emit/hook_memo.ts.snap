@@ -127,11 +127,40 @@ $t3 = $[0];
 return $t3;
 });
 
-const $fn1 = () => log("a");
-const $fn3 = () => log("b");
+const $view2 = Text("Two");
+const $fn3 = () => log("a");
+export interface Hint2Props {
+  readonly n: number;
+}
+export const Hint2 = view(function Hint2(props: Hint2Props) {
+"use no memo";
+const $ = $c(2);
+const { n } = props;
+let $t4;
+if ($[0] !== n) {
+$t4 = VStack($view2, Button(Text(`${n}`)).onPress($fn3));
+$[0] = n;
+$[1] = $t4;
+} else {
+$t4 = $[1];
+}
+return $t4;
+});
+
 export function useHandlers(n: number): { first: () => void; second: () => void; doubled: number } {
-const first = $fn1;
-const second = $fn3;
+"use no memo";
+const $ = $c(2);
+let first;
+let second;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+first = () => log("a");
+second = () => log("b");
+$[0] = first;
+$[1] = second;
+} else {
+first = $[0];
+second = $[1];
+}
 return { first: first, second: second, doubled: n * 2 };
 }
 
