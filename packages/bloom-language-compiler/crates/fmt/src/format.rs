@@ -33,6 +33,8 @@ pub struct Migration {
     /// Types a `public` declaration names: they become `public` too (0.x `pub` could name them).
     pub publicize: Vec<String>,
     pub notes: Vec<(Span, String)>,
+    /// The value refs (`@ref x = v`) of the view being printed: `Ref(v)` in `@State`, read as `x.value`.
+    pub refs: Vec<String>,
 }
 
 fn line() -> Doc {
@@ -559,7 +561,11 @@ impl<'a> Formatter<'a> {
                 }
             },
         );
-        concat(vec![head, self.braced(lines, span.end)])
+        let out = concat(vec![head, self.braced(lines, span.end)]);
+        if let Some(m) = &mut self.migrate {
+            m.refs.clear();
+        }
+        out
     }
 
     /// `: View, Equatable`.
@@ -704,9 +710,6 @@ impl<'a> Formatter<'a> {
                 Member::Effect(_) => {
                     why = Some("an `effect` becomes `.task(id:)`, `.onChange(of:)` or `.onAppear` by hand")
                 }
-                Member::State(state) if state.attr == StateAttr::Ref => {
-                    why = Some("an `@ref` becomes a `class` held in `@State` by hand")
-                }
                 Member::State(state) if matches!(state.attr, StateAttr::List | StateAttr::Record) => {
                     why = Some("`@list`/`@record` wait for BloomData's 2.0 `@Model`")
                 }
@@ -744,6 +747,20 @@ impl<'a> Formatter<'a> {
         let equatable =
             if v.members.iter().any(|m| matches!(m, Member::Equal(_))) { ", Equatable" } else { "" };
         let head = text(format!("struct {}: {protocol}{equatable} ", v.name.name));
+        let view_text = self.slice(span);
+        let refs: Vec<String> = v
+            .members
+            .iter()
+            .filter_map(|m| match m {
+                Member::State(state) if state.attr == StateAttr::Ref && host_ref(state, view_text).is_none() => {
+                    Some(state.name.name.clone())
+                }
+                _ => None,
+            })
+            .collect();
+        if let Some(m) = &mut self.migrate {
+            m.refs = refs;
+        }
         let lines = self.lines(
             &entries,
             |e| e.0,
@@ -760,6 +777,23 @@ impl<'a> Formatter<'a> {
                         parts.push(this.expr(default));
                     }
                     concat(parts)
+                }
+                // `@ref field: T? = none` a host view fills (`.ref(field)`): `ViewRef<T>()`;
+                // any other `@ref x = v`: a `Ref(v)`, read as `x.value`.
+                Entry::Member(Member::State(state)) if state.attr == StateAttr::Ref => {
+                    let name = state.name.name.clone();
+                    let value = match host_ref(state, &view_text) {
+                        Some(inner) => text(format!("ViewRef<{}>()", this.slice(inner))),
+                        None => {
+                            let ty = state.ty.as_ref().map(|t| format!("<{}>", this.slice(t.span)));
+                            concat(vec![
+                                text(format!("Ref{}(", ty.unwrap_or_default())),
+                                this.expr(&state.value),
+                                text(")"),
+                            ])
+                        }
+                    };
+                    concat(vec![text(format!("@State private var {name} = ")), value])
                 }
                 Entry::Member(Member::State(state)) => {
                     let (attr, value) = match state.attr {
@@ -958,6 +992,9 @@ impl<'a> Formatter<'a> {
             ExprKind::None => text("none"),
             ExprKind::Unit => text("()"),
             ExprKind::Task(b) => concat(vec![text("task "), self.block(b, Layout::Own)]),
+            ExprKind::Name(name) if self.migrate.as_ref().is_some_and(|m| m.refs.contains(name)) => {
+                text(format!("{name}.value"))
+            }
             ExprKind::Name(name) => text(name.clone()),
             ExprKind::ImplicitMember(name) => text(format!(".{}", name.name)),
             ExprKind::Binding(path) => {
@@ -1606,4 +1643,27 @@ fn swift_interpolation(literal: &str) -> String {
         i += ch.len_utf8();
     }
     out
+}
+
+/// The `T` of `@ref field: T? = none` when the view hands the ref to a host view
+/// (`.ref(field)`, `.inputRef(field)`, `ref: field`): its instance, a `ViewRef<T>()`.
+fn host_ref(state: &StateDecl, view: &str) -> Option<Span> {
+    let ty = state.ty.as_ref()?;
+    if !matches!(state.value.kind, ExprKind::None) {
+        return None;
+    }
+    let inner = match &ty.kind {
+        TypeKind::Optional(inner) => inner.span,
+        _ => return None,
+    };
+    let name = &state.name.name;
+    let handed = [format!(".ref({name})"), format!(".inputRef({name})"), format!("ref: {name}")]
+        .iter()
+        .any(|form| {
+            view.match_indices(form.as_str()).any(|(i, _)| {
+                let after = view[i + form.len()..].chars().next();
+                after.is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
+            })
+        });
+    handed.then_some(inner)
 }
