@@ -126,7 +126,15 @@ impl Tr<'_> {
             Expression::StringLiteral(s) => quote(s.value.as_str().unwrap_or_default()),
             Expression::TemplateLiteral(t) => self.template(t),
             Expression::Identifier(id) => self.ident(&id.name, id.span),
-            Expression::ParenthesizedExpression(p) => format!("({})", self.expr(&p.expression)),
+            Expression::ParenthesizedExpression(p) => {
+                let inner = self.expr(&p.expression);
+                // `(['a', 'b'] as const)` became a constant's name: no parentheses around a name.
+                if !inner.is_empty() && inner.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+                    inner
+                } else {
+                    format!("({inner})")
+                }
+            }
             Expression::TSAsExpression(a) => {
                 // `as const` says nothing at run time; `as T` neither, so it is dropped
                 // under review (`bloomc check --tsc` checks the value where it lands).
@@ -135,6 +143,25 @@ impl Tr<'_> {
                     self.review(format!("`as {ty}` dropped: annotate where the value lands if tsc needs it"));
                 }
                 let text = self.expr(&a.expression);
+                // `(['a', 'b'] as const)` inside a function: a module constant, which keeps the
+                // literals' union (a local list of strings is `[String]`).
+                if ty == "const"
+                    && self.module_init != Some(a.span)
+                    && let Expression::ArrayExpression(list) = a.expression.without_parentheses()
+                    && !list.elements.is_empty()
+                    && let Some(values) = list
+                        .elements
+                        .iter()
+                        .map(|e| match e {
+                            oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) => {
+                                s.value.as_str().map(str::to_string)
+                            }
+                            _ => None,
+                        })
+                        .collect::<Option<Vec<_>>>()
+                {
+                    return self.hoist_const_list(&values, text);
+                }
                 // `as T` of a named type: kept for bloomc's answer (`crate::typed::casts`).
                 if let oxc_ast::ast::TSType::TSTypeReference(r) = &a.type_annotation
                     && r.type_arguments.is_none()
@@ -1265,6 +1292,26 @@ impl Tr<'_> {
                 return format!("useInfiniteQuery(InfiniteQueryOptions({}))", fields.join(", "));
             }
             return format!("useQuery(QueryOptions({}))", fields.join(", "));
+        }
+        // `s.padStart(2, "0")`: the standard library's `paddingStart(to:with:)` (and `padEnd`).
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && let Some(to) = match m.property.name.as_str() {
+                "padStart" => Some("paddingStart"),
+                "padEnd" => Some("paddingEnd"),
+                _ => None,
+            }
+            && matches!(call.arguments.len(), 1 | 2)
+            && call.arguments.iter().all(|a| a.as_expression().is_some())
+        {
+            let dot = if m.optional || has_optional(&m.object) { "?." } else { "." };
+            let object = self.expr(&m.object);
+            let args: Vec<String> =
+                call.arguments.iter().filter_map(|a| a.as_expression()).map(|a| self.expr(a)).collect();
+            return match args.as_slice() {
+                [length] => format!("{object}{dot}{to}(to: {length})"),
+                [length, pad] => format!("{object}{dot}{to}(to: {length}, with: {pad})"),
+                _ => unreachable!(),
+            };
         }
         let callee = match &call.callee {
             Expression::StaticMemberExpression(m) => {
