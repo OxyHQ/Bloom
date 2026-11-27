@@ -1597,7 +1597,9 @@ impl<'s, 'i> Parser<'s, 'i> {
             self.bump();
             native = true;
         } else {
-            self.unexpected("`module` or `native` (`extern module \"package\" { … }`, `extern native \"Name\" { … }`)");
+            self.unexpected(
+                "`module` or `native` (`extern module \"package\" { … }`, `extern native \"Name\" { … }`)",
+            );
         }
         let package = match self.tok().clone() {
             Tok::Str { parts, .. } => {

@@ -812,15 +812,8 @@ impl Eval<'_> {
         };
         let (name, name_span) = name?;
         self.module_name(&name, name_span, "package");
-        let manifest = Manifest {
-            name,
-            name_span,
-            platforms,
-            dependencies,
-            targets,
-            app,
-            insert_dependency_at: insert,
-        };
+        let manifest =
+            Manifest { name, name_span, platforms, dependencies, targets, app, insert_dependency_at: insert };
         self.validate(&manifest);
         Some(manifest)
     }
@@ -874,7 +867,9 @@ impl Eval<'_> {
             for item in items {
                 if let Some((scheme, span)) = self.string(item, "a URL scheme") {
                     let valid = scheme.chars().next().is_some_and(|c| c.is_ascii_lowercase())
-                        && scheme.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || "+.-".contains(c));
+                        && scheme
+                            .chars()
+                            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || "+.-".contains(c));
                     if !valid {
                         self.error(
                             Diagnostic::error("B0811", span, format!("\"{scheme}\" is not a URL scheme"))
@@ -887,7 +882,9 @@ impl Eval<'_> {
             }
         }
         if let Some(splash) = &settings.splash
-            && !(splash.len() == 7 && splash.starts_with('#') && splash[1..].chars().all(|c| c.is_ascii_hexdigit()))
+            && !(splash.len() == 7
+                && splash.starts_with('#')
+                && splash[1..].chars().all(|c| c.is_ascii_hexdigit()))
         {
             self.error(
                 Diagnostic::error("B0811", args.span, format!("`splash:` \"{splash}\" is not a colour"))
@@ -1070,8 +1067,10 @@ impl Eval<'_> {
             "module" => TargetKind::Module,
             "tests" => TargetKind::Tests,
             "native" => {
-                let kotlin = self.take(&mut args, "kotlin").and_then(|v| self.string(v, "`kotlin:`")).map(|(s, _)| s);
-                let swift = self.take(&mut args, "swift").and_then(|v| self.string(v, "`swift:`")).map(|(s, _)| s);
+                let kotlin =
+                    self.take(&mut args, "kotlin").and_then(|v| self.string(v, "`kotlin:`")).map(|(s, _)| s);
+                let swift =
+                    self.take(&mut args, "swift").and_then(|v| self.string(v, "`swift:`")).map(|(s, _)| s);
                 TargetKind::Native { kotlin, swift }
             }
             _ => {
@@ -1476,8 +1475,13 @@ let package = Package(
         assert_eq!(m.app.permissions[0].android(), ["android.permission.CAMERA"]);
         assert_eq!(m.app.permissions[1], Permission::Android("android.permission.NFC".into()));
         let (kotlin, swift) = m.targets[1].native_sources().unwrap();
-        assert_eq!((kotlin, swift), (PathBuf::from("Native/Haptics/kt"), PathBuf::from("Native/Haptics/ios")));
-        let e = errors("let package = Package(name: \"A\", app: App(splash: \"white\", schemes: [\"Demo\"]), targets: [.app(\"A\")])");
+        assert_eq!(
+            (kotlin, swift),
+            (PathBuf::from("Native/Haptics/kt"), PathBuf::from("Native/Haptics/ios"))
+        );
+        let e = errors(
+            "let package = Package(name: \"A\", app: App(splash: \"white\", schemes: [\"Demo\"]), targets: [.app(\"A\")])",
+        );
         assert!(e.iter().any(|e| e.contains("\"Demo\" is not a URL scheme")), "{e:?}");
         assert!(e.iter().any(|e| e.contains("\"white\" is not a colour")), "{e:?}");
     }

@@ -108,8 +108,10 @@ fn component_descriptors(root: &Path) -> Vec<String> {
 /// Each listed package's `react-native.config.js` `dependency.platforms.android`, by name
 /// (`null` for a package that opts out of Android).
 fn configs(build: &Path, names: &[String]) -> Result<BTreeMap<String, Value>, String> {
-    let with_config: Vec<&String> =
-        names.iter().filter(|n| build.join("node_modules").join(n).join("react-native.config.js").is_file()).collect();
+    let with_config: Vec<&String> = names
+        .iter()
+        .filter(|n| build.join("node_modules").join(n).join("react-native.config.js").is_file())
+        .collect();
     if with_config.is_empty() {
         return Ok(BTreeMap::new());
     }
@@ -145,8 +147,9 @@ fn dependencies(manifest: &Value) -> Vec<String> {
 /// and among the dependencies of the Expo packages whose JS a Bloom build keeps (`kept`:
 /// their JS draws with them).
 pub fn libraries(build: &Path, kept: &[&str]) -> Result<Vec<Library>, String> {
-    let manifest = json::parse(&std::fs::read_to_string(build.join("package.json")).map_err(|e| e.to_string())?)
-        .map_err(|e| format!("package.json: {e}"))?;
+    let manifest =
+        json::parse(&std::fs::read_to_string(build.join("package.json")).map_err(|e| e.to_string())?)
+            .map_err(|e| format!("package.json: {e}"))?;
     let mut names = dependencies(&manifest);
     for pkg in kept {
         let path = build.join("node_modules").join(pkg).join("package.json");
@@ -187,13 +190,16 @@ pub fn libraries(build: &Path, kept: &[&str]) -> Result<Vec<Library>, String> {
         };
         let pkg = json::parse(&std::fs::read_to_string(root.join("package.json")).unwrap_or_default())
             .unwrap_or(Value::Null);
-        let library_name = field("libraryName").or_else(|| pkg.get("codegenConfig").get("name").as_str().map(str::to_string));
+        let library_name = field("libraryName")
+            .or_else(|| pkg.get("codegenConfig").get("name").as_str().map(str::to_string));
         let cmake_lists = match field("cmakeListsPath") {
             Some(path) => crate::files::normalize(&source_dir.join(path)),
             None => source_dir.join("build/generated/source/codegen/jni/CMakeLists.txt"),
         };
         let descriptors = match config.map(|c| c.get("componentDescriptors")) {
-            Some(Value::Array(items)) => items.iter().filter_map(|v| v.as_str().map(str::to_string)).collect(),
+            Some(Value::Array(items)) => {
+                items.iter().filter_map(|v| v.as_str().map(str::to_string)).collect()
+            }
             _ => component_descriptors(&root),
         };
         out.push(Library {

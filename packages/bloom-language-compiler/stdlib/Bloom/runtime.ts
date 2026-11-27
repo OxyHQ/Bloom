@@ -1011,7 +1011,9 @@ export function storageIsNative(kind: string): boolean {
     native = false;
     if (onNative()) {
       try {
-        native = (require('./NativeBloomStorageBridge') as { isAvailable(): boolean }).isAvailable();
+        native = (
+          require('./NativeBloomStorageBridge') as { isAvailable(): boolean }
+        ).isAvailable();
       } catch {
         native = false;
       }

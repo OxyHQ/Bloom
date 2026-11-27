@@ -2,7 +2,7 @@
 // anything else runs (React Native's own `URL` cannot resolve a relative URL or read its
 // parts; the standard library's `URL` and the router need both). Blob URLs stay React
 // Native's.
-'use strict';
+
 const { URL, URLSearchParams } = require('whatwg-url-minimum');
 
 const native = globalThis.URL;

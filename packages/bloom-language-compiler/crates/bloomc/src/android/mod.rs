@@ -26,7 +26,6 @@ use crate::expo::{Mode, application_id, run_in, shown_rel};
 use crate::json::{self, Value};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
-
 /// The shims of the Expo surface a Bloom build answers, by file.
 const SHIM_FILES: &[(&str, &str)] = &[
     ("expo.js", include_str!("shims/expo.js")),
@@ -40,7 +39,6 @@ const SHIM_FILES: &[(&str, &str)] = &[
     ("expo-dom-global.js", include_str!("shims/expo-dom-global.js")),
     ("empty.js", include_str!("shims/empty.js")),
     ("url.js", include_str!("shims/url.js")),
-    ("unavailable.js", include_str!("shims/unavailable.js")),
 ];
 
 /// What each shimmed request resolves to on Android and iOS.
@@ -59,7 +57,8 @@ const SHIMMED: &[(&str, &str)] = &[
 
 /// Expo packages whose JS a Bloom build keeps, over the shims, until their Bloom
 /// replacement lands: expo-router (the Bloom router, phase F step 3) and the two it draws
-/// with. Every other `expo*` request resolves to `unavailable.js`.
+/// with. Every other `expo*` request does not resolve: an optional `require` falls back,
+/// an import fails the build, naming the way out.
 const KEPT: &[&str] = &["expo-router", "expo-status-bar", "expo-glass-effect"];
 
 /// React Native's own Metro config and Babel preset: what a Bloom build bundles with
@@ -106,8 +105,10 @@ pub fn routed_entry(header: &str, app: &Path) -> Result<String, String> {
     if files.is_empty() {
         return Err(format!("{}: no route files", app.display()));
     }
-    let modules: Vec<String> =
-        files.iter().map(|f| format!("  {}: require({}),", quote(&format!("./{f}")), quote(&format!("./app/{f}")))).collect();
+    let modules: Vec<String> = files
+        .iter()
+        .map(|f| format!("  {}: require({}),", quote(&format!("./{f}")), quote(&format!("./app/{f}"))))
+        .collect();
     Ok(format!(
         "{header}import './shims/url';\nimport {{ createElement }} from 'react';\nimport {{ AppRegistry }} from 'react-native';\nimport {{ ExpoRoot }} from 'expo-router';\n\n// The route files (written from the app's routes enum), as the router's context.\nconst modules = {{\n{}\n}};\nfunction context(key) {{\n  return modules[key];\n}}\ncontext.keys = () => Object.keys(modules);\ncontext.resolve = (key) => key;\ncontext.id = './app';\n\nfunction Root() {{\n  return createElement(ExpoRoot, {{ context }});\n}}\n\nAppRegistry.registerComponent('main', () => Root);\n",
         modules.join("\n")
@@ -134,7 +135,8 @@ pub fn write_js(package: &Package, header: &str) -> Result<(), String> {
         write(&shims.join(name), text)?;
     }
     write(&shims.join("app-config.json"), &app_config(package))?;
-    let shimmed: Vec<String> = SHIMMED.iter().map(|(n, f)| format!("  {}: {},", quote(n), quote(f))).collect();
+    let shimmed: Vec<String> =
+        SHIMMED.iter().map(|(n, f)| format!("  {}: {},", quote(n), quote(f))).collect();
     let kept: Vec<String> = KEPT.iter().map(|n| quote(n)).collect();
     let native_only: Vec<String> = crate::expo::STDLIB_NATIVE.iter().map(|(n, _)| quote(n)).collect();
     write(
@@ -154,7 +156,7 @@ config.resolver.disableHierarchicalLookup = true;
 config.resolver.blockList = [/\/\.bloom\/(cache|dist|modules)\//, /\/\.bloom\/build\/(android|ios|native)\//];
 
 // The Expo surface the JS that remains reads, answered by Bloom's shims; any other Expo
-// package has no native code here, and resolves to a module that says so.
+// package has no native code here, and does not resolve.
 const shims = path.join(projectRoot, 'shims');
 const shimmed = {{
 {shimmed}
@@ -171,8 +173,10 @@ config.resolver.resolveRequest = (context, name, platform) => {{
     if (shimmed[name]) return {{ type: 'sourceFile', filePath: path.join(shims, shimmed[name]) }};
     const pkg = packageOf(name);
     if (isExpo(pkg) && !kept.has(pkg)) {{
-      if (process.env.BLOOM_DEBUG) console.warn(`bloom: ${{name}} (from ${{context.originModulePath}}) has no native code in a Bloom build`);
-      return {{ type: 'sourceFile', filePath: path.join(shims, 'unavailable.js') }};
+      // Not resolved: an optional `require` (in a `try`) falls back, and an import fails the build.
+      throw new Error(
+        `${{name}} is an Expo package, which has no native code in a Bloom build (ADR 0002, section 7): use its Bloom module, or build with --with-expo`,
+      );
     }}
   }}
   return (upstreamResolve ?? context.resolveRequest)(context, name, platform);
@@ -318,7 +322,10 @@ pub fn native_modules(package: &Package) -> Result<Vec<NativeModule>, String> {
             .iter()
             .find(|m| m.name == target.name)
             .ok_or_else(|| format!("the standard library declares no `extern native \"{}\"`", target.name))?;
-        out.push(NativeModule { module: module.clone(), kotlin: std_dir.parent().unwrap_or(&std_dir).join(kotlin) });
+        out.push(NativeModule {
+            module: module.clone(),
+            kotlin: std_dir.parent().unwrap_or(&std_dir).join(kotlin),
+        });
     }
     for (index, target) in package.manifest.targets.iter().enumerate() {
         let Some((kotlin, _)) = target.native_sources() else { continue };
@@ -328,8 +335,14 @@ pub fn native_modules(package: &Package) -> Result<Vec<NativeModule>, String> {
             for module in bloom_lang::native::modules(&source)? {
                 // The bridge and the spec sit beside the interface, where its import finds them.
                 let dir = file.parent().unwrap_or(&package.root);
-                write(&dir.join(bloom_lang::native::spec_file(&module.name)), &bloom_lang::native::spec(&module))?;
-                write(&dir.join(bloom_lang::native::bridge_file(&module.name)), &bloom_lang::native::bridge(&module))?;
+                write(
+                    &dir.join(bloom_lang::native::spec_file(&module.name)),
+                    &bloom_lang::native::spec(&module),
+                )?;
+                write(
+                    &dir.join(bloom_lang::native::bridge_file(&module.name)),
+                    &bloom_lang::native::bridge(&module),
+                )?;
                 if module.name == target.name {
                     found = Some(module);
                 }
@@ -371,8 +384,9 @@ fn kotlin_package(dir: &Path) -> Option<String> {
 fn write_native_library(build: &Path, native: &NativeModule) -> Result<autolink::Library, String> {
     let name = &native.module.name;
     let root = build.join("native").join(name);
-    let java_package = kotlin_package(&native.kotlin)
-        .ok_or_else(|| format!("{}: no Kotlin sources for the native module `{name}`", native.kotlin.display()))?;
+    let java_package = kotlin_package(&native.kotlin).ok_or_else(|| {
+        format!("{}: no Kotlin sources for the native module `{name}`", native.kotlin.display())
+    })?;
     write(
         &root.join("package.json"),
         &json::write(&json::object([
@@ -390,7 +404,10 @@ fn write_native_library(build: &Path, native: &NativeModule) -> Result<autolink:
             ),
         ])),
     )?;
-    write(&root.join("js").join(bloom_lang::native::spec_file(name)), &bloom_lang::native::spec(&native.module))?;
+    write(
+        &root.join("js").join(bloom_lang::native::spec_file(name)),
+        &bloom_lang::native::spec(&native.module),
+    )?;
     let android = root.join("android");
     write(
         &android.join("build.gradle"),
@@ -471,7 +488,11 @@ fn schemes(package: &Package) -> Vec<String> {
 }
 
 fn xml(s: &str) -> String {
-    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;").replace('\'', "\\'")
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "\\'")
 }
 
 /// React Native's own version catalog: the SDK, NDK and build tools it is built with.
@@ -516,7 +537,18 @@ fn keytool(store: &Path, alias: &str, password: &str, dname: &str) -> Result<(),
     let status = Command::new("keytool")
         .args(["-genkeypair", "-noprompt", "-keystore"])
         .arg(store)
-        .args(["-storetype", "PKCS12", "-alias", alias, "-keyalg", "RSA", "-keysize", "2048", "-validity", "10000"])
+        .args([
+            "-storetype",
+            "PKCS12",
+            "-alias",
+            alias,
+            "-keyalg",
+            "RSA",
+            "-keysize",
+            "2048",
+            "-validity",
+            "10000",
+        ])
         .args(["-storepass", password, "-keypass", password, "-dname", dname])
         .status()
         .map_err(|e| format!("keytool: {e}"))?;
@@ -634,7 +666,9 @@ fn write_gradle(package: &Package, libraries: &[autolink::Library], release: boo
     let modules = build.join("node_modules");
     let gradle_plugin = modules.join("@react-native/gradle-plugin");
     if !gradle_plugin.is_dir() {
-        return Err("React Native's Gradle plugin is not installed (node_modules/@react-native/gradle-plugin)".into());
+        return Err(
+            "React Native's Gradle plugin is not installed (node_modules/@react-native/gradle-plugin)".into(),
+        );
     }
     let v = versions(&build);
     let get = |k: &str, d: &str| v.get(k).cloned().unwrap_or_else(|| d.to_string());
@@ -648,7 +682,12 @@ fn write_gradle(package: &Package, libraries: &[autolink::Library], release: boo
     let id = app_id(package);
 
     // Gradle itself: React Native's Gradle plugin's own wrapper.
-    for file in ["gradlew", "gradlew.bat", "gradle/wrapper/gradle-wrapper.jar", "gradle/wrapper/gradle-wrapper.properties"] {
+    for file in [
+        "gradlew",
+        "gradlew.bat",
+        "gradle/wrapper/gradle-wrapper.jar",
+        "gradle/wrapper/gradle-wrapper.properties",
+    ] {
         let to = android.join(file);
         std::fs::create_dir_all(to.parent().unwrap_or(&android)).map_err(|e| e.to_string())?;
         std::fs::copy(gradle_plugin.join(file), &to).map_err(|e| format!("{file}: {e}"))?;
@@ -658,10 +697,12 @@ fn write_gradle(package: &Package, libraries: &[autolink::Library], release: boo
         use std::os::unix::fs::PermissionsExt;
         let _ = std::fs::set_permissions(android.join("gradlew"), std::fs::Permissions::from_mode(0o755));
     }
-    if let Some(sdk) = std::env::var_os("ANDROID_HOME").or_else(|| std::env::var_os("ANDROID_SDK_ROOT")).or_else(|| {
-        let home = PathBuf::from(std::env::var_os("HOME")?).join("Android/Sdk");
-        home.is_dir().then(|| home.into_os_string())
-    }) {
+    if let Some(sdk) =
+        std::env::var_os("ANDROID_HOME").or_else(|| std::env::var_os("ANDROID_SDK_ROOT")).or_else(|| {
+            let home = PathBuf::from(std::env::var_os("HOME")?).join("Android/Sdk");
+            home.is_dir().then(|| home.into_os_string())
+        })
+    {
         write(&android.join("local.properties"), &format!("sdk.dir={}\n", Path::new(&sdk).display()))?;
     }
 
@@ -771,7 +812,10 @@ dependencies {{
             version = quote(&version(package)),
         ),
     )?;
-    write(&android.join("app/proguard-rules.pro"), "# Generated by bloom. React Native's own rules come with its AAR.\n")?;
+    write(
+        &android.join("app/proguard-rules.pro"),
+        "# Generated by bloom. React Native's own rules come with its AAR.\n",
+    )?;
     let kotlin_dir = android.join("app/src/main/java").join(id.replace('.', "/"));
     write(
         &kotlin_dir.join("MainApplication.kt"),
@@ -804,7 +848,8 @@ dependencies {{
             )
         })
         .collect();
-    let round = if package.manifest.app.icon.is_some() { "" } else { " android:roundIcon=\"@mipmap/ic_launcher\"" };
+    let round =
+        if package.manifest.app.icon.is_some() { "" } else { " android:roundIcon=\"@mipmap/ic_launcher\"" };
     write(
         &android.join("app/src/main/AndroidManifest.xml"),
         &format!(
@@ -819,7 +864,10 @@ dependencies {{
     let splash = package.manifest.app.splash.clone().unwrap_or_else(|| "#FFFFFF".into());
     write(
         &res.join("values/strings.xml"),
-        &format!("<resources>\n  <string name=\"app_name\">{}</string>\n</resources>\n", xml(&display_name(package))),
+        &format!(
+            "<resources>\n  <string name=\"app_name\">{}</string>\n</resources>\n",
+            xml(&display_name(package))
+        ),
     )?;
     write(
         &res.join("values/colors.xml"),
@@ -831,7 +879,8 @@ dependencies {{
         Some(image) => {
             let to = res.join("drawable-xxhdpi/splash_image.png");
             std::fs::create_dir_all(to.parent().unwrap_or(&res)).map_err(|e| e.to_string())?;
-            std::fs::copy(package.root.join(image), &to).map_err(|e| format!("the splash image {image}: {e}"))?;
+            std::fs::copy(package.root.join(image), &to)
+                .map_err(|e| format!("the splash image {image}: {e}"))?;
             "  <item><bitmap android:gravity=\"center\" android:src=\"@drawable/splash_image\" /></item>\n"
         }
         None => "",
@@ -880,12 +929,19 @@ pub fn build(package: &Package, mode: &Mode) -> Result<Option<PathBuf>, String> 
     }
     let android = package.build_dir().join("android");
     if mode.generate {
-        println!("bloom: the Gradle project is in {} (open it in Android Studio)", shown_rel(package, &android));
+        println!(
+            "bloom: the Gradle project is in {} (open it in Android Studio)",
+            shown_rel(package, &android)
+        );
         return Ok(Some(android));
     }
     let variant = if mode.release { "Release" } else { "Debug" };
     let abis = std::env::var("BLOOM_ANDROID_ABIS").unwrap_or_else(|_| "x86_64".into());
-    run_in(&android, "./gradlew", &[&format!("assemble{variant}"), &format!("-PreactNativeArchitectures={abis}")])?;
+    run_in(
+        &android,
+        "./gradlew",
+        &[&format!("assemble{variant}"), &format!("-PreactNativeArchitectures={abis}")],
+    )?;
     let lower = variant.to_lowercase();
     let built = android.join(format!("app/build/outputs/apk/{lower}/app-{lower}.apk"));
     let suffix = if mode.release { "" } else { "-debug" };
@@ -906,7 +962,11 @@ pub fn run(package: &Package, mode: &Mode) -> Result<bool, String> {
         run_in(&build_dir, "adb", &["-s", &serial, "reverse", "tcp:8081", "tcp:8081"])?;
     }
     let id = app_id(package);
-    run_in(&build_dir, "adb", &["-s", &serial, "shell", "am", "start", "-n", &format!("{id}/.MainActivity")])?;
+    run_in(
+        &build_dir,
+        "adb",
+        &["-s", &serial, "shell", "am", "start", "-n", &format!("{id}/.MainActivity")],
+    )?;
     println!("bloom: started {id} on {serial}");
     if !mode.release {
         run_in(&build_dir, "node", &["bloom-metro.js", "start"])?;
@@ -952,7 +1012,10 @@ mod tests {
         assert!(!metro.contains("expo/metro-config"), "{metro}");
         assert!(metro.contains("\"expo-linking\": \"expo-linking.js\""), "{metro}");
         let babel = read("babel.config.js");
-        assert!(babel.contains("module:@react-native/babel-preset") && babel.contains("react-native-worklets/plugin"));
+        assert!(
+            babel.contains("module:@react-native/babel-preset")
+                && babel.contains("react-native-worklets/plugin")
+        );
         let config = json::parse(&read("shims/app-config.json")).unwrap();
         assert_eq!(config.get("scheme").as_str(), Some("shop"));
         assert!(read("bloom-metro.js").contains("bundleCommand"));
@@ -985,16 +1048,26 @@ mod tests {
         );
         let natives = native_modules(&package).unwrap();
         assert_eq!(natives.iter().map(|n| n.module.name.as_str()).collect::<Vec<_>>(), ["BloomStorage"]);
-        assert!(natives[0].kotlin.join("so/oxy/bloom/storage/BloomStorageModule.kt").is_file(), "{:?}", natives[0].kotlin);
+        assert!(
+            natives[0].kotlin.join("so/oxy/bloom/storage/BloomStorageModule.kt").is_file(),
+            "{:?}",
+            natives[0].kotlin
+        );
         let build = package.build_dir();
         let lib = write_native_library(&build, &natives[0]).unwrap();
         assert_eq!(lib.import, "import so.oxy.bloom.storage.BloomStoragePackage;");
-        let spec = std::fs::read_to_string(build.join("native/BloomStorage/js/NativeBloomStorage.ts")).unwrap();
+        let spec =
+            std::fs::read_to_string(build.join("native/BloomStorage/js/NativeBloomStorage.ts")).unwrap();
         assert!(spec.contains("TurboModuleRegistry.get<Spec>('BloomStorage')"), "{spec}");
         let gradle = std::fs::read_to_string(build.join("native/BloomStorage/android/build.gradle")).unwrap();
         assert!(gradle.contains("codegenJavaPackageName = \"so.oxy.bloom.storage\""), "{gradle}");
-        let pkg = json::parse(&std::fs::read_to_string(build.join("native/BloomStorage/package.json")).unwrap()).unwrap();
-        assert_eq!(pkg.get("codegenConfig").get("android").get("javaPackageName").as_str(), Some("so.oxy.bloom.storage"));
+        let pkg =
+            json::parse(&std::fs::read_to_string(build.join("native/BloomStorage/package.json")).unwrap())
+                .unwrap();
+        assert_eq!(
+            pkg.get("codegenConfig").get("android").get("javaPackageName").as_str(),
+            Some("so.oxy.bloom.storage")
+        );
         let _ = std::fs::remove_dir_all(&package.root);
     }
 }

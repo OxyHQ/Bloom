@@ -127,7 +127,7 @@ nothing published in the last week resolves, except first-party packages.
 | `bloom check [--tsc] [--allow-ts-imports] [paths…]` | the manifest and every module; with `--tsc`, also runs `tsc` over the binding modules' emitted TS |
 | `bloom fmt [--check] [paths…]` | formats the package's files |
 | `bloom lsp` | the language server, module-aware |
-| `bloom build web\|android [--release]` | checks, generates `.bloom/build/`, installs, and builds: `expo export` for the web (`.bloom/dist/web/`), `expo prebuild` and Gradle for Android (`.bloom/dist/android/<Name>.apk`, x86_64 by default) |
+| `bloom build web\|android [--release] [--with-expo] [--generate]` | checks, generates `.bloom/build/`, installs, and builds: `expo export` for the web (`.bloom/dist/web/`); for Android, Bloom's own Gradle project, no Expo (`.bloom/dist/android/<Name>.apk`, x86_64 by default; below). `--with-expo` builds Android through `expo prebuild` instead; `--generate` writes the Gradle project and stops |
 | `bloom run web\|android [--release] [--device <serial>]` | the dev server with fast refresh; with `--release`, the built app, installed and started |
 | `bloom test [filter]` | the `.tests` targets, run by Jest underneath |
 | `bloom add <Package> [--from x.y.z] [--npm <pkg>]` | a Bloom package, recorded in `Package.bloom` and `Package.resolved` |
@@ -140,7 +140,8 @@ emulator: it never picks a phone by itself.
 
 ### The generated build directory
 
-`.bloom/build/` is an Expo app written on every build and never edited: its
+`.bloom/build/` is written on every build and never edited (an Expo app for the web
+and `--with-expo`; for Android, see below): its
 `package.json`, `bunfig.toml` (the quarantine), `app.json` (from the manifest's name
 and platforms), `index.js` (the app's root view), `metro.config.js` (the package's
 modules through the compiler's Metro adapter), `babel.config.js`, `tsconfig.json`,
@@ -152,6 +153,65 @@ modules through the compiler's Metro adapter), `babel.config.js`, `tsconfig.json
 | `BLOOM_BUN` | the bun binary |
 | `BLOOM_ANDROID_ABIS` | Gradle's `reactNativeArchitectures` (default `x86_64`) |
 | `BLOOM_LINK` | `name=path,…`: first-party packages from a checkout, for working on Bloom itself. A `.tgz` is installed as is; a directory as it packs (its `pack:local` script when it has one, as the compiler's carries the addon the checkout built, else `bun pm pack`), never copied, so the checkout's examples and their `.bloom/build/` stay out. A rebuilt checkout is installed again on the next build. |
+| `BLOOM_KEYSTORES` | where the signing keystores live (default `~/.bloom/keystores/`) |
+| `BLOOM_ANDROID_KEYSTORE`, `…_PASSWORD`, `BLOOM_ANDROID_KEY_ALIAS` | a release keystore of your own (CI) |
+
+### Android without Expo
+
+`bloom build android` writes `.bloom/build/android/`, a Gradle project over React
+Native's own Gradle plugin (ADR 0002, section 7):
+
+- **The app module** is written from `Package.bloom`'s `app:`:
+
+  ```swift
+  app: App(id: "so.oxy.demo", version: "1.2.0", build: 42, schemes: ["demo"],
+           icon: "Resources/AppIcon.png", splash: "#FFFFFF", permissions: [.camera, .notifications]),
+  ```
+
+  Every field has a default: the id `so.bloom.<name>`, version 1.0.0, build 1, the scheme
+  `<name>`, Bloom's icon and a white splash.
+- **Signing.** Debug builds use `~/.bloom/keystores/debug.keystore`. A release build uses a
+  key per app (`<id>.keystore`), created on first use, readable only by you, and never in the
+  package. Keep it: updates are signed with it.
+- **Libraries.** React Native (Fabric, Hermes) and the React Native libraries the app depends
+  on, autolinked from `.bloom/build/autolinking.json`, which `bloom` writes, plus the
+  package's native modules. No Expo module is linked.
+- **Metro.** `bloom-metro.js` (`bundle` for Gradle, `start` for the dev server) runs Metro
+  over React Native's own config and Babel preset.
+- **Expo packages.** The Expo JS that remains until its Bloom replacement lands
+  (expo-router, until the Bloom router) runs over small shims of the Expo surface it reads.
+  Any other Expo package does not resolve: an optional `require` falls back, and an import
+  fails the build.
+
+## Native modules
+
+A native module's interface is written once, in Bloom, as an `extern native` block. Its
+implementations are Kotlin (Android) and Swift (iOS), declared as a `.native` target:
+
+```swift
+// Package.bloom
+.native("Haptics", kotlin: "Native/Haptics/android", swift: "Native/Haptics/ios"),
+
+// Native/Haptics/Haptics.bloom
+extern native "Haptics" {
+  func impact(_ style: String)
+  func isSupported() -> Bool
+}
+```
+
+From the interface, `bloom` writes React Native's TurboModule spec (`NativeHaptics.ts`).
+The Android build's codegen turns it into the Java class the Kotlin module extends, so the
+Kotlin compiler checks the module against the interface. `bloom` also writes a bridge
+(`NativeHapticsBridge.ts`) that loads the module on first use.
+
+- **Types.** The bridge carries `String`, `Bool`, `Int`, `Double`, arrays and optionals of
+  them; another type stops the build with its name. A type or constant inside
+  `extern native` is B0824.
+- **Calls.** Every function is synchronous unless it is `async throws`. A function without a
+  result crosses as one that returns a `Bool`, so the call blocks until the native side has
+  run it.
+- **The standard library** declares `BloomStorage`, the store under `KeyValueStore`,
+  `SecureStore` and `FileStore`.
 
 ## Binding modules
 
@@ -218,3 +278,4 @@ target is an error (B0823).
 | B0820, B0821 | an extern function with a body; an async extern function not declared `throws` |
 | B0822 | `Foreign<"…">` in an app module |
 | B0823 | a test outside a `.tests` target |
+| B0824 | a type, constant or value inside `extern native` (it declares functions) |

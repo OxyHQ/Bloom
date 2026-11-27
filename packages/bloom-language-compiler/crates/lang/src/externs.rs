@@ -129,12 +129,18 @@ pub fn lower(file: &mut File) -> Vec<Diagnostic> {
                     };
                     used = true;
                 }
-                ItemKind::Const(_) | ItemKind::Struct(_) | ItemKind::Enum(_) | ItemKind::Alias(_) | ItemKind::Protocol(_)
+                ItemKind::Const(_)
+                | ItemKind::Struct(_)
+                | ItemKind::Enum(_)
+                | ItemKind::Alias(_)
+                | ItemKind::Protocol(_)
                     if module.native =>
                 {
                     diagnostics.push(
                         Diagnostic::error("B0824", span, "a native module declares functions")
-                            .label("its bridge carries strings, numbers, booleans, arrays of them and optionals")
+                            .label(
+                                "its bridge carries strings, numbers, booleans, arrays of them and optionals",
+                            )
                             .help("declare a `func` here, and the types over it outside `extern native`")
                             .toolchain("native-modules"),
                     );

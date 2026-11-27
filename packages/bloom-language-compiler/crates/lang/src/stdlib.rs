@@ -42,11 +42,15 @@ pub const MANIFEST: &str = include_str!("../../../stdlib/Package.bloom");
 pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     (
         "Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt",
-        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt"),
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt"
+        ),
     ),
     (
         "Native/BloomStorage/android/so/oxy/bloom/storage/BloomStoragePackage.kt",
-        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStoragePackage.kt"),
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStoragePackage.kt"
+        ),
     ),
     (
         "Native/BloomStorage/android/so/oxy/bloom/storage/Stores.kt",

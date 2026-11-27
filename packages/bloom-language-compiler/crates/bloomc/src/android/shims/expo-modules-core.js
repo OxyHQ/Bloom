@@ -3,7 +3,7 @@
 // module is absent: `requireOptionalNativeModule` is null and `requireNativeModule` names the
 // module and the way out. ADR 0002, section 7: each user of this file leaves with its Expo
 // package, replaced by its Bloom module.
-'use strict';
+
 const { Platform: RNPlatform } = require('react-native');
 
 function absent(what, name) {
@@ -18,7 +18,10 @@ class EventEmitter {
   }
   addListener(event, listener) {
     let set = this._listeners.get(event);
-    if (!set) this._listeners.set(event, (set = new Set()));
+    if (!set) {
+      set = new Set();
+      this._listeners.set(event, set);
+    }
     set.add(listener);
     return { remove: () => this.removeListener(event, listener) };
   }
@@ -50,7 +53,10 @@ class CodedError extends Error {
 }
 class UnavailabilityError extends CodedError {
   constructor(moduleName, propertyName) {
-    super('ERR_UNAVAILABLE', `The method or property ${moduleName}.${propertyName} is not available on ${RNPlatform.OS}`);
+    super(
+      'ERR_UNAVAILABLE',
+      `The method or property ${moduleName}.${propertyName} is not available on ${RNPlatform.OS}`,
+    );
   }
 }
 

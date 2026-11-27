@@ -392,7 +392,10 @@ pub fn generate_for(package: &Package, bloom: bool) -> Result<(), String> {
                     ),
                 )?;
                 if bloom {
-                    write(&build.join("index.js"), &crate::android::routed_entry(header, &build.join("app"))?)?;
+                    write(
+                        &build.join("index.js"),
+                        &crate::android::routed_entry(header, &build.join("app"))?,
+                    )?;
                 } else {
                     write(&build.join("index.js"), &format!("{header}import 'expo-router/entry';\n"))?;
                 }
