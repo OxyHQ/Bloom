@@ -108,3 +108,30 @@ $t2 = $[14];
 return $t2;
 });
 
+function log(s: string): void {
+}
+
+const $view0 = Text("Static");
+const $view1 = Button(Text("Go"));
+const $fn2 = () => log("go");
+export const Hint = view(function Hint() {
+"use no memo";
+const $ = $c(1);
+let $t3;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t3 = VStack($view0, $view1.onPress($fn2));
+$[0] = $t3;
+} else {
+$t3 = $[0];
+}
+return $t3;
+});
+
+const $fn1 = () => log("a");
+const $fn3 = () => log("b");
+export function useHandlers(n: number): { first: () => void; second: () => void; doubled: number } {
+const first = $fn1;
+const second = $fn3;
+return { first: first, second: second, doubled: n * 2 };
+}
+
