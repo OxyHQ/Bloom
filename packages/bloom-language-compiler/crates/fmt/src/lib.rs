@@ -168,6 +168,11 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
                 .map_or(source.len(), |i| effect.span.end as usize + i);
             edits.push((effect.span.start as usize, end, String::new()));
         }
+        // A body that is an `if` or a `match` draws its branch: the modifiers go on a `Group`.
+        if matches!(root.kind, ExprKind::If(_) | ExprKind::Match(_)) {
+            edits.push((root.span.start as usize, root.span.start as usize, "Group {\n".to_string()));
+            modifiers.insert_str(0, "\n}");
+        }
         edits.push((root.span.end as usize, root.span.end as usize, modifiers));
     }
     if edits.is_empty() {
