@@ -1,0 +1,137 @@
+{
+  "View": {
+    "prefix": ["view", "struct view"],
+    "description": "A view: a struct that conforms to View, with its body",
+    "body": [
+      "struct ${1:${TM_FILENAME_BASE:Greeting}}: View {",
+      "\tlet ${2:title}: ${3:String}",
+      "",
+      "\tvar body: some View {",
+      "\t\t${0:Text($2)}",
+      "\t}",
+      "}"
+    ]
+  },
+  "State": {
+    "prefix": ["state", "@State"],
+    "description": "A view's state: @State private var",
+    "body": ["@State private var ${1:count} = ${0:0}"]
+  },
+  "Binding": {
+    "prefix": ["binding", "@Binding"],
+    "description": "A prop holding a binding: @Binding var, passed as $name",
+    "body": ["@Binding var ${1:isOn}: ${0:Bool}"]
+  },
+  "Function": {
+    "prefix": ["func"],
+    "description": "A function",
+    "body": ["func ${1:name}(${2:_ value: Int}) -> ${3:Int} {", "\t${0:value}", "}"]
+  },
+  "Async throwing function": {
+    "prefix": ["func async", "async throws"],
+    "description": "An async function that throws",
+    "body": [
+      "func ${1:load}(${2:_ id: String}) async throws -> ${3:String} {",
+      "\t${0:return id}",
+      "}"
+    ]
+  },
+  "Switch": {
+    "prefix": ["switch"],
+    "description": "switch over a value, its cases checked for exhaustiveness",
+    "body": [
+      "switch ${1:value} {",
+      "case ${2:.some(let item)}:",
+      "\t${3:break}",
+      "${4:default}:",
+      "\t${0:break}",
+      "}"
+    ]
+  },
+  "Guard let": {
+    "prefix": ["guard let", "guard"],
+    "description": "guard let: unwrap an optional, or leave",
+    "body": ["guard let ${1:item} = ${2:value} else { ${3:return} }", "$0"]
+  },
+  "If let": {
+    "prefix": ["if let"],
+    "description": "if let: run a block with an optional's value",
+    "body": ["if let ${1:item} = ${2:value} {", "\t$0", "}"]
+  },
+  "Do catch": {
+    "prefix": ["do", "do catch"],
+    "description": "do / catch: call what throws, and handle its error",
+    "body": ["do {", "\t${1:try await sleep(100)}", "} catch {", "\t$0", "}"]
+  },
+  "For in": {
+    "prefix": ["for", "for in"],
+    "description": "for … in: loop over a sequence",
+    "body": ["for ${1:item} in ${2:items} {", "\t$0", "}"]
+  },
+  "Enum": {
+    "prefix": ["enum"],
+    "description": "An enum with its cases, one carrying a payload",
+    "body": [
+      "enum ${1:Load} {",
+      "\tcase ${2:loading}",
+      "\tcase ${3:failed}(${4:message}: ${5:String})",
+      "\tcase ${0:ready}",
+      "}"
+    ]
+  },
+  "Struct": {
+    "prefix": ["struct"],
+    "description": "A data struct: its stored properties are its fields",
+    "body": [
+      "struct ${1:Post}: ${2:Equatable} {",
+      "\tlet ${3:id}: ${4:String}",
+      "\tvar ${0:likes}: Int = 0",
+      "}"
+    ]
+  },
+  "Protocol": {
+    "prefix": ["protocol"],
+    "description": "A protocol: properties and function requirements",
+    "body": [
+      "protocol ${1:Titled} {",
+      "\tvar ${2:title}: ${3:String} { get }",
+      "\tfunc ${0:badge}(_ count: Int) -> String",
+      "}"
+    ]
+  },
+  "Extension": {
+    "prefix": ["extension"],
+    "description": "An extension: members, or a conformance, added to a type",
+    "body": [
+      "extension ${1:Post} {",
+      "\tfunc ${2:liked}() -> ${3:Bool} {",
+      "\t\t${0:likes > 0}",
+      "\t}",
+      "}"
+    ]
+  },
+  "Observable class": {
+    "prefix": ["@Observable", "observable", "class"],
+    "description": "An @Observable model: views draw again when the fields they read change",
+    "body": [
+      "@Observable",
+      "final class ${1:Model} {",
+      "\tvar ${2:count} = ${3:0}",
+      "",
+      "\tfunc ${4:increment}() {",
+      "\t\t${0:$2 += 1}",
+      "\t}",
+      "}"
+    ]
+  },
+  "Test": {
+    "prefix": ["test"],
+    "description": "A test, in a .tests target (bloom test)",
+    "body": ["test(\"${1:it works}\") {", "\t#expect(${0:1 + 1 == 2})", "}"]
+  },
+  "Task": {
+    "prefix": ["Task"],
+    "description": "Task { … }: start async work without awaiting it",
+    "body": ["Task {", "\t${0:await sleep(100)}", "}"]
+  }
+}

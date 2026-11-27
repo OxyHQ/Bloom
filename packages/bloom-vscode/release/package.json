@@ -1,0 +1,9 @@
+{
+  "name": "bloom-vscode-release-tools",
+  "private": true,
+  "description": "The tools that package and publish the Bloom VS Code extension, locked here (npm ci), apart from the workspace.",
+  "devDependencies": {
+    "@vscode/vsce": "4.1.1",
+    "ovsx": "1.4.0"
+  }
+}

@@ -276,11 +276,13 @@ jobs:
             (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
           done
       # The VS Code extension's .bloom grammar against its scope fixtures, run
-      # through vscode-textmate, the engine VS Code uses.
-      - name: Bloom VS Code grammar
+      # through vscode-textmate, the engine VS Code uses; and its snippets,
+      # expanded, through the compiler's addon built above.
+      - name: Bloom VS Code grammar and snippets
         run: cd packages/bloom-vscode && bun run test
       # The extension as an installable .vsix, kept as this run's artifact
-      # (Extensions: Install from VSIX...). It is not published to a marketplace.
+      # (Extensions: Install from VSIX...). vscode-extension-release.yml publishes
+      # it once its version is new on main.
       - name: Package the Bloom VS Code extension
         run: cd packages/bloom-vscode && bun run package
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

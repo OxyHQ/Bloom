@@ -54,3 +54,33 @@ goes first.
 5. **Merge.** Open the PR, titled with every version (`chore(release): Bloom 23.10.0, the language
    1.8.0`), and enqueue it (`gh pr merge <n> --squash`). After the merge, check each package in the
    release job's log (`+ @oxy.so/<name>@<version>`) and with `npm view <name> version`.
+
+## The VS Code extension
+
+`packages/bloom-vscode` is the editor extension, `oxy.bloom-vscode` ("Bloom, the language by
+Oxy") on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=oxy.bloom-vscode)
+and [Open VSX](https://open-vsx.org/extension/oxy/bloom-vscode). It is not an npm package, so it
+stays `private: true` (Oxy's npm release would otherwise try to publish it) and takes no changelog
+fragment. Its version is its own, and the same rule holds: a version merged to `main` is the
+release.
+
+- **A release** is a PR from `main` that bumps `packages/bloom-vscode/package.json`'s `version`
+  alone (a fix is a patch, a feature a minor), titled `chore(release): the VS Code extension
+  0.2.0`, its body listing what changed for people using it. Enqueue it as any PR.
+- **What runs**: on that push to `main`, [`vscode-extension-release.yml`](../.github/workflows/vscode-extension-release.yml)
+  asks both registries whether they have the version. When one does not, it waits for Validate
+  Bloom to have passed on the commit (the npm release's own check), packages one `.vsix` with the
+  `vsce` locked in `packages/bloom-vscode/release/`, publishes that file to each registry missing
+  it from the `vscode-marketplace` environment, then tags the commit `bloom-vscode@<version>` with
+  a GitHub release that carries the `.vsix` (never marked latest). A version already on both
+  registries runs nothing past the first job.
+- **The tokens** are `VSCE_PAT` (an Azure DevOps personal access token with Marketplace → Manage,
+  for publisher `oxy`) and `OVSX_PAT` (an Open VSX access token of the `oxy` namespace), secrets of
+  the `vscode-marketplace` environment only. A registry whose token is not set is skipped with a
+  notice, not failed. Azure DevOps tokens expire (one year at most): when one does, the
+  Marketplace step fails; create a new token and replace the secret. After setting or replacing a
+  token, run the workflow from the Actions tab (Run workflow, on `main`) to publish what is missing.
+- **Locally** `bun run package` builds the same `.vsix` (CI keeps one per run as an artifact);
+  nothing is ever published from a laptop. The publishing tools are updated in `release/` with
+  `npm install --package-lock-only --ignore-scripts --before=<a date a week ago>`, the same 7-day
+  quarantine as `bunfig.toml`.

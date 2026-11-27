@@ -1,5 +1,5 @@
-// The Bloom extension's language client: runs `bloomc lsp` (the workspace's
-// own compiler when it has one, see ./bloomc-path) and speaks the LSP messages
+// The Bloom extension's language client: runs `bloomc lsp` or `bloom lsp` (the
+// workspace's own compiler when it has one, see ./bloomc-path) and speaks the LSP messages
 // it serves: incremental sync, diagnostics, hover, go-to-definition,
 // references, completion and formatting. Written against VS Code's API
 // directly, with no client library: the server's surface is small and the
@@ -7,7 +7,7 @@
 const { spawn } = require('node:child_process');
 const vscode = require('vscode');
 
-const { resolveBloomc } = require('./bloomc-path');
+const { candidates, resolveBloomc } = require('./bloomc-path');
 const { Connection } = require('./connection');
 
 const LANGUAGE = 'bloom';
@@ -20,6 +20,18 @@ const toLocation = (location) =>
 
 let connection;
 
+/** Starts `command args`: the child once it runs, or the error that kept it from starting. */
+function start({ command, args }) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'inherit'] });
+    child.once('error', reject);
+    child.once('spawn', () => {
+      child.off('error', reject);
+      resolve(child);
+    });
+  });
+}
+
 async function activate(context) {
   const bloomc = resolveBloomc({
     setting: vscode.workspace.getConfiguration('bloom').get('bloomcPath'),
@@ -27,13 +39,28 @@ async function activate(context) {
     // A workspace's own binaries run only once it is trusted.
     trusted: vscode.workspace.isTrusted,
   });
-  const child = spawn(bloomc.command, bloomc.args, { stdio: ['pipe', 'pipe', 'inherit'] });
+  // `bloomc`, then `bloom`, from the PATH: the first that exists serves.
+  let child;
+  let failure;
+  for (const candidate of candidates(bloomc)) {
+    try {
+      child = await start(candidate);
+      break;
+    } catch (error) {
+      // A missing command is ENOENT, or EACCES when a PATH directory is unreadable.
+      failure = `${candidate.command} lsp (${error.message})`;
+    }
+  }
+  if (!child) {
+    vscode.window.showWarningMessage(
+      `Bloom: could not start ${failure}. Install @oxy.so/bloom-language-compiler in the workspace, or set bloom.bloomcPath to bloom or bloomc.`,
+    );
+    return;
+  }
   const diagnostics = vscode.languages.createDiagnosticCollection(LANGUAGE);
   context.subscriptions.push(diagnostics);
   child.on('error', (error) => {
-    vscode.window.showWarningMessage(
-      `Bloom: could not start ${bloomc.command} lsp (${error.message}). Install @oxy.so/bloom-language-compiler in the workspace, or set bloom.bloomcPath.`,
-    );
+    vscode.window.showWarningMessage(`Bloom: the language server failed (${error.message}).`);
   });
 
   connection = new Connection(child, (method, params) => {

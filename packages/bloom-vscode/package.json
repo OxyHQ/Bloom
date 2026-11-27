@@ -3,19 +3,43 @@
   "displayName": "Bloom",
   "version": "0.1.0",
   "private": true,
-  "description": "Bloom language (.bloom) support for VS Code: syntax highlighting, and diagnostics, hover, go-to-definition, references, completion and formatting from bloomc lsp.",
+  "description": "Bloom, the language by Oxy: .bloom syntax highlighting, snippets, and diagnostics, hover, go-to-definition, references, completion and formatting from the Bloom language server.",
   "license": "SEE LICENSE IN LICENSE",
+  "publisher": "oxy",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#2B1033",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/OxyHQ/Bloom/blob/main/packages/bloom-vscode/README.md",
+  "bugs": {
+    "url": "https://github.com/OxyHQ/Bloom/issues"
+  },
+  "qna": "https://github.com/OxyHQ/Bloom/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OxyHQ/Bloom.git",
     "directory": "packages/bloom-vscode"
   },
-  "publisher": "oxy",
+  "pricing": "Free",
+  "keywords": [
+    "bloom",
+    "oxy",
+    "bloom language",
+    ".bloom",
+    "swift",
+    "react native",
+    "language server",
+    "lsp"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets",
+    "Formatters",
+    "Linters"
   ],
   "main": "./src/extension.js",
   "activationEvents": [],
@@ -52,14 +76,27 @@
         "bloom.bloomcPath": {
           "type": "string",
           "default": "bloomc",
-          "description": "The bloomc binary the language server runs as `bloomc lsp`. With the default, a trusted workspace's own compiler (@oxy.so/bloom-language-compiler in its node_modules) is used first, then bloomc on the PATH."
+          "description": "The Bloom compiler the language server runs as `<path> lsp`: `bloom` or `bloomc` (the same program), by name or path. With the default, a trusted workspace's own compiler (@oxy.so/bloom-language-compiler in its node_modules) is used first, then `bloomc` on the PATH, then `bloom`."
         }
+      }
+    },
+    "snippets": [
+      {
+        "language": "bloom",
+        "path": "./snippets/bloom.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[bloom]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
       }
     }
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs",
-    "package": "npx --yes @vscode/vsce@4.1.1 package --no-dependencies --out bloom-vscode.vsix"
+    "test": "node --test test/*.test.mjs checks/*.test.mjs",
+    "release-tools": "npm ci --prefix release --ignore-scripts --no-audit --fund=false",
+    "package": "npm run release-tools && release/node_modules/.bin/vsce package --no-dependencies --out bloom-vscode.vsix"
   },
   "devDependencies": {
     "vscode-oniguruma": "2.0.1",

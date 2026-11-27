@@ -34,7 +34,7 @@ function isExecutable(file) {
  *    (its bloomc, when it is executable), else the compiler's shim
  *    (`js/bloomc.js`, run by Node, which restores a lost mode and falls back to
  *    the WASI build).
- * 3. `bloomc` on the PATH.
+ * 3. `bloomc` on the PATH (the extension then tries `bloom`, see `candidates`).
  *
  * @param {{ setting?: string, folders: string[], trusted: boolean, platform?: string, arch?: string }} options
  */
@@ -63,4 +63,17 @@ function resolveBloomc({
   return { command: 'bloomc', args: ['lsp'], from: 'path' };
 }
 
-module.exports = { resolveBloomc, PLATFORMS, cliFile };
+/**
+ * The commands the extension starts in turn until one exists: the resolved
+ * one, or, for the PATH's, `bloomc` (the npm package's command) and then
+ * `bloom` (the same program under its 2.0 name, as `cargo install` puts it on
+ * the PATH).
+ *
+ * @param {{ command: string, args: string[], from: string }} resolved
+ */
+function candidates(resolved) {
+  if (resolved.from !== 'path') return [resolved];
+  return ['bloomc', 'bloom'].map((command) => ({ command, args: ['lsp'], from: 'path' }));
+}
+
+module.exports = { resolveBloomc, candidates, PLATFORMS, cliFile };
