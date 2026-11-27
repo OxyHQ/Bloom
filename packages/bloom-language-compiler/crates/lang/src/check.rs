@@ -374,6 +374,9 @@ pub struct CheckResult {
     /// A view's `let`s, and a hook function's top-level ones, whose value calls a hook (drawn
     /// every render, never in a memo scope).
     pub hook_lets: HashSet<Span>,
+    /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
+    /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
+    pub map_writes: HashSet<ExprId>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
     /// Module constants whose record literal keeps its string literals' types (`let SIZES =
@@ -495,6 +498,13 @@ pub struct Checker<'o> {
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
     /// may call hooks.
     hook_body: Option<usize>,
+    /// The frame of the hook function being checked: its closures are cached across calls, so
+    /// a `var` of its own is not one they may capture.
+    hook_frame: Option<usize>,
+    /// `var`s a closure may capture, read and write (Swift's): one declared in a function, a
+    /// closure or a handler, by its name's span. Not one of a view's render or of a hook
+    /// function, whose closures are cached across renders and would keep a stale binding.
+    capturable: HashSet<Span>,
     /// Whether the call just checked was a hook.
     was_hook: bool,
     /// The body's root chain may carry `.task`.
@@ -620,6 +630,8 @@ impl<'o> Checker<'o> {
             hook_allowed: false,
             hook_args: HashSet::default(),
             hook_body: None,
+            hook_frame: None,
+            capturable: HashSet::default(),
             was_hook: false,
             task_allowed: false,
             reported: HashSet::default(),
@@ -2031,8 +2043,11 @@ impl<'o> Checker<'o> {
         let ret = if init { Ty::Unit } else { fn_ty.ret.clone() };
         let hook = is_hook_name(&f.name.name).then_some(self.scopes.len() + 1);
         let outer_hook = std::mem::replace(&mut self.hook_body, hook);
+        let frame = is_hook_name(&f.name.name).then_some(self.frames.len() - 1);
+        let outer_frame = std::mem::replace(&mut self.hook_frame, frame);
         self.block(&f.body, Some(&ret));
         self.hook_body = outer_hook;
+        self.hook_frame = outer_frame;
         self.frames.pop();
         self.pop();
         self.bounds_in_scope = outer_bounds;
@@ -2912,6 +2927,10 @@ impl<'o> Checker<'o> {
                 self.binding_stmt = true;
                 self.declare(&v.name, ty, LocalKind::Var);
                 self.binding_stmt = false;
+                let frame = self.frames.len() - 1;
+                if !self.frames[frame].render && self.hook_frame != Some(frame) {
+                    self.capturable.insert(v.name.span);
+                }
             }
             StmtKind::Assign(a) => self.assign(a),
             StmtKind::Return(_) if self.frames.last().is_some_and(|f| f.cleanup) => {
@@ -3172,6 +3191,7 @@ impl<'o> Checker<'o> {
                 }
                 (Seg::Index(i), Ty::Map(value)) => {
                     self.expr(i, Some(&Ty::Str));
+                    self.out.map_writes.insert(i.id);
                     *value
                 }
                 (_, Ty::Unknown) => Ty::Unknown,
@@ -3403,6 +3423,10 @@ impl<'o> Checker<'o> {
     }
 
     fn var_captured(&mut self, info: &Local, span: Span) {
+        // A function's own `var`: its closures capture the binding, as Swift's do (JS's `let`).
+        if self.capturable.contains(&info.span) {
+            return;
+        }
         self.report(
             Diagnostic::error(
                 "B0402",
@@ -3411,7 +3435,7 @@ impl<'o> Checker<'o> {
             )
             .label("captured here")
             .with_label(info.span, "declared here")
-            .help("bind its value to a `let` before the closure, or make it `@state`")
+            .help("bind its value to a `let` before the closure, or make it `@state` (a function's own `var` may be captured; a view's render and a hook function's may not)")
             .spec("43-soundness-rules"),
         );
     }

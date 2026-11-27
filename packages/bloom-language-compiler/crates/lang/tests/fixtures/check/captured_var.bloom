@@ -1,0 +1,10 @@
+// A hook function's own `var` is not one its closures may capture: they are cached across calls,
+// and would keep the first call's binding.
+func useCount(_ tags: [String]) -> () -> Int {
+  var seen = 0
+  let bump = {
+    seen += 1
+    return seen
+  }
+  return bump
+}
