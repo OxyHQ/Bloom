@@ -103,6 +103,9 @@ pub struct BloomOptions {
     pub dev: Option<bool>,
     /// The app's Expo Router folder, relative to `root` (default: `app/` or `src/app/`).
     pub app: Option<String>,
+    /// The migration mode (`--allow-ts-imports`, ADR 0002 section 4): an app module may import
+    /// TS by path, as `bloom migrate` checks its output. For an app part-way through a port.
+    pub allow_ts_imports: Option<bool>,
 }
 
 fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
@@ -112,6 +115,7 @@ fn lang_options(options: Option<BloomOptions>) -> bloom_lang::Options {
         paths: options.paths.unwrap_or_default().into_iter().collect(),
         dev: options.dev.unwrap_or(false),
         app: options.app.map(Into::into),
+        allow_ts_imports: options.allow_ts_imports.unwrap_or(false),
         ..bloom_lang::Options::default()
     }
 }
