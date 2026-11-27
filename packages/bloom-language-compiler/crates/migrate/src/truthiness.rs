@@ -62,6 +62,17 @@ pub fn spell(
         let plain = operand.chars().all(|c| c.is_alphanumeric() || c == '_');
         let object = found.ends_with('?') && !matches!(found, "String?" | "Int?" | "Float?" | "Bool?");
         if whole_if && plain && object && !negated {
+            // A branch that writes `x` (TS's `setX(…)`): `x` there would be the immutable
+            // unwrapped value, so the value is `xValue` and the writes stay `x`'s.
+            let body = end + 1;
+            if let Some(close) = block_end(source, body)
+                && !edits.iter().any(|(s, e, _)| start < *e && *s < close)
+                && !reserved.iter().any(|(s, e)| start < *e && *s < close)
+                && let Some(renamed) = rebind(&source[body + 1..close], operand)
+            {
+                edits.push((start, close, format!("let {operand}Value = {operand} {{{renamed}")));
+                continue;
+            }
             edits.push((start, end, format!("let {operand} = {operand}")));
             continue;
         }
@@ -533,4 +544,112 @@ fn branch_len(source: &str, then: bool) -> Option<usize> {
         i += 1;
     }
     (!then).then_some(bytes.len())
+}
+
+/// The index of the `}` closing the block whose `{` is at `open`, skipping strings.
+fn block_end(source: &str, open: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    if bytes.get(open) != Some(&b'{') {
+        return None;
+    }
+    let (mut depth, mut i, mut string) = (0usize, open, false);
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\\' if string => i += 1,
+            b'"' => string = !string,
+            b'{' if !string => depth += 1,
+            b'}' if !string => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i);
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    None
+}
+
+/// `body` (a block's text after its `{`) with each read of `name` written `nameValue`, when
+/// the block writes `name` (`name = …`); `None` when it does not. A member (`.name`), a label
+/// (`name:`) and the text of a string literal (outside its interpolations) are not reads.
+fn rebind(body: &str, name: &str) -> Option<String> {
+    let bytes = body.as_bytes();
+    let ident = |c: u8| c.is_ascii_alphanumeric() || c == b'_';
+    let mut out = String::with_capacity(body.len() + 16);
+    let (mut i, mut writes) = (0usize, false);
+    // Nesting of string literals and their `${…}` interpolations: `true` is a string.
+    let mut stack: Vec<bool> = Vec::new();
+    let mut braces: Vec<usize> = Vec::new();
+    while i < bytes.len() {
+        let in_string = stack.last() == Some(&true);
+        let c = bytes[i];
+        if in_string {
+            match c {
+                b'\\' => {
+                    out.push_str(&body[i..(i + 2).min(body.len())]);
+                    i += 2;
+                    continue;
+                }
+                b'"' => {
+                    stack.pop();
+                }
+                b'$' if bytes.get(i + 1) == Some(&b'{') => {
+                    stack.push(false);
+                    braces.push(0);
+                    out.push_str("${");
+                    i += 2;
+                    continue;
+                }
+                _ => {}
+            }
+            out.push(c as char);
+            i += 1;
+            continue;
+        }
+        match c {
+            b'"' => stack.push(true),
+            b'{' => {
+                if let Some(d) = braces.last_mut() {
+                    *d += 1;
+                }
+            }
+            b'}' if braces.last() == Some(&0) => {
+                braces.pop();
+                stack.pop();
+            }
+            b'}' => {
+                if let Some(d) = braces.last_mut() {
+                    *d -= 1;
+                }
+            }
+            _ => {}
+        }
+        if body[i..].starts_with(name)
+            && (i == 0 || !ident(bytes[i - 1]))
+            && bytes.get(i + name.len()).is_none_or(|&n| !ident(n))
+        {
+            let member = i >= 1 && bytes[i - 1] == b'.' && !(i >= 2 && bytes[i - 2] == b'.');
+            let after = &body[i + name.len()..];
+            let label = after.starts_with(':') && !after.starts_with("::");
+            let rest = after.trim_start();
+            let write = ["=", "+=", "-=", "*="].iter().any(|o| rest.starts_with(o))
+                && !rest.starts_with("==")
+                && !rest.starts_with("=>");
+            writes |= write && !member;
+            if member || label || write {
+                out.push_str(name);
+            } else {
+                out.push_str(name);
+                out.push_str("Value");
+            }
+            i += name.len();
+            continue;
+        }
+        let len = body[i..].chars().next().map_or(1, char::len_utf8);
+        out.push_str(&body[i..i + len]);
+        i += len;
+    }
+    writes.then_some(out)
 }
