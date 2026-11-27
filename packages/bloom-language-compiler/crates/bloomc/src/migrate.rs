@@ -235,7 +235,10 @@ fn module_imports(root: &Path, file: &Path, lang: &bloom_lang::Options) -> Resul
 
 /// Points the TS importers of `migrated` at their `.bloom` modules; returns what
 /// still needs a person (JSX that draws a module that is now a view).
-fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Result<Vec<String>, String> {
+pub(crate) fn rewrite_importers(
+    root: &Path,
+    migrated: &[(PathBuf, Option<String>)],
+) -> Result<Vec<String>, String> {
     let stems: Vec<PathBuf> =
         migrated.iter().map(|(p, _)| normalize(&root.join(p.with_extension("")))).collect();
     let mut notes = Vec::new();
@@ -246,7 +249,19 @@ fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Res
         let mut rest = source.as_str();
         let mut changed = false;
         let mut drawn = Vec::new();
-        while let Some(i) = rest.find(['\'', '"']) {
+        while let Some(i) = rest.find(['\'', '"', '/']) {
+            // A comment is copied as it is: an apostrophe in it opens no string.
+            if rest.as_bytes()[i] == b'/' {
+                let comment = match rest.as_bytes().get(i + 1) {
+                    Some(b'/') => Some(rest[i..].find('\n').map_or(rest.len(), |n| i + n)),
+                    Some(b'*') => Some(rest[i + 2..].find("*/").map_or(rest.len(), |n| i + 2 + n + 2)),
+                    _ => None,
+                };
+                let end = comment.unwrap_or(i + 1);
+                out.push_str(&rest[..end]);
+                rest = &rest[end..];
+                continue;
+            }
             let quote = rest.as_bytes()[i] as char;
             let Some(len) = rest[i + 1..].find(quote) else { break };
             let spec = &rest[i + 1..i + 1 + len];
@@ -255,10 +270,12 @@ fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Res
                 .iter()
                 .any(|k| head.ends_with(k));
             out.push_str(&rest[..=i]);
-            let target = if spec.starts_with('.') {
-                Some(normalize(&dir.join(spec)))
+            // A `.bloom` module migrated from 0.x is imported as `X.bloom` already.
+            let bare = spec.strip_suffix(".bloom").unwrap_or(spec);
+            let target = if bare.starts_with('.') {
+                Some(normalize(&dir.join(bare)))
             } else {
-                spec.strip_prefix("@/").map(|s| normalize(&root.join(s)))
+                bare.strip_prefix("@/").map(|s| normalize(&root.join(s)))
             };
             if is_specifier
                 && let Some(target) = target
@@ -266,12 +283,29 @@ fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Res
             {
                 // 2.0 exports a TS default export by name: `import X from` becomes
                 // `import { Name as X } from`.
-                if let Some(name) = &migrated[index].1 {
+                let name = migrated[index].1.as_deref();
+                if let Some(name) = name {
                     named_default_import(&mut out, name);
                 }
-                out.push_str(spec);
+                out.push_str(bare);
                 out.push_str(".bloom");
                 changed = true;
+                // `jest.mock(spec, () => ({ default: … }))` mocks the export by its name.
+                if let Some(name) = name
+                    && head.ends_with("jest.mock(")
+                {
+                    let after = &rest[i + 1 + len + 1..];
+                    if let Some(end) = call_end(after)
+                        && let Some(at) = after[..end].find("default:")
+                    {
+                        let mut call = after[..end].to_string();
+                        call.replace_range(at..at + "default:".len(), &format!("{name}:"));
+                        out.push(quote);
+                        out.push_str(&call);
+                        rest = &after[end..];
+                        continue;
+                    }
+                }
                 let statement = &head[head.rfind("import").unwrap_or(head.len())..];
                 drawn.extend(imported_names(statement));
             } else {
@@ -299,6 +333,20 @@ fn rewrite_importers(root: &Path, migrated: &[(PathBuf, Option<String>)]) -> Res
         }
     }
     Ok(notes)
+}
+
+/// Where the call `text` is inside (after its first argument) closes: the index of its `)`.
+fn call_end(text: &str) -> Option<usize> {
+    let mut depth = 0usize;
+    for (i, c) in text.char_indices() {
+        match c {
+            '(' | '{' | '[' => depth += 1,
+            ')' | '}' | ']' if depth == 0 => return (c == ')').then_some(i),
+            ')' | '}' | ']' => depth -= 1,
+            _ => {}
+        }
+    }
+    None
 }
 
 /// The `import` statement `out` ends inside (at its specifier's opening quote), with its
@@ -363,4 +411,37 @@ fn normalize(path: &Path) -> PathBuf {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_0x_default_export_is_imported_and_mocked_by_name() {
+        let root = std::env::temp_dir().join(format!("bloomc-importers-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("Post")).unwrap();
+        let caller = root.join("Feed.tsx");
+        std::fs::write(
+            &caller,
+            "// The row's chip, and the warning's.\n\
+             import Chip from './Post/LaneChip.bloom';\n\
+             import { Other } from './Post/Other.bloom';\n\
+             jest.mock('@/Post/LaneChip.bloom', () => ({ __esModule: true, default: () => null }));\n",
+        )
+        .unwrap();
+        let notes =
+            rewrite_importers(&root, &[(PathBuf::from("Post/LaneChip.bloom"), Some("LaneChip".into()))])
+                .unwrap();
+        let out = std::fs::read_to_string(&caller).unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
+        assert_eq!(notes, vec!["Feed.tsx: imports the .bloom module(s)".to_string()]);
+        assert_eq!(
+            out,
+            "// The row's chip, and the warning's.\n\
+             import { LaneChip as Chip } from './Post/LaneChip.bloom';\n\
+             import { Other } from './Post/Other.bloom';\n\
+             jest.mock('@/Post/LaneChip.bloom', () => ({ __esModule: true, LaneChip: () => null }));\n"
+        );
+    }
 }
