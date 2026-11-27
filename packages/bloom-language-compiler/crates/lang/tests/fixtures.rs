@@ -214,3 +214,54 @@ fn routes_follow_the_app_tree() {
     let _ = std::fs::remove_dir_all(&root);
     assert!(after.diagnostics.is_empty(), "the new route is seen: {:?}", after.diagnostics);
 }
+
+/// A package's `exports` patterns (`"./icons/Ri*"`), resolved as Node and TS do: the longest
+/// matching prefix, its `*` replaced, `types` read before `react-native`, `import`, `default`.
+#[test]
+fn package_exports_patterns() {
+    let root = Path::new(env!("CARGO_TARGET_TMPDIR")).join("exports_patterns");
+    let _ = std::fs::remove_dir_all(&root);
+    let bloom = root.join("node_modules/@oxy.so/bloom");
+    let files = [
+        (
+            "package.json",
+            r#"{
+  "name": "@oxy.so/bloom",
+  "exports": {
+    "./icons/*": { "types": "./lib/typescript/module/icons/wrong/*.d.ts" },
+    "./icons/Ri*": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/remix/Ri*.d.ts",
+        "default": "./src/icons/remix/Ri*.tsx"
+      },
+      "import": { "types": "./lib/typescript/module/icons/remix/Ri*.d.ts", "default": "./lib/module/icons/remix/Ri*.js" }
+    },
+    "./icons/LikeIcon": [{ "import": { "types": "./lib/typescript/module/icons/LikeIcon.d.ts" } }]
+  }
+}"#,
+        ),
+        (
+            "lib/typescript/module/icons/remix/RiHeart3Line.d.ts",
+            "export declare const RiHeart3Line: import(\"react\").ForwardRefExoticComponent<{ size?: number }>;\n",
+        ),
+        (
+            "lib/typescript/module/icons/LikeIcon.d.ts",
+            "export declare function LikeIcon({ size }: { size?: number }): import(\"react\").JSX.Element;\n",
+        ),
+    ];
+    for (path, text) in files {
+        let path = bloom.join(path);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, text).unwrap();
+    }
+    let source = std::fs::read_to_string(fixtures().join("packages/exports_patterns.bloom")).unwrap();
+    let file = root.join("Liked.bloom");
+    let options = Options { root: Some(root.clone()), ..Default::default() };
+    let output = compile(&source, &file.to_string_lossy(), &options);
+    let all: Vec<&str> =
+        output.diagnostics.iter().chain(&output.warnings).map(|d| d.rendered.as_str()).collect();
+    assert!(all.is_empty(), "{}", all.join("\n\n"));
+    if let Err(failure) = snapshot(&fixtures().join("packages/exports_patterns.ts.snap"), &output.code) {
+        panic!("{failure}");
+    }
+}
