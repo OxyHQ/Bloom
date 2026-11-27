@@ -456,6 +456,26 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
             {
                 Some((end, end, "!".to_string()))
             }
+            // A TS tuple's `length` (`coordinates: [number, number]`): its arity.
+            ("B0205", "count")
+                if receiver.is_some_and(|r| r.starts_with('(') && r.ends_with(')')) && source[..start].ends_with('.') =>
+            {
+                let r = receiver.unwrap_or_default();
+                let inner = &r[1..r.len() - 1];
+                let mut depth = 0i32;
+                let arity = 1 + inner
+                    .chars()
+                    .filter(|c| {
+                        match c {
+                            '(' | '[' | '{' | '<' => depth += 1,
+                            ')' | ']' | '}' | '>' => depth -= 1,
+                            _ => {}
+                        }
+                        *c == ',' && depth == 0
+                    })
+                    .count();
+                receiver_start(source, start).map(|at| (at, end, arity.to_string()))
+            }
             // An `Int?` index (`indexOf`, `findIndex`) TS's test had found (`if (i > 0)`), used
             // where the index is required (`xs[i]`, `removing(at: i)`): `i!`.
             ("B0201", _)
@@ -772,6 +792,10 @@ fn receiver_start(source: &str, start: usize) -> Option<usize> {
         at = ident.len();
         if at > 0 && bytes[at - 1] == b'.' {
             at -= 1;
+            // `a!.b`, `a?.b`: the unwrap belongs to the receiver.
+            while at > 0 && matches!(bytes[at - 1], b'!' | b'?') {
+                at -= 1;
+            }
             continue;
         }
         break;
