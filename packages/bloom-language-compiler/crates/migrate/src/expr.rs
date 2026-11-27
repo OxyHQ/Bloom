@@ -900,6 +900,19 @@ impl Tr<'_> {
                 && !self.react.contains_key(id.name.as_str()))
     }
 
+    /// `Array.from` itself, not a local or an import of that name.
+    fn is_array_from(&self, call: &CallExpression) -> bool {
+        matches!(&call.callee, Expression::StaticMemberExpression(m)
+            if m.property.name == "from"
+                && matches!(&m.object, Expression::Identifier(o) if o.name == "Array" && !self.imported.contains("Array")))
+    }
+
+    /// `0..<n`, the bound parenthesized unless it is a postfix expression.
+    fn range_to(&mut self, n: &Expression) -> String {
+        let n = self.expr(n);
+        if is_postfix_text(&n) { format!("0..<{n}") } else { format!("0..<({n})") }
+    }
+
     fn call_inner(&mut self, call: &CallExpression) -> String {
         // `Math.max(a, b)` and kin are the prelude's typed `max(a, b)`; `Array.isArray(x)` is `x is [Foreign]`.
         if let Expression::StaticMemberExpression(m) = &call.callee
@@ -915,6 +928,30 @@ impl Tr<'_> {
             if let Some(f) = prelude {
                 let args: Vec<String> = call.arguments.iter().map(|a| self.expr(a.to_expression())).collect();
                 return format!("{f}({})", args.join(", "));
+            }
+            // `Array.from({ length: n }, (_, i) => …)` is `(0..<n).map { i in … }`, and with no
+            // function the range itself (ADR 0002 section 6.3).
+            if object.name == "Array"
+                && m.property.name == "from"
+                && let Some(n) = array_from_length(call)
+            {
+                let range = self.range_to(n);
+                return match call.arguments.get(1) {
+                    None => format!("({range})"),
+                    Some(Argument::ArrowFunctionExpression(arrow)) if let Some(i) = unused_item(arrow) => {
+                        let i = match i {
+                            Some((name, span)) => self.bind(name, span),
+                            None => "_".into(),
+                        };
+                        let body = self.closure_body(arrow);
+                        format!("({range}).map {{ {i} in\n{body}\n}}")
+                    }
+                    Some(_) => self.refuse(
+                        "array:from",
+                        "`Array.from({ length })` with a function that reads its item (`undefined`)",
+                        call.span,
+                    ),
+                };
             }
             if object.name == "Array" && m.property.name == "isArray" && call.arguments.len() == 1 {
                 let value = self.expr(call.arguments[0].to_expression());
@@ -998,6 +1035,19 @@ impl Tr<'_> {
             && self.is_view(&member.object)
         {
             return self.modifier(call, &member.object, &member.property.name, member.property.span);
+        }
+        // `Array.from({ length: n }).map((_, i) => …)`: `(0..<n).map { i in … }`.
+        if let Some((member, x, i, arrow)) = indexed_callback(call, &["map", "flatMap"])
+            && x.starts_with('_')
+            && let Expression::CallExpression(from) = member.object.without_parentheses()
+            && self.is_array_from(from)
+            && from.arguments.len() == 1
+            && let Some(n) = array_from_length(from)
+        {
+            let range = self.range_to(n);
+            let i = self.bind(i, arrow.span);
+            let body = self.closure_body(arrow);
+            return format!("({range}).{} {{ {i} in\n{body}\n}}", member.property.name);
         }
         // `xs.map((x, i) => …)`: `xs.enumerated().map { (i, x) in … }`.
         if let Some((member, x, i, arrow)) = indexed_callback(call, &["map", "flatMap"]) {
@@ -1894,6 +1944,31 @@ pub fn indexed_callback<'b, 'a>(
             }
             _ => None,
         },
+        _ => None,
+    }
+}
+
+/// `Array.from({ length: n }, …)`'s `n`.
+pub fn array_from_length<'b, 'a>(call: &'b CallExpression<'a>) -> Option<&'b Expression<'a>> {
+    let Some(Argument::ObjectExpression(o)) = call.arguments.first() else { return None };
+    let [ObjectPropertyKind::ObjectProperty(p)] = o.properties.as_slice() else { return None };
+    (!p.computed && p.key.static_name().is_some_and(|k| k == "length") && call.arguments.len() <= 2).then_some(&p.value)
+}
+
+/// An `Array.from` callback's index parameter, when it never reads the item (`undefined`):
+/// `Some(None)` for none (`() => …`, `(_) => …`), `Some(Some(i))` for `(_, i) => …`.
+fn unused_item<'b>(arrow: &'b ArrowFunctionExpression) -> Option<Option<(&'b str, Span)>> {
+    if arrow.r#async || arrow.params.rest.is_some() {
+        return None;
+    }
+    let name = |p: &'b oxc_ast::ast::FormalParameter| match &p.pattern {
+        BindingPattern::BindingIdentifier(id) => Some((id.name.as_str(), id.span)),
+        _ => None,
+    };
+    match arrow.params.items.as_slice() {
+        [] => Some(None),
+        [x] => name(x).filter(|(x, _)| x.starts_with('_')).map(|_| None),
+        [x, i] => name(x).filter(|(x, _)| x.starts_with('_')).and(name(i)).map(Some),
         _ => None,
     }
 }
