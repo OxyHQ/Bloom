@@ -1952,7 +1952,8 @@ pub fn indexed_callback<'b, 'a>(
 pub fn array_from_length<'b, 'a>(call: &'b CallExpression<'a>) -> Option<&'b Expression<'a>> {
     let Some(Argument::ObjectExpression(o)) = call.arguments.first() else { return None };
     let [ObjectPropertyKind::ObjectProperty(p)] = o.properties.as_slice() else { return None };
-    (!p.computed && p.key.static_name().is_some_and(|k| k == "length") && call.arguments.len() <= 2).then_some(&p.value)
+    (!p.computed && p.key.static_name().is_some_and(|k| k == "length") && call.arguments.len() <= 2)
+        .then_some(&p.value)
 }
 
 /// An `Array.from` callback's index parameter, when it never reads the item (`undefined`):
