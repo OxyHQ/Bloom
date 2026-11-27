@@ -2620,6 +2620,8 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::P(P::AndAnd) => BinaryOp::And,
             Tok::P(P::OrOr) => BinaryOp::Or,
             Tok::P(P::QuestionQuestion) => BinaryOp::Default,
+            Tok::P(P::DotDotLt) => BinaryOp::HalfOpen,
+            Tok::P(P::DotDotDot) => BinaryOp::Closed,
             _ => return None,
         })
     }
@@ -2668,6 +2670,22 @@ impl<'s, 'i> Parser<'s, 'i> {
                     )
                     .label("comparisons do not chain")
                     .help("join two comparisons with `&&`: `a < b && b < c`")
+                    .spec("61-precedence-high-to-low"),
+                );
+            }
+            // Ranges do not chain either (Swift's range operators are not associative).
+            if op.is_range()
+                && let ExprKind::Binary(inner, _, _) = &lhs.kind
+                && inner.is_range()
+            {
+                self.error(
+                    Diagnostic::error(
+                        "B0101",
+                        op_span,
+                        format!("`{}` cannot follow another range", op.text()),
+                    )
+                    .label("ranges do not chain")
+                    .help("write one range: `a..<b`")
                     .spec("61-precedence-high-to-low"),
                 );
             }

@@ -159,6 +159,41 @@ impl Checker<'_> {
                         self.out.calls.insert(expr.id, CallRes::Regex);
                         return Ty::Foreign("RegExp".into());
                     }
+                    // `Array(0..<n)`, `Array(xs)`, `Array(set)`: a new array of the elements.
+                    "Array" if self.lookup("Array").is_none() => {
+                        self.out.calls.insert(expr.id, CallRes::ArrayOf);
+                        let [arg] = call.args.as_slice() else {
+                            self.report(
+                                Diagnostic::error("B0207", call.callee.span, "`Array` takes one collection")
+                                    .label("`Array(0..<n)`, `Array(xs)` or `Array(set)`")
+                                    .spec("63-ranges"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Unknown;
+                        };
+                        let ty = self.expr(&arg.value, None);
+                        return match self.resolve(&ty) {
+                            Ty::List(elem) | Ty::Set(elem) if arg.label.is_none() && !arg.spread => {
+                                Ty::List(elem)
+                            }
+                            Ty::Unknown => Ty::Unknown,
+                            other => {
+                                self.report(
+                                    Diagnostic::error(
+                                        "B0201",
+                                        arg.value.span,
+                                        format!(
+                                            "`Array` takes a range, a list or a set, not {}",
+                                            self.show(&other)
+                                        ),
+                                    )
+                                    .label("not a collection")
+                                    .spec("63-ranges"),
+                                );
+                                Ty::Unknown
+                            }
+                        };
+                    }
                     "catching" => return self.catching(expr, call),
                     // `import("./X")`: the module's promise, TS's to type.
                     "import" if self.lookup("import").is_none() => {

@@ -94,6 +94,8 @@ pub enum CallRes {
     Math(&'static str),
     /// `Regex(pattern, flags)`: a JS `RegExp`.
     Regex,
+    /// `Array(xs)`: a new array of a range's, a list's or a set's elements.
+    ArrayOf,
     /// `catching { … }`: the block's value, or what it threw, as a `Result`.
     Catching,
     /// `Int(s)` / `Float(s)`.
@@ -4831,6 +4833,17 @@ impl<'o> Checker<'o> {
 
     fn binary(&mut self, expr: &Expr, op: BinaryOp, lhs: &Expr, rhs: &Expr, expected: Option<&Ty>) -> Ty {
         match op {
+            // `a..<b`, `a...b`: a collection of `Int`s, typed `[Int]`. A `for` over it and its
+            // `.map` build no array of their own (section 6.3).
+            BinaryOp::HalfOpen | BinaryOp::Closed => {
+                for side in [lhs, rhs] {
+                    let ty = self.expr(side, Some(&Ty::Int));
+                    if !self.coerce(&ty, &Ty::Int) {
+                        self.mismatch(side.span, &ty, &Ty::Int);
+                    }
+                }
+                Ty::List(Box::new(Ty::Int))
+            }
             BinaryOp::And | BinaryOp::Or => {
                 let left = self.expr(lhs, None);
                 // `f || b` of a TS value `f`: JS's value `||`, `b` when `f` is falsy, typed
