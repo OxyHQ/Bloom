@@ -5,6 +5,7 @@
 //! rewritten; anything else stays an error (a refusal).
 
 use bloom_lang::Diagnostic;
+use std::collections::HashMap;
 
 /// `source` with each member bloomc named respelled, or `None` when there is none.
 pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
@@ -18,6 +19,14 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
         let edit = match (d.code, text) {
             // `s.has(x)`, `m.size`: a Bloom `Set`/`Map` has `contains` and `count`.
             ("B0209", "has") if collection => Some((start, end, "contains".to_string())),
+            // `n.toFixed(d)`: Bloom's `n.formatted(fractionDigits: d)` (`Int` and `Float`).
+            ("B0209", "toFixed")
+                if matches!(receiver, Some("Int" | "Float" | "Int?" | "Float?"))
+                    && source[end..].starts_with('(')
+                    && !source[end..].starts_with("()") =>
+            {
+                Some((start, end + 1, "formatted(fractionDigits: ".to_string()))
+            }
             // `xs?[0]` from JS's `xs?.[0]`, where TS typed `xs` present (a TS value, `Foreign`):
             // there is nothing to unwrap, so the read is `xs[0]`, as JS read it.
             ("B0214", _)
@@ -1346,4 +1355,40 @@ fn block_end(source: &str, start: usize) -> Option<usize> {
         prev = c;
     }
     None
+}
+
+/// A TS cast the codemod dropped (`x as Tab`, [`crate::module::Translated::casts`]) where bloomc
+/// expected a string literal union and found `String`: Bloom's checked cast, `(x as! Tab)` (a
+/// trap in a dev build when `x` is not one of the cases, TS's plain cast in a release one).
+pub fn casts(source: &str, diagnostics: &[Diagnostic], casts: &HashMap<String, String>) -> Option<String> {
+    let mut edits: Vec<(usize, usize, String)> = Vec::new();
+    for d in diagnostics {
+        if d.code != "B0201" {
+            continue;
+        }
+        let Some(expected) =
+            d.message.strip_prefix("expected `").and_then(|m| m.strip_suffix("`, found `String`"))
+        else {
+            continue;
+        };
+        if !expected.starts_with('"') {
+            continue;
+        }
+        let (start, end) = (d.span.start as usize, d.span.end as usize);
+        let Some(text) = source.get(start..end) else { continue };
+        let Some(ty) = casts.get(&crate::truthiness::squeeze(text)) else { continue };
+        if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
+            continue;
+        }
+        edits.push((start, end, format!("({text} as! {ty})")));
+    }
+    if edits.is_empty() {
+        return None;
+    }
+    edits.sort_by_key(|(start, ..)| std::cmp::Reverse(*start));
+    let mut out = source.to_string();
+    for (start, end, text) in edits {
+        out.replace_range(start..end, &text);
+    }
+    Some(out)
 }
