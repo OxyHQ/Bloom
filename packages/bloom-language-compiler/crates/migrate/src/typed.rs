@@ -50,6 +50,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic]) -> Option<String> {
                     (start, end, snapshot)
                 })
             }
+            // `0..<n` with a `Float` bound (a TS `number` given to `Array.from({ length })`, which
+            // truncates it): `0..<n.truncated()`.
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Float`"
+                    && (source[..start].ends_with("..<") || source[..start].ends_with("..<(")) =>
+            {
+                let simple = text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
+                Some((start, end, if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") }))
+            }
             // `n = value` where `@state n = 7` took an `Int` from its literal but TS's state is a
             // `number`: the state is a `Float` (`@state n: Float = 7`).
             ("B0201", _)
