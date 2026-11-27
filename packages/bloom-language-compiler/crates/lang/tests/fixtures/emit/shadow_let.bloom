@@ -1,0 +1,34 @@
+// A `let` or `var` that shadows a parameter, a prop or an outer local takes a JS name of its
+// own (`x$1`): JS has one scope for a function's parameters and body (`const x` beside a
+// parameter `x` is "already declared"), and `const x = x ?? 0` in an inner block reads the new
+// `x` before it is set. The codemod writes TS's `const { isNested = false } = props` this way.
+public func f(_ x: Int? = none) -> Int {
+  let x = x ?? 0
+  return x
+}
+
+public func g(_ items: [Int], _ limit: Int) -> [Int] {
+  var limit = limit
+  if limit > items.count {
+    limit = items.count
+  }
+  return items.map { item in
+    let item = item * 2
+    return item
+  }.prefix(limit)
+}
+
+public func pair(_ point: (Int, Int)?) -> Int {
+  let point = point ?? (0, 0)
+  let (x, y) = point
+  return x + y
+}
+
+public struct Row: View {
+  var isNested: Bool? = none
+
+  var body: some View {
+    let isNested = isNested ?? false
+    Text(isNested ? "nested" : "top")
+  }
+}

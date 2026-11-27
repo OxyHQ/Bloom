@@ -322,6 +322,10 @@ pub struct CheckResult {
     /// Pattern span → the type it matches; binding span → its local.
     pub pattern_tys: HashMap<Span, Ty>,
     pub pattern_locals: HashMap<Span, LocalId>,
+    /// A `let`/`var` that shadows a parameter, a prop or an outer local (`let x = x ?? 0`), by
+    /// its name's span: its JS name (`x$1`). JS has one scope for a function's parameters and
+    /// body, and `const x = x` reads the new `x` before it is set.
+    pub renamed: HashMap<Span, String>,
     /// Item index → its locals: a fn's parameters, a view's info.
     pub fn_params: HashMap<Span, Vec<LocalId>>,
     pub views: HashMap<usize, ViewInfo>,
@@ -525,6 +529,8 @@ pub struct Checker<'o> {
     shapes_in_scope: Vec<(String, Ty)>,
     /// Checking a module constant's record literal: its string literal fields keep their types.
     literal_record: bool,
+    /// Declaring a `let`/`var` statement's names: one that shadows is renamed (`renamed`).
+    binding_stmt: bool,
     /// Calls of a shape-bounded generic, checked once their type arguments are known: each
     /// type argument, its shape, where, and the shapes in scope there.
     pending_shapes: Vec<PendingShape>,
@@ -625,6 +631,7 @@ impl<'o> Checker<'o> {
             bounds_in_scope: Vec::new(),
             shapes_in_scope: Vec::new(),
             literal_record: false,
+            binding_stmt: false,
             pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
@@ -1129,6 +1136,23 @@ impl<'o> Checker<'o> {
     }
 
     fn declare(&mut self, name: &Ident, ty: Ty, kind: LocalKind) -> LocalId {
+        if self.binding_stmt
+            && matches!(kind, LocalKind::Let | LocalKind::Var)
+            && name.name != "_"
+            && let Some(outer) = self.lookup(&name.name)
+            && !matches!(
+                self.out.locals[outer].kind,
+                LocalKind::ModuleFn
+                    | LocalKind::ModuleConst
+                    | LocalKind::View
+                    | LocalKind::Import { .. }
+                    | LocalKind::Component { .. }
+            )
+        {
+            let taken =
+                self.out.renamed.values().filter(|n| n.starts_with(&format!("{}$", name.name))).count();
+            self.out.renamed.insert(name.span, format!("{}${}", name.name, taken + 1));
+        }
         let id = self.out.locals.len();
         self.out.locals.push(Local {
             name: name.name.clone(),
@@ -2804,12 +2828,16 @@ impl<'o> Checker<'o> {
                 self.hook_allowed = self.hook_body == Some(self.scopes.len());
                 let ty = self.expr(&l.value, declared.as_ref());
                 self.hook_allowed = false;
+                self.binding_stmt = true;
                 self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
+                self.binding_stmt = false;
             }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
                 let ty = self.expr(&v.value, declared.as_ref());
+                self.binding_stmt = true;
                 self.declare(&v.name, ty, LocalKind::Var);
+                self.binding_stmt = false;
             }
             StmtKind::Assign(a) => self.assign(a),
             StmtKind::Return(_) if self.frames.last().is_some_and(|f| f.cleanup) => {
