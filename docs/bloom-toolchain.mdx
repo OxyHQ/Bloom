@@ -151,7 +151,7 @@ modules through the compiler's Metro adapter), `babel.config.js`, `tsconfig.json
 | `BLOOM_STORE` | the content-addressed store |
 | `BLOOM_BUN` | the bun binary |
 | `BLOOM_ANDROID_ABIS` | Gradle's `reactNativeArchitectures` (default `x86_64`) |
-| `BLOOM_LINK` | `name=path,…`: first-party packages from a checkout, for working on Bloom itself |
+| `BLOOM_LINK` | `name=path,…`: first-party packages from a checkout, for working on Bloom itself. A `.tgz` is installed as is; a directory as it packs (its `pack:local` script when it has one, as the compiler's carries the addon the checkout built, else `bun pm pack`), never copied, so the checkout's examples and their `.bloom/build/` stay out. A rebuilt checkout is installed again on the next build. |
 
 ## Binding modules
 
