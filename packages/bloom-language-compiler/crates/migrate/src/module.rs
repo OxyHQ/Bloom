@@ -139,8 +139,8 @@ pub struct Tr<'s> {
     /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
     /// name and the own props; a call's other fields are the rest's record.
     pub rest_views: HashMap<String, (String, Vec<String>)>,
-    /// `useQuery({ … })` calls drawn with Mention's `TanStackQuery` binding module (their
-    /// span starts): every `useQuery` of the file, each with options and result reads the
+    /// `useQuery({ … })` and `useInfiniteQuery({ … })` calls drawn with Mention's `TanStackQuery`
+    /// binding module (their span starts): every one of the file, each with options and result reads the
     /// binding declares (`Tr::scan_tanstack`).
     pub tanstack: HashSet<u32>,
     /// Views whose written-out props took TS destructure defaults (`Scope::field_defaults`): a
@@ -972,61 +972,137 @@ impl<'s> Tr<'s> {
 
     /// [`Tr::tanstack`]. The binding (Mention's `Bindings/TanStackQuery`) declares these
     /// options and result fields; a file that reads others keeps TanStack's TS declarations.
+    /// `useInfiniteQuery` is the cursor-paged one: a `String?` cursor (`initialPageParam` of
+    /// `undefined`/`null`), `queryFn: ({ pageParam }) => …` and a one-page `getNextPageParam`.
     fn scan_tanstack(&mut self, body: &[Statement]) {
         use oxc_ast_visit::Visit;
         const OPTIONS: &[&str] =
             &["queryKey", "queryFn", "enabled", "staleTime", "gcTime", "refetchInterval"];
         const RESULT: &[&str] = &["data", "isLoading", "isPending", "isFetching", "isError", "refetch"];
-        if self.import_sources.get("useQuery").map(String::as_str) != Some("@tanstack/react-query")
-            || self.import_renames.contains_key("useQuery")
-        {
+        const INFINITE_OPTIONS: &[&str] =
+            &["queryKey", "queryFn", "initialPageParam", "getNextPageParam", "enabled", "staleTime"];
+        const INFINITE_RESULT: &[&str] = &[
+            "data",
+            "isLoading",
+            "isPending",
+            "isFetching",
+            "isError",
+            "hasNextPage",
+            "isFetchingNextPage",
+            "fetchNextPage",
+            "refetch",
+        ];
+        let hooks: Vec<&'static str> = ["useQuery", "useInfiniteQuery"]
+            .into_iter()
+            .filter(|h| {
+                self.import_sources.get(*h).map(String::as_str) == Some("@tanstack/react-query")
+                    && !self.import_renames.contains_key(*h)
+            })
+            .collect();
+        if hooks.is_empty() {
             return;
         }
         #[derive(Default)]
         struct Calls<'s> {
             src: &'s str,
+            hooks: Vec<&'static str>,
             all: usize,
             bound: Vec<(u32, Option<String>, bool)>,
         }
-        fn options_ok(call: &oxc_ast::ast::CallExpression) -> bool {
+        fn hook<'h>(hooks: &[&'h str], call: &oxc_ast::ast::CallExpression) -> Option<&'h str> {
+            let Expression::Identifier(id) = &call.callee else { return None };
+            hooks.iter().find(|h| **h == id.name.as_str()).copied()
+        }
+        /// `undefined`, `null`, or either cast (`undefined as string | undefined`): no first cursor.
+        fn no_cursor(e: &Expression) -> bool {
+            match e.without_parentheses() {
+                Expression::TSAsExpression(a) => no_cursor(&a.expression),
+                Expression::NullLiteral(_) => true,
+                Expression::Identifier(id) => id.name == "undefined",
+                _ => false,
+            }
+        }
+        fn options_ok(call: &oxc_ast::ast::CallExpression, infinite: bool) -> bool {
             let [Argument::ObjectExpression(o)] = call.arguments.as_slice() else { return false };
+            let allowed = if infinite { INFINITE_OPTIONS } else { OPTIONS };
             let mut has_fn = false;
+            let mut has_cursor = !infinite;
             for p in &o.properties {
                 let oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) = p else { return false };
                 let Some(key) = crate::view::key_name(&p.key) else { return false };
-                if !OPTIONS.contains(&key.as_str()) || p.computed {
+                if !allowed.contains(&key.as_str()) || p.computed {
                     return false;
                 }
-                if key == "queryFn" {
-                    // `() => call()`: its promise is awaited in the binding's async closure.
-                    let Expression::ArrowFunctionExpression(a) = &p.value else { return false };
-                    if a.get_expression().is_none() || !a.params.items.is_empty() {
-                        return false;
+                match key.as_str() {
+                    "queryFn" => {
+                        // `() => call()`, or `({ pageParam }) => call(pageParam)` for a page: its
+                        // promise is awaited in the binding's async closure.
+                        let Expression::ArrowFunctionExpression(a) = &p.value else { return false };
+                        if a.get_expression().is_none() {
+                            return false;
+                        }
+                        let params_ok = if infinite {
+                            match a.params.items.as_slice() {
+                                [] => true,
+                                [param] => match &param.pattern {
+                                    BindingPattern::ObjectPattern(o) => {
+                                        o.rest.is_none()
+                                            && o.properties.iter().all(|f| {
+                                                crate::view::key_name(&f.key).as_deref() == Some("pageParam")
+                                                    && matches!(&f.value, BindingPattern::BindingIdentifier(id) if id.name == "pageParam")
+                                            })
+                                    }
+                                    _ => false,
+                                },
+                                _ => false,
+                            }
+                        } else {
+                            a.params.items.is_empty()
+                        };
+                        if !params_ok {
+                            return false;
+                        }
+                        has_fn = true;
                     }
-                    has_fn = true;
+                    "initialPageParam" => {
+                        if !no_cursor(&p.value) {
+                            return false;
+                        }
+                        has_cursor = true;
+                    }
+                    // A named function, or an arrow of the last page alone: the binding's `(T) -> String?`.
+                    "getNextPageParam" => match &p.value {
+                        Expression::Identifier(_) => {}
+                        Expression::ArrowFunctionExpression(a)
+                            if a.params.items.len() == 1 && a.params.rest.is_none() => {}
+                        _ => return false,
+                    },
+                    _ => {}
                 }
             }
-            has_fn
+            has_fn && has_cursor
         }
         impl<'a> Visit<'a> for Calls<'_> {
             fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-                if matches!(&call.callee, Expression::Identifier(id) if id.name == "useQuery") {
+                if hook(&self.hooks, call).is_some() {
                     self.all += 1;
                 }
                 oxc_ast_visit::walk::walk_call_expression(self, call);
             }
             fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
                 if let Some(Expression::CallExpression(call)) = &d.init
-                    && matches!(&call.callee, Expression::Identifier(id) if id.name == "useQuery")
+                    && let Some(name) = hook(&self.hooks, call)
                 {
-                    let ok = options_ok(call);
+                    let infinite = name == "useInfiniteQuery";
+                    let result = if infinite { INFINITE_RESULT } else { RESULT };
+                    let ok = options_ok(call, infinite);
                     let reads = match &d.id {
                         BindingPattern::BindingIdentifier(id) => Some(id.name.to_string()),
                         BindingPattern::ObjectPattern(p) => {
                             let fields = p.rest.is_none()
                                 && p.properties.iter().all(|f| {
                                     crate::view::key_name(&f.key)
-                                        .is_some_and(|k| RESULT.contains(&k.as_str()))
+                                        .is_some_and(|k| result.contains(&k.as_str()))
                                         && matches!(f.value, BindingPattern::BindingIdentifier(_))
                                 });
                             self.bound.push((call.span.start, None, ok && fields));
@@ -1035,14 +1111,15 @@ impl<'s> Tr<'s> {
                         }
                         _ => None,
                     };
-                    let ok = ok && reads.as_deref().is_some_and(|n| reads_only(self.src, n, d.span.end));
+                    let ok =
+                        ok && reads.as_deref().is_some_and(|n| reads_only(self.src, n, d.span.end, result));
                     self.bound.push((call.span.start, reads, ok));
                 }
                 oxc_ast_visit::walk::walk_variable_declarator(self, d);
             }
         }
         /// Every read of `name` after `from` is `name.f` / `name?.f` of a declared field.
-        fn reads_only(src: &str, name: &str, from: u32) -> bool {
+        fn reads_only(src: &str, name: &str, from: u32, result: &[&str]) -> bool {
             let text = &src[from as usize..];
             text.match_indices(name).all(|(i, _)| {
                 let before = text[..i].chars().next_back();
@@ -1054,11 +1131,11 @@ impl<'s> Tr<'s> {
                 let field = after.strip_prefix("?.").or_else(|| after.strip_prefix('.'));
                 field.is_some_and(|f| {
                     let f: String = f.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
-                    RESULT.contains(&f.as_str())
+                    result.contains(&f.as_str())
                 })
             })
         }
-        let mut calls = Calls { src: self.src, ..Default::default() };
+        let mut calls = Calls { src: self.src, hooks, ..Default::default() };
         for statement in body {
             calls.visit_statement(statement);
         }
