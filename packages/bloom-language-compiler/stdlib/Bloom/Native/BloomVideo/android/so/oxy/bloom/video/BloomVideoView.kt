@@ -62,7 +62,7 @@ class BloomVideoView(context: ThemedReactContext) : TextureView(context) {
   }
 
   /** Stops showing `player`. */
-  fun detach(player: BloomPlayer) {
+  internal fun detach(player: BloomPlayer) {
     if (player.view === this) {
       player.exo.clearVideoTextureView(this)
       player.view = null
@@ -74,7 +74,7 @@ class BloomVideoView(context: ThemedReactContext) : TextureView(context) {
     Players.forget(this)
   }
 
-  fun videoSizeChanged(size: VideoSize) {
+  internal fun videoSizeChanged(size: VideoSize) {
     // The size the picture is shown at (a pixel aspect ratio other than 1 widens it).
     val w = (size.width * size.pixelWidthHeightRatio).toInt()
     if (w == videoWidth && size.height == videoHeight) return

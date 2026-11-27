@@ -15,14 +15,19 @@ import com.facebook.react.bridge.UiThreadUtil
  * generates from the Bloom interface, so the Kotlin compiler checks this class against it.
  */
 class BloomVideoModule(context: ReactApplicationContext) : NativeBloomVideoSpec(context), PlayerEvents {
-  private fun on(id: Double, work: (BloomPlayer) -> Unit) {
+  /**
+   * Runs `work` on player `id` on the main looper. A call without a result crosses as a
+   * synchronous one returning a boolean (ADR 0002, section 7); it only posts, so it returns at once.
+   */
+  private fun on(id: Double, work: (BloomPlayer) -> Unit): Boolean {
     UiThreadUtil.runOnUiThread { Players[id.toInt()]?.let(work) }
+    return true
   }
 
   private fun list(array: ReadableArray?): List<String> =
     if (array == null) emptyList() else (0 until array.size()).map { array.getString(it) ?: "" }
 
-  override fun create(id: Double, source: String?, headers: ReadableArray) {
+  override fun create(id: Double, source: String?, headers: ReadableArray): Boolean {
     val list = list(headers)
     UiThreadUtil.runOnUiThread {
       Players.remove(id.toInt())?.release()
@@ -30,11 +35,12 @@ class BloomVideoModule(context: ReactApplicationContext) : NativeBloomVideoSpec(
       Players.add(player)
       player.replace(source, list)
     }
+    return true
   }
 
-  override fun replace(id: Double, source: String?, headers: ReadableArray) {
+  override fun replace(id: Double, source: String?, headers: ReadableArray): Boolean {
     val list = list(headers)
-    on(id) { it.replace(source, list) }
+    return on(id) { it.replace(source, list) }
   }
 
   override fun play(id: Double) = on(id) { it.exo.play() }
@@ -53,8 +59,9 @@ class BloomVideoModule(context: ReactApplicationContext) : NativeBloomVideoSpec(
 
   override fun setTimeInterval(id: Double, seconds: Double) = on(id) { it.setTimeInterval(seconds) }
 
-  override fun release(id: Double) {
+  override fun release(id: Double): Boolean {
     UiThreadUtil.runOnUiThread { Players.remove(id.toInt())?.release() }
+    return true
   }
 
   override fun invalidate() {
