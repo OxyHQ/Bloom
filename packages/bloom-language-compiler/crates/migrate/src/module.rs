@@ -1128,6 +1128,25 @@ impl<'s> Tr<'s> {
                 if word(before) || before == Some('.') || word(after.chars().next()) {
                     return true;
                 }
+                // An element of a dependency list (`[t, query]`): the result as a value.
+                let prev = text[..i].trim_end().chars().next_back();
+                let next = after.trim_start().chars().next();
+                if matches!(prev, Some('[' | ',')) && matches!(next, Some(']' | ',')) {
+                    return true;
+                }
+                // `const { hasNextPage, fetchNextPage } = query;`: fields the binding declares.
+                if let Some(head) = text[..i].trim_end().strip_suffix('=')
+                    && let Some(open) = head.rfind("const {")
+                    && matches!(next, Some(';') | Some('\n') | None)
+                {
+                    let names = head[open + "const {".len()..].trim_end().trim_end_matches('}');
+                    return !names.contains(['{', ':', '.', '='])
+                        && names
+                            .split(',')
+                            .map(str::trim)
+                            .filter(|n| !n.is_empty())
+                            .all(|n| result.contains(&n));
+                }
                 let field = after.strip_prefix("?.").or_else(|| after.strip_prefix('.'));
                 field.is_some_and(|f| {
                     let f: String = f.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
