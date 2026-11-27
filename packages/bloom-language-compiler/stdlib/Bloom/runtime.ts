@@ -122,6 +122,8 @@ export function subtracting<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): ReadonlySe
 
 export const PI = Math.PI;
 export const E = Math.E;
+export const INFINITY = Number.POSITIVE_INFINITY;
+export const NAN = Number.NaN;
 export const sqrt = Math.sqrt;
 export const cbrt = Math.cbrt;
 export const pow = Math.pow;
