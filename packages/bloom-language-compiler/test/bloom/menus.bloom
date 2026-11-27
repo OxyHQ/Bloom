@@ -1,0 +1,23 @@
+/// A menu's actions and content, the 2.0 way: `actions()` and `menu()` nodes, as the TS wrote them.
+public struct Choice {
+  let id: String
+  let label: String
+}
+
+public struct RowActions: MenuActions {
+  let id: String
+  let onOpen: (String) -> Unit
+  var body: [String: () -> Unit] {
+    ["open": { onOpen(id) }]
+  }
+}
+
+public struct RowMenu: MenuContent {
+  let choices: [Choice]
+  var body: some View {
+    Item("First").tag("first")
+    for c in choices {
+      Item(c.label).tag(c.id)
+    }
+  }
+}

@@ -804,6 +804,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 "View" => Some(ViewKind::View),
                 "Screen" => Some(ViewKind::Screen),
                 "Layout" => Some(ViewKind::Layout),
+                "MenuActions" => Some(ViewKind::MenuActions),
+                "MenuContent" => Some(ViewKind::MenuContent),
                 _ => None,
             },
             _ => None,
