@@ -1398,6 +1398,13 @@ impl<'s> Tr<'s> {
         body: &[Statement],
     ) -> String {
         let init = init.without_parentheses();
+        // `memo(Named) as typeof Named`: the cast says nothing at run time.
+        let init = match init {
+            Expression::TSAsExpression(a) if matches!(&a.type_annotation, oxc_ast::ast::TSType::TSTypeQuery(_)) => {
+                a.expression.without_parentheses()
+            }
+            other => other,
+        };
         // `const X = memo(Named[, compare])` of a view here: X is Named (a view is memoised;
         // the comparator is Named's `equal` member).
         if let Some((named, _)) = memo_alias(init, &self.react)
