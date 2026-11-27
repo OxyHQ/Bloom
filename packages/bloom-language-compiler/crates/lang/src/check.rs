@@ -4375,6 +4375,8 @@ impl<'o> Checker<'o> {
                     self.child_slots.extend([then.id, otherwise.id]);
                 }
                 self.expr(cond, Some(&Ty::Bool));
+                // A hook in a branch runs only sometimes (B0420).
+                self.hook_allowed = false;
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
                 self.narrow_present(cond);
@@ -4998,6 +5000,8 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::And | BinaryOp::Or => {
                 let left = self.expr(lhs, None);
+                // A hook on the right runs only sometimes (B0420).
+                self.hook_allowed = false;
                 // `f || b` of a TS value `f`: JS's value `||`, `b` when `f` is falsy, typed
                 // as `b` and checked by tsc (`satisfies`).
                 if op == BinaryOp::Or
@@ -5062,6 +5066,8 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::Default => {
                 let left = self.expr(lhs, None);
+                // A hook on the right runs only sometimes (B0420).
+                self.hook_allowed = false;
                 match self.resolve(&left) {
                     Ty::Option(inner) => {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's

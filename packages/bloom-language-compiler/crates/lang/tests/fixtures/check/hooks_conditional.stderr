@@ -1,0 +1,26 @@
+error[B0420]: the hook `useAccountOf` is called outside a view member
+ --> check/hooks_conditional.bloom:6:23
+  |
+6 |   let picked = true ? useAccountOf("a") : useAccountOf("b")
+  |                       ^^^^^^^^^^^^ a hook runs on every render, in the same order
+  |
+help: call it as a view member (`let value = useAccountOf(…)`), or at the top level of a hook function (`fn useX`)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0420]: the hook `useAccountOf` is called outside a view member
+ --> check/hooks_conditional.bloom:6:43
+  |
+6 |   let picked = true ? useAccountOf("a") : useAccountOf("b")
+  |                                           ^^^^^^^^^^^^ a hook runs on every render, in the same order
+  |
+help: call it as a view member (`let value = useAccountOf(…)`), or at the top level of a hook function (`fn useX`)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0420]: the hook `useAccountOf` is called outside a view member
+ --> check/hooks_conditional.bloom:7:46
+  |
+7 |   let loading = useAccountOf("c").loading || useAccountOf("d").loading
+  |                                              ^^^^^^^^^^^^ a hook runs on every render, in the same order
+  |
+help: call it as a view member (`let value = useAccountOf(…)`), or at the top level of a hook function (`fn useX`)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
