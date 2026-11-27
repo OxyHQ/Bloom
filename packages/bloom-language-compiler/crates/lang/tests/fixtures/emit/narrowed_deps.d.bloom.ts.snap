@@ -1,0 +1,9 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface ThreadRowProps {
+  readonly sliceKey?: string | undefined | null;
+  readonly owner: object;
+  readonly title: string;
+  readonly detail: unknown;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ThreadRow())`), or from TSX as `toElement(ThreadRow())`. */
+export declare const ThreadRow: (props: ThreadRowProps) => ComposedView;

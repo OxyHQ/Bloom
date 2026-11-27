@@ -967,7 +967,8 @@ checker: state, props, hook results and other members. The emitter then writes t
 itself (`react/compiler-runtime`'s `c(n)`, the slot array the React Compiler uses) with exact
 dependencies, and marks the body `"use no memo"` so the React Compiler skips it. Because values
 are immutable, a dependency is the value itself (no mutation analysis, no proxies, no
-subscriptions at runtime). Static subtrees are hoisted to module scope by the existing language
+subscriptions at runtime). A narrowed name (`sliceKey` inside `if sliceKey != none`, `x` inside
+`if x is T`) is the value it narrows, so a child that reads it depends on it. Static subtrees are hoisted to module scope by the existing language
 compiler pass, which runs on bloomc's output in the same process.
 
 The cache is kept small. Members written one after another on the same dependencies share one
