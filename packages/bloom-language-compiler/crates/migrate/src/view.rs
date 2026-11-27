@@ -181,6 +181,23 @@ impl Tr<'_> {
             Body::Expr(e) => (String::new(), self.view_value(e)),
             Body::Block(statements, end) => self.view_members(statements, end),
         };
+        // Written-out props with a TS destructure default: `name: T = value`.
+        let params = if self.scope.field_defaults.is_empty() {
+            params
+        } else {
+            let defaults = std::mem::take(&mut self.scope.field_defaults);
+            self.view_defaults.insert(name.to_string(), defaults.clone());
+            let fields = std::mem::take(&mut self.scope.props_field_types);
+            let out: Vec<String> = fields
+                .into_iter()
+                .map(|(name, ty, optional)| match defaults.iter().find(|(k, _)| *k == name) {
+                    Some((_, value)) => format!("{name}: {ty} = {value}"),
+                    None if optional => format!("{name}: {} = none", optional_ty(&ty)),
+                    None => format!("{name}: {ty}"),
+                })
+                .collect();
+            Some(out.join(", "))
+        };
         let members = match equal {
             Some(equal) if members.is_empty() => equal,
             Some(equal) => format!("{equal}\n\n{members}"),
@@ -235,6 +252,7 @@ impl Tr<'_> {
             };
             if let Some(fields) = fields.filter(|f| !f.is_empty()) {
                 let mut out = Vec::new();
+                self.scope.props_field_types = fields.clone();
                 for (name, ty, optional) in fields {
                     let declared = if optional { optional_ty(&ty) } else { ty.clone() };
                     self.scope.decl.insert(name.clone(), declared.clone());
@@ -705,6 +723,16 @@ impl Tr<'_> {
                         (key_name(&property.key), &property.value)
                         && let BindingPattern::BindingIdentifier(local) = &a.left
                     {
+                        // `{ isNested = false } = props` of written-out props, a constant default:
+                        // the stored property's own (`Scope::field_defaults`).
+                        if local.name == key.as_str()
+                            && self.scope.props_fields.contains(&key)
+                            && is_constant(&a.right)
+                        {
+                            let value = self.expr(&a.right);
+                            self.scope.field_defaults.push((key, value));
+                            continue;
+                        }
                         // `{ isNested = false } = props`: the prop, or the default when absent.
                         let value = self.expr(&a.right);
                         self.scope.renames.remove(local.name.as_str());
@@ -3111,5 +3139,18 @@ fn awaited_test<'b, 'a>(test: &'b Expression<'a>) -> Option<&'b Expression<'a>> 
             awaited_test(&u.argument)
         }
         _ => None,
+    }
+}
+
+/// A literal default (`false`, `0`, `-1`, `"x"`): it reads nothing, so it may be a stored
+/// property's default.
+fn is_constant(e: &Expression) -> bool {
+    match e.without_parentheses() {
+        Expression::BooleanLiteral(_) | Expression::NumericLiteral(_) | Expression::StringLiteral(_) => true,
+        Expression::UnaryExpression(u) => {
+            u.operator == oxc_syntax::operator::UnaryOperator::UnaryNegation
+                && matches!(u.argument, Expression::NumericLiteral(_))
+        }
+        _ => false,
     }
 }
