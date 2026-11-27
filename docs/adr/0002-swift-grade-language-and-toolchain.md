@@ -326,7 +326,8 @@ The gate is **more than 80%**.
 | 2026-11-27 | #1007 on phase A + the M1–M9 compiler fixes (#1016) | 324 files (fd8a4290f) | 28.4% (+4.0% review) = 32.4% |
 | 2026-11-27 | #1007: `xs.at(i)`, `x!`, narrowed reads as `x!`, `@ref` → `Ref(v)`/`ViewRef<T>()`, state-reset effects as `.onChange(of:)`, options records, React's stale reads as snapshots, JS names kept on `Foreign` | 324 files (fd8a4290f) | 29.3% (+7.7% review) = 37.0% |
 | 2026-11-27 | the same, with the compiler's R2–R4 and R7 (`fix/bloom-lang-2-core2` 7b9e701f5) | 324 files (fd8a4290f) | 30.2% (+8.6% review) = 38.9% |
-| 2026-11-27 | #1007: typed promises' `then`/`catch` as tasks, closures' `var` snapshots, `sort` comparators, `splice`/`unshift`, tuple arity; with the compiler's R1–R5, R7 (`fix/bloom-lang-2-core2` ea118687b) | 324 files (fd8a4290f) | 34.9% (+9.9% review) = **44.8%** |
+| 2026-11-27 | #1007: typed promises' `then`/`catch` as tasks, closures' `var` snapshots, `sort` comparators, `splice`/`unshift`, tuple arity; with the compiler's R1–R5, R7 (`fix/bloom-lang-2-core2` ea118687b) | 324 files (fd8a4290f) | 34.9% (+9.9% review) = 44.8% |
+| 2026-11-27 | #1007 on main (29e83bdbd, phases A and B merged), with #1017 (R1–R7) | 324 files (fd8a4290f) | 35.5% (+10.8% review) = **46.3%** (40.4% without #1017) |
 
 Most refusals come from bloomc's errors on the draft. On 2026-11-26 that was 133 of 221
 refused files, and the largest single cause was an indexed array read typing as `T?` where
