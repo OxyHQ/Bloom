@@ -17,23 +17,23 @@ number. `codemod/classnames.generated.json` holds every row, for the codemods;
 this page shows the utilities written in 2 apps or more.
 
 Sources: `scripts/scan-classnames.mjs` (read-only, `git grep` at each
-default branch) wrote `codemod/classname-usage.json` from 28 apps:
-Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticator `99a64d1`, Clarity `fdd53fa`, Codea `ab778e3`, CrowdSource `277fcf89c`, Dropsea `e5c6ee5`, FAIRWallet `063f2e5`, Gemies `0ad4d2a0b`, GoWay `47d8c9a`, Homiio `0a6c3d0f`, Inbox `f922ed0`, Mention `a5202152a`, Mercaria `2dbaf002`, Moovo `c10a05f`, Move `64f124d`, Nilo `e9058cf`, Noted `d963635`, OxyOS `9898c5d3`, Peable `6c06f9c3`, Schedio `a5b81b6`, Syra `9e7f6a12`, Vibbr `4820a2d`, Willo `8dbdb95`, oxy `35fe7434c`, tnp `c368f8b`. `scripts/generate-classnames.mjs` writes this page.
+default branch) wrote `codemod/classname-usage.json` from 27 apps:
+Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticator `99a64d1`, Clarity `fdd53fa`, Codea `ab778e3`, CrowdSource `277fcf89c`, Dropsea `e5c6ee5`, FAIRWallet `063f2e5`, Gemies `0ad4d2a0b`, GoWay `47d8c9a`, Homiio `0a6c3d0f`, Inbox `f922ed0`, Mention `a5202152a`, Mercaria `2dbaf002`, Moovo `c10a05f`, Move `64f124d`, Nilo `e9058cf`, Noted `d963635`, OxyOS `9898c5d3`, Peable `6c06f9c3`, Syra `9e7f6a12`, Vibbr `4820a2d`, Willo `8dbdb95`, oxy `35fe7434c`, tnp `c368f8b`. `scripts/generate-classnames.mjs` writes this page.
 
 ## Summary
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1090 | 47358 | 88.2% |
-| Expressed by the view’s structure | 48 | 3426 | 6.4% |
+| Maps to a modifier and a token | 1090 | 46585 | 88.2% |
+| Expressed by the view’s structure | 48 | 3341 | 6.3% |
 | Redundant in the language | 28 | 407 | 0.8% |
-| Needs a named token (raw value) | 258 | 608 | 1.1% |
+| Needs a named token (raw value) | 256 | 606 | 1.1% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 427 | 1546 | 2.9% |
+| An app’s own class | 418 | 1479 | 2.8% |
 
-53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
+52793 uses of 1909 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
 condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 290 (`when('md')`), `hover:` 195 (`when('hovered')`), `sm:` 114 (`when('sm')`), `lg:` 107 (`when('lg')`), `focus-visible:` 95 (`when('focused')`), `dark:` 91 (`when('dark')`), `disabled:` 66 (`when('disabled')`), `xl:` 41 (`when('xl')`), `data-open:` 38, `after:` 36, `data-closed:` 35, `aria-invalid:` 31, `file:` 31, `focus:` 28 (`when('focused')`).
 
@@ -42,7 +42,7 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
-| space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
+| space | 197 | 600px (8), 144px (8), 520px (7), 100px (7), 18px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
 | opacity | 58 | --ring at 50% (16), black at [0.04]% (7), white at [0.06]% (6), white at 15% (4), --primary at 15% (3), black at [0.025]% (2), black at [0.07]% (2), white at [0.02]% (2), white at [0.07]% (2), --sidebar-foreground at 70% (2), black at [0.06]% (2), black at 35% (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
 | font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
@@ -74,121 +74,121 @@ when the fill is a role's colour.
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
 | `text-muted-foreground` | .foreground('muted') | 3045 | 22 |
-| `items-center` | .align('center') | 2876 | 27 |
-| `text-sm` | .font('14').leading('20px') | 1955 | 21 |
-| `flex-1` | .flex('1') | 1914 | 27 |
+| `items-center` | .align('center') | 2738 | 26 |
+| `text-sm` | .font('14').leading('20px') | 1951 | 20 |
+| `flex-1` | .flex('1') | 1819 | 26 |
 | `text-foreground` | .foreground('foreground') | 1777 | 23 |
-| `text-xs` | .font('xs').leading('16px') | 1489 | 23 |
-| `gap-2` | .spacing('sm') | 1279 | 26 |
+| `text-xs` | .font('xs').leading('16px') | 1488 | 22 |
+| `gap-2` | .spacing('sm') | 1277 | 25 |
 | `gap-3` | .spacing('md') | 1021 | 25 |
-| `font-semibold` | .weight('semibold') | 996 | 22 |
+| `font-semibold` | .weight('semibold') | 985 | 21 |
 | `border-border` | .border('border') | 956 | 19 |
-| `justify-center` | .justify('center') | 889 | 25 |
-| `border` | .border(role, 'thin') | 857 | 22 |
-| `px-4` | .padding('horizontal', 'lg') | 645 | 25 |
-| `flex-wrap` | .wrap() | 599 | 25 |
+| `justify-center` | .justify('center') | 836 | 24 |
+| `border` | .border(role, 'thin') | 828 | 21 |
+| `px-4` | .padding('horizontal', 'lg') | 620 | 24 |
+| `flex-wrap` | .wrap() | 598 | 24 |
 | `gap-4` | .spacing('lg') | 567 | 25 |
-| `font-medium` | .weight('medium') | 546 | 20 |
-| `rounded-full` | .corner('infinite') | 542 | 21 |
-| `text-base` | .font('16').leading('normal') | 501 | 20 |
-| `text-center` | .textAlign('center') | 499 | 24 |
+| `rounded-full` | .corner('infinite') | 536 | 20 |
+| `font-medium` | .weight('medium') | 511 | 19 |
+| `text-center` | .textAlign('center') | 496 | 23 |
 | `w-full` | .frame(\{ width: 'full' \}) | 493 | 24 |
-| `justify-between` | .justify('between') | 490 | 25 |
 | `gap-1` | .spacing('xs') | 476 | 22 |
+| `text-base` | .font('16').leading('normal') | 473 | 19 |
 | `bg-surface` | .background('surface') | 470 | 9 |
 | `font-mono` | .font('mono') | 465 | 13 |
-| `p-4` | .padding('all', 'lg') | 458 | 24 |
-| `rounded-2xl` | .corner('lg') | 435 | 15 |
+| `p-4` | .padding('all', 'lg') | 457 | 23 |
+| `justify-between` | .justify('between') | 454 | 24 |
 | `bg-background` | .background('background') | 430 | 21 |
+| `rounded-2xl` | .corner('lg') | 411 | 14 |
 | `bg-muted` | .background('mutedFill') | 331 | 17 |
-| `font-bold` | .weight('bold') | 314 | 18 |
-| `px-3` | .padding('horizontal', 'md') | 308 | 23 |
+| `font-bold` | .weight('bold') | 309 | 17 |
+| `px-3` | .padding('horizontal', 'md') | 306 | 22 |
 | `absolute` | .position(…) (the edges it is pinned at) | 275 | 22 |
 | `text-text-secondary` | .foreground('muted') | 273 | 4 |
-| `py-2` | .padding('vertical', 'sm') | 268 | 23 |
-| `rounded-xl` | .corner('md') | 267 | 18 |
+| `py-2` | .padding('vertical', 'sm') | 267 | 22 |
 | `min-w-0` | .frame(\{ minWidth: 'none' \}) | 265 | 18 |
 | `bg-card` | .background('card') | 264 | 17 |
-| `text-[13px]` | .font('sm') | 258 | 10 |
-| `overflow-hidden` | .clipped() | 245 | 23 |
-| `py-3` | .padding('vertical', 'md') | 244 | 19 |
+| `rounded-xl` | .corner('md') | 264 | 17 |
 | `text-destructive` | .foreground('destructive') | 239 | 15 |
+| `py-3` | .padding('vertical', 'md') | 235 | 18 |
+| `overflow-hidden` | .clipped() | 226 | 22 |
 | `gap-space-8` | .spacing('sm') | 224 | 3 |
 | `text-text` | .foreground('foreground') | 220 | 2 |
+| `text-[13px]` | .font('sm') | 219 | 9 |
 | `rounded-lg` | .corner('sm') | 217 | 17 |
-| `mt-1` | .margin('top', 'xs') | 215 | 19 |
+| `mt-1` | .margin('top', 'xs') | 214 | 18 |
 | `text-primary` | .foreground('primary') | 214 | 16 |
 | `gap-1.5` | .spacing('6') | 209 | 17 |
 | `mt-2` | .margin('top', 'sm') | 207 | 19 |
 | `border-b` | .border(role, 'thin', 'bottom') | 201 | 18 |
 | `rounded-md` | .corner('6') | 194 | 13 |
-| `text-[15px]` | .font('md') | 194 | 12 |
 | `gap-6` | .spacing('2xl') | 185 | 20 |
 | `items-start` | .align('start') | 177 | 22 |
 | `p-3` | .padding('all', 'md') | 177 | 20 |
 | `opacity-70` | .opacity('70') | 167 | 13 |
-| `mb-3` | .margin('bottom', 'md') | 162 | 15 |
+| `text-[15px]` | .font('md') | 165 | 11 |
 | `text-text-tertiary` | .foreground('muted') | 161 | 4 |
+| `mb-3` | .margin('bottom', 'md') | 160 | 14 |
 | `px-5` | .padding('horizontal', 'xl') | 156 | 14 |
-| `text-lg` | .font('18').leading('28px') | 151 | 18 |
-| `uppercase` | .textCase('uppercase') | 151 | 15 |
+| `text-lg` | .font('18').leading('28px') | 149 | 17 |
+| `uppercase` | .textCase('uppercase') | 149 | 14 |
 | `px-6` | .padding('horizontal', '2xl') | 144 | 18 |
-| `py-1` | .padding('vertical', 'xs') | 143 | 19 |
-| `mt-3` | .margin('top', 'md') | 142 | 15 |
-| `mt-0.5` | .margin('top', '2xs') | 139 | 14 |
-| `py-4` | .padding('vertical', 'lg') | 137 | 18 |
-| `mt-4` | .margin('top', 'lg') | 136 | 16 |
+| `py-1` | .padding('vertical', 'xs') | 142 | 18 |
+| `mt-3` | .margin('top', 'md') | 136 | 14 |
 | `px-2` | .padding('horizontal', 'sm') | 135 | 22 |
-| `mb-2` | .margin('bottom', 'sm') | 133 | 15 |
+| `mt-4` | .margin('top', 'lg') | 133 | 15 |
+| `mb-2` | .margin('bottom', 'sm') | 132 | 14 |
+| `mt-0.5` | .margin('top', '2xs') | 125 | 13 |
 | `gap-0.5` | .spacing('2xs') | 124 | 16 |
+| `py-4` | .padding('vertical', 'lg') | 122 | 17 |
 | `bg-primary` | .background('primary') | 121 | 14 |
 | `gap-space-4` | .spacing('xs') | 121 | 3 |
 | `self-start` | .alignSelf('start') | 120 | 16 |
 | `justify-end` | .justify('end') | 116 | 18 |
 | `text-[11px]` | .font('11') | 114 | 15 |
-| `mb-4` | .margin('bottom', 'lg') | 110 | 14 |
+| `mb-4` | .margin('bottom', 'lg') | 109 | 13 |
 | `text-primary-text` | .foreground('primaryText') | 106 | 3 |
 | `mb-1` | .margin('bottom', 'xs') | 103 | 13 |
-| `px-8` | .padding('horizontal', '3xl') | 103 | 11 |
+| `px-8` | .padding('horizontal', '3xl') | 102 | 10 |
 | `gap-space-12` | .spacing('md') | 98 | 3 |
 | `rounded-radius-max` | .corner('full') | 97 | 3 |
 | `items-end` | .align('end') | 96 | 19 |
-| `mb-6` | .margin('bottom', '2xl') | 96 | 12 |
 | `bg-primary/10` | .background('primary/10') | 95 | 12 |
 | `mx-auto` | .alignSelf('center') (in a column) | 95 | 13 |
 | `text-caption` | .font('11').leading('14px') | 94 | 2 |
-| `text-xl` | .font('xl').leading('28px') | 92 | 19 |
+| `mb-6` | .margin('bottom', '2xl') | 93 | 11 |
+| `text-xl` | .font('xl').leading('28px') | 91 | 18 |
 | `text-2xl` | .font('24').leading('32px') | 90 | 16 |
 | `cursor-pointer` | .cursor('pointer') | 89 | 10 |
-| `text-white` | .foreground('white') | 89 | 13 |
-| `py-16` | .padding('vertical', '64') | 88 | 11 |
-| `h-10` | .frame(\{ height: '4xl' \}) | 82 | 18 |
+| `text-white` | .foreground('white') | 88 | 12 |
+| `py-16` | .padding('vertical', '64') | 87 | 10 |
 | `py-2.5` | .padding('vertical', '10') | 82 | 16 |
-| `leading-5` | .leading('20px') | 81 | 12 |
 | `border-t` | .border(role, 'thin', 'top') | 80 | 17 |
+| `h-10` | .frame(\{ height: '4xl' \}) | 80 | 17 |
+| `leading-5` | .leading('20px') | 80 | 11 |
 | `pt-2` | .padding('top', 'sm') | 79 | 19 |
 | `gap-5` | .spacing('xl') | 78 | 16 |
 | `px-space-16` | .padding('horizontal', 'lg') | 77 | 3 |
 | `p-2` | .padding('all', 'sm') | 76 | 15 |
 | `h-9` | .frame(\{ height: '36' \}) | 75 | 12 |
-| `p-6` | .padding('all', '2xl') | 73 | 18 |
-| `py-1.5` | .padding('vertical', '6') | 73 | 15 |
 | `hidden` | .hidden() (or a conditional child, `show && view`) | 72 | 9 |
+| `p-6` | .padding('all', '2xl') | 72 | 17 |
 | `pb-4` | .padding('bottom', 'lg') | 72 | 12 |
 | `pb-2` | .padding('bottom', 'sm') | 71 | 17 |
+| `py-1.5` | .padding('vertical', '6') | 71 | 14 |
 | `self-center` | .alignSelf('center') | 70 | 13 |
 | `p-5` | .padding('all', 'xl') | 69 | 15 |
 | `shrink-0` | .shrink('never') | 68 | 15 |
 | `opacity-80` | .opacity('80') | 66 | 11 |
 | `py-0.5` | .padding('vertical', '2xs') | 66 | 14 |
-| `py-3.5` | .padding('vertical', '14') | 66 | 6 |
-| `w-10` | .frame(\{ width: '4xl' \}) | 65 | 13 |
+| `py-3.5` | .padding('vertical', '14') | 64 | 5 |
 | `text-[14px]` | .font('14') | 64 | 4 |
 | `pt-3` | .padding('top', 'md') | 63 | 15 |
+| `w-10` | .frame(\{ width: '4xl' \}) | 63 | 12 |
 | `bg-border` | .background('border') | 61 | 14 |
-| `px-1` | .padding('horizontal', 'xs') | 61 | 16 |
 | `tracking-wider` | .tracking('wider') | 61 | 7 |
 | `bg-popover` | .background('popover') | 60 | 3 |
+| `px-1` | .padding('horizontal', 'xs') | 60 | 15 |
 | `bg-transparent` | .background('transparent') | 58 | 11 |
 | `h-8` | .frame(\{ height: '3xl' \}) | 57 | 18 |
 | `leading-6` | .leading('24px') | 57 | 9 |
@@ -212,8 +212,7 @@ when the fill is a role's colour.
 | `w-12` | .frame(\{ width: '48' \}) | 47 | 12 |
 | `rounded` | .corner('xs') | 46 | 11 |
 | `bg-white` | .background('white') | 44 | 8 |
-| `mb-8` | .margin('bottom', '3xl') | 44 | 6 |
-| `mr-3` | .margin('right', 'md') | 43 | 6 |
+| `mb-8` | .margin('bottom', '3xl') | 43 | 5 |
 | `px-screen-margin` | .padding('horizontal', 'xl') | 43 | 2 |
 | `py-10` | .padding('vertical', '4xl') | 43 | 8 |
 | `left-0` | .position(\{ left: 'none' \}) | 42 | 13 |
@@ -235,10 +234,8 @@ when the fill is a role's colour.
 | `tabular-nums` | .monospacedDigit() | 37 | 4 |
 | `h-11` | .frame(\{ height: '44' \}) | 36 | 10 |
 | `h-7` | .frame(\{ height: '28' \}) | 36 | 13 |
-| `h-[1px]` | .frame(\{ height: '1' \}) | 36 | 3 |
 | `h-px` | .frame(\{ height: '1' \}) | 36 | 8 |
 | `text-surface-foreground` | .foreground('onSurface') | 36 | 2 |
-| `mx-4` | .margin('horizontal', 'lg') | 35 | 7 |
 | `rounded-3xl` | .corner('2xl') | 35 | 9 |
 | `underline` | .underline() | 35 | 11 |
 | `h-14` | .frame(\{ height: '56' \}) | 34 | 10 |
@@ -247,20 +244,19 @@ when the fill is a role's colour.
 | `bg-accent` | .background('accent') | 33 | 8 |
 | `border-dashed` | .borderStyle('dashed') | 33 | 11 |
 | `bottom-0` | .position(\{ bottom: 'none' \}) | 33 | 13 |
-| `mb-0.5` | .margin('bottom', '2xs') | 33 | 5 |
 | `pointer-events-none` | .allowsHitTesting(false) | 33 | 6 |
 | `rounded-radius-16` | .corner('lg') | 33 | 2 |
 | `bg-destructive/10` | .background('destructive/10') | 32 | 8 |
 | `mb-1.5` | .margin('bottom', '6') | 32 | 8 |
-| `ml-2` | .margin('left', 'sm') | 32 | 9 |
-| `mt-1.5` | .margin('top', '6') | 32 | 10 |
-| `mt-5` | .margin('top', 'xl') | 32 | 9 |
+| `mt-1.5` | .margin('top', '6') | 31 | 9 |
+| `mt-5` | .margin('top', 'xl') | 31 | 8 |
 | `p-0` | .padding('all', 'none') | 31 | 6 |
 | `py-space-8` | .padding('vertical', 'sm') | 31 | 2 |
 | `top-0` | .position(\{ top: 'none' \}) | 31 | 15 |
 | `z-10` | .zIndex('floating') | 31 | 10 |
 | `border-border/60` | .border('border/60') | 30 | 2 |
-| `ml-3` | .margin('left', 'md') | 30 | 8 |
+| `ml-2` | .margin('left', 'sm') | 30 | 8 |
+| `mr-3` | .margin('right', 'md') | 30 | 5 |
 | `opacity-60` | .opacity('60') | 30 | 9 |
 | `w-8` | .frame(\{ width: '3xl' \}) | 30 | 13 |
 | `gap-y-1` | .verticalSpacing('xs') | 29 | 8 |
@@ -268,18 +264,18 @@ when the fill is a role's colour.
 | `text-[16px]` | .font('16') | 29 | 3 |
 | `whitespace-nowrap` | .noWrap() | 29 | 4 |
 | `bg-muted/40` | .background('mutedFill/40') | 28 | 5 |
-| `leading-[18px]` | .leading('18px') | 28 | 7 |
-| `py-12` | .padding('vertical', '48') | 28 | 13 |
-| `mb-5` | .margin('bottom', 'xl') | 27 | 9 |
+| `leading-[18px]` | .leading('18px') | 27 | 6 |
 | `space-y-3` | .childSpacing('vertical', 'md') | 27 | 2 |
-| `w-16` | .frame(\{ width: '64' \}) | 27 | 10 |
 | `w-11` | .frame(\{ width: '44' \}) | 26 | 7 |
+| `w-16` | .frame(\{ width: '64' \}) | 26 | 9 |
 | `mr-2` | .margin('right', 'sm') | 25 | 5 |
 | `pt-6` | .padding('top', '2xl') | 25 | 7 |
+| `py-12` | .padding('vertical', '48') | 25 | 12 |
 | `rounded-[24px]` | .corner('2xl') | 25 | 6 |
 | `rounded-radius-12` | .corner('md') | 25 | 3 |
 | `space-y-4` | .childSpacing('vertical', 'lg') | 25 | 2 |
 | `w-56` | .frame(\{ width: '224' \}) | 25 | 5 |
+| `mb-5` | .margin('bottom', 'xl') | 24 | 8 |
 | `py-space-4` | .padding('vertical', 'xs') | 24 | 3 |
 | `select-none` | .selectable(false) | 24 | 6 |
 | `space-y-1` | .childSpacing('vertical', 'xs') | 24 | 2 |
@@ -290,8 +286,8 @@ when the fill is a role's colour.
 | `py-space-12` | .padding('vertical', 'md') | 23 | 3 |
 | `text-body` | .font('md').leading('22px') | 23 | 2 |
 | `cursor-not-allowed` | .cursor('not-allowed') | 22 | 6 |
-| `h-16` | .frame(\{ height: '64' \}) | 22 | 10 |
 | `max-w-sm` | .frame(\{ maxWidth: '384' \}) | 22 | 12 |
+| `ml-3` | .margin('left', 'md') | 22 | 7 |
 | `mt-space-4` | .margin('top', 'xs') | 22 | 2 |
 | `pb-8` | .padding('bottom', '3xl') | 22 | 6 |
 | `ring-2` | .ring(role, 'thick') | 22 | 4 |
@@ -300,7 +296,9 @@ when the fill is a role's colour.
 | `z-50` | .zIndex('50') | 22 | 5 |
 | `gap-space-2` | .spacing('2xs') | 21 | 3 |
 | `gap-space-24` | .spacing('2xl') | 21 | 3 |
+| `h-16` | .frame(\{ height: '64' \}) | 21 | 9 |
 | `h-6` | .frame(\{ height: '2xl' \}) | 21 | 12 |
+| `mx-4` | .margin('horizontal', 'lg') | 21 | 6 |
 | `px-space-8` | .padding('horizontal', 'sm') | 21 | 3 |
 | `size-4` | .frame(\{ width: 'lg', height: 'lg' \}) | 21 | 4 |
 | `border-2` | .border(role, 'thick') | 20 | 12 |
@@ -308,7 +306,6 @@ when the fill is a role's colour.
 | `my-1` | .margin('vertical', 'xs') | 20 | 5 |
 | `my-2` | .margin('vertical', 'sm') | 20 | 4 |
 | `p-3.5` | .padding('all', '14') | 20 | 3 |
-| `pr-3` | .padding('right', 'md') | 20 | 6 |
 | `shadow-sm` | .shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)') | 20 | 5 |
 | `bg-muted/50` | .background('mutedFill/half') | 19 | 5 |
 | `min-w-40` | .frame(\{ minWidth: '160' \}) | 19 | 2 |
@@ -345,13 +342,13 @@ when the fill is a role's colour.
 | `bg-muted/30` | .background('mutedFill/30') | 15 | 4 |
 | `border-destructive` | .border('destructive') | 15 | 6 |
 | `font-normal` | .weight('regular') | 15 | 9 |
-| `gap-8` | .spacing('3xl') | 15 | 9 |
 | `h-5` | .frame(\{ height: 'xl' \}) | 15 | 9 |
 | `right-2` | .position(\{ right: 'sm' \}) | 15 | 7 |
 | `w-2` | .frame(\{ width: 'sm' \}) | 15 | 7 |
 | `w-2.5` | .frame(\{ width: '10' \}) | 15 | 11 |
 | `w-7` | .frame(\{ width: '28' \}) | 15 | 9 |
 | `bg-foreground` | .background('foreground') | 14 | 8 |
+| `gap-8` | .spacing('3xl') | 14 | 8 |
 | `leading-7` | .leading('28px') | 14 | 5 |
 | `leading-[22px]` | .leading('22px') | 14 | 6 |
 | `leading-snug` | .leading('easy') | 14 | 5 |
@@ -365,7 +362,9 @@ when the fill is a role's colour.
 | `h-24` | .frame(\{ height: '96' \}) | 13 | 5 |
 | `h-4` | .frame(\{ height: 'lg' \}) | 13 | 4 |
 | `leading-[24px]` | .leading('24px') | 13 | 2 |
+| `mb-0.5` | .margin('bottom', '2xs') | 13 | 4 |
 | `p-8` | .padding('all', '3xl') | 13 | 7 |
+| `pr-3` | .padding('right', 'md') | 13 | 5 |
 | `py-space-16` | .padding('vertical', 'lg') | 13 | 3 |
 | `ring-0` | .ring('none') | 13 | 4 |
 | `rounded-[6px]` | .corner('6') | 13 | 4 |
@@ -379,7 +378,6 @@ when the fill is a role's colour.
 | `border-r` | .border(role, 'thin', 'right') | 12 | 4 |
 | `cursor-default` | .cursor('default') | 12 | 4 |
 | `leading-[20px]` | .leading('20px') | 12 | 4 |
-| `ml-1` | .margin('left', 'xs') | 12 | 7 |
 | `mt-space-8` | .margin('top', 'sm') | 12 | 3 |
 | `opacity-0` | .opacity('transparent') | 12 | 5 |
 | `pt-space-8` | .padding('top', 'sm') | 12 | 3 |
@@ -435,6 +433,7 @@ when the fill is a role's colour.
 | `mb-2.5` | .margin('bottom', '10') | 9 | 2 |
 | `mb-space-24` | .margin('bottom', '2xl') | 9 | 2 |
 | `min-w-64` | .frame(\{ minWidth: '256' \}) | 9 | 2 |
+| `ml-1` | .margin('left', 'xs') | 9 | 6 |
 | `mt-10` | .margin('top', '4xl') | 9 | 5 |
 | `mt-space-12` | .margin('top', 'md') | 9 | 2 |
 | `mx-5` | .margin('horizontal', 'xl') | 9 | 3 |
@@ -452,6 +451,7 @@ when the fill is a role's colour.
 | `bg-black` | .background('black') | 8 | 8 |
 | `border-destructive/40` | .border('destructive/40') | 8 | 3 |
 | `gap-x-3` | .horizontalSpacing('md') | 8 | 3 |
+| `h-[1px]` | .frame(\{ height: '1' \}) | 8 | 2 |
 | `items-stretch` | .align('stretch') | 8 | 4 |
 | `left-3` | .position(\{ left: 'md' \}) | 8 | 5 |
 | `max-w-[320px]` | .frame(\{ maxWidth: '320' \}) | 8 | 2 |
@@ -736,7 +736,7 @@ when the fill is a role's colour.
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `flex-row` | HStack(…) | 2530 | 25 |
+| `flex-row` | HStack(…) | 2445 | 24 |
 | `flex` | a stack (HStack or VStack) | 342 | 11 |
 | `flex-col` | VStack(…) | 119 | 12 |
 | `grid` | Grid(…).columns(n) | 97 | 4 |
