@@ -89,6 +89,20 @@ impl Tr<'_> {
         // X()` drawing it inside a wrapper such as a feature gate): its chrome is the inner
         // screen's, and a file has one route. It waits on `ViewModifier` (the wrapper as a
         // modifier of the screen's content that also hides the chrome while it holds it back).
+        // …unless the wrapper is a gate with a `.bloom` ViewModifier (`<Gate><X /></Gate>`): the
+        // screen is the route's, `X().modifier(Gate())`, and the gate's held states hide its chrome.
+        let gated = (kind == "screen" && !vis.contains("default"))
+            .then(|| self.gated_route(body))
+            .flatten()
+            .filter(|g| g.screen == name);
+        if let Some(gate) = gated {
+            self.used.insert(gate.name.clone());
+            if !self.gate_imports.iter().any(|(n, ..)| *n == gate.name) {
+                self.gate_imports.push((gate.name.clone(), gate.specifier.clone(), gate.bloom.clone()));
+            }
+            let view = self.view_item(name, call, "pub default ", body);
+            return gated_body(&view, &format!(".modifier({}({}))", gate.name, gate.args));
+        }
         if kind != "view"
             && !vis.contains("default")
             && body.iter().any(|s| matches!(s, Statement::ExportDefaultDeclaration(d)
@@ -4048,5 +4062,120 @@ pub fn string_literals(ty: &TSType) -> Option<Vec<String>> {
             u.types.iter().map(string_literals).collect::<Option<Vec<_>>>().map(|v| v.concat())
         }
         _ => None,
+    }
+}
+
+/// A route whose default export only draws its screen inside a gate: `export default function
+/// R() { return <Gate allowSupervised><X /></Gate>; }`, the gate a TS import with a `.bloom`
+/// `struct Gate: ViewModifier` (`props::view_modifier_module`).
+pub struct GatedRoute {
+    pub screen: String,
+    pub name: String,
+    pub args: String,
+    pub specifier: String,
+    pub bloom: String,
+}
+
+impl Tr<'_> {
+    pub fn gated_route(&self, module: &[Statement]) -> Option<GatedRoute> {
+        use oxc_ast::ast::{
+            ExportDefaultDeclarationKind, ImportDeclarationSpecifier, JSXAttributeItem, JSXAttributeName,
+            JSXAttributeValue, JSXChild, JSXElementName,
+        };
+        let f = module.iter().find_map(|s| match s {
+            Statement::ExportDefaultDeclaration(d) => match &d.declaration {
+                ExportDefaultDeclarationKind::FunctionDeclaration(f) => Some(f),
+                _ => None,
+            },
+            _ => None,
+        })?;
+        if !f.params.items.is_empty() {
+            return None;
+        }
+        let [Statement::ReturnStatement(ret)] = f.body.as_ref()?.statements.as_slice() else { return None };
+        let Expression::JSXElement(gate) = ret.argument.as_ref()?.without_parentheses() else { return None };
+        let JSXElementName::IdentifierReference(gate_name) = &gate.opening_element.name else { return None };
+        let mut inner = gate.children.iter().filter(|c| match c {
+            JSXChild::Text(t) => !t.value.trim().is_empty(),
+            _ => true,
+        });
+        let (Some(JSXChild::Element(screen)), None) = (inner.next(), inner.next()) else { return None };
+        let JSXElementName::IdentifierReference(screen_name) = &screen.opening_element.name else {
+            return None;
+        };
+        if !screen.opening_element.attributes.is_empty() || !screen.children.is_empty() {
+            return None;
+        }
+        // Its props: `flag` (true) or `flag={true|false}`.
+        let mut args = Vec::new();
+        for attr in &gate.opening_element.attributes {
+            let JSXAttributeItem::Attribute(a) = attr else { return None };
+            let JSXAttributeName::Identifier(key) = &a.name else { return None };
+            let value = match &a.value {
+                None => "true".to_string(),
+                Some(JSXAttributeValue::ExpressionContainer(c)) => match c.expression.as_expression() {
+                    Some(Expression::BooleanLiteral(b)) => b.value.to_string(),
+                    _ => return None,
+                },
+                _ => return None,
+            };
+            args.push(format!("{}: {value}", key.name));
+        }
+        let specifier = module.iter().find_map(|s| match s {
+            Statement::ImportDeclaration(i)
+                if i.specifiers.as_ref().is_some_and(|specs| {
+                    specs.iter().any(|spec| {
+                        matches!(spec, ImportDeclarationSpecifier::ImportSpecifier(x)
+                    if x.local.name == gate_name.name && x.imported.name() == gate_name.name)
+                    })
+                }) =>
+            {
+                i.source.value.as_str().map(str::to_string)
+            }
+            _ => None,
+        })?;
+        let bloom = crate::props::view_modifier_module(&self.filename, &specifier, &gate_name.name)?;
+        Some(GatedRoute {
+            screen: screen_name.name.to_string(),
+            name: gate_name.name.to_string(),
+            args: args.join(", "),
+            specifier,
+            bloom,
+        })
+    }
+}
+
+/// A `screen` declaration's body with `modifier` applied to its root (in a `Group` when the
+/// body is a branch or holds statements).
+fn gated_body(view: &str, modifier: &str) -> String {
+    let Some(open) = view.find("body {\n") else { return view.to_string() };
+    let start = open + "body {\n".len();
+    // The body's own closing brace: the view ends with `\n}\n}`.
+    let Some(end) = view[start..].rfind("\n}\n}").map(|i| start + i) else { return view.to_string() };
+    let root = &view[start..end];
+    let first = root.trim_start();
+    let branch = ["if ", "match ", "let ", "var ", "//"].iter().any(|k| first.starts_with(k));
+    let gated =
+        if branch { format!("Group {{\n{root}\n}}\n{modifier}") } else { format!("{root}\n{modifier}") };
+    format!("{}{gated}{}", &view[..start], &view[end..])
+}
+
+#[cfg(test)]
+mod gate_tests {
+    use super::gated_body;
+
+    #[test]
+    fn a_gate_is_the_screen_roots_modifier() {
+        let view =
+            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n}\n}";
+        assert_eq!(
+            gated_body(view, ".modifier(Gate())"),
+            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n.modifier(Gate())\n}\n}"
+        );
+        let branch = "pub default screen Lists {\nbody {\nif a { A() } else { B() }\n}\n}";
+        assert_eq!(
+            gated_body(branch, ".modifier(Gate())"),
+            "pub default screen Lists {\nbody {\nGroup {\nif a { A() } else { B() }\n}\n.modifier(Gate())\n}\n}"
+        );
     }
 }

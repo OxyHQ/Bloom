@@ -583,6 +583,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     .then(|| (end, end, format!(", {receiver}.count")))
                 })
             }
+            // JS `x.slice(-n)` (the last n): Swift's `suffix(n)` (a string's is its `utf16` view's,
+            // in the 2.0 text, as JS counts it).
+            ("B0207", _)
+                if d.message == "this takes 2 argument(s), not 1"
+                    && source[..start].ends_with(".slice(")
+                    && source[end..].starts_with(')')
+                    && text.trim_start().strip_prefix('-').is_some_and(|n| {
+                        let n = n.trim();
+                        !n.is_empty() && n.chars().all(|c| c.is_ascii_digit())
+                    }) =>
+            {
+                let n = text.trim_start()[1..].trim().to_string();
+                Some((start - ".slice(".len(), end + 1, format!(".suffix({n})")))
+            }
             // A closure's optional parameters (`(a, b?: T) =>`, written `b: T?`) the call leaves out:
             // `none`, as JS passes `undefined`. (bloomc points at the last argument given.)
             ("B0207", _)
@@ -1740,11 +1754,11 @@ pub fn foreign_js_names(source: &str, filename: &str, options: &bloom_lang::Opti
 }
 
 /// JS's string lengths and offsets are UTF-16 units, Bloom's `String` counts characters (as
-/// Swift's does): `count`, `slice(…)` and `paddingStart`/`paddingEnd` (the codemod's spellings of
-/// `length`, `slice`/`substring` and `padStart`/`padEnd`) on a receiver bloomc types `String` read
+/// Swift's does): `count`, `slice(…)`, `suffix(…)` and `paddingStart`/`paddingEnd` (the codemod's
+/// spellings of `length`, `slice`/`substring`, `slice(-n)` and `padStart`/`padEnd`) on a receiver bloomc types `String` read
 /// its `utf16` view, which keeps JS's exact semantics and costs nothing (the lead's decision).
 pub fn utf16_units(source: &str, filename: &str, options: &bloom_lang::Options) -> Option<String> {
-    const MEMBERS: &[&str] = &["count", "slice(", "paddingStart(", "paddingEnd("];
+    const MEMBERS: &[&str] = &["count", "slice(", "suffix(", "paddingStart(", "paddingEnd("];
     let checked = bloom_lang::check(source, filename, options);
     let mut ends: HashMap<usize, &str> = HashMap::new();
     for (span, ty) in &checked.types {

@@ -38,6 +38,27 @@ pub fn external_fields(from: &str, specifier: &str, name: &str) -> Option<(Vec<F
     Some((fields, imports))
 }
 
+/// The `.bloom` specifier of a `struct name: ViewModifier` for a TS import of `name` from
+/// `specifier` (in `from`): the module's own `.bloom` twin (`X.tsx` beside `X.bloom`), or a
+/// `name.bloom` beside the module TS imports it from (`hooks/useCommunitiesPreview` exports
+/// the TS gate, `hooks/CommunitiesPreviewGate.bloom` the modifier).
+pub fn view_modifier_module(from: &str, specifier: &str, name: &str) -> Option<String> {
+    let ts = resolve(Path::new(from), specifier)?;
+    let stem = ts.with_extension("");
+    let declares = |path: &Path| {
+        std::fs::read_to_string(path).is_ok_and(|text| text.contains(&format!("struct {name}: ViewModifier")))
+    };
+    if declares(&stem.with_extension("bloom")) {
+        return Some(format!("{specifier}.bloom"));
+    }
+    let beside = stem.parent()?.join(format!("{name}.bloom"));
+    if declares(&beside) {
+        let dir = specifier.rsplit_once('/').map_or(".", |(dir, _)| dir);
+        return Some(format!("{dir}/{name}.bloom"));
+    }
+    None
+}
+
 /// The file a relative specifier names (`./types` → `./types.ts`).
 fn resolve(from: &Path, specifier: &str) -> Option<PathBuf> {
     let base = if specifier.starts_with("./") || specifier.starts_with("../") {

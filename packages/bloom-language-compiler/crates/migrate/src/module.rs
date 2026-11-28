@@ -229,6 +229,9 @@ pub struct Tr<'s> {
     pub pattern_defaults: Vec<String>,
     /// The `equal(old, new) { … }` member of the view being declared (a memo comparator).
     pub pending_equal: Option<String>,
+    /// A gate a route's screen is drawn inside, as its `.modifier(…)`: (the gate's local name, its
+    /// TS specifier, its `.bloom` specifier).
+    pub gate_imports: Vec<(String, String, String)>,
     /// The module constant initialiser being translated (`Tr::constant`): an `as const` list
     /// that is one is the module constant itself.
     pub module_init: Option<Span>,
@@ -451,6 +454,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         react_values: Default::default(),
         import_renames: HashMap::new(),
         pending_equal: None,
+        gate_imports: Vec::new(),
         module_init: None,
         hoisted: Vec::new(),
         hoisted_names: HashSet::new(),
@@ -590,7 +594,24 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     let items = hoist_lets(items);
 
     // Sections one empty line apart: the header, the imports, each item, what trails.
-    let imports = tr.imports_text(&imports);
+    let mut imports = tr.imports_text(&imports);
+    // A gate applied as a modifier is imported from its `.bloom` module.
+    for (name, from, to) in &tr.gate_imports {
+        imports = imports
+            .lines()
+            .map(|line| {
+                let named = line.contains(&format!("{{ {name} }}"))
+                    || line.contains(&format!("{name},"))
+                    || line.contains(&format!(", {name} }}"));
+                if named && line.ends_with(&format!("from \"{from}\"")) {
+                    line.replace(&format!("\"{from}\""), &format!("\"{to}\""))
+                } else {
+                    line.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let mut sections = vec![header, imports];
     sections.extend(items);
     sections.push(trailing);
@@ -2013,6 +2034,9 @@ impl<'s> Tr<'s> {
                 {
                     let name = f.id.as_ref().map(|id| id.name.to_string()).unwrap_or_default();
                     match self.route_kind() {
+                        // A route that draws its screen inside a gate is that screen, gated
+                        // (`view_item` writes it as the route's default).
+                        Some(_) if self.gated_route(body).is_some() => String::new(),
                         // A route's default export is a React component: a `screen` or `layout`.
                         Some(kind) => self.route_fn(kind, &name, f, body),
                         None => self.function_item(&name, f, "pub default ", body),
