@@ -119,3 +119,19 @@ fn save(value: Int) -> Promise<Unit> {
   Text("a").task { await load() }
 //          ^^^^ entity.name.function.modifier.bloom
 }
+
+screen Home {
+// <------ storage.type.screen.bloom
+//     ^^^^ entity.name.type.view.bloom
+  body {
+    Text("home")
+  }
+}
+
+layout Tabs {
+// <------ storage.type.layout.bloom
+//     ^^^^ entity.name.type.view.bloom
+  body {
+    Slot()
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "prism-bloom",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prism component for Bloom, the language by Oxy (.bloom files): Bloom 0.x and 2.0.",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Oxy (https://oxy.so)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/prism-bloom"
+  },
+  "homepage": "https://github.com/OxyHQ/Bloom/tree/main/packages/prism-bloom",
+  "keywords": [
+    "prism",
+    "prismjs",
+    "refractor",
+    "bloom",
+    "oxy",
+    "syntax-highlighting"
+  ],
+  "main": "./prism-bloom.js",
+  "files": [
+    "prism-bloom.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "prismjs": "1.30.0"
+  }
+}

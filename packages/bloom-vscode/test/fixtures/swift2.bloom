@@ -1,0 +1,226 @@
+// Bloom 2.0's surface (spec sections 4.6 to 4.9, 5, 6.2, 6.3, 7.1a, 10): see grammar.test.mjs.
+import Bloom
+// <------ keyword.control.import.bloom
+//     ^^^^^ entity.name.namespace.bloom
+import Mention.Posts
+//     ^^^^^^^^^^^^^ entity.name.namespace.bloom
+
+public protocol Titled {
+// <------ storage.modifier.bloom
+//     ^^^^^^^^ storage.type.protocol.bloom
+//              ^^^^^^ entity.name.type.protocol.bloom
+  var title: String { get }
+//                    ^^^ storage.modifier.accessor.bloom
+  var count: Int { get set }
+//                     ^^^ storage.modifier.accessor.bloom
+  static func make() -> Self
+//^^^^^^ storage.modifier.bloom
+//       ^^^^ storage.type.function.bloom
+//            ^^^^ entity.name.function.bloom
+//                      ^^^^ variable.language.self.bloom
+}
+
+extension Post: Titled, Equatable {
+// <--------- storage.type.extension.bloom
+//        ^^^^ entity.name.type.extension.bloom
+//                      ^^^^^^^^^ support.type.protocol.bloom
+  public var title: String { text }
+  static func == (a: Self, b: Self) -> Bool { a.id == b.id }
+//            ^^ entity.name.function.operator.bloom
+}
+
+@Observable
+// <----------- storage.modifier.attribute.bloom
+public final class FeedModel {
+//     ^^^^^ storage.modifier.bloom
+//           ^^^^^ storage.type.class.bloom
+//                 ^^^^^^^^^ entity.name.type.class.bloom
+  public private(set) var posts: [Post] = []
+//       ^^^^^^^ storage.modifier.bloom
+//               ^^^ storage.modifier.bloom
+  public init(api: MentionAPI) { self.api = api }
+//       ^^^^ storage.type.function.init.bloom
+//                               ^^^^ variable.language.self.bloom
+
+  public func like(_ post: Post) async throws {
+//                 ^ variable.language.wildcard.bloom
+//                   ^^^^ variable.parameter.bloom
+//                               ^^^^^ storage.modifier.bloom
+//                                     ^^^^^^ storage.modifier.throws.bloom
+    guard let i = posts.firstIndex(where: { $0.id == post.id }) else { return }
+//  ^^^^^ keyword.control.bloom
+//                                          ^^ variable.language.closure-argument.bloom
+//                                                              ^^^^ keyword.control.bloom
+    posts[i].likes += 1
+  }
+}
+
+actor Counter {}
+// <----- storage.type.actor.bloom
+//    ^^^^^^^ entity.name.type.actor.bloom
+
+func firstIndex<T: Equatable & Hashable>(_ xs: [T], of x: T) -> Int? where T: Sendable {
+//             ^ punctuation.definition.generic.begin.bloom
+//              ^ entity.name.type.bloom
+//                 ^^^^^^^^^ support.type.protocol.bloom
+//                           ^ keyword.operator.type.composition.bloom
+//                                     ^ punctuation.definition.generic.end.bloom
+//                                                  ^^ entity.name.label.bloom
+//                                                     ^ variable.parameter.bloom
+//                                                                   ^^^^^ keyword.control.bloom
+  for i in 0..<xs.count { if xs[i] == x { return i } }
+//          ^^^ keyword.operator.range.bloom
+  for i in 1...3 { log(i) }
+//          ^^^ keyword.operator.range.bloom
+  return xs?[0] == nil ? none : 0
+}
+
+public struct PostRow: View {
+//            ^^^^^^^ entity.name.type.struct.bloom
+//                     ^^^^ support.type.primitive.bloom
+  let post: Post
+  @Binding var isOn: Bool
+//^^^^^^^^ storage.modifier.attribute.bloom
+  @State private var draft = ""
+//^^^^^^ storage.modifier.attribute.bloom
+//       ^^^^^^^ storage.modifier.bloom
+  @Environment(\.locale) private var locale
+//             ^ keyword.operator.key-path.bloom
+//               ^^^^^^ variable.other.property.bloom
+  @Query(\Post.createdAt) var posts: [Post]
+//        ^^^^ entity.name.type.bloom
+
+  var body: some View {
+//          ^^^^ keyword.other.type.some.bloom
+    VStack {
+      Text("\(post.author.name) wrote \("\(post.likes)") likes")
+//          ^^ punctuation.section.interpolation.begin.bloom
+//                 ^^^^^^ variable.other.property.bloom
+//                            ^ punctuation.section.interpolation.end.bloom
+//                                    ^^ punctuation.section.interpolation.begin.bloom
+//                                       ^^ punctuation.section.interpolation.begin.bloom
+//                                              ^^^^^ variable.other.property.bloom
+//                                                      ^^^^^^ string.quoted.double.bloom
+      Toggle($isOn)
+//           ^^^^^ variable.other.binding.bloom
+    }
+    .padding(.md)
+//            ^^ variable.other.enummember.bloom
+    .foreground(post.isLiked ? .danger : .primary.opacity(0.1))
+//                              ^^^^^^ variable.other.enummember.bloom
+//                                        ^^^^^^^ variable.other.enummember.bloom
+  }
+}
+
+enum Load<T> {
+  case loading, failed(Error)
+//^^^^ keyword.control.case.bloom
+//     ^^^^^^^ variable.other.enummember.bloom
+  case ready(T)
+}
+
+func check(code: Int) throws(APIError) -> Int {
+//                    ^^^^^^ storage.modifier.throws.bloom
+//                           ^^^^^^^^ entity.name.type.bloom
+  switch load {
+//^^^^^^ keyword.control.bloom
+  case .loading:
+//^^^^ keyword.control.case.bloom
+//      ^^^^^^^ variable.other.enummember.bloom
+  case let .failed(message):
+//     ^^^ storage.type.let.bloom
+//          ^^^^^^ variable.other.enummember.bloom
+  case .ready(let count) where count == 0:
+//                       ^^^^^ keyword.control.bloom
+  case .a, .b:
+//          ^ variable.other.enummember.bloom
+  default:
+//^^^^^^^ keyword.control.default.bloom
+    break
+//  ^^^^^ keyword.control.transfer.bloom
+  }
+  if code >= 500 { throw APIError.status(code: code) }
+//                 ^^^^^ keyword.control.exception.bloom
+  do {
+//^^ keyword.control.exception.bloom
+    let ok = try await check(code: code)
+//           ^^^ keyword.control.exception.bloom
+//               ^^^^^ keyword.control.bloom
+  } catch let error as APIError {
+//  ^^^^^ keyword.control.exception.bloom
+//                  ^^ keyword.control.as.bloom
+  } catch .offline {
+//         ^^^^^^^ variable.other.enummember.bloom
+  }
+  let value = try? check(code: 1)
+//            ^^^^ keyword.control.exception.bloom
+  let forced = try! check(code: 1)
+//             ^^^^ keyword.control.exception.bloom
+  let tab = raw as! Tab
+//              ^^^ keyword.operator.cast.bloom
+  let maybe = error as? HTTPError
+//                  ^^^ keyword.operator.cast.bloom
+  let name = user!.name
+//               ^ keyword.operator.unwrap.bloom
+  let shown = !hidden
+//            ^ keyword.operator.logical.bloom
+  if x is String { return 1 }
+//     ^^ keyword.operator.type.is.bloom
+  return code
+}
+
+func describe(_ item: any Titled) -> String { item.title }
+//                    ^^^ keyword.other.type.any.bloom
+
+func useFeed() -> QueryResult<[Post]> {
+//                           ^ punctuation.definition.generic.begin.bloom
+//                                  ^ punctuation.definition.generic.end.bloom
+  let state = useState<Int>(0)
+//                    ^ punctuation.definition.generic.begin.bloom
+//                        ^ punctuation.definition.generic.end.bloom
+  let sorted = posts.sorted { a, b in a.likes < b.likes }
+//                                            ^ keyword.operator.comparison.bloom
+  let pick = flag ? left : right
+//                       ^ punctuation.separator.colon.bloom
+  let typed = files.map { file: File? in file?.name }
+//                        ^^^^^^^^^^^ variable.parameter.closure.bloom
+//                                    ^^ keyword.control.in.bloom
+}
+
+let note = """
+  Hello \(name), and ${legacy}
+//      ^^ punctuation.section.interpolation.begin.bloom
+//        ^^^^ meta.embedded.line.bloom
+//                   ^^ punctuation.section.interpolation.begin.bloom
+//                     ^^^^^^ meta.embedded.line.bloom
+  """
+
+extern module "./runtime" {
+// <------ storage.modifier.extern.bloom
+//     ^^^^^^ storage.type.module.bloom
+//            ^^^^^^^^^^^ string.quoted.double.bloom
+  @extern("actorQueue") private func actorQueueSync<A, T>(_ actor: A) async throws -> T
+//^^^^^^^ storage.modifier.attribute.bloom
+//                                                          ^^^^^ variable.parameter.bloom
+}
+
+extern native "BloomStorage" {
+//     ^^^^^^ storage.type.native.bloom
+}
+
+test("a like counts once") {
+// <---- keyword.other.test.bloom
+//   ^^^^^^^^^^^^^^^^^^^^ string.quoted.double.bloom
+  #expect(once.likes == post.likes + 1)
+//^ punctuation.definition.macro.bloom
+//^^^^^^^ entity.name.function.macro.bloom
+}
+
+view Ticker {
+  effect(id: tick) {
+//^^^^^^ keyword.other.effect.bloom
+  }
+  equal(old, new) { old.id == new.id }
+//^^^^^ keyword.other.equal.bloom
+  body { Text("\(count)") }
+}

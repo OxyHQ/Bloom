@@ -1,0 +1,26 @@
+func render(load: Load, raw: String) throws {
+  switch load {
+  case .loading:
+    ProgressView()
+  case let .failed(message):
+    Text(message)
+  default:
+    break
+  }
+
+  do {
+    let ok = try check(code: code)
+  } catch let error as APIError {
+    throw error
+  }
+  let value = try? check(code: 1)
+  let tab = raw as! Tab
+}
+
+extern module "./runtime" {
+  private func sleepMs(_ ms: Double) async throws
+}
+
+test("a like counts once") {
+  #expect(once.likes == post.likes + 1)
+}

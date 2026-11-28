@@ -1,0 +1,27 @@
+<span class="hljs-keyword">import</span> { useTranslation } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-i18next&quot;</span>
+
+<span class="hljs-comment">/// A draft, as the composer holds it.</span>
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">Draft</span> {
+  text: <span class="hljs-type">String</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&quot;</span>
+  count: <span class="hljs-type">Int</span> <span class="hljs-operator">=</span> <span class="hljs-number">1_000</span>
+}
+
+<span class="hljs-keyword">pub</span> <span class="hljs-keyword">view</span> <span class="hljs-title class_">Composer</span>(maxLength: <span class="hljs-type">Int</span> <span class="hljs-operator">=</span> <span class="hljs-number">500</span>, onSend: <span class="hljs-keyword">async</span> (<span class="hljs-type">Draft</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Result</span><span class="hljs-operator">&lt;</span><span class="hljs-type">Unit</span>, <span class="hljs-type">String</span><span class="hljs-operator">&gt;</span>) {
+  <span class="hljs-meta">@state</span> draft <span class="hljs-operator">=</span> <span class="hljs-type">Draft</span>()
+  <span class="hljs-keyword">let</span> left <span class="hljs-operator">=</span> maxLength <span class="hljs-operator">-</span> draft.text.count
+
+  <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">send</span>() {
+    <span class="hljs-keyword">match</span> <span class="hljs-keyword">await</span> <span class="hljs-title function_ invoke__">onSend</span>(draft) {
+      <span class="hljs-keyword">case</span> <span class="hljs-symbol">.ok</span>(_) <span class="hljs-operator">=&gt;</span> draft <span class="hljs-operator">=</span> <span class="hljs-type">Draft</span>()
+      <span class="hljs-keyword">case</span> <span class="hljs-symbol">.err</span>(message) <span class="hljs-operator">=&gt;</span> <span class="hljs-title function_ invoke__">toast</span>(message, type: <span class="hljs-string">&quot;error&quot;</span>)
+    }
+  }
+
+  <span class="hljs-keyword">body</span> {
+    <span class="hljs-type">VStack</span> {
+      <span class="hljs-type">TextField</span>(<span class="hljs-variable">$draft</span>.text, <span class="hljs-string">&quot;Say <span class="hljs-char escape_">\&quot;</span>hi<span class="hljs-char escape_">\&quot;</span><span class="hljs-char escape_">\n</span>&quot;</span>)
+      <span class="hljs-type">Text</span>(<span class="hljs-string">&quot;<span class="hljs-subst">${left}</span>&quot;</span>).<span class="hljs-title function_ invoke__">foreground</span>(left <span class="hljs-operator">&lt;</span> <span class="hljs-number">0</span> <span class="hljs-operator">?</span> <span class="hljs-string">&quot;error&quot;</span> : <span class="hljs-string">&quot;muted&quot;</span>)
+    }
+    .<span class="hljs-title function_ invoke__">padding</span>(<span class="hljs-string">&quot;lg&quot;</span>)
+  }
+}
