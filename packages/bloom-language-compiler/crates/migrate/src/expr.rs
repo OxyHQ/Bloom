@@ -1799,13 +1799,13 @@ impl Tr<'_> {
         // A spread child (`...xs.map(…)`) is a `for` line, which only a builder takes.
         // A spread of a name (`Text(...runs)`) stays a spread argument.
         let spread = children.iter().any(|a| match a {
-            Argument::SpreadElement(s) => match s.argument.without_parentheses() {
+            Argument::SpreadElement(s) => matches!(
+                s.argument.without_parentheses(),
                 Expression::CallExpression(_)
-                | Expression::ConditionalExpression(_)
-                | Expression::LogicalExpression(_)
-                | Expression::ArrayExpression(_) => true,
-                _ => false,
-            },
+                    | Expression::ConditionalExpression(_)
+                    | Expression::LogicalExpression(_)
+                    | Expression::ArrayExpression(_)
+            ),
             _ => false,
         });
         let builder =
@@ -2395,7 +2395,9 @@ fn missing_record_fields(array: &oxc_ast::ast::ArrayExpression) -> Option<Vec<Ve
             }
             keys.push(match &p.key {
                 PropertyKey::StaticIdentifier(id) => id.name.to_string(),
-                PropertyKey::StringLiteral(s) if crate::module::is_identifier(s.value.as_str().unwrap_or_default()) => {
+                PropertyKey::StringLiteral(s)
+                    if crate::module::is_identifier(s.value.as_str().unwrap_or_default()) =>
+                {
                     s.value.as_str().unwrap_or_default().to_string()
                 }
                 _ => return None,

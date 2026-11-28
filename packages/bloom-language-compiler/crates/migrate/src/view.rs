@@ -1037,7 +1037,9 @@ impl Tr<'_> {
                         self.server_error_fields.push((key, ty));
                     }
                 }
-                out.push_str(&format!("\nlet {name}Body = try? {name}?.response.decode(ServerErrorBody.self)"));
+                out.push_str(&format!(
+                    "\nlet {name}Body = try? {name}?.response.decode(ServerErrorBody.self)"
+                ));
             }
             return out;
         }
@@ -1782,7 +1784,8 @@ impl Tr<'_> {
             }
             let ty = self.ty(&t.type_annotation);
             // A `ReactNode` parameter may be given nothing (`row(id, undefined)`), as TS's may.
-            let ty = if ty == "View" && self.is_react_node(&t.type_annotation) { "View?".to_string() } else { ty };
+            let ty =
+                if ty == "View" && self.is_react_node(&t.type_annotation) { "View?".to_string() } else { ty };
             let declared =
                 if param.optional && param.initializer.is_none() { optional_ty(&ty) } else { ty.clone() };
             self.scope.decl.insert(name.clone(), declared);
@@ -3190,7 +3193,9 @@ fn local_extends<'b, 'a>(
 /// with their Bloom types (each optional), or none for an untyped `data`. A field of another
 /// type than a string, number or boolean is not this shape.
 pub fn axios_error_fields(ty: &TSType) -> Option<Vec<(String, String)>> {
-    fn members<'b, 'a>(t: &'b TSType<'a>) -> Option<Vec<(String, &'b oxc_ast::ast::TSPropertySignature<'a>)>> {
+    fn members<'b, 'a>(
+        t: &'b TSType<'a>,
+    ) -> Option<Vec<(String, &'b oxc_ast::ast::TSPropertySignature<'a>)>> {
         match t {
             TSType::TSTypeLiteral(l) => Some(
                 l.members

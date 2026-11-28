@@ -809,7 +809,9 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             ("B0201", _)
                 if (d.message == "expected `View?`, found `String`"
                     || d.message == "expected `View`, found `String`")
-                    && (line_is(source, start, end) || braced(source, start, end) || argument(source, start, end)) =>
+                    && (line_is(source, start, end)
+                        || braced(source, start, end)
+                        || argument(source, start, end)) =>
             {
                 Some((start, end, format!("RawText({text})")))
             }
