@@ -64,12 +64,7 @@ it("guards the standard library's Date methods", () => {
   expect(o.since(undefined)).toBe(-1);
   expect(o.since(new Date(5000))).toBe(5);
   expect(o.shown('not a date')).toBe('Invalid Date');
-  expect(o.shown('2026-11-26T18:30:00Z')).toBe(
-    new Date('2026-11-26T18:30:00Z').toLocaleDateString('en', {
-      dateStyle: 'short',
-      timeZone: 'UTC',
-    }),
-  );
+  expect(o.shown('2026-11-26T18:30:00Z')).toBe('11/26/2026');
 });
 
 it("reads an implicit member after ?? from the left side's type", () => {

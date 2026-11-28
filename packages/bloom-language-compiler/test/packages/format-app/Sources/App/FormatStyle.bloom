@@ -21,3 +21,9 @@ public func styled(_ d: Date, _ locale: String) -> String {
 public func dateOnly(_ d: Date, _ locale: String) -> String { d.formatted(date: .long, locale: locale, timeZone: "UTC") }
 public func plain(_ d: Date, _ locale: String) -> String { d.formatted(locale: locale, timeZone: "UTC") }
 public func relative(_ d: Date, _ now: Date) -> String { d.formatted(.relative, locale: "en", now: now) }
+public func numericDate(_ d: Date, _ locale: String) -> String {
+  d.formatted(date: .numeric, time: .omitted, locale: locale, timeZone: "UTC")
+}
+public func numericDateTime(_ d: Date, _ locale: String) -> String {
+  d.formatted(date: .numeric, time: .shortened, locale: locale, timeZone: "UTC")
+}

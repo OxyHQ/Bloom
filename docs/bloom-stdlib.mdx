@@ -262,7 +262,7 @@ A length of time, in seconds (negative: before).
 How much of a date `formatted(date:time:)` shows (Swift's `Date.FormatStyle.DateStyle`).
 
 - `case omitted`: No date.
-- `case numeric`: "11/26/26" (Intl's `short`).
+- `case numeric`: "11/26/2026": the numeric date with the full year, as Swift writes it (Intl's numeric `year`, `month` and `day`, not its `short` style's "11/26/26").
 - `case abbreviated`: "Nov 26, 2026" (Intl's `medium`).
 - `case long`: "November 26, 2026" (Intl's `long`).
 - `case complete`: "Thursday, November 26, 2026" (Intl's `full`).
