@@ -3257,7 +3257,10 @@ pub fn negate(test: &Expression, text: &str) -> String {
         Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot => {
             text.strip_prefix('!').map_or_else(|| format!("!({text})"), str::to_string)
         }
-        Expression::Identifier(_) | Expression::StaticMemberExpression(_) | Expression::CallExpression(_) => {
+        // A call written as an operator form (`Array.isArray(x)` is `x is [Foreign]`) is parenthesised.
+        Expression::Identifier(_) | Expression::StaticMemberExpression(_) | Expression::CallExpression(_)
+            if !text.contains(" is ") =>
+        {
             format!("!{text}")
         }
         _ => format!("!({text})"),
