@@ -19,10 +19,24 @@
 /// (`Native/BloomStorage/`) conform to this interface through the TurboModule spec the
 /// toolchain generates from it. `kind` is `kv` (SQLite), `secure` (the keystore or keychain)
 /// or `file` (the app's files).
+///
+/// The `sql…` functions are `@Model`'s SQLite (`stdlib/Bloom/models.ts`, BloomData's
+/// persister): a database file by handle, its statements' parameters as JSON.
 extern native "BloomStorage" {
   @extern("get") private func nativeGet(_ kind: String, _ name: String, _ key: String) -> String?
   @extern("set") private func nativeSet(_ kind: String, _ name: String, _ key: String, _ value: String?)
   @extern("keys") private func nativeKeys(_ kind: String, _ name: String) -> [String]
+  /// Opens the database file `name` (or the one already open): its handle.
+  @extern("sqlOpen") private func nativeSqlOpen(_ name: String) -> Int
+  /// Runs a script of statements without parameters.
+  @extern("sqlExec") private func nativeSqlExec(_ db: Int, _ source: String)
+  /// Runs one statement with `params` (a JSON array): the rows it changed.
+  @extern("sqlRun") private func nativeSqlRun(_ db: Int, _ source: String, _ params: String) -> Int
+  /// The rows of one query with `params` (a JSON array), framed as `models.ts`'s `decodeRows` reads them.
+  @extern("sqlAll") private func nativeSqlAll(_ db: Int, _ source: String, _ params: String) -> String
+  @extern("sqlClose") private func nativeSqlClose(_ db: Int)
+  /// Deletes the database file `name` (closing it first).
+  @extern("sqlDelete") private func nativeSqlDelete(_ name: String)
 }
 
 extern module "./runtime" {

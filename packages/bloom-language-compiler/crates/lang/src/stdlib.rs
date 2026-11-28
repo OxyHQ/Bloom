@@ -46,6 +46,10 @@ pub const MANIFEST: &str = include_str!("../../../stdlib/Package.bloom");
 /// The native modules' implementations, by path under the standard library's directory.
 pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     (
+        "Native/BloomStorage/android/so/oxy/bloom/storage/Databases.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/Databases.kt"),
+    ),
+    (
         "Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt",
         include_str!(
             "../../../stdlib/Bloom/Native/BloomStorage/android/so/oxy/bloom/storage/BloomStorageModule.kt"
