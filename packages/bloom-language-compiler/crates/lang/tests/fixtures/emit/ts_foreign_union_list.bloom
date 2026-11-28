@@ -1,0 +1,12 @@
+// A list of a foreign union whose first member is parenthesized (`(typeof NAMES)[number] |
+// 'shop'`) wraps the whole union: `readonly ((typeof NAMES)[number] | 'shop')[]`, which Babel and
+// tsc parse (Mention's Profile/types `ProfileTab`).
+public let NAMES = ["a", "b"]
+
+public type Tab = Foreign<"(typeof NAMES)[number] | 'shop'">
+
+public func tabs() -> [Tab] { [] }
+
+public type Keys = Foreign<"keyof typeof NAMES">
+
+public func keys() -> [Keys] { [] }
