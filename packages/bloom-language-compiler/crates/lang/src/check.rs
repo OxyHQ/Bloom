@@ -395,6 +395,9 @@ pub struct CheckResult {
     /// `HTTPClient`'s): the call's id and that parameter's slot, which takes `Task.signal`, so the
     /// work is cancelled with the task, as Swift's child work is.
     pub implicit_signals: HashMap<ExprId, usize>,
+    /// `x as? JSError` (or `HTTPError`) on a TS value: the cast's argument is that value, which
+    /// TS takes as an `Error` there (`x as unknown as Error`).
+    pub foreign_casts: HashSet<ExprId>,
     /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
     /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
     pub map_writes: HashSet<ExprId>,
@@ -5015,7 +5018,13 @@ impl<'o> Checker<'o> {
                 }
                 match self.cast_fn(&target) {
                     Some((func, f)) => {
-                        if let Some(param) = f.params.first()
+                        // `error as? JSError` on a TS value (a `.catch` callback's error, a
+                        // `JSONValue`): the cast tests it at run time, as Swift's `Any as? Error`.
+                        let foreign_error = matches!(self.resolve(&value), Ty::Foreign(_))
+                            && f.params.first().is_some_and(|p| self.resolve(&p.ty) == Ty::JsError);
+                        if foreign_error {
+                            self.out.foreign_casts.insert(expr.id);
+                        } else if let Some(param) = f.params.first()
                             && !self.coerce(&value, &param.ty)
                         {
                             self.mismatch(subject.span, &value, &param.ty);

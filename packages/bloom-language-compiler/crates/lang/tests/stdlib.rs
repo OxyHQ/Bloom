@@ -959,3 +959,22 @@ fn a_tasks_request_is_cancelled_with_it_and_runs_no_catch() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `x as? JSError` on a TS value: the cast takes it as an `Error` (mention15 foreign-as-jserror).
+/// The runtime test is `test/foreign-errors.test.ts`.
+const FOREIGN_ERRORS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/ForeignErrors.bloom");
+
+#[test]
+fn a_ts_value_casts_to_a_js_error() {
+    let root = package("foreign-errors", &[("Sources/Model/ForeignErrors.bloom", FOREIGN_ERRORS)]);
+    let path = root.join("Sources/Model/ForeignErrors.bloom");
+    let out = compile(FOREIGN_ERRORS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("(error as unknown as Error)"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/foreign-errors.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

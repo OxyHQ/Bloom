@@ -2645,7 +2645,10 @@ impl<'a> Emitter<'a> {
             }
             ExprKind::CastAs(subject, ..) => {
                 let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
-                let value = self.expr(subject);
+                let mut value = self.expr(subject);
+                if self.ck.foreign_casts.contains(&expr.id) {
+                    value = value.wrap("", " as unknown as Error");
+                }
                 let mut out = Frag::of(func);
                 out.f(value.wrap("(", ")"));
                 out
