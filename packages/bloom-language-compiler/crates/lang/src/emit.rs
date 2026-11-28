@@ -1774,14 +1774,28 @@ impl<'a> Emitter<'a> {
             AssignOp::Sub => Some("-"),
             AssignOp::Mul => Some("*"),
         };
-        let mut value = self.expr(&a.value);
+        // `xs += ys` of an array: a new one, `[...xs, ...ys]` (a literal's items in place).
+        let list = op.is_some() && matches!(self.ck.types.get(&a.value.id), Some(Ty::List(_)));
+        let awaited = expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. });
+        let mut value = match &a.value.kind {
+            ExprKind::List(items) if list && !awaited => {
+                let items: Vec<Frag> = items.iter().map(|item| self.expr(item)).collect();
+                Frag::join(items, ", ")
+            }
+            _ => self.expr(&a.value),
+        };
         // `state = await f(state)`: awaited before the update, which is not async.
-        if expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. }) {
+        if awaited {
             let temp = self.temp();
             let mut line = Frag::at(a.value.span, format!("const {temp} = "));
             line.f(value).s(";");
             self.push_stmt(line);
             value = Frag::of(temp);
+        }
+        if list && (awaited || !matches!(a.value.kind, ExprKind::List(_))) {
+            let mut out = Frag::of("...");
+            out.f(value);
+            value = out;
         }
         // `n += k` on an `Int`: a dev build traps a result outside ±(2^53 − 1), as `n + k` does.
         let int_check = self.options.dev
@@ -1801,6 +1815,11 @@ impl<'a> Emitter<'a> {
         }
         let combine = |current: Frag, value: Frag| -> Frag {
             match op {
+                Some(_) if list => {
+                    let mut out = Frag::of("[...");
+                    out.f(current).s(", ").f(value).s("]");
+                    out
+                }
                 Some(op) => {
                     let mut out = current;
                     out.s(&format!(" {op} ")).f(value.wrap("(", ")"));
@@ -2923,6 +2942,25 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// The items of one operand of an array `+`, in place.
+    fn concat_parts(&mut self, operand: &Expr, parts: &mut Vec<Frag>) {
+        match &operand.kind {
+            ExprKind::Paren(inner) => self.concat_parts(inner, parts),
+            ExprKind::List(items) => parts.extend(items.iter().map(|item| self.expr(item))),
+            ExprKind::Binary(BinaryOp::Add, lhs, rhs)
+                if matches!(self.ck.types.get(&operand.id), Some(Ty::List(_))) =>
+            {
+                self.concat_parts(lhs, parts);
+                self.concat_parts(rhs, parts);
+            }
+            _ => {
+                let mut out = Frag::of("...");
+                out.f(self.expr(operand));
+                parts.push(out);
+            }
+        }
+    }
+
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
         // An `Int` is 64-bit, exact on the JS backend within ±(2^53 − 1): a dev build traps a
         // `+`, `-` or `*` whose result leaves that range, as Swift traps an overflow.
@@ -2937,6 +2975,16 @@ impl<'a> Emitter<'a> {
             self.int_checked = outer;
             self.helpers.insert("int");
             return inner.wrap("$int(", ")");
+        }
+        // `a + b` of two arrays (Swift's): a new one, `a`'s elements then `b`'s.
+        // A literal's items and a nested `+`'s operands go in place: `a + [x] + b` is
+        // `[...a, x, ...b]`.
+        if op == BinaryOp::Add && matches!(self.ck.types.get(&expr.id), Some(Ty::List(_))) {
+            let mut parts = Vec::new();
+            self.concat_parts(lhs, &mut parts);
+            self.concat_parts(rhs, &mut parts);
+            let list = Frag::join(parts, ", ").wrap("[", "]");
+            return if self.options.dev { list.wrap("Object.freeze(", ")") } else { list };
         }
         // `0...3` as a `ClosedRange`: its bounds.
         if op == BinaryOp::Closed && matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_))) {
