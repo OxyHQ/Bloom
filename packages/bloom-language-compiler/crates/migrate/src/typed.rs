@@ -237,6 +237,21 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 call_args(source, start, end).and_then(|(a, b)| options_record(source, a, b))
             }
+            // JS `s.slice(n)` (to the end) on a plain receiver: Bloom's `slice` takes both ends.
+            ("B0207", _)
+                if d.message == "this takes 2 argument(s), not 1"
+                    && source[..start].ends_with(".slice(")
+                    && !text.trim_start().starts_with('-')
+                    && source[end..].starts_with(')') =>
+            {
+                let dot = start - ".slice(".len();
+                receiver_start(source, dot + 1).and_then(|at| {
+                    let receiver = &source[at..dot];
+                    (!receiver.is_empty()
+                        && receiver.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.')))
+                    .then(|| (end, end, format!(", {receiver}.count")))
+                })
+            }
             ("B0207", _) if d.message == "missing argument(s): ``" => call_args(source, start, end)
                 .filter(|(a, b)| {
                     let inner = &source[*a..*b];
@@ -500,6 +515,42 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                             && rest[op.len()..].chars().next().is_none_or(|c| !c.is_ascii_digit() && c != '.')
                     })
                     .map(|(op, test)| (start, end + op.len(), format!("{text} {test}")))
+            }
+            // A function read from a `Record<K, F>` that TS typed present (`const Glyph =
+            // ICONS[mode]`), then called: JS calls it as it is, so the read is `ICONS[mode]!`.
+            ("B0208", _)
+                if d.message.ends_with("?` cannot be called")
+                    && !text.is_empty()
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_') =>
+            {
+                // Past `if let x = x` to the declaration it unwraps.
+                let decl = format!("let {text} = ");
+                let shadow = format!("let {text} = {text} {{");
+                let mut before = start;
+                let at = loop {
+                    let at = source[..before].rfind(&decl)?;
+                    if !source[at..].starts_with(&shadow) {
+                        break at;
+                    }
+                    before = at;
+                };
+                let value = at + decl.len();
+                let end_of = statement_end(source, value);
+                // The one record read in the value, unwrapped (`c ? none : ICONS[k]`).
+                let reads: Vec<usize> = (value..end_of)
+                    .filter(|&i| {
+                        source.as_bytes()[i] == b']'
+                            && !source[i + 1..].starts_with(['!', '?'])
+                            && is_subscript(&source[value..=i])
+                            && subscript_open(source, i).is_some_and(|o| {
+                                source[..o].ends_with(|c: char| c.is_alphanumeric() || c == '_')
+                            })
+                    })
+                    .collect();
+                match reads.as_slice() {
+                    [close] => Some((close + 1, close + 1, "!".to_string())),
+                    _ => None,
+                }
             }
             // Arithmetic on a `Record<K, number>` read TS typed present: `d[k]!`.
             ("B0201", _)
@@ -1408,12 +1459,29 @@ pub fn casts(source: &str, diagnostics: &[Diagnostic], casts: &HashMap<String, S
         if !expected.starts_with('"') {
             continue;
         }
-        let (start, end) = (d.span.start as usize, d.span.end as usize);
-        let Some(text) = source.get(start..end) else { continue };
-        let Some(ty) = casts.get(&crate::truthiness::squeeze(text)) else { continue };
+        let (mut start, mut end) = (d.span.start as usize, d.span.end as usize);
+        let Some(mut text) = source.get(start..end) else { continue };
+        // bloomc points at a branch of the conditional the cast's `a || b` was spelled as: the
+        // cast is the group around it.
+        if !casts.contains_key(&crate::truthiness::squeeze(text))
+            && let Some((s, e)) = enclosing_group(source, start, end)
+            && unspelled_or(&crate::truthiness::squeeze(&source[s + 1..e - 1])).is_some()
+        {
+            (start, end, text) = (s, e, &source[s..e]);
+        }
+        let key = crate::truthiness::squeeze(text);
+        let bare = key.strip_prefix('(').and_then(|k| k.strip_suffix(')')).unwrap_or(&key);
+        let Some(ty) = casts.get(&key).or_else(|| casts.get(bare)).or_else(|| {
+            let or = unspelled_or(bare)?;
+            casts.get(&or).or_else(|| casts.get(&format!("({or})")))
+        }) else {
+            continue;
+        };
         if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
             continue;
         }
+        // An unnamed TS type (`Trend['type']`) is cast to the union bloomc expected.
+        let ty = if ty.is_empty() { format!("({expected})") } else { ty.clone() };
         edits.push((start, end, format!("({text} as! {ty})")));
     }
     if edits.is_empty() {
@@ -1425,6 +1493,76 @@ pub fn casts(source: &str, diagnostics: &[Diagnostic], casts: &HashMap<String, S
         out.replace_range(start..end, &text);
     }
     Some(out)
+}
+
+/// Where the statement whose value starts at `start` ends: a line break outside brackets that
+/// neither ends in an operator nor is followed by a line continuing it (`?`, `:`, `.`, `&&`).
+fn statement_end(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let mut depth = 0i32;
+    let mut quote = false;
+    for i in start..bytes.len() {
+        match bytes[i] {
+            b'"' => quote = !quote,
+            _ if quote => {}
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => {
+                depth -= 1;
+                if depth < 0 {
+                    return i;
+                }
+            }
+            b'\n' if depth == 0 => {
+                let line = source[start..i].trim_end();
+                let next = source[i + 1..].trim_start();
+                let continued = line
+                    .ends_with(['=', '!', '<', '>', '?', ':', '&', '|', '+', '-', '*', '/', ','])
+                    || next.starts_with(['?', ':', '.', '&', '|']);
+                if !continued {
+                    return i;
+                }
+            }
+            _ => {}
+        }
+    }
+    bytes.len()
+}
+
+/// The parenthesised group of `source` around `start..end`: `(` … `)`.
+fn enclosing_group(source: &str, start: usize, end: usize) -> Option<(usize, usize)> {
+    let bytes = source.as_bytes();
+    let mut depth = 0i32;
+    let open = (0..start).rev().find(|&i| {
+        match bytes[i] {
+            b')' => depth += 1,
+            b'(' if depth == 0 => return true,
+            b'(' => depth -= 1,
+            _ => {}
+        }
+        false
+    })?;
+    let mut depth = 0i32;
+    let close = (end..bytes.len()).find(|&i| {
+        match bytes[i] {
+            b'(' => depth += 1,
+            b')' if depth == 0 => return true,
+            b')' => depth -= 1,
+            _ => {}
+        }
+        false
+    })?;
+    Some((open, close + 1))
+}
+
+/// A JS value `a || b` as `crate::truthiness` spelled it for a `String` or a number
+/// (`a.isEmpty ? b : a`, `a == 0 ? b : a`), squeezed: the `a||b` a cast was recorded by.
+fn unspelled_or(text: &str) -> Option<String> {
+    let (test, rest) = text.split_once('?')?;
+    let (right, left) = rest.rsplit_once(':')?;
+    let a = test.strip_suffix(".isEmpty").or_else(|| test.strip_suffix("==0"))?;
+    let a = a.strip_prefix('(').and_then(|x| x.strip_suffix(')')).unwrap_or(a);
+    let left = left.strip_prefix('(').and_then(|x| x.strip_suffix(')')).unwrap_or(left);
+    (a == left).then(|| format!("{a}||{right}"))
 }
 
 /// What a guarded name's one declaration in the draft says.

@@ -1,0 +1,62 @@
+// Values TS had typed that Bloom reads the same way (lang-mention-10):
+// - `x as Trend['type']` where Bloom expects the union: `x as! (union)`, also around a spelled `a || b`;
+// - a function read from a `Record<K, F>` TS typed present, then called: `ICONS[k]!`;
+// - JS `s.slice(n)`: `s.slice(n, s.count)`;
+// - i18next's `t(key, "default", { … })`: the default is `defaultValue:`;
+// - an optional number member tested for truthiness narrows (`x != none && x != 0`);
+// - `xs.filter((x): x is T => …)`: `compactMap`, so the list is of `T`.
+
+import { type Trend, type TrendingTopic, formatCount, hosts, rows, t } from "./trends"
+import { RiAlertLine, RiExchangeLine } from "@oxy.so/bloom/icons/RiAlertLine"
+
+public type Mode = "alert" | "exchange"
+
+// bloom: review: `Record<Mode, typeof RiAlertLine>` is a `[String: Foreign<"typeof RiAlertLine">]`: its keys are no longer checked
+private let ICONS: [String: Foreign<"typeof RiAlertLine">] = {
+  alert: RiAlertLine,
+  exchange: RiExchangeLine,
+}
+
+private func toTrend(_ topic: TrendingTopic) -> Trend {
+  // bloom: review: `as Trend['type']` dropped: annotate where the value lands if tsc needs it
+  {
+    type: ((topic.type.isEmpty ? "hashtag" : topic.type) as! "hashtag" | "topic" | "entity"),
+    name: topic.name,
+    direction: "flat",
+  }
+}
+
+private func folder(_ tabId: String, _ prefix: String) -> String {
+  tabId.slice(prefix.count, tabId.count)
+}
+
+private func people(_ trend: Trend) -> String {
+  if trend.authorCount != none && trend.authorCount != 0 && trend.authorCount > 0 {
+    return formatCount(trend.authorCount)
+  }
+  t("trend.people", defaultValue: "Attached {{number}}", number: 1)
+}
+
+public func load(_ topics: [TrendingTopic]) {
+  rows(topics.map(toTrend))
+  hosts(
+    (topics.map { topic in topic.host }).compactMap {
+      host in
+      (host != none && !host.isEmpty) ? host : none
+    },
+  )
+}
+
+public struct TrendIcon: View {
+  let mode: Mode
+  let trend: Trend
+  let Glyph = ICONS[mode]!
+
+  var body: some View {
+    VStack {
+      Text(people(trend))
+      Text(folder(trend.name, "#"))
+      Glyph(width: 20, height: 20, fill: "red")
+    }
+  }
+}

@@ -205,6 +205,28 @@ pub fn defaults(
         }
         edits.push((left_start, end, text));
     }
+    // The condition of the `a ? a : b` written above, now typed: its truthiness.
+    for d in diagnostics {
+        let Some(found) =
+            d.message.strip_prefix("expected `Bool`, found `").and_then(|m| m.strip_suffix('`'))
+        else {
+            continue;
+        };
+        if d.code != "B0201" {
+            continue;
+        }
+        let (start, end) = (d.span.start as usize, d.span.end as usize);
+        let Some(text) = source.get(start..end) else { continue };
+        if !is_postfix(text) || !source[end..].starts_with(&format!(" ? {text} : ")) {
+            continue;
+        }
+        let Some(test) = test(text, found, false) else { continue };
+        let test = if test.contains(" || ") || test.contains(" && ") { format!("({test})") } else { test };
+        if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
+            continue;
+        }
+        edits.push((start, end, test));
+    }
     // The same `a || b` of two TS values, typed `Bool` where a value is expected
     // (bloomc reports the whole expression).
     for d in diagnostics {
@@ -368,6 +390,8 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
         "String?" if !negated && is_name(text) => format!("{text} != none && !{text}.isEmpty"),
         "String?" if is_name(text) => format!("{text} == none || {text}.isEmpty"),
         "String?" => format!("({text} ?? \"\") {eq} \"\""),
+        "Int?" | "Float?" if !negated && is_name(text) => format!("{text} != none && {text} != 0"),
+        "Int?" | "Float?" if is_name(text) => format!("{text} == none || {text} == 0"),
         "Int?" | "Float?" => format!("({text} ?? 0) {eq} 0"),
         "Bool?" => format!("{operand} {} true", if negated { "!=" } else { "==" }),
         // Any other optional is truthy when present: an object, a list, a view, a function.
@@ -375,6 +399,8 @@ fn test(text: &str, ty: &str, negated: bool) -> Option<String> {
         // A value that is never `none` (a struct, a record, a list, a function): JS's
         // object is always truthy.
         t if always_object(t) => (if negated { "false" } else { "true" }).to_string(),
+        // A union of non-empty string literals is never falsy.
+        t if !t.ends_with('?') && literal_union(t) => (if negated { "false" } else { "true" }).to_string(),
         _ => return None,
     })
 }

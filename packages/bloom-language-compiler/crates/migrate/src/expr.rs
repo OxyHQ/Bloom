@@ -183,6 +183,11 @@ impl Tr<'_> {
                     let name = self.name(&id.name, id.span);
                     self.casts.insert(crate::truthiness::squeeze(&text), name);
                 }
+                // `as X['k']`: a TS type Bloom does not name. Where bloomc expects a literal union,
+                // the cast is to that union, written out (`crate::typed::casts`).
+                if let oxc_ast::ast::TSType::TSIndexedAccessType(_) = &a.type_annotation {
+                    self.casts.insert(crate::truthiness::squeeze(&text), String::new());
+                }
                 text
             }
             Expression::TSSatisfiesExpression(s) => self.expr(&s.expression),
@@ -742,8 +747,10 @@ impl Tr<'_> {
                     return Test::Bind(name.clone(), Some(format!("!{name}.isEmpty")));
                 }
                 "Float?" if binds && plain => return Test::Bind(name.clone(), Some(format!("{name} != 0"))),
-                "String?" if plain => format!("{name} != none && !{name}.isEmpty"),
+                "String?" if plain || is_member_path(&name) => format!("{name} != none && !{name}.isEmpty"),
                 "String?" => format!("({name} ?? \"\") != \"\""),
+                // A member path is read again: bloomc narrows it for the branch (`trend.count`).
+                "Float?" if is_member_path(&name) => format!("{name} != none && {name} != 0"),
                 "Float?" => format!("({name} ?? 0) != 0"),
                 t if t.ends_with('?') && binds && plain => return Test::Bind(name, None),
                 t if t.ends_with('?') => format!("{name} != none"),
@@ -841,8 +848,11 @@ impl Tr<'_> {
                 "Float" => format!("{name} == 0"),
                 "Bool?" => format!("{name} != true"),
                 // Parenthesised (an `if` head drops them: bloomc narrows a bare `||`).
-                "String?" if is_plain_name(&name) => format!("({name} == none || {name}.isEmpty)"),
+                "String?" if is_plain_name(&name) || is_member_path(&name) => {
+                    format!("({name} == none || {name}.isEmpty)")
+                }
                 "String?" => format!("({name} ?? \"\") == \"\""),
+                "Float?" if is_member_path(&name) => format!("({name} == none || {name} == 0)"),
                 "Float?" => format!("({name} ?? 0) == 0"),
                 t if t.ends_with('?') => format!("{name} == none"),
                 _ => format!("!({})", self.expr(e)),
@@ -1018,6 +1028,29 @@ impl Tr<'_> {
     }
 
     fn call_inner(&mut self, call: &CallExpression) -> String {
+        // `xs.filter((x): x is T => test)`: TS narrows the list's element type by the guard, which
+        // Swift spells `compactMap { x in test ? x : none }` (the element is `T`, not `T?`).
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && m.property.name == "filter"
+            && !m.optional
+            && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
+            && let Some(ret) = &arrow.return_type
+            && let oxc_ast::ast::TSType::TSTypePredicate(p) = &ret.type_annotation
+            && !p.asserts
+            && let [param] = arrow.params.items.as_slice()
+            && let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &param.pattern
+            && let oxc_ast::ast::TSTypePredicateName::Identifier(guarded) = &p.parameter_name
+            && guarded.name == id.name
+            && let Some(body) = arrow.get_expression()
+        {
+            let receiver = self.expr(&m.object);
+            let receiver = if is_postfix_text(&receiver) { receiver } else { format!("({receiver})") };
+            let name = self.name(&id.name, id.span);
+            let head = std::mem::replace(&mut self.head, false);
+            let test = self.test(body, false);
+            self.head = head;
+            return format!("{receiver}.compactMap {{ {name} in {test} ? {name} : none }}");
+        }
         // `Math.max(a, b)` and kin are the prelude's typed `max(a, b)`; `Array.isArray(x)` is `x is [Foreign]`.
         if let Expression::StaticMemberExpression(m) = &call.callee
             && let Expression::Identifier(object) = &m.object
@@ -1390,7 +1423,19 @@ impl Tr<'_> {
             Some((Argument::ObjectExpression(o), rest)) if named_args_fit(o) => (Some(o), rest),
             _ => (None, call.arguments.as_slice()),
         };
+        // i18next's `t(key, "default", { … })`: the default is the options' `defaultValue`.
+        let (rest, default) = match rest {
+            [key, Argument::StringLiteral(d)] if callee == "t" && last_object.is_some() => (
+                std::slice::from_ref(key),
+                Some(format!("defaultValue: {}", quote(d.value.as_str().unwrap_or_default()))),
+            ),
+            _ => (rest, None),
+        };
         let mut args = self.positional(rest, false);
+        if let Some(default) = default {
+            args.push_str(", ");
+            args.push_str(&default);
+        }
         if let Some(object) = last_object {
             let named = self.named_args(object);
             if !named.is_empty() {
@@ -2334,6 +2379,15 @@ pub fn escape(text: &str) -> String {
         }
     }
     out
+}
+
+/// `a.b.c`: a read of stored members, with no call, unwrap or subscript (read again for free).
+fn is_member_path(text: &str) -> bool {
+    text.contains('.')
+        && text.split('.').all(|part| {
+            part.starts_with(|c: char| c.is_alphabetic() || c == '_')
+                && part.chars().all(|c| c.is_alphanumeric() || c == '_')
+        })
 }
 
 pub fn quote(text: &str) -> String {
