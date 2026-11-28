@@ -1235,6 +1235,10 @@ impl<'a> Formatter<'a> {
     }
 
     fn closure(&mut self, closure: &Closure) -> Doc {
+        // `reduce(0, +)`: an operator passed as a function, as written.
+        if let Some(op) = closure.operator {
+            return text(op.text());
+        }
         let header: Vec<Doc> = if closure.has_in {
             let params = closure
                 .params

@@ -69,6 +69,7 @@ fn node(name: &str, args: Vec<Arg>, children: Option<Vec<Stmt>>, span: Span) -> 
         params: Vec::new(),
         has_in: false,
         tuple: false,
+        operator: None,
         body,
         span: fresh(span),
     });

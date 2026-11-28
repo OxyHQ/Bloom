@@ -531,3 +531,56 @@ func same(_ a: Session, _ b: Session?) -> Bool {
           (binary_expression
             (identifier)
             (identifier)))))))
+
+====================
+Operator functions
+====================
+
+let a = xs.reduce(0, +)
+let b = xs.sorted(by: <)
+let c: (Int, Int) -> Int = (+)
+let d = f(-x)
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (value_arguments
+        (value_argument
+          (integer_literal))
+        (value_argument
+          (operator_function)))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (value_arguments
+        (value_argument
+          (identifier)
+          (operator_function)))))
+  (property_declaration
+    (identifier)
+    (function_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (parenthesized_expression
+      (operator_function)))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (prefix_expression
+            (identifier)))))))

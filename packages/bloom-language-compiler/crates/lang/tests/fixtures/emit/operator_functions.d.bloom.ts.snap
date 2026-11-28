@@ -1,0 +1,9 @@
+export declare function total(xs: readonly number[]): number;
+export declare function product(xs: readonly number[]): number;
+export declare function joined(xs: readonly string[]): string;
+export declare function ascending(xs: readonly number[]): readonly number[];
+export declare function descending(xs: readonly string[]): readonly string[];
+export declare function seven(): number;
+export declare function remainder(): number;
+export declare const add: (p0: number, p1: number) => number;
+export declare function same(f?: (p0: string, p1: string) => boolean): boolean;
