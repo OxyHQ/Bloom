@@ -2147,6 +2147,7 @@ impl Tr<'_> {
         let mut groups: Vec<(Vec<&Expression>, bool, &[Statement])> = Vec::new();
         let mut tests = Vec::new();
         let mut default = false;
+        let mut checked = false;
         for (i, case) in s.cases.iter().enumerate() {
             match &case.test {
                 Some(t) => tests.push(t),
@@ -2176,6 +2177,21 @@ impl Tr<'_> {
                     case.span,
                 );
             }
+            // `default: { const unhandled: never = action; throw … }`: TS's exhaustiveness check.
+            // Swift's `switch` checks it itself (bloomc), so the arm is not written.
+            if default
+                && tests.is_empty()
+                && let Some(Statement::VariableDeclaration(v)) = body.first()
+                && v.declarations.iter().any(|d| {
+                    d.type_annotation
+                        .as_ref()
+                        .is_some_and(|t| matches!(t.type_annotation, TSType::TSNeverKeyword(_)))
+                })
+            {
+                default = false;
+                checked = true;
+                continue;
+            }
             groups.push((std::mem::take(&mut tests), std::mem::replace(&mut default, false), body));
         }
         let literal = |e: &Expression| {
@@ -2200,9 +2216,10 @@ impl Tr<'_> {
         // Every case returns a value and there is no `default`: TS's exhaustive `switch` on a
         // literal union (a function that returns from it), so no `case _` (bloomc checks it).
         let exhaustive = fallback.is_none()
-            && groups.iter().all(|(_, _, body)| {
-                matches!(body.last(), Some(Statement::ReturnStatement(r)) if r.argument.is_some())
-            });
+            && (checked
+                || groups.iter().all(|(_, _, body)| {
+                    matches!(body.last(), Some(Statement::ReturnStatement(r)) if r.argument.is_some())
+                }));
         if all_literal {
             let mut lines: Vec<String> = arms
                 .into_iter()
