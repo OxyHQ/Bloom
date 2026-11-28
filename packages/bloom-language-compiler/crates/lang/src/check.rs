@@ -605,6 +605,11 @@ pub struct Checker<'o> {
     /// The names declared overloaded by their labels (`describe` of `describe$0$count`,
     /// `Double$formatted` of `Double$formatted$0$digits`): a call picks one by its labels.
     pub(super) overloaded: HashSet<String>,
+    /// The closure being checked has a `try` or a `throw` nothing in it catches: its function
+    /// type throws.
+    escaped_throw: bool,
+    /// The closures (by span) whose function type throws.
+    pub(super) throwing_closures: HashSet<Span>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -750,6 +755,8 @@ impl<'o> Checker<'o> {
             run_slots: HashSet::default(),
             js_globals: HashSet::default(),
             overloaded: HashSet::default(),
+            escaped_throw: false,
+            throwing_closures: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -1261,7 +1268,11 @@ impl<'o> Checker<'o> {
                 } else {
                     f.is_async == g.is_async && self.coerce(&f.ret, &g.ret)
                 };
-                params_ok && ret_ok
+                // `() throws -> T` is a type of its own (Swift's): a function that throws never fits
+                // where one that does not is expected (its caller writes no `try`); one that does not
+                // throw fits either. A TS callback may throw (JS has no checked errors).
+                let throws_ok = !f.throws || g.throws || g.ts;
+                params_ok && ret_ok && throws_ok
             }
             _ => self.unify(&a, &e),
         }
@@ -1446,7 +1457,7 @@ impl<'o> Checker<'o> {
             }
             TypeKind::Tuple(items) if items.is_empty() => Ty::Unit,
             TypeKind::Tuple(items) => Ty::Tuple(items.iter().map(|t| self.resolve_type(t)).collect()),
-            TypeKind::Fn { is_async, params, ret } => {
+            TypeKind::Fn { is_async, throws, params, ret } => {
                 let params = params
                     .iter()
                     .map(|p| ParamTy {
@@ -1465,7 +1476,7 @@ impl<'o> Checker<'o> {
                     is_async: *is_async,
                     generics: 0,
                     ts: false,
-                    throws: false,
+                    throws: *throws,
                     bounds: Vec::new(),
                     shapes: Vec::new(),
                 }))
@@ -2178,7 +2189,14 @@ impl<'o> Checker<'o> {
 
     /// A call of a function that throws: written in a `try`.
     pub(super) fn throwing_call(&mut self, span: Span, f: &FnTy) {
-        if f.throws && !self.trying {
+        if f.throws {
+            self.throwing_span(span);
+        }
+    }
+
+    /// A call at `span` that throws: written in a `try`.
+    pub(super) fn throwing_span(&mut self, span: Span) {
+        if !self.trying {
             self.report(
                 Diagnostic::error("B0223", span, "this call can throw, and it is not marked with `try`")
                     .label("a throwing call")
@@ -2193,6 +2211,9 @@ impl<'o> Checker<'o> {
     /// outside a `do { … } catch`.
     fn unhandled_try(&mut self, span: Span) {
         let Some(frame) = self.frames.last() else { return };
+        if frame.closure && frame.handled == 0 {
+            self.escaped_throw = true;
+        }
         if frame.closure || frame.raises.is_some() || frame.handled > 0 || frame.throws {
             return;
         }
@@ -3358,6 +3379,9 @@ impl<'o> Checker<'o> {
                 // `throw e` in a `func … throws(E)`: `e` is an `E`.
                 let raises = self.frames.last().and_then(|f| f.raises.clone()).filter(|t| *t != Ty::Unknown);
                 let handled = self.frames.last().is_some_and(|f| f.handled > 0);
+                if !handled && self.frames.last().is_some_and(|f| f.closure) {
+                    self.escaped_throw = true;
+                }
                 match raises {
                     Some(ty) if !handled => {
                         self.expr(value, Some(&ty));
@@ -7529,8 +7553,10 @@ impl<'o> Checker<'o> {
             closure_results(&c.body, true, &mut self.callback_results);
         }
         let trying = std::mem::take(&mut self.trying);
+        let outer_escaped = std::mem::take(&mut self.escaped_throw);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
+        let escaped = std::mem::replace(&mut self.escaped_throw, outer_escaped);
         // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
         // as one.
         if is_element(&ret_resolved) {
@@ -7558,13 +7584,21 @@ impl<'o> Checker<'o> {
         self.pop();
         let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
+        let throws = escaped && expected_fn.as_ref().is_none_or(|f| f.throws);
+        if throws {
+            self.throwing_closures.insert(c.span);
+        }
         Ty::Fn(Rc::new(FnTy {
             params: param_tys,
             ret,
             is_async: frame.is_async,
             generics: 0,
             ts: false,
-            throws: false,
+            // A closure whose `try` or `throw` nothing in it catches throws (Swift's inference),
+            // where a throwing function, or any, is expected. Where TS or a Bloom function expects
+            // one that does not throw it is typed so, as before (its error reaches the caller as
+            // a JS exception).
+            throws,
             bounds: Vec::new(),
             shapes: Vec::new(),
         }))

@@ -1464,14 +1464,16 @@ impl<'a> Formatter<'a> {
                 let items = items.iter().map(|a| self.ty(a)).collect();
                 concat(vec![text("("), join(items, || text(", ")), text(")")])
             }
-            TypeKind::Fn { is_async, params, ret } => {
+            TypeKind::Fn { is_async, throws, params, ret } => {
                 let params = params.iter().map(|a| self.ty(a)).collect();
-                concat(vec![
-                    text(if *is_async { "async (" } else { "(" }),
-                    join(params, || text(", ")),
-                    text(") -> "),
-                    self.ty(ret),
-                ])
+                // Swift's spelling: `(A) async throws -> R`.
+                let effects = match (*is_async, *throws) {
+                    (true, true) => ") async throws -> ",
+                    (true, false) => ") async -> ",
+                    (false, true) => ") throws -> ",
+                    (false, false) => ") -> ",
+                };
+                concat(vec![text("("), join(params, || text(", ")), text(effects), self.ty(ret)])
             }
             // An optional function or union keeps its parentheses: `() -> Int?` returns an
             // optional, and `"a" | "b"?` is not a type.

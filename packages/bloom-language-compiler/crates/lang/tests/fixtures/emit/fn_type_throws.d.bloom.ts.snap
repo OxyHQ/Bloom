@@ -1,0 +1,9 @@
+export interface BadNumber {
+  readonly text: string;
+}
+export declare function parsed(s: string): number;
+export declare function doubled(s: string): number;
+export declare function runThrowing(f: (p0: string) => number, s: string): number;
+export declare function loadThrowing(f: () => Promise<number>): Promise<number>;
+export declare function all(): readonly number[];
+export declare function caught(s: string): number;

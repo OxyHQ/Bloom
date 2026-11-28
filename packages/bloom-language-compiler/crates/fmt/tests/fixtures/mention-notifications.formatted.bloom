@@ -67,7 +67,7 @@ pub default view NotificationSettingsScreen {
   // The section's types are mapped (`Partial<…[K]>`), so they are Foreign until annotated.
   let stored: Partial<Prefs> = section.value
   let loading: Bool = section.isLoading
-  let update: async (Partial<Prefs>) -> Unit = section.update
+  let update: (Partial<Prefs>) async -> Unit = section.update
 
   @state saving = false
 

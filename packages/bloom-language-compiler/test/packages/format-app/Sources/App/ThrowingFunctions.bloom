@@ -1,0 +1,34 @@
+// `() throws -> T` kept in function types: a value of one is called with `try`, a function that
+// does not throw fits it, a closure whose `try` nothing catches is one, and `map` rethrows.
+
+public struct NotANumber: Error {
+  public let text: String
+}
+
+public func strictNumber(_ s: String) throws -> Int {
+  guard let n = Int(s) else { throw NotANumber(text: s) }
+  return n
+}
+
+public func lenientNumber(_ s: String) -> Int { Int(s) ?? 0 }
+
+public func applyThrowing(_ f: (String) throws -> Int, _ s: String) throws -> Int { try f(s) }
+
+/// Each text through `strictNumber`, `-1` for the whole list when one is not a number.
+public func strictNumbers(_ texts: [String]) -> [Int] {
+  do {
+    return try texts.map(strictNumber)
+  } catch {
+    return [-1]
+  }
+}
+
+/// `applyThrowing` with a function that throws, one that does not and a closure; `-1` on an error.
+public func appliedNumbers(_ s: String) -> [Int] {
+  let later = { try strictNumber(s) * 10 }
+  do {
+    return [try applyThrowing(lenientNumber, s), try applyThrowing({ t in try strictNumber(t) + 1 }, s), try later()]
+  } catch {
+    return [-1]
+  }
+}

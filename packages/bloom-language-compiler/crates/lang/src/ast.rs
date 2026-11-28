@@ -969,6 +969,8 @@ pub enum TypeKind {
     Tuple(Vec<TypeExpr>),
     Fn {
         is_async: bool,
+        /// `() throws -> T` (2.0): a call of a value of it is written `try`.
+        throws: bool,
         params: Vec<TypeExpr>,
         ret: Box<TypeExpr>,
     },

@@ -528,7 +528,7 @@ Why a JSON value did not decode: at `at` (`Post.author`), `expected` was wanted 
 
 How a type decodes from JSON and encodes to it: `T.self` for a `Codable` type.
 
-- `let decode: (JSONValue, String) -> T`: The value `json` holds; `at` names the field for errors.
+- `let decode: (JSONValue, String) throws -> T`: The value `json` holds; `at` names the field for errors.
 - `let encode: (T) -> JSONValue`: The value as JSON.
 
 ### `func decodingFailure<T>(_ value: JSONValue, _ at: String, _ expected: String) -> T`
@@ -581,24 +581,24 @@ The member `key` of the object `value` (absent when it has none).
 
 ### `extension Array`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Element) -> [Element]`: Each item decoded by `element`.
+- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Element) throws -> [Element]`: Each item decoded by `element`.
 - `static func encode(_ value: [Element], _ element: (Element) -> JSONValue) -> JSONValue`
-- `static func decoder(_ element: (JSONValue, String) -> Element) -> (JSONValue, String) -> [Element]`: The decoder of arrays of what `element` decodes (for nested types).
+- `static func decoder(_ element: (JSONValue, String) throws -> Element) -> (JSONValue, String) throws -> [Element]`: The decoder of arrays of what `element` decodes (for nested types).
 - `static func encoder(_ element: (Element) -> JSONValue) -> ([Element]) -> JSONValue`: The encoder of arrays of what `element` encodes.
 - `static func codec(_ element: Codec<Element>) -> Codec<[Element]>`: The codec of arrays of `element`'s type: `Codec.array(Post.self)` is `[Post]`'s.
 
 ### `extension Optional`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) -> Wrapped) -> Wrapped?`: `none` when absent or null; else what `wrapped` decodes.
+- `static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) throws -> Wrapped) throws -> Wrapped?`: `none` when absent or null; else what `wrapped` decodes.
 - `static func encode(_ value: Wrapped?, _ wrapped: (Wrapped) -> JSONValue) -> JSONValue`: Absent (left out of its object) when `none`.
-- `static func decoder(_ wrapped: (JSONValue, String) -> Wrapped) -> (JSONValue, String) -> Wrapped?`
+- `static func decoder(_ wrapped: (JSONValue, String) throws -> Wrapped) -> (JSONValue, String) throws -> Wrapped?`
 - `static func encoder(_ wrapped: (Wrapped) -> JSONValue) -> (Wrapped?) -> JSONValue`
 
 ### `extension Dictionary`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Value) -> [String: Value]`: Each member decoded by `element`.
+- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Value) throws -> [String: Value]`: Each member decoded by `element`.
 - `static func encode(_ value: [String: Value], _ element: (Value) -> JSONValue) -> JSONValue`
-- `static func decoder(_ element: (JSONValue, String) -> Value) -> (JSONValue, String) -> [String: Value]`
+- `static func decoder(_ element: (JSONValue, String) throws -> Value) -> (JSONValue, String) throws -> [String: Value]`
 - `static func encoder(_ element: (Value) -> JSONValue) -> ([String: Value]) -> JSONValue`
 
 ### `func decodeCase<T>(_ value: JSONValue, _ at: String, _ cases: [T], _ expected: String) -> T`
@@ -613,7 +613,7 @@ A case-only enum's value as its case name.
 
 - `static func parse(_ text: String) -> JSONValue`: `text` parsed (throws on invalid JSON).
 - `static func stringify(_ value: JSONValue, indent: Int = 0) -> String`: `value` as JSON text; `indent` spaces per level (0: on one line).
-- `static func decode<T>(_ codec: Codec<T>, from text: String) -> T`: The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
+- `static func decode<T>(_ codec: Codec<T>, from text: String) throws -> T`: The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
 - `static func encode<T>(_ codec: Codec<T>, _ value: T, indent: Int = 0) -> String`: `value` as JSON text.
 
 ## HTTP

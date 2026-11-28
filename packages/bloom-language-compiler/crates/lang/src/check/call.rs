@@ -913,7 +913,9 @@ impl Checker<'_> {
     }
 
     /// Positional arguments of fixed types (prelude functions, methods).
-    fn positional(&mut self, call: &Call, params: &[Ty]) {
+    /// Checks the arguments against `params`: whether one is a function that throws (a function
+    /// named, or a closure whose `try` nothing in it catches).
+    fn positional(&mut self, call: &Call, params: &[Ty]) -> bool {
         let count = call.args.len() + usize::from(call.trailing.is_some());
         if count != params.len() {
             let span = call.args.first().map_or(call.callee.span, |a| a.span);
@@ -927,15 +929,24 @@ impl Checker<'_> {
                 .spec("5-values-functions-and-closures"),
             );
         }
+        let throws = |this: &Self, ty: &Ty| matches!(this.resolve(ty), Ty::Fn(f) if f.throws);
+        let mut throwing = false;
         for (arg, ty) in call.args.iter().zip(params) {
             self.expr(&arg.value, Some(ty));
+            throwing |= match (&arg.value.kind, self.out.names.get(&arg.value.id)) {
+                (ExprKind::Name(_), Some(NameRes::Local(local))) => throws(self, &self.out.locals[*local].ty),
+                (ExprKind::Closure(c), _) => self.throwing_closures.contains(&c.span),
+                _ => false,
+            };
         }
         if let (Some(trailing), Some(ty)) = (&call.trailing, params.get(call.args.len())) {
             let closure = self.closure(trailing, Some(ty), false);
             if !self.coerce(&closure, ty) {
                 self.mismatch(trailing.span, &closure, ty);
             }
+            throwing |= throws(self, &closure);
         }
+        throwing
     }
 
     /// `fail(e)`: throws `e` from a closure TS calls (or `catching { … }`'s block),
@@ -3609,7 +3620,10 @@ impl Checker<'_> {
         } else {
             params
         };
-        self.positional(call, &params);
+        // Swift's `rethrows`: `try xs.map(parse)` with a function that throws throws itself.
+        if self.positional(call, &params) {
+            self.throwing_span(expr.span);
+        }
         self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
         ret
     }
@@ -3633,7 +3647,8 @@ impl Checker<'_> {
                 is_async: false,
                 generics: 0,
                 ts: false,
-                throws: false,
+                // Swift's `rethrows`: a function that throws fits (the call then throws).
+                throws: true,
                 bounds: Vec::new(),
                 shapes: Vec::new(),
             }))

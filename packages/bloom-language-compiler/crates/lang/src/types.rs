@@ -364,7 +364,8 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
             f.write_str("(")?;
             let params: Vec<Ty> = fn_ty.params.iter().map(|p| p.ty.clone()).collect();
             list(f, &params)?;
-            write!(f, ") -> {}", Display { ty: &fn_ty.ret, defs })
+            let throws = if fn_ty.throws { " throws" } else { "" };
+            write!(f, "){throws} -> {}", Display { ty: &fn_ty.ret, defs })
         }
         Ty::Async(t) => write!(f, "async {}", Display { ty: t, defs }),
         Ty::Promise(t) => write!(f, "Promise<{}>", Display { ty: t, defs }),

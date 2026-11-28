@@ -807,6 +807,14 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
+  **A function type keeps its effects** (Swift's): `(String) throws -> Int` and
+  `() async throws -> T` are types of their own. A call of a value of a throwing type is a
+  throwing call (`try f(s)`); a function that does not throw fits a throwing type, and one that
+  throws where a non-throwing one is expected is B0201 (a TS callback may throw: JS has no checked
+  errors). A closure whose `try` or `throw` nothing in it catches is throwing where a throwing
+  type, or none, is expected (`let load = { try parse(s) }` is called `try load()`). The standard
+  library's list methods rethrow: `try xs.map(parse)`. `Codec.decode` is
+  `(JSONValue, String) throws -> T`, and `JSON.decode(_:from:)` throws.
 - A thrown JS `Error` (a `TypeError`, a TS library's own) is the standard library's `JSError`:
   `error as? JSError` and `catch let e as JSError` give its `name`, `message` and `stack`
   (`String?`). Any thrown value is `error.jsValue`, a `JSONValue?` (`none` for `null` or

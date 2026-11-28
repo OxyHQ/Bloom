@@ -20,8 +20,8 @@ extension Page {
     Codec(
       decode: { value, at in
         Page(
-          items: Array.decoder(item.decode)(jsonField(value, "items", at), "\(at).items"),
-          cursor: Optional.decoder(String.decode)(jsonField(value, "cursor", at), "\(at).cursor"),
+          items: try Array.decoder(item.decode)(jsonField(value, "items", at), "\(at).items"),
+          cursor: try Optional.decoder(String.decode)(jsonField(value, "cursor", at), "\(at).cursor"),
         )
       },
       encode: { page in
