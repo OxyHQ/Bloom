@@ -28,6 +28,7 @@ mod build;
 mod complete;
 mod deps;
 mod expo;
+mod file_routes;
 mod files;
 mod json;
 mod lsp;
@@ -52,6 +53,7 @@ const USAGE: &str = "usage:
   bloom add <package> [--from <version>] [--npm <npm-package>]
   bloom bind <npm-package>[@version] [--name <Name>]
   bloom migrate --from 0.x [--check] [--jobs N] <paths…>
+  bloom routes [--app <dir>] [--platform android|ios|web] [--out <file>] [paths…]
   bloom lsp
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]";
 
@@ -80,6 +82,10 @@ struct Args {
     from: Option<String>,
     npm: Option<String>,
     name: Option<String>,
+    /// `routes --app <dir>`: an Expo Router app's `app/` directory (default `app`).
+    app: Option<PathBuf>,
+    /// `routes --platform <name>`: whose files are read (default android).
+    platform: Option<String>,
 }
 
 fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
@@ -105,6 +111,8 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--from" => args.from = Some(value(&mut raw, "--from", "a version")?),
             "--npm" => args.npm = Some(value(&mut raw, "--npm", "an npm package")?),
             "--name" => args.name = Some(value(&mut raw, "--name", "a module name")?),
+            "--app" => args.app = Some(value(&mut raw, "--app", "a directory")?.into()),
+            "--platform" => args.platform = Some(value(&mut raw, "--platform", "android, ios or web")?),
             "--jobs" | "-j" => {
                 let n = value(&mut raw, "--jobs", "a number")?;
                 args.jobs =
@@ -214,6 +222,12 @@ fn run(args: &Args, jobs: usize) -> Result<bool, String> {
             Some(other) => Err(format!("migrate --from {other}: only 0.x is known")),
             None => Err("migrate needs --from 0.x".to_string()),
         },
+        "routes" => file_routes::print(
+            args.app.as_deref().unwrap_or(std::path::Path::new("app")),
+            file_routes::Platform::parse(args.platform.as_deref().unwrap_or("android"))?,
+            &args.paths.iter().map(|p| p.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+            args.out.as_deref(),
+        ),
         "lsp" => lsp::serve(std::io::stdin().lock(), std::io::stdout().lock()),
         "help" | "--help" | "-h" => {
             println!("{USAGE}");
