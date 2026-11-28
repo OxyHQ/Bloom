@@ -53,7 +53,7 @@ const USAGE: &str = "usage:
   bloom add <package> [--from <version>] [--npm <npm-package>]
   bloom bind <npm-package>[@version] [--name <Name>]
   bloom migrate --from 0.x [--check] [--jobs N] <paths…>
-  bloom routes [--app <dir>] [--platform android|ios|web] [paths…]
+  bloom routes [--app <dir>] [--platform android|ios|web] [--out <file>] [paths…]
   bloom lsp
   bloomc build <dir> --out <dir> [--jobs N] [--no-cache] [--dev]";
 
@@ -226,6 +226,7 @@ fn run(args: &Args, jobs: usize) -> Result<bool, String> {
             args.app.as_deref().unwrap_or(std::path::Path::new("app")),
             file_routes::Platform::parse(args.platform.as_deref().unwrap_or("android"))?,
             &args.paths.iter().map(|p| p.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+            args.out.as_deref(),
         ),
         "lsp" => lsp::serve(std::io::stdin().lock(), std::io::stdout().lock()),
         "help" | "--help" | "-h" => {
