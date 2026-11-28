@@ -1,0 +1,231 @@
+/**
+ * Bloom's theme and the language's token scales as Kotlin, for the native Android runtime
+ * (ADR 0003, docs/native-runtime-api.mdx "Theme"). Rendered from the SAME sources as
+ * `tokens.json`: every preset's resolved palette comes from the colour engine
+ * (`getResolvedTokens`), the scales, the type ramp and the colour roles from the language's
+ * spec. No colour is typed by hand; `scripts/generate-design-tokens-json.ts` writes the file and
+ * `src/__tests__/design-tokens-kotlin.test.ts` holds it byte-identical to this render.
+ */
+
+import spec from '../packages/bloom-language/spec/language.json';
+import { APP_COLOR_NAMES } from '../src/theme/color-presets';
+import { getResolvedTokens } from '../src/theme/token-registry';
+import { resolvedColorToHex } from '../src/design-tokens/tokens-json';
+
+/** Where the generated file lives, relative to the repository root. */
+export const KOTLIN_THEME_PATH =
+  'packages/bloom-language-compiler/crates/native/runtime/android/so/oxy/bloom/ui/BloomTheme.generated.kt';
+
+/** `--muted-foreground` → `mutedForeground`, `--chart-1` → `chart1`. */
+function fieldName(property: string): string {
+  return property
+    .replace(/^--/, '')
+    .split('-')
+    .map((part, i) => (i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join('');
+}
+
+/** A token's Kotlin name: `2xl` is `_2xl`, `caption-1` is `caption1`. */
+function tokenName(name: string): string {
+  const flat = name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+  return /^[0-9]/.test(flat) ? `_${flat}` : flat;
+}
+
+/** `#rrggbb` or `#rrggbbaa` → `0xAARRGGBB` (a Compose `Color(Long)`'s argument). */
+function argb(hex: string): string {
+  const rgb = hex.slice(1, 7).toUpperCase();
+  const alpha = (hex.length === 9 ? hex.slice(7, 9) : 'ff').toUpperCase();
+  return `0x${alpha}${rgb}`;
+}
+
+function sortedTokens(record: Record<string, string>): [string, string][] {
+  return Object.entries(record).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+type Scale = Record<string, number>;
+
+function dpObject(name: string, doc: string, scale: Scale): string {
+  const lines = Object.entries(scale).map(([k, v]) => `  val ${tokenName(k)}: Dp = ${v}.dp`);
+  return `/** ${doc} */\nobject ${name} {\n${lines.join('\n')}\n}\n`;
+}
+
+function dpEnum(name: string, doc: string, scale: Scale): string {
+  const cases = Object.entries(scale).map(([k, v]) => `${tokenName(k)}(${v}.dp)`);
+  return `/** ${doc} */\nenum class ${name}(val dp: Dp) { ${cases.join(', ')} }\n`;
+}
+
+/** A number as a Kotlin `Double` literal (`0` is `0.0`). */
+function double(n: number): string {
+  return Number.isInteger(n) ? n.toFixed(1) : String(n);
+}
+
+function fontObject(): string {
+  const ramp = spec.typeRamp as Record<string, unknown>;
+  const families = new Map<string, [number, number, number]>();
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(ramp)) {
+    if (key.startsWith('$')) continue;
+    const [size, line, tracking, weight] = value as [number, number, number, string];
+    const family = key.replace(/-(regular|medium|semibold|bold)$/, '');
+    lines.push(`  val ${tokenName(key)} = ramp(${size}, ${line}, ${double(tracking)}, ${weight})`);
+    if (!families.has(family)) families.set(family, [size, line, tracking]);
+  }
+  // A family's own token (`.headline`) is its regular weight; `.weight()` sets another.
+  for (const [family, [size, line, tracking]] of families) {
+    lines.push(`  val ${tokenName(family)} = ramp(${size}, ${line}, ${double(tracking)}, 400)`);
+  }
+  return [
+    "/** The type ramp, the spec's `typeRamp`: each family at each weight, and the family's regular. */",
+    'object Font {',
+    '  private fun ramp(size: Int, line: Int, tracking: Double, weight: Int) =',
+    '    TextStyle(fontSize = size.sp, lineHeight = line.sp, letterSpacing = (tracking / size).em, fontWeight = FontWeight(weight))',
+    '',
+    ...lines,
+    '}',
+    '',
+  ].join('\n');
+}
+
+/** The language's colour roles (`.muted`, `.onPrimary`), read from the theme in scope. */
+function colorRoles(fields: Set<string>): string {
+  const roles = spec.colors as Record<string, unknown>;
+  const lines: string[] = [];
+  for (const [role, value] of Object.entries(roles)) {
+    if (role.startsWith('$')) continue;
+    const [, css] = value as [string, string | null];
+    if (css === null) continue;
+    const name = tokenName(role);
+    if (css.startsWith('#')) {
+      lines.push(`  val ${name}: Color get() = Color(${argb(css)})`);
+    } else if (css === 'transparent') {
+      lines.push(`  val ${name}: Color get() = Color(0x00000000)`);
+    } else {
+      const field = fieldName(css);
+      if (!fields.has(field)) {
+        throw new Error(
+          `the spec's colour role ${role} names --${css}, which no Bloom palette has`,
+        );
+      }
+      lines.push(
+        `  val ${name}: Color @Composable @ReadOnlyComposable get() = BloomTheme.palette.${field}`,
+      );
+    }
+  }
+  return [
+    "/** The language's colour roles (`spec.colors`), each its palette token in the theme in scope. */",
+    'object Colors {',
+    ...lines,
+    '}',
+    '',
+  ].join('\n');
+}
+
+/**
+ * A control's tone (`.tint(.danger)`): its colour role, from the spec's `toneRole` (`null`, a
+ * neutral tone, is the foreground). A colour role written as a tint (`.tint(.primary)`) is a
+ * tone of that role.
+ */
+function toneEnum(): string {
+  const tones = spec.toneRole as Record<string, string | null>;
+  const cases: [string, string][] = [];
+  for (const [tone, role] of Object.entries(tones)) {
+    if (tone.startsWith('$')) continue;
+    cases.push([tone, role ?? 'foreground']);
+  }
+  for (const role of ['primary', 'secondary', 'tertiary', 'error']) {
+    if (!cases.some(([t]) => t === role)) cases.push([role, role]);
+  }
+  return [
+    "/** A control's tone (`.tint`): its colour role, the spec's `toneRole`. */",
+    'enum class Tone {',
+    `  ${cases.map(([t]) => tokenName(t)).join(', ')};`,
+    '',
+    '  val color: Color',
+    '    @Composable @ReadOnlyComposable get() = when (this) {',
+    ...cases.map(([t, r]) => `      ${tokenName(t)} -> Colors.${tokenName(r)}`),
+    '    }',
+    '}',
+    '',
+  ].join('\n');
+}
+
+export function renderBloomThemeKotlin(): string {
+  const [firstPreset] = APP_COLOR_NAMES;
+  if (firstPreset === undefined) throw new Error('Bloom ships no colour preset');
+  const first = getResolvedTokens(firstPreset, 'light');
+  const properties = sortedTokens(first).map(([p]) => p);
+  const fields = properties.map(fieldName);
+  const palette = [
+    "/** A preset's resolved palette in one scheme: every colour token of Bloom's theme, by name. */",
+    '@Immutable',
+    'class BloomPalette(private val argb: LongArray) {',
+    ...fields.map((f, i) => `  val ${f}: Color get() = Color(argb[${i}])`),
+    '}',
+    '',
+  ].join('\n');
+  // One function per preset: a single `when` of every palette passes the JVM's 64 KB method limit.
+  const functions: string[] = [];
+  const dispatch: string[] = [];
+  for (const [index, name] of APP_COLOR_NAMES.entries()) {
+    const arrays = (['light', 'dark'] as const).map((scheme) => {
+      const tokens = getResolvedTokens(name, scheme);
+      const values = properties.map((p) => {
+        const value = tokens[p];
+        if (value === undefined) throw new Error(`${name}/${scheme} has no ${p}`);
+        return argb(resolvedColorToHex(value));
+      });
+      return `longArrayOf(${values.join(', ')})`;
+    });
+    functions.push(
+      `  /** \`${name}\`. */\n  private fun preset${index}(dark: Boolean): LongArray =\n    if (dark) ${arrays[1]}\n    else ${arrays[0]}`,
+    );
+    dispatch.push(`      "${name}" -> preset${index}(dark)`);
+  }
+  const lookup = [
+    '/** Every preset Bloom ships, light and dark, as the colour engine resolves them. */',
+    'object BloomPresets {',
+    `  val names: List<String> = listOf(${APP_COLOR_NAMES.map((n) => `"${n}"`).join(', ')})`,
+    '',
+    '  /** The palette of `preset` (an `AppColorName`) in a scheme; none for an unknown preset. */',
+    '  fun palette(preset: String, dark: Boolean): BloomPalette? {',
+    '    val values = when (preset) {',
+    ...dispatch,
+    '      else -> return null',
+    '    }',
+    '    return BloomPalette(values)',
+    '  }',
+    '',
+    functions.join('\n\n'),
+    '}',
+    '',
+  ].join('\n');
+  const scales = spec.scales as unknown as Record<string, Scale>;
+  return [
+    "// Generated by scripts/generate-design-tokens-json.ts from Bloom's colour engine and the",
+    '// language spec (scripts/native-theme-kotlin.ts). Do not edit.',
+    '@file:Suppress("ObjectPropertyName", "EnumEntryName", "unused")',
+    '',
+    'package so.oxy.bloom.ui',
+    '',
+    'import androidx.compose.runtime.Composable',
+    'import androidx.compose.runtime.Immutable',
+    'import androidx.compose.runtime.ReadOnlyComposable',
+    'import androidx.compose.ui.graphics.Color',
+    'import androidx.compose.ui.text.TextStyle',
+    'import androidx.compose.ui.text.font.FontWeight',
+    'import androidx.compose.ui.unit.Dp',
+    'import androidx.compose.ui.unit.dp',
+    'import androidx.compose.ui.unit.em',
+    'import androidx.compose.ui.unit.sp',
+    '',
+    dpObject('Space', "The language's space scale (`spec.scales.space`).", scales.space ?? {}),
+    dpObject('Corner', "The language's corner scale (`spec.scales.corner`).", scales.corner ?? {}),
+    dpEnum('IconSize', "An icon's size (`spec.scales.iconSize`).", scales.iconSize ?? {}),
+    dpEnum('AvatarSize', "An avatar's size (`spec.scales.avatarSize`).", scales.avatarSize ?? {}),
+    fontObject(),
+    colorRoles(new Set(fields)),
+    toneEnum(),
+    palette,
+    lookup,
+  ].join('\n');
+}

@@ -20,6 +20,7 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { KOTLIN_THEME_PATH, renderBloomThemeKotlin } from './native-theme-kotlin';
 import { renderBloomTokensJson } from '../src/design-tokens/tokens-json';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -31,4 +32,12 @@ const json = renderBloomTokensJson();
 writeFileSync(OUT_PATH, json);
 console.log(
   `[generate-design-tokens-json] wrote ${relative(REPO_ROOT, OUT_PATH)} (${json.length} bytes)`,
+);
+
+// The same theme and the language's scales as Kotlin, for the native Android runtime (ADR 0003).
+const KOTLIN_OUT = join(REPO_ROOT, KOTLIN_THEME_PATH);
+const kotlin = renderBloomThemeKotlin();
+writeFileSync(KOTLIN_OUT, kotlin);
+console.log(
+  `[generate-design-tokens-json] wrote ${relative(REPO_ROOT, KOTLIN_OUT)} (${kotlin.length} bytes)`,
 );

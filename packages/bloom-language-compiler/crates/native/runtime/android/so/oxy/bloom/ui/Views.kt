@@ -70,7 +70,11 @@ import so.oxy.bloom.std.Binding
 import so.oxy.bloom.std.Identifiable
 
 /** Text traits a stack hands its children (Bloom's inherited `foreground`). */
-val LocalForeground = staticCompositionLocalOf { Colors.foreground }
+val LocalForeground = staticCompositionLocalOf<Color?> { null }
+
+/** The inherited foreground, or the theme's. */
+val currentForeground: Color
+  @Composable get() = LocalForeground.current ?: Colors.foreground
 
 // ---- layout ---------------------------------------------------------------------------
 
@@ -156,7 +160,7 @@ fun Text(
   lines: Long? = null,
   modifier: Modifier = Modifier,
 ) {
-  val color = foreground ?: LocalForeground.current
+  val color = foreground ?: currentForeground
   BasicText(
     text,
     modifier,
@@ -173,7 +177,7 @@ class IconData(val paths: List<String>, val width: Float, val height: Float, val
 
 @Composable
 fun Icon(icon: IconData, size: IconSize = IconSize.sm, foreground: Color? = null, modifier: Modifier = Modifier) {
-  val color = foreground ?: LocalForeground.current
+  val color = foreground ?: currentForeground
   Canvas(modifier.size(size.dp)) {
     val s = this.size.width / icon.width
     scale(s, s, pivot = Offset.Zero) {
@@ -208,8 +212,9 @@ fun ProgressView(size: ControlSize = ControlSize.md, modifier: Modifier = Modifi
   val turn by rememberInfiniteTransition("spin").animateFloat(
     0f, 360f, infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart), "turn",
   )
+  val arc = Colors.muted
   Canvas(modifier.size(d)) {
-    drawArc(Colors.muted, turn, 270f, false, style = Stroke(width = 2.dp.toPx()))
+    drawArc(arc, turn, 270f, false, style = Stroke(width = 2.dp.toPx()))
   }
 }
 
@@ -241,7 +246,7 @@ fun Toggle(isOn: Binding<Boolean>, label: String = "", tint: Tone = Tone.primary
 @Composable
 fun TextField(text: Binding<String>, placeholder: String = "", modifier: Modifier = Modifier) {
   val value = text.get()
-  val fg = LocalForeground.current
+  val fg = currentForeground
   Box(modifier.fillMaxWidth().clip(RoundedCornerShape(Corner.md)).background(Colors.mutedFill).padding(horizontal = Space.md, vertical = Space.sm)) {
     if (value.isEmpty()) BasicText(placeholder, style = Font.body.copy(color = Colors.muted))
     androidx.compose.foundation.text.BasicTextField(
@@ -264,7 +269,7 @@ fun Button(
   tint: Tone = Tone.primary,
   modifier: Modifier = Modifier,
 ) {
-  Button(content = { BasicText(label, style = buttonFont(size).copy(color = LocalForeground.current, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) }, onPress, size, style, tint, modifier)
+  Button(content = { BasicText(label, style = buttonFont(size).copy(color = currentForeground, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) }, onPress, size, style, tint, modifier)
 }
 
 private fun buttonFont(size: ControlSize) = when (size) {
@@ -313,6 +318,7 @@ fun GroupedSection(title: String? = null, modifier: Modifier = Modifier, content
       BasicText(title, Modifier.padding(horizontal = Space.xs), style = Font.body2.copy(color = Colors.muted, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
     val ys = remember { IntArrayHolder() }
+    val hairline = Colors.border
     Layout(
       content = content,
       modifier = Modifier
@@ -320,7 +326,7 @@ fun GroupedSection(title: String? = null, modifier: Modifier = Modifier, content
         .clip(RoundedCornerShape(Corner.lg))
         .background(Colors.surface)
         .drawBehind {
-          for (i in 1 until ys.count) drawRect(Colors.border, Offset(16.dp.toPx(), ys.values[i].toFloat()), androidx.compose.ui.geometry.Size(size.width, 0.5.dp.toPx()))
+          for (i in 1 until ys.count) drawRect(hairline, Offset(16.dp.toPx(), ys.values[i].toFloat()), androidx.compose.ui.geometry.Size(size.width, 0.5.dp.toPx()))
         },
     ) { measurables, constraints ->
       val placeables = measurables.map { it.measure(constraints.copy(minHeight = 0)) }
