@@ -253,7 +253,8 @@ is the render's, as a `let`'s is; only its reads narrow, so `x = none` and `$x` 
 state's, `$x` a binding of the narrowed type): `if onEnd != none {
 onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
-p.x : d`, `p == none ? d : p.x`); and after a guard
+p.x : d`, `p == none ? d : p.x`); in the `else` of an `if` whose test fails only when it is
+present (`if x == none || x.isEmpty { … } else { use(x) }`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
 block. A test in parentheses narrows as one without (`(p.x != none) ? p.x : d`). Values are immutable, so a member chain of such a name narrows the same way
 (`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
