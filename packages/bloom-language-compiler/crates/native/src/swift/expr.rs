@@ -486,6 +486,16 @@ impl Emitter<'_> {
     }
 
     fn call(&mut self, e: &Expr, call: &Call) -> String {
+        // A node and its modifiers anywhere (`words.map { Text(w).foregroundStyle(.primary) }`):
+        // a view, drawn as one (its universal modifiers BloomUI's).
+        if matches!(&call.callee.kind, ExprKind::Field(..)) {
+            let chain = super::view::unwind(e);
+            if !chain.mods.is_empty()
+                && super::view::constructor(chain.base).is_some_and(|c| super::nodes::is_node(c))
+            {
+                return self.view_expr(e, self.indent);
+            }
+        }
         if let Some(bloom_lang::backend::CallRes::With(def)) = self.file.checked.calls.get(&e.id)
             && let Some(text) = self.with_call(call, *def)
         {

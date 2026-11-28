@@ -29,7 +29,7 @@ pub(crate) fn unwind(expr: &Expr) -> Chain<'_> {
 }
 
 /// The constructor a chain's base calls (`VStack` of `VStack(spacing: .lg) { … }`).
-fn constructor(base: &Expr) -> Option<&str> {
+pub(crate) fn constructor(base: &Expr) -> Option<&str> {
     match &base.kind {
         ExprKind::Call(c) => match &c.callee.kind {
             ExprKind::Name(n) => Some(n.as_str()),

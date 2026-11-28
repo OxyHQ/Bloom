@@ -28,7 +28,8 @@ public struct Name: View {
     VStack {
       RawText(linked ? Text("link") : (name ?? ""))
       RawText(linked ? Text("link") : name)
-      Text("by ", verified ? Text("✓").weight("bold") : (linked ? "@" : ""), name ?? "")
+      Text("by ", verified ? Text("✓")
+      .bloomWeight("bold") : (linked ? "@" : ""), name ?? "")
     }
   }
 
