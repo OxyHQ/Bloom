@@ -45,7 +45,7 @@ fun rows(ids: List<String>): Long {
     }
     return ids.map({ i -> (TODO()) })
 }()
-  val twice = { n -> n * 2L }
+  val twice = { n: Long -> n * 2L }
   return twice(all.count)
 }
 
