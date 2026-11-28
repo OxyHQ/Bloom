@@ -1,0 +1,12 @@
+import { Embed, HStack, Icon, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { RiHeart3Line } from "@oxy.so/bloom/icons/RiHeart3Line";
+import { LikeIcon } from "@oxy.so/bloom/icons/LikeIcon";
+
+const $view0 = HStack(Icon(RiHeart3Line), Embed($jsx(LikeIcon, { size: 16 } satisfies ComponentProps<typeof LikeIcon>)));
+export const Liked = view(function Liked() {
+"use no memo";
+return $view0;
+});
+

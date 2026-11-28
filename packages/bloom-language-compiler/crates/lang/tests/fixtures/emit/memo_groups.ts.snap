@@ -1,11 +1,10 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { HStack, Icon, RawText, VStack, view } from "@oxy.so/bloom-language";
-import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine";
+import { HStack, RawText, Text, VStack, view } from "@oxy.so/bloom-language";
 import { useTranslation } from "react-i18next";
 
-const $view0 = Icon(RiAlertLine).size("13").foreground("muted");
-const $view1 = VStack(Icon(RiAlertLine).size("18").foreground("muted")).frame({ width: "36", height: "36" }).background("background").corner("infinite").align("center").justify("center");
+const $view0 = Text("!").font("sm").foreground("muted");
+const $view1 = VStack(Text("!").font("md").foreground("muted")).frame({ width: "36", height: "36" }).background("background").corner("infinite").align("center").justify("center");
 export interface ContentWarningProps {
   readonly text: string;
   readonly revealed: boolean;
