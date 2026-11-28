@@ -4,41 +4,78 @@
 // each one states its type, and tsc checks the crossing.
 
 import { useSyncExternalStore } from 'react';
+// The language's string helpers, written beside this file (`text.ts`, the same source): not the
+// language's index, which loads the whole UI runtime.
+import { characterCount, characterOffset, characters as segment, utf16Offset } from './text';
 
 // ---- strings ----------------------------------------------------------------
-
-type Segmenter = { segment(s: string): Iterable<{ segment: string }> };
-const IntlWithSegmenter = Intl as unknown as {
-  Segmenter?: new (locale?: string, options?: { granularity: string }) => Segmenter;
-};
-let graphemeSegmenter: Segmenter | undefined;
+//
+// Bloom's strings count user-perceived characters, as Swift's do: offsets and lengths here are
+// in characters (`@oxy.so/bloom-language`'s `characterCount`), and the `utf16` view's are JS's.
 
 /** The user-perceived characters of `s` (extended grapheme clusters). */
 export function characters(s: string): readonly string[] {
-  if (IntlWithSegmenter.Segmenter) {
-    graphemeSegmenter ??= new IntlWithSegmenter.Segmenter(undefined, { granularity: 'grapheme' });
-    return Array.from(graphemeSegmenter.segment(s), (x) => x.segment);
-  }
-  return Array.from(s);
+  return segment(s);
 }
 
+/** The character offset of the first `sub` at or after character `from`, or -1. */
 export function indexOf(s: string, sub: string, from: number): number {
-  return s.indexOf(sub, from);
+  const at = s.indexOf(sub, utf16Offset(s, from));
+  return at < 0 ? -1 : characterOffset(s, at);
 }
 
+/** The character offset of the last `sub`, or -1. */
 export function lastIndexOf(s: string, sub: string): number {
-  return s.lastIndexOf(sub);
+  const at = s.lastIndexOf(sub);
+  return at < 0 ? -1 : characterOffset(s, at);
 }
 
 export function replaceAll(s: string, target: string, replacement: string): string {
   return s.split(target).join(replacement);
 }
 
+/** The characters of `pad`, repeated, that bring `s` to `length` characters. */
+function padding(s: string, length: number, pad: string): string {
+  const missing = length - characterCount(s);
+  if (missing <= 0 || pad === '') return '';
+  const unit = segment(pad);
+  let out = '';
+  for (let i = 0; i < missing; i++) out += unit[i % unit.length];
+  return out;
+}
+
 export function padStart(s: string, length: number, pad: string): string {
-  return s.padStart(length, pad);
+  return padding(s, length, pad) + s;
 }
 
 export function padEnd(s: string, length: number, pad: string): string {
+  return s + padding(s, length, pad);
+}
+
+// The `utf16` view: JS's own offsets and lengths, for what counts UTF-16 units (a server's
+// length limit).
+
+export function utf16Length(s: string): number {
+  return s.length;
+}
+
+export function utf16Slice(s: string, start: number, end: number): string {
+  return s.slice(start, end);
+}
+
+export function utf16IndexOf(s: string, sub: string, from: number): number {
+  return s.indexOf(sub, from);
+}
+
+export function utf16LastIndexOf(s: string, sub: string): number {
+  return s.lastIndexOf(sub);
+}
+
+export function utf16PadStart(s: string, length: number, pad: string): string {
+  return s.padStart(length, pad);
+}
+
+export function utf16PadEnd(s: string, length: number, pad: string): string {
   return s.padEnd(length, pad);
 }
 
@@ -153,6 +190,18 @@ export const acos = Math.acos;
 export const atan = Math.atan;
 export const atan2 = Math.atan2;
 export const hypot = (a: number, b: number): number => Math.hypot(a, b);
+export const sinh = Math.sinh;
+export const cosh = Math.cosh;
+export const tanh = Math.tanh;
+export const asinh = Math.asinh;
+export const acosh = Math.acosh;
+export const atanh = Math.atanh;
+export const exp2 = (x: number): number => 2 ** x;
+export const expm1 = Math.expm1;
+export const log1p = Math.log1p;
+export const trunc = Math.trunc;
+/** C's `fmod`: JS's `%` on numbers is exactly it (the result has `x`'s sign). */
+export const fmod = (x: number, y: number): number => x % y;
 export const random = Math.random;
 export const isFiniteNumber = (n: number): boolean => Number.isFinite(n);
 export const isNaNNumber = (n: number): boolean => Number.isNaN(n);
@@ -225,16 +274,35 @@ export function formatDate(
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
 }
 
-/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+/**
+ * `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`).
+ * An hour is in the locale's clock, as Swift's is. Three keys are the standard library's: `locale`
+ * (a style's `.locale(_:)`, over `locale`), `hourCycle` (its clock: Intl's `h11`, `h12`, `h23` or
+ * `h24`), and `amPM: 'omitted'`, which drops the day period from the text (Swift's `amPM: .omitted`).
+ */
 export function formatDateFields(
   ms: number,
   locale: string,
   options: Readonly<Record<string, string>>,
   timeZone: string,
 ): string {
-  const all: Intl.DateTimeFormatOptions = { ...options };
+  const { amPM, hourCycle, locale: styleLocale, ...fields } = options;
+  const all: Intl.DateTimeFormatOptions = { ...fields };
+  if (hourCycle) all.hourCycle = hourCycle as Intl.DateTimeFormatOptions['hourCycle'];
   if (timeZone) all.timeZone = timeZone;
-  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
+  const format = new Intl.DateTimeFormat(styleLocale || locale || undefined, all);
+  if (amPM !== 'omitted') return format.format(ms);
+  // The parts without the day period, and the space that set it apart.
+  const parts = format.formatToParts(ms);
+  const kept = parts.filter((part, i) => {
+    if (part.type === 'dayPeriod') return false;
+    if (part.type !== 'literal' || part.value.trim() !== '') return true;
+    return parts[i + 1]?.type !== 'dayPeriod' && parts[i - 1]?.type !== 'dayPeriod';
+  });
+  return kept
+    .map((part) => part.value)
+    .join('')
+    .trim();
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {
@@ -697,11 +765,12 @@ export type RegexMatch = {
   readonly named: Readonly<Record<string, string>>;
 };
 
-function matchOf(m: RegExpMatchArray): RegexMatch {
+/** `m` of `s`, its `start` in characters (JS's `index` is a UTF-16 offset). */
+function matchOf(m: RegExpMatchArray, s: string): RegexMatch {
   const named: Record<string, string> = {};
   for (const [name, value] of Object.entries(m.groups ?? {}))
     if (value !== undefined) named[name] = value;
-  return { text: m[0], start: m.index ?? 0, groups: m.slice(1), named };
+  return { text: m[0], start: characterOffset(s, m.index ?? 0), groups: m.slice(1), named };
 }
 
 const compiled = new Map<string, RegExp>();
@@ -736,7 +805,7 @@ export function regexMatches(
   const re = regex(pattern, flags);
   const out: RegexMatch[] = [];
   for (const m of s.matchAll(re)) {
-    out.push(matchOf(m));
+    out.push(matchOf(m, s));
     if (limit > 0 && out.length >= limit) break;
   }
   return out;
@@ -745,7 +814,7 @@ export function regexMatches(
 /** The match of `pattern` spanning all of `s` (Swift's `wholeMatch(of:)`), or `undefined`. */
 export function regexWhole(pattern: string, flags: string, s: string): RegexMatch | undefined {
   const m = new RegExp(`^(?:${pattern})$`, flags.replace(/[gmy]/g, '')).exec(s);
-  return m ? matchOf(m) : undefined;
+  return m ? matchOf(m, s) : undefined;
 }
 
 export function regexReplace(

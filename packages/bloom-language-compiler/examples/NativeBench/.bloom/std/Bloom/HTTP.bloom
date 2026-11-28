@@ -93,7 +93,7 @@ extension HTTPResponse {
   public func json() throws -> JSONValue { parseJSON(self.text) }
 
   /// The body decoded as a `T` (`response.decode(Post.self)`).
-  public func decode<T>(_ codec: Codec<T>) throws -> T { JSON.decode(codec, from: self.text) }
+  public func decode<T>(_ codec: Codec<T>) throws -> T { try JSON.decode(codec, from: self.text) }
 }
 
 /// A client for one server: its base URL, the headers every request sends and a timeout.

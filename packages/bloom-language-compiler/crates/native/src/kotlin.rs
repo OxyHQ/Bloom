@@ -622,7 +622,7 @@ impl<'a> Emitter<'a> {
                 let params: Vec<String> = params.iter().map(|p| self.ty(p)).collect();
                 format!("@Composable ({}) -> Unit", params.join(", "))
             }
-            TypeKind::Fn { is_async, params, ret } => {
+            TypeKind::Fn { is_async, params, ret, .. } => {
                 let params: Vec<String> = params.iter().map(|p| self.ty(p)).collect();
                 let ret = self.ty(ret);
                 let suspend = if *is_async { "suspend " } else { "" };

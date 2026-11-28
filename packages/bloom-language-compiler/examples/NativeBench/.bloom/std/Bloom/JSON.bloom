@@ -89,7 +89,7 @@ public struct DecodingError: Equatable {
 /// How a type decodes from JSON and encodes to it: `T.self` for a `Codable` type.
 public struct Codec<T> {
   /// The value `json` holds; `at` names the field for errors.
-  public let decode: (JSONValue, String) -> T
+  public let decode: (JSONValue, String) throws -> T
   /// The value as JSON.
   public let encode: (T) -> JSONValue
 }
@@ -207,9 +207,9 @@ extension URL {
 
 extension Array {
   /// Each item decoded by `element`.
-  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Element) -> [Element] {
+  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Element) throws -> [Element] {
     if jsonKind(value) != "array" { return decodingFailure(value, at, "an array") }
-    return jsonItems(value).map { element($0, at) }
+    return try jsonItems(value).map { try element($0, at) }
   }
 
   public static func encode(_ value: [Element], _ element: (Element) -> JSONValue) -> JSONValue {
@@ -217,8 +217,8 @@ extension Array {
   }
 
   /// The decoder of arrays of what `element` decodes (for nested types).
-  public static func decoder(_ element: (JSONValue, String) -> Element) -> (JSONValue, String) -> [Element] {
-    { value, at in Array.decode(value, at, element) }
+  public static func decoder(_ element: (JSONValue, String) throws -> Element) -> (JSONValue, String) throws -> [Element] {
+    { value, at in try Array.decode(value, at, element) }
   }
 
   /// The encoder of arrays of what `element` encodes.
@@ -234,9 +234,9 @@ extension Array {
 
 extension Optional {
   /// `none` when absent or null; else what `wrapped` decodes.
-  public static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) -> Wrapped) -> Wrapped? {
+  public static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) throws -> Wrapped) throws -> Wrapped? {
     let kind = jsonKind(value)
-    return kind == "absent" || kind == "null" ? none : wrapped(value, at)
+    return kind == "absent" || kind == "null" ? none : try wrapped(value, at)
   }
 
   /// Absent (left out of its object) when `none`.
@@ -244,8 +244,8 @@ extension Optional {
     value.map { wrapped($0) } ?? jsonAbsent()
   }
 
-  public static func decoder(_ wrapped: (JSONValue, String) -> Wrapped) -> (JSONValue, String) -> Wrapped? {
-    { value, at in Optional.decode(value, at, wrapped) }
+  public static func decoder(_ wrapped: (JSONValue, String) throws -> Wrapped) -> (JSONValue, String) throws -> Wrapped? {
+    { value, at in try Optional.decode(value, at, wrapped) }
   }
 
   public static func encoder(_ wrapped: (Wrapped) -> JSONValue) -> (Wrapped?) -> JSONValue {
@@ -255,17 +255,17 @@ extension Optional {
 
 extension Dictionary {
   /// Each member decoded by `element`.
-  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Value) -> [String: Value] {
+  public static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Value) throws -> [String: Value] {
     if jsonKind(value) != "object" { return decodingFailure(value, at, "an object") }
-    return jsonKeys(value).reduce([:]) { out, key in out.setting(key, element(jsonMember(value, key), at)) }
+    return try jsonKeys(value).reduce([:]) { out, key in out.setting(key, try element(jsonMember(value, key), at)) }
   }
 
   public static func encode(_ value: [String: Value], _ element: (Value) -> JSONValue) -> JSONValue {
     jsonOfObject(value.mapValues { element($0) })
   }
 
-  public static func decoder(_ element: (JSONValue, String) -> Value) -> (JSONValue, String) -> [String: Value] {
-    { value, at in Dictionary.decode(value, at, element) }
+  public static func decoder(_ element: (JSONValue, String) throws -> Value) -> (JSONValue, String) throws -> [String: Value] {
+    { value, at in try Dictionary.decode(value, at, element) }
   }
 
   public static func encoder(_ element: (Value) -> JSONValue) -> ([String: Value]) -> JSONValue {
@@ -291,9 +291,9 @@ extension JSON {
   public static func stringify(_ value: JSONValue, indent: Int = 0) -> String { stringifyJSON(value, indent) }
 
   /// The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
-  public static func decode<T>(_ codec: Codec<T>, from text: String) -> T {
+  public static func decode<T>(_ codec: Codec<T>, from text: String) throws -> T {
     let decode = codec.decode
-    return decode(parseJSON(text), "JSON")
+    return try decode(parseJSON(text), "JSON")
   }
 
   /// `value` as JSON text.

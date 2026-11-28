@@ -36,3 +36,27 @@ export function set(kind: string, name: string, key: string, value: string | und
 export function keys(kind: string, name: string): readonly string[] {
   return module().keys(kind, name);
 }
+
+export function sqlOpen(name: string): number {
+  return module().sqlOpen(name);
+}
+
+export function sqlExec(db: number, source: string): void {
+  module().sqlExec(db, source);
+}
+
+export function sqlRun(db: number, source: string, params: string): number {
+  return module().sqlRun(db, source, params);
+}
+
+export function sqlAll(db: number, source: string, params: string): string {
+  return module().sqlAll(db, source, params);
+}
+
+export function sqlClose(db: number): void {
+  module().sqlClose(db);
+}
+
+export function sqlDelete(name: string): void {
+  module().sqlDelete(name);
+}

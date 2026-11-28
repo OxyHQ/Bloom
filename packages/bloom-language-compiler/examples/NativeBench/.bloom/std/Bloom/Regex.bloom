@@ -23,7 +23,8 @@ public struct Regex: Equatable {
   public var flags: String = ""
 }
 
-/// One match: its text, where it starts (UTF-16 offset) and its groups.
+/// One match: its text, where it starts (a character offset, as `String.count` counts; Swift's
+/// model on every backend) and its groups.
 public struct RegexMatch: Equatable {
   public let text: String
   public let start: Int
@@ -46,7 +47,7 @@ extension Regex {
     if let message = regexError(pattern, "") {
       throw RegexError(pattern: pattern, message: message)
     }
-    return Regex(pattern: pattern, flags: "")
+    self = Regex(pattern: pattern, flags: "")
   }
 
   /// The expression, checked: throws a `RegexError` when `pattern` is invalid.
@@ -106,6 +107,6 @@ extension RegexMatch {
     return self.groups[n - 1]
   }
 
-  /// Where the match ends (UTF-16 offset, exclusive).
+  /// Where the match ends (a character offset, exclusive).
   public var end: Int { self.start + self.text.count }
 }
