@@ -1846,8 +1846,14 @@ impl<'a> Emitter<'a> {
             match *name {
                 "task" | "onAppear" => {
                     let body = call.trailing.as_deref().map(|c| c.body.clone()).unwrap_or_default();
+                    // `.task(id: v)`: the effect restarts (the old one cancelled) when `v` changes.
+                    let key = call
+                        .args
+                        .iter()
+                        .find(|a| a.label.as_ref().is_some_and(|l| l.name == "id"))
+                        .map_or_else(|| "Unit".to_string(), |a| self.expr(&a.value));
                     let inner = self.block(&body, indent + 1, Mode::Unit);
-                    let _ = write!(effects, "{p}LaunchedEffect(Unit) {{\n{inner}{p}}}\n");
+                    let _ = write!(effects, "{p}LaunchedEffect({key}) {{\n{inner}{p}}}\n");
                 }
                 "onChange" => {
                     let of = call.args.first().map(|a| self.expr(&a.value)).unwrap_or_default();
@@ -2487,6 +2493,12 @@ impl<'a> Emitter<'a> {
                 };
             }
             Some(FieldRes::StaticGet(name)) => return static_name(&name.replacen("$$get$", "$$", 1)),
+            // A task's cancellation is its coroutine's: `await Task.cancellation` suspends until
+            // the effect is cancelled (its `defer` runs in the `finally`), `Task.isCancelled`
+            // reads the job. Work given no cancellation (core12's `implicit_signals`) needs
+            // nothing passed: a suspend call is cancelled with its coroutine.
+            Some(FieldRes::TaskCancellation) => return "kotlinx.coroutines.awaitCancellation()".into(),
+            Some(FieldRes::TaskCancelled) => return "(kotlinx.coroutines.currentCoroutineContext()[kotlinx.coroutines.Job]?.isActive == false)".into(),
             // A dictionary's `keys`, `values` and `entries` are lists (of pairs, for `entries`).
             Some(FieldRes::Prop {
                 recv: bloom_lang::backend::Recv::Map | bloom_lang::backend::Recv::JsMap,
