@@ -243,6 +243,18 @@ impl Tr<'_> {
                                 push(&mut fields, field);
                             }
                         }
+                        // An object type imported from another TS file: its fields written out.
+                        TSType::TSTypeReference(r)
+                            if r.type_arguments.is_none()
+                                && let TSTypeName::IdentifierReference(id) = &r.type_name
+                                && self.imported.contains(id.name.as_str())
+                                && let Some(external) = self.external_props(&id.name) =>
+                        {
+                            for f in external {
+                                let ty = if f.optional { optional_ty(&f.ty) } else { f.ty };
+                                push(&mut fields, format!("{}: {ty}", f.name));
+                            }
+                        }
                         _ => return self.refuse("type:intersection", "an intersection type", i.span),
                     }
                 }

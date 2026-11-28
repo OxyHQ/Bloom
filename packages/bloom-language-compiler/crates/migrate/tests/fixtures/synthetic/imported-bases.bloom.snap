@@ -1,0 +1,34 @@
+// Types built on another file's types: 2.0 has no spread members and no general intersection,
+// so an imported base's fields are written out (its first, then the type's own; a field the
+// type declares again is its own), in an interface, an inline intersection and `Pick`/`Omit`.
+
+public struct MediaEntry {
+  let postId: String
+  let uri: String
+  let mediaIndex: Float
+}
+
+public func firstUri(_ entries: [MediaEntry]) -> String { entries.at(0)?.uri ?? "" }
+
+public func describe(_ entry: { postId: String, mediaIndex: Float?, label: String }) -> String {
+  "\(entry.label) \(entry.postId)"
+}
+
+public struct Cell: View {
+  let count: Float
+  let title: String
+  var body: some View {
+    VStack {
+      Text(title)
+      Text("\(count)")
+    }
+  }
+}
+
+public struct Quiet: View {
+  let tone: String
+  let title: String
+  var body: some View {
+    Text("\(title) \(tone)")
+  }
+}
