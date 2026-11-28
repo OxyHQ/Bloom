@@ -216,7 +216,7 @@ impl Tr<'_> {
             // record type of all their fields (no general intersection; a later field wins, as in TS).
             TSType::TSIntersectionType(i) => {
                 let mut fields: Vec<String> = Vec::new();
-                let mut push = |fields: &mut Vec<String>, field: String| {
+                let push = |fields: &mut Vec<String>, field: String| {
                     let name = field.split(':').next().unwrap_or_default().to_string();
                     fields.retain(|f| f.split(':').next() != Some(name.as_str()));
                     fields.push(field);
