@@ -1625,6 +1625,25 @@ impl Checker<'_> {
         partial: bool,
     ) -> Ty {
         let d = self.out.defs[def].clone();
+        // `UniqueID()`: a view's stable identity, a `@State`'s initial value and nothing else.
+        if !partial
+            && call.args.is_empty()
+            && call.trailing.is_none()
+            && d.name == "UniqueID"
+            && self.out.transparent.contains(&def)
+        {
+            if self.unique_id_state == Some(expr.id) {
+                self.out.unique_ids.insert(expr.id);
+            } else {
+                self.report(
+                    Diagnostic::error("B0420", expr.span, "`UniqueID()` is a view's identity, made once for its life")
+                        .label("not a `@State`'s initial value")
+                        .help("declare it as a view's state, `@State private var id = UniqueID()`, and read `id.string`")
+                        .spec("73-reactivity-compile-time"),
+                );
+            }
+            return Ty::Adt(def, Vec::new());
+        }
         let targs = if !targs.is_empty() {
             targs
         } else {

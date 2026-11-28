@@ -421,9 +421,28 @@ pub struct CheckResult {
     /// A generic function's or view's shape-bounded type parameters (by its span): each
     /// one's index and shape, which TS writes `T extends Shape`.
     pub shapes: HashMap<Span, Vec<(u32, Ty)>>,
+    /// `@Transparent` structs (Rust's `#[repr(transparent)]`): exactly one stored field, and a
+    /// value of the struct is that field's value (TS: `type UniqueID = string`; Kotlin: a
+    /// `@JvmInline value class`; Swift: a struct). Construction is the field's value, a read of
+    /// the field is the value itself, and `==` compares the field.
+    pub transparent: HashSet<DefId>,
+    /// `UniqueID()` as a `@State`'s initial value (a view's, or a hook function's): the call's
+    /// id. A stable identity for the view's life, React's `useId()` on the TS backend; the
+    /// state has no setter.
+    pub unique_ids: HashSet<ExprId>,
 }
 
 impl CheckResult {
+    /// Whether `ty` is a `@Transparent` struct: its stored field and that field's type.
+    pub fn transparent_field(&self, ty: &Ty) -> Option<(String, Ty)> {
+        let Ty::Adt(def, args) = ty else { return None };
+        if !self.transparent.contains(def) {
+            return None;
+        }
+        let field = self.defs[*def].fields().first()?;
+        Some((field.name.clone(), substitute(&field.ty, args)))
+    }
+
     pub fn types(&self, _source: &str) -> Vec<(Span, String)> {
         let mut out: Vec<(Span, String)> = self
             .spans
@@ -527,6 +546,8 @@ pub struct Checker<'o> {
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
     /// may call hooks.
     hook_body: Option<usize>,
+    /// The `@State`'s initial value being checked: `UniqueID()` may be it (B0420 elsewhere).
+    unique_id_state: Option<ExprId>,
     /// The frame of the hook function being checked: its closures are cached across calls, so
     /// a `var` of its own is not one they may capture.
     hook_frame: Option<usize>,
@@ -684,6 +705,7 @@ impl<'o> Checker<'o> {
             hook_allowed: false,
             hook_args: HashSet::default(),
             hook_body: None,
+            unique_id_state: None,
             hook_frame: None,
             capturable: HashSet::default(),
             was_hook: false,
@@ -1668,6 +1690,9 @@ impl<'o> Checker<'o> {
                 class,
                 tagged: None,
             });
+            if is_transparent(item) {
+                self.out.transparent.insert(def);
+            }
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
             self.span_type((name.span, Ty::Adt(def, Vec::new())));
         }
@@ -1686,6 +1711,7 @@ impl<'o> Checker<'o> {
                 ItemKind::Class(c) => self.class_fields(c),
                 _ => {}
             }
+            self.transparent_rules(item);
         }
         for item in &file.items {
             if let ItemKind::Protocol(p) = &item.kind {
@@ -2518,7 +2544,13 @@ impl<'o> Checker<'o> {
                     };
                     let ty = match state.attr {
                         _ if ty != Ty::Unknown || self.out.env_keys.contains_key(&state.span) => ty,
-                        StateAttr::State | StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
+                        StateAttr::State => {
+                            let saved = self.unique_id_state.replace(state.value.id);
+                            let ty = self.expr(&state.value, declared.as_ref());
+                            self.unique_id_state = saved;
+                            ty
+                        }
+                        StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
                             self.boundary(&state.value, None);
@@ -2526,6 +2558,8 @@ impl<'o> Checker<'o> {
                         }
                     };
                     let kind = match state.attr {
+                        // `@State private var id = UniqueID()`: a stable identity, never set.
+                        StateAttr::State if self.out.unique_ids.contains(&state.value.id) => LocalKind::Hook,
                         StateAttr::State => LocalKind::State,
                         StateAttr::Ref => LocalKind::Ref,
                         _ => LocalKind::Hook,
@@ -2847,6 +2881,7 @@ impl<'o> Checker<'o> {
         // Its types are numbered from 0 there: after this module's here.
         let offset = self.out.defs.len();
         self.out.defs.extend(module.defs.iter().map(|d| shift_def(d, offset)));
+        self.out.transparent.extend(module.transparent.iter().map(|d| d + offset));
         self.out.dependencies.extend(module.files.iter().map(|(p, _)| p.clone()));
         for (name, local, spec_span) in names {
             if let Some(def) = module.types.get(&name.name) {
@@ -2881,6 +2916,51 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `@Transparent`: on a struct with exactly one stored field, a `let` (B0106).
+    fn transparent_rules(&mut self, item: &Item) {
+        let Some(attr) = item.modifiers.attrs.iter().find(|a| a.name.name == "Transparent") else { return };
+        let ItemKind::Struct(s) = &item.kind else {
+            self.report(
+                Diagnostic::error("B0106", attr.span, "`@Transparent` is a struct's")
+                    .label("not a struct")
+                    .help("write it on a `struct` with one stored `let`: `@Transparent struct UserID { let raw: String }`")
+                    .spec("44-structs"),
+            );
+            return;
+        };
+        if s.fields.len() != 1 {
+            let span = s.fields.get(1).map_or(s.name.span, |f| f.name.span);
+            let found = if s.fields.is_empty() { "none".to_string() } else { s.fields.len().to_string() };
+            self.report(
+                Diagnostic::error(
+                    "B0106",
+                    span,
+                    format!("a `@Transparent` struct has exactly one stored property; `{}` has {found}", s.name.name),
+                )
+                .label(if s.fields.is_empty() { "no stored property" } else { "a second stored property" })
+                .help("a transparent struct is its one field at run time; make the others computed properties, or drop `@Transparent`")
+                .spec("44-structs"),
+            );
+            return;
+        }
+        let mutable = s.surface.as_ref().and_then(|body| {
+            body.members.iter().find_map(|m| match &m.kind {
+                TypeMemberKind::Stored { mutable: true, name, .. } if !m.modifiers.is_static => {
+                    Some(name.span)
+                }
+                _ => None,
+            })
+        });
+        if let Some(span) = mutable {
+            self.report(
+                Diagnostic::error("B0106", span, "a `@Transparent` struct's stored property is a `let`")
+                    .label("a `var`")
+                    .help("write `let`; a new value is a new struct: `UserID(raw: text)`")
+                    .spec("44-structs"),
+            );
+        }
+    }
+
     /// Another module's `pub` types and signatures, for an import.
     fn declare_signatures(&mut self, file: &File, specifier: &str) {
         // Its imports name the types its signatures use: `.bloom` ones too (their
@@ -2911,6 +2991,9 @@ impl<'o> Checker<'o> {
                 class,
                 tagged: None,
             });
+            if is_transparent(item) {
+                self.out.transparent.insert(def);
+            }
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
         }
         for item in &file.items {
@@ -3074,7 +3157,10 @@ impl<'o> Checker<'o> {
             // `@State var x = v` in a hook function's body: its state, as a view's `@State` is.
             StmtKind::Var(v) if let Some(attr) = v.state => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
+                let in_hook = self.hook_body == Some(self.scopes.len());
+                let saved = std::mem::replace(&mut self.unique_id_state, in_hook.then_some(v.value.id));
                 let ty = self.expr(&v.value, declared.as_ref());
+                self.unique_id_state = saved;
                 if self.hook_body != Some(self.scopes.len()) {
                     self.report(
                         Diagnostic::error("B0420", attr.to(v.name.span), format!("`@State var {}` is outside a hook function's body", v.name.name))
@@ -3083,10 +3169,15 @@ impl<'o> Checker<'o> {
                             .spec("73-reactivity-compile-time"),
                     );
                 }
+                // `@State var id = UniqueID()`: a stable identity, never set (`useId()`).
+                let unique = self.out.unique_ids.contains(&v.value.id);
                 self.binding_stmt = true;
-                let local = self.declare(&v.name, ty, LocalKind::State);
+                let local =
+                    self.declare(&v.name, ty, if unique { LocalKind::Hook } else { LocalKind::State });
                 self.binding_stmt = false;
-                self.out.hook_states.insert(v.span, local);
+                if !unique {
+                    self.out.hook_states.insert(v.span, local);
+                }
             }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
@@ -3509,7 +3600,14 @@ impl<'o> Checker<'o> {
         }
         let mutable = matches!(info.kind, LocalKind::State | LocalKind::Var | LocalKind::Ref);
         if !mutable {
+            let identity = info.kind == LocalKind::Hook
+                && self.out.transparent_field(&info.ty).is_some()
+                && matches!(&info.ty, Ty::Adt(def, _) if self.out.defs[*def].name == "UniqueID");
             let help = match info.kind {
+                _ if identity => {
+                    "a `UniqueID` is the view's identity for its life; keep a `@State var` of another type for a value that changes"
+                        .to_string()
+                }
                 LocalKind::Let | LocalKind::Derived => format!(
                     "declare it with `var {name} = …` (in a function) or make it `@state {name} = …` (in a view)"
                 ),
@@ -7158,6 +7256,8 @@ struct Signatures {
     /// Its exported `type X = …` aliases: the type and how many parameters it takes.
     aliases: HashMap<String, (Ty, usize)>,
     values: HashMap<String, (Ty, LocalKind)>,
+    /// Its `@Transparent` structs.
+    transparent: HashSet<DefId>,
     files: Vec<(PathBuf, ts::Stamp)>,
     checked: std::cell::Cell<u64>,
 }
@@ -7252,6 +7352,7 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         types,
         aliases,
         values,
+        transparent: std::mem::take(&mut sub.out.transparent),
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),
     });
@@ -7342,7 +7443,8 @@ pub fn interface(file: &File, source: &str, path: &Path, options: &Options) -> S
         }
         let mut line = format!("{} {name}", who(level));
         if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
-            line.push_str(&format!(" type {}", keys[*def]));
+            let transparent = if sub.out.transparent.contains(def) { "@Transparent " } else { "" };
+            line.push_str(&format!(" {transparent}type {}", keys[*def]));
         }
         if let Some(id) = sub.scopes[0].get(name) {
             let local = &sub.out.locals[*id];
@@ -7450,6 +7552,12 @@ fn view_alias<'f>(file: &'f File, value: &Expr) -> Option<&'f ViewDecl> {
         }
         _ => None,
     })
+}
+
+/// `@Transparent struct X { let field: T }`: a struct emitted as its one stored field.
+fn is_transparent(item: &Item) -> bool {
+    matches!(item.kind, ItemKind::Struct(_))
+        && item.modifiers.attrs.iter().any(|a| a.name.name == "Transparent")
 }
 
 /// How `==` compares values of a type (spec 4.3).

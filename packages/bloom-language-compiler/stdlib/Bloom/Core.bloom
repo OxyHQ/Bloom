@@ -36,6 +36,16 @@ public struct ClosedRange<Bound> {
   public let upperBound: Bound
 }
 
+/// A stable identity for a view's life: a label paired with its field, a key into a registry.
+/// Made only as a view's state, once, when the view first appears:
+/// `@State private var id = UniqueID()`, then read `id.string`. It is its string at run time
+/// (`@Transparent`): React's `useId()` on the web and in React Native (hydration-safe).
+@Transparent
+public struct UniqueID: Equatable, Hashable {
+  /// The identity as text, unique within the app while the view lives.
+  public let string: String
+}
+
 // ---- String ---------------------------------------------------------------------
 
 extension String {

@@ -32,6 +32,12 @@ The values from `lowerBound` up to and including `upperBound`: the value of `a..
 - `let lowerBound: Bound`
 - `let upperBound: Bound`
 
+### `struct UniqueID: Equatable, Hashable`
+
+A stable identity for a view's life: a label paired with its field, a key into a registry. Made only as a view's state, once, when the view first appears: `@State private var id = UniqueID()`, then read `id.string`. It is its string at run time (`@Transparent`): React's `useId()` on the web and in React Native (hydration-safe).
+
+- `let string: String`: The identity as text, unique within the app while the view lives.
+
 ### `extension String`
 
 - `var characters: [Character]`: The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1` where `count` (UTF-16 units) is 4.

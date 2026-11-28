@@ -1,0 +1,34 @@
+// `@Transparent` (Rust's `#[repr(transparent)]`): a struct with one stored `let` is that field
+// at run time. Its TS type is the field's, construction is the value, a read of the field is
+// the value itself, and `==` compares the field.
+@Transparent
+public struct Handle: Equatable {
+  public let raw: String
+  public var short: String { raw.count > 4 ? "long" : raw }
+}
+
+@Transparent
+public struct Box<T> {
+  public let value: T
+}
+
+@Transparent
+public struct Wrapped: Equatable {
+  public let handle: Handle
+}
+
+public struct Account: Equatable {
+  public let handle: Handle
+  public let followers: Int
+}
+
+public func handle(_ raw: String) -> Handle { Handle(raw: raw) }
+public func raw(_ h: Handle) -> String { h.raw }
+public func rawMaybe(_ a: Account?) -> String? { a?.handle.raw }
+public func same(_ a: Handle, _ b: Handle) -> Bool { a == b }
+public func sameWrapped(_ a: Wrapped, _ b: Wrapped) -> Bool { a == b && a.handle.raw == b.handle.raw }
+public func sameAccount(_ a: Account, _ b: Account) -> Bool { a == b }
+public func boxed(_ n: Int) -> Box<Int> { Box(value: n) }
+public func unboxed(_ b: Box<Int>) -> Int { b.value + 1 }
+public func renamed(_ a: Account) -> Account { Account(handle: a.handle.with(raw: "new"), followers: a.followers) }
+public func shorts(_ hs: [Handle]) -> [String] { hs.map { $0.short } }

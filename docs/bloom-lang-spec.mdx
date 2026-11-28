@@ -331,6 +331,34 @@ first entry spreads a struct and every key written is one of its fields, the lit
 struct, each key checked against its field's type, with or without an expected type. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
 exhaustive `match` on a fieldless enum maps a key to a field.
 
+**`@Transparent` structs** (Rust's `#[repr(transparent)]`, a Swift tagged type):
+
+```bloom
+@Transparent
+public struct UserID: Codable, Equatable, Hashable {
+  public let raw: String
+  public var isGuest: Bool { raw.hasPrefix("guest-") }
+}
+let id = UserID(raw: "u1")   // the string "u1" at run time
+id.raw                        // the value itself
+```
+
+A struct marked `@Transparent` has exactly one stored property, a `let` (B0106 for none, a
+second one or a `var`; B0106 on anything that is not a struct). It is a type of its own to the
+checker (a `UserID` is not a `String`), and that field at run time: its TS type is the field's
+(`export type UserID = string`), `UserID(raw: v)` is `v`, `id.raw` is `id`, `id.with(raw: v)` is
+`v`, and `==` (`Equatable`, `Hashable`) compares the field. A derived `Codable` is the field's
+codec (`"u1"`, not `{ "raw": "u1" }`). Computed properties and methods are its own, called with
+the field's value as `self`. The Kotlin backend writes a `@JvmInline value class`, the Swift
+one a struct (`CheckResult.transparent`).
+
+**`UniqueID`** is the standard library's transparent identity, `struct UniqueID { let string:
+String }`. `@State private var id = UniqueID()` (a view's state, or a hook function's
+`@State var`) is the view's identity for its life, made once when it first appears: React's
+`useId()` on the TS backend (`const id = useId()`, no setter, hydration-safe), read as
+`id.string` (a label paired with its field, a key into a registry). `UniqueID()` anywhere else
+is B0420, and assigning the state is B0403.
+
 ### 4.5 Enums, Option and Result
 
 ```bloom

@@ -864,3 +864,40 @@ fn a_static_let_is_not_a_field() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `@Transparent` structs are their one field (`type UserID = string`), and
+/// `@State private var id = UniqueID()` is one `useId()`, read as `id.string`. The runtime
+/// test is `test/transparent.test.tsx`.
+const TRANSPARENT: &str = include_str!("../../../test/packages/format-app/Sources/App/Transparent.bloom");
+
+#[test]
+fn a_transparent_struct_is_its_field_and_unique_id_is_use_id() {
+    let root = package("transparent", &[("Sources/Model/Transparent.bloom", TRANSPARENT)]);
+    let path = root.join("Sources/Model/Transparent.bloom");
+    let out = compile(TRANSPARENT, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("export type UserID = string;"), "{}", out.code);
+    assert!(out.code.contains("const id = useId();"), "{}", out.code);
+    assert!(!out.code.contains("setId"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/transparent.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `UniqueID()` is a `@State`'s initial value only (B0420), and that state is never set (B0403).
+#[test]
+fn unique_id_is_only_a_states_initial_value() {
+    let source = "public func stray() -> UniqueID { UniqueID() }\n\
+public struct Field: View {\n  @State private var id = UniqueID()\n  var body: some View {\n    Button(Text(id.string)).onPress { id = UniqueID(string: \"x\") }\n  }\n}\n\
+public func useLate(_ on: Bool) -> Int {\n  let k = UniqueID()\n  return 0\n}\n";
+    let root = package("unique-id-errors", &[("Sources/Model/Field.bloom", source)]);
+    let path = root.join("Sources/Model/Field.bloom");
+    let out = compile(source, &path.to_string_lossy(), &Options::default());
+    let text = rendered(&out);
+    assert_eq!(out.diagnostics.iter().filter(|d| d.code == "B0420").count(), 2, "{text}");
+    assert_eq!(out.diagnostics.iter().filter(|d| d.code == "B0403").count(), 1, "{text}");
+    assert_eq!(out.diagnostics.len(), 3, "{text}");
+    assert!(text.contains("the view's identity for its life"), "{text}");
+}

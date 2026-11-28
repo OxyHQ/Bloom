@@ -1209,6 +1209,16 @@ impl<'a> Emitter<'a> {
 
     fn struct_decl(&mut self, s: &StructDecl, export: &str) -> Frag {
         let Some(def) = self.def_of(&s.name.name) else { return Frag::default() };
+        // `@Transparent`: the struct is its one field (`type UniqueID = string`).
+        if self.ck.transparent.contains(&def)
+            && let Some(field) = self.ck.defs[def].fields().first().cloned()
+        {
+            let ty = self.ts_type(&field.ty);
+            return Frag::at(
+                s.name.span,
+                format!("{export}type {}{} = {ty};\n", s.name.name, self.generics(&s.generics)),
+            );
+        }
         let fields: Vec<String> =
             self.ck.defs[def].fields().to_vec().iter().map(|f| format!("  {}", self.ts_field(f))).collect();
         Frag::at(
@@ -1498,6 +1508,13 @@ impl<'a> Emitter<'a> {
                     });
                 }
                 line.s(");");
+                self.push_stmt(line);
+            }
+            // `@State var id = UniqueID()` in a hook function: `const id = useId()`.
+            StmtKind::Var(v) if self.ck.unique_ids.contains(&v.value.id) => {
+                let value = self.value_expr(&v.value);
+                let mut line = Frag::at(stmt.span, format!("const {} = ", self.bound_name(&v.name)));
+                line.f(value).s(";");
                 self.push_stmt(line);
             }
             StmtKind::Var(v) => {
@@ -1985,6 +2002,15 @@ impl<'a> Emitter<'a> {
     /// The type of what `expr` evaluates to.
     fn expr_ty(&self, expr: &Expr) -> Ty {
         self.ck.types.get(&expr.id).cloned().unwrap_or(Ty::Unknown)
+    }
+
+    /// Whether `object.name` reads a `@Transparent` struct's field (the object itself).
+    fn transparent_read(&self, object: &Expr, name: &str) -> bool {
+        let ty = match self.expr_ty(object) {
+            Ty::Option(inner) => *inner,
+            other => other,
+        };
+        self.ck.transparent_field(&ty).is_some_and(|(field, _)| field == name)
     }
 
     /// Whether `path` starts at a `var` (a value that can change while its bindings are read).
@@ -3041,6 +3067,14 @@ impl<'a> Emitter<'a> {
     fn field(&mut self, expr: &Expr, object: &Expr, name: &Ident) -> Frag {
         let opt = matches!(expr.kind, ExprKind::OptField(..));
         let res = self.ck.fields.get(&expr.id).cloned();
+        // `id.string` of a `@Transparent` struct: the value is its field (`id?.string`: `id`).
+        if res == Some(FieldRes::Field) && self.transparent_read(object, &name.name) {
+            let out = self.expr(object);
+            if self.guarded.contains(&object.id) {
+                self.guarded.insert(expr.id);
+            }
+            return out;
+        }
         let wraps = match &res {
             Some(FieldRes::Extension(_) | FieldRes::Witness { .. }) => true,
             Some(FieldRes::Prop { recv, name: prop }) => !matches!(
@@ -3519,6 +3553,10 @@ impl<'a> Emitter<'a> {
     }
 
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
+        if self.ck.unique_ids.contains(&expr.id) {
+            self.import_name("react", "useId");
+            return Frag::at(expr.span, "useId()");
+        }
         if self.hoistable(expr) {
             return self.hoist(expr);
         }
@@ -3637,8 +3675,15 @@ impl<'a> Emitter<'a> {
                     .s(" }");
                 out
             }
-            CallRes::With(_) => {
+            CallRes::With(def) => {
                 let ExprKind::Field(object, _) = &call.callee.kind else { unreachable!() };
+                // A `@Transparent` struct's `with(raw: v)`: `v` (it is its one field).
+                if self.ck.transparent.contains(&def) {
+                    return match call.args.iter().rev().find(|a| a.label.is_some()) {
+                        Some(arg) => self.expr(&arg.value),
+                        None => self.expr(object),
+                    };
+                }
                 let mut out = Frag::of("{ ...");
                 out.f(self.operand(object));
                 for arg in &call.args {
@@ -4033,6 +4078,22 @@ impl<'a> Emitter<'a> {
     /// checks take TS's `null`.
     fn construct(&mut self, call: &Call, def: DefId, partial: bool, literal: bool) -> Frag {
         let fields = self.ck.defs[def].fields().to_vec();
+        // `UserID(raw: s)` of a `@Transparent` struct: `s` itself (`UserID(..other)`: `other`).
+        if self.ck.transparent.contains(&def) && !partial {
+            if let Some(arg) = call.args.iter().rev().find(|a| a.label.is_some()) {
+                return self.expr(&arg.value);
+            }
+            if let Some(arg) = call.args.iter().find(|a| a.spread) {
+                return self.expr(&arg.value);
+            }
+            if let Some(value) = fields.first().and_then(|f| match &f.default {
+                FieldDefault::Expr(id) => self.default_expr(*id),
+                FieldDefault::Literal(text) => Some(Frag::of(text.clone())),
+                FieldDefault::Undefined | FieldDefault::None => None,
+            }) {
+                return value;
+            }
+        }
         let given: HashMap<&str, &Expr> =
             call.args.iter().filter_map(|a| a.label.as_ref().map(|l| (l.name.as_str(), &a.value))).collect();
         let mut entries: Vec<Frag> = Vec::new();
@@ -4660,6 +4721,10 @@ impl Emitter<'_> {
                     .collect();
                 and(parts)
             }
+            // A `@Transparent` struct is its field: compared as the field is.
+            Ty::Adt(..) if let Some((_, field)) = self.ck.transparent_field(ty) => {
+                self.equal(a, b, &field, seen)
+            }
             Ty::Adt(def, args) => {
                 if seen.contains(def) {
                     let name = self.eq_helper(ty);
@@ -5063,6 +5128,13 @@ impl<'a> Emitter<'a> {
     fn dep_path(&self, expr: &Expr) -> Option<String> {
         let view = self.view.as_ref()?;
         match &expr.kind {
+            // A `@Transparent` struct's field is the struct's value: its path is the object's.
+            ExprKind::Field(object, name) | ExprKind::OptField(object, name)
+                if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field)
+                    && self.transparent_read(object, &name.name) =>
+            {
+                self.dep_path(object)
+            }
             ExprKind::Name(_) => match self.source_local(expr.id) {
                 Some(local) if view.versions.contains_key(&local) => Some(view.versions[&local].clone()),
                 Some(local) if view.reactive.contains(&local) => Some(self.local_name(local)),
@@ -6218,6 +6290,12 @@ impl<'a> Emitter<'a> {
                             line.f(self.expr(&state.value)).s(");");
                             line
                         }
+                    }
+                    // `@State private var id = UniqueID()`: React's `useId()`, never set.
+                    StateAttr::State if self.ck.unique_ids.contains(&state.value.id) => {
+                        let mut line = Frag::at(state.span, format!("const {name} = "));
+                        line.f(self.expr(&state.value)).s(";");
+                        line
                     }
                     StateAttr::State => {
                         self.import_name("react", "useState");

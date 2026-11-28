@@ -1,0 +1,26 @@
+error[B0106]: a `@Transparent` struct has exactly one stored property; `Pair` has 2
+ --> check/transparent.bloom:6:14
+  |
+6 |   public let b: String
+  |              ^ a second stored property
+  |
+help: a transparent struct is its one field at run time; make the others computed properties, or drop `@Transparent`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0106]: a `@Transparent` struct's stored property is a `let`
+  --> check/transparent.bloom:11:14
+   |
+11 |   public var count: Int
+   |              ^^^^^ a `var`
+   |
+help: write `let`; a new value is a new struct: `UserID(raw: text)`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0106]: `@Transparent` is a struct's
+  --> check/transparent.bloom:14:1
+   |
+14 | @Transparent
+   | ^^^^^^^^^^^^ not a struct
+   |
+help: write it on a `struct` with one stored `let`: `@Transparent struct UserID { let raw: String }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
