@@ -299,6 +299,29 @@ enum class Tone {
     }
 }
 
+/** The native edge: the rim's 1px lines and the sheen's two inset shadows (Surface's `NATIVE_SURFACE_EDGE`), in dp. */
+@Immutable
+class MaterialEdge(val rimLine: Float, val sheenReach: Float, val sheenBlur: Float, val sheenGain: Float)
+
+/** The edge of each scheme. */
+object MaterialEdges {
+  val light = MaterialEdge(rimLine = 0.7f, sheenReach = 8.0f, sheenBlur = 5.18f, sheenGain = 0.14f)
+  val dark = MaterialEdge(rimLine = 0.4f, sheenReach = 7.0f, sheenBlur = 5.18f, sheenGain = 0.14f)
+}
+
+/** A glass tint's opacity (`spec.scales.glassOpacity`). */
+enum class GlassOpacity(val value: Float) { subtle(0.24f), dim(0.35f), medium(0.48f), strong(0.72f) }
+
+/**
+ * The glass materials (`spec.glass`): whether the edge's sheen is drawn, whether the body paints the
+ * surface fill when untinted, the opacity a tint takes by default, and the lens engine's frost at
+ * rest and as a menu, in dp.
+ */
+enum class GlassMaterial(val sheen: Boolean, val fillsSurface: Boolean, val tintOpacity: GlassOpacity?, val lensBlur: Float, val lensMenuBlur: Float?) {
+  regular(true, false, null, 5.0f, 24.0f),
+  clear(false, true, GlassOpacity.subtle, 2.0f, null);
+}
+
 /** A preset's resolved palette in one scheme: every colour token of Bloom's theme, by name. */
 @Immutable
 class BloomPalette(private val argb: LongArray) {

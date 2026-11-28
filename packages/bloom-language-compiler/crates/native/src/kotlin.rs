@@ -232,7 +232,7 @@ fn token_class(node: &str, param: &str) -> &'static str {
         ("Avatar", "size") => "AvatarSize",
         ("Icon", "size") => "IconSize",
         (_, "size") | (_, "controlSize") => "ControlSize",
-        ("Button", "style") => "ButtonStyle",
+        ("Button", "style" | "buttonStyle") => "ButtonStyle",
         (_, "contentFit") => "ContentFit",
         (_, "corner") => "Corner",
         (_, "tint") => "Tone",
@@ -1943,6 +1943,14 @@ impl<'a> Emitter<'a> {
                 m.pop();
                 m.push_str(&format!(", corner = {radius})"));
             }
+            // The material's surface too (`.glass().corner(.lg)`): a capsule otherwise.
+            for m in layout.iter_mut().filter(|m| {
+                (m.starts_with(".bloomGlass(") || m.starts_with(".bloomBlur(")) && m.ends_with(')')
+            }) {
+                m.pop();
+                let sep = if m.ends_with('(') { "" } else { ", " };
+                m.push_str(&format!("{sep}corner = {radius})"));
+            }
         }
         // `.shrink().grow()`: the grow's weight alone.
         if layout.iter().any(|m| m == ".weight(1f)") {
@@ -2180,6 +2188,7 @@ impl<'a> Emitter<'a> {
                 "lineLimit" => "lines",
                 "align" => "alignment",
                 "controlSize" => "size",
+                "buttonStyle" => "style",
                 other => other,
             };
             args.push(format!("{param} = {value}"));

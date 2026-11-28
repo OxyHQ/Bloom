@@ -15,6 +15,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -419,8 +420,20 @@ fun Button(
     ControlSize.md -> 40.dp to 16.dp
     ControlSize.lg -> 48.dp to 20.dp
   }
+  // Every style but plain paints through the material, as Button's SurfacePaint does: the body and
+  // the native edge; the glass styles are glass (regular, or tinted by the button's tone), pressed
+  // with the lens engine's jelly.
+  val shape = RoundedCornerShape(h / 2)
+  val material = when (style) {
+    ButtonStyle.plain -> Modifier
+    ButtonStyle.glass -> Modifier.bloomGlass(GlassValue.regular.interactive(), h / 2)
+    ButtonStyle.glassProminent -> Modifier.bloomGlass(GlassValue.regular.tint(tint.color).interactive(), h / 2)
+    ButtonStyle.outline -> Modifier.bloomMaterial(shape, fill = null).border(1.dp, Colors.border, shape)
+    else -> Modifier.bloomMaterial(shape, bg)
+  }
   Box(
-    modifier.height(h).clip(RoundedCornerShape(h / 2)).background(bg).clickable(onClick = onPress).padding(horizontal = padX),
+    // No Material ripple: the press is the material's (the engine's jelly on glass).
+    modifier.height(h).then(material).clip(shape).clickable(interactionSource = null, indication = null, onClick = onPress).padding(horizontal = padX),
     contentAlignment = Alignment.Center,
   ) {
     CompositionLocalProvider(LocalForeground provides fg) { content() }
@@ -442,8 +455,9 @@ fun GroupedSection(title: String? = null, modifier: Modifier = Modifier, content
       content = content,
       modifier = Modifier
         .fillMaxWidth()
+        // The card is a surface of the material: its body and the native edge.
+        .bloomMaterial(RoundedCornerShape(Corner.lg), Colors.surface)
         .clip(RoundedCornerShape(Corner.lg))
-        .background(Colors.surface)
         .drawBehind {
           for (i in 1 until ys.count) drawRect(hairline, Offset(16.dp.toPx(), ys.values[i].toFloat()), androidx.compose.ui.geometry.Size(size.width, 0.5.dp.toPx()))
         },

@@ -11,6 +11,7 @@ import spec from '../packages/bloom-language/spec/language.json';
 import { APP_COLOR_NAMES } from '../src/theme/color-presets';
 import { getResolvedTokens } from '../src/theme/token-registry';
 import { resolvedColorToHex } from '../src/design-tokens/tokens-json';
+import { NATIVE_SURFACE_EDGE } from '../src/surface/native-edge';
 
 /** Where the generated file lives, relative to the repository root. */
 export const KOTLIN_THEME_PATH =
@@ -100,13 +101,17 @@ function fontObject(): string {
 function textAndLineScales(scales: Record<string, Record<string, unknown>>): string {
   const entries = (scale: Record<string, unknown> | undefined) =>
     Object.entries(scale ?? {}).filter(([k]) => !k.startsWith('$'));
-  const weights = entries(scales.weight).map(([k, v]) => `  val ${tokenName(k)} = FontWeight(${v})`);
+  const weights = entries(scales.weight).map(
+    ([k, v]) => `  val ${tokenName(k)} = FontWeight(${v})`,
+  );
   const leading = [
     ...entries(scales.leading).map(([k, v]) => `  val ${tokenName(k)}: TextUnit = ${v}.em`),
     ...entries(scales.leadingPx).map(([k, v]) => `  val ${tokenName(k)}: TextUnit = ${v}.sp`),
   ];
   const widths = entries(scales.borderWidth).map(([k, v]) =>
-    v === 'hairline' ? `  val ${tokenName(k)}: Dp = Dp.Hairline` : `  val ${tokenName(k)}: Dp = ${v}.dp`,
+    v === 'hairline'
+      ? `  val ${tokenName(k)}: Dp = Dp.Hairline`
+      : `  val ${tokenName(k)}: Dp = ${v}.dp`,
   );
   return [
     "/** A text's weight (`spec.scales.weight`). */",
@@ -190,6 +195,59 @@ function toneEnum(): string {
   ].join('\n');
 }
 
+function float(n: number): string {
+  return `${Number.isInteger(n) ? `${n}.0` : `${n}`}f`;
+}
+
+/**
+ * Bloom's material, from its two sources: the native edge Surface draws (`NATIVE_SURFACE_EDGE`,
+ * src/surface/shared.ts) and the spec's glass materials (`spec.glass`) and tint opacities
+ * (`spec.scales.glassOpacity`). The runtime's `BloomMaterial` draws through them.
+ */
+function materialSpec(): string {
+  const edge = (e: { rimLine: number; sheen: { reach: number; blur: number; gain: number } }) =>
+    `MaterialEdge(rimLine = ${float(e.rimLine)}, sheenReach = ${float(e.sheen.reach)}, sheenBlur = ${float(e.sheen.blur)}, sheenGain = ${float(e.sheen.gain)})`;
+  type Glass = {
+    sheen: boolean;
+    fill: string | null;
+    tintOpacity: string | null;
+    lensBlur: number;
+    lensMenuBlur?: number;
+  };
+  const glass = Object.entries(spec.glass as unknown as Record<string, Glass>).filter(
+    ([k]) => !k.startsWith('$'),
+  );
+  const opacity = spec.scales.glassOpacity as unknown as Record<string, number>;
+  const opacities = Object.entries(opacity).filter(([k]) => !k.startsWith('$'));
+  return [
+    "/** The native edge: the rim's 1px lines and the sheen's two inset shadows (Surface's `NATIVE_SURFACE_EDGE`), in dp. */",
+    '@Immutable',
+    'class MaterialEdge(val rimLine: Float, val sheenReach: Float, val sheenBlur: Float, val sheenGain: Float)',
+    '',
+    '/** The edge of each scheme. */',
+    'object MaterialEdges {',
+    `  val light = ${edge(NATIVE_SURFACE_EDGE.light)}`,
+    `  val dark = ${edge(NATIVE_SURFACE_EDGE.dark)}`,
+    '}',
+    '',
+    "/** A glass tint's opacity (`spec.scales.glassOpacity`). */",
+    `enum class GlassOpacity(val value: Float) { ${opacities.map(([k, v]) => `${tokenName(k)}(${float(v)})`).join(', ')} }`,
+    '',
+    '/**',
+    " * The glass materials (`spec.glass`): whether the edge's sheen is drawn, whether the body paints the",
+    " * surface fill when untinted, the opacity a tint takes by default, and the lens engine's frost at",
+    ' * rest and as a menu, in dp.',
+    ' */',
+    'enum class GlassMaterial(val sheen: Boolean, val fillsSurface: Boolean, val tintOpacity: GlassOpacity?, val lensBlur: Float, val lensMenuBlur: Float?) {',
+    ...glass.map(
+      ([name, g], i) =>
+        `  ${tokenName(name)}(${g.sheen}, ${g.fill === 'surface'}, ${g.tintOpacity ? `GlassOpacity.${tokenName(g.tintOpacity)}` : 'null'}, ${float(g.lensBlur)}, ${g.lensMenuBlur === undefined ? 'null' : float(g.lensMenuBlur)})${i === glass.length - 1 ? ';' : ','}`,
+    ),
+    '}',
+    '',
+  ].join('\n');
+}
+
 export function renderBloomThemeKotlin(): string {
   const [firstPreset] = APP_COLOR_NAMES;
   if (firstPreset === undefined) throw new Error('Bloom ships no colour preset');
@@ -268,6 +326,7 @@ export function renderBloomThemeKotlin(): string {
     textAndLineScales(spec.scales as unknown as Record<string, Record<string, unknown>>),
     colorRoles(new Set(fields)),
     toneEnum(),
+    materialSpec(),
     palette,
     lookup,
   ].join('\n');

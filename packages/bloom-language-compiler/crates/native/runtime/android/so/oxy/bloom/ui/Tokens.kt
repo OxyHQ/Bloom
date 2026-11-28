@@ -38,6 +38,9 @@ const val DEFAULT_PRESET = "oxy"
 
 private val LocalPalette = staticCompositionLocalOf<BloomPalette?> { null }
 
+/** Whether the theme in scope is dark (its material's edge is the dark one). */
+val LocalDark = staticCompositionLocalOf { false }
+
 /** The theme in scope: the palette every colour role reads. */
 object BloomTheme {
   val palette: BloomPalette
@@ -56,5 +59,5 @@ object BloomTheme {
 @Composable
 fun BloomThemeProvider(preset: String = DEFAULT_PRESET, dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
   val palette = BloomPresets.palette(preset, dark) ?: BloomTheme.defaultPalette(dark)
-  CompositionLocalProvider(LocalPalette provides palette, content = content)
+  CompositionLocalProvider(LocalPalette provides palette, LocalDark provides dark, content = content)
 }

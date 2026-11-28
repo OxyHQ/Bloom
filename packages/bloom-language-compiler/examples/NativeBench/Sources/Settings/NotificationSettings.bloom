@@ -124,6 +124,18 @@ public struct NotificationSettings: View {
             row(.quotes, "Quote posts", "When someone quotes your post")
           }
           .title("Notification types")
+          // Bloom's material (ADR 0003, BloomMaterial): each button style, a glass chip and a
+          // floating island, drawn through the one material.
+          HStack(spacing: .sm) {
+            Button("Solid") { opened = opened + 1 }.size(.sm)
+            Button("Subtle") { opened = opened + 1 }.size(.sm).style(.subtle)
+            Button("Glass") { opened = opened + 1 }.size(.sm).style(.glass)
+          }
+          HStack(spacing: .sm) {
+            Text("Glass chip").padding(.md).glass()
+            Text("Card glass").padding(.md).glass().corner(.lg)
+            Text("Island").padding(.md).blur()
+          }
         }
       }
       .padding(.horizontal, .lg)

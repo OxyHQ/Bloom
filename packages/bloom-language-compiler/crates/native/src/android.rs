@@ -23,6 +23,135 @@ const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/ui/Modifiers.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Modifiers.kt")),
     ("so/oxy/bloom/ui/Image.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Image.kt")),
     ("so/oxy/bloom/ui/Icons.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Icons.kt")),
+    ("so/oxy/bloom/ui/Material.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Material.kt")),
+];
+
+/// The lens engine the runtime's material draws through (bloom-lens's `android-engine`, free of
+/// React Native): written beside the runtime, and replaced by the engine's own Gradle project
+/// (`:oxy.so-bloom-lens-engine`) in an app that links `@oxy.so/bloom-lens` (`bloom build`'s
+/// `:bloom-islands`), so its classes are in the app once.
+pub const ENGINE_PACKAGE: &str = "so/oxy/bloom/glassmenu";
+const ENGINE: &[(&str, &str)] = &[
+    (
+        "so/oxy/bloom/glassmenu/backdrop/GlassBackdrop.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/backdrop/GlassBackdrop.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/backdrop/GlassLens.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/backdrop/GlassLens.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/chrome/StaticGlassCache.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/chrome/StaticGlassCache.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/field/GlassFieldTexture.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/field/GlassFieldTexture.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/field/GlassGaussianField.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/field/GlassGaussianField.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/field/GlassShapes.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/field/GlassShapes.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/field/RoundedField.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/field/RoundedField.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/field/RoundedUnion.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/field/RoundedUnion.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/motion/GlassJelly.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/motion/GlassJelly.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/motion/GlassSpring.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/motion/GlassSpring.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/overlay/GlassFeedback.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/overlay/GlassFeedback.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/records/GlassAbsorbRecord.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/records/GlassAbsorbRecord.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/records/GlassMenuConfigRecord.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/records/GlassMenuConfigRecord.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/records/GlassShrinkRecord.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/records/GlassShrinkRecord.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/records/GlassTriggerConfigRecord.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/records/GlassTriggerConfigRecord.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/render/GlassRecipe.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/render/GlassRecipe.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/render/GlassRenderer.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/render/GlassRenderer.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/render/GlassShaders.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/render/GlassShaders.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/render/GlassStill.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/render/GlassStill.kt"
+        ),
+    ),
+    (
+        "so/oxy/bloom/glassmenu/render/GlassSurfaceState.kt",
+        include_str!(
+            "../../../../bloom-lens/android-engine/src/main/java/so/oxy/bloom/glassmenu/render/GlassSurfaceState.kt"
+        ),
+    ),
 ];
 
 /// The versions the project builds with: React Native 0.88's AGP, and Compose and Kotlin
@@ -38,6 +167,7 @@ const COROUTINES: &str = "1.10.2";
 pub fn runtime_sources() -> Vec<crate::Emitted> {
     RUNTIME
         .iter()
+        .chain(ENGINE)
         .map(|(path, text)| crate::Emitted { path: path.into(), text: (*text).to_string() })
         .collect()
 }
@@ -171,7 +301,7 @@ dependencies {{
             "{header}package {id}\n\nimport android.os.Bundle\nimport androidx.activity.ComponentActivity\nimport androidx.activity.compose.setContent\nimport androidx.activity.enableEdgeToEdge\nimport {app_package}.App\nimport so.oxy.bloom.ui.BloomThemeProvider\n\nclass MainActivity : ComponentActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    enableEdgeToEdge()\n    super.onCreate(savedInstanceState)\n    setContent {{ BloomThemeProvider {{ App() }} }}\n  }}\n}}\n"
         ),
     )?;
-    for (path, text) in RUNTIME {
+    for (path, text) in RUNTIME.iter().chain(ENGINE) {
         write(&dir.join("app/src/main/kotlin").join(path), text)?;
     }
     Ok(())
