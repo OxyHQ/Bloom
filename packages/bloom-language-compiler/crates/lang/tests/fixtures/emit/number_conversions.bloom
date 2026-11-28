@@ -1,0 +1,10 @@
+// Swift's numeric initializers: `Int(x)` of a number truncates toward zero, `Double(n)` and
+// `Float(n)` are the number itself, never `none`; `Int(s)` / `Double(s)` of a string are its
+// number or `none`, as before.
+
+public func whole(_ x: Double) -> Int { Int(x) }
+public func asDouble(_ n: Int) -> Double { Double(n) }
+public func asFloat(_ n: Int) -> Float { Float(n) / 2 }
+public func parsedInt(_ s: String) -> Int { Int(s) ?? -1 }
+public func parsedDouble(_ s: String) -> Double { Double(s) ?? 0 }
+public func ratio(_ a: Int, _ b: Int) -> Int { Int(Double(a) / Double(b) * 100) }

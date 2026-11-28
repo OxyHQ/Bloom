@@ -1,0 +1,6 @@
+// Swift's numeric initializers on numbers and on strings.
+
+public func truncatedWhole(_ x: Double) -> Int { Int(x) }
+public func percentOf(_ a: Int, _ b: Int) -> Int { Int(Double(a) / Double(b) * 100) }
+public func halfOf(_ n: Int) -> Double { Double(n) / 2 }
+public func parsedWhole(_ s: String) -> Int { Int(s) ?? -1 }

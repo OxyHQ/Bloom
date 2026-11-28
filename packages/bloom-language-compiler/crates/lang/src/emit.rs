@@ -4063,6 +4063,10 @@ impl<'a> Emitter<'a> {
                 let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
                 value.wrap(&format!("${helper}("), ")")
             }
+            CallRes::Convert { int } => {
+                let value = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
+                if int { value.wrap("Math.trunc(", ")") } else { value }
+            }
             CallRes::Fail => {
                 // Where a value is needed (`c ? x : fail(e)`): a throw as an expression.
                 let mut out = Frag::of("(() => { throw ");

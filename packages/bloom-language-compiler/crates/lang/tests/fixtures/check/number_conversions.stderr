@@ -1,0 +1,7 @@
+error[B0201]: `Int(…)` takes a number or a string, and this is `Bool`
+ --> check/number_conversions.bloom:1:45
+  |
+1 | public func bad(_ flag: Bool) -> Int? { Int(flag) }
+  |                                             ^^^^ not a number or a string
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft
