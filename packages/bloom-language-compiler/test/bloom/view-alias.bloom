@@ -1,0 +1,7 @@
+// A view and a `let` alias of it (Mention's `public let PostItem = PostItemContent`).
+public struct TitleRow: View {
+  let title: String
+  var onOpen: (() -> Unit)? = none
+  var body: some View { Text("row " + title) }
+}
+public let TitleRowAlias = TitleRow

@@ -1700,7 +1700,12 @@ impl<'o> Checker<'o> {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = self.const_value(&c.value, declared.as_ref());
+                    // `public let PostItem = PostItemContent`: the view itself, called as it is
+                    // (its props as named arguments).
+                    let alias = view_alias(file, &c.value).is_some()
+                        && matches!(self.out.types.get(&c.value.id), Some(t) if !matches!(t, Ty::Unknown));
                     let local = match self.lazy_props(&c.value) {
+                        _ if alias => self.declare_unique(&c.name, ty, LocalKind::View),
                         // `let X = lazy(() => import("./X"))`: a component, with the module's props.
                         Some(props) => self.declare_unique(
                             &c.name,
@@ -2922,6 +2927,11 @@ impl<'o> Checker<'o> {
                 ItemKind::View(v) if v.kind == ViewKind::View || v.kind.is_menu() => {
                     let ty = self.view_type(v);
                     self.declare(&v.name, ty, LocalKind::View);
+                }
+                // `public let PostItem = PostItemContent`: the view itself, called as it is.
+                ItemKind::Const(c) if let Some(v) = view_alias(file, &c.value) => {
+                    let ty = self.view_type(v);
+                    self.declare(&c.name, ty, LocalKind::View);
                 }
                 ItemKind::Const(c) => {
                     let ty = match &c.ty {
@@ -7398,6 +7408,17 @@ fn shift_def(def: &Def, offset: usize) -> Def {
         })
     });
     Def { kind, tagged, ..def.clone() }
+}
+
+/// `let Alias = SomeView` where `SomeView` is a view this file declares: that view.
+fn view_alias<'f>(file: &'f File, value: &Expr) -> Option<&'f ViewDecl> {
+    let ExprKind::Name(name) = &value.kind else { return None };
+    file.items.iter().find_map(|item| match &item.kind {
+        ItemKind::View(v) if v.name.name == *name && (v.kind == ViewKind::View || v.kind.is_menu()) => {
+            Some(v)
+        }
+        _ => None,
+    })
 }
 
 /// How `==` compares values of a type (spec 4.3).
