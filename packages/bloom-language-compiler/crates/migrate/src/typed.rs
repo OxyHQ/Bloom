@@ -804,11 +804,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     })
                 }
             }
-            // A string drawn as a child (`{description}`): its text.
+            // A string drawn as a child (`{description}`), or handed where a view is taken (a
+            // local function's `ReactNode` parameter, `row(id, "2h")`): its text.
             ("B0201", _)
                 if (d.message == "expected `View?`, found `String`"
                     || d.message == "expected `View`, found `String`")
-                    && (line_is(source, start, end) || braced(source, start, end)) =>
+                    && (line_is(source, start, end) || braced(source, start, end) || argument(source, start, end)) =>
             {
                 Some((start, end, format!("RawText({text})")))
             }
@@ -1577,6 +1578,13 @@ fn subscript_close(source: &str, open: usize) -> Option<usize> {
 }
 
 /// Whether `start..end` is a builder's only line written inline: `{ rows }`.
+/// Whether `start..end` is a call's argument or a field's value: after `(`, `,` or `:`, and
+/// before `,`, `)` or `}`.
+fn argument(source: &str, start: usize, end: usize) -> bool {
+    source[..start].trim_end().ends_with(['(', ',', ':'])
+        && source[end..].trim_start().starts_with([',', ')', '}'])
+}
+
 fn braced(source: &str, start: usize, end: usize) -> bool {
     source[..start].trim_end().ends_with('{') && source[end..].trim_start().starts_with('}')
 }

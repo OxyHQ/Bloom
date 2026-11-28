@@ -1781,6 +1781,8 @@ impl Tr<'_> {
                 self.scope.types.insert(id.name.to_string(), tid.name.to_string());
             }
             let ty = self.ty(&t.type_annotation);
+            // A `ReactNode` parameter may be given nothing (`row(id, undefined)`), as TS's may.
+            let ty = if ty == "View" && self.is_react_node(&t.type_annotation) { "View?".to_string() } else { ty };
             let declared =
                 if param.optional && param.initializer.is_none() { optional_ty(&ty) } else { ty.clone() };
             self.scope.decl.insert(name.clone(), declared);

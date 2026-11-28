@@ -1,0 +1,17 @@
+// A local function's `ReactNode` parameter is a `View?` (TS's may be given nothing), and a string
+// handed to it is its text (`RawText`).
+
+public struct Rows: View {
+  let names: [String]
+  let when: String
+  func row(_ name: String, _ meta: View?) -> View {
+    HStack {
+      Text(name)
+      if let meta = meta { Text("·") }
+    }
+  }
+
+  var body: some View {
+    VStack(row(names.at(0) ?? "", RawText(when)), row(names.at(1) ?? "", none))
+  }
+}

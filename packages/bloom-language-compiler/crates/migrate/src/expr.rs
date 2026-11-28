@@ -2243,6 +2243,10 @@ impl Tr<'_> {
             // (`crate::typed` writes `none` where a call leaves it out).
             let ty = param.type_annotation.as_ref().map(|t| {
                 let ty = self.ty(&t.type_annotation);
+                // A closure's `ReactNode` parameter may be given nothing (`row(id, undefined)`).
+                if self.is_react_node(&t.type_annotation) && ty == "View" {
+                    return ": View?".to_string();
+                }
                 if param.optional && param.initializer.is_none() {
                     format!(": {}", crate::module::optional_ty(&ty))
                 } else {
