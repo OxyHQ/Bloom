@@ -35,7 +35,7 @@ need (`import protocol SwiftUI.View`, `import struct SwiftUI.State`, …), so an
 
 | Bloom | Kotlin | Swift |
 |---|---|---|
-| `Int` | `Long` (64-bit, overflow traps: `Math.addExact` and friends) | `Int` (traps already) |
+| `Int` | `Long` (64-bit, overflow traps: `Math.addExact` and friends), once the checker pins `Int` to 64 bits; until then the Kotlin backend emits `Int` | `Int` (traps already) |
 | `Double` | `Double` | `Double` |
 | `Bool` | `Boolean` | `Bool` |
 | `String`, `Character` | `String`; `count`, indices and `characters` by grapheme cluster (`BreakIterator`) | `String`, `Character` |
@@ -52,7 +52,7 @@ need (`import protocol SwiftUI.View`, `import struct SwiftUI.State`, …), so an
 | `enum` with payloads | `sealed interface` with `data object` / `data class` cases | `enum` with associated values |
 | `protocol P` | `interface P`; `P & Q` is a generic bound `where T : P, T : Q` | `protocol P`; `P & Q` |
 | `any P` | `P` | `any P` |
-| `func f(of x: T)` | `fun f(of: T)`: the argument label is Kotlin's parameter name; label overloads that clash on the JVM get a mangled JVM name (`@JvmName`), never a different Kotlin name | `func f(of x: T)` |
+| `func f(of x: T)` | `fun f(of: T)`: the argument label is Kotlin's parameter name. Kotlin does not overload on parameter names, so overloads that differ only in labels (`move(to:)`, `move(by:)`) take the labels into the Kotlin name (`move_to`, `move_by`), chosen at each call from the checker's resolution | `func f(of x: T)` |
 | `async` | `suspend` | `async` |
 | `actor` | `class` whose public members run on its own `limitedParallelism(1)` dispatcher | `actor` |
 | `Binding<T>` | `so.oxy.bloom.std.Binding<T>` (`get`, `set`, `value`) | `Binding<T>` |
