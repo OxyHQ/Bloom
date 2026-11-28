@@ -1,0 +1,12 @@
+export interface Draft {
+  readonly q: string;
+  readonly cursor?: string | undefined;
+}
+export interface Page<T> {
+  readonly items: readonly T[];
+  readonly more: boolean;
+}
+export declare function searched(draft: Draft, text: string): Draft;
+export declare function cleared(draft: Draft): string;
+export declare function ended(page: Page<number>): Page<number>;
+export declare function tagged(draft: Draft): string;

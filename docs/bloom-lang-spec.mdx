@@ -309,7 +309,11 @@ JS object spread; an optional patch (`Partial<S>?`) spreads the same way. A fiel
 default is `none` that a construction leaves out (or gives as `none`) is left out of the
 object, as TS's `x?: T` is: `QueryOptions(queryKey: k, queryFn: f)` is `{ queryKey: k,
 queryFn: f }`, never `{ staleTime: undefined, … }`, which overrides a library's default where
-it merges `{ ...defaults, ...options }`. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+it merges `{ ...defaults, ...options }`. The record literal `{ ..p, likes: false }` is the same
+copy-and-change: a key written after the spread replaces the spread's field (JS's
+`{ ...p, likes: false }`, Rust's struct update), only a key written twice is B0208, and when the
+first entry spreads a struct and every key written is one of its fields, the literal is that
+struct, each key checked against its field's type, with or without an expected type. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
 exhaustive `match` on a fieldless enum maps a key to a field.
 
 ### 4.5 Enums, Option and Result

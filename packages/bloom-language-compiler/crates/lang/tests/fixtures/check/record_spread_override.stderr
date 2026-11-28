@@ -1,0 +1,15 @@
+error[B0208]: `q` is given twice
+ --> check/record_spread_override.bloom:9:33
+  |
+9 |   let next = { ..draft, q: "a", q: "b" }
+  |                                 ^ a record has each key once
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `String`, found `Int`
+  --> check/record_spread_override.bloom:14:28
+   |
+14 |   let next = { ..draft, q: 1 }
+   |                            ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

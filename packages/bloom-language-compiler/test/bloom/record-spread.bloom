@@ -1,0 +1,15 @@
+/// Copy-and-change: a key written after `..base` replaces base's field.
+public struct Draft: Equatable {
+  var q: String
+  var cursor: String? = none
+}
+
+public func searched(_ draft: Draft, _ text: String) -> Draft {
+  let next = { ..draft, q: text, cursor: none }
+  return next
+}
+
+public func paged(_ draft: Draft, _ cursor: String) -> Draft {
+  let next = { ..draft, cursor: cursor }
+  return next
+}
