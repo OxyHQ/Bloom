@@ -44,6 +44,7 @@ cat > "$out/tsconfig.json" <<JSON
     "types": ["node"],
     "paths": {
       "@oxy.so/bloom-language": ["$repo/packages/bloom-language/src/index.ts"],
+      "@oxy.so/bloom-language/*": ["$repo/packages/bloom-language/src/entries/*.ts"],
       "@oxy.so/bloom/icons/*": ["$repo/src/icons/remix/*"]
     }
   },
