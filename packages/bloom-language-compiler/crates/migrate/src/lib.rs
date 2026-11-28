@@ -250,7 +250,18 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
         }
     };
     let _ = notes;
-    let compiled = bloom_lang::compile(&bloom, &target, options);
+    let mut bloom = bloom;
+    let mut compiled = bloom_lang::compile(&bloom, &target, options);
+    // A string's JS length and offsets are its UTF-16 units: `s.utf16.count`, `s.utf16.slice(…)`.
+    if let Some(units) = typed::utf16_units(&bloom, &target, options)
+        && let Ok(reformatted) = bloom_fmt::format(&units, &target)
+    {
+        let again = bloom_lang::compile(&reformatted, &target, options);
+        if again.diagnostics.len() <= compiled.diagnostics.len() {
+            bloom = reformatted;
+            compiled = again;
+        }
+    }
     let mut reasons: Vec<Reason> = compiled
         .diagnostics
         .iter()
@@ -273,8 +284,6 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     }
     // i18next's `t("k")` as `String(localized: "k")`, string tokens as typed ones (`.padding("md")` → `.padding(.md)`), then SwiftUI's names
     // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
-    let mut bloom = bloom;
-    let mut compiled = compiled;
     let passes: [Pass; 7] = [
         // TS's `unknown` by the stdlib's name for it (`JSONValue` is `Foreign<"unknown">`).
         &|text| {

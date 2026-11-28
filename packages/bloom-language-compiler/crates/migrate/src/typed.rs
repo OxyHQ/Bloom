@@ -1739,6 +1739,45 @@ pub fn foreign_js_names(source: &str, filename: &str, options: &bloom_lang::Opti
     Some(out)
 }
 
+/// JS's string lengths and offsets are UTF-16 units, Bloom's `String` counts characters (as
+/// Swift's does): `count`, `slice(…)` and `paddingStart`/`paddingEnd` (the codemod's spellings of
+/// `length`, `slice`/`substring` and `padStart`/`padEnd`) on a receiver bloomc types `String` read
+/// its `utf16` view, which keeps JS's exact semantics and costs nothing (the lead's decision).
+pub fn utf16_units(source: &str, filename: &str, options: &bloom_lang::Options) -> Option<String> {
+    const MEMBERS: &[&str] = &["count", "slice(", "paddingStart(", "paddingEnd("];
+    let checked = bloom_lang::check(source, filename, options);
+    let mut ends: HashMap<usize, &str> = HashMap::new();
+    for (span, ty) in &checked.types {
+        ends.entry(span.end as usize).or_insert(ty.as_str());
+    }
+    let mut at_dots: Vec<usize> = Vec::new();
+    for member in MEMBERS {
+        for (at, _) in source.match_indices(&format!(".{member}")) {
+            let end = at + 1 + member.len();
+            if !member.ends_with('(') && source[end..].starts_with(|c: char| c.is_alphanumeric() || c == '_')
+            {
+                continue;
+            }
+            if source[..at].ends_with(".utf16") || source[..at].ends_with(".utf16?") {
+                continue;
+            }
+            let receiver_end = if source[..at].ends_with('?') { at - 1 } else { at };
+            if ends.get(&receiver_end).is_some_and(|ty| matches!(*ty, "String" | "String?")) {
+                at_dots.push(at);
+            }
+        }
+    }
+    if at_dots.is_empty() {
+        return None;
+    }
+    at_dots.sort_unstable_by(|a, b| b.cmp(a));
+    let mut out = source.to_string();
+    for at in at_dots {
+        out.insert_str(at, ".utf16");
+    }
+    Some(out)
+}
+
 /// `Boolean(x)`'s `!!x` as `x` where bloomc types `x` a `Bool`. Where it types `x` a TS value it
 /// could not type (`Foreign`), `!!x` stays JS's truthiness: jobs/[id]'s
 /// `enabled: Boolean(job?.employerOxyUserId)` is not the id string handed to `enabled`.

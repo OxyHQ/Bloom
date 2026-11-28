@@ -12,7 +12,7 @@ public struct Communities: View {
   var body: some View {
     if !((communities == none) || communities.count == 0) {
       // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
-      VStack { for (index, c) in communities!.enumerated() { Text(c.name).id(c.id || "\(index)") } }
+      VStack { for (index, c) in communities.enumerated() { Text(c.name).id(c.id || "\(index)") } }
     }
   }
 }

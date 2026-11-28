@@ -12,7 +12,7 @@ private func isPast(_ at: String) -> Bool {
 
 private func dayKey() -> String {
   let now = Date.now
-  let month = "\(now.components().month)".paddingStart(to: 2, with: "0")
+  let month = "\(now.components().month)".utf16.paddingStart(to: 2, with: "0")
   "\(now.components().year)-\(month)-\(now.components().day)"
 }
 
