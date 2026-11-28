@@ -1,0 +1,3 @@
+# `.bloom` modules load through Bloom's compiler (scripts/bloom-loader.ts).
+[test]
+preload = ["./scripts/bloom-loader.ts"]

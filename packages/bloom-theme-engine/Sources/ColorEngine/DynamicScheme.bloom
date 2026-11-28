@@ -1,0 +1,93 @@
+// Bloom's colour engine, in Bloom: variants, the dynamic scheme and the dislike analyzer
+// (src/theme/color-engine/variant.ts, dynamic-scheme.ts, dislike-analyzer.ts).
+
+/// The families of dynamic scheme (Material Color Utilities' numbering, in order).
+public enum Variant {
+  case monochrome
+  case neutral
+  case tonalSpot
+  case vibrant
+  case expressive
+  case fidelity
+  case content
+  case rainbow
+  case fruitSalad
+}
+
+/// The five tonal palettes a variant derives from the seed, plus error, and the dark mode and
+/// contrast level a role reads to resolve into a colour.
+public final class DynamicScheme {
+  public let sourceColorArgb: Int
+  public let variant: Variant
+  public let contrastLevel: Double
+  public let isDark: Bool
+  public let sourceColorHct: Hct
+  public let primaryPalette: TonalPalette
+  public let secondaryPalette: TonalPalette
+  public let tertiaryPalette: TonalPalette
+  public let neutralPalette: TonalPalette
+  public let neutralVariantPalette: TonalPalette
+  public let errorPalette: TonalPalette
+
+  public init(
+    sourceColorArgb: Int,
+    variant: Variant,
+    contrastLevel: Double,
+    isDark: Bool,
+    primaryPalette: TonalPalette,
+    secondaryPalette: TonalPalette,
+    tertiaryPalette: TonalPalette,
+    neutralPalette: TonalPalette,
+    neutralVariantPalette: TonalPalette,
+  ) {
+    self.sourceColorArgb = sourceColorArgb
+    self.variant = variant
+    self.contrastLevel = contrastLevel
+    self.isDark = isDark
+    self.sourceColorHct = hctFromInt(sourceColorArgb)
+    self.primaryPalette = primaryPalette
+    self.secondaryPalette = secondaryPalette
+    self.tertiaryPalette = tertiaryPalette
+    self.neutralPalette = neutralPalette
+    self.neutralVariantPalette = neutralVariantPalette
+    self.errorPalette = tonalPaletteFromHueAndChroma(25.0, 84.0)
+  }
+
+  /// The ARGB of `role` in this scheme.
+  public func getArgb(_ role: ColorRole) -> Int { roleArgb(role, self) }
+
+  /// The HCT of `role` in this scheme.
+  public func getHct(_ role: ColorRole) -> Hct { roleHct(role, self) }
+}
+
+/// The seed hue rotated by the amount of the hue band it falls in (`hues` and `rotations` are
+/// the same length: the variants' constant tables).
+public func getRotatedHue(_ sourceColor: Hct, _ hues: [Double], _ rotations: [Double]) -> Double {
+  let sourceHue = sourceColor.hue
+  if rotations.count == 1 { return sanitizeDegreesDouble(sourceColor.hue + rotations[0]) }
+  let size = hues.count
+  var i = 0
+  while i <= size - 2 {
+    let thisHue = hues[i]
+    let nextHue = hues[i + 1]
+    let rotation = rotations[i]
+    if thisHue < sourceHue && sourceHue < nextHue {
+      return sanitizeDegreesDouble(sourceHue + rotation)
+    }
+    i += 1
+  }
+  return sourceHue
+}
+
+/// Whether `hct` is a dark yellow-green that reads as bile.
+public func isDisliked(_ hct: Hct) -> Bool {
+  let huePasses = hct.hue.rounded() >= 90 && hct.hue.rounded() <= 111
+  let chromaPasses = hct.chroma.rounded() > 16
+  let tonePasses = hct.tone.rounded() < 65
+  return huePasses && chromaPasses && tonePasses
+}
+
+/// `hct` with its tone raised to 70 when it is disliked.
+public func fixIfDisliked(_ hct: Hct) -> Hct {
+  isDisliked(hct) ? hctFrom(hct.hue, hct.chroma, 70.0) : hct
+}

@@ -14,8 +14,11 @@ fun String.slice(start: Long, end: Long = length.toLong()): String {
 
 // ---- Numbers -----------------------------------------------------------------------------
 
-/** JavaScript's `Math.round`: half toward +infinity. */
-fun Double.rounded(): Long = Math.floor(this + 0.5).toLong()
+/**
+ * JavaScript's `Math.round`: half toward +infinity. `Math.round` is exact where `floor(x + 0.5)`
+ * is not (0.49999999999999994, odd integers above 2^52).
+ */
+fun Double.rounded(): Long = Math.round(this)
 
 fun Double.floor(): Long = Math.floor(this).toLong()
 
@@ -42,6 +45,14 @@ fun Double.clamped(lo: Double, hi: Double): Double = coerceIn(lo, hi)
 fun Long.clamp(lo: Long, hi: Long): Long = coerceIn(lo, hi)
 
 fun Double.clamp(lo: Double, hi: Double): Double = coerceIn(lo, hi)
+
+// ---- Ranges ------------------------------------------------------------------------------
+
+/** Swift's `ClosedRange.lowerBound` (`0...3` is Kotlin's `0L..3L`). */
+val <T : Comparable<T>> kotlin.ranges.ClosedRange<T>.lowerBound: T get() = start
+
+/** Swift's `ClosedRange.upperBound`. */
+val <T : Comparable<T>> kotlin.ranges.ClosedRange<T>.upperBound: T get() = endInclusive
 
 // ---- Lists -------------------------------------------------------------------------------
 
@@ -71,10 +82,18 @@ fun <T> List<T>.appending(element: T): List<T> = ArrayList<T>(size + 1).also { i
 fun <T> List<T>.inserting(element: T, at: Long): List<T> =
   ArrayList(this).also { it.add(at.toInt().coerceIn(0, size), element) }
 
+
+
 fun <T> List<T>.removing(at: Long): List<T> =
   if (at in 0 until size) ArrayList(this).also { it.removeAt(at.toInt()) } else this
 
 // ---- Dictionaries and sets ---------------------------------------------------------------
+
+/** `Map()`, `Map<K, V>()`: an empty map (JavaScript's `new Map`), insertion-ordered. */
+fun <K, V> Map(): Map<K, V> = LinkedHashMap()
+
+/** `Map(entries)`. */
+fun <K, V> Map(entries: List<Pair<K, V>>): Map<K, V> = LinkedHashMap<K, V>().also { m -> entries.forEach { m[it.first] = it.second } }
 
 fun <K, V> Map<K, V>.setting(key: K, value: V): Map<K, V> = LinkedHashMap(this).also { it[key] = value }
 

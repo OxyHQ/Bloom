@@ -18,7 +18,7 @@ data class Tagged(
 
 fun tagged(tags: List<String>, run: (String) -> Unit): Tagged {
   var handlers: MutableMap<String, () -> Unit> = mutableMapOf()
-  val add = { tag -> 
+  val add = { tag: String -> 
     handlers[tag] = { run(tag) }
     return tag
 }

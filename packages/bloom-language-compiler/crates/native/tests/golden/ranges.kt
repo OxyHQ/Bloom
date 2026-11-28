@@ -14,7 +14,7 @@ fun total(n: Long): Long {
   for (i in 0L ..< n) {
     sum = sum + i
   }
-  for (i in 1L ... n) {
+  for (i in 1L .. n) {
     sum = sum + i
   }
   for (_ in 0L ..< 3L) {
@@ -58,7 +58,7 @@ inline fun Dots(count: Long, modifier: Modifier = Modifier) {
 @Composable
 inline fun Stars(rating: Long, modifier: Modifier = Modifier) {
   HStack(modifier = modifier) {
-    for (_ in 1L ... rating) {
+    for (_ in 1L .. rating) {
       Text("*")
     }
   }

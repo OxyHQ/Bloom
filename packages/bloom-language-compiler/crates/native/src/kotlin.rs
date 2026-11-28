@@ -2863,7 +2863,19 @@ impl<'a> Emitter<'a> {
         let shorthand = !c.has_in && c.params.len() == 1 && c.params[0].name.name == "$0";
         let saved = self.shorthand_it;
         self.shorthand_it = shorthand;
-        let params: Vec<String> = c.params.iter().map(|q| kw(&q.name.name.replace('$', "p"))).collect();
+        // A parameter's written type is kept (`{ (name: String) -> String in … }` is
+        // `{ name: String -> … }`): a lambda held in a `val` has no expected type to infer it from.
+        let params: Vec<String> = c
+            .params
+            .iter()
+            .map(|q| {
+                let name = kw(&q.name.name.replace('$', "p"));
+                match &q.ty {
+                    Some(t) if !c.tuple => format!("{name}: {}", self.ty(t)),
+                    _ => name,
+                }
+            })
+            .collect();
         let head = if shorthand || params.is_empty() {
             String::new()
         } else if c.tuple {
@@ -3079,6 +3091,8 @@ impl<'a> Emitter<'a> {
                 let (a, b) = (self.expr(a), self.expr(b));
                 let op = match op {
                     BinaryOp::Default => "?:",
+                    // Swift's closed range `a...b` is Kotlin's `a..b` (`..<` is the same in both).
+                    BinaryOp::Closed => "..",
                     other => other.text(),
                 };
                 format!("{a} {op} {b}")

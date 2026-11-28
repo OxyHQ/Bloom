@@ -1,0 +1,37 @@
+// Bloom's colour engine, in Bloom: HCT, hue, chroma and tone (src/theme/color-engine/hct.ts).
+//
+// CAM16 hue and chroma with L* as tone: a perceptually even lightness axis (a tone difference of
+// 40 guarantees a 3:1 contrast ratio, 50 guarantees 4.5:1). A value: the TypeScript's setters
+// (`hct.tone = t`) are `with` copies here (`hct.withTone(t)`), which solve the same colour.
+
+public struct Hct: Equatable {
+  public let argb: Int
+  public let hue: Double
+  public let chroma: Double
+  public let tone: Double
+
+  /// The ARGB colour.
+  public func toInt() -> Int { argb }
+
+  /// The colour with this one's chroma and tone at `newHue`.
+  public func withHue(_ newHue: Double) -> Hct { hctFromInt(solveToInt(newHue, chroma, tone)) }
+
+  /// The colour with this one's hue and tone at `newChroma`.
+  public func withChroma(_ newChroma: Double) -> Hct {
+    hctFromInt(solveToInt(hue, newChroma, tone))
+  }
+
+  /// The colour with this one's hue and chroma at `newTone`.
+  public func withTone(_ newTone: Double) -> Hct { hctFromInt(solveToInt(hue, chroma, newTone)) }
+}
+
+/// An HCT colour from hue (degrees), chroma and tone (L*, 0–100).
+public func hctFrom(_ hue: Double, _ chroma: Double, _ tone: Double) -> Hct {
+  hctFromInt(solveToInt(hue, chroma, tone))
+}
+
+/// An ARGB colour as HCT.
+public func hctFromInt(_ argb: Int) -> Hct {
+  let cam = cam16FromInt(argb)
+  return Hct(argb: argb, hue: cam.hue, chroma: cam.chroma, tone: lstarFromArgb(argb))
+}

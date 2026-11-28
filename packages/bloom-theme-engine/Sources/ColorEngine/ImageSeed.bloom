@@ -1,0 +1,133 @@
+// Bloom's colour engine, in Bloom: a seed from an image, the parts that are not the Wu quantizer
+// (src/theme/color-engine/score.ts, lab-point-provider.ts, and seed-from-image.ts' assignment of
+// each colour to its nearest representative). The quantizer itself (quantizer-wu.ts,
+// quantizer-map.ts) needs arrays written in place, which Bloom does not have yet (a question for
+// the compiler): it is the TypeScript's until it does.
+
+/// An ARGB colour as an L*a*b* point.
+public func labFromInt(_ argb: Int) -> Vec3 { labFromArgb(argb) }
+
+/// An L*a*b* point as an ARGB colour.
+public func intFromLab(_ point: Vec3) -> Int { argbFromLab(point.x, point.y, point.z) }
+
+/// The squared Euclidean distance in L*a*b*.
+public func labDistance(_ from: Vec3, _ to: Vec3) -> Double {
+  let dL = from.x - to.x
+  let dA = from.y - to.y
+  let dB = from.z - to.z
+  return dL * dL + dA * dA + dB * dB
+}
+
+/// Each colour's population given to its nearest representative in L*a*b* (the first nearest on
+/// a tie): seed-from-image.ts' `quantizeImage` after `quantizeWu`, deterministic. `counts` is the
+/// image's opaque colours and their counts, in first-seen order.
+public func assignToRepresentatives(
+  _ representatives: [Int],
+  _ counts: Map<Int, Int>,
+) -> Map<Int, Int> {
+  if representatives.isEmpty { return Map() }
+  let repPoints = representatives.map { r in labFromInt(r) }
+  var populations: [Int] = representatives.map { _ in 0 }
+  for (pixel, count) in counts.entries {
+    let point = labFromInt(pixel)
+    var best = 0
+    var bestDistance = Double.infinity
+    for i in 0..<repPoints.count {
+      let d = labDistance(point, repPoints[i])
+      if d < bestDistance {
+        bestDistance = d
+        best = i
+      }
+    }
+    populations[best] = populations[best] + count
+  }
+  var result: Map<Int, Int> = Map()
+  for i in 0..<representatives.count {
+    if populations[i] > 0 { result = result.setting(representatives[i], populations[i]) }
+  }
+  return result
+}
+
+let TARGET_CHROMA = 48.0
+let WEIGHT_PROPORTION = 0.7
+let WEIGHT_CHROMA_ABOVE = 0.3
+let WEIGHT_CHROMA_BELOW = 0.1
+let CUTOFF_CHROMA = 5.0
+let CUTOFF_EXCITED_PROPORTION = 0.01
+
+/// How a palette is ranked: how many seeds, the colour when none qualifies, and whether colours
+/// too grey or too rare are left out.
+public struct ScoreOptions: Equatable {
+  public var desired: Int = 4
+  public var fallbackColorARGB: Int = 4282549748
+  public var filter: Bool = true
+}
+
+struct ScoredHct {
+  let hct: Hct
+  let score: Double
+}
+
+/// Quantized colours and their populations ranked as theme seeds, best first, de-duplicated by
+/// hue: a hue well represented in the image and chromatic enough for an accent wins.
+public func score(
+  _ colorsToPopulation: Map<Int, Int>,
+  _ options: ScoreOptions = ScoreOptions(),
+) -> [Int] {
+  let desired = options.desired
+  var colorsHct: [Hct] = []
+  var huePopulation: [Int] = (0..<360).map { _ in 0 }
+  var populationSum = 0
+  for (argb, population) in colorsToPopulation.entries {
+    let hct = hctFromInt(argb)
+    colorsHct = colorsHct.appending(hct)
+    let hueIndex = hct.hue.floor()
+    huePopulation[hueIndex] = huePopulation[hueIndex] + population
+    populationSum += population
+  }
+
+  var hueExcitedProportions: [Double] = (0..<360).map { _ in 0.0 }
+  for hue in 0..<360 {
+    let proportion = huePopulation[hue].toFloat() / populationSum.toFloat()
+    for i in (hue - 14)..<(hue + 16) {
+      let index = sanitizeDegreesInt(i)
+      hueExcitedProportions[index] = hueExcitedProportions[index] + proportion
+    }
+  }
+
+  var scoredHct: [ScoredHct] = []
+  for hct in colorsHct {
+    let hue = sanitizeDegreesInt(hct.hue.rounded())
+    let proportion = hueExcitedProportions[hue]
+    if options.filter && (hct.chroma < CUTOFF_CHROMA || proportion <= CUTOFF_EXCITED_PROPORTION) {
+      continue
+    }
+    let proportionScore = proportion * 100.0 * WEIGHT_PROPORTION
+    let chromaWeight = hct.chroma < TARGET_CHROMA ? WEIGHT_CHROMA_BELOW : WEIGHT_CHROMA_ABOVE
+    let chromaScore = (hct.chroma - TARGET_CHROMA) * chromaWeight
+    scoredHct = scoredHct.appending(ScoredHct(hct: hct, score: proportionScore + chromaScore))
+  }
+  let ranked = scoredHct.sorted(by: { a, b in a.score > b.score })
+
+  var chosenColors: [Hct] = []
+  var differenceLimit = 90
+  while differenceLimit >= 15 {
+    chosenColors = []
+    for entry in ranked {
+      let hct = entry.hct
+      let duplicateHue = chosenColors.find {
+        chosen in
+        differenceDegrees(hct.hue, chosen.hue) < differenceLimit.toFloat()
+      }
+      if duplicateHue == none { chosenColors = chosenColors.appending(hct) }
+      if chosenColors.count >= desired { break }
+    }
+    if chosenColors.count >= desired { break }
+    differenceLimit -= 1
+  }
+
+  var colors: [Int] = []
+  if chosenColors.isEmpty { colors = colors.appending(options.fallbackColorARGB) }
+  for chosen in chosenColors { colors = colors.appending(chosen.toInt()) }
+  return colors
+}

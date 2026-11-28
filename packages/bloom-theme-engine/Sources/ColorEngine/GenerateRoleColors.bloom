@@ -1,0 +1,85 @@
+// Bloom's colour engine, in Bloom: the dynamic-theming entry point
+// (src/theme/color-engine/generate-role-colors.ts). Any seed colour to the full role set; presets
+// are fixed seeds, and a picked colour or one from artwork works the same.
+
+public struct GenerateOptions: Equatable {
+  /// The seed colour, `#rrggbb`.
+  public let seed: String
+  public var variant: SchemeVariant = SchemeVariant.vibrant
+  public var isDark: Bool = false
+  /// -1 (low), 0 (normal), 1 (high).
+  public var contrastLevel: Double = 0.0
+  /// A secondary-accent seed, `#rrggbb`: the secondary palette takes its hue and chroma.
+  public var secondarySeed: String? = none
+  /// A tertiary-accent seed, `#rrggbb`.
+  public var tertiarySeed: String? = none
+}
+
+/// A theme solves the same seed several times (tokens, scope variables, the theme object); an
+/// ambient seed that changes per artwork only churns the bounded tail.
+let ROLE_COLORS_CACHE_LIMIT = 128
+private var roleColorsCache: Map<String, [String: String]> = Map()
+
+/// The full role set of a seed, each role as `rgb(r g b)`, keyed by its name, in `ColorRole` order.
+public func generateRoleColors(_ opts: GenerateOptions) -> [String: String] {
+  let key = cacheKey(opts)
+  if let hit = roleColorsCache.get(key) {
+    // Recency: a map iterates in insertion order, so a hit is inserted again.
+    roleColorsCache = roleColorsCache.removing(key).setting(key, hit)
+    return hit
+  }
+  let roles = solveRoleColors(opts)
+  roleColorsCache = roleColorsCache.setting(key, roles)
+  if roleColorsCache.count > ROLE_COLORS_CACHE_LIMIT {
+    if let oldest = roleColorsCache.keys.first {
+      roleColorsCache = roleColorsCache.removing(oldest)
+    }
+  }
+  return roles
+}
+
+func variantName(_ v: SchemeVariant) -> String {
+  switch v {
+  case .vivid:
+    return "vivid"
+  case .vibrant:
+    return "vibrant"
+  case .expressive:
+    return "expressive"
+  case .tonalSpot:
+    return "tonalSpot"
+  case .neutral:
+    return "neutral"
+  case .monochrome:
+    return "monochrome"
+  }
+}
+
+func cacheKey(_ o: GenerateOptions) -> String {
+  let dark = o.isDark ? "1" : "0"
+  return "\(o.seed.lowercased())|\(variantName(o.variant))|\(dark)|\(o.contrastLevel)|\(o.secondarySeed?.lowercased() ?? "")|\(o.tertiarySeed?.lowercased() ?? "")"
+}
+
+func solveRoleColors(_ opts: GenerateOptions) -> [String: String] {
+  var accents = AccentSources()
+  if let secondary = opts.secondarySeed {
+    accents.secondarySource = hctFromInt(argbFromHex(secondary))
+  }
+  if let tertiary = opts.tertiarySeed { accents.tertiarySource = hctFromInt(argbFromHex(tertiary)) }
+  let scheme = buildScheme(
+    opts.variant,
+    hctFromInt(argbFromHex(opts.seed)),
+    opts.isDark,
+    opts.contrastLevel,
+    accents,
+  )
+  var out: [String: String] = [:]
+  for role in ColorRole.allCases {
+    let argb = roleArgb(role, scheme)
+    out = out.setting(
+      "\(role)",
+      "rgb(\(redFromArgb(argb)) \(greenFromArgb(argb)) \(blueFromArgb(argb)))",
+    )
+  }
+  return out
+}

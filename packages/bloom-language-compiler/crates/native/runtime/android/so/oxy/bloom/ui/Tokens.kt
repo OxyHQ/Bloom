@@ -12,6 +12,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import bloom.bloomthemeengine.colorengine.SeedThemeOptions
+import bloom.bloomthemeengine.colorengine.seedTokens
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
@@ -63,9 +65,17 @@ fun BloomThemeProvider(
   preset: String = DEFAULT_PRESET,
   dark: Boolean = isSystemInDarkTheme(),
   colors: Map<String, Long>? = null,
+  seed: String? = null,
+  secondarySeed: String? = null,
+  tertiarySeed: String? = null,
   content: @Composable () -> Unit,
 ) {
-  val base = BloomPresets.palette(preset, dark) ?: BloomTheme.defaultPalette(dark)
+  val preset0 = BloomPresets.palette(preset, dark) ?: BloomTheme.defaultPalette(dark)
+  // A seed's theme (a colour the person picked, an ambient accent), resolved on the device by
+  // Bloom's colour engine, the one the TypeScript engine's goldens hold.
+  val base = if (seed == null) preset0 else remember(preset0, seed, secondarySeed, tertiarySeed, dark) {
+    preset0.with(seedPaletteColors(seed, dark, secondarySeed, tertiarySeed))
+  }
   // A theme resolved elsewhere (an island's host app: its accents, seed or ambient colour) wins
   // over the preset's own colours, token by token.
   val palette = if (colors.isNullOrEmpty()) base else remember(base, colors) { base.with(colors) }
@@ -78,6 +88,31 @@ fun BloomThemeProvider(
     LocalBacking provides colors?.get("backing")?.let { Color(it) },
     content = content,
   )
+}
+
+
+/**
+ * A seed's palette colours by field name (`--primary-foreground` → `primaryForeground`), from the
+ * colour engine's `seedTokens` (`packages/bloom-theme-engine`, `SeedTheme.bloom`).
+ */
+fun seedPaletteColors(seed: String, dark: Boolean, secondarySeed: String? = null, tertiarySeed: String? = null): Map<String, Long> {
+  val tokens: Map<String, String> = seedTokens(
+    SeedThemeOptions(
+      seed = seed,
+      isDark = dark,
+      secondarySeed = secondarySeed,
+      tertiarySeed = tertiarySeed,
+    ),
+  )
+  val out = HashMap<String, Long>()
+  for ((token, value) in tokens) {
+    val argb = parseCssColor(value) ?: continue
+    val name = token.removePrefix("--").split('-').mapIndexed { i, part ->
+      if (i == 0) part else part.replaceFirstChar { it.uppercase() }
+    }.joinToString("")
+    out[name] = argb
+  }
+  return out
 }
 
 /**
