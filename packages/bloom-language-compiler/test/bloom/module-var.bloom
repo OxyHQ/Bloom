@@ -1,0 +1,11 @@
+/// A file-scope `private var`, read and written by the file's functions and closures.
+private var count = 0
+private var onTick: (() -> Unit)? = none
+
+public func bump() -> Int {
+  count += 1
+  onTick?()
+  return count
+}
+
+public func listen(_ f: () -> Unit) { onTick = f }

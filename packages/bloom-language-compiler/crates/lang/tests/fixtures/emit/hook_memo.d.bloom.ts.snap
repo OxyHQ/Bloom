@@ -4,7 +4,7 @@ export interface Tagged {
   readonly title: string;
   readonly tags: readonly string[];
 }
-export declare function useTaggedRow(item: Tagged, givenIsNested?: boolean | undefined | null, onOpen?: (() => void) | undefined | null): { heading: string; summary: string; label: string; open: () => undefined | undefined; longest: string; first: string; rest: number; top: number };
+export declare function useTaggedRow(item: Tagged, givenIsNested?: boolean | undefined | null, onOpen?: (() => void) | undefined | null): { heading: string; summary: string; label: string; open: () => void; longest: string; first: string; rest: number; top: number };
 export interface TaggedRowProps {
   readonly item: Tagged;
   readonly onOpen?: (() => void) | undefined | null;

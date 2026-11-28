@@ -92,6 +92,7 @@ pub fn derive(item: &Item, names: &mut BTreeSet<String>, diagnostics: &mut Vec<D
         visibility: item.visibility,
         modifiers: Modifiers::default(),
         kind: ItemKind::Const(ConstDecl {
+            mutable: false,
             name: Ident { name: crate::extensions::mangle(ty, "store", true), span },
             ty: Some(store_ty),
             value,

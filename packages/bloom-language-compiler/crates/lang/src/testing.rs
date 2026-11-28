@@ -109,6 +109,7 @@ pub fn lower(file: &mut File, source: &str, allowed: bool) -> Vec<Diagnostic> {
             visibility: Visibility::Private,
             modifiers: Modifiers::default(),
             kind: ItemKind::Const(ConstDecl {
+                mutable: false,
                 name: Ident { name: format!("__registered{count}"), span },
                 ty: None,
                 value: register,

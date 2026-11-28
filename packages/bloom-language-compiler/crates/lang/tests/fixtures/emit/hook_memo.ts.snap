@@ -14,7 +14,7 @@ function describe(tags: readonly string[]): string {
 return tags.join(", ");
 }
 
-export function useTaggedRow(item: Tagged, givenIsNested: boolean | undefined = undefined, onOpen: (() => void) | undefined = undefined): { heading: string; summary: string; label: string; open: () => undefined | undefined; longest: string; first: string; rest: number; top: number } {
+export function useTaggedRow(item: Tagged, givenIsNested: boolean | undefined = undefined, onOpen: (() => void) | undefined = undefined): { heading: string; summary: string; label: string; open: () => void; longest: string; first: string; rest: number; top: number } {
 "use no memo";
 const $ = $c(11);
 const isNested = givenIsNested ?? false;
@@ -47,9 +47,7 @@ let open;
 if ($[5] !== isNested || $[6] !== onOpen) {
 open = () => {
 if (!isNested) {
-const $t0 = onOpen;
-if ($t0 == null) return undefined;
-return ($t0)();
+onOpen?.();
 }
 };
 $[5] = isNested;
@@ -59,7 +57,7 @@ $[7] = open;
 open = $[7];
 }
 let longest: string;
-let $t1;
+let $t0;
 if ($[8] !== item.tags) {
 longest = (() => {
 let best = "";
@@ -70,15 +68,15 @@ best = tag;
 }
 return (best.length === 0) ? fallback : best;
 })();
-$t1 = [item.tags[0] ?? fallback, item.tags.length - 1] as const;
+$t0 = [item.tags[0] ?? fallback, item.tags.length - 1] as const;
 $[8] = item.tags;
 $[9] = longest;
-$[10] = $t1;
+$[10] = $t0;
 } else {
 longest = $[9];
-$t1 = $[10];
+$t0 = $[10];
 }
-const [first, rest] = $t1;
+const [first, rest] = $t0;
 return { heading: heading, summary: summary, label: label, open: open, longest: longest, first: first, rest: rest, top: insets.top };
 }
 
@@ -91,9 +89,9 @@ export const TaggedRow = view(function TaggedRow(props: TaggedRowProps) {
 const $ = $c(15);
 const { item, onOpen = undefined } = props;
 const row = useTaggedRow(item, undefined, onOpen);
-let $t2;
+let $t1;
 if ($[7] !== row.label || $[8] !== row.open || $[9] !== row.summary || $[10] !== row.longest || $[11] !== row.first || $[12] !== row.rest || $[13] !== row.top) {
-$t2 = VStack(($[0] !== row.label || $[1] !== row.open ? ($[0] = row.label, $[1] = row.open, $[2] = Button(Text(row.label)).onPress(row.open)) : $[2]), Text(row.summary), ($[3] !== row.longest || $[4] !== row.first || $[5] !== row.rest ? ($[3] = row.longest, $[4] = row.first, $[5] = row.rest, $[6] = Text(`${row.longest}, ${row.first} +${row.rest}`)) : $[6])).padding("top", row.top);
+$t1 = VStack(($[0] !== row.label || $[1] !== row.open ? ($[0] = row.label, $[1] = row.open, $[2] = Button(Text(row.label)).onPress(row.open)) : $[2]), Text(row.summary), ($[3] !== row.longest || $[4] !== row.first || $[5] !== row.rest ? ($[3] = row.longest, $[4] = row.first, $[5] = row.rest, $[6] = Text(`${row.longest}, ${row.first} +${row.rest}`)) : $[6])).padding("top", row.top);
 $[7] = row.label;
 $[8] = row.open;
 $[9] = row.summary;
@@ -101,11 +99,11 @@ $[10] = row.longest;
 $[11] = row.first;
 $[12] = row.rest;
 $[13] = row.top;
-$[14] = $t2;
+$[14] = $t1;
 } else {
-$t2 = $[14];
+$t1 = $[14];
 }
-return $t2;
+return $t1;
 });
 
 function log(s: string): void {
@@ -117,14 +115,14 @@ const $fn2 = () => log("go");
 export const Hint = view(function Hint() {
 "use no memo";
 const $ = $c(1);
-let $t3;
+let $t2;
 if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t3 = VStack($view0, $view1.onPress($fn2));
-$[0] = $t3;
+$t2 = VStack($view0, $view1.onPress($fn2));
+$[0] = $t2;
 } else {
-$t3 = $[0];
+$t2 = $[0];
 }
-return $t3;
+return $t2;
 });
 
 const $view2 = Text("Two");
@@ -136,15 +134,15 @@ export const Hint2 = view(function Hint2(props: Hint2Props) {
 "use no memo";
 const $ = $c(2);
 const { n } = props;
-let $t4;
+let $t3;
 if ($[0] !== n) {
-$t4 = VStack($view2, Button(Text(`${n}`)).onPress($fn3));
+$t3 = VStack($view2, Button(Text(`${n}`)).onPress($fn3));
 $[0] = n;
-$[1] = $t4;
+$[1] = $t3;
 } else {
-$t4 = $[1];
+$t3 = $[1];
 }
-return $t4;
+return $t3;
 });
 
 export function useHandlers(n: number): { first: () => void; second: () => void; doubled: number } {
