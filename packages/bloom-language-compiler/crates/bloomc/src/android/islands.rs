@@ -101,7 +101,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.AbstractComposeView
+import android.widget.FrameLayout
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NativeModule
@@ -113,7 +115,9 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.Event
+import androidx.compose.foundation.isSystemInDarkTheme
 import so.oxy.bloom.ui.BloomThemeProvider
+import so.oxy.bloom.ui.DEFAULT_PRESET
 
 /** Registers the `BloomIsland` view (autolinked by `bloom build android`). */
 class BloomIslandPackage : ReactPackage {{
@@ -129,14 +133,32 @@ class BloomIslandPackage : ReactPackage {{
  * draws another. Each intent the island emits is an `onIslandEvent` with `{{ name, payload }}` (the
  * payload is JSON). Its content is set once ([Content]); a prop change only recomposes.
  */
-class BloomIslandView(private val reactContext: ThemedReactContext) : AbstractComposeView(reactContext) {{
+class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayout(reactContext) {{
   var island by mutableStateOf<String?>(null)
   var props by mutableStateOf("{{}}")
+  /** The app's theme: its colour preset (an `AppColorName`) and scheme (none: the system's). */
+  var themePreset by mutableStateOf<String?>(null)
+  var themeDark by mutableStateOf<Boolean?>(null)
+
+  // Fabric may create and measure the view before it is attached (a screen mounted off-window,
+  // preallocation), when Compose has no window recomposer: the island's ComposeView is added once
+  // the view is attached, and drawn from then on.
+  private val compose = ComposeView(reactContext).apply {{
+    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+    setContent {{ IslandContent() }}
+  }}
+
+  override fun onAttachedToWindow() {{
+    super.onAttachedToWindow()
+    if (compose.parent == null) addView(compose, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+    post(measureAndLayout)
+  }}
 
   @Composable
-  override fun Content() {{
+  private fun IslandContent() {{
     val entry = island?.let {{ IslandRegistry.islands[it] }} ?: return
-    BloomThemeProvider {{ entry(props, ::send) }}
+    val dark = themeDark ?: isSystemInDarkTheme()
+    BloomThemeProvider(preset = themePreset ?: DEFAULT_PRESET, dark = dark) {{ entry(props, ::send) }}
   }}
 
   // React Native lays its views out itself and drops a child's `requestLayout`: the island's
@@ -152,7 +174,7 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : AbstractCo
 
   override fun requestLayout() {{
     super.requestLayout()
-    post(measureAndLayout)
+    if (isAttachedToWindow) post(measureAndLayout)
   }}
 
   private fun send(name: String, payload: String) {{
@@ -191,6 +213,17 @@ class BloomIslandViewManager : SimpleViewManager<BloomIslandView>() {{
   @ReactProp(name = "props")
   fun setProps(view: BloomIslandView, props: String?) {{
     view.props = props ?: "{{}}"
+  }}
+
+  @ReactProp(name = "themePreset")
+  fun setThemePreset(view: BloomIslandView, preset: String?) {{
+    view.themePreset = preset
+  }}
+
+  /** `"dark"`, `"light"`, or none for the system's scheme. */
+  @ReactProp(name = "themeScheme")
+  fun setThemeScheme(view: BloomIslandView, scheme: String?) {{
+    view.themeDark = when (scheme) {{ "dark" -> true; "light" -> false; else -> null }}
   }}
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
