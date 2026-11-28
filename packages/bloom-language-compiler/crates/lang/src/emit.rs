@@ -2681,6 +2681,14 @@ impl<'a> Emitter<'a> {
                 let test: Vec<String> = ts.iter().map(|v| format!("{value} === {v}")).collect();
                 Frag::of(format!("({} ? {value} as {union} : undefined)", test.join(" || ")))
             }
+            // `err as? PollContractError` of a TS error class: the value when it is an instance.
+            ExprKind::CastAs(subject, ..)
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) =>
+            {
+                let class = class.to_string();
+                let value = self.path_or_temp(subject);
+                Frag::of(format!("({value} instanceof {class} ? {value} : undefined)"))
+            }
             ExprKind::CastAs(subject, ..) => {
                 let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
                 let mut value = self.expr(subject);
@@ -2695,6 +2703,9 @@ impl<'a> Emitter<'a> {
                 let value = self.operand(subject);
                 if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
                     self.aliases.insert(*narrowed, value.text.clone());
+                }
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) {
+                    return Frag::of(format!("({} instanceof {class})", value.text));
                 }
                 let test = match self.ck.is_tests.get(&expr.id) {
                     Some(Ty::Str) => "typeof {} === \"string\"",

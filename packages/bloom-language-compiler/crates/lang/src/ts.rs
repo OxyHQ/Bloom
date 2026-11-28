@@ -107,6 +107,9 @@ pub enum TsDecl {
     Class {
         extends: bool,
         props: Option<TsType>,
+        /// `class PollContractError extends Error {}`: an error class, a value and a type
+        /// (`err is PollContractError` is `instanceof`), never a component.
+        error: bool,
     },
     /// `const X = memo(Inner)`: the component `Inner` is (its props).
     Memo(String),
@@ -499,21 +502,23 @@ impl Reader {
             }
             Declaration::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
+                    let base = class.heritage.as_ref().and_then(|heritage| match &heritage.expression {
+                        oxc_ast::ast::Expression::Identifier(id) => Some(id.name.to_string()),
+                        oxc_ast::ast::Expression::StaticMemberExpression(member) => {
+                            Some(member.property.name.to_string())
+                        }
+                        _ => None,
+                    });
                     let props = class.heritage.as_ref().and_then(|heritage| {
-                        let base = match &heritage.expression {
-                            oxc_ast::ast::Expression::Identifier(id) => id.name.to_string(),
-                            oxc_ast::ast::Expression::StaticMemberExpression(member) => {
-                                member.property.name.to_string()
-                            }
-                            _ => return None,
-                        };
-                        if !matches!(base.as_str(), "Component" | "PureComponent") {
+                        if !matches!(base.as_deref(), Some("Component" | "PureComponent")) {
                             return None;
                         }
                         heritage.type_arguments.as_ref()?.params.first().map(|t| self.ty(t))
                     });
                     let extends = class.heritage.is_some();
-                    add(file, id.name.to_string(), TsDecl::Class { extends, props });
+                    // `extends Error`, `extends TypeError`, `extends HttpError`: an error class.
+                    let error = base.as_deref().is_some_and(|b| b.ends_with("Error"));
+                    add(file, id.name.to_string(), TsDecl::Class { extends, props, error });
                 }
             }
             Declaration::TSEnumDeclaration(enumeration) => {
@@ -1129,6 +1134,9 @@ pub struct Mapped {
     pub ty: Option<Ty>,
     /// A component: a function from props to an element.
     pub component: Option<Ty>,
+    /// An error class (`class PollContractError extends Error`): its type is tested with
+    /// `instanceof` (`err is PollContractError`).
+    pub class: bool,
 }
 
 pub struct Mapper<'m> {
@@ -1356,7 +1364,9 @@ impl Mapper<'_> {
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
                 mapped.ty = Some(self.named(file, name, &[], path, depth));
             }
-            TsDecl::Class { extends: true, props } if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
+            TsDecl::Class { extends: true, props, error: false }
+                if name.starts_with(|c: char| c.is_ascii_uppercase()) =>
+            {
                 let props = match props {
                     Some(props) => self.ty(
                         file,
@@ -1369,9 +1379,10 @@ impl Mapper<'_> {
                 };
                 mapped.component = Some(props);
             }
-            TsDecl::Class { .. } => {
+            TsDecl::Class { error, .. } => {
                 mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()));
                 mapped.ty = Some(Ty::Foreign(path.into()));
+                mapped.class = error;
             }
             TsDecl::Memo(inner) => {
                 let mapped = self.local(file, &inner, path, depth + 1)?;
