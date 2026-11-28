@@ -205,9 +205,42 @@ impl Checker<'_> {
                     "Map" | "Set" => return self.collection(expr, call, name == "Map", None, expected),
                     "min" | "max" | "abs" | "round" | "floor" | "ceil" => return self.math(expr, call, name),
                     "Int" | "Float" | "Double" => {
+                        let int = name == "Int";
+                        // `Int(3.7)` / `Double(n)`: a number converted (Swift's), never `none`.
+                        if let [arg] = call.args.as_slice()
+                            && arg.label.is_none()
+                            && !arg.spread
+                            && call.trailing.is_none()
+                        {
+                            let given = self.expr(&arg.value, None);
+                            match self.resolve(&given) {
+                                Ty::Int | Ty::Float => {
+                                    self.out.calls.insert(expr.id, CallRes::Convert { int });
+                                    return if int { Ty::Int } else { Ty::Float };
+                                }
+                                Ty::Str | Ty::Strings(_) | Ty::Unknown => {}
+                                ref other => {
+                                    if !self.coerce(other, &Ty::Str) {
+                                        self.report(
+                                            Diagnostic::error(
+                                                "B0201",
+                                                arg.value.span,
+                                                format!(
+                                                    "`{name}(…)` takes a number or a string, and this is {}",
+                                                    self.show(other)
+                                                ),
+                                            )
+                                            .label("not a number or a string")
+                                            .spec("12-standard-library-surface-draft"),
+                                        );
+                                    }
+                                }
+                            }
+                            self.out.calls.insert(expr.id, CallRes::Parse { int });
+                            return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
+                        }
                         // `Int(s)` / `Float(s)`: a string's number, or `none`.
                         self.positional(call, &[Ty::Str]);
-                        let int = name == "Int";
                         self.out.calls.insert(expr.id, CallRes::Parse { int });
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }

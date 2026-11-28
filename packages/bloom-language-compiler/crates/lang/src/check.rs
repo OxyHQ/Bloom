@@ -102,6 +102,11 @@ pub enum CallRes {
     Parse {
         int: bool,
     },
+    /// `Int(x)` / `Double(n)` of a number (Swift's): `Int` truncates toward zero, `Double` is the
+    /// number itself.
+    Convert {
+        int: bool,
+    },
     Struct(DefId),
     Partial(DefId),
     /// `s.with(field: v)`.
