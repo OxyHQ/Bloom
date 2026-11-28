@@ -232,6 +232,7 @@ const NODES: &[&str] = &[
     "Divider",
     "Tabs",
     "TabItem",
+    "Video",
 ];
 
 /// A modifier's category, from the spec (`modifierCategories`): `node` when it is an option

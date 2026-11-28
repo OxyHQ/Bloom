@@ -27,3 +27,7 @@ section: Added
   the text colour).
 - `.onPress` records the pressed view's window bounds (`PressAnchor`), which an island hands its
   host with the intent.
+- `Video` on media3 (the version expo-video ships, with HLS): `VideoPlayer(url:)` (`isMuted`,
+  `loops`, `play()`/`pause()`), `Video(player:)` with its poster until the first frame, and
+  `Video(url:, poster:)` with `.muted()`, `.loops()` and `.autoplay()` (plays while half of it
+  is on screen). Decoders come from a pool of three, lent only while a view plays.

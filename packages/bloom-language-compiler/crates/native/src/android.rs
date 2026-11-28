@@ -23,6 +23,7 @@ const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/ui/FlexColumn.kt", include_str!("../runtime/android/so/oxy/bloom/ui/FlexColumn.kt")),
     ("so/oxy/bloom/ui/Grid.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Grid.kt")),
     ("so/oxy/bloom/ui/Tabs.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Tabs.kt")),
+    ("so/oxy/bloom/ui/Video.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Video.kt")),
     ("so/oxy/bloom/ui/Modifiers.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Modifiers.kt")),
     ("so/oxy/bloom/ui/Image.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Image.kt")),
     ("so/oxy/bloom/ui/Icons.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Icons.kt")),
@@ -166,6 +167,8 @@ const COMPOSE: &str = "1.12.1";
 const ACTIVITY: &str = "1.11.0";
 const PROFILEINSTALLER: &str = "1.4.0";
 const COROUTINES: &str = "1.10.2";
+/// Media3, the version expo-video ships (one ExoPlayer in an app that has both).
+const MEDIA3: &str = "1.9.1";
 
 /// The Kotlin runtime's sources, as files under a source root (`so/oxy/bloom/ui/Views.kt`).
 pub fn runtime_sources() -> Vec<crate::Emitted> {
@@ -265,6 +268,8 @@ dependencies {{
   implementation("androidx.compose.foundation:foundation:{COMPOSE}")
   implementation("androidx.profileinstaller:profileinstaller:{PROFILEINSTALLER}")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:{COROUTINES}")
+  implementation("androidx.media3:media3-exoplayer:{MEDIA3}")
+  implementation("androidx.media3:media3-exoplayer-hls:{MEDIA3}")
 }}
 "#
         ),
