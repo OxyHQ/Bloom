@@ -541,6 +541,9 @@ fn helper_text(name: &str) -> &'static str {
         "okValue" => {
             "function $okValue<T, E>(result: $Result<T, E>): T | undefined {\n  return result.ok ? result.value : undefined;\n}"
         }
+        "cancellation" => {
+            "function $cancellation(signal: AbortSignal | undefined): Promise<void> {\n  return new Promise((resolve) => {\n    if (signal === undefined || signal.aborted) resolve();\n    else signal.addEventListener(\"abort\", () => resolve(), { once: true });\n  });\n}"
+        }
         "compact" => {
             "function $compact<T>(items: readonly (T | null | undefined)[]): readonly T[] {\n  return items.filter((item): item is T => item != null);\n}"
         }
@@ -3116,7 +3119,8 @@ impl<'a> Emitter<'a> {
                 | FieldRes::TaskSignal
                 | FieldRes::Static(_)
                 | FieldRes::StaticGet(_)
-                | FieldRes::TaskCancelled,
+                | FieldRes::TaskCancelled
+                | FieldRes::TaskCancellation,
             ) => Frag::default(),
             Some(FieldRes::Witness { witness: None, .. }) => Frag::of(self.path_or_temp(object)),
             Some(FieldRes::Extension(_) | FieldRes::Witness { .. }) => self.expr(object),
@@ -3172,6 +3176,13 @@ impl<'a> Emitter<'a> {
             Some(FieldRes::StaticGet(func)) => Frag::of(format!("{func}()")),
             Some(FieldRes::TaskCancelled) => {
                 Frag::of(self.signal.as_ref().map_or_else(|| "false".into(), |s| format!("{s}.aborted")))
+            }
+            Some(FieldRes::TaskCancellation) => {
+                self.helpers.insert("cancellation");
+                Frag::of(format!(
+                    "$cancellation({})",
+                    self.signal.clone().unwrap_or_else(|| "undefined".into())
+                ))
             }
             Some(FieldRes::Index(i)) => index(object, &i.to_string()),
             Some(FieldRes::Prop { recv, name: prop }) => match (recv, prop) {
@@ -3629,6 +3640,16 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
+                // A `.task`'s work given no cancellation takes the task's (`sleep(for:)`).
+                if let Some(&slot) = self.ck.implicit_signals.get(&expr.id)
+                    && let Some(signal) = self.signal.clone()
+                    && rest.is_empty()
+                {
+                    while values.len() <= slot {
+                        values.push(Frag::of("undefined"));
+                    }
+                    values[slot] = Frag::of(signal);
+                }
                 self.push_witnesses(expr, &order, &rest, &mut values);
                 let mut out = self.operand(&call.callee);
                 out.f(Frag::join(values, ", ").wrap(open, ")"));

@@ -196,6 +196,9 @@ pub enum FieldRes {
     TaskSignal,
     /// `Task.isCancelled`.
     TaskCancelled,
+    /// `Task.cancellation`: awaited, it returns once the task is cancelled (the view leaves or
+    /// the id changes), so a `defer` before it runs exactly then (React's effect cleanup).
+    TaskCancellation,
     /// `x.p`, an extension's computed property: `func(x)`.
     Extension(Rc<str>),
     /// `T.m`, an extension's static member: the lowered name.
@@ -388,6 +391,10 @@ pub struct CheckResult {
     /// A view's `let`s, and a hook function's top-level ones, whose value calls a hook (drawn
     /// every render, never in a memo scope).
     pub hook_lets: HashSet<Span>,
+    /// A Bloom call in a `.task` that leaves out its `cancellation: TaskSignal?` (`sleep(for:)`,
+    /// `HTTPClient`'s): the call's id and that parameter's slot, which takes `Task.signal`, so the
+    /// work is cancelled with the task, as Swift's child work is.
+    pub implicit_signals: HashMap<ExprId, usize>,
     /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
     /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
     pub map_writes: HashSet<ExprId>,
@@ -815,7 +822,7 @@ impl<'o> Checker<'o> {
         format!("`{}`", Display { ty: &ty, defs: &self.out.defs })
     }
 
-    fn mismatch(&mut self, span: Span, actual: &Ty, expected: &Ty) {
+    pub(super) fn mismatch(&mut self, span: Span, actual: &Ty, expected: &Ty) {
         let actual = self.zonk(actual);
         let expected = self.zonk(expected);
         if matches!(actual, Ty::Unknown) || matches!(expected, Ty::Unknown) {
@@ -6627,7 +6634,8 @@ impl<'o> Checker<'o> {
         if let ExprKind::Name(type_name) = &object.kind
             && self.lookup(type_name).is_none()
         {
-            if type_name == "Task" && matches!(name.name.as_str(), "signal" | "isCancelled") {
+            if type_name == "Task" && matches!(name.name.as_str(), "signal" | "isCancelled" | "cancellation")
+            {
                 if !self.frames.iter().any(|f| f.task) {
                     self.report(
                         Diagnostic::error(
@@ -6643,6 +6651,10 @@ impl<'o> Checker<'o> {
                 if name.name == "isCancelled" {
                     self.out.fields.insert(expr.id, FieldRes::TaskCancelled);
                     return Ty::Bool;
+                }
+                if name.name == "cancellation" {
+                    self.out.fields.insert(expr.id, FieldRes::TaskCancellation);
+                    return Ty::Async(Box::new(Ty::Unit));
                 }
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());
@@ -6931,7 +6943,7 @@ impl<'o> Checker<'o> {
     }
 
     /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
-    fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
+    pub(super) fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
         let owner = crate::extensions::key(type_name);
         let getter = crate::extensions::mangle(owner, &format!("get${}", name.name), true);
         if let Some(local) = self.lookup(&getter) {

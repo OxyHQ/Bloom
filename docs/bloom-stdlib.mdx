@@ -828,8 +828,17 @@ The launch splash of a native build.
 Bloom (concurrency): `Task`, `TaskGroup`, `sleep(for:)` and `AsyncStream`.
 
 A view's work runs in `.task { }` (cancelled when the view leaves; `Task.signal` is its
-cancellation, which `HTTPClient` and `sleep(for:)` take). Work that outlives a view
-starts with `Task.run`:
+cancellation, which `HTTPClient` and `sleep(for:)` take, and take by themselves in a `.task`
+when given none). `await Task.cancellation` returns once the task is cancelled, so a setup's
+teardown is a `defer` before it:
+
+```swift
+.task(id: room) { let s = socket.join(room); defer { socket.leave(s) }; await Task.cancellation }
+
+```
+
+and a debounce is `.task(id: query) { try? await sleep(for: .milliseconds(300)); search(query) }`.
+Work that outlives a view starts with `Task.run`:
 
 ```swift
 let upload = Task.run { signal in try await api.perform(.post, "media", json: body, cancellation: signal) }

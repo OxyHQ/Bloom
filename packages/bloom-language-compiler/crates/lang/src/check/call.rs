@@ -900,6 +900,17 @@ impl Checker<'_> {
                 self.throwing_call(expr.span, &f);
                 self.witnesses_of(expr, call.callee.span, &f);
                 let (order, rest) = self.bloom_args(call, &f, false);
+                // In a `.task`, work that takes a cancellation and is given none takes the task's.
+                if self.frames.iter().any(|frame| frame.task)
+                    && let Some(slot) = f.params.iter().position(|p| {
+                        p.labelled
+                            && p.name.as_deref() == Some("cancellation")
+                            && matches!(&p.ty, Ty::Option(inner) if matches!(&**inner, Ty::Foreign(t) if &**t == "AbortSignal"))
+                    })
+                    && order.get(slot) == Some(&None)
+                {
+                    self.out.implicit_signals.insert(expr.id, slot);
+                }
                 self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
             }
@@ -1888,6 +1899,19 @@ impl Checker<'_> {
         expected: Option<&Ty>,
     ) -> Ty {
         let d = self.out.defs[def].clone();
+        // `.milliseconds(300)` where a `Duration` is expected: the type's static function, as
+        // Swift's implicit member expression reads any static member giving the type.
+        if !d.variants().iter().any(|v| v.name == name.name)
+            && let Some(ty) = self.static_member(&call.callee, &d.name, name)
+        {
+            let ret = self.value_call(expr, call, &ty);
+            if let Some(want) = expected
+                && !self.coerce(&ret, want)
+            {
+                self.mismatch(name.span, &ret, want);
+            }
+            return ret;
+        }
         let Some(index) = d.variants().iter().position(|v| v.name == name.name) else {
             if matches!(d.kind, DefKind::Struct(_)) {
                 self.report(

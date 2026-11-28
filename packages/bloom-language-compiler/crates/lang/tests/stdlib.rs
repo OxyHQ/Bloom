@@ -919,3 +919,24 @@ fn errors_read_leniently_and_objects_compare_by_identity() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `await Task.cancellation` and a `.task`'s `sleep(for:)` taking its cancellation (mention15
+/// task-defer-runs-at-once). The runtime test is `test/task-cancellation.test.tsx`.
+const TASK_CANCELLATION: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/TaskCancellation.bloom");
+
+#[test]
+fn a_task_awaits_its_cancellation_and_hands_it_to_sleep() {
+    let root = package("task-cancellation", &[("Sources/Model/TaskCancellation.bloom", TASK_CANCELLATION)]);
+    let path = root.join("Sources/Model/TaskCancellation.bloom");
+    let out = compile(TASK_CANCELLATION, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("await ($cancellation($signal));"), "{}", out.code);
+    assert!(out.code.contains("sleep((Duration$$milliseconds)(50), $signal)"), "{}", out.code);
+    let golden =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/task-cancellation.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

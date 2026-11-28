@@ -1160,7 +1160,13 @@ in those closures throws the same way (4.5).
   start async work with `task { … }`, or use `.task`. It compiles to exactly one `useEffect`.
 - **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
   disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
-  `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
+  `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops. A
+  Bloom call in it that takes `cancellation: TaskSignal?` and is given none takes `Task.signal`
+  (`sleep(for:)`, `HTTPClient`'s calls), as Swift's child work is cancelled with its task.
+  `await Task.cancellation` returns once the task is cancelled: a top-level `defer` before it
+  runs exactly then (the id changes, the view leaves), as a React effect's cleanup does
+  (`let s = start(); defer { stop(s) }; await Task.cancellation`). Without it, the `defer` runs
+  when the body returns, as any `defer` does.
   Compiles to one `useEffect` with an `AbortController` (what a careful hand-written effect does).
 - **`.onChange(of: value) { old, new in … }`** runs after a change (one `useEffect`, comparing in a
   ref only when `old` is used).
@@ -1298,7 +1304,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
 | prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
-| tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
+| tasks | `Task.signal`, `Task.cancellation`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
 | data (BloomData) | `@Model` stores, `@Query`, `Source`, `Realtime`, and `Mutation.make(name, optimistic:) { … }` with `run(input)`, an optimistic change (named as Services' `run`; `Action` is BloomUI's action-bar node) |
 
