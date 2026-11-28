@@ -14,7 +14,7 @@ import { createElement, useState } from 'react';
 import { Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import { Button, Icon, Text, VStack } from '../primitives';
 import { drawScreen, ScreenHost } from '../screen-host';
-import { view } from '../view';
+import { inlineView, view } from '../view';
 
 jest.mock('../router/screen-header', () => jest.requireActual('../router/screen-header.tsx'));
 jest.mock('../router/sheet-host', () => jest.requireActual('../router/sheet-host.tsx'));
@@ -154,9 +154,35 @@ describe('@oxy.so/bloom-language/screen-host', () => {
       createElement(() => drawScreen(Post({ id: '7' }).title('Renamed'), { throughViews: true })),
     );
     expect(only(renamed, 'PageHeader').props.title).toBe('Renamed');
-    // Without it, the view is the Screen's content: its body's title draws nothing.
+    // Without it, the view is the Screen's content, and its body's title still rises to the
+    // screen (SwiftUI's `navigationTitle` is a preference of any drawn view).
     const plain = mount(createElement(() => drawScreen(Post({ id: '7' }))));
-    expect(only(plain, 'PageHeader').props.title).toBeUndefined();
+    expect(only(plain, 'PageHeader').props.title).toBe('Post 7');
+  });
+
+  it('a drawn view’s title and toolbar rise to the screen, under the root’s own', () => {
+    const Detail = view(function Detail({ name }: { name: string }) {
+      const [title] = useState(name);
+      return VStack(Text(name))
+        .title(title)
+        .toolbar(Button(Icon(Glyph)).label('Edit'));
+    });
+    const Inline = inlineView(({ name }: { name: string }) => Text(name).title(`Inline ${name}`));
+    // A view deep in the body.
+    const deep = mount(
+      createElement(() => drawScreen(VStack(Text('top'), VStack(Detail({ name: 'Event' }))))),
+    );
+    const header = only(deep, 'PageHeader');
+    expect(header.props.title).toBe('Event');
+    expect(header.props.actions).toBeTruthy();
+    // An inlined view's body too.
+    const inline = mount(createElement(() => drawScreen(VStack(Inline({ name: 'list' })))));
+    expect(only(inline, 'PageHeader').props.title).toBe('Inline list');
+    // The root's own wins.
+    const own = mount(
+      createElement(() => drawScreen(VStack(Detail({ name: 'Event' })).title('Root'))),
+    );
+    expect(only(own, 'PageHeader').props.title).toBe('Root');
   });
 
   it('a root that is its own surface, and null, as screen() draws them', () => {

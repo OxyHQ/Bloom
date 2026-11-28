@@ -1963,6 +1963,14 @@ Screen's header in the page on every platform),
 and kept while it closes. The root's `.testID` names the Screen itself, not a
 box around the content.
 
+**Chrome rises from any drawn view**, as SwiftUI's `navigationTitle` and `toolbar` are
+preferences of any view a screen draws: a view's `.title`, `.titleDisplay`, `.subtitle`,
+`.toolbar`, `.toolbarLeading`, `.backLabel` and `.scrollEdge` (on its call, `Detail(id).title(…)`,
+or on its body's root) title the screen whatever its depth, for what the screen's root does not
+say itself (the root's own wins, and an outer view's over an inner one's). Only views rise: a
+menu section's or a settings row's own `.title` stays theirs. A view that changes its title
+redraws the screen's header only.
+
 ### The screen host, without the router
 
 `@oxy.so/bloom-language/screen-host` is what `screen()` draws its body with,
@@ -2000,7 +2008,7 @@ function Route({ view, depth, pop }: { view: Child; depth: number; pop: () => vo
   body is its stack's. Modifiers on the view itself come after its body's.
   A Bloom build's screens are views (`struct PostScreen: View`), so the
   Bloom router draws them this way. Without the option, a view is the
-  Screen's content, as under `screen()`.
+  Screen's content, as under `screen()`, and its chrome still rises to the screen.
 
 It sets no navigator for `navigate()`. In a Bloom build, `push()` and
 `dismiss()` are the standard library's. A host of an app's own provides one, as

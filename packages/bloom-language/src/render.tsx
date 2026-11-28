@@ -236,6 +236,7 @@ import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { paintedHost } from './painted-host';
+import { rising, risingOf } from './rising-chrome';
 import { ContentSafeAreaPadded, SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
@@ -3349,12 +3350,26 @@ function drawPresentedDialog(
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
   const view = node.props as ViewNodeProps;
+  // The screen chrome the view's own call declares (`Post().title(post.title)`), and an inlined
+  // view's body's: it rises to the screen drawing it (`rising-chrome.ts`). A view with a
+  // component of its own writes its body's from there (`view.ts`).
+  const own = risingOf(node);
+  const body = view.component === undefined ? risingOf(view.body) : undefined;
+  const values = own === undefined ? body : body === undefined ? own : { ...body, ...own };
   // An inlined view (`inlineView`): its body, drawn here in this tree, as a view's body is drawn in its own.
-  if (view.component === undefined) return renderChild(view.body, ctx, key) as ReactElement;
+  if (view.component === undefined) {
+    const element = renderChild(
+      view.body,
+      ctx,
+      values === undefined ? key : undefined,
+    ) as ReactElement;
+    return (values === undefined ? element : rising(values, element, key)) as ReactElement;
+  }
   const { component, props } = view;
   let element: ReactElement = draw(component, props as Record<string, unknown>);
   if (ctx.env !== ctx.provided || ctx.animation !== ctx.scoped)
     element = draw(EnvContext.Provider, { value: carrying(ctx.env, ctx.animation) }, element);
+  if (values !== undefined) return rising(values, element, key) as ReactElement;
   return key === undefined ? element : cloneElement(element, { key });
 }
 

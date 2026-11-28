@@ -2,6 +2,7 @@ import { memo, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
 import { drawRead } from './render';
+import { risingOf, useRisingChrome } from './rising-chrome';
 
 const NO_CHILDREN: readonly Child[] = [];
 const NO_PROPS = Object.freeze({});
@@ -54,7 +55,10 @@ export function view<P extends object = Record<string, never>>(
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
     const built = body(props);
-    return drawRead(typeof built === 'function' ? built() : built);
+    const tree = typeof built === 'function' ? built() : built;
+    // The screen chrome its body declares rises to the screen drawing it (`rising-chrome.ts`).
+    useRisingChrome(risingOf(tree));
+    return drawRead(tree);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost, equal) as unknown as ComponentType<object>;
