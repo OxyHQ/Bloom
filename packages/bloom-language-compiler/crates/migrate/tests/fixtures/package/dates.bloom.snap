@@ -6,7 +6,7 @@
 import { formatRelativeTime } from "@/utils/time"
 
 private func isPast(_ at: String) -> Bool {
-  ((try? Date(at, strategy: .iso8601))?.millisecondsSince1970 ?? Float.nan) <=
+  ((try? Date(at, strategy: .iso8601))?.millisecondsSince1970 ?? .nan) <=
     Date.now.millisecondsSince1970
 }
 
@@ -25,7 +25,7 @@ private func tomorrow() -> String {
 }
 
 private func drafted(_ timestamp: String) -> String {
-  let date = ((try? Date(timestamp, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan))
+  let date = ((try? Date(timestamp, strategy: .iso8601)) ?? Date(millisecondsSince1970: .nan))
   (date.millisecondsSince1970.isNaN ? "Invalid Date" : date.formatted(
     .dateTime.year().month(.defaultDigits).day(),
   ))
@@ -39,26 +39,28 @@ public struct When: View {
   var body: some View {
     VStack {
       Text(
-        ((try? Date(at, strategy: .iso8601)).map {
-          $0.formatted(.dateTime.year().month(.defaultDigits).day().hour().minute().second())
-        } ??
+        ((try? Date(at, strategy: .iso8601))?.formatted(
+          .dateTime.year().month(.defaultDigits).day().hour().minute().second(),
+        ) ??
           "Invalid Date"),
       )
       Text(
-        ((try? Date(at, strategy: .iso8601)).map {
-          $0.formatted(.dateTime.month(.wide).year(), locale: "en-US")
-        } ??
+        ((try? Date(at, strategy: .iso8601))?.formatted(
+          .dateTime.month(.wide).year(),
+          locale: "en-US",
+        ) ??
           "Invalid Date"),
       )
       Text(
-        ((try? Date(at, strategy: .iso8601)).map {
-          $0.formatted(.dateTime.hour(.twoDigits).minute(.twoDigits), locale: locale)
-        } ??
+        ((try? Date(at, strategy: .iso8601))?.formatted(
+          .dateTime.hour(.twoDigits).minute(.twoDigits),
+          locale: locale,
+        ) ??
           "Invalid Date"),
       )
-      Text(short(((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan))))
+      Text(short(((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: .nan))))
       Text(
-        ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan)).formatted(
+        ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: .nan)).formatted(
           date: .abbreviated,
           time: .shortened,
           locale: locale,
@@ -66,7 +68,7 @@ public struct When: View {
       )
       Text(
         formatRelativeTime(
-          ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan)),
+          ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: .nan)),
           locale,
         ),
       )

@@ -6,10 +6,10 @@
 //! |---|---|
 //! | `new Date()`, `Date.now()` | `Date.now`, `Date.now.millisecondsSince1970` |
 //! | `new Date(ms)` | `Date(millisecondsSince1970: ms)` |
-//! | `new Date(iso)` | `(try? Date(iso, strategy: .iso8601))`, `?? Date(millisecondsSince1970: Float.nan)` as a value |
+//! | `new Date(iso)` | `(try? Date(iso, strategy: .iso8601))`, `?? Date(millisecondsSince1970: .nan)` as a value |
 //! | `new Date(y, m, d, h, mi, s)` | `Calendar.current.date(year: y, month: m + 1, day: d, …)` |
 //! | `new Date(d.getFullYear(), d.getMonth(), d.getDate())` | `Calendar.current.startOfDay(d)` |
-//! | `Date.UTC(…)`, `Date.parse(s)` | `Calendar(utc: true).date(…).millisecondsSince1970`, `(try? Date(s, …))?.millisecondsSince1970 ?? Float.nan` |
+//! | `Date.UTC(…)`, `Date.parse(s)` | `Calendar(utc: true).date(…).millisecondsSince1970`, `(try? Date(s, …))?.millisecondsSince1970 ?? .nan` |
 //! | `d.getTime()`, `d.toISOString()` | `d.millisecondsSince1970`, `d.iso8601` |
 //! | `d.getFullYear()`, `getMonth()`, `getDate()`, `getDay()`, `getHours()` … | `d.components().year`, `(… .month - 1)`, `.day`, `(… .weekday - 1)`, `.hour` … |
 //! | `d.toLocaleDateString(l, o)`, `toLocaleTimeString`, `toLocaleString` | `d.formatted(.dateTime.month(.abbreviated).day(), locale: l)` |
@@ -18,7 +18,7 @@
 //! FormatStyle's fields are ECMA-402's options with its defaults spelled out
 //! (`toLocaleDateString()` is `.dateTime.year().month(.defaultDigits).day()`), so the text is
 //! byte-identical. JS prints "Invalid Date" for an Invalid Date where Intl throws, so a parse
-//! that may fail formats as `.map { $0.formatted(…) } ?? "Invalid Date"`. A setter (`setHours`)
+//! that may fail formats as `?.formatted(…) ?? "Invalid Date"`. A setter (`setHours`)
 //! is refused: a Bloom `Date` is a value.
 
 use oxc_ast::ast::*;
@@ -44,7 +44,7 @@ pub struct DateVal {
     pub kind: DateKind,
 }
 
-const INVALID: &str = "Date(millisecondsSince1970: Float.nan)";
+const INVALID: &str = "Date(millisecondsSince1970: .nan)";
 
 impl DateVal {
     /// As a `Date` value: JS's Invalid Date where the parse failed.
@@ -481,7 +481,7 @@ impl Tr<'_> {
                 ("now", []) => "Date.now.millisecondsSince1970".into(),
                 ("parse", [s]) if let Some(s) = s.as_expression() => {
                     let s = self.expr(s);
-                    format!("((try? Date({s}, strategy: .iso8601))?.millisecondsSince1970 ?? Float.nan)")
+                    format!("((try? Date({s}, strategy: .iso8601))?.millisecondsSince1970 ?? .nan)")
                 }
                 ("UTC", args) => {
                     let date = self.calendar_date("Calendar(utc: true)", args, call.span);
@@ -526,7 +526,7 @@ impl Tr<'_> {
         };
         let text = match method {
             "getTime" | "valueOf" => match receiver.kind {
-                DateKind::Optional => format!("({}?.millisecondsSince1970 ?? Float.nan)", receiver.text),
+                DateKind::Optional => format!("({}?.millisecondsSince1970 ?? .nan)", receiver.text),
                 _ => format!("{}{optional}.millisecondsSince1970", receiver.receiver()),
             },
             "toISOString" => format!("{}{optional}.iso8601", receiver.plain().receiver()),
@@ -567,7 +567,7 @@ impl Tr<'_> {
                     Err(why) => return Some(self.refuse("intl:option", why, call.span)),
                 };
                 match receiver.kind {
-                    _ if m.optional => format!("{}.map {{ $0.formatted({args}) }}", receiver.receiver()),
+                    _ if m.optional => format!("{}?.formatted({args})", receiver.receiver()),
                     DateKind::Valid => format!("{}.formatted({args})", receiver.receiver()),
                     // JS writes an Invalid Date as "Invalid Date"; Intl (FormatStyle) throws.
                     DateKind::MaybeInvalid => {
@@ -577,7 +577,7 @@ impl Tr<'_> {
                         )
                     }
                     DateKind::Optional => {
-                        format!("({}.map {{ $0.formatted({args}) }} ?? \"Invalid Date\")", receiver.text)
+                        format!("({}?.formatted({args}) ?? \"Invalid Date\")", receiver.text)
                     }
                 }
             }
