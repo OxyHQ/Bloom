@@ -1,0 +1,12 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+type $KeyPath<S, V> = { [K in keyof S]-?: S[K] extends V ? K : never }[keyof S];
+export interface Prefs {
+  readonly hideLikes: boolean;
+  readonly hideReplies: boolean;
+  readonly name: string;
+}
+export declare function read(p: Prefs, key: $KeyPath<Prefs, boolean>): boolean;
+export declare function toggled(p: Prefs, key: $KeyPath<Prefs, boolean>): Prefs;
+export declare function both(p: Prefs): Prefs;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PrivacyToggles())`), or from TSX as `toElement(PrivacyToggles())`. */
+export declare const PrivacyToggles: () => ComposedView;

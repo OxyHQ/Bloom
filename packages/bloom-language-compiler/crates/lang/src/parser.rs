@@ -3090,6 +3090,20 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let span = expr.span.to(name.span);
                     expr = self.expr_node(ExprKind::OptField(Box::new(expr), name), span);
                 }
+                // `x[keyPath: kp]` (Swift's): the field a key path names.
+                Tok::P(P::LBracket)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::Ident(word) if word == "keyPath")
+                        && matches!(self.nth(2), Tok::P(P::Colon)) =>
+                {
+                    let open = self.bump();
+                    self.bump();
+                    self.bump();
+                    let key = self.expr(Ctx::Normal);
+                    self.expect_close(P::RBracket, open);
+                    let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
+                    expr = self.expr_node(ExprKind::KeyPathIndex(Box::new(expr), Box::new(key)), span);
+                }
                 Tok::P(P::LBracket) if !self.token().space_before => {
                     let open = self.bump();
                     let index = self.expr(Ctx::Normal);
@@ -3820,6 +3834,8 @@ fn is_place(expr: &Expr) -> bool {
         ExprKind::Field(inner, _) => is_place(inner),
         // `posts[i].likes += 1` (2.0): an element, rebuilt with value semantics.
         ExprKind::Index(inner, _) => is_place(inner),
+        // `next[keyPath: key] = v` (Swift's): a `var`'s copy with the field the key path names.
+        ExprKind::KeyPathIndex(inner, _) => matches!(inner.kind, ExprKind::Name(_)),
         _ => false,
     }
 }

@@ -1185,8 +1185,18 @@ function expressionFamily(head) {
         seq(field('function', expr($)), '?.', field('arguments', $.value_arguments)),
       ),
 
+    // `xs[i]`, and Swift's `x[keyPath: k]` (the field a key path names).
     [`${p}subscript_expression`]: ($) =>
-      prec(PREC.postfix, seq(field('target', expr($)), '[', field('index', $._expression), ']')),
+      prec(
+        PREC.postfix,
+        seq(
+          field('target', expr($)),
+          '[',
+          optional(seq(field('label', alias('keyPath', $.identifier)), ':')),
+          field('index', $._expression),
+          ']',
+        ),
+      ),
 
     [`${p}force_unwrap_expression`]: ($) => prec(PREC.postfix, seq(expr($), token.immediate('!'))),
 

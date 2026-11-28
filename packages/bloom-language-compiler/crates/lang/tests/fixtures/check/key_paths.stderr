@@ -1,0 +1,18 @@
+error[B0201]: expected `String`, found `Bool`
+ --> check/key_paths.bloom:9:32
+  |
+9 |   next[keyPath: \Prefs.name] = true
+  |                                ^^^^ this is `Bool`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0403]: cannot assign to `p`: it is immutable
+  --> check/key_paths.bloom:14:3
+   |
+13 | public func immutable(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Bool {
+   |                         - declared here
+14 |   p[keyPath: key] = false
+   |   ^ immutable
+   |
+help: copy it into a `var`: `var next = p`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

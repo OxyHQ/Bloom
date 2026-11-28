@@ -784,6 +784,8 @@ pub enum ExprKind {
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
+    /// `x[keyPath: kp]` (Swift's): the field of `x` the key path `kp` names, read or written.
+    KeyPathIndex(Box<Expr>, Box<Expr>),
     /// `xs?[i]` (Swift's optional subscript): the element when `xs` is not `none`, as JS's
     /// `xs?.[i]`; `none` from there through the chain.
     OptIndex(Box<Expr>, Box<Expr>),
