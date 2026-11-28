@@ -30,6 +30,16 @@ declare module '@oxy.so/bloom-language' {
   export function characters(s: string): string[];
   export function characterOffset(s: string, u: number): number;
   export function utf16Offset(s: string, n: number): number;
+  export class Observable {
+    $set(field: string, value: unknown): void;
+    $subscribe(fields: readonly string[], listener: () => void): () => void;
+  }
+}
+declare module '@oxy.so/bloom-language/video-view' {
+  export function videoAttach(model: object, url?: string): void;
+  export function videoPlay(model: object): void;
+  export function videoPause(model: object): void;
+  export function videoSeek(model: object, seconds: number): void;
 }
 TS
 # What the Bloom router (router.ts) draws with beyond React and React Native, as far as it

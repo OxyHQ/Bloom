@@ -195,9 +195,12 @@ Bloom (math): constants and functions over `Double` and `Int`.
 
 `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
 (`rounded()`, `clamped(…)`, …) are the compiler's; these complete them, with Foundation's
-names and meaning. Each is the same double on every backend: TypeScript computes it with
-V8's fdlibm port (`Math.cbrt`, …), Kotlin with the JVM's `StrictMath` (fdlibm), and Swift
-with the same algorithms (not Darwin's libm, which differs in the last bit).
+names and meaning. Each is the same double on every backend, and the reference is V8's own
+algorithms, what `Math` computes in node (not fdlibm as such, and not JSC's, so a reference
+is never taken from bun): V8's `cbrt` (not StrictMath's), FreeBSD msun's `log2` and `tanh`,
+`exp(1)` exactly `E`, and V8's Kahan-summed `hypot`. Kotlin runs ports of that code on the JVM
+(crates/native's math-conformance gate: 520,676 calls, no difference; `pow` and `exp2` within
+1 ulp), and Swift ports the same code, never Darwin's libm.
 
 ### `func sqrt(_ x: Double) -> Double`
 
@@ -903,6 +906,10 @@ A `bloom build` answers `expo-video` with a shim over this module (crates/bloomc
 `shims/expo-video.js`): `useVideoPlayer`, `createVideoPlayer` and `VideoView` keep their
 API, so an app's call sites need no edits. Underneath is androidx media3 (ExoPlayer), the
 library expo-video ships, without Expo's module core.
+
+### `final class VideoPlayer`
+
+A player of one video, AVPlayer's shape: the app makes it, holds it in a `@State`, hands it to `Video(player:)` and drives it.
 
 ## Splash
 

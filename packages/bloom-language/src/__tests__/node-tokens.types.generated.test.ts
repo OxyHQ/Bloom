@@ -77,6 +77,8 @@ type S = {
   "toolbarSpacer": "fixed" | "flexible";
   "contentFit": "cover" | "contain" | "fill" | "none" | "scale-down";
   "mediaContentFit": "contain" | "cover";
+  "videoGravity": "fill" | "fit";
+  "videoControls": "hidden" | "automatic";
   "justify": "start" | "center" | "end" | "between" | "around" | "evenly";
   "axis": "horizontal" | "vertical";
   "ringExtra": "none";
@@ -1427,6 +1429,9 @@ type fileUploadChecks = [
 type videoChecks = [
   Expect<'video: the universal modifiers', Universal<View<'Video'>>>,
   Expect<"video.contentFit(contentFit)", Ok<At<View<'Video'>['contentFit'], '0'>, S['contentFit']>>,
+  Expect<"video.videoGravity(videoGravity)", Ok<At<View<'Video'>['videoGravity'], '0'>, S['videoGravity']>>,
+  Expect<"video.controls(videoControls)", Ok<At<View<'Video'>['controls'], '0'>, S['videoControls']>>,
+  Expect<"video.autoplay arity", Same<Lengths<View<'Video'>['autoplay']>, 0 | 1>>,
 ];
 
 type inputOtpChecks = [

@@ -457,6 +457,8 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "tagField.tint(tint: accentTone)", constructor: "TagField", call: "TagField().tint(@)", sets: &["accentTone"], tokens: &[], opacity: false },
     TokenParam { label: "tagField.size(size: controlSize)", constructor: "TagField", call: "TagField().size(@)", sets: &["controlSize"], tokens: &[], opacity: false },
     TokenParam { label: "video.contentFit(contentFit)", constructor: "Video", call: "Video().contentFit(@)", sets: &["contentFit"], tokens: &[], opacity: false },
+    TokenParam { label: "video.videoGravity(videoGravity)", constructor: "Video", call: "Video().videoGravity(@)", sets: &["videoGravity"], tokens: &[], opacity: false },
+    TokenParam { label: "video.controls(videoControls)", constructor: "Video", call: "Video().controls(@)", sets: &["videoControls"], tokens: &[], opacity: false },
     TokenParam { label: "inputOtp.characters(otpCharacters)", constructor: "InputOtp", call: "InputOtp().characters(@)", sets: &["otpCharacters"], tokens: &[], opacity: false },
     TokenParam { label: "colorSwatchPicker.size(size: space)", constructor: "ColorSwatchPicker", call: "ColorSwatchPicker().size(@)", sets: &["space"], tokens: &[], opacity: false },
     TokenParam { label: "animatedCheck.size(size: space)", constructor: "AnimatedCheck", call: "AnimatedCheck().size(@)", sets: &["space"], tokens: &[], opacity: false },

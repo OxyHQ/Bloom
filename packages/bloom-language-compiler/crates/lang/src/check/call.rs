@@ -2512,6 +2512,11 @@ impl Checker<'_> {
             self.node_arity(call, ctor, kind, params);
         }
         let fixed: Vec<&str> = params.iter().filter(|p| !p.starts_with("...")).copied().collect();
+        // `Video(player: p)` and `Video(url: u, poster: q)` (AVKit's shape): the standard
+        // library's `VideoPlayer`, or a URL whose player the view owns, and its poster.
+        if ctor == "Video" && self.video_args(call) {
+            return Ty::View(Some(kind));
+        }
         for (index, arg) in call.args.iter().enumerate() {
             if let Some(label) = &arg.label {
                 self.report(
@@ -3803,6 +3808,41 @@ impl Checker<'_> {
         }
         self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
         ret
+    }
+
+    /// `Video(player:)` / `Video(url:poster:)`: `true` when the call is written so, its
+    /// arguments then checked (a `VideoPlayer`; a `URL` and an optional one). Backends read the
+    /// labels from the call (`CallRes::Node("Video")`).
+    fn video_args(&mut self, call: &Call) -> bool {
+        let labels: Vec<Option<&str>> =
+            call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.as_str())).collect();
+        let named = |this: &Self, name: &str| match this.type_names.get(name) {
+            Some(TypeName::Def(def)) => Some(Ty::Adt(*def, Vec::new())),
+            _ => None,
+        };
+        let expected: Vec<Option<Ty>> = match labels.as_slice() {
+            [Some("player")] => vec![named(self, "VideoPlayer")],
+            [Some("url")] => vec![named(self, "URL")],
+            [Some("url"), Some("poster")] => {
+                let url = named(self, "URL");
+                vec![url.clone(), url.map(|u| Ty::Option(Box::new(u)))]
+            }
+            _ => return false,
+        };
+        for (arg, ty) in call.args.iter().zip(expected) {
+            match ty {
+                Some(ty) => {
+                    let found = self.expr(&arg.value, Some(&ty));
+                    if !self.coerce(&found, &ty) {
+                        self.mismatch(arg.value.span, &found, &ty);
+                    }
+                }
+                None => {
+                    self.boundary(&arg.value, None);
+                }
+            }
+        }
+        true
     }
 
     /// Swift's mutating members of an array (`append`, `insert(_:at:)`, `remove(at:)`, …) and
