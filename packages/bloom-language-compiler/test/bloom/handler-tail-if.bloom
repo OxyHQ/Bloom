@@ -1,0 +1,18 @@
+/// A handler's last `if … else` and `switch` are statements.
+public enum Mode {
+  case on
+  case off
+}
+
+public func pressIf(_ id: String?, _ log: (String) -> Unit) -> some View {
+  Button(Text("a")).onPress { if let id = id { log(id) } else { log("none") } }
+}
+
+public func pressSwitch(_ mode: Mode, _ log: (String) -> Unit) -> some View {
+  Button(Text("b")).onPress {
+    switch mode {
+    case .on: log("on")
+    case .off: log("off")
+    }
+  }
+}
