@@ -386,7 +386,46 @@ impl Checker<'_> {
                             let ty = self.instantiate(&ty);
                             return self.value_call(expr, call, &ty);
                         }
+                        // Swift's rule: a struct whose own body declares an `init` has no
+                        // memberwise one (an `init` in an extension keeps it). A copy with
+                        // changes (`P(..p, x: 1)`) is Bloom's, and stays.
+                        if self.out.defs[def].own_init && !call.args.iter().any(|a| a.spread) {
+                            let labels: String = call
+                                .args
+                                .iter()
+                                .map(|a| format!("{}:", a.label.as_ref().map_or("_", |l| l.name.as_str())))
+                                .collect();
+                            self.report(
+                                Diagnostic::error(
+                                    "B0207",
+                                    call.callee.span,
+                                    format!("`{name}` has no `init({labels})`"),
+                                )
+                                .label("not one of its initializers")
+                                .help(format!(
+                                    "`{name}` declares its own `init`, so it has no memberwise one (Swift's rule): \
+                                     call one of its `init`s, or declare this one in an `extension {name}`"
+                                ))
+                                .spec("44-structs"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Adt(
+                                def,
+                                (0..self.out.defs[def].generics.len()).map(|_| self.fresh()).collect(),
+                            );
+                        }
                         return self.construct(expr, call, def, Vec::new(), expected, false);
+                    }
+                    // An enum's `init` (Swift's `Size(count: 3)`), by its labels.
+                    let init = crate::extensions::init_name(
+                        name,
+                        call.args.iter().map(|a| Some(a.label.as_ref().map_or("_", |l| l.name.as_str()))),
+                    );
+                    if let Some(local) = self.lookup(&init) {
+                        self.out.names.insert(call.callee.id, NameRes::Local(local));
+                        let ty = self.out.locals[local].ty.clone();
+                        let ty = self.instantiate(&ty);
+                        return self.value_call(expr, call, &ty);
                     }
                     self.report(
                         Diagnostic::error(

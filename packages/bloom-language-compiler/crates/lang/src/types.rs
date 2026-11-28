@@ -199,6 +199,9 @@ pub struct Def {
     /// member's type by its tag. The def's own field is the tag, a union of the members' tags;
     /// a `match` on it narrows the value to the member each arm names.
     pub tagged: Option<std::rc::Rc<Tagged>>,
+    /// A struct whose own body declares an `init` (Swift's rule): it has no memberwise init, so
+    /// `P(x: 1)` is that `init`'s, or an error. An `init` in an extension keeps the memberwise one.
+    pub own_init: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -2066,6 +2066,7 @@ impl Mapper<'_> {
                     origin: Origin::Ts { path: path.to_string() },
                     class: None,
                     tagged: None,
+                    own_init: false,
                 });
                 let ty = Ty::Adt(id, Vec::new());
                 if args.is_empty() {
@@ -2191,6 +2192,7 @@ impl Mapper<'_> {
             origin: Origin::Ts { path: path.to_string() },
             class: None,
             tagged: Some(Rc::new(Tagged { tag, members: tagged })),
+            own_init: false,
         });
         Some(Ty::Adt(id, Vec::new()))
     }
@@ -2215,6 +2217,7 @@ impl Mapper<'_> {
             origin: Origin::Ts { path: path.to_string() },
             class: None,
             tagged: None,
+            own_init: false,
         });
         let fields = self.fields(file, members, scope, path, depth);
         self.defs[id].kind = DefKind::Struct(fields);

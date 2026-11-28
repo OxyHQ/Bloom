@@ -1,0 +1,71 @@
+error[B0405]: `init` ends before it sets `name`
+ --> check/struct_init.bloom:9:10
+  |
+9 |   public init(id: String, named: Bool) {
+  |          ^^^^ this `init`
+  |
+help: set every stored field on every path (or give the field a default)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0405]: `init` returns before it sets `name`
+  --> check/struct_init.bloom:20:7
+   |
+20 |       return
+   |       ^^^^^^ returns here
+   |
+help: set every stored field before `return` (or give the field a default)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0405]: `self.name` is read before `init` sets it
+  --> check/struct_init.bloom:22:17
+   |
+22 |     let shown = self.name
+   |                 ^^^^^^^^^ not set yet
+   |
+help: set `self.name = …` first
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0405]: `self` is used before `init` sets every field
+  --> check/struct_init.bloom:29:14
+   |
+29 |     let me = self
+   |              ^^^^ not made yet
+   |
+help: set every stored field first, then use `self`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: an `init` sets `self`: its `return` gives no value
+  --> check/struct_init.bloom:37:12
+   |
+37 |     return self
+   |            ^^^^ a value
+   |
+help: set `self = …` (or its fields), then `return`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: an `init` sets `self`: its `return` gives no value
+  --> check/struct_init.bloom:42:12
+   |
+42 |     return none
+   |            ^^^^ a value
+   |
+help: set `self = …` (or its fields), then `return`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0405]: `init` returns before it sets `id`, `name`
+  --> check/struct_init.bloom:42:5
+   |
+42 |     return none
+   |     ^^^^^^^^^^^ returns here
+   |
+help: set every stored field before `return` (or give the field a default)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0207]: `Account` has no `init(id:name:)`
+  --> check/struct_init.bloom:47:33
+   |
+47 | public func make() -> Account { Account(id: "a", name: "b") }
+   |                                 ^^^^^^^ not one of its initializers
+   |
+help: `Account` declares its own `init`, so it has no memberwise one (Swift's rule): call one of its `init`s, or declare this one in an `extension Account`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

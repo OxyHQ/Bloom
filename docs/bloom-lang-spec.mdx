@@ -343,6 +343,17 @@ struct, each key checked against its field's type, with or without an expected t
 A stored `let` is set once, when the struct is made (Swift's): `next.id = 4` is B0403 outside the
 struct's own `init`, in a `var` copy too; a new value is a new struct, `Prefs(..next, id: 4)`.
 
+**Initializers** (Swift's): a struct's `init(…)` sets `self`, field by field (`self.celsius =
+v`, or `celsius = v`) or whole (`self = Temperature(…)`), starting from the fields' defaults. It
+returns nothing: `return` ends it, and the call gives `self`. Every stored field without a
+default (an optional `var` starts as `none`) is set on every path before it returns, and none,
+nor `self` itself, is read before it is set: B0405, Swift's definite initialization. `init?(…)`
+is failable: it gives `T?`, and `return none` fails it. Inits are told apart by their labels
+(`Temperature(fahrenheit:)`, `Temperature(reading:)`). A struct whose own body declares an `init`
+has no memberwise one, so `Temperature(celsius: 1)` is B0207, while an `init` in an
+`extension` keeps it. An enum's `init` sets `self` to a case (`self = .large`), and a built-in
+type's sets it whole. In TS an init is a function, `Temperature$$init$fahrenheit(98.6)`.
+
 **Key paths** (Swift's) name a struct's field as a value: `\.hideLikes` (its root from what is
 expected) or `\Prefs.hideLikes`. The key path of a stored `var` is a `WritableKeyPath<Prefs, Bool>`,
 Swift's subtype of `KeyPath<Prefs, Bool>`, which fits wherever a `KeyPath` is expected; a `let`'s

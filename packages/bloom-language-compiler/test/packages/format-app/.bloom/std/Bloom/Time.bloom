@@ -201,19 +201,19 @@ public struct DateComponents: Equatable {
 
 extension Date {
   /// The current instant: `Date()`.
-  public init() { dateNow() }
+  public init() { self = dateNow() }
 
   /// The instant `seconds` after 1970-01-01T00:00:00Z.
-  public init(timeIntervalSince1970 seconds: Double) { dateOfMs(seconds * 1000.0) }
+  public init(timeIntervalSince1970 seconds: Double) { self = dateOfMs(seconds * 1000.0) }
 
   /// The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
-  public init(millisecondsSince1970 ms: Double) { dateOfMs(ms) }
+  public init(millisecondsSince1970 ms: Double) { self = dateOfMs(ms) }
 
   /// The instant `text` names, read by `strategy` (`try? Date(text, strategy: .iso8601)`); throws
   /// a `DateParseError` when it names none.
   public init(_ text: String, strategy: DateParseStrategy) throws {
     guard let ms = parseISO(text) else { throw DateParseError(text: text) }
-    return dateOfMs(ms)
+    self = dateOfMs(ms)
   }
 
   /// The current instant.

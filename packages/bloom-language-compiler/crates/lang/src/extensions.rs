@@ -18,6 +18,12 @@
 
 use crate::ast::*;
 
+/// Whether a lowered function is an `init` (`T$$init`, or a value type's `T$$init$label…`).
+pub fn is_init(name: &str) -> bool {
+    let name = overload_base(name).unwrap_or(name);
+    name.ends_with("$$init") || name.contains("$$init$")
+}
+
 /// The name a member `member` of type `owner` is lowered to.
 pub fn mangle(owner: &str, member: &str, is_static: bool) -> String {
     format!("{owner}{}{member}", if is_static { "$$" } else { "$" })
@@ -197,7 +203,14 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
             for p in &mut f.params {
                 replace_self(&mut p.ty, &owner.self_ty);
             }
-            f.ret = Some(owner.self_ty.clone());
+            // `init?` gives `Self?` (the parser wrote it); any other gives `Self`.
+            f.ret = Some(match f.ret.take() {
+                Some(mut failable) => {
+                    replace_self(&mut failable, &owner.self_ty);
+                    failable
+                }
+                None => owner.self_ty.clone(),
+            });
             implicit_self(&mut f.params, &mut f.body, owner.members, ids);
             ItemKind::Fn(f)
         }

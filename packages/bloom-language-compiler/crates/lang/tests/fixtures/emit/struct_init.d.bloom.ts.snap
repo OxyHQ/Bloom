@@ -1,0 +1,15 @@
+export interface Temperature {
+  readonly celsius: number;
+  readonly label: string;
+}
+export declare function Temperature$$init$fahrenheit(fahrenheit: number): Temperature;
+export declare function Temperature$$init$reading(reading: string): Temperature | undefined;
+export declare function Temperature$kelvin(self: Temperature): number;
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+export declare function Point$$init$diagonal(n: number): Point;
+export type Size = "small" | "large";
+export declare function Size$$init$count(count: number): Size;
+export declare function readings(): number;

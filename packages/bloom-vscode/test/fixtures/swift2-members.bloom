@@ -59,3 +59,13 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
 //                   ^^ keyword.operator.assignment.compound.bloom
   return [next, Account(name: next[keyPath: read])]
 }
+
+public struct Reading {
+  let value: Double
+  public init?(text: String) {
+//       ^^^^ storage.type.function.init.bloom
+//           ^ keyword.operator.optional.bloom
+    guard let v = Double(text) else { return none }
+    self.value = v
+  }
+}

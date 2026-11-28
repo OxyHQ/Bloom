@@ -900,9 +900,11 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Fn | Kw::Async) => TypeMemberKind::Func(self.fn_decl()),
             Tok::Ident(word) if word == "func" => TypeMemberKind::Func(self.fn_decl()),
-            Tok::Ident(word) if word == "init" && matches!(self.nth(1), Tok::P(P::LParen)) => {
+            // `init?(…)` (Swift's failable init): it gives `Self?`, `return none` failing.
+            Tok::Ident(word) if word == "init" && matches!(self.nth(1), Tok::P(P::LParen | P::Question)) => {
                 let init_start = self.span();
                 let name = self.ident("`init`");
+                let failable = self.at(P::Question).then(|| self.bump());
                 let params = self.params();
                 let throws = self.throws_clause();
                 let body = self.block();
@@ -914,7 +916,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                     constraints: Vec::new(),
                     params,
                     throws,
-                    ret: None,
+                    ret: failable.map(|at| TypeExpr {
+                        kind: TypeKind::Optional(Box::new(TypeExpr {
+                            kind: TypeKind::Named {
+                                name: Ident { name: "Self".into(), span: at },
+                                args: Vec::new(),
+                            },
+                            span: at,
+                        })),
+                        span: at,
+                    }),
                     span: init_start.to(body.span),
                     body,
                 })

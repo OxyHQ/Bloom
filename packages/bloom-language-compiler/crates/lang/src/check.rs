@@ -5,6 +5,7 @@
 
 pub(crate) mod call;
 mod exhaust;
+mod init;
 mod members;
 
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
@@ -683,6 +684,9 @@ pub struct Checker<'o> {
     pending_shapes: Vec<PendingShape>,
     /// Inside a class's `init`: its fields are set directly, its `let`s too.
     in_init: bool,
+    /// The frame of the `init` being checked, and whether it is failable (`init?`): its `return`
+    /// gives no value (`return none` fails an `init?`).
+    init_frame: Option<(usize, bool)>,
     /// `EnvironmentKey(…, default: v)` calls → `v`'s type, and the module constants that
     /// hold one → that type: what a key of this file holds.
     env_values: HashMap<ExprId, Ty>,
@@ -803,6 +807,7 @@ impl<'o> Checker<'o> {
             claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
+            init_frame: None,
             env_values: HashMap::default(),
             key_values: HashMap::default(),
             pending_witnesses: Vec::new(),
@@ -1072,6 +1077,7 @@ impl<'o> Checker<'o> {
             origin: Origin::Record,
             class: None,
             tagged: None,
+            own_init: false,
         });
         let def = self.out.defs.len() - 1;
         self.records.insert(name, def);
@@ -1090,6 +1096,7 @@ impl<'o> Checker<'o> {
             origin: Origin::Record,
             class: None,
             tagged: None,
+            own_init: false,
         });
         let def = self.out.defs.len() - 1;
         self.records.insert(name.to_string(), def);
@@ -1830,6 +1837,7 @@ impl<'o> Checker<'o> {
                 origin: Origin::Local,
                 class,
                 tagged: None,
+                own_init: own_init(item),
             });
             if is_transparent(item) {
                 self.out.transparent.insert(def);
@@ -2415,14 +2423,23 @@ impl<'o> Checker<'o> {
             &mut self.member_fn,
             crate::extensions::demangle(&f.name.name).map(|_| f.name.name.clone()),
         );
-        // A class's `init` makes `self`; a built-in type's gives the value its body ends with.
-        let init = f.name.name.ends_with("$$init")
-            && !crate::extensions::demangle(&f.name.name)
-                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner));
+        // An `init` makes `self` (Swift's): a class's is the new object, whose fields it sets; a
+        // value type's (a struct, an enum, a built-in type) is a `var` it sets field by field or
+        // whole (`self = …`). It returns nothing: `self` is what the call gives (`none` from a
+        // failable `init?` that `return none`s).
+        let init = crate::extensions::is_init(&f.name.name);
         let outer_init = std::mem::replace(&mut self.in_init, init);
+        let failable = init && matches!(fn_ty.ret, Ty::Option(_));
+        let outer_init_frame =
+            std::mem::replace(&mut self.init_frame, init.then(|| (self.frames.len() - 1, failable)));
         if init {
-            let self_ty = fn_ty.ret.clone();
-            self.declare(&Ident { name: "self".into(), span: f.name.span }, self_ty, LocalKind::Let);
+            let self_ty = match &fn_ty.ret {
+                Ty::Option(inner) => (**inner).clone(),
+                other => other.clone(),
+            };
+            let class = matches!(&self_ty, Ty::Adt(def, _) if self.out.defs[*def].class.is_some());
+            let kind = if class { LocalKind::Let } else { LocalKind::Var };
+            self.declare(&Ident { name: "self".into(), span: f.name.span }, self_ty, kind);
             self.frames.last_mut().expect("a frame").ret = Ty::Unit;
         }
         // A generic view's member also sees the view's own bounds (its witnesses are props).
@@ -2458,6 +2475,10 @@ impl<'o> Checker<'o> {
         let frame = is_hook_name(&f.name.name).then_some(self.frames.len() - 1);
         let outer_frame = std::mem::replace(&mut self.hook_frame, frame);
         self.block(&f.body, Some(&ret));
+        if init {
+            self.init_flow(f, &fn_ty.ret, failable);
+        }
+        self.init_frame = outer_init_frame;
         self.hook_body = outer_hook;
         self.hook_frame = outer_frame;
         self.frames.pop();
@@ -3269,6 +3290,7 @@ impl<'o> Checker<'o> {
                 origin: Origin::Bloom { specifier: specifier.to_string() },
                 class,
                 tagged: None,
+                own_init: own_init(item),
             });
             if is_transparent(item) {
                 self.out.transparent.insert(def);
@@ -3553,6 +3575,33 @@ impl<'o> Checker<'o> {
                         .help("return before the `defer`, or put the rest in an `if`")
                         .spec("8-effects-tasks-and-concurrency"),
                 );
+            }
+            // `return` in an `init` ends it with `self`; `return none` fails an `init?`.
+            StmtKind::Return(value)
+                if self.init_frame.is_some_and(|(frame, _)| frame + 1 == self.frames.len()) =>
+            {
+                let failable = self.init_frame.is_some_and(|(_, failable)| failable);
+                match value {
+                    Some(none) if failable && matches!(none.kind, ExprKind::None) => {}
+                    Some(value) => {
+                        self.expr(value, None);
+                        self.report(
+                            Diagnostic::error(
+                                "B0201",
+                                value.span,
+                                "an `init` sets `self`: its `return` gives no value",
+                            )
+                            .label("a value")
+                            .help(if failable {
+                                "set `self = …` and `return`, or `return none` to fail"
+                            } else {
+                                "set `self = …` (or its fields), then `return`"
+                            })
+                            .spec("44-structs"),
+                        );
+                    }
+                    None => {}
+                }
             }
             StmtKind::Return(value) => {
                 let ret = self.frames.last().expect("a frame").ret.clone();
@@ -9087,5 +9136,13 @@ fn literal_text(expr: &Expr) -> Option<String> {
         }
         ExprKind::Unary(UnaryOp::Neg, inner) => format!("-{}", literal_text(inner)?),
         _ => return None,
+    })
+}
+
+/// Whether a struct's own body declares an `init` (it has no memberwise init then).
+fn own_init(item: &Item) -> bool {
+    let ItemKind::Struct(s) = &item.kind else { return false };
+    s.surface.as_ref().is_some_and(|body| {
+        body.members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"))
     })
 }

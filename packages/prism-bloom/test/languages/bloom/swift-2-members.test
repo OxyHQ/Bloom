@@ -31,6 +31,14 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
   return [next, Account(name: next[keyPath: read])]
 }
 
+public struct Reading {
+  let value: Double
+  public init?(text: String) {
+    guard let v = Double(text) else { return none }
+    self.value = v
+  }
+}
+
 ----------------------------------------------------
 [
 	[
@@ -972,6 +980,142 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
 	[
 		"punctuation",
 		"]"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"public"
+	],
+	[
+		"keyword",
+		"struct"
+	],
+	[
+		"class-name",
+		"Reading"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	[
+		"argument-label",
+		"value"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Double"
+	],
+	[
+		"keyword",
+		"public"
+	],
+	[
+		"keyword",
+		"init"
+	],
+	[
+		"operator",
+		"?"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	[
+		"argument-label",
+		"text"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"String"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"guard"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" v ",
+	[
+		"operator",
+		"="
+	],
+	[
+		"class-name-reference",
+		"Double"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"text",
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"keyword",
+		"else"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"return"
+	],
+	[
+		"nil",
+		"none"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"self-keyword",
+		"self"
+	],
+	[
+		"punctuation",
+		"."
+	],
+	"value ",
+	[
+		"operator",
+		"="
+	],
+	" v\n  ",
+	[
+		"punctuation",
+		"}"
 	],
 	[
 		"punctuation",

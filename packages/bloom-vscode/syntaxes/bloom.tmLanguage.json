@@ -178,8 +178,11 @@
           }
         },
         {
-          "match": "\\b(init)\\s*(?=[(<])",
-          "captures": { "1": { "name": "storage.type.function.init.bloom" } }
+          "match": "\\b(init)(\\?)?\\s*(?=[(<])",
+          "captures": {
+            "1": { "name": "storage.type.function.init.bloom" },
+            "2": { "name": "keyword.operator.optional.bloom" }
+          }
         },
         {
           "match": "\\b(let|var)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",

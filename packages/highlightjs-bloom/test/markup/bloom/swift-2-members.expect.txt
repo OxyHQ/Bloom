@@ -30,3 +30,11 @@
   next[keyPath: key] <span class="hljs-operator">+=</span> <span class="hljs-number">1</span>
   <span class="hljs-keyword">return</span> [next, <span class="hljs-type">Account</span>(name: next[keyPath: read])]
 }
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Reading</span> {
+  <span class="hljs-keyword">let</span> value: <span class="hljs-type">Double</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">init</span><span class="hljs-operator">?</span>(text: <span class="hljs-type">String</span>) {
+    <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> v <span class="hljs-operator">=</span> <span class="hljs-type">Double</span>(text) <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> <span class="hljs-literal">none</span> }
+    <span class="hljs-variable language_">self</span>.value <span class="hljs-operator">=</span> v
+  }
+}
