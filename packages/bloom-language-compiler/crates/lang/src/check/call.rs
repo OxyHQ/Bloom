@@ -3362,8 +3362,31 @@ impl Checker<'_> {
             self.token_arg(value, set, modifier);
             return;
         }
+        // `width: w == "100%" ? "full" : w`: each branch a token or points of its own, the
+        // test narrowing each as in any conditional.
+        let token = |e: &Expr| matches!(e.kind, ExprKind::Str { .. } | ExprKind::ImplicitMember(_));
+        if let ExprKind::Ternary(cond, then, otherwise) = &value.kind
+            && (token(then) || token(otherwise))
+        {
+            self.expr(cond, Some(&Ty::Bool));
+            self.push();
+            self.narrow_present(cond);
+            self.points_arg(then, set, modifier);
+            self.pop();
+            self.push();
+            self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+            self.points_arg(otherwise, set, modifier);
+            self.pop();
+            self.out.types.insert(value.id, Ty::Unknown);
+            return;
+        }
         let ty = self.boundary(value, None);
-        match self.resolve(&ty) {
+        let ty = match self.resolve(&ty) {
+            // A frame's side may be `none` (Swift's `frame(width: CGFloat?)`): left out.
+            Ty::Option(inner) if modifier == "frame" => self.resolve(&inner),
+            other => other,
+        };
+        match ty {
             Ty::Int | Ty::Float | Ty::Foreign(_) | Ty::Unknown => {}
             _ => {
                 self.out.types.remove(&value.id);

@@ -496,7 +496,11 @@ an `Int` (`2 * Math.PI` is a `Float`), negated (`-event.translationY`), or compa
 a string (`item.pokeCount > 1`, checked as a `number`; two TS values compare as TS compares them). So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
 of string literals (`['a', 'b'] as const`, declared or inferred) is a list of their union,
-`[("a" | "b")]`, and its element type `(typeof C)[number]` is that union. `f || b`
+`[("a" | "b")]`, and its element type `(typeof C)[number]` is that union. A TS union of literals and
+`number`/`string`/`boolean` kept as it is (`width: Foreign<"number | '100%'">?`) narrows by `==` on
+its literals as TS narrows it: where `width == "100%"` fails it is the other members (`Float?`), so
+`.frame(width: width == "100%" ? "full" : width)` takes each branch (a frame's side, Swift's
+`frame(width: CGFloat?)`, may be `none`). `f || b`
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
