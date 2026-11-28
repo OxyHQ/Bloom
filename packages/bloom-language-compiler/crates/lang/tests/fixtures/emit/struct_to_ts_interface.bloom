@@ -1,0 +1,32 @@
+// A Bloom struct fits a TS object type it satisfies, as TS checks it: each required field of the
+// TS type is a stored field of the struct, of a fitting type, and the optional ones may be
+// missing. Nothing is converted (a struct is a plain object of its fields).
+import { AccountAvatar, normalizedHandle, placeholderColor } from "@/handles"
+
+public struct Hue {
+  let hue: Int
+}
+
+public struct ProfileCardData {
+  let id: String
+  var username: String? = none
+  var avatar: String? = none
+  var color: Hue? = none
+  var bio: String = ""
+}
+
+public func handle(_ card: ProfileCardData) -> String {
+  normalizedHandle(card) ?? ""
+}
+
+public func color(_ card: ProfileCardData) -> String {
+  placeholderColor(card)
+}
+
+public struct ProfileAvatar: View {
+  let card: ProfileCardData
+
+  var body: some View {
+    AccountAvatar(account: card, size: 40)
+  }
+}

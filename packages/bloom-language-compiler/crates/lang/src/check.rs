@@ -1229,6 +1229,35 @@ impl<'o> Checker<'o> {
                 self.structural.pop();
                 fits
             }
+            // A Bloom struct where a TS object type is expected (`normalizedHandle(card)` with
+            // `user: UserHandleInput`): a struct is a plain object of its stored fields at run
+            // time, so it fits as TS checks it, when each of the TS type's required fields is
+            // one of them, of a fitting type. An all-optional TS type (TS's "weak type") needs
+            // one field in common. Bloom to Bloom stays nominal; a `@Transparent` struct is
+            // its one field and a class an instance, so neither fits this way.
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if matches!(self.out.defs[*d1].origin, Origin::Local | Origin::Bloom { .. })
+                    && matches!(self.out.defs[*d2].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d1].kind, DefKind::Struct(_))
+                    && matches!(self.out.defs[*d2].kind, DefKind::Struct(_))
+                    && self.out.defs[*d1].class.is_none()
+                    && !self.out.transparent.contains(d1) =>
+            {
+                let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
+                let have = self.out.defs[d1].fields();
+                let want = self.out.defs[d2].fields();
+                let weak = want.iter().all(|w| w.default == FieldDefault::Undefined);
+                if weak && !want.iter().any(|w| have.iter().any(|h| h.name == w.name)) {
+                    return false;
+                }
+                if self.structural.contains(&(d1, d2)) {
+                    return true;
+                }
+                self.structural.push((d1, d2));
+                let fits = self.fits_record(d1, &x, d2, &y);
+                self.structural.pop();
+                fits
+            }
             (Ty::Strings(x), Ty::Strings(y)) => {
                 Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
             }

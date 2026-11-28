@@ -561,6 +561,10 @@ callback alias types a closure's parameters: with `presentSheet(render: SurfaceR
 `SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
 surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
 one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
+Bloom struct fits one at the TS boundary only (`normalizedHandle(card)` with `user:
+UserHandleInput`) when each of its required fields is a stored field of the struct of a fitting
+type and, for an all-optional TS type, one field is in common (TS's weak types; a
+`@Transparent` struct and a class do not fit this way, and Bloom to Bloom stays nominal), a
 `Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
 `AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
 `JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
