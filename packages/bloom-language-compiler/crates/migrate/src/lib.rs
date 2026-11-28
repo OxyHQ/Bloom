@@ -186,6 +186,17 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             compiled = again;
         }
     }
+    // A keyed write into a `@ref`'s value is 0.x's gap only: 2.0 prints it `r.value[k] = v` (the
+    // lead's decision), and the 2.0 text is checked whole below.
+    compiled.diagnostics.retain(|d| {
+        !(d.code == "B0403"
+            && d.message.strip_prefix("an element of `").and_then(|m| m.split('`').next()).is_some_and(
+                |name| {
+                    formatted.contains(&format!("@ref {name} "))
+                        || formatted.contains(&format!("@ref {name}:"))
+                },
+            ))
+    });
     if !compiled.diagnostics.is_empty() {
         let reasons = compiled
             .diagnostics

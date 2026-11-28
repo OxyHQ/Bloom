@@ -301,6 +301,17 @@ impl Tr<'_> {
 const REACT_ELEMENT_TYPES: &[&str] = &["ReactNode", "ReactElement"];
 
 impl Tr<'_> {
+    /// `ReactNode` itself (imported from `react`, or `React.ReactNode`), which holds `undefined`.
+    pub fn is_react_node(&self, ty: &TSType) -> bool {
+        let TSType::TSTypeReference(r) = ty else { return false };
+        let named = match &r.type_name {
+            TSTypeName::IdentifierReference(id) => self.react.get(id.name.as_str()).map(String::as_str),
+            TSTypeName::QualifiedName(q) => Some(q.right.name.as_str()),
+            _ => None,
+        };
+        named == Some("ReactNode") && self.is_react_element_type(&r.type_name)
+    }
+
     /// `ReactNode`/`ReactElement` imported from `react`, `React.ReactNode`, `JSX.Element`.
     fn is_react_element_type(&self, name: &TSTypeName) -> bool {
         let react_namespace = |n: &str| self.react.get(n).is_some_and(|e| e == "default" || e == "*");

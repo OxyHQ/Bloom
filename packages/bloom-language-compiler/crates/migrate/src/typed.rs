@@ -136,6 +136,15 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             }
             // `xs.count < max` with a `Float` max (a TS `number`): JS compared numbers, so the
             // count is read as one, `xs.count.toFloat() < max`.
+            // A string where a view is expected (TS's `ReactNode` takes one): its text node.
+            ("B0201", _)
+                if matches!(
+                    d.message.as_str(),
+                    "expected `View`, found `String`" | "expected `View?`, found `String`"
+                ) && !text.starts_with("RawText(") =>
+            {
+                Some((start, end, format!("RawText({text})")))
+            }
             ("B0201", _) if d.message == "expected `Int`, found `Float`" => {
                 let before = &source[..start];
                 [" < ", " <= ", " > ", " >= ", " == ", " != "]

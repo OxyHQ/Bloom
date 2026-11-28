@@ -1,0 +1,27 @@
+// A list of records whose items differ in their keys is typed as TS types it: every key, optional
+// where an item leaves it out. A function's `ReactNode` parameter takes nothing too (`View?`), and a
+// string handed to it is its text node.
+
+private let LINKS: [{ key: String, url: String, label: String? }] = [
+  { key: "about", url: "https://oxy.so/mention" },
+  { key: "oxy", url: "https://oxy.so/", label: "Oxy" },
+]
+
+private func row(_ key: String, _ meta: View?) -> View {
+  HStack {
+    Text(key)
+    Embed(meta)
+  }
+  .id(key)
+}
+
+public struct Footer: View {
+  let count: Float
+  var body: some View {
+    VStack {
+      Text(LINKS.map { link in link.label ?? link.url }.joined(" · "))
+      row("count", RawText("\(count) links"))
+      row("none", none)
+    }
+  }
+}
