@@ -1273,6 +1273,8 @@ impl<'o> Checker<'o> {
                 _ => false,
             },
             (Ty::List(x), Ty::List(y)) => self.coerce(x, y),
+            // A TS promise is covariant (`Promise<Unit>` where TS takes `Promise<unknown>`).
+            (Ty::Promise(x), Ty::Promise(y)) => self.coerce(x, y),
             (Ty::Fn(f), Ty::Fn(g)) => {
                 if f.params.len() > g.params.len() && f.params[g.params.len()..].iter().any(|p| !p.optional) {
                     return false;

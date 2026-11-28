@@ -1,0 +1,6 @@
+import { openExternal, openIn } from "@/links";
+
+export function open(link: string): void {
+openIn(link, { openWebUrl: (url: string) => openExternal(url) });
+}
+
