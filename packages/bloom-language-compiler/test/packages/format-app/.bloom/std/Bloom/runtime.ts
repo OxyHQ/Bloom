@@ -265,16 +265,34 @@ export function formatDate(
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
 }
 
-/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+/**
+ * `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`).
+ * Two are the standard library's: `hour12: 'true'` is Intl's `hour12: true` (an hour with its
+ * AM/PM), and `amPM: 'omitted'` drops the day period from the text (Swift's `amPM: .omitted`).
+ */
 export function formatDateFields(
   ms: number,
   locale: string,
   options: Readonly<Record<string, string>>,
   timeZone: string,
 ): string {
-  const all: Intl.DateTimeFormatOptions = { ...options };
+  const { hour12, amPM, ...fields } = options;
+  const all: Intl.DateTimeFormatOptions = { ...fields };
+  if (hour12 !== undefined) all.hour12 = hour12 === 'true';
   if (timeZone) all.timeZone = timeZone;
-  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
+  const format = new Intl.DateTimeFormat(locale || undefined, all);
+  if (amPM !== 'omitted') return format.format(ms);
+  // The parts without the day period, and the space that set it apart.
+  const parts = format.formatToParts(ms);
+  const kept = parts.filter((part, i) => {
+    if (part.type === 'dayPeriod') return false;
+    if (part.type !== 'literal' || part.value.trim() !== '') return true;
+    return parts[i + 1]?.type !== 'dayPeriod' && parts[i - 1]?.type !== 'dayPeriod';
+  });
+  return kept
+    .map((part) => part.value)
+    .join('')
+    .trim();
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {
