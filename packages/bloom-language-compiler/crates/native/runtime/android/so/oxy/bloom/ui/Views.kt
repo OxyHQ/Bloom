@@ -248,7 +248,7 @@ fun Icon(icon: IconData, size: IconSize = IconSize.sm, foreground: Color? = null
 fun Avatar(source: String, size: AvatarSize = AvatarSize.md, modifier: Modifier = Modifier) {
   // Bloom's avatar: a circle, filled while its picture loads (or when it has none).
   val box = modifier.size(size.dp).clip(CircleShape).background(Colors.surface)
-  if (source.isEmpty()) Box(box) else Image(source, contentFit = ContentFit.cover, modifier = box)
+  if (source.isEmpty()) Box(box) else BloomImage(source, ContentFit.cover, box, benchMark = false)
 }
 
 /** `Image(url)`: decoded off the main thread at its drawn size, through [ImagePipeline]. */
