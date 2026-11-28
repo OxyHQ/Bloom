@@ -1492,7 +1492,11 @@ impl<'s> Tr<'s> {
                 self.quiet = true;
                 let text = self.expr(body);
                 self.quiet = false;
-                let chain = text.strip_prefix(&param).map(str::to_string).unwrap_or_default();
+                let mut chain = text.strip_prefix(&param).map(str::to_string).unwrap_or_default();
+                // `v.….modifier(other)` of a modifier defined above: its chain, inlined too.
+                for (other, inner) in &self.modifiers {
+                    chain = chain.replace(&format!(".modifier({other})"), inner);
+                }
                 self.modifiers.insert(name.to_string(), chain);
             }
             _ => {
