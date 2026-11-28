@@ -395,6 +395,53 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     _ => None,
                 }
             }
+            // `xs.enumerated()`, `names.joined(", ")` on a TS value Bloom could not type (a
+            // `Foreign<"P['k']">` member, a zustand selector's result): the list method is
+            // Bloom's, so the binding is given its Bloom type, as bloomc's help says. The
+            // elements are TS values (`[Foreign]`); `joined` takes strings (`[String]`). A `let`
+            // is annotated (`let names: [String] = …`), a closure parameter too
+            // (`{ (spine: [Foreign]) in`).
+            ("B0601", method) if d.message.contains("is a Bloom list's") && source[..start].ends_with('.') => {
+                let before = &source[..start - 1];
+                let name: String = before
+                    .chars()
+                    .rev()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .rev()
+                    .collect();
+                let preceded = before[..before.len() - name.len()].chars().next_back();
+                let ty = if method == "joined" { "[String]" } else { "[Foreign]" };
+                if name.is_empty()
+                    || name.starts_with(|c: char| c.is_ascii_digit())
+                    || preceded.is_some_and(|c| c == '.' || c == '?')
+                {
+                    None
+                } else {
+                    let scope = &source[..start];
+                    let word = |at: usize, len: usize| {
+                        !scope[at + len..].starts_with(|c: char| c.is_alphanumeric() || c == '_')
+                    };
+                    let bound = [format!("let {name} = "), format!("var {name} = ")]
+                        .iter()
+                        .filter_map(|head| scope.rfind(head.as_str()).map(|at| (at + head.len() - 3, None)))
+                        .chain(
+                            [format!("{{ {name} in"), format!("{{\n{name} in")]
+                                .iter()
+                                .filter_map(|head| scope.rfind(head.as_str()))
+                                .filter(|at| word(at + 2, name.len()))
+                                .map(|at| (at + 2, Some(()))),
+                        )
+                        .max_by_key(|(at, _)| *at);
+                    bound
+                        .and_then(|(at, param)| match param {
+                            None => Some((at, at, format!(": {ty}"))),
+                            Some(()) => Some((at, at + name.len(), format!("({name}: {ty})"))),
+                        })
+                        .filter(|(a, ..)| !edits.iter().any(|(b, ..)| b == a))
+                }
+            }
             // `s.substring(a, b)` from literal non-negative indices: Bloom's `slice`.
             ("B0209", "substring")
                 if receiver == Some("String")
