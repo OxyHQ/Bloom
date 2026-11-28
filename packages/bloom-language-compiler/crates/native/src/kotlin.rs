@@ -2875,6 +2875,14 @@ impl<'a> Emitter<'a> {
                         (Recv::List, "compactMap") => return format!("{b}.mapNotNull({joined})"),
                         (Recv::Option, "map") => return format!("{b}?.let({joined})"),
                         (Recv::Option, "unwrapOr") => return format!("({b} ?: {joined})"),
+                        // core12's natural order (no comparator, over Int, Float, String or
+                        // Date): `min`/`max` are `T?`, `sorted` Kotlin's own.
+                        (Recv::List, "min" | "max") if self.file.checked.natural_orders.contains(&_e.id) => {
+                            return format!("{b}.{name}OrNull()");
+                        }
+                        (Recv::List, "sorted") if self.file.checked.natural_orders.contains(&_e.id) => {
+                            return format!("{b}.sorted()");
+                        }
                         _ => {}
                     }
                 }

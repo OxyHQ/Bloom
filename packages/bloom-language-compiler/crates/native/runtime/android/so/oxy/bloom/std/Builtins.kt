@@ -99,3 +99,16 @@ fun <S, F, U> BloomResult<S, F>.mapErr(transform: (F) -> U): BloomResult<S, U> =
   }
 
 fun <S, F> BloomResult<S, F>.unwrapOr(fallback: S): S = if (this is BloomResult.Ok) value else fallback
+
+// Numeric conversions: `Int(s)`/`Float(s)` of a string parse (none when it is not a number);
+// `Int(x)` of a number truncates toward zero, `Double(n)`/`Float(n)` is the number (#1082's
+// `CallRes::Convert`).
+fun Int(s: String): Long? = s.trim().toLongOrNull()
+fun Float(s: String): Double? = s.trim().toDoubleOrNull()
+fun Double(s: String): Double? = s.trim().toDoubleOrNull()
+fun Int(x: Double): Long = x.toLong()
+fun Int(x: Long): Long = x
+fun Float(x: Long): Double = x.toDouble()
+fun Float(x: Double): Double = x
+fun Double(x: Long): Double = x.toDouble()
+fun Double(x: Double): Double = x
