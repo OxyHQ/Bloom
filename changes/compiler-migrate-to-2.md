@@ -28,3 +28,11 @@ section: Added
   - a `defineModifier` made in place, or inside another, is a modifier value; a list pattern with defaults reads `at(i) ?? d`; `function f<T>` keeps its type parameters, and a generic view's members are 2.0's;
   - a `switch`'s `never` default is Swift's exhaustive `switch`; a TS component's `aria-pressed` is `..["aria-pressed": x]`; `ReadonlySet` is `Set`; `Embed(<></>)` is an empty `Group`;
   - a module `let` of one file is a file-scope `private var` (needs the compiler's #1058).
+- Round 11 (lang-mention-11):
+  - a private hook with an effect, used by one view, is spliced into it (its effect the view's `.task(id:)`); a closure that reads a name declared below it moves below it;
+  - what a view did while drawing runs after the render: a ref kept to the render's value and a call under a test are `.task(id:)`;
+  - a closure typed by its declaration (`const f: F`, `useCallback<F>`) takes its parameters' types from it;
+  - a record list whose items differ in their keys is TS's union of shapes (`label: String?`); a function's `ReactNode` parameter is `View?`, and a string there is `RawText`;
+  - a list the source tests is optional; an optional string among a text's runs, `!!x?.trim()`, a `Record` read destructured;
+  - an imported base type's fields are written out (`extends`, intersections, `Pick`/`Omit`); a React component returning an element is a view; a JSX spread of written-out props passes each field;
+  - JS's locale number formatting is FormatStyle (`toLocaleString()`, `Intl.NumberFormat`; needs the compiler's #1065).
