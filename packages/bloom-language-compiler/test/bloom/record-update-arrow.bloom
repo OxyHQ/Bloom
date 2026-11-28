@@ -1,0 +1,13 @@
+// A record update of a TS interface state: `(draft) => ({ … })` (record-update-arrow-body).
+import { type InstallmentPrefs } from "./installment-prefs"
+
+public struct Settings: View {
+  let value: InstallmentPrefs
+  @State private var draft = value
+  var body: some View {
+    VStack {
+      Text(draft.enabled ? "On" : "Off")
+      Button(Text("Toggle")).onPress { draft = { ..draft, enabled: !draft.enabled } }
+    }
+  }
+}

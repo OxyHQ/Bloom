@@ -1,0 +1,14 @@
+// `draft = { ..draft, enabled: false }` on a `@State` of a TS interface type: React's functional
+// update returns the object literal, parenthesised (`(draft) => ({ … })`), never a block.
+import { type InstallmentPrefs } from "@/payments/prefs"
+
+public struct Settings: View {
+  let value: InstallmentPrefs
+  @State private var draft = value
+  var body: some View {
+    VStack {
+      Text(draft.enabled ? "On" : "Off")
+      Button(Text("Toggle")).onPress { draft = { ..draft, enabled: !draft.enabled } }
+    }
+  }
+}

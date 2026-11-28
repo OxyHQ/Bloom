@@ -1,0 +1,28 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { type InstallmentPrefs } from "@/payments/prefs";
+
+const $view0 = Button(Text("Toggle"));
+export interface SettingsProps {
+  readonly value: InstallmentPrefs;
+}
+export const Settings = view(function Settings(props: SettingsProps) {
+"use no memo";
+const $ = $c(2);
+const { value } = props;
+const [draft, setDraft] = useState<InstallmentPrefs>(() => value);
+let $t0;
+if ($[0] !== draft) {
+$t0 = VStack(Text(draft.enabled ? "On" : "Off"), $view0.onPress(() => {
+setDraft((draft) => ({ countries: draft.countries, message: draft.message, enabled: !draft.enabled }));
+}));
+$[0] = draft;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

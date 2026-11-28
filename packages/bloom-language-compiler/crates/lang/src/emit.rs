@@ -1883,7 +1883,9 @@ impl<'a> Emitter<'a> {
                 };
                 let mut line = Frag::at(span, format!("{setter}("));
                 if functional {
-                    line.s(&format!("({name}) => ")).f(if fields.is_empty() {
+                    // An object literal as the arrow's body is parenthesised (`{` would open a block).
+                    let object = new.text.trim_start().starts_with('{');
+                    line.s(&format!("({name}) => ")).f(if fields.is_empty() && !object {
                         new
                     } else {
                         new.wrap("(", ")")

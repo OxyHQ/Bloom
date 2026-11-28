@@ -1,0 +1,7 @@
+import type { InstallmentPrefs } from "@/payments/prefs";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface SettingsProps {
+  readonly value: InstallmentPrefs;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Settings())`), or from TSX as `toElement(Settings())`. */
+export declare const Settings: (props: SettingsProps) => ComposedView;
