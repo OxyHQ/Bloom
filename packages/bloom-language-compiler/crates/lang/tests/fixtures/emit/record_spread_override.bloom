@@ -1,0 +1,33 @@
+// `{ ..base, k: v }` is copy-and-change: a key written after the spread replaces the spread's
+// field, as JS's `{ ...base, k: v }` does (Mention's settings/pages/feed, jobs/index). With a
+// struct first, the literal is that struct with or without an expected type.
+public struct Draft: Equatable {
+  var q: String
+  var cursor: String? = none
+}
+
+public struct Page<T> {
+  var items: [T]
+  var more: Bool
+}
+
+public func searched(_ draft: Draft, _ text: String) -> Draft {
+  let next = { ..draft, q: text, cursor: none }
+  return next
+}
+
+public func cleared(_ draft: Draft) -> String {
+  let next = { ..draft, cursor: none }
+  return next.q
+}
+
+public func ended(_ page: Page<Int>) -> Page<Int> {
+  let last = { ..page, more: false }
+  return last
+}
+
+public func tagged(_ draft: Draft) -> String {
+  // A key the struct has not: a record of its own, the spread's fields and `tag`.
+  let extra = { ..draft, tag: "new" }
+  return extra.tag
+}
