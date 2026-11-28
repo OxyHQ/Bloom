@@ -739,9 +739,41 @@ impl Tr<'_> {
         let mut members: Vec<String> = Vec::new();
         let mut previous: Option<u32> = None;
         let mut skip_to = 0;
+        // JS hoists a `function`: one read above its place is translated there, Swift's local
+        // functions being seen from their place on (when it reads nothing declared from there).
+        let declared: Vec<Vec<String>> = statements.iter().map(declared_names).collect();
+        let mut hoisted: HashSet<usize> = HashSet::new();
         for (i, statement) in statements.iter().enumerate() {
-            if i < skip_to {
+            if i < skip_to || hoisted.contains(&i) {
                 continue;
+            }
+            for (j, later) in statements.iter().enumerate().skip(i + 1) {
+                let Statement::FunctionDeclaration(f) = later else { continue };
+                let (Some(id), Some(body)) = (&f.id, Body::of_function(f)) else { continue };
+                if hoisted.contains(&j) || !referenced_names(statement).contains(id.name.as_str()) {
+                    continue;
+                }
+                let reads = referenced_names(later);
+                let blocked = declared[i..]
+                    .iter()
+                    .flatten()
+                    .any(|n| n != id.name.as_str() && reads.contains(n.as_str()));
+                if blocked {
+                    continue;
+                }
+                let note = self.note(f.span.start);
+                let name = id.name.to_string();
+                self.scope.member_fns.insert(name.clone());
+                let text = self.fn_text(
+                    &name,
+                    "",
+                    f.r#async,
+                    &f.params,
+                    f.return_type.as_deref().map(|t| &t.type_annotation),
+                    body,
+                );
+                members.push(format!("{note}{}{text}", self.take_reviews()));
+                hoisted.insert(j);
             }
             let span = statement.span();
             // `let x = init` and the statements after it that build `x` (`if (c) x = …`,
@@ -4342,4 +4374,55 @@ mod gate_tests {
             "pub default screen Lists {\nbody {\nGroup {\nif a { A() } else { B() }\n}\n.modifier(Gate())\n}\n}"
         );
     }
+}
+
+/// The names a view body's statement declares (`const a = …`, `const [x, setX] = …`, `function f`).
+fn declared_names(statement: &Statement) -> Vec<String> {
+    fn pattern(p: &BindingPattern, out: &mut Vec<String>) {
+        match p {
+            BindingPattern::BindingIdentifier(id) => out.push(id.name.to_string()),
+            BindingPattern::ObjectPattern(o) => {
+                for property in &o.properties {
+                    pattern(&property.value, out);
+                }
+                if let Some(rest) = &o.rest {
+                    pattern(&rest.argument, out);
+                }
+            }
+            BindingPattern::ArrayPattern(a) => {
+                for element in a.elements.iter().flatten() {
+                    pattern(element, out);
+                }
+                if let Some(rest) = &a.rest {
+                    pattern(&rest.argument, out);
+                }
+            }
+            BindingPattern::AssignmentPattern(a) => pattern(&a.left, out),
+        }
+    }
+    let mut out = Vec::new();
+    match statement {
+        Statement::VariableDeclaration(v) => {
+            for d in &v.declarations {
+                pattern(&d.id, &mut out);
+            }
+        }
+        Statement::FunctionDeclaration(f) => out.extend(f.id.as_ref().map(|i| i.name.to_string())),
+        _ => {}
+    }
+    out
+}
+
+/// Every name a statement reads (an over-approximation: an inner binding's reads count too).
+fn referenced_names(statement: &Statement) -> HashSet<String> {
+    use oxc_ast_visit::Visit;
+    struct Names(HashSet<String>);
+    impl<'a> Visit<'a> for Names {
+        fn visit_identifier_reference(&mut self, id: &oxc_ast::ast::IdentifierReference<'a>) {
+            self.0.insert(id.name.to_string());
+        }
+    }
+    let mut names = Names(HashSet::new());
+    names.visit_statement(statement);
+    names.0
 }
