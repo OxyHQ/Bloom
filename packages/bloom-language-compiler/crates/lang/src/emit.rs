@@ -3454,8 +3454,10 @@ impl<'a> Emitter<'a> {
                 only = false;
             }
         });
-        // Assignments write states: their setters are the view's.
+        // Assignments write states: their setters are the view's. Any assignment anywhere in
+        // it (a `do`'s body, a `guard`'s, a nested closure's), as the checker resolved them.
         only && !stmts_assign(&c.body)
+            && !self.ck.assigns.keys().any(|span| span.start >= c.span.start && span.end <= c.span.end)
     }
 
     // ---- calls --------------------------------------------------------------

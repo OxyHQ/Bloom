@@ -1,0 +1,19 @@
+// A closure in .onAppear that writes @State inside a do/catch stays in the view function (its
+// setter is the view's); hoisted to module scope, the write threw and the state never changed.
+import { Promise } from "js"
+public struct Recent: View {
+  @State private var items: [String] = []
+  var body: some View {
+    VStack { for i in items { Text(i) } }
+    .onAppear {
+      let load = {
+        do {
+          let got: [String] = try await Promise.resolve(["a"])
+          items = got
+        } catch {
+        }
+      }
+      task { await load() }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+// A closure declared in `.onAppear { let load = { … } ; task { await load() } }` that writes
+// @State is hoisted to module scope (`const $fn2 = async () => { … setItems(parsed) … }`), outside
+// the view function where `setItems` is declared: the write is a ReferenceError (here swallowed by
+// the closure's `catch`), so the state never changes. Mention: components/Compose/EmojiPickerSheet
+// (its recent emojis never load).
+// Expected: a closure that reads or writes the view's state stays inside the view function.
+import { Promise } from "js"
+public struct Recent: View {
+  @State private var items: [String] = []
+  var body: some View {
+    VStack { for i in items { Text(i) } }
+    .onAppear {
+      let load = {
+        do {
+          let got: [String] = try await Promise.resolve(["a"])
+          items = got
+        } catch {
+        }
+      }
+      task { await load() }
+    }
+  }
+}
