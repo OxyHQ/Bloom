@@ -13,7 +13,8 @@
 //! - **Overrides.** The app's own native config, which `bloom init --adopt` writes from the
 //!   app config's evaluated plugins (`<overrides>/android/`), is a layer over the generated
 //!   project: its `AndroidManifest.xml` merges over the app's (as a build-type manifest, so
-//!   it wins), and its `res/`, `gradle.properties`, `proguard-rules.pro` and `app.gradle`
+//!   it wins), and its `res/`, `gradle.properties`, `proguard-rules.pro`, `app.gradle` and
+//!   `google-services.json` (with Google's services plugin)
 //!   are added.
 //! - **The JS.** Metro runs over the app's `metro.config.js`, with the app's `tsconfig.json`
 //!   path aliases (which Expo's CLI resolves) and the stopgap rule above layered on top.
@@ -289,6 +290,9 @@ pub struct Overrides {
     pub gradle_properties: Option<String>,
     pub proguard: Option<String>,
     pub app_gradle: Option<PathBuf>,
+    /// The app's Firebase config (`google-services.json`, which a symlink to the Expo app
+    /// config's `googleServicesFile` may be): FCM and Firebase read it through Google's plugin.
+    pub google_services: Option<PathBuf>,
 }
 
 impl Overrides {
@@ -302,6 +306,7 @@ impl Overrides {
             gradle_properties: text("gradle.properties"),
             proguard: text("proguard-rules.pro"),
             app_gradle: Some(dir.join("app.gradle")).filter(|f| f.is_file()),
+            google_services: Some(dir.join("google-services.json")).filter(|f| f.is_file()),
         }
     }
 

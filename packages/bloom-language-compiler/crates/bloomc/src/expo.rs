@@ -86,6 +86,8 @@ pub struct Mode {
     pub with_expo: bool,
     /// Write the native project and stop, without building it (`--generate`).
     pub generate: bool,
+    /// A store release (`--store`): the AAB and one APK per ABI (`android::build`).
+    pub store: bool,
     pub device: Option<String>,
     pub jobs: usize,
     pub allow_ts_imports: bool,
@@ -97,6 +99,7 @@ impl Mode {
             release: args.release,
             with_expo: args.with_expo,
             generate: args.generate,
+            store: args.store,
             device: args.device.clone(),
             jobs: check.jobs,
             allow_ts_imports: check.allow_ts_imports,
