@@ -69,6 +69,9 @@ pub struct TsMember {
 #[derive(Debug, Clone)]
 pub struct TsFn {
     pub type_params: Vec<String>,
+    /// Each type parameter's constraint, when it has one other than a view's
+    /// (`<Style extends DefaultStyle>`): the soft context of a literal given for it.
+    pub bounded: Vec<bool>,
     pub params: Vec<TsParam>,
     pub ret: Option<TsType>,
     /// What an unannotated function returns, read from its body (`infer`): mapped where `ret`
@@ -622,6 +625,7 @@ impl Reader {
         }
         TsFn {
             type_params: fn_type_params(type_parameters),
+            bounded: fn_type_bounds(type_parameters),
             params: out,
             ret: ret.map(|t| self.ty(t)),
             inferred: None,
@@ -811,6 +815,25 @@ fn fn_type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclara
                             if matches!(type_name(&r.type_name).as_str(), "ViewModifiers" | "AnyView" | "ViewNode")
                     );
                     if view { format!("{}{VIEW_PARAM}", p.name.name) } else { p.name.name.to_string() }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Whether each type parameter has a constraint other than a view's (`<S extends DefaultStyle>`).
+fn fn_type_bounds(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaration>>) -> Vec<bool> {
+    declaration
+        .as_ref()
+        .map(|d| {
+            d.params
+                .iter()
+                .map(|p| match &p.constraint {
+                    Some(TSType::TSTypeReference(r)) => {
+                        !matches!(type_name(&r.type_name).as_str(), "ViewModifiers" | "AnyView" | "ViewNode")
+                    }
+                    Some(TSType::TSUnknownKeyword(_) | TSType::TSAnyKeyword(_)) | None => false,
+                    Some(_) => true,
                 })
                 .collect()
         })
@@ -1191,6 +1214,7 @@ impl Mapper<'_> {
         };
         let t = TsFn {
             type_params: Vec::new(),
+            bounded: Vec::new(),
             params: vec![param("key", TsType::String, false), param("options", TsType::Other, true)],
             ret: Some(TsType::String),
             inferred: None,
@@ -1198,6 +1222,7 @@ impl Mapper<'_> {
         let member = |name: &str, ty: TsType| TsMember { name: name.into(), optional: false, ty };
         let hook = TsFn {
             type_params: Vec::new(),
+            bounded: Vec::new(),
             params: vec![param("ns", TsType::Other, true), param("options", TsType::Other, true)],
             ret: Some(TsType::Object(vec![
                 member("t", TsType::Fn(Box::new(t))),
@@ -1516,6 +1541,44 @@ impl Mapper<'_> {
                 rest: param.rest,
             });
         }
+        // A constrained type parameter (`<Style extends DefaultStyle>(updater: () => Style)`): the
+        // TS type a literal given for it is checked against, element by element, while the type
+        // itself is still inferred from the literal (TS's). Its path: the parameter TS reads with
+        // the constraint in place of the type parameter (`ReturnType<Parameters<f>[0]>`).
+        let mut shapes: Vec<(Ty, Ty)> = Vec::new();
+        for (index, param) in function.params.iter().enumerate() {
+            let param_path = format!("NonNullable<Parameters<{fn_path}>[{index}]>");
+            let bound = |name: &str| {
+                function
+                    .type_params
+                    .iter()
+                    .position(|p| p == name)
+                    .filter(|&k| function.bounded.get(k) == Some(&true))
+            };
+            let direct = |ty: &TsType| match ty {
+                TsType::Ref(name, args) if args.is_empty() => bound(name),
+                TsType::Intersection(items) => items.iter().find_map(|t| match t {
+                    TsType::Ref(name, args) if args.is_empty() => bound(name),
+                    _ => None,
+                }),
+                _ => None,
+            };
+            let found = match &param.ty {
+                Some(TsType::Fn(callback)) => {
+                    callback.ret.as_ref().and_then(direct).map(|k| (k, format!("ReturnType<{param_path}>")))
+                }
+                Some(ty) => direct(ty).map(|k| (k, param_path.clone())),
+                None => None,
+            };
+            if let Some((k, path)) = found
+                && !shapes.iter().any(|(p, _)| matches!(p, Ty::Param(i, _) if *i as usize == k))
+            {
+                shapes.push((
+                    Ty::Param(k as u32, function.type_params[k].clone().into()),
+                    Ty::Foreign(path.into()),
+                ));
+            }
+        }
         let ret_path = format!("ReturnType<{fn_path}>");
         let ret = match function.ret.as_ref().or(function.inferred.as_ref()) {
             Some(TsType::Ref(promise, args)) if promise == "Promise" && args.len() == 1 => {
@@ -1532,7 +1595,7 @@ impl Mapper<'_> {
             ts: true,
             throws: false,
             bounds: Vec::new(),
-            shapes: Vec::new(),
+            shapes,
         }))
     }
 
@@ -1919,6 +1982,16 @@ impl Mapper<'_> {
                 }
                 let scope: Scope = params.clone();
                 let fields = self.fields(file, &all, &scope, path, depth);
+                // `SharedValue<Value>` where `Value` is the enclosing function's type parameter
+                // (`useSharedValue<Value>(…): SharedValue<Value>`): the definition stays generic
+                // and the reference carries its arguments, so instantiating the function reaches
+                // its fields (`progress.value` is the call's `Value`, not the name `Value`).
+                let mapped: Vec<Ty> = args.to_vec();
+                if mapped.iter().any(mentions_param) {
+                    self.defs[id].generics = params.clone();
+                    self.defs[id].kind = DefKind::Struct(fields);
+                    return Ty::Adt(id, mapped);
+                }
                 let fields = fields
                     .into_iter()
                     .map(|f| FieldDef { ty: crate::types::substitute(&f.ty, args), ..f })
@@ -2174,4 +2247,16 @@ fn returns_view_node(file: &TsFile, ret: &TsType) -> bool {
         }
         other => node(other),
     }
+}
+
+/// Whether `ty` names a type parameter.
+fn mentions_param(ty: &Ty) -> bool {
+    let mut found = false;
+    crate::types::map_ty(ty, &mut |t| {
+        if matches!(t, Ty::Param(..)) {
+            found = true;
+        }
+        None
+    });
+    found
 }

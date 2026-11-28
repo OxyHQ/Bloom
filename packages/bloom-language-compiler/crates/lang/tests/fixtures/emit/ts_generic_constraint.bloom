@@ -1,0 +1,14 @@
+// A TS generic parameter's constraint is the soft context of a literal given for it (ProfileHeader):
+// `useAnimatedStyle<Style extends DefaultStyle>(updater: () => Style)`. The callback's result
+// literal is TS's to check, element by element, against `DefaultStyle`, while `Style` is still
+// TS's to infer from it, with no excess-field check. `progress.value` is the call's `Value`.
+import { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated"
+
+func useCollapse() -> Float {
+  let progress = useSharedValue(0.0)
+  let style = useAnimatedStyle({
+    ({ transform: [{ scale: interpolate(progress.value, [0, 1], [1, 0.5]) }, { translateY: interpolate(progress.value, [0, 1], [0, 8]) }] })
+  })
+  let _ = style
+  return progress.value + 1.0
+}

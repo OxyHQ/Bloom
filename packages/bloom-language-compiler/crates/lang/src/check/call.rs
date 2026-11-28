@@ -878,8 +878,27 @@ impl Checker<'_> {
             }
             Ty::Foreign(text) => {
                 self.out.calls.insert(expr.id, CallRes::Ts);
+                // A literal given to a TS function Bloom cannot read (`StyleSheet.create(video:
+                // { minHeight: web ? "var(…)" : 384 })`): TS's to check against the parameter, as
+                // any literal where a TS type is expected, element by element.
+                let positional = call.args.iter().filter(|a| a.label.is_none() && !a.spread).count();
+                let mut index = 0;
                 for arg in &call.args {
-                    self.boundary(&arg.value, None);
+                    let context = if arg.spread || !super::literal_shaped(&arg.value) || text.is_empty() {
+                        None
+                    } else if let Some(label) = &arg.label {
+                        Some(format!(
+                            "NonNullable<Parameters<{text}>[{positional}]>[{}]",
+                            crate::emit::string_literal(&label.name)
+                        ))
+                    } else {
+                        Some(format!("NonNullable<Parameters<{text}>[{index}]>"))
+                    };
+                    if arg.label.is_none() && !arg.spread {
+                        index += 1;
+                    }
+                    let context = context.map(|c| Ty::Foreign(c.into()));
+                    self.boundary(&arg.value, context.as_ref());
                 }
                 if let Some(trailing) = &call.trailing {
                     self.closure(trailing, None, true);
@@ -1191,6 +1210,39 @@ impl Checker<'_> {
 
     /// A TS function: positional arguments in order (a rest parameter takes the
     /// rest), named ones form one options object passed last (spec 5).
+    /// The soft context of an argument given for a TS function's constrained type parameter
+    /// (`useAnimatedStyle(() => ({ transform: [...] }))`, `<Style extends DefaultStyle>`): a
+    /// literal for it, or a closure's result literal, is checked against the constraint, TS's
+    /// type, element by element (as any literal where a TS type is expected), while the type
+    /// parameter itself is left to TS to infer from it, with no excess-field check.
+    fn soft_context(&mut self, f: &FnTy, param: &Ty, value: &Expr) -> Option<Ty> {
+        if f.shapes.is_empty() {
+            return None;
+        }
+        match &value.kind {
+            ExprKind::Closure(_) => self.soft_callback(f, param),
+            _ if super::literal_shaped(value) => self.constraint_of(f, param),
+            _ => None,
+        }
+    }
+
+    /// `param`, a function whose result is a constrained type parameter, with the constraint
+    /// as its result.
+    fn soft_callback(&mut self, f: &FnTy, param: &Ty) -> Option<Ty> {
+        let Ty::Fn(callback) = self.resolve(param) else { return None };
+        let ret = self.constraint_of(f, &callback.ret)?;
+        Some(Ty::Fn(Rc::new(FnTy { ret, ..(*callback).clone() })))
+    }
+
+    /// The constraint of `ty` when it is one of `f`'s constrained type parameters.
+    fn constraint_of(&mut self, f: &FnTy, ty: &Ty) -> Option<Ty> {
+        let Ty::Var(var) = self.resolve(ty) else { return None };
+        f.shapes.iter().find_map(|(param, shape)| match self.resolve(param) {
+            Ty::Var(v) if v == var => Some(shape.clone()),
+            _ => None,
+        })
+    }
+
     fn ts_args(&mut self, expr: &Expr, call: &Call, f: &FnTy) {
         self.out.calls.insert(expr.id, CallRes::Ts);
         let positional: Vec<&Arg> = call.args.iter().filter(|a| a.label.is_none()).collect();
@@ -1228,7 +1280,14 @@ impl Checker<'_> {
                         }
                         _ => param.ty.clone(),
                     };
-                    self.boundary(&arg.value, Some(&ty));
+                    match self.soft_context(f, &ty, &arg.value) {
+                        Some(soft) => {
+                            self.boundary(&arg.value, Some(&soft));
+                        }
+                        None => {
+                            self.boundary(&arg.value, Some(&ty));
+                        }
+                    }
                 }
                 None => {
                     self.report(
@@ -1281,9 +1340,20 @@ impl Checker<'_> {
                         self.boundary(&arg.value, ty.as_ref());
                     }
                 }
-                Some(_) => {
+                Some(options) => {
+                    // The options object for a constrained type parameter (`StyleSheet.create(
+                    // video: { … })`, `<T extends NamedStyles<T>>`): each named value is checked
+                    // against its member of the constraint, TS's type, as a literal's fields are.
+                    let soft = self.constraint_of(f, &options);
                     for arg in &named {
-                        self.boundary(&arg.value, None);
+                        let label = arg.label.as_ref().expect("named");
+                        let member = soft.as_ref().and_then(|soft| match soft {
+                            Ty::Foreign(path) => Some(Ty::Foreign(
+                                format!("{path}[{}]", crate::emit::string_literal(&label.name)).into(),
+                            )),
+                            _ => None,
+                        });
+                        self.boundary(&arg.value, member.as_ref());
                     }
                 }
                 None => {
@@ -1317,12 +1387,14 @@ impl Checker<'_> {
                 );
             }
             self.closure_throws = true;
+            let soft = ty.as_ref().and_then(|t| self.soft_callback(f, t));
             let closure = self.closure(
                 trailing,
-                ty.as_ref().filter(|t| matches!(self.resolve(t), Ty::Fn(_))),
+                soft.as_ref().or(ty.as_ref()).filter(|t| matches!(self.resolve(t), Ty::Fn(_))),
                 ty.is_none(),
             );
-            if let Some(ty) = ty
+            if soft.is_none()
+                && let Some(ty) = ty
                 && !self.coerce(&closure, &ty)
             {
                 self.mismatch(trailing.span, &closure, &ty);
@@ -1440,7 +1512,10 @@ impl Checker<'_> {
                         }
                         // A field of a TS object (`{ transform: [{ scale }, { translateY }] }`
                         // where a TS type is expected): its literal is TS's to check.
-                        None if matches!(target, Some(Ty::Foreign(_))) && super::literal_shaped(value) => {
+                        None if matches!(target, Some(Ty::Foreign(_)))
+                            && (super::literal_shaped(value)
+                                || matches!(value.kind, ExprKind::Ternary(..))) =>
+                        {
                             self.expr(value, Some(&Ty::Foreign("".into())))
                         }
                         None => {

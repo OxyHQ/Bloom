@@ -1,0 +1,4 @@
+import { Platform, StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({ video: { padding: 24, minHeight: (Platform.OS === "web") ? "var(--bloom-screen-viewport-height)" : 384 } });
+

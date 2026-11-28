@@ -4872,6 +4872,25 @@ impl<'o> Checker<'o> {
                     }
                     return joined;
                 }
+                // Where a TS type is expected (`minHeight: web ? "var(…)" : 384`, RN's
+                // `DimensionValue`): each branch is TS's to check against it, as a literal's
+                // elements are, never joined to the other's type.
+                if let Some(foreign @ Ty::Foreign(_)) = expected_resolved.as_ref().map(|e| match e {
+                    Ty::Option(inner) => self.resolve(inner),
+                    other => other.clone(),
+                }) {
+                    self.expr(cond, Some(&Ty::Bool));
+                    self.hook_allowed = false;
+                    self.push();
+                    self.narrow_present(cond);
+                    self.boundary(then, Some(&foreign));
+                    self.pop();
+                    self.push();
+                    self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+                    self.boundary(otherwise, Some(&foreign));
+                    self.pop();
+                    return expected_resolved.clone().unwrap_or(foreign);
+                }
                 // In a child's place, so are its branches (`c ? Text(…) : xs.map(f)`).
                 let slot = self.child_slots.contains(&expr.id);
                 if slot {
