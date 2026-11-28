@@ -143,6 +143,10 @@ pub struct Tr<'s> {
     /// Module functions taking one destructured object, every call passing one object or
     /// a name: labelled parameters (key, type, optional), in the pattern's order.
     pub labelled: HashMap<String, Vec<(String, String, bool)>>,
+    /// [`Tr::labelled`] functions that TS modules call too: `@jsOptions` (bloomc emits them to
+    /// TS as taking one object). Their parameter's name when it is one (`input`, read only as
+    /// `input.x`): the body keeps it, as a record of the labels.
+    pub js_options: HashMap<String, Option<String>>,
     /// The `ReactNode` parameters (by span start) of a local function that only hands them to a
     /// TS component's prop, every call passing text (a string, a fragment of text, nothing):
     /// `String?`, so the component draws the same text the TS gave it (no nested `Text`).
@@ -440,6 +444,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         scope: Scope::default(),
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
+        js_options: HashMap::new(),
         text_params: HashSet::new(),
         object_tests: HashSet::new(),
         rest_views: HashMap::new(),
@@ -1233,53 +1238,105 @@ impl<'s> Tr<'s> {
         for statement in body {
             uses.visit_statement(statement);
         }
+        let js_options = js_options_supported();
         for statement in body {
-            let Statement::FunctionDeclaration(f) = statement else { continue };
+            let (f, exported) = match statement {
+                Statement::FunctionDeclaration(f) => (f, false),
+                Statement::ExportDeclaration(e) => match &e.declaration {
+                    Declaration::FunctionDeclaration(f) => (f, true),
+                    _ => continue,
+                },
+                _ => continue,
+            };
             let Some(id) = &f.id else { continue };
             let name = id.name.as_str();
+            let exported = exported || self.listed_exports.contains(name);
+            // TS modules call an exported one with an object: only as `@jsOptions`.
+            if exported && !js_options {
+                continue;
+            }
             let [param] = f.params.items.as_slice() else { continue };
-            let (BindingPattern::ObjectPattern(pattern), Some(t)) = (&param.pattern, &param.type_annotation)
-            else {
-                continue;
-            };
-            if pattern.rest.is_some()
-                || uses.calls.get(name).is_none_or(|&c| c == 0 || uses.refs.get(name) != Some(&c))
-                || self.listed_exports.contains(name)
-            {
+            let Some(t) = &param.type_annotation else { continue };
+            // Only a destructured object, or (`@jsOptions`) a named one; checked before the
+            // type is read (reading it notes the types it names, as imports).
+            match &param.pattern {
+                BindingPattern::ObjectPattern(p) if p.rest.is_none() => {}
+                BindingPattern::BindingIdentifier(p)
+                    if exported && f.body.as_ref().is_some_and(|b| only_member_reads(b, &p.name)) => {}
+                _ => continue,
+            }
+            let local_calls = uses.calls.get(name).copied().unwrap_or(0);
+            // Read only as calls `f({ … })` / `f(name)` here (a value read keeps the object).
+            if uses.refs.get(name).copied().unwrap_or(0) != local_calls || (!exported && local_calls == 0) {
                 continue;
             }
-            let TSType::TSTypeReference(r) = &t.type_annotation else { continue };
-            let TSTypeName::IdentifierReference(ty) = &r.type_name else { continue };
-            if r.type_arguments.is_some() {
-                continue;
-            }
-            let fields: Vec<(String, String, bool)> = match crate::view::local_object(body, &ty.name) {
-                Some(members) => members.iter().filter_map(|m| self.field(m)).collect(),
-                None if self.imported.contains(ty.name.as_str()) => match self.external_props(&ty.name) {
-                    Some(fields) => fields.into_iter().map(|f| (f.name, f.ty, f.optional)).collect(),
-                    None => continue,
-                },
-                None => continue,
+            let fields: Vec<(String, String, bool)> = match &t.type_annotation {
+                TSType::TSTypeReference(r) => {
+                    let TSTypeName::IdentifierReference(ty) = &r.type_name else { continue };
+                    if r.type_arguments.is_some() {
+                        continue;
+                    }
+                    match crate::view::local_object(body, &ty.name) {
+                        Some(members) => members.iter().filter_map(|m| self.field(m)).collect(),
+                        None if self.imported.contains(ty.name.as_str()) => match self
+                            .external_props(&ty.name)
+                        {
+                            Some(fields) => fields.into_iter().map(|f| (f.name, f.ty, f.optional)).collect(),
+                            None => continue,
+                        },
+                        None => continue,
+                    }
+                }
+                // `f(input: { a: A; b?: B })`, the options' type written in place.
+                TSType::TSTypeLiteral(l) if exported => {
+                    let fields: Vec<_> = l.members.iter().filter_map(|m| self.field(m)).collect();
+                    if fields.len() != l.members.len() {
+                        continue;
+                    }
+                    fields
+                }
+                _ => continue,
             };
             let mut params = Vec::new();
-            for property in &pattern.properties {
-                let simple = match &property.value {
-                    BindingPattern::BindingIdentifier(_) => true,
-                    BindingPattern::AssignmentPattern(a) => {
-                        matches!(a.left, BindingPattern::BindingIdentifier(_))
+            match &param.pattern {
+                BindingPattern::ObjectPattern(pattern) => {
+                    if pattern.rest.is_some() {
+                        continue;
                     }
-                    _ => false,
-                };
-                let Some(key) = crate::view::key_name(&property.key).filter(|_| simple && !property.computed)
-                else {
-                    params.clear();
-                    break;
-                };
-                let Some((_, ty, optional)) = fields.iter().find(|(k, ..)| *k == key) else {
-                    params.clear();
-                    break;
-                };
-                params.push((key, ty.clone(), *optional));
+                    for property in &pattern.properties {
+                        let simple = match &property.value {
+                            BindingPattern::BindingIdentifier(_) => true,
+                            BindingPattern::AssignmentPattern(a) => {
+                                matches!(a.left, BindingPattern::BindingIdentifier(_))
+                            }
+                            _ => false,
+                        };
+                        let Some(key) =
+                            crate::view::key_name(&property.key).filter(|_| simple && !property.computed)
+                        else {
+                            params.clear();
+                            break;
+                        };
+                        let Some((_, ty, optional)) = fields.iter().find(|(k, ..)| *k == key) else {
+                            params.clear();
+                            break;
+                        };
+                        params.push((key, ty.clone(), *optional));
+                    }
+                    if !params.is_empty() && exported {
+                        self.js_options.insert(name.to_string(), None);
+                    }
+                }
+                // `f(input: Options)` read only as `input.field`: its fields are the labels.
+                BindingPattern::BindingIdentifier(p) if exported => {
+                    let Some(body) = &f.body else { continue };
+                    if !only_member_reads(body, &p.name) || fields.is_empty() {
+                        continue;
+                    }
+                    params = fields.clone();
+                    self.js_options.insert(name.to_string(), Some(p.name.to_string()));
+                }
+                _ => continue,
             }
             if !params.is_empty() {
                 self.labelled.insert(name.to_string(), params);
@@ -2736,8 +2793,9 @@ impl<'s> Tr<'s> {
                 return self.menu_struct(protocol, name, call, vis, body);
             }
             if self.is_lang(&callee, "defineModifier") {
-                // Used as a value too (`.modifier(look ?? card)`, a prop): the modifier itself.
-                if modifier_used_as_value(self.src, name)
+                // Used as a value too (`.modifier(look ?? card)`, a prop), or exported (another
+                // module applies it): the modifier itself.
+                if (modifier_used_as_value(self.src, name) || vis.starts_with("pub"))
                     && let Some(chain) = self.modifiers.get(name).cloned()
                 {
                     self.lang_values.insert(callee.clone());
@@ -3187,4 +3245,56 @@ fn drawn_as_jsx(src: &str, name: &str) -> bool {
     let open = format!("<{name}");
     src.match_indices(&open)
         .any(|(i, _)| src[i + open.len()..].starts_with(|c: char| c.is_whitespace() || c == '/' || c == '>'))
+}
+
+/// Whether this bloomc takes `@jsOptions` (a labelled function TS calls with one object). The
+/// codemod writes it only then; before, an exported options function keeps its record parameter.
+pub fn js_options_supported() -> bool {
+    static SUPPORTED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *SUPPORTED.get_or_init(|| {
+        // Only to read the drafts before bloomc has it (they are refused: B-unknown attribute).
+        if std::env::var_os("BLOOM_MIGRATE_JS_OPTIONS").is_some() {
+            return true;
+        }
+        let (_, _, diagnostics) = bloom_lang::parse("@jsOptions public func f(a: Int) {}\n", "probe.bloom");
+        diagnostics.is_empty()
+    })
+}
+
+/// Every read of `name` in `body` is `name.field` (not computed, not written, not handed on).
+fn only_member_reads(body: &oxc_ast::ast::FunctionBody, name: &str) -> bool {
+    use oxc_ast_visit::Visit;
+    struct Reads<'n> {
+        name: &'n str,
+        members: usize,
+        all: usize,
+    }
+    impl<'a> Visit<'a> for Reads<'_> {
+        fn visit_identifier_reference(&mut self, id: &oxc_ast::ast::IdentifierReference<'a>) {
+            if id.name == self.name {
+                self.all += 1;
+            }
+        }
+        fn visit_static_member_expression(&mut self, m: &oxc_ast::ast::StaticMemberExpression<'a>) {
+            if let Expression::Identifier(id) = &m.object
+                && id.name == self.name
+                && !m.optional
+            {
+                self.members += 1;
+            }
+            oxc_ast_visit::walk::walk_static_member_expression(self, m);
+        }
+        fn visit_simple_assignment_target(&mut self, t: &oxc_ast::ast::SimpleAssignmentTarget<'a>) {
+            if let oxc_ast::ast::SimpleAssignmentTarget::StaticMemberExpression(m) = t
+                && let Expression::Identifier(id) = &m.object
+                && id.name == self.name
+            {
+                self.all += 1000;
+            }
+            oxc_ast_visit::walk::walk_simple_assignment_target(self, t);
+        }
+    }
+    let mut reads = Reads { name, members: 0, all: 0 };
+    reads.visit_function_body(body);
+    reads.all > 0 && reads.all == reads.members
 }
