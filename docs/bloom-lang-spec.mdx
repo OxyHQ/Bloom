@@ -836,7 +836,9 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
   **A function type keeps its effects** (Swift's): `(String) throws -> Int` and
   `() async throws -> T` are types of their own. A call of a value of a throwing type is a
-  throwing call (`try f(s)`); a function that does not throw fits a throwing type, and one that
+  throwing call (`try f(s)`); a function that does not await fits an `async` type (`let one: ()
+async -> Int = { 1 }`, `run(count)`; the emit gives it as an `async` function, so the caller
+still gets a promise), a function that does not throw fits a throwing type, and one that
   throws where a non-throwing one is expected is B0201 (a TS callback may throw: JS has no checked
   errors). A closure whose `try` or `throw` nothing in it catches is throwing where a throwing
   type, or none, is expected (`let load = { try parse(s) }` is called `try load()`). The standard

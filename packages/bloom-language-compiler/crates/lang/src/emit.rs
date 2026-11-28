@@ -2498,6 +2498,13 @@ impl<'a> Emitter<'a> {
             out.f(self.ts_element(expr));
             return out;
         }
+        // A function that does not await, given where an `async` one is expected: an `async`
+        // function of its arguments, so the caller gets a promise.
+        if self.ck.async_wraps.contains(&expr.id) {
+            let inner = self.expr_inner(expr);
+            out.s("(async (...$args) => (").f(inner).s(")(...$args))");
+            return out;
+        }
         out.f(self.expr_inner(expr));
         // A Bloom view where TS takes a React element.
         if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
