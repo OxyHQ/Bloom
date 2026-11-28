@@ -823,9 +823,12 @@ impl<'s, 'i> Parser<'s, 'i> {
             return ItemKind::View(view);
         }
         self.unconstrained(&constraints);
-        // A data struct: its stored properties are its fields.
+        // A data struct: its stored properties are its fields. A `static let` is the type's,
+        // not a field (`crate::extensions` lowers it to `T$$name`), so never a constructor
+        // argument nor a Codable key.
         for member in &surface.members {
             match &member.kind {
+                TypeMemberKind::Stored { .. } if member.modifiers.is_static => {}
                 TypeMemberKind::Stored { name, ty: Some(ty), value, .. } => fields.push(Field {
                     name: name.clone(),
                     ty: ty.clone(),

@@ -845,3 +845,22 @@ fn an_optional_call_guards_its_receiver() {
         assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
     }
 }
+
+/// A struct's `static let` is the type's, never a field nor a Codable key (lang-native-android-2).
+/// The runtime round trip is `test/static-members.test.ts`.
+const STATIC_MEMBERS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/StaticMembers.bloom");
+
+#[test]
+fn a_static_let_is_not_a_field() {
+    let root = package("static-members", &[("Sources/Model/StaticMembers.bloom", STATIC_MEMBERS)]);
+    let path = root.join("Sources/Model/StaticMembers.bloom");
+    let out = compile(STATIC_MEMBERS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(!out.code.contains("\"empty\""), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/static-members.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
