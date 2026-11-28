@@ -55,6 +55,9 @@ pub enum TsType {
     Returns(Box<TsType>),
     /// `X["k"]`: the member `k` of the object type `X`, as TS's indexed access reads it.
     Index(Box<TsType>, String),
+    /// `X[number]`: the element type of the array (or `as const` tuple) type `X`
+    /// (`(typeof MEMBERSHIP_BENEFITS)[number]`).
+    Element(Box<TsType>),
     /// Anything else: foreign.
     Other,
 }
@@ -794,6 +797,7 @@ impl Reader {
                     ),
                     _ => self.other(),
                 },
+                TSType::TSNumberKeyword(_) => TsType::Element(Box::new(self.ty(&access.object_type))),
                 _ => self.other(),
             },
             TSType::TSFunctionType(function) => TsType::Fn(Box::new(self.function(
@@ -1707,6 +1711,11 @@ impl Mapper<'_> {
                     ty
                 }
                 None => Ty::Foreign(path.into()),
+            },
+            // `(typeof C)[number]` of an `as const` list of strings: their union.
+            TsType::Element(object) => match self.ty(file, object, scope, path, depth + 1) {
+                Ty::List(element) => *element,
+                _ => Ty::Foreign(path.into()),
             },
             TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
                 Ty::Foreign(path.into())

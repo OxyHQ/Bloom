@@ -1,0 +1,3 @@
+import type { Tier } from "@/benefits";
+export declare function labels(tier: Tier): readonly string[];
+export declare function paid(tier: Tier): boolean;
