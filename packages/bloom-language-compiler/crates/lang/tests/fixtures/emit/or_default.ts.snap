@@ -1,0 +1,15 @@
+import { type ClaimUser, handleOf } from "@/types/claims";
+
+function mute(username: string): string {
+return username;
+}
+
+export function grouped(user: ClaimUser): string {
+const name = handleOf(user) || (user.displayName || "user");
+return mute(name);
+}
+
+export function flat(user: ClaimUser): string {
+return mute((handleOf(user) || user.displayName) || "user");
+}
+
