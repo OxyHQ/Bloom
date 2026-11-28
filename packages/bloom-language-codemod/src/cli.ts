@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * bloom-language-codemod <app dir> [--css <entry>] [--write] [--out <dir>] [--package <name>=<dir>] [--fixtures]
+ * bloom-language-codemod imports <dir> [--write]   (see imports.ts)
  *
  * Reads every .tsx under <app dir> (tests and stories left out), converts what
  * converts exactly, and writes the report (`report.generated.json`, `report.md`) to
@@ -18,6 +19,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { dirname, join, relative, resolve } from 'node:path';
 
 import { BEFORE_BLOOM, corpusModule } from './corpus';
+import { exportMap, rewriteImports } from './imports';
 import { overriddenClasses } from './overrides';
 import { report } from './report';
 import { loadTable } from './table';
@@ -44,6 +46,7 @@ function arg(name: string): string | undefined {
 }
 
 const USAGE = `Usage: bloom-language-codemod <app dir> [options]
+       bloom-language-codemod imports <dir> [--write]
 
 Moves the app's NativeWind className JSX and Bloom JSX to the Bloom language
 where the result renders the same, and reports why the rest stays JSX.
@@ -57,9 +60,46 @@ Options:
   --package <name>=<dir>   read a CSS package the app imports from <dir>
   --fixtures               also write the parity corpus (proven from a Bloom checkout)
   -h, --help               show this help
+
+imports: moves each TS import of the language to the entry that exports it now
+(2.0.0 gave each family of nodes its own: Row from '@oxy.so/bloom-language/containers',
+TextField from '/inputs'), read from the language's package.json#exports. A second run
+changes nothing. Without --write it lists what it would move.
 `;
 
+/** `imports <dir> [--write]`: each of the language's TS imports from the entry that exports it. */
+function imports(): void {
+  const dir = resolve(process.argv[3] ?? '.');
+  const write = process.argv.includes('--write');
+  const map = exportMap();
+  const tsFiles = (d: string): string[] =>
+    readdirSync(d).flatMap((name) => {
+      const path = join(d, name);
+      if (name === 'node_modules' || name.startsWith('.')) return [];
+      if (statSync(path).isDirectory()) return tsFiles(path);
+      return /\.(ts|tsx|mts|cts)$/.test(name) && !name.endsWith('.d.ts') ? [path] : [];
+    });
+  let changed = 0;
+  let names = 0;
+  for (const path of tsFiles(dir).sort()) {
+    const result = rewriteImports(readFileSync(path, 'utf8'), map);
+    if (!result.changed) continue;
+    changed += 1;
+    names += result.moved.length;
+    const moves = result.moved.map((m) => `${m.name} → ${m.to}`).join(', ');
+    console.log(`${relative(dir, path)}: ${moves}`);
+    if (write) writeFileSync(path, result.code);
+  }
+  console.log(
+    `${write ? 'moved' : 'would move'} ${names} import(s) in ${changed} file(s)${write ? '' : ' (pass --write to rewrite them)'}`,
+  );
+}
+
 async function main(): Promise<void> {
+  if (process.argv[2] === 'imports') {
+    imports();
+    return;
+  }
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     process.stdout.write(USAGE);
     return;
