@@ -1,0 +1,14 @@
+// A text run that is a view in one branch and a string in the other (Mention's UserName): one
+// Text host whose child is either, as TS's `<Text>{c ? <Link/> : s}</Text>`.
+public struct Name: View {
+  let linked: Bool
+  let verified: Bool
+  let name: String?
+  var body: some View {
+    VStack {
+      RawText(linked ? Text("link") : name ?? "")
+      RawText(linked ? Text("link") : name)
+      Text("by ", verified ? Text("✓").weight("bold") : linked ? "@" : "", name ?? "")
+    }
+  }
+}

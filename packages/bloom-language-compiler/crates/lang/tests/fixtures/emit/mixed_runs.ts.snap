@@ -1,0 +1,15 @@
+import { RawText, Text, VStack, inlineView } from "@oxy.so/bloom-language";
+
+const $view0 = Text("link");
+const $view1 = Text("✓").weight("bold");
+export interface NameProps {
+  readonly linked: boolean;
+  readonly verified: boolean;
+  readonly name: string | undefined;
+}
+export const Name = inlineView(function Name(props: NameProps) {
+"use no memo";
+const { linked, verified, name } = props;
+return VStack(RawText(linked ? $view0 : (name ?? "")), RawText(linked ? $view0 : name), Text("by ", verified ? $view1 : (linked ? "@" : ""), name ?? ""));
+});
+
