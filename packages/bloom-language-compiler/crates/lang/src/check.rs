@@ -3274,6 +3274,21 @@ impl<'o> Checker<'o> {
         if discard { Ty::Unit } else { ty }
     }
 
+    /// The `@State` a narrowed name is (`report` inside `if report != none`), through every
+    /// narrowing of it: what a write or a `$` binding of the name names.
+    fn narrowed_state(&self, local: LocalId) -> Option<LocalId> {
+        let mut at = local;
+        let mut steps = 0;
+        while let Some(&(_, original)) = self.out.narrowed.values().find(|(narrowed, _)| *narrowed == at) {
+            if original == at || steps > 16 {
+                break;
+            }
+            at = original;
+            steps += 1;
+        }
+        (at != local && self.out.locals[at].kind == LocalKind::State).then_some(at)
+    }
+
     /// A statement no path falls out of: `return`, `throw`, `break`, `continue`, a call that
     /// returns `Never` (`fatal(…)`, Swift's `fatalError`), or a `do` whose body and catches all
     /// end so. Read after the statement is checked, from its call's type.
@@ -3750,6 +3765,8 @@ impl<'o> Checker<'o> {
             self.expr(&a.value, None);
             return;
         };
+        // `report = none` inside `if report != none { … }`: the write is the state's.
+        let local = self.narrowed_state(local).unwrap_or(local);
         let info = self.out.locals[local].clone();
         // A field of a TS value (an expo-video player, a DOM node): TS's own object.
         let mut through = info.ty.clone();
@@ -6123,7 +6140,14 @@ impl<'o> Checker<'o> {
             self.unknown_name(root.span, &root.name);
             return Ty::Unknown;
         };
-        let info = self.out.locals[local].clone();
+        // `$report` inside `if report != none { … }`: a binding of the state, of the narrowed
+        // type (TS's `[report, setReport]` with `report: string` there).
+        let narrowed_ty = self.narrowed_state(local).map(|_| self.out.locals[local].ty.clone());
+        let local = self.narrowed_state(local).unwrap_or(local);
+        let mut info = self.out.locals[local].clone();
+        if let Some(ty) = narrowed_ty {
+            info.ty = ty;
+        }
         if info.kind == LocalKind::Bound && path.len() == 1 {
             self.out.bindings.insert(expr.id, (local, Vec::new()));
             return Ty::Binding(Box::new(info.ty.clone()));

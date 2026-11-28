@@ -1,0 +1,15 @@
+// A narrowed `@State` (`if report != none`) narrows its reads only: a write and `$report` there
+// are the state's, `$report` a binding of the narrowed type.
+public struct ReportBox: View {
+  @State private var report: String? = none
+
+  var body: some View {
+    VStack {
+      Button(Text("Report")).onPress { report = "" }
+      if report != none {
+        TextEditor($report)
+        Button(Text("Send")).disabled(report.trimmed().isEmpty).onPress { report = none }
+      }
+    }
+  }
+}
