@@ -71,10 +71,28 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     let before = &source[..start - 1];
                     let line = &before[before.rfind('\n').map_or(0, |i| i + 1)..];
                     let receiver_text = line.rsplit([' ', '(']).next().unwrap_or("");
-                    !receiver_text.is_empty() && line.trim_start().starts_with(&format!("{receiver_text} = "))
+                    !receiver_text.is_empty()
+                        && (line.trim_start().starts_with(&format!("{receiver_text} = "))
+                            || line.contains(&format!("{{ {receiver_text} = ")))
                 } =>
             {
                 Some((start, end, if text == "add" { "inserting" } else { "removing" }.to_string()))
+            }
+            // `new Set(xs).add(x)`: JS copies the set, then adds to the copy; with value semantics
+            // that is `xs.inserting(x)` (`delete`: `removing`).
+            ("B0209", "add" | "delete")
+                if receiver.is_some_and(|r| r.starts_with("Set<"))
+                    && source[..start].ends_with(").")
+                    && let Some(open) = source[..start - 2].rfind("Set(")
+                    && source[..open].ends_with(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+                    && source[open + 4..start - 2]
+                        .chars()
+                        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                    && !source[open + 4..start - 2].is_empty() =>
+            {
+                let set = &source[open + 4..start - 2];
+                let method = if text == "add" { "inserting" } else { "removing" };
+                Some((open, end, format!("{set}.{method}")))
             }
             // `0..<n` with a `Float` bound (a TS `number` given to `Array.from({ length })`, which
             // truncates it): `0..<n.truncated()`.

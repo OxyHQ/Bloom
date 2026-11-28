@@ -1,0 +1,20 @@
+// A TS component's hyphenated prop (`aria-pressed`) is passed as JSX passes it, a spread of a
+// one-entry dictionary. A `ReadonlySet<T>` is a `Set<T>`, and `new Set(s).add(x)` (a copy, then
+// an add) is `s.inserting(x)`.
+
+import { Chip } from "./chip"
+
+public struct Chips: View {
+  let slugs: [String]
+  @State private var chosen: Set<String> = Set()
+  func choose(_ slug: String) { chosen = (chosen.contains(slug) ? chosen : chosen.inserting(slug)) }
+
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    VStack {
+      for slug in slugs {
+        Chip(label: slug, onPress: { choose(slug) }, ..["aria-pressed": chosen.contains(slug)])
+      }
+    }
+  }
+}
