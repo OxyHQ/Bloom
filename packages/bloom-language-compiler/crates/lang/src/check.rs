@@ -3696,7 +3696,8 @@ impl<'o> Checker<'o> {
             op => {
                 let value = self.expr(&a.value, Some(&ty));
                 let numeric = matches!(self.resolve(&ty), Ty::Int | Ty::Float | Ty::Unknown);
-                let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str);
+                // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
+                let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
                     self.report(
                         Diagnostic::error(
@@ -3878,7 +3879,8 @@ impl<'o> Checker<'o> {
             op => {
                 let value = self.expr(&a.value, Some(&place_ty));
                 let numeric = matches!(self.resolve(&place_ty), Ty::Int | Ty::Float | Ty::Unknown);
-                let text = op == AssignOp::Add && matches!(self.resolve(&place_ty), Ty::Str);
+                // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
+                let text = op == AssignOp::Add && matches!(self.resolve(&place_ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
                     self.report(
                         Diagnostic::error(
@@ -6569,6 +6571,14 @@ impl<'o> Checker<'o> {
                     }
                     Ty::Float => {
                         self.expr(rhs, Some(&left));
+                        left
+                    }
+                    // Swift's `a + b` of two arrays: a new one, `a`'s elements then `b`'s.
+                    Ty::List(_) if op == BinaryOp::Add => {
+                        let right = self.expr(rhs, Some(&left));
+                        if !self.coerce(&right, &left) {
+                            self.mismatch(rhs.span, &right, &left);
+                        }
                         left
                     }
                     // Swift's `date + seconds`, `date - seconds`: the instant that much later or

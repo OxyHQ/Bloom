@@ -304,6 +304,9 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
   integer literal outside it is B0105, `Int(s)` of text outside it is `none`, and a dev build
   traps an `Int` `+`, `-` or `*` (and `+=`, `-=`, `*=`) whose result leaves it (`$int`, a
   `RangeError`), as Swift traps an overflow; a release build does not check.
+- `a + b` of two arrays of one element type is a new array, `a`'s elements then `b`'s (Swift's),
+  and `xs += ys` is `xs = xs + ys`. The JS backend writes a spread with a literal's items in
+  place: `["first"] + a + ["last"]` is `["first", ...a, "last"]`, `xs += [x]` is `xs = [...xs, x]`.
 - An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
   programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
   `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
