@@ -52,3 +52,9 @@ public struct Variants: View {
     }
   }
 }
+
+// A spread of a name (PostItem's context line) is the text's runs, not a builder line.
+public func runsText(..runs: [String?]) -> View {
+  // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+  Text(runs).weight(.semibold)
+}
