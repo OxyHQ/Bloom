@@ -240,7 +240,9 @@ own against the expected type (an annotation, a TS parameter's, or a spec object
 never against its sibling's. A spec object parameter is a record of its keys:
 `.accessibilityValue(c ? { text } : { min, max, now })`, and a typed one names each key's type
 (`Dialog().buttons([…])` takes `[dialogButton]`, `{ label: String, color?, onPress?, … }`: a
-button without `label` is B0206, an unknown key B0205). A literal
+button without `label` is B0206, an unknown key B0205). Where a TS type is expected, each list
+element and each field of a record literal is TS's to check on its own (tsc does, on the emitted
+code): `let s: Style = { transform: [{ scale: 0.5 }, { translateY: y }] }`. A literal
 `"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a

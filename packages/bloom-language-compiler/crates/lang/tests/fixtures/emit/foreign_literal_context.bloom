@@ -1,0 +1,18 @@
+// A literal where a TS type is expected: each list element and each field is TS's to check on its
+// own (tsc does, on the emitted code), never typed from its sibling.
+public type Style = Foreign<"{ transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number }">
+public type Steps = Foreign<"Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>">
+
+public func collapsed(_ y: Float, _ wide: Bool) -> Style {
+  let style: Style = { transform: [{ scale: 0.5 }, { translateY: y }, { rotate: "45deg" }], opacity: wide ? 1 : 0.5 }
+  return style
+}
+
+public func steps(_ x: Float) -> Steps {
+  let all: Steps = [{ kind: "move", x: x }, { kind: "wait", ms: 300 }]
+  return all
+}
+
+public func either(_ wide: Bool) -> Style {
+  wide ? { transform: [{ scale: 2 }] } : { opacity: 0 }
+}

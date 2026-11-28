@@ -1,0 +1,5 @@
+export type Style = { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };
+export type Steps = Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>;
+export declare function collapsed(y: number, wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };
+export declare function steps(x: number): Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>;
+export declare function either(wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };

@@ -4453,7 +4453,11 @@ impl<'o> Checker<'o> {
                 if matches!(expr.kind, ExprKind::Closure(_)) {
                     self.closure_throws = true;
                 }
-                let ty = self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_))));
+                // A literal where a TS type is expected (`tsFunc([{ a }, { b }])`): each element and
+                // field is TS's to check on its own, not typed from its sibling.
+                let foreign_literal = literal_shaped(expr);
+                let ty = self
+                    .infer(expr, hint.as_ref().filter(|h| foreign_literal || !matches!(h, Ty::Foreign(_))));
                 if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty()
                 {
                     self.narrowed_path(expr, ty)
@@ -4564,6 +4568,29 @@ impl<'o> Checker<'o> {
                     },
                     _ => self.fresh(),
                 };
+                // Where a TS type is expected, each literal item is TS's to check on its own (as a
+                // TS value), never typed from its sibling; the list is that TS type.
+                if let Some(foreign @ Ty::Foreign(_)) = &expected_resolved
+                    && items.iter().any(literal_shaped)
+                {
+                    let foreign = foreign.clone();
+                    let item_ty = Ty::Foreign("".into());
+                    for item in items {
+                        let (inner, spread) = match &item.kind {
+                            ExprKind::Spread(inner) => (&**inner, true),
+                            _ => (item, false),
+                        };
+                        let ty = if literal_shaped(inner) {
+                            self.expr(inner, Some(&item_ty))
+                        } else {
+                            self.expr(inner, None)
+                        };
+                        if spread {
+                            self.out.types.insert(item.id, ty);
+                        }
+                    }
+                    return foreign;
+                }
                 // With no declared item type, an item's expected type is its siblings': inferred.
                 if matches!(self.resolve(&elem), Ty::Var(_)) {
                     for item in items {
@@ -7443,6 +7470,16 @@ fn closure_results(stmts: &[Stmt], tail: bool, out: &mut HashSet<ExprId>) {
             }
             _ => {}
         }
+    }
+}
+
+/// A literal Swift types from its context: a list, a record, or a ternary or parentheses of them.
+fn literal_shaped(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::List(_) | ExprKind::Record(_) => true,
+        ExprKind::Paren(inner) => literal_shaped(inner),
+        ExprKind::Ternary(_, then, otherwise) => literal_shaped(then) || literal_shaped(otherwise),
+        _ => false,
     }
 }
 
