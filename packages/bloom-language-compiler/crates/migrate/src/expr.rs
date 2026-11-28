@@ -905,25 +905,6 @@ impl Tr<'_> {
     }
 
     pub fn test(&mut self, e: &Expression, binds: bool) -> String {
-        // `isServer ? item.post : …` with `const isServer = item.origin === 'server'`: the
-        // discriminant test in place, so bloomc narrows `item` in the branch.
-        let negated = matches!(e.without_parentheses(), Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot);
-        let alias = match e.without_parentheses() {
-            Expression::Identifier(id) => Some(id),
-            Expression::UnaryExpression(u) if negated => match u.argument.without_parentheses() {
-                Expression::Identifier(id) => Some(id),
-                _ => None,
-            },
-            _ => None,
-        };
-        if let Some(id) = alias
-            && let Some((object, field, lit, equal)) =
-                self.discriminant_aliases.get(id.name.as_str()).cloned()
-        {
-            let object = self.ident(&object, id.span);
-            let op = if equal != negated { "==" } else { "!=" };
-            return format!("{object}.{field} {op} {}", quote(&lit));
-        }
         match self.test_parts(e, binds) {
             Test::Plain(text) => text,
             Test::Bind(name, None) => format!("let {name} = {name}"),
@@ -941,6 +922,25 @@ impl Tr<'_> {
     }
 
     fn test_parts_inner(&mut self, e: &Expression, binds: bool) -> Test {
+        // `isServer ? item.post : …` (or a builder's `if isServer`) with `const isServer = item.origin === 'server'`: the
+        // discriminant test in place, so bloomc narrows `item` in the branch.
+        let negated = matches!(e.without_parentheses(), Expression::UnaryExpression(u) if u.operator == UnaryOperator::LogicalNot);
+        let alias = match e.without_parentheses() {
+            Expression::Identifier(id) => Some(id),
+            Expression::UnaryExpression(u) if negated => match u.argument.without_parentheses() {
+                Expression::Identifier(id) => Some(id),
+                _ => None,
+            },
+            _ => None,
+        };
+        if let Some(id) = alias
+            && let Some((object, field, lit, equal)) =
+                self.discriminant_aliases.get(id.name.as_str()).cloned()
+        {
+            let object = self.ident(&object, id.span);
+            let op = if equal != negated { "==" } else { "!=" };
+            return Test::Plain(format!("{object}.{field} {op} {}", quote(&lit)));
+        }
         if let Some((name, ty)) = self.declared(e) {
             let plain = is_plain_name(&name);
             return Test::Plain(match ty.as_str() {
