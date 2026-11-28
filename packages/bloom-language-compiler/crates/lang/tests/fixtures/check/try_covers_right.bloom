@@ -1,0 +1,5 @@
+// A `try` covers what is to its right, never what is to its left; a `try?` covers its operand only.
+func g(_ a: Int) throws -> Int { a }
+func h(_ b: Int) throws -> Int { b }
+public func bad(_ a: Int) throws -> Int { g(a) + (try h(a)) }
+public func bad2(_ a: Int) -> Int { (try? g(a) ?? h(a)) ?? 0 }
