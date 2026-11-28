@@ -717,7 +717,8 @@ fitting, or two fitting equally, is B0207 with the overloads listed. Two with th
 B0217 (overloads differ by labels, not by types), and so is an overloaded name read without a call
 (B0202). Each overload is emitted named by its labels (`describe$0$count`,
 `Double$formatted$0$digits`); a name declared once keeps its name. A directory module's files share
-one namespace, so a function's overloads are declared in one file (B0807 otherwise). A closure without
+one namespace, so a function's overloads are declared in one file (B0807 otherwise). That is a
+current limit, not the design: Swift takes a name's overloads from anywhere in its module. A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
 outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
