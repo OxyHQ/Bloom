@@ -782,10 +782,6 @@ fn exported_views(dts: &Path) -> Vec<String> {
         .collect()
 }
 
-/// `jest.mock(spec, factory)` of a migrated module whose views the factory mocks as React
-/// components (`X: (props) => <Text …/>`, `X: 'X'`): each such view's mock is the component drawn
-/// as the view's node (`Embed`), since a TS importer now calls the view (`toElement(X({ … }))`).
-
 /// `loader().then((m) => ({ default: m.X }))` of a view `X` the loader's module exports: `lazy`
 /// takes a component, so the default draws it, `(props) => toElement(m.X(props))`.
 fn wrap_loaded_views(source: &str, loader: &str, views: &[String]) -> Option<String> {
@@ -839,6 +835,9 @@ fn wrap_loaded_views(source: &str, loader: &str, views: &[String]) -> Option<Str
 }
 
 /// `call` is the text after the specifier (`, () => …`); none when it mocks no view.
+/// `jest.mock(spec, factory)` of a migrated module whose views the factory mocks as React
+/// components (`X: (props) => <Text …/>`, `X: 'X'`): each such view's mock is the component drawn
+/// as the view's node (`Embed`), since a TS importer now calls the view (`toElement(X({ … }))`).
 fn mock_views(call: &str, views: &[String]) -> Option<String> {
     let factory = call.trim_start().strip_prefix(',')?.trim();
     let factory = factory.strip_suffix(',').unwrap_or(factory).trim_end();
