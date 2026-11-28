@@ -5077,10 +5077,15 @@ impl<'a> Emitter<'a> {
                 let local = self.source_local(object.id)?;
                 Some(format!("{}.{}", self.local_name(local), name.name))
             }
+            // A TS value's field read as a dependency with `?.`: the cache's test runs at every
+            // render, before any guard the read sits behind (`if !(job?.url) { return }` then
+            // `job.id`), and Bloom does not know when TS's value is there.
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
             {
-                self.dep_path(object).map(|p| format!("{p}.{}", name.name))
+                let dot =
+                    if matches!(self.expr_ty(object), Ty::Foreign(_) | Ty::Option(_)) { "?." } else { "." };
+                self.dep_path(object).map(|p| format!("{p}{dot}{}", name.name))
             }
             // `query.data?.count` is `length` in JS: a respelled member is no path, and its
             // object is the dependency (the raw `?.count` would never change).

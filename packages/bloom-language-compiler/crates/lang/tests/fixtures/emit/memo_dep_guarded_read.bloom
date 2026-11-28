@@ -1,0 +1,30 @@
+// A view method that reads `job.id` after its own guard (`if !(job?.url) { return }`, TS's narrowing
+// kept as a claim on a TS value) is memoized with `job.id` among its dependencies:
+// `if ($[3] !== job?.url || $[4] !== job.id || …)` runs at render, before the guard, so a render
+// with `job` undefined (a query still loading or empty) throws "Cannot read properties of undefined
+// (reading 'id')". Mention: app/(app)/jobs/[id] (applyExternally, the view effect), every state.
+// Expected: the dependency is what the closure captures, `job` (or `job?.id`), never a read the
+// closure only makes behind its guard.
+
+import { recordJobMetric } from "@/services/jobsService"
+public struct Detail: View {
+  let data: Foreign<"{ job?: { id: string; externalApplyUrl?: string } } | undefined">
+  let job = data?.job
+  func apply() {
+    if job == none { return }
+    recordJobMetric(job.id, "external_apply_click")
+  }
+  var body: some View { Button(Text("Apply")).onPress(apply) }
+}
+
+// TS's own narrowing (a guard on `job?.externalApplyUrl`, kept as TS's claim): the dependency is
+// `job?.id`, safe while `job` is undefined.
+public struct ClaimDetail: View {
+  let data: Foreign<"{ job?: { id: string; externalApplyUrl?: string } } | undefined">
+  let job = data?.job
+  func apply() {
+    if job?.externalApplyUrl == none { return }
+    recordJobMetric(job.id, "external_apply_click")
+  }
+  var body: some View { Button(Text("Apply")).onPress(apply) }
+}
