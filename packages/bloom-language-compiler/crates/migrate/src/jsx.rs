@@ -173,6 +173,12 @@ impl Tr<'_> {
                         },
                         Some(other) => self.refuse("jsx:element-prop", "an element as a prop", other.span()),
                     };
+                    // `aria-pressed={x}`: a name Bloom cannot label, passed as JSX passes it (a
+                    // spread of a one-entry dictionary).
+                    if key.name.contains('-') {
+                        props.push(format!("{note}..[{}: {value}]", crate::expr::quote(&key.name)));
+                        continue;
+                    }
                     props.push(format!("{note}{}: {value}", key.name));
                 }
             }
