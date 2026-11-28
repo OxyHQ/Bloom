@@ -385,3 +385,34 @@ internal fun encodeComponent(s: String): String =
 /** JavaScript's `decodeURIComponent` (a `+` stays a `+`). */
 internal fun decodeComponent(s: String): String =
   runCatching { java.net.URLDecoder.decode(s.replace("+", "%2B"), "UTF-8") }.getOrDefault(s)
+
+// ---- lenient reads (stdlib JSON's `string`, `number`, `int`, `bool`, `array`, `object`) ----
+
+internal fun jsonAsString(value: JSONValue): String? = value as? String
+
+internal fun jsonAsNumber(value: JSONValue): Double? = (value as? Double)?.takeIf { it.isFinite() }
+
+/** A number with no fraction, within `Int`'s exact range (2^53, as the TypeScript runtime's). */
+internal fun jsonAsInt(value: JSONValue): Long? {
+  val d = value as? Double ?: return null
+  if (!d.isFinite() || d != Math.floor(d) || Math.abs(d) > 9007199254740991.0) return null
+  return d.toLong()
+}
+
+internal fun jsonAsBool(value: JSONValue): Boolean? = value as? Boolean
+
+@Suppress("UNCHECKED_CAST")
+internal fun jsonAsArray(value: JSONValue): List<JSONValue>? = value as? List<JSONValue>
+
+@Suppress("UNCHECKED_CAST")
+internal fun jsonAsObject(value: JSONValue): Map<String, JSONValue>? = value as? Map<String, JSONValue>
+
+/**
+ * The value an error was thrown with (`error.jsValue`): a `BloomError`'s, else none. On the JVM a
+ * thrown value is a `Throwable`; only a Bloom `throw` of a value carries one.
+ */
+internal fun errorValue(error: Throwable): JSONValue? = (error as? BloomError)?.value
+
+/** A JS `Error` (`JSError.cast`): the JVM's throwable as one, by its class name and message. */
+internal fun jsErrorFrom(error: Throwable): JSError? =
+  JSError(error::class.simpleName ?: "Error", error.message ?: "", error.stackTraceToString())
