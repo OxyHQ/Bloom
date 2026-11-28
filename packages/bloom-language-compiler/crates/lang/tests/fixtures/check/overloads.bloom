@@ -1,0 +1,11 @@
+public func go(with: Int) -> Int { with }
+public func go(by: Int) -> Int { by }
+public func pick(a: Int = 1) -> Int { a }
+public func pick(b: Int = 2) -> Int { b }
+public func same(x: Int) -> Int { x }
+public func same(x: String) -> String { x }
+
+public func run() -> Int {
+  let f = go
+  return go(at: 1) + pick()
+}

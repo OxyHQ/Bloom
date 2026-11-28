@@ -1,0 +1,35 @@
+error[B0217]: `same` is declared twice
+ --> check/overloads.bloom:6:13
+  |
+6 | public func same(x: String) -> String { x }
+  |             ^^^^ a second declaration
+  |
+help: overloads are told apart by their argument labels, not their types: give one other labels, or rename it
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0202]: `go` is overloaded: name one by its labels
+ --> check/overloads.bloom:9:11
+  |
+9 |   let f = go
+  |           ^^ more than one function has this name
+  |
+help: call one of `go(by:)`, `go(with:)`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: no `go` takes the labels `(at:)`
+  --> check/overloads.bloom:10:10
+   |
+10 |   return go(at: 1) + pick()
+   |          ^^ not one of its overloads
+   |
+help: its overloads are `go(by:)`, `go(with:)`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0207]: this call of `pick` is ambiguous
+  --> check/overloads.bloom:10:22
+   |
+10 |   return go(at: 1) + pick()
+   |                      ^^^^ more than one overload takes these labels
+   |
+help: `pick(a:)`, `pick(b:)` all fit: write the labels of one in full
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures

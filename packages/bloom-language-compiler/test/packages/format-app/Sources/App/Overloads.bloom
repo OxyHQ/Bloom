@@ -1,0 +1,26 @@
+// Swift's overloading by argument labels: one name, told apart by what a call writes.
+
+public func measured(count: Int) -> String { "\(count) items" }
+public func measured(name: String) -> String { "named \(name)" }
+public func measured(_ value: Int, of total: Int = 100) -> String { "\(value)/\(total)" }
+
+public struct Gauge {
+  public let celsius: Double
+
+  public static func make(celsius: Double) -> Gauge { Gauge(celsius: celsius) }
+  public static func make(fahrenheit: Double) -> Gauge { Gauge(celsius: (fahrenheit - 32) * 5 / 9) }
+
+  public func reading(unit: String) -> String { "\(celsius) \(unit)" }
+  public func reading(_ format: (Double) -> String) -> String { format(celsius) }
+}
+
+extension Int {
+  public func spelled(plural: String) -> String { self == 1 ? "1 item" : "\(self) \(plural)" }
+  public func spelled(digits: Int) -> String {
+    var text = "\(self)"
+    while text.count < digits {
+      text = "0" + text
+    }
+    return text
+  }
+}

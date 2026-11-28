@@ -707,7 +707,16 @@ in any order after the positional ones.
 **2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
 unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
 is called `move(p, to: q)`. A positional argument where a label is due is B0207 ("missing
-argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. A closure without
+argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. **Overloading by labels
+(Swift's rule):** functions of one name in one file, free functions or one type's methods (static
+or instance), may differ by their labels: `func describe(count: Int)` beside
+`func describe(name: String)`, `func formatted(digits:)` beside `formatted(currency:)`. A call
+takes the overload its labels fit (defaults may be left out; the one leaving out fewest wins); none
+fitting, or two fitting equally, is B0207 with the overloads listed. Two with the same labels are
+B0217 (overloads differ by labels, not by types), and so is an overloaded name read without a call
+(B0202). Each overload is emitted named by its labels (`describe$0$count`,
+`Double$formatted$0$digits`); a name declared once keeps its name. A directory module's files share
+one namespace, so a function's overloads are declared in one file (B0807 otherwise). A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
 outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and

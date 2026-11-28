@@ -602,6 +602,9 @@ pub struct Checker<'o> {
     /// JS's globals imported from "js" (`Number`, `Math`): functions and namespaces, never a
     /// TS component, whatever their case.
     pub(super) js_globals: HashSet<LocalId>,
+    /// The names declared overloaded by their labels (`describe` of `describe$0$count`,
+    /// `Double$formatted` of `Double$formatted$0$digits`): a call picks one by its labels.
+    pub(super) overloaded: HashSet<String>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -746,6 +749,7 @@ impl<'o> Checker<'o> {
             child_slots: HashSet::default(),
             run_slots: HashSet::default(),
             js_globals: HashSet::default(),
+            overloaded: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -1356,6 +1360,9 @@ impl<'o> Checker<'o> {
         });
         self.span_type((name.span, ty));
         if name.name != "_" {
+            if let Some(base) = crate::extensions::overload_base(&name.name).filter(|b| !b.is_empty()) {
+                self.overloaded.insert(base.to_string());
+            }
             self.scopes.last_mut().expect("a scope").insert(name.name.clone(), id);
         }
         id
@@ -1925,17 +1932,33 @@ impl<'o> Checker<'o> {
     }
 
     fn duplicate(&mut self, name: &Ident) {
+        self.duplicate_of(name, false);
+    }
+
+    /// `fns`: two functions (overloads with the same labels, Swift's invalid redeclaration).
+    fn duplicate_of(&mut self, name: &Ident, fns: bool) {
+        let overload = fns || crate::extensions::overload_base(&name.name).is_some();
         self.report(
-            Diagnostic::error("B0217", name.span, format!("`{}` is declared twice", name.name))
-                .label("a second declaration")
-                .help("rename one of them")
+            Diagnostic::error(
+                "B0217",
+                name.span,
+                format!("`{}` is declared twice", crate::extensions::overload_display(&name.name)),
+            )
+            .label("a second declaration")
+            .help(if overload {
+                "overloads are told apart by their argument labels, not their types: give one other labels, or rename it"
+            } else {
+                "rename one of them"
+            })
                 .spec("10-modules-and-interop"),
         );
     }
 
     fn declare_unique(&mut self, name: &Ident, ty: Ty, kind: LocalKind) -> LocalId {
-        if self.scopes.last().is_some_and(|s| s.contains_key(&name.name)) {
-            self.duplicate(name);
+        if let Some(&earlier) = self.scopes.last().and_then(|s| s.get(&name.name)) {
+            let fns = matches!(kind, LocalKind::ModuleFn)
+                && matches!(self.out.locals[earlier].kind, LocalKind::ModuleFn);
+            self.duplicate_of(name, fns);
         }
         self.declare(name, ty, kind)
     }
@@ -2209,8 +2232,10 @@ impl<'o> Checker<'o> {
             handled: 0,
         });
         // A type's member (`T$m`): what an observable `self` it reads; an `init` makes `self`.
-        let outer_member =
-            std::mem::replace(&mut self.member_fn, f.name.name.contains('$').then(|| f.name.name.clone()));
+        let outer_member = std::mem::replace(
+            &mut self.member_fn,
+            crate::extensions::demangle(&f.name.name).map(|_| f.name.name.clone()),
+        );
         // A class's `init` makes `self`; a built-in type's gives the value its body ends with.
         let init = f.name.name.ends_with("$$init")
             && !crate::extensions::demangle(&f.name.name)
@@ -5802,6 +5827,16 @@ impl<'o> Checker<'o> {
     }
 
     fn unknown_name(&mut self, span: Span, name: &str) {
+        if self.overloaded.contains(name) {
+            let shown = self.overloads_of(name).join("`, `");
+            self.report(
+                Diagnostic::error("B0202", span, format!("`{name}` is overloaded: name one by its labels"))
+                    .label("more than one function has this name")
+                    .help(format!("call one of `{shown}`"))
+                    .spec("5-values-functions-and-closures"),
+            );
+            return;
+        }
         let names = self.names_in_scope();
         let help =
             closest(name, names.iter().map(String::as_str)).map(|near| format!("did you mean `{near}`?"));

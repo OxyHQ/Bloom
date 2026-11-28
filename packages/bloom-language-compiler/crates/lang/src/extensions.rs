@@ -47,7 +47,10 @@ pub fn key(name: &str) -> &str {
 }
 
 /// The member an extension function was lowered from (`String$padded` → `("String", "padded", false)`).
+/// An overload's (`Double$formatted$0$digits`) is its base's member; a free function's overload
+/// (`describe$0$count`) is no member.
 pub fn demangle(name: &str) -> Option<(&str, &str, bool)> {
+    let name = overload_base(name).unwrap_or(name);
     if let Some((owner, member)) = name.split_once("$$") {
         return Some((owner, member.strip_prefix("get$").unwrap_or(member), true));
     }
@@ -524,8 +527,80 @@ fn member_names(file: &File) -> Vec<(String, Vec<String>)> {
     out
 }
 
-/// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place.
+/// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place;
+/// then names each overload by its labels ([`overloads`]).
 pub fn lower(file: &mut File) {
+    lower_members(file);
+    overloads(file);
+}
+
+/// The marker between an overloaded function's name and its labels (`describe$0$count`). No
+/// other lowered name has it: every other `$` is followed by a name, and a name never starts
+/// with a digit.
+pub const OVERLOAD: &str = "$0";
+
+/// An overload's name, by the labels its call writes (`_` for an unlabelled parameter; `self`,
+/// a member's receiver, is not one): `describe(count:)` is `describe$0$count`, `f()` is `f$0`.
+pub fn overload_name<'a>(name: &str, labels: impl Iterator<Item = &'a str>) -> String {
+    let mut out = format!("{name}{OVERLOAD}");
+    for label in labels {
+        out.push('$');
+        out.push_str(label);
+    }
+    out
+}
+
+/// The name an overload was lowered from (`describe$0$count` → `describe`).
+pub fn overload_base(name: &str) -> Option<&str> {
+    name.split_once(OVERLOAD).map(|(base, _)| base)
+}
+
+/// An overload's name as Swift writes it: `describe$0$count` is `describe(count:)`,
+/// `Double$formatted$0$digits` is `formatted(digits:)`. Any other name is itself.
+pub fn overload_display(name: &str) -> String {
+    let Some((base, labels)) = name.split_once(OVERLOAD) else { return name.to_string() };
+    let member = demangle(base).map_or(base, |(_, member, _)| member);
+    let labels: String = labels.split('$').filter(|l| !l.is_empty()).map(|l| format!("{l}:")).collect();
+    format!("{member}({labels})")
+}
+
+/// Swift's overloading by argument labels: functions of one name in one file (free functions,
+/// and the members [`lower_members`] made of one type's methods) whose calls write different
+/// labels are each named by their labels ([`overload_name`]); the checker picks one by a call's
+/// labels. A name declared once keeps its name; two declarations with the same labels stay a
+/// redeclaration (B0217).
+fn overloads(file: &mut File) {
+    let labels_of = |f: &FnDecl| -> Vec<String> {
+        f.params
+            .iter()
+            .enumerate()
+            .filter(|(i, p)| !(*i == 0 && p.name.name == "self"))
+            .map(|(_, p)| p.label.as_ref().map_or(p.name.name.clone(), |l| l.name.clone()))
+            .collect()
+    };
+    let mut groups: std::collections::HashMap<String, Vec<Vec<String>>> = std::collections::HashMap::new();
+    for item in &file.items {
+        if let ItemKind::Fn(f) = &item.kind
+            && !f.name.name.contains("$$init")
+        {
+            groups.entry(f.name.name.clone()).or_default().push(labels_of(f));
+        }
+    }
+    groups.retain(|_, sets| sets.len() > 1 && sets.iter().any(|s| *s != sets[0]));
+    if groups.is_empty() {
+        return;
+    }
+    for item in &mut file.items {
+        if let ItemKind::Fn(f) = &mut item.kind
+            && groups.contains_key(&f.name.name)
+        {
+            let labels = labels_of(f);
+            f.name.name = overload_name(&f.name.name, labels.iter().map(String::as_str));
+        }
+    }
+}
+
+fn lower_members(file: &mut File) {
     let mut ids = Ids(u32::MAX / 2);
     view_statics(file, &mut ids);
     for item in &mut file.items {
