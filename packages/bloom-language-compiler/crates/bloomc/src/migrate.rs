@@ -352,6 +352,18 @@ pub(crate) fn rewrite_importers(
                         }
                     }
                 }
+                // `require('./X').default` (a mock factory taking the real module) reads the default
+                // 2.0 exports by name: `require('./X.bloom').Name`.
+                if let Some(name) = name
+                    && (head.ends_with("require(") || head.ends_with("jest.requireActual("))
+                    && let Some(tail) = rest[i + 1 + len + 1..].strip_prefix(").default")
+                    && !tail.starts_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$')
+                {
+                    out.push(quote);
+                    out.push_str(&format!(").{name}"));
+                    rest = &rest[i + 1 + len + 1 + ").default".len()..];
+                    continue;
+                }
                 // `lazy(() => import('./X'))` reads the module's default: 2.0 exports it by name,
                 // so the import hands it on as the default `lazy` takes.
                 if let Some(name) = name
@@ -413,6 +425,118 @@ pub(crate) fn rewrite_importers(
                     ));
                 }
             }
+        }
+    }
+    notes.extend(rewrite_barrel_importers(root, migrated, &stems)?);
+    Ok(notes)
+}
+
+/// The importers of a barrel (`Attachments/index.ts`) that re-exports a migrated module's views
+/// (`export { X } from './X.bloom'`): a view taken from the barrel is drawn as a node too,
+/// `<X …/>` as `toElement(X({ … }))`, as if it were imported from its module.
+fn rewrite_barrel_importers(
+    root: &Path,
+    migrated: &[(PathBuf, Option<String>)],
+    stems: &[PathBuf],
+) -> Result<Vec<String>, String> {
+    let resolve = |dir: &Path, spec: &str| -> Option<PathBuf> {
+        let bare = spec.strip_suffix(".bloom").unwrap_or(spec);
+        if bare.starts_with('.') {
+            Some(normalize(&dir.join(bare)))
+        } else {
+            bare.strip_prefix("@/").map(|s| normalize(&root.join(s)))
+        }
+    };
+    // `from '<spec>'` occurrences: (the statement before it, the specifier).
+    let specifiers = |source: &str| -> Vec<(usize, String)> {
+        let mut out = Vec::new();
+        for quote in ["'", "\""] {
+            for (at, _) in source.match_indices(&format!("from {quote}")) {
+                let start = at + 6;
+                if let Some(len) = source[start..].find(quote) {
+                    out.push((at, source[start..start + len].to_string()));
+                }
+            }
+        }
+        out
+    };
+    let files = modules(&[root.to_path_buf()], true)?;
+    // Barrel stem → the views it re-exports from a migrated module (by their exported names).
+    let mut barrels: Vec<(PathBuf, Vec<String>)> = Vec::new();
+    for file in &files {
+        let Ok(source) = std::fs::read_to_string(file) else { continue };
+        let dir = file.parent().unwrap_or(root);
+        let mut views = Vec::new();
+        for (at, spec) in specifiers(&source) {
+            let Some(target) = resolve(dir, &spec) else { continue };
+            let Some(index) = stems.iter().position(|s| s == &target) else { continue };
+            let head = &source[..at];
+            let Some(open) = head.rfind("export") else { continue };
+            let statement = &head[open..];
+            if !statement.contains('{') || statement.contains("export type") {
+                continue;
+            }
+            let module_views = exported_views(&root.join(migrated[index].0.with_extension("d.bloom.ts")));
+            let braces = &statement
+                [statement.find('{').unwrap_or(0) + 1..statement.rfind('}').unwrap_or(statement.len())];
+            for part in braces.split(',') {
+                let part = part.trim().strip_prefix("type ").unwrap_or(part.trim());
+                let (from, exported) = match part.split_once(" as ") {
+                    Some((a, b)) => (a.trim(), b.trim()),
+                    None => (part, part),
+                };
+                if !exported.is_empty() && module_views.iter().any(|v| v == from) {
+                    views.push(exported.to_string());
+                }
+            }
+        }
+        if !views.is_empty() {
+            let stem = normalize(&file.with_extension(""));
+            let stem = if stem.file_name().is_some_and(|n| n == "index") {
+                stem.parent().map(Path::to_path_buf).unwrap_or(stem)
+            } else {
+                stem
+            };
+            barrels.push((stem, views));
+        }
+    }
+    let mut notes = Vec::new();
+    if barrels.is_empty() {
+        return Ok(notes);
+    }
+    for file in &files {
+        let Ok(source) = std::fs::read_to_string(file) else { continue };
+        let dir = file.parent().unwrap_or(root);
+        let mut drawn: Vec<String> = Vec::new();
+        for (at, spec) in specifiers(&source) {
+            let Some(target) = resolve(dir, &spec) else { continue };
+            let target = if target.file_name().is_some_and(|n| n == "index") {
+                target.parent().map(Path::to_path_buf).unwrap_or(target)
+            } else {
+                target
+            };
+            let Some((_, views)) = barrels.iter().find(|(stem, _)| stem == &target) else { continue };
+            let head = &source[..at];
+            let Some(open) = head.rfind("import") else { continue };
+            let statement = &head[open..];
+            for part in statement.split(['{', '}', ',']) {
+                let part = part.trim();
+                let (imported, local) = match part.split_once(" as ") {
+                    Some((a, b)) => (a.trim(), b.trim()),
+                    None => (part, part),
+                };
+                if views.iter().any(|v| v == imported) && !drawn.iter().any(|d| d == local) {
+                    drawn.push(local.to_string());
+                }
+            }
+        }
+        if drawn.is_empty() {
+            continue;
+        }
+        if let Some(redrawn) = bloom_migrate::draw_views_as_nodes(&source, &file.to_string_lossy(), &drawn) {
+            std::fs::write(file, &redrawn).map_err(|e| format!("{}: {e}", file.display()))?;
+            let shown = file.strip_prefix(root).unwrap_or(file).display().to_string();
+            notes.push(format!("{shown}: draws the barrel's migrated views as toElement(X({{ … }}))"));
         }
     }
     Ok(notes)
@@ -717,6 +841,32 @@ mod tests {
              import { Other } from './Post/Other.bloom';\n\
              /* drags ESM in at import time */\n\
              jest.mock('@/Post/LaneChip.bloom', () => ({ __esModule: true, LaneChip: () => null }));\n"
+        );
+    }
+
+    #[test]
+    fn a_mock_factory_requiring_the_default_takes_it_by_name() {
+        let root = std::env::temp_dir().join(format!("bloomc-require-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("Attachments")).unwrap();
+        let caller = root.join("embed.test.tsx");
+        std::fs::write(
+            &caller,
+            "jest.mock('./Attachments', () => ({\n  \
+               Embed: require('./Attachments/Embed').default,\n  \
+               Other: require('./Attachments/Embed').defaultValue,\n\
+             }));\n",
+        )
+        .unwrap();
+        rewrite_importers(&root, &[(PathBuf::from("Attachments/Embed.bloom"), Some("Embed".into()))])
+            .unwrap();
+        let out = std::fs::read_to_string(&caller).unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
+        assert_eq!(
+            out,
+            "jest.mock('./Attachments', () => ({\n  \
+               Embed: require('./Attachments/Embed.bloom').Embed,\n  \
+               Other: require('./Attachments/Embed.bloom').defaultValue,\n\
+             }));\n"
         );
     }
 }
