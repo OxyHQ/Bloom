@@ -168,6 +168,10 @@ pub struct Tr<'s> {
     pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
     pub try_return: bool,
+    /// Inside a `forEach` callback written as a `for`: a bare `return` is `continue`. The
+    /// next closure body takes `pending_loop_return` as its own.
+    pub loop_return: bool,
+    pub pending_loop_return: bool,
     /// How many closures the statement is in: a `throw` in one is `err(e)?`.
     pub closures: u32,
     /// Translating the arguments of a call to a TS import (`useMutation({ mutationFn })`):
@@ -408,6 +412,8 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         throwing: HashSet::new(),
         pairs: false,
         try_return: false,
+        loop_return: false,
+        pending_loop_return: false,
         closures: 0,
         ts_args: false,
         head: false,

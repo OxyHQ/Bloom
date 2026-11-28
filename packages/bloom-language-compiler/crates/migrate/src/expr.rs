@@ -2143,6 +2143,8 @@ impl Tr<'_> {
         let propagate = std::mem::replace(&mut self.propagate, false);
         let returning = std::mem::replace(&mut self.try_return, false);
         let in_do = std::mem::replace(&mut self.in_do, false);
+        let pending = std::mem::replace(&mut self.pending_loop_return, false);
+        let loop_return = std::mem::replace(&mut self.loop_return, pending);
         self.closures += 1;
         let body = match arrow.get_expression() {
             Some(e) => self.stmt_expr(e),
@@ -2151,6 +2153,7 @@ impl Tr<'_> {
             }
         };
         self.closures -= 1;
+        self.loop_return = loop_return;
         self.in_do = in_do;
         self.propagate = propagate;
         self.try_return = returning;
@@ -2160,6 +2163,7 @@ impl Tr<'_> {
 
     fn closure_inner(&mut self, arrow: &ArrowFunctionExpression) -> String {
         let saved = self.scope.clone();
+        let loop_return = std::mem::replace(&mut self.loop_return, false);
         let (params, prelude) = self.closure_params(&arrow.params);
         let body = match arrow.get_expression() {
             Some(e) => self.stmt_expr(e),
@@ -2168,6 +2172,7 @@ impl Tr<'_> {
             }
         };
         self.scope = saved;
+        self.loop_return = loop_return;
         let body = if prelude.is_empty() { body } else { format!("{}\n{body}", prelude.join("\n")) };
         match params {
             params if !params.is_empty() => format!("{{ {params} in\n{body}\n}}"),
