@@ -4044,11 +4044,18 @@ impl<'o> Checker<'o> {
                 self.cond(&if_expr.cond);
                 self.builder(&if_expr.then.stmts);
                 self.pop();
+                // The `else` narrows where the test fails, as an `if`'s value does
+                // (`if item.origin == "server" { … } else { item.draft }`).
+                self.push();
+                if let Cond::Expr(test) = &if_expr.cond {
+                    self.narrow(test, BinaryOp::Eq, BinaryOp::Or);
+                }
                 match if_expr.otherwise.as_deref() {
                     Some(Else::If(next)) => self.child(next),
                     Some(Else::Block(block)) => self.builder(&block.stmts),
                     None => {}
                 }
+                self.pop();
             }
             ExprKind::Match(m) => {
                 self.record(expr, Ty::View(None));
