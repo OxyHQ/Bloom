@@ -267,7 +267,7 @@ impl Tr<'_> {
     }
 
     /// A name's or a prop's declared Bloom type.
-    fn declared_type(&self, e: &Expression) -> Option<String> {
+    pub fn declared_type(&self, e: &Expression) -> Option<String> {
         let name = match e.without_parentheses() {
             Expression::Identifier(id) => {
                 self.scope.renames.get(id.name.as_str()).cloned().unwrap_or(id.name.to_string())

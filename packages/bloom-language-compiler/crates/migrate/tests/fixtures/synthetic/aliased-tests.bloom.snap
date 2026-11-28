@@ -1,0 +1,29 @@
+// A boolean const of a trimmed optional (`hasName`) narrows `name` where it holds (TS's aliased conditions):
+// `hasName ? name : …` reads `name!`. A function whose returns (in a `switch` too) are strings or
+// i18next's `t(…)` returns a `String`.
+
+import { useTranslation } from "react-i18next"
+
+public struct Name: View {
+  var name: String? = none
+  let handle: String
+  let tab: String
+  let { t } = useTranslation()
+  let hasName = ((name?.trimmed() ?? "") != "")
+  let primary = hasName ? name! : "@\(handle)"
+  func empty() -> String {
+    switch tab {
+    case "followers":
+      return t("connections.emptyFollowers")
+    case _:
+      return ""
+    }
+  }
+
+  var body: some View {
+    VStack {
+      Text(primary)
+      Text(empty())
+    }
+  }
+}

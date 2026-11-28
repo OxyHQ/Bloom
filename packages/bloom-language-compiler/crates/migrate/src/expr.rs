@@ -270,6 +270,17 @@ impl Tr<'_> {
                 } else {
                     a
                 };
+                // `hasName ? name : …` with `const hasName = !!name?.trim()`: TS narrows `name`
+                // by the aliased test, so it is `name!` (a release build emits TS's `name`).
+                let a = if let (Expression::Identifier(t), Expression::Identifier(y)) =
+                    (c.test.without_parentheses(), c.consequent.without_parentheses())
+                    && self.alias_proves(&t.name, &y.name)
+                    && self.declared_type(&c.consequent).is_some_and(|ty| ty.ends_with('?'))
+                {
+                    format!("{a}!")
+                } else {
+                    a
+                };
                 let b = self.expr(&c.alternate);
                 format!("{test} ? {a} : {b}")
             }
@@ -912,6 +923,21 @@ impl Tr<'_> {
         let ty = self.scope.decl.get(&name)?.clone();
         self.used.insert(name.clone());
         Some((name, ty))
+    }
+
+    /// Whether `const test = !!value?.…` (or `!!value`, `Boolean(value…)`, `value != null`) is
+    /// in the file: TS narrows `value` where `test` holds.
+    fn alias_proves(&self, test: &str, value: &str) -> bool {
+        let head = format!("const {test} = ");
+        let Some(at) = self.src.find(&head) else { return false };
+        let init = &self.src[at + head.len()..];
+        let init = &init[..init.find(['\n', ';']).unwrap_or(init.len())];
+        [format!("!!{value}?."), format!("Boolean({value}?."), format!("Boolean({value})")]
+            .iter()
+            .any(|p| init.starts_with(p.as_str()))
+            || [format!("!!{value}"), format!("{value} != null"), format!("{value} !== undefined")]
+                .iter()
+                .any(|p| init == p)
     }
 
     /// The declared type name of a name or a prop, when known.

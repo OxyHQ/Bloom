@@ -2064,6 +2064,13 @@ impl Tr<'_> {
             .then(|| id.name.to_string())
     }
 
+    /// `t(…)` of `const { t } = useTranslation()`.
+    fn is_translation(&self, e: &Expression) -> bool {
+        matches!(e.without_parentheses(), Expression::CallExpression(c)
+            if matches!(&c.callee, Expression::Identifier(id) if id.name == "t")
+                && self.imported.contains("useTranslation"))
+    }
+
     fn infer_ret(&mut self, body: Body) -> Option<String> {
         match body {
             Body::Expr(e) => {
@@ -2097,6 +2104,11 @@ impl Tr<'_> {
                     value_type(values[0]).filter(|t| values.iter().all(|v| value_type(v) == Some(t)))
                 {
                     Some(ty.to_string())
+                } else if values.iter().any(|v| self.is_translation(v))
+                    && values.iter().all(|v| self.is_translation(v) || value_type(v) == Some("String"))
+                {
+                    // i18next's `t(key, …)` (of `useTranslation()`) is a string, as a literal is.
+                    Some("String".into())
                 } else if let Some(callee) = self.ts_call_of(values[0])
                     && values.iter().all(|v| self.ts_call_of(v).as_deref() == Some(callee.as_str()))
                 {
@@ -3589,6 +3601,17 @@ fn return_values<'b, 'a>(statements: &'b [Statement<'a>]) -> Vec<&'b Expression<
                 }
             }
             Statement::BlockStatement(b) => out.extend(return_values(&b.body)),
+            Statement::SwitchStatement(sw) => {
+                for case in &sw.cases {
+                    out.extend(return_values(&case.consequent));
+                }
+            }
+            Statement::TryStatement(t) => {
+                out.extend(return_values(&t.block.body));
+                if let Some(h) = &t.handler {
+                    out.extend(return_values(&h.body.body));
+                }
+            }
             _ => {}
         }
     }
