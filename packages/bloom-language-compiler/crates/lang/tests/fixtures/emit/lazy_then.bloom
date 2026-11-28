@@ -1,0 +1,13 @@
+// React's `lazy` component, kept by the codemod as a module `let`, is emitted as a call inside the
+// Suspense's `$render`: `$render(ReportModal({ … }))`. A LazyExoticComponent is not callable
+// (TypeError at the sheet's draw). Mention: components/Feed/postMenuActions (report and
+// add-to-list sheets; postMenuActions.test "submits a report…").
+// Expected: a TS component, `$jsx(ReportModal, { … })`.
+import { lazy, Suspense } from "react"
+import { Text as RNText } from "react-native"
+private let Lazy = lazy { import("react-native").then { m in ({ default: m.Text }) } }
+public struct Sheet: View {
+  var body: some View {
+    Suspense(fallback: none) { Lazy(children: "Hi") }
+  }
+}

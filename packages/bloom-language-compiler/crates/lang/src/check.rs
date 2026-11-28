@@ -3987,24 +3987,41 @@ impl<'o> Checker<'o> {
         }
         let closure = match (call.args.as_slice(), &call.trailing) {
             ([arg], None) => match &arg.value.kind {
-                ExprKind::Closure(c) => c,
-                _ => return None,
+                ExprKind::Closure(c) => Some(c),
+                // `lazy(loadReport)`: a loader of its own.
+                _ => None,
             },
-            ([], Some(c)) => c,
+            ([], Some(c)) => Some(&**c),
             _ => return None,
         };
-        let [Stmt { kind: StmtKind::Expr(body), .. }] = closure.body.as_slice() else { return None };
-        let ExprKind::Call(import) = &body.kind else { return None };
-        if !matches!(&import.callee.kind, ExprKind::Name(n) if n == "import") {
-            return None;
-        }
-        let [arg] = import.args.as_slice() else { return None };
-        let ExprKind::Str { parts, .. } = &arg.value.kind else { return None };
-        let [StrPart::Text(specifier)] = parts.as_slice() else { return None };
-        // The module is TS's to read: the component's props are checked by the emitted
+        // Whatever the loader gives, React's `lazy` makes a component of it. Its module, when
+        // the loader is `import("./X")` or a chain on it (`import("pkg").then { m in … }`), is
+        // TS's to read: the component's props are checked by the emitted
         // `satisfies ComponentProps<typeof X>`.
-        if let Some(path) = ts::resolve(&self.path, specifier, self.options) {
-            self.out.dependencies.insert(path);
+        let mut root = match closure.map(|c| c.body.as_slice()) {
+            Some([Stmt { kind: StmtKind::Expr(body), .. }]) => Some(body),
+            _ => None,
+        };
+        while let Some(expr) = root {
+            match &expr.kind {
+                ExprKind::Call(import) if matches!(&import.callee.kind, ExprKind::Name(n) if n == "import") =>
+                {
+                    if let [arg] = import.args.as_slice()
+                        && let ExprKind::Str { parts, .. } = &arg.value.kind
+                        && let [StrPart::Text(specifier)] = parts.as_slice()
+                        && let Some(path) = ts::resolve(&self.path, specifier, self.options)
+                    {
+                        self.out.dependencies.insert(path);
+                    }
+                    break;
+                }
+                ExprKind::Call(call) => match &call.callee.kind {
+                    ExprKind::Field(object, _) | ExprKind::OptField(object, _) => root = Some(&**object),
+                    _ => break,
+                },
+                ExprKind::Await(inner) | ExprKind::Paren(inner) => root = Some(&**inner),
+                _ => break,
+            }
         }
         Some(Ty::Foreign("".into()))
     }

@@ -1,0 +1,12 @@
+// React's `lazy` over any loader (`lazy(loadToggle)`, as `import(…).then { … }` is, which Jest cannot
+// run; that form is the golden emit/lazy_then): a component, drawn as an element in its `Suspense`.
+import { lazy, Suspense } from "react"
+import { loadToggle } from "./hooked-toggle"
+
+private let Greeting = lazy(loadToggle)
+
+public struct Sheet: View {
+  var body: some View {
+    Suspense(fallback: none) { Greeting(label: "Hi") }
+  }
+}

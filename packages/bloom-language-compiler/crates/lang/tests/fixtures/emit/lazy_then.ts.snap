@@ -1,0 +1,14 @@
+import { Embed, inlineView } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { lazy, Suspense } from "react";
+import { Text as RNText } from "react-native";
+
+const Lazy = lazy(() => (import("react-native").then((m) => ({ default: m.Text })) satisfies Promise<Awaited<ReturnType<(Parameters<typeof lazy>[0])>>>));
+
+const $view0 = Embed($jsx(Suspense, { fallback: undefined, children: $jsx(Lazy, { children: "Hi" } satisfies ComponentProps<typeof Lazy>) } satisfies ComponentProps<typeof Suspense>));
+export const Sheet = inlineView(function Sheet() {
+"use no memo";
+return $view0;
+});
+
