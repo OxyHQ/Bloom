@@ -3147,7 +3147,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                 } else {
                     None
                 };
-                let value = self.expr(Ctx::Normal);
+                let value = match self.operator_function() {
+                    Some(value) => value,
+                    None => self.expr(Ctx::Normal),
+                };
                 args.push(Arg { label, spread: false, span: start.to(value.span), value });
             }
             if !self.eat(P::Comma) {
@@ -3318,7 +3321,48 @@ impl<'s, 'i> Parser<'s, 'i> {
             ret,
             body,
             span: open.to(Span::new(self.prev_end(), self.prev_end())),
+            operator: None,
         }
+    }
+
+    /// `+` as an argument (`reduce(0, +)`, `sorted(by: <)`) or in parentheses (`(+)`): an
+    /// arithmetic or comparison operator directly before `,` or `)` is Swift's operator
+    /// function, the closure `{ $0 + $1 }`.
+    fn operator_function(&mut self) -> Option<Expr> {
+        let op = self.binary_op().filter(|op| {
+            matches!(
+                op,
+                BinaryOp::Mul
+                    | BinaryOp::Div
+                    | BinaryOp::Rem
+                    | BinaryOp::Add
+                    | BinaryOp::Sub
+                    | BinaryOp::Lt
+                    | BinaryOp::Le
+                    | BinaryOp::Gt
+                    | BinaryOp::Ge
+                    | BinaryOp::Eq
+                    | BinaryOp::Ne
+            )
+        })?;
+        if !matches!(self.nth(1), Tok::P(P::Comma | P::RParen)) {
+            return None;
+        }
+        let span = self.bump();
+        let param = |n: u32| ClosureParam { name: Ident { name: format!("${n}"), span }, ty: None };
+        let lhs = self.expr_node(ExprKind::Name("$0".into()), span);
+        let rhs = self.expr_node(ExprKind::Name("$1".into()), span);
+        let body = self.expr_node(ExprKind::Binary(op, Box::new(lhs), Box::new(rhs)), span);
+        let closure = Closure {
+            params: vec![param(0), param(1)],
+            has_in: false,
+            tuple: false,
+            ret: None,
+            body: vec![Stmt { kind: StmtKind::Expr(body), span }],
+            span,
+            operator: Some(op),
+        };
+        Some(self.expr_node(ExprKind::Closure(closure), span))
     }
 
     fn if_expr(&mut self) -> Expr {
@@ -3546,7 +3590,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let mut items = Vec::new();
                 let mut trailing_comma = false;
                 while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
-                    items.push(self.expr(Ctx::Normal));
+                    // `(+)`: an operator function anywhere a value goes (`let add: (Int, Int) -> Int = (+)`).
+                    let item = match self.operator_function() {
+                        Some(item) => item,
+                        None => self.expr(Ctx::Normal),
+                    };
+                    items.push(item);
                     trailing_comma = self.eat(P::Comma);
                     if !trailing_comma {
                         break;

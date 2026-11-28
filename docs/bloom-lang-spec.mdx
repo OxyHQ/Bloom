@@ -163,10 +163,12 @@ postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | 
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
-arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; a struct spread, or a
-                                                   list spread into a rest parameter *)
+arg           = [ IDENT ":" ] ( expr | opfn ) | ".." expr ;  (* named argument; a struct spread,
+                                                   or a list spread into a rest parameter *)
+opfn          = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=" ;
+                                    (* an operator function, directly before "," or ")" *)
 primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
-              | "(" expr ")" | "(" expr "," expr { "," expr } ")"
+              | "(" expr ")" | "(" opfn ")" | "(" expr "," expr { "," expr } ")"
               | "[" [ item { "," item } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
 
 item          = expr | ".." expr ;                  (* `[..a, b]`: a list's items in place *)
@@ -724,7 +726,10 @@ B0217 (overloads differ by labels, not by types), and so is an overloaded name r
 one namespace, so a function's overloads are declared in one file (B0807 otherwise). That is a
 current limit, not the design: Swift takes a name's overloads from anywhere in its module. A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
-outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
+outside a closure). An arithmetic or comparison operator passed as a function is that closure
+(Swift's operator functions): `xs.reduce(0, +)`, `xs.sorted(by: >)`, and `(+)` in parentheses
+anywhere a value goes (`let add: (Int, Int) -> Int = (+)`); it is typed by the function type
+expected there, and is `{ $0 + $1 }` to every backend. A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
 `private` (the file), plus `private(set)` for who assigns; a `public` declaration that names an
 `internal` or `private` type of its file is B0108. `import Bloom` and `import Mention.Posts` name

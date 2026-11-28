@@ -1,0 +1,42 @@
+function $sorted<T>(items: readonly T[], before: (a: T, b: T) => boolean): readonly T[] {
+  return [...items].sort((a, b) => (before(a, b) ? -1 : before(b, a) ? 1 : 0));
+}
+
+export function total(xs: readonly number[]): number {
+return xs.reduce(($0: number, $1: number) => $0 + $1, 0);
+}
+
+export function product(xs: readonly number[]): number {
+return xs.reduce(($0: number, $1: number) => $0 * $1, 1.0);
+}
+
+export function joined(xs: readonly string[]): string {
+return xs.reduce(($0: string, $1: string) => $0 + $1, "");
+}
+
+export function ascending(xs: readonly number[]): readonly number[] {
+return $sorted(xs, ($0: number, $1: number) => $0 < $1);
+}
+
+export function descending(xs: readonly string[]): readonly string[] {
+return $sorted(xs, ($0: string, $1: string) => $0 > $1);
+}
+
+function apply(f: (p0: number, p1: number) => number, a: number, b: number): number {
+return f(a, b);
+}
+
+export function seven(): number {
+return apply(($0: number, $1: number) => $0 + $1, 3, 4);
+}
+
+export function remainder(): number {
+return apply(($0: number, $1: number) => $0 % $1, 7, 4);
+}
+
+export const add: (p0: number, p1: number) => number = (($0: number, $1: number) => $0 + $1);
+
+export function same(f: (p0: string, p1: string) => boolean = (($0: string, $1: string) => $0 === $1)): boolean {
+return f("a", "a");
+}
+

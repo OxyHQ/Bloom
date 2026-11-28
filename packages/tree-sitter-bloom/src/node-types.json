@@ -2615,6 +2615,11 @@
     }
   },
   {
+    "type": "operator_function",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "optional_binding",
     "named": true,
     "fields": {
@@ -2753,6 +2758,10 @@
       "types": [
         {
           "type": "_expression",
+          "named": true
+        },
+        {
+          "type": "operator_function",
           "named": true
         }
       ]
@@ -3943,6 +3952,10 @@
         "types": [
           {
             "type": "_expression",
+            "named": true
+          },
+          {
+            "type": "operator_function",
             "named": true
           }
         ]
