@@ -19,6 +19,7 @@ mod comments;
 mod expr;
 mod i18n;
 mod importers;
+mod inline;
 mod jsx;
 mod module;
 mod props;
@@ -109,6 +110,9 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
             default_export: None,
         };
     }
+    // A private hook with an effect, used by one view, is spliced into that view first.
+    let inlined = inline::private_hooks(source, filename);
+    let source = inlined.as_deref().unwrap_or(source);
     // A relative `filename` is read from `options.root` (the props files it opens, too).
     let path = match &options.root {
         Some(root) if Path::new(filename).is_relative() => root.join(filename).to_string_lossy().into_owned(),
