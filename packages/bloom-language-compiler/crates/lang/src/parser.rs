@@ -2449,8 +2449,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.bump();
                 let cond = if self.eat_kw(Kw::Let) {
                     let pattern = self.pattern();
-                    self.expect(P::Eq, "`=` and the value to unwrap");
-                    Cond::Let(pattern, Box::new(self.expr(Ctx::Head)))
+                    let value = self.let_value(&pattern, "`=` and the value to unwrap");
+                    Cond::Let(pattern, Box::new(value))
                 } else {
                     Cond::Expr(Box::new(self.expr(Ctx::Head)))
                 };
@@ -3372,12 +3372,24 @@ impl<'s, 'i> Parser<'s, 'i> {
         Some(self.expr_node(ExprKind::Closure(closure), span))
     }
 
+    /// What `if let` / `guard let` unwraps: `= value`, or, after a bare name, the name itself
+    /// (Swift 5.7's `if let x { … }`, `guard let x else { … }`). The shorthand's value has the
+    /// pattern's span, which is how `bloom fmt` prints it back.
+    fn let_value(&mut self, pattern: &Pattern, expected: &str) -> Expr {
+        if let PatternKind::Bind(name) = &pattern.kind
+            && !self.at(P::Eq)
+        {
+            return self.expr_node(ExprKind::Name(name.name.clone()), pattern.span);
+        }
+        self.expect(P::Eq, expected);
+        self.expr(Ctx::Head)
+    }
+
     fn if_expr(&mut self) -> Expr {
         let start = self.bump();
         let cond = if self.eat_kw(Kw::Let) {
             let pattern = self.pattern();
-            self.expect(P::Eq, "`=` and the value to match");
-            let value = self.expr(Ctx::Head);
+            let value = self.let_value(&pattern, "`=` and the value to match");
             Cond::Let(pattern, Box::new(value))
         } else {
             Cond::Expr(Box::new(self.expr(Ctx::Head)))

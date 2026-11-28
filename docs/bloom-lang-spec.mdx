@@ -147,7 +147,8 @@ base_type     = TYPE_NAME [ "<" type { "," type } ">" ]
 
 expr          = if_expr | match_expr | closure | binary ;
 if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
-cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
+cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing
+              | "let" IDENT ;                       (* `if let x`: `if let x = x` *)
 match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
                 (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit;
                    an arm may also be one statement: case .ok(_) => draft = Draft() *)
@@ -802,7 +803,8 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   fallthrough; `case .a, .b:` matches either, `case let .x(v)` and `.x(let v)` bind (a Bloom
   pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
   rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
-- `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
+- `guard cond else { … }` and `guard let x = optional else { … }` (Swift 5.7's `guard let x else
+  { … }` and `if let x { … }` unwrap the name into itself): the block must leave with
   `return`, `throw`, `break`, `continue`, a call that returns `Never` (`fatal(…)`, Swift's
   `fatalError`) or a `do` whose body and every `catch` leave (B0110), and what the condition binds
   is in scope after it. The same ends a path anywhere a value is expected: a function or closure
