@@ -2,7 +2,7 @@
 # The colour engine in Bloom on the Kotlin backend: emits packages/bloom-theme-engine with
 # `bloom-native emit --target kotlin-compose` (and the standard library's Math), compiles the
 # emitted Kotlin with the runtime's std files it calls and the JVM harness (test/jvm: the golden
-# check and stubs of Android and Compose, which the engine does not touch), and runs the golden.
+# checks and stubs of Android and Compose, which the engine does not touch), and runs the goldens.
 #
 # BLOOM_NATIVE: the bloom-native binary (default: built from this checkout, in CARGO_TARGET_DIR).
 # GRADLE_USER_HOME_DIR: the Gradle cache holding the Kotlin compiler (the native backend's).
@@ -25,4 +25,9 @@ trap 'rm -rf "$OUT"' EXIT
 STD="$NATIVE/runtime/android/so/oxy/bloom/std"
 java -cp "$CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-stdlib -no-reflect -classpath "$STDLIB:$COROUTINES" -d "$OUT/classes" \
   $(find "$OUT/src" -name '*.kt') "$STD/Std.kt" "$STD/Builtins.kt" "$STD/MathExterns.kt" "$PKG"/test/jvm/*.kt 2>&1 | grep -v "^warning" || true
-java -cp "$OUT/classes:$STDLIB:$COROUTINES" "${HARNESS:-Slice1ConformanceKt}" "$ROOT/src/theme/__tests__/__fixtures__/golden-color-engine.txt"
+# HARNESS: the golden checks to run (default: every slice's).
+status=0
+for harness in ${HARNESS:-Slice1ConformanceKt Slice2ConformanceKt}; do
+  java -cp "$OUT/classes:$STDLIB:$COROUTINES" "$harness" "$ROOT/src/theme/__tests__/__fixtures__/golden-color-engine.txt" || status=1
+done
+exit $status

@@ -1,0 +1,258 @@
+// Bloom's colour engine, in Bloom: the scheme variants (src/theme/color-engine/scheme-variants.ts).
+// How each variant derives its tonal palettes from the seed.
+
+public enum SchemeVariant {
+  case vivid
+  case vibrant
+  case expressive
+  case tonalSpot
+  case neutral
+  case monochrome
+}
+
+/// Explicit accent seeds: a supplied source's palette is built from that colour itself (its hue
+/// and chroma) instead of the variant's derived rotation; the role tones apply on top.
+public struct AccentSources: Equatable {
+  public var secondarySource: Hct? = none
+  public var tertiarySource: Hct? = none
+}
+
+/// The accent palette of a role: from the pinned colour when there is one, else `derived`.
+func accentPalette(_ source: Hct?, _ derived: () -> TonalPalette) -> TonalPalette {
+  if let pinned = source { return tonalPaletteFromInt(pinned.toInt()) }
+  return derived()
+}
+
+let VIBRANT_HUES: [Double] = [0.0, 41.0, 61.0, 101.0, 131.0, 181.0, 251.0, 301.0, 360.0]
+let VIBRANT_SECONDARY_ROTATIONS: [Double] = [18.0, 15.0, 10.0, 12.0, 15.0, 18.0, 15.0, 12.0, 12.0]
+let VIBRANT_TERTIARY_ROTATIONS: [Double] = [35.0, 30.0, 20.0, 25.0, 30.0, 35.0, 30.0, 25.0, 25.0]
+
+let EXPRESSIVE_HUES: [Double] = [0.0, 21.0, 51.0, 121.0, 151.0, 191.0, 271.0, 321.0, 360.0]
+let EXPRESSIVE_SECONDARY_ROTATIONS: [Double] = [
+  45.0,
+  95.0,
+  45.0,
+  20.0,
+  45.0,
+  90.0,
+  45.0,
+  45.0,
+  45.0,
+]
+let EXPRESSIVE_TERTIARY_ROTATIONS: [Double] = [
+  120.0,
+  120.0,
+  20.0,
+  45.0,
+  20.0,
+  15.0,
+  20.0,
+  120.0,
+  120.0,
+]
+
+/// Maxed-out colourfulness at each position of the primary palette.
+public func schemeVibrant(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.vibrant,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: tonalPaletteFromHueAndChroma(source.hue, 200.0),
+    secondaryPalette: accentPalette(
+      accents.secondarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, VIBRANT_HUES, VIBRANT_SECONDARY_ROTATIONS),
+          24.0,
+        )
+      },
+    ),
+    tertiaryPalette: accentPalette(
+      accents.tertiarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, VIBRANT_HUES, VIBRANT_TERTIARY_ROTATIONS),
+          32.0,
+        )
+      },
+    ),
+    neutralPalette: tonalPaletteFromHueAndChroma(source.hue, 10.0),
+    neutralVariantPalette: tonalPaletteFromHueAndChroma(source.hue, 12.0),
+  )
+}
+
+/// Bloom's own brand-vivid scheme: the vibrant base, with secondary and tertiary accents that keep
+/// much more chroma than Material 3's. What the presets use.
+public func schemeVivid(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.vibrant,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: tonalPaletteFromHueAndChroma(source.hue, 200.0),
+    secondaryPalette: accentPalette(
+      accents.secondarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, VIBRANT_HUES, VIBRANT_SECONDARY_ROTATIONS),
+          64.0,
+        )
+      },
+    ),
+    tertiaryPalette: accentPalette(
+      accents.tertiarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, VIBRANT_HUES, VIBRANT_TERTIARY_ROTATIONS),
+          72.0,
+        )
+      },
+    ),
+    neutralPalette: tonalPaletteFromHueAndChroma(source.hue, 10.0),
+    neutralVariantPalette: tonalPaletteFromHueAndChroma(source.hue, 12.0),
+  )
+}
+
+/// Playful, detached from the seed hue (primary rotated 240°).
+public func schemeExpressive(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.expressive,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: tonalPaletteFromHueAndChroma(sanitizeDegreesDouble(source.hue + 240.0), 40.0),
+    secondaryPalette: accentPalette(
+      accents.secondarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, EXPRESSIVE_HUES, EXPRESSIVE_SECONDARY_ROTATIONS),
+          24.0,
+        )
+      },
+    ),
+    tertiaryPalette: accentPalette(
+      accents.tertiarySource,
+      {
+        tonalPaletteFromHueAndChroma(
+          getRotatedHue(source, EXPRESSIVE_HUES, EXPRESSIVE_TERTIARY_ROTATIONS),
+          32.0,
+        )
+      },
+    ),
+    neutralPalette: tonalPaletteFromHueAndChroma(source.hue + 15.0, 8.0),
+    neutralVariantPalette: tonalPaletteFromHueAndChroma(source.hue + 15.0, 12.0),
+  )
+}
+
+/// The Material You default: a calm, balanced treatment of the seed.
+public func schemeTonalSpot(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.tonalSpot,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: tonalPaletteFromHueAndChroma(source.hue, 36.0),
+    secondaryPalette: accentPalette(
+      accents.secondarySource,
+      { tonalPaletteFromHueAndChroma(source.hue, 16.0) },
+    ),
+    tertiaryPalette: accentPalette(
+      accents.tertiarySource,
+      { tonalPaletteFromHueAndChroma(sanitizeDegreesDouble(source.hue + 60.0), 24.0) },
+    ),
+    neutralPalette: tonalPaletteFromHueAndChroma(source.hue, 6.0),
+    neutralVariantPalette: tonalPaletteFromHueAndChroma(source.hue, 8.0),
+  )
+}
+
+/// Near-greyscale: the seed hue is only a whisper.
+public func schemeNeutral(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.neutral,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: tonalPaletteFromHueAndChroma(source.hue, 12.0),
+    secondaryPalette: accentPalette(
+      accents.secondarySource,
+      { tonalPaletteFromHueAndChroma(source.hue, 8.0) },
+    ),
+    tertiaryPalette: accentPalette(
+      accents.tertiarySource,
+      { tonalPaletteFromHueAndChroma(source.hue, 16.0) },
+    ),
+    neutralPalette: tonalPaletteFromHueAndChroma(source.hue, 2.0),
+    neutralVariantPalette: tonalPaletteFromHueAndChroma(source.hue, 2.0),
+  )
+}
+
+/// No colour at all: every palette is grey, so only the seed's tone survives. A pinned accent is
+/// ignored on purpose.
+public func schemeMonochrome(
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double,
+) -> DynamicScheme {
+  let grey = { tonalPaletteFromHueAndChroma(source.hue, 0.0) }
+  return DynamicScheme(
+    sourceColorArgb: source.toInt(),
+    variant: Variant.monochrome,
+    contrastLevel: contrastLevel,
+    isDark: isDark,
+    primaryPalette: grey(),
+    secondaryPalette: grey(),
+    tertiaryPalette: grey(),
+    neutralPalette: grey(),
+    neutralVariantPalette: grey(),
+  )
+}
+
+/// A scheme by variant name; `accents` pins the secondary and tertiary palettes when given.
+public func buildScheme(
+  _ variant: SchemeVariant,
+  _ source: Hct,
+  _ isDark: Bool,
+  _ contrastLevel: Double = 0.0,
+  _ accents: AccentSources = AccentSources(),
+) -> DynamicScheme {
+  switch variant {
+  case .vivid:
+    return schemeVivid(source, isDark, contrastLevel, accents)
+  case .vibrant:
+    return schemeVibrant(source, isDark, contrastLevel, accents)
+  case .expressive:
+    return schemeExpressive(source, isDark, contrastLevel, accents)
+  case .tonalSpot:
+    return schemeTonalSpot(source, isDark, contrastLevel, accents)
+  case .neutral:
+    return schemeNeutral(source, isDark, contrastLevel, accents)
+  case .monochrome:
+    return schemeMonochrome(source, isDark, contrastLevel)
+  }
+}

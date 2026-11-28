@@ -1,0 +1,514 @@
+// Bloom's colour engine, in Bloom: the colour roles and their resolution
+// (src/theme/color-engine/color-roles.ts, color-role.ts, tone-delta-pair.ts).
+//
+// A role is a recipe, not a colour: a palette, a base tone, and optionally a background to
+// contrast against and a paired role to keep a tonal distance from. The TypeScript holds each
+// recipe as closures on a `ColorRole` object; here a role is a case of `ColorRole`, its recipe is
+// the `role…` functions below, one case each in the TypeScript's order, and `roleResolvedTone`
+// resolves it as `getTone` does, in the same order. One file: the checker loses the enum's
+// identity across files that reference each other's declarations (a question for the compiler).
+
+/// Every Bloom colour role, in the TypeScript's `Roles` order (its keys are the case names).
+public enum ColorRole: CaseIterable {
+  case primaryPaletteKeyColor
+  case secondaryPaletteKeyColor
+  case tertiaryPaletteKeyColor
+  case neutralPaletteKeyColor
+  case neutralVariantPaletteKeyColor
+  case background
+  case onBackground
+  case surface
+  case surfaceDim
+  case surfaceBright
+  case surfaceContainerLowest
+  case surfaceContainerLow
+  case surfaceContainer
+  case surfaceContainerHigh
+  case surfaceContainerHighest
+  case onSurface
+  case surfaceVariant
+  case onSurfaceVariant
+  case inverseSurface
+  case inverseOnSurface
+  case outline
+  case outlineVariant
+  case shadow
+  case scrim
+  case surfaceTint
+  case primary
+  case onPrimary
+  case primaryContainer
+  case onPrimaryContainer
+  case inversePrimary
+  case secondary
+  case onSecondary
+  case secondaryContainer
+  case onSecondaryContainer
+  case tertiary
+  case onTertiary
+  case tertiaryContainer
+  case onTertiaryContainer
+  case error
+  case onError
+  case errorContainer
+  case onErrorContainer
+}
+
+// The tone-delta pair (src/theme/color-engine/tone-delta-pair.ts), beside the roles it pairs.
+
+public enum TonePolarity {
+  case darker
+  case lighter
+  case nearer
+  case farther
+}
+
+/// Two roles kept at least `delta` apart in tone, in a direction, so paired roles never collapse
+/// into each other.
+public struct ToneDeltaPair: Equatable {
+  public let roleA: ColorRole
+  public let roleB: ColorRole
+  public let delta: Double
+  public let polarity: TonePolarity
+  public let stayTogether: Bool
+}
+
+func isFidelity(_ s: DynamicScheme) -> Bool {
+  s.variant == Variant.fidelity || s.variant == Variant.content
+}
+
+func isMonochrome(_ s: DynamicScheme) -> Bool { s.variant == Variant.monochrome }
+
+/// For fidelity schemes: the tone nearest a target chroma.
+func findDesiredChromaByTone(
+  _ hue: Double,
+  _ chroma: Double,
+  _ tone: Double,
+  _ byDecreasingTone: Bool,
+) -> Double {
+  var answer = tone
+  var closestToChroma = hctFrom(hue, chroma, tone)
+  if closestToChroma.chroma < chroma {
+    var chromaPeak = closestToChroma.chroma
+    while closestToChroma.chroma < chroma {
+      answer += byDecreasingTone ? -1.0 : 1.0
+      let potentialSolution = hctFrom(hue, chroma, answer)
+      if chromaPeak > potentialSolution.chroma { break }
+      if abs(potentialSolution.chroma - chroma) < 0.4 { break }
+      let potentialDelta = abs(potentialSolution.chroma - chroma)
+      let currentDelta = abs(closestToChroma.chroma - chroma)
+      if potentialDelta < currentDelta { closestToChroma = potentialSolution }
+      chromaPeak = max(chromaPeak, potentialSolution.chroma)
+    }
+  }
+  return answer
+}
+
+/// The most elevated surface a scheme can show: the brightest or dimmest ground.
+func highestSurface(_ s: DynamicScheme) -> ColorRole {
+  s.isDark ? ColorRole.surfaceBright : ColorRole.surfaceDim
+}
+
+/// The role's palette in `s`.
+public func rolePalette(_ role: ColorRole, _ s: DynamicScheme) -> TonalPalette {
+  switch role {
+  case .primaryPaletteKeyColor, .surfaceTint, .primary, .onPrimary, .primaryContainer, .onPrimaryContainer, .inversePrimary:
+    return s.primaryPalette
+  case .secondaryPaletteKeyColor, .secondary, .onSecondary, .secondaryContainer, .onSecondaryContainer:
+    return s.secondaryPalette
+  case .tertiaryPaletteKeyColor, .tertiary, .onTertiary, .tertiaryContainer, .onTertiaryContainer:
+    return s.tertiaryPalette
+  case .neutralVariantPaletteKeyColor, .surfaceVariant, .onSurfaceVariant, .outline, .outlineVariant:
+    return s.neutralVariantPalette
+  case .error, .onError, .errorContainer, .onErrorContainer:
+    return s.errorPalette
+  default:
+    return s.neutralPalette
+  }
+}
+
+/// The role's base tone in `s`, before contrast (the TypeScript's `tone` closure).
+public func roleTone(_ role: ColorRole, _ s: DynamicScheme) -> Double {
+  switch role {
+  case .primaryPaletteKeyColor:
+    return s.primaryPalette.keyColor().tone
+  case .secondaryPaletteKeyColor:
+    return s.secondaryPalette.keyColor().tone
+  case .tertiaryPaletteKeyColor:
+    return s.tertiaryPalette.keyColor().tone
+  case .neutralPaletteKeyColor:
+    return s.neutralPalette.keyColor().tone
+  case .neutralVariantPaletteKeyColor:
+    return s.neutralVariantPalette.keyColor().tone
+  case .background:
+    return s.isDark ? 6.0 : 98.0
+  case .onBackground:
+    return s.isDark ? 90.0 : 10.0
+  case .surface:
+    return s.isDark ? 6.0 : 98.0
+  case .surfaceDim:
+    return s.isDark ? 6.0 : curve(87.0, 87.0, 80.0, 75.0).get(s.contrastLevel)
+  case .surfaceBright:
+    return s.isDark ? curve(24.0, 24.0, 29.0, 34.0).get(s.contrastLevel) : 98.0
+  case .surfaceContainerLowest:
+    return s.isDark ? curve(4.0, 4.0, 2.0, 0.0).get(s.contrastLevel) : 100.0
+  case .surfaceContainerLow:
+    return s.isDark ? curve(10.0, 10.0, 11.0, 12.0).get(s.contrastLevel) : curve(
+      96.0,
+      96.0,
+      96.0,
+      95.0,
+    ).get(s.contrastLevel)
+  case .surfaceContainer:
+    return s.isDark ? curve(12.0, 12.0, 16.0, 20.0).get(s.contrastLevel) : curve(
+      94.0,
+      94.0,
+      92.0,
+      90.0,
+    ).get(s.contrastLevel)
+  case .surfaceContainerHigh:
+    return s.isDark ? curve(17.0, 17.0, 21.0, 25.0).get(s.contrastLevel) : curve(
+      92.0,
+      92.0,
+      88.0,
+      85.0,
+    ).get(s.contrastLevel)
+  case .surfaceContainerHighest:
+    return s.isDark ? curve(22.0, 22.0, 26.0, 30.0).get(s.contrastLevel) : curve(
+      90.0,
+      90.0,
+      84.0,
+      80.0,
+    ).get(s.contrastLevel)
+  case .onSurface:
+    return s.isDark ? 90.0 : 10.0
+  case .surfaceVariant:
+    return s.isDark ? 30.0 : 90.0
+  case .onSurfaceVariant:
+    return s.isDark ? 80.0 : 30.0
+  case .inverseSurface:
+    return s.isDark ? 90.0 : 20.0
+  case .inverseOnSurface:
+    return s.isDark ? 20.0 : 95.0
+  case .outline:
+    return s.isDark ? 60.0 : 50.0
+  case .outlineVariant:
+    return s.isDark ? 30.0 : 80.0
+  case .shadow, .scrim:
+    return 0.0
+  case .surfaceTint:
+    return s.isDark ? 80.0 : 40.0
+  case .primary:
+    return isMonochrome(s) ? (s.isDark ? 100.0 : 0.0) : s.isDark ? 80.0 : 40.0
+  case .onPrimary:
+    return isMonochrome(s) ? (s.isDark ? 10.0 : 90.0) : s.isDark ? 20.0 : 100.0
+  case .primaryContainer:
+    if isFidelity(s) { return s.sourceColorHct.tone }
+    if isMonochrome(s) { return s.isDark ? 85.0 : 25.0 }
+    return s.isDark ? 30.0 : 90.0
+  case .onPrimaryContainer:
+    if isFidelity(s) { return foregroundTone(roleTone(ColorRole.primaryContainer, s), 4.5) }
+    if isMonochrome(s) { return s.isDark ? 0.0 : 100.0 }
+    return s.isDark ? 90.0 : 30.0
+  case .inversePrimary:
+    return s.isDark ? 40.0 : 80.0
+  case .secondary:
+    return s.isDark ? 80.0 : 40.0
+  case .onSecondary:
+    return isMonochrome(s) ? (s.isDark ? 10.0 : 100.0) : s.isDark ? 20.0 : 100.0
+  case .secondaryContainer:
+    let initialTone = s.isDark ? 30.0 : 90.0
+    if isMonochrome(s) { return s.isDark ? 30.0 : 85.0 }
+    if !isFidelity(s) { return initialTone }
+    return findDesiredChromaByTone(
+      s.secondaryPalette.hue,
+      s.secondaryPalette.chroma,
+      initialTone,
+      !s.isDark,
+    )
+  case .onSecondaryContainer:
+    if isMonochrome(s) { return s.isDark ? 90.0 : 10.0 }
+    if !isFidelity(s) { return s.isDark ? 90.0 : 30.0 }
+    return foregroundTone(roleTone(ColorRole.secondaryContainer, s), 4.5)
+  case .tertiary:
+    return isMonochrome(s) ? (s.isDark ? 90.0 : 25.0) : s.isDark ? 80.0 : 40.0
+  case .onTertiary:
+    return isMonochrome(s) ? (s.isDark ? 10.0 : 90.0) : s.isDark ? 20.0 : 100.0
+  case .tertiaryContainer:
+    if isMonochrome(s) { return s.isDark ? 60.0 : 49.0 }
+    if !isFidelity(s) { return s.isDark ? 30.0 : 90.0 }
+    let proposedHct = s.tertiaryPalette.getHct(s.sourceColorHct.tone)
+    return fixIfDisliked(proposedHct).tone
+  case .onTertiaryContainer:
+    if isMonochrome(s) { return s.isDark ? 0.0 : 100.0 }
+    if !isFidelity(s) { return s.isDark ? 90.0 : 30.0 }
+    return foregroundTone(roleTone(ColorRole.tertiaryContainer, s), 4.5)
+  case .error:
+    return s.isDark ? 80.0 : 40.0
+  case .onError:
+    return s.isDark ? 20.0 : 100.0
+  case .errorContainer:
+    return s.isDark ? 30.0 : 90.0
+  case .onErrorContainer:
+    return isMonochrome(s) ? (s.isDark ? 90.0 : 10.0) : s.isDark ? 90.0 : 30.0
+  }
+}
+
+/// Whether the role is a background other roles contrast against.
+public func roleIsBackground(_ role: ColorRole) -> Bool {
+  switch role {
+  case .background, .surface, .surfaceDim, .surfaceBright, .surfaceContainerLowest, .surfaceContainerLow, .surfaceContainer, .surfaceContainerHigh, .surfaceContainerHighest, .surfaceVariant, .surfaceTint, .primary, .primaryContainer, .secondary, .secondaryContainer, .tertiary, .tertiaryContainer, .error, .errorContainer:
+    return true
+  default:
+    return false
+  }
+}
+
+/// The role the role contrasts against in `s`, if any.
+public func roleBackground(_ role: ColorRole, _ s: DynamicScheme) -> ColorRole? {
+  switch role {
+  case .onBackground:
+    return ColorRole.background
+  case .onSurface, .onSurfaceVariant, .outline, .outlineVariant, .primary, .primaryContainer, .secondary, .secondaryContainer, .tertiary, .tertiaryContainer, .error, .errorContainer:
+    return highestSurface(s)
+  case .inverseOnSurface, .inversePrimary:
+    return ColorRole.inverseSurface
+  case .onPrimary:
+    return ColorRole.primary
+  case .onPrimaryContainer:
+    return ColorRole.primaryContainer
+  case .onSecondary:
+    return ColorRole.secondary
+  case .onSecondaryContainer:
+    return ColorRole.secondaryContainer
+  case .onTertiary:
+    return ColorRole.tertiary
+  case .onTertiaryContainer:
+    return ColorRole.tertiaryContainer
+  case .onError:
+    return ColorRole.error
+  case .onErrorContainer:
+    return ColorRole.errorContainer
+  default:
+    return none
+  }
+}
+
+/// A second background the role contrasts against: none of Bloom's roles has one.
+public func roleSecondBackground(_ role: ColorRole, _ s: DynamicScheme) -> ColorRole? { none }
+
+/// The role's contrast curve (every role with a background has one).
+public func roleContrastCurve(_ role: ColorRole) -> ContrastCurve? {
+  switch role {
+  case .onBackground:
+    return curve(3.0, 3.0, 4.5, 7.0)
+  case .onSurface, .inverseOnSurface, .onPrimary, .onSecondary, .onTertiary, .onError:
+    return curve(4.5, 7.0, 11.0, 21.0)
+  case .onSurfaceVariant:
+    return curve(3.0, 4.5, 7.0, 11.0)
+  case .outline:
+    return curve(1.5, 3.0, 4.5, 7.0)
+  case .outlineVariant, .primaryContainer, .secondaryContainer, .tertiaryContainer, .errorContainer:
+    return curve(1.0, 1.0, 3.0, 4.5)
+  case .primary, .inversePrimary, .secondary, .tertiary, .error:
+    return curve(3.0, 4.5, 7.0, 7.0)
+  case .onPrimaryContainer, .onSecondaryContainer, .onTertiaryContainer, .onErrorContainer:
+    return curve(3.0, 4.5, 7.0, 11.0)
+  default:
+    return none
+  }
+}
+
+/// The pair the role keeps a tonal distance in, if any: each accent and its container.
+public func roleToneDeltaPair(_ role: ColorRole) -> ToneDeltaPair? {
+  switch role {
+  case .primary, .primaryContainer:
+    return ToneDeltaPair(
+      roleA: ColorRole.primaryContainer,
+      roleB: ColorRole.primary,
+      delta: 10.0,
+      polarity: TonePolarity.nearer,
+      stayTogether: false,
+    )
+  case .secondary, .secondaryContainer:
+    return ToneDeltaPair(
+      roleA: ColorRole.secondaryContainer,
+      roleB: ColorRole.secondary,
+      delta: 10.0,
+      polarity: TonePolarity.nearer,
+      stayTogether: false,
+    )
+  case .tertiary, .tertiaryContainer:
+    return ToneDeltaPair(
+      roleA: ColorRole.tertiaryContainer,
+      roleB: ColorRole.tertiary,
+      delta: 10.0,
+      polarity: TonePolarity.nearer,
+      stayTogether: false,
+    )
+  case .error, .errorContainer:
+    return ToneDeltaPair(
+      roleA: ColorRole.errorContainer,
+      roleB: ColorRole.error,
+      delta: 10.0,
+      polarity: TonePolarity.nearer,
+      stayTogether: false,
+    )
+  default:
+    return none
+  }
+}
+
+/// The ARGB of `role` in `scheme`.
+public func roleArgb(_ role: ColorRole, _ scheme: DynamicScheme) -> Int {
+  roleHct(role, scheme).argb
+}
+
+/// The HCT of `role` in `scheme`.
+public func roleHct(_ role: ColorRole, _ scheme: DynamicScheme) -> Hct {
+  let tone = roleResolvedTone(role, scheme)
+  return rolePalette(role, scheme).getHct(tone)
+}
+
+/// The tone `role` resolves to in `scheme`: its base tone, moved for contrast against its
+/// background and for distance from its pair (the TypeScript's `getTone`).
+public func roleResolvedTone(_ role: ColorRole, _ scheme: DynamicScheme) -> Double {
+  let decreasingContrast = scheme.contrastLevel < 0
+  if let pair = roleToneDeltaPair(role) {
+    let roleA = pair.roleA
+    let roleB = pair.roleB
+    let delta = pair.delta
+    let polarity = pair.polarity
+    let stayTogether = pair.stayTogether
+    let bg = roleBackground(role, scheme)!
+    let bgTone = roleResolvedTone(bg, scheme)
+    let aIsNearer = polarity == TonePolarity.nearer ||
+      (polarity == TonePolarity.lighter && !scheme.isDark) ||
+      (polarity == TonePolarity.darker && scheme.isDark)
+    let nearer = aIsNearer ? roleA : roleB
+    let farther = aIsNearer ? roleB : roleA
+    let amNearer = role == nearer
+    let expansionDir = scheme.isDark ? 1.0 : -1.0
+    let nContrast = roleContrastCurve(nearer)!.get(scheme.contrastLevel)
+    let fContrast = roleContrastCurve(farther)!.get(scheme.contrastLevel)
+    let nInitialTone = roleTone(nearer, scheme)
+    var nTone = ratioOfTones(bgTone, nInitialTone) >= nContrast ? nInitialTone : foregroundTone(
+      bgTone,
+      nContrast,
+    )
+    let fInitialTone = roleTone(farther, scheme)
+    var fTone = ratioOfTones(bgTone, fInitialTone) >= fContrast ? fInitialTone : foregroundTone(
+      bgTone,
+      fContrast,
+    )
+    if decreasingContrast {
+      nTone = foregroundTone(bgTone, nContrast)
+      fTone = foregroundTone(bgTone, fContrast)
+    }
+    if (fTone - nTone) * expansionDir >= delta {
+
+      // The constraint holds already.
+    } else {
+      fTone = clampDouble(0.0, 100.0, nTone + delta * expansionDir)
+      if (fTone - nTone) * expansionDir >= delta {
+
+        // It holds once the farther role moved.
+      } else {
+        nTone = clampDouble(0.0, 100.0, fTone - delta * expansionDir)
+      }
+    }
+    if 50.0 <= nTone && nTone < 60.0 {
+      if expansionDir > 0 {
+        nTone = 60.0
+        fTone = max(fTone, nTone + delta * expansionDir)
+      } else {
+        nTone = 49.0
+        fTone = min(fTone, nTone + delta * expansionDir)
+      }
+    } else if 50.0 <= fTone && fTone < 60.0 {
+      if stayTogether {
+        if expansionDir > 0 {
+          nTone = 60.0
+          fTone = max(fTone, nTone + delta * expansionDir)
+        } else {
+          nTone = 49.0
+          fTone = min(fTone, nTone + delta * expansionDir)
+        }
+      } else if expansionDir > 0 {
+        fTone = 60.0
+      } else {
+        fTone = 49.0
+      }
+    }
+    return amNearer ? nTone : fTone
+  }
+
+  var answer = roleTone(role, scheme)
+  guard let background = roleBackground(role, scheme) else { return answer }
+  let bgTone = roleResolvedTone(background, scheme)
+  let desiredRatio = roleContrastCurve(role)!.get(scheme.contrastLevel)
+  if ratioOfTones(bgTone, answer) >= desiredRatio {
+
+    // It contrasts enough already.
+  } else {
+    answer = foregroundTone(bgTone, desiredRatio)
+  }
+  if decreasingContrast { answer = foregroundTone(bgTone, desiredRatio) }
+  if roleIsBackground(role) && 50.0 <= answer && answer < 60.0 {
+    answer = ratioOfTones(49.0, bgTone) >= desiredRatio ? 49.0 : 60.0
+  }
+  if let second = roleSecondBackground(role, scheme) {
+    let bgTone1 = roleResolvedTone(background, scheme)
+    let bgTone2 = roleResolvedTone(second, scheme)
+    let upper = max(bgTone1, bgTone2)
+    let lower = min(bgTone1, bgTone2)
+    if ratioOfTones(upper, answer) >= desiredRatio && ratioOfTones(lower, answer) >= desiredRatio {
+      return answer
+    }
+    let lightOption = lighter(upper, desiredRatio)
+    let darkOption = darker(lower, desiredRatio)
+    var availables: [Double] = []
+    if lightOption != -1.0 { availables = availables.appending(lightOption) }
+    if darkOption != -1.0 { availables = availables.appending(darkOption) }
+    let prefersLight = tonePrefersLightForeground(bgTone1) || tonePrefersLightForeground(bgTone2)
+    if prefersLight { return lightOption < 0 ? 100.0 : lightOption }
+    if availables.count == 1 { return availables[0] }
+    return darkOption < 0 ? 0.0 : darkOption
+  }
+  return answer
+}
+
+/// The tone that reaches `ratio` against `bgTone`, lighter or darker as the background prefers.
+public func foregroundTone(_ bgTone: Double, _ ratio: Double) -> Double {
+  let lighterTone = lighterUnsafe(bgTone, ratio)
+  let darkerTone = darkerUnsafe(bgTone, ratio)
+  let lighterRatio = ratioOfTones(lighterTone, bgTone)
+  let darkerRatio = ratioOfTones(darkerTone, bgTone)
+  let preferLighter = tonePrefersLightForeground(bgTone)
+  if preferLighter {
+    let negligibleDifference = abs(lighterRatio - darkerRatio) < 0.1 &&
+      lighterRatio < ratio &&
+      darkerRatio < ratio
+    return lighterRatio >= ratio ||
+      lighterRatio >= darkerRatio ||
+      negligibleDifference ? lighterTone : darkerTone
+  }
+  return darkerRatio >= ratio || darkerRatio >= lighterRatio ? darkerTone : lighterTone
+}
+
+public func tonePrefersLightForeground(_ tone: Double) -> Bool { tone.rounded() < 60 }
+
+public func toneAllowsLightForeground(_ tone: Double) -> Bool { tone.rounded() <= 49 }
+
+public func enableLightForeground(_ tone: Double) -> Double {
+  if tonePrefersLightForeground(tone) && !toneAllowsLightForeground(tone) { return 49.0 }
+  return tone
+}
+
+extension DynamicScheme {
+  /// The ARGB of `role` in this scheme.
+  public func getArgb(_ role: ColorRole) -> Int { roleArgb(role, self) }
+
+  /// The HCT of `role` in this scheme.
+  public func getHct(_ role: ColorRole) -> Hct { roleHct(role, self) }
+}
