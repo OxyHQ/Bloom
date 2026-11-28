@@ -1407,6 +1407,11 @@ impl Checker<'_> {
                             self.expr(value, Some(&field_ty));
                             field_ty
                         }
+                        // A field of a TS object (`{ transform: [{ scale }, { translateY }] }`
+                        // where a TS type is expected): its literal is TS's to check.
+                        None if matches!(target, Some(Ty::Foreign(_))) && super::literal_shaped(value) => {
+                            self.expr(value, Some(&Ty::Foreign("".into())))
+                        }
                         None => {
                             // A module constant's record (`let SIZES = { small: "8" }`): its
                             // literals' types, as TS's `as const` (R6). Only its own fields, not
@@ -1963,7 +1968,7 @@ impl Checker<'_> {
     /// when `list`), as Swift checks a literal against its context: each list element and
     /// ternary branch on its own. `None` for any other value, which TypeScript checks.
     fn object_expected(&mut self, object: &str, list: bool, value: &Expr) -> Option<Ty> {
-        if !literal_shaped(value) {
+        if !super::literal_shaped(value) {
             return None;
         }
         let fields = ui::object_fields(object)?;
@@ -2098,6 +2103,12 @@ impl Checker<'_> {
                 self.unknown_field(label, &props);
             }
             // `ref: input` gives a TS component the `@ref` itself, as `.ref(input)` gives a node.
+            // A literal given to a prop Bloom cannot read (`style: [TABS, { borderColor }]` on React
+            // Native's `ScrollView`, whose props extend `ViewProps`) is TS's to check, each element
+            // on its own.
+            let ty = ty.or_else(|| {
+                (fields.is_none() && super::literal_shaped(&arg.value)).then(|| Ty::Foreign("".into()))
+            });
             let ref_object = label.name == "ref" && matches!(arg.value.kind, ExprKind::Name(_));
             self.ref_object = ref_object;
             self.boundary(&arg.value, ty.as_ref());
@@ -3118,14 +3129,4 @@ fn contains_var(ty: &Ty) -> bool {
         None
     });
     found
-}
-
-/// A literal Swift types from its context: a list, a record, or a ternary or `if` of them.
-fn literal_shaped(expr: &Expr) -> bool {
-    match &expr.kind {
-        ExprKind::List(_) | ExprKind::Record(_) => true,
-        ExprKind::Paren(inner) => literal_shaped(inner),
-        ExprKind::Ternary(_, then, otherwise) => literal_shaped(then) || literal_shaped(otherwise),
-        _ => false,
-    }
 }
