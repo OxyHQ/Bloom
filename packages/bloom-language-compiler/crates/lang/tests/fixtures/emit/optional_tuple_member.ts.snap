@@ -1,0 +1,13 @@
+
+export interface P {
+  readonly c?: (readonly [number, number]) | undefined;
+}
+
+export function f(p: P | undefined): boolean {
+return p?.c?.[0] != null;
+}
+
+export function g(c: (readonly [number, number]) | undefined): number {
+return c?.[1] ?? 0;
+}
+

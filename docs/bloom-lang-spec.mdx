@@ -159,7 +159,8 @@ closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] }
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
                                                       await f()? is (await f())? *)
-postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | "[" expr "]" | "?" } ;
+postfix       = primary { call | "." ( NAME | INT ) | "?." ( NAME | INT ) | "?." "(" [ args ] ")"
+                        | "[" expr "]" | "?" } ;       (* `t.0`, `t?.0`: a tuple's member *)
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
