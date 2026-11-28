@@ -761,9 +761,14 @@ fn write_gradle(package: &Package, inputs: &GradleInputs) -> Result<(), String> 
     write(
         &android.join("build.gradle"),
         &format!(
-            "{header}buildscript {{\n  ext {{\n    buildToolsVersion = {bt}\n    minSdkVersion = {min_sdk}\n    compileSdkVersion = {csdk}\n    targetSdkVersion = {tsdk}\n    ndkVersion = {ndk}\n    kotlinVersion = {kotlin}\n  }}\n  repositories {{\n    google()\n    mavenCentral()\n  }}\n  dependencies {{\n    classpath('com.android.tools.build:gradle')\n    classpath('com.facebook.react:react-native-gradle-plugin')\n    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')\n{compose_plugin}  }}\n}}\n\nallprojects {{\n  repositories {{\n    google()\n    mavenCentral()\n{jitpack}  }}\n}}\n\n{expo_root}apply plugin: \"com.facebook.react.rootproject\"\n",
+            "{header}buildscript {{\n  ext {{\n    buildToolsVersion = {bt}\n    minSdkVersion = {min_sdk}\n    compileSdkVersion = {csdk}\n    targetSdkVersion = {tsdk}\n    ndkVersion = {ndk}\n    kotlinVersion = {kotlin}\n  }}\n  repositories {{\n    google()\n    mavenCentral()\n  }}\n  dependencies {{\n    classpath('com.android.tools.build:gradle')\n    classpath('com.facebook.react:react-native-gradle-plugin')\n    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')\n{compose_plugin}{gms}  }}\n}}\n\nallprojects {{\n  repositories {{\n    google()\n    mavenCentral()\n{jitpack}  }}\n}}\n\n{expo_root}apply plugin: \"com.facebook.react.rootproject\"\n",
             // The stopgaps build with Expo's root project plugin (their KSP and Kotlin versions,
             // Expo's version catalog) and the repositories Expo's template lists.
+            gms = if inputs.overrides.google_services.is_some() {
+                "    classpath('com.google.gms:google-services:4.4.4')\n"
+            } else {
+                ""
+            },
             jitpack = if inputs.expo.is_some() { "    maven { url 'https://www.jitpack.io' }\n" } else { "" },
             expo_root = if inputs.expo.is_some() { "apply plugin: \"expo-root-project\"\n" } else { "" },
             bt = quote(&get("buildTools", "36.0.0")),
@@ -879,13 +884,28 @@ android {{
       useLegacyPackaging false
     }}
   }}
+  // A store release's APKs, one per ABI (`bloom build android --store`). Off while building
+  // the app bundle: AGP refuses split APKs next to a bundle (issuetracker.google.com/402800800).
+  splits {{
+    abi {{
+      enable findProperty("bloomAbiSplits") == "true"
+      reset()
+      include(*((findProperty("reactNativeArchitectures") ?: "x86_64").toString().split(",")))
+      universalApk false
+    }}
+  }}
 }}
 
 dependencies {{
   implementation("com.facebook.react:react-android")
   implementation("com.facebook.react:hermes-android")
 }}
-{res}{app_gradle}"#,
+{res}{app_gradle}{firebase}"#,
+            firebase = if inputs.overrides.google_services.is_some() {
+                "\n// The app's Firebase config (google-services.json in the `adopt:` overrides).\napply plugin: \"com.google.gms.google-services\"\n"
+            } else {
+                ""
+            },
             res = inputs
                 .overrides
                 .res
@@ -916,6 +936,16 @@ dependencies {{
             inputs.overrides.proguard.as_deref().unwrap_or_default()
         ),
     )?;
+    // Google's services plugin reads the Firebase config beside the app module's build file.
+    let firebase = android.join("app/google-services.json");
+    match &inputs.overrides.google_services {
+        Some(from) => {
+            std::fs::copy(from, &firebase).map_err(|e| format!("{}: {e}", from.display()))?;
+        }
+        None => {
+            let _ = std::fs::remove_file(&firebase);
+        }
+    }
     let kotlin_dir = android.join("app/src/main/java").join(id.replace('.', "/"));
     let expo = inputs.expo.is_some();
     write(
@@ -1115,6 +1145,9 @@ pub fn build(package: &Package, mode: &Mode) -> Result<Option<PathBuf>, String> 
         );
         return Ok(Some(android));
     }
+    if mode.store {
+        return store_build(package, &android).map(Some);
+    }
     let variant = if mode.release { "Release" } else { "Debug" };
     let abis = std::env::var("BLOOM_ANDROID_ABIS").unwrap_or_else(|_| "x86_64".into());
     run_in(
@@ -1130,6 +1163,95 @@ pub fn build(package: &Package, mode: &Mode) -> Result<Option<PathBuf>, String> 
     std::fs::copy(&built, &apk).map_err(|e| format!("{}: {e}", built.display()))?;
     println!("bloom: Android build in {}", shown_rel(package, &apk));
     Ok(Some(apk))
+}
+
+/// The ABIs a store release carries unless `$BLOOM_ANDROID_ABIS` names others: React Native's.
+const STORE_ABIS: &str = "armeabi-v7a,arm64-v8a,x86,x86_64";
+
+/// `bloom build android --store`: the signed app bundle, `.bloom/dist/android/<Name>.aab`, and
+/// one APK per ABI, `<Name>-<abi>.apk` (no universal APK). With `$BLOOM_ANDROID_CERT_SHA256`
+/// set, every artifact must carry that signing certificate, or the build fails.
+fn store_build(package: &Package, android: &Path) -> Result<PathBuf, String> {
+    let abis = std::env::var("BLOOM_ANDROID_ABIS").unwrap_or_else(|_| STORE_ABIS.into());
+    let arch = format!("-PreactNativeArchitectures={abis}");
+    // Two invocations: the bundle without splits, then the split APKs.
+    run_in(android, "./gradlew", &["bundleRelease", &arch, "-PbloomAbiSplits=false"])?;
+    run_in(android, "./gradlew", &["assembleRelease", &arch, "-PbloomAbiSplits=true"])?;
+    let dist = package.dot().join("dist/android");
+    std::fs::create_dir_all(&dist).map_err(|e| e.to_string())?;
+    let name = &package.manifest.name;
+    let copy = |from: PathBuf, to: PathBuf| -> Result<PathBuf, String> {
+        std::fs::copy(&from, &to).map_err(|e| format!("{}: {e}", from.display()))?;
+        Ok(to)
+    };
+    let outputs = android.join("app/build/outputs");
+    let aab = copy(outputs.join("bundle/release/app-release.aab"), dist.join(format!("{name}.aab")))?;
+    let mut apks = Vec::new();
+    for abi in abis.split(',').map(str::trim).filter(|a| !a.is_empty()) {
+        let from = outputs.join(format!("apk/release/app-{abi}-release.apk"));
+        apks.push(copy(from, dist.join(format!("{name}-{abi}.apk")))?);
+    }
+    if let Ok(expected) = std::env::var("BLOOM_ANDROID_CERT_SHA256") {
+        let expected = hex_digest(&expected);
+        for artifact in std::iter::once(&aab).chain(&apks) {
+            let found = signing_certificate(artifact)?;
+            if found != expected {
+                return Err(format!(
+                    "{}: signed with the certificate {found}, not $BLOOM_ANDROID_CERT_SHA256 ({expected})",
+                    artifact.display()
+                ));
+            }
+        }
+        println!("bloom: every artifact carries the certificate {expected}");
+    }
+    println!("bloom: store release in {} (the AAB and {} APKs)", shown_rel(package, &dist), apks.len());
+    Ok(aab)
+}
+
+/// A SHA-256 digest as lowercase hex, without separators (`AB:CD…` or `abcd…`).
+fn hex_digest(text: &str) -> String {
+    text.chars().filter(char::is_ascii_hexdigit).map(|c| c.to_ascii_lowercase()).collect()
+}
+
+/// The SHA-256 of the certificate `artifact` is signed with: `keytool` reads an app bundle's
+/// JAR signature, `apksigner` an APK's (whose v2/v3 signature keytool cannot read).
+fn signing_certificate(artifact: &Path) -> Result<String, String> {
+    let path = artifact.to_string_lossy();
+    let aab = artifact.extension().is_some_and(|e| e == "aab");
+    let output = if aab {
+        Command::new("keytool").args(["-printcert", "-jarfile", &path]).output()
+    } else {
+        Command::new(apksigner()).args(["verify", "--print-certs", &path]).output()
+    }
+    .map_err(|e| format!("reading the signature of {path}: {e}"))?;
+    let text = String::from_utf8_lossy(&output.stdout);
+    let digest = text.lines().find_map(|line| {
+        let line = line.trim();
+        if aab {
+            line.strip_prefix("SHA256:")
+        } else {
+            line.split_once("certificate SHA-256 digest:").map(|(_, d)| d)
+        }
+    });
+    match digest {
+        Some(d) if output.status.success() => Ok(hex_digest(d)),
+        _ => Err(format!("{path} is not signed (or its signature cannot be read)")),
+    }
+}
+
+/// `apksigner` from the newest build tools of `$ANDROID_HOME`, else the one on `PATH`.
+fn apksigner() -> PathBuf {
+    let sdk = std::env::var_os("ANDROID_HOME").or_else(|| std::env::var_os("ANDROID_SDK_ROOT"));
+    let newest = sdk.and_then(|sdk| {
+        let mut tools: Vec<PathBuf> = std::fs::read_dir(PathBuf::from(sdk).join("build-tools"))
+            .ok()?
+            .filter_map(|e| e.ok().map(|e| e.path().join("apksigner")))
+            .filter(|p| p.is_file())
+            .collect();
+        tools.sort();
+        tools.pop()
+    });
+    newest.unwrap_or_else(|| PathBuf::from("apksigner"))
 }
 
 /// `bloom run android`: build, install and start on the emulator; a debug build with Metro.
@@ -1156,6 +1278,12 @@ pub fn run(package: &Package, mode: &Mode) -> Result<bool, String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_certificate_digest_reads_with_or_without_separators() {
+        assert_eq!(super::hex_digest("B8:AB:37:46"), "b8ab3746");
+        assert_eq!(super::hex_digest(" b8ab3746 "), "b8ab3746");
+    }
+
     #[test]
     fn the_bundle_tracks_the_lockfiles_beside_each_node_modules() {
         let dir = std::env::temp_dir().join(format!("bloom-lockfiles-{}", std::process::id()));

@@ -5,7 +5,7 @@
 //! bloom init --adopt
 //! bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
 //! bloom fmt [--check] [--jobs N] [paths…]
-//! bloom build web|android|ios [--release] [--with-expo] [--generate]
+//! bloom build web|android|ios [--release] [--store] [--with-expo] [--generate]
 //! bloom run web|android|ios [--release] [--device <serial>] [--with-expo]
 //! bloom test [filter]
 //! bloom add <package> [--from <version>] [--npm <npm-package>]
@@ -49,7 +49,7 @@ const USAGE: &str = "usage:
   bloom init --adopt
   bloom check [--tsc] [--project <dir>] [--allow-ts-imports] [--jobs N] [paths…]
   bloom fmt [--check] [--jobs N] [paths…]
-  bloom build web|android|ios [--release] [--with-expo] [--generate]
+  bloom build web|android|ios [--release] [--store] [--with-expo] [--generate]
   bloom run web|android|ios [--release] [--device <serial>] [--with-expo]
   bloom test [filter]
   bloom add <package> [--from <version>] [--npm <npm-package>]
@@ -74,6 +74,9 @@ struct Args {
     with_expo: bool,
     /// `build android --generate`: write the Gradle project (for Android Studio) and stop.
     generate: bool,
+    /// `build android --store`: a release for the stores, the app bundle (AAB) and one APK per
+    /// ABI, signed and checked against `$BLOOM_ANDROID_CERT_SHA256` when it is set.
+    store: bool,
     tsc: bool,
     /// `init --adopt`: an existing Expo app becomes a Bloom package.
     adopt: bool,
@@ -101,6 +104,10 @@ fn parse_args(raw: impl IntoIterator<Item = String>) -> Result<Args, String> {
             "--release" => args.release = true,
             "--with-expo" => args.with_expo = true,
             "--generate" => args.generate = true,
+            "--store" => {
+                args.store = true;
+                args.release = true;
+            }
             "--tsc" => args.tsc = true,
             "--adopt" => args.adopt = true,
             "--project" | "-p" => args.project = Some(value(&mut raw, "--project", "a directory")?.into()),
@@ -255,6 +262,12 @@ mod tests {
         assert_eq!(a.device.as_deref(), Some("emulator-5554"));
         let a = args("new Demo --template module").unwrap();
         assert_eq!(a.template.as_deref(), Some("module"));
+    }
+
+    #[test]
+    fn store_is_a_release() {
+        let a = args("build android --store").unwrap();
+        assert!(a.store && a.release);
     }
 
     #[test]

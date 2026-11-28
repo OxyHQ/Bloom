@@ -128,7 +128,7 @@ nothing published in the last week resolves, except first-party packages.
 | `bloom check [--tsc] [--allow-ts-imports] [paths…]` | the manifest and every module; with `--tsc`, also runs `tsc` over the binding modules' emitted TS |
 | `bloom fmt [--check] [paths…]` | formats the package's files |
 | `bloom lsp` | the language server, module-aware |
-| `bloom build web\|android [--release] [--with-expo] [--generate]` | checks, generates `.bloom/build/`, installs, and builds: `expo export` for the web (`.bloom/dist/web/`); for Android, Bloom's own Gradle project, no Expo (`.bloom/dist/android/<Name>.apk`, x86_64 by default; below). `--with-expo` builds Android through `expo prebuild` instead; `--generate` writes the Gradle project and stops |
+| `bloom build web\|android [--release] [--store] [--with-expo] [--generate]` | checks, generates `.bloom/build/`, installs, and builds: `expo export` for the web (`.bloom/dist/web/`); for Android, Bloom's own Gradle project, no Expo (`.bloom/dist/android/<Name>.apk`, x86_64 by default; below). `--with-expo` builds Android through `expo prebuild` instead; `--generate` writes the Gradle project and stops  `--store` is a store release: the app bundle `<Name>.aab` and one APK per ABI, `<Name>-<abi>.apk` (React Native's four ABIs unless `BLOOM_ANDROID_ABIS` names others) |
 | `bloom run web\|android [--release] [--device <serial>]` | the dev server with fast refresh; with `--release`, the built app, installed and started |
 | `bloom test [filter]` | the `.tests` targets, run by Jest underneath |
 | `bloom add <Package> [--from x.y.z] [--npm <pkg>]` | a Bloom package, recorded in `Package.bloom` and `Package.resolved` |
@@ -156,6 +156,7 @@ modules through the compiler's Metro adapter), `babel.config.js`, `tsconfig.json
 | `BLOOM_LINK` | `name=path,…`: first-party packages from a checkout, for working on Bloom itself. A `.tgz` is installed as is; a directory as it packs (its `pack:local` script when it has one, as the compiler's carries the addon the checkout built, else `bun pm pack`), never copied, so the checkout's examples and their `.bloom/build/` stay out. A rebuilt checkout is installed again on the next build. |
 | `BLOOM_KEYSTORES` | where the signing keystores live (default `~/.bloom/keystores/`) |
 | `BLOOM_ANDROID_KEYSTORE`, `…_PASSWORD`, `BLOOM_ANDROID_KEY_ALIAS` | a release keystore of your own (CI) |
+| `BLOOM_ANDROID_CERT_SHA256` | `--store`: the signing certificate every artifact must carry (`apksigner` and `keytool` read it), or the build fails |
 
 ### Android without Expo
 
@@ -226,7 +227,16 @@ let package = Package(
   `Native/android/`, a layer over the generated project: its `AndroidManifest.xml` merges over
   the app's (as the build type's manifest), and its `res/`, `gradle.properties`,
   `proguard-rules.pro` and `app.gradle` are added. `init` writes it from Expo's introspection
-  and reports what it left out (attributes naming resources a plugin generates).
+  and reports what it left out (attributes naming resources a plugin generates). A
+  `google-services.json` there (a symlink to the app config's `googleServicesFile` will do) is
+  the app's Firebase config: the build applies Google's services plugin, as Expo's does.
+- **Store releases.** `bloom build android --store` writes the signed app bundle and one APK per
+  ABI. With `BLOOM_ANDROID_KEYSTORE` and `BLOOM_ANDROID_CERT_SHA256` it signs with your key and
+  fails unless every artifact carries that certificate; OxyHQ/oxy's `android-release.yml` runs
+  it for `builder: bloom`.
+- **OTA updates.** While `expo-updates` is a stopgap, give the Bloom build its own runtime
+  version (Mention's is `<version>-bloom`, in its overrides' `expo_runtime_version`): its native
+  layer is not the Expo build's, so neither build may take the other's updates.
 - **`reactNativeFromSource: true`** builds React Native's Android libraries from the installed
   `react-native`, its patches included.
 
