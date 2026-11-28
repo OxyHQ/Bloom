@@ -1,0 +1,47 @@
+// A call that returns `Never` ends a path, as `return` and `throw` do: at a function's end,
+// in a `guard`'s `else`, and in each `catch` of a `do` that is the last statement.
+struct Failure: Error {
+  let message: String
+}
+
+func fail(_ message: String) -> Never {
+  throw Failure(message: message)
+}
+
+func parse(_ s: String) throws -> Int {
+  guard let n = Int(s) else { throw Failure(message: s) }
+  return n
+}
+
+public func count(_ s: String, retry: Bool) -> Int {
+  do {
+    return try parse(s)
+  } catch {
+    if retry { return 0 }
+    fail("not a number")
+  }
+}
+
+public func positive(_ n: Int) -> Int {
+  guard n > 0 else { fail("negative") }
+  return n
+}
+
+public func checked(_ s: String) -> Int {
+  if s.isEmpty { return 0 }
+  fail("unchecked")
+}
+
+public func loader(retry: Bool) -> () async throws -> [Int] {
+  {
+    do {
+      let n = try await fetchCount()
+      return [n]
+    } catch {
+      if retry { return [] }
+      fail("offline")
+    }
+  }
+}
+
+func fetchCount() async throws -> Int { 1 }
