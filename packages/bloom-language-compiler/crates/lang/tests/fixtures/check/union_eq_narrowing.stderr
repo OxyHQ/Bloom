@@ -1,0 +1,15 @@
+error[B0201]: expected `"light" | "dark"`, found `"light" | "dark" | "system"`
+ --> check/union_eq_narrowing.bloom:6:34
+  |
+6 |   a == "light" || b == "light" ? a : "dark"
+  |                                  ^ this is `"light" | "dark" | "system"`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `"light" | "dark"`, found `"system"`
+  --> check/union_eq_narrowing.bloom:11:19
+   |
+11 |   a == "system" ? a : "dark"
+   |                   ^ this is `"system"`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

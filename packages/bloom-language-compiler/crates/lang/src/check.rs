@@ -4251,25 +4251,35 @@ impl<'o> Checker<'o> {
         if let ExprKind::Paren(inner) = &expr.kind {
             return self.narrow(inner, test, join);
         }
+        // `!(x == "a")`: what holds is the inner test's other branch.
+        if let ExprKind::Unary(UnaryOp::Not, inner) = &expr.kind {
+            let flip = |op| if op == BinaryOp::Ne { BinaryOp::Eq } else { BinaryOp::Ne };
+            let other = if join == BinaryOp::And { BinaryOp::Or } else { BinaryOp::And };
+            return self.narrow(inner, flip(test), other);
+        }
         let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
+        // Where the test holds (`test` is `!=`: the branch that runs when it is true).
+        let holds = test == BinaryOp::Ne;
         match op {
             op if *op == join => {
                 self.narrow(lhs, test, join);
                 self.narrow(rhs, test, join);
             }
+            // `mode == "adaptive" || mode == "system"` holding: `mode` is one of the two.
+            BinaryOp::And | BinaryOp::Or => self.narrow_any_of(expr, holds),
             // `rows.kind == "sources"` (where `!= none` would narrow) on a TS discriminated
-            // union: `rows` is that member there, as TS narrows it.
-            op if (*op == BinaryOp::Eq && test == BinaryOp::Ne)
-                || (*op == BinaryOp::Ne && test == BinaryOp::Eq) =>
-            {
-                let (subject, literal) = match (&lhs.kind, &rhs.kind) {
-                    (_, ExprKind::Str { parts, .. }) => (lhs, parts),
-                    (ExprKind::Str { parts, .. }, _) => (rhs, parts),
-                    _ => return,
-                };
-                let [StrPart::Text(value)] = literal.as_slice() else { return };
-                let value = value.clone();
-                self.narrow_tag(expr.id, subject, &value);
+            // union: `rows` is that member there, as TS narrows it; where `rows.kind !=
+            // "sources"` holds, it is the other member. A literal union (`mode == "system"`) is
+            // that value, or the others.
+            BinaryOp::Eq | BinaryOp::Ne if literal_side(lhs, rhs).is_some() => {
+                let (subject, value) = literal_side(lhs, rhs).expect("checked");
+                let equal = (*op == BinaryOp::Eq) == holds;
+                if equal {
+                    self.narrow_tag(expr.id, subject, &value);
+                } else {
+                    self.narrow_tag_except(expr.id, subject, &value);
+                }
+                self.narrow_strings(subject, &[value], equal);
             }
             op if *op == test => {
                 let subject = match (&lhs.kind, &rhs.kind) {
@@ -4302,6 +4312,97 @@ impl<'o> Checker<'o> {
                 self.out.narrowed.insert(subject.id, (narrowed, original));
             }
             _ => {}
+        }
+    }
+
+    /// `x == "a" || x == "b"` holding (`holds`; or `x != "a" && x != "b"` not holding): a
+    /// literal union `x` is one of those values.
+    fn narrow_any_of(&mut self, expr: &Expr, holds: bool) {
+        let ExprKind::Binary(any, ..) = &expr.kind else { return };
+        let mut leaves = Vec::new();
+        any_leaves(expr, *any, &mut leaves);
+        let mut subject: Option<(&Expr, LocalId)> = None;
+        let mut values = Vec::new();
+        for leaf in leaves {
+            let ExprKind::Binary(op @ (BinaryOp::Eq | BinaryOp::Ne), lhs, rhs) = &leaf.kind else { return };
+            let Some((side, value)) = literal_side(lhs, rhs) else { return };
+            if (*op == BinaryOp::Eq) != holds {
+                return;
+            }
+            // One name throughout (`&&` narrows its right side by its left, so each `mode` may
+            // read another local of that name).
+            let Some(NameRes::Local(local)) = self.out.names.get(&side.id).cloned() else { return };
+            match subject {
+                Some((_, first)) if self.out.locals[first].name != self.out.locals[local].name => return,
+                None => subject = Some((side, local)),
+                _ => {}
+            }
+            values.push(value);
+        }
+        if let Some((side, _)) = subject {
+            self.narrow_strings(side, &values, true);
+        }
+    }
+
+    /// A name of a literal union narrowed to `values` (`keep`) or to its other values: declared
+    /// again with that union, as `!= none` narrows an optional.
+    fn narrow_strings(&mut self, subject: &Expr, values: &[String], keep: bool) {
+        let ExprKind::Name(name) = &subject.kind else { return };
+        let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned() else { return };
+        if !matches!(
+            self.out.locals[original].kind,
+            LocalKind::Let
+                | LocalKind::Param
+                | LocalKind::Prop
+                | LocalKind::Derived
+                | LocalKind::Hook
+                | LocalKind::State
+        ) {
+            return;
+        }
+        // What it is here (an earlier test of the same condition may have narrowed it).
+        let current = self.lookup(name).unwrap_or(original);
+        let (set, optional) = match self.resolve(&self.out.locals[current].ty.clone()) {
+            Ty::Strings(set) if !set.token => (set, false),
+            Ty::Option(inner) => match self.resolve(&inner) {
+                Ty::Strings(set) if !set.token => (set, true),
+                _ => return,
+            },
+            _ => return,
+        };
+        let left: Vec<String> = set.values.iter().filter(|v| values.contains(v) == keep).cloned().collect();
+        if left.is_empty() || left.len() == set.values.len() {
+            return;
+        }
+        let shown = left.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+        let narrowed = Ty::Strings(Rc::new(StrSet { name: shown, values: left, token: false }));
+        // `x == "a"` holding: `x` is present too.
+        let ty = if optional && !keep { Ty::Option(Box::new(narrowed)) } else { narrowed };
+        let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+        let local = self.declare(&ident, ty, LocalKind::Let);
+        self.out.narrowed.insert(subject.id, (local, original));
+    }
+
+    /// `item.origin != "server"` holding on a TS discriminated union of two members: the other
+    /// one, as TS narrows it.
+    fn narrow_tag_except(&mut self, id: ExprId, subject: &Expr, value: &str) {
+        let other = |tagged: &Tagged| -> Option<Ty> {
+            let rest: Vec<&(String, Ty)> = tagged.members.iter().filter(|(v, _)| v != value).collect();
+            match rest.as_slice() {
+                [(_, member)] if rest.len() < tagged.members.len() => Some(member.clone()),
+                _ => None,
+            }
+        };
+        if let Some((_, original, tagged)) = self.tagged_subject(subject) {
+            let Some(member) = other(&tagged) else { return };
+            let ident =
+                Ident { name: self.out.locals[original].name.clone(), span: self.out.locals[original].span };
+            let narrowed = self.declare(&ident, member, LocalKind::Let);
+            self.out.narrowed.insert(id, (narrowed, original));
+        } else if let Some((root, path, tagged)) = self.tagged_path(subject) {
+            let Some(member) = other(&tagged) else { return };
+            let depth = self.scopes.len();
+            self.paths.push((depth, root, path, member));
         }
     }
 
@@ -7425,6 +7526,32 @@ impl<'o> Checker<'o> {
             bounds: Vec::new(),
             shapes: Vec::new(),
         }))
+    }
+}
+
+/// `a == "x"` / `"x" == a`: the side tested and the literal.
+fn literal_side<'e>(lhs: &'e Expr, rhs: &'e Expr) -> Option<(&'e Expr, String)> {
+    let (subject, parts) = match (&lhs.kind, &rhs.kind) {
+        (_, ExprKind::Str { parts, .. }) => (lhs, parts),
+        (ExprKind::Str { parts, .. }, _) => (rhs, parts),
+        _ => return None,
+    };
+    match parts.as_slice() {
+        [StrPart::Text(value)] => Some((subject, value.clone())),
+        [] => Some((subject, String::new())),
+        _ => None,
+    }
+}
+
+/// The leaves of a chain of `op` (`a || b || c`), through parentheses.
+fn any_leaves<'e>(expr: &'e Expr, op: BinaryOp, out: &mut Vec<&'e Expr>) {
+    match &expr.kind {
+        ExprKind::Paren(inner) => any_leaves(inner, op, out),
+        ExprKind::Binary(o, lhs, rhs) if *o == op => {
+            any_leaves(lhs, op, out);
+            any_leaves(rhs, op, out);
+        }
+        _ => out.push(expr),
     }
 }
 

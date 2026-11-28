@@ -1,0 +1,41 @@
+import { type DraftItem } from "@/types/draft-items";
+
+export type BloomMode = "light" | "dark" | "system" | "adaptive";
+
+export type ThemeMode = "system" | "light" | "dark";
+
+export type Shade = "light" | "dark";
+
+export function themeMode(mode: "light" | "dark" | "system" | "adaptive"): "system" | "light" | "dark" {
+return ((mode === "adaptive") || (mode === "system")) ? "system" : mode;
+}
+
+export function shadeOf(mode: "light" | "dark" | "system" | "adaptive"): ("light" | "dark") | undefined {
+if ((mode !== "light") && (mode !== "dark")) {
+return undefined;
+}
+return mode;
+}
+
+export function shadeAfterGuard(mode: "system" | "light" | "dark"): "light" | "dark" {
+if (mode === "system") {
+return "light";
+}
+return mode;
+}
+
+export function notSystem(mode: "system" | "light" | "dark"): "light" | "dark" {
+return (!(mode === "system")) ? mode : "dark";
+}
+
+export function label(item: DraftItem): string {
+return (item.origin === "server") ? item.post.title : item.draft.name;
+}
+
+export function deviceName(item: DraftItem): string {
+if (item.origin !== "device") {
+return item.post.title;
+}
+return item.draft.name;
+}
+

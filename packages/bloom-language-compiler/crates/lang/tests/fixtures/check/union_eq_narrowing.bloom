@@ -1,0 +1,12 @@
+public type Mode = "light" | "dark" | "system"
+public type Shade = "light" | "dark"
+
+// Either of two names tested: neither is narrowed where the test holds.
+public func mixed(_ a: Mode, _ b: Mode) -> Shade {
+  a == "light" || b == "light" ? a : "dark"
+}
+
+// `==` where the branch needs `!=`: the true branch is `"system"`, not a shade.
+public func wrongBranch(_ a: Mode) -> Shade {
+  a == "system" ? a : "dark"
+}

@@ -1,0 +1,10 @@
+import type { DraftItem } from "@/types/draft-items";
+export type BloomMode = "light" | "dark" | "system" | "adaptive";
+export type ThemeMode = "system" | "light" | "dark";
+export type Shade = "light" | "dark";
+export declare function themeMode(mode: "light" | "dark" | "system" | "adaptive"): "system" | "light" | "dark";
+export declare function shadeOf(mode: "light" | "dark" | "system" | "adaptive"): ("light" | "dark") | undefined;
+export declare function shadeAfterGuard(mode: "system" | "light" | "dark"): "light" | "dark";
+export declare function notSystem(mode: "system" | "light" | "dark"): "light" | "dark";
+export declare function label(item: DraftItem): string;
+export declare function deviceName(item: DraftItem): string;
