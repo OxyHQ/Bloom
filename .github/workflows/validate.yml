@@ -407,8 +407,10 @@ jobs:
     name: Android (${{ matrix.variant }})
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    # TEST: forced onto Seldon to measure it; the final commit uses *seldon-lane.
-    runs-on: seldon-ci
+    # Measured on Seldon 2026-11-28 (two runs, PR 1075): legacy 6 min, default
+    # 5 min, predictive 12 min, against 1, 3 and 8 to 9 hosted. Slower, so the
+    # router sends them here only while Seldon is the sooner start.
+    runs-on: *seldon-lane
     timeout-minutes: 60
     permissions: *lane-permissions
     outputs: *lane-outputs
