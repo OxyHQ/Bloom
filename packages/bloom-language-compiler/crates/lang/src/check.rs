@@ -3920,6 +3920,8 @@ impl<'o> Checker<'o> {
                 }
                 let ExprKind::Name(name) = &subject.kind else { return };
                 let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned() else { return };
+                // A `@State` too: its value is the render's, as a `let`'s is (a write in a handler
+                // is read again only after it, which is B0410).
                 if !matches!(
                     self.out.locals[original].kind,
                     LocalKind::Let
@@ -3927,6 +3929,7 @@ impl<'o> Checker<'o> {
                         | LocalKind::Prop
                         | LocalKind::Derived
                         | LocalKind::Hook
+                        | LocalKind::State
                 ) {
                     return;
                 }
@@ -3957,6 +3960,7 @@ impl<'o> Checker<'o> {
                             | LocalKind::Prop
                             | LocalKind::Derived
                             | LocalKind::Hook
+                            | LocalKind::State
                     ) =>
                 {
                     Some((*local, Vec::new()))
