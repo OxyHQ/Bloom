@@ -18,34 +18,9 @@ function lexerList(name) {
 export const KEYWORDS = lexerList('KEYWORDS');
 if (!KEYWORDS?.length) throw new Error('crates/lang/src/lexer.rs has no KEYWORDS list');
 
-// The lexer's list once it has one; until then, the list as the 2.0 lexer writes it.
-export const CONTEXTUAL_KEYWORDS = lexerList('CONTEXTUAL_KEYWORDS') ?? [
-  'actor',
-  'any',
-  'break',
-  'catch',
-  'class',
-  'continue',
-  'do',
-  'extension',
-  'fileprivate',
-  'final',
-  'func',
-  'guard',
-  'init',
-  'internal',
-  'private',
-  'protocol',
-  'public',
-  'rethrows',
-  'self',
-  'some',
-  'static',
-  'switch',
-  'throw',
-  'throws',
-  'try',
-];
+export const CONTEXTUAL_KEYWORDS = lexerList('CONTEXTUAL_KEYWORDS');
+if (!CONTEXTUAL_KEYWORDS?.length)
+  throw new Error('crates/lang/src/lexer.rs has no CONTEXTUAL_KEYWORDS list');
 
 /** Every word a grammar must mark as a keyword (or as the literal or `self` it is). */
 export const ALL_KEYWORDS = [...new Set([...KEYWORDS, ...CONTEXTUAL_KEYWORDS])].sort();
