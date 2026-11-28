@@ -86,16 +86,20 @@ impl Tr<'_> {
             _ => "view",
         };
         // A `screen()` beside the file's default export (the route, `export default function
-        // X()` drawing it) is a view: a file has one route.
-        let kind = if kind != "view"
+        // X()` drawing it inside a wrapper such as a feature gate): its chrome is the inner
+        // screen's, and a file has one route. It waits on `ViewModifier` (the wrapper as a
+        // modifier of the screen's content that also hides the chrome while it holds it back).
+        if kind != "view"
             && !vis.contains("default")
             && body.iter().any(|s| matches!(s, Statement::ExportDefaultDeclaration(d)
                 if !matches!(&d.declaration, oxc_ast::ast::ExportDefaultDeclarationKind::Identifier(i) if i.name == name)))
         {
-            "view"
-        } else {
-            kind
-        };
+            return self.refuse(
+                "route:wrapped-screen",
+                format!("the `screen()` `{name}` drawn inside the route's own wrapper"),
+                call.span,
+            );
+        }
         if call.arguments.len() != 1 {
             return self.refuse("view:options", format!("`{}(…)` with options", callee.name), call.span);
         }
@@ -963,10 +967,90 @@ impl Tr<'_> {
         }
     }
 
-    /// `const [v, setV] = useState<T>(init)` in a hook function (which has no `@state`):
-    /// React's hook called as TS, `let (v, setV): (T, Foreign) = useState(init)`; the
-    /// setter is TS's (`Dispatch<SetStateAction<T>>`, tsc checks its calls).
+    /// `const [v, setV] = useState<T>(init)` in a hook function: its hook-local state,
+    /// `@State var v: T = init`, read as `v` and written as `v = …` (`setV(x)` and `setV(f)`
+    /// are assignments, as a view's `@state` setter calls are).
     fn hook_state(&mut self, pattern: &oxc_ast::ast::ArrayPattern, call: &CallExpression) -> String {
+        let identity = |e: &Expression| {
+            matches!(
+                e.without_parentheses(),
+                Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
+            )
+        };
+        let held = match call.arguments.first().and_then(|a| a.as_expression()) {
+            Some(Expression::ArrowFunctionExpression(arrow)) => arrow.get_expression().is_some_and(identity),
+            Some(e) => {
+                identity(e)
+                    && matches!(e.without_parentheses(), Expression::ObjectExpression(o) if o.properties.is_empty())
+            }
+            None => false,
+        };
+        if held {
+            return self.hook_state_ts(pattern, call);
+        }
+        if pattern.rest.is_some() || pattern.elements.len() > 2 {
+            return self.refuse(
+                "react:useState",
+                "`useState` destructured beyond `[value, setValue]`",
+                pattern.span,
+            );
+        }
+        let mut names = Vec::new();
+        for i in 0..2 {
+            names.push(match pattern.elements.get(i) {
+                Some(Some(BindingPattern::BindingIdentifier(id))) => (id.name.to_string(), id.span),
+                None | Some(None) => ("_".to_string(), pattern.span),
+                Some(Some(other)) => {
+                    return self.refuse("react:useState", "a nested `useState` pattern", other.span());
+                }
+            });
+        }
+        if names[0].0 == "_" {
+            return self.refuse("react:useState", "`useState` without a value name", pattern.span);
+        }
+        let value = self.bind(&names[0].0, names[0].1);
+        if names[1].0 != "_" {
+            self.scope.setters.insert(names[1].0.clone(), Setter { state: value.clone() });
+        }
+        let arg = call.arguments.first().and_then(|a| a.as_expression());
+        let ty = match call.type_arguments.as_ref().and_then(|a| a.params.first()) {
+            Some(t) if arg.is_none() => Some(optional_ty(&self.ty(t))),
+            Some(t) => Some(self.ty(t)),
+            None => match arg.map(|a| a.without_parentheses()) {
+                Some(Expression::NumericLiteral(_)) => Some("Float".into()),
+                _ => None,
+            },
+        };
+        let init = match arg {
+            // `useState(() => …)`: the value the closure gives, computed once.
+            Some(Expression::ArrowFunctionExpression(arrow)) if arrow.params.items.is_empty() => {
+                match arrow.get_expression() {
+                    Some(e) => self.expr(e),
+                    None => {
+                        let saved = self.scope.clone();
+                        let body = self.block_stmts(arrow_statements(arrow), arrow_end(arrow), true);
+                        self.scope = saved;
+                        format!("{{\n{body}\n}}()")
+                    }
+                }
+            }
+            Some(e) => self.expr(e),
+            None if ty.as_deref().is_some_and(|t| t.ends_with('?')) => "none".into(),
+            None => {
+                return self.refuse("react:useState", "`useState()` without an initial value", call.span);
+            }
+        };
+        let name = self.name(&value, pattern.span);
+        match ty {
+            Some(ty) => format!("@State var {name}: {ty} = {init}"),
+            None => format!("@State var {name} = {init}"),
+        }
+    }
+
+    /// `const [v, setV] = useState({})` in a hook function, an object TS holds for its identity
+    /// (a per-instance token, compared with `===`): React's hook called as TS, `let (v, setV): (T, Foreign) = useState(init)`; the
+    /// setter is TS's (`Dispatch<SetStateAction<T>>`, tsc checks its calls).
+    fn hook_state_ts(&mut self, pattern: &oxc_ast::ast::ArrayPattern, call: &CallExpression) -> String {
         if pattern.rest.is_some() || pattern.elements.len() > 2 {
             return self.refuse(
                 "react:useState",
@@ -998,12 +1082,10 @@ impl Tr<'_> {
         let init = arg.map(|a| self.expr(a)).unwrap_or_default();
         let name = self.name(&names[0], pattern.span);
         let Expression::Identifier(callee) = &call.callee else { unreachable!() };
-        let state = callee.name.to_string();
-        self.react_values.insert(if state == "useState" {
-            state.clone()
-        } else {
-            format!("useState as {state}")
-        });
+        // Imported under a name of its own: a hook-local `@State` emits React's `useState` itself.
+        let _ = callee;
+        let state = "useStateOfTS".to_string();
+        self.react_values.insert(format!("useState as {state}"));
         // The setter is TS's `Dispatch<SetStateAction<T>>`, written so tsc can check its calls.
         let ts = match call.type_arguments.as_ref().and_then(|a| a.params.first()) {
             Some(t) if arg.is_none() => Some(format!("{} | undefined", self.slice(t.span()))),
@@ -1405,15 +1487,18 @@ impl Tr<'_> {
                     let inner = self.record_pattern(inner);
                     parts.push(format!("{key}: {inner}"));
                 }
-                // `{ data: lanes = [] }`: bound, then `let lanes = lanes ?? []`.
+                // `{ data: lanes = [] }`: bound as `lanesOrNone`, then `let lanes = lanesOrNone ?? []`
+                // (one name per binding: no `let` shadows another in its own scope).
                 BindingPattern::AssignmentPattern(a) => match &a.left {
                     BindingPattern::BindingIdentifier(local) => {
                         let bound = self.bind(&local.name, local.span);
-                        parts.push(if bound == key { key } else { format!("{key}: {bound}") });
                         // A `null`/`undefined` default is the value itself.
-                        if !crate::expr::is_nothing(&a.right) {
+                        if crate::expr::is_nothing(&a.right) {
+                            parts.push(if bound == key { key } else { format!("{key}: {bound}") });
+                        } else {
                             let value = self.expr(&a.right);
-                            self.pattern_defaults.push(format!("let {bound} = {bound} ?? {value}"));
+                            parts.push(format!("{key}: {bound}OrNone"));
+                            self.pattern_defaults.push(format!("let {bound} = {bound}OrNone ?? {value}"));
                         }
                     }
                     other => parts.push(self.refuse(
@@ -2358,7 +2443,9 @@ impl Tr<'_> {
                 };
                 let list = self.head_expr(&f.right);
                 self.loop_block = true;
+                self.loops += 1;
                 let body = self.block_of(&f.body);
+                self.loops -= 1;
                 self.loop_block = false;
                 let body = match pattern {
                     Some(p) => format!("let {p} = {item}\n{body}"),
@@ -2393,9 +2480,14 @@ impl Tr<'_> {
             Statement::ForStatement(f) => self.refuse("statement:for", "a C-style `for`", f.span),
             Statement::WhileStatement(w) => {
                 let test = self.head_expr(&w.test);
+                self.loops += 1;
                 let body = self.block_of(&w.body);
+                self.loops -= 1;
                 format!("while {test} {{\n{body}\n}}")
             }
+            // Swift's `break` and `continue` of the loop they are in.
+            Statement::BreakStatement(b) if b.label.is_none() && self.loops > 0 => "break".into(),
+            Statement::ContinueStatement(c) if c.label.is_none() && self.loops > 0 => "continue".into(),
             Statement::EmptyStatement(_) => String::new(),
             other => self.refuse("statement", "a statement with no `.bloom` form", other.span()),
         }

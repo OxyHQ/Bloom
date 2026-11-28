@@ -197,6 +197,8 @@ pub struct Tr<'s> {
     pub head: bool,
     /// The next block translated is a loop's body: `if (c) continue;` there guards the rest.
     pub loop_block: bool,
+    /// How many `for`/`while` bodies the statement being written is inside: `break`/`continue` there.
+    pub loops: usize,
     /// Translating a hook function (`fn useX`): React's memo hooks are TS calls.
     pub hook_fn: bool,
     /// Language exports the output calls as TS (`defineModifier` for a modifier value).
@@ -431,6 +433,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         ts_args: false,
         head: false,
         loop_block: false,
+        loops: 0,
         hook_fn: false,
         dynamic_import: false,
         equal_for: HashMap::new(),

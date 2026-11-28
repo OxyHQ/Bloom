@@ -14,8 +14,8 @@ public struct BadgeProps {
 }
 
 private func marker(_ label: String, _ arg1: Visual) -> View {
-  let { size, tone } = arg1
-  let size = size ?? "15"
+  let { size: sizeOrNone, tone } = arg1
+  let size = sizeOrNone ?? "15"
   Text("\(label) \(size) \(tone ?? "muted")")
 }
 

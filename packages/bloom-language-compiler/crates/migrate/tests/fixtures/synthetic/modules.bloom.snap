@@ -5,7 +5,7 @@
 
 import { type CardProps } from "./card"
 import { URL } from "js"
-import { lazy, useMemo, useState } from "react"
+import { lazy, useMemo } from "react"
 
 public let Panel = lazy { import("./card") }
 
@@ -19,10 +19,8 @@ private func useTitles(_ rows: [Row]) -> [String] {
 }
 
 private func useOpenFor(_ id: String) {
-  let (openFor, setOpenFor): (String?, Foreign<"import('react').Dispatch<import('react').SetStateAction<string | undefined>>">) = useState(
-    none,
-  )
-  { open: openFor == id, show: { setOpenFor(id) } }
+  @State var openFor: String? = none
+  { open: openFor == id, show: { openFor = id } }
 }
 
 private func hostOf(_ link: String) -> String {
