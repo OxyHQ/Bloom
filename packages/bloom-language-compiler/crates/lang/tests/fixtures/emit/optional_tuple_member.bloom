@@ -1,0 +1,6 @@
+// `x?.0` (Swift's): optional chaining to a tuple's member, `x?.[0]` in JS.
+public struct P {
+  var c: (Double, Double)? = none
+}
+public func f(_ p: P?) -> Bool { p?.c?.0 != none }
+public func g(_ c: (Double, Double)?) -> Double { c?.1 ?? 0 }

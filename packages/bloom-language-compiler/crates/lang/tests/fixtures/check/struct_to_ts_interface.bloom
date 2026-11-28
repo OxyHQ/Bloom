@@ -1,0 +1,27 @@
+// A Bloom struct fits a TS object type only as TS would check it.
+import { normalizedHandle, placeholderColor } from "@/handles"
+
+struct NoId {
+  var avatar: String? = none
+}
+
+struct Unrelated {
+  let title: String
+}
+
+struct WrongType {
+  let id: Int
+}
+
+struct Card {
+  let id: String
+}
+
+struct Other {
+  let id: String
+}
+
+func missing(_ s: NoId) -> String { placeholderColor(s) }
+func weak(_ u: Unrelated) -> String { normalizedHandle(u) ?? "" }
+func wrong(_ w: WrongType) -> String { placeholderColor(w) }
+func nominal(_ c: Card) -> Other { c }

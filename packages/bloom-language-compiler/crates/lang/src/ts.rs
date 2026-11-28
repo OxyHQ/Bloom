@@ -55,6 +55,9 @@ pub enum TsType {
     Returns(Box<TsType>),
     /// `X["k"]`: the member `k` of the object type `X`, as TS's indexed access reads it.
     Index(Box<TsType>, String),
+    /// `X[number]`: the element type of the array (or `as const` tuple) type `X`
+    /// (`(typeof MEMBERSHIP_BENEFITS)[number]`).
+    Element(Box<TsType>),
     /// Anything else: foreign.
     Other,
 }
@@ -107,6 +110,9 @@ pub enum TsDecl {
     Class {
         extends: bool,
         props: Option<TsType>,
+        /// `class PollContractError extends Error {}`: an error class, a value and a type
+        /// (`err is PollContractError` is `instanceof`), never a component.
+        error: bool,
     },
     /// `const X = memo(Inner)`: the component `Inner` is (its props).
     Memo(String),
@@ -499,21 +505,23 @@ impl Reader {
             }
             Declaration::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
+                    let base = class.heritage.as_ref().and_then(|heritage| match &heritage.expression {
+                        oxc_ast::ast::Expression::Identifier(id) => Some(id.name.to_string()),
+                        oxc_ast::ast::Expression::StaticMemberExpression(member) => {
+                            Some(member.property.name.to_string())
+                        }
+                        _ => None,
+                    });
                     let props = class.heritage.as_ref().and_then(|heritage| {
-                        let base = match &heritage.expression {
-                            oxc_ast::ast::Expression::Identifier(id) => id.name.to_string(),
-                            oxc_ast::ast::Expression::StaticMemberExpression(member) => {
-                                member.property.name.to_string()
-                            }
-                            _ => return None,
-                        };
-                        if !matches!(base.as_str(), "Component" | "PureComponent") {
+                        if !matches!(base.as_deref(), Some("Component" | "PureComponent")) {
                             return None;
                         }
                         heritage.type_arguments.as_ref()?.params.first().map(|t| self.ty(t))
                     });
                     let extends = class.heritage.is_some();
-                    add(file, id.name.to_string(), TsDecl::Class { extends, props });
+                    // `extends Error`, `extends TypeError`, `extends HttpError`: an error class.
+                    let error = base.as_deref().is_some_and(|b| b.ends_with("Error"));
+                    add(file, id.name.to_string(), TsDecl::Class { extends, props, error });
                 }
             }
             Declaration::TSEnumDeclaration(enumeration) => {
@@ -789,6 +797,7 @@ impl Reader {
                     ),
                     _ => self.other(),
                 },
+                TSType::TSNumberKeyword(_) => TsType::Element(Box::new(self.ty(&access.object_type))),
                 _ => self.other(),
             },
             TSType::TSFunctionType(function) => TsType::Fn(Box::new(self.function(
@@ -1129,6 +1138,9 @@ pub struct Mapped {
     pub ty: Option<Ty>,
     /// A component: a function from props to an element.
     pub component: Option<Ty>,
+    /// An error class (`class PollContractError extends Error`): its type is tested with
+    /// `instanceof` (`err is PollContractError`).
+    pub class: bool,
 }
 
 pub struct Mapper<'m> {
@@ -1227,6 +1239,13 @@ impl Mapper<'_> {
                 value: Some(self.use_translation(file, path, depth)),
                 ..Mapped::default()
             });
+        }
+        // The language's node types (`ScrollViewNode`): a view of that kind (see `reference`).
+        if file.path.to_string_lossy().contains("bloom-language")
+            && let Some(constructor) = local.strip_suffix("Node")
+            && let Some(node) = crate::ui::node_by_constructor(constructor)
+        {
+            return Some(Mapped { ty: Some(Ty::View(Some(node.kind))), ..Mapped::default() });
         }
         self.local(file, &local, path, depth)
     }
@@ -1356,7 +1375,9 @@ impl Mapper<'_> {
             TsDecl::Interface { .. } | TsDecl::Alias { .. } => {
                 mapped.ty = Some(self.named(file, name, &[], path, depth));
             }
-            TsDecl::Class { extends: true, props } if name.starts_with(|c: char| c.is_ascii_uppercase()) => {
+            TsDecl::Class { extends: true, props, error: false }
+                if name.starts_with(|c: char| c.is_ascii_uppercase()) =>
+            {
                 let props = match props {
                     Some(props) => self.ty(
                         file,
@@ -1369,9 +1390,10 @@ impl Mapper<'_> {
                 };
                 mapped.component = Some(props);
             }
-            TsDecl::Class { .. } => {
+            TsDecl::Class { error, .. } => {
                 mapped.value = Some(Ty::Foreign(format!("typeof {path}").into()));
                 mapped.ty = Some(Ty::Foreign(path.into()));
+                mapped.class = error;
             }
             TsDecl::Memo(inner) => {
                 let mapped = self.local(file, &inner, path, depth + 1)?;
@@ -1574,6 +1596,7 @@ impl Mapper<'_> {
                 ty,
                 optional: param.optional,
                 rest: param.rest,
+                inout: false,
             });
         }
         // A constrained type parameter (`<Style extends DefaultStyle>(updater: () => Style)`): the
@@ -1628,6 +1651,7 @@ impl Mapper<'_> {
             is_async: false,
             generics,
             ts: true,
+            options: false,
             throws: false,
             bounds: Vec::new(),
             shapes,
@@ -1697,9 +1721,16 @@ impl Mapper<'_> {
                 }
                 None => Ty::Foreign(path.into()),
             },
-            TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
-                Ty::Foreign(path.into())
-            }
+            // `(typeof C)[number]` of an `as const` list of strings: their union.
+            TsType::Element(object) => match self.ty(file, object, scope, path, depth + 1) {
+                Ty::List(element) => *element,
+                _ => Ty::Foreign(path.into()),
+            },
+            // `Req & { signal?: AbortSignal }` of object types: one record of every member's
+            // fields (the first member's where two name one), so a labelled call's arguments,
+            // and the literals in them, are checked against each field's type.
+            TsType::Intersection(items) => self.intersection(file, items, scope, path, depth),
+            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other => Ty::Foreign(path.into()),
         }
     }
 
@@ -1742,7 +1773,10 @@ impl Mapper<'_> {
         if matches!(&inner, Ty::Foreign(_)) && !crate::check::is_element(&inner) {
             return Ty::Foreign(path.into());
         }
-        if nullable { Ty::Option(Box::new(inner)) } else { inner }
+        // `T | undefined` of a `T` that is optional already (`c ? undefined : server`, `server`
+        // a `ReturnType` that may be `undefined`): TS's `undefined | undefined` is one, so one
+        // optional.
+        if nullable && !matches!(inner, Ty::Option(_)) { Ty::Option(Box::new(inner)) } else { inner }
     }
 
     fn reference(
@@ -1807,6 +1841,13 @@ impl Mapper<'_> {
         // The embedded language's view types, now followed through its re-exports: a view.
         if matches!(name, "ViewNode" | "AnyView") {
             return Ty::View(None);
+        }
+        // A node's own type (`ScrollViewNode`, what `ScrollView(…)` returns): a view of that kind,
+        // which takes its modifiers, as SwiftUI's `ScrollView<Content>` is its own view type.
+        if let Some(constructor) = name.strip_suffix("Node")
+            && let Some(node) = crate::ui::node_by_constructor(constructor)
+        {
+            return Ty::View(Some(node.kind));
         }
         if file.decls.contains_key(name) {
             let mapped: Vec<Ty> =
@@ -2007,15 +2048,10 @@ impl Mapper<'_> {
                 if !params.is_empty() && params.len() != args.len() {
                     return Ty::Foreign(path.into());
                 }
+                // Each base's fields, and its bases' (`PickerProps extends BaseProps extends
+                // ConstraintProps`), as tsc reads the chain.
                 let mut all = Vec::new();
-                for parent in &extends {
-                    if let TsType::Ref(parent_name, _) = parent
-                        && let Some(TsDecl::Interface { members: inherited, .. }) =
-                            file.decls.get(parent_name)
-                    {
-                        all.extend(inherited.iter().cloned());
-                        continue;
-                    }
+                if !inherited_members(file, &extends, &mut all, 0) {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
@@ -2033,6 +2069,7 @@ impl Mapper<'_> {
                     origin: Origin::Ts { path: path.to_string() },
                     class: None,
                     tagged: None,
+                    own_init: false,
                 });
                 let ty = Ty::Adt(id, Vec::new());
                 if args.is_empty() {
@@ -2130,6 +2167,7 @@ impl Mapper<'_> {
             name: tag.clone(),
             ty: Ty::Strings(Rc::new(StrSet { name, values, token: false })),
             default: FieldDefault::None,
+            mutable: true,
         }];
         // A field every member has, with one type, is the union's too (`block.domain`), as TS
         // reads it without narrowing.
@@ -2157,8 +2195,58 @@ impl Mapper<'_> {
             origin: Origin::Ts { path: path.to_string() },
             class: None,
             tagged: Some(Rc::new(Tagged { tag, members: tagged })),
+            own_init: false,
         });
         Some(Ty::Adt(id, Vec::new()))
+    }
+
+    /// An intersection of object types as one record of their fields; `Foreign` when a member
+    /// is anything else (a type parameter, a function, a primitive).
+    fn intersection(
+        &mut self,
+        file: &Rc<TsFile>,
+        items: &[TsType],
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Ty {
+        // Only an inline object or a named, non-generic type is flattened: a generic's props
+        // (`Parameters<typeof VirtualList>[0]`) type their fields by a type parameter TS infers at
+        // the use, which only TS can check.
+        let flat = |item: &TsType| match item {
+            TsType::Object(_) => true,
+            TsType::Ref(_, args) => args.is_empty(),
+            _ => false,
+        };
+        if depth > 8 || !items.iter().all(flat) {
+            return Ty::Foreign(path.into());
+        }
+        let mut fields: Vec<FieldDef> = Vec::new();
+        for item in items {
+            let Ty::Adt(def, args) = self.ty(file, item, scope, path, depth + 1) else {
+                return Ty::Foreign(path.into());
+            };
+            let DefKind::Struct(own) = &self.defs[def].kind else { return Ty::Foreign(path.into()) };
+            if !args.is_empty() || self.defs[def].class.is_some() {
+                return Ty::Foreign(path.into());
+            }
+            for field in own.clone() {
+                if !fields.iter().any(|f| f.name == field.name) {
+                    fields.push(field);
+                }
+            }
+        }
+        let id = self.defs.len();
+        self.defs.push(Def {
+            name: "{…}".to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Ts { path: path.to_string() },
+            class: None,
+            tagged: None,
+            own_init: false,
+        });
+        Ty::Adt(id, Vec::new())
     }
 
     fn object(
@@ -2181,6 +2269,7 @@ impl Mapper<'_> {
             origin: Origin::Ts { path: path.to_string() },
             class: None,
             tagged: None,
+            own_init: false,
         });
         let fields = self.fields(file, members, scope, path, depth);
         self.defs[id].kind = DefKind::Struct(fields);
@@ -2230,7 +2319,7 @@ impl Mapper<'_> {
                     ty = Ty::Option(Box::new(ty));
                 }
                 let default = if member.optional { FieldDefault::Undefined } else { FieldDefault::None };
-                FieldDef { name: member.name.clone(), ty, default }
+                FieldDef { name: member.name.clone(), ty, default, mutable: true }
             })
             .collect()
     }
@@ -2348,4 +2437,23 @@ fn mentions_param(ty: &Ty) -> bool {
         None
     });
     found
+}
+
+/// The members `extends` gives an interface, base by base and each base's own bases first: false
+/// when a base is not an interface of the same file (TS's to check then).
+fn inherited_members(file: &TsFile, extends: &[TsType], out: &mut Vec<TsMember>, depth: usize) -> bool {
+    if depth > 16 {
+        return false;
+    }
+    for parent in extends {
+        let TsType::Ref(parent_name, _) = parent else { return false };
+        let Some(TsDecl::Interface { members, extends: grand, .. }) = file.decls.get(parent_name) else {
+            return false;
+        };
+        if !inherited_members(file, grand, out, depth + 1) {
+            return false;
+        }
+        out.extend(members.iter().cloned());
+    }
+    true
 }

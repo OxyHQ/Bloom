@@ -1,0 +1,6 @@
+// A TS promise is covariant: a `Promise<Unit>` callback fits TS's `(url) => Promise<unknown>`.
+import { openExternal, openIn } from "@/links"
+
+public func open(link: String) {
+  let _ = openIn(link, openWebUrl: { url in openExternal(url) })
+}

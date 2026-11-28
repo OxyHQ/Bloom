@@ -199,8 +199,18 @@ pub enum P {
     At,
     Dollar,
     Pipe,
-    /// `&`: a protocol composition (`T: Equatable & Hashable`).
+    /// `&`: a protocol composition (`T: Equatable & Hashable`), an `Int`'s bits (`a & b`), and
+    /// an `inout` argument (`&x`).
     Amp,
+    /// `&=`, `|=`, `^`, `^=`, `~` and Swift's overflow operators `&+`, `&-`, `&*`.
+    AmpEq,
+    PipeEq,
+    Caret,
+    CaretEq,
+    Tilde,
+    AmpPlus,
+    AmpMinus,
+    AmpStar,
     /// `\`: a key path (`\.likes`).
     Backslash,
 }
@@ -249,6 +259,14 @@ impl P {
             P::At => "@",
             P::Dollar => "$",
             P::Amp => "&",
+            P::AmpEq => "&=",
+            P::PipeEq => "|=",
+            P::Caret => "^",
+            P::CaretEq => "^=",
+            P::Tilde => "~",
+            P::AmpPlus => "&+",
+            P::AmpMinus => "&-",
+            P::AmpStar => "&*",
             P::Pipe => "|",
             P::Backslash => "\\",
         }
@@ -259,6 +277,13 @@ impl P {
         matches!(
             self,
             P::AndAnd
+                | P::Caret
+                | P::AmpPlus
+                | P::AmpMinus
+                | P::AmpStar
+                | P::AmpEq
+                | P::PipeEq
+                | P::CaretEq
                 | P::OrOr
                 | P::QuestionQuestion
                 | P::Plus
@@ -467,7 +492,14 @@ impl Lexer<'_> {
             (b'.', b'.') if self.peek(2) == b'<' => (P::DotDotLt, 3),
             (b'.', b'.') if self.peek(2) == b'.' => (P::DotDotDot, 3),
             (b'.', b'.') => (P::DotDot, 2),
-            (b'?', b'.') if !self.peek(2).is_ascii_digit() => (P::QuestionDot, 2),
+            // `x?.0` (Swift's optional chaining to a tuple member) when the `?` is against what
+            // it chains; `c ? .5 : 1` keeps its spaces.
+            (b'?', b'.')
+                if !self.peek(2).is_ascii_digit()
+                    || (self.pos > 0 && !self.src[self.pos - 1].is_ascii_whitespace()) =>
+            {
+                (P::QuestionDot, 2)
+            }
             (b'?', b'?') => (P::QuestionQuestion, 2),
             (b'-', b'>') => (P::Arrow, 2),
             (b'=', b'>') => (P::FatArrow, 2),
@@ -479,6 +511,25 @@ impl Lexer<'_> {
             (b'>', b'=') => (P::Ge, 2),
             (b'&', b'&') => (P::AndAnd, 2),
             (b'|', b'|') => (P::OrOr, 2),
+            (b'&', b'=') => (P::AmpEq, 2),
+            (b'|', b'=') => (P::PipeEq, 2),
+            (b'^', b'=') => (P::CaretEq, 2),
+            // `a &+ b`: an overflow operator, written with a space before it (`f(&x)` is an
+            // `inout` argument, never one).
+            (b'&', b'+' | b'-' | b'*')
+                if self.pos > 0
+                    && self.src[self.pos - 1].is_ascii_whitespace()
+                    && self.src.get(self.pos + 2).is_some_and(|c| c.is_ascii_whitespace()) =>
+            {
+                (
+                    match self.peek(1) {
+                        b'+' => P::AmpPlus,
+                        b'-' => P::AmpMinus,
+                        _ => P::AmpStar,
+                    },
+                    2,
+                )
+            }
             (b'+', b'=') => (P::PlusEq, 2),
             (b'-', b'=') => (P::MinusEq, 2),
             (b'*', b'=') => (P::StarEq, 2),
@@ -506,6 +557,8 @@ impl Lexer<'_> {
             (b'$', _) => (P::Dollar, 1),
             (b'|', _) => (P::Pipe, 1),
             (b'&', _) => (P::Amp, 1),
+            (b'^', _) => (P::Caret, 1),
+            (b'~', _) => (P::Tilde, 1),
             (b'\\', _) => (P::Backslash, 1),
             _ => return None,
         };

@@ -1,0 +1,4 @@
+export declare function greet(name: string | undefined | null): string;
+export declare function count(items: (readonly string[]) | undefined | null): number;
+export declare function label(title: string | undefined | null): string;
+export declare function full(first: string | undefined | null): string;

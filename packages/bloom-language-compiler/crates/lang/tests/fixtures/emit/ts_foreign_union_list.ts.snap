@@ -1,0 +1,15 @@
+
+export const NAMES = ["a", "b"] as const;
+
+export type Tab = (typeof NAMES)[number] | 'shop';
+
+export function tabs(): readonly ((typeof NAMES)[number] | 'shop')[] {
+return [];
+}
+
+export type Keys = keyof typeof NAMES;
+
+export function keys(): readonly (keyof typeof NAMES)[] {
+return [];
+}
+

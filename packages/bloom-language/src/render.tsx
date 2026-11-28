@@ -236,6 +236,7 @@ import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { paintedHost } from './painted-host';
+import { rising, risingOf } from './rising-chrome';
 import { ContentSafeAreaPadded, SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
@@ -1524,6 +1525,15 @@ function drawNode(
   );
 }
 
+/** Whether a view's own frame sets `side` (`.frame({ width })`), at rest. */
+function hasSide(layer: Layer | undefined, side: 'width' | 'height'): boolean {
+  return (
+    layer?.modifiers.some(
+      (modifier) => modifier.kind === 'frame' && modifier.value[side] !== undefined,
+    ) ?? false
+  );
+}
+
 function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
   const style = layerStyle(layer);
   return flex ? Object.assign(style, placeStyle(p.place)) : style;
@@ -2681,13 +2691,24 @@ function renderHost(
       const interactive = p.pressable || p.hoverGroup;
       const imageFlex = interactive ? '' : flex;
       const aspectRatio = ownValue(p, 'aspectRatio')?.value;
-      const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}`;
+      // SwiftUI's: an image of a ratio with no width or height takes the width a stack offers
+      // (a `VStack(alignment: .leading)`'s too), and its height from the ratio. A column that
+      // does not stretch its children would leave it no width (it has none until it loads), so
+      // it stretches itself, unless it is placed (`alignSelf`) or in an `HStack`.
+      const stretch =
+        aspectRatio !== undefined &&
+        !inRow &&
+        p.place.alignSelf === undefined &&
+        !hasSide(layer, 'width') &&
+        !hasSide(layer, 'height');
+      const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}|${stretch ? 'S' : ''}`;
       const out = cachedStyle(
         'component',
         styleKey,
         () => {
           const style = boxStyle(layer, imageFlex, p);
           if (aspectRatio !== undefined) style.aspectRatio = aspectRatio;
+          if (stretch && !interactive) style.alignSelf = 'stretch';
           return style;
         },
         () => boxVariants(layer, imageFlex, p),
@@ -2711,7 +2732,11 @@ function renderHost(
         props,
       );
       if (!interactive) return image;
-      const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
+      const placement = cachedStyle('host', `IMP|${flex}|${stretch ? 'S' : ''}`, () => {
+        const style = boxStyle(undefined, flex, p);
+        if (stretch) style.alignSelf = 'stretch';
+        return style;
+      });
       return drawOutermost(palette, box, hostFor(p), placement, hostProps(behaviour, key), image);
     }
     case 'button': {
@@ -3325,12 +3350,26 @@ function drawPresentedDialog(
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
   const view = node.props as ViewNodeProps;
+  // The screen chrome the view's own call declares (`Post().title(post.title)`), and an inlined
+  // view's body's: it rises to the screen drawing it (`rising-chrome.ts`). A view with a
+  // component of its own writes its body's from there (`view.ts`).
+  const own = risingOf(node);
+  const body = view.component === undefined ? risingOf(view.body) : undefined;
+  const values = own === undefined ? body : body === undefined ? own : { ...body, ...own };
   // An inlined view (`inlineView`): its body, drawn here in this tree, as a view's body is drawn in its own.
-  if (view.component === undefined) return renderChild(view.body, ctx, key) as ReactElement;
+  if (view.component === undefined) {
+    const element = renderChild(
+      view.body,
+      ctx,
+      values === undefined ? key : undefined,
+    ) as ReactElement;
+    return (values === undefined ? element : rising(values, element, key)) as ReactElement;
+  }
   const { component, props } = view;
   let element: ReactElement = draw(component, props as Record<string, unknown>);
   if (ctx.env !== ctx.provided || ctx.animation !== ctx.scoped)
     element = draw(EnvContext.Provider, { value: carrying(ctx.env, ctx.animation) }, element);
+  if (values !== undefined) return rising(values, element, key) as ReactElement;
   return key === undefined ? element : cloneElement(element, { key });
 }
 

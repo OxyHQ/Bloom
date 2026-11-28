@@ -26,8 +26,9 @@ const PREC = {
   range: 7,
   additive: 8,
   multiplicative: 9,
-  prefix: 10,
-  postfix: 11,
+  shift: 10,
+  prefix: 11,
+  postfix: 12,
 };
 
 /** Words the lexer reserves (`Kw` in lexer.rs). */
@@ -328,6 +329,8 @@ export default grammar({
       seq(
         optional($.modifiers),
         'init',
+        // `init?(…)`: Swift's failable init.
+        optional(field('failable', '?')),
         field('parameters', $.parameters),
         optional('async'),
         optional($.throws_clause),
@@ -450,7 +453,7 @@ export default grammar({
 
     parameters: ($) => seq('(', optional(seq(commaSep1($.parameter), optional(','))), ')'),
 
-    /** `p: T = v`, `to target: Point` (a label, then the name), `..xs: [T]`, `..Props`. */
+    /** `p: T = v`, `to target: Point` (a label, then the name), `_ xs: inout [T]`, `..xs: [T]`, `..Props`. */
     parameter: ($) =>
       choice(
         seq('..', field('type', $.user_type)),
@@ -459,6 +462,7 @@ export default grammar({
           optional(field('label', $._label_name)),
           field('name', $._name),
           ':',
+          optional(field('inout', 'inout')),
           field('type', $._type),
           optional(seq('=', field('default', $._expression))),
         ),
@@ -615,7 +619,7 @@ export default grammar({
     assignment: ($) =>
       seq(
         field('target', $._expression),
-        field('operator', choice('=', '+=', '-=', '*=')),
+        field('operator', choice('=', '+=', '-=', '*=', '&=', '|=', '^=', '<<=', '>>=')),
         field('value', $._expression),
       ),
 
@@ -691,9 +695,15 @@ export default grammar({
 
     value_argument: ($) =>
       choice(
-        seq(optional(seq(field('label', $._label_name), ':')), field('value', $._expression)),
+        seq(
+          optional(seq(field('label', $._label_name), ':')),
+          field('value', choice($._expression, $.operator_function)),
+        ),
         $.spread_element,
       ),
+
+    /** `reduce(0, +)`, `sorted(by: <)`, `(+)`: an operator passed as a function (Swift's). */
+    operator_function: (_) => choice('+', '-', '*', '/', '%', '<', '<=', '>', '>=', '==', '!='),
 
     spread_element: ($) => seq('..', $._expression),
 
@@ -725,7 +735,7 @@ export default grammar({
 
     unit: (_) => seq('(', ')'),
 
-    parenthesized_expression: ($) => seq('(', $._expression, ')'),
+    parenthesized_expression: ($) => seq('(', choice($._expression, $.operator_function), ')'),
 
     tuple_expression: ($) =>
       seq('(', $._expression, ',', optional(seq(commaSep1($._expression), optional(','))), ')'),
@@ -789,12 +799,18 @@ export default grammar({
         ),
       ),
 
-    /** `let x = optional` in an `if` or a `guard`. */
+    /** `let x = optional` in an `if` or a `guard`, or Swift 5.7's `let x` (the name unwrapped). */
     optional_binding: ($) =>
-      seq('let', field('pattern', $._pattern), '=', field('value', $._expression)),
+      choice(
+        seq('let', field('pattern', $._pattern), '=', field('value', $._expression)),
+        seq('let', field('pattern', $.identifier)),
+      ),
 
     _head_optional_binding: ($) =>
-      seq('let', field('pattern', $._pattern), '=', field('value', $._head_expression)),
+      choice(
+        seq('let', field('pattern', $._pattern), '=', field('value', $._head_expression)),
+        seq('let', field('pattern', $.identifier)),
+      ),
 
     /** 0.x: `match x { case .a(v) => … }`. */
     match_expression: ($) =>
@@ -1081,8 +1097,10 @@ function expressionFamily(head) {
     [`${p}binary_expression`]: ($) =>
       choice(
         ...[
-          [PREC.multiplicative, choice('*', '/', '%')],
-          [PREC.additive, choice('+', '-')],
+          // Swift's: `<<`/`>>` above multiplication, `&`/`&*` with it, `|`/`^`/`&+`/`&-` with `+`.
+          [PREC.shift, choice('<<', '>>')],
+          [PREC.multiplicative, choice('*', '/', '%', '&', '&*')],
+          [PREC.additive, choice('+', '-', '|', '^', '&+', '&-')],
           [PREC.range, choice('..<', '...')],
           [PREC.comparison, choice('<', '<=', '>', '>=')],
           [PREC.equality, choice('==', '!=', '===', '!==')],
@@ -1121,7 +1139,11 @@ function expressionFamily(head) {
       ),
 
     [`${p}prefix_expression`]: ($) =>
-      prec.right(PREC.prefix, seq(field('operator', choice('!', '-')), field('operand', expr($)))),
+      // `&x`: a place passed to an `inout` parameter; `~x`: an `Int`'s bits inverted.
+      prec.right(
+        PREC.prefix,
+        seq(field('operator', choice('!', '-', '~', '&')), field('operand', expr($))),
+      ),
 
     /** `try f()`, `try? f()`, `try! f()`. */
     [`${p}try_expression`]: ($) =>
@@ -1173,8 +1195,18 @@ function expressionFamily(head) {
         seq(field('function', expr($)), '?.', field('arguments', $.value_arguments)),
       ),
 
+    // `xs[i]`, and Swift's `x[keyPath: k]` (the field a key path names).
     [`${p}subscript_expression`]: ($) =>
-      prec(PREC.postfix, seq(field('target', expr($)), '[', field('index', $._expression), ']')),
+      prec(
+        PREC.postfix,
+        seq(
+          field('target', expr($)),
+          '[',
+          optional(seq(field('label', alias('keyPath', $.identifier)), ':')),
+          field('index', $._expression),
+          ']',
+        ),
+      ),
 
     [`${p}force_unwrap_expression`]: ($) => prec(PREC.postfix, seq(expr($), token.immediate('!'))),
 

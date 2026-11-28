@@ -133,7 +133,7 @@ impl Checker<'_> {
             if sealed {
                 class.sealed.push(name.name.clone());
             }
-            fields.push(FieldDef { name: name.name.clone(), ty, default });
+            fields.push(FieldDef { name: name.name.clone(), ty, default, mutable: *mutable });
         }
         self.generics.clear();
         self.out.defs[def].kind = DefKind::Struct(fields);

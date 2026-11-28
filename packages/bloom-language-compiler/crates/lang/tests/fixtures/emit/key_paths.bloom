@@ -1,0 +1,59 @@
+// Swift's key paths: `\.field` and `\T.field`, `KeyPath<T, V>` / `WritableKeyPath<T, V>`, and
+// `x[keyPath: k]` read and written on a value type's `var` copy (or a `@State`). A key path is its
+// field's name in TS.
+public struct Prefs {
+  var hideLikes: Bool = false
+  var hideReplies: Bool = false
+  var name: String = ""
+}
+
+public func read(_ p: Prefs, _ key: KeyPath<Prefs, Bool>) -> Bool { p[keyPath: key] }
+
+public func toggled(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Prefs {
+  var next = p
+  next[keyPath: key] = !p[keyPath: key]
+  return next
+}
+
+public func both(_ p: Prefs) -> Prefs { toggled(toggled(p, \.hideLikes), \Prefs.hideReplies) }
+
+// A `WritableKeyPath` is a `KeyPath`: it reads where one is expected.
+public func readWritable(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Bool { read(p, key) }
+
+public struct Counts {
+  var likes: Int = 0
+  var title: String = ""
+  let id: String = ""
+}
+
+// `+=` through a writable key path, as on any place.
+public func bumped(_ c: Counts, _ key: WritableKeyPath<Counts, Int>) -> Counts {
+  var next = c
+  next[keyPath: key] += 1
+  next[keyPath: \Counts.title] += "!"
+  return next
+}
+
+// A `let`'s key path reads.
+public func identity(_ c: Counts) -> String { c[keyPath: \Counts.id] }
+
+public struct PrivacyToggles: View {
+  @State private var prefs = Prefs()
+
+  @State private var counts = Counts()
+
+  func flip(_ key: WritableKeyPath<Prefs, Bool>) {
+    prefs[keyPath: key] = !prefs[keyPath: key]
+  }
+
+  func bump(_ key: WritableKeyPath<Counts, Int>) {
+    counts[keyPath: key] += 2
+  }
+
+  var body: some View {
+    Button(Text("Likes")).onPress {
+      flip(\.hideLikes)
+      bump(\.likes)
+    }
+  }
+}

@@ -487,12 +487,22 @@ impl<'a> Formatter<'a> {
                 text(" "),
                 self.block(body, Layout::Broken),
             ]),
-            TypeMemberKind::Func(f) if f.name.name == "init" => concat(vec![
-                text("init"),
-                self.params(&f.params),
-                text(" "),
-                self.block(&f.body, Layout::Own),
-            ]),
+            TypeMemberKind::Func(f) if f.name.name == "init" => {
+                // `init?` (failable: the parser gave it `Self?`), its parameters, `throws`.
+                let mut parts =
+                    vec![text(if f.ret.is_some() { "init?" } else { "init" }), self.params(&f.params)];
+                if let Some(throws) = &f.throws {
+                    parts.push(text(" throws"));
+                    if let Some(ty) = &throws.ty {
+                        parts.push(text("("));
+                        parts.push(self.ty(ty));
+                        parts.push(text(")"));
+                    }
+                }
+                parts.push(text(" "));
+                parts.push(self.block(&f.body, Layout::Own));
+                concat(parts)
+            }
             TypeMemberKind::Func(f) => self.fn_decl(f),
             TypeMemberKind::Let(l) => self.let_stmt(l),
         };
@@ -638,7 +648,8 @@ impl<'a> Formatter<'a> {
                 } else if unlabelled.contains(&param.span) {
                     name = format!("_ {name}");
                 }
-                let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
+                let mut parts =
+                    vec![text(name), text(if param.inout { ": inout " } else { ": " }), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
                     parts.push(this.expr(default));
@@ -1015,9 +1026,15 @@ impl<'a> Formatter<'a> {
                 });
                 entries.wrap("{", line, "}")
             }
-            ExprKind::Unary(op, inner) => {
-                concat(vec![text(if *op == UnaryOp::Not { "!" } else { "-" }), self.expr(inner)])
-            }
+            ExprKind::Unary(op, inner) => concat(vec![
+                text(match op {
+                    UnaryOp::Not => "!",
+                    UnaryOp::Neg => "-",
+                    UnaryOp::BitNot => "~",
+                }),
+                self.expr(inner),
+            ]),
+            ExprKind::InOut(inner) => concat(vec![text("&"), self.expr(inner)]),
             ExprKind::Binary(op, ..) => self.binary(e, *op),
             ExprKind::Ternary(c, a, b) => {
                 concat(vec![self.expr(c), text(" ? "), self.expr(a), text(" : "), self.expr(b)])
@@ -1028,7 +1045,8 @@ impl<'a> Formatter<'a> {
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
             | ExprKind::Index(..)
-            | ExprKind::OptIndex(..) => self.chain(e, context),
+            | ExprKind::OptIndex(..)
+            | ExprKind::KeyPathIndex(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1115,6 +1133,10 @@ impl<'a> Formatter<'a> {
                     links.push(Link::Index(index, true));
                     current = inner;
                 }
+                ExprKind::KeyPathIndex(inner, key) => {
+                    links.push(Link::KeyPath(key));
+                    current = inner;
+                }
                 ExprKind::Try(inner) => {
                     links.push(Link::Try);
                     current = inner;
@@ -1148,6 +1170,10 @@ impl<'a> Formatter<'a> {
                     let index = self.expr(index);
                     let open = if *optional { "?[" } else { "[" };
                     lines.last_mut().expect("head").extend([text(open), index, text("]")]);
+                }
+                Link::KeyPath(key) => {
+                    let key = self.expr(key);
+                    lines.last_mut().expect("head").extend([text("[keyPath: "), key, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
                 Link::Force => lines.last_mut().expect("head").push(text("!")),
@@ -1235,6 +1261,10 @@ impl<'a> Formatter<'a> {
     }
 
     fn closure(&mut self, closure: &Closure) -> Doc {
+        // `reduce(0, +)`: an operator passed as a function, as written.
+        if let Some(op) = closure.operator {
+            return text(op.text());
+        }
         let header: Vec<Doc> = if closure.has_in {
             let params = closure
                 .params
@@ -1265,6 +1295,13 @@ impl<'a> Formatter<'a> {
     fn cond(&mut self, cond: &Cond) -> Doc {
         match cond {
             Cond::Expr(e) => self.expr(e),
+            // `if let x { … }` (Swift 5.7's shorthand): written as it was.
+            Cond::Let(pattern, value)
+                if value.span == pattern.span
+                    && matches!((&pattern.kind, &value.kind), (PatternKind::Bind(a), ExprKind::Name(b)) if a.name == *b) =>
+            {
+                concat(vec![text("let "), self.pattern(pattern)])
+            }
             Cond::Let(pattern, value) => {
                 concat(vec![text("let "), self.pattern(pattern), text(" = "), self.expr(value)])
             }
@@ -1513,6 +1550,8 @@ enum Link<'e> {
     },
     /// `[i]`, or `?[i]` (optional).
     Index(&'e Expr, bool),
+    /// `[keyPath: k]`.
+    KeyPath(&'e Expr),
     Try,
     Force,
 }

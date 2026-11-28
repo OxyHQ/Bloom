@@ -1,0 +1,15 @@
+func bump(_ n: inout Int) { n += 1 }
+
+func widen(_ x: inout Float) { x = x * 2.0 }
+
+func later(_ n: inout Int) async { n = 2 }
+
+public func f() {
+  var n = 1
+  let k = 2
+  bump(n)
+  bump(&k)
+  let m = &n
+  widen(&n)
+  bump(&5)
+}

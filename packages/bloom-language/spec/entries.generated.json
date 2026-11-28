@@ -690,7 +690,14 @@
       "VideoViewabilityScope"
     ],
     "video-view": [
-      "Video"
+      "Video",
+      "provideVideoPlayers",
+      "setVideoDecoders",
+      "videoAttach",
+      "videoPause",
+      "videoPlay",
+      "videoRelease",
+      "videoSeek"
     ],
     "view-that-fits": [
       "ViewThatFits"

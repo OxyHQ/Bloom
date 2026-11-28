@@ -24,7 +24,8 @@ const api = { headers: {}, timeoutSeconds: 30, baseURL: URL$$parse("https://api.
 const response = await (HTTPClient$send(api, "get", path, undefined, undefined, $signal));
 if ($signal.aborted) return;
 setText(response.text);
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
 if ($signal.aborted) return;
 {
 setText("failed");

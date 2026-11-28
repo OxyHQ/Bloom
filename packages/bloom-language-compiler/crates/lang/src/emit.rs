@@ -158,6 +158,16 @@ struct ViewState {
 
 struct Emitter<'a> {
     ck: &'a CheckResult,
+    /// The `var`s written in place, and the reads that copy them (`crate::cow`).
+    cow: crate::cow::Cow,
+    /// A mutating member's write-back (`CallRes::Mutating` on a place that is not an owned
+    /// `var`): how the place is written, and its new value, for [`Self::assign`].
+    assign_override: Option<(AssignRes, Frag)>,
+    /// The expression a statement evaluates for its effect alone (its value is dropped).
+    discarded: Option<ExprId>,
+    /// Emitting a function with `inout` parameters: their names, and whether it gives `Unit`.
+    /// Each `return` gives them back with its value (`[value, xs]`, or `xs` alone).
+    inout_ret: Option<(Vec<String>, bool)>,
     /// The file is not a route (outside the app's router folder): a 2.0 `struct X: Screen`
     /// is its named export, not the default one Expo Router takes from a route.
     named_screens: bool,
@@ -222,6 +232,14 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// Emitting a `@jsOptions` function (`FnTy::options`): its parameters are one object's fields.
+    options_fn: bool,
+    /// Emitting an `init`'s own body (not a closure in it): `return` gives `self`.
+    in_init: bool,
+    /// Emitting a function's result (its expression body, a `return`, its last line), through
+    /// parentheses and a ternary's branches: an absent view there crosses as `null`, which a TS
+    /// render callback's `ReactElement | null` takes; anywhere else as `undefined`.
+    result_position: bool,
     /// The `Int` arithmetic being emitted inside its dev-build check (`$int(…)`).
     int_checked: Option<ExprId>,
     /// Optional-chain links emitted as a guard (`(t == null ? undefined : …)`), not as JS's own
@@ -261,6 +279,10 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
     }
     let mut emitter = Emitter {
         ck,
+        cow: crate::cow::analyze(file, ck),
+        assign_override: None,
+        discarded: None,
+        inout_ret: None,
         named_screens: !crate::routes::is_route_file(filename, options),
         defaults,
         options,
@@ -297,6 +319,9 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         names,
         enumerated: false,
         range_index: false,
+        options_fn: false,
+        in_init: false,
+        result_position: false,
         int_checked: None,
         guarded: HashSet::default(),
         memo_group: None,
@@ -489,8 +514,115 @@ fn is_atom(expr: &Expr) -> bool {
     )
 }
 
+/// Whether `expr` is an `Int` bit or overflow operation (through parentheses).
+fn is_bit_tree(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::Paren(inner) => is_bit_tree(inner),
+        ExprKind::Binary(op, ..) => bit_helper(*op).is_some(),
+        ExprKind::Unary(UnaryOp::BitNot, _) => true,
+        _ => false,
+    }
+}
+
+/// The 64-bit helper of an `Int` bit or overflow operator (`helper_text`).
+fn bit_helper(op: BinaryOp) -> Option<&'static str> {
+    Some(match op {
+        BinaryOp::BitAnd => "band",
+        BinaryOp::BitOr => "bor",
+        BinaryOp::BitXor => "bxor",
+        BinaryOp::Shl => "shl",
+        BinaryOp::Shr => "shr",
+        BinaryOp::WrapAdd => "wadd",
+        BinaryOp::WrapSub => "wsub",
+        BinaryOp::WrapMul => "wmul",
+        _ => return None,
+    })
+}
+
 fn helper_text(name: &str) -> &'static str {
     match name {
+        // `Int`'s 64-bit two's complement bit and overflow operators. JS's `&`, `|`, `^` are
+        // 32-bit: two 32-bit operands take them, any other through BigInt. A result is exact
+        // within ±(2^53 − 1), where an `Int` is exact on JS.
+        "band" => {
+            "function $band(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a & b : Number(BigInt.asIntN(64, BigInt(a) & BigInt(b)));\n}"
+        }
+        "bor" => {
+            "function $bor(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a | b : Number(BigInt.asIntN(64, BigInt(a) | BigInt(b)));\n}"
+        }
+        "bxor" => {
+            "function $bxor(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a ^ b : Number(BigInt.asIntN(64, BigInt(a) ^ BigInt(b)));\n}"
+        }
+        // Swift's smart shifts: a negative count shifts the other way; 64 or more shifts every bit out.
+        "shl" => {
+            "function $shl(a: number, n: number): number {\n  if (n < 0) return n <= -64 ? (a < 0 ? -1 : 0) : Math.floor(a / 2 ** -n);\n  if (n >= 64) return 0;\n  return Number(BigInt.asIntN(64, BigInt(a) << BigInt(n)));\n}"
+        }
+        "shr" => {
+            "function $shr(a: number, n: number): number {\n  if (n < 0) return n <= -64 ? 0 : Number(BigInt.asIntN(64, BigInt(a) << BigInt(-n)));\n  if (n >= 64) return a < 0 ? -1 : 0;\n  return Math.floor(a / 2 ** n);\n}"
+        }
+        // A BigInt tree's smart shifts (a count that is not a literal in 0..<64).
+        "bshl" => {
+            "function $bshl(a: bigint, n: number): bigint {\n  if (n < 0) return n <= -64 ? (a < 0n ? -1n : 0n) : a >> BigInt(-n);\n  return n >= 64 ? 0n : BigInt.asIntN(64, a << BigInt(n));\n}"
+        }
+        "bshr" => {
+            "function $bshr(a: bigint, n: number): bigint {\n  if (n < 0) return n <= -64 ? 0n : BigInt.asIntN(64, a << BigInt(-n));\n  return n >= 64 ? (a < 0n ? -1n : 0n) : a >> BigInt(n);\n}"
+        }
+        "wadd" => {
+            "function $wadd(a: number, b: number): number {\n  const sum = a + b;\n  return Number.isSafeInteger(sum) ? sum : Number(BigInt.asIntN(64, BigInt(a) + BigInt(b)));\n}"
+        }
+        "wsub" => {
+            "function $wsub(a: number, b: number): number {\n  const difference = a - b;\n  return Number.isSafeInteger(difference) ? difference : Number(BigInt.asIntN(64, BigInt(a) - BigInt(b)));\n}"
+        }
+        "wmul" => {
+            "function $wmul(a: number, b: number): number {\n  const product = a * b;\n  return Number.isSafeInteger(product) ? product : Number(BigInt.asIntN(64, BigInt(a) * BigInt(b)));\n}"
+        }
+        // Swift's mutating members, on an array or a record nothing else holds (`crate::cow`):
+        // each changes it in place and gives the member's result; an index out of range traps.
+        "mutated" => {
+            "function $mutated<T>(value: T, change: (copy: { -readonly [K in keyof T]: T[K] }) => unknown): T {\n  const copy = (Array.isArray(value) ? [...value] : { ...value }) as { -readonly [K in keyof T]: T[K] };\n  change(copy);\n  return copy as T;\n}"
+        }
+        "appendAll" => {
+            "function $appendAll<T>(items: T[], more: readonly T[]): void {\n  for (const item of more) items.push(item);\n}"
+        }
+        "insertAt" => {
+            "function $insertAt<T>(items: T[], item: T, at: number): void {\n  if (!(at >= 0 && at <= items.length)) throw new RangeError(`Index out of range: ${at} is not in 0...${items.length}`);\n  items.splice(at, 0, item);\n}"
+        }
+        "removeAt" => {
+            "function $removeAt<T>(items: T[], at: number): T {\n  if (!(at >= 0 && at < items.length)) throw new RangeError(`Index out of range: ${at} is not in 0..<${items.length}`);\n  return items.splice(at, 1)[0] as T;\n}"
+        }
+        "removeFirst" => {
+            "function $removeFirst<T>(items: T[]): T {\n  if (items.length === 0) throw new RangeError(\"Can't remove the first element of an empty array\");\n  return items.shift() as T;\n}"
+        }
+        "removeLast" => {
+            "function $removeLast<T>(items: T[]): T {\n  if (items.length === 0) throw new RangeError(\"Can't remove the last element of an empty array\");\n  return items.pop() as T;\n}"
+        }
+        "removeFirstN" => {
+            "function $removeFirstN<T>(items: T[], k: number): void {\n  if (!(k >= 0 && k <= items.length)) throw new RangeError(`Can't remove ${k} elements of ${items.length}`);\n  items.splice(0, k);\n}"
+        }
+        "removeLastN" => {
+            "function $removeLastN<T>(items: T[], k: number): void {\n  if (!(k >= 0 && k <= items.length)) throw new RangeError(`Can't remove ${k} elements of ${items.length}`);\n  items.length -= k;\n}"
+        }
+        "removeAll" => {
+            "function $removeAll(items: unknown[] | Record<string, unknown>): void {\n  if (Array.isArray(items)) items.length = 0;\n  else for (const key of Object.keys(items)) delete items[key];\n}"
+        }
+        "removeAllWhere" => {
+            "function $removeAllWhere<T>(items: T[], remove: (item: T) => boolean): void {\n  let kept = 0;\n  for (let i = 0; i < items.length; i++) {\n    const item = items[i] as T;\n    if (!remove(item)) items[kept++] = item;\n  }\n  items.length = kept;\n}"
+        }
+        "swapAt" => {
+            "function $swapAt<T>(items: T[], i: number, j: number): void {\n  if (!(i >= 0 && i < items.length && j >= 0 && j < items.length)) throw new RangeError(`Index out of range: ${i}, ${j} in 0..<${items.length}`);\n  const item = items[i] as T;\n  items[i] = items[j] as T;\n  items[j] = item;\n}"
+        }
+        "sortNatural" => {
+            "function $sortNatural<T>(items: T[]): void {\n  items.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));\n}"
+        }
+        "sortBy" => {
+            "function $sortBy<T>(items: T[], before: (a: T, b: T) => boolean): void {\n  items.sort((a, b) => (before(a, b) ? -1 : before(b, a) ? 1 : 0));\n}"
+        }
+        "removeValue" => {
+            "function $removeValue<V>(map: Record<string, V>, key: string): V | undefined {\n  if (!Object.prototype.hasOwnProperty.call(map, key)) return undefined;\n  const value = map[key];\n  delete map[key];\n  return value;\n}"
+        }
+        "updateValue" => {
+            "function $updateValue<V>(map: Record<string, V>, value: V, key: string): V | undefined {\n  const old = Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;\n  map[key] = value;\n  return old;\n}"
+        }
         "at" => {
             "function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {\n  const out = items.slice();\n  out[at] = item;\n  return out;\n}"
         }
@@ -745,6 +877,20 @@ impl<'a> Emitter<'a> {
 
     // ---- types ------------------------------------------------------------
 
+    /// An owned `var`'s type (`crate::cow`): its array or record is TS's mutable one.
+    fn ts_mutable(&mut self, ty: &Ty) -> String {
+        match ty {
+            Ty::List(t) => format!("{}[]", self.ts_operand(t)),
+            Ty::Map(v) => format!("Record<string, {}>", self.ts_type(v)),
+            other => self.ts_type(other),
+        }
+    }
+
+    /// The owned `var` (`crate::cow`) a `var` statement declares, by its name's span.
+    fn owned_local(&self, name: Span) -> Option<LocalId> {
+        self.cow.owned.iter().copied().find(|l| self.ck.locals[*l].span == name)
+    }
+
     fn ts_type(&mut self, ty: &Ty) -> String {
         match ty {
             Ty::Int | Ty::Float => "number".into(),
@@ -803,7 +949,7 @@ impl<'a> Emitter<'a> {
                 }
             }
             Ty::Partial(inner) => format!("Partial<{}>", self.ts_type(inner)),
-            Ty::KeyPath(root, value) => {
+            Ty::KeyPath(root, value, _) => {
                 self.uses_key_path = true;
                 format!("$KeyPath<{}, {}>", self.ts_type(root), self.ts_type(value))
             }
@@ -825,6 +971,14 @@ impl<'a> Emitter<'a> {
                 format!("({}) => {ret}", params.join(", "))
             }
             Ty::Async(t) | Ty::Promise(t) => format!("Promise<{}>", self.ts_return(t, false)),
+            // A scroll view, as the language types it (`ScrollView(…)` is a `ScrollViewNode`), so
+            // its own modifiers type-check on a prop of it.
+            Ty::View(Some("scrollView")) => {
+                if !self.ck.type_imports.iter().any(|name| name == "ScrollViewNode") {
+                    self.type_imports.entry(LANGUAGE.into()).or_default().insert("ScrollViewNode".into());
+                }
+                "ScrollViewNode".into()
+            }
             Ty::View(_) => {
                 self.type_imports.entry(LANGUAGE.into()).or_default().insert("Child".into());
                 "Child".into()
@@ -849,14 +1003,31 @@ impl<'a> Emitter<'a> {
 
     fn ts_operand(&mut self, ty: &Ty) -> String {
         let text = self.ts_type(ty);
-        if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_))
-            || text.contains(" | ") && !text.starts_with('(')
-            || text.starts_with("readonly ")
-        {
+        if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_)) || !ts_atomic(&text) {
             format!("({text})")
         } else {
             text
         }
+    }
+
+    /// A `@jsOptions` function's object type: a field per parameter, by its label, optional when
+    /// it has a default. `input`: a declaration's parameter type (`ts_input`).
+    fn options_type(&mut self, f: &FnDecl, types: &[Ty], input: bool) -> String {
+        let fields: Vec<String> = f
+            .params
+            .iter()
+            .zip(types)
+            .map(|(param, ty)| {
+                let label = param.label.as_ref().map_or(&param.name.name, |l| &l.name);
+                let text = if input { self.ts_input(ty) } else { self.ts_type(ty) };
+                format!(
+                    "readonly {}{}: {text}",
+                    prop_key(label),
+                    if param.default.is_some() { "?" } else { "" }
+                )
+            })
+            .collect();
+        format!("{{ {} }}", fields.join("; "))
     }
 
     fn ts_return(&mut self, ty: &Ty, is_async: bool) -> String {
@@ -997,11 +1168,17 @@ impl<'a> Emitter<'a> {
             }
             ItemKind::Fn(f) => {
                 let mut out = Frag::at(item.span, export);
+                self.options_fn = self
+                    .ck
+                    .items
+                    .get(&index)
+                    .is_some_and(|local| matches!(&self.ck.locals[*local].ty, Ty::Fn(t) if t.options));
                 let function = if crate::check::is_hook_name(&f.name.name) && !f.is_async {
                     self.hook_function(f)
                 } else {
                     self.function(f, None)
                 };
+                self.options_fn = false;
                 out.f(function);
                 out.s("\n");
                 out
@@ -1318,15 +1495,48 @@ impl<'a> Emitter<'a> {
     fn function(&mut self, f: &FnDecl, as_arrow: Option<()>) -> Frag {
         let params = self.ck.fn_params.get(&f.span).cloned().unwrap_or_default();
         let mut list = Vec::new();
+        let mut inouts: Vec<(String, Ty)> = Vec::new();
         for (param, local) in f.params.iter().zip(&params) {
             let ty = self.ck.locals[*local].ty.clone();
             let dots = if param.rest { "..." } else { "" };
-            let mut p =
-                Frag::at(param.span, format!("{dots}{}: {}", js_name(&param.name.name), self.ts_type(&ty)));
+            // An `inout` array or dictionary is the caller's own storage, written in place.
+            let text = if param.inout {
+                inouts.push((self.local_name(*local), ty.clone()));
+                self.ts_mutable(&ty)
+            } else {
+                self.ts_type(&ty)
+            };
+            let mut p = Frag::at(param.span, format!("{dots}{}: {text}", js_name(&param.name.name)));
             if let Some(default) = &param.default {
                 p.s(" = ").f(self.value_expr(default));
             }
             list.push(p);
+        }
+        if std::mem::take(&mut self.options_fn) && !list.is_empty() {
+            // `@jsOptions`: one object, destructured (`{ tab, isWeb = false }: { … }`).
+            let mut targets = Vec::new();
+            for (param, local) in f.params.iter().zip(&params) {
+                let label = param.label.as_ref().map_or(&param.name.name, |l| &l.name);
+                let name = js_name(&param.name.name);
+                let mut target = Frag::at(
+                    param.span,
+                    if *label == param.name.name { name } else { format!("{}: {name}", prop_key(label)) },
+                );
+                if let Some(default) = &param.default {
+                    target.s(" = ").f(self.value_expr(default));
+                }
+                let _ = local;
+                targets.push(target);
+            }
+            let fields = self.options_type(
+                f,
+                &params.iter().map(|l| self.ck.locals[*l].ty.clone()).collect::<Vec<_>>(),
+                false,
+            );
+            let every_optional = f.params.iter().all(|p| p.default.is_some());
+            let mut object = Frag::join(targets, ", ").wrap("{ ", " }");
+            object.s(&format!(": {fields}{}", if every_optional { " = {}" } else { "" }));
+            list = vec![object];
         }
         for witness in self.witness_params(f.span, &f.generics) {
             list.push(Frag::of(witness));
@@ -1337,23 +1547,63 @@ impl<'a> Emitter<'a> {
             .and_then(|r| self.ck.type_exprs.get(&r.span).cloned())
             .or_else(|| self.ck.fn_rets.get(&f.span).cloned())
             .unwrap_or(Ty::Unit);
-        let ret = self.ts_return(&ret_ty, f.is_async);
+        let ret = if inouts.is_empty() {
+            self.ts_return(&ret_ty, f.is_async)
+        } else {
+            let types: Vec<Ty> = inouts.iter().map(|(_, t)| t.clone()).collect();
+            self.inout_return_type(&ret_ty, &types)
+        };
+        let outer_inout = std::mem::replace(
+            &mut self.inout_ret,
+            (!inouts.is_empty())
+                .then(|| (inouts.iter().map(|(n, _)| n.clone()).collect(), ret_ty == Ty::Unit)),
+        );
         let generics = match self.arrow_generics.take() {
             Some(generics) if f.generics.is_empty() => generics,
             _ => self.shaped_generics(&f.generics, f.span),
         };
-        // A class's `init` (`T$$init`): makes `self`, runs, and returns it.
-        let body = if f.name.name.ends_with("$$init")
-            && !crate::extensions::demangle(&f.name.name)
-                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner))
-        {
-            let class = self.ts_type(&ret_ty);
-            let new = match &ret_ty {
-                Ty::Adt(def, _) => self.ck.defs[*def].name.clone(),
-                _ => class.clone(),
+        // An `init`: makes `self`, runs, and returns it. A class's `self` is the new object; a
+        // value type's starts as its fields' defaults (or unset, for an enum or a built-in type)
+        // and is set field by field or whole.
+        let body = if crate::extensions::is_init(&f.name.name) {
+            let made = match &ret_ty {
+                Ty::Option(inner) => (**inner).clone(),
+                other => other.clone(),
             };
-            self.bufs.push(vec![Frag::of(format!("const self: {class} = new {new}();"))]);
+            let text = self.ts_type(&made);
+            let start = match &made {
+                Ty::Adt(def, _) if self.ck.defs[*def].class.is_some() => {
+                    format!("const self: {text} = new {}();", self.ck.defs[*def].name)
+                }
+                Ty::Adt(def, _) if !self.ck.defs[*def].fields().is_empty() => {
+                    let fields = self.ck.defs[*def].fields().to_vec();
+                    let mut entries = Vec::new();
+                    for field in &fields {
+                        if self.may_be_absent(field) {
+                            continue;
+                        }
+                        let value = match &field.default {
+                            FieldDefault::Expr(id) => self.default_expr(*id),
+                            FieldDefault::Literal(text) => Some(Frag::of(text.clone())),
+                            FieldDefault::Undefined | FieldDefault::None => None,
+                        };
+                        if let Some(value) = value {
+                            entries.push(format!("{}: {}", prop_key(&field.name), value.text));
+                        }
+                    }
+                    let object = if entries.is_empty() {
+                        "{}".to_string()
+                    } else {
+                        format!("{{ {} }}", entries.join(", "))
+                    };
+                    format!("let self = {object} as {text};")
+                }
+                _ => format!("let self!: {text};"),
+            };
+            self.bufs.push(vec![Frag::of(start)]);
+            let outer = std::mem::replace(&mut self.in_init, true);
             self.stmts(&f.body.stmts, Tail::Discard, None);
+            self.in_init = outer;
             self.push_stmt(Frag::of("return self;"));
             let lines = self.bufs.pop().expect("the init's buffer");
             let mut out = Frag::of("{\n");
@@ -1369,9 +1619,26 @@ impl<'a> Emitter<'a> {
                     hook.depth = self.bufs.len() + 1;
                     self.hook_body(&f.body.stmts, tail)
                 }
+                // A function with `inout` parameters that gives `Unit` gives them back at its end.
+                None if self.inout_ret.as_ref().is_some_and(|(_, unit)| *unit) => {
+                    self.bufs.push(Vec::new());
+                    self.stmts(&f.body.stmts, tail, None);
+                    let mut back = Frag::of("return ");
+                    back.f(self.inout_result(None)).s(";");
+                    self.push_stmt(back);
+                    let lines = self.bufs.pop().expect("the function's buffer");
+                    let mut out = Frag::of("{\n");
+                    out.reserve_lines(&lines);
+                    for line in lines {
+                        out.f(line).s("\n");
+                    }
+                    out.s("}");
+                    out
+                }
                 None => self.block_body(&f.body.stmts, tail, None),
             }
         };
+        self.inout_ret = outer_inout;
         let mut out = Frag::at(f.span, "");
         match as_arrow {
             None => {
@@ -1474,7 +1741,9 @@ impl<'a> Emitter<'a> {
                 self.match_stmt(m, tail)
             }
             (_, Tail::Discard) => {
+                self.discarded = Some(expr.id);
                 let value = self.expr(expr);
+                self.discarded = None;
                 // `await ping()?` as a statement: the work is in the statements it pushed.
                 if value.text == "undefined" {
                     return;
@@ -1484,7 +1753,12 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             (_, Tail::Return) => {
-                let value = self.expr(expr);
+                let outer = std::mem::replace(&mut self.result_position, true);
+                let mut value = self.expr(expr);
+                self.result_position = outer;
+                if self.inout_ret.is_some() {
+                    value = self.inout_result(Some(value));
+                }
                 let mut line = Frag::at(expr.span, "return ");
                 line.f(value).s(";");
                 self.push_stmt(line);
@@ -1568,7 +1842,14 @@ impl<'a> Emitter<'a> {
             }
             StmtKind::Var(v) => {
                 let annotation = v.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
-                let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();
+                let owned = self.owned_local(v.name.span);
+                // An owned `var`'s own storage, written in place: TS's mutable array or record.
+                let annotation = match (owned, annotation) {
+                    (Some(local), _) => format!(": {}", self.ts_mutable(&self.ck.locals[local].ty.clone())),
+                    (None, annotation) => {
+                        annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default()
+                    }
+                };
                 let value = self.value_expr(&v.value);
                 let mut line =
                     Frag::at(stmt.span, format!("let {}{annotation} = ", self.bound_name(&v.name)));
@@ -1576,8 +1857,18 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             StmtKind::Assign(a) => self.assign(a, stmt.span),
+            // In an `init`: `return` gives `self`, an `init?`'s `return none` nothing.
+            StmtKind::Return(value) if self.in_init => self.push_stmt(Frag::at(
+                stmt.span,
+                if value.is_some() { "return undefined;" } else { "return self;" },
+            )),
             StmtKind::Return(value) => match value {
                 Some(value) => self.tail_expr(value, &Tail::Return),
+                None if self.inout_ret.is_some() => {
+                    let mut line = Frag::at(stmt.span, "return ");
+                    line.f(self.inout_result(None)).s(";");
+                    self.push_stmt(line);
+                }
                 None => self.push_stmt(Frag::at(stmt.span, "return;")),
             },
             StmtKind::While(w) => {
@@ -1687,18 +1978,15 @@ impl<'a> Emitter<'a> {
             [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
-                match &signal {
-                    // In a task, a throw once it is cancelled (an aborted request) is the
-                    // cancellation itself: the task stops, and no `catch` runs.
-                    Some(signal) => {
-                        line.s(&format!(" catch ({name}) {{\nif ({signal}.aborted) return;\n"))
-                            .f(body)
-                            .s("\n}");
-                    }
-                    None => {
-                        line.s(&format!(" catch ({name}) ")).f(body);
-                    }
+                // The caught value is Bloom's `Error`: TS's `Error` (a catch binding is TS's
+                // `unknown`), as a function that takes one declares it.
+                line.s(&format!(" catch ($error) {{\nconst {name} = $error as Error;\n"));
+                // In a task, a throw once it is cancelled (an aborted request) is the
+                // cancellation itself: the task stops, and no `catch` runs.
+                if let Some(signal) = &signal {
+                    line.s(&format!("if ({signal}.aborted) return;\n"));
                 }
+                line.f(body).s("\n}");
             }
             catches => {
                 line.s(" catch ($error) {\n");
@@ -1723,7 +2011,7 @@ impl<'a> Emitter<'a> {
                         let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                         match &cast {
                             Some(cast) => lines.push(format!("const {name} = {cast}($error)!;")),
-                            None => lines.push(format!("const {name} = $error;")),
+                            None => lines.push(format!("const {name} = $error as Error;")),
                         }
                     }
                     let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
@@ -1791,21 +2079,74 @@ impl<'a> Emitter<'a> {
     }
 
     fn assign(&mut self, a: &AssignStmt, span: Span) {
-        let Some(res) = self.ck.assigns.get(&a.span).cloned() else { return };
+        let (res, given) = match self.assign_override.take() {
+            Some((res, value)) => (res, Some(value)),
+            None => match self.ck.assigns.get(&a.span).cloned() {
+                Some(res) => (res, None),
+                None => return,
+            },
+        };
         let op = match a.op {
             AssignOp::Set => None,
             AssignOp::Add => Some("+"),
             AssignOp::Sub => Some("-"),
             AssignOp::Mul => Some("*"),
+            AssignOp::BitAnd => Some("&"),
+            AssignOp::BitOr => Some("|"),
+            AssignOp::BitXor => Some("^"),
+            AssignOp::Shl => Some("<<"),
+            AssignOp::Shr => Some(">>"),
         };
-        let mut value = self.expr(&a.value);
+        // `h ^= x`: through the 64-bit helper its operator is (`$bxor(h, x)`).
+        let bit_helper = a.op.binary().and_then(bit_helper);
+        if let Some(helper) = bit_helper {
+            self.helpers.insert(helper);
+        }
+        // `xs += ys` of an array: a new one, `[...xs, ...ys]` (a literal's items in place).
+        let list = op.is_some() && matches!(self.ck.types.get(&a.value.id), Some(Ty::List(_)));
+        let awaited = expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. });
+        let mut value = match &a.value.kind {
+            _ if given.is_some() => given.expect("the new value"),
+            ExprKind::List(items) if list && !awaited => {
+                let items: Vec<Frag> = items.iter().map(|item| self.expr(item)).collect();
+                Frag::join(items, ", ")
+            }
+            _ => self.expr(&a.value),
+        };
         // `state = await f(state)`: awaited before the update, which is not async.
-        if expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. }) {
+        if awaited {
             let temp = self.temp();
             let mut line = Frag::at(a.value.span, format!("const {temp} = "));
             line.f(value).s(";");
             self.push_stmt(line);
             value = Frag::of(temp);
+        }
+        // `xs += ys` on an owned `var` (`crate::cow`): appended in place.
+        let appended = list
+            && matches!(&res, AssignRes::Var { local, fields } if fields.is_empty() && self.cow.owned.contains(local));
+        let literal = !awaited && matches!(a.value.kind, ExprKind::List(_));
+        if appended {
+            let name = self.local_name(match &res {
+                AssignRes::Var { local, .. } => *local,
+                _ => unreachable!("an owned var"),
+            });
+            let line = if literal {
+                let mut line = Frag::at(span, format!("{name}.push("));
+                line.f(value).s(");");
+                line
+            } else {
+                self.helpers.insert("appendAll");
+                let mut line = Frag::at(span, format!("$appendAll({name}, "));
+                line.f(value).s(");");
+                line
+            };
+            self.push_stmt(line);
+            return;
+        }
+        if list && (awaited || !matches!(a.value.kind, ExprKind::List(_))) {
+            let mut out = Frag::of("...");
+            out.f(value);
+            value = out;
         }
         // `n += k` on an `Int`: a dev build traps a result outside ±(2^53 − 1), as `n + k` does.
         let int_check = self.options.dev
@@ -1825,6 +2166,16 @@ impl<'a> Emitter<'a> {
         }
         let combine = |current: Frag, value: Frag| -> Frag {
             match op {
+                Some(_) if list => {
+                    let mut out = Frag::of("[...");
+                    out.f(current).s(", ").f(value).s("]");
+                    out
+                }
+                Some(_) if bit_helper.is_some() => {
+                    let mut out = Frag::of(format!("${}(", bit_helper.unwrap_or_default()));
+                    out.f(current).s(", ").f(value).s(")");
+                    if int_check { out.wrap("$int(", ")") } else { out }
+                }
                 Some(op) => {
                     let mut out = current;
                     out.s(&format!(" {op} ")).f(value.wrap("(", ")"));
@@ -1834,6 +2185,31 @@ impl<'a> Emitter<'a> {
             }
         };
         match res {
+            // `next[keyPath: key] = v`: a copy with that field (a value type's write), typed as
+            // the value it replaces (TS widens a computed key).
+            AssignRes::KeyPath { local, state } => {
+                let ExprKind::KeyPathIndex(_, key) = &a.target.kind else { return };
+                let name = self.local_name(local);
+                let key_frag = self.expr(key);
+                // `next[keyPath: key] += v`: the field it replaces, combined (a state's from its
+                // updater's own argument, which has the state's name).
+                let mut current = Frag::of(name.clone());
+                current.s("[").f(self.expr(key)).s("]");
+                let value = combine(current, value);
+                let mut copy = Frag::of(format!("({{ ...{name}, ["));
+                copy.f(key_frag).s("]: ").f(value).s(&format!(" }} as typeof {name})"));
+                let line = if state {
+                    let setter = self.setter(local);
+                    let mut line = Frag::at(span, format!("{setter}(({name}) => "));
+                    line.f(copy).s(");");
+                    line
+                } else {
+                    let mut line = Frag::at(span, format!("{name} = "));
+                    line.f(copy).s(";");
+                    line
+                };
+                self.push_stmt(line);
+            }
             AssignRes::Bound { local } => {
                 let name = self.local_name(local);
                 let new = combine(Frag::of(format!("{name}[0]")), value);
@@ -1885,10 +2261,20 @@ impl<'a> Emitter<'a> {
                     current = path(&current, seg);
                 }
                 let leaf = combine(Frag::of(current), value);
+                // An owned `var`'s element (`crate::cow`): written in place, the levels below it
+                // rebuilt.
+                let in_place = model.is_none()
+                    && self.cow.owned.contains(&local)
+                    && matches!(segs.first(), Some(Seg::Index(..)));
                 // Rebuilt from the innermost segment out: a fresh object or list at each.
                 let (base, rest) = match model {
                     Some(_) => (path(&root, &segs[0]), &segs[1..]),
+                    None if in_place => (path(&root, &segs[0]), &segs[1..]),
                     None => (root.clone(), &segs[..]),
+                };
+                let written = match &segs[0] {
+                    Seg::Index(i, _) if in_place => format!("{root}[{i}]"),
+                    _ => base.clone(),
                 };
                 let mut bases = vec![base.clone()];
                 for seg in rest {
@@ -1925,7 +2311,7 @@ impl<'a> Emitter<'a> {
                         line
                     }
                     _ => {
-                        let mut line = Frag::at(span, format!("{base} = "));
+                        let mut line = Frag::at(span, format!("{written} = "));
                         line.f(built);
                         line
                     }
@@ -1933,6 +2319,7 @@ impl<'a> Emitter<'a> {
                 line.s(";");
                 self.push_stmt(line);
             }
+
             AssignRes::State { local, fields, functional } => {
                 let name = self.local_name(local);
                 let setter = self.setter(local);
@@ -2482,17 +2869,36 @@ impl<'a> Emitter<'a> {
             out.f(self.ts_element(expr));
             return out;
         }
+        // A function that does not await, given where an `async` one is expected: an `async`
+        // function of its arguments, so the caller gets a promise.
+        if self.ck.async_wraps.contains(&expr.id) {
+            let inner = self.expr_inner(expr);
+            out.s("(async (...$args) => (").f(inner).s(")(...$args))");
+            return out;
+        }
+        let result = self.result_position;
+        self.result_position = result && matches!(expr.kind, ExprKind::Paren(_) | ExprKind::Ternary(..));
         out.f(self.expr_inner(expr));
+        self.result_position = result;
+        // An owned `var`'s read that escapes, or the shared value one is set from: a copy, so a
+        // write in place is never seen through another name (`crate::cow`).
+        if self.cow.copies.contains(&expr.id) {
+            out = match self.ck.types.get(&expr.id) {
+                Some(Ty::Map(_)) => out.wrap("({ ...", " })"),
+                _ => out.wrap("[...", "]"),
+            };
+        }
         // A Bloom view where TS takes a React element.
         if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
             self.import_name(LANGUAGE, "toElement");
+            let nothing = if result { "null" } else { "undefined" };
             return match self.expr_ty(expr) {
                 // A function giving views where TS takes one giving elements (`renderCell`): each
                 // view it gives crosses (`none` stays `undefined`).
                 Ty::Fn(f) => {
                     if matches!(f.ret, Ty::Option(_)) {
                         Frag::of(format!(
-                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? undefined : toElement($v); }})",
+                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? null : toElement($v); }})",
                             out.text
                         ))
                     } else {
@@ -2502,17 +2908,19 @@ impl<'a> Emitter<'a> {
                         ))
                     }
                 }
-                // `meta: View?`: `none` stays `undefined` (`toElement(undefined)` is an element
-                // drawing nothing, which TS reads as present).
+                // `meta: View?`: `none` is `undefined`, as every optional crosses, never
+                // `toElement(undefined)` (an element drawing nothing, which TS reads as present): a
+                // prop left unset stays unset (`'k' in props`, a default prop). A function's result
+                // is `null`, which a render callback's `ReactElement | null` takes.
                 Ty::Option(_) if is_path_text(&out.text) => {
-                    Frag::of(format!("({0} == null ? undefined : toElement({0}))", out.text))
+                    Frag::of(format!("({0} == null ? {nothing} : toElement({0}))", out.text))
                 }
                 Ty::Option(_) => {
                     let name = self.temp();
                     let mut stmt = Frag::of(format!("const {name} = "));
                     stmt.f(out).s(";");
                     self.push_stmt(stmt);
-                    Frag::of(format!("({name} == null ? undefined : toElement({name}))"))
+                    Frag::of(format!("({name} == null ? {nothing} : toElement({name}))"))
                 }
                 _ => out.wrap("toElement(", ")"),
             };
@@ -2581,6 +2989,20 @@ impl<'a> Emitter<'a> {
 
     fn expr_inner(&mut self, expr: &Expr) -> Frag {
         match &expr.kind {
+            // `&xs`: an owned `var`'s own storage, which the function writes in place; any other
+            // place's array or dictionary as a copy, written back when the call returns.
+            ExprKind::InOut(place) => {
+                let value = self.expr(place);
+                let owned = matches!(
+                    (&place.kind, self.ck.names.get(&place.id)),
+                    (ExprKind::Name(_), Some(NameRes::Local(local))) if self.cow.owned.contains(local)
+                );
+                match self.ck.types.get(&place.id) {
+                    Some(Ty::List(_)) if !owned => value.wrap("[...", "]"),
+                    Some(Ty::Map(_)) if !owned => value.wrap("({ ...", " })"),
+                    _ => value,
+                }
+            }
             ExprKind::Error => Frag::of("undefined"),
             ExprKind::Int(v) => Frag::of(v.to_string()),
             ExprKind::Float(v) => {
@@ -2686,6 +3108,14 @@ impl<'a> Emitter<'a> {
                 let test: Vec<String> = ts.iter().map(|v| format!("{value} === {v}")).collect();
                 Frag::of(format!("({} ? {value} as {union} : undefined)", test.join(" || ")))
             }
+            // `err as? PollContractError` of a TS error class: the value when it is an instance.
+            ExprKind::CastAs(subject, ..)
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) =>
+            {
+                let class = class.to_string();
+                let value = self.path_or_temp(subject);
+                Frag::of(format!("({value} instanceof {class} ? {value} : undefined)"))
+            }
             ExprKind::CastAs(subject, ..) => {
                 let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
                 let mut value = self.expr(subject);
@@ -2700,6 +3130,9 @@ impl<'a> Emitter<'a> {
                 let value = self.operand(subject);
                 if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
                     self.aliases.insert(*narrowed, value.text.clone());
+                }
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) {
+                    return Frag::of(format!("({} instanceof {class})", value.text));
                 }
                 let test = match self.ck.is_tests.get(&expr.id) {
                     Some(Ty::Str) => "typeof {} === \"string\"",
@@ -2766,6 +3199,12 @@ impl<'a> Emitter<'a> {
                     })
                     .collect();
                 if entries.is_empty() { Frag::of("{}") } else { Frag::join(entries, ", ").wrap("{ ", " }") }
+            }
+            // `~x`: `-x - 1`, the 64-bit inversion, exact for every `Int` JS holds.
+            ExprKind::Unary(UnaryOp::BitNot, operand) => {
+                let mut out = Frag::of("(-");
+                out.f(self.operand(operand)).s(" - 1)");
+                out
             }
             ExprKind::Unary(op, operand) => {
                 let mut out = Frag::of(if *op == UnaryOp::Not { "!" } else { "-" });
@@ -2890,6 +3329,12 @@ impl<'a> Emitter<'a> {
                     out
                 }
             }
+            // `x[keyPath: key]`: a key path is its field's name, so the field is `x[key]`.
+            ExprKind::KeyPathIndex(object, key) => {
+                let mut out = self.operand(object);
+                out.s("[").f(self.expr(key)).s("]");
+                out
+            }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
                 let open = if self.guarded.contains(&object.id) { "?.[" } else { "[" };
@@ -2947,7 +3392,54 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// The items of one operand of an array `+`, in place.
+    fn concat_parts(&mut self, operand: &Expr, parts: &mut Vec<Frag>) {
+        match &operand.kind {
+            ExprKind::Paren(inner) => self.concat_parts(inner, parts),
+            ExprKind::List(items) => parts.extend(items.iter().map(|item| self.expr(item))),
+            ExprKind::Binary(BinaryOp::Add, lhs, rhs)
+                if matches!(self.ck.types.get(&operand.id), Some(Ty::List(_))) =>
+            {
+                self.concat_parts(lhs, parts);
+                self.concat_parts(rhs, parts);
+            }
+            _ => {
+                let mut out = Frag::of("...");
+                out.f(self.expr(operand));
+                parts.push(out);
+            }
+        }
+    }
+
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A tree of them (`(h &* p) & mask`, `a << 24 | b`): one BigInt expression, 64-bit
+        // throughout, so only the result has to be within ±(2^53 − 1).
+        if bit_helper(op).is_some() && [lhs, rhs].iter().any(|side| is_bit_tree(side)) {
+            let tree = self.bit_tree(expr);
+            let mut out = Frag::of("Number(BigInt.asIntN(64, ");
+            out.f(tree).s("))");
+            if self.options.dev {
+                self.helpers.insert("int");
+                return out.wrap("$int(", ")");
+            }
+            return out;
+        }
+        // `a & b`, `a << n`, `a &+ b`: 64-bit, through a helper (JS's own operators are 32-bit).
+        if let Some(helper) = bit_helper(op) {
+            self.helpers.insert(helper);
+            let (left, right) = (self.expr(lhs), self.expr(rhs));
+            let mut out = Frag::of(format!("${helper}("));
+            out.f(left).s(", ").f(right).s(")");
+            // A shift or a wrapping result may leave ±(2^53 − 1), where an `Int` is exact on JS:
+            // a dev build traps it, as `+` does.
+            if self.options.dev
+                && matches!(op, BinaryOp::Shl | BinaryOp::WrapAdd | BinaryOp::WrapSub | BinaryOp::WrapMul)
+            {
+                self.helpers.insert("int");
+                return out.wrap("$int(", ")");
+            }
+            return out;
+        }
         // An `Int` is 64-bit, exact on the JS backend within ±(2^53 − 1): a dev build traps a
         // `+`, `-` or `*` whose result leaves that range, as Swift traps an overflow.
         if self.options.dev
@@ -2961,6 +3453,16 @@ impl<'a> Emitter<'a> {
             self.int_checked = outer;
             self.helpers.insert("int");
             return inner.wrap("$int(", ")");
+        }
+        // `a + b` of two arrays (Swift's): a new one, `a`'s elements then `b`'s.
+        // A literal's items and a nested `+`'s operands go in place: `a + [x] + b` is
+        // `[...a, x, ...b]`.
+        if op == BinaryOp::Add && matches!(self.ck.types.get(&expr.id), Some(Ty::List(_))) {
+            let mut parts = Vec::new();
+            self.concat_parts(lhs, &mut parts);
+            self.concat_parts(rhs, &mut parts);
+            let list = Frag::join(parts, ", ").wrap("[", "]");
+            return if self.options.dev { list.wrap("Object.freeze(", ")") } else { list };
         }
         // `0...3` as a `ClosedRange`: its bounds.
         if op == BinaryOp::Closed && matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_))) {
@@ -3423,6 +3925,43 @@ impl<'a> Emitter<'a> {
 
     /// A closure; one that reads nothing of its view or function is a module constant.
     fn closure(&mut self, c: &Closure) -> Frag {
+        let outer_init = std::mem::replace(&mut self.in_init, false);
+        let outer_inout = self.inout_ret.take();
+        let out = self.closure_inner(c);
+        self.in_init = outer_init;
+        self.inout_ret = outer_inout;
+        out
+    }
+
+    /// What a function with `inout` parameters returns: `value` and the parameters' values.
+    fn inout_result(&self, value: Option<Frag>) -> Frag {
+        let Some((names, unit)) = &self.inout_ret else { return value.unwrap_or_default() };
+        if *unit && names.len() == 1 {
+            return Frag::of(names[0].clone());
+        }
+        let mut out = Frag::of("[");
+        if !*unit {
+            out.f(value.unwrap_or_else(|| Frag::of("undefined"))).s(", ");
+        }
+        out.s(&names.join(", ")).s("]");
+        out
+    }
+
+    /// The type a function with `inout` parameters returns (`inout_result`'s).
+    fn inout_return_type(&mut self, ret: &Ty, inouts: &[Ty]) -> String {
+        let types: Vec<String> = inouts.iter().map(|t| self.ts_mutable(t)).collect();
+        if *ret == Ty::Unit && types.len() == 1 {
+            return types[0].clone();
+        }
+        let mut all = Vec::new();
+        if *ret != Ty::Unit {
+            all.push(self.ts_type(ret));
+        }
+        all.extend(types);
+        format!("[{}]", all.join(", "))
+    }
+
+    fn closure_inner(&mut self, c: &Closure) -> Frag {
         let Some(info) = self.ck.closures.get(&c.span).cloned() else { return Frag::of("undefined") };
         if let Some(name) = self.hoisted_names.get(&c.span).cloned() {
             return Frag::of(name);
@@ -3498,7 +4037,9 @@ impl<'a> Emitter<'a> {
                 if !matches!(e.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
             {
                 self.bufs.push(Vec::new());
+                let outer = std::mem::replace(&mut self.result_position, true);
                 let value = self.expr(e);
+                self.result_position = outer;
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
                     // An object literal (also a `.setting(…)` spread) is not a block.
@@ -3586,6 +4127,198 @@ impl<'a> Emitter<'a> {
 
     // ---- calls --------------------------------------------------------------
 
+    /// Swift's mutating members (`CallRes::Mutating`). An owned `var` (`crate::cow`) is
+    /// changed in place; any other place (a `@State`, a struct's field, an element) gets a
+    /// changed copy, written back as an assignment to it is, and the member's result is taken
+    /// from a copy of its value before.
+    fn mutating(&mut self, expr: &Expr, call: &Call, recv: Recv, name: &'static str) -> Frag {
+        let ExprKind::Field(object, _) = &call.callee.kind else { return Frag::of("undefined") };
+        let Some(res) = self.ck.mutations.get(&expr.id).cloned() else { return Frag::of("undefined") };
+        let mut args: Vec<Frag> = self.args(call);
+        if let Some(trailing) = &call.trailing {
+            args.push(self.closure(trailing));
+        }
+        let unit = matches!(
+            name,
+            "append"
+                | "appendContentsOf"
+                | "insert"
+                | "removeFirstN"
+                | "removeLastN"
+                | "removeAll"
+                | "removeAllWhere"
+                | "swapAt"
+                | "sort"
+                | "sortBy"
+                | "reverse"
+        );
+        let owned = match &res {
+            AssignRes::Var { local, fields } if fields.is_empty() && self.cow.owned.contains(local) => {
+                Some(*local)
+            }
+            _ => None,
+        };
+        if let Some(local) = owned {
+            let place = Frag::of(self.local_name(local));
+            let out = self.mutate_in_place(recv, name, place, args);
+            // A member that gives nothing is `undefined` where its value is read (JS's `push`
+            // gives the length).
+            return if unit && self.discarded != Some(expr.id) && matches!(name, "append" | "reverse") {
+                out.wrap("void ", "")
+            } else {
+                out
+            };
+        }
+        // The arguments once, before the place is read (a literal, a name or a closure as is).
+        let simple: Vec<bool> = call
+            .args
+            .iter()
+            .map(|a| {
+                matches!(
+                    a.value.kind,
+                    ExprKind::Int(_)
+                        | ExprKind::Float(_)
+                        | ExprKind::Bool(_)
+                        | ExprKind::None
+                        | ExprKind::Name(_)
+                        | ExprKind::Closure(_)
+                )
+            })
+            .chain(call.trailing.iter().map(|_| true))
+            .collect();
+        let args: Vec<Frag> = args
+            .into_iter()
+            .zip(simple)
+            .map(|(arg, simple)| {
+                if simple || is_ident(&arg.text) {
+                    return arg;
+                }
+                let temp = self.temp();
+                let mut stmt = Frag::of(format!("const {temp} = "));
+                stmt.f(arg).s(";");
+                self.push_stmt(stmt);
+                Frag::of(temp)
+            })
+            .collect();
+        let copy = |place: Frag| -> Frag {
+            if recv == Recv::Map { place.wrap("{ ...", " }") } else { place.wrap("[...", "]") }
+        };
+        let result = if unit {
+            None
+        } else {
+            let before = self.expr(object);
+            let value = self.mutate_in_place(recv, name, copy(before), args.clone());
+            let temp = self.temp();
+            let mut stmt = Frag::of(format!("const {temp} = "));
+            stmt.f(value).s(";");
+            self.push_stmt(stmt);
+            Some(temp)
+        };
+        // The place's new value: a copy of it, changed.
+        self.helpers.insert("mutated");
+        let current = self.expr(object);
+        let changed = self.mutate_in_place(recv, name, Frag::of("$copy"), args);
+        let mut value = Frag::of("$mutated(");
+        value.f(current).s(", ($copy) => ").f(changed).s(")");
+        let target = AssignStmt {
+            target: (**object).clone(),
+            op: AssignOp::Set,
+            value: Expr { id: ExprId(u32::MAX), kind: ExprKind::Error, span: object.span },
+            span: expr.span,
+        };
+        self.assign_override = Some((res, value));
+        self.assign(&target, expr.span);
+        Frag::of(result.unwrap_or_else(|| "undefined".to_string()))
+    }
+
+    /// A mutating member on `place`, an array or a record nothing else holds: changed in place,
+    /// the member's result the expression's value.
+    fn mutate_in_place(&mut self, recv: Recv, name: &'static str, place: Frag, args: Vec<Frag>) -> Frag {
+        let method = |method: &str, place: Frag, args: Vec<Frag>| -> Frag {
+            let mut out = place;
+            out.s(&format!(".{method}")).f(Frag::join(args, ", ").wrap("(", ")"));
+            out
+        };
+        match (recv, name) {
+            (Recv::List, "append") => method("push", place, args),
+            (Recv::List, "popLast") => method("pop", place, args),
+            (Recv::List, "reverse") => method("reverse", place, args),
+            (_, name) => {
+                let helper = match (recv, name) {
+                    (Recv::List, "appendContentsOf") => "appendAll",
+                    (Recv::List, "insert") => "insertAt",
+                    (_, "removeAll") => "removeAll",
+                    (Recv::List, "removeAt") => "removeAt",
+                    (Recv::List, "removeFirst") => "removeFirst",
+                    (Recv::List, "removeLast") => "removeLast",
+                    (Recv::List, "removeFirstN") => "removeFirstN",
+                    (Recv::List, "removeLastN") => "removeLastN",
+                    (Recv::List, "removeAllWhere") => "removeAllWhere",
+                    (Recv::List, "swapAt") => "swapAt",
+                    (Recv::List, "sort") => "sortNatural",
+                    (Recv::List, "sortBy") => "sortBy",
+                    (Recv::Map, "removeValue") => "removeValue",
+                    _ => "updateValue",
+                };
+                self.helpers.insert(helper);
+                let mut values = vec![place];
+                values.extend(args);
+                let mut out = Frag::of(format!("${helper}("));
+                out.f(Frag::join(values, ", ")).s(")");
+                out
+            }
+        }
+    }
+
+    /// An `Int` bit-operation tree as one BigInt expression: its operators BigInt's, each
+    /// overflow operator wrapped to 64 bits, each other operand `BigInt(x)` (a literal `5n`).
+    fn bit_tree(&mut self, expr: &Expr) -> Frag {
+        let wrap = |inner: Frag| inner.wrap("BigInt.asIntN(64, ", ")");
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.bit_tree(inner),
+            ExprKind::Unary(UnaryOp::BitNot, inner) => {
+                let mut out = Frag::of("(~");
+                out.f(self.bit_tree(inner)).s(")");
+                out
+            }
+            ExprKind::Binary(op, lhs, rhs) if bit_helper(*op).is_some() => {
+                let left = self.bit_tree(lhs);
+                // A shift's count: Swift's smart shift, through `$bshl`/`$bshr` unless it is a
+                // literal in 0..<64.
+                if matches!(op, BinaryOp::Shl | BinaryOp::Shr) {
+                    if let ExprKind::Int(n) = rhs.kind
+                        && (0..64).contains(&n)
+                    {
+                        let mut out = Frag::of("(");
+                        out.f(left).s(&format!(" {} {n}n)", op.text()));
+                        return if *op == BinaryOp::Shl { wrap(out) } else { out };
+                    }
+                    let helper = if *op == BinaryOp::Shl { "bshl" } else { "bshr" };
+                    self.helpers.insert(helper);
+                    let mut out = Frag::of(format!("${helper}("));
+                    out.f(left).s(", ").f(self.expr(rhs)).s(")");
+                    return out;
+                }
+                let right = self.bit_tree(rhs);
+                let symbol = match op {
+                    BinaryOp::WrapAdd => "+",
+                    BinaryOp::WrapSub => "-",
+                    BinaryOp::WrapMul => "*",
+                    other => other.text(),
+                };
+                let mut out = Frag::of("(");
+                out.f(left).s(&format!(" {symbol} ")).f(right).s(")");
+                if matches!(op, BinaryOp::WrapAdd | BinaryOp::WrapSub | BinaryOp::WrapMul) {
+                    wrap(out)
+                } else {
+                    out
+                }
+            }
+            ExprKind::Int(n) => Frag::of(format!("{n}n")),
+            _ => self.expr(expr).wrap("BigInt(", ")"),
+        }
+    }
+
     fn args(&mut self, call: &Call) -> Vec<Frag> {
         call.args.iter().map(|a| self.expr(&a.value)).collect()
     }
@@ -3657,6 +4390,45 @@ impl<'a> Emitter<'a> {
     }
 
     fn call(&mut self, expr: &Expr, call: &Call) -> Frag {
+        let inout_args: Vec<&Expr> = match self.ck.calls.get(&expr.id) {
+            // In the parameters' order, which `inout_result` gives them back in.
+            Some(CallRes::Bloom { order, .. } | CallRes::Extension { order, .. }) => order
+                .iter()
+                .filter_map(|slot| slot.and_then(|i| call.args.get(i)))
+                .map(|a| &a.value)
+                .filter(|v| self.ck.inouts.contains_key(&v.id))
+                .collect(),
+            _ => call.args.iter().map(|a| &a.value).filter(|v| self.ck.inouts.contains_key(&v.id)).collect(),
+        };
+        if inout_args.is_empty() {
+            return self.call_inner(expr, call);
+        }
+        // `f(&xs)`: the call, then each place written back from what it gives.
+        let value = self.call_inner(expr, call);
+        let temp = self.temp();
+        let mut line = Frag::at(expr.span, format!("const {temp} = "));
+        line.f(value).s(";");
+        self.push_stmt(line);
+        let unit = matches!(self.ck.types.get(&expr.id), Some(Ty::Unit) | None);
+        let single = unit && inout_args.len() == 1;
+        for (k, arg) in inout_args.iter().enumerate() {
+            let ExprKind::InOut(place) = &arg.kind else { continue };
+            let back =
+                if single { temp.clone() } else { format!("{temp}[{}]", if unit { k } else { k + 1 }) };
+            let res = self.ck.inouts[&arg.id].clone();
+            let target = AssignStmt {
+                target: (**place).clone(),
+                op: AssignOp::Set,
+                value: Expr { id: ExprId(u32::MAX), kind: ExprKind::Error, span: place.span },
+                span: arg.span,
+            };
+            self.assign_override = Some((res, Frag::of(back)));
+            self.assign(&target, expr.span);
+        }
+        Frag::of(if unit { "undefined".to_string() } else { format!("{temp}[0]") })
+    }
+
+    fn call_inner(&mut self, expr: &Expr, call: &Call) -> Frag {
         if self.ck.unique_ids.contains(&expr.id) {
             self.import_name("react", "useId");
             return Frag::at(expr.span, "useId()");
@@ -3672,6 +4444,19 @@ impl<'a> Emitter<'a> {
             return out;
         };
         match res {
+            CallRes::Mutating { recv, name } => self.mutating(expr, call, recv, name),
+            // `Array(repeating: v, count: n)`: `v` once, in each of `n` slots.
+            CallRes::ArrayRepeating => {
+                let element = match self.ck.types.get(&expr.id).cloned() {
+                    Some(Ty::List(item)) => self.ts_type(&item),
+                    _ => "unknown".to_string(),
+                };
+                let value = self.expr(&call.args[0].value);
+                let count = self.expr(&call.args[1].value);
+                let mut out = Frag::of(format!("new Array<{element}>("));
+                out.f(count).s(").fill(").f(value).s(")");
+                out
+            }
             CallRes::New(def) => Frag::of(format!("new {}()", self.ck.defs[def].name)),
             CallRes::Spawn => {
                 let closure = call.trailing.as_deref().expect("`Task { … }`'s closure");
@@ -3717,6 +4502,31 @@ impl<'a> Emitter<'a> {
                 let mut out = Frag::of(func.to_string());
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 self.guarded_call(expr, guard, out)
+            }
+            CallRes::Bloom { order, rest } if matches!(self.expr_ty(&call.callee), Ty::Fn(ref f) if f.options) =>
+            {
+                // `@jsOptions`: the given arguments as one object, by their labels.
+                let Ty::Fn(fn_ty) = self.expr_ty(&call.callee) else { unreachable!("checked") };
+                let mut entries = Vec::new();
+                for (slot, param) in order.iter().zip(&fn_ty.params) {
+                    let Some(i) = slot else { continue };
+                    let value = if *i == call.args.len() {
+                        self.closure(call.trailing.as_ref().expect("a trailing closure"))
+                    } else {
+                        self.expr(&call.args[*i].value)
+                    };
+                    let mut entry = Frag::of(format!("{}: ", prop_key(param.name.as_deref().unwrap_or("_"))));
+                    entry.f(value);
+                    entries.push(entry);
+                }
+                let mut values = vec![Frag::join(entries, ", ").wrap("{ ", " }")];
+                if values[0].text == "{  }" {
+                    values[0] = Frag::of("{}");
+                }
+                self.push_witnesses(expr, &order, &rest, &mut values);
+                let mut out = self.operand(&call.callee);
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
+                out
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
@@ -4086,6 +4896,10 @@ impl<'a> Emitter<'a> {
                 self.helpers.insert(helper);
                 let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
                 value.wrap(&format!("${helper}("), ")")
+            }
+            CallRes::Convert { int } => {
+                let value = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
+                if int { value.wrap("Math.trunc(", ")") } else { value }
             }
             CallRes::Fail => {
                 // Where a value is needed (`c ? x : fail(e)`): a throw as an expression.
@@ -5160,9 +5974,10 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
-            expr_awaits(a) || expr_awaits(b)
-        }
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => expr_awaits(a) || expr_awaits(b),
         ExprKind::Ternary(a, b, c) => expr_awaits(a) || expr_awaits(b) || expr_awaits(c),
         ExprKind::Call(call) => expr_awaits(&call.callee) || call.args.iter().any(|a| expr_awaits(&a.value)),
         ExprKind::If(i) => {
@@ -5303,6 +6118,12 @@ impl<'a> Emitter<'a> {
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
             {
+                // Under a narrowed name (`item.draft.id` in the `else` of `if item.origin ==
+                // "server"`), the read is there only where the narrowing holds, and the cache's
+                // test runs before it: the name itself is the dependency.
+                if let Some(root) = self.narrowed_root(object) {
+                    return self.dep_path(root);
+                }
                 let dot =
                     if matches!(self.expr_ty(object), Ty::Foreign(_) | Ty::Option(_)) { "?." } else { "." };
                 self.dep_path(object).map(|p| format!("{p}{dot}{}", name.name))
@@ -5316,6 +6137,24 @@ impl<'a> Emitter<'a> {
                 self.dep_path(object).map(|p| format!("{p}?.{}", name.name))
             }
             ExprKind::Paren(inner) => self.dep_path(inner),
+            _ => None,
+        }
+    }
+
+    /// The narrowed name a member chain starts from (`item` in `item.draft`, narrowed by a tag
+    /// test): its reads are valid only where the narrowing holds. An optional's `!= none`
+    /// narrowing is left out (its reads are `?.` already).
+    fn narrowed_root<'e>(&self, expr: &'e Expr) -> Option<&'e Expr> {
+        match &expr.kind {
+            ExprKind::Field(object, _) | ExprKind::OptField(object, _) | ExprKind::Paren(object) => {
+                self.narrowed_root(object)
+            }
+            ExprKind::Name(_) => matches!(
+                self.ck.names.get(&expr.id),
+                Some(NameRes::Local(local)) if self.narrowed_from.contains_key(local)
+                    && !matches!(self.ck.locals[*self.narrowed_from.get(local).expect("checked")].ty, Ty::Option(_))
+            )
+            .then_some(expr),
             _ => None,
         }
     }
@@ -5373,7 +6212,10 @@ impl<'a> Emitter<'a> {
                 go(k);
                 go(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+            ExprKind::Binary(_, a, b)
+            | ExprKind::Index(a, b)
+            | ExprKind::OptIndex(a, b)
+            | ExprKind::KeyPathIndex(a, b) => {
                 go(a);
                 go(b);
             }
@@ -6588,7 +7430,9 @@ impl<'a> Emitter<'a> {
                             line.f(value);
                         } else {
                             line.s("() => ").f(
-                                if matches!(state.value.kind, ExprKind::Call(_))
+                                // An object literal as the arrow's body is parenthesised (`{`
+                                // would open a block): a call's, and a dictionary's (`[:]`).
+                                if matches!(state.value.kind, ExprKind::Call(_) | ExprKind::Map(_))
                                     && value.text.starts_with('{')
                                 {
                                     value.wrap("(", ")")
@@ -7008,6 +7852,15 @@ impl<'a> Emitter<'a> {
                         })
                         .collect();
                     let mut params = params;
+                    if fn_ty.options && !params.is_empty() {
+                        let types: Vec<Ty> = fn_ty.params.iter().map(|t| t.ty.clone()).collect();
+                        let every_optional = f.params.iter().all(|p| p.default.is_some());
+                        params = vec![format!(
+                            "options{}: {}",
+                            if every_optional { "?" } else { "" },
+                            self.options_type(f, &types, true)
+                        )];
+                    }
                     params.extend(self.witness_params(f.span, &f.generics));
                     let ret = self.ts_return(&fn_ty.ret, fn_ty.is_async);
                     let generics = self.shaped_generics(&f.generics, f.span);
@@ -7164,4 +8017,48 @@ fn mentions_param(ty: &Ty) -> bool {
         None
     });
     found
+}
+
+/// Whether TS type text binds tighter than a postfix `[]` or `[K]`: no union, intersection,
+/// function or conditional type at its top level, and no prefix operator (`readonly`, `keyof`,
+/// `typeof`). `(typeof NAMES)[number] | 'shop'` starts with a parenthesis and is still a union.
+fn ts_atomic(text: &str) -> bool {
+    let text = text.trim();
+    if ["readonly ", "keyof ", "typeof ", "unique ", "infer ", "new ", "asserts "]
+        .iter()
+        .any(|prefix| text.starts_with(prefix))
+    {
+        return false;
+    }
+    let bytes = text.as_bytes();
+    let mut depth = 0i32;
+    let mut quote: Option<u8> = None;
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if let Some(q) = quote {
+            if c == b'\\' {
+                i += 1;
+            } else if c == q {
+                quote = None;
+            }
+        } else {
+            match c {
+                b'\'' | b'"' | b'`' => quote = Some(c),
+                b'(' | b'[' | b'{' | b'<' => depth += 1,
+                b')' | b']' | b'}' => depth -= 1,
+                // `=>` is not a closing angle bracket.
+                b'>' if i > 0 && bytes[i - 1] == b'=' => {
+                    if depth == 0 {
+                        return false;
+                    }
+                }
+                b'>' => depth -= 1,
+                b'|' | b'&' | b'?' if depth == 0 => return false,
+                _ => {}
+            }
+        }
+        i += 1;
+    }
+    true
 }

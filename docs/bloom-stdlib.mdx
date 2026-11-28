@@ -194,11 +194,21 @@ Stops the program: a state the code holds impossible was reached.
 Bloom (math): constants and functions over `Double` and `Int`.
 
 `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
-(`rounded()`, `clamped(…)`, …) are the compiler's; these complete them.
+(`rounded()`, `clamped(…)`, …) are the compiler's; these complete them, with Foundation's
+names and meaning. Each is the same double on every backend, and the reference is V8's own
+algorithms, what `Math` computes in node (not fdlibm as such, and not JSC's, so a reference
+is never taken from bun): V8's `cbrt` (not StrictMath's), FreeBSD msun's `log2` and `tanh`,
+`exp(1)` exactly `E`, and V8's Kahan-summed `hypot`. Kotlin runs ports of that code on the JVM
+(crates/native's math-conformance gate: 520,676 calls, no difference; `pow` and `exp2` within
+1 ulp), and Swift ports the same code, never Darwin's libm.
 
 ### `func sqrt(_ x: Double) -> Double`
 
 The square root of `x`.
+
+### `func cbrt(_ x: Double) -> Double`
+
+The cube root of `x` (negative for a negative `x`, unlike `pow(x, 1.0 / 3.0)`).
 
 ### `func pow(_ x: Double, _ y: Double) -> Double`
 
@@ -232,6 +242,18 @@ The cosine of `x` (radians).
 
 The tangent of `x` (radians).
 
+### `func asin(_ x: Double) -> Double`
+
+The arc sine of `x` (radians, in -π/2...π/2; NaN outside -1...1).
+
+### `func acos(_ x: Double) -> Double`
+
+The arc cosine of `x` (radians, in 0...π; NaN outside -1...1).
+
+### `func atan(_ x: Double) -> Double`
+
+The arc tangent of `x` (radians, in -π/2...π/2).
+
 ### `func atan2(_ y: Double, _ x: Double) -> Double`
 
 The angle of the point (`x`, `y`) from the x axis (radians).
@@ -240,8 +262,53 @@ The angle of the point (`x`, `y`) from the x axis (radians).
 
 The length of the vector (`a`, `b`).
 
+### `func sinh(_ x: Double) -> Double`
+
+The hyperbolic sine of `x`.
+
+### `func cosh(_ x: Double) -> Double`
+
+The hyperbolic cosine of `x`.
+
+### `func tanh(_ x: Double) -> Double`
+
+The hyperbolic tangent of `x`.
+
+### `func asinh(_ x: Double) -> Double`
+
+The inverse hyperbolic sine of `x`.
+
+### `func acosh(_ x: Double) -> Double`
+
+The inverse hyperbolic cosine of `x` (NaN below 1).
+
+### `func atanh(_ x: Double) -> Double`
+
+The inverse hyperbolic tangent of `x` (NaN outside -1...1).
+
+### `func exp2(_ x: Double) -> Double`
+
+2 to the power `x`.
+
+### `func expm1(_ x: Double) -> Double`
+
+`exp(x) - 1`, exact for an `x` near 0.
+
+### `func log1p(_ x: Double) -> Double`
+
+`log(1 + x)`, exact for an `x` near 0.
+
+### `func trunc(_ x: Double) -> Double`
+
+`x` without its fraction, toward zero (`trunc(-2.7)` is `-2.0`).
+
+### `func fmod(_ x: Double, _ y: Double) -> Double`
+
+The remainder of `x / y` with `x`'s sign (C's `fmod`, Swift's `truncatingRemainder`).
+
 ### `extension Double`
 
+- `func truncatingRemainder(dividingBy other: Double) -> Double`: The remainder of dividing by `other`, with this value's sign (Swift's `%` on `Double`).
 - `static let pi: Double`: π.
 - `static let e: Double`: Euler's number.
 - `static let infinity: Double`: Positive infinity (JS's `Infinity`): greater than every finite value.
@@ -322,6 +389,24 @@ A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
 - `case defaultDigits`
 - `case twoDigits`
 
+### `enum AMPMStyle`
+
+Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`), in a locale whose clock has one: a 24-hour locale's hour has none.
+
+- `case omitted`: No AM/PM: "6", in the locale's clock.
+- `case narrow`: The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+- `case abbreviated`: The AM/PM: "6 PM".
+- `case wide`: The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+
+### `struct HourStyle: Equatable`
+
+How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM. The hour is in the locale's clock, as Swift's is ("6 PM" in English, "18" in Spanish); a style's `.locale(_:)` with an `HourCycle` chooses another.
+
+- `static func defaultDigits(amPM: AMPMStyle) -> HourStyle`: "6 PM", or "18" in a 24-hour locale ("6" with `.omitted`).
+- `static func twoDigits(amPM: AMPMStyle) -> HourStyle`: "06 PM", or "18" in a 24-hour locale ("06" with `.omitted`).
+- `static var defaultDigitsNoAMPM: HourStyle`: "6", or "18" in a 24-hour locale: no AM/PM.
+- `static var twoDigitsNoAMPM: HourStyle`: "06", or "18" in a 24-hour locale: no AM/PM.
+
 ### `enum MonthStyle`
 
 How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
@@ -352,9 +437,10 @@ How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.a
 - `func month(_ style: MonthStyle = .abbreviated) -> DateFormat`: The month, "Nov" by default.
 - `func day(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The day of the month: "26".
 - `func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat`: The weekday, "Thu" by default.
-- `func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The hour, in the locale's clock: "6 PM".
+- `func hour(_ style: HourStyle? = none) -> DateFormat`: The hour, in the locale's clock ("6 PM", "18"); `.defaultDigits(amPM:)` and `.twoDigits(amPM:)` choose its digits and whether it shows its AM/PM.
 - `func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The minute: "30".
 - `func second(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The second: "05".
+- `func locale(_ locale: Locale) -> DateFormat`: Written for `locale` (Swift's `Date.FormatStyle.locale(_:)`), over `formatted`'s `locale:`; its hour cycle, if it has one, is the clock: `.locale(Locale(identifier: "en").hourCycle(.zeroToTwentyThree))` is "18:30".
 
 ### `struct DateComponents: Equatable`
 
@@ -821,6 +907,10 @@ A `bloom build` answers `expo-video` with a shim over this module (crates/bloomc
 API, so an app's call sites need no edits. Underneath is androidx media3 (ExoPlayer), the
 library expo-video ships, without Expo's module core.
 
+### `final class VideoPlayer`
+
+A player of one video, AVPlayer's shape: the app makes it, holds it in a `@State`, hands it to `Video(player:)` and drives it.
+
 ## Splash
 
 Bloom (app): the launch splash, held until the app's first screen is ready.
@@ -1079,9 +1169,19 @@ A catalog maps keys to strings, or to plural forms by CLDR category:
 
 ### `struct Locale: Equatable`
 
-A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
+A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it, and the clock its times are written in: the language's own (`none`), or an `HourCycle`.
 
 - `let identifier: String`
+- `let hourCycle: HourCycle?`
+
+### `enum HourCycle`
+
+The hours of a clock (Swift's `Locale.HourCycle`; Intl's `hourCycle`): `.oneToTwelve` is "6:30 PM" in every language, `.zeroToTwentyThree` "18:30".
+
+- `case zeroToEleven`: 0 to 11, with the AM/PM (Intl's `h11`).
+- `case oneToTwelve`: 1 to 12, with the AM/PM (Intl's `h12`).
+- `case zeroToTwentyThree`: 0 to 23 (Intl's `h23`).
+- `case oneToTwentyFour`: 1 to 24 (Intl's `h24`).
 
 ### `extension Locale`
 

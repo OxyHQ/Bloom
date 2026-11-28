@@ -1,0 +1,14 @@
+public func f(_ ys: [Int]) -> [Int] {
+  let xs = ys
+  xs.append(1)
+  ys.removeAll()
+  [1, 2].reverse()
+  return xs
+}
+
+public func g(_ xs: [String]) {
+  var ys = xs
+  ys.sort()
+  var pairs: [(Int, Int)] = []
+  pairs.sort()
+}

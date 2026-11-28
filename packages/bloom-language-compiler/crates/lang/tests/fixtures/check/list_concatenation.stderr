@@ -1,0 +1,15 @@
+error[B0201]: expected `Int`, found `String`
+ --> check/list_concatenation.bloom:2:47
+  |
+2 | public func mixed(_ a: [Int]) -> [Int] { a + ["x"] }
+  |                                               ^^^ this is `String`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `[Int]`, found `Int`
+ --> check/list_concatenation.bloom:3:48
+  |
+3 | public func element(_ a: [Int]) -> [Int] { a + 1 }
+  |                                                ^ this is `Int`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

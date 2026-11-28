@@ -1,0 +1,45 @@
+// A key path's value has the field's type, and it writes a `var` or a `@State`, never a `let`.
+// Only a `WritableKeyPath` (of a stored `var`) writes; a `KeyPath`, or a `let`'s, reads.
+public struct Prefs {
+  var hideLikes: Bool = false
+  var name: String = ""
+  let id: Int = 0
+}
+
+public func wrongValue(_ p: Prefs) -> Prefs {
+  var next = p
+  next[keyPath: \Prefs.name] = true
+  return next
+}
+
+public func immutable(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Bool {
+  p[keyPath: key] = false
+  return p[keyPath: key]
+}
+
+public func readOnly(_ p: Prefs, _ key: KeyPath<Prefs, Bool>) -> Prefs {
+  var next = p
+  next[keyPath: key] = true
+  return next
+}
+
+public func letField(_ p: Prefs) -> Prefs {
+  var next = p
+  next[keyPath: \Prefs.id] = 3
+  next.id = 4
+  return next
+}
+
+public func notWritable(_ p: Prefs) -> Prefs { setTo(p, \Prefs.id) }
+
+func setTo(_ p: Prefs, _ key: WritableKeyPath<Prefs, Int>) -> Prefs {
+  var next = p
+  next[keyPath: key] += 1
+  return next
+}
+
+public func textPlus(_ p: Prefs) -> Prefs {
+  var next = p
+  next[keyPath: \Prefs.hideLikes] += true
+  return next
+}

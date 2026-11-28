@@ -3415,7 +3415,7 @@ And every universal modifier.
 
 ### `video`
 
-- `Video(player: VideoViewProps['player'])`: Bloom `VideoView`: the picture of `player` (the app's own expo-video player).
+- `Video(source: VideoViewProps['player'] | VideoModel | UrlLike, poster?: UrlLike)`: Bloom `VideoView`: the picture of `source`, which is the app's own expo-video player, a Bloom `VideoPlayer` (`Video(player:)`), or a URL whose player the view builds and owns (`Video(url:poster:)`), drawn from the pool's decoders.
 
 Imported from `@oxy.so/bloom-language/video-view`.
 
@@ -3424,6 +3424,12 @@ Modifiers:
 - [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: ContentFit)`: How the picture fills its box: `contain` by default.
 - [`.nativeControls()`](bloom-language-modifiers.mdx#nativecontrols) `(value: boolean)`: The platform's playback controls over it.
 - [`.allowsPictureInPicture()`](bloom-language-modifiers.mdx#allowspictureinpicture) `(value: boolean)`: Whether it can float in picture in picture.
+- [`.poster()`](bloom-language-modifiers.mdx#poster) `(url: UrlLike)`: The image drawn until the video's first frame (Bloom's `VideoPlayer` and `Video(url)`).
+- [`.videoGravity()`](bloom-language-modifiers.mdx#videogravity) `(value: 'fill' | 'fit')`: AVKit's gravity: `fill` covers the box (cropped), `fit` shows the whole picture.
+- [`.controls()`](bloom-language-modifiers.mdx#controls) `(value: 'hidden' | 'automatic')`: The platform's playback controls: `automatic` shows them, `hidden` does not.
+- [`.muted()`](bloom-language-modifiers.mdx#muted) `(value?: boolean)`: Plays without sound (a `Video(url)`'s own player).
+- [`.loops()`](bloom-language-modifiers.mdx#loops) `(value?: boolean)`: Starts again when it ends (a `Video(url)`'s own player).
+- [`.autoplay()`](bloom-language-modifiers.mdx#autoplay) `(value?: boolean)` (here: a value (optional)): Plays while it is on screen and pauses off it, the one audible video at a time.
 
 And every universal modifier.
 

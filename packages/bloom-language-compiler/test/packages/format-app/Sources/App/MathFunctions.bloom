@@ -1,0 +1,13 @@
+// Foundation's math, public in `Bloom.Math`: each the same double on every backend.
+
+public func cubeRoots(_ xs: [Double]) -> [Double] { xs.map { cbrt($0) } }
+
+public func angles(_ y: Double, _ x: Double) -> [Double] { [atan(y / x), atan2(y, x), asin(0.5), acos(0.5)] }
+
+public func hyperbolic(_ x: Double) -> [Double] {
+  [sinh(x), cosh(x), tanh(x), asinh(x), acosh(x + 1.0), atanh(x / 2.0)]
+}
+
+public func nearZero(_ x: Double) -> [Double] { [exp2(x), expm1(x), log1p(x), trunc(-x * 10.0)] }
+
+public func remainders(_ x: Double, _ y: Double) -> [Double] { [fmod(x, y), x.truncatingRemainder(dividingBy: y)] }

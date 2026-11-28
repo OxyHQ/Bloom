@@ -1,0 +1,20 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
+
+export function shouldFeedOwnProfileScroll({ tab, isWeb, isPrivate = false }: { readonly tab: string; readonly isWeb: boolean; readonly isPrivate?: boolean }): boolean {
+return ((!isWeb) && (!isPrivate)) && (tab !== "media");
+}
+
+export function greeting({ for: name, loud = false }: { readonly for: string; readonly loud?: boolean }): string {
+return loud ? `HI ${name}` : `hi ${name}`;
+}
+
+export function pageSize({ compact = false }: { readonly compact?: boolean } = {}): number {
+return compact ? 10 : 20;
+}
+
+export function uses(): boolean {
+const a = shouldFeedOwnProfileScroll({ tab: "posts", isWeb: false });
+const b = greeting({ for: "Ada", loud: true });
+return a && ($characterCount(b) > (pageSize({}) + pageSize({ compact: true })));
+}
+

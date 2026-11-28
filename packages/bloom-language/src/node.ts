@@ -1082,6 +1082,12 @@ export interface ValueModifiers {
   // Video playback (controls/video-playback.tsx)
   autoplay: boolean;
 
+  // Videos (controls/video-view.tsx)
+  poster: string | { readonly absoluteString: string };
+  videoGravity: 'fill' | 'fit';
+  controls: 'hidden' | 'automatic';
+  loops: boolean;
+
   // Activity heatmaps (controls/activity-heatmap.tsx)
   colorScale: readonly ColorToken[];
   // Phone inputs (controls/phone-input.tsx)
@@ -4149,8 +4155,22 @@ export class Node {
   }
 
   // Video playback (controls/video-playback.tsx)
-  autoplay(value: boolean): Node {
+  autoplay(value = true): Node {
     return this.set('autoplay', value);
+  }
+
+  // Videos (controls/video-view.tsx)
+  poster(value: string | { readonly absoluteString: string }): Node {
+    return this.set('poster', value);
+  }
+  videoGravity(value: 'fill' | 'fit'): Node {
+    return this.set('videoGravity', value);
+  }
+  controls(value: 'hidden' | 'automatic'): Node {
+    return this.set('controls', value);
+  }
+  loops(value = true): Node {
+    return this.set('loops', value);
   }
 
   // Activity heatmaps (controls/activity-heatmap.tsx)

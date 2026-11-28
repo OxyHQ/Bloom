@@ -72,6 +72,15 @@ export const ChoiceList = 'ChoiceList';
 export const VideoPlaybackProvider = 'VideoPlaybackProvider';
 export const VideoViewabilityProvider = 'VideoViewabilityProvider';
 export const VideoViewabilityScope = 'VideoViewabilityScope';
+/** `useVideoPlayback`: nothing elected in a test (no provider, no viewport). */
+export const useVideoPlayback = () => ({
+  shouldPlay: false,
+  canLoad: true,
+  claimActive: () => {},
+  reportVisibility: () => {},
+});
+/** expo-video's module: none in a test (the video pool takes `provideVideoPlayers`). */
+export const loadExpoVideo = () => null;
 export const HoverCard = 'HoverCard';
 export const HoverCardTrigger = 'HoverCardTrigger';
 export const HoverCardContent = 'HoverCardContent';

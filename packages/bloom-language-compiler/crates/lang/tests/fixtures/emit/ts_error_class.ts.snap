@@ -1,0 +1,21 @@
+import { PollClosedError, PollContractError, vote } from "@/poll";
+
+export async function record(id: string): Promise<string> {
+try {
+await (vote(id));
+return "ok";
+} catch ($error) {
+const err = $error as Error;
+{
+if ((err instanceof PollClosedError)) {
+return "closed";
+}
+const $t0 = (err instanceof PollContractError ? err : undefined);
+if ($t0 != null) {
+return ($t0.code satisfies string);
+}
+return ((err instanceof PollContractError)) ? "not understood" : "failed";
+}
+}
+}
+

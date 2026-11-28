@@ -34,6 +34,17 @@ It writes `report.md` and `report.generated.json` (what converted, and why the r
 
 Then typecheck the app and format it with its Biome: the codemod prints with recast and does not format.
 
+### Moving to the 2.x entries
+
+`@oxy.so/bloom-language` 2.0.0 gave each family of nodes an entry of its own, and the root exports only the language. `Row` and `Card` now come from `/containers`, `TextField` and `Search` from `/inputs`, `VirtualList` from `/list`, and `Dialog` from `/overlays`. That way an app's bundle carries only the families it imports. A TS file that imports a family's name from the root gets TS's `has no exported member` error, and at run time the name is `undefined`. To move every such import to the entry that exports it now, run:
+
+```bash
+npx bloom-language-codemod imports .           # list what moves
+npx bloom-language-codemod imports . --write   # rewrite the imports in place
+```
+
+The language's `package.json#exports` is the source of truth. It covers values and types, and keeps aliases, `type` imports and default imports. A name already imported from its entry is left as it is, and so is a name no entry exports, so a second run changes nothing. It reads `.ts` and `.tsx` files, skipping `node_modules`. On Mention it moved 352 names in 139 files.
+
 ## The proof
 
 Every converted region can be rendered before and after through Bloom's parity harness, native and web, light and dark (`--fixtures`, then the parity suites). The proof runs from a Bloom checkout; see [the codemod's guide](https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-codemod.mdx).

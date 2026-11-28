@@ -1,0 +1,23 @@
+// `@jsOptions`: a function migrated from a TS options-object signature keeps that ABI. Bloom
+// calls it with labels; TS calls it with one object (`shouldFeedOwnProfileScroll({ tab, isWeb })`),
+// a defaulted parameter an optional field (Mention's Profile/types).
+@jsOptions
+public func shouldFeedOwnProfileScroll(tab: String, isWeb: Bool, isPrivate: Bool = false) -> Bool {
+  !isWeb && !isPrivate && tab != "media"
+}
+
+/// A label that is not the body's name: the field is the label.
+@jsOptions
+public func greeting(for name: String, loud: Bool = false) -> String {
+  loud ? "HI \(name)" : "hi \(name)"
+}
+
+/// Every field optional: the object may be left out in TS.
+@jsOptions
+public func pageSize(compact: Bool = false) -> Int { compact ? 10 : 20 }
+
+public func uses() -> Bool {
+  let a = shouldFeedOwnProfileScroll(tab: "posts", isWeb: false)
+  let b = greeting(for: "Ada", loud: true)
+  return a && b.count > pageSize() + pageSize(compact: true)
+}

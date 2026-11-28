@@ -531,3 +531,178 @@ func same(_ a: Session, _ b: Session?) -> Bool {
           (binary_expression
             (identifier)
             (identifier)))))))
+
+====================
+Operator functions
+====================
+
+let a = xs.reduce(0, +)
+let b = xs.sorted(by: <)
+let c: (Int, Int) -> Int = (+)
+let d = f(-x)
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (value_arguments
+        (value_argument
+          (integer_literal))
+        (value_argument
+          (operator_function)))))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (value_arguments
+        (value_argument
+          (identifier)
+          (operator_function)))))
+  (property_declaration
+    (identifier)
+    (function_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))
+    (parenthesized_expression
+      (operator_function)))
+  (property_declaration
+    (identifier)
+    (call_expression
+      (identifier)
+      (value_arguments
+        (value_argument
+          (prefix_expression
+            (identifier)))))))
+
+====================
+Optional tuple members
+====================
+
+let a = p?.c?.0
+let b = c?.1 ?? 0
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (navigation_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (integer_literal)))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (navigation_expression
+        (identifier)
+        (integer_literal))
+      (integer_literal))))
+
+====================
+Key path subscripts
+====================
+
+func f(p: P, k: WritableKeyPath<P, Bool>) -> P {
+  var next = p
+  next[keyPath: k] = !p[keyPath: k]
+  return next
+}
+
+---
+
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)
+          (type_arguments
+            (user_type
+              (type_identifier))
+            (user_type
+              (type_identifier))))))
+    (user_type
+      (type_identifier))
+    (block
+      (var_declaration
+        (identifier)
+        (identifier))
+      (assignment
+        (subscript_expression
+          (identifier)
+          (identifier)
+          (identifier))
+        (prefix_expression
+          (subscript_expression
+            (identifier)
+            (identifier)
+            (identifier))))
+      (return_statement
+        (identifier)))))
+
+==================================================
+Int bit and overflow operators
+==================================================
+
+let argb = a << 24 | r << 16 | b & 255
+let h = ~x &+ y &* 3 ^ z >> 1
+let g: Array<Array<Int>> = []
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (prefix_expression
+          (identifier))
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (user_type
+      (type_identifier)
+      (type_arguments
+        (user_type
+          (type_identifier)
+          (type_arguments
+            (user_type
+              (type_identifier))))))
+    (array_literal)))

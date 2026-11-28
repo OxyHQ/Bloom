@@ -1,0 +1,49 @@
+// Members, key paths and operator functions: a tuple's member and optional chaining to it,
+// `if let x` and `guard let x else`, `\.k` and `\T.k`, `x[keyPath: k]` read and written, and an
+// operator as a function. `bloom check` passes on it.
+public struct Account {
+  var name: String = ""
+  var visits: Int = 0
+}
+
+public func members(_ pair: (Int, String), _ maybe: (Int, String)?, _ user: Account?) -> Int {
+  let first = pair.0
+  let second = maybe?.1 ?? ""
+  let name = user?.name ?? second
+  if let user {
+    return user.visits + first
+  }
+  guard let maybe else { return name.count }
+  return maybe.0
+}
+
+public func operators(_ xs: [Int]) -> [Int] {
+  let total = xs.reduce(0, +)
+  let add: (Int, Int) -> Int = (+)
+  return xs.sorted(by: >) + [total, add(1, 2)]
+}
+
+public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>) -> [Account] {
+  let read: KeyPath<Account, String> = \Account.name
+  var next = accounts[0].with(\.visits, 1)
+  next[keyPath: key] = next[keyPath: key] + accounts.count
+  next[keyPath: key] += 1
+  return [next, Account(name: next[keyPath: read])]
+}
+
+public struct Reading {
+  let value: Double
+  public init?(text: String) {
+    guard let v = Double(text) else { return none }
+    self.value = v
+  }
+}
+
+func fill(_ grid: inout [Int], with v: Int) {
+  grid.append(v)
+}
+
+func packed(_ a: Int, _ b: Int) -> Int {
+  let argb = a << 24 | b &+ 1
+  return ~argb
+}

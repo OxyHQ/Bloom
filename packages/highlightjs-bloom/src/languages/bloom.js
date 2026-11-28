@@ -46,6 +46,7 @@ export default function bloom(hljs) {
       'import',
       'in',
       'init',
+      'inout',
       'internal',
       'is',
       'layout',
@@ -223,18 +224,25 @@ export default function bloom(hljs) {
   };
   const MACRO = { scope: 'meta', match: /#[A-Za-z_][A-Za-z0-9_]*/ };
   const KEY_PATH = {
-    // `\.likes`, `\Post.title`.
-    match: [/\\/, /(?:[A-Z][A-Za-z0-9_]*)?\.[A-Za-z_][A-Za-z0-9_]*/],
-    scope: { 1: 'operator', 2: 'property' },
+    variants: [
+      // `\Post.title`, `\Post.author.name`: its root is a type.
+      {
+        match: [/\\/, TYPE_NAME, /(?:\.[A-Za-z_][A-Za-z0-9_]*)+/],
+        scope: { 1: 'operator', 2: 'type', 3: 'property' },
+      },
+      // `\.likes`, `\.author.name`.
+      { match: [/\\/, /(?:\.[A-Za-z_][A-Za-z0-9_]*)+/], scope: { 1: 'operator', 2: 'property' } },
+    ],
   };
   const CLOSURE_ARGUMENT = { scope: 'variable.language', match: /\$[0-9]+\b/ };
   const BINDING = { scope: 'variable', match: /\$[A-Za-z_][A-Za-z0-9_]*/ };
   const IMPLICIT_MEMBER = {
     // An enum case or token where a value is expected: `= .loading`, `.padding(.md)`,
-    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`.
+    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`; never the
+    // member of `user?.name`, whose `?` against a value chains.
     scope: 'symbol',
     match:
-      /(?<=(?:[=(,:?[!]|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_][A-Za-z0-9_]*/,
+      /(?<=(?:[=(,:[!]|(?<![\w)\]!])\?|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_][A-Za-z0-9_]*/,
   };
   const TYPE = { scope: 'type', match: /\b[A-Z][A-Za-z0-9_]*\b/, relevance: 0 };
   const CALL = {
@@ -248,7 +256,8 @@ export default function bloom(hljs) {
   };
   const OPERATOR = {
     scope: 'operator',
-    match: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=]/,
+    match:
+      /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|<<=?|>>=?|&[+\-*]|[&|^]=|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=^~]/,
     relevance: 0,
   };
 

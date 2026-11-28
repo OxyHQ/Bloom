@@ -624,6 +624,30 @@ describe('interop', () => {
     });
   });
 
+  it('an image of a ratio with no width or height takes the width its column offers', () => {
+    // SwiftUI's: `VStack(alignment: .leading) { Image(…).aspectRatio(16 / 9) }` is as wide as the stack.
+    const r = mount(toElement(VStack(Image('a.jpg').aspectRatio(16 / 9)).align('start')));
+    expect(hosts(r, 'BloomImage')[0]?.props.style).toEqual({
+      aspectRatio: 16 / 9,
+      alignSelf: 'stretch',
+    });
+    // A width, a height or a placement of its own, or a row, keeps it as it is.
+    const sized = mount(toElement(VStack(Image('a.jpg').frame({ width: 'xl' }).aspectRatio(2))));
+    expect(hosts(sized, 'BloomImage')[0]?.props.style).toEqual({
+      width: tokens.space.xl,
+      aspectRatio: 2,
+    });
+    const placed = mount(toElement(VStack(Image('a.jpg').aspectRatio(2).alignSelf('center'))));
+    expect(hosts(placed, 'BloomImage')[0]?.props.style).toEqual({
+      aspectRatio: 2,
+      alignSelf: 'center',
+    });
+    const row = mount(toElement(HStack(Image('a.jpg').aspectRatio(2))));
+    expect(hosts(row, 'BloomImage')[0]?.props.style).toEqual({ aspectRatio: 2 });
+    const pressable = mount(toElement(VStack(Image('a.jpg').aspectRatio(2).onPress(jest.fn()))));
+    expect(hosts(pressable, 'Pressable')[0]?.props.style).toEqual({ alignSelf: 'stretch' });
+  });
+
   it('an image tint paints tintColor from a colour role', () => {
     const r = mount(toElement(Image(1).tint('primary').frame({ width: 'xl', height: 'xl' })));
     expect(hosts(r, 'BloomImage')[0]?.props).toMatchObject({

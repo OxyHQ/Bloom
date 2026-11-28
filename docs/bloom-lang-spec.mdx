@@ -147,7 +147,8 @@ base_type     = TYPE_NAME [ "<" type { "," type } ">" ]
 
 expr          = if_expr | match_expr | closure | binary ;
 if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
-cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
+cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing
+              | "let" IDENT ;                       (* `if let x`: `if let x = x` *)
 match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
                 (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit;
                    an arm may also be one statement: case .ok(_) => draft = Draft() *)
@@ -159,14 +160,18 @@ closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] }
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
                                                       await f()? is (await f())? *)
-postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | "[" expr "]" | "?" } ;
+postfix       = primary { call | "." ( NAME | INT ) | "?." ( NAME | INT ) | "?." "(" [ args ] ")"
+                        | "[" expr "]" | "[" "keyPath" ":" expr "]" | "?" } ;
+                                     (* `t.0`, `t?.0`: a tuple's member; `x[keyPath: k]` *)
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
-arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; a struct spread, or a
-                                                   list spread into a rest parameter *)
+arg           = [ IDENT ":" ] ( expr | opfn ) | ".." expr ;  (* named argument; a struct spread,
+                                                   or a list spread into a rest parameter *)
+opfn          = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=" ;
+                                    (* an operator function, directly before "," or ")" *)
 primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
-              | "(" expr ")" | "(" expr "," expr { "," expr } ")"
+              | "(" expr ")" | "(" opfn ")" | "(" expr "," expr { "," expr } ")"
               | "[" [ item { "," item } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
 
 item          = expr | ".." expr ;                  (* `[..a, b]`: a list's items in place *)
@@ -251,7 +256,8 @@ is the render's, as a `let`'s is; only its reads narrow, so `x = none` and `$x` 
 state's, `$x` a binding of the narrowed type): `if onEnd != none {
 onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
-p.x : d`, `p == none ? d : p.x`); and after a guard
+p.x : d`, `p == none ? d : p.x`); in the `else` of an `if` whose test fails only when it is
+present (`if x == none || x.isEmpty { … } else { use(x) }`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
 block. A test in parentheses narrows as one without (`(p.x != none) ? p.x : d`). Values are immutable, so a member chain of such a name narrows the same way
 (`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
@@ -300,6 +306,9 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
   integer literal outside it is B0105, `Int(s)` of text outside it is `none`, and a dev build
   traps an `Int` `+`, `-` or `*` (and `+=`, `-=`, `*=`) whose result leaves it (`$int`, a
   `RangeError`), as Swift traps an overflow; a release build does not check.
+- `a + b` of two arrays of one element type is a new array, `a`'s elements then `b`'s (Swift's),
+  and `xs += ys` is `xs = xs + ys`. The JS backend writes a spread with a literal's items in
+  place: `["first"] + a + ["last"]` is `["first", ...a, "last"]`, `xs += [x]` is `xs = [...xs, x]`.
 - An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
   programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
   `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
@@ -329,8 +338,30 @@ it merges `{ ...defaults, ...options }`. The record literal `{ ..p, likes: false
 copy-and-change: a key written after the spread replaces the spread's field (JS's
 `{ ...p, likes: false }`, Rust's struct update), only a key written twice is B0208, and when the
 first entry spreads a struct and every key written is one of its fields, the literal is that
-struct, each key checked against its field's type, with or without an expected type. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
-exhaustive `match` on a fieldless enum maps a key to a field.
+struct, each key checked against its field's type, with or without an expected type.
+
+A stored `let` is set once, when the struct is made (Swift's): `next.id = 4` is B0403 outside the
+struct's own `init`, in a `var` copy too; a new value is a new struct, `Prefs(..next, id: 4)`.
+
+**Initializers** (Swift's): a struct's `init(…)` sets `self`, field by field (`self.celsius =
+v`, or `celsius = v`) or whole (`self = Temperature(…)`), starting from the fields' defaults. It
+returns nothing: `return` ends it, and the call gives `self`. Every stored field without a
+default (an optional `var` starts as `none`) is set on every path before it returns, and none,
+nor `self` itself, is read before it is set: B0405, Swift's definite initialization. `init?(…)`
+is failable: it gives `T?`, and `return none` fails it. Inits are told apart by their labels
+(`Temperature(fahrenheit:)`, `Temperature(reading:)`). A struct whose own body declares an `init`
+has no memberwise one, so `Temperature(celsius: 1)` is B0207, while an `init` in an
+`extension` keeps it. An enum's `init` sets `self` to a case (`self = .large`), and a built-in
+type's sets it whole. In TS an init is a function, `Temperature$$init$fahrenheit(98.6)`.
+
+**Key paths** (Swift's) name a struct's field as a value: `\.hideLikes` (its root from what is
+expected) or `\Prefs.hideLikes`. The key path of a stored `var` is a `WritableKeyPath<Prefs, Bool>`,
+Swift's subtype of `KeyPath<Prefs, Bool>`, which fits wherever a `KeyPath` is expected; a `let`'s
+(and a class's field's) is a `KeyPath`, which reads only. `p[keyPath: key]` reads the field, and
+`next[keyPath: key] = v` (or `+=`, as on any place) on a `var` or a `@State` writes a copy with it
+(value semantics) through a `WritableKeyPath`; through a `KeyPath` it is B0403. In TS a key path is its field's name, of the
+type `$KeyPath<Prefs, boolean>` (the keys whose value is a `boolean`): the read is `p[key]` and the
+write `next = { ...next, [key]: v }`.
 
 **`@Transparent` structs** (Rust's `#[repr(transparent)]`, a Swift tagged type):
 
@@ -487,7 +518,12 @@ a string, a `String`), and the emitter writes `(insets.top satisfies number)`; s
 an `Int` (`2 * Math.PI` is a `Float`), negated (`-event.translationY`), or compared with a number or
 a string (`item.pokeCount > 1`, checked as a `number`; two TS values compare as TS compares them). So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
-of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
+of string literals (`['a', 'b'] as const`, declared or inferred) is a list of their union,
+`[("a" | "b")]`, and its element type `(typeof C)[number]` is that union. A TS union of literals and
+`number`/`string`/`boolean` kept as it is (`width: Foreign<"number | '100%'">?`) narrows by `==` on
+its literals as TS narrows it: where `width == "100%"` fails it is the other members (`Float?`), so
+`.frame(width: width == "100%" ? "full" : width)` takes each branch (a frame's side, Swift's
+`frame(width: CGFloat?)`, may be `none`). `f || b`
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
@@ -503,7 +539,10 @@ returns says nothing of its data; a binding module gives it a generic signature
 (`public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>` with `queryFn: () async
 -> T`), and `T` is then the `queryFn` closure's result. A TS
 class that extends nothing (`ViewModifier`) is a value
-and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
+and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`. So is an
+error class, one whose base's name ends in `Error` (`class PollContractError extends Error`), never
+a component: `err is PollContractError` and `err as? PollContractError` of a caught error or a TS
+value are JS's `instanceof` (Swift's `e is C`).
 
 `x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
 can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its
@@ -562,6 +601,10 @@ callback alias types a closure's parameters: with `presentSheet(render: SurfaceR
 `SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
 surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
 one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
+Bloom struct fits one at the TS boundary only (`normalizedHandle(card)` with `user:
+UserHandleInput`) when each of its required fields is a stored field of the struct of a fitting
+type and, for an all-optional TS type, one field is in common (TS's weak types; a
+`@Transparent` struct and a class do not fit this way, and Bloom to Bloom stays nominal), a
 `Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
 `AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
 `JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
@@ -653,8 +696,24 @@ A `class` is a reference type: a TS class with its stored properties as fields (
 written without a type takes its literal's), `init` (lowered to `T$$init`, which makes `self`
 and returns it; without one, `T()` is `new T()`), and members lowered as a struct's. A `let`
 property is assigned only in `init` (B0403); a `private(set)` or `private` one only in the
-class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`,
-also on a `var`'s list) rebuilds the path with fresh objects, so values stay values.
+class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`)
+rebuilds the path with fresh objects, so values stay values.
+
+**Arrays and dictionaries are values, written in place (copy-on-write, Swift's).** A local `var`
+holding a `[T]` or a `[String: V]` that is written in place (an element `xs[i] = v`, `table[k] = v`,
+`xs[i] += 1`; a mutating member `xs.append(v)`; `xs += ys`; or passed as `&xs`) owns its storage,
+and on TypeScript each such write is one JS write, O(1): n writes take O(n). The `var` is copied
+only where its storage could be shared: when it is set from a value another name may hold
+(`var xs = ys`, `xs = f()`; not from a literal, `Array(repeating:count:)`, `map`, `filter` or
+another fresh result), and where it escapes (`let b = xs`, an argument, a field, a literal's
+element, a closure's result). Reading it keeps it in place: `xs[i]`, `xs.count`, a standard
+library member's receiver, `for x in xs` (copied first when the loop writes `xs`), `==`, `+`, and
+the function's own `return xs`. A write is never seen through another name: `let before = xs;
+xs[0] = 9` leaves `before` as it was. Only the top level is the `var`'s own: `grid[i][j] = v`
+writes `grid[i]` in place with a rebuilt row, so a row read earlier (`let row = grid[i]`) keeps
+its value. A closure that captures the `var` shares it, as Swift's capture does. Any other place
+(a `@State`, a struct's field, a class's field) is written with a changed copy. Kotlin and Swift
+have value semantics of their own.
 
 `@Observable` makes the class a store with field-level subscriptions and no proxies: writes go
 through `$set(field, value)` (a write of the same value notifies nobody), and bloomc computes at
@@ -705,6 +764,17 @@ props, never a rest parameter.
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
 in any order after the positional ones.
 
+**`inout` (Swift's).** `func fill(_ xs: inout [Int], with v: Int) { xs[0] = v }` takes a place,
+written `&xs` at the call (`fill(&grid, with: 1)`, `swap(&a, &b)`, `bump(&bag.count)`); the
+function's parameter is its `var`, and the place is written back when it returns. The place is
+a `var`, a `@State`, or a field or element of one, of exactly the parameter's type (B0201); a
+`let` is B0403; an `inout` parameter given no `&`, or `&` anywhere else, is B0406 (with the fix),
+and so is `inout` in an `async` function. An array or dictionary passed from a `var` is that
+`var`'s own storage, written in place (copy-on-write, above); from any other place, a copy. On
+TypeScript the function gives the parameters back after its result: `xs` (a `Unit` function with
+one), `[a, b]` (with several), `[result, xs]` (with a result), which the call assigns to each
+place.
+
 **2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
 unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
 is called `move(p, to: q)`. A positional argument where a label is due is B0207 ("missing
@@ -717,9 +787,13 @@ fitting, or two fitting equally, is B0207 with the overloads listed. Two with th
 B0217 (overloads differ by labels, not by types), and so is an overloaded name read without a call
 (B0202). Each overload is emitted named by its labels (`describe$0$count`,
 `Double$formatted$0$digits`); a name declared once keeps its name. A directory module's files share
-one namespace, so a function's overloads are declared in one file (B0807 otherwise). A closure without
+one namespace, so a function's overloads are declared in one file (B0807 otherwise). That is a
+current limit, not the design: Swift takes a name's overloads from anywhere in its module. A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
-outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
+outside a closure). An arithmetic or comparison operator passed as a function is that closure
+(Swift's operator functions): `xs.reduce(0, +)`, `xs.sorted(by: >)`, and `(+)` in parentheses
+anywhere a value goes (`let add: (Int, Int) -> Int = (+)`); it is typed by the function type
+expected there, and is `{ $0 + $1 }` to every backend. A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
 `private` (the file), plus `private(set)` for who assigns; a `public` declaration that names an
 `internal` or `private` type of its file is B0108. `import Bloom` and `import Mention.Posts` name
@@ -736,9 +810,10 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | Level | Operators | Assoc. |
 |---|---|---|
 | postfix | call, `.x`, `?.x`, `[i]`, `?`, `!` (no space before it) | left |
-| prefix | `!` `-` `await` | right |
-| multiplicative | `*` `/` `%` | left |
-| additive | `+` `-` (`+` also joins `String`s) | left |
+| prefix | `!` `-` `~` `await` (`&x` passes an `inout` argument) | right |
+| shift | `<<` `>>` | left |
+| multiplicative | `*` `/` `%` `&` `&*` | left |
+| additive | `+` `-` `\|` `^` `&+` `&-` (`+` also joins `String`s) | left |
 | range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
 | equality | `==` `!=` `===` `!==` | none |
@@ -746,6 +821,13 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | or | `\|\|` | left |
 | default | `??` | right |
 | conditional | `c ? a : b` | right |
+
+**`Int`'s bit and overflow operators (Swift's).** `a & b`, `a | b`, `a ^ b`, `~a`, `a << n` and `a >> n`, the wrapping `a &+ b`, `a &- b` and `a &* b`, and the compound `&=`, `|=`, `^=`, `<<=` and `>>=` all take `Int`s and give an `Int`. They use 64-bit two's complement semantics on every backend. Shifts are Swift's smart shifts: a negative count shifts the other way, and a count of 64 or more shifts every bit out (`>>` of a negative gives `-1`). Precedence is Swift's too: shifts bind above multiplication, `&` and `&*` sit with `*`, and `|`, `^`, `&+` and `&-` sit with `+`. `&+` needs spaces around it, because `f(&x)` is an `inout` argument.
+
+**The TS cost:** an `Int` is a JS number there, exact within ±(2^53 − 1).
+- A lone `a & b`, `a | b` or `a ^ b` of two 32-bit values is JS's own operator, and so is a `>>`. Anything else goes through BigInt.
+- A tree of these operators (`(h &* 16777619) & 0xffffffff`, `a << 24 | r << 16`) is one BigInt expression, 64-bit at every step. Only the result has to be within ±(2^53 − 1): a dev build traps outside that range, as `+` does, and a release build rounds.
+- So a 32-bit hash or an ARGB colour is exact on TS, and a full 64-bit hash value is not. Kotlin's `Long` and Swift's `Int` are 64-bit natively.
 
 `if`/`else` and `match` are expressions; every branch has the same type (an `if` without
 `else` in a builder yields an optional child).
@@ -783,9 +865,13 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   fallthrough; `case .a, .b:` matches either, `case let .x(v)` and `.x(let v)` bind (a Bloom
   pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
   rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
-- `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
-  `return`, `throw`, `break`, `continue` or `fatalError(…)` (B0110), and what the condition binds
-  is in scope after it. It compiles to `if (!(cond)) { … }`.
+- `guard cond else { … }` and `guard let x = optional else { … }` (Swift 5.7's `guard let x else
+  { … }` and `if let x { … }` unwrap the name into itself): the block must leave with
+  `return`, `throw`, `break`, `continue`, a call that returns `Never` (`fatal(…)`, Swift's
+  `fatalError`) or a `do` whose body and every `catch` leave (B0110), and what the condition binds
+  is in scope after it. The same ends a path anywhere a value is expected: a function or closure
+  whose last statement is one, or a `do`/`catch` whose body and catches each end with one, needs
+  no value after it. It compiles to `if (!(cond)) { … }`.
 - An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
 - Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
   call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
@@ -804,13 +890,18 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   plain `raw as Tab`, at no cost, as `x!` is. `as!` to anything else, and a cast of a
   non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
-  `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
+  `try?`, `try!`; one `try` or `try!` covers the whole expression to its right: `try g(a) + h(b)`,
+  `try ok() ? a() : b()`), or it is B0223. A `try?` does too (Swift's reading): `try? f() ?? x` is
+  `try? (f() ?? x)`, so of an `f()` that is never `none` the `??` never falls back, which is
+  B0225 (a warning) with `(try? f()) ?? x` as its fix. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
   **A function type keeps its effects** (Swift's): `(String) throws -> Int` and
   `() async throws -> T` are types of their own. A call of a value of a throwing type is a
-  throwing call (`try f(s)`); a function that does not throw fits a throwing type, and one that
+  throwing call (`try f(s)`); a function that does not await fits an `async` type (`let one: ()
+async -> Int = { 1 }`, `run(count)`; the emit gives it as an `async` function, so the caller
+still gets a promise), a function that does not throw fits a throwing type, and one that
   throws where a non-throwing one is expected is B0201 (a TS callback may throw: JS has no checked
   errors). A closure whose `try` or `throw` nothing in it catches is throwing where a throwing
   type, or none, is expected (`let load = { try parse(s) }` is called `try load()`). The standard
@@ -1308,6 +1399,14 @@ so a wrong path is a compile error.
   PostItemContent`, and a private view it names is declared beside it, unexported. A view's
   `T?` prop and a function's `T?` parameter are declared `T | undefined | null`: TS's `null`
   is `none` to Bloom, so a TS caller may pass either.
+- **`@jsOptions` functions:** a function migrated from a TS options-object signature keeps that
+  ABI for its TS callers. `@jsOptions func shouldScroll(tab: Tab, isWeb: Bool = false)` is
+  called with labels in Bloom, as any function (`shouldScroll(tab: t)`), and is emitted taking one
+  object of its labels, `shouldScroll({ tab, isWeb = false }: { readonly tab: Tab; readonly
+  isWeb?: boolean })`. A defaulted parameter is an optional field, and when every one is, the
+  object may be left out. The label is the field, so a parameter labelled `_` and a rest
+  parameter are B0106, and so is a type's member. Without the attribute a function's TS
+  parameters are positional. Natively (Swift, Kotlin) it is a function of labelled parameters.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
@@ -1354,12 +1453,14 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 |---|---|
 | `String` | `count` (user-perceived characters, Swift's: `"👍🏽".count` is 1 on every backend; `s.utf16.count` is JS's `length`, 4), `isEmpty`, `slice(a, b)` (in characters), `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?`. Every offset and length of a string API is in characters, as `count` is: `firstIndex(of:)`, `lastIndex(of:)`, `prefix`/`suffix`/`dropFirst`/`dropLast`, `paddingStart(to:)`/`paddingEnd(to:)` and a regex match's `start`/`end`, so one read off one API indexes another. `s.utf16` (Swift's `UTF16View`, the string itself at run time) has JS's units: `count`, `slice(a, b)`, `prefix`/`suffix`, `firstIndex(of:)`/`lastIndex(of:)`, `paddingStart`/`paddingEnd`, for what counts UTF-16 units (a server's length limit). The TS backend counts with `characterCount` (`@oxy.so/bloom-language`: `Intl.Segmenter`, or UAX #29's rules where the engine has none, as Hermes; a string with nothing at or past U+0300 is counted without segmenting) |
 | `Int`/`Float` | `Double.infinity`, `Double.nan` (JS's `Infinity`, `NaN`), `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `formatted(digits:locale:)` (Intl, localized), `formatted(fractionDigits: 0...3, locale:)` (Intl: at least 0, at most 3 decimals, JS's `toLocaleString()`), `formatted(currency: "USD", locale:)` (Intl's currency style), `formatted(fractionDigits: n)` (JS's `toFixed(n)`: exactly `n` decimals, never localized, `"3.14"`); a range `a...b` where a `ClosedRange` is expected is that value, `{ lowerBound, upperBound }`, and an implicit member chain (`.dateTime.month(.abbreviated).day()` where a `DateFormat` is expected) starts from that type's static member, as Swift's does |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
-| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`; on a `var` (or any place: a `@State`, a field), Swift's mutating members, written in place (section 4.9, copy-on-write): `append(x)`, `append(contentsOf: ys)`, `insert(x, at: i)`, `remove(at: i) -> T`, `removeFirst() -> T`, `removeLast() -> T`, `removeFirst(k)`, `removeLast(k)`, `popLast() -> T?`, `removeAll()`, `removeAll(where:)`, `swapAt(i, j)`, `sort()`, `sort(by:)`, `reverse()` (an index out of range traps); `Array(repeating: v, count: n)` (`v` once, in each slot); `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)`; on a `var`, `table[k] = v` and the mutating `removeValue(forKey: k) -> V?`, `updateValue(v, forKey: k) -> V?`, `removeAll()`, written in place |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
-| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; of a number, Swift's conversions: `Int(x)` truncates toward zero, `Double(n)`/`Float(n)` is the number (`Double(a) / Double(b)` divides exactly); `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
+| math (`Bloom.Math`) | `sqrt`, `cbrt`, `pow`, `exp`, `exp2`, `expm1`, `log`, `log2`, `log10`, `log1p`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `hypot`, `trunc`, `fmod`, `Double.truncatingRemainder(dividingBy:)`. **The cross-backend contract:** each gives V8's double (what `Math` computes in node, never JSC's: a reference comes from node, not bun). That is V8's own algorithms, not fdlibm as such: V8's `cbrt` (not the JVM's `StrictMath.cbrt`), FreeBSD msun's `log2` and `tanh`, `exp(1)` exactly `E`, and V8's Kahan-summed `hypot`. Kotlin runs ports of that code (`crates/native/scripts/math-conformance.sh`: 520,676 calls, no difference; `pow` and `exp2` within 1 ulp), and Swift ports the same code, not Darwin's libm |
+| video (`Bloom.Video`) | AVKit's shape. `@Observable final class VideoPlayer`: `init(url: URL)`, `isMuted`, `loops`, `play()`, `pause()`, `seek(to: seconds)`, read-only `currentTime`, `duration` and `isPlaying`. `Video(player: p)` draws a player and `Video(url: u, poster: q)` builds and owns one; both are the language's `video` node, with `.poster(url)`, `.videoGravity(.fill \| .fit)`, `.controls(.hidden \| .automatic)`, and `.muted()`, `.loops()` and `.autoplay()` (play while visible, the one audible video at a time; pause off screen). The runtime pools the decoders: one decodes at a time by default (`setVideoDecoders(n)` on TS). A player that starts takes the decoder from the one before, which pauses and keeps its position. On TS the players are expo-video's (the `@oxy.so/bloom-language/video-view` entry); a `bloom build` plays them with media3 on Android |
 | tasks | `Task.signal`, `Task.cancellation`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
 | data (BloomData) | `@Model` stores, `@Query`, `Source`, `Realtime`, and `Mutation.make(name, optimistic:) { … }` with `run(input)`, an optimistic change (named as Services' `run`; `Action` is BloomUI's action-bar node) |
@@ -1396,7 +1497,8 @@ help: did you mean `"md"`?
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
-`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0231 (a
+`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0225 (a warning: a `??`
+the `try?` before it covers, which never falls back), B0231 (a
 requirement of a conformance not met), B0232 (a type argument or `any P` value that does not
 conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async

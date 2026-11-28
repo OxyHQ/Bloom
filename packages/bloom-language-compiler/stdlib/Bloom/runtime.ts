@@ -190,6 +190,18 @@ export const acos = Math.acos;
 export const atan = Math.atan;
 export const atan2 = Math.atan2;
 export const hypot = (a: number, b: number): number => Math.hypot(a, b);
+export const sinh = Math.sinh;
+export const cosh = Math.cosh;
+export const tanh = Math.tanh;
+export const asinh = Math.asinh;
+export const acosh = Math.acosh;
+export const atanh = Math.atanh;
+export const exp2 = (x: number): number => 2 ** x;
+export const expm1 = Math.expm1;
+export const log1p = Math.log1p;
+export const trunc = Math.trunc;
+/** C's `fmod`: JS's `%` on numbers is exactly it (the result has `x`'s sign). */
+export const fmod = (x: number, y: number): number => x % y;
 export const random = Math.random;
 export const isFiniteNumber = (n: number): boolean => Number.isFinite(n);
 export const isNaNNumber = (n: number): boolean => Number.isNaN(n);
@@ -262,16 +274,35 @@ export function formatDate(
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
 }
 
-/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+/**
+ * `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`).
+ * An hour is in the locale's clock, as Swift's is. Three keys are the standard library's: `locale`
+ * (a style's `.locale(_:)`, over `locale`), `hourCycle` (its clock: Intl's `h11`, `h12`, `h23` or
+ * `h24`), and `amPM: 'omitted'`, which drops the day period from the text (Swift's `amPM: .omitted`).
+ */
 export function formatDateFields(
   ms: number,
   locale: string,
   options: Readonly<Record<string, string>>,
   timeZone: string,
 ): string {
-  const all: Intl.DateTimeFormatOptions = { ...options };
+  const { amPM, hourCycle, locale: styleLocale, ...fields } = options;
+  const all: Intl.DateTimeFormatOptions = { ...fields };
+  if (hourCycle) all.hourCycle = hourCycle as Intl.DateTimeFormatOptions['hourCycle'];
   if (timeZone) all.timeZone = timeZone;
-  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
+  const format = new Intl.DateTimeFormat(styleLocale || locale || undefined, all);
+  if (amPM !== 'omitted') return format.format(ms);
+  // The parts without the day period, and the space that set it apart.
+  const parts = format.formatToParts(ms);
+  const kept = parts.filter((part, i) => {
+    if (part.type === 'dayPeriod') return false;
+    if (part.type !== 'literal' || part.value.trim() !== '') return true;
+    return parts[i + 1]?.type !== 'dayPeriod' && parts[i - 1]?.type !== 'dayPeriod';
+  });
+  return kept
+    .map((part) => part.value)
+    .join('')
+    .trim();
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {

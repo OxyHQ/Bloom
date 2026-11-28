@@ -1,0 +1,34 @@
+import { Embed, inlineView } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { AccountAvatar, normalizedHandle, placeholderColor } from "@/handles";
+
+export interface Hue {
+  readonly hue: number;
+}
+
+export interface ProfileCardData {
+  readonly id: string;
+  readonly username?: string | undefined;
+  readonly avatar?: string | undefined;
+  readonly color?: Hue | undefined;
+  readonly bio: string;
+}
+
+export function handle(card: ProfileCardData): string {
+return normalizedHandle(card) ?? "";
+}
+
+export function color(card: ProfileCardData): string {
+return placeholderColor(card);
+}
+
+export interface ProfileAvatarProps {
+  readonly card: ProfileCardData;
+}
+export const ProfileAvatar = inlineView(function ProfileAvatar(props: ProfileAvatarProps) {
+"use no memo";
+const { card } = props;
+return Embed($jsx(AccountAvatar, { account: card, size: 40 } satisfies ComponentProps<typeof AccountAvatar>));
+});
+

@@ -22,6 +22,11 @@ const f = require('./packages/format-app/Sources/App/FormatStyle.bloom') as {
   relative: (d: D, now: D) => string;
   numericDate: (d: D, locale: string) => string;
   numericDateTime: (d: D, locale: string) => string;
+  clockAMPM: (d: D, locale: string) => string;
+  clock12: (d: D, locale: string) => string;
+  clock24: (d: D, locale: string) => string;
+  hourOnly: (d: D, locale: string) => string;
+  hourNoAMPM: (d: D, locale: string) => string;
 };
 
 const LOCALES = ['en', 'es', 'ja', 'ar'];
@@ -68,6 +73,28 @@ describe.each(LOCALES)('%s', (locale) => {
     expect(f.clock(date, locale)).toBe(
       at.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }),
     );
+    // `.hour(.twoDigits(amPM: .abbreviated))`: the locale's clock, as Swift's (Intl with no
+    // `hour12`), with its AM/PM where that clock has one.
+    expect(f.clockAMPM(date, locale)).toBe(
+      at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
+    );
+    // A style's `.locale(_:)` with an `HourCycle`: that clock, Intl's `hourCycle`.
+    expect(f.clock12(date, locale)).toBe(
+      at.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h12',
+        timeZone: 'UTC',
+      }),
+    );
+    expect(f.clock24(date, locale)).toBe(
+      at.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+        timeZone: 'UTC',
+      }),
+    );
     expect(f.styled(date, locale)).toBe(
       at.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }),
     );
@@ -98,4 +125,16 @@ it("writes DateStyle.numeric as Swift does: the full year, not Intl's short styl
   expect(f.numericDate(date, 'en-US')).toBe('11/26/2026');
   expect(f.numericDateTime(date, 'en-US')).toBe('11/26/2026, 6:05 PM');
   expect(f.numericDate(date, 'es')).toBe('26/11/2026');
+});
+
+it("writes an hour without its AM/PM for amPM: .omitted, in the locale's clock", () => {
+  // Swift's `.hour(.defaultDigits(amPM: .omitted))` in en_US at 18:05 is "6"; a 24-hour locale's is "18".
+  expect(f.hourOnly(date, 'en-US')).toBe('6');
+  expect(f.hourNoAMPM(date, 'en-US')).toBe('6:05');
+  expect(f.hourNoAMPM(date, 'es')).toBe('18:05');
+  expect(f.clock12(date, 'en-US')).toBe('06:05 PM');
+  expect(f.clock12(date, 'es')).toBe('06:05 p. m.');
+  expect(f.clockAMPM(date, 'en-US')).toBe('06:05 PM');
+  expect(f.clockAMPM(date, 'es')).toBe('18:05');
+  expect(f.clock24(date, 'en-US')).toBe('18:05');
 });

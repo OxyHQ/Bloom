@@ -296,7 +296,7 @@
       }
     },
     "key-path": {
-      "comment": "A key path: `\\.likes`, `\\Post.title`.",
+      "comment": "A key path: `\\.likes`, `\\Post.title`; a later `.component` reads as a member.",
       "match": "(\\\\)([A-Z][A-Za-z0-9_]*)?(\\.)([A-Za-z_][A-Za-z0-9_]*)",
       "name": "meta.key-path.bloom",
       "captures": {
@@ -354,10 +354,13 @@
           }
         },
         {
-          "match": "\\b(init)\\s*(?=[(<])",
+          "match": "\\b(init)(\\?)?\\s*(?=[(<])",
           "captures": {
             "1": {
               "name": "storage.type.function.init.bloom"
+            },
+            "2": {
+              "name": "keyword.operator.optional.bloom"
             }
           }
         },
@@ -598,7 +601,7 @@
         },
         {
           "name": "storage.modifier.bloom",
-          "match": "\\b(pub|public|internal|private|fileprivate|static|mutating|default|async|nonisolated)\\b"
+          "match": "\\b(pub|public|internal|private|fileprivate|static|mutating|inout|default|async|nonisolated)\\b"
         },
         {
           "comment": "`open` and `final` are modifiers only before a declaration (`open` is often a value's name).",
@@ -750,6 +753,18 @@
           }
         },
         {
+          "comment": "A tuple's member: `pair.0`, and optional chaining to one, `pair?.1`. Against what it reads, as bloom fmt writes it; `c ? .5 : 1` is a ternary.",
+          "match": "(?<=[A-Za-z0-9_)\\]!])(\\??\\.)([0-9]+)\\b",
+          "captures": {
+            "1": {
+              "name": "punctuation.accessor.bloom"
+            },
+            "2": {
+              "name": "variable.other.property.bloom"
+            }
+          }
+        },
+        {
           "match": "(\\??\\.)([a-zA-Z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
@@ -865,6 +880,11 @@
           "comment": "Reference identity: `a === b`, `a !== b`.",
           "name": "keyword.operator.comparison.identity.bloom",
           "match": "===|!=="
+        },
+        {
+          "comment": "`Int`'s bit and overflow operators (Swift's), before the shorter ones they start with.",
+          "name": "keyword.operator.bitwise.bloom",
+          "match": "<<=|>>=|&=|\\|=|\\^=|<<|>>|&\\+|&-|&\\*|\\^|~"
         },
         {
           "name": "keyword.operator.comparison.bloom",

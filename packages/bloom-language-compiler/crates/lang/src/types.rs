@@ -46,7 +46,9 @@ pub enum Ty {
     View(Option<&'static str>),
     Binding(Box<Ty>),
     /// `KeyPath<S, V>`: a field of the struct `S` whose type is `V` (at runtime, its name).
-    KeyPath(Box<Ty>, Box<Ty>),
+    /// `WritableKeyPath<S, V>` when the third is `true` (a stored `var`): Swift's subtype, which
+    /// fits where a `KeyPath` is expected and also writes, `x[keyPath: k] = v`.
+    KeyPath(Box<Ty>, Box<Ty>, bool),
     /// A closed set of strings: a token set of the spec, or a TS literal union.
     Strings(Rc<StrSet>),
     /// A TS value Bloom could not type: its TS type's text.
@@ -68,6 +70,10 @@ pub struct FnTy {
     pub generics: u32,
     /// A TS function: named arguments form one options object, passed last.
     pub ts: bool,
+    /// A `@jsOptions` Bloom function: called with labels in Bloom, and in TS with one object of
+    /// them (`f({ tab, isWeb })`), a defaulted parameter an optional field. Natively it is a
+    /// function of labelled parameters.
+    pub options: bool,
     /// `throws` (2.0): a call of it is written `try`.
     pub throws: bool,
     /// Its constrained type parameters that take a witness (2.0): each one's type
@@ -92,6 +98,8 @@ pub struct ParamTy {
     pub optional: bool,
     /// A TS rest parameter (`...args: T[]`): takes any number of `T`.
     pub rest: bool,
+    /// Swift's `inout`: the argument is a place (`&x`), written back when the call returns.
+    pub inout: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -133,6 +141,10 @@ pub struct FieldDef {
     pub name: String,
     pub ty: Ty,
     pub default: FieldDefault,
+    /// A `var` (Swift's stored `var`): written in a `var` copy, and named by a
+    /// `WritableKeyPath`. A struct's `let` is set once, when the struct is made (Kotlin's `val`).
+    /// A TS object type's and a record's fields are `var`s.
+    pub mutable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -189,6 +201,9 @@ pub struct Def {
     /// member's type by its tag. The def's own field is the tag, a union of the members' tags;
     /// a `match` on it narrows the value to the member each arm names.
     pub tagged: Option<std::rc::Rc<Tagged>>,
+    /// A struct whose own body declares an `init` (Swift's rule): it has no memberwise init, so
+    /// `P(x: 1)` is that `init`'s, or an error. An `init` in an extension keeps the memberwise one.
+    pub own_init: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -266,9 +281,9 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             let a = go(a);
             Ty::Result(a, go(b))
         }
-        Ty::KeyPath(a, b) => {
+        Ty::KeyPath(a, b, writable) => {
             let a = go(a);
-            Ty::KeyPath(a, go(b))
+            Ty::KeyPath(a, go(b), *writable)
         }
         Ty::Tuple(items) => Ty::Tuple(items.iter().map(|t| map_ty(t, f)).collect()),
         Ty::Adt(def, args) => Ty::Adt(*def, args.iter().map(|t| map_ty(t, f)).collect()),
@@ -283,12 +298,14 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
                     ty: map_ty(&p.ty, f),
                     optional: p.optional,
                     rest: p.rest,
+                    inout: p.inout,
                 })
                 .collect(),
             ret: map_ty(&fn_ty.ret, f),
             is_async: fn_ty.is_async,
             generics: fn_ty.generics,
             ts: fn_ty.ts,
+            options: fn_ty.options,
             throws: fn_ty.throws,
             bounds: fn_ty.bounds.iter().map(|(t, p)| (map_ty(t, f), p.clone())).collect(),
             shapes: fn_ty.shapes.iter().map(|(t, s)| (map_ty(t, f), map_ty(s, f))).collect(),
@@ -362,8 +379,15 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
                 f.write_str("async ")?;
             }
             f.write_str("(")?;
-            let params: Vec<Ty> = fn_ty.params.iter().map(|p| p.ty.clone()).collect();
-            list(f, &params)?;
+            for (i, p) in fn_ty.params.iter().enumerate() {
+                if i > 0 {
+                    f.write_str(", ")?;
+                }
+                if p.inout {
+                    f.write_str("inout ")?;
+                }
+                write_ty(f, &p.ty, defs)?;
+            }
             let throws = if fn_ty.throws { " throws" } else { "" };
             write!(f, "){throws} -> {}", Display { ty: &fn_ty.ret, defs })
         }
@@ -371,7 +395,13 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::Promise(t) => write!(f, "Promise<{}>", Display { ty: t, defs }),
         Ty::View(_) => f.write_str("View"),
         Ty::Binding(t) => write!(f, "Binding<{}>", Display { ty: t, defs }),
-        Ty::KeyPath(a, b) => write!(f, "KeyPath<{}, {}>", Display { ty: a, defs }, Display { ty: b, defs }),
+        Ty::KeyPath(a, b, writable) => write!(
+            f,
+            "{}KeyPath<{}, {}>",
+            if *writable { "Writable" } else { "" },
+            Display { ty: a, defs },
+            Display { ty: b, defs }
+        ),
         Ty::Strings(set) if set.token => f.write_str(&token_type_name(&set.name)),
         Ty::Strings(set) => f.write_str(&set.name),
         Ty::Foreign(text) if text.is_empty() => f.write_str("Foreign"),

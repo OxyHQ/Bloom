@@ -1,0 +1,30 @@
+// A TS parameter that is an intersection of object types (`Req & { signal?: AbortSignal }`) is
+// one record of both members' fields: a labelled call's arguments, and the literals in them, are
+// checked against each field's type (here `Act[][]`, whose `color` is optional). Mention:
+// NotificationItem's `showCancelableActionMenu`.
+import { showBoth, showPlain } from "@/ui/action-menu"
+
+private func open(_ unread: Bool) {
+  showPlain(label: "Options", groups: [unread ? [{ label: "Read", onPress: {} }] : [], [{ label: "Delete", color: "red", onPress: {} }]])
+  showBoth(
+    label: "Options",
+    groups: [
+      unread ? [{ label: "Read", onPress: {} }] : [],
+      [{ label: "Delete", color: "red", onPress: {} }],
+    ],
+  )
+}
+
+import { Wrapped } from "@/ui/action-menu"
+
+public struct Row {
+  let key: String
+}
+
+/// A generic component's props in an intersection stay TS's: the closure's item is TS's `T`.
+public struct Rows: View {
+  let rows: [Row]
+  var body: some View {
+    Wrapped(data: rows, keyExtractor: { item, index in "row-\(index)" })
+  }
+}

@@ -598,7 +598,8 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut modifiers = Modifiers::default();
         loop {
             match self.tok().clone() {
-                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern") => {
+                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern" || n == "jsOptions") =>
+                {
                     let start = self.bump();
                     let name = self.ident("an attribute");
                     let args = if self.at(P::LParen) && !self.token().space_before {
@@ -899,9 +900,11 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::Fn | Kw::Async) => TypeMemberKind::Func(self.fn_decl()),
             Tok::Ident(word) if word == "func" => TypeMemberKind::Func(self.fn_decl()),
-            Tok::Ident(word) if word == "init" && matches!(self.nth(1), Tok::P(P::LParen)) => {
+            // `init?(…)` (Swift's failable init): it gives `Self?`, `return none` failing.
+            Tok::Ident(word) if word == "init" && matches!(self.nth(1), Tok::P(P::LParen | P::Question)) => {
                 let init_start = self.span();
                 let name = self.ident("`init`");
+                let failable = self.at(P::Question).then(|| self.bump());
                 let params = self.params();
                 let throws = self.throws_clause();
                 let body = self.block();
@@ -913,7 +916,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                     constraints: Vec::new(),
                     params,
                     throws,
-                    ret: None,
+                    ret: failable.map(|at| TypeExpr {
+                        kind: TypeKind::Optional(Box::new(TypeExpr {
+                            kind: TypeKind::Named {
+                                name: Ident { name: "Self".into(), span: at },
+                                args: Vec::new(),
+                            },
+                            span: at,
+                        })),
+                        span: at,
+                    }),
                     span: init_start.to(body.span),
                     body,
                 })
@@ -1079,6 +1091,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             rest: false,
                             spread: false,
                             whole: None,
+                            inout: false,
                             ty: TypeExpr { kind: TypeKind::Named { name: binding, args: vec![ty] }, span },
                             default: None,
                             span: member.span,
@@ -1136,6 +1149,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             rest: false,
                             spread: false,
                             whole: None,
+                            inout: false,
                             ty,
                             default: default.clone(),
                             span: member.span,
@@ -1867,6 +1881,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     rest: false,
                     spread: true,
                     whole: None,
+                    inout: false,
                     ty,
                     default: None,
                     span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1902,6 +1917,15 @@ impl<'s, 'i> Parser<'s, 'i> {
             } else {
                 self.bump();
             }
+            // `_ xs: inout [Int]` (Swift's): the caller's place, written back.
+            let inout = matches!(self.tok(), Tok::Ident(word) if word == "inout")
+                && !matches!(
+                    self.nth(1),
+                    Tok::P(P::Comma | P::RParen | P::Eq | P::Lt | P::Dot | P::Question)
+                );
+            if inout {
+                self.bump();
+            }
             let ty = self.type_expr();
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
             // `..props: Props`, a named type and not a list: the props spread, their whole named.
@@ -1913,6 +1937,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     rest: false,
                     spread: true,
                     whole: Some(name),
+                    inout: false,
                     ty,
                     default,
                     span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1928,6 +1953,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 rest,
                 spread: false,
                 whole: None,
+                inout,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -2449,8 +2475,8 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.bump();
                 let cond = if self.eat_kw(Kw::Let) {
                     let pattern = self.pattern();
-                    self.expect(P::Eq, "`=` and the value to unwrap");
-                    Cond::Let(pattern, Box::new(self.expr(Ctx::Head)))
+                    let value = self.let_value(&pattern, "`=` and the value to unwrap");
+                    Cond::Let(pattern, Box::new(value))
                 } else {
                     Cond::Expr(Box::new(self.expr(Ctx::Head)))
                 };
@@ -2504,16 +2530,23 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             _ => {
                 let expr = self.expr(Ctx::Normal);
-                let op = match self.tok() {
-                    Tok::P(P::Eq) => Some(AssignOp::Set),
-                    Tok::P(P::PlusEq) => Some(AssignOp::Add),
-                    Tok::P(P::MinusEq) => Some(AssignOp::Sub),
-                    Tok::P(P::StarEq) => Some(AssignOp::Mul),
-                    _ => None,
+                let (op, width) = match (self.tok(), self.nth(1)) {
+                    (Tok::P(P::Eq), _) => (Some(AssignOp::Set), 1),
+                    (Tok::P(P::PlusEq), _) => (Some(AssignOp::Add), 1),
+                    (Tok::P(P::MinusEq), _) => (Some(AssignOp::Sub), 1),
+                    (Tok::P(P::StarEq), _) => (Some(AssignOp::Mul), 1),
+                    (Tok::P(P::AmpEq), _) => (Some(AssignOp::BitAnd), 1),
+                    (Tok::P(P::PipeEq), _) => (Some(AssignOp::BitOr), 1),
+                    (Tok::P(P::CaretEq), _) => (Some(AssignOp::BitXor), 1),
+                    (Tok::P(P::Lt), Tok::P(P::Le)) if self.joined() => (Some(AssignOp::Shl), 2),
+                    (Tok::P(P::Gt), Tok::P(P::Ge)) if self.joined() => (Some(AssignOp::Shr), 2),
+                    _ => (None, 0),
                 };
                 match op {
                     Some(op) => {
-                        self.bump();
+                        for _ in 0..width {
+                            self.bump();
+                        }
                         if !is_place(&expr) {
                             self.error(
                                 Diagnostic::error(
@@ -2547,8 +2580,18 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn statement_word(&self) -> bool {
         !matches!(
             self.nth(1),
-            Tok::P(P::Eq | P::Dot | P::LParen | P::PlusEq | P::MinusEq | P::StarEq | P::QuestionDot)
-                | Tok::Newline
+            Tok::P(
+                P::Eq
+                    | P::Dot
+                    | P::LParen
+                    | P::PlusEq
+                    | P::MinusEq
+                    | P::StarEq
+                    | P::AmpEq
+                    | P::PipeEq
+                    | P::CaretEq
+                    | P::QuestionDot
+            ) | Tok::Newline
                 | Tok::Eof
         )
     }
@@ -2677,6 +2720,16 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn expr(&mut self, ctx: Ctx) -> Expr {
         match self.tok() {
+            // `try g(a) + h(b)`, `try? f() ?? x` (Swift's): a `try` that starts an expression
+            // covers all of it to its right, the conditional too. One inside an operand
+            // (`a + try f()`) covers that operand (`unary`).
+            Tok::Ident(word) if word == "try" && self.try_ahead() => {
+                let start = self.bump();
+                let kind = self.try_kind();
+                let operand = self.expr(ctx);
+                let span = start.to(operand.span);
+                return self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span);
+            }
             Tok::Kw(Kw::If) => {
                 let expr = self.if_expr();
                 return self.postfix_after(expr, ctx);
@@ -2707,8 +2760,32 @@ impl<'s, 'i> Parser<'s, 'i> {
         if self.at(P::Dot) { self.postfix_loop(expr, ctx, None) } else { expr }
     }
 
+    /// Whether the token after this one starts where this one ends (`>>`, `<<=`).
+    fn joined(&self) -> bool {
+        self.tokens.get(self.pos + 1).is_some_and(|next| next.span.start == self.token().span.end)
+    }
+
+    /// A binary operator here, and how many tokens it is (`<<` and `>>` are two `<`s or `>`s
+    /// against each other, so a type's `Array<Array<Int>>` still closes).
+    fn binary_op2(&self) -> Option<(BinaryOp, usize)> {
+        match (self.tok(), self.nth(1)) {
+            (Tok::P(P::Lt), Tok::P(P::Lt)) if self.joined() => return Some((BinaryOp::Shl, 2)),
+            (Tok::P(P::Gt), Tok::P(P::Gt)) if self.joined() => return Some((BinaryOp::Shr, 2)),
+            // `<<=` and `>>=` are assignments, never a comparison.
+            (Tok::P(P::Lt), Tok::P(P::Le)) | (Tok::P(P::Gt), Tok::P(P::Ge)) if self.joined() => return None,
+            _ => {}
+        }
+        self.binary_op().map(|op| (op, 1))
+    }
+
     fn binary_op(&self) -> Option<BinaryOp> {
         Some(match self.tok() {
+            Tok::P(P::Amp) => BinaryOp::BitAnd,
+            Tok::P(P::Pipe) => BinaryOp::BitOr,
+            Tok::P(P::Caret) => BinaryOp::BitXor,
+            Tok::P(P::AmpPlus) => BinaryOp::WrapAdd,
+            Tok::P(P::AmpMinus) => BinaryOp::WrapSub,
+            Tok::P(P::AmpStar) => BinaryOp::WrapMul,
             Tok::P(P::Star) => BinaryOp::Mul,
             Tok::P(P::Slash) => BinaryOp::Div,
             Tok::P(P::Percent) => BinaryOp::Rem,
@@ -2755,12 +2832,15 @@ impl<'s, 'i> Parser<'s, 'i> {
                 lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty, forced), span);
                 continue;
             }
-            let Some(op) = self.binary_op() else { break };
+            let Some((op, width)) = self.binary_op2() else { break };
             let prec = op.precedence();
             if prec < min {
                 break;
             }
-            let op_span = self.bump();
+            let mut op_span = self.bump();
+            if width == 2 {
+                op_span = op_span.to(self.bump());
+            }
             let rhs =
                 if op == BinaryOp::Default { self.binary(prec, ctx) } else { self.binary(prec + 1, ctx) };
             // Comparisons do not chain: `a < b < c` says nothing clear.
@@ -2801,6 +2881,19 @@ impl<'s, 'i> Parser<'s, 'i> {
         lhs
     }
 
+    /// After `try`: `?` (`try?`), `!` (`try!`) against it, or a plain `try`.
+    fn try_kind(&mut self) -> TryKind {
+        if self.at(P::Question) && !self.token().space_before {
+            self.bump();
+            TryKind::Optional
+        } else if self.at(P::Bang) && !self.token().space_before {
+            self.bump();
+            TryKind::Force
+        } else {
+            TryKind::Plain
+        }
+    }
+
     fn unary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok() {
@@ -2816,18 +2909,24 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Unary(UnaryOp::Neg, Box::new(operand)), span)
             }
+            // `~x`: an `Int`'s bits inverted.
+            Tok::P(P::Tilde) => {
+                self.bump();
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::Unary(UnaryOp::BitNot, Box::new(operand)), span)
+            }
+            // `&x` (Swift's): a place passed to an `inout` parameter.
+            Tok::P(P::Amp) => {
+                self.bump();
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::InOut(Box::new(operand)), span)
+            }
             // `try f()`, `try? f()`, `try! f()` (2.0).
             Tok::Ident(word) if word == "try" && self.try_ahead() => {
                 self.bump();
-                let kind = if self.at(P::Question) && !self.token().space_before {
-                    self.bump();
-                    TryKind::Optional
-                } else if self.at(P::Bang) && !self.token().space_before {
-                    self.bump();
-                    TryKind::Force
-                } else {
-                    TryKind::Plain
-                };
+                let kind = self.try_kind();
                 let operand = self.unary(ctx);
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span)
@@ -3064,9 +3163,30 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 Tok::P(P::QuestionDot) => {
                     self.bump();
-                    let name = self.name_or_keyword("a member name");
+                    // `c?.0`: a tuple's member, when the tuple is there.
+                    let name = match self.tok().clone() {
+                        Tok::Int(index) => {
+                            let span = self.bump();
+                            Ident { name: index.to_string(), span }
+                        }
+                        _ => self.name_or_keyword("a member name"),
+                    };
                     let span = expr.span.to(name.span);
                     expr = self.expr_node(ExprKind::OptField(Box::new(expr), name), span);
+                }
+                // `x[keyPath: kp]` (Swift's): the field a key path names.
+                Tok::P(P::LBracket)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::Ident(word) if word == "keyPath")
+                        && matches!(self.nth(2), Tok::P(P::Colon)) =>
+                {
+                    let open = self.bump();
+                    self.bump();
+                    self.bump();
+                    let key = self.expr(Ctx::Normal);
+                    self.expect_close(P::RBracket, open);
+                    let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
+                    expr = self.expr_node(ExprKind::KeyPathIndex(Box::new(expr), Box::new(key)), span);
                 }
                 Tok::P(P::LBracket) if !self.token().space_before => {
                     let open = self.bump();
@@ -3147,7 +3267,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                 } else {
                     None
                 };
-                let value = self.expr(Ctx::Normal);
+                let value = match self.operator_function() {
+                    Some(value) => value,
+                    None => self.expr(Ctx::Normal),
+                };
                 args.push(Arg { label, spread: false, span: start.to(value.span), value });
             }
             if !self.eat(P::Comma) {
@@ -3318,15 +3441,68 @@ impl<'s, 'i> Parser<'s, 'i> {
             ret,
             body,
             span: open.to(Span::new(self.prev_end(), self.prev_end())),
+            operator: None,
         }
+    }
+
+    /// `+` as an argument (`reduce(0, +)`, `sorted(by: <)`) or in parentheses (`(+)`): an
+    /// arithmetic or comparison operator directly before `,` or `)` is Swift's operator
+    /// function, the closure `{ $0 + $1 }`.
+    fn operator_function(&mut self) -> Option<Expr> {
+        let op = self.binary_op().filter(|op| {
+            matches!(
+                op,
+                BinaryOp::Mul
+                    | BinaryOp::Div
+                    | BinaryOp::Rem
+                    | BinaryOp::Add
+                    | BinaryOp::Sub
+                    | BinaryOp::Lt
+                    | BinaryOp::Le
+                    | BinaryOp::Gt
+                    | BinaryOp::Ge
+                    | BinaryOp::Eq
+                    | BinaryOp::Ne
+            )
+        })?;
+        if !matches!(self.nth(1), Tok::P(P::Comma | P::RParen)) {
+            return None;
+        }
+        let span = self.bump();
+        let param = |n: u32| ClosureParam { name: Ident { name: format!("${n}"), span }, ty: None };
+        let lhs = self.expr_node(ExprKind::Name("$0".into()), span);
+        let rhs = self.expr_node(ExprKind::Name("$1".into()), span);
+        let body = self.expr_node(ExprKind::Binary(op, Box::new(lhs), Box::new(rhs)), span);
+        let closure = Closure {
+            params: vec![param(0), param(1)],
+            has_in: false,
+            tuple: false,
+            ret: None,
+            body: vec![Stmt { kind: StmtKind::Expr(body), span }],
+            span,
+            operator: Some(op),
+        };
+        Some(self.expr_node(ExprKind::Closure(closure), span))
+    }
+
+    /// What `if let` / `guard let` unwraps: `= value`, or, after a bare name, the name itself
+    /// (Swift 5.7's `if let x { … }`, `guard let x else { … }`). The shorthand's value has the
+    /// pattern's span, which is how `bloom fmt` prints it back.
+    fn let_value(&mut self, pattern: &Pattern, expected: &str) -> Expr {
+        if let PatternKind::Bind(name) = &pattern.kind
+            && !self.at(P::Eq)
+        {
+            return self.expr_node(ExprKind::Name(name.name.clone()), pattern.span);
+        }
+        self.expect(P::Eq, expected);
+        self.expr(Ctx::Head)
     }
 
     fn if_expr(&mut self) -> Expr {
         let start = self.bump();
         let cond = if self.eat_kw(Kw::Let) {
             let pattern = self.pattern();
-            self.expect(P::Eq, "`=` and the value to match");
-            let value = self.expr(Ctx::Head);
+            let value = self.let_value(&pattern, "`=` and the value to match");
             Cond::Let(pattern, Box::new(value))
         } else {
             Cond::Expr(Box::new(self.expr(Ctx::Head)))
@@ -3546,7 +3722,12 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let mut items = Vec::new();
                 let mut trailing_comma = false;
                 while !self.at(P::RParen) && !matches!(self.tok(), Tok::Eof) {
-                    items.push(self.expr(Ctx::Normal));
+                    // `(+)`: an operator function anywhere a value goes (`let add: (Int, Int) -> Int = (+)`).
+                    let item = match self.operator_function() {
+                        Some(item) => item,
+                        None => self.expr(Ctx::Normal),
+                    };
+                    items.push(item);
                     trailing_comma = self.eat(P::Comma);
                     if !trailing_comma {
                         break;
@@ -3737,6 +3918,8 @@ fn is_place(expr: &Expr) -> bool {
         ExprKind::Field(inner, _) => is_place(inner),
         // `posts[i].likes += 1` (2.0): an element, rebuilt with value semantics.
         ExprKind::Index(inner, _) => is_place(inner),
+        // `next[keyPath: key] = v` (Swift's): a `var`'s copy with the field the key path names.
+        ExprKind::KeyPathIndex(inner, _) => matches!(inner.kind, ExprKind::Name(_)),
         _ => false,
     }
 }

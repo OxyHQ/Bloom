@@ -35,6 +35,7 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("Data.bloom", include_str!("../../../stdlib/Bloom/Data.bloom")),
     ("runtime.ts", include_str!("../../../stdlib/Bloom/runtime.ts")),
     ("routing.ts", include_str!("../../../stdlib/Bloom/routing.ts")),
+    ("players.ts", include_str!("../../../stdlib/Bloom/players.ts")),
     ("routing-expo.ts", include_str!("../../../stdlib/Bloom/routing-expo.ts")),
     ("router.ts", include_str!("../../../stdlib/Bloom/router.ts")),
     ("models.ts", include_str!("../../../stdlib/Bloom/models.ts")),

@@ -1,0 +1,61 @@
+error[B0201]: expected `String`, found `Bool`
+  --> check/key_paths.bloom:11:32
+   |
+11 |   next[keyPath: \Prefs.name] = true
+   |                                ^^^^ this is `Bool`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0403]: cannot assign to `p`: it is immutable
+  --> check/key_paths.bloom:16:3
+   |
+15 | public func immutable(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Bool {
+   |                         - declared here
+16 |   p[keyPath: key] = false
+   |   ^ immutable
+   |
+help: copy it into a `var`: `var next = p`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0403]: cannot assign through `KeyPath<Prefs, Bool>`: it is read-only
+  --> check/key_paths.bloom:22:17
+   |
+22 |   next[keyPath: key] = true
+   |                 ^^^ a `KeyPath` reads; a `WritableKeyPath` writes
+   |
+help: take a `WritableKeyPath<Prefs, Bool>`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0403]: cannot assign through `KeyPath<Prefs, Int>`: it is read-only
+  --> check/key_paths.bloom:28:17
+   |
+28 |   next[keyPath: \Prefs.id] = 3
+   |                 ^^^^^^^^^ `id` is a `let`
+   |
+help: declare it `var id`; a `let` is set once, when the struct is made
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0403]: cannot assign to `id`: it is a `let`
+  --> check/key_paths.bloom:29:3
+   |
+29 |   next.id = 4
+   |   ^^^^^^^ a `let` of `Prefs`, set once when it is made
+   |
+help: declare it `var id`, or make a new `Prefs` with the value
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `WritableKeyPath<Prefs, Int>`, found `KeyPath<Prefs, Int>`
+  --> check/key_paths.bloom:33:57
+   |
+33 | public func notWritable(_ p: Prefs) -> Prefs { setTo(p, \Prefs.id) }
+   |                                                         ^^^^^^^^^ this is `KeyPath<Prefs, Int>`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: `+=` needs a number, found `Bool`
+  --> check/key_paths.bloom:43:3
+   |
+43 |   next[keyPath: \Prefs.hideLikes] += true
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not a number
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#61-precedence-high-to-low

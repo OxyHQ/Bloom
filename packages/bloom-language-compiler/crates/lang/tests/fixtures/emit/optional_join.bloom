@@ -1,0 +1,21 @@
+// Two optional branches of one `T?` join to `T?`: `c ? name : d ? "s" : none` of a `String?`
+// `name` is `String?`, not `String??`.
+public func primary(_ c: Bool, _ name: String?, _ handle: String?) -> String {
+  let p = c ? name : handle != none ? "@\(handle)" : none
+  return p ?? ""
+}
+
+public func chained(_ c: Bool, _ name: String?, _ other: String?) -> String? {
+  c ? name : other
+}
+
+public struct Primary: View {
+  let hasName: Bool
+  var name: String? = none
+  var handle: String? = none
+
+  var body: some View {
+    let text = hasName ? name : handle != none ? "@\(handle)" : none
+    Text(text ?? "")
+  }
+}

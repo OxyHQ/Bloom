@@ -45,8 +45,11 @@ export function status(code: number): string {
 try {
 const ok = check(code);
 return `ok ${ok}`;
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 return "failed";
+}
 }
 }
 

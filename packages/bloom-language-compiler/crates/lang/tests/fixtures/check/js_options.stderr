@@ -1,0 +1,26 @@
+error[B0106]: a `@jsOptions` function's parameters are its object's fields: `_` has no field name
+ --> check/js_options.bloom:3:24
+  |
+3 | public func positional(_ tab: String, isWeb: Bool) -> Bool { isWeb }
+  |                        ^^^^^^^^^^^^^ not a field
+  |
+help: label it: `tab: …`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0106]: a `@jsOptions` function's parameters are its object's fields: a rest parameter has no field
+ --> check/js_options.bloom:6:18
+  |
+6 | public func rest(..tags: [String]) -> Int { tags.count }
+  |                  ^^^^^^^^^^^^^^^^ not a field
+  |
+help: label it: `tags: …`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop
+
+error[B0207]: missing argument label `tab:`
+  --> check/js_options.bloom:16:44
+   |
+16 | public func wrong() -> Bool { shouldScroll("a") }
+   |                                            ^^^ this argument is `tab`
+   |
+help: write `tab: …`, or declare the parameter `_ tab` to call it by position
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures

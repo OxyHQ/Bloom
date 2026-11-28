@@ -60,6 +60,96 @@ fn a_module_sees_its_other_files() {
     assert!(out.dependencies.iter().any(|d| d.ends_with("Package.bloom")));
 }
 
+/// A TS-style import of a file of the module's own (`@/Feed/Card`, kept by the codemod from
+/// before `Card.tsx` was Bloom): dropped with a warning, so it never hides the sibling's
+/// declarations behind a TS import (Mention's lists, marketplace).
+#[test]
+fn a_path_import_of_an_own_file_is_dropped() {
+    let root = package(
+        "own-path",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Card.bloom",
+                "public struct CardData {\n  let id: String\n}\n\npublic func cardTitle(_ d: CardData) -> String { d.id }\n",
+            ),
+            (
+                "Sources/Feed/Use.bloom",
+                "import { type CardData } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> CardData { CardData(id: id) }\n",
+            ),
+        ],
+    );
+    let mut options = Options { allow_ts_imports: true, root: Some(root.clone()), ..Options::default() };
+    options.paths.insert("@/*".into(), vec!["Sources/*".into()]);
+    let out = build(&root, "Sources/Feed/Use.bloom", &options);
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert_eq!(out.warnings.iter().map(|d| d.code).collect::<Vec<_>>(), ["B0901"], "{:?}", out.warnings);
+    assert!(out.code.contains("from \"./Card.bloom\""), "{}", out.code);
+    // A renaming import is the only way to rename, so the renamed names are kept, imported from
+    // the `.bloom` file itself; the others are in scope already (Mention's lists:
+    // `ListCard as ListCardComponent, type ListCardData`).
+    std::fs::write(
+        root.join("Sources/Feed/Use.bloom"),
+        "import { cardTitle as title, type CardData } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> String { title(CardData(id: id)) }\n",
+    )
+    .unwrap();
+    let out = build(&root, "Sources/Feed/Use.bloom", &options);
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(!out.warnings.iter().any(|d| d.code == "B0602"), "{:?}", out.warnings);
+    assert!(out.code.contains("cardTitle as title"), "{}", out.code);
+    assert!(out.code.contains("from \"./Card.bloom\""), "{}", out.code);
+}
+
+/// A `@jsOptions` function of another file of the module is called with one object there too.
+#[test]
+fn a_js_options_function_is_called_with_an_object_from_a_sibling() {
+    let root = package(
+        "js-options",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Scroll.bloom",
+                "@jsOptions\npublic func shouldScroll(tab: String, isWeb: Bool = false) -> Bool { !isWeb && tab == \"a\" }\n",
+            ),
+            ("Sources/Feed/Use.bloom", "func use() -> Bool { shouldScroll(tab: \"a\") }\n"),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Use.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("shouldScroll({ tab: \"a\" })"), "{}", out.code);
+}
+
+/// Two files of a module naming each other's types (an import cycle: `Pair`'s fields are a
+/// `ColorRole`, and `ColorRole`'s file builds a `Pair`), the enum named as the language's token
+/// set is (`ColorRole`): a third file sees one `ColorRole` whatever order they are read in.
+/// The type is never the token set, and never two (theme engine, #1087's B0201 "expected
+/// `ColorRole`, found `ColorRole`").
+#[test]
+fn an_import_cycle_keeps_a_type_one_type() {
+    let root = package(
+        "cycle",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Contrast.bloom",
+                "public struct Pair: Equatable {\n  public let roleA: ColorRole\n  public let roleB: ColorRole\n}\n",
+            ),
+            (
+                "Sources/Feed/ColorRoles.bloom",
+                "public enum ColorRole {\n  case primary\n  case onPrimary\n}\n\npublic func pairOf(_ role: ColorRole) -> Pair { Pair(roleA: role, roleB: ColorRole.onPrimary) }\n",
+            ),
+            (
+                "Sources/Feed/ColorRole.bloom",
+                "public func nearer(_ role: ColorRole) -> Bool {\n  let pair = pairOf(role)\n  return role == pair.roleA && pair.roleB == ColorRole.onPrimary\n}\n",
+            ),
+        ],
+    );
+    for file in ["ColorRole", "ColorRoles", "Contrast"] {
+        let out = build(&root, &format!("Sources/Feed/{file}.bloom"), &Options::default());
+        assert!(out.diagnostics.is_empty(), "{file}: {:?}", out.diagnostics);
+    }
+}
+
 #[test]
 fn app_modules_import_no_paths() {
     let root = package(

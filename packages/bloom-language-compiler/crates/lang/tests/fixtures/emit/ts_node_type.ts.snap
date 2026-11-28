@@ -1,0 +1,29 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { ScrollView, Text, inlineView, view } from "@oxy.so/bloom-language";
+import { type ScrollViewNode } from "@oxy.so/bloom-language";
+
+export interface AccountPageProps {
+  readonly content: ScrollViewNode;
+}
+export const AccountPage = inlineView(function AccountPage(props: AccountPageProps) {
+"use no memo";
+const { content } = props;
+return content.screenScroll("content").padding("md");
+});
+
+const $view0 = ScrollView(Text("About"));
+export const AccountScreen = view(function AccountScreen() {
+"use no memo";
+const $ = $c(1);
+let $t0;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+const content = $view0;
+$t0 = AccountPage({ content: content });
+$[0] = $t0;
+} else {
+$t0 = $[0];
+}
+return $t0;
+});
+

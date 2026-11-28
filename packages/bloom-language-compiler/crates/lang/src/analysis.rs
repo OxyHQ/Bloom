@@ -994,6 +994,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         | ExprKind::Await(a)
         | ExprKind::Try(a)
         | ExprKind::Force(a)
+        | ExprKind::InOut(a)
         | ExprKind::Throwing(_, a)
         | ExprKind::Field(a, _)
         | ExprKind::OptField(a, _) => walk_expr(a, f),
@@ -1003,7 +1004,10 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
             walk_expr(k, f);
             walk_expr(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => {
             walk_expr(a, f);
             walk_expr(b, f);
         }

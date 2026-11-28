@@ -1,0 +1,7 @@
+import { profileSEOPolicy } from "@/seo";
+
+export function seoTitle(flag: boolean): string {
+const policy = profileSEOPolicy(flag, undefined);
+return policy.server?.title ?? "fallback";
+}
+

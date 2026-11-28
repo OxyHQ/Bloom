@@ -1,0 +1,21 @@
+// An operator passed as a function (Swift's): `reduce(0, +)`, `sorted(by: <)`. It is the closure
+// `{ $0 + $1 }`, typed by the parameter it is given to.
+public func total(_ xs: [Int]) -> Int { xs.reduce(0, +) }
+
+public func product(_ xs: [Double]) -> Double { xs.reduce(1.0, *) }
+
+public func joined(_ xs: [String]) -> String { xs.reduce("", +) }
+
+public func ascending(_ xs: [Int]) -> [Int] { xs.sorted(by: <) }
+
+public func descending(_ xs: [String]) -> [String] { xs.sorted(by: >) }
+
+func apply(_ f: (Int, Int) -> Int, _ a: Int, _ b: Int) -> Int { f(a, b) }
+
+public func seven() -> Int { apply(+, 3, 4) }
+
+public func remainder() -> Int { apply(%, 7, 4) }
+
+public let add: (Int, Int) -> Int = (+)
+
+public func same(_ f: (String, String) -> Bool = (==)) -> Bool { f("a", "a") }

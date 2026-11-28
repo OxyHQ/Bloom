@@ -46,7 +46,10 @@ in scope in the others with no import.
 - **No string paths in app modules**: `import { x } from "pkg"` is an error
   (B0806) outside binding modules, and so is writing `Foreign<"…">` (B0822). The
   migration mode, `bloom check --allow-ts-imports`, allows both while a codebase
-  moves over.
+  moves over. A path import of one of the module's own files (`import { type
+  CardData } from "@/Feed/Card"`, kept from before `Card.tsx` was Bloom) is dropped
+  with a warning (B0901): the file's names are in scope already. An import that
+  renames (`{ CardData as Card }`) is kept.
 
 Underneath, a file's module imports become named imports of exactly the names it
 uses, from the files that declare them, so a module still compiles file by file and

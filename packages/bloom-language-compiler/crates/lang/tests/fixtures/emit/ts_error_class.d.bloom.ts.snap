@@ -1,0 +1,1 @@
+export declare function record(id: string): Promise<string>;

@@ -1,0 +1,53 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+function $appendAll<T>(items: T[], more: readonly T[]): void {
+  for (const item of more) items.push(item);
+}
+
+export function both(a: readonly number[], b: readonly number[]): readonly number[] {
+return [...a, ...b];
+}
+
+export function around(a: readonly string[]): readonly string[] {
+return ["first", ...a, "last"];
+}
+
+export function appended(a: readonly number[]): readonly number[] {
+let out: number[] = [...a];
+out.push(1, 2);
+$appendAll(out, a);
+return out;
+}
+
+export function fromEmpty(a: readonly number[]): readonly number[] {
+return [...a];
+}
+
+async function more(): Promise<readonly string[]> {
+return ["z"];
+}
+
+const $view0 = Button(Text("Add"));
+const $view1 = Button(Text("Load"));
+export const Tags = view(function Tags() {
+"use no memo";
+const $ = $c(2);
+const [tags, setTags] = useState<readonly string[]>(() => []);
+let $t1;
+if ($[0] !== tags) {
+$t1 = VStack($view0.onPress(() => {
+setTags((tags) => [...tags, "x"]);
+}), $view1.onPress(() => void (async () => {
+const $t0 = await (more());
+setTags((tags) => [...tags, ...$t0]);
+})()), Text(`${tags.length}`));
+$[0] = tags;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

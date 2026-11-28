@@ -13,6 +13,7 @@ type Node = Parameters<typeof toElement>[0];
 const m = require('./bloom/element-props.bloom') as {
   Posts: (props: { items: { postId: string }[] }) => Node;
   Row: (props: { title: string; meta?: Node }) => Node;
+  Rows: (props: { titles: string[] }) => Node;
 };
 const { Text } = require('@oxy.so/bloom-language') as { Text: (s: string) => Node };
 
@@ -41,4 +42,8 @@ it('keeps an optional view none across the boundary', () => {
     'meta shown',
     '2 mutual',
   ]);
+});
+
+it('draws the views a function handed by name gives', () => {
+  expect(texts(m.Rows({ titles: ['a', 'b'] }))).toEqual(['row a', 'row b']);
 });

@@ -1,0 +1,4 @@
+export declare function pack(a: number, r: number, g: number, b: number): number;
+export declare function unpack(argb: number): readonly number[];
+export declare function ops(a: number, b: number): readonly number[];
+export declare function fnv32(bytes: readonly number[]): number;

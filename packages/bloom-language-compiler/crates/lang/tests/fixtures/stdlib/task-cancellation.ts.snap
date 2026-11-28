@@ -65,7 +65,8 @@ try {
 await (sleep((Duration$$milliseconds)(50), $signal));
 if ($signal.aborted) return;
 onSearch(query);
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
 if ($signal.aborted) return;
 {
 }

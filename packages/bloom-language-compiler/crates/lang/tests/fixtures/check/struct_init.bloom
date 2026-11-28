@@ -1,0 +1,47 @@
+// Definite initialization: every stored field set on every path before `init` returns, and
+// none read (nor `self` used) before it is set.
+public struct Account {
+  let id: String
+  let name: String
+  var note: String? = none
+
+  // `name` is set on one branch only.
+  public init(id: String, named: Bool) {
+    self.id = id
+    if named {
+      self.name = id
+    }
+  }
+
+  // `return` before `name` is set; `self.name` read before it is.
+  public init(early id: String) {
+    self.id = id
+    if id.isEmpty {
+      return
+    }
+    let shown = self.name
+    self.name = shown
+  }
+
+  // `self` used whole before every field is set.
+  public init(copying other: Account) {
+    self.id = other.id
+    let me = self
+    self.name = me.id
+  }
+
+  // `return` with a value.
+  public init(value: String) {
+    self.id = value
+    self.name = value
+    return self
+  }
+
+  // `return none` in an `init` that cannot fail.
+  public init(never: String) {
+    return none
+  }
+}
+
+// The memberwise `init` is gone: `Account` declares its own.
+public func make() -> Account { Account(id: "a", name: "b") }

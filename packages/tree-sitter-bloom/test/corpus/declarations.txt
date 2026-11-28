@@ -861,3 +861,99 @@ func names(_ actors: [Actor]) -> [String] {
               (identifier)
               (identifier))
             (identifier)))))))
+
+====================
+A struct's init and a failable init
+====================
+
+public struct Temperature {
+  let celsius: Double
+
+  public init(fahrenheit: Double) {
+    celsius = fahrenheit
+  }
+
+  public init?(reading: String) {
+    return none
+  }
+}
+
+---
+
+(source_file
+  (struct_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (struct_body
+      (property_declaration
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (init_declaration
+        (modifiers
+          (visibility_modifier))
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (assignment
+            (identifier)
+            (identifier))))
+      (init_declaration
+        (modifiers
+          (visibility_modifier))
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (return_statement
+            (none_literal)))))))
+
+==================================================
+inout parameters and & arguments
+==================================================
+
+func fill(_ xs: inout [Int], with v: Int) { xs[0] = v }
+func run() { fill(&grid, with: 1) }
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (block
+      (assignment
+        (subscript_expression
+          (identifier)
+          (integer_literal))
+        (identifier))))
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (call_expression
+        (identifier)
+        (value_arguments
+          (value_argument
+            (prefix_expression
+              (identifier)))
+          (value_argument
+            (identifier)
+            (integer_literal)))))))

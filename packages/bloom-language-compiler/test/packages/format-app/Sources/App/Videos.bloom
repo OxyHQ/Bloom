@@ -1,0 +1,32 @@
+// The video player and its view, SwiftUI/AVKit's shape.
+
+/// A player the view drives.
+public struct Clip: View {
+  let url: URL
+  @State private var player: VideoPlayer? = none
+  var body: some View {
+    VStack {
+      if let p = player {
+        Video(player: p).videoGravity(.fill).controls(.hidden)
+        Text("\(p.currentTime)")
+      }
+      Button("Play") { player?.play() }
+    }
+  }
+}
+
+/// A feed's row: its own player, muted, looping and playing while it is on screen.
+public struct FeedVideo: View {
+  let url: URL
+  let poster: URL
+  var body: some View {
+    Video(url: url, poster: poster).muted().loops().autoplay()
+  }
+}
+
+public func makePlayer(_ url: URL) -> VideoPlayer {
+  let p = VideoPlayer(url: url)
+  p.isMuted = true
+  p.seek(to: 2.0)
+  return p
+}

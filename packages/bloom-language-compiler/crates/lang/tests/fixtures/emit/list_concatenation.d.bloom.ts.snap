@@ -1,0 +1,7 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function both(a: readonly number[], b: readonly number[]): readonly number[];
+export declare function around(a: readonly string[]): readonly string[];
+export declare function appended(a: readonly number[]): readonly number[];
+export declare function fromEmpty(a: readonly number[]): readonly number[];
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Tags())`), or from TSX as `toElement(Tags())`. */
+export declare const Tags: () => ComposedView;

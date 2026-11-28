@@ -1,0 +1,54 @@
+error[B0406]: `n` is `inout`, and an `async` function takes none
+ --> check/inout_args.bloom:5:14
+  |
+5 | func later(_ n: inout Int) async { n = 2 }
+  |              ^ `inout` in an `async` function
+  |
+help: return the new value instead, and assign it where it is called
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0406]: `n` is `inout`: pass a `var`'s place with `&`
+  --> check/inout_args.bloom:10:8
+   |
+10 |   bump(n)
+   |        ^ written back when the call returns
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0403]: cannot pass `k` as `inout`: it is immutable
+  --> check/inout_args.bloom:11:9
+   |
+ 9 |   let k = 2
+   |       - declared here
+   |
+11 |   bump(&k)
+   |         ^ immutable
+   |
+help: declare it with `var k = …` (in a function) or make it `@state k = …` (in a view)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0406]: `&` passes a place to an `inout` parameter, and this is none
+  --> check/inout_args.bloom:12:11
+   |
+12 |   let m = &n
+   |           ^^ not an `inout` parameter's argument
+   |
+help: pass the value itself, without `&`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#5-values-functions-and-closures
+
+error[B0201]: expected `Float`, found `Int`
+  --> check/inout_args.bloom:13:10
+   |
+13 |   widen(&n)
+   |          ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0403]: an `inout` argument is a `var`'s place
+  --> check/inout_args.bloom:14:9
+   |
+14 |   bump(&5)
+   |         ^ not a `var`
+   |
+help: copy it into a `var` first: `var next = …`, then pass `&next`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

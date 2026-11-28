@@ -362,6 +362,9 @@ pub struct Param {
     pub spread: bool,
     /// `..props: Props` (a view's): the props spread, and their whole value named.
     pub whole: Option<Ident>,
+    /// `_ xs: inout [Int]` (Swift's): the caller's place, passed as `&xs`, written back when the
+    /// function returns.
+    pub inout: bool,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,
@@ -591,15 +594,46 @@ pub enum AssignOp {
     Add,
     Sub,
     Mul,
+    /// `&=`, `|=`, `^=`, `<<=`, `>>=` (Swift's), on an `Int`.
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
 }
 
 impl AssignOp {
+    /// `&=`, `|=`, `^=`, `<<=`, `>>=`: an `Int`'s bits.
+    pub fn is_bitwise(self) -> bool {
+        matches!(self, AssignOp::BitAnd | AssignOp::BitOr | AssignOp::BitXor | AssignOp::Shl | AssignOp::Shr)
+    }
+
+    /// The binary operator a compound assignment applies (`+=` is `+`).
+    pub fn binary(self) -> Option<BinaryOp> {
+        Some(match self {
+            AssignOp::Set => return None,
+            AssignOp::Add => BinaryOp::Add,
+            AssignOp::Sub => BinaryOp::Sub,
+            AssignOp::Mul => BinaryOp::Mul,
+            AssignOp::BitAnd => BinaryOp::BitAnd,
+            AssignOp::BitOr => BinaryOp::BitOr,
+            AssignOp::BitXor => BinaryOp::BitXor,
+            AssignOp::Shl => BinaryOp::Shl,
+            AssignOp::Shr => BinaryOp::Shr,
+        })
+    }
+
     pub fn text(self) -> &'static str {
         match self {
             AssignOp::Set => "=",
             AssignOp::Add => "+=",
             AssignOp::Sub => "-=",
             AssignOp::Mul => "*=",
+            AssignOp::BitAnd => "&=",
+            AssignOp::BitOr => "|=",
+            AssignOp::BitXor => "^=",
+            AssignOp::Shl => "<<=",
+            AssignOp::Shr => ">>=",
         }
     }
 }
@@ -653,6 +687,8 @@ pub enum StrPart {
 pub enum UnaryOp {
     Not,
     Neg,
+    /// `~x` (Swift's): an `Int`'s bits inverted.
+    BitNot,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -679,6 +715,18 @@ pub enum BinaryOp {
     HalfOpen,
     /// `a...b`: the `Int`s from `a` up to and including `b`.
     Closed,
+    /// `a & b`, `a | b`, `a ^ b` (Swift's): an `Int`'s bits, 64-bit two's complement.
+    BitAnd,
+    BitOr,
+    BitXor,
+    /// `a << n`, `a >> n` (Swift's smart shifts): a negative `n` shifts the other way, and `n`
+    /// of 64 or more gives `0` (or `-1`, shifting a negative right).
+    Shl,
+    Shr,
+    /// `a &+ b`, `a &- b`, `a &* b` (Swift's): wrapping on overflow, 64-bit.
+    WrapAdd,
+    WrapSub,
+    WrapMul,
 }
 
 impl BinaryOp {
@@ -702,6 +750,14 @@ impl BinaryOp {
             BinaryOp::Default => "??",
             BinaryOp::HalfOpen => "..<",
             BinaryOp::Closed => "...",
+            BinaryOp::BitAnd => "&",
+            BinaryOp::BitOr => "|",
+            BinaryOp::BitXor => "^",
+            BinaryOp::Shl => "<<",
+            BinaryOp::Shr => ">>",
+            BinaryOp::WrapAdd => "&+",
+            BinaryOp::WrapSub => "&-",
+            BinaryOp::WrapMul => "&*",
         }
     }
 
@@ -713,8 +769,15 @@ impl BinaryOp {
     /// Binding power: higher binds tighter (section 6.1).
     pub fn precedence(self) -> u8 {
         match self {
-            BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => 8,
-            BinaryOp::Add | BinaryOp::Sub => 7,
+            // Swift's `BitwiseShiftPrecedence`, above multiplication.
+            BinaryOp::Shl | BinaryOp::Shr => 9,
+            BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem | BinaryOp::BitAnd | BinaryOp::WrapMul => 8,
+            BinaryOp::Add
+            | BinaryOp::Sub
+            | BinaryOp::BitOr
+            | BinaryOp::BitXor
+            | BinaryOp::WrapAdd
+            | BinaryOp::WrapSub => 7,
             // Swift's `RangeFormationPrecedence`: below `+`, above the comparisons.
             BinaryOp::HalfOpen | BinaryOp::Closed => 6,
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => 5,
@@ -784,6 +847,10 @@ pub enum ExprKind {
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
+    /// `x[keyPath: kp]` (Swift's): the field of `x` the key path `kp` names, read or written.
+    KeyPathIndex(Box<Expr>, Box<Expr>),
+    /// `&x` (Swift's): a place passed to an `inout` parameter, written back after the call.
+    InOut(Box<Expr>),
     /// `xs?[i]` (Swift's optional subscript): the element when `xs` is not `none`, as JS's
     /// `xs?.[i]`; `none` from there through the chain.
     OptIndex(Box<Expr>, Box<Expr>),
@@ -867,6 +934,10 @@ pub struct Closure {
     pub ret: Option<TypeExpr>,
     pub body: Vec<Stmt>,
     pub span: Span,
+    /// `reduce(0, +)`, `sorted(by: <)`: an operator passed as a function (Swift's). The parser
+    /// writes it as the closure `{ $0 + $1 }` (`params` `$0`, `$1`, `body` the binary), so a
+    /// backend reads an ordinary closure; the formatter prints the operator back.
+    pub operator: Option<BinaryOp>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

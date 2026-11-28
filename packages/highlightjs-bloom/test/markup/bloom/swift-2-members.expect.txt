@@ -1,0 +1,49 @@
+<span class="hljs-comment">// Members, key paths and operator functions: a tuple&#x27;s member and optional chaining to it,</span>
+<span class="hljs-comment">// `if let x` and `guard let x else`, `\.k` and `\T.k`, `x[keyPath: k]` read and written, and an</span>
+<span class="hljs-comment">// operator as a function. `bloom check` passes on it.</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Account</span> {
+  <span class="hljs-keyword">var</span> name: <span class="hljs-type">String</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&quot;</span>
+  <span class="hljs-keyword">var</span> visits: <span class="hljs-type">Int</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">members</span>(_ pair: (<span class="hljs-type">Int</span>, <span class="hljs-type">String</span>), _ maybe: (<span class="hljs-type">Int</span>, <span class="hljs-type">String</span>)<span class="hljs-operator">?</span>, _ user: <span class="hljs-type">Account</span><span class="hljs-operator">?</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-keyword">let</span> first <span class="hljs-operator">=</span> pair.<span class="hljs-number">0</span>
+  <span class="hljs-keyword">let</span> second <span class="hljs-operator">=</span> maybe<span class="hljs-operator">?</span>.<span class="hljs-number">1</span> <span class="hljs-operator">??</span> <span class="hljs-string">&quot;&quot;</span>
+  <span class="hljs-keyword">let</span> name <span class="hljs-operator">=</span> user<span class="hljs-operator">?</span>.name <span class="hljs-operator">??</span> second
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> user {
+    <span class="hljs-keyword">return</span> user.visits <span class="hljs-operator">+</span> first
+  }
+  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> maybe <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> name.count }
+  <span class="hljs-keyword">return</span> maybe.<span class="hljs-number">0</span>
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">operators</span>(_ xs: [<span class="hljs-type">Int</span>]) <span class="hljs-operator">-&gt;</span> [<span class="hljs-type">Int</span>] {
+  <span class="hljs-keyword">let</span> total <span class="hljs-operator">=</span> xs.<span class="hljs-title function_ invoke__">reduce</span>(<span class="hljs-number">0</span>, <span class="hljs-operator">+</span>)
+  <span class="hljs-keyword">let</span> add: (<span class="hljs-type">Int</span>, <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> <span class="hljs-operator">=</span> (<span class="hljs-operator">+</span>)
+  <span class="hljs-keyword">return</span> xs.<span class="hljs-title function_ invoke__">sorted</span>(by: <span class="hljs-operator">&gt;</span>) <span class="hljs-operator">+</span> [total, <span class="hljs-title function_ invoke__">add</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)]
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">visited</span>(_ accounts: [<span class="hljs-type">Account</span>], _ key: <span class="hljs-type">WritableKeyPath</span><span class="hljs-operator">&lt;</span><span class="hljs-type">Account</span>, <span class="hljs-type">Int</span><span class="hljs-operator">&gt;</span>) <span class="hljs-operator">-&gt;</span> [<span class="hljs-type">Account</span>] {
+  <span class="hljs-keyword">let</span> read: <span class="hljs-type">KeyPath</span><span class="hljs-operator">&lt;</span><span class="hljs-type">Account</span>, <span class="hljs-type">String</span><span class="hljs-operator">&gt;</span> <span class="hljs-operator">=</span> <span class="hljs-operator">\</span><span class="hljs-type">Account</span><span class="hljs-property">.name</span>
+  <span class="hljs-keyword">var</span> next <span class="hljs-operator">=</span> accounts[<span class="hljs-number">0</span>].<span class="hljs-title function_ invoke__">with</span>(<span class="hljs-operator">\</span><span class="hljs-property">.visits</span>, <span class="hljs-number">1</span>)
+  next[keyPath: key] <span class="hljs-operator">=</span> next[keyPath: key] <span class="hljs-operator">+</span> accounts.count
+  next[keyPath: key] <span class="hljs-operator">+=</span> <span class="hljs-number">1</span>
+  <span class="hljs-keyword">return</span> [next, <span class="hljs-type">Account</span>(name: next[keyPath: read])]
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Reading</span> {
+  <span class="hljs-keyword">let</span> value: <span class="hljs-type">Double</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">init</span><span class="hljs-operator">?</span>(text: <span class="hljs-type">String</span>) {
+    <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> v <span class="hljs-operator">=</span> <span class="hljs-type">Double</span>(text) <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> <span class="hljs-literal">none</span> }
+    <span class="hljs-variable language_">self</span>.value <span class="hljs-operator">=</span> v
+  }
+}
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">fill</span>(_ grid: <span class="hljs-keyword">inout</span> [<span class="hljs-type">Int</span>], with v: <span class="hljs-type">Int</span>) {
+  grid.<span class="hljs-title function_ invoke__">append</span>(v)
+}
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">packed</span>(_ a: <span class="hljs-type">Int</span>, _ b: <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-keyword">let</span> argb <span class="hljs-operator">=</span> a <span class="hljs-operator">&lt;&lt;</span> <span class="hljs-number">24</span> <span class="hljs-operator">|</span> b <span class="hljs-operator">&amp;+</span> <span class="hljs-number">1</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-operator">~</span>argb
+}

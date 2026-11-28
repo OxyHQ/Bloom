@@ -1,0 +1,4 @@
+export declare function shouldFeedOwnProfileScroll(options: { readonly tab: string; readonly isWeb: boolean; readonly isPrivate?: boolean }): boolean;
+export declare function greeting(options: { readonly for: string; readonly loud?: boolean }): string;
+export declare function pageSize(options?: { readonly compact?: boolean }): number;
+export declare function uses(): boolean;

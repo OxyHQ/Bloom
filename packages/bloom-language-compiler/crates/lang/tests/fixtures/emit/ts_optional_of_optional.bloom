@@ -1,0 +1,8 @@
+// TS's `T | undefined` of a `T` that may be `undefined` already is one optional: `server?.title`
+// reads the field (Mention's ChannelScreen, `profileSEOPolicy(…).server`).
+import { profileSEOPolicy } from "@/seo"
+
+public func seoTitle(_ flag: Bool) -> String {
+  let policy = profileSEOPolicy(flag, none)
+  return policy.server?.title ?? "fallback"
+}

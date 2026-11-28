@@ -40,9 +40,11 @@
       },
     ],
     // An enum case or token where a value is expected: `= .loading`, `.padding(.md)`,
-    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`.
+    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`; never the
+    // member of `user?.name`, whose `?` against a value chains.
     'implicit-member': {
-      pattern: /((?:[=(,:?[!]|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_]\w*/,
+      pattern:
+        /((?:[=(,:[!]|(?:^|[^\w)\]!])\?|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_]\w*/,
       lookbehind: true,
       alias: 'constant',
     },
@@ -50,8 +52,16 @@
     attribute: { pattern: /@[A-Za-z_]\w*/, alias: 'atrule' },
     // A test macro: `#expect(…)`.
     macro: { pattern: /#[A-Za-z_]\w*/, alias: 'property' },
-    // A key path: `\.likes`, `\Post.title`.
-    'key-path': { pattern: /\\(?:[A-Z]\w*)?\.[A-Za-z_]\w*/, alias: 'property' },
+    // A key path: `\.likes`, `\Post.title`, `\Post.author.name`; its root is a type.
+    'key-path': {
+      pattern: /\\(?:[A-Z]\w*)?(?:\.[A-Za-z_]\w*)+/,
+      alias: 'property',
+      inside: {
+        operator: /^\\/,
+        'class-name': /^[A-Z]\w*/,
+        punctuation: /\./,
+      },
+    },
     'class-name': {
       // `struct Post`, `class FeedModel`, `actor Counter`, `view Composer`, `import Bloom`.
       pattern:
@@ -95,7 +105,7 @@
       /\bactor(?=\s+$)/,
       /\b(?:get|set)\b(?=\s*(?:set\s*)?\})/,
       /\bextern\s+(?:module|native)\b/,
-      /\b(?:any|as|async|await|body|break|case|catch|class|continue|default|defer|do|else|enum|extension|extern|fallthrough|fileprivate|final|fn|for|from|func|guard|if|import|in|init|internal|is|layout|let|match|mutating|nonisolated|private|protocol|pub|public|repeat|rethrows|return|screen|some|static|struct|switch|task|throw|throws|try|type|var|view|where|while)\b/,
+      /\b(?:any|as|async|await|body|break|case|catch|class|continue|default|defer|do|else|enum|extension|extern|fallthrough|fileprivate|final|fn|for|from|func|guard|if|import|in|init|inout|internal|is|layout|let|match|mutating|nonisolated|private|protocol|pub|public|repeat|rethrows|return|screen|some|static|struct|switch|task|throw|throws|try|type|var|view|where|while)\b/,
     ],
     boolean: /\b(?:true|false)\b/,
     nil: { pattern: /\bnone\b/, alias: 'constant' },
@@ -107,7 +117,8 @@
       /\b(?:0x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*|[0-9](?:_?[0-9])*(?:\.[0-9](?:_?[0-9])*)?(?:[eE][+-]?[0-9]+)?)\b/,
     'class-name-reference': { pattern: /\b[A-Z]\w*/, alias: 'class-name' },
     function: /\b[a-z_]\w*(?=\s*\()/,
-    operator: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=\\]/,
+    operator:
+      /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|<<=?|>>=?|&[+\-*]|[&|^]=|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=\\^~]/,
     punctuation: /[{}[\]();,.:]/,
   };
   interpolation.inside.rest = Prism.languages.bloom;

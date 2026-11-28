@@ -1,0 +1,65 @@
+function $toFloat(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && !Number.isNaN(value) ? value : undefined;
+}
+
+export interface Temperature {
+  readonly celsius: number;
+  readonly label: string;
+}
+
+export function Temperature$$init$fahrenheit(fahrenheit: number): Temperature {
+let self = { label: "°C" } as Temperature;
+self = { ...self, celsius: ((fahrenheit - 32.0) * 5.0) / 9.0 };
+return self;
+}
+
+export function Temperature$$init$reading(reading: string): Temperature | undefined {
+let self = { label: "°C" } as Temperature;
+const $t0 = $toFloat(reading);
+if (!($t0 != null)) {
+return undefined;
+}
+if ($t0 < (-273.15)) {
+return undefined;
+}
+self = { ...self, celsius: $t0 };
+self = { ...self, label: "read" };
+return self;
+}
+
+export function Temperature$kelvin(self: Temperature): number {
+return self.celsius + 273.15;
+}
+
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+export function Point$$init$diagonal(n: number): Point {
+let self = {} as Point;
+self = { x: n, y: n };
+return self;
+}
+
+export type Size = "small" | "large";
+
+export function Size$$init$count(count: number): Size {
+let self!: Size;
+if (count > 10) {
+self = "large";
+} else {
+self = "small";
+}
+return self;
+}
+
+export function readings(): number {
+const body = Temperature$$init$fahrenheit(98.6);
+const read = Temperature$$init$reading("21") ?? body;
+const p = Point$$init$diagonal(2);
+const q = { x: 1, y: p.y };
+return ((Temperature$kelvin(body) + read.celsius) + q.x) + ((Size$$init$count(3) === ("small")) ? 1.0 : 0.0);
+}
+
