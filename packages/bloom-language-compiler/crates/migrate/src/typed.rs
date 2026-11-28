@@ -579,7 +579,11 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                             d.message["expected `".len()..].split_once("`, found `").unwrap_or_default();
                         want.starts_with(|c: char| c.is_ascii_uppercase())
                             && want.chars().all(|c| c.is_alphanumeric() || c == '_')
-                            && !["String", "Float", "Int", "Double", "Bool", "View"].contains(&want)
+                            // A string or number name TS narrowed (`if (!name || …) return …; else`):
+                            // a plain name only, as a field path may be a TS getter's fresh read.
+                            && (!["String", "Float", "Int", "Double", "Bool", "View"].contains(&want)
+                                || (["String", "Float", "Int", "Double"].contains(&want)
+                                    && text.chars().all(|c| c.is_alphanumeric() || c == '_')))
                             && found.strip_suffix("?`") == Some(want)
                     } =>
             {

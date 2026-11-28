@@ -1,0 +1,21 @@
+// A string or number name TS narrowed to present (the `else` of `!name || …`), passed where a
+// Bloom view requires it, is `name!` where bloomc does not narrow it.
+
+private struct Live: View {
+  let username: String
+  var body: some View {
+    Text(username)
+  }
+}
+
+public struct Card: View {
+  var username: String? = none
+  var disable: Bool? = none
+  var body: some View {
+    if (username == none || username.isEmpty) || disable == true {
+      Text("nobody")
+    } else {
+      Live(username: username!)
+    }
+  }
+}
