@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function primary(c: boolean, name: string | undefined | null, handle: string | undefined | null): string;
+export declare function chained(c: boolean, name: string | undefined | null, other: string | undefined | null): string | undefined;
+export interface PrimaryProps {
+  readonly hasName: boolean;
+  readonly name?: string | undefined | null;
+  readonly handle?: string | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Primary())`), or from TSX as `toElement(Primary())`. */
+export declare const Primary: (props: PrimaryProps) => ComposedView;

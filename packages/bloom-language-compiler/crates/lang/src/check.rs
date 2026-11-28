@@ -5444,9 +5444,14 @@ impl<'o> Checker<'o> {
                 // to `x`'s optional, not to `x`'s type.
                 // `c ? s : opt?.x`: the other branch may be `none` too (an optional chain), so it
                 // is held to `s`'s optional and the two join to it.
+                // An optional `x` is its own optional: `c ? name : d ? "s" : none` of a `String?`
+                // name is `String?`, never `String??` (Swift flattens none here either).
                 let optional_a = (expected.is_none()
                     && (ends_in_none(otherwise) || optional_chain(otherwise)))
-                .then(|| Ty::Option(Box::new(a.clone())));
+                .then(|| match self.resolve(&a) {
+                    Ty::Option(_) => a.clone(),
+                    _ => Ty::Option(Box::new(a.clone())),
+                });
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
