@@ -2,6 +2,7 @@ package so.oxy.bloom.ui
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.HorizontalAlignmentLine
@@ -23,7 +24,13 @@ internal class FlexItem(
   var fill: Boolean = true,
   var shrink: Float = 0f,
   var align: Alignment.Vertical? = null,
-)
+  var alignX: Alignment.Horizontal? = null,
+  /** What a container knows its child by (a tab's value). */
+  var tag: Any? = null,
+) {
+  /** Where React Native's pixel grid puts it (`Grid.kt`). */
+  val grid = GridState()
+}
 
 private class FlexData(private val update: FlexItem.() -> Unit) : ParentDataModifier {
   override fun Density.modifyParentData(parentData: Any?): Any = ((parentData as? FlexItem) ?: FlexItem()).apply(update)
@@ -64,8 +71,29 @@ fun FlexRow(
   modifier: Modifier = Modifier,
   content: @Composable RowScope.() -> Unit,
 ) {
-  Layout(content = { FlexRowScope.content() }, modifier = modifier) { measurables, constraints ->
+  val ref = remember { GridRef() }
+  Layout(content = { FlexRowScope.content() }, modifier = modifier.gridRoot(ref)) { measurables, constraints ->
     val gap = spacing.roundToPx()
+    val own = ref.state
+    val cx0 = own.cx
+    val cy0 = own.cy
+    val ax0 = own.ax
+    val ay0 = own.ay
+    // Each child starts on the grid where its unrounded start rounds to: its carry is set
+    // before it is measured, from the unrounded widths before it.
+    val gapU = spacing.toPx()
+    var accX = 0f
+    val unroundedW = FloatArray(measurables.size)
+    val unroundedH = FloatArray(measurables.size)
+    val measureAt = { i: Int, c: Constraints ->
+      val m = measurables[i]
+      val g = (m.parentData as? FlexItem)?.grid
+      g?.reset(cx0, cy0, ax0, ay0)
+      val p = m.measure(c)
+      unroundedW[i] = g?.uw?.takeUnless { it.isNaN() } ?: p.width.toFloat()
+      unroundedH[i] = g?.uh?.takeUnless { it.isNaN() } ?: p.height.toFloat()
+      p
+    }
     val n = measurables.size
     val items = measurables.map { (it.parentData as? FlexItem) ?: FlexItem() }
     val bounded = constraints.hasBoundedWidth
@@ -77,7 +105,7 @@ fun FlexRow(
     // The rigid children: their own width, in order, from the room there is.
     for (i in 0 until n) {
       if (items[i].weight > 0f || items[i].shrink > 0f) continue
-      val p = measurables[i].measure(child((max - used).coerceAtLeast(0)))
+      val p = measureAt(i, child((max - used).coerceAtLeast(0)))
       placeables[i] = p
       used += p.width
     }
@@ -109,7 +137,7 @@ fun FlexRow(
         }
       }
       for (i in shrinking) {
-        val p = measurables[i].measure(child(target[i].coerceAtLeast(0)))
+        val p = measureAt(i, child(target[i].coerceAtLeast(0)))
         placeables[i] = p
         used += p.width
       }
@@ -124,20 +152,40 @@ fun FlexRow(
         val share = if (k == weights.lastIndex) left else (room * items[i].weight / sum).toInt()
         left -= share
         val c = if (items[i].fill) Constraints(share, share, 0, constraints.maxHeight) else child(share)
-        val p = measurables[i].measure(c)
+        val p = measureAt(i, c)
         placeables[i] = p
         used += p.width
       }
     }
-    val width = used.coerceIn(constraints.minWidth, max)
-    val height = placeables.maxOf { it?.height ?: 0 }.coerceIn(constraints.minHeight, constraints.maxHeight)
+    // On the grid: each child at its unrounded start rounded; the row as wide as its unrounded
+    // end rounds to (or its room), as tall as its tallest child's.
+    val xs = IntArray(n)
+    for (i in 0 until n) {
+      if (placeables[i] == null) continue
+      xs[i] = gridRound(cx0 + accX).toInt()
+      accX += unroundedW[i] + gapU
+    }
+    val contentW = if (n > 0) accX - gapU else 0f
+    val contentH = (0 until n).maxOfOrNull { unroundedH[it] } ?: 0f
+    val lastEnd = (0 until n).filter { placeables[it] != null }.maxOfOrNull { xs[it] + placeables[it]!!.width } ?: 0
+    val width = maxOf(lastEnd, gridRound(cx0 + contentW).toInt(), used.coerceAtMost(max)).coerceIn(constraints.minWidth, max)
+    val height = maxOf(
+      (placeables.maxOfOrNull { it?.height ?: 0 } ?: 0),
+      gridRound(cy0 + contentH).toInt(),
+    ).coerceIn(constraints.minHeight, constraints.maxHeight)
+    own.uw = contentW
+    own.uh = contentH
     layout(width, height) {
-      var x = 0
       for (i in 0 until n) {
         val p = placeables[i] ?: continue
         val align = items[i].align ?: across
-        p.placeRelative(x, align.align(p.height, height))
-        x += p.width + gap
+        val y = when (align) {
+          Alignment.Top -> 0
+          Alignment.Bottom -> height - p.height
+          // Centered on the unrounded box, then rounded.
+          else -> (gridRound(cy0 + (maxOf(contentH, height.toFloat()) - unroundedH[i]) / 2f) - gridRound(cy0)).toInt()
+        }
+        p.placeRelative(xs[i], y)
       }
     }
   }

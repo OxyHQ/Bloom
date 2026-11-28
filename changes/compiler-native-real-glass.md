@@ -18,3 +18,12 @@ section: Added
   (`getInitial`, `avatarTintForName`, `avatarInitialsType`).
 - A `VStack` in an `HStack` with a full-width child is as wide as its content (React Native's
   column in a row), and `dict[key] = value` on a local dictionary writes a map, not a list.
+- The native runtime lays out on React Native's pixel grid: each Bloom stack, padding and frame
+  carries what Yoga keeps unrounded and rounds every edge where Yoga rounds it (half up, from the
+  unrounded absolute position), so a view lands on the same pixels as on React Native (Mention's
+  composer capsule: 32..1048 × 341..487 on both). `VStack` is its own flex column for it.
+- Bloom's `Tabs` and `TabItem` (the underline style: the 1 dp baseline in the hairline of the
+  surface, the chosen tab's 2 dp underline sliding in 200 ms, the labels in `primary-text` and
+  the text colour).
+- `.onPress` records the pressed view's window bounds (`PressAnchor`), which an island hands its
+  host with the intent.

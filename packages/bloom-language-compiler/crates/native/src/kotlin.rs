@@ -230,6 +230,8 @@ const NODES: &[&str] = &[
     "Action",
     "NavigationStack",
     "Divider",
+    "Tabs",
+    "TabItem",
 ];
 
 /// A modifier's category, from the spec (`modifierCategories`): `node` when it is an option
@@ -261,6 +263,7 @@ fn token_class(node: &str, param: &str) -> &'static str {
         ("Icon", "size") => "IconSize",
         (_, "size") | (_, "controlSize") => "ControlSize",
         ("Button", "style" | "buttonStyle") => "ButtonStyle",
+        ("Tabs", "style") => "TabsStyle",
         (_, "contentFit") => "ContentFit",
         (_, "corner") => "Corner",
         (_, "tint") => "Tone",

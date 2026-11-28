@@ -3,6 +3,10 @@
 // emitter writes them in reverse order.
 package so.oxy.bloom.ui
 
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.runtime.remember
+import androidx.compose.ui.composed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,22 +29,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+// On React Native's pixel grid (`Grid.kt`): each side where Yoga would round the content's edge.
 fun Modifier.bloomPadding(edge: Edge, value: Dp): Modifier = when (edge) {
-  Edge.all -> padding(value)
-  Edge.horizontal -> padding(horizontal = value)
-  Edge.vertical -> padding(vertical = value)
-  Edge.top -> padding(top = value)
-  Edge.bottom -> padding(bottom = value)
-  Edge.leading -> padding(start = value)
-  Edge.trailing -> padding(end = value)
+  Edge.all -> gridPadding(value, value, value, value)
+  Edge.horizontal -> gridPadding(value, 0.dp, value, 0.dp)
+  Edge.vertical -> gridPadding(0.dp, value, 0.dp, value)
+  Edge.top -> gridPadding(0.dp, value, 0.dp, 0.dp)
+  Edge.bottom -> gridPadding(0.dp, 0.dp, 0.dp, value)
+  Edge.leading -> gridPadding(value, 0.dp, 0.dp, 0.dp)
+  Edge.trailing -> gridPadding(0.dp, 0.dp, value, 0.dp)
 }
 
-fun Modifier.bloomPadding(value: Dp): Modifier = padding(value)
+fun Modifier.bloomPadding(value: Dp): Modifier = gridPadding(value, value, value, value)
 
 /** Points the view computes as it renders (`.padding(.top, inset)`). */
 fun Modifier.bloomPadding(edge: Edge, value: Double): Modifier = bloomPadding(edge, value.dp)
 
-fun Modifier.bloomPadding(value: Double): Modifier = padding(value.dp)
+fun Modifier.bloomPadding(value: Double): Modifier = bloomPadding(value.dp)
 
 /** A length: a token (`Dp`, `Length.full`) or points computed as the view renders. */
 private fun length(value: Any?): Dp? = when (value) {
@@ -68,14 +73,19 @@ fun Modifier.bloomFrame(
   var m = this
   val w = length(width)
   val h = length(height)
-  if (minWidth != null || maxWidth != null) {
-    m = m.widthIn(min = length(minWidth) ?: Dp.Unspecified, max = length(maxWidth) ?: Dp.Unspecified)
+  // `Length.full` fills; the rest are points on React Native's pixel grid (`Grid.kt`).
+  if (w == Dp.Infinity) m = m.fillMaxWidth()
+  if (h == Dp.Infinity) m = m.fillMaxHeight()
+  fun side(d: Dp?) = if (d == null || d == Dp.Infinity) Dp.Unspecified else d
+  val gw = side(w)
+  val gh = side(h)
+  val minW = length(minWidth) ?: Dp.Unspecified
+  val maxW = length(maxWidth) ?: Dp.Unspecified
+  val minH = length(minHeight) ?: Dp.Unspecified
+  val maxH = length(maxHeight) ?: Dp.Unspecified
+  if (listOf(gw, gh, minW, maxW, minH, maxH).any { it != Dp.Unspecified }) {
+    m = m.gridFrame(gw, gh, minW, maxW, minH, maxH)
   }
-  if (minHeight != null || maxHeight != null) {
-    m = m.heightIn(min = length(minHeight) ?: Dp.Unspecified, max = length(maxHeight) ?: Dp.Unspecified)
-  }
-  if (w != null) m = if (w == Dp.Infinity) m.fillMaxWidth() else if (w != Dp.Unspecified) m.width(w) else m
-  if (h != null) m = if (h == Dp.Infinity) m.fillMaxHeight() else if (h != Dp.Unspecified) m.height(h) else m
   return m
 }
 
@@ -123,8 +133,46 @@ fun Modifier.bloomOpacity(value: Double): Modifier = alpha(value.toFloat())
 fun Modifier.bloomAspectRatio(ratio: Double): Modifier = aspectRatio(ratio.toFloat())
 
 /** `.onPress { }`: a tap, with no ripple (Bloom's press feedback is the node's own). */
-fun Modifier.bloomOnPress(action: () -> Unit): Modifier =
-  clickable(interactionSource = null, indication = null, onClick = action)
+fun Modifier.bloomOnPress(action: () -> Unit): Modifier = composed {
+  val placed = remember { arrayOfNulls<androidx.compose.ui.layout.LayoutCoordinates>(1) }
+  onPlaced { placed[0] = it }.clickable(interactionSource = null, indication = null) {
+    placed[0]?.takeIf { it.isAttached }?.let { PressAnchor.record(it.boundsInWindow()) }
+    action()
+  }
+}
+
+/**
+ * Where the view last pressed through `.onPress` is in its window (px), and when: what a host
+ * presents from it (an island's "…" menu grows out of the glyph that was pressed).
+ */
+object PressAnchor {
+  var left = 0f
+    private set
+  var top = 0f
+    private set
+  var width = 0f
+    private set
+  var height = 0f
+    private set
+  var at = 0L
+    private set
+
+  fun record(bounds: androidx.compose.ui.geometry.Rect) {
+    left = bounds.left
+    top = bounds.top
+    width = bounds.width
+    height = bounds.height
+    at = android.os.SystemClock.uptimeMillis()
+  }
+
+  /** The last press's bounds if it was within [withinMs], else none. */
+  fun recent(withinMs: Long = 1000L): androidx.compose.ui.geometry.Rect? =
+    if (at != 0L && android.os.SystemClock.uptimeMillis() - at <= withinMs) {
+      androidx.compose.ui.geometry.Rect(left, top, left + width, top + height)
+    } else {
+      null
+    }
+}
 
 /** Bloom's inherited `.disabled()`: a subtree's controls stop taking input. */
 val LocalDisabled = androidx.compose.runtime.compositionLocalOf { false }

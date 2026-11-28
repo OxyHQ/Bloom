@@ -107,9 +107,7 @@ fun VStack(
     HAlign.trailing, HAlign.end -> Alignment.End
     else -> Alignment.Start
   }
-  val column = @Composable {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(spacing), horizontalAlignment = across, content = content)
-  }
+  val column = @Composable { FlexColumn(spacing, across, modifier, content) }
   if (foreground == null) column() else CompositionLocalProvider(LocalForeground provides foreground) { column() }
 }
 
@@ -335,7 +333,7 @@ fun Avatar(
     if (text != null) {
       val tint = avatarTint(if (initials.isNullOrBlank() && !name.isNullOrBlank()) avatarTintForName(name) else "neutral")
       Box(modifier.size(size.dp).clip(CircleShape).background(tint.first), contentAlignment = Alignment.Center) {
-        BasicText(text, style = avatarInitialsType(size.dp.value).copy(color = tint.second))
+        BasicText(text, style = avatarInitialsType(size.dp.value).copy(color = tint.second, fontFamily = BloomFonts.sans()))
       }
       return
     }
