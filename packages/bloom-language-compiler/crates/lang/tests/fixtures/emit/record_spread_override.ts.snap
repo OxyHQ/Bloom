@@ -1,0 +1,31 @@
+
+export interface Draft {
+  readonly q: string;
+  readonly cursor?: string | undefined;
+}
+
+export interface Page<T> {
+  readonly items: readonly T[];
+  readonly more: boolean;
+}
+
+export function searched(draft: Draft, text: string): Draft {
+const next = { q: text };
+return next;
+}
+
+export function cleared(draft: Draft): string {
+const next = { q: draft.q };
+return next.q;
+}
+
+export function ended(page: Page<number>): Page<number> {
+const last = { items: page.items, more: false };
+return last;
+}
+
+export function tagged(draft: Draft): string {
+const extra = { ...draft, tag: "new" };
+return extra.tag;
+}
+

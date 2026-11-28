@@ -1376,29 +1376,59 @@ impl Checker<'_> {
             _ => {}
         }
         let mut fields: Vec<FieldDef> = Vec::new();
-        for entry in entries {
+        // The keys written out: a key written twice is B0208, while a key written after a
+        // spread replaces the spread's field (copy-and-change, as JS's `{ ...d, k: v }`).
+        let mut explicit: Vec<&str> = Vec::new();
+        // `{ ..s, k: v }` whose first entry spreads a struct: its fields keep their types, and
+        // when every key written is one of them the literal is that struct, as it is when the
+        // struct is expected.
+        let mut base: Option<(DefId, Vec<Ty>)> = None;
+        let mut spreads = 0;
+        for (index, entry) in entries.iter().enumerate() {
             match entry {
                 RecordEntry::Field { key, value } => {
-                    if fields.iter().any(|f| f.name == key.name) {
+                    if explicit.contains(&key.name.as_str()) {
                         self.report(
                             Diagnostic::error("B0208", key.span, format!("`{}` is given twice", key.name))
                                 .label("a record has each key once")
                                 .spec("44-structs"),
                         );
                     }
-                    // A module constant's record (`let SIZES = { small: "8" }`): its literals'
-                    // types, as TS's `as const` (R6). Only its own fields, not nested values.
-                    let literal = std::mem::take(&mut self.literal_record);
-                    let hint = if literal { super::string_literal(value) } else { None };
-                    let ty = self.boundary(value, hint.as_ref());
-                    self.literal_record = literal;
+                    explicit.push(&key.name);
+                    let field_ty = base.as_ref().and_then(|(def, args)| {
+                        self.out.defs[*def]
+                            .fields()
+                            .iter()
+                            .find(|f| f.name == key.name)
+                            .map(|f| substitute(&f.ty, args))
+                    });
+                    let ty = match field_ty {
+                        Some(field_ty) => {
+                            self.expr(value, Some(&field_ty));
+                            field_ty
+                        }
+                        None => {
+                            // A module constant's record (`let SIZES = { small: "8" }`): its
+                            // literals' types, as TS's `as const` (R6). Only its own fields, not
+                            // nested values.
+                            let literal = std::mem::take(&mut self.literal_record);
+                            let hint = if literal { super::string_literal(value) } else { None };
+                            let ty = self.boundary(value, hint.as_ref());
+                            self.literal_record = literal;
+                            ty
+                        }
+                    };
                     fields.retain(|f| f.name != key.name);
                     fields.push(FieldDef { name: key.name.clone(), ty, default: FieldDefault::None });
                 }
                 RecordEntry::Spread(value) => {
+                    spreads += 1;
                     let ty = self.expr(value, None);
                     match self.resolve(&ty) {
                         Ty::Adt(def, args) if is_struct(self, def) => {
+                            if index == 0 {
+                                base = Some((def, args.clone()));
+                            }
                             for field in self.out.defs[def].fields().to_vec() {
                                 fields.retain(|f| f.name != field.name);
                                 let ty = substitute(&field.ty, &args);
@@ -1422,6 +1452,19 @@ impl Checker<'_> {
         }
         if let Some(foreign @ Ty::Foreign(_)) = target {
             return foreign;
+        }
+        if let Some((def, args)) = base
+            && spreads == 1
+            && explicit.iter().all(|k| self.out.defs[def].fields().iter().any(|f| f.name == *k))
+        {
+            let ty = Ty::Adt(def, args);
+            if let Some(target) = &target
+                && !self.coerce(&ty, target)
+            {
+                self.mismatch(expr.span, &ty, target);
+            }
+            self.out.calls.insert(expr.id, CallRes::Struct(def));
+            return ty;
         }
         let ty = self.record_type(fields);
         if let Some(target) = &target {
