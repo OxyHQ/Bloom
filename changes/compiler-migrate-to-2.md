@@ -15,3 +15,10 @@ section: Added
 - `bloom migrate --write` draws a migrated view's JSX in the files that import it as `toElement(X({ … }))` (a `key` is `toElement`'s second argument), importing `toElement` where needed.
 - A view that hands its props on whole has them written out, and passes each one (`Row(post: post, …)`). Rest props (`{ label, ...menu }: P & { label }`) are one stored property of `P`. A local function of one destructured object takes labelled parameters.
 - TanStack's `useQuery({ queryKey, queryFn })` is drawn with an app's `TanStackQuery` binding module (`useQuery(QueryOptions(…))`) when the file reads only the options and result fields the binding declares.
+- `actions(function …)` and `menu(function …)` are `struct X: MenuActions` and `struct X: MenuContent`, and a generic component is `struct X<T>: View`. An intersection alias of the file's object types is one struct. A menu's row list, `{c && xs?.map(…)}` and a setter in a statement's `?:` or `&&` are written as builder lines and `if`s.
+- More TS forms with a 2.0 spelling:
+  - an inline `as const` string list is a module constant of its literals' union, and an `as const` list of pairs is a list of tuples;
+  - `padStart`/`padEnd` are `paddingStart`/`paddingEnd`;
+  - `Boolean(x?.trim())` and a value `a && "…"` keep JS's truthiness;
+  - `[value, onValueChange]` is a `Binding`;
+  - a keyed write is a subscript set, and a `switch` that returns from every case has no `case _`.
