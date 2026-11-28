@@ -3410,7 +3410,7 @@ impl<'a> Emitter<'a> {
                         (Recv::List, "indexOf") => return format!("{b}.bloomIndexOf({joined})"),
                         (Recv::List, "find") => return format!("{b}.firstOrNull({joined})"),
                         (Recv::List, "compactMap") => return format!("{b}.mapNotNull({joined})"),
-                        (Recv::Option, "map") => return format!("{b}?.let({joined})"),
+                        (Recv::Option, "map" | "flatMap") => return format!("{b}?.let({joined})"),
                         (Recv::Option, "unwrapOr") => return format!("({b} ?: {joined})"),
                         // core12's natural order (no comparator, over Int, Float, String or
                         // Date): `min`/`max` are `T?`, `sorted` Kotlin's own.
