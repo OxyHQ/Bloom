@@ -1,0 +1,30 @@
+// Value types: structs with defaults, `let` and `var`, nested values, copies.
+public struct Author: Equatable, Hashable {
+  public let name: String
+  public let handle: String
+}
+
+public struct Post: Identifiable, Equatable {
+  public let id: String
+  public let author: Author
+  public var likes: Int = 0
+  public var tags: [String] = []
+  public let score: Double = 1.5
+}
+
+/// A post liked: `var` is a copy, changed in place.
+public func liked(_ post: Post) -> Post {
+  var copy = post
+  copy.likes += 1
+  copy
+}
+
+func total(_ posts: [Post]) -> Int {
+  var sum = 0
+  for p in posts {
+    sum += p.likes
+  }
+  sum
+}
+
+let origin = Author(name: "Ada", handle: "ada")

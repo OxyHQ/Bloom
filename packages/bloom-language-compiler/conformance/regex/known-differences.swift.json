@@ -1,0 +1,11 @@
+{
+  "$comment": "Cases of conformance/regex/expected.json the Swift runtime (BloomRegex: RegexTranslate over ICU) does not match, by pattern, flags and text, each with why. The regex conformance test fails on any other mismatch, and on an entry here that matches.",
+  "cases": [
+    {
+      "pattern": ".",
+      "flags": "",
+      "text": "😀",
+      "why": "Without `u`, JS's `.` matches one UTF-16 unit, half of an emoji. A Swift string cannot hold half a character (it is well-formed), so the match is the whole emoji: write the `u` flag."
+    }
+  ]
+}

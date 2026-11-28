@@ -1,0 +1,22 @@
+// Closures: parameters, `$0`, multi-statement bodies with a value, stored and passed on.
+public struct Counter {
+  public let onChange: (Int) -> Void
+  public let format: (Int) -> String
+}
+
+func apply(_ xs: [Int], _ f: (Int) -> Int) -> [Int] { xs.map(f) }
+
+func doubled(_ xs: [Int]) -> [Int] { xs.map { $0 * 2 } }
+
+func labels(_ xs: [Int]) -> [String] {
+  xs.map { n in
+    let half = n / 2
+    "\(n) is \(half) twice"
+  }
+}
+
+func make() -> Counter {
+  Counter(onChange: { n in print("now \(n)") }, format: { n in "#\(n)" })
+}
+
+func sum(_ xs: [Int]) -> Int { xs.reduce(0) { acc, x in acc + x } }

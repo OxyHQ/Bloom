@@ -1,0 +1,17 @@
+# Goldens that emit but do not type-check as Swift yet: the Swift backend's work queue, each with
+# the reason. scripts/typecheck-swift.sh skips them; a case leaves this list when it type-checks.
+#
+# TypeScript-shaped data with no Swift meaning yet (structural records, `Partial`, JS `Map`).
+records            # structural records, `Partial<T>`
+record_types       # a record type alias
+record_key_index   # a record indexed by key
+record_spread_override  # a record spread with an override
+keyed_match        # `Partial<T>`
+collections        # JS `Map<K, V>`
+# BloomUI nodes not on SwiftUI yet.
+inline_view        # ErrorBoundary
+mixed_runs         # RawText
+optional_binding   # MenuContent
+# Emitter gaps.
+soft_names         # a view member named like `body`
+union_casts        # the stdlib's number formatting labels (`fractionDigits:`)

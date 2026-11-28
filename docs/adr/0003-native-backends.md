@@ -123,10 +123,11 @@ the paths below are that branch's.
   - **A feed of PostItem rows** (#2049) for text and image posts: avatar, name, verified badge,
     handle and age, text, a 4:3 picture, and the action bar (reply, repost, like, share, counts).
     500 rows of fixture data in a virtualized list, with an optimistic like.
-- **iOS.** Not built. The Mac is not in hangar yet and there is no Swift toolchain on this
-  machine; SwiftUI does not exist on Linux, so `swiftc -typecheck` would need a stub SwiftUI and
-  would prove little. `--target swiftui` reports itself unbuilt. The mapping is the closest of
-  the three: the surface is SwiftUI's (see "What the language needs").
+- **iOS.** Not built in the prototype (no Mac in hangar yet). Since the decision, the Swift
+  backend, its runtime and the Xcode project exist and are type-checked on Linux with Swift's own
+  toolchain against a SwiftUI interface stub; they are unmeasured until the Mac lane. The state,
+  what that check does and does not prove, and what the Mac needs are in
+  [Native iOS](../native-ios.mdx).
 
 ### What it took
 

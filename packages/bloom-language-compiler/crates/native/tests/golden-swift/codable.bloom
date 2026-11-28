@@ -1,0 +1,13 @@
+// Codable: derived, for structs with optionals and nested values, and payload-less enums.
+public enum Role: Codable, Equatable {
+  case reader
+  case editor
+}
+
+public struct Profile: Codable, Equatable {
+  public let id: String
+  public let name: String
+  public let bio: String?
+  public var role: Role = .reader
+  public var tags: [String] = []
+}

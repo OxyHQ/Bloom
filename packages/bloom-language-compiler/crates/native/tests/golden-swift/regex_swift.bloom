@@ -1,0 +1,47 @@
+// `Regex` in Swift's shape: `try Regex("…")` (throws on an invalid pattern), `wholeMatch(of:)`,
+// `firstMatch(of:)`, `matches(of:)`, `contains(_:)`, `replacing(_:with:)`, `split(separator:)`,
+// and a group that did not take part is `none`.
+public func isDigits(_ s: String) -> Bool {
+  guard let digits = try? Regex("\\d+") else { return false }
+  return s.wholeMatch(of: digits) != none
+}
+
+public func validPattern(_ pattern: String) -> String {
+  do {
+    let _ = try Regex(pattern)
+    return "valid"
+  } catch {
+    return "invalid"
+  }
+}
+
+public func firstHandle(_ s: String) -> String? {
+  guard let handle = try? Regex("@(\\w+)") else { return none }
+  return s.firstMatch(of: handle)?.group(1)
+}
+
+public func handles(_ s: String) -> [String] {
+  guard let handle = try? Regex("@(\\w+)") else { return [] }
+  return s.matches(of: handle).compactMap { $0.group(1) }
+}
+
+public func hasNumber(_ s: String) -> Bool {
+  guard let digit = try? Regex("[0-9]") else { return false }
+  return s.contains(digit)
+}
+
+public func squeezed(_ s: String) -> String {
+  guard let spaces = try? Regex("\\s+") else { return s }
+  return s.replacing(spaces, with: " ")
+}
+
+public func fields(_ s: String) -> [String] {
+  guard let separator = try? Regex("\\s*,\\s*") else { return [] }
+  return s.split(separator: separator)
+}
+
+public func optionalGroups(_ s: String) -> [String?] {
+  guard let pair = try? Regex("(a)|(b)") else { return [] }
+  guard let found = s.firstMatch(of: pair) else { return [] }
+  return [found.group(0), found.group(1), found.group(2), found.group(3)]
+}

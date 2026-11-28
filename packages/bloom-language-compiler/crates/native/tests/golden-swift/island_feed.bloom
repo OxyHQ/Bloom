@@ -1,0 +1,29 @@
+// A module hosted as an island (`native: .island`): the view named after it gets the island
+// host's entry, `IslandFeed__island(props:emit:)`, its props decoded from JSON (a default where
+// one is absent, nothing drawn when a required one does not decode) and its event props emitted
+// by name with their values' JSON, and `IslandFeed__register()`.
+public struct Post: Codable, Equatable {
+  public let id: String
+  public var likes: Int = 0
+}
+
+public struct Intent: Codable, Equatable {
+  public let kind: String
+  public let postId: String
+}
+
+public struct IslandFeed: View {
+  let posts: [Post]
+  var topInset: Double = 0.0
+  var title: String? = none
+  let onIntent: (Intent) -> Void
+  let onRefresh: () -> Void
+  var body: some View {
+    VStack {
+      for post in posts {
+        Text(post.id).onPress { onIntent(Intent(kind: "open", postId: post.id)) }
+      }
+    }
+    .padding(.top, topInset)
+  }
+}

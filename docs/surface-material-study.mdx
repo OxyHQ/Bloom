@@ -176,11 +176,27 @@ This is the direct translation of the post: let the platform draw the material b
 Decided by the owner on 2026-10-30.
 
 1. **One material, no selector.** `Surface` gains no `effect` prop and no style list. `fill` already covers `color` and `none`; the renditions are internal.
-2. **iOS draws a real system blur under floating surfaces only; Android stays opaque.** iOS and Android floating surfaces look different, because Android cannot blur them safely. In-flow surfaces stay a tint on both.
-3. **No Liquid Glass.** `expo-glass-effect` stays out of Bloom, as decided in 9.0. Bloom's measured material is the look.
+2. **iOS draws a real system blur under floating surfaces only; Android stays opaque.** iOS and Android floating surfaces look different, because Android cannot blur them safely. In-flow surfaces stay a tint on both. (Superseded for the native runtimes on 2026-11-28, decision 7.)
+3. **No Liquid Glass.** `expo-glass-effect` stays out of Bloom, as decided in 9.0. Bloom's measured material is the look. (**Superseded on 2026-11-28 by decision 7.**)
 4. **The web bakes the material for in-flow surfaces on a known, opaque backing.** The census and the pixel script (phase 2) are the guard.
 5. **Increased contrast is its own setting, and it adds a hairline.** It is separate from reduce transparency. Under it the body is opaque and the edge light becomes a 1px hairline (phase 1).
 6. **OxyOS shadows wait for the GPU path.** Phase 4 is not done on the CPU host.
+
+Decided by the owner on 2026-11-28, with ADR 0003 (native backends):
+
+7. **Liquid Glass for everything on iOS, through the one shared material.** Buttons, the FAB,
+   header controls, the bottom bar, tabs and menus all draw through Bloom's single material
+   primitive (`BloomMaterial`, [the native runtime API](./native-runtime-api.mdx), "Material"),
+   which is the same material on Android (the bloom-lens engine). On iOS 26 and later it is the
+   system's Liquid Glass (`glassEffect`, interactive for a control); before iOS 26 it is the
+   blur fallback (the spec's `iosFallback` material under Bloom's tint and rim). No component
+   draws its own effect. This replaces decision 3, and decision 2 for the native runtimes: there,
+   controls are glass, not opaque tinted pills. Bloom's accessibility rule still wins (reduce
+   transparency and increased contrast paint the material solid with a hairline, decision 5),
+   and the material follows Bloom's theme, not the window. Today's React Native iOS keeps its
+   current paint until it adopts the same primitive; side-by-side recordings on the Mac lane are
+   the evidence that the glass is at least as good. The iOS plan, including the effects iOS has
+   no system equivalent for, is in [Native iOS](./native-ios.mdx).
 
 ## Not proposed
 
