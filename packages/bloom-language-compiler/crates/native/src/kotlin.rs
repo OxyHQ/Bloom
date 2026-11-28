@@ -2201,8 +2201,14 @@ impl<'a> Emitter<'a> {
         let saved = self.shorthand_it;
         self.shorthand_it = shorthand;
         let params: Vec<String> = c.params.iter().map(|q| kw(&q.name.name.replace('$', "p"))).collect();
-        let head =
-            if shorthand || params.is_empty() { String::new() } else { format!("{} -> ", params.join(", ")) };
+        let head = if shorthand || params.is_empty() {
+            String::new()
+        } else if c.tuple {
+            // `{ (i, x) in … }`: one tuple (a `Pair`, `xs.enumerated()`'s), destructured.
+            format!("({}) -> ", params.join(", "))
+        } else {
+            format!("{} -> ", params.join(", "))
+        };
         let text = if c.body.len() == 1
             && let StmtKind::Expr(e) = &c.body[0].kind
             && !matches!(e.kind, ExprKind::If(_) | ExprKind::Match(_))
