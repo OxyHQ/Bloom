@@ -242,6 +242,10 @@ pub struct Tr<'s> {
     pub json_casts: HashSet<u32>,
     /// The file's `async` functions and arrows (`const f = async () => …`, `useCallback(async …)`).
     pub async_fns: HashSet<String>,
+    /// `const isServer = item.origin === 'server'`: a discriminant test TS narrows `item` by
+    /// through the alias (TS 4.4), which Swift does not: the test is written in place
+    /// (alias → (object, field, literal, equal)).
+    pub discriminant_aliases: HashMap<String, (String, String, String, bool)>,
     /// The module constant initialiser being translated (`Tr::constant`): an `as const` list
     /// that is one is the module constant itself.
     pub module_init: Option<Span>,
@@ -469,6 +473,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         json_errors: HashMap::new(),
         json_casts: HashSet::new(),
         async_fns: HashSet::new(),
+        discriminant_aliases: HashMap::new(),
         module_init: None,
         hoisted: Vec::new(),
         hoisted_names: HashSet::new(),
@@ -580,6 +585,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     tr.scan_keyed_objects(&program);
     tr.scan_json_errors(&program);
     tr.scan_async_fns(&program);
+    tr.scan_discriminant_aliases(&program);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -1402,6 +1408,36 @@ impl<'s> Tr<'s> {
             self.json_errors.insert(name, paths);
             self.json_casts.insert(at);
         }
+    }
+
+    fn scan_discriminant_aliases(&mut self, program: &oxc_ast::ast::Program) {
+        use oxc_ast_visit::Visit;
+        use oxc_syntax::operator::BinaryOperator;
+        struct Scan<'s>(&'s mut HashMap<String, (String, String, String, bool)>);
+        impl<'a> Visit<'a> for Scan<'_> {
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &d.id
+                    && let Some(Expression::BinaryExpression(b)) =
+                        d.init.as_ref().map(|e| e.without_parentheses())
+                    && matches!(b.operator, BinaryOperator::StrictEquality | BinaryOperator::StrictInequality)
+                    && let Expression::StaticMemberExpression(m) = b.left.without_parentheses()
+                    && let Expression::Identifier(object) = &m.object
+                    && let Expression::StringLiteral(lit) = b.right.without_parentheses()
+                {
+                    self.0.insert(
+                        id.name.to_string(),
+                        (
+                            object.name.to_string(),
+                            m.property.name.to_string(),
+                            lit.value.as_str().unwrap_or_default().to_string(),
+                            b.operator == BinaryOperator::StrictEquality,
+                        ),
+                    );
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+        }
+        Scan(&mut self.discriminant_aliases).visit_program(program);
     }
 
     fn scan_async_fns(&mut self, program: &oxc_ast::ast::Program) {

@@ -69,3 +69,4 @@ section: Added
   - a caught value cast to an Axios-like shape (`error as { response?: … }`) is `error.jsValue`, read `err?["response"]?["data"]?["error"]?.string`; a statement's `ok && asyncFn()` is an `if`; a type-guard `filter` on a TS array stays JS's `filter`.
   - the language's node types (`ScrollViewNode`) are `View`; a ternary of two record shapes gives each branch the other's fields as `none`.
   - `--write`: a view a `lazy(() => import(…).then(…))` reads is wrapped as a component, `(props) => toElement(m.X(props))`.
+  - a discriminant test's `const` alias (`isServer ? item.post : …`) is written in place, so bloomc narrows the union there.

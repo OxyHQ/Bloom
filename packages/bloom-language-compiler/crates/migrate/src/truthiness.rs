@@ -222,6 +222,18 @@ pub fn defaults(
         if !is_postfix(text) || !source[end..].starts_with(&format!(" ? {text} : ")) {
             continue;
         }
+        // A member chain's optional string (`seo.server?.title || fallback`): bloomc narrows a
+        // name, not a chain, so the test and the value it gives are spelled out, `(x != none &&
+        // !x!.isEmpty) ? x! : fallback` (JS's falsy `""` included).
+        if found == "String?" && !is_name(text) && text.contains('.') {
+            let then_start = end + 3;
+            if edits.iter().any(|(s, e, _)| start < *e && *s < then_start + text.len()) {
+                continue;
+            }
+            edits.push((start, end, format!("({text} != none && !{text}!.isEmpty)")));
+            edits.push((then_start, then_start + text.len(), format!("{text}!")));
+            continue;
+        }
         let Some(test) = test(text, found, false) else { continue };
         let test = if test.contains(" || ") || test.contains(" && ") { format!("({test})") } else { test };
         if edits.iter().any(|(s, e, _)| start < *e && *s < end) {
