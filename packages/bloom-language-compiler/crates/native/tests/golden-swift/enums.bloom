@@ -1,0 +1,65 @@
+// Enums: plain cases, payloads (labelled and not), recursion, and every pattern.
+public enum Tone: CaseIterable, Equatable {
+  case primary, muted, error
+}
+
+public enum Media: Equatable {
+  case empty
+  case image(url: String, aspect: Double)
+  case video(String)
+}
+
+public enum Tree {
+  case leaf(Int)
+  case node(Tree, Tree)
+}
+
+func describe(_ m: Media) -> String {
+  switch m {
+  case .empty:
+    "nothing"
+  case .image(let url, _):
+    "image \(url)"
+  case .video(let url):
+    "video \(url)"
+  }
+}
+
+func weight(_ t: Tree) -> Int {
+  switch t {
+  case .leaf(let n):
+    n
+  case .node(let a, let b):
+    weight(a) + weight(b)
+  }
+}
+
+func grade(_ n: Int) -> String {
+  switch n {
+  case 0:
+    "none"
+  case 1, 2:
+    "few"
+  default:
+    "many"
+  }
+}
+
+func isImage(_ m: Media) -> Bool {
+  switch m {
+  case .image(_, _):
+    true
+  default:
+    false
+  }
+}
+
+extension Tone {
+  var title: String {
+    switch self {
+    case .primary: "Primary"
+    case .muted: "Muted"
+    case .error: "Error"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# Goldens that emit but do not type-check as Swift yet: the Swift backend's work queue, each with
+# the reason. scripts/typecheck-swift.sh skips them; a case leaves this list when it type-checks.
+#
+# Flow narrowing: Bloom narrows an optional after `if x != none`, `x || y`, a ternary; Swift needs
+# `if let` or `!`. Needs the checker's name resolution (bloom_lang::backend NameRes), not spans.
+state_narrowing    # narrowing after `!= none`
+narrow_paren       # narrowing through parentheses
+ternary_none       # narrowing in a ternary
+optional_or        # an optional as a truth value
+# TypeScript-shaped data with no Swift meaning yet (structural records, `Partial`, JS `Map`).
+records            # structural records, `Partial<T>`
+record_types       # a record type alias
+record_key_index   # a record indexed by key
+record_spread_override  # a record spread with an override
+keyed_match        # `Partial<T>`
+collections        # JS `Map<K, V>`
+# BloomUI nodes and screen chrome not on SwiftUI yet.
+inline_view        # ErrorBoundary
+mixed_runs         # RawText
+optional_binding   # MenuContent
+screen_named       # Screen (the screen node and its chrome)
+# Emitter gaps.
+equality           # a recursive (indirect) enum's structural `==`
+equal_member       # a public view whose props are internal: its `body` must still be public
+soft_names         # a view member named like `body`
+view_alias         # a type alias of a view
+list_methods       # a statement printed on one line with the next
+virtual_list_row   # `VirtualList` over `enumerated()`
+union_casts        # the stdlib's number formatting labels (`fractionDigits:`)

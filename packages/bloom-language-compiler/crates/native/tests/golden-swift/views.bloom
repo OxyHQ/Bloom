@@ -1,0 +1,55 @@
+// Views: `@State`, `@Binding`, `$state`, builders with `if`/`switch`/`for`, effects.
+public enum Filter: Equatable {
+  case all
+  case unread
+}
+
+public struct Row: View {
+  let title: String
+  @Binding var isOn: Bool
+
+  var body: some View {
+    HStack(spacing: .sm) {
+      Text(title).font(.body)
+      Spacer()
+      Toggle($isOn).label(title)
+    }
+    .padding(.horizontal, .lg)
+  }
+}
+
+public struct Inbox: View {
+  @State private var filter = Filter.all
+  @State private var muted = false
+  @State private var items: [String] = ["a", "b"]
+
+  func refresh() async {
+    try? await sleep(for: Duration.milliseconds(5.0))
+    items = items.appending("c")
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: .md) {
+      Row(title: "Mute", isOn: $muted)
+      switch filter {
+      case .all:
+        Text("All")
+      case .unread:
+        Text("Unread").foregroundStyle(.muted)
+      }
+      if items.isEmpty {
+        Text("Nothing yet")
+      } else {
+        for item in items {
+          Text(item)
+        }
+      }
+    }
+    .task {
+      await refresh()
+    }
+    .onChange(of: muted) { old, new in
+      print("muted \(old) -> \(new)")
+    }
+  }
+}

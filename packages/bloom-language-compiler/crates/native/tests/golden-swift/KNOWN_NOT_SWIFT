@@ -1,0 +1,3 @@
+# Goldens that are emitted but are not expected to type-check as Swift, each with why.
+# scripts/typecheck-swift.sh skips them; a construct removed from here is covered.
+surface_protocols  # the TypeScript backend's codec witness: `static let self: Codec<Post>`, `T.self.name`
