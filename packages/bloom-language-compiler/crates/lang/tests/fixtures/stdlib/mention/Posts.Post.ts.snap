@@ -2,7 +2,7 @@ import type { RegexMatch } from "../../.bloom/std/Bloom/Regex.bloom";
 import { uniqued } from "../../.bloom/std/Bloom/Core.bloom";
 import { type ModelStore, modelStore } from "../../.bloom/std/Bloom/Data.bloom";
 import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Int$$decode, Int$$encode, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, URL$$decode, URL$$encode, decodeCase, encodeCase, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
-import { type Regex, Regex$matches, RegexMatch$group } from "../../.bloom/std/Bloom/Regex.bloom";
+import { type Regex, Regex$$init$_, Regex$matches, RegexMatch$group } from "../../.bloom/std/Bloom/Regex.bloom";
 import { Date$$get$now, Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970, Date$formatted, DateFormat$$get$abbreviated } from "../../.bloom/std/Bloom/Time.bloom";
 import { type URL } from "../../.bloom/std/Bloom/URL.bloom";
 function $compact<T>(items: readonly (T | null | undefined)[]): readonly T[] {

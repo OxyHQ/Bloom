@@ -133,6 +133,9 @@ struct Owner<'a> {
     /// The names a member's body reads as `self.name` when it binds none of them itself
     /// (Swift's implicit `self`): the type's stored properties and instance members.
     members: &'a [String],
+    /// A value type (a built-in one, or a struct): its `init`s are told apart by their labels and
+    /// each body gives the value it makes. A class's `init` makes `self` (`T$$init`).
+    value_init: bool,
 }
 
 /// Fresh expression ids for the nodes lowering adds (`self`, `T.case`), past the parser's.
@@ -176,7 +179,7 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
             // A built-in type's `init`s (`Date(timeIntervalSince1970:)`, `Date(_:strategy:)`) are
             // told apart by their labels, as Swift's are: `Date$$init$timeIntervalSince1970`. Each
             // body gives the value it makes.
-            let name = if BUILTIN.contains(&owner.key.as_str()) {
+            let name = if owner.value_init {
                 init_name(
                     &owner.key,
                     f.params
@@ -500,6 +503,16 @@ pub fn lower(file: &mut File) {
             _ => None,
         })
         .collect();
+    // A class declared here: an `extension` of it adds members, its `init` makes `self`.
+    let classes: Vec<String> = file
+        .items
+        .iter()
+        .filter_map(|i| match &i.kind {
+            ItemKind::Class(c) => Some(c.name.name.clone()),
+            _ => None,
+        })
+        .collect();
+    let classes: Vec<&str> = classes.iter().map(String::as_str).collect();
     let names = member_names(file);
     let none = Vec::new();
     let names_of = |owner: &str| names.iter().find(|(n, _)| n == owner).map_or(&none, |(_, m)| m);
@@ -532,6 +545,8 @@ pub fn lower(file: &mut File) {
             span: item.modifiers.visibility_span.unwrap_or(name.span),
             name,
             members: names_of(key(&name.name)),
+            value_init: BUILTIN.contains(&key(&name.name))
+                || !(matches!(item.kind, ItemKind::Class(_)) || classes.contains(&name.name.as_str())),
         };
         let mut lowered = Vec::new();
         for member in members {

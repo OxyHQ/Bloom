@@ -932,13 +932,18 @@ What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`
 
 ## Regex
 
-Bloom: `Regex`, regular expressions (JS's syntax).
+Bloom: `Regex`, regular expressions (JS's syntax), in Swift's shape.
 
 ```swift
-let mention = Regex(pattern: "@(\\w+)")
-let handles = mention.matches(in: text).map { $0.group(1) ?? "" }
-let plain = Regex(pattern: "\\s+").replacing(in: text, with: " ")
+let digits = try Regex("^\\d+$")
+if code.wholeMatch(of: digits) != none { … }
+let handles = text.matches(of: try Regex("@(\\w+)")).map { $0.group(1) ?? "" }
+let plain = text.replacing(try Regex("\\s+"), with: " ")
+
 ```
+
+A group that did not take part in a match is `none` (`group(n)`), as Swift's optional
+captures are. `Regex(pattern:flags:)` builds one unchecked, with flags.
 
 ### `struct Regex: Equatable`
 
@@ -953,8 +958,8 @@ One match: its text, where it starts (UTF-16 offset) and its groups.
 
 - `let text: String`
 - `let start: Int`
-- `let groups: [String]`: The numbered groups, from group 1 (`""` where a group did not take part).
-- `let named: [String: String]`: The named groups (`(?<handle>\\w+)`).
+- `let groups: [String?]`: The numbered groups, from group 1 (`none` where a group did not take part).
+- `let named: [String: String]`: The named groups that took part (`(?<handle>\\w+)`).
 
 ### `struct RegexError: Equatable`
 
@@ -965,6 +970,7 @@ A pattern that is not a valid expression.
 
 ### `extension Regex`
 
+- `init(_ pattern: String) throws`: The expression `pattern`, checked (Swift's `try Regex("…")`): throws a `RegexError` when it is invalid.
 - `static func compile(_ pattern: String, flags: String = "") throws -> Regex`: The expression, checked: throws a `RegexError` when `pattern` is invalid.
 - `func matches(in text: String) -> [RegexMatch]`: Every match in `text`, in order.
 - `func firstMatch(in text: String) -> RegexMatch?`: The first match in `text`, or `none`.
@@ -972,9 +978,18 @@ A pattern that is not a valid expression.
 - `func replacing(in text: String, with replacement: String) -> String`: `text` with every match replaced (`$1`, `$<name>` insert groups).
 - `func split(_ text: String) -> [String]`: The parts of `text` between matches.
 
+### `extension String`
+
+- `func wholeMatch(of regex: Regex) -> RegexMatch?`: The match of `regex` spanning the whole string, or `none`.
+- `func firstMatch(of regex: Regex) -> RegexMatch?`: The first match of `regex`, or `none`.
+- `func matches(of regex: Regex) -> [RegexMatch]`: Every match of `regex`, in order.
+- `func contains(_ regex: Regex) -> Bool`: Whether `regex` matches somewhere in the string.
+- `func replacing(_ regex: Regex, with replacement: String) -> String`: The string with every match of `regex` replaced (`$1`, `$<name>` insert groups).
+- `func split(separator: Regex) -> [String]`: The parts of the string between the matches of `separator`.
+
 ### `extension RegexMatch`
 
-- `func group(_ n: Int) -> String?`: Group `n` (1 is the first), or `none`.
+- `func group(_ n: Int) -> String?`: Group `n` (1 is the first, 0 the whole match), or `none`: past the last group, or where the group did not take part in the match.
 - `var end: Int`: Where the match ends (UTF-16 offset, exclusive).
 
 ## Logger

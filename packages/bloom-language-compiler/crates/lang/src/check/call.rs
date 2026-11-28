@@ -329,6 +329,20 @@ impl Checker<'_> {
                         return self.construct_class(expr, call, def, name);
                     }
                     if matches!(self.out.defs[def].kind, DefKind::Struct(_)) {
+                        // `Regex("\\d+")`: an `init` of an extension, beside the memberwise one
+                        // (Swift keeps both), when the arguments are not the fields by name.
+                        let init = crate::extensions::init_name(
+                            name,
+                            call.args.iter().map(|a| Some(a.label.as_ref().map_or("_", |l| l.name.as_str()))),
+                        );
+                        if !call.args.iter().any(|a| a.spread)
+                            && let Some(local) = self.lookup(&init)
+                        {
+                            self.out.names.insert(call.callee.id, NameRes::Local(local));
+                            let ty = self.out.locals[local].ty.clone();
+                            let ty = self.instantiate(&ty);
+                            return self.value_call(expr, call, &ty);
+                        }
                         return self.construct(expr, call, def, Vec::new(), expected, false);
                     }
                     self.report(
@@ -670,6 +684,15 @@ impl Checker<'_> {
         let shadowed = match recv {
             Ty::Adt(def, _) => self.out.defs[*def].fields().iter().any(|f| f.name == member.name),
             Ty::View(_) | Ty::Foreign(_) | Ty::Unknown => true,
+            // Swift's `s.contains(regex)` and `s.split(separator: regex)`: the standard
+            // library's `Regex` overloads of the string's own methods.
+            Ty::Str if member.name == "contains" && self.regex_arg(call) => false,
+            Ty::Str
+                if member.name == "split"
+                    && call.args.iter().any(|a| a.label.as_ref().is_some_and(|l| l.name == "separator")) =>
+            {
+                false
+            }
             other => method_names(other).contains(&member.name.as_str()),
         };
         if shadowed {
@@ -689,6 +712,29 @@ impl Checker<'_> {
         self.task_signal(expr, &rest.params, &order);
         self.out.calls.insert(expr.id, CallRes::Extension { func, order, rest: rest_args });
         Some(if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() })
+    }
+
+    /// Whether a call's one argument is a `Regex` (a name or a field holding one, or a
+    /// `Regex(…)` built in place), read without checking it: what picks `String.contains(_: Regex)`.
+    fn regex_arg(&self, call: &Call) -> bool {
+        let [arg] = call.args.as_slice() else { return false };
+        if arg.label.is_some() {
+            return false;
+        }
+        let mut value = &arg.value;
+        while let ExprKind::Try(inner) | ExprKind::Paren(inner) = &value.kind {
+            value = inner;
+        }
+        let is_regex =
+            |ty: &Ty| matches!(self.resolve(ty), Ty::Adt(def, _) if self.out.defs[def].name == "Regex");
+        match &value.kind {
+            ExprKind::Name(name) => self.lookup(name).is_some_and(|l| is_regex(&self.out.locals[l].ty)),
+            ExprKind::Call(c) => {
+                matches!(&c.callee.kind, ExprKind::Name(n) if n == "Regex")
+                    || matches!(&c.callee.kind, ExprKind::Field(object, _) if matches!(&object.kind, ExprKind::Name(n) if n == "Regex"))
+            }
+            _ => false,
+        }
     }
 
     /// What `?.` reaches: the value of an optional; `None` (reported) when `ty` is never `none`.
