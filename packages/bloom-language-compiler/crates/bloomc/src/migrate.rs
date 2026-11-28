@@ -110,6 +110,7 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
         }
         entries.push(Entry { path: shown(path), migration });
     }
+    duplicate_names(&files, &mut entries, root.as_deref());
     let mut ok = true;
     for (path, entry) in files.iter().zip(&entries) {
         let m = &entry.migration;
@@ -170,6 +171,127 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
         }
     }
     Ok(ok)
+}
+
+/// A public name another embedded-language module of the package also exports: TS's file scope
+/// allows two (`export interface X` here, `export const X = actions(…)` there), but a 2.0 module
+/// is one namespace, so the two are B0807 once both are Bloom. Refused until one is renamed in
+/// the TS (the package's module is its `Package.bloom` directory, Mention's `.app(path: ".")`).
+fn duplicate_names(files: &[PathBuf], entries: &mut [Entry], cwd: Option<&Path>) {
+    let Some(cwd) = cwd else { return };
+    let Some(package) = cwd.ancestors().find(|d| d.join("Package.bloom").is_file()) else { return };
+    let Ok(all) = modules(&[package.to_path_buf()], false) else { return };
+    let mut exporters: std::collections::HashMap<String, Vec<PathBuf>> = Default::default();
+    for path in &all {
+        let Ok(source) = std::fs::read_to_string(path) else { continue };
+        if !source.contains("@oxy.so/bloom-language") {
+            continue;
+        }
+        for name in ts_exports(&source) {
+            exporters.entry(name).or_default().push(normalize(&cwd.join(path)));
+        }
+    }
+    for (path, entry) in files.iter().zip(entries.iter_mut()) {
+        let m = &mut entry.migration;
+        if !matches!(m.status, Status::Migrated | Status::NeedsReview) {
+            continue;
+        }
+        let me = normalize(&cwd.join(path));
+        let mut clashes = Vec::new();
+        for name in public_names(m.bloom.as_deref().unwrap_or_default()) {
+            // A platform fork (`X.native.tsx` beside `X.web.tsx`) is one module's two builds.
+            let base = |p: &Path| -> String {
+                let s = p.to_string_lossy();
+                let s = s.trim_end_matches(".tsx").trim_end_matches(".ts");
+                [".native", ".web", ".ios", ".android"]
+                    .iter()
+                    .fold(s.to_string(), |s, f| s.strip_suffix(f).map(str::to_string).unwrap_or(s))
+            };
+            if let Some(other) =
+                exporters.get(&name).and_then(|v| v.iter().find(|p| **p != me && base(p) != base(&me)))
+            {
+                let shown = other.strip_prefix(package).unwrap_or(other).to_string_lossy().into_owned();
+                clashes.push(format!("`{name}` is also exported by {shown}"));
+            }
+        }
+        if !clashes.is_empty() {
+            m.status = Status::Refused;
+            for detail in clashes {
+                m.reasons.push(bloom_migrate::Reason {
+                    code: "module:duplicate-name".into(),
+                    detail: format!(
+                        "{detail}: a module is one namespace in Bloom, so rename one in the TS first"
+                    ),
+                    line: 0,
+                });
+            }
+        }
+    }
+}
+
+/// The names a TS module exports by declaration or by an `export { … }` list of its own.
+fn ts_exports(source: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let ident = |s: &str| -> Option<String> {
+        let n: String = s.chars().take_while(|c| c.is_alphanumeric() || *c == '_' || *c == '$').collect();
+        (!n.is_empty()).then_some(n)
+    };
+    for line in source.lines() {
+        let Some(rest) = line.strip_prefix("export ") else { continue };
+        let mut rest = rest.trim_start();
+        for word in ["declare ", "async ", "abstract "] {
+            rest = rest.strip_prefix(word).unwrap_or(rest);
+        }
+        if rest.starts_with("default") {
+            continue;
+        }
+        if let Some(list) = rest.strip_prefix('{') {
+            if line.contains(" from ") {
+                continue;
+            }
+            let list = list.split('}').next().unwrap_or_default();
+            for spec in list.split(',') {
+                let spec = spec.trim().trim_start_matches("type ").trim();
+                let name = spec.rsplit(" as ").next().unwrap_or(spec).trim();
+                out.extend(ident(name));
+            }
+            continue;
+        }
+        for kw in
+            ["function* ", "function ", "const ", "let ", "var ", "class ", "interface ", "type ", "enum "]
+        {
+            if let Some(after) = rest.strip_prefix(kw) {
+                out.extend(ident(after.trim_start()));
+                break;
+            }
+        }
+    }
+    out
+}
+
+/// The `public` (or `pub`) top-level names of a `.bloom` module.
+fn public_names(bloom: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for line in bloom.lines() {
+        let line =
+            line.strip_prefix('@').map(|l| l.split_once(' ').map(|(_, r)| r).unwrap_or("")).unwrap_or(line);
+        let Some(rest) = line.strip_prefix("public ").or_else(|| line.strip_prefix("pub ")) else { continue };
+        let mut words = rest.split_whitespace().skip_while(|w| matches!(*w, "default" | "static" | "final"));
+        let Some(kw) = words.next() else { continue };
+        if !matches!(
+            kw,
+            "struct" | "func" | "let" | "var" | "enum" | "type" | "protocol" | "view" | "class" | "actor"
+        ) {
+            continue;
+        }
+        if let Some(n) = words.next() {
+            let n: String = n.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+            if !n.is_empty() {
+                out.push(n);
+            }
+        }
+    }
+    out
 }
 
 /// `file`'s string imports, in 2.0's module imports where the manifest says (ADR 0002,
@@ -663,7 +785,7 @@ fn mock_views(call: &str, views: &[String]) -> Option<String> {
     let fields: Vec<String> = mocked.iter().map(|v| format!("{v}: asView(mod.{v})")).collect();
     let names: Vec<String> = mocked.iter().map(|v| format!("`{v}`")).collect();
     Some(format!(
-        ", () => {{\n  // {}: the migrated module's view(s); each mocked component is drawn as the view's node.\n  const mod = ({factory})() as Record<string, unknown>;\n  const {{ Embed }} = jest.requireActual<typeof import('@oxy.so/bloom-language')>('@oxy.so/bloom-language');\n  const {{ createElement }} = jest.requireActual<typeof import('react')>('react');\n  const asView = (c: unknown) =>\n    typeof c === 'function' || typeof c === 'string'\n      ? (props: object) => Embed(createElement(c as never, props))\n      : c;\n  return {{ ...mod, {} }};\n}}",
+        ", () => {{\n  // {}: the migrated module's view(s); each mocked component is drawn as the view's node.\n  // The language is read when a view is drawn, not here: a factory runs mid-import.\n  const mod = ({factory})() as Record<string, unknown>;\n  const asView = (c: unknown) =>\n    typeof c === 'function' || typeof c === 'string'\n      ? (props: object) => {{\n          const {{ Embed }} = jest.requireActual<typeof import('@oxy.so/bloom-language')>('@oxy.so/bloom-language');\n          const {{ createElement }} = jest.requireActual<typeof import('react')>('react');\n          return Embed(createElement(c as never, props));\n        }}\n      : c;\n  return {{ ...mod, {} }};\n}}",
         names.join(", "),
         fields.join(", ")
     ))
@@ -983,5 +1105,24 @@ mod tests {
             "{out}"
         );
         assert!(out.contains("toElement(Card({ note: 1 }))"), "{out}");
+    }
+}
+
+#[cfg(test)]
+mod duplicate_name_tests {
+    use super::{public_names, ts_exports};
+
+    #[test]
+    fn reads_a_ts_modules_own_exports() {
+        let ts = "export interface PostMenuActions {}\nexport const X = actions(f);\nexport async function load() {}\n\
+                  export { a, b as c, type D };\nexport { e } from './e';\nexport default function Z() {}\n";
+        assert_eq!(ts_exports(ts), ["PostMenuActions", "X", "load", "a", "c", "D"]);
+    }
+
+    #[test]
+    fn reads_a_bloom_modules_public_names() {
+        let bloom = "public struct PostMenuActions: MenuActions {\n}\n@jsOptions public func f(a: Int) {}\n\
+                     pub view V() {}\nprivate let x = 1\nlet y = 2\n";
+        assert_eq!(public_names(bloom), ["PostMenuActions", "f", "V"]);
     }
 }
