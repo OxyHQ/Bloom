@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
 import { type PostCardProps } from "@/types/post";
 
 interface Badge {
@@ -11,46 +9,24 @@ interface Badge {
 export interface PostCardViewProps extends PostCardProps {
   readonly dense?: boolean;
 }
-export const PostCard = view(function PostCard(props: PostCardViewProps) {
+export const PostCard = inlineView(function PostCard(props: PostCardViewProps) {
 "use no memo";
-const $ = $c(5);
 const { title, likes, subtitle, onOpen, dense = false } = props;
-let $t0;
-if ($[0] !== title || $[1] !== subtitle || $[2] !== likes || $[3] !== dense) {
-$t0 = VStack(Text(title), Text(subtitle ?? ""), Text(`${likes}`)).padding(dense ? 4 : 8);
-$[0] = title;
-$[1] = subtitle;
-$[2] = likes;
-$[3] = dense;
-$[4] = $t0;
-} else {
-$t0 = $[4];
-}
-return $t0;
+return VStack(Text(title), Text(subtitle ?? ""), Text(`${likes}`)).padding(dense ? 4 : 8);
 });
 
 interface TagProps {
   readonly text: string;
   readonly tone?: string;
 }
-const Tag = view(function Tag(props: TagProps) {
+const Tag = inlineView(function Tag(props: TagProps) {
 "use no memo";
-const $ = $c(3);
 const { text, tone = "calm" } = props;
-let $t1;
-if ($[0] !== text || $[1] !== tone) {
-$t1 = Text(`${text} (${tone})`);
-$[0] = text;
-$[1] = tone;
-$[2] = $t1;
-} else {
-$t1 = $[2];
-}
-return $t1;
+return Text(`${text} (${tone})`);
 });
 
 const $view0 = VStack(PostCard({ title: "Hello", likes: 3 }), PostCard({ title: "Again", likes: 1, subtitle: "two", dense: true }), Tag({ text: "new" }));
-export const Feed = view(function Feed() {
+export const Feed = inlineView(function Feed() {
 "use no memo";
 return $view0;
 });
@@ -62,40 +38,19 @@ return `${card.title} (${card.likes})`;
 export interface PostShellProps extends PostCardProps {
   readonly pinned?: boolean;
 }
-export const PostShell = view(function PostShell(props: PostShellProps) {
+export const PostShell = inlineView(function PostShell(props: PostShellProps) {
 "use no memo";
-const $ = $c(9);
 const { title, likes, subtitle, onOpen, pinned = false } = props;
-let $t2;
-if ($[5] !== pinned || $[6] !== title || $[7] !== props) {
-$t2 = VStack(($[0] !== pinned || $[1] !== title ? ($[0] = pinned, $[1] = title, $[2] = Text(pinned ? "Pinned" : title)) : $[2]), ($[3] !== props ? ($[3] = props, $[4] = Text(summary(props))) : $[4]));
-$[5] = pinned;
-$[6] = title;
-$[7] = props;
-$[8] = $t2;
-} else {
-$t2 = $[8];
-}
-return $t2;
+return VStack(Text(pinned ? "Pinned" : title), Text(summary(props)));
 });
 
 export interface BadgesProps {
   readonly badge: Badge;
   readonly extra: { text: string; more: number };
 }
-export const Badges = view(function Badges(props: BadgesProps) {
+export const Badges = inlineView(function Badges(props: BadgesProps) {
 "use no memo";
-const $ = $c(7);
 const { badge, extra } = props;
-let $t3;
-if ($[4] !== badge || $[5] !== extra) {
-$t3 = VStack(($[0] !== badge ? ($[0] = badge, $[1] = Tag({ ...badge })) : $[1]), ($[2] !== extra ? ($[2] = extra, $[3] = Tag({ ...extra, tone: "loud" })) : $[3]));
-$[4] = badge;
-$[5] = extra;
-$[6] = $t3;
-} else {
-$t3 = $[6];
-}
-return $t3;
+return VStack(Tag({ ...badge }), Tag({ ...extra, tone: "loud" }));
 });
 

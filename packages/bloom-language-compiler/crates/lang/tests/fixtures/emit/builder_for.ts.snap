@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
 import { opacity } from "@oxy.so/bloom-language";
 
 const $view0 = Text("Spread");
@@ -8,18 +6,9 @@ const $view1 = Text("A sibling follows");
 export interface ListsProps {
   readonly titles: readonly string[];
 }
-export const Lists = view(function Lists(props: ListsProps) {
+export const Lists = inlineView(function Lists(props: ListsProps) {
 "use no memo";
-const $ = $c(2);
 const { titles } = props;
-let $t0;
-if ($[0] !== titles) {
-$t0 = VStack(VStack($view0, ...titles.map((title) => Text(title).id(title))), VStack(titles.map((title) => Text(title)), $view1), VStack(titles.map((title) => Text(title).id(title).transition(opacity))));
-$[0] = titles;
-$[1] = $t0;
-} else {
-$t0 = $[1];
-}
-return $t0;
+return VStack(VStack($view0, ...titles.map((title) => Text(title).id(title))), VStack(titles.map((title) => Text(title)), $view1), VStack(titles.map((title) => Text(title).id(title).transition(opacity))));
 });
 

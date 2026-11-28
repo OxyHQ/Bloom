@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Embed, Header, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Embed, Header, Text, VStack, inlineView } from "@oxy.so/bloom-language";
 import { jsx as $jsx } from "react/jsx-runtime";
 import type { Child } from "@oxy.so/bloom-language";
 import type { ComponentProps } from "react";
@@ -17,24 +15,15 @@ const $view3 = Embed($jsx(EngagementBar, { children: $jsx(Action, { label: "one"
 export interface BarProps {
   readonly liked: boolean;
 }
-export const Bar = view(function Bar(props: BarProps) {
+export const Bar = inlineView(function Bar(props: BarProps) {
 "use no memo";
-const $ = $c(2);
 const { liked } = props;
-let $t0;
-if ($[0] !== liked) {
-$t0 = VStack(Embed(($render) => $jsx(EngagementBar, { size: "md", children: $render([$view0, $view1, (liked) ? $view2 : null]) } satisfies ComponentProps<typeof EngagementBar>)), $view3);
-$[0] = liked;
-$[1] = $t0;
-} else {
-$t0 = $[1];
-}
-return $t0;
+return VStack(Embed(($render) => $jsx(EngagementBar, { size: "md", children: $render([$view0, $view1, (liked) ? $view2 : null]) } satisfies ComponentProps<typeof EngagementBar>)), $view3);
 });
 
 const $view4 = Text("inside");
 const $view5 = Embed(($render) => $jsx(Slot, { title: "t", content: $render($view4) } satisfies ComponentProps<typeof Slot>));
-export const Slotted = view(function Slotted() {
+export const Slotted = inlineView(function Slotted() {
 "use no memo";
 return $view5;
 });
@@ -49,24 +38,15 @@ const $view12 = Text("open");
 export interface PlaceholderProps {
   readonly open: boolean;
 }
-export const Placeholder = view(function Placeholder(props: PlaceholderProps) {
+export const Placeholder = inlineView(function Placeholder(props: PlaceholderProps) {
 "use no memo";
-const $ = $c(2);
 const { open } = props;
-let $t2;
-if ($[0] !== open) {
-let $t1: Child;
+let $t0: Child;
 if (open) {
-$t1 = $view12;
+$t0 = $view12;
 } else {
-$t1 = undefined;
+$t0 = undefined;
 }
-$t2 = Embed(($render) => $jsx(Box, { testID: "box", children: $render([$view8, $view10, Embed($jsx(EngagementBar, { children: open ? "open" : "closed" } satisfies ComponentProps<typeof EngagementBar>))]) } satisfies ComponentProps<typeof Box>)).header($view11.accessory($t1));
-$[0] = open;
-$[1] = $t2;
-} else {
-$t2 = $[1];
-}
-return $t2;
+return Embed(($render) => $jsx(Box, { testID: "box", children: $render([$view8, $view10, Embed($jsx(EngagementBar, { children: open ? "open" : "closed" } satisfies ComponentProps<typeof EngagementBar>))]) } satisfies ComponentProps<typeof Box>)).header($view11.accessory($t0));
 });
 

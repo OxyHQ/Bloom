@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Embed, Text, VStack, toElement, view } from "@oxy.so/bloom-language";
+import { Embed, Text, VStack, inlineView, toElement } from "@oxy.so/bloom-language";
 import { jsx as $jsx } from "react/jsx-runtime";
 import type { ComponentProps } from "react";
 import { default as Badge, NamedBadge } from "@/elements/Badge";
@@ -14,19 +12,9 @@ export interface ElementPropsProps {
   readonly bare?: boolean;
   readonly title?: string;
 }
-export const ElementProps = view(function ElementProps(props: ElementPropsProps) {
+export const ElementProps = inlineView(function ElementProps(props: ElementPropsProps) {
 "use no memo";
-const $ = $c(7);
 const { bare = false, title = "title" } = props;
-let $t0;
-if ($[4] !== bare || $[5] !== title) {
-$t0 = VStack(($[0] !== bare ? ($[0] = bare, $[1] = Embed(($render) => $jsx(Frame, { header: toElement($view0), footer: bare ? undefined : toElement($view1), children: $render($view2) } satisfies ComponentProps<typeof Frame>))) : $[1]), ($[2] !== title ? ($[2] = title, $[3] = Embed(($render) => $jsx(Shell, { header: toElement(Text(title)), children: $render($view2) } satisfies ComponentProps<typeof Shell>))) : $[3]), Badge({ label: "a" }), NamedBadge({ label: "b" }));
-$[4] = bare;
-$[5] = title;
-$[6] = $t0;
-} else {
-$t0 = $[6];
-}
-return $t0;
+return VStack(Embed(($render) => $jsx(Frame, { header: toElement($view0), footer: bare ? undefined : toElement($view1), children: $render($view2) } satisfies ComponentProps<typeof Frame>)), Embed(($render) => $jsx(Shell, { header: toElement(Text(title)), children: $render($view2) } satisfies ComponentProps<typeof Shell>)), Badge({ label: "a" }), NamedBadge({ label: "b" }));
 });
 

@@ -3,7 +3,16 @@
  * what a careful author writes in TypeScript, for the cost gate to compare.
  */
 import { useCallback, useMemo, useState } from 'react';
-import { Button, type ComposedView, HStack, Text, VStack, view } from '@oxy.so/bloom-language';
+import {
+  Button,
+  type Child,
+  type ComposedView,
+  HStack,
+  Text,
+  VStack,
+  view,
+} from '@oxy.so/bloom-language';
+import { ErrorBoundary } from '@oxy.so/bloom-language/containers';
 
 export const Counter = view(function Counter({ step = 1 }: { step?: number }) {
   const [count, setCount] = useState(0);
@@ -66,3 +75,28 @@ export const Tagged = view(function Tagged({
   const row = useTagged(title, tags, onOpen);
   return VStack(Button(Text(row.label)).onPress(row.open), Text(row.summary)).spacing('sm');
 });
+
+/**
+ * TS's PostErrorBoundary was one class fiber around the row: the language's boundary node, drawn
+ * in place, is that class and nothing more.
+ */
+export const PostErrorBoundary = ({
+  children,
+  postId,
+  onCrash = () => {},
+}: {
+  children: Child;
+  postId?: string;
+  onCrash?: (message: string) => void;
+}) =>
+  ErrorBoundary(children)
+    .resetKey(postId)
+    .onError((error: Error) =>
+      onCrash(`[PostErrorBoundary] Post ${postId ?? 'unknown'} crashed: ${error.message}`),
+    )
+    .fallback((context: { retry: () => void }) =>
+      VStack(
+        Text('This post could not be displayed.').foreground('muted'),
+        Button(Text('Tap to retry')).onPress(context.retry),
+      ),
+    );

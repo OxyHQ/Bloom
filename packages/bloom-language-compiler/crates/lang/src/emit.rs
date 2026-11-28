@@ -5759,6 +5759,10 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
+        // A stateless view whose body is one node: no component of its own (`inlineView`).
+        if self.inlinable(index, v) {
+            return self.inline_view(item, v, props_decl, &props_name, !info.props.is_empty());
+        }
         // The body, cached on what it reads.
         let deps = self.deps(&v.body.stmts);
         self.bufs.push(Vec::new());
@@ -5852,6 +5856,91 @@ impl<'a> Emitter<'a> {
         self.view_generics.clear();
         // `pub default view`: the module's default export too.
         if v.kind == ViewKind::View && item.visibility == Visibility::PubDefault {
+            out.s(&format!("export default {name};\n"));
+        }
+        out
+    }
+
+    /// Whether a view is drawn in its caller's tree, with no component (fiber) of its own: a
+    /// `struct X: View` that holds nothing (no `@State`, environment, `let` member, method,
+    /// effect, comparator or observed model, so its body calls no hook) and whose body is one
+    /// node: a chain with no `.task`/`.onChange` and no `.id()` of its own (its key is its
+    /// caller's). Its semantics are a view's: the body is built from the props it is called
+    /// with, and the modifiers chained on it apply around its body (`inlineView`). A generic
+    /// view keeps its component (its witnesses are props).
+    fn inlinable(&self, index: usize, v: &ViewDecl) -> bool {
+        if v.kind != ViewKind::View || !v.generics.is_empty() || !v.members.is_empty() {
+            return false;
+        }
+        if self.ck.observed.get(&index).is_some_and(|o| !o.is_empty()) {
+            return false;
+        }
+        let [stmt] = v.body.stmts.as_slice() else { return false };
+        let StmtKind::Expr(root) = &stmt.kind else { return false };
+        if !matches!(root.kind, ExprKind::Call(_))
+            || !matches!(self.ck.types.get(&root.id), Some(Ty::View(_)))
+        {
+            return false;
+        }
+        if !self.effects(root).is_empty() {
+            return false;
+        }
+        // The root's own `.id()` would be its key in the caller's list.
+        let mut current = root;
+        while let ExprKind::Call(call) = &current.kind {
+            match &call.callee.kind {
+                ExprKind::Field(receiver, name) => {
+                    if name.name == "id"
+                        && matches!(self.ck.calls.get(&current.id), Some(CallRes::Modifier { .. }))
+                    {
+                        return false;
+                    }
+                    current = receiver;
+                }
+                _ => break,
+            }
+        }
+        true
+    }
+
+    /// `inlineView(function X(props) { return <body>; })`: the body built where the view is
+    /// called, with no memo cache (the caller's caches the call) and no hook.
+    fn inline_view(
+        &mut self,
+        item: &Item,
+        v: &ViewDecl,
+        props_decl: Frag,
+        props_name: &str,
+        has_props: bool,
+    ) -> Frag {
+        let StmtKind::Expr(root) = &v.body.stmts[0].kind else {
+            unreachable!("an inlinable body is one node")
+        };
+        self.body_span = Some(v.body.span);
+        let value = self.child(root);
+        self.body_span = None;
+        let mut line = Frag::of("return ");
+        line.f(value).s(";");
+        self.push_stmt(line);
+        let lines = self.bufs.pop().expect("the view");
+        let slots = self.view.take().expect("the view").slots;
+        debug_assert_eq!(slots, 0, "an inlined view has no memo cache");
+        let mut body = Frag::of("\"use no memo\";\n");
+        body.reserve_lines(&lines);
+        for line in lines {
+            body.f(line).s("\n");
+        }
+        self.import_name(LANGUAGE, "inlineView");
+        let name = &v.name.name;
+        let export = if item.visibility.exported(self.options.modules) { "export " } else { "" };
+        let param = if has_props { format!("props: {props_name}") } else { String::new() };
+        let mut out = props_decl;
+        out.mark(item.span)
+            .s(&format!("{export}const {name} = inlineView(function {name}({param}) {{\n"))
+            .f(body)
+            .s("});\n");
+        self.view_generics.clear();
+        if item.visibility == Visibility::PubDefault {
             out.s(&format!("export default {name};\n"));
         }
         out

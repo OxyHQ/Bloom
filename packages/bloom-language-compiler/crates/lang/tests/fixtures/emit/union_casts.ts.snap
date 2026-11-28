@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Button, HStack, Text, view } from "@oxy.so/bloom-language";
+import { Button, HStack, Text, inlineView } from "@oxy.so/bloom-language";
 
 const TABS = ["videos", "following", "live"] as const;
 
@@ -39,19 +37,9 @@ export interface TabsProps {
   readonly selected: "videos" | "following" | "live";
   readonly onSelect: (p0: "videos" | "following" | "live") => void;
 }
-export const Tabs = view(function Tabs(props: TabsProps) {
+export const Tabs = inlineView(function Tabs(props: TabsProps) {
 "use no memo";
-const $ = $c(3);
 const { selected, onSelect } = props;
-let $t1;
-if ($[0] !== selected || $[1] !== onSelect) {
-$t1 = HStack(...TABS.map((tab) => Button(Text(tab)).foreground((tab === selected) ? ("foreground") : ("muted")).onPress(() => onSelect(tab))));
-$[0] = selected;
-$[1] = onSelect;
-$[2] = $t1;
-} else {
-$t1 = $[2];
-}
-return $t1;
+return HStack(...TABS.map((tab) => Button(Text(tab)).foreground((tab === selected) ? ("foreground") : ("muted")).onPress(() => onSelect(tab))));
 });
 

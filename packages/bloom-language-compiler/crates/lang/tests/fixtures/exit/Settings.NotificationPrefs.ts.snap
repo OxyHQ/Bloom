@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Loading, Observable, Text, VStack, defineEnvironment, view } from "@oxy.so/bloom-language";
+import { Loading, Observable, Text, VStack, defineEnvironment, inlineView } from "@oxy.so/bloom-language";
 import type { Binding, Child } from "@oxy.so/bloom-language";
 import { Dictionary$merging } from "../../.bloom/std/Bloom/Core.bloom";
 
@@ -55,7 +53,7 @@ self.$set("enabled", Dictionary$merging(self.enabled, { [PrefKey$id(key)]: on })
 }
 
 const $view0 = Loading();
-export const SettingsSkeleton = view(function SettingsSkeleton() {
+export const SettingsSkeleton = inlineView(function SettingsSkeleton() {
 "use no memo";
 return $view0;
 });
@@ -68,19 +66,9 @@ export interface SettingsSectionProps {
   readonly title: string;
   readonly rows: () => Child;
 }
-export const SettingsSection = view(function SettingsSection(props: SettingsSectionProps) {
+export const SettingsSection = inlineView(function SettingsSection(props: SettingsSectionProps) {
 "use no memo";
-const $ = $c(5);
 const { title, rows } = props;
-let $t0;
-if ($[2] !== title || $[3] !== rows) {
-$t0 = VStack(Text(title).font("headline"), ($[0] !== rows ? ($[0] = rows, $[1] = rows()) : $[1])).spacing("sm");
-$[2] = title;
-$[3] = rows;
-$[4] = $t0;
-} else {
-$t0 = $[4];
-}
-return $t0;
+return VStack(Text(title).font("headline"), rows()).spacing("sm");
 });
 

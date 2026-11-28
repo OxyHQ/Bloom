@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Embed, Text, VStack, toElement, view } from "@oxy.so/bloom-language";
+import { Embed, Text, VStack, inlineView, toElement } from "@oxy.so/bloom-language";
 import { jsx as $jsx, jsxs as $jsxs } from "react/jsx-runtime";
 import type { ComponentProps } from "react";
 import { Suspense } from "react";
@@ -54,18 +52,9 @@ const $fn0 = () => {
 export interface SheetProps {
   readonly label: string;
 }
-export const Sheet = view(function Sheet(props: SheetProps) {
+export const Sheet = inlineView(function Sheet(props: SheetProps) {
 "use no memo";
-const $ = $c(2);
 const { label } = props;
-let $t4;
-if ($[0] !== label) {
-$t4 = VStack(Text(label), Embed($jsx(Suspense, { fallback: undefined, children: $jsx(Panel, { title: label, onClose: $fn0 } satisfies ComponentProps<typeof Panel>) } satisfies ComponentProps<typeof Suspense>)));
-$[0] = label;
-$[1] = $t4;
-} else {
-$t4 = $[1];
-}
-return $t4;
+return VStack(Text(label), Embed($jsx(Suspense, { fallback: undefined, children: $jsx(Panel, { title: label, onClose: $fn0 } satisfies ComponentProps<typeof Panel>) } satisfies ComponentProps<typeof Suspense>)));
 });
 
