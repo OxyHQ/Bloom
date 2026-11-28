@@ -2148,6 +2148,7 @@ impl Mapper<'_> {
             name: tag.clone(),
             ty: Ty::Strings(Rc::new(StrSet { name, values, token: false })),
             default: FieldDefault::None,
+            mutable: true,
         }];
         // A field every member has, with one type, is the union's too (`block.domain`), as TS
         // reads it without narrowing.
@@ -2248,7 +2249,7 @@ impl Mapper<'_> {
                     ty = Ty::Option(Box::new(ty));
                 }
                 let default = if member.optional { FieldDefault::Undefined } else { FieldDefault::None };
-                FieldDef { name: member.name.clone(), ty, default }
+                FieldDef { name: member.name.clone(), ty, default, mutable: true }
             })
             .collect()
     }

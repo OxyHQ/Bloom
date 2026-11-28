@@ -808,7 +808,7 @@ impl<'a> Emitter<'a> {
                 }
             }
             Ty::Partial(inner) => format!("Partial<{}>", self.ts_type(inner)),
-            Ty::KeyPath(root, value) => {
+            Ty::KeyPath(root, value, _) => {
                 self.uses_key_path = true;
                 format!("$KeyPath<{}, {}>", self.ts_type(root), self.ts_type(value))
             }
@@ -1859,9 +1859,14 @@ impl<'a> Emitter<'a> {
             AssignRes::KeyPath { local, state } => {
                 let ExprKind::KeyPathIndex(_, key) = &a.target.kind else { return };
                 let name = self.local_name(local);
-                let key = self.expr(key);
+                let key_frag = self.expr(key);
+                // `next[keyPath: key] += v`: the field it replaces, combined (a state's from its
+                // updater's own argument, which has the state's name).
+                let mut current = Frag::of(name.clone());
+                current.s("[").f(self.expr(key)).s("]");
+                let value = combine(current, value);
                 let mut copy = Frag::of(format!("({{ ...{name}, ["));
-                copy.f(key).s("]: ").f(value).s(&format!(" }} as typeof {name})"));
+                copy.f(key_frag).s("]: ").f(value).s(&format!(" }} as typeof {name})"));
                 let line = if state {
                     let setter = self.setter(local);
                     let mut line = Frag::at(span, format!("{setter}(({name}) => "));

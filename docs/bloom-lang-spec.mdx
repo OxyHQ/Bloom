@@ -340,11 +340,15 @@ copy-and-change: a key written after the spread replaces the spread's field (JS'
 first entry spreads a struct and every key written is one of its fields, the literal is that
 struct, each key checked against its field's type, with or without an expected type.
 
+A stored `let` is set once, when the struct is made (Swift's): `next.id = 4` is B0403 outside the
+struct's own `init`, in a `var` copy too; a new value is a new struct, `Prefs(..next, id: 4)`.
+
 **Key paths** (Swift's) name a struct's field as a value: `\.hideLikes` (its root from what is
-expected) or `\Prefs.hideLikes`, typed `KeyPath<Prefs, Bool>`; `WritableKeyPath<Prefs, Bool>`
-is the same type (a struct's fields are its own to write in a copy). `p[keyPath: key]` reads the
-field, and `next[keyPath: key] = v` on a `var` or a `@State` writes a copy with it (value
-semantics; `+=` through a key path is not supported). In TS a key path is its field's name, of the
+expected) or `\Prefs.hideLikes`. The key path of a stored `var` is a `WritableKeyPath<Prefs, Bool>`,
+Swift's subtype of `KeyPath<Prefs, Bool>`, which fits wherever a `KeyPath` is expected; a `let`'s
+(and a class's field's) is a `KeyPath`, which reads only. `p[keyPath: key]` reads the field, and
+`next[keyPath: key] = v` (or `+=`, as on any place) on a `var` or a `@State` writes a copy with it
+(value semantics) through a `WritableKeyPath`; through a `KeyPath` it is B0403. In TS a key path is its field's name, of the
 type `$KeyPath<Prefs, boolean>` (the keys whose value is a `boolean`): the read is `p[key]` and the
 write `next = { ...next, [key]: v }`.
 

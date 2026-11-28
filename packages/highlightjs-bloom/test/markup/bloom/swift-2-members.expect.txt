@@ -27,5 +27,6 @@
   <span class="hljs-keyword">let</span> read: <span class="hljs-type">KeyPath</span><span class="hljs-operator">&lt;</span><span class="hljs-type">Account</span>, <span class="hljs-type">String</span><span class="hljs-operator">&gt;</span> <span class="hljs-operator">=</span> <span class="hljs-operator">\</span><span class="hljs-type">Account</span><span class="hljs-property">.name</span>
   <span class="hljs-keyword">var</span> next <span class="hljs-operator">=</span> accounts[<span class="hljs-number">0</span>].<span class="hljs-title function_ invoke__">with</span>(<span class="hljs-operator">\</span><span class="hljs-property">.visits</span>, <span class="hljs-number">1</span>)
   next[keyPath: key] <span class="hljs-operator">=</span> next[keyPath: key] <span class="hljs-operator">+</span> accounts.count
+  next[keyPath: key] <span class="hljs-operator">+=</span> <span class="hljs-number">1</span>
   <span class="hljs-keyword">return</span> [next, <span class="hljs-type">Account</span>(name: next[keyPath: read])]
 }

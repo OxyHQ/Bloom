@@ -1011,9 +1011,12 @@ impl<'o> Checker<'o> {
             | (Ty::Async(x), Ty::Async(y))
             | (Ty::Promise(x), Ty::Promise(y))
             | (Ty::Binding(x), Ty::Binding(y)) => self.unify(x, y),
-            (Ty::Result(a1, b1), Ty::Result(a2, b2))
-            | (Ty::KeyPath(a1, b1), Ty::KeyPath(a2, b2))
-            | (Ty::JsMap(a1, b1), Ty::JsMap(a2, b2)) => self.unify(a1, a2) && self.unify(b1, b2),
+            (Ty::Result(a1, b1), Ty::Result(a2, b2)) | (Ty::JsMap(a1, b1), Ty::JsMap(a2, b2)) => {
+                self.unify(a1, a2) && self.unify(b1, b2)
+            }
+            (Ty::KeyPath(a1, b1, w1), Ty::KeyPath(a2, b2, w2)) => {
+                w1 == w2 && self.unify(a1, a2) && self.unify(b1, b2)
+            }
             (Ty::Tuple(x), Ty::Tuple(y)) => {
                 x.len() == y.len() && x.iter().zip(y).all(|(x, y)| self.unify(x, y))
             }
@@ -1289,6 +1292,11 @@ impl<'o> Checker<'o> {
             (Ty::List(x), Ty::List(y)) => self.coerce(x, y),
             // A TS promise is covariant (`Promise<Unit>` where TS takes `Promise<unknown>`).
             (Ty::Promise(x), Ty::Promise(y)) => self.coerce(x, y),
+            // Swift's `WritableKeyPath<S, V>` is a `KeyPath<S, V>`; never the other way.
+            (Ty::KeyPath(a1, b1, w1), Ty::KeyPath(a2, b2, w2)) if *w1 || !*w2 => {
+                let (a1, b1, a2, b2) = (a1.clone(), b1.clone(), a2.clone(), b2.clone());
+                self.unify(&a1, &a2) && self.unify(&b1, &b2)
+            }
             (Ty::Fn(f), Ty::Fn(g)) => {
                 if f.params.len() > g.params.len() && f.params[g.params.len()..].iter().any(|p| !p.optional) {
                     return false;
@@ -1510,7 +1518,7 @@ impl<'o> Checker<'o> {
                         } else {
                             FieldDefault::None
                         };
-                        FieldDef { name: name.name.clone(), ty, default }
+                        FieldDef { name: name.name.clone(), ty, default, mutable: true }
                     })
                     .collect();
                 self.record_type(fields)
@@ -1664,9 +1672,9 @@ impl<'o> Checker<'o> {
                     Ty::Unknown
                 };
             }
-            // `WritableKeyPath<T, V>` is a key path that writes too: a struct's stored fields are
-            // its own to write in a `var` copy (value semantics), so it is `KeyPath<T, V>`.
+            // Swift's `WritableKeyPath<T, V>`: a `KeyPath<T, V>` that writes too, of a stored `var`.
             "KeyPath" | "WritableKeyPath" => {
+                let writable = name.name == "WritableKeyPath";
                 if !arity(self, 2) {
                     return Ty::Unknown;
                 }
@@ -1674,11 +1682,11 @@ impl<'o> Checker<'o> {
                 let value = self.resolve_type(&args[1]);
                 return match &root {
                     Ty::Adt(def, _) if matches!(self.out.defs[*def].kind, DefKind::Struct(_)) => {
-                        Ty::KeyPath(Box::new(root), Box::new(value))
+                        Ty::KeyPath(Box::new(root), Box::new(value), writable)
                     }
                     // A generic function's `KeyPath<T, V>`: each call's `T` is a struct, which
                     // the key path written at the call is checked against.
-                    Ty::Param(..) => Ty::KeyPath(Box::new(root), Box::new(value)),
+                    Ty::Param(..) => Ty::KeyPath(Box::new(root), Box::new(value), writable),
                     Ty::Unknown => Ty::Unknown,
                     _ => {
                         self.report(
@@ -2063,6 +2071,18 @@ impl<'o> Checker<'o> {
         let Some(TypeName::Def(def)) = self.type_names.get(&s.name.name).cloned() else { return };
         self.generics = s.generics.iter().map(|g| g.name.clone()).collect();
         let mut fields: Vec<FieldDef> = Vec::new();
+        // Its `let`s, as written Swift's way (2.0); a 0.x struct's fields are `var`s.
+        let lets: Vec<&str> = s.surface.as_ref().map_or_else(Vec::new, |body| {
+            body.members
+                .iter()
+                .filter_map(|m| match &m.kind {
+                    TypeMemberKind::Stored { mutable: false, name, .. } if !m.modifiers.is_static => {
+                        Some(name.name.as_str())
+                    }
+                    _ => None,
+                })
+                .collect()
+        });
         for field in &s.fields {
             if fields.iter().any(|f| f.name == field.name.name) {
                 self.duplicate(&field.name);
@@ -2072,7 +2092,8 @@ impl<'o> Checker<'o> {
                 Some(expr) => FieldDefault::Expr(expr.id),
                 None => FieldDefault::None,
             };
-            fields.push(FieldDef { name: field.name.name.clone(), ty, default });
+            let mutable = !lets.contains(&field.name.name.as_str());
+            fields.push(FieldDef { name: field.name.name.clone(), ty, default, mutable });
         }
         self.generics.clear();
         self.out.defs[def].kind = DefKind::Struct(fields);
@@ -2427,7 +2448,7 @@ impl<'o> Checker<'o> {
                     (true, other) => Ty::Option(Box::new(other)),
                 };
                 let default = if p.optional { FieldDefault::Undefined } else { FieldDefault::None };
-                FieldDef { name: p.name.unwrap_or_default(), ty, default }
+                FieldDef { name: p.name.unwrap_or_default(), ty, default, mutable: true }
             })
             .collect();
         let props = self.record_type(fields);
@@ -3740,6 +3761,9 @@ impl<'o> Checker<'o> {
                                 && let Some((class_def, class)) = &class
                             {
                                 self.model_write(*class_def, class, field, name == "self");
+                            } else {
+                                let f = f.clone();
+                                self.struct_let_write(def, &f, field.span, index == 0 && name == "self");
                             }
                             found
                         }
@@ -3807,6 +3831,21 @@ impl<'o> Checker<'o> {
         true
     }
 
+    /// A write to a struct's stored `let` (Swift's): set once, when the struct is made, so only
+    /// its own `init` assigns it (`self.id = id`). A class's fields are `model_write`'s.
+    fn struct_let_write(&mut self, def: DefId, field: &FieldDef, span: Span, through_self: bool) {
+        if field.mutable || self.out.defs[def].class.is_some() || (self.in_init && through_self) {
+            return;
+        }
+        let owner = self.out.defs[def].name.clone();
+        self.report(
+            Diagnostic::error("B0403", span, format!("cannot assign to `{}`: it is a `let`", field.name))
+                .label(format!("a `let` of `{owner}`, set once when it is made"))
+                .help(format!("declare it `var {}`, or make a new `{owner}` with the value", field.name))
+                .spec("44-structs"),
+        );
+    }
+
     /// A write to a class's field: a `let` only in its `init`, a `private(set)` only in
     /// the class's own members.
     fn model_write(&mut self, def: DefId, class: &ClassDef, field: &Ident, through_self: bool) {
@@ -3852,7 +3891,6 @@ impl<'o> Checker<'o> {
             self.expr(&a.value, Some(&field));
             return true;
         };
-        let _ = key;
         let Some(local) = self.lookup(name) else {
             self.expr(&a.value, Some(&field));
             return true;
@@ -3874,18 +3912,59 @@ impl<'o> Checker<'o> {
         } else if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
             self.var_captured(&info, a.target.span);
         }
-        if a.op != AssignOp::Set {
+        // Swift's rule: only a `WritableKeyPath` writes; a `KeyPath` (or one of a `let`) reads.
+        if let Some(Ty::KeyPath(root, value, false)) = self.out.types.get(&key.id).map(|t| self.resolve(t)) {
+            let shown = self.show(&Ty::KeyPath(root.clone(), value.clone(), false));
+            let field = match &key.kind {
+                ExprKind::KeyPath { path, .. } => path.first().map(|f| f.name.clone()),
+                _ => None,
+            };
+            let help = match &field {
+                Some(field) => {
+                    format!("declare it `var {field}`; a `let` is set once, when the struct is made")
+                }
+                None => format!(
+                    "take a `WritableKeyPath<{}, {}>`",
+                    self.show(&root).trim_matches('`'),
+                    self.show(&value).trim_matches('`')
+                ),
+            };
             self.report(
                 Diagnostic::error(
-                    "B0201",
-                    a.span,
-                    format!("`{}` through a key path is not supported", a.op.text()),
+                    "B0403",
+                    key.span,
+                    format!("cannot assign through {shown}: it is read-only"),
                 )
-                .label("write `x[keyPath: k] = x[keyPath: k] + v`")
+                .label(match &field {
+                    Some(field) => format!("`{field}` is a `let`"),
+                    None => "a `KeyPath` reads; a `WritableKeyPath` writes".to_string(),
+                })
+                .help(help)
                 .spec("44-structs"),
             );
         }
-        self.expr(&a.value, Some(&field));
+        match a.op {
+            AssignOp::Set => {
+                self.expr(&a.value, Some(&field));
+            }
+            // `next[keyPath: key] += 1`, as on any place.
+            op => {
+                let value = self.expr(&a.value, Some(&field));
+                let numeric = matches!(self.resolve(&field), Ty::Int | Ty::Float | Ty::Unknown);
+                let text = op == AssignOp::Add && matches!(self.resolve(&field), Ty::Str | Ty::List(_));
+                if !numeric && !text {
+                    self.report(
+                        Diagnostic::error(
+                            "B0201",
+                            a.span,
+                            format!("`{}` needs a number, found {}", op.text(), self.show(&value)),
+                        )
+                        .label("not a number")
+                        .spec("61-precedence-high-to-low"),
+                    );
+                }
+            }
+        }
         let state = info.kind == LocalKind::State;
         if state {
             self.frames.last_mut().expect("a frame").written.insert(local);
@@ -3980,11 +4059,15 @@ impl<'o> Checker<'o> {
         // The place's type, field by field.
         let place_ty = {
             let mut ty = info.ty.clone();
-            for field in &fields {
+            for (index, field) in fields.iter().enumerate() {
                 ty = match self.resolve(&ty) {
                     Ty::Adt(def, args) => match self.out.defs[def].fields().iter().find(|f| f.name == *field)
                     {
-                        Some(f) => substitute(&f.ty, &args),
+                        Some(f) => {
+                            let f = f.clone();
+                            self.struct_let_write(def, &f, a.target.span, index == 0 && name == "self");
+                            substitute(&f.ty, &args)
+                        }
                         None => {
                             self.expr(&a.target, None);
                             Ty::Unknown
@@ -5914,7 +5997,7 @@ impl<'o> Checker<'o> {
             ExprKind::KeyPathIndex(object, key) => {
                 let root = self.expr(object, None);
                 let value = self.fresh();
-                let want = Ty::KeyPath(Box::new(root), Box::new(value.clone()));
+                let want = Ty::KeyPath(Box::new(root), Box::new(value.clone()), false);
                 let given = self.expr(key, Some(&want));
                 if !self.coerce(&given, &want) {
                     self.mismatch(key.span, &given, &want);
@@ -5948,7 +6031,7 @@ impl<'o> Checker<'o> {
                             other => (other.clone(), false),
                         };
                         let value = self.fresh();
-                        let key = Ty::KeyPath(Box::new(base.clone()), Box::new(value.clone()));
+                        let key = Ty::KeyPath(Box::new(base.clone()), Box::new(value.clone()), false);
                         match &index.kind {
                             ExprKind::KeyPath { .. } => {
                                 self.expr(index, Some(&key));
@@ -6373,9 +6456,9 @@ impl<'o> Checker<'o> {
     /// `\.field` (its struct from the expected `KeyPath<S, V>`) or `\S.field`.
     fn key_path(&mut self, expr: &Expr, root: Option<&Ident>, path: &[Ident], expected: Option<&Ty>) -> Ty {
         let expected_root = match expected {
-            Some(Ty::KeyPath(root, _)) => Some(self.resolve(root)),
+            Some(Ty::KeyPath(root, ..)) => Some(self.resolve(root)),
             Some(Ty::Option(inner)) => match self.resolve(inner) {
-                Ty::KeyPath(root, _) => Some(self.resolve(&root)),
+                Ty::KeyPath(root, ..) => Some(self.resolve(&root)),
                 _ => None,
             },
             _ => None,
@@ -6429,7 +6512,9 @@ impl<'o> Checker<'o> {
             return Ty::Unknown;
         };
         self.out.fields.insert(expr.id, FieldRes::Field);
-        Ty::KeyPath(Box::new(root_ty.clone()), Box::new(substitute(&f.ty, args)))
+        // A stored `var` of a struct (not a class: its fields are written in place) writes too.
+        let writable = f.mutable && self.out.defs[*def].class.is_none();
+        Ty::KeyPath(Box::new(root_ty.clone()), Box::new(substitute(&f.ty, args)), writable)
     }
 
     fn binding(&mut self, expr: &Expr, path: &[Ident]) -> Ty {

@@ -27,5 +27,6 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
   let read: KeyPath<Account, String> = \Account.name
   var next = accounts[0].with(\.visits, 1)
   next[keyPath: key] = next[keyPath: key] + accounts.count
+  next[keyPath: key] += 1
   return [next, Account(name: next[keyPath: read])]
 }
