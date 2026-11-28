@@ -1870,6 +1870,16 @@ impl<'s> Tr<'s> {
     /// A generic component (`function Shell<TItem>(props: P<TItem>)`): drafted as a view, then
     /// written as 2.0's `struct Shell<TItem>: View`, since a 0.x `view` takes no type parameters.
     pub fn generic_view(&mut self, draft: String, vis: &str, name: &str, generics: &[String]) -> String {
+        // The view printed in 2.0's forms (its members too: `@state` is `@State private var`),
+        // then given its type parameters (0.x has no generic view).
+        if let Ok((printed, _)) = bloom_fmt::migrate(&draft, "generic.bloom") {
+            let head = format!("struct {name}: View");
+            if let Some(at) = printed.find(&head) {
+                let mut printed = printed;
+                printed.insert_str(at + "struct ".len() + name.len(), &format!("<{}>", generics.join(", ")));
+                return printed.trim().to_string();
+            }
+        }
         let Some((stored, members, body_part)) = draft_parts(&draft, vis, name) else { return draft };
         let vis = vis.replace("pub ", "public ");
         format!(
