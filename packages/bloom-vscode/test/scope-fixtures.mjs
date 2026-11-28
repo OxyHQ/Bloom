@@ -11,10 +11,13 @@ import { join } from 'node:path';
 
 export const FIXTURES = new URL('fixtures/', import.meta.url).pathname;
 
-/** The fixture files, by name. */
+/**
+ * The fixture files, by name: `.bloom`, and `.bloom-next` for syntax an open pull request adds to
+ * the compiler (packages/tree-sitter-bloom/scripts/parse-repo.mjs renames it once it lands).
+ */
 export const fixtureNames = () =>
   readdirSync(FIXTURES)
-    .filter((file) => file.endsWith('.bloom'))
+    .filter((file) => file.endsWith('.bloom') || file.endsWith('.bloom-next'))
     .sort();
 
 const ASSERTION = /^\s*\/\/\s*(?=\^|<-)/;

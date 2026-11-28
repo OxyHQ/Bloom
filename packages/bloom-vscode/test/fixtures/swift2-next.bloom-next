@@ -1,6 +1,7 @@
 // Bloom 2.0's newer surface: protocol composition, ViewModifier, Never, @Transparent, a hook's
 // @State, loop labels with break and continue, identity, try Regex, closure signatures, and every
-// contextual keyword (bloom_lang::CONTEXTUAL_KEYWORDS). `bloom check` passes on it.
+// contextual keyword (bloom_lang::CONTEXTUAL_KEYWORDS). `bloom check` passes on it with #1066's
+// compiler; it is `.bloom-next` until that syntax is on main (tree-sitter-bloom's parse-repo.mjs).
 public protocol Named {
   var name: String { get }
 }

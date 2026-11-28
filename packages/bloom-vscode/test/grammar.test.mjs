@@ -98,7 +98,7 @@ test('every repository rule the grammar names exists', () => {
 });
 
 test('every fixture closes every rule it opens', () => {
-  for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.bloom'))) {
+  for (const name of fixtureNames()) {
     let state = textmate.INITIAL;
     for (const line of readFileSync(join(fixtures, name), 'utf8').split('\n'))
       state = grammar.tokenizeLine(line, state).ruleStack;
