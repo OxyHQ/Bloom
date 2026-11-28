@@ -22,8 +22,12 @@ pub fn spell(
         if d.code != "B0201" {
             continue;
         }
-        let Some(found) =
-            d.message.strip_prefix("expected `Bool`, found `").and_then(|m| m.strip_suffix('`'))
+        // An optional `Bool` (a TS `flag?: boolean`) takes the same test.
+        let Some(found) = d
+            .message
+            .strip_prefix("expected `Bool`, found `")
+            .or_else(|| d.message.strip_prefix("expected `Bool?`, found `"))
+            .and_then(|m| m.strip_suffix('`'))
         else {
             continue;
         };

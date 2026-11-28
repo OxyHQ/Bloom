@@ -443,11 +443,12 @@ impl Tr<'_> {
             Expression::BinaryExpression(b) if let Some(text) = self.date_month(b) => text,
             Expression::BinaryExpression(b) => self.binary(b),
             Expression::UnaryExpression(u) => match u.operator {
-                // `!!x?.trim()`: `Boolean(x?.trim())`, an optional string's truthiness.
+                // `!!x` is `Boolean(x)`: its truthiness as a value, which bloomc types and
+                // `crate::truthiness` spells (`x != none`) even where nothing expects a `Bool`
+                // (a TS component's prop); `!!x?.trim()` an optional string's.
                 UnaryOperator::LogicalNot
                     if let Expression::UnaryExpression(inner) = u.argument.without_parentheses()
-                        && inner.operator == UnaryOperator::LogicalNot
-                        && optional_string_call(&inner.argument) =>
+                        && inner.operator == UnaryOperator::LogicalNot =>
                 {
                     self.boolean(&inner.argument)
                 }
