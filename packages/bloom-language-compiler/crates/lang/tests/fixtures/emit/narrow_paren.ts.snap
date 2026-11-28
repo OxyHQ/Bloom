@@ -1,0 +1,16 @@
+
+export interface Room {
+  readonly status: ("scheduled" | "live") | undefined;
+}
+
+function take(status: "scheduled" | "live"): string {
+return status;
+}
+
+export function shown(room: Room | undefined): string {
+if ((room != null)) {
+return take((room.status != null) ? room.status! : "scheduled");
+}
+return "";
+}
+

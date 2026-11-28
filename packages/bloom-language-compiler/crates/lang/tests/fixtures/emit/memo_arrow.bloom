@@ -1,0 +1,9 @@
+// An arrow component in a `.tsx` (`const List = (props: P) => <… />`) is a component, and so is
+// its `memo(List, eq)` re-exported by default: it is mounted (`$jsx(List, …)`), not called.
+import { default as List } from "@/elements/List"
+
+public struct Replies: View {
+  var body: some View {
+    VStack { List(kind: "replies") }
+  }
+}

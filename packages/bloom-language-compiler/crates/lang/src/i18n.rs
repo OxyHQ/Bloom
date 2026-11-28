@@ -27,6 +27,13 @@ use crate::diagnostic::{Diagnostic, closest};
 /// The standard library's lookup (`String.localized`).
 pub const LOOKUP: &str = "String$$localized";
 
+/// The standard library's hook that reads the preferred locale, so a view re-draws when it
+/// changes (`Locale.prefer`): a view that shows localized strings reads it once.
+pub const LOCALE_HOOK: &str = "useLocalization";
+
+/// The view member that holds it, passed to each lookup in the view (`locale:`).
+const LOCALE_MEMBER: &str = "bloom$locale";
+
 /// Where a package's catalogs are, under its root.
 pub const DIR: &str = "Resources/Localizable";
 
@@ -173,6 +180,12 @@ struct Lowering<'c> {
     catalogs: &'c Catalogs,
     diagnostics: Vec<Diagnostic>,
     used: bool,
+    /// In a view: its lookups read the locale through the view's hook member.
+    in_view: bool,
+    /// A lookup in the current view, which then declares the member.
+    view_used: bool,
+    /// Some view declares the member (the hook is then imported).
+    hook_used: bool,
 }
 
 impl Lowering<'_> {
@@ -184,8 +197,20 @@ impl Lowering<'_> {
             kind: ExprKind::Name(LOOKUP.into()),
             span,
         };
-        let mut args = vec![Arg { label: None, spread: false, span: key.span, value: key }];
+        let key_span = key.span;
+        let mut args = vec![Arg { label: None, spread: false, span: key_span, value: key }];
         args.extend(rest);
+        // In a view, the locale its hook read: a switch re-draws the view (a memo dependency).
+        if self.in_view {
+            self.view_used = true;
+            let locale = Expr {
+                id: ExprId(NEXT_ID.fetch_add(1, Ordering::Relaxed)),
+                kind: ExprKind::Name(LOCALE_MEMBER.into()),
+                span,
+            };
+            let label = Ident { name: "locale".into(), span };
+            args.push(Arg { label: Some(label), spread: false, span: key_span, value: locale });
+        }
         Expr {
             id: ExprId(NEXT_ID.fetch_add(1, Ordering::Relaxed)),
             kind: ExprKind::Call(Call {
@@ -405,6 +430,8 @@ impl Lowering<'_> {
             ItemKind::Fn(f) => self.block(&mut f.body),
             ItemKind::Const(c) => self.expr(&mut c.value),
             ItemKind::View(v) => {
+                self.in_view = true;
+                self.view_used = false;
                 for member in &mut v.members {
                     match member {
                         Member::State(s) => self.expr(&mut s.value),
@@ -415,6 +442,31 @@ impl Lowering<'_> {
                     }
                 }
                 self.block(&mut v.body);
+                self.in_view = false;
+                if self.view_used {
+                    self.hook_used = true;
+                    let span = crate::codable::synthetic(v.span);
+                    let id = || ExprId(NEXT_ID.fetch_add(1, Ordering::Relaxed));
+                    let hook = Expr { id: id(), kind: ExprKind::Name(LOCALE_HOOK.into()), span };
+                    let call = Call {
+                        callee: Box::new(hook),
+                        args: Vec::new(),
+                        parens: true,
+                        trailing: None,
+                        optional: false,
+                    };
+                    let member = LetStmt {
+                        pattern: Pattern {
+                            kind: PatternKind::Bind(Ident { name: LOCALE_MEMBER.into(), span }),
+                            span,
+                        },
+                        ty: None,
+                        value: Expr { id: id(), kind: ExprKind::Call(call), span },
+                        span,
+                        is_async: false,
+                    };
+                    v.members.insert(0, Member::Let(member));
+                }
             }
             _ => {}
         }
@@ -422,13 +474,27 @@ impl Lowering<'_> {
 }
 
 /// Lowers `file`'s localized strings against the catalogs of the package at `root`.
-/// Returns whether the file now uses the standard library's lookup.
-pub fn lower(file: &mut File, root: &Path, diagnostics: &mut Vec<Diagnostic>) -> bool {
+/// Returns the standard library's names the file now uses (the lookup, the locale hook).
+pub fn lower(file: &mut File, root: &Path, diagnostics: &mut Vec<Diagnostic>) -> Vec<&'static str> {
     let catalogs = catalogs(root);
-    let mut lowering = Lowering { catalogs: &catalogs, diagnostics: Vec::new(), used: false };
+    let mut lowering = Lowering {
+        catalogs: &catalogs,
+        diagnostics: Vec::new(),
+        used: false,
+        in_view: false,
+        view_used: false,
+        hook_used: false,
+    };
     for item in &mut file.items {
         lowering.item(item);
     }
     diagnostics.extend(lowering.diagnostics);
-    lowering.used
+    let mut names = Vec::new();
+    if lowering.used {
+        names.push(LOOKUP);
+    }
+    if lowering.hook_used {
+        names.push(LOCALE_HOOK);
+    }
+    names
 }

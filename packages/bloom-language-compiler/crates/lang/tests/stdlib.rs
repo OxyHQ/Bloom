@@ -303,8 +303,23 @@ fn localized_strings_are_checked_against_the_catalogs() {
     let path = root.join("Sources/Model/FeedTitle.bloom");
     let out = compile(FEED_TITLE, &path.to_string_lossy(), &Options::default());
     assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
-    assert!(out.code.contains("String$$localized(\"feed.title\")"), "{}", out.code);
-    assert!(out.code.contains("String$$localized(\"feed.count\", undefined, count)"), "{}", out.code);
+    // In a view, each lookup reads the locale the view's hook read, so a switch re-draws it.
+    assert!(out.code.contains("const bloom$locale = useLocalization();"), "{}", out.code);
+    assert!(
+        out.code.contains("String$$localized(\"feed.title\", undefined, undefined, bloom$locale)"),
+        "{}",
+        out.code
+    );
+    assert!(
+        out.code.contains("String$$localized(\"feed.count\", undefined, count, bloom$locale)"),
+        "{}",
+        out.code
+    );
+    assert!(
+        out.code.contains("$[0] !== bloom$locale"),
+        "the label's memo depends on the locale: {}",
+        out.code
+    );
     assert!(out.code.contains("\"Plain text stays as written\""), "{}", out.code);
     let warnings: Vec<&str> = out.warnings.iter().map(|w| w.code).collect();
     assert_eq!(warnings, ["B0842"], "es.json lacks feed.count");

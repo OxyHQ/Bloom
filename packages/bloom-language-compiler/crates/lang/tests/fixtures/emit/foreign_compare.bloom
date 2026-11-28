@@ -1,0 +1,22 @@
+// A TS value compared with a number or a string is one, and so is a TS value beside an `Int`
+// (`2 * Math.PI`) or negated (`-event.translationY`): each is checked by `satisfies` (spec 4.7).
+import { useDrag, usePage } from "@/corpus"
+import { Math } from "js"
+
+public let CIRCUMFERENCE = 2 * Math.PI * 18
+
+public struct Pager: View {
+  let page = usePage()
+  let drag = useDrag()
+
+  var body: some View {
+    let next = page.page < page.totalPages ? page.page + 1 : none
+    let pull = -drag.translationY
+    VStack {
+      if page.page > 1 { Text("more") }
+      if page.label >= "m" { Text("late") }
+      if 0 < page.totalPages { Text("pages") }
+      Text("\(next ?? 0) \(pull)")
+    }
+  }
+}

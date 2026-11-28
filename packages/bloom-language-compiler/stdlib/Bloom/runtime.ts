@@ -3,6 +3,8 @@
 // app code never does. Each export is small and typed: the Bloom declaration of
 // each one states its type, and tsc checks the crossing.
 
+import { useSyncExternalStore } from 'react';
+
 // ---- strings ----------------------------------------------------------------
 
 type Segmenter = { segment(s: string): Iterable<{ segment: string }> };
@@ -688,6 +690,18 @@ type Catalog = Readonly<Record<string, string | Readonly<Record<string, string>>
 
 const catalogs = new Map<string, Catalog>();
 let preferred: string | undefined;
+/** The views reading the preferred locale (`useLocalization`), told when it changes. */
+const localeListeners = new Set<() => void>();
+
+function subscribeLocale(listener: () => void): () => void {
+  localeListeners.add(listener);
+  return () => localeListeners.delete(listener);
+}
+
+/** `useLocalization()`: the preferred locale, re-read by the view when it changes. */
+export function useLocaleIdentifier(): string {
+  return useSyncExternalStore(subscribeLocale, preferredLocale, preferredLocale);
+}
 
 /** Registers the strings of `locale` (`bloom build` registers the package's catalogs). */
 export function registerCatalog(locale: string, catalog: unknown): void {
@@ -695,7 +709,9 @@ export function registerCatalog(locale: string, catalog: unknown): void {
 }
 
 export function setPreferredLocale(locale: string): void {
+  const before = preferredLocale();
   preferred = locale || undefined;
+  if (preferredLocale() !== before) for (const listener of [...localeListeners]) listener();
 }
 
 export function preferredLocale(): string {
@@ -719,14 +735,22 @@ export function localize(
   key: string,
   args: Readonly<Record<string, string>>,
   count: number | undefined,
+  inLocale?: string,
 ): string {
-  const locale = preferredLocale();
+  const locale = inLocale ?? preferredLocale();
   const found = lookup(key, locale);
   let text: string;
   if (found === undefined) text = key;
   else if (typeof found === 'string') text = found;
   else {
-    const category = count === undefined ? 'other' : new Intl.PluralRules(locale).select(count);
+    // A count of exactly 0 takes a `zero` form where the catalog has one, in every language
+    // (as i18next's `_zero`), before the CLDR category (only Arabic's has `zero`).
+    const category =
+      count === undefined
+        ? 'other'
+        : count === 0 && found.zero !== undefined
+          ? 'zero'
+          : new Intl.PluralRules(locale).select(count);
     text = found[category] ?? found.other ?? key;
   }
   return text.replace(

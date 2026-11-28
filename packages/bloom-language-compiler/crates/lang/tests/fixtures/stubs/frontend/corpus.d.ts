@@ -56,3 +56,11 @@ export interface Author extends Person {
 export declare function useAuthors(): Author[] | undefined;
 export declare function badges(): Opaque<import('@oxy.so/bloom-language').Child>[];
 export type Decision = 'available' | 'pending';
+/** A page of results whose figures Bloom does not read (as an infinite query's `lastPage`). */
+export declare function usePage(): Opaque<{ page: number; totalPages: number; label: string }>;
+/** A gesture's event (react-native-gesture-handler's): its figures are TS's. */
+export declare function useDrag(): Opaque<{ translationY: number }>;
+/** A route's parameter, read by a hook (Mention's `useRoutedProfileUsername`). */
+export declare function useRoutedName(): string;
+/** A hook that takes another's value (Mention's `useProfileAccount`). */
+export declare function useAccountOf(name: string): { loading: boolean; name: string };

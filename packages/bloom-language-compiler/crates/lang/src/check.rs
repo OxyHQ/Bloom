@@ -476,6 +476,9 @@ pub struct Checker<'o> {
     pending: HashMap<LocalId, (bool, usize)>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
+    /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
+    /// run on every render, in the same order, as the call does.
+    hook_args: HashSet<ExprId>,
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
     /// may call hooks.
     hook_body: Option<usize>,
@@ -598,6 +601,7 @@ impl<'o> Checker<'o> {
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
+            hook_args: HashSet::default(),
             hook_body: None,
             was_hook: false,
             task_allowed: false,
@@ -3700,6 +3704,10 @@ impl<'o> Checker<'o> {
     /// `test` (`!=` joined by `&&`, or `==` joined by `||` for a guard that exits) holding
     /// for `name … none`: the name is present after it.
     fn narrow(&mut self, expr: &Expr, test: BinaryOp, join: BinaryOp) {
+        // `(x != none) ? x : d`: through parentheses.
+        if let ExprKind::Paren(inner) = &expr.kind {
+            return self.narrow(inner, test, join);
+        }
         let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
         match op {
             op if *op == join => {
@@ -4153,8 +4161,8 @@ impl<'o> Checker<'o> {
         };
         self.out.types.insert(expr.id, ty.clone());
         self.span_type((expr.span, ty.clone()));
-        if hint.as_ref().is_some_and(is_element) && matches!(self.resolve(&ty), Ty::View(_)) {
-            self.out.elements.insert(expr.id);
+        if hint.as_ref().is_some_and(is_element) {
+            self.element(expr);
         }
         if let Some(hint) = hint {
             let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
@@ -4339,6 +4347,11 @@ impl<'o> Checker<'o> {
                     };
                     let ty = self.expr(operand, hint.as_ref());
                     let ty = self.resolve(&ty);
+                    // A TS value negated is a number (`-event.translationY`), checked by TS.
+                    if let Ty::Foreign(_) = ty {
+                        self.out.foreign_checks.insert(operand.id, Ty::Float);
+                        return Ty::Float;
+                    }
                     if !matches!(ty, Ty::Int | Ty::Float | Ty::Unknown) {
                         self.operand_error(operand.span, "`-`", &ty);
                     }
@@ -4366,6 +4379,8 @@ impl<'o> Checker<'o> {
                     self.child_slots.extend([then.id, otherwise.id]);
                 }
                 self.expr(cond, Some(&Ty::Bool));
+                // A hook in a branch runs only sometimes (B0420).
+                self.hook_allowed = false;
                 // `p != none ? p.x : d` / `p == none ? d : p.x`: present in the branch that knows.
                 self.push();
                 self.narrow_present(cond);
@@ -4989,6 +5004,8 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::And | BinaryOp::Or => {
                 let left = self.expr(lhs, None);
+                // A hook on the right runs only sometimes (B0420).
+                self.hook_allowed = false;
                 // `f || b` of a TS value `f`: JS's value `||`, `b` when `f` is falsy, typed
                 // as `b` and checked by tsc (`satisfies`).
                 if op == BinaryOp::Or
@@ -5012,8 +5029,23 @@ impl<'o> Checker<'o> {
                     && !matches!(self.resolve(&inner), Ty::Bool)
                     && !matches!(expected.map(|e| self.resolve(e)), Some(Ty::Bool))
                 {
-                    let right = self.expr(rhs, Some(&inner));
-                    return self.join(&inner, &right, expr.span);
+                    // The other side may be absent too (`user.username || user.handle`): then
+                    // so is the whole, as JS's `||` gives it.
+                    let optional = Ty::Option(inner.clone());
+                    let right = self.expr(rhs, Some(&optional));
+                    let mut inside = rhs;
+                    while let ExprKind::Paren(e) = &inside.kind {
+                        inside = e;
+                    }
+                    let own = self.out.types.get(&inside.id).cloned().unwrap_or(right);
+                    let own = match self.resolve(&own) {
+                        // Checked as the optional (`satisfies T | undefined`).
+                        Ty::Foreign(_) => return optional,
+                        Ty::Option(r) => *r,
+                        other => other,
+                    };
+                    let joined = self.join(&inner, &own, expr.span);
+                    return if self.may_be_absent(rhs) { Ty::Option(Box::new(joined)) } else { joined };
                 }
                 // As `expr(lhs, Some(Bool))` would have.
                 if let Some(recorded) = &mut self.expected {
@@ -5038,6 +5070,8 @@ impl<'o> Checker<'o> {
             }
             BinaryOp::Default => {
                 let left = self.expr(lhs, None);
+                // A hook on the right runs only sometimes (B0420).
+                self.hook_allowed = false;
                 match self.resolve(&left) {
                     Ty::Option(inner) => {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
@@ -5174,6 +5208,25 @@ impl<'o> Checker<'o> {
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => {
                 let left = self.expr(lhs, None);
                 let left = self.resolve(&left);
+                // A TS value compared with a number (or a string) is one (`item.pokeCount > 1`):
+                // the emitted `satisfies` lets TS check it, as in arithmetic. Two TS values are
+                // compared as TS compares them.
+                if let Ty::Foreign(_) = left {
+                    let right = self.expr(rhs, None);
+                    let checked = match self.actual(rhs, &right) {
+                        Ty::Int | Ty::Float => Some(Ty::Float),
+                        Ty::Str | Ty::Strings(_) => Some(Ty::Str),
+                        Ty::Foreign(_) | Ty::Unknown | Ty::Never | Ty::Var(_) => None,
+                        other => {
+                            self.operand_error(rhs.span, &format!("`{}`", op.text()), &other);
+                            None
+                        }
+                    };
+                    if let Some(ty) = checked {
+                        self.out.foreign_checks.insert(lhs.id, ty);
+                    }
+                    return Ty::Bool;
+                }
                 if !matches!(left, Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Unknown | Ty::Var(_))
                 {
                     self.operand_error(lhs.span, &format!("`{}`", op.text()), &left);
@@ -5218,6 +5271,11 @@ impl<'o> Checker<'o> {
                                 self.unify(&right, &Ty::Int);
                                 Ty::Int
                             }
+                            // A TS value beside an `Int` is a number (`2 * Math.PI`).
+                            Ty::Foreign(_) => {
+                                self.out.foreign_checks.insert(rhs.id, Ty::Float);
+                                Ty::Float
+                            }
                             other => {
                                 self.mismatch(rhs.span, &other, &Ty::Int);
                                 Ty::Int
@@ -5256,6 +5314,49 @@ impl<'o> Checker<'o> {
                     }
                 }
             }
+        }
+    }
+
+    /// A Bloom view where TS takes a React element crosses as one (`toElement(view)`); an
+    /// optional one is, branch by branch (`bare ? none : Text("foot")`), and otherwise whole.
+    pub(super) fn element(&mut self, expr: &Expr) {
+        if matches!(expr.kind, ExprKind::None) {
+            return;
+        }
+        let Some(ty) = self.out.types.get(&expr.id).cloned() else { return };
+        match self.resolve(&ty) {
+            Ty::View(_) => {
+                self.out.elements.insert(expr.id);
+            }
+            Ty::Option(inner) if matches!(self.resolve(&inner), Ty::View(_)) => match &expr.kind {
+                ExprKind::Paren(inside) => self.element(inside),
+                ExprKind::Ternary(_, then, otherwise) => {
+                    self.element(then);
+                    self.element(otherwise);
+                }
+                _ => {
+                    self.out.elements.insert(expr.id);
+                }
+            },
+            _ => {}
+        }
+    }
+
+    /// Whether `expr`, checked against an optional, may be `none`: its own type, through the
+    /// branches and fallbacks that pass the optional down (`(a || (c ? b : d))`).
+    fn may_be_absent(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::None => true,
+            ExprKind::Paren(inner) => self.may_be_absent(inner),
+            ExprKind::Ternary(_, then, otherwise) => {
+                self.may_be_absent(then) || self.may_be_absent(otherwise)
+            }
+            ExprKind::Binary(BinaryOp::Or | BinaryOp::Default, lhs, rhs)
+                if matches!(self.out.types.get(&lhs.id).map(|t| self.resolve(t)), Some(Ty::Option(_))) =>
+            {
+                self.may_be_absent(rhs)
+            }
+            _ => matches!(self.out.types.get(&expr.id).map(|t| self.resolve(t)), Some(Ty::Option(_))),
         }
     }
 

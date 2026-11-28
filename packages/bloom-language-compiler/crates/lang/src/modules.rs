@@ -296,9 +296,9 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     };
     out.in_module = true;
     derived.extend(crate::bloomui::lower(file, &mut out.diagnostics));
-    if crate::i18n::lower(file, &absolute(&root), &mut out.diagnostics) {
-        derived.insert(crate::i18n::LOOKUP.to_string());
-    }
+    derived.extend(
+        crate::i18n::lower(file, &absolute(&root), &mut out.diagnostics).into_iter().map(String::from),
+    );
     let target = &graph.manifest.targets[index];
     let bindings = matches!(target.kind, TargetKind::Bindings { .. } | TargetKind::Native { .. });
     let dir = path.parent().map(Path::to_path_buf).unwrap_or_default();

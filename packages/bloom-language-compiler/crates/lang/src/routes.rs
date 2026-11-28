@@ -67,6 +67,28 @@ pub fn routes(options: &Options) -> Option<Rc<Routes>> {
     Some(routes)
 }
 
+/// Whether `filename` is one of the app's routes: under `Options::app`, else `app/` or
+/// `src/app/` under the root. With no router folder, every file may be one.
+pub fn is_route_file(filename: &str, options: &Options) -> bool {
+    let dir = match &options.app {
+        Some(app) => options.root.as_ref().map_or_else(|| app.clone(), |root| root.join(app)),
+        None => {
+            let Some(root) = options.root.as_ref() else { return true };
+            match ["app", "src/app"].iter().map(|dir| root.join(dir)).find(|dir| dir.is_dir()) {
+                Some(dir) => dir,
+                None => return true,
+            }
+        }
+    };
+    let file = Path::new(filename);
+    let file = match &options.root {
+        Some(root) if file.is_relative() => root.join(file),
+        _ => file.to_path_buf(),
+    };
+    let canonical = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
+    file.starts_with(&dir) || canonical(&file).starts_with(canonical(&dir))
+}
+
 /// Forgets every tree read (an editor's `clear_caches`).
 pub fn clear() {
     TREES.with(|trees| trees.borrow_mut().clear());
