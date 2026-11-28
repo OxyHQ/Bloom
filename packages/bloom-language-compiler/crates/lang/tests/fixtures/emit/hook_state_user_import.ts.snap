@@ -1,0 +1,9 @@
+import { useState } from "react";
+
+export function useRow(): readonly [string | undefined, unknown] {
+const [open, setOpen] = useState<string | undefined>(undefined);
+const [owner, ]: readonly [unknown, unknown] = useState(() => (() => {
+}));
+return [open, owner] as const;
+}
+

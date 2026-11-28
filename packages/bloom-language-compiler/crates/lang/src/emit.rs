@@ -228,6 +228,9 @@ struct Emitter<'a> {
     body_span: Option<Span>,
     /// Where the item being emitted starts: a module constant before it is defined.
     item_start: u32,
+    /// The names the module imports itself, by module (`useState` from `"react"`): the emitter's
+    /// own import of one is that same binding, not a second declaration.
+    user_imports: HashSet<(String, String)>,
 }
 
 pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, options: &Options) -> Emitted {
@@ -291,6 +294,20 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         scope: None,
         body_span: None,
         item_start: 0,
+        user_imports: file
+            .imports
+            .iter()
+            .filter_map(|import| match &import.kind {
+                ImportKind::Named(specs) => Some(
+                    specs
+                        .iter()
+                        .filter(|spec| spec.alias.is_none() && !spec.type_only)
+                        .map(|spec| (import.source.clone(), spec.name.name.clone())),
+                ),
+                _ => None,
+            })
+            .flatten()
+            .collect(),
     };
     let mut body = Frag::default();
     for import in &file.imports {
@@ -541,7 +558,16 @@ impl<'a> Emitter<'a> {
             out.s("import { c as $c } from \"react/compiler-runtime\";\n");
         }
         for (module, names) in &self.imports {
-            let names: Vec<&str> = names.iter().map(String::as_str).collect();
+            // A name the module imports itself from there is that binding already (`import {
+            // useState } from "react"` beside a hook-local `@State var`).
+            let names: Vec<&str> = names
+                .iter()
+                .map(String::as_str)
+                .filter(|name| !self.user_imports.contains(&(module.to_string(), name.to_string())))
+                .collect();
+            if names.is_empty() {
+                continue;
+            }
             out.s(&format!("import {{ {} }} from {};\n", names.join(", "), string_literal(module)));
         }
         for (module, names) in &self.type_imports {
@@ -818,12 +844,19 @@ impl<'a> Emitter<'a> {
 
     // ---- names ------------------------------------------------------------
 
+    /// The name of a view function's own props parameter: `props`, or `$props` in a module that
+    /// names something `props` itself (`let props: String`), which `const { props } = props`
+    /// would redeclare.
+    fn props_param(&self) -> &'static str {
+        if self.names.contains("props") { "$props" } else { "props" }
+    }
+
     fn local_name(&self, local: LocalId) -> String {
         if let Some(alias) = self.aliases.get(&local) {
             return alias.clone();
         }
         if self.ck.whole_props.contains(&local) {
-            return "props".into();
+            return self.props_param().into();
         }
         let info = &self.ck.locals[local];
         if let Some(hoisted) = self.hoisted_names.get(&info.span) {
@@ -5715,7 +5748,7 @@ impl<'a> Emitter<'a> {
         let param = if no_props {
             String::new()
         } else {
-            format!("props: {props_name}{}", self.generics(&v.generics))
+            format!("{}: {props_name}{}", self.props_param(), self.generics(&v.generics))
         };
         let generics = self.shaped_generics(&v.generics, v.span);
         let export = if item.visibility.exported(self.options.modules) { "export " } else { "" };
@@ -5858,7 +5891,7 @@ impl<'a> Emitter<'a> {
                 ));
             }
             let mut line = Frag::of("const ");
-            line.f(Frag::join(targets, ", ").wrap("{ ", " }")).s(" = props;");
+            line.f(Frag::join(targets, ", ").wrap("{ ", " }")).s(&format!(" = {};", self.props_param()));
             self.push_stmt(line);
         }
         let observed = self.ck.observed.get(&index).cloned().unwrap_or_default();
@@ -5934,7 +5967,7 @@ impl<'a> Emitter<'a> {
         }
         let has_props = !info.props.is_empty() || !witness_props.is_empty();
         let own_props = format!("{props_name}{}", self.generics(&v.generics));
-        let param = if has_props { format!("props: {own_props}") } else { String::new() };
+        let param = if has_props { format!("{}: {own_props}", self.props_param()) } else { String::new() };
         let generics = self.shaped_generics(&v.generics, v.span);
         let name = &v.name.name;
         let (wrapper, module, prefix) = match v.kind {
@@ -6065,7 +6098,7 @@ impl<'a> Emitter<'a> {
         self.import_name(LANGUAGE, "inlineView");
         let name = &v.name.name;
         let export = if item.visibility.exported(self.options.modules) { "export " } else { "" };
-        let param = if has_props { format!("props: {props_name}") } else { String::new() };
+        let param = if has_props { format!("{}: {props_name}", self.props_param()) } else { String::new() };
         let mut out = props_decl;
         out.mark(item.span)
             .s(&format!("{export}const {name} = inlineView(function {name}({param}) {{\n"))

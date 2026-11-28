@@ -1,0 +1,1 @@
+export declare function useRow(): readonly [string | undefined, unknown];

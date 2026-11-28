@@ -1,0 +1,15 @@
+// A prop named `props`: the view function's own parameter takes a name no Bloom identifier can
+// (`$props`), so `const { props } = $props` declares it once.
+public struct Island: View {
+  let name: String
+  let props: String
+  var body: some View { Text(name + props) }
+}
+
+public struct Counted: View {
+  let props: Int
+  @State private var taps = 0
+  var body: some View {
+    Button(Text("\(props + taps)")).onPress { taps += 1 }
+  }
+}

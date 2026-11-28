@@ -1,0 +1,37 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, inlineView, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+
+export interface IslandProps {
+  readonly name: string;
+  readonly props: string;
+}
+export const Island = inlineView(function Island($props: IslandProps) {
+"use no memo";
+const { name, props } = $props;
+return Text(name + props);
+});
+
+export interface CountedProps {
+  readonly props: number;
+}
+export const Counted = view(function Counted($props: CountedProps) {
+"use no memo";
+const $ = $c(3);
+const { props } = $props;
+const [taps, setTaps] = useState<number>(0);
+let $t0;
+if ($[0] !== props || $[1] !== taps) {
+$t0 = Button(Text(`${props + taps}`)).onPress(() => {
+setTaps((taps) => taps + (1));
+});
+$[0] = props;
+$[1] = taps;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+
