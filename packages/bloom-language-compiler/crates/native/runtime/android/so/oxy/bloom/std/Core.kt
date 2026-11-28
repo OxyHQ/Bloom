@@ -16,13 +16,55 @@ data class ClosedRange<Bound>(
 @JvmInline
 value class UniqueID(val string: String)
 
+@JvmInline
+value class UTF16View(val string: String) {
+  val count: Long
+    get() = utf16Length(this.string)
+  val isEmpty: Boolean
+    get() = utf16Length(this.string) == 0L
+  fun slice(start: Long, end: Long): String {
+    return utf16Slice(this.string, start, end)
+  }
+  fun prefix(n: Long): String {
+    return utf16Slice(this.string, 0L, (if (n < 0L) 0L else n))
+  }
+  fun suffix(n: Long): String {
+    val all = utf16Length(this.string)
+    return (if (n <= 0L) "" else utf16Slice(this.string, (if (n >= all) 0L else all - n), all))
+  }
+  fun firstIndex(of: String, from: Long = 0L): Long? {
+    val sub = of
+    val at = utf16IndexOf(this.string, sub, from)
+    return (if (at < 0L) null else at)
+  }
+  fun lastIndex(of: String): Long? {
+    val sub = of
+    val at = utf16LastIndexOf(this.string, sub)
+    return (if (at < 0L) null else at)
+  }
+  fun paddingStart(to: Long, with: String = " "): String {
+    val length = to
+    val pad = with
+    return utf16PadStart(this.string, length, pad)
+  }
+  fun paddingEnd(to: Long, with: String = " "): String {
+    val length = to
+    val pad = with
+    return utf16PadEnd(this.string, length, pad)
+  }
+}
+
 val String.characters: List<String>
   get() {
     return graphemes(this)
   }
 val String.characterCount: Long
   get() {
-    return graphemes(this).count
+    return this.count
+  }
+val String.utf16: UTF16View
+  get() {
+    return UTF16View(this)
   }
 val String.isBlank: Boolean
   get() {
@@ -54,10 +96,10 @@ fun String.components(separatedBy: String): List<String> {
   return this.split(separator)
 }
 fun String.droppingPrefix(prefix: String): String {
-  return (if (this.startsWith(prefix)) this.slice(prefix.count, this.count) else this)
+  return (if (this.startsWith(prefix)) this.utf16.slice(prefix.utf16.count, this.utf16.count) else this)
 }
 fun String.droppingSuffix(suffix: String): String {
-  return (if (this.endsWith(suffix)) this.slice(0L, this.count - suffix.count) else this)
+  return (if (this.endsWith(suffix)) this.utf16.slice(0L, this.utf16.count - suffix.utf16.count) else this)
 }
 fun String.prefix(n: Long): String {
   return graphemes(this).prefix(n).joined("")

@@ -24,11 +24,6 @@ data class ViewingConditions(
   val chromaFactor: Double,
 )
 
-fun cubeRoot(x: Double): Double {
-  val y = pow(x, 1.0 / 3.0)
-  return y - (y * y * y - x) / (3.0 * y * y)
-}
-
 fun makeViewingConditions(whitePoint: Vec3 = whitePointD65(), adaptingLuminance: Double = ((200.0 / Double__pi) * yFromLstar(50.0)) / 100.0, backgroundLstar: Double = 50.0, surround: Double = 2.0, discountingIlluminant: Boolean = false): ViewingConditions {
   val xyz = whitePoint
   val rW = xyz.x * 0.401288 + xyz.y * 0.650173 + xyz.z * -0.051461
@@ -43,7 +38,7 @@ fun makeViewingConditions(whitePoint: Vec3 = whitePointD65(), adaptingLuminance:
   val k = 1.0 / (5.0 * adaptingLuminance + 1.0)
   val k4 = k * k * k * k
   val k4F = 1.0 - k4
-  val fl = k4 * adaptingLuminance + 0.1 * k4F * k4F * cubeRoot(5.0 * adaptingLuminance)
+  val fl = k4 * adaptingLuminance + 0.1 * k4F * k4F * cbrt(5.0 * adaptingLuminance)
   val n = yFromLstar(backgroundLstar) / whitePoint.y
   val z = 1.48 + sqrt(n)
   val nbb = 0.725 / pow(n, 0.2)

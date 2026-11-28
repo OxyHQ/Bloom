@@ -1,0 +1,149 @@
+// Bloom's colour engine, in Bloom: a colour role resolved in a scheme
+// (src/theme/color-engine/color-role.ts): its tone moved for contrast against its background and
+// for distance from its pair, in `getTone`'s order, and the foreground tone helpers.
+
+/// The ARGB of `role` in `scheme`.
+public func roleArgb(_ role: ColorRole, _ scheme: DynamicScheme) -> Int {
+  roleHct(role, scheme).argb
+}
+
+/// The HCT of `role` in `scheme`.
+public func roleHct(_ role: ColorRole, _ scheme: DynamicScheme) -> Hct {
+  let tone = roleResolvedTone(role, scheme)
+  return rolePalette(role, scheme).getHct(tone)
+}
+
+/// The tone `role` resolves to in `scheme`: its base tone, moved for contrast against its
+/// background and for distance from its pair (the TypeScript's `getTone`).
+public func roleResolvedTone(_ role: ColorRole, _ scheme: DynamicScheme) -> Double {
+  let decreasingContrast = scheme.contrastLevel < 0
+  if let pair = roleToneDeltaPair(role) {
+    let roleA = pair.roleA
+    let roleB = pair.roleB
+    let delta = pair.delta
+    let polarity = pair.polarity
+    let stayTogether = pair.stayTogether
+    let bg = roleBackground(role, scheme)!
+    let bgTone = roleResolvedTone(bg, scheme)
+    let aIsNearer = polarity == TonePolarity.nearer ||
+      (polarity == TonePolarity.lighter && !scheme.isDark) ||
+      (polarity == TonePolarity.darker && scheme.isDark)
+    let nearer = aIsNearer ? roleA : roleB
+    let farther = aIsNearer ? roleB : roleA
+    let amNearer = role == nearer
+    let expansionDir = scheme.isDark ? 1.0 : -1.0
+    let nContrast = roleContrastCurve(nearer)!.get(scheme.contrastLevel)
+    let fContrast = roleContrastCurve(farther)!.get(scheme.contrastLevel)
+    let nInitialTone = roleTone(nearer, scheme)
+    var nTone = ratioOfTones(bgTone, nInitialTone) >= nContrast ? nInitialTone : foregroundTone(
+      bgTone,
+      nContrast,
+    )
+    let fInitialTone = roleTone(farther, scheme)
+    var fTone = ratioOfTones(bgTone, fInitialTone) >= fContrast ? fInitialTone : foregroundTone(
+      bgTone,
+      fContrast,
+    )
+    if decreasingContrast {
+      nTone = foregroundTone(bgTone, nContrast)
+      fTone = foregroundTone(bgTone, fContrast)
+    }
+    if (fTone - nTone) * expansionDir >= delta {
+
+      // The constraint holds already.
+    } else {
+      fTone = clampDouble(0.0, 100.0, nTone + delta * expansionDir)
+      if (fTone - nTone) * expansionDir >= delta {
+
+        // It holds once the farther role moved.
+      } else {
+        nTone = clampDouble(0.0, 100.0, fTone - delta * expansionDir)
+      }
+    }
+    if 50.0 <= nTone && nTone < 60.0 {
+      if expansionDir > 0 {
+        nTone = 60.0
+        fTone = max(fTone, nTone + delta * expansionDir)
+      } else {
+        nTone = 49.0
+        fTone = min(fTone, nTone + delta * expansionDir)
+      }
+    } else if 50.0 <= fTone && fTone < 60.0 {
+      if stayTogether {
+        if expansionDir > 0 {
+          nTone = 60.0
+          fTone = max(fTone, nTone + delta * expansionDir)
+        } else {
+          nTone = 49.0
+          fTone = min(fTone, nTone + delta * expansionDir)
+        }
+      } else if expansionDir > 0 {
+        fTone = 60.0
+      } else {
+        fTone = 49.0
+      }
+    }
+    return amNearer ? nTone : fTone
+  }
+
+  var answer = roleTone(role, scheme)
+  guard let background = roleBackground(role, scheme) else { return answer }
+  let bgTone = roleResolvedTone(background, scheme)
+  let desiredRatio = roleContrastCurve(role)!.get(scheme.contrastLevel)
+  if ratioOfTones(bgTone, answer) >= desiredRatio {
+
+    // It contrasts enough already.
+  } else {
+    answer = foregroundTone(bgTone, desiredRatio)
+  }
+  if decreasingContrast { answer = foregroundTone(bgTone, desiredRatio) }
+  if roleIsBackground(role) && 50.0 <= answer && answer < 60.0 {
+    answer = ratioOfTones(49.0, bgTone) >= desiredRatio ? 49.0 : 60.0
+  }
+  if let second = roleSecondBackground(role, scheme) {
+    let bgTone1 = roleResolvedTone(background, scheme)
+    let bgTone2 = roleResolvedTone(second, scheme)
+    let upper = max(bgTone1, bgTone2)
+    let lower = min(bgTone1, bgTone2)
+    if ratioOfTones(upper, answer) >= desiredRatio && ratioOfTones(lower, answer) >= desiredRatio {
+      return answer
+    }
+    let lightOption = lighter(upper, desiredRatio)
+    let darkOption = darker(lower, desiredRatio)
+    var availables: [Double] = []
+    if lightOption != -1.0 { availables = availables.appending(lightOption) }
+    if darkOption != -1.0 { availables = availables.appending(darkOption) }
+    let prefersLight = tonePrefersLightForeground(bgTone1) || tonePrefersLightForeground(bgTone2)
+    if prefersLight { return lightOption < 0 ? 100.0 : lightOption }
+    if availables.count == 1 { return availables[0] }
+    return darkOption < 0 ? 0.0 : darkOption
+  }
+  return answer
+}
+
+/// The tone that reaches `ratio` against `bgTone`, lighter or darker as the background prefers.
+public func foregroundTone(_ bgTone: Double, _ ratio: Double) -> Double {
+  let lighterTone = lighterUnsafe(bgTone, ratio)
+  let darkerTone = darkerUnsafe(bgTone, ratio)
+  let lighterRatio = ratioOfTones(lighterTone, bgTone)
+  let darkerRatio = ratioOfTones(darkerTone, bgTone)
+  let preferLighter = tonePrefersLightForeground(bgTone)
+  if preferLighter {
+    let negligibleDifference = abs(lighterRatio - darkerRatio) < 0.1 &&
+      lighterRatio < ratio &&
+      darkerRatio < ratio
+    return lighterRatio >= ratio ||
+      lighterRatio >= darkerRatio ||
+      negligibleDifference ? lighterTone : darkerTone
+  }
+  return darkerRatio >= ratio || darkerRatio >= lighterRatio ? darkerTone : lighterTone
+}
+
+public func tonePrefersLightForeground(_ tone: Double) -> Bool { tone.rounded() < 60 }
+
+public func toneAllowsLightForeground(_ tone: Double) -> Bool { tone.rounded() <= 49 }
+
+public func enableLightForeground(_ tone: Double) -> Double {
+  if tonePrefersLightForeground(tone) && !toneAllowsLightForeground(tone) { return 49.0 }
+  return tone
+}

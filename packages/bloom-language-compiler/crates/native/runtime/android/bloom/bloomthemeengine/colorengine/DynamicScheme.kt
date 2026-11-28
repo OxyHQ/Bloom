@@ -39,6 +39,13 @@ class DynamicScheme(sourceColorArgb: Long, variant: Variant, contrastLevel: Doub
     this.neutralVariantPalette = neutralVariantPalette
     this.errorPalette = tonalPaletteFromHueAndChroma(25.0, 84.0)
   }
+
+  fun getArgb(role: ColorRole): Long {
+    return roleArgb(role, this)
+  }
+  fun getHct(role: ColorRole): Hct {
+    return roleHct(role, this)
+  }
 }
 
 fun getRotatedHue(sourceColor: Hct, hues: List<Double>, rotations: List<Double>): Double {

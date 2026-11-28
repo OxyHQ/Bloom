@@ -89,3 +89,16 @@ fun curve(low: Double, normal: Double, medium: Double, high: Double): ContrastCu
   return ContrastCurve(low, normal, medium, high)
 }
 
+enum class TonePolarity {
+  darker, lighter, nearer, farther
+}
+
+@Immutable
+data class ToneDeltaPair(
+  val roleA: ColorRole,
+  val roleB: ColorRole,
+  val delta: Double,
+  val polarity: TonePolarity,
+  val stayTogether: Boolean,
+)
+

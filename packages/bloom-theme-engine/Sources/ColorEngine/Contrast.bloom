@@ -72,3 +72,22 @@ public struct ContrastCurve: Equatable {
 func curve(_ low: Double, _ normal: Double, _ medium: Double, _ high: Double) -> ContrastCurve {
   ContrastCurve(low: low, normal: normal, medium: medium, high: high)
 }
+
+// The tone-delta pair (src/theme/color-engine/tone-delta-pair.ts).
+
+public enum TonePolarity {
+  case darker
+  case lighter
+  case nearer
+  case farther
+}
+
+/// Two roles kept at least `delta` apart in tone, in a direction, so paired roles never collapse
+/// into each other.
+public struct ToneDeltaPair: Equatable {
+  public let roleA: ColorRole
+  public let roleB: ColorRole
+  public let delta: Double
+  public let polarity: TonePolarity
+  public let stayTogether: Bool
+}

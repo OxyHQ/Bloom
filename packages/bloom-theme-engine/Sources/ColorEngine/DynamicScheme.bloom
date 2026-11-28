@@ -52,6 +52,12 @@ public final class DynamicScheme {
     self.neutralVariantPalette = neutralVariantPalette
     self.errorPalette = tonalPaletteFromHueAndChroma(25.0, 84.0)
   }
+
+  /// The ARGB of `role` in this scheme.
+  public func getArgb(_ role: ColorRole) -> Int { roleArgb(role, self) }
+
+  /// The HCT of `role` in this scheme.
+  public func getHct(_ role: ColorRole) -> Hct { roleHct(role, self) }
 }
 
 /// The seed hue rotated by the amount of the hue band it falls in (`hues` and `rotations` are

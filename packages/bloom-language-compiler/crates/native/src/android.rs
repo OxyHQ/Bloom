@@ -197,6 +197,10 @@ pub const THEME_ENGINE: &[(&str, &str)] = &[
         include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorPolicy.kt"),
     ),
     (
+        "bloom/bloomthemeengine/colorengine/ColorRole.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorRole.kt"),
+    ),
+    (
         "bloom/bloomthemeengine/colorengine/ColorRoles.kt",
         include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorRoles.kt"),
     ),

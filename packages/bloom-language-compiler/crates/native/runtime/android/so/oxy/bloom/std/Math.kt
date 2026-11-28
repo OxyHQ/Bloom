@@ -5,6 +5,10 @@ package so.oxy.bloom.std
 
 import androidx.compose.runtime.*
 
+fun Double.truncatingRemainder(dividingBy: Double): Double {
+  val other = dividingBy
+  return fmod(this, other)
+}
 val Double__pi: Double = PI
 val Double__e: Double = E
 val Double__infinity: Double = INFINITY
