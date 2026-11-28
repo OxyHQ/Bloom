@@ -10,7 +10,7 @@
 //! migrated module by an extensionless path (relative, or `@/`) imports it as
 //! `X.bloom` (spec 10), `jest.mock` paths included; the modules that draw a
 //! migrated component as JSX (`<X …/>`) draw it as `toElement(X({ … }))` (a view is a node
-//! factory), and the ones it cannot rewrite (a view with children) are listed.
+//! factory), its children its `children` prop, and the ones it cannot rewrite are listed.
 
 use std::path::{Path, PathBuf};
 
@@ -407,6 +407,7 @@ pub(crate) fn rewrite_importers(
         let mut changed = false;
         let mut drawn = Vec::new();
         let mut needs_to_element = false;
+        let mut loaders: Vec<(String, Vec<String>)> = Vec::new();
         while let Some(i) = rest.find(['\'', '"', '/']) {
             // A comment is copied as it is: an apostrophe in it opens no string.
             if rest.as_bytes()[i] == b'/' {
@@ -540,6 +541,20 @@ pub(crate) fn rewrite_importers(
                         needs_to_element = true;
                         continue;
                     }
+                    // `const load = () => import('./X')`, read later as `lazy(() => load().then(…))`.
+                    let before = head.strip_suffix("import(").unwrap_or(head).trim_end();
+                    if let Some(arrow) = before.strip_suffix("=>").map(str::trim_end)
+                        && let Some(binding) = arrow.strip_suffix("()").map(str::trim_end)
+                        && let Some(binding) = binding.strip_suffix('=').map(str::trim_end)
+                        && let Some(at) = binding.rfind("const ")
+                    {
+                        let name = binding[at + "const ".len()..].trim();
+                        if !name.is_empty()
+                            && name.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+                        {
+                            loaders.push((name.to_string(), views.clone()));
+                        }
+                    }
                 }
                 // `lazy(() => import('./X'))` reads the module's default: 2.0 exports it by name,
                 // so the import hands it on as the default `lazy` takes.
@@ -604,6 +619,12 @@ pub(crate) fn rewrite_importers(
             rest = &rest[i + 1 + len + 1..];
         }
         out.push_str(rest);
+        for (loader, views) in &loaders {
+            if let Some(wrapped) = wrap_loaded_views(&out, loader, views) {
+                out = wrapped;
+                needs_to_element = true;
+            }
+        }
         if changed {
             // `<X …/>` of a migrated view: `toElement(X({ … }))`.
             let names: Vec<String> = drawn.to_vec();
@@ -764,6 +785,59 @@ fn exported_views(dts: &Path) -> Vec<String> {
 /// `jest.mock(spec, factory)` of a migrated module whose views the factory mocks as React
 /// components (`X: (props) => <Text …/>`, `X: 'X'`): each such view's mock is the component drawn
 /// as the view's node (`Embed`), since a TS importer now calls the view (`toElement(X({ … }))`).
+
+/// `loader().then((m) => ({ default: m.X }))` of a view `X` the loader's module exports: `lazy`
+/// takes a component, so the default draws it, `(props) => toElement(m.X(props))`.
+fn wrap_loaded_views(source: &str, loader: &str, views: &[String]) -> Option<String> {
+    let call = format!("{loader}()");
+    let mut out = String::with_capacity(source.len());
+    let mut rest = source;
+    let mut changed = false;
+    while let Some(at) = rest.find(&call) {
+        let before_ok = rest[..at]
+            .chars()
+            .next_back()
+            .is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '$' || c == '.'));
+        let after = &rest[at + call.len()..];
+        let mut squeezed = String::new();
+        let mut taken = 0;
+        for (i, c) in after.char_indices() {
+            if squeezed.len() > 120 {
+                break;
+            }
+            if !c.is_whitespace() {
+                squeezed.push(c);
+            }
+            taken = i + c.len_utf8();
+            if squeezed.ends_with("}))") {
+                break;
+            }
+        }
+        let read = squeezed.strip_prefix(".then((").and_then(|r| r.split_once(")=>({default:")).and_then(
+            |(m, read)| {
+                let view = read.strip_prefix(&format!("{m}."))?.strip_suffix("}))")?;
+                views.iter().any(|v| v == view).then(|| (m.to_string(), view.to_string()))
+            },
+        );
+        match read {
+            Some((m, view)) if before_ok => {
+                out.push_str(&rest[..at + call.len()]);
+                out.push_str(&format!(
+                    ".then(({m}) => ({{ default: (props: object) => toElement({m}.{view}(props as never)) }}))"
+                ));
+                rest = &after[taken..];
+                changed = true;
+            }
+            _ => {
+                out.push_str(&rest[..at + call.len()]);
+                rest = after;
+            }
+        }
+    }
+    out.push_str(rest);
+    changed.then_some(out)
+}
+
 /// `call` is the text after the specifier (`, () => …`); none when it mocks no view.
 fn mock_views(call: &str, views: &[String]) -> Option<String> {
     let factory = call.trim_start().strip_prefix(',')?.trim();

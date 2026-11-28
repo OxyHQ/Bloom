@@ -15,6 +15,18 @@ const LANGUAGE: &str = "@oxy.so/bloom-language";
 /// `source` with each childless `<Name …/>` of `names` drawn as a node, or `None` when it
 /// draws none (or one it cannot: children, a namespaced attribute).
 pub fn draw_views_as_nodes(source: &str, filename: &str, names: &[String]) -> Option<String> {
+    // A view drawn inside another's children is drawn first; the outer one on the next pass.
+    let mut out = draw_pass(source, filename, names)?;
+    for _ in 0..4 {
+        match draw_pass(&out, filename, names) {
+            Some(next) if next != out => out = next,
+            _ => break,
+        }
+    }
+    Some(out)
+}
+
+fn draw_pass(source: &str, filename: &str, names: &[String]) -> Option<String> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(filename).unwrap_or_else(|_| SourceType::tsx());
     let parsed = Parser::new(&allocator, source, source_type).parse();
@@ -30,15 +42,58 @@ pub fn draw_views_as_nodes(source: &str, filename: &str, names: &[String]) -> Op
         in_children: bool,
     }
     impl Finder<'_, '_> {
+        /// Whether a migrated view is drawn among `children`, at any depth.
+        fn has_view(&self, children: &[JSXChild]) -> bool {
+            struct Any<'n>(&'n [String], bool);
+            impl<'a> Visit<'a> for Any<'_> {
+                fn visit_jsx_element(&mut self, e: &JSXElement<'a>) {
+                    if let JSXElementName::IdentifierReference(id) = &e.opening_element.name
+                        && self.0.iter().any(|n| n == id.name.as_str())
+                    {
+                        self.1 = true;
+                    }
+                    oxc_ast_visit::walk::walk_jsx_element(self, e);
+                }
+            }
+            let mut any = Any(self.names, false);
+            for child in children {
+                any.visit_jsx_child(child);
+            }
+            any.1
+        }
         fn text(&self, span: Span) -> &str {
             &self.source[span.start as usize..span.end as usize]
         }
         fn node(&self, e: &JSXElement) -> Option<String> {
             let JSXElementName::IdentifierReference(id) = &e.opening_element.name else { return None };
-            if !self.names.iter().any(|n| n == id.name.as_str()) || !e.children.is_empty() {
+            if !self.names.iter().any(|n| n == id.name.as_str()) {
                 return None;
             }
             let mut fields = Vec::new();
+            // Children are the view's `children` prop (one as itself, several as a fragment), once
+            // no migrated view is left among them (an inner one is drawn first, a pass before).
+            let drawn: Vec<&JSXChild> = e
+                .children
+                .iter()
+                .filter(|c| !matches!(c, JSXChild::Text(t) if t.value.trim().is_empty()))
+                .collect();
+            if !drawn.is_empty() {
+                if self.has_view(&e.children) {
+                    return None;
+                }
+                let children = match drawn.as_slice() {
+                    [JSXChild::ExpressionContainer(c)] => {
+                        self.text(c.expression.as_expression()?.span()).to_string()
+                    }
+                    [JSXChild::Element(child)] => self.text(child.span).to_string(),
+                    _ => {
+                        let inner = &self.source[e.opening_element.span.end as usize
+                            ..e.closing_element.as_ref()?.span.start as usize];
+                        format!("<>{inner}</>")
+                    }
+                };
+                fields.push(format!("children: {children}"));
+            }
             let mut key = None;
             for attribute in &e.opening_element.attributes {
                 match attribute {
