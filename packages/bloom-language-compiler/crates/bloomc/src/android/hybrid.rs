@@ -436,6 +436,12 @@ module.exports = async () => {{
   let config = require(path.join(appRoot, 'metro.config.js'));
   if (typeof config === 'function') config = await config();
   config = await config;
+  // The app's Babel transformer (Expo's), told the engine is Hermes, as Expo's CLI tells it:
+  // babel-preset-expo then transforms for Hermes, not for an older engine.
+  if (config.transformer?.babelTransformerPath) {{
+    process.env.BLOOM_UPSTREAM_BABEL_TRANSFORMER = config.transformer.babelTransformerPath;
+    config.transformer.babelTransformerPath = path.join(__dirname, 'babel-transformer.js');
+  }}
   const upstream = config.resolver.resolveRequest;
   config.resolver.resolveRequest = (context, name, platform) => {{
     const resolve = upstream ?? context.resolveRequest;
@@ -463,6 +469,28 @@ module.exports = async () => {{
             shim_lines = shim_lines.join("\n"),
             allowed = allowed.join(", "),
             modules = modules.join(", "),
+        ),
+    )?;
+    write(
+        &build.join("babel-transformer.js"),
+        &format!(
+            r#"{header}// The app's Babel transformer, with the engine a Bloom Android build runs (Hermes) in the
+// options Expo's preset reads, as Expo's CLI passes it.
+const upstream = require(process.env.BLOOM_UPSTREAM_BABEL_TRANSFORMER);
+
+function withEngine(args) {{
+  const options = args.options ?? {{}};
+  if (options.platform === 'web') return args;
+  const custom = {{ engine: 'hermes', ...(options.customTransformOptions ?? {{}}) }};
+  return {{ ...args, options: {{ ...options, customTransformOptions: custom }} }};
+}}
+
+module.exports = {{
+  ...upstream,
+  transform: (args) => upstream.transform(withEngine(args)),
+  getCacheKey: (...args) => [upstream.getCacheKey ? upstream.getCacheKey(...args) : '', 'bloom-engine-hermes'].join(':'),
+}};
+"#
         ),
     )?;
     write(

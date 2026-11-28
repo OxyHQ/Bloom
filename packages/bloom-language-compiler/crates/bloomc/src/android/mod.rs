@@ -232,6 +232,11 @@ function bundle() {
     platforms: { android: {}, ios: {} },
   };
   args.dev = args.dev === true;
+  // Every Bloom Android build runs Hermes: transform for it (as Expo's CLI does), not for an
+  // older engine. Without this the bundle carries the transforms for the 'default' profile.
+  if (args.unstableTransformProfile === undefined && args.platform !== 'web') {
+    args.unstableTransformProfile = 'hermes-stable';
+  }
   return bundleCommand.func([], ctx, args);
 }
 
@@ -813,6 +818,9 @@ tasks.matching {{ it.name.startsWith("createBundle") && it.name.endsWith("JsAndA
     // Native projects inside the package (an adopted app's own modules) are Gradle's outputs.
     exclude "**/android/**", "**/ios/**", "**/build/**"
   }}).withPropertyName("bloomSources").withPathSensitivity(PathSensitivity.RELATIVE)
+  // How bloom bundles (its Metro driver and config, an adopted app's Babel transformer): a
+  // change there is a new bundle too.
+  inputs.files(fileTree(file("../..")) {{ include "*.js" }}).withPropertyName("bloomMetro").withPathSensitivity(PathSensitivity.RELATIVE)
 }}
 
 android {{
