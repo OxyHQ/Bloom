@@ -91,3 +91,15 @@ fn swiftui_is_reported_not_built() {
     let program = bench();
     assert!(bloom_native::emit(&program, bloom_native::Target::SwiftUI).is_err());
 }
+
+#[test]
+fn a_text_of_runs_is_one_annotated_text_and_a_row_shrinks_by_factor() {
+    let kt = kotlin();
+    assert!(
+        kt.contains("Text(buildList<TextRun> { add(TextRun(\"Read \")); add(TextRun(\"this\", color = Colors.primary, weight = "),
+        "{kt}"
+    );
+    assert!(kt.contains("addAll(words.map { w -> (if ("), "{kt}");
+    // The bench's name line: the handle gives way before the name, as React Native's flex-shrink.
+    assert!(kt.contains(".flexShrink(1f)") && kt.contains(".flexShrink(10f)"), "{kt}");
+}

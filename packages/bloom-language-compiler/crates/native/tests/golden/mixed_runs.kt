@@ -14,7 +14,7 @@ inline fun Name(linked: Boolean, verified: Boolean, name: String?, modifier: Mod
   VStack(modifier = modifier) {
     RawText((if (linked) Text("link") else name ?: ""))
     RawText((if (linked) Text("link") else name))
-    Text("by ", (if (verified) Text("✓").weight(Weight.bold) else (if (linked) "@" else "")), name ?: "")
+    Text(buildList<TextRun> { add(TextRun("by ")); add((if (verified) TextRun("✓", weight = Weight.bold) else (if (linked) TextRun("@") else TextRun("")))); add(TextRun(name ?: "")); })
   }
 }
 

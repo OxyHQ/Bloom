@@ -15,7 +15,8 @@ OWN = {"Like", "LikeFill", "Reply", "Repost", "MediaAttachment", "GifAttachment"
 ALIASES = {"verified": "verifiedBadge", "verifiedFill": "verifiedBadgeFill"}
 NAMES = ["like", "likeFill", "reply", "repost", "share", "bookmark", "bookmarkFill",
          "verifiedBadgeFill", "moreFill", "repeat2", "sendPlane", "volumeMute", "volumeUp",
-         "play", "playFill", "home", "homeFill", "settings", "settingsFill"]
+         "play", "playFill", "home", "homeFill", "settings", "settingsFill",
+         "fediverse", "pencil", "megaphone", "camera", "mediaAttachment"]
 
 def component(name):
     name = ALIASES.get(name, name)

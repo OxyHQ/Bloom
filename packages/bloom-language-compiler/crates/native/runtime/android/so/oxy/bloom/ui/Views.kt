@@ -12,6 +12,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -115,9 +117,7 @@ fun HStack(
     VAlign.bottom, VAlign.end -> Alignment.Bottom
     else -> Alignment.CenterVertically
   }
-  val row = @Composable {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(spacing), verticalAlignment = across, content = content)
-  }
+  val row = @Composable { FlexRow(spacing, across, modifier, content) }
   if (foreground == null) row() else CompositionLocalProvider(LocalForeground provides foreground) { row() }
 }
 
@@ -189,6 +189,67 @@ fun Text(
   if (weight != null) style = style.copy(fontWeight = weight)
   if (leading != androidx.compose.ui.unit.TextUnit.Unspecified) style = style.copy(lineHeight = leading)
   if (monospacedDigit) style = style.copy(fontFeatureSettings = "tnum")
+  BasicText(
+    text,
+    modifier,
+    style = style,
+    maxLines = lines?.toInt() ?: Int.MAX_VALUE,
+    overflow = if (lines != null) TextOverflow.Ellipsis else TextOverflow.Clip,
+  )
+}
+
+/**
+ * A run of a [Text] (`Text("a ", Text("b").foregroundStyle(.primary))`): its own colour, weight,
+ * decoration, and a link (`href`, opened by the platform) or a press of its own.
+ */
+class TextRun(
+  val text: String,
+  val color: Color? = null,
+  val weight: androidx.compose.ui.text.font.FontWeight? = null,
+  val underline: Boolean = false,
+  val italic: Boolean = false,
+  val href: String? = null,
+  val onPress: (() -> Unit)? = null,
+)
+
+/** A `Text` of runs: one paragraph, wrapped and ellipsized as one, each run styled as it says. */
+@Composable
+fun Text(
+  runs: List<TextRun>,
+  font: androidx.compose.ui.text.TextStyle = Font.body,
+  weight: androidx.compose.ui.text.font.FontWeight? = null,
+  leading: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+  foreground: Color? = null,
+  lines: Long? = null,
+  monospacedDigit: Boolean = false,
+  modifier: Modifier = Modifier,
+) {
+  val color = foreground ?: currentForeground
+  var style = Font.body.merge(font).copy(color = color, fontFamily = BloomFonts.sans())
+  if (weight != null) style = style.copy(fontWeight = weight)
+  if (leading != androidx.compose.ui.unit.TextUnit.Unspecified) style = style.copy(lineHeight = leading)
+  if (monospacedDigit) style = style.copy(fontFeatureSettings = "tnum")
+  val uri = androidx.compose.ui.platform.LocalUriHandler.current
+  val text = androidx.compose.runtime.remember(runs) {
+    androidx.compose.ui.text.buildAnnotatedString {
+      for (run in runs) {
+        val span = androidx.compose.ui.text.SpanStyle(
+          color = run.color ?: Color.Unspecified,
+          fontWeight = run.weight,
+          fontStyle = if (run.italic) androidx.compose.ui.text.font.FontStyle.Italic else null,
+          textDecoration = if (run.underline) androidx.compose.ui.text.style.TextDecoration.Underline else null,
+        )
+        val press = run.onPress ?: run.href?.let { href -> { runCatching { uri.openUri(href) }; Unit } }
+        if (press != null) {
+          withLink(androidx.compose.ui.text.LinkAnnotation.Clickable(run.text) { press() }) {
+            withStyle(span) { append(run.text) }
+          }
+        } else {
+          withStyle(span) { append(run.text) }
+        }
+      }
+    }
+  }
   BasicText(
     text,
     modifier,

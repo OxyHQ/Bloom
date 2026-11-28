@@ -443,7 +443,8 @@ impl<'a> Emitter<'a> {
     /// (`(T) -> Void`) emits its name and its value's JSON, which `onIslandEvent` carries out.
     fn island_entry(&mut self, v: &ViewDecl) -> String {
         let name = v.name.name.clone();
-        let mut body = String::from("  val json = remember(props) { JSON__parse(props.ifEmpty { \"{}\" }) }\n");
+        let mut body =
+            String::from("  val json = remember(props) { JSON__parse(props.ifEmpty { \"{}\" }) }\n");
         let mut args = Vec::new();
         for p in v.params.iter().flatten() {
             let prop = p.name.name.clone();
@@ -465,8 +466,10 @@ impl<'a> Emitter<'a> {
                     let optional = matches!(p.ty.kind, TypeKind::Optional(_));
                     let decode = match (&p.default, optional) {
                         (Some(d), false) => {
-                            let wrapped =
-                                TypeExpr { kind: TypeKind::Optional(Box::new(p.ty.clone())), span: p.ty.span };
+                            let wrapped = TypeExpr {
+                                kind: TypeKind::Optional(Box::new(p.ty.clone())),
+                                span: p.ty.span,
+                            };
                             let d = self.expr(d);
                             coder(&wrapped, true).map(|dec| format!("({dec})(member, \"{at}\") ?: {d}"))
                         }
@@ -478,7 +481,10 @@ impl<'a> Emitter<'a> {
                     };
                     let local = format!("p_{prop}");
                     let _ = writeln!(body, "  val {local}Json = {value}");
-                    let _ = writeln!(body, "  val {local} = remember({local}Json) {{ val member = {local}Json; {decode} }}");
+                    let _ = writeln!(
+                        body,
+                        "  val {local} = remember({local}Json) {{ val member = {local}Json; {decode} }}"
+                    );
                     args.push(format!("{} = {local}", kw(&prop)));
                 }
             }
@@ -763,9 +769,13 @@ impl<'a> Emitter<'a> {
         }
         // `@Transparent` (one field, the value is that field's): a `@JvmInline value class`,
         // its field's value at runtime, `==` the field's.
-        let transparent = self.file.checked.defs.iter().enumerate().any(|(id, d)| {
-            d.name == *name && self.file.checked.transparent.contains(&id)
-        });
+        let transparent = self
+            .file
+            .checked
+            .defs
+            .iter()
+            .enumerate()
+            .any(|(id, d)| d.name == *name && self.file.checked.transparent.contains(&id));
         if transparent && fields.len() == 1 && s.generics.is_empty() {
             let field = fields[0].trim().trim_end_matches(',');
             return format!("@JvmInline\n{vis}value class {name}({field}){supers}{}", Self::braces(body));
@@ -1885,7 +1895,7 @@ impl<'a> Emitter<'a> {
         }
         // `.shrink().grow()`: the grow's weight alone.
         if layout.iter().any(|m| m == ".weight(1f)") {
-            layout.retain(|m| m != ".weight(1f, fill = false)");
+            layout.retain(|m| m != ".weight(1f, fill = false)" && !m.starts_with(".flexShrink("));
         }
         // Bloom's modifiers wrap outward (the last is outermost), Compose's chain runs from the
         // outside in: reversed.
@@ -1929,7 +1939,20 @@ impl<'a> Emitter<'a> {
             if !matches!(self.scopes.last(), Some(&"row" | &"column")) {
                 return String::new();
             }
-            return if name == "grow" { ".weight(1f)".into() } else { ".weight(1f, fill = false)".into() };
+            if name == "grow" {
+                return ".weight(1f)".into();
+            }
+            // In a row, React Native's flex-shrink (the runtime's `FlexRow`): `.first` gives way
+            // before `.normal`; in a column, a weight measured after its siblings.
+            if self.scopes.last() == Some(&"row") {
+                let factor = match call.args.first().map(|a| &a.value.kind) {
+                    Some(ExprKind::ImplicitMember(m)) if m.name == "first" => "10f",
+                    Some(ExprKind::ImplicitMember(m)) if m.name == "never" || m.name == "none" => "0f",
+                    _ => "1f",
+                };
+                return format!(".flexShrink({factor})");
+            }
+            return ".weight(1f, fill = false)".into();
         }
         let args: Vec<String> = call
             .args
@@ -1995,9 +2018,17 @@ impl<'a> Emitter<'a> {
         let node = chain.name;
         let call = chain.call;
         let mut args: Vec<String> = Vec::new();
+        // `Text("a ", Text("b").foregroundStyle(.primary))`, `Text(..runs.map { … })`: one text
+        // of runs (an `AnnotatedString`), each run a string or a styled `Text`.
+        let runs = node == "Text"
+            && (call.args.len() > 1
+                || call.args.iter().any(|a| a.spread || matches!(self.ty_of(&a.value), Some(Ty::View(_)))));
+        if runs {
+            args.push(self.text_runs(&call.args));
+        }
         // The constructor's own arguments.
         let mut positional = 0;
-        for a in &call.args {
+        for a in call.args.iter().filter(|_| !runs) {
             let label = a.label.as_ref().map(|l| l.name.as_str());
             let text = match (node, label) {
                 ("Icon" | "Action", None) if positional == 0 => self.token_or_expr(node, "icon", &a.value),
@@ -2196,6 +2227,83 @@ impl<'a> Emitter<'a> {
             }
         }
         out
+    }
+
+    /// A `Text`'s runs as the runtime's `List<TextRun>`: each argument a run, a spread
+    /// (`..xs.map { x in … }`) its runs in place.
+    fn text_runs(&mut self, args: &[Arg]) -> String {
+        let mut out = String::from("buildList<TextRun> {");
+        for a in args {
+            if a.spread {
+                // `..xs.map { x in run }`: each element's run.
+                if let ExprKind::Call(call) = &a.value.kind
+                    && let ExprKind::Field(base, method) = &call.callee.kind
+                    && method.name == "map"
+                    && let Some(c) = call.trailing.as_deref().or_else(|| {
+                        call.args.first().and_then(|x| match &x.value.kind {
+                            ExprKind::Closure(c) => Some(c),
+                            _ => None,
+                        })
+                    })
+                    && let [Stmt { kind: StmtKind::Expr(body), .. }] = c.body.as_slice()
+                {
+                    let list = self.expr(base);
+                    let param = c.params.first().map_or_else(|| "it".to_string(), |p| kw(&p.name.name));
+                    let run = self.text_run(body);
+                    let _ = write!(out, " addAll({list}.map {{ {param} -> {run} }});");
+                } else {
+                    let list = self.expr(&a.value);
+                    let _ = write!(out, " addAll({list});");
+                }
+            } else {
+                let run = self.text_run(&a.value);
+                let _ = write!(out, " add({run});");
+            }
+        }
+        out.push_str(" }");
+        out
+    }
+
+    /// One run: a string, or `Text(s)` with its colour, weight, decoration, link or press.
+    fn text_run(&mut self, e: &Expr) -> String {
+        match &e.kind {
+            ExprKind::Paren(inner) => return self.text_run(inner),
+            ExprKind::Ternary(c, a, b) => {
+                let (c, a, b) = (self.expr(c), self.text_run(a), self.text_run(b));
+                return format!("(if ({c}) {a} else {b})");
+            }
+            _ => {}
+        }
+        let Some(chain) = unwind(e).filter(|c| c.name == "Text") else {
+            return format!("TextRun({})", self.expr(e));
+        };
+        let text = chain.call.args.first().map(|a| self.expr(&a.value)).unwrap_or_else(|| "\"\"".into());
+        let mut parts = vec![text];
+        for (name, call) in &chain.mods {
+            let arg = call.args.first();
+            match (*name, arg) {
+                ("foregroundStyle" | "foreground", Some(a)) => {
+                    parts.push(format!("color = {}", self.token_or_expr("Text", "foregroundStyle", &a.value)))
+                }
+                ("weight", Some(a)) => {
+                    parts.push(format!("weight = {}", self.token_or_expr("Text", "weight", &a.value)))
+                }
+                ("underline", _) => parts.push("underline = true".into()),
+                ("italic", _) => parts.push("italic = true".into()),
+                ("link", Some(a)) => parts.push(format!("href = {}", self.expr(&a.value))),
+                ("onPress", _) => {
+                    let action = match call.trailing.as_deref() {
+                        Some(c) => self.closure(c),
+                        None => arg.map(|a| self.expr(&a.value)).unwrap_or_default(),
+                    };
+                    parts.push(format!("onPress = {action}"));
+                }
+                _ => {
+                    self.unsupported(call.callee.span, format!("`.{name}` on a run of a text"));
+                }
+            }
+        }
+        format!("TextRun({})", parts.join(", "))
     }
 
     fn closure(&mut self, c: &Closure) -> String {
