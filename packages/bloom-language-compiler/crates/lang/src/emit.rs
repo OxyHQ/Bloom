@@ -2378,7 +2378,12 @@ impl<'a> Emitter<'a> {
                 Some(NameRes::Local(local)) => Frag::of(self.local_name(*local)),
                 _ => Frag::of("undefined"),
             },
-            ExprKind::ImplicitMember(name) => Frag::of(string_literal(&name.name)),
+            // `.relative` where a `DateFormat` is expected: the struct's static member.
+            ExprKind::ImplicitMember(name) => match self.ck.fields.get(&expr.id) {
+                Some(FieldRes::StaticGet(func)) => Frag::at(expr.span, format!("{func}()")),
+                Some(FieldRes::Static(func)) => Frag::at(expr.span, func.to_string()),
+                _ => Frag::of(string_literal(&name.name)),
+            },
             ExprKind::Binding(path) => {
                 let Some((local, fields)) = self.ck.bindings.get(&expr.id).cloned() else {
                     return Frag::of("undefined");
@@ -2676,6 +2681,12 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // `0...3` as a `ClosedRange`: its bounds.
+        if op == BinaryOp::Closed && matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_))) {
+            let mut out = Frag::at(expr.span, "{ lowerBound: ");
+            out.f(self.expr(lhs)).s(", upperBound: ").f(self.expr(rhs)).s(" }");
+            return out;
+        }
         // A range read as a value: its array, built once (`for` and `.map` build none).
         if op.is_range() {
             let closed = op == BinaryOp::Closed;

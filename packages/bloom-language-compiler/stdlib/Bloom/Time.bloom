@@ -3,8 +3,9 @@
 // A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encodes
 // as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
 //
-//     Text(post.createdAt.formatted(.relative))   // "2 minutes ago"
-//     Text(event.startsAt.formatted(.dateTime(.medium, .short)))
+//     Text(post.createdAt.formatted(.relative))                       // "2 minutes ago"
+//     Text(event.startsAt.formatted(date: .abbreviated, time: .shortened)) // "Nov 26, 2026, 6:30 PM"
+//     Text(event.startsAt.formatted(.dateTime.month(.abbreviated).day()))   // "Nov 26"
 
 extern module "./runtime" {
   private func nowMs() -> Double
@@ -12,6 +13,7 @@ extern module "./runtime" {
   private func parseISO(_ s: String) -> Double?
   private func isoString(_ ms: Double) -> String
   private func formatDate(_ ms: Double, _ locale: String, _ date: String, _ time: String, _ timeZone: String) -> String
+  private func formatDateFields(_ ms: Double, _ locale: String, _ options: [String: String], _ timeZone: String) -> String
   private func formatRelative(_ value: Double, _ unit: String, _ locale: String, _ style: String) -> String
   private func dateParts(_ ms: Double, _ utc: Bool) -> DateComponents
   private func dateFromParts(
@@ -38,25 +40,97 @@ public struct Duration: Equatable {
   public let seconds: Double
 }
 
-/// How much of a date or a time a format shows.
+/// How much of a date `formatted(date:time:)` shows (Swift's `Date.FormatStyle.DateStyle`).
 public enum DateStyle {
+  /// No date.
   case omitted
-  case short
-  case medium
+  /// "11/26/26" (Intl's `short`).
+  case numeric
+  /// "Nov 26, 2026" (Intl's `medium`).
+  case abbreviated
+  /// "November 26, 2026" (Intl's `long`).
   case long
-  case full
+  /// "Thursday, November 26, 2026" (Intl's `full`).
+  case complete
 }
 
-/// How `Date.formatted(_:)` writes a date.
-public enum DateFormat {
-  /// "2 minutes ago", "in 3 days", "yesterday".
-  case relative
-  /// "2m", "3h", "4d": the short form timelines use.
+/// How much of a time `formatted(date:time:)` shows (Swift's `Date.FormatStyle.TimeStyle`).
+public enum TimeStyle {
+  /// No time.
+  case omitted
+  /// "6:30 PM" (Intl's `short`).
+  case shortened
+  /// "6:30:00 PM" (Intl's `medium`).
+  case standard
+  /// "6:30:00 PM UTC" (Intl's `long`).
+  case complete
+}
+
+/// A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
+public enum DigitStyle {
+  case defaultDigits
+  case twoDigits
+}
+
+/// How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
+public enum MonthStyle {
+  /// "11" (Intl's `numeric`).
+  case defaultDigits
+  /// "11" padded: "01" (Intl's `2-digit`).
+  case twoDigits
+  /// "November" (Intl's `long`).
+  case wide
+  /// "Nov" (Intl's `short`).
   case abbreviated
-  /// The date and the time, each in its style.
-  case dateTime(DateStyle, DateStyle)
+  /// "N" (Intl's `narrow`).
+  case narrow
+}
+
+/// How a weekday is written (Swift's `Date.FormatStyle.Symbol.Weekday`).
+public enum WeekdayStyle {
+  /// "Thursday" (Intl's `long`).
+  case wide
+  /// "Thu" (Intl's `short`).
+  case abbreviated
+  /// "T" (Intl's `narrow`).
+  case narrow
+}
+
+/// How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.abbreviated`,
+/// `.iso8601`, or `.dateTime` and the fields it shows, each in its style, as Intl writes them for
+/// the locale (`.dateTime.month(.abbreviated).day()` is "Nov 26" in English, "26 nov" in Spanish).
+public struct DateFormat: Equatable {
+  let kind: String
+  let fields: [String: String]
+
+  /// "2 minutes ago", "in 3 days", "yesterday".
+  public static var relative: DateFormat { DateFormat(kind: "relative", fields: [:]) }
+  /// "2m", "3h", "4d": the short form timelines use.
+  public static var abbreviated: DateFormat { DateFormat(kind: "abbreviated", fields: [:]) }
   /// `2026-11-26T18:30:00.000Z`.
-  case iso8601
+  public static var iso8601: DateFormat { DateFormat(kind: "iso8601", fields: [:]) }
+  /// The fields named after it (`.dateTime.year().month().day()`); with none, the numeric date and
+  /// the time ("11/26/2026, 6:30 PM").
+  public static var dateTime: DateFormat { DateFormat(kind: "fields", fields: [:]) }
+
+  /// The year: "2026" ("26" with `.twoDigits`).
+  public func year(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("year", digits(style)) }
+  /// The month, "Nov" by default.
+  public func month(_ style: MonthStyle = .abbreviated) -> DateFormat { self.field("month", monthName(style)) }
+  /// The day of the month: "26".
+  public func day(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("day", digits(style)) }
+  /// The weekday, "Thu" by default.
+  public func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat { self.field("weekday", weekdayName(style)) }
+  /// The hour, in the locale's clock: "6 PM".
+  public func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("hour", digits(style)) }
+  /// The minute: "30".
+  public func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("minute", digits(style)) }
+  /// The second: "05".
+  public func second(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("second", digits(style)) }
+
+  func field(_ name: String, _ value: String) -> DateFormat {
+    DateFormat(kind: "fields", fields: self.fields.setting(name, value))
+  }
 }
 
 /// The calendar fields of a date (`month` 1–12, `weekday` 1 = Sunday … 7).
@@ -105,18 +179,39 @@ extension Date {
   /// Whether this instant is after `other`.
   public func isAfter(_ other: Date) -> Bool { self.timeIntervalSince1970 > other.timeIntervalSince1970 }
 
-  /// The date written for a person in `locale` (`""`: the device's), relative to `now`
-  /// for `.relative` and `.abbreviated`.
-  public func formatted(_ format: DateFormat = .dateTime(.medium, .short), locale: String = "", now: Date = Date.now) -> String {
-    switch format {
-    case .relative:
-      relativeText(self.timeIntervalSince1970 - now.timeIntervalSince1970, locale, "long")
-    case .abbreviated:
-      abbreviatedText(now.timeIntervalSince1970 - self.timeIntervalSince1970)
-    case .dateTime(let date, let time):
-      formatDate(self.millisecondsSince1970, locale, styleName(date), styleName(time), "")
-    case .iso8601:
-      self.iso8601
+  /// The date written for a person in `locale` (`""`: the device's) and `timeZone` (`""`: the
+  /// device's; an IANA name, `"UTC"`, `"Asia/Tokyo"`): in `format`, or, with `date:` or `time:`,
+  /// in those styles (Swift's `formatted(date: .abbreviated, time: .shortened)`). `.relative` and
+  /// `.abbreviated` are relative to `now`.
+  public func formatted(
+    _ format: DateFormat = .dateTime,
+    date: DateStyle? = none,
+    time: TimeStyle? = none,
+    locale: String = "",
+    timeZone: String = "",
+    now: Date = Date.now,
+  ) -> String {
+    if date != none || time != none {
+      return formatDate(
+        self.millisecondsSince1970,
+        locale,
+        dateStyleName(date ?? .omitted),
+        timeStyleName(time ?? .omitted),
+        timeZone,
+      )
+    }
+    switch format.kind {
+    case "relative":
+      return relativeText(self.timeIntervalSince1970 - now.timeIntervalSince1970, locale, "long")
+    case "abbreviated":
+      return abbreviatedText(now.timeIntervalSince1970 - self.timeIntervalSince1970)
+    case "iso8601":
+      return self.iso8601
+    default:
+      let fields = format.fields.isEmpty
+        ? ["year": "numeric", "month": "numeric", "day": "numeric", "hour": "numeric", "minute": "2-digit"]
+        : format.fields
+      return formatDateFields(self.millisecondsSince1970, locale, fields, timeZone)
     }
   }
 
@@ -124,18 +219,66 @@ extension Date {
   public func components(utc: Bool = false) -> DateComponents { dateParts(self.millisecondsSince1970, utc) }
 }
 
-private func styleName(_ style: DateStyle) -> String {
+private func dateStyleName(_ style: DateStyle) -> String {
   switch style {
   case .omitted:
     "omitted"
-  case .short:
+  case .numeric:
     "short"
-  case .medium:
+  case .abbreviated:
     "medium"
   case .long:
     "long"
-  case .full:
+  case .complete:
     "full"
+  }
+}
+
+private func timeStyleName(_ style: TimeStyle) -> String {
+  switch style {
+  case .omitted:
+    "omitted"
+  case .shortened:
+    "short"
+  case .standard:
+    "medium"
+  case .complete:
+    "long"
+  }
+}
+
+private func digits(_ style: DigitStyle) -> String {
+  switch style {
+  case .defaultDigits:
+    "numeric"
+  case .twoDigits:
+    "2-digit"
+  }
+}
+
+private func monthName(_ style: MonthStyle) -> String {
+  switch style {
+  case .defaultDigits:
+    "numeric"
+  case .twoDigits:
+    "2-digit"
+  case .wide:
+    "long"
+  case .abbreviated:
+    "short"
+  case .narrow:
+    "narrow"
+  }
+}
+
+private func weekdayName(_ style: WeekdayStyle) -> String {
+  switch style {
+  case .wide:
+    "long"
+  case .abbreviated:
+    "short"
+  case .narrow:
+    "narrow"
   }
 }
 
