@@ -1,5 +1,6 @@
 // A `switch` whose every case returns a value, with no `default`, is TS's exhaustive
-// `switch` on a literal union: a `match` with no `case _`.
+// `switch` on a literal union: a `match` with no `case _`. So is one whose `default` is TS's
+// exhaustiveness check (`const unhandled: never = x; throw …`): bloomc checks it.
 
 public type Severity = "suspend" | "silence"
 
@@ -9,6 +10,17 @@ private func label(_ severity: Severity) -> String {
     return "Suspended"
   case "silence":
     return "Silenced"
+  }
+}
+
+public func act(_ severity: Severity, _ log: (String) -> Unit) {
+  switch severity {
+  case "suspend":
+    log("suspend")
+    return
+  case "silence":
+    log("silence")
+    return
   }
 }
 
