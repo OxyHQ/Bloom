@@ -12,19 +12,19 @@ return a > 0;
 }
 
 export function sum(a: number, b: number): number {
-return (g(a)) + h(b);
+return g(a) + h(b);
 }
 
 export function chain(a: number): number {
-return ((g(a)) + (h(a) * g(a))) - h(1);
+return (g(a) + (h(a) * g(a))) - h(1);
 }
 
 export function pick(a: number): number {
-return (ok(a)) ? g(a) : h(a);
+return ok(a) ? g(a) : h(a);
 }
 
 export function same(a: number): boolean {
-return (g(a)) === h(a);
+return g(a) === h(a);
 }
 
 export function opt(a: number): number {
@@ -35,5 +35,29 @@ return g(a);
 return undefined;
 }
 })()) ?? 0;
+}
+
+export function whole(a: number): number | undefined {
+return (() => {
+try {
+return g(a) + h(1);
+} catch {
+return undefined;
+}
+})();
+}
+
+function maybe(a: number): number | undefined {
+return (a > 0) ? a : undefined;
+}
+
+export function coalesced(a: number): number | undefined {
+return (() => {
+try {
+return maybe(a) ?? h(1);
+} catch {
+return undefined;
+}
+})();
 }
 

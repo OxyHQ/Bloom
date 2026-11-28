@@ -576,6 +576,8 @@ pub struct Checker<'o> {
     /// TS error classes imported by name (`class PollContractError extends Error`): each one's
     /// TS type text, and the name its class is read by (`err is PollContractError`).
     error_classes: HashMap<String, String>,
+    /// `try? a ?? b`: the `??`'s id and where the `try?` starts, while its operand is checked.
+    try_default: Option<(ExprId, u32)>,
     /// The derived `Codable` codecs (`T.self`) declared ahead of their place, by name span.
     codecs_ahead: HashMap<Span, LocalId>,
     /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
@@ -755,6 +757,7 @@ impl<'o> Checker<'o> {
             modifier_site: None,
             modifier_arg: None,
             error_classes: HashMap::default(),
+            try_default: None,
             codecs_ahead: HashMap::default(),
             hook_args: HashSet::default(),
             hook_body: None,
@@ -4974,15 +4977,7 @@ impl<'o> Checker<'o> {
         if let (Some(recorded), Some(expected)) = (&mut self.expected, expected) {
             recorded.push((expr.span, expected.clone()));
         }
-        // `try g(a) + h(b)`: one `try` covers the whole expression to its right (Swift's).
-        let covered = !self.trying && try_covers_right(expr);
-        if covered {
-            self.trying = true;
-        }
         let mut ty = self.infer(expr, expected);
-        if covered {
-            self.trying = false;
-        }
         // A function value that does not await, where a Bloom `async` one is expected
         // (`let load: () async -> Int = count`): the emitter wraps it in an `async` function.
         if !matches!(expr.kind, ExprKind::Closure(_) | ExprKind::Paren(_))
@@ -5597,9 +5592,17 @@ impl<'o> Checker<'o> {
                 if *kind == TryKind::Plain {
                     self.unhandled_try(expr.span);
                 }
+                // `try? f() ?? x`: the `try?` covers the `??` too (Swift's reading).
+                let outer_default = self.try_default.take();
+                if *kind == TryKind::Optional
+                    && let ExprKind::Binary(BinaryOp::Default, ..) = &inner.kind
+                {
+                    self.try_default = Some((inner.id, expr.span.start));
+                }
                 let outer = std::mem::replace(&mut self.trying, true);
                 let ty = self.expr(inner, expected_inner.as_ref());
                 self.trying = outer;
+                self.try_default = outer_default;
                 // `try await` on a TS promise: its rejection is thrown, not a `Result`.
                 if matches!(kind, TryKind::Plain | TryKind::Force)
                     && let ExprKind::Await(_) = &inner.kind
@@ -6482,6 +6485,27 @@ impl<'o> Checker<'o> {
                             _ => {}
                         }
                         right
+                    }
+                    // `try? f() ?? x` of an `f()` that is never `none`: the `try?` covers the
+                    // `??`, so `x` is never used (Swift's warning); `(try? f()) ?? x` is the
+                    // fallback of the `try?`.
+                    other if self.try_default.is_some_and(|(id, _)| id == expr.id) => {
+                        let (_, start) = self.try_default.expect("checked");
+                        let written = &self.source[start as usize..lhs.span.end as usize];
+                        let shown = self.show(&other);
+                        self.report(
+                            Diagnostic::warning(
+                                "B0225",
+                                lhs.span,
+                                format!("`??` never falls back: the `try?` covers it, and this is {shown}"),
+                            )
+                            .label("never `none`")
+                            .help(format!("for the fallback of the `try?`, write `({written}) ?? …`"))
+                            .fix(Span::new(start, lhs.span.end), format!("({written})"))
+                            .spec("62-control-flow-and-errors-20"),
+                        );
+                        self.expr(rhs, Some(&other));
+                        other
                     }
                     other => {
                         self.report(
@@ -8575,23 +8599,6 @@ fn ends_in_none(expr: &Expr) -> bool {
         ExprKind::None => true,
         ExprKind::Paren(inner) => ends_in_none(inner),
         ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
-        _ => false,
-    }
-}
-
-/// A binary or conditional expression whose leftmost operand is a `try` (`try g(a) + h(b)`,
-/// `try f() ? a : b`, `try! x() == y()`): that `try` covers the whole expression to its right, as
-/// Swift's does. A `try?` stays its operand's (`try? f() ?? x` is `(try? f()) ?? x`).
-fn try_covers_right(expr: &Expr) -> bool {
-    fn leftmost(expr: &Expr) -> bool {
-        match &expr.kind {
-            ExprKind::Throwing(TryKind::Plain | TryKind::Force, _) => true,
-            ExprKind::Binary(_, lhs, _) | ExprKind::Ternary(lhs, ..) => leftmost(lhs),
-            _ => false,
-        }
-    }
-    match &expr.kind {
-        ExprKind::Binary(_, lhs, _) | ExprKind::Ternary(lhs, ..) => leftmost(lhs),
         _ => false,
     }
 }
