@@ -6555,6 +6555,14 @@ impl<'o> Checker<'o> {
         if matches!(expr.kind, ExprKind::None) {
             return;
         }
+        // A component named, not called (`icon: RiLinkM` where TS takes a `ComponentType`): the
+        // component itself, never an element of it.
+        if let ExprKind::Name(_) = &expr.kind
+            && let Some(NameRes::Local(local)) = self.out.names.get(&expr.id)
+            && matches!(self.out.locals[*local].kind, LocalKind::Component { .. } | LocalKind::View)
+        {
+            return;
+        }
         let Some(ty) = self.out.types.get(&expr.id).cloned() else { return };
         match self.resolve(&ty) {
             Ty::View(_) => {

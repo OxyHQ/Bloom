@@ -1,0 +1,12 @@
+import { Embed, Text, inlineView, toElement } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { RiLinkM } from "@oxy.so/bloom/icons/RiLinkM";
+import { EmptyState } from "@/empty-state";
+
+const $view0 = Embed($jsx(EmptyState, { title: "No sources", icon: RiLinkM, footer: toElement(Text("Add one")) } satisfies ComponentProps<typeof EmptyState>));
+export const Empty = inlineView(function Empty() {
+"use no memo";
+return $view0;
+});
+
