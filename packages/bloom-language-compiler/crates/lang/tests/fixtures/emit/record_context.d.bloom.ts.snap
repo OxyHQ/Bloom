@@ -1,0 +1,14 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface ProgressProps {
+  readonly label: string;
+  readonly percent: number | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Progress())`), or from TSX as `toElement(Progress())`. */
+export declare const Progress: (props: ProgressProps) => ComposedView;
+export interface Tag {
+  readonly id: string;
+  readonly label?: string | undefined;
+  readonly count?: number | undefined;
+}
+export declare function tags(wide: boolean): number;
+export declare function moved(y: number): number;

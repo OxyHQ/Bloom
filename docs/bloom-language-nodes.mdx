@@ -943,7 +943,7 @@ Modifiers:
 - [`.title()`](bloom-language-modifiers.mdx#title) `(value: string)`
 - [`.message()`](bloom-language-modifiers.mdx#message) `(value: string)`: The text under the title.
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: The dialog's accessible name, when it has no title.
-- [`.buttons()`](bloom-language-modifiers.mdx#buttons) `(value: readonly DialogAction[])`: The action row: Bloom's `DialogAction`s, in order.
+- [`.buttons()`](bloom-language-modifiers.mdx#buttons) `(value: readonly DialogAction[])` (here: a list of `dialogButton` (`label`: `string`, `color?`: [dialogActionColor](bloom-language-tokens.mdx#dialogactioncolor), `onPress?`: `action`, `disabled?`: `boolean`, `loading?`: `boolean`, `shouldCloseOnPress?`: `boolean`, `initialFocus?`: `boolean`, `testID?`: `string`)): The action row: Bloom's `DialogAction`s, in order.
 - [`.presentAt()`](bloom-language-modifiers.mdx#presentat) `(base: DialogPlacement, tiers?: DialogTiers)`: Where it presents: `base`, and from each breakpoint `tiers` names up (Bloom's responsive placement).
 - [`.dismissOnBackdrop()`](bloom-language-modifiers.mdx#dismissonbackdrop) `(value: boolean)`: `false`: a press on the backdrop does not dismiss it.
 - [`.scrollable()`](bloom-language-modifiers.mdx#scrollable) `(value?: boolean)`: Its content scrolls when it is taller than the dialog.
