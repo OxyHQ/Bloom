@@ -1,0 +1,12 @@
+// A JS class from "js" is constructed by a call, as `Date(x)` is: `Map(pairs)` and `Set(xs)` are
+// `new Map(pairs)` and `new Set(xs)` (without `new` they throw). A function that converts when
+// called (`String(x)`) stays a call.
+import { Map, Set, String } from "js"
+
+public func byId(_ ids: [String]) -> Foreign {
+  Map(ids.map { id in (id, id.count) })
+}
+
+public func unique(_ ids: [String]) -> Foreign { Set(ids) }
+
+public func shown(_ n: Int) -> Foreign { String(n) }
