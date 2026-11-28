@@ -2306,6 +2306,26 @@ impl Tr<'_> {
                 {
                     return self.set_state(&setter.state, call);
                 }
+                // `router.push(c ? { pathname, params } : "/search")`: a TS union argument whose
+                // branches have no one Bloom type, so the call is made in each branch.
+                if let [Argument::ConditionalExpression(c)] = call.arguments.as_slice()
+                    && {
+                        let kind = |e: &Expression| match e.without_parentheses() {
+                            Expression::ObjectExpression(_) => 1,
+                            Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => 2,
+                            _ => 0,
+                        };
+                        let (a, b) = (kind(&c.consequent), kind(&c.alternate));
+                        a != 0 && b != 0 && a != b
+                    }
+                {
+                    let callee = self.expr(&call.callee);
+                    let test = self.test(&c.test, false);
+                    let test = crate::expr::strip_parens(&test).to_string();
+                    let a = self.expr(&c.consequent);
+                    let b = self.expr(&c.alternate);
+                    return format!("if {test} {{\n{callee}({a})\n}} else {{\n{callee}({b})\n}}");
+                }
                 self.expr(e)
             }
             // `() => (c ? setStep('edit') : back())`: the parentheses say nothing here.
