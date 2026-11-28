@@ -4,7 +4,7 @@
 //! methods in BloomUI, written on the node before the universal ones), and the
 //! constructors whose trailing closure is a view builder.
 
-/// Constructor → its own modifiers (beyond the universal ones), sorted by constructor.
+/// Constructor → the modifiers it lists, universal names included (each hoisted onto the node, its method in BloomUI), sorted by constructor.
 pub const OWN_MODIFIERS: &[(&str, &[&str])] = &[
     ("Accordion", &["size", "allowsMultiple", "revealMotion"]),
     ("AccordionContent", &[]),

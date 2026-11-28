@@ -4,7 +4,7 @@ use std::fmt::Write as _;
 
 use bloom_lang::ast::*;
 
-use super::{Emitter, Mode, VALUE_RENAMES, kw, label, pad};
+use super::{Emitter, Mode, kw, label, pad, renamed_member, value_rename};
 
 /// Swift's precedence of a binary operator (higher binds tighter), and whether it groups
 /// to the right. Bloom's table differs: `??` is Bloom's loosest and binds tighter than a
@@ -99,8 +99,8 @@ impl Emitter<'_> {
             ExprKind::None => "nil".into(),
             ExprKind::Unit => "()".into(),
             ExprKind::Str { parts, .. } => self.string(parts),
-            ExprKind::Name(n) => match VALUE_RENAMES.iter().find(|(b, _)| b == n) {
-                Some((_, s)) => s.to_string(),
+            ExprKind::Name(n) => match value_rename(n) {
+                Some(s) => s,
                 None if n.starts_with('$') => n.clone(),
                 None => kw(n),
             },
@@ -346,7 +346,17 @@ impl Emitter<'_> {
     /// every backend (ADR 0003).
     fn field(&mut self, base: &Expr, field: &Ident) -> String {
         let b = self.postfix_base(base);
-        format!("{b}.{}", kw(&field.name))
+        format!("{b}.{}", self.member_name(base, &field.name))
+    }
+
+    /// A member's Swift name: the standard library's rename (`Calendar.timeZone` is
+    /// `deviceTimeZone`) on a value of the type, or on the type itself, else its own.
+    fn member_name(&self, base: &Expr, member: &str) -> String {
+        let ty = match &base.kind {
+            ExprKind::Name(n) if n.chars().next().is_some_and(char::is_uppercase) => Some(n.clone()),
+            _ => self.receiver_type(base),
+        };
+        ty.as_deref().and_then(|t| renamed_member(t, member)).map(str::to_string).unwrap_or_else(|| kw(member))
     }
 
     /// The arguments of a call, labels as written: Bloom's labels are Swift's.
@@ -403,7 +413,7 @@ impl Emitter<'_> {
         let callee = match &call.callee.kind {
             ExprKind::Field(base, method) => {
                 let b = self.postfix_base(base);
-                format!("{b}.{}", kw(&method.name))
+                format!("{b}.{}", self.member_name(base, &method.name))
             }
             _ => self.postfix_base(&call.callee),
         };

@@ -113,21 +113,68 @@ pub(crate) fn label(name: &str) -> String {
     escape(name, &["inout", "var", "let"])
 }
 
-/// The standard library's Bloom types that are Swift's own under another name. The Bloom
-/// standard library maps onto Swift's types where it can (`Date` is Foundation's, `Duration`
-/// and `Task` are Swift's); these are the ones whose Bloom value is a Swift type's member.
-const TYPE_RENAMES: &[(&str, &str)] = &[
-    // `ContinuousClock.now` is Bloom's instant of the clock: Swift's `ContinuousClock.Instant`.
-    ("ContinuousClock", "ContinuousClock.Instant"),
-    // A broadcast channel (`make`/`yield`/`finish`/`subscribe`), not Swift's single-consumer
-    // `AsyncStream`.
-    ("AsyncStream", "BloomAsyncStream"),
-    ("Float", "Double"),
-    ("Character", "String"),
-    ("Unit", "Void"),
-    ("Set", "OrderedSet"),
-    ("Dictionary", "OrderedDictionary"),
-];
+/// The standard library's rename table (`runtime/ios/Sources/Bloom/Renames.swift`: one
+/// `Bloom name -> Swift name` per line): the Bloom types and members whose Swift name differs,
+/// because Swift or Foundation has the name with other semantics. Read from the runtime's
+/// source, so the two cannot drift.
+const RENAMES: &str = include_str!("../../runtime/ios/Sources/Bloom/Renames.swift");
+
+/// The language's own names that are Swift's under another (not the standard library's).
+const LANGUAGE_RENAMES: &[(&str, &str)] =
+    &[("Float", "Double"), ("Unit", "Void"), ("Dictionary", "OrderedDictionary")];
+
+/// `(Bloom, Swift)` type names, and `(type, member, Swift member)`.
+pub(crate) struct Renames {
+    pub types: Vec<(String, String)>,
+    pub members: Vec<(String, String, String)>,
+}
+
+pub(crate) fn renames() -> &'static Renames {
+    static TABLE: std::sync::OnceLock<Renames> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        let mut types: Vec<(String, String)> =
+            LANGUAGE_RENAMES.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect();
+        let mut members = Vec::new();
+        for line in RENAMES.lines() {
+            let Some(rest) = line.strip_prefix("// ") else { break };
+            let Some((from, to)) = rest.split_once(" -> ") else {
+                if rest.trim().is_empty() { break } else { continue }
+            };
+            let (from, to) = (from.trim(), to.trim());
+            if from.starts_with('[') {
+                continue; // `[String: V]`: the map type, spelt by `TypeKind::Map`.
+            }
+            match (from.split_once('.'), to.split_once('.')) {
+                (Some((ty, member)), Some((_, new))) => {
+                    let strip = |s: &str| s.split('(').next().unwrap_or(s).to_string();
+                    members.push((ty.to_string(), strip(member), strip(new)));
+                }
+                _ => types.push((from.split('<').next().unwrap_or(from).to_string(), to.to_string())),
+            }
+        }
+        Renames { types, members }
+    })
+}
+
+/// A Bloom type's Swift name, its arguments `args` already Swift (`Task<T>` is
+/// `Task<T, any Error>`, `Codec<T>` is `T.Type`).
+fn renamed_type(name: &str, args: &[String]) -> Option<String> {
+    let (_, to) = renames().types.iter().find(|(from, _)| from == name)?;
+    Some(match (to.as_str(), args) {
+        ("T.Type", [t]) => format!("{t}.Type"),
+        (to, [t]) if to.contains("<T") => to.replace("<T", &format!("<{t}")),
+        (to, _) => {
+            let base = to.split('<').next().unwrap_or(to).to_string();
+            if args.is_empty() { base } else { format!("{base}<{}>", args.join(", ")) }
+        }
+    })
+}
+
+/// A member's Swift name on a receiver of Bloom type `ty`.
+pub(crate) fn renamed_member(ty: &str, member: &str) -> Option<&'static str> {
+    let ty = ty.trim_end_matches('?');
+    renames().members.iter().find(|(t, m, _)| t == ty && m == member).map(|(_, _, new)| new.as_str())
+}
 
 /// The SwiftUI declarations an emitted file with views imports, one by one.
 const SWIFTUI_IMPORTS: &[&str] = &[
@@ -147,8 +194,10 @@ const SWIFTUI_IMPORTS: &[&str] = &[
 ];
 
 /// `AsyncStream.make()`: a renamed type named as a value (its statics).
-const VALUE_RENAMES: &[(&str, &str)] =
-    &[("AsyncStream", "BloomAsyncStream"), ("Set", "OrderedSet"), ("Dictionary", "OrderedDictionary")];
+/// A renamed type named as a value (`AsyncStream.make()`, `Set.of(xs)`).
+pub(crate) fn value_rename(name: &str) -> Option<String> {
+    renamed_type(name, &[]).filter(|to| !to.contains('.') && name != "Character")
+}
 
 pub fn emit(program: &Program) -> Result<Vec<Emitted>, Vec<Problem>> {
     let (out, problems) = emit_all(program);
@@ -390,23 +439,19 @@ impl<'a> Emitter<'a> {
                 format!("any {}", inner.join(" & "))
             }
             TypeKind::Named { name, args } => {
-                let base = match name.name.as_str() {
-                    "View" if self.source_of(t.span).trim_start().starts_with("some") => {
-                        return "some View".into();
-                    }
-                    other => TYPE_RENAMES
-                        .iter()
-                        .find(|(b, _)| *b == other)
-                        .map(|(_, s)| s.to_string())
-                        .unwrap_or_else(|| other.to_string()),
-                };
+                if name.name == "View" && self.source_of(t.span).trim_start().starts_with("some") {
+                    return "some View".into();
+                }
                 let some =
                     if self.source_of(t.span).trim_start().starts_with("some ") { "some " } else { "" };
+                let args: Vec<String> = args.iter().map(|a| self.ty(a)).collect();
+                if let Some(swift) = renamed_type(&name.name, &args) {
+                    return format!("{some}{swift}");
+                }
                 if args.is_empty() {
-                    format!("{some}{base}")
+                    format!("{some}{}", name.name)
                 } else {
-                    let args: Vec<String> = args.iter().map(|a| self.ty(a)).collect();
-                    format!("{some}{base}<{}>", args.join(", "))
+                    format!("{some}{}<{}>", name.name, args.join(", "))
                 }
             }
             TypeKind::List(inner) => format!("[{}]", self.ty(inner)),
@@ -640,6 +685,10 @@ impl<'a> Emitter<'a> {
         } else if !has_init && s.fields.is_empty() && !vis.is_empty() {
             let _ = writeln!(out, "\n  {vis}init() {{}}");
         }
+        let decodes = conforms.iter().any(|c| c == "Codable" || c == "Decodable");
+        if decodes && !has_init && s.fields.iter().any(|f| f.default.is_some()) {
+            out.push_str(&self.decoding_init(vis, &s.fields));
+        }
         for m in &members {
             if matches!(&m.kind, TypeMemberKind::Stored { .. }) && !m.modifiers.is_static {
                 continue;
@@ -651,6 +700,28 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// `init(from:)` for a `Codable` struct whose fields have defaults: a missing key takes the
+    /// default, as Bloom's derived decoder does (Swift's synthesized one requires every key).
+    /// Encoding stays Swift's synthesized one (an absent optional is left out).
+    fn decoding_init(&mut self, vis: &str, fields: &[Field]) -> String {
+        let mut out = format!("\n  {vis}init(from decoder: any Decoder) throws {{\n    let c = try decoder.container(keyedBy: CodingKeys.self)\n");
+        for f in fields {
+            let name = kw(&f.name.name);
+            let (inner, optional) = match &f.ty.kind {
+                TypeKind::Optional(t) => (self.ty(t), true),
+                _ => (self.ty(&f.ty), false),
+            };
+            let line = match (&f.default, optional) {
+                (Some(d), _) => format!("try c.decodeIfPresent({inner}.self, forKey: .{name}) ?? {}", self.expr_value(d, 2)),
+                (None, true) => format!("try c.decodeIfPresent({inner}.self, forKey: .{name})"),
+                (None, false) => format!("try c.decode({inner}.self, forKey: .{name})"),
+            };
+            let _ = writeln!(out, "    self.{name} = {line}");
+        }
+        out.push_str("  }\n");
+        out
+    }
+
     /// `init(id: String, likes: Int = 0)`: Bloom's memberwise construction, every field
     /// labelled by its name, a default where the field has one.
     fn memberwise_init(&mut self, vis: &str, fields: &[Field]) -> String {
@@ -658,8 +729,12 @@ impl<'a> Emitter<'a> {
             .iter()
             .map(|f| {
                 let ty = self.param_type(&f.ty);
-                let default =
-                    f.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 2))).unwrap_or_default();
+                // An optional field with no default is `none` when left out (as on every backend).
+                let default = match (&f.default, &f.ty.kind) {
+                    (Some(d), _) => format!(" = {}", self.expr_value(d, 2)),
+                    (None, TypeKind::Optional(_)) => " = nil".to_string(),
+                    (None, _) => String::new(),
+                };
                 format!("{}: {ty}{default}", kw(&f.name.name))
             })
             .collect();
@@ -674,6 +749,11 @@ impl<'a> Emitter<'a> {
     fn enum_decl(&mut self, vis: &str, e: &EnumDecl) -> String {
         let generics = self.generics(&e.generics, &[]);
         let mut conforms = self.conformances(&e.conformances);
+        // A case-only `Codable` enum is its case's name on the wire (Bloom's derived codec).
+        if e.variants.iter().all(|v| v.payload.is_empty()) && conforms.iter().any(|c| matches!(c.as_str(), "Codable" | "Encodable" | "Decodable")) {
+            conforms.retain(|c| !matches!(c.as_str(), "Codable" | "Encodable" | "Decodable" | "CaseIterable"));
+            conforms.insert(0, "BloomCaseCodable".into());
+        }
         let payload_tys: Vec<&TypeExpr> =
             e.variants.iter().flat_map(|v| v.payload.iter().map(|p| &p.ty)).collect();
         let recursive = payload_tys.iter().any(|t| self.mentions(t, &e.name.name));

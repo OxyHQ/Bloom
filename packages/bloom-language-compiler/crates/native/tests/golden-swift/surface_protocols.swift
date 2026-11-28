@@ -86,7 +86,7 @@ public struct Page<T> {
 
 extension Page {
 
-  public static func codec(_ item: Codec<T>) -> Codec<Page<T>> {
+  public static func codec(_ item: T.Type) -> Page<T>.Type {
     return Codec(name: "page of \(item.name)")
   }
 }

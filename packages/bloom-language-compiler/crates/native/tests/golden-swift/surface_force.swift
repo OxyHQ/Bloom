@@ -8,7 +8,7 @@ public struct Event: Sendable {
   let revision: Int
   let title: String?
 
-  public init(revision: Int, title: String?) {
+  public init(revision: Int, title: String? = nil) {
     self.revision = revision
     self.title = title
   }

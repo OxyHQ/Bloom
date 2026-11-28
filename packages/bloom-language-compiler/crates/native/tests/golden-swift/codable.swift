@@ -4,7 +4,7 @@ import Foundation
 import Bloom
 import BloomUI
 
-public enum Role: Codable, Equatable, Sendable {
+public enum Role: BloomCaseCodable, Equatable, Sendable {
   case reader
   case editor
 }
@@ -16,12 +16,21 @@ public struct Profile: Codable, Equatable, Sendable {
   public var role: Role
   public var tags: [String]
 
-  public init(id: String, name: String, bio: String?, role: Role = .reader, tags: [String] = []) {
+  public init(id: String, name: String, bio: String? = nil, role: Role = .reader, tags: [String] = []) {
     self.id = id
     self.name = name
     self.bio = bio
     self.role = role
     self.tags = tags
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    self.id = try c.decode(String.self, forKey: .id)
+    self.name = try c.decode(String.self, forKey: .name)
+    self.bio = try c.decodeIfPresent(String.self, forKey: .bio)
+    self.role = try c.decodeIfPresent(Role.self, forKey: .role) ?? .reader
+    self.tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
   }
 }
 

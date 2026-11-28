@@ -58,8 +58,19 @@ fn cases() -> Vec<PathBuf> {
     cases
 }
 
-/// The case's Swift, or what stopped it (a check error or an uncovered construct).
+/// The case's Swift, or what stopped it, on a thread with the main thread's room: the checker
+/// and the emitter recurse with the tree, past a test thread's 2 MB on the larger cases.
 fn emit(case: &Path) -> String {
+    let case = case.to_path_buf();
+    std::thread::Builder::new()
+        .stack_size(64 << 20)
+        .spawn(move || emit_on_this_thread(&case))
+        .expect("a thread")
+        .join()
+        .expect("the case emits")
+}
+
+fn emit_on_this_thread(case: &Path) -> String {
     let name = case.file_stem().unwrap_or_default().to_string_lossy().into_owned();
     static CALLS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let call = CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
