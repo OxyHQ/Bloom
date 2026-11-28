@@ -1,0 +1,10 @@
+// One `try` covers the whole expression to its right (Swift's): each call in it is marked.
+func g(_ a: Int) throws -> Int { a }
+func h(_ b: Int) throws -> Int { b }
+func ok(_ a: Int) throws -> Bool { a > 0 }
+
+public func sum(_ a: Int, _ b: Int) throws -> Int { try g(a) + h(b) }
+public func chain(_ a: Int) throws -> Int { try g(a) + h(a) * g(a) - h(1) }
+public func pick(_ a: Int) throws -> Int { try ok(a) ? g(a) : h(a) }
+public func same(_ a: Int) throws -> Bool { try g(a) == h(a) }
+public func opt(_ a: Int) -> Int { (try? g(a)) ?? 0 }

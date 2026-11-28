@@ -4878,7 +4878,15 @@ impl<'o> Checker<'o> {
         if let (Some(recorded), Some(expected)) = (&mut self.expected, expected) {
             recorded.push((expr.span, expected.clone()));
         }
+        // `try g(a) + h(b)`: one `try` covers the whole expression to its right (Swift's).
+        let covered = !self.trying && try_covers_right(expr);
+        if covered {
+            self.trying = true;
+        }
         let mut ty = self.infer(expr, expected);
+        if covered {
+            self.trying = false;
+        }
         if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty() {
             ty = self.narrowed_path(expr, ty);
         }
@@ -8444,6 +8452,23 @@ fn ends_in_none(expr: &Expr) -> bool {
         ExprKind::None => true,
         ExprKind::Paren(inner) => ends_in_none(inner),
         ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
+        _ => false,
+    }
+}
+
+/// A binary or conditional expression whose leftmost operand is a `try` (`try g(a) + h(b)`,
+/// `try f() ? a : b`, `try! x() == y()`): that `try` covers the whole expression to its right, as
+/// Swift's does. A `try?` stays its operand's (`try? f() ?? x` is `(try? f()) ?? x`).
+fn try_covers_right(expr: &Expr) -> bool {
+    fn leftmost(expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Throwing(TryKind::Plain | TryKind::Force, _) => true,
+            ExprKind::Binary(_, lhs, _) | ExprKind::Ternary(lhs, ..) => leftmost(lhs),
+            _ => false,
+        }
+    }
+    match &expr.kind {
+        ExprKind::Binary(_, lhs, _) | ExprKind::Ternary(lhs, ..) => leftmost(lhs),
         _ => false,
     }
 }
