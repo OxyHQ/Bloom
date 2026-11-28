@@ -4645,10 +4645,17 @@ impl<'o> Checker<'o> {
         };
         let then = self.block(&if_expr.then, expected);
         self.pop();
+        // `if x == none || x.isEmpty { … } else { … }`: where the test fails, `x` is present
+        // (De Morgan's), as after an `if` whose branch returns.
+        self.push();
+        if let Cond::Expr(test) = &if_expr.cond {
+            self.narrow(test, BinaryOp::Eq, BinaryOp::Or);
+        }
         let other = match otherwise {
             Else::If(next) => self.expr(next, expected.or(Some(&then))),
             Else::Block(block) => self.block(block, expected.or(Some(&then))),
         };
+        self.pop();
         self.join(&then, &other, span)
     }
 

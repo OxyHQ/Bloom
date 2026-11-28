@@ -1,0 +1,4 @@
+export declare function pick(title: string | undefined | null, off: boolean): string;
+export declare function nested(title: string | undefined | null, sub: string | undefined | null, off: boolean): string;
+export declare function negated(title: string | undefined | null): string;
+export declare function value(title: string | undefined | null): string;
