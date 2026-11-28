@@ -28,7 +28,7 @@ Android), sin JavaScript en medio, para que Bloom vaya tan rápido como Swift o 
 | Fotogramas con retraso al hacer scroll rápido (120 Hz) | 0,64 % | **0,06 %** |
 | Tiempo de fotograma p90 | 12 ms | **7 ms** |
 | Memoria en reposo | 266 MB | **58 MB** |
-| Memoria tras recorrer el feed | 417 MB | **112 MB** |
+| Memoria tras recorrer las 500 filas | 412 MB | **129 MB** |
 | Latencia de un toggle (mediana / p95) | 42 / 53 ms | **7 / 12 ms** |
 | Tamaño del APK | 44,9 MB | **1,4 MB** |
 

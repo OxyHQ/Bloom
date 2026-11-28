@@ -150,7 +150,13 @@ are in `~/.local/share/bloom-lang/nativebackend/run/{rn,compose}-s1/`.
 | Toggle: janky frames over the 20 taps | 1.0–1.2% | 0.3–0.8% | |
 | **APK** (release) | 44.9 MB, arm64 only: native libraries 20.1, JS bundle 19.2, dex 2.8, resources 2.5 | **1.36 MB**: dex 1.19 (0.95 MB without the inlined pictures) | ÷33 |
 
-SESSION2
+Session 2 (40 flings, to the 500th row; `run/{rn,compose}-s2/`), the same builds an hour later:
+
+| | React Native + Hermes | Kotlin + Compose |
+|---|---|---|
+| Cold start: first frame / feed on screen | 144 / 342 ms (p95 158 / 390) | 132 / **117** ms (p95 143 / 120) |
+| Fast scroll: janky frames; frame time p90 / p99 | 0.73%; 11 / 16 ms | **0.10%; 7 / 11 ms** |
+| PSS idle / after all 500 rows | 258 / 412 MB | **58 / 129 MB** |
 
 Reading the numbers:
 
