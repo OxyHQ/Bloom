@@ -558,6 +558,9 @@ pub struct Checker<'o> {
     /// a ternary's first branch): it is not met with a generic method's result, which only a
     /// declared type (an annotation, a parameter's) is.
     inferred_expected: HashSet<ExprId>,
+    /// The base of an implicit member chain (`.dateTime` of `.dateTime.month()`), by its id: the
+    /// type the whole chain is expected to be.
+    implicit_chains: HashMap<ExprId, Ty>,
     /// Record literals a closure gives (its tail, its `return`s) when its result type is not
     /// written: an expected struct types them but takes their extra fields, as TS checks no
     /// excess property on a callback's result.
@@ -671,6 +674,7 @@ impl<'o> Checker<'o> {
             ts_claimed_locals: HashSet::default(),
             call_expected: HashMap::default(),
             inferred_expected: HashSet::default(),
+            implicit_chains: HashMap::default(),
             callback_results: HashSet::default(),
             claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
@@ -4503,6 +4507,14 @@ impl<'o> Checker<'o> {
 
     fn infer(&mut self, expr: &Expr, expected: Option<&Ty>) -> Ty {
         let expected_resolved = expected.map(|e| self.resolve(e));
+        // Swift's implicit member chain: `.dateTime.month(.abbreviated)` where a `DateFormat` is
+        // expected starts from `DateFormat.dateTime`.
+        if let Some(expected) = &expected_resolved
+            && matches!(expr.kind, ExprKind::Call(_) | ExprKind::Field(..))
+            && let Some(root) = implicit_root(expr)
+        {
+            self.implicit_chains.entry(root.id).or_insert_with(|| expected.clone());
+        }
         match &expr.kind {
             ExprKind::Error => Ty::Unknown,
             ExprKind::Int(_) => match expected_resolved {
@@ -5280,9 +5292,11 @@ impl<'o> Checker<'o> {
     }
 
     fn implicit_member(&mut self, expr: &Expr, name: &Ident, expected: Option<&Ty>) -> Ty {
-        let target = match expected {
+        // The base of a chain (`.dateTime.month(.abbreviated).day()`): the chain's expected type.
+        let chained = self.implicit_chains.remove(&expr.id);
+        let target = match expected.or(chained.as_ref()) {
             Some(Ty::Option(inner)) => self.resolve(inner),
-            Some(other) => other.clone(),
+            Some(other) => self.resolve(other),
             None => Ty::Unknown,
         };
         match &target {
@@ -5311,6 +5325,17 @@ impl<'o> Checker<'o> {
                         Ty::Unknown
                     }
                 }
+            }
+            // `.relative`, `.dateTime` where a `DateFormat` is expected: a static member of the
+            // struct, as Swift's implicit member expression reads one.
+            Ty::Adt(def, _)
+                if matches!(self.out.defs[*def].kind, DefKind::Struct(_))
+                    && let Some(ty) = {
+                        let owner = self.out.defs[*def].name.clone();
+                        self.static_member(expr, &owner, name)
+                    } =>
+            {
+                ty
             }
             _ => {
                 self.report(
@@ -5458,6 +5483,22 @@ impl<'o> Checker<'o> {
         match op {
             // `a..<b`, `a...b`: a collection of `Int`s, typed `[Int]`. A `for` over it and its
             // `.map` build no array of their own (section 6.3).
+            // `0...3` where a `ClosedRange<Int>` is expected (`formatted(fractionDigits: 0...3)`):
+            // Swift's range value, its two bounds.
+            BinaryOp::Closed
+                if let Some(Ty::Adt(def, args)) = expected.map(|e| match self.resolve(e) {
+                    Ty::Option(inner) => self.resolve(&inner),
+                    other => other,
+                }) && self.out.defs[def].name == "ClosedRange"
+                    && matches!(self.out.defs[def].kind, DefKind::Struct(_)) =>
+            {
+                let bound = args.first().cloned().unwrap_or(Ty::Int);
+                for side in [lhs, rhs] {
+                    self.expr(side, Some(&bound));
+                }
+                self.out.calls.insert(expr.id, CallRes::Struct(def));
+                Ty::Adt(def, args)
+            }
             BinaryOp::HalfOpen | BinaryOp::Closed => {
                 for side in [lhs, rhs] {
                     let ty = self.expr(side, Some(&Ty::Int));
@@ -7470,6 +7511,23 @@ fn closure_results(stmts: &[Stmt], tail: bool, out: &mut HashSet<ExprId>) {
             }
             _ => {}
         }
+    }
+}
+
+/// The implicit member a chain of member reads and calls starts from (`.dateTime` of
+/// `.dateTime.month(.abbreviated).day()`), if it starts from one.
+fn implicit_root(expr: &Expr) -> Option<&Expr> {
+    let mut at = expr;
+    loop {
+        at = match &at.kind {
+            ExprKind::Call(call) => match &call.callee.kind {
+                ExprKind::Field(object, _) => object,
+                _ => return None,
+            },
+            ExprKind::Field(object, _) => object,
+            ExprKind::ImplicitMember(_) if !std::ptr::eq(at, expr) => return Some(at),
+            _ => return None,
+        };
     }
 }
 

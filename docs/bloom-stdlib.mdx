@@ -25,6 +25,13 @@ compiler's; these extend them, statically dispatched (`crate::extensions`).
 
 One user-perceived character: an extended grapheme cluster, as a string.
 
+### `struct ClosedRange<Bound>`
+
+The values from `lowerBound` up to and including `upperBound`: the value of `a...b` where one is expected (`1234.5.formatted(fractionDigits: 0...2)`). Elsewhere `a...b` is its `Int`s.
+
+- `let lowerBound: Bound`
+- `let upperBound: Bound`
+
 ### `extension String`
 
 - `var characters: [Character]`: The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1` where `count` (UTF-16 units) is 4.
@@ -203,13 +210,13 @@ The length of the vector (`a`, `b`).
 - `var squareRoot: Double`: The square root.
 - `var isFinite: Bool`: Whether the value is neither infinite nor NaN.
 - `var isNaN: Bool`: Whether the value is NaN.
-- `func formatted(digits: Int = 0, locale: String = "") -> String`: The value with `digits` decimal places, as a person in `locale` writes it (`""`: the device's locale): `1234.5.formatted(digits: 1)` is `1,234.5` in English.
+- `func formatted(digits: Int? = none, fractionDigits: ClosedRange<Int>? = none, currency: String? = none, locale: String = "") -> String`: The value as a person in `locale` writes it (`""`: the device's locale), Swift's `FormatStyle` over `Intl.NumberFormat`:  - `formatted(digits: 1)`: exactly that many decimal places (`1234.5` is `1,234.5` in English); - `formatted(fractionDigits: 0...3)`: at least 0 and at most 3 (JS's `toLocaleString()`; `{ maximumFractionDigits: n }` is `0...n`); - `formatted(currency: "USD")`: in that currency (ISO 4217), with its own decimal places unless `fractionDigits` says otherwise (`$1,234.50`).  With none of them, no decimal places.
 - `func compact(locale: String = "") -> String`: Compact (`1.2K`, `3.4M`), as a person in `locale` writes it.
 - `static func random(in from: Double, to: Double) -> Double`: A uniformly distributed value in `from..<to`.
 
 ### `extension Int`
 
-- `func formatted(locale: String = "") -> String`: The value as a person in `locale` writes it (`1234` is `1,234` in English).
+- `func formatted(currency: String? = none, locale: String = "") -> String`: The value as a person in `locale` writes it (`1234` is `1,234` in English); with `currency`, in that currency (`$1,234.00`).
 - `func compact(locale: String = "") -> String`: Compact (`1.2K`, `3.4M`): how Mention shows counts.
 - `var isEven: Bool`: Whether the value is even.
 - `static func random(in from: Int, to: Int) -> Int`: A uniformly distributed integer in `from..<to`.
@@ -222,8 +229,9 @@ A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encod
 as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
 
 ```swift
-Text(post.createdAt.formatted(.relative))   // "2 minutes ago"
-Text(event.startsAt.formatted(.dateTime(.medium, .short)))
+Text(post.createdAt.formatted(.relative))                       // "2 minutes ago"
+Text(event.startsAt.formatted(date: .abbreviated, time: .shortened)) // "Nov 26, 2026, 6:30 PM"
+Text(event.startsAt.formatted(.dateTime.month(.abbreviated).day()))   // "Nov 26"
 ```
 
 ### `struct Date: Equatable`
@@ -240,22 +248,63 @@ A length of time, in seconds (negative: before).
 
 ### `enum DateStyle`
 
-How much of a date or a time a format shows.
+How much of a date `formatted(date:time:)` shows (Swift's `Date.FormatStyle.DateStyle`).
 
-- `case omitted`
-- `case short`
-- `case medium`
-- `case long`
-- `case full`
+- `case omitted`: No date.
+- `case numeric`: "11/26/26" (Intl's `short`).
+- `case abbreviated`: "Nov 26, 2026" (Intl's `medium`).
+- `case long`: "November 26, 2026" (Intl's `long`).
+- `case complete`: "Thursday, November 26, 2026" (Intl's `full`).
 
-### `enum DateFormat`
+### `enum TimeStyle`
 
-How `Date.formatted(_:)` writes a date.
+How much of a time `formatted(date:time:)` shows (Swift's `Date.FormatStyle.TimeStyle`).
 
-- `case relative`: "2 minutes ago", "in 3 days", "yesterday".
-- `case abbreviated`: "2m", "3h", "4d": the short form timelines use.
-- `case dateTime(DateStyle, DateStyle)`: The date and the time, each in its style.
-- `case iso8601`: `2026-11-26T18:30:00.000Z`.
+- `case omitted`: No time.
+- `case shortened`: "6:30 PM" (Intl's `short`).
+- `case standard`: "6:30:00 PM" (Intl's `medium`).
+- `case complete`: "6:30:00 PM UTC" (Intl's `long`).
+
+### `enum DigitStyle`
+
+A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
+
+- `case defaultDigits`
+- `case twoDigits`
+
+### `enum MonthStyle`
+
+How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
+
+- `case defaultDigits`: "11" (Intl's `numeric`).
+- `case twoDigits`: "11" padded: "01" (Intl's `2-digit`).
+- `case wide`: "November" (Intl's `long`).
+- `case abbreviated`: "Nov" (Intl's `short`).
+- `case narrow`: "N" (Intl's `narrow`).
+
+### `enum WeekdayStyle`
+
+How a weekday is written (Swift's `Date.FormatStyle.Symbol.Weekday`).
+
+- `case wide`: "Thursday" (Intl's `long`).
+- `case abbreviated`: "Thu" (Intl's `short`).
+- `case narrow`: "T" (Intl's `narrow`).
+
+### `struct DateFormat: Equatable`
+
+How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.abbreviated`, `.iso8601`, or `.dateTime` and the fields it shows, each in its style, as Intl writes them for the locale (`.dateTime.month(.abbreviated).day()` is "Nov 26" in English, "26 nov" in Spanish).
+
+- `static var relative: DateFormat`: "2 minutes ago", "in 3 days", "yesterday".
+- `static var abbreviated: DateFormat`: "2m", "3h", "4d": the short form timelines use.
+- `static var iso8601: DateFormat`: `2026-11-26T18:30:00.000Z`.
+- `static var dateTime: DateFormat`: The fields named after it (`.dateTime.year().month().day()`); with none, the numeric date and the time ("11/26/2026, 6:30 PM").
+- `func year(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The year: "2026" ("26" with `.twoDigits`).
+- `func month(_ style: MonthStyle = .abbreviated) -> DateFormat`: The month, "Nov" by default.
+- `func day(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The day of the month: "26".
+- `func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat`: The weekday, "Thu" by default.
+- `func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The hour, in the locale's clock: "6 PM".
+- `func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The minute: "30".
+- `func second(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The second: "05".
 
 ### `struct DateComponents: Equatable`
 
@@ -280,11 +329,10 @@ The calendar fields of a date (`month` 1–12, `weekday` 1 = Sunday … 7).
 - `func distance(to other: Date) -> Duration`: How long from this instant to `other` (negative when `other` is earlier).
 - `func isBefore(_ other: Date) -> Bool`: Whether this instant is before `other`.
 - `func isAfter(_ other: Date) -> Bool`: Whether this instant is after `other`.
-- `func formatted(_ format: DateFormat = .dateTime(.medium, .short), locale: String = "", now: Date = Date.now) -> String`: The date written for a person in `locale` (`""`: the device's), relative to `now` for `.relative` and `.abbreviated`.
-- `case .relative:`
-- `case .abbreviated:`
-- `case .dateTime(let date, let time):`
-- `case .iso8601:`
+- `func formatted(_ format: DateFormat = .dateTime, date: DateStyle? = none, time: TimeStyle? = none, locale: String = "", timeZone: String = "", now: Date = Date.now) -> String`: The date written for a person in `locale` (`""`: the device's) and `timeZone` (`""`: the device's; an IANA name, `"UTC"`, `"Asia/Tokyo"`): in `format`, or, with `date:` or `time:`, in those styles (Swift's `formatted(date: .abbreviated, time: .shortened)`). `.relative` and `.abbreviated` are relative to `now`.
+- `case "relative":`
+- `case "abbreviated":`
+- `case "iso8601":`
 - `func components(utc: Bool = false) -> DateComponents`: The calendar fields in the device's time zone (in UTC with `utc`).
 
 ### `extension Duration`

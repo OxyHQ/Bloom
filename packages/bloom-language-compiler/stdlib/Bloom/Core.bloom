@@ -29,6 +29,13 @@ extern module "./runtime" {
 /// One user-perceived character: an extended grapheme cluster, as a string.
 public type Character = String
 
+/// The values from `lowerBound` up to and including `upperBound`: the value of `a...b` where one
+/// is expected (`1234.5.formatted(fractionDigits: 0...2)`). Elsewhere `a...b` is its `Int`s.
+public struct ClosedRange<Bound> {
+  public let lowerBound: Bound
+  public let upperBound: Bound
+}
+
 // ---- String ---------------------------------------------------------------------
 
 extension String {

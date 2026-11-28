@@ -1,0 +1,11 @@
+import { Double$formatted, Int$formatted } from "../../.bloom/std/Bloom/Math.bloom";
+import { type Date, Date$formatted, DateFormat$$get$dateTime, DateFormat$$get$relative, DateFormat$day, DateFormat$month } from "../../.bloom/std/Bloom/Time.bloom";
+
+export function amounts(x: number, n: number): readonly string[] {
+return [Double$formatted(x, undefined, { lowerBound: 0, upperBound: 3 }), Double$formatted(x, undefined, undefined, "EUR", "es"), x.toFixed(2), Int$formatted(n, "JPY", "ja")];
+}
+
+export function days(d: Date): readonly string[] {
+return [Date$formatted(d, DateFormat$day(DateFormat$month(DateFormat$$get$dateTime(), "abbreviated")), undefined, undefined, "en", "UTC"), Date$formatted(d, undefined, "abbreviated", "shortened"), Date$formatted(d, DateFormat$$get$relative())];
+}
+

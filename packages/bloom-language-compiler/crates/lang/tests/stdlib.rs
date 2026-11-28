@@ -759,3 +759,36 @@ fn the_ui_kits_image_specs_are_generated_from_the_image_interface() {
         );
     }
 }
+
+/// Swift's FormatStyle over Intl: `0...3` is a `ClosedRange` where one is expected, and
+/// `.dateTime.month(.abbreviated).day()` an implicit member chain from `DateFormat.dateTime`.
+const FORMATS: &str = r#"public func amounts(_ x: Float, _ n: Int) -> [String] {
+  [
+    x.formatted(fractionDigits: 0...3),
+    x.formatted(currency: "EUR", locale: "es"),
+    x.formatted(fractionDigits: 2),
+    n.formatted(currency: "JPY", locale: "ja"),
+  ]
+}
+
+public func days(_ d: Date) -> [String] {
+  [
+    d.formatted(.dateTime.month(.abbreviated).day(), locale: "en", timeZone: "UTC"),
+    d.formatted(date: .abbreviated, time: .shortened),
+    d.formatted(.relative),
+  ]
+}
+"#;
+
+#[test]
+fn format_styles_compile_to_intl() {
+    let root = package("formats", &[("Sources/Model/Formats.bloom", FORMATS)]);
+    let path = root.join("Sources/Model/Formats.bloom");
+    let out = compile(FORMATS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/format-style.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
