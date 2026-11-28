@@ -1,0 +1,22 @@
+import { Embed, VStack, inlineView, toElement } from "@oxy.so/bloom-language";
+import { VirtualList } from "@oxy.so/bloom-language/list";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { Rows } from "@/store";
+
+const ITEMS = ["tabs", "posts"] as const;
+
+export interface ProfileProps {
+  readonly tabs?: Child | undefined;
+  readonly content?: Child | undefined;
+}
+export const Profile = inlineView(function Profile(props: ProfileProps) {
+"use no memo";
+const { tabs = undefined, content = undefined } = props;
+return VStack(Embed($jsx(Rows, { count: 2, renderItem: (index: number) => (index === 0) ? (tabs == null ? null : toElement(tabs)) : (content == null ? null : toElement(content)), header: (content == null ? null : toElement(content)) } satisfies ComponentProps<typeof Rows>)), VirtualList(ITEMS, (arg: { item: "tabs" | "posts"; index: number }) => {
+const { item } = arg;
+return (item === "tabs") ? tabs : content;
+}));
+});
+

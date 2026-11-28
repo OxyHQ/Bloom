@@ -25,7 +25,7 @@ const { data } = props;
 let $t0;
 if ($[0] !== data) {
 const empty = (data.length === 0) ? $view0 : undefined;
-$t0 = Embed($jsx(GridList, { data: data, renderCell: ((...$a: Parameters<typeof $renderCell>) => toElement($renderCell(...$a))), emptyComponent: (empty == null ? undefined : toElement(empty)), header: toElement($view1) } satisfies ComponentProps<typeof GridList>));
+$t0 = Embed($jsx(GridList, { data: data, renderCell: ((...$a: Parameters<typeof $renderCell>) => toElement($renderCell(...$a))), emptyComponent: (empty == null ? null : toElement(empty)), header: toElement($view1) } satisfies ComponentProps<typeof GridList>));
 $[0] = data;
 $[1] = $t0;
 } else {

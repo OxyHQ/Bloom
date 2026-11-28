@@ -2536,7 +2536,7 @@ impl Checker<'_> {
     }
 
     /// The type of a `VirtualList`'s row closure written in place with one untyped parameter
-    /// (`{ row in … }`): `(VirtualListRow<T>) -> View`, `T` the items' element, so `row.item` is
+    /// (`{ row in … }`): `(VirtualListRow<T>) -> View?`, `T` the items' element, so `row.item` is
     /// the item and `row.index` its index. `None` for any other row (a function value, a typed
     /// closure), which TypeScript checks against `VirtualListRowFn<T>`.
     fn virtual_list_row(&mut self, call: &Call, row: &Expr) -> Option<Ty> {
@@ -2570,7 +2570,10 @@ impl Checker<'_> {
                 optional: false,
                 rest: false,
             }],
-            ret: Ty::View(None),
+            // `VirtualListRowFn<T>` gives a `Child`, which may be nothing: a row may be `none`
+            // (Swift's `Optional<View>` is a view), `if item == "tabs" { stickyTabs } else { … }`
+            // of optional views.
+            ret: Ty::Option(Box::new(Ty::View(None))),
             is_async: false,
             generics: 0,
             ts: false,
