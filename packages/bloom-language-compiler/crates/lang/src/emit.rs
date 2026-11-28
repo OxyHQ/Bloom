@@ -4280,6 +4280,9 @@ impl<'a> Emitter<'a> {
 
     fn method_lowered(&mut self, call: &Call, recv: Recv, name: &str, object: Frag, optional: bool) -> Frag {
         let dot = if optional { "?." } else { "." };
+        // `xs.enumerated().map { (i, x) in … }` fused into `xs.map((x, i) => …)`: the closure
+        // takes the index too, hoisted or not.
+        let fused = self.enumerated && recv == Recv::List && name == "map";
         let mut args: Vec<Frag> = self.args(call);
         if let Some(trailing) = &call.trailing {
             args.push(self.closure(trailing));
@@ -4352,7 +4355,7 @@ impl<'a> Emitter<'a> {
                 out
             }
             (Recv::List, "map" | "filter" | "find" | "flatMap") => {
-                let f = args.first().map(|a| lambda(a, 1)).unwrap_or_default();
+                let f = args.first().map(|a| lambda(a, if fused { 2 } else { 1 })).unwrap_or_default();
                 call_on(object, name, vec![f])
             }
             (Recv::List, "any" | "all") => {
