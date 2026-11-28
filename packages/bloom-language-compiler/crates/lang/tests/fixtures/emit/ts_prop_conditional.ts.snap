@@ -22,7 +22,7 @@ const { drawing, routeHeader = undefined } = props;
 const [height, setHeight] = useState<number>(0);
 let $t0;
 if ($[0] !== drawing || $[1] !== routeHeader || $[2] !== height) {
-$t0 = Embed(($render) => $jsx(Screen, { header: drawing ? toElement($view0) : (routeHeader == null ? null : toElement(routeHeader)), children: $render(Embed(($render) => $jsx(RNView, { onLayout: IS_WEB ? undefined : ((event) => {
+$t0 = Embed(($render) => $jsx(Screen, { header: drawing ? toElement($view0) : (routeHeader == null ? undefined : toElement(routeHeader)), children: $render(Embed(($render) => $jsx(RNView, { onLayout: IS_WEB ? undefined : ((event) => {
 setHeight((event.nativeEvent.layout.height satisfies number));
 }), children: $render(Text(`${height}`)) } satisfies ComponentProps<typeof RNView>))) } satisfies ComponentProps<typeof Screen>));
 $[0] = drawing;
