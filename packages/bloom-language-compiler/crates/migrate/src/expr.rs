@@ -135,6 +135,10 @@ impl Tr<'_> {
                     format!("({inner})")
                 }
             }
+            Expression::TSAsExpression(a) if self.json_casts.contains(&a.span.start) => {
+                let value = self.expr(&a.expression);
+                format!("{value}.jsValue")
+            }
             Expression::TSAsExpression(a) => {
                 // `as const` says nothing at run time; `as T` neither, so it is dropped
                 // under review (`bloomc check --tsc` checks the value where it lands).
@@ -598,6 +602,10 @@ impl Tr<'_> {
     }
 
     fn static_member(&mut self, object: &Expression, property: &str, optional: bool, _span: Span) -> String {
+        // `err.response?.data?.error` on a thrown value read as TS shapes it (`scan_json_errors`).
+        if let Some(text) = self.json_read(object, property) {
+            return text;
+        }
         // `Number.NaN`, `Number.MAX_SAFE_INTEGER`, …: the stdlib's or the number itself.
         if let Expression::Identifier(o) = object.without_parentheses()
             && o.name == "Number"
@@ -640,6 +648,43 @@ impl Tr<'_> {
         let object_text = if optional { self.optional_read(object) } else { self.expr(object) };
         let property = if property == "length" { "count" } else { property };
         format!("{object_text}{dot}{property}")
+    }
+
+    /// `err.a?.b` with `err` a thrown value's `jsValue`: `err?["a"]?["b"]`, and its leaf's value
+    /// where TS typed it (`?.string`).
+    fn json_read(&mut self, object: &Expression, property: &str) -> Option<String> {
+        let mut path = vec![property.to_string()];
+        let mut at = object.without_parentheses();
+        loop {
+            match at {
+                Expression::StaticMemberExpression(m) => {
+                    path.push(m.property.name.to_string());
+                    at = m.object.without_parentheses();
+                }
+                Expression::ChainExpression(c) => match &c.expression {
+                    oxc_ast::ast::ChainElement::StaticMemberExpression(m) => {
+                        path.push(m.property.name.to_string());
+                        at = m.object.without_parentheses();
+                    }
+                    _ => return None,
+                },
+                Expression::Identifier(id) => {
+                    let paths = self.json_errors.get(id.name.as_str())?;
+                    path.reverse();
+                    let leaf = *paths.get(&path.join("."))?;
+                    let root = self.ident(&id.name, id.span);
+                    let reads: String = path.iter().map(|k| format!("?[{}]", quote(k))).collect();
+                    let value = match leaf {
+                        "string" => "?.string",
+                        "number" => "?.number",
+                        "bool" => "?.bool",
+                        _ => "",
+                    };
+                    return Some(format!("{root}{reads}{value}"));
+                }
+                _ => return None,
+            }
+        }
     }
 
     fn binary(&mut self, b: &oxc_ast::ast::BinaryExpression) -> String {

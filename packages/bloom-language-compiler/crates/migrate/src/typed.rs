@@ -423,6 +423,27 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     _ => None,
                 }
             }
+            // `xs.filter((x): x is T => Boolean(x))` the codemod wrote `compactMap { x in !!x ? x :
+            // none }`, on a TS array (a `.map(…)` of a TS value): JS's `filter` again, which is what
+            // the TS ran, `filter { x in !!x }`.
+            ("B0601", "compactMap")
+                if d.message.contains("is a Bloom list's") && source[..start].ends_with('.') =>
+            {
+                (|| {
+                    let rest = &source[end..];
+                    let open = rest.find('{').filter(|i| rest[..*i].trim().is_empty())?;
+                    let close = rest[open..].find('}').map(|i| open + i)?;
+                    let body = rest[open + 1..close].trim();
+                    let (param, value) = body.split_once(" in ")?;
+                    let param = param.trim();
+                    let truthy = format!("!!{param} ? {param} : none");
+                    let present = format!("{param} != none ? {param} : none");
+                    let value = value.trim();
+                    (param.chars().all(|c| c.is_alphanumeric() || c == '_')
+                        && (value == truthy || value == present))
+                        .then(|| (start, end + close + 1, format!("filter {{ {param} in !!{param} }}")))
+                })()
+            }
             // `xs.enumerated()`, `names.joined(", ")` on a TS value Bloom could not type (a
             // `Foreign<"P['k']">` member, a zustand selector's result): the list method is
             // Bloom's, so the binding is given its Bloom type, as bloomc's help says. The

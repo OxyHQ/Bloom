@@ -2766,11 +2766,15 @@ impl Tr<'_> {
 
     /// An expression in statement position: a setter call is an assignment.
     /// Whether `e` (a branch of a statement's `?:` or `&&`) calls a state setter.
+    /// (Or calls a local async function, whose promise no one reads: blocked's `onPress={() =>
+    /// !isBlocking && handleBlock(user)}`. An arrow's body may be a value, `find((t) => a && f(t))`,
+    /// so other calls keep their `&&`.)
     fn writes_state(&self, e: &Expression) -> bool {
         match e.without_parentheses() {
             Expression::CallExpression(call) => matches!(
                 &call.callee,
                 Expression::Identifier(id) if self.scope.setters.contains_key(id.name.as_str())
+                    || self.async_fns.contains(id.name.as_str())
             ),
             Expression::ConditionalExpression(c) => {
                 self.writes_state(&c.consequent) || self.writes_state(&c.alternate)

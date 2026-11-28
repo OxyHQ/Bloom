@@ -235,6 +235,13 @@ pub struct Tr<'s> {
     /// The object literals (by start) a `const` binds that the file reads by a key that is not a
     /// field name (`pages["edit-profile"]`, `PRESETS[key]`): written as dictionaries.
     pub keyed_objects: HashSet<u32>,
+    /// `const err = error as { response?: { data?: … } }`: a thrown value read as TS shapes it,
+    /// by the binding's name: each path's leaf (`"string"`, `"number"`, `"bool"`, `"json"`).
+    pub json_errors: HashMap<String, HashMap<String, &'static str>>,
+    /// The `as { … }` casts (by start) written as the error's `jsValue`.
+    pub json_casts: HashSet<u32>,
+    /// The file's `async` functions and arrows (`const f = async () => …`, `useCallback(async …)`).
+    pub async_fns: HashSet<String>,
     /// The module constant initialiser being translated (`Tr::constant`): an `as const` list
     /// that is one is the module constant itself.
     pub module_init: Option<Span>,
@@ -459,6 +466,9 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         pending_equal: None,
         gate_imports: Vec::new(),
         keyed_objects: HashSet::new(),
+        json_errors: HashMap::new(),
+        json_casts: HashSet::new(),
+        async_fns: HashSet::new(),
         module_init: None,
         hoisted: Vec::new(),
         hoisted_names: HashSet::new(),
@@ -568,6 +578,8 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     tr.scan_tanstack(&program.body);
     tr.scan_throwing(&program);
     tr.scan_keyed_objects(&program);
+    tr.scan_json_errors(&program);
+    tr.scan_async_fns(&program);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -1331,6 +1343,104 @@ impl<'s> Tr<'s> {
                 self.keyed_objects.insert(at);
             }
         }
+    }
+
+    /// `const err = e as { response?: { data?: { error?: string } } }` on a caught value (an
+    /// Axios error read as TS shapes it): `err` is `e.jsValue` (the stdlib's lenient JSON of the
+    /// thrown value) and `err.response?.data?.error` is `err?["response"]?["data"]?["error"]?.string`.
+    fn scan_json_errors(&mut self, program: &oxc_ast::ast::Program) {
+        use oxc_ast::ast::{TSSignature, TSType};
+        use oxc_ast_visit::Visit;
+        fn paths(ty: &TSType, at: &str, out: &mut HashMap<String, &'static str>) -> bool {
+            let TSType::TSTypeLiteral(lit) = ty else { return false };
+            for member in &lit.members {
+                let TSSignature::TSPropertySignature(p) = member else { return false };
+                let name = match &p.key {
+                    oxc_ast::ast::PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                    _ => return false,
+                };
+                let path = if at.is_empty() { name.to_string() } else { format!("{at}.{name}") };
+                let Some(ann) = &p.type_annotation else { return false };
+                let leaf = match &ann.type_annotation {
+                    TSType::TSStringKeyword(_) => "string",
+                    TSType::TSNumberKeyword(_) => "number",
+                    TSType::TSBooleanKeyword(_) => "bool",
+                    TSType::TSTypeLiteral(_) => {
+                        if !paths(&ann.type_annotation, &path, out) {
+                            return false;
+                        }
+                        "json"
+                    }
+                    _ => "json",
+                };
+                out.insert(path, leaf);
+            }
+            true
+        }
+        #[derive(Default)]
+        struct Scan {
+            found: Vec<(String, HashMap<String, &'static str>, u32)>,
+        }
+        impl<'a> Visit<'a> for Scan {
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &d.id
+                    && let Some(Expression::TSAsExpression(a)) =
+                        d.init.as_ref().map(|e| e.without_parentheses())
+                    && matches!(a.expression.without_parentheses(), Expression::Identifier(_))
+                {
+                    let mut out = HashMap::new();
+                    if paths(&a.type_annotation, "", &mut out) && out.keys().any(|k| k == "response") {
+                        self.found.push((id.name.to_string(), out, a.span.start));
+                    }
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+        }
+        let mut scan = Scan::default();
+        scan.visit_program(program);
+        for (name, paths, at) in scan.found {
+            self.json_errors.insert(name, paths);
+            self.json_casts.insert(at);
+        }
+    }
+
+    fn scan_async_fns(&mut self, program: &oxc_ast::ast::Program) {
+        use oxc_ast_visit::Visit;
+        fn is_async(e: &Expression) -> bool {
+            match e.without_parentheses() {
+                Expression::ArrowFunctionExpression(a) => a.r#async,
+                Expression::FunctionExpression(f) => f.r#async,
+                // `useCallback(async () => …, deps)`
+                Expression::CallExpression(c) => {
+                    c.arguments.first().and_then(|a| a.as_expression()).is_some_and(is_async)
+                }
+                _ => false,
+            }
+        }
+        struct Scan<'s>(&'s mut HashSet<String>);
+        impl<'a> Visit<'a> for Scan<'_> {
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &d.id
+                    && d.init.as_ref().is_some_and(is_async)
+                {
+                    self.0.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+            fn visit_function(
+                &mut self,
+                f: &oxc_ast::ast::Function<'a>,
+                flags: oxc_syntax::scope::ScopeFlags,
+            ) {
+                if f.r#async
+                    && let Some(id) = &f.id
+                {
+                    self.0.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_function(self, f, flags);
+            }
+        }
+        Scan(&mut self.async_fns).visit_program(program);
     }
 
     fn scan_throwing(&mut self, program: &oxc_ast::ast::Program) {
