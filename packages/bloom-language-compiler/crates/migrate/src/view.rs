@@ -1995,7 +1995,26 @@ impl Tr<'_> {
     ) -> String {
         let saved = self.scope.clone();
         let labels = self.labelled.get(name).cloned();
-        let (params, prelude) = self.fn_params(params, labels);
+        let js_options = self.js_options.get(name).cloned();
+        let (params, prelude) = match (&labels, js_options.as_ref().and_then(|o| o.as_deref())) {
+            // `f(input: Options)` read as `input.x`: labels, and `input` the record of them.
+            (Some(labels), Some(record)) => {
+                let mut out = Vec::new();
+                let mut fields = Vec::new();
+                for (key, ty, optional) in labels {
+                    let label = self.bind_param(key, Span::default());
+                    out.push(if *optional {
+                        format!("{label}: {} = none", optional_ty(ty))
+                    } else {
+                        format!("{label}: {ty}")
+                    });
+                    fields.push(format!("{key}: {label}"));
+                }
+                let record = self.bind(record, Span::default());
+                (out.join(", "), vec![format!("let {record} = {{ {} }}", fields.join(", "))])
+            }
+            _ => self.fn_params(params, labels),
+        };
         let ret = match ret {
             Some(t) => self.ret_type(t, is_async),
             None => self.infer_ret(body),
@@ -2067,7 +2086,8 @@ impl Tr<'_> {
         let keyword = if is_async { "async fn" } else { "fn" };
         let ret = ret.map(|r| format!(" -> {r}")).unwrap_or_default();
         let throws = if throws { " throws" } else { "" };
-        format!("{vis}{keyword} {name}({params}){throws}{ret} {{\n{text}\n}}")
+        let attr = if js_options.is_some() { "@jsOptions " } else { "" };
+        format!("{attr}{vis}{keyword} {name}({params}){throws}{ret} {{\n{text}\n}}")
     }
 
     /// A function's parameters, and the `let`s that destructure a typed object parameter.
