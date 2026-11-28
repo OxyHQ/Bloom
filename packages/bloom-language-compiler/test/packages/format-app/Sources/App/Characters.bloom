@@ -1,0 +1,18 @@
+// A string counts user-perceived characters (Swift's), and `utf16` is JS's units.
+
+public func charCount(_ s: String) -> Int { s.count }
+public func utf16Count(_ s: String) -> Int { s.utf16.count }
+public func charSlice(_ s: String, _ a: Int, _ b: Int) -> String { s.slice(a, b) }
+public func utf16Slice(_ s: String, _ a: Int, _ b: Int) -> String { s.utf16.slice(a, b) }
+public func charIndex(_ s: String, _ sub: String) -> Int? { s.firstIndex(of: sub) }
+public func charLastIndex(_ s: String, _ sub: String) -> Int? { s.lastIndex(of: sub) }
+public func utf16Index(_ s: String, _ sub: String) -> Int? { s.utf16.firstIndex(of: sub) }
+public func charPadded(_ s: String, _ n: Int) -> String { s.paddingStart(to: n, with: "·") }
+public func utf16Padded(_ s: String, _ n: Int) -> String { s.utf16.paddingEnd(to: n, with: "-") }
+public func optionalCount(_ s: String?) -> Int? { s?.count }
+
+/// Where `@handle` starts, and the text from there (a match's `start` indexes `slice`).
+public func handleAt(_ s: String) -> [String] {
+  guard let m = s.firstMatch(of: try! Regex("@\\w+")) else { return [] }
+  return ["\(m.start)", "\(m.end)", s.slice(m.start, m.end)]
+}

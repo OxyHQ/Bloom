@@ -1,4 +1,4 @@
-import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
+import { Text, VStack, characterCount as $characterCount, inlineView } from "@oxy.so/bloom-language";
 function $index(index: number): number | undefined {
   return index < 0 ? undefined : index;
 }
@@ -36,7 +36,7 @@ return ids.map((x, i) => [i, x] as const);
 function longest(ids: readonly string[]): number {
 let best = 0;
 for (const [i, id] of ids.entries()) {
-best = (id.length > best) ? i : best;
+best = ($characterCount(id) > best) ? i : best;
 }
 return best;
 }

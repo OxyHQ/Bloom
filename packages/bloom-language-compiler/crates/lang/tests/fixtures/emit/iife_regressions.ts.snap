@@ -1,5 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 import { useMemo } from "react";
 import { type AvatarItem } from "@/corpus";
 
@@ -17,7 +18,7 @@ return all;
 
 function heading(section: Section, wide: boolean): number {
 const first = wide ? ({ title: section.title }) : section.data.map((d: string) => ({ title: d, more: true }))[0]!;
-return first.title.length;
+return $characterCount(first.title);
 }
 
 interface Member {

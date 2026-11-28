@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, characterCount as $characterCount, view } from "@oxy.so/bloom-language";
 
 export type Tone = "calm" | "loud";
 
@@ -54,7 +54,7 @@ label = $[6];
 }
 let $t0;
 if ($[7] !== label || $[8] !== inset || $[9] !== side || $[10] !== corner) {
-$t0 = VStack(Text(label + "!").padding("leading", inset).frame({ width: side, height: side }).corner(corner), Text(`${label.length}`));
+$t0 = VStack(Text(label + "!").padding("leading", inset).frame({ width: side, height: side }).corner(corner), Text(`${$characterCount(label)}`));
 $[7] = label;
 $[8] = inset;
 $[9] = side;

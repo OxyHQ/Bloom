@@ -11,6 +11,12 @@ extern module "./runtime" {
   private func replaceAll(_ s: String, _ target: String, _ replacement: String) -> String
   private func padStart(_ s: String, _ length: Int, _ pad: String) -> String
   private func padEnd(_ s: String, _ length: Int, _ pad: String) -> String
+  private func utf16Length(_ s: String) -> Int
+  private func utf16Slice(_ s: String, _ start: Int, _ end: Int) -> String
+  private func utf16IndexOf(_ s: String, _ sub: String, _ from: Int) -> Int
+  private func utf16LastIndexOf(_ s: String, _ sub: String) -> Int
+  private func utf16PadStart(_ s: String, _ length: Int, _ pad: String) -> String
+  private func utf16PadEnd(_ s: String, _ length: Int, _ pad: String) -> String
   private func repeatString(_ s: String, _ count: Int) -> String
   private func compareStrings(_ a: String, _ b: String, _ locale: String) -> Int
   private func trimStart(_ s: String) -> String
@@ -47,15 +53,31 @@ public struct UniqueID: Equatable, Hashable {
   public let string: String
 }
 
+/// A string's UTF-16 code units (Swift's `String.UTF16View`): JS's own lengths and offsets, for
+/// what counts them (a server's length limit, a TS API's offsets). `s.utf16.count` is JS's
+/// `s.length`; it costs nothing (`@Transparent`: the string itself at run time).
+@Transparent
+public struct UTF16View: Equatable, Hashable {
+  /// The string viewed.
+  public let string: String
+}
+
 // ---- String ---------------------------------------------------------------------
+//
+// A string counts user-perceived characters (extended grapheme clusters), as Swift's does, on
+// every backend: `"👍🏽".count == 1`, and `slice`, `firstIndex(of:)`, `prefix`, padding and a
+// regex match's `start` are in characters too. `s.utf16` is the string's UTF-16 units
+// (`"👍🏽".utf16.count == 4`, JS's `length`).
 
 extension String {
-  /// The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1`
-  /// where `count` (UTF-16 units) is 4.
+  /// The user-perceived characters: `"👍🏽".characters == ["👍🏽"]`.
   public var characters: [Character] { graphemes(self) }
 
-  /// How many user-perceived characters the string has.
-  public var characterCount: Int { graphemes(self).count }
+  /// How many user-perceived characters the string has: `count`, by its older name.
+  public var characterCount: Int { self.count }
+
+  /// The string's UTF-16 code units: `s.utf16.count` is JS's `length`.
+  public var utf16: UTF16View { UTF16View(string: self) }
 
   /// Whether the string is empty or only whitespace.
   public var isBlank: Bool { self.trimmed().isEmpty }
@@ -66,13 +88,13 @@ extension String {
   /// Whether the string ends with `suffix`.
   public func hasSuffix(_ suffix: String) -> Bool { self.endsWith(suffix) }
 
-  /// The UTF-16 offset of the first `sub` at or after `from`, or `none`.
+  /// The character offset of the first `sub` at or after character `from`, or `none`.
   public func firstIndex(of sub: String, from: Int = 0) -> Int? {
     let at = indexOf(self, sub, from)
     return at < 0 ? none : at
   }
 
-  /// The UTF-16 offset of the last `sub`, or `none`.
+  /// The character offset of the last `sub`, or `none`.
   public func lastIndex(of sub: String) -> Int? {
     let at = lastIndexOf(self, sub)
     return at < 0 ? none : at
@@ -88,12 +110,12 @@ extension String {
 
   /// The string without `prefix`, when it starts with it.
   public func droppingPrefix(_ prefix: String) -> String {
-    self.startsWith(prefix) ? self.slice(prefix.count, self.count) : self
+    self.startsWith(prefix) ? self.utf16.slice(prefix.utf16.count, self.utf16.count) : self
   }
 
   /// The string without `suffix`, when it ends with it.
   public func droppingSuffix(_ suffix: String) -> String {
-    self.endsWith(suffix) ? self.slice(0, self.count - suffix.count) : self
+    self.endsWith(suffix) ? self.utf16.slice(0, self.utf16.count - suffix.utf16.count) : self
   }
 
   /// The first `n` characters (user-perceived).
@@ -121,10 +143,10 @@ extension String {
   /// Trailing whitespace removed.
   public func trimmingEnd() -> String { trimEnd(self) }
 
-  /// Padded at the start with `pad` to `length` UTF-16 units.
+  /// Padded at the start with `pad`'s characters to `length` characters.
   public func paddingStart(to length: Int, with pad: String = " ") -> String { padStart(self, length, pad) }
 
-  /// Padded at the end with `pad` to `length` UTF-16 units.
+  /// Padded at the end with `pad`'s characters to `length` characters.
   public func paddingEnd(to length: Int, with pad: String = " ") -> String { padEnd(self, length, pad) }
 
   /// The first character upper-cased.
@@ -142,6 +164,50 @@ extension String {
 
   /// `s` repeated `count` times.
   public static func repeating(_ s: String, count: Int) -> String { repeatString(s, count) }
+}
+
+
+extension UTF16View {
+  /// How many UTF-16 code units the string has (JS's `length`).
+  public var count: Int { utf16Length(self.string) }
+
+  /// Whether the string has no code units.
+  public var isEmpty: Bool { utf16Length(self.string) == 0 }
+
+  /// The units from `start` up to `end`, as a string (JS's `slice`: a negative offset counts
+  /// from the end).
+  public func slice(_ start: Int, _ end: Int) -> String { utf16Slice(self.string, start, end) }
+
+  /// The first `n` units, as a string.
+  public func prefix(_ n: Int) -> String { utf16Slice(self.string, 0, n < 0 ? 0 : n) }
+
+  /// The last `n` units, as a string.
+  public func suffix(_ n: Int) -> String {
+    let all = utf16Length(self.string)
+    return n <= 0 ? "" : utf16Slice(self.string, n >= all ? 0 : all - n, all)
+  }
+
+  /// The UTF-16 offset of the first `sub` at or after unit `from`, or `none` (JS's `indexOf`).
+  public func firstIndex(of sub: String, from: Int = 0) -> Int? {
+    let at = utf16IndexOf(self.string, sub, from)
+    return at < 0 ? none : at
+  }
+
+  /// The UTF-16 offset of the last `sub`, or `none` (JS's `lastIndexOf`).
+  public func lastIndex(of sub: String) -> Int? {
+    let at = utf16LastIndexOf(self.string, sub)
+    return at < 0 ? none : at
+  }
+
+  /// The string padded at the start with `pad` to `length` units (JS's `padStart`).
+  public func paddingStart(to length: Int, with pad: String = " ") -> String {
+    utf16PadStart(self.string, length, pad)
+  }
+
+  /// The string padded at the end with `pad` to `length` units (JS's `padEnd`).
+  public func paddingEnd(to length: Int, with pad: String = " ") -> String {
+    utf16PadEnd(self.string, length, pad)
+  }
 }
 
 // ---- Array ------------------------------------------------------------------------

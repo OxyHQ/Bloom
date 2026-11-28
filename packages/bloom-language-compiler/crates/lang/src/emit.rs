@@ -3132,7 +3132,7 @@ impl<'a> Emitter<'a> {
             Some(FieldRes::Extension(_) | FieldRes::Witness { .. }) => true,
             Some(FieldRes::Prop { recv, name: prop }) => !matches!(
                 (recv, *prop),
-                (Recv::Str | Recv::List, "count")
+                (Recv::List, "count")
                     | (Recv::List, "first" | "last")
                     | (Recv::JsMap | Recv::Set, "count")
                     | (Recv::Result, _)
@@ -3222,7 +3222,12 @@ impl<'a> Emitter<'a> {
             }
             Some(FieldRes::Index(i)) => index(object, &i.to_string()),
             Some(FieldRes::Prop { recv, name: prop }) => match (recv, prop) {
-                (Recv::Str | Recv::List, "count") => suffix(object, "length"),
+                // A string counts its characters (Swift's): `s.utf16.count` is JS's `length`.
+                (Recv::Str, "count") => {
+                    self.import_name(LANGUAGE, "characterCount as $characterCount");
+                    object.wrap("$characterCount(", ")")
+                }
+                (Recv::List, "count") => suffix(object, "length"),
                 (Recv::Str | Recv::List, "isEmpty") => suffix(object, "length").wrap("(", " === 0)"),
                 (Recv::List, "first") => index(object, "0"),
                 (Recv::List, "last") => {
@@ -4277,7 +4282,7 @@ impl<'a> Emitter<'a> {
         // `x?.m(…)`: a JS method is `x?.m(…)`; any other lowering reads `x` once, then
         // runs only when it is not `none`.
         let direct = match recv {
-            Recv::Str => !matches!(name, "toInt" | "toFloat"),
+            Recv::Str => !matches!(name, "toInt" | "toFloat" | "slice"),
             Recv::List => {
                 matches!(
                     name,
@@ -4393,6 +4398,15 @@ impl<'a> Emitter<'a> {
         };
         match (recv, name) {
             (Recv::Str, "contains") => call_on(object, "includes", args),
+            // In characters, as `count` is (JS's `slice` on the `utf16` view).
+            (Recv::Str, "slice") => {
+                self.import_name(LANGUAGE, "characterSlice as $characterSlice");
+                let mut values = vec![object];
+                values.extend(args);
+                let mut out = Frag::of("$characterSlice(");
+                out.f(Frag::join(values, ", ")).s(")");
+                out
+            }
             (Recv::Str, "lowercased") => call_on(object, "toLowerCase", args),
             (Recv::Str, "uppercased") => call_on(object, "toUpperCase", args),
             (Recv::Str, "trimmed") => call_on(object, "trim", args),

@@ -1567,7 +1567,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "generate": "node scripts/generate-signatures.mjs && node scripts/generate-entries.mjs && node scripts/generate.mjs && node scripts/generate-type-checks.mjs && node scripts/generate-reference.mjs",
+    "generate": "node scripts/generate-signatures.mjs && node scripts/generate-entries.mjs && node scripts/generate.mjs && node scripts/generate-type-checks.mjs && node scripts/generate-reference.mjs && node scripts/generate-graphemes.mjs",
     "build": "bob build",
     "typescript": "tsc --noEmit -p . && node scripts/verify-completions.mjs",
     "test": "jest && jest -c parity/jest.config.js",

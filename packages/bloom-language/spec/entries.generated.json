@@ -72,6 +72,11 @@
       "actions",
       "animate",
       "asymmetric",
+      "characterBoundaries",
+      "characterCount",
+      "characterOffset",
+      "characterSlice",
+      "characters",
       "clear",
       "defineEnvironment",
       "defineKeyframes",
@@ -94,6 +99,7 @@
       "useMotionValue",
       "useNamespace",
       "useObserved",
+      "utf16Offset",
       "view"
     ],
     "router": [

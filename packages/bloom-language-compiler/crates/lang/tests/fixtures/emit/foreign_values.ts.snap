@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, RawText, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
+import { Button, RawText, Text, VStack, characterCount as $characterCount, inlineView, view } from "@oxy.so/bloom-language";
 import { GroupedSectionItem } from "@oxy.so/bloom-language/containers";
 import { useInsets, useList, useMods, usePlayer } from "@/hooks/useInsets";
 
@@ -104,7 +104,7 @@ interface Avatar {
 }
 
 function width(s: string): number {
-return s.length;
+return $characterCount(s);
 }
 
 export function named(u: Author): number {

@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 import { type SubmenuRows } from "@/types/rows";
 import { type Block, type Variant, type Prefs, PREF_KEYS } from "@/types/rows";
 
@@ -5,9 +6,9 @@ export function count(rows: SubmenuRows): number {
 if (rows.kind === "sources") {
 return rows.sources.length;
 } else if (rows.kind === "replySettings") {
-return rows.postId.length;
+return $characterCount(rows.postId);
 } else {
-return (rows.label ?? rows.laneId).length;
+return $characterCount((rows.label ?? rows.laneId));
 }
 }
 
