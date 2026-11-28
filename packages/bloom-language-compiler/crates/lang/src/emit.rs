@@ -548,6 +548,12 @@ fn helper_text(name: &str) -> &'static str {
         "cancellation" => {
             "function $cancellation(signal: AbortSignal | undefined): Promise<void> {\n  return new Promise((resolve) => {\n    if (signal === undefined || signal.aborted) resolve();\n    else signal.addEventListener(\"abort\", () => resolve(), { once: true });\n  });\n}"
         }
+        "dropLast" => {
+            "function $dropLast<T>(items: readonly T[], n: number): readonly T[] {\n  return items.slice(0, Math.max(0, items.length - Math.max(0, n)));\n}"
+        }
+        "suffix" => {
+            "function $suffix<T>(items: readonly T[], n: number): readonly T[] {\n  return n <= 0 ? [] : items.slice(Math.max(0, items.length - n));\n}"
+        }
         "compact" => {
             "function $compact<T>(items: readonly (T | null | undefined)[]): readonly T[] {\n  return items.filter((item): item is T => item != null);\n}"
         }
@@ -4459,7 +4465,22 @@ impl<'a> Emitter<'a> {
                 values.extend(args);
                 call_on(object, "slice", values)
             }
-            (Recv::List, "dropFirst") => call_on(object, "slice", args),
+            // Swift's: past the end gives `[]`, a count below zero is none dropped or taken.
+            (Recv::List, "dropFirst") if args.is_empty() => call_on(object, "slice", vec![Frag::of("1")]),
+            (Recv::List, "dropFirst") => {
+                let n = args.into_iter().next().unwrap_or_default();
+                call_on(object, "slice", vec![n.wrap("Math.max(0, ", ")")])
+            }
+            (Recv::List, "dropLast") => {
+                let mut values = vec![object];
+                values.push(args.into_iter().next().unwrap_or_else(|| Frag::of("1")));
+                helper(self, "dropLast", values)
+            }
+            (Recv::List, "suffix") => {
+                let mut values = vec![object];
+                values.extend(args);
+                helper(self, "suffix", values)
+            }
             (Recv::List, "appending") => {
                 let mut out = Frag::of("[...");
                 out.f(object).s(", ").f(args.into_iter().next().unwrap_or_default()).s("]");

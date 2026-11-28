@@ -1,0 +1,48 @@
+import { String$dropFirst, String$dropLast, String$prefix, String$suffix } from "../../.bloom/std/Bloom/Core.bloom";
+function $dropLast<T>(items: readonly T[], n: number): readonly T[] {
+  return items.slice(0, Math.max(0, items.length - Math.max(0, n)));
+}
+function $suffix<T>(items: readonly T[], n: number): readonly T[] {
+  return n <= 0 ? [] : items.slice(Math.max(0, items.length - n));
+}
+
+export function listPrefix(xs: readonly number[], n: number): readonly number[] {
+return xs.slice(0, n);
+}
+
+export function listSuffix(xs: readonly number[], n: number): readonly number[] {
+return $suffix(xs, n);
+}
+
+export function listDropFirst(xs: readonly number[], n: number): readonly number[] {
+return xs.slice(Math.max(0, n));
+}
+
+export function listDropLast(xs: readonly number[], n: number): readonly number[] {
+return $dropLast(xs, n);
+}
+
+export function listDropOne(xs: readonly number[]): readonly (readonly number[])[] {
+return [xs.slice(1), $dropLast(xs, 1)];
+}
+
+export function textPrefix(s: string, n: number): string {
+return String$prefix(s, n);
+}
+
+export function textSuffix(s: string, n: number): string {
+return String$suffix(s, n);
+}
+
+export function textDropFirst(s: string, n: number): string {
+return String$dropFirst(s, n);
+}
+
+export function textDropLast(s: string, n: number): string {
+return String$dropLast(s, n);
+}
+
+export function textDropOne(s: string): readonly string[] {
+return [String$dropFirst(s), String$dropLast(s)];
+}
+

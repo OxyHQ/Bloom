@@ -53,6 +53,8 @@ A stable identity for a view's life: a label paired with its field, a key into a
 - `func droppingSuffix(_ suffix: String) -> String`: The string without `suffix`, when it ends with it.
 - `func prefix(_ n: Int) -> String`: The first `n` characters (user-perceived).
 - `func suffix(_ n: Int) -> String`: The last `n` characters (user-perceived).
+- `func dropFirst(_ n: Int = 1) -> String`: Without the first `n` characters (user-perceived; one by default).
+- `func dropLast(_ n: Int = 1) -> String`: Without the last `n` characters (user-perceived; one by default).
 - `func truncated(to length: Int, ellipsis: String = "…") -> String`: At most `length` characters, with `ellipsis` in place of the rest.
 - `func trimmingStart() -> String`: Leading whitespace removed.
 - `func trimmingEnd() -> String`: Trailing whitespace removed.

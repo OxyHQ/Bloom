@@ -3340,6 +3340,16 @@ impl Checker<'_> {
             };
             let _ = self.unify(&ret, &target);
         }
+        // `xs.dropFirst()` / `xs.dropLast()`: one element, Swift's default.
+        let params = if recv_kind == Recv::List
+            && matches!(method, "dropFirst" | "dropLast")
+            && call.args.is_empty()
+            && call.trailing.is_none()
+        {
+            Vec::new()
+        } else {
+            params
+        };
         self.positional(call, &params);
         self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
         ret
@@ -3420,7 +3430,7 @@ impl Checker<'_> {
                     "contains" => (vec![t.clone()], Ty::Bool),
                     "sorted" => (vec![f(vec![t.clone(), t.clone()], Ty::Bool)], list(t)),
                     "reversed" => (vec![], list(t)),
-                    "prefix" | "dropFirst" => (vec![Ty::Int], list(t)),
+                    "prefix" | "suffix" | "dropFirst" | "dropLast" => (vec![Ty::Int], list(t)),
                     "appending" => (vec![t.clone()], list(t)),
                     "inserting" => (vec![t.clone(), Ty::Int], list(t)),
                     "removing" => (vec![Ty::Int], list(t)),
@@ -3510,7 +3520,9 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "sorted",
             "reversed",
             "prefix",
+            "suffix",
             "dropFirst",
+            "dropLast",
             "appending",
             "inserting",
             "removing",

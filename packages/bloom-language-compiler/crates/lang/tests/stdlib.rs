@@ -978,3 +978,20 @@ fn a_ts_value_casts_to_a_js_error() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// Swift's `prefix`/`suffix`/`dropFirst`/`dropLast` on lists and strings. The runtime test is
+/// `test/slices.test.ts`.
+const SLICES: &str = include_str!("../../../test/packages/format-app/Sources/App/Slices.bloom");
+
+#[test]
+fn lists_and_strings_slice_as_swift_does() {
+    let root = package("slices", &[("Sources/Model/Slices.bloom", SLICES)]);
+    let path = root.join("Sources/Model/Slices.bloom");
+    let out = compile(SLICES, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/slices.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

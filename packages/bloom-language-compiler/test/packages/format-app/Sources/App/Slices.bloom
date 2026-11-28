@@ -1,0 +1,12 @@
+// Swift's slices of lists and strings: `prefix(_:)`, `suffix(_:)`, `dropFirst(_:)`, `dropLast(_:)`
+// (one by default), counted in elements and in user-perceived characters.
+public func listPrefix(_ xs: [Int], _ n: Int) -> [Int] { xs.prefix(n) }
+public func listSuffix(_ xs: [Int], _ n: Int) -> [Int] { xs.suffix(n) }
+public func listDropFirst(_ xs: [Int], _ n: Int) -> [Int] { xs.dropFirst(n) }
+public func listDropLast(_ xs: [Int], _ n: Int) -> [Int] { xs.dropLast(n) }
+public func listDropOne(_ xs: [Int]) -> [[Int]] { [xs.dropFirst(), xs.dropLast()] }
+public func textPrefix(_ s: String, _ n: Int) -> String { s.prefix(n) }
+public func textSuffix(_ s: String, _ n: Int) -> String { s.suffix(n) }
+public func textDropFirst(_ s: String, _ n: Int) -> String { s.dropFirst(n) }
+public func textDropLast(_ s: String, _ n: Int) -> String { s.dropLast(n) }
+public func textDropOne(_ s: String) -> [String] { [s.dropFirst(), s.dropLast()] }
