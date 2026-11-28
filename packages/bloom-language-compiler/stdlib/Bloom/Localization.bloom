@@ -20,9 +20,24 @@ extern module "./runtime" {
   @extern("pluralCategory") private func pluralCategoryOf(_ n: Double, _ locale: String) -> String
 }
 
-/// A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
+/// A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it, and the clock its times
+/// are written in: the language's own (`none`), or an `HourCycle`.
 public struct Locale: Equatable {
   public let identifier: String
+  public let hourCycle: HourCycle? = none
+}
+
+/// The hours of a clock (Swift's `Locale.HourCycle`; Intl's `hourCycle`): `.oneToTwelve` is
+/// "6:30 PM" in every language, `.zeroToTwentyThree` "18:30".
+public enum HourCycle {
+  /// 0 to 11, with the AM/PM (Intl's `h11`).
+  case zeroToEleven
+  /// 1 to 12, with the AM/PM (Intl's `h12`).
+  case oneToTwelve
+  /// 0 to 23 (Intl's `h23`).
+  case zeroToTwentyThree
+  /// 1 to 24 (Intl's `h24`).
+  case oneToTwentyFour
 }
 
 extension Locale {

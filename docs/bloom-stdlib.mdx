@@ -324,7 +324,7 @@ A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
 
 ### `enum AMPMStyle`
 
-Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`).
+Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`), in a locale whose clock has one: a 24-hour locale's hour has none.
 
 - `case omitted`: No AM/PM: "6", in the locale's clock.
 - `case narrow`: The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
@@ -333,10 +333,10 @@ Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.A
 
 ### `struct HourStyle: Equatable`
 
-How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM. A shown AM/PM is the 12-hour clock (Intl's `hour12: true`), in every locale.
+How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM. The hour is in the locale's clock, as Swift's is ("6 PM" in English, "18" in Spanish); a style's `.locale(_:)` with an `HourCycle` chooses another.
 
-- `static func defaultDigits(amPM: AMPMStyle) -> HourStyle`: "6 PM" ("6" with `.omitted`).
-- `static func twoDigits(amPM: AMPMStyle) -> HourStyle`: "06 PM" ("06" with `.omitted`).
+- `static func defaultDigits(amPM: AMPMStyle) -> HourStyle`: "6 PM", or "18" in a 24-hour locale ("6" with `.omitted`).
+- `static func twoDigits(amPM: AMPMStyle) -> HourStyle`: "06 PM", or "18" in a 24-hour locale ("06" with `.omitted`).
 - `static var defaultDigitsNoAMPM: HourStyle`: "6", or "18" in a 24-hour locale: no AM/PM.
 - `static var twoDigitsNoAMPM: HourStyle`: "06", or "18" in a 24-hour locale: no AM/PM.
 
@@ -370,9 +370,10 @@ How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.a
 - `func month(_ style: MonthStyle = .abbreviated) -> DateFormat`: The month, "Nov" by default.
 - `func day(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The day of the month: "26".
 - `func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat`: The weekday, "Thu" by default.
-- `func hour(_ style: HourStyle? = none) -> DateFormat`: The hour: in the locale's clock ("6 PM", "18") with no style; `.defaultDigits(amPM:)` and `.twoDigits(amPM:)` choose its digits and its AM/PM.
+- `func hour(_ style: HourStyle? = none) -> DateFormat`: The hour, in the locale's clock ("6 PM", "18"); `.defaultDigits(amPM:)` and `.twoDigits(amPM:)` choose its digits and whether it shows its AM/PM.
 - `func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The minute: "30".
 - `func second(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The second: "05".
+- `func locale(_ locale: Locale) -> DateFormat`: Written for `locale` (Swift's `Date.FormatStyle.locale(_:)`), over `formatted`'s `locale:`; its hour cycle, if it has one, is the clock: `.locale(Locale(identifier: "en").hourCycle(.zeroToTwentyThree))` is "18:30".
 
 ### `struct DateComponents: Equatable`
 
@@ -1097,9 +1098,19 @@ A catalog maps keys to strings, or to plural forms by CLDR category:
 
 ### `struct Locale: Equatable`
 
-A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it.
+A language and region (`en`, `es-ES`, `pt-BR`), as BCP 47 writes it, and the clock its times are written in: the language's own (`none`), or an `HourCycle`.
 
 - `let identifier: String`
+- `let hourCycle: HourCycle?`
+
+### `enum HourCycle`
+
+The hours of a clock (Swift's `Locale.HourCycle`; Intl's `hourCycle`): `.oneToTwelve` is "6:30 PM" in every language, `.zeroToTwentyThree` "18:30".
+
+- `case zeroToEleven`: 0 to 11, with the AM/PM (Intl's `h11`).
+- `case oneToTwelve`: 1 to 12, with the AM/PM (Intl's `h12`).
+- `case zeroToTwentyThree`: 0 to 23 (Intl's `h23`).
+- `case oneToTwentyFour`: 1 to 24 (Intl's `h24`).
 
 ### `extension Locale`
 
