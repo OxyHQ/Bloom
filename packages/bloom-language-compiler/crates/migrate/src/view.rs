@@ -4356,26 +4356,6 @@ fn gated_body(view: &str, modifier: &str) -> String {
     format!("{}{gated}{}", &view[..start], &view[end..])
 }
 
-#[cfg(test)]
-mod gate_tests {
-    use super::gated_body;
-
-    #[test]
-    fn a_gate_is_the_screen_roots_modifier() {
-        let view =
-            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n}\n}";
-        assert_eq!(
-            gated_body(view, ".modifier(Gate())"),
-            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n.modifier(Gate())\n}\n}"
-        );
-        let branch = "pub default screen Lists {\nbody {\nif a { A() } else { B() }\n}\n}";
-        assert_eq!(
-            gated_body(branch, ".modifier(Gate())"),
-            "pub default screen Lists {\nbody {\nGroup {\nif a { A() } else { B() }\n}\n.modifier(Gate())\n}\n}"
-        );
-    }
-}
-
 /// The names a view body's statement declares (`const a = …`, `const [x, setX] = …`, `function f`).
 fn declared_names(statement: &Statement) -> Vec<String> {
     fn pattern(p: &BindingPattern, out: &mut Vec<String>) {
@@ -4425,4 +4405,24 @@ fn referenced_names(statement: &Statement) -> HashSet<String> {
     let mut names = Names(HashSet::new());
     names.visit_statement(statement);
     names.0
+}
+
+#[cfg(test)]
+mod gate_tests {
+    use super::gated_body;
+
+    #[test]
+    fn a_gate_is_the_screen_roots_modifier() {
+        let view =
+            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n}\n}";
+        assert_eq!(
+            gated_body(view, ".modifier(Gate())"),
+            "pub default screen Lists {\nlet a = 1\n\nbody {\nVStack { Text(\"x\") }.title(\"Lists\")\n.modifier(Gate())\n}\n}"
+        );
+        let branch = "pub default screen Lists {\nbody {\nif a { A() } else { B() }\n}\n}";
+        assert_eq!(
+            gated_body(branch, ".modifier(Gate())"),
+            "pub default screen Lists {\nbody {\nGroup {\nif a { A() } else { B() }\n}\n.modifier(Gate())\n}\n}"
+        );
+    }
 }
