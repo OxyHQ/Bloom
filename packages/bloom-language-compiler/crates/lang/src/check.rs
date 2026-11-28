@@ -3850,8 +3850,16 @@ impl<'o> Checker<'o> {
             Ty::Adt(def, _) => self.out.defs[def].fields().iter().map(|f| f.name.clone()).collect(),
             _ => Vec::new(),
         };
-        let help = closest(&name.name, fields.iter().map(String::as_str))
-            .map(|near| format!("did you mean `{near}`?"))
+        // `VirtualList(posts, { post in post.title })`: the row is not the item.
+        let row = matches!(self.resolve(ty), Ty::Adt(def, _) if self.out.defs[def].name.starts_with("VirtualListRow<"));
+        let help = (row && name.name != "item" && name.name != "index")
+            .then(|| {
+                format!("a row is `{{ item, index }}`: the item's `{}` is `.item.{}`", name.name, name.name)
+            })
+            .or_else(|| {
+                closest(&name.name, fields.iter().map(String::as_str))
+                    .map(|near| format!("did you mean `{near}`?"))
+            })
             .or_else(|| {
                 (!fields.is_empty()).then(|| {
                     format!(

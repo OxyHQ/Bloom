@@ -1945,6 +1945,15 @@ impl Checker<'_> {
                 );
             }
             let param = fixed.get(index).map_or("...", |p| p.trim_end_matches('?'));
+            // `VirtualList(posts, { row in … })`: the row closure is handed FlashList's
+            // `{ item, index }` (`VirtualListRow<T>`), never the item itself.
+            if ctor == "VirtualList"
+                && index == 1
+                && let Some(row) = self.virtual_list_row(call, &arg.value)
+            {
+                self.boundary(&arg.value, Some(&row));
+                continue;
+            }
             // A child's place: a list of views is a child there (`Embed(c ? a : xs.map(f))`).
             if param == "..." || param == "view" || ctor == "Embed" {
                 self.child_slots.insert(arg.value.id);
@@ -1964,6 +1973,51 @@ impl Checker<'_> {
             self.builder_closure(trailing);
         }
         Ty::View(Some(kind))
+    }
+
+    /// The type of a `VirtualList`'s row closure written in place with one untyped parameter
+    /// (`{ row in … }`): `(VirtualListRow<T>) -> View`, `T` the items' element, so `row.item` is
+    /// the item and `row.index` its index. `None` for any other row (a function value, a typed
+    /// closure), which TypeScript checks against `VirtualListRowFn<T>`.
+    fn virtual_list_row(&mut self, call: &Call, row: &Expr) -> Option<Ty> {
+        let ExprKind::Closure(closure) = &row.kind else { return None };
+        if closure.tuple || closure.params.len() != 1 || closure.params[0].ty.is_some() {
+            return None;
+        }
+        let items = call.args.first()?;
+        let items = self.out.types.get(&items.value.id).cloned()?;
+        let item = match self.resolve(&items) {
+            Ty::List(item) => *item,
+            Ty::Option(inner) => match self.resolve(&inner) {
+                Ty::List(item) => *item,
+                _ => return None,
+            },
+            _ => return None,
+        };
+        let item = self.resolve(&item);
+        let name = format!("VirtualListRow<{}>", self.show(&item).trim_matches('`'));
+        let fields = vec![
+            FieldDef { name: "item".into(), ty: item, default: FieldDefault::None },
+            FieldDef { name: "index".into(), ty: Ty::Int, default: FieldDefault::None },
+        ];
+        let row = self.object_type(&name, fields);
+        Some(Ty::Fn(Rc::new(FnTy {
+            params: vec![ParamTy {
+                labelled: false,
+                positional: true,
+                name: Some("row".into()),
+                ty: row,
+                optional: false,
+                rest: false,
+            }],
+            ret: Ty::View(None),
+            is_async: false,
+            generics: 0,
+            ts: false,
+            throws: false,
+            bounds: Vec::new(),
+            shapes: Vec::new(),
+        })))
     }
 
     /// A node takes as many arguments (a builder's lines among them) as its signature has.
