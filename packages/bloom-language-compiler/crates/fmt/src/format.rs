@@ -1023,6 +1023,12 @@ impl<'a> Formatter<'a> {
     /// `a op b op c`: one level of the same precedence, breaking after each
     /// operator when it does not fit.
     fn binary(&mut self, e: &Expr, op: BinaryOp) -> Doc {
+        // `0..<n`, `1...n`: Swift's form, with no spaces and no break.
+        if op.is_range()
+            && let ExprKind::Binary(_, lo, hi) = &e.kind
+        {
+            return concat(vec![self.expr(lo), text(op.text().to_string()), self.expr(hi)]);
+        }
         let mut operands = Vec::new();
         let mut operators = Vec::new();
         let mut current = e;

@@ -159,6 +159,41 @@ impl Checker<'_> {
                         self.out.calls.insert(expr.id, CallRes::Regex);
                         return Ty::Foreign("RegExp".into());
                     }
+                    // `Array(0..<n)`, `Array(xs)`, `Array(set)`: a new array of the elements.
+                    "Array" if self.lookup("Array").is_none() => {
+                        self.out.calls.insert(expr.id, CallRes::ArrayOf);
+                        let [arg] = call.args.as_slice() else {
+                            self.report(
+                                Diagnostic::error("B0207", call.callee.span, "`Array` takes one collection")
+                                    .label("`Array(0..<n)`, `Array(xs)` or `Array(set)`")
+                                    .spec("63-ranges"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Unknown;
+                        };
+                        let ty = self.expr(&arg.value, None);
+                        return match self.resolve(&ty) {
+                            Ty::List(elem) | Ty::Set(elem) if arg.label.is_none() && !arg.spread => {
+                                Ty::List(elem)
+                            }
+                            Ty::Unknown => Ty::Unknown,
+                            other => {
+                                self.report(
+                                    Diagnostic::error(
+                                        "B0201",
+                                        arg.value.span,
+                                        format!(
+                                            "`Array` takes a range, a list or a set, not {}",
+                                            self.show(&other)
+                                        ),
+                                    )
+                                    .label("not a collection")
+                                    .spec("63-ranges"),
+                                );
+                                Ty::Unknown
+                            }
+                        };
+                    }
                     "catching" => return self.catching(expr, call),
                     // `import("./X")`: the module's promise, TS's to type.
                     "import" if self.lookup("import").is_none() => {
@@ -265,6 +300,39 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Field(object, member) => {
+                // `Skeleton.Region(…) { … }` on `import * as Skeleton`: a member the module
+                // exports as a component is drawn as one (its builder its `children`).
+                // `Button.Group(…) { … }`: an UpperCamel static of a TS component is one too
+                // (`Button: … & { Group: typeof Group }`); TS checks its props.
+                if let ExprKind::Name(ns) = &object.kind
+                    && member.name.starts_with(|c: char| c.is_ascii_uppercase())
+                    && let Some(local) = self.lookup(ns)
+                {
+                    let props = match self.out.locals[local].kind {
+                        LocalKind::Import { .. } => match self.ts_namespaces.get(ns).cloned() {
+                            Some(file) => self.namespace_component(&file, ns, &member.name),
+                            // An UpperCamel TS value Bloom could not type is a component (as
+                            // `Button(…)` is), and so is its UpperCamel static.
+                            None => (ns.starts_with(|c: char| c.is_ascii_uppercase())
+                                && matches!(
+                                    self.resolve(&self.out.locals[local].ty.clone()),
+                                    Ty::Foreign(_)
+                                )
+                                && !self.out.constructors.contains(&local))
+                            .then(|| Ty::Foreign("".into())),
+                        },
+                        LocalKind::Component { .. } => Some(Ty::Foreign("".into())),
+                        _ => None,
+                    };
+                    if let Some(props) = props {
+                        // The callee is a TS path (`Button.Group`), read as is.
+                        self.out.names.insert(object.id, NameRes::Local(local));
+                        self.out.types.insert(object.id, self.out.locals[local].ty.clone());
+                        self.out.fields.insert(call.callee.id, FieldRes::Field);
+                        self.out.types.insert(call.callee.id, Ty::Foreign("".into()));
+                        return self.component_call(expr, call, &props);
+                    }
+                }
                 // `Type.m(…)`: an extension's static function.
                 if let ExprKind::Name(type_name) = &object.kind
                     && self.lookup(type_name).is_none()
@@ -1112,6 +1180,19 @@ impl Checker<'_> {
         }
         if let Some(trailing) = &call.trailing {
             let ty = f.params.get(slot).map(|p| p.ty.clone());
+            // A trailing closure past a TS function's parameters is an argument it never reads
+            // (and a builder's nodes in it are never drawn).
+            if ty.is_none() && !f.params.last().is_some_and(|p| p.rest) {
+                self.report(
+                    Diagnostic::error("B0207", trailing.span, "no parameter takes this trailing closure")
+                        .label(format!("this TS function takes {} argument(s)", f.params.len()))
+                        .help(
+                            "a TS component takes a builder as its `children`: declare it to return a React \
+                             element (`JSX.Element`, `ReactNode`), or pass the closure as an argument",
+                        )
+                        .spec("5-values-functions-and-closures"),
+                );
+            }
             self.closure_throws = true;
             let closure = self.closure(
                 trailing,
@@ -1766,6 +1847,17 @@ impl Checker<'_> {
         );
     }
 
+    /// The props of `ns.name` when the module `file` exports it as a component.
+    fn namespace_component(&mut self, file: &Rc<crate::ts::TsFile>, ns: &str, name: &str) -> Option<Ty> {
+        let mut mapper = crate::ts::Mapper {
+            defs: &mut self.out.defs,
+            options: self.options,
+            named: &mut self.ts_named,
+            reads: &mut self.out.dependencies,
+        };
+        mapper.export(file, name, &format!("{ns}.{name}"), 0)?.component
+    }
+
     fn component_call(&mut self, expr: &Expr, call: &Call, props: &Ty) -> Ty {
         self.out.calls.insert(expr.id, CallRes::Component);
         let props = self.resolve(props);
@@ -1828,9 +1920,109 @@ impl Checker<'_> {
             }
         }
         if let Some(trailing) = &call.trailing {
-            self.builder_closure(trailing);
+            self.component_builder(call.callee.span, trailing, fields.as_deref(), &given);
+            // `TextFieldLabel { label }`: one line of text is the component's text children,
+            // as JSX's `<TextFieldLabel>{label}</TextFieldLabel>` (a builder line is a view).
+            match trailing.body.as_slice() {
+                [Stmt { kind: StmtKind::Expr(line), .. }]
+                    if trailing.params.is_empty()
+                        && !matches!(line.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
+                {
+                    // Typed on its own first; anything but text is read again as a child, as
+                    // any builder line is (what the first reading reported is dropped).
+                    let mark = self.out.diagnostics.len();
+                    self.push();
+                    let ty = self.expr(line, None);
+                    self.pop();
+                    if matches!(self.resolve(&ty), Ty::Str | Ty::Strings(_)) {
+                        self.out.text_children.insert(trailing.span);
+                        self.out.closures.insert(
+                            trailing.span,
+                            ClosureInfo {
+                                params: Vec::new(),
+                                is_async: false,
+                                ret: Ty::View(None),
+                                builder: true,
+                            },
+                        );
+                    } else {
+                        for diagnostic in self.out.diagnostics.split_off(mark) {
+                            self.reported.remove(&diagnostic.span);
+                        }
+                        self.builder_closure(trailing);
+                    }
+                }
+                _ => self.builder_closure(trailing),
+            }
         }
         Ty::View(Some("embed"))
+    }
+
+    /// Where a TS component's trailing builder goes: its `children` (JSX children), or the
+    /// one node prop it declares in their place (`content: ReactNode`), as a view's builder
+    /// fills its `View` property. A component with neither cannot draw the builder's nodes,
+    /// so that is an error, never a silent drop. Props Bloom cannot read are TS's to check
+    /// (`satisfies ComponentProps<…>`), so the builder is their `children`.
+    fn component_builder(
+        &mut self,
+        callee: Span,
+        trailing: &Closure,
+        fields: Option<&[FieldDef]>,
+        given: &[String],
+    ) {
+        if given.iter().any(|g| g == "children") {
+            self.report(
+                Diagnostic::error("B0207", trailing.span, "`children` is given twice")
+                    .label("the trailing builder is the component's `children`")
+                    .help("pass the children by name or as the trailing builder, not both")
+                    .spec("72-builders-modifiers-and-tokens"),
+            );
+            return;
+        }
+        let Some(fields) = fields else { return };
+        if fields.iter().any(|f| f.name == "children") {
+            return;
+        }
+        let slots: Vec<&str> = fields
+            .iter()
+            .filter(|f| !given.contains(&f.name) && self.is_node_ty(&f.ty))
+            .map(|f| f.name.as_str())
+            .collect();
+        if let [slot] = slots.as_slice() {
+            self.out.component_slots.insert(trailing.span, (*slot).to_string());
+            return;
+        }
+        let help = if slots.is_empty() {
+            "draw the nodes beside it, or give it a `children` prop".to_string()
+        } else {
+            format!(
+                "it has several node props ({}): pass each by name, as `{}: VStack {{ … }}`",
+                slots.iter().map(|s| format!("`{s}`")).collect::<Vec<_>>().join(", "),
+                slots[0]
+            )
+        };
+        self.report(
+            Diagnostic::error("B0506", trailing.span, "this component takes no children")
+                .label("these nodes would never be drawn")
+                .with_label(callee, "its props have no `children`, and no node prop is left for them")
+                .help(help)
+                .spec("72-builders-modifiers-and-tokens"),
+        );
+    }
+
+    /// A TS prop that holds a node: `ReactNode`, `ReactElement`, a Bloom view, or one of those
+    /// optional.
+    fn is_node_ty(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::View(_) => true,
+            Ty::Option(inner) => self.is_node_ty(&inner),
+            Ty::Foreign(text) => {
+                text.ends_with(".ReactNode")
+                    || text.ends_with(".ReactElement")
+                    || text.ends_with("JSX.Element")
+            }
+            _ => false,
+        }
     }
 
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
@@ -2014,6 +2206,10 @@ impl Checker<'_> {
                     self.expr(value, Some(&Ty::Bool));
                 }
                 ParamKind::View | ParamKind::Children => self.child(value),
+                // `.accessory(if open { row })`: an `if` without `else` is an optional child.
+                ParamKind::Object { .. } | ParamKind::Any if matches!(&value.kind, ExprKind::If(i) if i.otherwise.is_none()) => {
+                    self.child(value)
+                }
                 ParamKind::Object { .. } | ParamKind::Any => {
                     self.boundary(value, None);
                 }

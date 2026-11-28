@@ -135,6 +135,10 @@ pub enum P {
     Semi,
     Dot,
     DotDot,
+    /// `..<`: a half-open range (`0..<n`).
+    DotDotLt,
+    /// `...`: a closed range (`1...n`).
+    DotDotDot,
     Question,
     QuestionDot,
     QuestionQuestion,
@@ -181,6 +185,8 @@ impl P {
             P::Semi => ";",
             P::Dot => ".",
             P::DotDot => "..",
+            P::DotDotLt => "..<",
+            P::DotDotDot => "...",
             P::Question => "?",
             P::QuestionDot => "?.",
             P::QuestionQuestion => "??",
@@ -418,6 +424,8 @@ impl Lexer<'_> {
 
     fn punct(&mut self) -> Option<P> {
         let (p, len) = match (self.peek(0), self.peek(1)) {
+            (b'.', b'.') if self.peek(2) == b'<' => (P::DotDotLt, 3),
+            (b'.', b'.') if self.peek(2) == b'.' => (P::DotDotDot, 3),
             (b'.', b'.') => (P::DotDot, 2),
             (b'?', b'.') if !self.peek(2).is_ascii_digit() => (P::QuestionDot, 2),
             (b'?', b'?') => (P::QuestionQuestion, 2),

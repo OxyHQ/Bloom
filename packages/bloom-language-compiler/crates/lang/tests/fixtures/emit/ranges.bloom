@@ -1,0 +1,64 @@
+// Swift's ranges: `a..<b` (half-open) and `a...b` (closed), collections of `Int`s. A `for` over
+// one is a counting loop and `.map` one `Array.from({ length })`: neither builds another array.
+public func total(_ n: Int) -> Int {
+  var sum = 0
+  for i in 0..<n {
+    sum += i
+  }
+  for i in 1...n {
+    sum += i
+  }
+  for _ in 0..<3 {
+    sum += 1
+  }
+  return sum
+}
+
+public func squares(_ n: Int) -> [Int] {
+  (0..<n).map { i in i * i }
+}
+
+public func indices(_ n: Int) -> [Int] {
+  Array(0..<n)
+}
+
+public func window(_ xs: [Int], from: Int) -> [Int] {
+  // A range read as a value is its array; the lower bound is read once.
+  let span = from..<xs.count
+  return span.filter { $0 % 2 == 0 }
+}
+
+public func countdown(_ n: Int) -> Int {
+  var left = n
+  var turns = 0
+  // The bound is read once, as Swift builds the range once.
+  for _ in 0..<left {
+    left -= 1
+    turns += 1
+  }
+  return turns
+}
+
+public struct Dots: View {
+  let count: Int
+
+  var body: some View {
+    HStack {
+      for i in 0..<count {
+        Text("\(i)")
+      }
+    }
+  }
+}
+
+public struct Stars: View {
+  let rating: Int
+
+  var body: some View {
+    HStack {
+      for _ in 1...rating {
+        Text("*")
+      }
+    }
+  }
+}

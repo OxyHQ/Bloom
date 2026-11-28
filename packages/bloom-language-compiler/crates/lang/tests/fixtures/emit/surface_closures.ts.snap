@@ -15,19 +15,19 @@ export interface PaneProps {
 }
 export const Pane = view(function Pane(props: PaneProps) {
 "use no memo";
-const $ = $c(5);
+const $ = $c(3);
 const { onTap } = props;
 const disabled = useEnvironment(environmentValues.disabled);
 let $t0;
-if ($[2] !== disabled || $[3] !== onTap) {
-$t0 = VStack(Text(row($fn0, $fn2)), Button(($[0] !== disabled ? ($[0] = disabled, $[1] = Text(disabled ? "Off" : "On")) : $[1])).onPress(() => void (async () => {
+if ($[0] !== disabled || $[1] !== onTap) {
+$t0 = VStack(Text(row($fn0, $fn2)), Button(Text(disabled ? "Off" : "On")).onPress(() => void (async () => {
 await (onTap());
 })()));
-$[2] = disabled;
-$[3] = onTap;
-$[4] = $t0;
+$[0] = disabled;
+$[1] = onTap;
+$[2] = $t0;
 } else {
-$t0 = $[4];
+$t0 = $[2];
 }
 return $t0;
 });
@@ -60,16 +60,16 @@ export interface SectionProps {
 }
 export const Section = view(function Section(props: SectionProps) {
 "use no memo";
-const $ = $c(7);
+const $ = $c(5);
 const { title, rows } = props;
 let $t2;
-if ($[4] !== title || $[5] !== rows) {
-$t2 = VStack(($[0] !== title ? ($[0] = title, $[1] = Text(title)) : $[1]), ($[2] !== rows ? ($[2] = rows, $[3] = rows()) : $[3]));
-$[4] = title;
-$[5] = rows;
-$[6] = $t2;
+if ($[2] !== title || $[3] !== rows) {
+$t2 = VStack(Text(title), ($[0] !== rows ? ($[0] = rows, $[1] = rows()) : $[1]));
+$[2] = title;
+$[3] = rows;
+$[4] = $t2;
 } else {
-$t2 = $[6];
+$t2 = $[4];
 }
 return $t2;
 });

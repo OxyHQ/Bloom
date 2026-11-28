@@ -267,6 +267,7 @@
     "operators": {
       "patterns": [
         { "name": "keyword.operator.arrow.bloom", "match": "=>|->" },
+        { "name": "keyword.operator.range.bloom", "match": "\\.\\.<|\\.\\.\\." },
         { "name": "keyword.operator.spread.bloom", "match": "\\.\\." },
         { "name": "keyword.operator.optional.bloom", "match": "\\?\\?|\\?" },
         { "name": "keyword.operator.logical.bloom", "match": "&&|\\|\\||!(?!=)" },

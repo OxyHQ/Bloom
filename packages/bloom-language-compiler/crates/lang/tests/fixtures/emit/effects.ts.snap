@@ -22,7 +22,7 @@ return 2;
 
 export const Search = view(function Search() {
 "use no memo";
-const $ = $c(7);
+const $ = $c(5);
 const [query, setQuery] = useState<string>("");
 const [draft, setDraft] = useState<Draft>(() => ({ text: "", tags: [] }));
 const [saved, setSaved] = useState<boolean>(true);
@@ -75,13 +75,13 @@ setTotal(0.0);
 return () => $controller.abort();
 }, [query]);
 let $t5;
-if ($[4] !== query || $[5] !== total) {
-$t5 = VStack(($[0] !== query ? ($[0] = query, $[1] = TextField([query, setQuery] as const, "Search")) : $[1]), ($[2] !== total ? ($[2] = total, $[3] = Text(`${total}`)) : $[3]));
-$[4] = query;
-$[5] = total;
-$[6] = $t5;
+if ($[2] !== query || $[3] !== total) {
+$t5 = VStack(($[0] !== query ? ($[0] = query, $[1] = TextField([query, setQuery] as const, "Search")) : $[1]), Text(`${total}`));
+$[2] = query;
+$[3] = total;
+$[4] = $t5;
 } else {
-$t5 = $[6];
+$t5 = $[4];
 }
 return $t5;
 });

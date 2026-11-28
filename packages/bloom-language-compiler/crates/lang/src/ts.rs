@@ -363,6 +363,10 @@ impl Reader {
             match file.decls.get(&name) {
                 // A function's first overload is the one Bloom reads.
                 Some(TsDecl::Fn(_)) if matches!(decl, TsDecl::Fn(_)) => {}
+                // `declare function Region(…)` and `declare namespace Region { … }` (a component
+                // with statics, as Bloom's own declare them): the function is the value.
+                Some(TsDecl::Fn(_) | TsDecl::Var(_) | TsDecl::Class { .. })
+                    if matches!(decl, TsDecl::Other) => {}
                 // A value and a type of one name: both are kept.
                 Some(TsDecl::Var(_) | TsDecl::Fn(_)) if is_type => {
                     file.types.insert(name, decl);
@@ -683,6 +687,19 @@ impl Reader {
                 }
                 TsType::Object(members)
             }
+            // `import("react").JSX.Element`, as emitted declarations write React's types: the
+            // name `React.JSX.Element` reads (another module's `import(…)` stays foreign).
+            TSType::TSImportType(import) if import.source.value == "react" => match &import.qualifier {
+                Some(qualifier) => {
+                    let args = import
+                        .type_arguments
+                        .as_ref()
+                        .map(|a| a.params.iter().map(|t| self.ty(t)).collect())
+                        .unwrap_or_default();
+                    TsType::Ref(format!("React.{}", import_qualifier(qualifier)), args)
+                }
+                None => self.other(),
+            },
             // `typeof useX`: the value's type, read where the summary is mapped.
             TSType::TSTypeQuery(query) if query.type_arguments.is_none() => match &query.expr_name {
                 oxc_ast::ast::TSTypeQueryExprName::IdentifierReference(id) => {
@@ -740,6 +757,15 @@ fn type_name(name: &TSTypeName) -> String {
         TSTypeName::IdentifierReference(id) => id.name.to_string(),
         TSTypeName::QualifiedName(q) => format!("{}.{}", type_name(&q.left), q.right.name),
         TSTypeName::ThisExpression(_) => "this".into(),
+    }
+}
+
+fn import_qualifier(qualifier: &oxc_ast::ast::TSImportTypeQualifier) -> String {
+    match qualifier {
+        oxc_ast::ast::TSImportTypeQualifier::Identifier(id) => id.name.to_string(),
+        oxc_ast::ast::TSImportTypeQualifier::QualifiedName(q) => {
+            format!("{}.{}", import_qualifier(&q.left), q.right.name)
+        }
     }
 }
 
@@ -1192,6 +1218,13 @@ impl Mapper<'_> {
             TsType::Intersection(members) => {
                 members.iter().find_map(|m| self.component_in(file, m, depth + 1))
             }
+            // `declare const $$View: typeof View` (react-native's `View`): the function it names.
+            TsType::Query(name) => match file.decls.get(name)? {
+                TsDecl::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
+                    Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
+                }
+                _ => None,
+            },
             TsType::Ref(name, args) if args.is_empty() => {
                 let (target, decl) = self.type_decl(file, name, depth + 1)?;
                 match decl {

@@ -19,18 +19,18 @@ export interface PostRowProps {
 }
 export const PostRow = view(function PostRow(props: PostRowProps) {
 "use no memo";
-const $ = $c(12);
+const $ = $c(8);
 const { post, dense = false, onLike } = props;
 let $t0;
-if ($[7] !== post.text || $[8] !== post.likes || $[9] !== onLike || $[10] !== dense) {
-$t0 = HStack(($[0] !== post.text ? ($[0] = post.text, $[1] = Text(post.text)) : $[1]), ($[4] !== post.likes || $[5] !== onLike ? ($[4] = post.likes, $[5] = onLike, $[6] = Button(($[2] !== post.likes ? ($[2] = post.likes, $[3] = Text(`${post.likes}`)) : $[3])).onPress(() => onLike())) : $[6])).spacing(dense ? "xs" : "sm");
-$[7] = post.text;
-$[8] = post.likes;
-$[9] = onLike;
-$[10] = dense;
-$[11] = $t0;
+if ($[3] !== post.text || $[4] !== post.likes || $[5] !== onLike || $[6] !== dense) {
+$t0 = HStack(Text(post.text), ($[0] !== post.likes || $[1] !== onLike ? ($[0] = post.likes, $[1] = onLike, $[2] = Button(Text(`${post.likes}`)).onPress(() => onLike())) : $[2])).spacing(dense ? "xs" : "sm");
+$[3] = post.text;
+$[4] = post.likes;
+$[5] = onLike;
+$[6] = dense;
+$[7] = $t0;
 } else {
-$t0 = $[11];
+$t0 = $[7];
 }
 return $t0;
 }, (a: PostRowProps, b: PostRowProps): boolean => {
@@ -43,7 +43,7 @@ export interface ComposerProps {
 }
 export const Composer = view(function Composer(props: ComposerProps) {
 "use no memo";
-const $ = $c(17);
+const $ = $c(13);
 const { isOn } = props;
 const [draft, setDraft] = useState<string>("");
 const [sent, setSent] = useState<number>(0);
@@ -64,15 +64,15 @@ useEffect(() => {
 setSent(0);
 }, []);
 let $t1;
-if ($[12] !== sent || $[13] !== draft || $[14] !== isOn || $[15] !== send) {
-$t1 = VStack(($[2] !== sent ? ($[2] = sent, $[3] = Text(`${title}: ${sent}`)) : $[3]), ($[4] !== draft ? ($[4] = draft, $[5] = TextField([draft, setDraft] as const, "Write")) : $[5]), ($[6] !== isOn ? ($[6] = isOn, $[7] = Toggle(isOn)) : $[7]), ($[8] !== isOn ? ($[8] = isOn, $[9] = Text(isOn[0] ? "On" : "Off")) : $[9]), ($[10] !== send ? ($[10] = send, $[11] = $view0.onPress(() => send())) : $[11]));
-$[12] = sent;
-$[13] = draft;
-$[14] = isOn;
-$[15] = send;
-$[16] = $t1;
+if ($[8] !== sent || $[9] !== draft || $[10] !== isOn || $[11] !== send) {
+$t1 = VStack(Text(`${title}: ${sent}`), ($[2] !== draft ? ($[2] = draft, $[3] = TextField([draft, setDraft] as const, "Write")) : $[3]), ($[4] !== isOn ? ($[4] = isOn, $[5] = Toggle(isOn)) : $[5]), Text(isOn[0] ? "On" : "Off"), ($[6] !== send ? ($[6] = send, $[7] = $view0.onPress(() => send())) : $[7]));
+$[8] = sent;
+$[9] = draft;
+$[10] = isOn;
+$[11] = send;
+$[12] = $t1;
 } else {
-$t1 = $[16];
+$t1 = $[12];
 }
 return $t1;
 });

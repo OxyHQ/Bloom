@@ -116,6 +116,24 @@ enum Tail {
     Bind(String),
 }
 
+/// A run of member `let`s (and `fn`s) cached on the same dependencies: one test, one
+/// branch, each value in its own slot. `index`: its statement in the buffer at `depth`.
+struct MemoGroup {
+    deps: Vec<String>,
+    base: usize,
+    entries: Vec<MemoEntry>,
+    depth: usize,
+    index: usize,
+}
+
+struct MemoEntry {
+    name: String,
+    ty: Option<String>,
+    prelude: Vec<Frag>,
+    value: Frag,
+    slot: usize,
+}
+
 struct ViewState {
     slots: usize,
     /// Members whose value can change between renders.
@@ -174,6 +192,10 @@ struct Emitter<'a> {
     names: HashSet<String>,
     /// The next closure maps an `.enumerated()` list: its `(i, x)` is `(x, i)`.
     enumerated: bool,
+    /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
+    range_index: bool,
+    /// The last member cache pushed, which the next one on the same dependencies joins.
+    memo_group: Option<MemoGroup>,
     /// While the body's tree is emitted: what the enclosing cache scope depends on.
     scope: Option<Vec<String>>,
     body_span: Option<Span>,
@@ -230,6 +252,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, _filename: &str, optio
         eq_vars: 0,
         names,
         enumerated: false,
+        range_index: false,
+        memo_group: None,
         scope: None,
         body_span: None,
         item_start: 0,
@@ -1325,6 +1349,33 @@ impl<'a> Emitter<'a> {
                 line.f(cond).s(") ").f(body);
                 self.push_stmt(line);
             }
+            // `for i in a..<b`: a counting loop, no array.
+            StmtKind::For(f) if let Some((lo, hi, closed)) = range_of(&f.iter) => {
+                let target = match self.binding_target(&f.pattern) {
+                    t if t == "_" => self.temp(),
+                    t => t,
+                };
+                let start = self.expr(lo);
+                // The bound is read once, as Swift's range is built once: a literal or a `let`
+                // inline, anything else into a temp.
+                let (bound, end) = if self.fixed_bound(hi) {
+                    (Frag::default(), self.operand(hi))
+                } else {
+                    let name = self.temp();
+                    let mut decl = Frag::of(format!(", {name} = "));
+                    decl.f(self.expr(hi));
+                    (decl, Frag::of(name))
+                };
+                let body = self.block_body(&f.body.stmts, Tail::Discard, self.signal.clone().as_deref());
+                let mut line = Frag::at(stmt.span, format!("for (let {target} = "));
+                line.f(start)
+                    .f(bound)
+                    .s(&format!("; {target} {} ", if closed { "<=" } else { "<" }))
+                    .f(end)
+                    .s(&format!("; {target}++) "))
+                    .f(body);
+                self.push_stmt(line);
+            }
             StmtKind::For(f) => {
                 let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
                 let mut iter = match self.enumerated_list(&f.iter) {
@@ -2391,6 +2442,25 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A range read as a value: its array, built once (`for` and `.map` build none).
+        if op.is_range() {
+            let closed = op == BinaryOp::Closed;
+            let mut out = Frag::at(expr.span, "Array.from({ length: ");
+            if is_zero(lhs) {
+                out.f(self.range_length(lhs, rhs, closed)).s(" }, ($_, i) => i)");
+            } else if let ExprKind::Int(low) = lhs.kind {
+                out.f(self.range_length(lhs, rhs, closed)).s(&format!(" }}, ($_, i) => {low} + i)"));
+            } else {
+                // The lower bound is read once per element: a path as is, anything else once.
+                let lo = self.path_or_temp(lhs);
+                out.f(self.operand(rhs)).s(&format!(" - {lo}"));
+                if closed {
+                    out.s(" + 1");
+                }
+                out.s(&format!(" }}, ($_, i) => {lo} + i)"));
+            }
+            return out;
+        }
         // `a == b` on a `T: Equatable`: its witness.
         if let Some(witness) = self.ck.witness_eq.get(&expr.id).cloned() {
             let (a, b) = (self.expr(lhs), self.expr(rhs));
@@ -2774,7 +2844,10 @@ impl<'a> Emitter<'a> {
             .collect();
         // A parameter without a TS type takes its type from where the closure is passed.
         let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
-        let params: Vec<String> = if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
+        let params: Vec<String> = if std::mem::take(&mut self.range_index) && !c.tuple && params.len() == 1 {
+            // `(0..<n).map { i in … }` is `Array.from({ length: n }, ($_, i) => …)`.
+            vec!["$_".into(), params[0].clone()]
+        } else if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
             // `xs.enumerated().map { (i, x) in … }` is `xs.map((x, i) => …)`.
             vec![params[1].clone(), params[0].clone()]
         } else if c.tuple {
@@ -3179,14 +3252,38 @@ impl<'a> Emitter<'a> {
                         entry
                     })
                     .collect();
-                let children = call.trailing.as_ref().map(|t| self.children(&t.body));
+                // The children are built inside the render function, so a static one is hoisted on
+                // its own even when the whole component is (the embedded pass would hoist it out).
+                // Text children (`TextFieldLabel { label }`) are passed as they are.
+                if let Some(trailing) =
+                    call.trailing.as_ref().filter(|t| self.ck.text_children.contains(&t.span))
+                    && let [Stmt { kind: StmtKind::Expr(line), .. }] = trailing.body.as_slice()
+                {
+                    let slot = self.ck.component_slots.get(&trailing.span).map_or("children", String::as_str);
+                    let mut entry = Frag::of(format!("{}: ", prop_key(slot)));
+                    entry.f(self.expr(line));
+                    props.push(entry);
+                }
+                let was_static = std::mem::replace(&mut self.in_static, false);
+                let children = call
+                    .trailing
+                    .as_ref()
+                    .filter(|t| !self.ck.text_children.contains(&t.span))
+                    .map(|t| self.children(&t.body));
+                self.in_static = was_static;
                 if let Some(children) = &children {
                     let rendered = if children.len() == 1 {
                         children[0].clone()
                     } else {
                         Frag::join(children.clone(), ", ").wrap("[", "]")
                     };
-                    props.push(rendered.wrap("children: $render(", ")"));
+                    // `children`, or the one node prop the component declares in their place.
+                    let slot = call
+                        .trailing
+                        .as_ref()
+                        .and_then(|t| self.ck.component_slots.get(&t.span))
+                        .map_or("children", String::as_str);
+                    props.push(rendered.wrap(&format!("{}: $render(", prop_key(slot)), ")"));
                 }
                 let object =
                     if props.is_empty() { Frag::of("{}") } else { Frag::join(props, ", ").wrap("{ ", " }") };
@@ -3268,6 +3365,11 @@ impl<'a> Emitter<'a> {
                     out = out.wrap("(", &format!(" as {ty})"));
                 }
                 out
+            }
+            // `Array(0..<n)` is the range's array; a list or a set is copied.
+            CallRes::ArrayOf => {
+                let arg = &call.args[0].value;
+                if range_of(arg).is_some() { self.expr(arg) } else { self.expr(arg).wrap("[...", "]") }
             }
             CallRes::Regex => {
                 let args: Vec<Frag> = call.args.iter().map(|a| self.expr(&a.value)).collect();
@@ -3484,6 +3586,29 @@ impl<'a> Emitter<'a> {
             }
             _ => false,
         };
+        // `(0..<n).map { i in … }`: `Array.from({ length: n }, ($_, i) => …)`, one array.
+        if recv == Recv::List
+            && name == "map"
+            && !optional
+            && call.args.is_empty()
+            && let Some(closure) = call.trailing.as_deref()
+            && !closure.tuple
+            && closure.params.len() == 1
+            && let Some((lo, hi, closed)) = range_of(receiver)
+            && is_zero(lo)
+        {
+            let length = self.range_length(lo, hi, closed);
+            let f = match self.hoisted_names.get(&closure.span).cloned() {
+                Some(hoisted) => Frag::of(format!("($_, i) => {hoisted}(i)")),
+                None => {
+                    self.range_index = true;
+                    self.closure(closure)
+                }
+            };
+            let mut out = Frag::of("Array.from({ length: ");
+            out.f(length).s(" }, ").f(f).s(")");
+            return out;
+        }
         // `xs.enumerated().map { (i, x) in … }`: `xs.map((x, i) => …)`, no pairs built.
         let mut receiver = receiver;
         if recv == Recv::List
@@ -3722,16 +3847,25 @@ impl<'a> Emitter<'a> {
                 StmtKind::Expr(expr) => out.push(self.scoped_child(expr)),
                 StmtKind::For(f) => {
                     let iter_ty = self.ck.types.get(&f.iter.id).cloned().unwrap_or(Ty::Unknown);
-                    // `for (i, x) in xs.enumerated()`: `xs.map((x, i) => …)`.
+                    // `for i in 0..<n`: `Array.from({ length: n }, ($_, i) => …)`, one array.
+                    // `for _ in 1...n` counts only: its lower bound is read for the length alone.
+                    let counted = range_of(&f.iter)
+                        .filter(|(lo, _, _)| is_zero(lo) || f.pattern.kind == PatternKind::Wildcard);
                     let swapped = match (self.enumerated_list(&f.iter), &f.pattern.kind) {
                         (Some(list), PatternKind::Tuple(items)) if items.len() == 2 => {
                             Some((list, [self.binding_target(&items[1]), self.binding_target(&items[0])]))
                         }
                         _ => None,
                     };
-                    let mut iter = match &swapped {
-                        Some((list, _)) => self.operand(list),
-                        None => self.operand(&f.iter),
+                    let mut iter = match (&swapped, counted) {
+                        (Some((list, _)), _) => self.operand(list),
+                        (None, Some((lo, hi, closed))) => {
+                            let length = self.range_length(lo, hi, closed);
+                            let mut out = Frag::of("Array.from({ length: ");
+                            out.f(length).s(" }");
+                            out
+                        }
+                        (None, None) => self.operand(&f.iter),
                     };
                     if matches!(iter_ty, Ty::Map(_)) {
                         iter = iter.wrap("Object.entries(", ")");
@@ -3741,6 +3875,10 @@ impl<'a> Emitter<'a> {
                     }
                     let target = match swapped {
                         Some((_, [x, i])) => format!("{x}, {i}"),
+                        None if counted.is_some() => match self.binding_target(&f.pattern) {
+                            t if t == "_" => "$_".into(),
+                            t => format!("$_, {t}"),
+                        },
                         None => self.binding_target(&f.pattern),
                     };
                     self.bufs.push(Vec::new());
@@ -3766,7 +3904,8 @@ impl<'a> Emitter<'a> {
                         && matches!(f.body.stmts.as_slice(), [.., Stmt { kind: StmtKind::Expr(e), .. }] if plain_item(e))
                         && f.body.stmts.iter().filter(|s| !matches!(s.kind, StmtKind::Let(_))).count() == 1;
                     let mut line = if spread { Frag::of("...") } else { Frag::default() };
-                    line.f(iter).mark(stmt.span).s(&format!(".map(({target}) => ")).f(body).s(")");
+                    let map = if counted.is_some() { ", " } else { ".map(" };
+                    line.f(iter).mark(stmt.span).s(&format!("{map}({target}) => ")).f(body).s(")");
                     out.push(line);
                 }
                 _ => {}
@@ -3846,6 +3985,48 @@ impl<'a> Emitter<'a> {
 }
 
 impl Emitter<'_> {
+    // ---- ranges (spec 6.3) ----------------------------------------------------
+
+    /// How many `Int`s `lo..<hi` (`lo...hi` when `closed`) holds: `hi - lo`, `hi` from 0.
+    /// A literal lower bound folds in: `1...n` holds `n`, `2..<n` holds `n - 2`.
+    fn range_length(&mut self, lo: &Expr, hi: &Expr, closed: bool) -> Frag {
+        if let ExprKind::Int(low) = lo.kind {
+            let less = low - i64::from(closed);
+            return match less {
+                0 => self.expr(hi),
+                k if k > 0 => {
+                    let mut out = self.operand(hi);
+                    out.s(&format!(" - {k}"));
+                    out
+                }
+                k => {
+                    let mut out = self.operand(hi);
+                    out.s(&format!(" + {}", -k));
+                    out
+                }
+            };
+        }
+        let mut out = self.operand(hi);
+        out.s(" - ").f(self.operand(lo));
+        if closed {
+            out.s(" + 1");
+        }
+        out
+    }
+
+    /// A loop bound that reads the same on every turn: a literal, or a name no one assigns.
+    fn fixed_bound(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Int(_) => true,
+            ExprKind::Paren(e) => self.fixed_bound(e),
+            ExprKind::Name(_) => match self.ck.names.get(&expr.id) {
+                Some(NameRes::Local(local)) => !matches!(self.ck.locals[*local].kind, LocalKind::Var),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     // ---- structural equality (spec 4.3) ----------------------------------------
 
     /// `expr` as a path to read more than once: itself when it is one, else a temp.
@@ -4058,6 +4239,62 @@ fn mentions(text: &str, name: &str) -> bool {
 fn covers(outer: &str, inner: &str) -> bool {
     outer == inner
         || inner.strip_prefix(outer).is_some_and(|rest| rest.starts_with('.') || rest.starts_with("?."))
+}
+
+/// A member cache group: its declarations, then one test of its dependencies.
+fn render_memo(group: &MemoGroup) -> Frag {
+    let first = group.entries[0].slot;
+    let cond = if group.deps.is_empty() {
+        format!("$[{first}] === Symbol.for(\"react.memo_cache_sentinel\")")
+    } else {
+        group
+            .deps
+            .iter()
+            .enumerate()
+            .map(|(i, d)| format!("$[{}] !== {d}", group.base + i))
+            .collect::<Vec<_>>()
+            .join(" || ")
+    };
+    let mut out = Frag::default();
+    for entry in &group.entries {
+        out.s(&match &entry.ty {
+            Some(ty) => format!("let {}: {ty};\n", entry.name),
+            None => format!("let {};\n", entry.name),
+        });
+    }
+    out.s(&format!("if ({cond}) {{\n"));
+    for entry in &group.entries {
+        for line in &entry.prelude {
+            out.f(line.clone()).s("\n");
+        }
+        out.s(&format!("{} = ", entry.name)).f(entry.value.clone()).s(";\n");
+    }
+    for (i, d) in group.deps.iter().enumerate() {
+        out.s(&format!("$[{}] = {d};\n", group.base + i));
+    }
+    for entry in &group.entries {
+        out.s(&format!("$[{}] = {};\n", entry.slot, entry.name));
+    }
+    out.s("} else {\n");
+    for entry in &group.entries {
+        out.s(&format!("{} = $[{}];\n", entry.name, entry.slot));
+    }
+    out.s("}");
+    out
+}
+
+/// `a..<b` or `a...b` (in parentheses or not): its bounds, and whether it is closed.
+fn range_of(expr: &Expr) -> Option<(&Expr, &Expr, bool)> {
+    match &expr.kind {
+        ExprKind::Paren(inner) => range_of(inner),
+        ExprKind::Binary(op, lo, hi) if op.is_range() => Some((lo, hi, *op == BinaryOp::Closed)),
+        _ => None,
+    }
+}
+
+/// The literal `0`.
+fn is_zero(expr: &Expr) -> bool {
+    matches!(expr.kind, ExprKind::Int(0))
 }
 
 fn is_path(expr: &Expr) -> bool {
@@ -4405,7 +4642,9 @@ impl<'a> Emitter<'a> {
         let narrower = !deps.is_empty()
             && deps.iter().all(|d| parent.iter().any(|p| covers(p, d)))
             && !(deps.len() == parent.len() && deps.iter().all(|d| parent.contains(d)));
-        if !narrower {
+        // A leaf (a node and its modifiers, no child view) that reads its one dependency once
+        // costs about what its test does: built with its parent, it takes no slots.
+        if !narrower || (deps.len() == 1 && self.leaf_node(expr) && self.reactive_reads(expr) == 1) {
             return self.child(expr);
         }
         self.scope = Some(deps.clone());
@@ -4426,6 +4665,58 @@ impl<'a> Emitter<'a> {
         let mut out = Frag::of(format!("({cond} ? ({stores}$[{slot}] = "));
         out.f(value).s(&format!(") : $[{slot}])"));
         out
+    }
+
+    /// A node and its modifiers with no view among their arguments, no builder and no closure.
+    fn leaf_node(&self, expr: &Expr) -> bool {
+        let ExprKind::Call(call) = &expr.kind else { return false };
+        // Its arguments are cheap to compute again: reads, literals and operators, no call.
+        let plain = call.trailing.is_none()
+            && call.args.iter().all(|a| {
+                let mut cheap = !matches!(self.ck.types.get(&a.value.id), Some(Ty::View(_)));
+                crate::analysis::walk_expr(&a.value, &mut |node| {
+                    let crate::analysis::Node::Expr(e) = node else { return };
+                    // A computed property (an extension's, a witness's) is a call too.
+                    let computed = matches!(e.kind, ExprKind::Field(..) | ExprKind::OptField(..))
+                        && !matches!(
+                            self.ck.fields.get(&e.id),
+                            None | Some(
+                                FieldRes::Field
+                                    | FieldRes::Index(_)
+                                    | FieldRes::EnumCase(..)
+                                    | FieldRes::Prop { .. }
+                            )
+                        );
+                    if computed
+                        || matches!(e.kind, ExprKind::Call(_) | ExprKind::Closure(_) | ExprKind::Await(_))
+                    {
+                        cheap = false;
+                    }
+                });
+                cheap
+            });
+        match self.ck.calls.get(&expr.id) {
+            Some(CallRes::Node(_)) => plain,
+            Some(CallRes::Modifier { .. }) => match &call.callee.kind {
+                ExprKind::Field(receiver, _) => plain && self.leaf_node(receiver),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// How many times `expr` reads a value that can change between renders.
+    fn reactive_reads(&self, expr: &Expr) -> usize {
+        let Some(view) = self.view.as_ref() else { return 0 };
+        let mut count = 0;
+        crate::check::walk_names(expr, &mut |_, id| {
+            if let Some(NameRes::Local(local)) = self.ck.names.get(&id)
+                && view.reactive.contains(local)
+            {
+                count += 1;
+            }
+        });
+        count
     }
 
     /// The expressions of `item` that are the same value on every evaluation:
@@ -4573,6 +4864,49 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// A member's cache: `name` computed by `prelude; value`, again only when a dependency
+    /// changed. Right after another on the same dependencies, it joins that one's test (three
+    /// `t(…)` strings keyed on `t` are one `if`, not three).
+    fn push_memo(
+        &mut self,
+        name: String,
+        ty: Option<String>,
+        deps: &[String],
+        prelude: Vec<Frag>,
+        value: Frag,
+    ) {
+        let depth = self.bufs.len();
+        let len = self.bufs.last().map_or(0, Vec::len);
+        let joins = self.memo_group.as_ref().is_some_and(|g| {
+            g.deps == deps
+                && g.depth == depth
+                && g.index + 1 == len
+                && self.bufs.last().and_then(|b| b.last()).map(|f| &f.text) == Some(&render_memo(g).text)
+        });
+        let view = self.view.as_mut().expect("a view");
+        if joins {
+            let slot = view.slots;
+            view.slots += 1;
+            let group = self.memo_group.as_mut().expect("joins");
+            group.entries.push(MemoEntry { name, ty, prelude, value, slot });
+            let rendered = render_memo(group);
+            let index = group.index;
+            self.bufs.last_mut().expect("a buffer")[index] = rendered;
+            return;
+        }
+        let base = view.slots;
+        view.slots += deps.len() + 1;
+        let group = MemoGroup {
+            deps: deps.to_vec(),
+            base,
+            entries: vec![MemoEntry { name, ty, prelude, value, slot: base + deps.len() }],
+            depth,
+            index: len,
+        };
+        self.push_stmt(render_memo(&group));
+        self.memo_group = Some(group);
+    }
+
     /// `name` computed by `prelude; value`, again only when a dependency changed.
     fn memo(
         &mut self,
@@ -4628,6 +4962,7 @@ impl<'a> Emitter<'a> {
         // The props, and a name for their whole value (`..props: P`), are what a render reads.
         let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
         self.view = Some(ViewState { slots: 0, reactive, setters, versions: HashMap::default() });
+        self.memo_group = None;
         self.bufs.push(Vec::new());
         // Props.
         let export = if !item.visibility.exported(self.options.modules) || v.kind != ViewKind::View {
@@ -5076,8 +5411,7 @@ impl<'a> Emitter<'a> {
                     .map(|l| self.ck.locals[*l].ty.clone())
                     .or(annotation);
                 let ty = ty.map(|t| self.ts_type(&t));
-                let memo = self.memo(&name, ty, &deps, prelude, value);
-                self.push_stmt(memo);
+                self.push_memo(name.clone(), ty, &deps, prelude, value);
                 if destructure && l.pattern.kind != PatternKind::Wildcard {
                     self.push_stmt(Frag::of(format!("const {target} = {name};")));
                 }
@@ -5107,8 +5441,7 @@ impl<'a> Emitter<'a> {
                 }
                 let ty = self.ck.locals[local].ty.clone();
                 let ts = self.ts_type(&ty);
-                let memo = self.memo(&name, Some(ts), &deps, Vec::new(), function);
-                self.push_stmt(memo);
+                self.push_memo(name, Some(ts), &deps, Vec::new(), function);
                 if !deps.is_empty() {
                     self.view.as_mut().expect("a view").reactive.insert(local);
                 }

@@ -586,6 +586,7 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | prefix | `!` `-` `await` | right |
 | multiplicative | `*` `/` `%` | left |
 | additive | `+` `-` (`+` also joins `String`s) | left |
+| range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
 | equality | `==` `!=` | none |
 | and | `&&` | left |
@@ -650,6 +651,34 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
 
 ## 7. Views
+
+### 6.3 Ranges
+
+Swift's ranges: `a..<b` holds the `Int`s from `a` up to, not including, `b`; `a...b` includes `b`.
+Both bounds are `Int`s (B0201 otherwise), and a range is a collection of them, typed `[Int]`: every
+list method reads it (`(0..<n).filter { … }`, `.count`, `.contains(i)`). Ranges bind below `+`
+and above the comparisons, so `0..<n + 1` is `0..<(n + 1)`, and they do not chain (B0101).
+`bloom fmt` writes them with no spaces.
+
+```bloom
+for i in 0..<count { total += i }          // for (let i = 0; i < count; i++)
+let squares = (0..<n).map { i in i * i }   // Array.from({ length: n }, ($_, i) => i * i)
+let all = Array(1...n)                     // Array.from({ length: n }, ($_, i) => 1 + i)
+HStack { for _ in 1...rating { Star() } }  // Array.from({ length: rating }, ($_) => …)
+```
+
+No range builds an array it does not return:
+
+- a `for` statement over a range is a counting loop; its bound is read once, as Swift builds the
+  range once (a literal or a `let` inline, anything else into a temp);
+- `(0..<n).map { … }` and a builder's `for i in 0..<n` (or `for _ in a..<b`) are one
+  `Array.from({ length })`, the array they return;
+- `Array(r)` is the range's array, and `Array(xs)` / `Array(set)` copy a list's or a set's
+  elements;
+- a range read as any other value is its array, `Array.from({ length: b - a }, ($_, i) => a + i)`.
+
+A reversed range (`5..<3`) traps when its array is built, as Swift's does (JS's `RangeError` for a
+negative length); a `for` over one runs no times.
 
 ### 7.1 A view
 
@@ -789,7 +818,21 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   `Binding(get: v, set: { v in … })`.
 - **TS React components are nodes**: an imported component `OxyAuthPrompt` is called with its
   props as named arguments, `OxyAuthPrompt(label: t("x"), description: t("y"))`, and a
-  trailing builder as `children`.
+  trailing builder as `children`. A TS function is a component when it is UpperCamel, takes at
+  most its props and returns a React element (`JSX.Element`, `ReactElement`, `ReactNode`, also as
+  emitted declarations write them: `import("react").JSX.Element`), and so is a `const` typed
+  `typeof` one (react-native's `View`) and a namespace's member (`import * as Skeleton`,
+  `Skeleton.Region { … }`) or a component's UpperCamel static (`Button.Group { … }`):
+  `EngagementBar(size: "md") {
+  Action(…) }` draws the bar with the actions inside, built in the caller's render. A component
+  whose props declare no `children` passes the builder to the one node prop (`ReactNode`, a
+  `View`) it declares and the call does not give (`Slot(title:) { … }` is its `content`); with
+  none, or several, the builder is B0506, and `children:` given beside a builder is B0207. One
+  line of text is the component's text children (`TextFieldLabel { label }`, JSX's
+  `<TextFieldLabel>{label}</TextFieldLabel>`); a builder line is otherwise a view. A
+  builder's nodes are never dropped: a trailing closure past a TS function's parameters is B0207,
+  and a node on a line of its own in a closure or function that is not a builder (`func f() {
+  Text("x") }`) is B0506 (built and never drawn).
 
 - A token parameter whose TypeScript type also takes a boolean takes a `Bool` (or an optional
   one): `.allowsHitTesting(false)` (`HitTesting`), `.when(on) { … }` (`Condition | boolean`),
@@ -836,6 +879,13 @@ dependencies, and marks the body `"use no memo"` so the React Compiler skips it.
 are immutable, a dependency is the value itself (no mutation analysis, no proxies, no
 subscriptions at runtime). Static subtrees are hoisted to module scope by the existing language
 compiler pass, which runs on bloomc's output in the same process.
+
+The cache is kept small. Members written one after another on the same dependencies share one
+test (`let label = t("a")`, `let show = t("b")` and `let hide = t("c")` are one `if ($[0] !== t)`
+with three value slots, not three tests). A child view is cached on its own when it reads less
+than its parent, except a leaf (a node and its modifiers, with no child view, closure or call
+among its arguments) that reads its one dependency once (`RawText(hide).font("sm")`): building it
+costs about what its test does, so it is built with its parent and takes no slots.
 
 **Writes.** Assigning a state member in a closure is `setX(v)`; when the right side reads the
 state (`count += 1`, `count = count + 1`) it is the functional update `setX(count => count + 1)`.
@@ -1060,7 +1110,7 @@ requirement of a conformance not met), B0232 (a type argument or `any P` value t
 conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async
 call neither awaited nor spawned), B0431 (`.task` not on the body's root), B0432 (`Task.signal`
-outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0601 (untyped `Foreign` use), B0602 (no
+outside a task), B0434 (an effect returns after its cleanup is set), B0435 (a second `equal`, or one without props), B0501/B0502 (modifier / token), B0506 (a node that would never be drawn), B0601 (untyped `Foreign` use), B0602 (no
 declarations found for a TS import), B0610 (`X.tsx` beside `X.bloom`). Parsing recovers at item,
 statement and closing-brace boundaries, so one typo reports one error.
 

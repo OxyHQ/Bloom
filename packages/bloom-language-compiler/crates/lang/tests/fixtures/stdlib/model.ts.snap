@@ -32,17 +32,17 @@ return ModelStore$update(Note$$store, note.slug, (n: Note) => ({ slug: n.slug, t
 const $fn0 = ($0: Note) => $0.pinned;
 export const Notes = view(function Notes() {
 "use no memo";
-const $ = $c(5);
+const $ = $c(3);
 const pinned: readonly Note[] = useQuery(Note$$store, "createdAt", "reverse", $fn0);
 const welcome: Note | undefined = useRecordQuery(Note$$store, "welcome");
 let $t0;
-if ($[2] !== welcome?.text || $[3] !== pinned) {
-$t0 = VStack(($[0] !== welcome?.text ? ($[0] = welcome?.text, $[1] = Text(welcome?.text ?? "")) : $[1]), ...pinned.map((note) => Text(note.text))).spacing("sm");
-$[2] = welcome?.text;
-$[3] = pinned;
-$[4] = $t0;
+if ($[0] !== welcome?.text || $[1] !== pinned) {
+$t0 = VStack(Text(welcome?.text ?? ""), ...pinned.map((note) => Text(note.text))).spacing("sm");
+$[0] = welcome?.text;
+$[1] = pinned;
+$[2] = $t0;
 } else {
-$t0 = $[4];
+$t0 = $[2];
 }
 return $t0;
 });

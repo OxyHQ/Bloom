@@ -25,7 +25,7 @@ export interface InsetProps {
 }
 export const Inset = view(function Inset(props: InsetProps) {
 "use no memo";
-const $ = $c(16);
+const $ = $c(12);
 const { card, gutter } = props;
 let inset: "md" | "sm" | "lg";
 if ($[0] !== card || $[1] !== gutter) {
@@ -37,39 +37,31 @@ $[2] = inset;
 inset = $[2];
 }
 let side: "96" | "48";
+let corner: "10" | "lg";
+let label: "card" | "row";
 if ($[3] !== card) {
 side = card ? "96" : "48";
+corner = card ? "10" : "lg";
+label = card ? "card" : "row";
 $[3] = card;
 $[4] = side;
+$[5] = corner;
+$[6] = label;
 } else {
 side = $[4];
-}
-let corner: "10" | "lg";
-if ($[5] !== card) {
-corner = card ? "10" : "lg";
-$[5] = card;
-$[6] = corner;
-} else {
-corner = $[6];
-}
-let label: "card" | "row";
-if ($[7] !== card) {
-label = card ? "card" : "row";
-$[7] = card;
-$[8] = label;
-} else {
-label = $[8];
+corner = $[5];
+label = $[6];
 }
 let $t0;
-if ($[11] !== label || $[12] !== inset || $[13] !== side || $[14] !== corner) {
-$t0 = VStack(Text(label + "!").padding("leading", inset).frame({ width: side, height: side }).corner(corner), ($[9] !== label ? ($[9] = label, $[10] = Text(`${label.length}`)) : $[10]));
-$[11] = label;
-$[12] = inset;
-$[13] = side;
-$[14] = corner;
-$[15] = $t0;
+if ($[7] !== label || $[8] !== inset || $[9] !== side || $[10] !== corner) {
+$t0 = VStack(Text(label + "!").padding("leading", inset).frame({ width: side, height: side }).corner(corner), Text(`${label.length}`));
+$[7] = label;
+$[8] = inset;
+$[9] = side;
+$[10] = corner;
+$[11] = $t0;
 } else {
-$t0 = $[15];
+$t0 = $[11];
 }
 return $t0;
 });

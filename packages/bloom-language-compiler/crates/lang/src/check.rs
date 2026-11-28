@@ -94,6 +94,8 @@ pub enum CallRes {
     Math(&'static str),
     /// `Regex(pattern, flags)`: a JS `RegExp`.
     Regex,
+    /// `Array(xs)`: a new array of a range's, a list's or a set's elements.
+    ArrayOf,
     /// `catching { … }`: the block's value, or what it threw, as a `Result`.
     Catching,
     /// `Int(s)` / `Float(s)`.
@@ -345,6 +347,12 @@ pub struct CheckResult {
     pub narrowed_paths: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
     pub builder_props: HashSet<Span>,
+    /// Trailing builders of a TS component that fill a node prop other than `children`
+    /// (`content: ReactNode`), by the builder's span: the prop's name.
+    pub component_slots: HashMap<Span, String>,
+    /// A TS component's one-line builder that is text (`TextFieldLabel { label }`): JSX text
+    /// children, passed as they are.
+    pub text_children: HashSet<Span>,
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,
@@ -457,6 +465,8 @@ pub struct Checker<'o> {
     generics: Vec<String>,
     frames: Vec<Frame>,
     ts_named: HashMap<(PathBuf, String), Ty>,
+    /// `import * as ns from "…"`: the TS file each namespace names, for its members.
+    ts_namespaces: HashMap<String, Rc<ts::TsFile>>,
     /// The view being checked.
     view: Option<usize>,
     /// The `async let`s not yet awaited: whether the call throws, and the scope depth.
@@ -578,6 +588,7 @@ impl<'o> Checker<'o> {
                 handled: 0,
             }],
             ts_named: HashMap::default(),
+            ts_namespaces: HashMap::default(),
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
@@ -2372,6 +2383,9 @@ impl<'o> Checker<'o> {
         match &import.kind {
             ImportKind::Module(_) => {}
             ImportKind::Namespace(name) => {
+                if let Some(file) = &file {
+                    self.ts_namespaces.insert(name.name.clone(), file.clone());
+                }
                 self.declare_unique(
                     name,
                     Ty::Foreign(format!("typeof {}", name.name).into()),
@@ -2797,6 +2811,19 @@ impl<'o> Checker<'o> {
             }
             StmtKind::Expr(expr) => {
                 let ty = self.expr(expr, None);
+                // A node on a line of its own outside a builder (a closure that is not a
+                // builder, a function's body): built, then dropped, so nothing draws it.
+                if matches!(self.resolve(&ty), Ty::View(_)) {
+                    self.report(
+                        Diagnostic::error("B0506", expr.span, "this node is built and never drawn")
+                            .label("a line of a closure or function that is not a builder")
+                            .help(
+                                "return it (the last line is the value), or pass it where a view is \
+                                 drawn: a node's or view's trailing builder, or a `View` prop",
+                            )
+                            .spec("72-builders-modifiers-and-tokens"),
+                    );
+                }
                 if matches!(self.resolve(&ty), Ty::Async(_) | Ty::Promise(_))
                     && !self.frames.last().is_some_and(|f| f.spawn)
                 {
@@ -3734,6 +3761,17 @@ impl<'o> Checker<'o> {
         self.push();
         self.cond(&if_expr.cond);
         let Some(otherwise) = if_expr.otherwise.as_deref() else {
+            // Where a `View?` is taken (`.accessory(if open { row })`), an `if` without `else`
+            // is the optional child it is in a builder.
+            let view = match expected.map(|e| self.resolve(e)) {
+                Some(Ty::Option(inner)) => Some(self.resolve(&inner)),
+                other => other,
+            };
+            if let Some(view @ Ty::View(_)) = view {
+                self.block(&if_expr.then, Some(&view));
+                self.pop();
+                return Ty::Option(Box::new(view));
+            }
             self.block(&if_expr.then, Some(&Ty::Unit));
             self.pop();
             return Ty::Unit;
@@ -4815,6 +4853,17 @@ impl<'o> Checker<'o> {
 
     fn binary(&mut self, expr: &Expr, op: BinaryOp, lhs: &Expr, rhs: &Expr, expected: Option<&Ty>) -> Ty {
         match op {
+            // `a..<b`, `a...b`: a collection of `Int`s, typed `[Int]`. A `for` over it and its
+            // `.map` build no array of their own (section 6.3).
+            BinaryOp::HalfOpen | BinaryOp::Closed => {
+                for side in [lhs, rhs] {
+                    let ty = self.expr(side, Some(&Ty::Int));
+                    if !self.coerce(&ty, &Ty::Int) {
+                        self.mismatch(side.span, &ty, &Ty::Int);
+                    }
+                }
+                Ty::List(Box::new(Ty::Int))
+            }
             BinaryOp::And | BinaryOp::Or => {
                 let left = self.expr(lhs, None);
                 // `f || b` of a TS value `f`: JS's value `||`, `b` when `f` is falsy, typed

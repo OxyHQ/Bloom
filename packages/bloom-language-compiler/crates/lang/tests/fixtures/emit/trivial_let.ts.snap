@@ -10,7 +10,7 @@ export interface CounterProps {
 }
 export const Counter = view(function Counter(props: CounterProps) {
 "use no memo";
-const $ = $c(13);
+const $ = $c(11);
 const { step = 1 } = props;
 const [count, setCount] = useState<number>(0);
 const label = `Count ${count}`;
@@ -32,16 +32,16 @@ $[4] = banner;
 banner = $[4];
 }
 let $t0;
-if ($[9] !== banner || $[10] !== long || $[11] !== step) {
-$t0 = VStack(banner, ($[5] !== long ? ($[5] = long, $[6] = Text(long)) : $[6]), ($[7] !== step ? ($[7] = step, $[8] = $view0.onPress(() => {
+if ($[7] !== banner || $[8] !== long || $[9] !== step) {
+$t0 = VStack(banner, Text(long), ($[5] !== step ? ($[5] = step, $[6] = $view0.onPress(() => {
 setCount((count) => count + (step));
-})) : $[8]));
-$[9] = banner;
-$[10] = long;
-$[11] = step;
-$[12] = $t0;
+})) : $[6]));
+$[7] = banner;
+$[8] = long;
+$[9] = step;
+$[10] = $t0;
 } else {
-$t0 = $[12];
+$t0 = $[10];
 }
 return $t0;
 });

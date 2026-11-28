@@ -1,0 +1,54 @@
+// A TS function component drawn with a trailing builder: the builder's nodes are its
+// `children` (JSX children), never the arguments of a plain function call.
+import { Action, EngagementBar } from "@/ui/bars"
+
+public struct Bar: View {
+  let liked: Bool
+
+  var body: some View {
+    VStack {
+      EngagementBar(size: "md") {
+        Action(label: "a")
+        Text("b")
+        if liked { Text("liked") }
+      }
+      EngagementBar {
+        Action(label: "one")
+      }
+    }
+  }
+}
+
+// A component whose one node prop is not `children` (`content?: ReactNode`): the builder fills it.
+import { Slot } from "@/ui/bars"
+
+public struct Slotted: View {
+  var body: some View {
+    Slot(title: "t") {
+      Text("inside")
+    }
+  }
+}
+
+// react-native's `View` (`declare const $$View: typeof View`), a namespace's components
+// (`import * as Skeleton`), and an `if` without `else` where a `View?` is taken.
+import { Box } from "@/ui/rn"
+import { Toolbar } from "@/ui/bars"
+import * as Skeleton from "@/ui/skeleton"
+
+public struct Placeholder: View {
+  let open: Bool
+
+  var body: some View {
+    Box(testID: "box") {
+      Skeleton.Region {
+        Skeleton.Circle(size: 36)
+        Text("loading")
+      }
+      Toolbar.Group { Text("tools") }
+      // One line of text is the component's text children (JSX's `<X>{label}</X>`).
+      EngagementBar { open ? "open" : "closed" }
+    }
+    .header(Header("Loading").accessory(if open { Text("open") }))
+  }
+}
