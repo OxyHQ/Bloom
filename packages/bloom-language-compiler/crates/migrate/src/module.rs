@@ -2037,6 +2037,13 @@ impl<'s> Tr<'s> {
                         // A route that draws its screen inside a gate is that screen, gated
                         // (`view_item` writes it as the route's default).
                         Some(_) if self.gated_route(body).is_some() => String::new(),
+                        // …and a wrapper that draws a state of its own before its screen.
+                        _ if crate::view::screens_of(body)
+                            .iter()
+                            .any(|s| crate::view::local_gate(body, s).is_some()) =>
+                        {
+                            String::new()
+                        }
                         // A route's default export is a React component: a `screen` or `layout`.
                         Some(kind) => self.route_fn(kind, &name, f, body),
                         None => self.function_item(&name, f, "pub default ", body),

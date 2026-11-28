@@ -103,6 +103,29 @@ impl Tr<'_> {
             let view = self.view_item(name, call, "pub default ", body);
             return gated_body(&view, &format!(".modifier({}({}))", gate.name, gate.args));
         }
+        // …or a wrapper that draws a state of its own before the screen (`if (!c) return A;
+        // return <X />;`): that is a file-local ViewModifier the screen applies.
+        if kind == "screen"
+            && !vis.contains("default")
+            && let Some((test, held)) = local_gate(body, name)
+        {
+            let cond = self.expr(test);
+            let held = self.expr(held);
+            let held = if [" ? ", " ?? ", " || ", " && "].iter().any(|op| held.contains(op)) {
+                format!("({held})")
+            } else {
+                held
+            };
+            let gate = format!("{name}Gate");
+            let view = self.view_item(name, call, "pub default ", body);
+            let modifier = format!(
+                "/// What the route drew before its screen: a state of its own, without the screen.\n\
+                 private struct {gate}: ViewModifier {{\n\
+                 func body(content: Content) -> some View {{\n\
+                 if {cond} {{ {held}.ownScreen() }} else {{ content }}\n}}\n}}\n\n"
+            );
+            return modifier + &gated_body(&view, &format!(".modifier({gate}())"));
+        }
         if kind != "view"
             && !vis.contains("default")
             && body.iter().any(|s| matches!(s, Statement::ExportDefaultDeclaration(d)
@@ -4143,6 +4166,63 @@ impl Tr<'_> {
             bloom,
         })
     }
+}
+
+/// The names of a module's `const X = screen(…)`.
+pub fn screens_of(module: &[Statement]) -> Vec<String> {
+    use oxc_ast::ast::BindingPattern;
+    let mut out = Vec::new();
+    for s in module {
+        let Statement::VariableDeclaration(v) = s else { continue };
+        for d in &v.declarations {
+            if let BindingPattern::BindingIdentifier(id) = &d.id
+                && let Some(Expression::CallExpression(call)) = &d.init
+                && matches!(&call.callee, Expression::Identifier(c) if c.name == "screen")
+            {
+                out.push(id.name.to_string());
+            }
+        }
+    }
+    out
+}
+
+/// `export default function R() { if (test) return held; return <name />; }`: the test and the
+/// state drawn before the screen.
+pub fn local_gate<'a>(
+    module: &'a [Statement<'a>],
+    name: &str,
+) -> Option<(&'a Expression<'a>, &'a Expression<'a>)> {
+    use oxc_ast::ast::{ExportDefaultDeclarationKind, JSXElementName};
+    let f = module.iter().find_map(|s| match s {
+        Statement::ExportDefaultDeclaration(d) => match &d.declaration {
+            ExportDefaultDeclarationKind::FunctionDeclaration(f) => Some(f),
+            _ => None,
+        },
+        _ => None,
+    })?;
+    if !f.params.items.is_empty() {
+        return None;
+    }
+    let [Statement::IfStatement(check), Statement::ReturnStatement(last)] =
+        f.body.as_ref()?.statements.as_slice()
+    else {
+        return None;
+    };
+    if check.alternate.is_some() {
+        return None;
+    }
+    let held = match &check.consequent {
+        Statement::ReturnStatement(r) => r.argument.as_ref()?,
+        Statement::BlockStatement(b) => match b.body.as_slice() {
+            [Statement::ReturnStatement(r)] => r.argument.as_ref()?,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    let Expression::JSXElement(screen) = last.argument.as_ref()?.without_parentheses() else { return None };
+    let JSXElementName::IdentifierReference(id) = &screen.opening_element.name else { return None };
+    (id.name == name && screen.opening_element.attributes.is_empty() && screen.children.is_empty())
+        .then_some((&check.test, held))
 }
 
 /// A `screen` declaration's body with `modifier` applied to its root (in a `Group` when the

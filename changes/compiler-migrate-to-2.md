@@ -63,3 +63,4 @@ section: Added
   - a string's JS `length`, `slice`/`substring` and `padStart`/`padEnd` read its `utf16` view (`s.utf16.count`, `s.utf16.slice(…)`), since a Bloom `String` counts characters (needs the compiler's `utf16` view, #1081);
   - `--write`: `require('./X').default` in a mock factory is `require('./X.bloom').Name`, a TS file that takes a migrated view through a barrel draws it as `toElement(X({ … }))`, and a typed `jest.requireActual<typeof import('./X')>('./X')` is rewritten, with the views it destructures drawn as nodes.
   - a route that only draws its `screen()` inside a gate with a `.bloom` `struct Gate: ViewModifier` is that screen with `.modifier(Gate(…))` on its root (was `route:wrapped-screen`); `x.slice(-n)` is `x.suffix(n)`, a string's on its `utf16` view.
+  - a wrapper that draws a state of its own before its screen (`if (!c) return held; return <X />`) is a file-local `ViewModifier` whose held state is `.ownScreen()`.
