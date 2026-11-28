@@ -1,0 +1,24 @@
+// An optional child inside a branch that tested it (`tabBar ? <Card>{tabBar}</Card> : null`) is
+// the child itself: bloomc has narrowed it, so the codemod's `if let tabBar = tabBar` goes.
+
+import { Card } from "./card"
+
+private struct TabsProps {
+  let tabBar: View?
+}
+
+public struct Tabs: View {
+  let tabBar: View?
+  let depth: Float
+  let sticky = tabBar != none ? (Card(
+    // The strip's title.
+    title: "tabs \(depth)",
+  ) { tabBar }) : none
+
+  var body: some View {
+    Card(title: "page") {
+      sticky
+      Text("end")
+    }
+  }
+}
