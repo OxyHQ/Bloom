@@ -1153,6 +1153,14 @@ impl Tr<'_> {
             {
                 return self.boolean(value);
             }
+            // An `Embed((render) => <C slot={render(x)} />)` render prop's `render(x)` in a prop:
+            // a view where TS takes an element, as `toElement(x)` is.
+            if self.scope.render.as_deref() == Some(name)
+                && let [arg] = call.arguments.as_slice()
+                && arg.as_expression().is_some()
+            {
+                return self.expr(arg.to_expression());
+            }
             if self.is_lang(name, "toElement") {
                 // The boundary disappears: a view is a value where TS takes an element.
                 // `toElement(x, key)` is `x.id(key)`.

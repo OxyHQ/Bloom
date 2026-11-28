@@ -857,7 +857,7 @@ impl<'s> Tr<'s> {
             })
             .map(|(local, export)| {
                 // React's components (`<Suspense>`) are values; its other names types.
-                let kind = if matches!(export.as_str(), "Suspense" | "StrictMode" | "Profiler") {
+                let kind = if matches!(export.as_str(), "Suspense" | "StrictMode" | "Profiler" | "Activity") {
                     ""
                 } else {
                     "type "
