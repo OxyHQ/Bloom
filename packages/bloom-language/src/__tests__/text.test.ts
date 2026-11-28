@@ -6,6 +6,7 @@
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
+import { GRAPHEME_UNICODE } from '../generated/graphemes.generated';
 import {
   characterBoundaries,
   characterCount,
@@ -16,7 +17,14 @@ import {
   utf16Offset,
 } from '../text';
 
-const intl = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+// Node's (the package's TS lib predates `Intl.Segmenter`).
+const { Segmenter } = Intl as unknown as {
+  Segmenter: new (
+    locale?: string,
+    options?: { granularity: string },
+  ) => { segment(s: string): Iterable<{ index: number }> };
+};
+const intl = new Segmenter(undefined, { granularity: 'grapheme' });
 const reference = (s: string) => [...Array.from(intl.segment(s), (x) => x.index), s.length];
 
 const SAMPLES = [
@@ -43,20 +51,36 @@ const SAMPLES = [
   'tab\there\u0000end',
 ];
 
+// Indic conjuncts (GB9c): a consonant, a virama and a consonant are one character.
+const CONJUNCTS = [
+  'नमस्ते',
+  'क्षत्रिय',
+  'स्त्री',
+  'क्‍ष',
+  'क््क',
+  'ক্ষ বাংলা',
+  'ક્ષ',
+  'କ୍ଷ',
+  'క్ష',
+  'ക്ഷ',
+  'क्a',
+  'a्क',
+  'क़्क',
+  'क्ष्म्य',
+];
+
 it('segments as Intl.Segmenter does without it (Hermes)', () => {
-  for (const s of SAMPLES) {
-    // GB9c (Indic conjuncts) is not applied: Devanagari with a virama is told apart below.
-    if (s === 'नमस्ते') continue;
+  for (const s of [...SAMPLES, ...CONJUNCTS]) {
     expect([s, fallbackCharacterBoundaries(s)]).toEqual([s, reference(s)]);
   }
-  // Without GB9c, a virama still joins what precedes it: "नमस्ते" is 4, where Intl says 3.
-  expect(fallbackCharacterBoundaries('नमस्ते').length - 1).toBe(4);
+  expect(fallbackCharacterBoundaries('नमस्ते').length - 1).toBe(3);
 });
 
 it('agrees with Intl.Segmenter on every pair of a sample of code points', () => {
   const points = [
     0x41, 0x0d, 0x0a, 0x7f, 0xad, 0x300, 0x903, 0x600, 0x1100, 0x1161, 0x11a8, 0xac00, 0xac01,
-    0x200c, 0x200d, 0x1f1e6, 0x1f600, 0x1f3fb, 0x2764, 0xfe0f, 0xe0020, 0x0e33,
+    0x200c, 0x200d, 0x1f1e6, 0x1f600, 0x1f3fb, 0x2764, 0xfe0f, 0xe0020, 0x0e33, 0x915, 0x94d, 0x93c,
+    0x995,
   ];
   for (const a of points)
     for (const b of points)
@@ -85,7 +109,10 @@ it('counts, slices and converts offsets in characters', () => {
   expect(characterBoundaries('a\r\n')).toEqual([0, 1, 3]);
 });
 
-it('has the break table this Node writes', () => {
+// The table is of the Unicode version of the Node that wrote it: another Node may differ.
+const sameUnicode = process.versions.unicode === GRAPHEME_UNICODE;
+
+(sameUnicode ? it : it.skip)('has the break table this Node writes', () => {
   const script = join(__dirname, '../../scripts/generate-graphemes.mjs');
   expect(() =>
     execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' }),

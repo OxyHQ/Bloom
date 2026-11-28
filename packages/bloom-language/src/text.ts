@@ -5,10 +5,10 @@
  *
  * Where the engine has `Intl.Segmenter` (V8, JavaScriptCore) it splits the string; elsewhere
  * (Hermes) UAX #29's rules run over the break classes of `generated/graphemes.generated.ts`
- * (GB3 to GB13; the Indic conjunct rule GB9c is not applied). A string of code units below
+ * (GB3 to GB13, the Indic conjunct rule GB9c included). A string of code units below
  * U+0300 with no CR LF is one character per unit, read without segmenting.
  */
-import { GRAPHEME_BREAKS } from './generated/graphemes.generated';
+import { CONJUNCT_BREAKS, GRAPHEME_BREAKS } from './generated/graphemes.generated';
 
 type Segmenter = { segment(s: string): Iterable<{ segment: string; index: number }> };
 const IntlWithSegmenter = Intl as unknown as {
@@ -41,11 +41,25 @@ const LV = 12;
 const LVT = 13;
 const PICTOGRAPHIC = 14;
 
+// Indic_Conjunct_Break values (GB9c).
+const CONSONANT = 1;
+const LINKER = 2;
+const CONJUNCT_EXTEND = 3;
+
 /** The break class of `cp` (0: Other), by binary search over the table's ranges. */
 function classOf(cp: number): number {
   if (cp < 0x20) return cp === 0x0d ? CR : cp === 0x0a ? LF : CONTROL;
   if (cp < 0x7f) return 0;
-  const table = GRAPHEME_BREAKS;
+  return lookup(GRAPHEME_BREAKS, cp);
+}
+
+/** `cp`'s Indic_Conjunct_Break (0: None). */
+function conjunctOf(cp: number): number {
+  return cp < 0x300 ? 0 : lookup(CONJUNCT_BREAKS, cp);
+}
+
+/** `cp`'s value in a table of `start, length, value` triples (0 where none lists it). */
+function lookup(table: readonly number[], cp: number): number {
   let lo = 0;
   let hi = table.length / 3 - 1;
   while (lo <= hi) {
@@ -67,9 +81,12 @@ function fallbackBoundaries(s: string): number[] {
   let zwjAfterPictographic = false;
   // GB12/13: how many Regional_Indicators run up to here.
   let indicators = 0;
+  // GB9c: 1 after a Consonant (then Extends or Linkers), 2 once a Linker followed it.
+  let conjunct = 0;
   for (let i = 0; i < s.length; ) {
     const cp = s.codePointAt(i) as number;
     const c = classOf(cp);
+    const incb = conjunctOf(cp);
     let joins = false;
     if (previous !== -1) {
       const p = previous;
@@ -80,6 +97,7 @@ function fallbackBoundaries(s: string): number[] {
       else if ((p === LV || p === V) && (c === V || c === T)) joins = true;
       else if ((p === LVT || p === T) && c === T) joins = true;
       else if (c === EXTEND || c === ZWJ || c === SPACING_MARK || p === PREPEND) joins = true;
+      else if (incb === CONSONANT && conjunct === 2) joins = true;
       else if (c === PICTOGRAPHIC && zwjAfterPictographic) joins = true;
       else if (p === RI && c === RI) joins = indicators % 2 === 1;
     }
@@ -88,6 +106,9 @@ function fallbackBoundaries(s: string): number[] {
     if (c === PICTOGRAPHIC) pictographic = true;
     else if (c !== EXTEND && c !== ZWJ) pictographic = false;
     indicators = c === RI ? indicators + 1 : 0;
+    if (incb === CONSONANT) conjunct = 1;
+    else if (incb === LINKER && conjunct > 0) conjunct = 2;
+    else if (incb !== CONJUNCT_EXTEND) conjunct = 0;
     previous = c;
     i += cp > 0xffff ? 2 : 1;
   }
