@@ -18,6 +18,8 @@ import {
   type ReactElement,
   type ReactNode,
   useMemo,
+  useState,
+  useSyncExternalStore,
 } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
@@ -36,6 +38,7 @@ import {
   type ViewNodeProps,
 } from '../node';
 import { valuesOf } from '../platform/values';
+import { createRisingStore, RISING_KEYS, RisingContext, type RisingValues } from '../rising-chrome';
 import { GROUP_MODIFIERS } from '../generated/spec.generated';
 import { ink, flexStyle, type RoleRef } from '../style';
 import { isSurfaceFill, surfaced, themeColor, withSurface } from '../paint';
@@ -141,7 +144,11 @@ function withBranchChrome(root: Node, values: Record<string, unknown>): Record<s
 }
 
 /** The chrome a body's root declares. */
-function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
+function chromeOf(
+  root: Child,
+  back: (() => void) | undefined,
+  risen: RisingValues = {},
+): ScreenChrome {
   const chrome: ScreenChrome = {
     header: null,
     custom: false,
@@ -154,7 +161,9 @@ function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
     content: root,
   };
   if (!isNode(root)) return chrome;
+  // The root's own, then its drawn branch's, then what the views it draws declare.
   const values = withBranchChrome(root, valuesOf(root));
+  for (const key of RISING_KEYS) if (!(key in values) && key in risen) values[key] = risen[key];
   chrome.values = values;
   // The drawn branch's chrome too (a root `Group`'s, as SwiftUI reads it from any branch): its
   // sheets, and its footer, floating action and test id where the root has none of its own.
@@ -319,7 +328,10 @@ const AROUND_A_SCREEN: ReadonlySet<string> = new Set(
  * same with `.ownScreen()` and `null` roots answered first.
  */
 export function ScreenHost({ root, back }: { root: Child } & ScreenHostOptions) {
-  const chrome = chromeOf(root, back);
+  // The chrome the views it draws declare (`rising-chrome.ts`), for what the root does not say.
+  const [store] = useState(createRisingStore);
+  const risen = useSyncExternalStore(store.subscribe, store.snapshot, store.snapshot);
+  const chrome = chromeOf(root, back, risen);
   // Undecided (the navigator is read after the first render): no header yet, in the page or the bar.
   const bar = useSystemBar();
   const system = bar === true && chrome.header !== null && !chrome.custom;
@@ -360,7 +372,7 @@ export function ScreenHost({ root, back }: { root: Child } & ScreenHostOptions) 
     bottomBar: footer ? toElement(footer.content) : undefined,
     bottomBarPlacement: footerOptions?.placement,
     bottomBarKeyboardBehavior: footerOptions?.keyboard,
-    children: toElement(chrome.content),
+    children: createElement(RisingContext.Provider, { value: store }, toElement(chrome.content)),
   };
   const painted = background === undefined ? undefined : ink(background);
   // A fill of its own is drawn by the leaf that reads the theme, `OnSurface` when it is the surface fill.
