@@ -70,7 +70,8 @@ fun FlexRow(
     val items = measurables.map { (it.parentData as? FlexItem) ?: FlexItem() }
     val bounded = constraints.hasBoundedWidth
     val max = if (bounded) constraints.maxWidth else Int.MAX_VALUE
-    val child = { w: Int -> Constraints(0, w, 0, constraints.maxHeight) }
+    // Unbounded (a horizontal scroll): each child at its own width.
+    val child = { w: Int -> Constraints(0, if (bounded) w else Constraints.Infinity, 0, constraints.maxHeight) }
     val placeables = arrayOfNulls<Placeable>(n)
     var used = if (n > 1) gap * (n - 1) else 0
     // The rigid children: their own width, in order, from the room there is.
