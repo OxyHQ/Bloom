@@ -1524,6 +1524,15 @@ function drawNode(
   );
 }
 
+/** Whether a view's own frame sets `side` (`.frame({ width })`), at rest. */
+function hasSide(layer: Layer | undefined, side: 'width' | 'height'): boolean {
+  return (
+    layer?.modifiers.some(
+      (modifier) => modifier.kind === 'frame' && modifier.value[side] !== undefined,
+    ) ?? false
+  );
+}
+
 function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
   const style = layerStyle(layer);
   return flex ? Object.assign(style, placeStyle(p.place)) : style;
@@ -2681,13 +2690,24 @@ function renderHost(
       const interactive = p.pressable || p.hoverGroup;
       const imageFlex = interactive ? '' : flex;
       const aspectRatio = ownValue(p, 'aspectRatio')?.value;
-      const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}`;
+      // SwiftUI's: an image of a ratio with no width or height takes the width a stack offers
+      // (a `VStack(alignment: .leading)`'s too), and its height from the ratio. A column that
+      // does not stretch its children would leave it no width (it has none until it loads), so
+      // it stretches itself, unless it is placed (`alignSelf`) or in an `HStack`.
+      const stretch =
+        aspectRatio !== undefined &&
+        !inRow &&
+        p.place.alignSelf === undefined &&
+        !hasSide(layer, 'width') &&
+        !hasSide(layer, 'height');
+      const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}|${stretch ? 'S' : ''}`;
       const out = cachedStyle(
         'component',
         styleKey,
         () => {
           const style = boxStyle(layer, imageFlex, p);
           if (aspectRatio !== undefined) style.aspectRatio = aspectRatio;
+          if (stretch && !interactive) style.alignSelf = 'stretch';
           return style;
         },
         () => boxVariants(layer, imageFlex, p),
@@ -2711,7 +2731,11 @@ function renderHost(
         props,
       );
       if (!interactive) return image;
-      const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
+      const placement = cachedStyle('host', `IMP|${flex}|${stretch ? 'S' : ''}`, () => {
+        const style = boxStyle(undefined, flex, p);
+        if (stretch) style.alignSelf = 'stretch';
+        return style;
+      });
       return drawOutermost(palette, box, hostFor(p), placement, hostProps(behaviour, key), image);
     }
     case 'button': {
