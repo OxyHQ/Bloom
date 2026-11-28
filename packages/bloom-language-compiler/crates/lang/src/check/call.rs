@@ -1607,7 +1607,11 @@ impl Checker<'_> {
                         format!("`{}` needs {}", d.name, missing.join(", ")),
                     )
                     .label("missing field(s) without a default")
-                    .help(format!("pass it: `{}({first}: …)`, or give the field a default", d.name))
+                    .help(if d.origin == Origin::Record {
+                        format!("write it: `{{ {first}: … }}`")
+                    } else {
+                        format!("pass it: `{}({first}: …)`, or give the field a default", d.name)
+                    })
                     .spec("44-structs"),
                 );
             }
@@ -1955,14 +1959,56 @@ impl Checker<'_> {
         );
     }
 
-    /// A node's argument: a primitive its signature names is checked here; any
-    /// other value TypeScript checks against the constructor on the emitted code.
+    /// The type a literal given to an object parameter is checked against (`[dialogButton]`
+    /// when `list`), as Swift checks a literal against its context: each list element and
+    /// ternary branch on its own. `None` for any other value, which TypeScript checks.
+    fn object_expected(&mut self, object: &str, list: bool, value: &Expr) -> Option<Ty> {
+        if !literal_shaped(value) {
+            return None;
+        }
+        let fields = ui::object_fields(object)?;
+        let fields = fields
+            .into_iter()
+            .map(|(key, kind)| {
+                let optional = kind.ends_with('?');
+                let ty = match kind.trim_end_matches('?') {
+                    "string" => Ty::Str,
+                    "number" => Ty::Float,
+                    "boolean" => Ty::Bool,
+                    "action" => Ty::Fn(Rc::new(FnTy {
+                        params: Vec::new(),
+                        ret: Ty::Unit,
+                        is_async: false,
+                        generics: 0,
+                        ts: false,
+                        throws: false,
+                        bounds: Vec::new(),
+                        shapes: Vec::new(),
+                    })),
+                    "value" => Ty::Unknown,
+                    set => Ty::Strings(ui::str_set(set)),
+                };
+                let ty = if optional && ty != Ty::Unknown { Ty::Option(Box::new(ty)) } else { ty };
+                let default = if optional { FieldDefault::Undefined } else { FieldDefault::None };
+                FieldDef { name: key.to_string(), ty, default }
+            })
+            .collect();
+        let ty = self.object_type(object, fields);
+        Some(if list { Ty::List(Box::new(ty)) } else { ty })
+    }
+
+    /// A node's argument: a primitive its signature names is checked here, a literal given to an
+    /// object parameter against the object; any other value TypeScript checks against the
+    /// constructor on the emitted code.
     fn node_arg(&mut self, value: &Expr, param: &str) {
         let expected = match param {
             "string" => Some(Ty::Str),
             "number" => Some(Ty::Float),
             "boolean" => Some(Ty::Bool),
-            _ => None,
+            param => match param.strip_prefix('[').and_then(|p| p.strip_suffix(']')) {
+                Some(object) => self.object_expected(object, true, value),
+                None => self.object_expected(param, false, value),
+            },
         };
         let ty = self.boundary(value, expected.as_ref());
         if param == "binding" && !matches!(self.resolve(&ty), Ty::Binding(_) | Ty::Foreign(_) | Ty::Unknown) {
@@ -2280,7 +2326,7 @@ impl Checker<'_> {
                 .map(|p| p.trim_end_matches('?'))
                 .find(|p| matches!(ui::param_kind(spec, p), ParamKind::Object { .. }));
             match object_param.map(|p| ui::param_kind(spec, p)) {
-                Some(ParamKind::Object { keys, set, points }) => {
+                Some(ParamKind::Object { keys, set, points, .. }) => {
                     for arg in &named {
                         let label = arg.label.as_ref().expect("named");
                         if !keys.contains(&label.name.as_str()) {
@@ -2377,7 +2423,15 @@ impl Checker<'_> {
                 ParamKind::Object { .. } | ParamKind::Any if matches!(&value.kind, ExprKind::If(i) if i.otherwise.is_none()) => {
                     self.child(value)
                 }
-                ParamKind::Object { .. } | ParamKind::Any => {
+                ParamKind::Object { name: object, .. } => {
+                    let ty = self.object_expected(object, false, value);
+                    self.boundary(value, ty.as_ref());
+                }
+                ParamKind::ObjectList(object) => {
+                    let ty = self.object_expected(object, true, value);
+                    self.boundary(value, ty.as_ref());
+                }
+                ParamKind::Any => {
                     self.boundary(value, None);
                 }
             }
@@ -3064,4 +3118,14 @@ fn contains_var(ty: &Ty) -> bool {
         None
     });
     found
+}
+
+/// A literal Swift types from its context: a list, a record, or a ternary or `if` of them.
+fn literal_shaped(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::List(_) | ExprKind::Record(_) => true,
+        ExprKind::Paren(inner) => literal_shaped(inner),
+        ExprKind::Ternary(_, then, otherwise) => literal_shaped(then) || literal_shaped(otherwise),
+        _ => false,
+    }
 }

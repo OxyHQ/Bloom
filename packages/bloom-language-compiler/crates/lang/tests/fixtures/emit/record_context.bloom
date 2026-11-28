@@ -1,0 +1,42 @@
+// A literal is checked against its context, as Swift checks it (lang-mention-10's record-context):
+// each list element and ternary branch is typed from what is expected, never from its sibling.
+// A spec object parameter types its literal (`.accessibilityValue`'s `{ min?, max?, now?, text? }`,
+// `Dialog().buttons`' `[dialogButton]`), and so do an annotation and a TS parameter's type.
+import Bloom
+import { tagItems, transformed } from "@/corpus"
+
+public struct Progress: View {
+  let label: String
+  let percent: Float?
+  @State private var discarding = false
+
+  var body: some View {
+    VStack {
+      Text(label)
+        .accessibilityValue(percent == none ? { text: label } : { min: 0, max: 100, now: percent })
+      Dialog()
+        .title("Discard?")
+        .buttons([
+          { label: "Discard", color: "destructive", onPress: { discarding = false } },
+          { label: "Keep editing", color: "cancel" },
+        ])
+        .presented($discarding)
+    }
+  }
+}
+
+public struct Tag {
+  var id: String
+  var label: String? = none
+  var count: Int? = none
+}
+
+public func tags(_ wide: Bool) -> Float {
+  let annotated: [Tag] = [{ id: "a", label: "A" }, { id: "b", count: 2 }]
+  let branch: Tag = wide ? { id: "w", label: "Wide" } : { id: "n", count: 1 }
+  return annotated.count + branch.id.count + tagItems([{ id: "a", label: "A" }, { id: "b", count: 2 }])
+}
+
+public func moved(_ y: Float) -> Float {
+  transformed({ transform: [{ scale: 1.5 }, { translateY: y }, { rotate: "45deg" }], opacity: 1 })
+}

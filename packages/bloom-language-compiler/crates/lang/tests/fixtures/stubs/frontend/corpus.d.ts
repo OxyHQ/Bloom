@@ -116,3 +116,13 @@ export interface AvatarItem {
   uri?: string | null;
   username?: string;
 }
+/** A list of optional-field records a TS function takes (record-context). */
+export declare function tagItems(
+  items: Array<{ id: string; label?: string; count?: number }>,
+): number;
+/** A transform list, each entry one transform (React Native's `transform`). */
+export interface Transformed {
+  transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>;
+  opacity?: number;
+}
+export declare function transformed(style: Transformed): number;

@@ -27,7 +27,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { NO_TOKEN, tokenSetsOf, withoutComment } from './token-sets.mjs';
+import { NO_TOKEN, objectsOf, tokenSetsOf, withoutComment } from './token-sets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, '..');
@@ -47,7 +47,7 @@ const typeRamp = withoutComment(spec.typeRamp);
 const motion = withoutComment(spec.motion);
 const easing = withoutComment(spec.easing);
 const loops = withoutComment(spec.loops);
-const objects = withoutComment(spec.objects);
+const objects = objectsOf(spec);
 const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const universal = new Set(spec.universal);
@@ -247,11 +247,25 @@ const tokenList = (set) =>
     .map((t) => code(`'${t}'`))
     .join(', ');
 
+/** A typed object, its fields written out: `{ label: string, color?: dialogActionColor }`. */
+function objectType(name, from) {
+  const fields = Object.entries(objects[name].fields).map(([key, type]) => {
+    const bare = type.replace(/\?$/, '');
+    const shown = tokenSets[bare] ? tokenLink(bare, from) : code(bare);
+    return `${code(`${key}${type.endsWith('?') ? '?' : ''}`)}: ${shown}`;
+  });
+  return `${code(name)} (${fields.join(', ')})`;
+}
+
 /** A spec parameter type, linked: a token set, an object parameter or a free value. */
 function paramType(param, from) {
   const name = param.replace(/\?$/, '');
   const optional = param.endsWith('?') ? ' (optional)' : '';
   if (tokenSets[name]) return `${tokenLink(name, from)}${optional}`;
+  // `[dialogButton]`: a list of a typed object.
+  const listed = /^\[(.+)\]$/.exec(name);
+  if (listed && objects[listed[1]]) return `a list of ${objectType(listed[1], from)}${optional}`;
+  if (objects[name]?.fields) return `${objectType(name, from)}${optional}`;
   if (objects[name]) {
     return `${code(`{ ${objects[name].keys.join(', ')} }`)}, each ${tokenLink(objects[name].tokens, from)}${optional}`;
   }

@@ -76,6 +76,7 @@ pub const SWIFT_TOKENS: &[(&str, &[(&str, &str)])] = &[
     ("cornerSide", &[("all", "all"), ("top", "top"), ("bottom", "bottom"), ("leading", "leading"), ("trailing", "trailing"), ("topLeading", "top-leading"), ("topTrailing", "top-trailing"), ("bottomLeading", "bottom-leading"), ("bottomTrailing", "bottom-trailing"), ("left", "left"), ("right", "right"), ("topLeft", "top-left"), ("topRight", "top-right"), ("bottomLeft", "bottom-left"), ("bottomRight", "bottom-right")]),
     ("cursor", &[("auto", "auto"), ("default", "default"), ("pointer", "pointer"), ("grab", "grab"), ("grabbing", "grabbing"), ("text", "text"), ("move", "move"), ("notAllowed", "not-allowed")]),
     ("dataTableStyle", &[("table", "table"), ("inset", "inset")]),
+    ("dialogActionColor", &[("default", "default"), ("cancel", "cancel"), ("destructive", "destructive")]),
     ("dialogPlacement", &[("center", "center"), ("left", "left"), ("right", "right"), ("start", "start"), ("end", "end"), ("bottom", "bottom")]),
     ("directionsDensity", &[("comfortable", "comfortable"), ("compact", "compact")]),
     ("dismissIcon", &[("close", "close"), ("unpin", "unpin")]),

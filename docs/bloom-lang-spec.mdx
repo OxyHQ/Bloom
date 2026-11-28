@@ -234,7 +234,13 @@ sibling (a list literal's earlier item, a ternary's first branch). A record a cl
 last line or a `return`, its result type not written) takes an expected struct or TS type with
 any extra fields, as TS checks no excess property on a callback's result; a literal written where
 the type is declared (`let x: [T] = [{ … }]`) is checked for them (B0205). Swift's signature writes a closure's result
-type by hand: `{ () -> [Item] in … }`, `{ (n: Int) -> Int in n * 2 }`. A literal
+type by hand: `{ () -> [Item] in … }`, `{ (n: Int) -> Int in n * 2 }`. A list or record literal
+is checked against its context as Swift checks one: each element and each ternary branch on its
+own against the expected type (an annotation, a TS parameter's, or a spec object parameter's),
+never against its sibling's. A spec object parameter is a record of its keys:
+`.accessibilityValue(c ? { text } : { min, max, now })`, and a typed one names each key's type
+(`Dialog().buttons([…])` takes `[dialogButton]`, `{ label: String, color?, onPress?, … }`: a
+button without `label` is B0206, an unknown key B0205). A literal
 `"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a

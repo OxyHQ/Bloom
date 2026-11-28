@@ -1,0 +1,48 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Dialog } from "@oxy.so/bloom-language/overlays";
+import { useState } from "react";
+import { tagItems, transformed } from "@/corpus";
+
+const $view0 = Dialog().title("Discard?");
+export interface ProgressProps {
+  readonly label: string;
+  readonly percent: number | undefined;
+}
+export const Progress = view(function Progress(props: ProgressProps) {
+"use no memo";
+const $ = $c(9);
+const { label, percent } = props;
+const [discarding, setDiscarding] = useState<boolean>(false);
+let $t0;
+if ($[5] !== label || $[6] !== percent || $[7] !== discarding) {
+$t0 = VStack(($[0] !== label || $[1] !== percent ? ($[0] = label, $[1] = percent, $[2] = Text(label).accessibilityValue((percent == null) ? ({ text: label }) : ({ min: 0, max: 100, now: percent }))) : $[2]), ($[3] !== discarding ? ($[3] = discarding, $[4] = $view0.buttons([{ label: "Discard", color: "destructive", onPress: () => {
+setDiscarding(false);
+} }, { label: "Keep editing", color: "cancel" }]).presented([discarding, setDiscarding] as const)) : $[4]));
+$[5] = label;
+$[6] = percent;
+$[7] = discarding;
+$[8] = $t0;
+} else {
+$t0 = $[8];
+}
+return $t0;
+});
+
+export interface Tag {
+  readonly id: string;
+  readonly label?: string | undefined;
+  readonly count?: number | undefined;
+}
+
+export function tags(wide: boolean): number {
+const annotated: readonly Tag[] = [{ id: "a", label: "A" }, { id: "b", count: 2 }];
+const branch: Tag = wide ? ({ id: "w", label: "Wide" }) : ({ id: "n", count: 1 });
+return (annotated.length + branch.id.length) + tagItems([{ id: "a", label: "A" }, { id: "b", count: 2 }]);
+}
+
+export function moved(y: number): number {
+return transformed({ transform: [{ scale: 1.5 }, { translateY: y }, { rotate: "45deg" }], opacity: 1 });
+}
+
