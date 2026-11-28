@@ -2216,6 +2216,7 @@ impl Tr<'_> {
             }
             Statement::ReturnStatement(r) => match &r.argument {
                 Some(value) => format!("return {}", self.expr(value)),
+                None if self.loop_return => "continue".into(),
                 None if self.try_return => "return ok(())".into(),
                 None => "return".into(),
             },
@@ -2589,12 +2590,9 @@ impl Tr<'_> {
                         .iter()
                         .all(|p| matches!(p.pattern, BindingPattern::BindingIdentifier(_)))
                     && matches!(arrow.params.items.len(), 1 | 2)
-                    && {
-                        // A `return` in the callback is a `continue` in a `for`.
-                        let mut returns = Vec::new();
-                        collect_returns(crate::view::arrow_statements(arrow), &mut returns);
-                        returns.is_empty()
-                    } =>
+                    // A bare `return` in the callback is a `continue` in a `for` (none inside
+                    // a loop of the callback, where it would continue that loop).
+                    && loop_safe_returns(crate::view::arrow_statements(arrow), false) =>
             {
                 let list = self.head_expr(&m.object);
                 let names: Vec<String> = arrow
@@ -2606,6 +2604,7 @@ impl Tr<'_> {
                         self.bind(&id.name, id.span)
                     })
                     .collect();
+                self.pending_loop_return = true;
                 let body = self.closure_body(arrow);
                 match names.as_slice() {
                     [x] => format!("for {x} in {list} {{\n{body}\n}}"),
@@ -3191,6 +3190,31 @@ fn collect_returns<'b, 'a>(
             _ => {}
         }
     }
+}
+
+/// Whether every `return` of a `forEach` callback is bare and outside the callback's own loops.
+fn loop_safe_returns(statements: &[Statement], in_loop: bool) -> bool {
+    statements.iter().all(|statement| match statement {
+        Statement::ReturnStatement(r) => r.argument.is_none() && !in_loop,
+        Statement::IfStatement(i) => {
+            loop_safe_returns(std::slice::from_ref(&i.consequent), in_loop)
+                && i.alternate.as_ref().is_none_or(|a| loop_safe_returns(std::slice::from_ref(a), in_loop))
+        }
+        Statement::BlockStatement(b) => loop_safe_returns(&b.body, in_loop),
+        Statement::ForOfStatement(f) => loop_safe_returns(std::slice::from_ref(&f.body), true),
+        Statement::ForInStatement(f) => loop_safe_returns(std::slice::from_ref(&f.body), true),
+        Statement::ForStatement(f) => loop_safe_returns(std::slice::from_ref(&f.body), true),
+        Statement::WhileStatement(w) => loop_safe_returns(std::slice::from_ref(&w.body), true),
+        Statement::DoWhileStatement(w) => loop_safe_returns(std::slice::from_ref(&w.body), true),
+        Statement::SwitchStatement(sw) => sw.cases.iter().all(|c| loop_safe_returns(&c.consequent, in_loop)),
+        Statement::TryStatement(t) => {
+            loop_safe_returns(&t.block.body, in_loop)
+                && t.handler.as_ref().is_none_or(|h| loop_safe_returns(&h.body.body, in_loop))
+                && t.finalizer.as_ref().is_none_or(|f| loop_safe_returns(&f.body, in_loop))
+        }
+        Statement::LabeledStatement(_) => false,
+        _ => true,
+    })
 }
 
 /// An arrow's statements (none when its body is an expression).
