@@ -126,6 +126,8 @@ struct Emitter<'a> {
     owner_generics: Vec<String>,
     /// The Kotlin package of the file being emitted.
     package: String,
+    /// The file's private items' names (a public inline view may not call them).
+    private_names: Vec<String>,
     /// In a function with `Codable` witnesses: each type parameter's codec parameter.
     codecs: HashMap<String, String>,
     /// The view's `@Binding` props: a read is `.value`, a write `.set(…)`, `$x` the binding.
@@ -184,21 +186,20 @@ const NODES: &[&str] = &[
     "Divider",
 ];
 
-/// A modifier every node takes: a `Modifier` extension of the runtime.
+/// A modifier's category, from the spec (`modifierCategories`): `node` when it is an option
+/// of its node's own implementation.
+fn category(name: &str) -> &'static str {
+    bloom_language_compiler::spec::MODIFIER_CATEGORIES
+        .iter()
+        .find(|(m, _)| *m == name)
+        .map_or("node", |(_, c)| c)
+}
+
+/// A modifier drawn around any node: a layout or paint modifier (by the spec's category), a
+/// `Modifier` extension of the runtime (`Modifier.bloomPadding`). Text traits, environment
+/// values and a node's own options are its parameters.
 fn universal(name: &str) -> bool {
-    matches!(
-        name,
-        "padding"
-            | "frame"
-            | "background"
-            | "corner"
-            | "opacity"
-            | "aspectRatio"
-            | "onTapGesture"
-            | "border"
-            | "grow"
-            | "shrink"
-    )
+    name == "onTapGesture" || matches!(category(name), "layout" | "paint")
 }
 
 /// The token class an implicit member is read from, by the modifier or argument it is in.
@@ -240,6 +241,7 @@ impl<'a> Emitter<'a> {
             owner_generics: Vec::new(),
             binding_props: Default::default(),
             package: String::new(),
+            private_names: Vec::new(),
             codecs: HashMap::new(),
         }
     }
@@ -281,6 +283,22 @@ impl<'a> Emitter<'a> {
 
     fn file(&mut self, package: &str, packages: &[String]) -> String {
         self.package = package.to_string();
+        self.private_names = self
+            .file
+            .ast
+            .items
+            .iter()
+            .filter(|i| i.visibility == Visibility::Private)
+            .filter_map(|i| match &i.kind {
+                ItemKind::View(v) => Some(v.name.name.clone()),
+                ItemKind::Fn(f) => Some(f.name.name.clone()),
+                ItemKind::Struct(s) => Some(s.name.name.clone()),
+                ItemKind::Const(c) => Some(c.name.name.clone()),
+                ItemKind::Enum(e) => Some(e.name.name.clone()),
+                ItemKind::Class(c) => Some(c.name.name.clone()),
+                _ => None,
+            })
+            .collect();
         let mut out = String::new();
         let _ = writeln!(
             out,
@@ -1066,11 +1084,46 @@ impl<'a> Emitter<'a> {
         let drawn = self.view_block(&v.body.stmts, 1, Some("modifier"));
         self.locals.pop();
         let scope_line = if self.needs_scope { "  val scope = rememberCoroutineScope()\n" } else { "" };
+        // A stateless one-node view (the TypeScript backend's `inlineView`) is an inline
+        // composable: no restart scope or skipping of its own, its body drawn in its caller's,
+        // as it costs no component on React Native. Its lambdas are `noinline` (they are passed
+        // on, not called in place), and a public one inlines only what is public.
+        let inline = self.inlinable(v)
+            && (vis == "private " || !self.private_names.iter().any(|n| mentions(&drawn, n)));
+        let (head, props) = if inline {
+            let props: Vec<String> = props
+                .iter()
+                .map(|p| match p.split_once(": ") {
+                    Some((name, ty)) if ty.contains("->") => format!("noinline {name}: {ty}"),
+                    _ => p.clone(),
+                })
+                .collect();
+            ("inline ", props)
+        } else {
+            ("", props)
+        };
         format!(
-            "@Composable\n{vis}fun {}({}) {{\n{scope_line}{body}{drawn}}}\n",
+            "@Composable\n{vis}{head}fun {}({}) {{\n{scope_line}{body}{drawn}}}\n",
             v.name.name,
             props.join(", ")
         )
+    }
+
+    /// The TypeScript backend's `inlineView` rule (`emit.rs`, `inlinable`): a view with no
+    /// members (state, environment, `let`s, methods, effects, a comparator), not generic,
+    /// reading no `@Observable` model, whose body is one view call with no `.task`, no
+    /// `.onChange` and no `.id()` of its own.
+    fn inlinable(&self, v: &ViewDecl) -> bool {
+        if v.kind != ViewKind::View || !v.generics.is_empty() || !v.members.is_empty() {
+            return false;
+        }
+        let [stmt] = v.body.stmts.as_slice() else { return false };
+        let StmtKind::Expr(root) = &stmt.kind else { return false };
+        if !matches!(root.kind, ExprKind::Call(_)) || !matches!(self.ty_of(root), Some(Ty::View(_))) {
+            return false;
+        }
+        let Some(chain) = unwind(root) else { return false };
+        !chain.mods.iter().any(|(name, _)| matches!(*name, "task" | "onChange" | "onAppear" | "id"))
     }
 
     // ---- statements ----------------------------------------------------------------
@@ -1145,10 +1198,21 @@ impl<'a> Emitter<'a> {
                 format!("{p}return{label}\n")
             }
             StmtKind::Defer(_) => unreachable!("handled by block"),
+            // `break` / `continue`, and a labelled loop's (`outer: for …`, `break outer`):
+            // Kotlin's `break@outer` on a loop written `outer@ for …`.
+            StmtKind::Break(label) => match label {
+                Some(l) => format!("{p}break@{}\n", l.name),
+                None => format!("{p}break\n"),
+            },
+            StmtKind::Continue(label) => match label {
+                Some(l) => format!("{p}continue@{}\n", l.name),
+                None => format!("{p}continue\n"),
+            },
             StmtKind::While(w) => {
                 let cond = self.expr(&w.cond);
                 let body = self.block(&w.body.stmts, indent + 1, Mode::Unit);
-                format!("{p}while ({cond}) {{\n{body}{p}}}\n")
+                let label = w.label.as_ref().map(|l| format!("{}@ ", l.name)).unwrap_or_default();
+                format!("{p}{label}while ({cond}) {{\n{body}{p}}}\n")
             }
             StmtKind::For(f) => {
                 let iter = self.expr(&f.iter);
@@ -1169,7 +1233,8 @@ impl<'a> Emitter<'a> {
                     _ => self.unsupported(f.pattern.span, "this `for` pattern"),
                 };
                 let body = self.block(&f.body.stmts, indent + 1, Mode::Unit);
-                format!("{p}for ({name} in {iter}) {{\n{body}{p}}}\n")
+                let label = f.label.as_ref().map(|l| format!("{}@ ", l.name)).unwrap_or_default();
+                format!("{p}{label}for ({name} in {iter}) {{\n{body}{p}}}\n")
             }
             StmtKind::Guard(g) => {
                 let otherwise = self.block(&g.otherwise.stmts, indent + 1, Mode::Unit);
@@ -2079,6 +2144,16 @@ impl<'a> Emitter<'a> {
             }
         }
     }
+}
+
+/// Whether `text` uses the identifier `name` (not as part of a longer one).
+fn mentions(text: &str, name: &str) -> bool {
+    let ident = |c: char| c.is_alphanumeric() || c == '_';
+    text.match_indices(name).any(|(at, _)| {
+        let before = text[..at].chars().next_back();
+        let after = text[at + name.len()..].chars().next();
+        !before.is_some_and(ident) && !after.is_some_and(ident)
+    })
 }
 
 /// A checker witness name (`$w_T_Codable`) as a Kotlin identifier.

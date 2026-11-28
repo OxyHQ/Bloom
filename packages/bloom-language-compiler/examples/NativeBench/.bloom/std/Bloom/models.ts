@@ -140,8 +140,9 @@ export async function modelLoad<T>(model: ModelHandle<T>): Promise<void> {
   await model.all.load(ALL);
 }
 
-/** Sort keys: numbers, strings, booleans, or a struct of one number (`Date`, `Duration`). */
+/** Sort keys: numbers, strings, booleans, a `Date` (a JS `Date`), or a struct of one number (`Duration`). */
 function sortValue(value: unknown): unknown {
+  if (value instanceof Date) return value.getTime();
   if (value !== null && typeof value === 'object') {
     const fields = Object.values(value as Record<string, unknown>);
     if (fields.length === 1 && typeof fields[0] === 'number') return fields[0];
