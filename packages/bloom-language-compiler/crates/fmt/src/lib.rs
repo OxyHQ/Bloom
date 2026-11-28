@@ -127,36 +127,46 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
             || v.members.iter().any(
                 |m| matches!(m, Member::State(s) if matches!(s.attr, StateAttr::List | StateAttr::Record)),
             );
-        // An `effect(id: x)` whose cleanup is a top-level `defer` and whose body does not wait:
-        // as a `.task(id: x)` the `defer` would run as soon as the body returns, not when React
-        // ran the cleanup (unmount, a new `x`). It stays an effect (so its view stays 0.x) until
-        // the stdlib's `Task.cancellation` lets the task wait for it
-        // (repros/mention15/task-defer-runs-at-once).
-        let cleanup_at_once = |e: &EffectDecl| {
-            let runs_once = matches!(
-                e.id.as_ref().map(|id| &id.kind),
-                Some(ExprKind::Unit | ExprKind::Int(_))
-            ) || matches!(e.id.as_ref().map(|id| &id.kind), Some(ExprKind::Tuple(values)) if values.is_empty());
-            let waits = |s: &Stmt| {
-                let text = slice(s.span);
-                !text.trim_start().starts_with("task ")
-                    && !text.trim_start().starts_with("task{")
-                    && (text.trim_start().starts_with("await ")
-                        || text.contains("= await ")
-                        || text.contains("try await ")
-                        || text.contains("match await "))
-            };
-            e.id.is_some()
-                && !runs_once
-                && e.body.stmts.iter().any(|s| matches!(s.kind, StmtKind::Defer(_)))
-                && !e.body.stmts.iter().any(waits)
-        };
-        if stays || effects.iter().any(|e| cleanup_at_once(e)) {
+        if stays {
             continue;
         }
         // `.task(id:)` first: the parser reads `.onAppear`/`.onDisappear` only at the chain's end.
         let mut modifiers = String::new();
         let mut once = String::new();
+        // A `.task`'s top-level `defer` runs when its body returns, where React ran the cleanup on
+        // unmount or a new id: a body with a cleanup ends waiting for its cancellation
+        // (`await Task.cancellation`, the stdlib's), so the `defer` runs then. A debounce, a
+        // `setTimeout` its cleanup clears, is a cancellable `sleep(for:)` before the work
+        // (repros/mention15/task-defer-runs-at-once).
+        let task_body = |e: &EffectDecl| -> String {
+            let stmts = &e.body.stmts;
+            if !stmts.iter().any(|s| matches!(s.kind, StmtKind::Defer(_))) {
+                return slice(e.body.span).to_string();
+            }
+            if let [before @ .., timer, cleanup] = stmts.as_slice()
+                && let StmtKind::Let(l) = &timer.kind
+                && let PatternKind::Bind(name) = &l.pattern.kind
+                && let ExprKind::Call(call) = &l.value.kind
+                && matches!(&call.callee.kind, ExprKind::Name(n) if n == "setTimeout")
+                && let [work, delay] = call.args.as_slice()
+                && work.label.is_none()
+                && delay.label.is_none()
+                && let ExprKind::Closure(work) = &work.value.kind
+                && work.params.is_empty()
+                && let StmtKind::Defer(block) = &cleanup.kind
+                && let [clear] = block.stmts.as_slice()
+                && slice(clear.span).trim() == format!("clearTimeout({})", name.name)
+                && !before.iter().any(|s| slice(s.span).contains(name.name.as_str()))
+            {
+                let mut lines: Vec<String> = before.iter().map(|s| slice(s.span).to_string()).collect();
+                lines.push(format!("try? await sleep(for: .milliseconds({}))", slice(delay.value.span)));
+                lines.extend(work.body.iter().map(|s| slice(s.span).to_string()));
+                return format!("{{\n{}\n}}", lines.join("\n"));
+            }
+            let body = slice(e.body.span);
+            let close = body.rfind('}').unwrap_or(body.len());
+            format!("{}\nawait Task.cancellation\n}}", body[..close].trim_end())
+        };
         for effect in &effects {
             let Some(id) = effect.id.as_ref() else {
                 let value = watched(effect).expect("a watched value");
@@ -170,7 +180,7 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
             let runs_once = matches!(id.kind, ExprKind::Unit | ExprKind::Int(_))
                 || matches!(&id.kind, ExprKind::Tuple(values) if values.is_empty());
             if !runs_once {
-                modifiers.push_str(&format!("\n.task(id: {}) {}", slice(id.span), slice(effect.body.span)));
+                modifiers.push_str(&format!("\n.task(id: {}) {}", slice(id.span), task_body(effect)));
                 continue;
             }
             let (defers, rest): (Vec<&Stmt>, Vec<&Stmt>) =
@@ -211,7 +221,48 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
         at = end;
     }
     out.push_str(&source[at..]);
-    Some(out)
+    Some(without_unused_js_timers(out))
+}
+
+/// `setTimeout`/`clearTimeout` dropped from the file's `"js"` import once no debounce reads them
+/// (a debounce is a `sleep(for:)` now), and the import with them when it names nothing else.
+fn without_unused_js_timers(source: String) -> String {
+    if !source.contains("} from \"js\"") {
+        return source;
+    }
+    let mut out = String::with_capacity(source.len());
+    let mut rest = source.as_str();
+    while let Some(line_end) = rest.find('\n') {
+        let line = &rest[..line_end];
+        rest = &rest[line_end + 1..];
+        let trimmed = line.trim();
+        if let Some(names) = trimmed.strip_prefix("import {").and_then(|r| r.strip_suffix("} from \"js\"")) {
+            let used = |name: &str| {
+                source.match_indices(name).any(|(i, _)| {
+                    let before = source[..i].chars().next_back();
+                    let after = source[i + name.len()..].chars().next();
+                    let word =
+                        |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$');
+                    !word(before) && !word(after) && !source[..i].ends_with("import { ") && after == Some('(')
+                })
+            };
+            let kept: Vec<&str> = names
+                .split(',')
+                .map(str::trim)
+                .filter(|n| !n.is_empty())
+                .filter(|n| !matches!(*n, "setTimeout" | "clearTimeout") || used(n))
+                .collect();
+            if kept.is_empty() {
+                continue;
+            }
+            out.push_str(&format!("import {{ {} }} from \"js\"\n", kept.join(", ")));
+            continue;
+        }
+        out.push_str(line);
+        out.push('\n');
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Each local function's parameters: labelled (`Some(name)`) when a call in the file names
@@ -242,7 +293,10 @@ fn labels(file: &bloom_lang::ast::File) -> std::collections::HashMap<String, Vec
             }
         }
     });
+    // A 2.0 `func` has its labels already (and may be overloaded by them): only a 0.x `fn`'s are
+    // read off its calls.
     fns.into_iter()
+        .filter(|f| !f.func)
         .map(|f| {
             let labels = f
                 .params
