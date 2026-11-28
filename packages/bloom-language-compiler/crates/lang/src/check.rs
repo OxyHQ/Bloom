@@ -4564,8 +4564,14 @@ impl<'o> Checker<'o> {
             Ty::Strings(set) if !set.token => (set, false),
             Ty::Option(inner) => match self.resolve(&inner) {
                 Ty::Strings(set) if !set.token => (set, true),
+                Ty::Foreign(text) => {
+                    return self.narrow_foreign_union(subject, name, original, &text, true, values, keep);
+                }
                 _ => return,
             },
+            Ty::Foreign(text) => {
+                return self.narrow_foreign_union(subject, name, original, &text, false, values, keep);
+            }
             _ => return,
         };
         let left: Vec<String> = set.values.iter().filter(|v| values.contains(v) == keep).cloned().collect();
@@ -4577,6 +4583,59 @@ impl<'o> Checker<'o> {
         // `x == "a"` holding: `x` is present too.
         let ty = if optional && !keep { Ty::Option(Box::new(narrowed)) } else { narrowed };
         let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+        let local = self.declare(&ident, ty, LocalKind::Let);
+        self.out.narrowed.insert(subject.id, (local, original));
+    }
+
+    /// A TS union of literals and plain types kept as it is (`width: Foreign<"number | '100%'">?`),
+    /// tested against literals: where `width == "100%"` holds it is that literal; where it fails
+    /// it is the other members, read as Bloom reads them (`number` is `Float`, so
+    /// `width == "100%" ? "full" : width` gives the frame a `Float?`), as TS narrows it.
+    #[allow(clippy::too_many_arguments)]
+    fn narrow_foreign_union(
+        &mut self,
+        subject: &Expr,
+        name: &str,
+        original: LocalId,
+        text: &str,
+        optional: bool,
+        values: &[String],
+        keep: bool,
+    ) {
+        let Some(members) = ts_union_members(text) else { return };
+        let absent = optional || members.iter().any(|m| matches!(m, UnionMember::Absent));
+        let literal = |m: &UnionMember| match m {
+            UnionMember::Literal(v) => Some(v.clone()),
+            _ => None,
+        };
+        let ty = if keep {
+            // `x == "100%"` holding: that literal, present.
+            if !values.iter().all(|v| members.iter().any(|m| literal(m).as_ref() == Some(v))) {
+                return;
+            }
+            let shown = values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+            Ty::Strings(Rc::new(StrSet { name: shown, values: values.to_vec(), token: false }))
+        } else {
+            let rest: Vec<&UnionMember> = members
+                .iter()
+                .filter(|m| !matches!(m, UnionMember::Absent))
+                .filter(|m| literal(m).is_none_or(|v| !values.contains(&v)))
+                .collect();
+            if rest.len() == members.iter().filter(|m| !matches!(m, UnionMember::Absent)).count() {
+                return;
+            }
+            let literals: Vec<String> = rest.iter().filter_map(|m| literal(m)).collect();
+            let narrowed = match rest.as_slice() {
+                [UnionMember::Plain(ty)] => ty.clone(),
+                _ if !literals.is_empty() && literals.len() == rest.len() => {
+                    let shown = literals.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+                    Ty::Strings(Rc::new(StrSet { name: shown, values: literals, token: false }))
+                }
+                _ => return,
+            };
+            if absent { Ty::Option(Box::new(narrowed)) } else { narrowed }
+        };
+        let ident = Ident { name: name.to_string(), span: self.out.locals[original].span };
         let local = self.declare(&ident, ty, LocalKind::Let);
         self.out.narrowed.insert(subject.id, (local, original));
     }
@@ -8616,6 +8675,38 @@ fn ends_in_none(expr: &Expr) -> bool {
         ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
         _ => false,
     }
+}
+
+/// A member of a TS union written as text (`number | '100%' | null`).
+enum UnionMember {
+    /// A string literal.
+    Literal(String),
+    /// `number`, `string` or `boolean`, as Bloom reads it.
+    Plain(Ty),
+    /// `null` or `undefined`.
+    Absent,
+}
+
+/// The members of a TS union of literals and plain types, or `None` for any other TS type.
+fn ts_union_members(text: &str) -> Option<Vec<UnionMember>> {
+    let parts: Vec<&str> = text.split('|').map(str::trim).collect();
+    if parts.len() < 2 {
+        return None;
+    }
+    parts
+        .into_iter()
+        .map(|part| {
+            let quoted = |q: char| part.len() >= 2 && part.starts_with(q) && part.ends_with(q);
+            Some(match part {
+                "number" => UnionMember::Plain(Ty::Float),
+                "string" => UnionMember::Plain(Ty::Str),
+                "boolean" => UnionMember::Plain(Ty::Bool),
+                "null" | "undefined" => UnionMember::Absent,
+                _ if quoted('\'') || quoted('"') => UnionMember::Literal(part[1..part.len() - 1].to_string()),
+                _ => return None,
+            })
+        })
+        .collect()
 }
 
 pub(crate) fn is_hook_name(name: &str) -> bool {
