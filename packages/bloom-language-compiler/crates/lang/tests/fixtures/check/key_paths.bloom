@@ -1,0 +1,16 @@
+// A key path's value has the field's type, and it writes a `var` or a `@State`, never a `let`.
+public struct Prefs {
+  var hideLikes: Bool = false
+  var name: String = ""
+}
+
+public func wrongValue(_ p: Prefs) -> Prefs {
+  var next = p
+  next[keyPath: \Prefs.name] = true
+  return next
+}
+
+public func immutable(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Bool {
+  p[keyPath: key] = false
+  return p[keyPath: key]
+}

@@ -322,6 +322,24 @@ A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
 - `case defaultDigits`
 - `case twoDigits`
 
+### `enum AMPMStyle`
+
+Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`).
+
+- `case omitted`: No AM/PM: "6", in the locale's clock.
+- `case narrow`: The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+- `case abbreviated`: The AM/PM: "6 PM".
+- `case wide`: The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+
+### `struct HourStyle: Equatable`
+
+How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM. A shown AM/PM is the 12-hour clock (Intl's `hour12: true`), in every locale.
+
+- `static func defaultDigits(amPM: AMPMStyle) -> HourStyle`: "6 PM" ("6" with `.omitted`).
+- `static func twoDigits(amPM: AMPMStyle) -> HourStyle`: "06 PM" ("06" with `.omitted`).
+- `static var defaultDigitsNoAMPM: HourStyle`: "6", or "18" in a 24-hour locale: no AM/PM.
+- `static var twoDigitsNoAMPM: HourStyle`: "06", or "18" in a 24-hour locale: no AM/PM.
+
 ### `enum MonthStyle`
 
 How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
@@ -352,7 +370,7 @@ How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.a
 - `func month(_ style: MonthStyle = .abbreviated) -> DateFormat`: The month, "Nov" by default.
 - `func day(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The day of the month: "26".
 - `func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat`: The weekday, "Thu" by default.
-- `func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The hour, in the locale's clock: "6 PM".
+- `func hour(_ style: HourStyle? = none) -> DateFormat`: The hour: in the locale's clock ("6 PM", "18") with no style; `.defaultDigits(amPM:)` and `.twoDigits(amPM:)` choose its digits and its AM/PM.
 - `func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The minute: "30".
 - `func second(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The second: "05".
 

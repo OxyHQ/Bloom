@@ -1687,18 +1687,15 @@ impl<'a> Emitter<'a> {
             [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
-                match &signal {
-                    // In a task, a throw once it is cancelled (an aborted request) is the
-                    // cancellation itself: the task stops, and no `catch` runs.
-                    Some(signal) => {
-                        line.s(&format!(" catch ({name}) {{\nif ({signal}.aborted) return;\n"))
-                            .f(body)
-                            .s("\n}");
-                    }
-                    None => {
-                        line.s(&format!(" catch ({name}) ")).f(body);
-                    }
+                // The caught value is Bloom's `Error`: TS's `Error` (a catch binding is TS's
+                // `unknown`), as a function that takes one declares it.
+                line.s(&format!(" catch ($error) {{\nconst {name} = $error as Error;\n"));
+                // In a task, a throw once it is cancelled (an aborted request) is the
+                // cancellation itself: the task stops, and no `catch` runs.
+                if let Some(signal) = &signal {
+                    line.s(&format!("if ({signal}.aborted) return;\n"));
                 }
+                line.f(body).s("\n}");
             }
             catches => {
                 line.s(" catch ($error) {\n");
@@ -1723,7 +1720,7 @@ impl<'a> Emitter<'a> {
                         let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                         match &cast {
                             Some(cast) => lines.push(format!("const {name} = {cast}($error)!;")),
-                            None => lines.push(format!("const {name} = $error;")),
+                            None => lines.push(format!("const {name} = $error as Error;")),
                         }
                     }
                     let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
@@ -1798,14 +1795,28 @@ impl<'a> Emitter<'a> {
             AssignOp::Sub => Some("-"),
             AssignOp::Mul => Some("*"),
         };
-        let mut value = self.expr(&a.value);
+        // `xs += ys` of an array: a new one, `[...xs, ...ys]` (a literal's items in place).
+        let list = op.is_some() && matches!(self.ck.types.get(&a.value.id), Some(Ty::List(_)));
+        let awaited = expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. });
+        let mut value = match &a.value.kind {
+            ExprKind::List(items) if list && !awaited => {
+                let items: Vec<Frag> = items.iter().map(|item| self.expr(item)).collect();
+                Frag::join(items, ", ")
+            }
+            _ => self.expr(&a.value),
+        };
         // `state = await f(state)`: awaited before the update, which is not async.
-        if expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. }) {
+        if awaited {
             let temp = self.temp();
             let mut line = Frag::at(a.value.span, format!("const {temp} = "));
             line.f(value).s(";");
             self.push_stmt(line);
             value = Frag::of(temp);
+        }
+        if list && (awaited || !matches!(a.value.kind, ExprKind::List(_))) {
+            let mut out = Frag::of("...");
+            out.f(value);
+            value = out;
         }
         // `n += k` on an `Int`: a dev build traps a result outside ±(2^53 − 1), as `n + k` does.
         let int_check = self.options.dev
@@ -1825,6 +1836,11 @@ impl<'a> Emitter<'a> {
         }
         let combine = |current: Frag, value: Frag| -> Frag {
             match op {
+                Some(_) if list => {
+                    let mut out = Frag::of("[...");
+                    out.f(current).s(", ").f(value).s("]");
+                    out
+                }
                 Some(op) => {
                     let mut out = current;
                     out.s(&format!(" {op} ")).f(value.wrap("(", ")"));
@@ -1834,6 +1850,26 @@ impl<'a> Emitter<'a> {
             }
         };
         match res {
+            // `next[keyPath: key] = v`: a copy with that field (a value type's write), typed as
+            // the value it replaces (TS widens a computed key).
+            AssignRes::KeyPath { local, state } => {
+                let ExprKind::KeyPathIndex(_, key) = &a.target.kind else { return };
+                let name = self.local_name(local);
+                let key = self.expr(key);
+                let mut copy = Frag::of(format!("({{ ...{name}, ["));
+                copy.f(key).s("]: ").f(value).s(&format!(" }} as typeof {name})"));
+                let line = if state {
+                    let setter = self.setter(local);
+                    let mut line = Frag::at(span, format!("{setter}(({name}) => "));
+                    line.f(copy).s(");");
+                    line
+                } else {
+                    let mut line = Frag::at(span, format!("{name} = "));
+                    line.f(copy).s(";");
+                    line
+                };
+                self.push_stmt(line);
+            }
             AssignRes::Bound { local } => {
                 let name = self.local_name(local);
                 let new = combine(Frag::of(format!("{name}[0]")), value);
@@ -2482,6 +2518,13 @@ impl<'a> Emitter<'a> {
             out.f(self.ts_element(expr));
             return out;
         }
+        // A function that does not await, given where an `async` one is expected: an `async`
+        // function of its arguments, so the caller gets a promise.
+        if self.ck.async_wraps.contains(&expr.id) {
+            let inner = self.expr_inner(expr);
+            out.s("(async (...$args) => (").f(inner).s(")(...$args))");
+            return out;
+        }
         out.f(self.expr_inner(expr));
         // A Bloom view where TS takes a React element.
         if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
@@ -2492,7 +2535,7 @@ impl<'a> Emitter<'a> {
                 Ty::Fn(f) => {
                     if matches!(f.ret, Ty::Option(_)) {
                         Frag::of(format!(
-                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? undefined : toElement($v); }})",
+                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? null : toElement($v); }})",
                             out.text
                         ))
                     } else {
@@ -2502,17 +2545,18 @@ impl<'a> Emitter<'a> {
                         ))
                     }
                 }
-                // `meta: View?`: `none` stays `undefined` (`toElement(undefined)` is an element
-                // drawing nothing, which TS reads as present).
+                // `meta: View?`: `none` is `null`, never `toElement(undefined)` (an element drawing
+                // nothing, which TS reads as present): a `ReactNode` takes it, and so does a
+                // render callback's `ReactElement | null`.
                 Ty::Option(_) if is_path_text(&out.text) => {
-                    Frag::of(format!("({0} == null ? undefined : toElement({0}))", out.text))
+                    Frag::of(format!("({0} == null ? null : toElement({0}))", out.text))
                 }
                 Ty::Option(_) => {
                     let name = self.temp();
                     let mut stmt = Frag::of(format!("const {name} = "));
                     stmt.f(out).s(";");
                     self.push_stmt(stmt);
-                    Frag::of(format!("({name} == null ? undefined : toElement({name}))"))
+                    Frag::of(format!("({name} == null ? null : toElement({name}))"))
                 }
                 _ => out.wrap("toElement(", ")"),
             };
@@ -2686,6 +2730,14 @@ impl<'a> Emitter<'a> {
                 let test: Vec<String> = ts.iter().map(|v| format!("{value} === {v}")).collect();
                 Frag::of(format!("({} ? {value} as {union} : undefined)", test.join(" || ")))
             }
+            // `err as? PollContractError` of a TS error class: the value when it is an instance.
+            ExprKind::CastAs(subject, ..)
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) =>
+            {
+                let class = class.to_string();
+                let value = self.path_or_temp(subject);
+                Frag::of(format!("({value} instanceof {class} ? {value} : undefined)"))
+            }
             ExprKind::CastAs(subject, ..) => {
                 let func = self.ck.casts.get(&expr.id).map_or("(() => undefined)".into(), |f| f.to_string());
                 let mut value = self.expr(subject);
@@ -2700,6 +2752,9 @@ impl<'a> Emitter<'a> {
                 let value = self.operand(subject);
                 if let Some((narrowed, _)) = self.ck.narrowed.get(&expr.id) {
                     self.aliases.insert(*narrowed, value.text.clone());
+                }
+                if let Some(Ty::Foreign(class)) = self.ck.is_tests.get(&expr.id) {
+                    return Frag::of(format!("({} instanceof {class})", value.text));
                 }
                 let test = match self.ck.is_tests.get(&expr.id) {
                     Some(Ty::Str) => "typeof {} === \"string\"",
@@ -2890,6 +2945,12 @@ impl<'a> Emitter<'a> {
                     out
                 }
             }
+            // `x[keyPath: key]`: a key path is its field's name, so the field is `x[key]`.
+            ExprKind::KeyPathIndex(object, key) => {
+                let mut out = self.operand(object);
+                out.s("[").f(self.expr(key)).s("]");
+                out
+            }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
                 let open = if self.guarded.contains(&object.id) { "?.[" } else { "[" };
@@ -2947,6 +3008,25 @@ impl<'a> Emitter<'a> {
         out
     }
 
+    /// The items of one operand of an array `+`, in place.
+    fn concat_parts(&mut self, operand: &Expr, parts: &mut Vec<Frag>) {
+        match &operand.kind {
+            ExprKind::Paren(inner) => self.concat_parts(inner, parts),
+            ExprKind::List(items) => parts.extend(items.iter().map(|item| self.expr(item))),
+            ExprKind::Binary(BinaryOp::Add, lhs, rhs)
+                if matches!(self.ck.types.get(&operand.id), Some(Ty::List(_))) =>
+            {
+                self.concat_parts(lhs, parts);
+                self.concat_parts(rhs, parts);
+            }
+            _ => {
+                let mut out = Frag::of("...");
+                out.f(self.expr(operand));
+                parts.push(out);
+            }
+        }
+    }
+
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
         // An `Int` is 64-bit, exact on the JS backend within ±(2^53 − 1): a dev build traps a
         // `+`, `-` or `*` whose result leaves that range, as Swift traps an overflow.
@@ -2961,6 +3041,16 @@ impl<'a> Emitter<'a> {
             self.int_checked = outer;
             self.helpers.insert("int");
             return inner.wrap("$int(", ")");
+        }
+        // `a + b` of two arrays (Swift's): a new one, `a`'s elements then `b`'s.
+        // A literal's items and a nested `+`'s operands go in place: `a + [x] + b` is
+        // `[...a, x, ...b]`.
+        if op == BinaryOp::Add && matches!(self.ck.types.get(&expr.id), Some(Ty::List(_))) {
+            let mut parts = Vec::new();
+            self.concat_parts(lhs, &mut parts);
+            self.concat_parts(rhs, &mut parts);
+            let list = Frag::join(parts, ", ").wrap("[", "]");
+            return if self.options.dev { list.wrap("Object.freeze(", ")") } else { list };
         }
         // `0...3` as a `ClosedRange`: its bounds.
         if op == BinaryOp::Closed && matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_))) {
@@ -4087,6 +4177,10 @@ impl<'a> Emitter<'a> {
                 let value = call.args.first().map_or(Frag::of("\"\""), |a| self.expr(&a.value));
                 value.wrap(&format!("${helper}("), ")")
             }
+            CallRes::Convert { int } => {
+                let value = call.args.first().map_or(Frag::of("0"), |a| self.expr(&a.value));
+                if int { value.wrap("Math.trunc(", ")") } else { value }
+            }
             CallRes::Fail => {
                 // Where a value is needed (`c ? x : fail(e)`): a throw as an expression.
                 let mut out = Frag::of("(() => { throw ");
@@ -5160,9 +5254,10 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
-            expr_awaits(a) || expr_awaits(b)
-        }
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => expr_awaits(a) || expr_awaits(b),
         ExprKind::Ternary(a, b, c) => expr_awaits(a) || expr_awaits(b) || expr_awaits(c),
         ExprKind::Call(call) => expr_awaits(&call.callee) || call.args.iter().any(|a| expr_awaits(&a.value)),
         ExprKind::If(i) => {
@@ -5303,6 +5398,12 @@ impl<'a> Emitter<'a> {
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
             {
+                // Under a narrowed name (`item.draft.id` in the `else` of `if item.origin ==
+                // "server"`), the read is there only where the narrowing holds, and the cache's
+                // test runs before it: the name itself is the dependency.
+                if let Some(root) = self.narrowed_root(object) {
+                    return self.dep_path(root);
+                }
                 let dot =
                     if matches!(self.expr_ty(object), Ty::Foreign(_) | Ty::Option(_)) { "?." } else { "." };
                 self.dep_path(object).map(|p| format!("{p}{dot}{}", name.name))
@@ -5316,6 +5417,24 @@ impl<'a> Emitter<'a> {
                 self.dep_path(object).map(|p| format!("{p}?.{}", name.name))
             }
             ExprKind::Paren(inner) => self.dep_path(inner),
+            _ => None,
+        }
+    }
+
+    /// The narrowed name a member chain starts from (`item` in `item.draft`, narrowed by a tag
+    /// test): its reads are valid only where the narrowing holds. An optional's `!= none`
+    /// narrowing is left out (its reads are `?.` already).
+    fn narrowed_root<'e>(&self, expr: &'e Expr) -> Option<&'e Expr> {
+        match &expr.kind {
+            ExprKind::Field(object, _) | ExprKind::OptField(object, _) | ExprKind::Paren(object) => {
+                self.narrowed_root(object)
+            }
+            ExprKind::Name(_) => matches!(
+                self.ck.names.get(&expr.id),
+                Some(NameRes::Local(local)) if self.narrowed_from.contains_key(local)
+                    && !matches!(self.ck.locals[*self.narrowed_from.get(local).expect("checked")].ty, Ty::Option(_))
+            )
+            .then_some(expr),
             _ => None,
         }
     }
@@ -5373,7 +5492,10 @@ impl<'a> Emitter<'a> {
                 go(k);
                 go(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+            ExprKind::Binary(_, a, b)
+            | ExprKind::Index(a, b)
+            | ExprKind::OptIndex(a, b)
+            | ExprKind::KeyPathIndex(a, b) => {
                 go(a);
                 go(b);
             }

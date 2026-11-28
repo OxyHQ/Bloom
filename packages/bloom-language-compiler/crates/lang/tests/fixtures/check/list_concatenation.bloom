@@ -1,0 +1,3 @@
+// `+` on arrays takes two arrays of one element type.
+public func mixed(_ a: [Int]) -> [Int] { a + ["x"] }
+public func element(_ a: [Int]) -> [Int] { a + 1 }

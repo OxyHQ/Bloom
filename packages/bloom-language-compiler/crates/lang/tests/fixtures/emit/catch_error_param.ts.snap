@@ -1,0 +1,44 @@
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+interface Failure {
+  readonly message: string;
+}
+
+function parse(s: string): number {
+const $t0 = $toInt(s);
+if (!($t0 != null)) {
+throw { message: s };
+}
+return $t0;
+}
+
+function isRetryable(error: Error): boolean {
+return false;
+}
+
+export function count(s: string): number {
+try {
+return parse(s);
+} catch ($error) {
+const error = $error as Error;
+{
+return isRetryable(error) ? 1 : 0;
+}
+}
+}
+
+export function named(s: string): boolean {
+try {
+parse(s);
+return true;
+} catch ($error) {
+const failure = $error as Error;
+{
+return isRetryable(failure);
+}
+}
+}
+

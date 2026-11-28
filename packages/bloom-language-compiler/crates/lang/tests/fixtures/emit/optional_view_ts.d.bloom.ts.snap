@@ -1,0 +1,7 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export interface ProfileProps {
+  readonly tabs?: Child | undefined | null;
+  readonly content?: Child | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Profile())`), or from TSX as `toElement(Profile())`. */
+export declare const Profile: (props: ProfileProps) => ComposedView;

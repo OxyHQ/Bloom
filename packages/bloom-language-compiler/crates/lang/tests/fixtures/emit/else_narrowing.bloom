@@ -1,0 +1,29 @@
+// The `else` of `if x == none || …` reads `x` as present (De Morgan's), as after an `if` that returns.
+func need(_ s: String) -> String { s }
+
+public func pick(title: String?, off: Bool) -> String {
+  if title == none || title.isEmpty {
+    return "a"
+  } else {
+    return need(title)
+  }
+}
+
+public func nested(title: String?, sub: String?, off: Bool) -> String {
+  if (title == none || off) || sub == none {
+    "a"
+  } else if title.isEmpty {
+    need(sub)
+  } else {
+    need(title) + need(sub)
+  }
+}
+
+public func negated(title: String?) -> String {
+  if !(title != none) { "none" } else { need(title) }
+}
+
+public func value(title: String?) -> String {
+  let shown = if title == none { "?" } else { need(title) }
+  return shown
+}

@@ -784,6 +784,8 @@ pub enum ExprKind {
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
+    /// `x[keyPath: kp]` (Swift's): the field of `x` the key path `kp` names, read or written.
+    KeyPathIndex(Box<Expr>, Box<Expr>),
     /// `xs?[i]` (Swift's optional subscript): the element when `xs` is not `none`, as JS's
     /// `xs?.[i]`; `none` from there through the chain.
     OptIndex(Box<Expr>, Box<Expr>),
@@ -867,6 +869,10 @@ pub struct Closure {
     pub ret: Option<TypeExpr>,
     pub body: Vec<Stmt>,
     pub span: Span,
+    /// `reduce(0, +)`, `sorted(by: <)`: an operator passed as a function (Swift's). The parser
+    /// writes it as the closure `{ $0 + $1 }` (`params` `$0`, `$1`, `body` the binary), so a
+    /// backend reads an ordinary closure; the formatter prints the operator back.
+    pub operator: Option<BinaryOp>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

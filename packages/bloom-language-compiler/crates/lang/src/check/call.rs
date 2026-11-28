@@ -205,9 +205,42 @@ impl Checker<'_> {
                     "Map" | "Set" => return self.collection(expr, call, name == "Map", None, expected),
                     "min" | "max" | "abs" | "round" | "floor" | "ceil" => return self.math(expr, call, name),
                     "Int" | "Float" | "Double" => {
+                        let int = name == "Int";
+                        // `Int(3.7)` / `Double(n)`: a number converted (Swift's), never `none`.
+                        if let [arg] = call.args.as_slice()
+                            && arg.label.is_none()
+                            && !arg.spread
+                            && call.trailing.is_none()
+                        {
+                            let given = self.expr(&arg.value, None);
+                            match self.resolve(&given) {
+                                Ty::Int | Ty::Float => {
+                                    self.out.calls.insert(expr.id, CallRes::Convert { int });
+                                    return if int { Ty::Int } else { Ty::Float };
+                                }
+                                Ty::Str | Ty::Strings(_) | Ty::Unknown => {}
+                                ref other => {
+                                    if !self.coerce(other, &Ty::Str) {
+                                        self.report(
+                                            Diagnostic::error(
+                                                "B0201",
+                                                arg.value.span,
+                                                format!(
+                                                    "`{name}(…)` takes a number or a string, and this is {}",
+                                                    self.show(other)
+                                                ),
+                                            )
+                                            .label("not a number or a string")
+                                            .spec("12-standard-library-surface-draft"),
+                                        );
+                                    }
+                                }
+                            }
+                            self.out.calls.insert(expr.id, CallRes::Parse { int });
+                            return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
+                        }
                         // `Int(s)` / `Float(s)`: a string's number, or `none`.
                         self.positional(call, &[Ty::Str]);
-                        let int = name == "Int";
                         self.out.calls.insert(expr.id, CallRes::Parse { int });
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }
@@ -745,7 +778,8 @@ impl Checker<'_> {
             return false;
         }
         let mut value = &arg.value;
-        while let ExprKind::Try(inner) | ExprKind::Paren(inner) = &value.kind {
+        // `s.contains(try! Regex("…"))`: through `try`, `try!` and parentheses.
+        while let ExprKind::Try(inner) | ExprKind::Paren(inner) | ExprKind::Throwing(_, inner) = &value.kind {
             value = inner;
         }
         let is_regex =
@@ -2502,7 +2536,7 @@ impl Checker<'_> {
     }
 
     /// The type of a `VirtualList`'s row closure written in place with one untyped parameter
-    /// (`{ row in … }`): `(VirtualListRow<T>) -> View`, `T` the items' element, so `row.item` is
+    /// (`{ row in … }`): `(VirtualListRow<T>) -> View?`, `T` the items' element, so `row.item` is
     /// the item and `row.index` its index. `None` for any other row (a function value, a typed
     /// closure), which TypeScript checks against `VirtualListRowFn<T>`.
     fn virtual_list_row(&mut self, call: &Call, row: &Expr) -> Option<Ty> {
@@ -2536,7 +2570,10 @@ impl Checker<'_> {
                 optional: false,
                 rest: false,
             }],
-            ret: Ty::View(None),
+            // `VirtualListRowFn<T>` gives a `Child`, which may be nothing: a row may be `none`
+            // (Swift's `Optional<View>` is a view), `if item == "tabs" { stickyTabs } else { … }`
+            // of optional views.
+            ret: Ty::Option(Box::new(Ty::View(None))),
             is_async: false,
             generics: 0,
             ts: false,
@@ -3329,8 +3366,31 @@ impl Checker<'_> {
             self.token_arg(value, set, modifier);
             return;
         }
+        // `width: w == "100%" ? "full" : w`: each branch a token or points of its own, the
+        // test narrowing each as in any conditional.
+        let token = |e: &Expr| matches!(e.kind, ExprKind::Str { .. } | ExprKind::ImplicitMember(_));
+        if let ExprKind::Ternary(cond, then, otherwise) = &value.kind
+            && (token(then) || token(otherwise))
+        {
+            self.expr(cond, Some(&Ty::Bool));
+            self.push();
+            self.narrow_present(cond);
+            self.points_arg(then, set, modifier);
+            self.pop();
+            self.push();
+            self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+            self.points_arg(otherwise, set, modifier);
+            self.pop();
+            self.out.types.insert(value.id, Ty::Unknown);
+            return;
+        }
         let ty = self.boundary(value, None);
-        match self.resolve(&ty) {
+        let ty = match self.resolve(&ty) {
+            // A frame's side may be `none` (Swift's `frame(width: CGFloat?)`): left out.
+            Ty::Option(inner) if modifier == "frame" => self.resolve(&inner),
+            other => other,
+        };
+        match ty {
             Ty::Int | Ty::Float | Ty::Foreign(_) | Ty::Unknown => {}
             _ => {
                 self.out.types.remove(&value.id);

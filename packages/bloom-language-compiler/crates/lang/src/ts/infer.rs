@@ -228,7 +228,24 @@ impl Reader {
             Expression::ParenthesizedExpression(inner) => self.expr(&inner.expression, env),
             Expression::TSAsExpression(cast) => match &cast.type_annotation {
                 // `x as const`: what `x` is.
-                oxc_ast::ast::TSType::TSTypeReference(r) if matches!(&r.type_name, oxc_ast::ast::TSTypeName::IdentifierReference(n) if n.name == "const") => {
+                oxc_ast::ast::TSType::TSTypeReference(r) if matches!(&r.type_name, oxc_ast::ast::TSTypeName::IdentifierReference(n) if n.name == "const") =>
+                {
+                    // `['a', 'b'] as const`: TS's readonly tuple of those literals.
+                    if let Expression::ArrayExpression(array) = &cast.expression
+                        && !array.elements.is_empty()
+                        && let Some(items) = array
+                            .elements
+                            .iter()
+                            .map(|element| match element.as_expression() {
+                                Some(Expression::StringLiteral(s)) => {
+                                    Some(TsType::StrLit(s.value.as_str().unwrap_or_default().to_string()))
+                                }
+                                _ => None,
+                            })
+                            .collect::<Option<Vec<_>>>()
+                    {
+                        return TsType::Tuple(items);
+                    }
                     self.expr(&cast.expression, env)
                 }
                 annotation => self.ty(annotation),
@@ -481,6 +498,7 @@ fn plain(ty: &TsType) -> bool {
     match ty {
         TsType::Number | TsType::String | TsType::Boolean | TsType::StrLit(_) | TsType::BoolLit => true,
         TsType::Array(item) => plain(item),
+        TsType::Tuple(items) => !items.is_empty() && items.iter().all(plain),
         TsType::Object(members) => !members.is_empty() && members.iter().all(|m| plain(&m.ty)),
         _ => false,
     }

@@ -1,0 +1,37 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, toElement, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { View as RNView } from "react-native";
+import { Screen } from "@oxy.so/bloom/screen";
+
+const IS_WEB = false;
+
+const $view0 = Text("Profile");
+export interface ShellProps {
+  readonly drawing: boolean;
+  readonly routeHeader?: Child | undefined;
+}
+export const Shell = view(function Shell(props: ShellProps) {
+"use no memo";
+const $ = $c(4);
+const { drawing, routeHeader = undefined } = props;
+const [height, setHeight] = useState<number>(0);
+let $t0;
+if ($[0] !== drawing || $[1] !== routeHeader || $[2] !== height) {
+$t0 = Embed(($render) => $jsx(Screen, { header: drawing ? toElement($view0) : (routeHeader == null ? null : toElement(routeHeader)), children: $render(Embed(($render) => $jsx(RNView, { onLayout: IS_WEB ? undefined : ((event) => {
+setHeight((event.nativeEvent.layout.height satisfies number));
+}), children: $render(Text(`${height}`)) } satisfies ComponentProps<typeof RNView>))) } satisfies ComponentProps<typeof Screen>));
+$[0] = drawing;
+$[1] = routeHeader;
+$[2] = height;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+

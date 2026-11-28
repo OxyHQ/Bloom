@@ -1,0 +1,17 @@
+import { Text, inlineView } from "@oxy.so/bloom-language";
+
+export interface CardProps {
+  readonly width?: (number | '100%') | undefined;
+  readonly height?: number;
+  readonly mode?: 'compact' | 'wide' | 'full';
+}
+export const Card = inlineView(function Card(props: CardProps) {
+"use no memo";
+const { width = undefined, height = 260, mode = "wide" } = props;
+return Text((mode === "full") ? "full" : mode).frame({ width: (width === "100%") ? "full" : width, height: height });
+});
+
+export function label(size: number | 'auto'): string {
+return (size === "auto") ? "auto" : `${size}px`;
+}
+

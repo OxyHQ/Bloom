@@ -1,0 +1,18 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface Hue {
+  readonly hue: number;
+}
+export interface ProfileCardData {
+  readonly id: string;
+  readonly username?: string | undefined;
+  readonly avatar?: string | undefined;
+  readonly color?: Hue | undefined;
+  readonly bio: string;
+}
+export declare function handle(card: ProfileCardData): string;
+export declare function color(card: ProfileCardData): string;
+export interface ProfileAvatarProps {
+  readonly card: ProfileCardData;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ProfileAvatar())`), or from TSX as `toElement(ProfileAvatar())`. */
+export declare const ProfileAvatar: (props: ProfileAvatarProps) => ComposedView;

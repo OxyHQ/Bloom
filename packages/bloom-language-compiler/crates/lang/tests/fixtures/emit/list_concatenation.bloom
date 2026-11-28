@@ -1,0 +1,30 @@
+// Swift's `+` on arrays: a new array, the left's elements then the right's. A literal's items
+// go in place, and `+=` is `xs = xs + ys` (on a `@State` too).
+public func both(_ a: [Int], _ b: [Int]) -> [Int] { a + b }
+
+public func around(_ a: [String]) -> [String] { ["first"] + a + ["last"] }
+
+public func appended(_ a: [Int]) -> [Int] {
+  var out = a
+  out += [1, 2]
+  out += a
+  return out
+}
+
+public func fromEmpty(_ a: [Int]) -> [Int] { [] + a }
+
+func more() async -> [String] { ["z"] }
+
+public struct Tags: View {
+  @State private var tags: [String] = []
+
+  var body: some View {
+    VStack {
+      Button(Text("Add")).onPress { tags += ["x"] }
+      Button(Text("Load")).onPress {
+        task { tags += await more() }
+      }
+      Text("\(tags.count)")
+    }
+  }
+}

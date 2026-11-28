@@ -1,0 +1,10 @@
+// `(typeof C)[number]` of an `as const` list of strings is their union, so it keys a record of
+// exactly those fields and narrows as a declared literal union does.
+import { type Tier } from "@/benefits"
+
+public func labels(tier: Tier) -> [String] {
+  let benefitLabels = { content_read: "Read member content", discussion_write: "Participate" }
+  return tier.benefits.map { benefit in benefitLabels[benefit] }
+}
+
+public func paid(tier: Tier) -> Bool { tier.kind == "plus" }

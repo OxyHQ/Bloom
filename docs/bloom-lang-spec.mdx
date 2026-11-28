@@ -147,7 +147,8 @@ base_type     = TYPE_NAME [ "<" type { "," type } ">" ]
 
 expr          = if_expr | match_expr | closure | binary ;
 if_expr       = "if" cond block [ "else" ( if_expr | block ) ] ;
-cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing ;
+cond          = expr_no_trailing | "let" pattern "=" expr_no_trailing
+              | "let" IDENT ;                       (* `if let x`: `if let x = x` *)
 match_expr    = "match" expr_no_trailing "{" { "case" pattern [ "if" expr ] "=>" ( block | expr ) NL } "}" ;
                 (* after "=>", "{" always opens a block; "{}" is the empty block, of type Unit;
                    an arm may also be one statement: case .ok(_) => draft = Draft() *)
@@ -159,14 +160,18 @@ closure_params= IDENT [ ":" type ] { "," IDENT [ ":" type ] }
 binary        = unary { BINOP unary } ;           (* precedence table in 6.1 *)
 unary         = [ "!" | "-" | "await" ] postfix ;   (* "await" binds tighter than a trailing "?":
                                                       await f()? is (await f())? *)
-postfix       = primary { call | "." NAME | "?." NAME | "?." "(" [ args ] ")" | "[" expr "]" | "?" } ;
+postfix       = primary { call | "." ( NAME | INT ) | "?." ( NAME | INT ) | "?." "(" [ args ] ")"
+                        | "[" expr "]" | "[" "keyPath" ":" expr "]" | "?" } ;
+                                     (* `t.0`, `t?.0`: a tuple's member; `x[keyPath: k]` *)
 call          = "(" [ args ] ")" [ closure ] | closure ;   (* a trailing closure; never in
                                                           expr_no_trailing heads *)
 args          = arg { "," arg } [ "," ] ;
-arg           = [ IDENT ":" ] expr | ".." expr ;  (* named argument; a struct spread, or a
-                                                   list spread into a rest parameter *)
+arg           = [ IDENT ":" ] ( expr | opfn ) | ".." expr ;  (* named argument; a struct spread,
+                                                   or a list spread into a rest parameter *)
+opfn          = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=" ;
+                                    (* an operator function, directly before "," or ")" *)
 primary       = literal | "()" | task_expr | STRING | NAME | "." IDENT | "$" IDENT { "." IDENT }
-              | "(" expr ")" | "(" expr "," expr { "," expr } ")"
+              | "(" expr ")" | "(" opfn ")" | "(" expr "," expr { "," expr } ")"
               | "[" [ item { "," item } ] "]" | "[" expr ":" expr { "," expr ":" expr } "]" | "[:]" ;
 
 item          = expr | ".." expr ;                  (* `[..a, b]`: a list's items in place *)
@@ -251,7 +256,8 @@ is the render's, as a `let`'s is; only its reads narrow, so `x = none` and `$x` 
 state's, `$x` a binding of the narrowed type): `if onEnd != none {
 onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
-p.x : d`, `p == none ? d : p.x`); and after a guard
+p.x : d`, `p == none ? d : p.x`); in the `else` of an `if` whose test fails only when it is
+present (`if x == none || x.isEmpty { … } else { use(x) }`); and after a guard
 that returns (`if x == none { return … }`, also `a == none || b == none`), in the rest of the
 block. A test in parentheses narrows as one without (`(p.x != none) ? p.x : d`). Values are immutable, so a member chain of such a name narrows the same way
 (`u.name != none && !u.name.isEmpty`, `u?.name`, `u.avatar?.url`); the emitter writes `u.name!`,
@@ -300,6 +306,9 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
   integer literal outside it is B0105, `Int(s)` of text outside it is `none`, and a dev build
   traps an `Int` `+`, `-` or `*` (and `+=`, `-=`, `*=`) whose result leaves it (`$int`, a
   `RangeError`), as Swift traps an overflow; a release build does not check.
+- `a + b` of two arrays of one element type is a new array, `a`'s elements then `b`'s (Swift's),
+  and `xs += ys` is `xs = xs + ys`. The JS backend writes a spread with a literal's items in
+  place: `["first"] + a + ["last"]` is `["first", ...a, "last"]`, `xs += [x]` is `xs = [...xs, x]`.
 - An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
   programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
   `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
@@ -329,8 +338,15 @@ it merges `{ ...defaults, ...options }`. The record literal `{ ..p, likes: false
 copy-and-change: a key written after the spread replaces the spread's field (JS's
 `{ ...p, likes: false }`, Rust's struct update), only a key written twice is B0208, and when the
 first entry spreads a struct and every key written is one of its fields, the literal is that
-struct, each key checked against its field's type, with or without an expected type. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
-exhaustive `match` on a fieldless enum maps a key to a field.
+struct, each key checked against its field's type, with or without an expected type.
+
+**Key paths** (Swift's) name a struct's field as a value: `\.hideLikes` (its root from what is
+expected) or `\Prefs.hideLikes`, typed `KeyPath<Prefs, Bool>`; `WritableKeyPath<Prefs, Bool>`
+is the same type (a struct's fields are its own to write in a copy). `p[keyPath: key]` reads the
+field, and `next[keyPath: key] = v` on a `var` or a `@State` writes a copy with it (value
+semantics; `+=` through a key path is not supported). In TS a key path is its field's name, of the
+type `$KeyPath<Prefs, boolean>` (the keys whose value is a `boolean`): the read is `p[key]` and the
+write `next = { ...next, [key]: v }`.
 
 **`@Transparent` structs** (Rust's `#[repr(transparent)]`, a Swift tagged type):
 
@@ -487,7 +503,12 @@ a string, a `String`), and the emitter writes `(insets.top satisfies number)`; s
 an `Int` (`2 * Math.PI` is a `Float`), negated (`-event.translationY`), or compared with a number or
 a string (`item.pokeCount > 1`, checked as a `number`; two TS values compare as TS compares them). So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
-of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
+of string literals (`['a', 'b'] as const`, declared or inferred) is a list of their union,
+`[("a" | "b")]`, and its element type `(typeof C)[number]` is that union. A TS union of literals and
+`number`/`string`/`boolean` kept as it is (`width: Foreign<"number | '100%'">?`) narrows by `==` on
+its literals as TS narrows it: where `width == "100%"` fails it is the other members (`Float?`), so
+`.frame(width: width == "100%" ? "full" : width)` takes each branch (a frame's side, Swift's
+`frame(width: CGFloat?)`, may be `none`). `f || b`
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes
@@ -503,7 +524,10 @@ returns says nothing of its data; a binding module gives it a generic signature
 (`public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>` with `queryFn: () async
 -> T`), and `T` is then the `queryFn` closure's result. A TS
 class that extends nothing (`ViewModifier`) is a value
-and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
+and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`. So is an
+error class, one whose base's name ends in `Error` (`class PollContractError extends Error`), never
+a component: `err is PollContractError` and `err as? PollContractError` of a caught error or a TS
+value are JS's `instanceof` (Swift's `e is C`).
 
 `x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
 can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its
@@ -562,6 +586,10 @@ callback alias types a closure's parameters: with `presentSheet(render: SurfaceR
 `SurfaceRenderFn = (surface: SurfaceControls) => ReactNode`, `presentSheet { surface in …
 surface.dismiss() }` reads `surface` as a `SurfaceControls`. TS's object types are structural:
 one fits another when its fields do (a `PostUser` where a `ProfileCardData` is expected), a
+Bloom struct fits one at the TS boundary only (`normalizedHandle(card)` with `user:
+UserHandleInput`) when each of its required fields is a stored field of the struct of a fitting
+type and, for an all-optional TS type, one field is in common (TS's weak types; a
+`@Transparent` struct and a class do not fit this way, and Bloom to Bloom stays nominal), a
 `Foreign?` passes where TS takes an optional, and the embedded language's `ViewNode` and
 `AnyView` are views. A Bloom view where TS takes a React element (`ReactNode`, `ReactElement`,
 `JSX.Element`: a prop, an argument, what a TS callback returns, as `presentSheet { surface in
@@ -717,9 +745,13 @@ fitting, or two fitting equally, is B0207 with the overloads listed. Two with th
 B0217 (overloads differ by labels, not by types), and so is an overloaded name read without a call
 (B0202). Each overload is emitted named by its labels (`describe$0$count`,
 `Double$formatted$0$digits`); a name declared once keeps its name. A directory module's files share
-one namespace, so a function's overloads are declared in one file (B0807 otherwise). A closure without
+one namespace, so a function's overloads are declared in one file (B0807 otherwise). That is a
+current limit, not the design: Swift takes a name's overloads from anywhere in its module. A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
-outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
+outside a closure). An arithmetic or comparison operator passed as a function is that closure
+(Swift's operator functions): `xs.reduce(0, +)`, `xs.sorted(by: >)`, and `(+)` in parentheses
+anywhere a value goes (`let add: (Int, Int) -> Int = (+)`); it is typed by the function type
+expected there, and is `{ $0 + $1 }` to every backend. A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
 `private` (the file), plus `private(set)` for who assigns; a `public` declaration that names an
 `internal` or `private` type of its file is B0108. `import Bloom` and `import Mention.Posts` name
@@ -783,9 +815,13 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   fallthrough; `case .a, .b:` matches either, `case let .x(v)` and `.x(let v)` bind (a Bloom
   pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
   rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
-- `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
-  `return`, `throw`, `break`, `continue` or `fatalError(…)` (B0110), and what the condition binds
-  is in scope after it. It compiles to `if (!(cond)) { … }`.
+- `guard cond else { … }` and `guard let x = optional else { … }` (Swift 5.7's `guard let x else
+  { … }` and `if let x { … }` unwrap the name into itself): the block must leave with
+  `return`, `throw`, `break`, `continue`, a call that returns `Never` (`fatal(…)`, Swift's
+  `fatalError`) or a `do` whose body and every `catch` leave (B0110), and what the condition binds
+  is in scope after it. The same ends a path anywhere a value is expected: a function or closure
+  whose last statement is one, or a `do`/`catch` whose body and catches each end with one, needs
+  no value after it. It compiles to `if (!(cond)) { … }`.
 - An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
 - Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
   call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);
@@ -804,13 +840,18 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   plain `raw as Tab`, at no cost, as `x!` is. `as!` to anything else, and a cast of a
   non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
-  `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
+  `try?`, `try!`; one `try` or `try!` covers the whole expression to its right: `try g(a) + h(b)`,
+  `try ok() ? a() : b()`), or it is B0223. A `try?` does too (Swift's reading): `try? f() ?? x` is
+  `try? (f() ?? x)`, so of an `f()` that is never `none` the `??` never falls back, which is
+  B0225 (a warning) with `(try? f()) ?? x` as its fix. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
   **A function type keeps its effects** (Swift's): `(String) throws -> Int` and
   `() async throws -> T` are types of their own. A call of a value of a throwing type is a
-  throwing call (`try f(s)`); a function that does not throw fits a throwing type, and one that
+  throwing call (`try f(s)`); a function that does not await fits an `async` type (`let one: ()
+async -> Int = { 1 }`, `run(count)`; the emit gives it as an `async` function, so the caller
+still gets a promise), a function that does not throw fits a throwing type, and one that
   throws where a non-throwing one is expected is B0201 (a TS callback may throw: JS has no checked
   errors). A closure whose `try` or `throw` nothing in it catches is throwing where a throwing
   type, or none, is expected (`let load = { try parse(s) }` is called `try load()`). The standard
@@ -1358,7 +1399,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
-| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
+| prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; of a number, Swift's conversions: `Int(x)` truncates toward zero, `Double(n)`/`Float(n)` is the number (`Double(a) / Double(b)` divides exactly); `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
 | tasks | `Task.signal`, `Task.cancellation`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
@@ -1396,7 +1437,8 @@ help: did you mean `"md"`?
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
-`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0231 (a
+`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0225 (a warning: a `??`
+the `try?` before it covers, which never falls back), B0231 (a
 requirement of a conformance not met), B0232 (a type argument or `any P` value that does not
 conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async

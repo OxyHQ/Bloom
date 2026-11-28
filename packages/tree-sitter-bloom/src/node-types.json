@@ -2615,6 +2615,11 @@
     }
   },
   {
+    "type": "operator_function",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "optional_binding",
     "named": true,
     "fields": {
@@ -2630,7 +2635,7 @@
       },
       "value": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "_expression",
@@ -2753,6 +2758,10 @@
       "types": [
         {
           "type": "_expression",
+          "named": true
+        },
+        {
+          "type": "operator_function",
           "named": true
         }
       ]
@@ -3383,6 +3392,16 @@
           }
         ]
       },
+      "label": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
       "target": {
         "multiple": false,
         "required": true,
@@ -3943,6 +3962,10 @@
         "types": [
           {
             "type": "_expression",
+            "named": true
+          },
+          {
+            "type": "operator_function",
             "named": true
           }
         ]

@@ -12,7 +12,10 @@ const load = async () => {
 try {
 const got: readonly string[] = (await (Promise.resolve(["a"])) satisfies readonly string[]);
 setItems(got);
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
+}
 }
 };
 void (async () => {

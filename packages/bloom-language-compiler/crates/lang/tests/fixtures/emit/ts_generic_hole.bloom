@@ -1,0 +1,16 @@
+// What Bloom cannot type in a TS value is TS's, never the hole `_`: a closure handed through a
+// TS generic (`useShallow { state in state.trends }`, `S` inferred by TS from the outer call),
+// and the items of a spread TS list (`[..stats.columns]`).
+import { stats, useShallow, useTrendsStore } from "@/store"
+
+public struct Trends: View {
+  let picked = useTrendsStore(useShallow { state in ({ trends: state.trends, summary: state.summary }) })
+
+  var body: some View {
+    Text(picked.summary)
+  }
+}
+
+public func sortedColumns() -> [Foreign] {
+  [..stats.columns].sorted { a, b in b.value > a.value }
+}

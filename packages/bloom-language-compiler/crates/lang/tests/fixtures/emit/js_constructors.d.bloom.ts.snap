@@ -1,0 +1,3 @@
+export declare function byId(ids: readonly string[]): unknown;
+export declare function unique(ids: readonly string[]): unknown;
+export declare function shown(n: number): unknown;

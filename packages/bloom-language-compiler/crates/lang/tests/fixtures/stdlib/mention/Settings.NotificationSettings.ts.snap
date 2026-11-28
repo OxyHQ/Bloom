@@ -65,8 +65,11 @@ try {
 const prefs = await (MentionAPI$get(self.api, "settings/notifications", NotificationPrefs$$self, undefined, cancellation));
 KeyValueStore$setValue(self.cache, NotificationPrefs$$self, prefs, cacheKey);
 return prefs;
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 return SettingsStore$cached(self);
+}
 }
 }
 
@@ -76,9 +79,12 @@ KeyValueStore$setValue(self.cache, NotificationPrefs$$self, next, cacheKey);
 try {
 await (HTTPClient$perform(self.api.http, "put", "settings/notifications", (((NotificationPrefs$$encode(next)) ?? undefined) satisfies unknown | undefined)));
 return next;
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 KeyValueStore$setValue(self.cache, NotificationPrefs$$self, prefs, cacheKey);
 return prefs;
+}
 }
 }
 

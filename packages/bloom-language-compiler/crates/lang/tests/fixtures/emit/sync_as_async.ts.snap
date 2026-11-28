@@ -1,0 +1,22 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
+
+function count(): number {
+return 2;
+}
+
+export const one: () => Promise<number> = async () => 1;
+
+export const two: () => Promise<number> = (async (...$args) => (count)(...$args));
+
+export async function run(work: () => Promise<number>): Promise<number> {
+return await (work());
+}
+
+export async function both(): Promise<number> {
+const a = await (run(async () => 3));
+const b = await (run((async (...$args) => (count)(...$args))));
+return a + b;
+}
+
+export const checked: (p0: string) => number = (s: string) => $characterCount(s);
+

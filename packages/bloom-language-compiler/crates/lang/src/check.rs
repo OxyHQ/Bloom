@@ -102,6 +102,11 @@ pub enum CallRes {
     Parse {
         int: bool,
     },
+    /// `Int(x)` / `Double(n)` of a number (Swift's): `Int` truncates toward zero, `Double` is the
+    /// number itself.
+    Convert {
+        int: bool,
+    },
     Struct(DefId),
     Partial(DefId),
     /// `s.with(field: v)`.
@@ -239,6 +244,11 @@ pub enum AssignRes {
     Bound {
         local: LocalId,
     },
+    /// `next[keyPath: key] = v` of a `var` or a `@State` (`state`): a copy with that field.
+    KeyPath {
+        local: LocalId,
+        state: bool,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -298,6 +308,9 @@ pub struct CheckResult {
     pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
     pub is_tests: HashMap<ExprId, Ty>,
+    /// A function value that does not await where a Bloom `async` function is expected
+    /// (`let load: () async -> Int = count`): a backend gives it as an `async` function.
+    pub async_wraps: HashSet<ExprId>,
     /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
     pub casts: HashMap<ExprId, Rc<str>>,
     /// `x as? Tab` / `x as! Tab` with `Tab` a string literal union: its values, tested at run
@@ -565,6 +578,15 @@ pub struct Checker<'o> {
     /// local the body declares. A stateful modifier is applied only here, reading what is
     /// declared before it.
     modifier_site: Option<usize>,
+    /// TS error classes imported by name (`class PollContractError extends Error`): each one's
+    /// TS type text, and the name its class is read by (`err is PollContractError`).
+    error_classes: HashMap<String, String>,
+    /// `try? a ?? b`: the `??`'s id and where the `try?` starts, while its operand is checked.
+    try_default: Option<(ExprId, u32)>,
+    /// The type variables of TS generics' instantiations (`instantiate`), TS's to infer.
+    ts_vars: HashSet<u32>,
+    /// The derived `Codable` codecs (`T.self`) declared ahead of their place, by name span.
+    codecs_ahead: HashMap<Span, LocalId>,
     /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
     modifier_arg: Option<ExprId>,
     /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
@@ -741,6 +763,10 @@ impl<'o> Checker<'o> {
             modifier_decls: HashMap::default(),
             modifier_site: None,
             modifier_arg: None,
+            error_classes: HashMap::default(),
+            try_default: None,
+            ts_vars: HashSet::default(),
+            codecs_ahead: HashMap::default(),
             hook_args: HashSet::default(),
             hook_body: None,
             unique_id_state: None,
@@ -1224,6 +1250,35 @@ impl<'o> Checker<'o> {
                 self.structural.pop();
                 fits
             }
+            // A Bloom struct where a TS object type is expected (`normalizedHandle(card)` with
+            // `user: UserHandleInput`): a struct is a plain object of its stored fields at run
+            // time, so it fits as TS checks it, when each of the TS type's required fields is
+            // one of them, of a fitting type. An all-optional TS type (TS's "weak type") needs
+            // one field in common. Bloom to Bloom stays nominal; a `@Transparent` struct is
+            // its one field and a class an instance, so neither fits this way.
+            (Ty::Adt(d1, x), Ty::Adt(d2, y))
+                if matches!(self.out.defs[*d1].origin, Origin::Local | Origin::Bloom { .. })
+                    && matches!(self.out.defs[*d2].origin, Origin::Ts { .. })
+                    && matches!(self.out.defs[*d1].kind, DefKind::Struct(_))
+                    && matches!(self.out.defs[*d2].kind, DefKind::Struct(_))
+                    && self.out.defs[*d1].class.is_none()
+                    && !self.out.transparent.contains(d1) =>
+            {
+                let (d1, d2, x, y) = (*d1, *d2, x.clone(), y.clone());
+                let have = self.out.defs[d1].fields();
+                let want = self.out.defs[d2].fields();
+                let weak = want.iter().all(|w| w.default == FieldDefault::Undefined);
+                if weak && !want.iter().any(|w| have.iter().any(|h| h.name == w.name)) {
+                    return false;
+                }
+                if self.structural.contains(&(d1, d2)) {
+                    return true;
+                }
+                self.structural.push((d1, d2));
+                let fits = self.fits_record(d1, &x, d2, &y);
+                self.structural.pop();
+                fits
+            }
             (Ty::Strings(x), Ty::Strings(y)) => {
                 Rc::ptr_eq(x, y) || x.values.iter().all(|v| ui::token_ok(y, v))
             }
@@ -1232,6 +1287,8 @@ impl<'o> Checker<'o> {
                 _ => false,
             },
             (Ty::List(x), Ty::List(y)) => self.coerce(x, y),
+            // A TS promise is covariant (`Promise<Unit>` where TS takes `Promise<unknown>`).
+            (Ty::Promise(x), Ty::Promise(y)) => self.coerce(x, y),
             (Ty::Fn(f), Ty::Fn(g)) => {
                 if f.params.len() > g.params.len() && f.params[g.params.len()..].iter().any(|p| !p.optional) {
                     return false;
@@ -1266,7 +1323,10 @@ impl<'o> Checker<'o> {
                         _ => self.coerce(&f.ret, inner),
                     }
                 } else {
-                    f.is_async == g.is_async && self.coerce(&f.ret, &g.ret)
+                    // A function that does not await fits an `async` type (Swift's); the emitter
+                    // wraps it where it is given (`async_wraps`).
+                    (f.is_async == g.is_async || (!f.is_async && g.is_async && !g.ts))
+                        && self.coerce(&f.ret, &g.ret)
                 };
                 // `() throws -> T` is a type of its own (Swift's): a function that throws never fits
                 // where one that does not is expected (its caller writes no `try`); one that does not
@@ -1604,7 +1664,9 @@ impl<'o> Checker<'o> {
                     Ty::Unknown
                 };
             }
-            "KeyPath" => {
+            // `WritableKeyPath<T, V>` is a key path that writes too: a struct's stored fields are
+            // its own to write in a `var` copy (value semantics), so it is `KeyPath<T, V>`.
+            "KeyPath" | "WritableKeyPath" => {
                 if !arity(self, 2) {
                     return Ty::Unknown;
                 }
@@ -1687,7 +1749,17 @@ impl<'o> Checker<'o> {
         let mut candidates: Vec<String> = self.type_names.keys().cloned().collect();
         candidates.extend(
             [
-                "Int", "Float", "Bool", "String", "Unit", "View", "Result", "Binding", "Partial", "KeyPath",
+                "Int",
+                "Float",
+                "Bool",
+                "String",
+                "Unit",
+                "View",
+                "Result",
+                "Binding",
+                "Partial",
+                "KeyPath",
+                "WritableKeyPath",
                 "Error",
             ]
             .map(String::from),
@@ -1807,6 +1879,15 @@ impl<'o> Checker<'o> {
                     let ty = self.view_type(v);
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
+                // `T.self` of a `Codable` struct declared below its use (Swift reads a file's
+                // declarations in any order): the derived codec's type is written, so it is
+                // declared with the functions; its value is checked in order below.
+                ItemKind::Const(c) if crate::codable::is_synthetic(c.name.span) && c.ty.is_some() => {
+                    let ty = self.resolve_type(c.ty.as_ref().expect("checked"));
+                    let local = self.declare_unique(&c.name, ty, LocalKind::ModuleConst);
+                    self.codecs_ahead.insert(c.name.span, local);
+                    Some(local)
+                }
                 _ => None,
             };
             if let Some(local) = local {
@@ -1817,6 +1898,10 @@ impl<'o> Checker<'o> {
         let mut screens = 0;
         for (index, item) in file.items.iter().enumerate() {
             match &item.kind {
+                ItemKind::Const(c) if self.codecs_ahead.contains_key(&c.name.span) => {
+                    let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
+                    self.const_value(&c.value, declared.as_ref());
+                }
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = self.const_value(&c.value, declared.as_ref());
@@ -2937,8 +3022,14 @@ impl<'o> Checker<'o> {
                             value: Some(Ty::Foreign(format!("typeof {}", local.name).into())),
                             ty: None,
                             component: None,
+                            class: false,
                         },
                     };
+                    if mapped.class
+                        && let Some(Ty::Foreign(text)) = &mapped.ty
+                    {
+                        self.error_classes.insert(text.to_string(), local.name.clone());
+                    }
                     if mapped.value.is_none() && mapped.component.is_none() && mapped.ty.is_some() {
                         self.out.type_only_imports.insert(spec.span);
                     }
@@ -3223,7 +3314,7 @@ impl<'o> Checker<'o> {
         if let Some(expected) = expected
             && !discard
             && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
-            && !stmts.last().is_some_and(always_exits)
+            && !stmts.last().is_some_and(|s| self.always_exits(s))
         {
             let expected = expected.clone();
             if !self.coerce(&Ty::Unit, &expected) {
@@ -3257,6 +3348,61 @@ impl<'o> Checker<'o> {
             steps += 1;
         }
         (at != local && self.out.locals[at].kind == LocalKind::State).then_some(at)
+    }
+
+    /// The name a TS error class is read by, when `ty` is one (`PollContractError`).
+    fn error_class(&self, ty: &Ty) -> Option<String> {
+        match self.resolve(ty) {
+            Ty::Foreign(text) => self.error_classes.get(&*text).cloned(),
+            _ => None,
+        }
+    }
+
+    /// What `is` / `as?` of a TS error class tests: an error, or a TS value.
+    fn class_subject(&mut self, subject: &Expr, value: &Ty, class: &str) {
+        let resolved = match self.resolve(value) {
+            Ty::Option(inner) => self.resolve(&inner),
+            other => other,
+        };
+        if !matches!(resolved, Ty::JsError | Ty::Foreign(_) | Ty::Unknown | Ty::Var(_)) {
+            self.report(
+                Diagnostic::error(
+                    "B0213",
+                    subject.span,
+                    format!("`{class}` is a TS error class, and this is {}", self.show(value)),
+                )
+                .label("not an error, nor a TS value")
+                .help("test a caught error (`catch let e`) or a TS value")
+                .spec("47-the-foreign-boundary"),
+            );
+        }
+    }
+
+    /// A statement no path falls out of: `return`, `throw`, `break`, `continue`, a call that
+    /// returns `Never` (`fatal(…)`, Swift's `fatalError`), or a `do` whose body and catches all
+    /// end so. Read after the statement is checked, from its call's type.
+    fn always_exits(&self, stmt: &Stmt) -> bool {
+        match &stmt.kind {
+            StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
+            StmtKind::Expr(e) => self.never_call(e),
+            StmtKind::Do(d) => {
+                d.body.stmts.last().is_some_and(|s| self.always_exits(s))
+                    && !d.catches.is_empty()
+                    && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(|s| self.always_exits(s)))
+            }
+            _ => false,
+        }
+    }
+
+    /// A call (under `try` or `await`) whose type is `Never`.
+    fn never_call(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Try(inner) | ExprKind::Await(inner) | ExprKind::Paren(inner) => self.never_call(inner),
+            ExprKind::Call(_) => {
+                self.out.types.get(&expr.id).is_some_and(|t| matches!(self.resolve(t), Ty::Never))
+            }
+            _ => false,
+        }
     }
 
     fn stmt(&mut self, stmt: &Stmt) {
@@ -3384,7 +3530,7 @@ impl<'o> Checker<'o> {
             // scope for the statements after the guard.
             StmtKind::Guard(g) => {
                 self.block(&g.otherwise, Some(&Ty::Unit));
-                if !g.otherwise.stmts.last().is_some_and(exits) {
+                if !g.otherwise.stmts.last().is_some_and(|s| self.always_exits(s)) {
                     self.report(
                         Diagnostic::error("B0110", g.otherwise.span, "a `guard`'s `else` must leave")
                             .label("this block falls through")
@@ -3635,7 +3781,8 @@ impl<'o> Checker<'o> {
             op => {
                 let value = self.expr(&a.value, Some(&ty));
                 let numeric = matches!(self.resolve(&ty), Ty::Int | Ty::Float | Ty::Unknown);
-                let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str);
+                // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
+                let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
                     self.report(
                         Diagnostic::error(
@@ -3690,7 +3837,67 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `next[keyPath: key] = value` (Swift's, on a value type): a `var`'s or a `@State`'s copy
+    /// with the field `key` names set. `false` for any other target.
+    fn assign_key_path(&mut self, a: &AssignStmt) -> bool {
+        let ExprKind::KeyPathIndex(object, key) = &a.target.kind else { return false };
+        let field = self.expr(&a.target, None);
+        let ExprKind::Name(name) = &object.kind else {
+            self.report(
+                Diagnostic::error("B0403", object.span, "a key path writes a `var` or a `@State`")
+                    .label("not a name")
+                    .help("copy it first: `var next = value`, then `next[keyPath: key] = …`")
+                    .spec("44-structs"),
+            );
+            self.expr(&a.value, Some(&field));
+            return true;
+        };
+        let _ = key;
+        let Some(local) = self.lookup(name) else {
+            self.expr(&a.value, Some(&field));
+            return true;
+        };
+        let local = self.narrowed_state(local).unwrap_or(local);
+        let info = self.out.locals[local].clone();
+        if !matches!(info.kind, LocalKind::Var | LocalKind::State) {
+            self.report(
+                Diagnostic::error(
+                    "B0403",
+                    object.span,
+                    format!("cannot assign to `{name}`: it is immutable"),
+                )
+                .label("immutable")
+                .with_label(info.span, "declared here")
+                .help(format!("copy it into a `var`: `var next = {name}`"))
+                .spec("44-structs"),
+            );
+        } else if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+            self.var_captured(&info, a.target.span);
+        }
+        if a.op != AssignOp::Set {
+            self.report(
+                Diagnostic::error(
+                    "B0201",
+                    a.span,
+                    format!("`{}` through a key path is not supported", a.op.text()),
+                )
+                .label("write `x[keyPath: k] = x[keyPath: k] + v`")
+                .spec("44-structs"),
+            );
+        }
+        self.expr(&a.value, Some(&field));
+        let state = info.kind == LocalKind::State;
+        if state {
+            self.frames.last_mut().expect("a frame").written.insert(local);
+        }
+        self.out.assigns.insert(a.span, AssignRes::KeyPath { local, state });
+        true
+    }
+
     fn assign(&mut self, a: &AssignStmt) {
+        if self.assign_key_path(a) {
+            return;
+        }
         if self.assign_place(a) {
             return;
         }
@@ -3817,7 +4024,8 @@ impl<'o> Checker<'o> {
             op => {
                 let value = self.expr(&a.value, Some(&place_ty));
                 let numeric = matches!(self.resolve(&place_ty), Ty::Int | Ty::Float | Ty::Unknown);
-                let text = op == AssignOp::Add && matches!(self.resolve(&place_ty), Ty::Str);
+                // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
+                let text = op == AssignOp::Add && matches!(self.resolve(&place_ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
                     self.report(
                         Diagnostic::error(
@@ -3913,11 +4121,18 @@ impl<'o> Checker<'o> {
                 self.cond(&if_expr.cond);
                 self.builder(&if_expr.then.stmts);
                 self.pop();
+                // The `else` narrows where the test fails, as an `if`'s value does
+                // (`if item.origin == "server" { … } else { item.draft }`).
+                self.push();
+                if let Cond::Expr(test) = &if_expr.cond {
+                    self.narrow(test, BinaryOp::Eq, BinaryOp::Or);
+                }
                 match if_expr.otherwise.as_deref() {
                     Some(Else::If(next)) => self.child(next),
                     Some(Else::Block(block)) => self.builder(&block.stmts),
                     None => {}
                 }
+                self.pop();
             }
             ExprKind::Match(m) => {
                 self.record(expr, Ty::View(None));
@@ -4436,8 +4651,14 @@ impl<'o> Checker<'o> {
             Ty::Strings(set) if !set.token => (set, false),
             Ty::Option(inner) => match self.resolve(&inner) {
                 Ty::Strings(set) if !set.token => (set, true),
+                Ty::Foreign(text) => {
+                    return self.narrow_foreign_union(subject, name, original, &text, true, values, keep);
+                }
                 _ => return,
             },
+            Ty::Foreign(text) => {
+                return self.narrow_foreign_union(subject, name, original, &text, false, values, keep);
+            }
             _ => return,
         };
         let left: Vec<String> = set.values.iter().filter(|v| values.contains(v) == keep).cloned().collect();
@@ -4449,6 +4670,59 @@ impl<'o> Checker<'o> {
         // `x == "a"` holding: `x` is present too.
         let ty = if optional && !keep { Ty::Option(Box::new(narrowed)) } else { narrowed };
         let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+        let local = self.declare(&ident, ty, LocalKind::Let);
+        self.out.narrowed.insert(subject.id, (local, original));
+    }
+
+    /// A TS union of literals and plain types kept as it is (`width: Foreign<"number | '100%'">?`),
+    /// tested against literals: where `width == "100%"` holds it is that literal; where it fails
+    /// it is the other members, read as Bloom reads them (`number` is `Float`, so
+    /// `width == "100%" ? "full" : width` gives the frame a `Float?`), as TS narrows it.
+    #[allow(clippy::too_many_arguments)]
+    fn narrow_foreign_union(
+        &mut self,
+        subject: &Expr,
+        name: &str,
+        original: LocalId,
+        text: &str,
+        optional: bool,
+        values: &[String],
+        keep: bool,
+    ) {
+        let Some(members) = ts_union_members(text) else { return };
+        let absent = optional || members.iter().any(|m| matches!(m, UnionMember::Absent));
+        let literal = |m: &UnionMember| match m {
+            UnionMember::Literal(v) => Some(v.clone()),
+            _ => None,
+        };
+        let ty = if keep {
+            // `x == "100%"` holding: that literal, present.
+            if !values.iter().all(|v| members.iter().any(|m| literal(m).as_ref() == Some(v))) {
+                return;
+            }
+            let shown = values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+            Ty::Strings(Rc::new(StrSet { name: shown, values: values.to_vec(), token: false }))
+        } else {
+            let rest: Vec<&UnionMember> = members
+                .iter()
+                .filter(|m| !matches!(m, UnionMember::Absent))
+                .filter(|m| literal(m).is_none_or(|v| !values.contains(&v)))
+                .collect();
+            if rest.len() == members.iter().filter(|m| !matches!(m, UnionMember::Absent)).count() {
+                return;
+            }
+            let literals: Vec<String> = rest.iter().filter_map(|m| literal(m)).collect();
+            let narrowed = match rest.as_slice() {
+                [UnionMember::Plain(ty)] => ty.clone(),
+                _ if !literals.is_empty() && literals.len() == rest.len() => {
+                    let shown = literals.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+                    Ty::Strings(Rc::new(StrSet { name: shown, values: literals, token: false }))
+                }
+                _ => return,
+            };
+            if absent { Ty::Option(Box::new(narrowed)) } else { narrowed }
+        };
+        let ident = Ident { name: name.to_string(), span: self.out.locals[original].span };
         let local = self.declare(&ident, ty, LocalKind::Let);
         self.out.narrowed.insert(subject.id, (local, original));
     }
@@ -4605,10 +4879,17 @@ impl<'o> Checker<'o> {
         };
         let then = self.block(&if_expr.then, expected);
         self.pop();
+        // `if x == none || x.isEmpty { … } else { … }`: where the test fails, `x` is present
+        // (De Morgan's), as after an `if` whose branch returns.
+        self.push();
+        if let Cond::Expr(test) = &if_expr.cond {
+            self.narrow(test, BinaryOp::Eq, BinaryOp::Or);
+        }
         let other = match otherwise {
             Else::If(next) => self.expr(next, expected.or(Some(&then))),
             Else::Block(block) => self.block(block, expected.or(Some(&then))),
         };
+        self.pop();
         self.join(&then, &other, span)
     }
 
@@ -4847,6 +5128,16 @@ impl<'o> Checker<'o> {
             recorded.push((expr.span, expected.clone()));
         }
         let mut ty = self.infer(expr, expected);
+        // A function value that does not await, where a Bloom `async` one is expected
+        // (`let load: () async -> Int = count`): the emitter wraps it in an `async` function.
+        if !matches!(expr.kind, ExprKind::Closure(_) | ExprKind::Paren(_))
+            && let (Ty::Fn(f), Some(Ty::Fn(g))) = (self.resolve(&ty), expected.map(|e| self.resolve(e)))
+            && !f.is_async
+            && g.is_async
+            && !g.ts
+        {
+            self.out.async_wraps.insert(expr.id);
+        }
         if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty() {
             ty = self.narrowed_path(expr, ty);
         }
@@ -4971,6 +5262,40 @@ impl<'o> Checker<'o> {
             self.ref_object = true;
             let ty = self.boundary(expr, None);
             self.ref_object = false;
+            return ty;
+        }
+        // `onLayout: IS_WEB ? none : { event in … }`, `header: c ? Text(…) : routeHeader`: each
+        // branch is TS's to check where TS's type is expected, as one given alone is (a closure's
+        // parameters from TS, a view crossing as an element), never typed from its sibling.
+        if let ExprKind::Ternary(cond, then, otherwise) = &expr.kind
+            && matches!(hint, None | Some(Ty::Foreign(_)))
+            // A node's child or text run keeps its own rules (`HStack(c ? rows : none)`).
+            && !self.child_slots.contains(&expr.id)
+            && !self.run_slots.contains(&expr.id)
+        {
+            let hint = hint.clone();
+            self.expr(cond, Some(&Ty::Bool));
+            self.hook_allowed = false;
+            self.push();
+            self.narrow_present(cond);
+            let a = self.boundary(then, hint.as_ref());
+            self.pop();
+            self.push();
+            self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+            let b = self.boundary(otherwise, hint.as_ref());
+            self.pop();
+            // The branches together, quietly (TS checks them): `View` and `View?` are `View?`,
+            // so a view in either crosses as an element where one is taken.
+            let (ra, rb) = (self.resolve(&a), self.resolve(&b));
+            let ty = if self.coerce(&rb, &ra) {
+                ra
+            } else if self.coerce(&ra, &rb) {
+                rb
+            } else {
+                hint.unwrap_or_else(|| Ty::Foreign("".into()))
+            };
+            self.out.types.insert(expr.id, ty.clone());
+            self.span_type((expr.span, ty.clone()));
             return ty;
         }
         let ty = match (&expr.kind, &hint) {
@@ -5166,6 +5491,12 @@ impl<'o> Checker<'o> {
                     if let ExprKind::Spread(inner) = &item.kind {
                         let list = Ty::List(Box::new(elem.clone()));
                         let ty = self.expr(inner, Some(&list));
+                        // `[..stats.columns]` of a TS list: its items are TS's (`T[number]`), not `_`.
+                        if let Ty::Foreign(text) = self.resolve(&ty)
+                            && matches!(self.resolve(&elem), Ty::Var(_))
+                        {
+                            self.unify(&elem, &Ty::Foreign(format!("NonNullable<{text}>[number]").into()));
+                        }
                         self.out.types.insert(item.id, ty);
                         continue;
                     }
@@ -5178,6 +5509,12 @@ impl<'o> Checker<'o> {
             ExprKind::Is(subject, te) => {
                 let ty = self.resolve_type(te);
                 let value = self.expr(subject, None);
+                // `err is PollContractError` of a TS error class: JS's `instanceof`.
+                if let Some(class) = self.error_class(&ty) {
+                    self.class_subject(subject, &value, &class);
+                    self.out.is_tests.insert(expr.id, Ty::Foreign(class.into()));
+                    return Ty::Bool;
+                }
                 let tested = matches!(ty, Ty::Str | Ty::Int | Ty::Float | Ty::Bool | Ty::List(_));
                 if !tested {
                     self.report(
@@ -5231,6 +5568,12 @@ impl<'o> Checker<'o> {
                         .spec("62-control-flow-and-errors-20"),
                     );
                     return target;
+                }
+                // `err as? PollContractError` of a TS error class: the error when it is one.
+                if let Some(class) = self.error_class(&target) {
+                    self.class_subject(subject, &value, &class);
+                    self.out.is_tests.insert(expr.id, Ty::Foreign(class.into()));
+                    return Ty::Option(Box::new(target));
                 }
                 match self.cast_fn(&target) {
                     Some((func, f)) => {
@@ -5389,9 +5732,14 @@ impl<'o> Checker<'o> {
                 // to `x`'s optional, not to `x`'s type.
                 // `c ? s : opt?.x`: the other branch may be `none` too (an optional chain), so it
                 // is held to `s`'s optional and the two join to it.
+                // An optional `x` is its own optional: `c ? name : d ? "s" : none` of a `String?`
+                // name is `String?`, never `String??` (Swift flattens none here either).
                 let optional_a = (expected.is_none()
                     && (ends_in_none(otherwise) || optional_chain(otherwise)))
-                .then(|| Ty::Option(Box::new(a.clone())));
+                .then(|| match self.resolve(&a) {
+                    Ty::Option(_) => a.clone(),
+                    _ => Ty::Option(Box::new(a.clone())),
+                });
                 let hint = match otherwise.kind {
                     _ if else_lit.is_some() => else_lit.as_ref(),
                     _ if then_lit.is_some() => None,
@@ -5434,9 +5782,17 @@ impl<'o> Checker<'o> {
                 if *kind == TryKind::Plain {
                     self.unhandled_try(expr.span);
                 }
+                // `try? f() ?? x`: the `try?` covers the `??` too (Swift's reading).
+                let outer_default = self.try_default.take();
+                if *kind == TryKind::Optional
+                    && let ExprKind::Binary(BinaryOp::Default, ..) = &inner.kind
+                {
+                    self.try_default = Some((inner.id, expr.span.start));
+                }
                 let outer = std::mem::replace(&mut self.trying, true);
                 let ty = self.expr(inner, expected_inner.as_ref());
                 self.trying = outer;
+                self.try_default = outer_default;
                 // `try await` on a TS promise: its rejection is thrown, not a `Result`.
                 if matches!(kind, TryKind::Plain | TryKind::Force)
                     && let ExprKind::Await(_) = &inner.kind
@@ -5553,6 +5909,17 @@ impl<'o> Checker<'o> {
                         Ty::Unknown
                     }
                 }
+            }
+            // `x[keyPath: kp]`: the field `kp` names, of the type it gives.
+            ExprKind::KeyPathIndex(object, key) => {
+                let root = self.expr(object, None);
+                let value = self.fresh();
+                let want = Ty::KeyPath(Box::new(root), Box::new(value.clone()));
+                let given = self.expr(key, Some(&want));
+                if !self.coerce(&given, &want) {
+                    self.mismatch(key.span, &given, &want);
+                }
+                self.resolve(&value)
             }
             ExprKind::Index(object, index) => {
                 let ty = self.expr(object, None);
@@ -5900,6 +6267,14 @@ impl<'o> Checker<'o> {
         match ty {
             Ty::Fn(f) if f.generics > 0 => {
                 let args: Vec<Ty> = (0..f.generics).map(|_| self.fresh()).collect();
+                // A TS generic's type variables are TS's to infer (`useShallow<S, U>`): one still
+                // unknown where a member is read is a TS value (`member`).
+                if f.ts {
+                    self.ts_vars.extend(args.iter().filter_map(|a| match a {
+                        Ty::Var(v) => Some(*v),
+                        _ => None,
+                    }));
+                }
                 let params =
                     f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
                 let bounds = f.bounds.iter().map(|(t, p)| (substitute(t, &args), p.clone())).collect();
@@ -6320,6 +6695,27 @@ impl<'o> Checker<'o> {
                         }
                         right
                     }
+                    // `try? f() ?? x` of an `f()` that is never `none`: the `try?` covers the
+                    // `??`, so `x` is never used (Swift's warning); `(try? f()) ?? x` is the
+                    // fallback of the `try?`.
+                    other if self.try_default.is_some_and(|(id, _)| id == expr.id) => {
+                        let (_, start) = self.try_default.expect("checked");
+                        let written = &self.source[start as usize..lhs.span.end as usize];
+                        let shown = self.show(&other);
+                        self.report(
+                            Diagnostic::warning(
+                                "B0225",
+                                lhs.span,
+                                format!("`??` never falls back: the `try?` covers it, and this is {shown}"),
+                            )
+                            .label("never `none`")
+                            .help(format!("for the fallback of the `try?`, write `({written}) ?? …`"))
+                            .fix(Span::new(start, lhs.span.end), format!("({written})"))
+                            .spec("62-control-flow-and-errors-20"),
+                        );
+                        self.expr(rhs, Some(&other));
+                        other
+                    }
                     other => {
                         self.report(
                             Diagnostic::error(
@@ -6488,6 +6884,14 @@ impl<'o> Checker<'o> {
                     }
                     Ty::Float => {
                         self.expr(rhs, Some(&left));
+                        left
+                    }
+                    // Swift's `a + b` of two arrays: a new one, `a`'s elements then `b`'s.
+                    Ty::List(_) if op == BinaryOp::Add => {
+                        let right = self.expr(rhs, Some(&left));
+                        if !self.coerce(&right, &left) {
+                            self.mismatch(rhs.span, &right, &left);
+                        }
                         left
                     }
                     // Swift's `date + seconds`, `date - seconds`: the instant that much later or
@@ -7246,7 +7650,17 @@ impl<'o> Checker<'o> {
 
     /// `value.name` on a value of type `ty`.
     fn member(&mut self, expr: &Expr, ty: &Ty, name: &Ident, object_span: Span) -> Ty {
-        let resolved = self.resolve(ty);
+        let mut resolved = self.resolve(ty);
+        // `useShallow { state in state.trends }`: a TS generic's parameter Bloom cannot see is a
+        // TS value (TS infers it from the outer call), read as TS reads it. A Bloom generic's
+        // unsolved variable stays an error.
+        if let Ty::Var(v) = resolved
+            && self.ts_vars.contains(&v)
+        {
+            let foreign = Ty::Foreign("any".into());
+            self.unify(&resolved, &foreign);
+            resolved = foreign;
+        }
         let builtin = matches!(
             (&resolved, name.name.as_str()),
             (
@@ -7618,7 +8032,10 @@ impl<'o> Checker<'o> {
         }
         let frame = self.frames.pop().expect("the closure's frame");
         self.pop();
-        let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
+        // A closure where a Bloom `async` function is expected is one, `await` or not (Swift's):
+        // the call site gets its promise.
+        let is_async = frame.is_async || expected_fn.as_ref().is_some_and(|f| f.is_async && !f.ts);
+        let info = ClosureInfo { params: locals, is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
         let throws = escaped && expected_fn.as_ref().is_none_or(|f| f.throws);
         if throws {
@@ -7627,7 +8044,7 @@ impl<'o> Checker<'o> {
         Ty::Fn(Rc::new(FnTy {
             params: param_tys,
             ret,
-            is_async: frame.is_async,
+            is_async,
             generics: 0,
             ts: false,
             // A closure whose `try` or `throw` nothing in it catches throws (Swift's inference),
@@ -8102,32 +8519,68 @@ pub fn reads_name(expr: &Expr, name: &str) -> bool {
     found
 }
 
-/// JS's built-in classes: calling one from "js" constructs it.
+/// JS's built-in classes, which only `new` makes (`Map(pairs)` without it throws): calling one
+/// from "js" constructs it. The functions that convert when called (`String`, `Number`, `Array`,
+/// `Object`, `Boolean`, `Symbol`, `BigInt`) are not among them.
 const JS_CLASSES: &[&str] = &[
     "AbortController",
+    "AggregateError",
     "ArrayBuffer",
+    "Audio",
+    "BigInt64Array",
+    "BigUint64Array",
     "Blob",
+    "BroadcastChannel",
+    "CustomEvent",
+    "DOMParser",
     "DataView",
     "Date",
     "Error",
+    "Event",
+    "EventTarget",
+    "File",
+    "FileReader",
+    "FinalizationRegistry",
+    "Float32Array",
+    "Float64Array",
     "FormData",
     "Headers",
     "Image",
+    "Int16Array",
+    "Int32Array",
+    "Int8Array",
+    "IntersectionObserver",
+    "Map",
+    "MessageChannel",
+    "MutationObserver",
     "Promise",
+    "Proxy",
     "RangeError",
+    "ReadableStream",
+    "ReferenceError",
     "RegExp",
     "Request",
+    "ResizeObserver",
     "Response",
+    "Set",
+    "SharedArrayBuffer",
+    "SyntaxError",
     "TextDecoder",
     "TextEncoder",
     "TypeError",
-    "Uint8Array",
+    "URIError",
     "URL",
     "URLSearchParams",
+    "Uint16Array",
+    "Uint32Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
     "WeakMap",
+    "WeakRef",
     "WeakSet",
     "WebSocket",
     "Worker",
+    "XMLHttpRequest",
 ];
 
 /// Every name `expr` reads, with its expression id (closures included).
@@ -8159,7 +8612,10 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             walk_names(k, f);
             walk_names(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => {
             walk_names(a, f);
             walk_names(b, f);
         }
@@ -8265,18 +8721,6 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
                 walk_stmts(&fs.body.stmts, f);
             }
         }
-    }
-}
-
-/// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
-fn exits(stmt: &Stmt) -> bool {
-    match &stmt.kind {
-        StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
-        StmtKind::Expr(e) => match &e.kind {
-            ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
-            _ => false,
-        },
-        _ => false,
     }
 }
 
@@ -8428,16 +8872,36 @@ fn ends_in_none(expr: &Expr) -> bool {
     }
 }
 
-/// A statement no path falls out of: an exit, or a `do` whose body and catches all exit.
-fn always_exits(stmt: &Stmt) -> bool {
-    match &stmt.kind {
-        StmtKind::Do(d) => {
-            d.body.stmts.last().is_some_and(always_exits)
-                && !d.catches.is_empty()
-                && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(always_exits))
-        }
-        _ => exits(stmt),
+/// A member of a TS union written as text (`number | '100%' | null`).
+enum UnionMember {
+    /// A string literal.
+    Literal(String),
+    /// `number`, `string` or `boolean`, as Bloom reads it.
+    Plain(Ty),
+    /// `null` or `undefined`.
+    Absent,
+}
+
+/// The members of a TS union of literals and plain types, or `None` for any other TS type.
+fn ts_union_members(text: &str) -> Option<Vec<UnionMember>> {
+    let parts: Vec<&str> = text.split('|').map(str::trim).collect();
+    if parts.len() < 2 {
+        return None;
     }
+    parts
+        .into_iter()
+        .map(|part| {
+            let quoted = |q: char| part.len() >= 2 && part.starts_with(q) && part.ends_with(q);
+            Some(match part {
+                "number" => UnionMember::Plain(Ty::Float),
+                "string" => UnionMember::Plain(Ty::Str),
+                "boolean" => UnionMember::Plain(Ty::Bool),
+                "null" | "undefined" => UnionMember::Absent,
+                _ if quoted('\'') || quoted('"') => UnionMember::Literal(part[1..part.len() - 1].to_string()),
+                _ => return None,
+            })
+        })
+        .collect()
 }
 
 pub(crate) fn is_hook_name(name: &str) -> bool {

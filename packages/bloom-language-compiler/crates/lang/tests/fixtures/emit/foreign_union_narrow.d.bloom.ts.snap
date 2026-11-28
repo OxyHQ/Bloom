@@ -1,0 +1,9 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface CardProps {
+  readonly width?: (number | '100%') | undefined | null;
+  readonly height?: number;
+  readonly mode?: 'compact' | 'wide' | 'full';
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Card())`), or from TSX as `toElement(Card())`. */
+export declare const Card: (props: CardProps) => ComposedView;
+export declare function label(size: number | 'auto'): string;
