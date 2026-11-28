@@ -768,6 +768,12 @@ impl Tr<'_> {
     /// `Boolean(x)`: the truthiness of `x`. An operand the codemod cannot type is
     /// `!!x` (bloomc types it, `crate::truthiness` spells it and drops the `!!`).
     fn boolean(&mut self, value: &Expression) -> String {
+        // `Boolean(x?.trim())`: an optional string's truthiness, `(x?.trimmed() ?? "") != ""`
+        // (`undefined` and `""` are both falsy).
+        if optional_string_call(value) {
+            let text = self.expr(value);
+            return format!("(({text} ?? \"\") != \"\")");
+        }
         let plain = self.declared(value).is_none()
             && !matches!(
                 value.without_parentheses(),
@@ -2485,4 +2491,20 @@ fn handler_name(name: &str) -> bool {
     ["on", "set"].iter().any(|prefix| {
         name.strip_prefix(prefix).and_then(|rest| rest.chars().next()).is_some_and(|c| c.is_ascii_uppercase())
     })
+}
+
+/// `x?.trim()`, `a?.b.toLowerCase()`: a string method's result through an optional link, a
+/// `String?` whatever `x` is (the method names a string).
+fn optional_string_call(e: &Expression) -> bool {
+    const STRING_METHODS: &[&str] =
+        &["trim", "trimStart", "trimEnd", "toLowerCase", "toUpperCase", "normalize"];
+    let call = match e.without_parentheses() {
+        Expression::ChainExpression(c) => match &c.expression {
+            oxc_ast::ast::ChainElement::CallExpression(call) => call,
+            _ => return false,
+        },
+        _ => return false,
+    };
+    matches!(&call.callee, Expression::StaticMemberExpression(m)
+        if STRING_METHODS.contains(&m.property.name.as_str()) && call.arguments.is_empty())
 }
