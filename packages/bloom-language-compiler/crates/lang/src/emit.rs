@@ -3192,7 +3192,20 @@ impl<'a> Emitter<'a> {
             .collect();
         // A parameter without a TS type takes its type from where the closure is passed.
         let contextual = c.params.iter().zip(&params).any(|(p, text)| *text == js_name(&p.name.name));
-        let params: Vec<String> = if std::mem::take(&mut self.range_index) && !c.tuple && params.len() == 1 {
+        let row = self.ck.row_closures.get(&c.span).copied();
+        let params: Vec<String> = if let Some(enumerated) = row {
+            // A `VirtualList`'s trailing row: FlashList hands it `{ item, index }`.
+            let item = info.params.last().map(|l| self.ck.locals[*l].ty.clone()).unwrap_or(Ty::Unknown);
+            let item_ty =
+                if matches!(item, Ty::Var(_) | Ty::Unknown) { "unknown".into() } else { self.ts_type(&item) };
+            let names: Vec<String> = c.params.iter().map(|p| js_name(&p.name.name)).collect();
+            let fields = if enumerated {
+                format!("{{ item: {}, index: {} }}", names[1], names[0])
+            } else {
+                format!("{{ item: {} }}", names[0])
+            };
+            vec![format!("{fields}: {{ item: {item_ty}; index: number }}")]
+        } else if std::mem::take(&mut self.range_index) && !c.tuple && params.len() == 1 {
             // `(0..<n).map { i in … }` is `Array.from({ length: n }, ($_, i) => …)`.
             vec!["$_".into(), params[0].clone()]
         } else if c.tuple && std::mem::take(&mut self.enumerated) && c.params.len() == 2 {
@@ -3530,14 +3543,28 @@ impl<'a> Emitter<'a> {
                 let signature = crate::ui::signature(ctor);
                 let rest_at = signature.iter().position(|p| p.starts_with("..."));
                 let mut values: Vec<Frag> = Vec::new();
+                // `VirtualList(posts.enumerated()) { i, post in … }`: the list itself; the row
+                // reads the index from FlashList's `{ item, index }`.
+                let row = call.trailing.as_ref().and_then(|t| self.ck.row_closures.get(&t.span).copied());
                 for (index, arg) in call.args.iter().enumerate() {
+                    if row == Some(true)
+                        && let ExprKind::Call(inner) = &arg.value.kind
+                        && let ExprKind::Field(list, _) = &inner.callee.kind
+                    {
+                        values.push(self.node_arg(list));
+                        continue;
+                    }
                     let value = self.node_arg(&arg.value);
                     let spread = arg.label.is_none()
                         && rest_at.is_some_and(|at| index >= at)
                         && matches!(self.expr_ty(&arg.value), Ty::List(_));
                     values.push(if spread { value.wrap("...", "") } else { value });
                 }
-                if let Some(trailing) = &call.trailing {
+                if let Some(trailing) = &call.trailing
+                    && row.is_some()
+                {
+                    values.push(self.closure(trailing));
+                } else if let Some(trailing) = &call.trailing {
                     // A trailing `for` fills a rest parameter as its parent's own children.
                     let rest = crate::ui::signature(ctor).last().is_some_and(|p| p.starts_with("..."));
                     values.extend(self.children_spreading(&trailing.body, rest));

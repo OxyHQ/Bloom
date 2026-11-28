@@ -6,7 +6,7 @@ export interface Person {
   readonly name: string;
 }
 
-const $fn0 = (row: { item: Person; index: number }) => Text(`${row.index + 1}. ${row.item.name}`);
+const $fn0 = ({ item: person }: { item: Person; index: number }) => Text(person.name);
 export interface PeopleProps {
   readonly people: readonly Person[];
 }
@@ -14,5 +14,25 @@ export const People = inlineView(function People(props: PeopleProps) {
 "use no memo";
 const { people } = props;
 return VirtualList(people, $fn0);
+});
+
+const $fn1 = ({ item: person, index: i }: { item: Person; index: number }) => Text(`${i + 1}. ${person.name}`);
+export interface NumberedPeopleProps {
+  readonly people: readonly Person[];
+}
+export const NumberedPeople = inlineView(function NumberedPeople(props: NumberedPeopleProps) {
+"use no memo";
+const { people } = props;
+return VirtualList(people, $fn1);
+});
+
+const $fn2 = (row: { item: Person; index: number }) => Text(`${row.index + 1}. ${row.item.name}`);
+export interface RowPeopleProps {
+  readonly people: readonly Person[];
+}
+export const RowPeople = inlineView(function RowPeople(props: RowPeopleProps) {
+"use no memo";
+const { people } = props;
+return VirtualList(people, $fn2);
 });
 

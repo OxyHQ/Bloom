@@ -10,3 +10,10 @@ public struct People: View {
     VirtualList(people, { person in Text(person.name) })
   }
 }
+
+public struct Counted: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people) { i, person in Text(person.name) }
+  }
+}

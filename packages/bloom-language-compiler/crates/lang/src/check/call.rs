@@ -1925,7 +1925,14 @@ impl Checker<'_> {
             .unwrap_or("Embed");
         self.out.calls.insert(expr.id, CallRes::Node(ctor));
         let params = ui::signature(ctor);
-        self.node_arity(call, ctor, kind, params);
+        // `VirtualList(posts) { post in … }` (SwiftUI's `List(data) { item in … }`): the
+        // trailing closure is the row, handed each item; its items are the one argument.
+        let row = ctor == "VirtualList"
+            && call.args.len() == 1
+            && call.trailing.as_ref().is_some_and(|t| t.has_in && !t.params.is_empty());
+        if !row {
+            self.node_arity(call, ctor, kind, params);
+        }
         let fixed: Vec<&str> = params.iter().filter(|p| !p.starts_with("...")).copied().collect();
         for (index, arg) in call.args.iter().enumerate() {
             if let Some(label) = &arg.label {
@@ -1970,9 +1977,76 @@ impl Checker<'_> {
             }
         }
         if let Some(trailing) = &call.trailing {
-            self.builder_closure(trailing);
+            if row {
+                self.trailing_row(call, trailing);
+            } else {
+                self.builder_closure(trailing);
+            }
         }
         Ty::View(Some(kind))
+    }
+
+    /// `VirtualList(posts) { post in … }`: the row closure, handed the item (the emitter reads it
+    /// from FlashList's `{ item }`); `VirtualList(posts.enumerated()) { i, post in … }` is
+    /// handed its index too (`{ item, index }`), with no pairs built.
+    fn trailing_row(&mut self, call: &Call, row: &Closure) {
+        let items = &call.args[0].value;
+        let items_ty = self.out.types.get(&items.id).cloned().unwrap_or(Ty::Unknown);
+        let element = |this: &mut Self, ty: &Ty| match this.resolve(ty) {
+            Ty::List(item) => Some(this.resolve(&item)),
+            Ty::Option(inner) => match this.resolve(&inner) {
+                Ty::List(item) => Some(this.resolve(&item)),
+                _ => None,
+            },
+            _ => None,
+        };
+        let enumerated = matches!(
+            self.out.calls.get(&items.id),
+            Some(CallRes::Method { recv: Recv::List, name: "enumerated" })
+        );
+        let item = match element(self, &items_ty) {
+            Some(Ty::Tuple(pair)) if enumerated && pair.len() == 2 => pair[1].clone(),
+            Some(item) => item,
+            None => Ty::Unknown,
+        };
+        let param = |ty: Ty| ParamTy {
+            labelled: false,
+            positional: true,
+            name: None,
+            ty,
+            optional: false,
+            rest: false,
+        };
+        let params = match (enumerated, row.params.len()) {
+            (true, 2) => vec![param(Ty::Int), param(item)],
+            (false, 1) => vec![param(item)],
+            (_, count) => {
+                let want = if enumerated {
+                    "two parameters, its index and its item (`{ i, post in … }`)"
+                } else {
+                    "one parameter, its item (`{ post in … }`)"
+                };
+                self.report(
+                    Diagnostic::error("B0503", row.span, format!("a row takes {want}, not {count}"))
+                        .label("the row's parameters")
+                        .help("`VirtualList(posts) { post in … }`, or `VirtualList(posts.enumerated()) { i, post in … }` with its index")
+                        .docs(ui::node_docs("virtualList")),
+                );
+                return;
+            }
+        };
+        let expected = Ty::Fn(Rc::new(FnTy {
+            params,
+            ret: Ty::View(None),
+            is_async: false,
+            generics: 0,
+            ts: false,
+            throws: false,
+            bounds: Vec::new(),
+            shapes: Vec::new(),
+        }));
+        self.closure(row, Some(&expected), false);
+        self.out.row_closures.insert(row.span, enumerated);
     }
 
     /// The type of a `VirtualList`'s row closure written in place with one untyped parameter

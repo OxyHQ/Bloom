@@ -324,6 +324,9 @@ pub struct CheckResult {
     pub async_lets: HashSet<LocalId>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
+    /// `VirtualList(posts) { post in … }`: the trailing row closures, handed FlashList's
+    /// `{ item }` (`{ item, index }` when `true`: `VirtualList(posts.enumerated()) { i, post in … }`).
+    pub row_closures: HashMap<Span, bool>,
     /// Pattern span → the type it matches; binding span → its local.
     pub pattern_tys: HashMap<Span, Ty>,
     pub pattern_locals: HashMap<Span, LocalId>,

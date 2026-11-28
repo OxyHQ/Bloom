@@ -6,3 +6,12 @@ error[B0205]: `VirtualListRow<Person>` has no field `name`
    |
 help: a row is `{ item, index }`: the item's `name` is `.item.name`
    = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0503]: a row takes one parameter, its item (`{ post in … }`), not 2
+  --> check/virtual_list_row.bloom:17:25
+   |
+17 |     VirtualList(people) { i, person in Text(person.name) }
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the row's parameters
+   |
+help: `VirtualList(posts) { post in … }`, or `VirtualList(posts.enumerated()) { i, post in … }` with its index
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-nodes.mdx#virtuallist
