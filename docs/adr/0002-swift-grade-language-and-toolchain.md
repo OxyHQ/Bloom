@@ -610,7 +610,7 @@ The coordinator gave the go to prepare Mention's switch, on a Mention branch (#2
 - Oxy Updates' own client (`Bloom.Updates`) replaces expo-updates later, as its stopgap line says.
 
 **Release.** oxy's shared `android-release.yml` takes `builder: bloom`: `bloomc build android
---store` (the app bundle and one APK per ABI, Bloom #NNNN) with the ecosystem key from the
+--store` (the app bundle and one APK per ABI, Bloom #1073) with the ecosystem key from the
 runner's `ORG_GRADLE_PROJECT_OXY_UPLOAD_*`, every artifact checked against the ecosystem
 certificate, and `Package.bloom` checked against the app config's version and versionCode. The
 archive, the Play upload (internal testing) and the GitHub release are the Expo build's steps.
@@ -654,10 +654,25 @@ in as the same account. Both builds are one application id and UID: one data dir
 keystore, and the same `@oxy.so/services` JS and `OxyDeviceSession` broker (a signature-level
 provider). No other app's credentials are read.
 
-**Before the switch ships** (checklist, with a test account only):
+**The upgrade, with a test account** (2026-11-28, hangar-test-36, which has Google Play services).
 
-- A session survives the Expo → Bloom upgrade as it does today: no forced sign-out, and a session
-  signed out in the Expo build is not revived by the Bloom build.
+- A new key-only QA account (oxy's product-journeys operator) signed in through Mention's own
+  "Continue with Oxy". That request was approved with the account's key: application Mention,
+  `device_sign_in`, no scopes.
+- Each build replaced the other in place, as a Play update does: one application id, UID and data
+  directory.
+- Signed in, with Commons uninstalled so only Mention's own storage counts:
+  - Expo → Bloom (two cold starts): signed in as the same account, no prompt and no onboarding again;
+  - Bloom → Expo again: signed in.
+- Signed out in the Expo build, then upgraded to Bloom (two cold starts): still signed out, with
+  Commons installed (the shared device session's sibling broker) and without it.
+- Two things are already true of the Expo build:
+  - with Commons installed, a fresh install comes up signed in (the shared `OxyDeviceSession`
+    lane, by design);
+  - its sign-out showed "There was a problem signing you out", although the sign-out took effect.
+
+**Before the switch ships** (checklist; the upgrade check above is done):
+
 - Push registration on a device with Google Play services, after release (the owner's Pixel 10
   Pro is install-only; the owner confirms it).
 - `bloom export android` and the second OTA publish job, or the decision to ship without OTA.
