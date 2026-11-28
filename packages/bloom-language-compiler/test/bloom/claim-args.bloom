@@ -1,0 +1,7 @@
+import { type ClaimPost, permalink } from "./claims"
+
+/// A guard kept on a TS value TS types as present, given to a TS function (postMenuActions).
+public func link(_ post: ClaimPost) -> String {
+  let id = post?.id
+  return permalink(id)
+}

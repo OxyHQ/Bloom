@@ -1,0 +1,41 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { type ClaimPost, permalink } from "@/types/claims";
+
+export function link(post: ClaimPost): string {
+const id = post?.id;
+return permalink(id);
+}
+
+export function direct(post: ClaimPost): string {
+return permalink(post?.user.name);
+}
+
+export interface ShareProps {
+  readonly post: ClaimPost;
+}
+export const Share = view(function Share(props: ShareProps) {
+"use no memo";
+const $ = $c(4);
+const { post } = props;
+const id = post?.id;
+let url: string;
+if ($[0] !== id) {
+url = permalink(id);
+$[0] = id;
+$[1] = url;
+} else {
+url = $[1];
+}
+let $t0;
+if ($[2] !== url) {
+$t0 = Text(url);
+$[2] = url;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+

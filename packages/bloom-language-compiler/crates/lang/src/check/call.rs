@@ -32,12 +32,17 @@ impl Checker<'_> {
             // `props.onOpen?.()` where TS says `onOpen` is always there: kept.
             let ty = match self.resolve(&ty) {
                 Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown => ty,
-                other if self.ts_claimed(&call.callee, &ty) => Ty::Option(Box::new(other)),
+                other if self.ts_claimed(&call.callee, &ty) => {
+                    self.claim_only.insert(call.callee.id);
+                    Ty::Option(Box::new(other))
+                }
                 _ => ty,
             };
             return match self.optional_target(&ty, call.callee.span, (Span::new(end, end + 2), "")) {
                 Some(inner) => {
                     let ret = self.value_call(expr, call, &inner);
+                    let claim = self.claim_only.contains(&call.callee.id);
+                    self.claim_link(expr, claim, &ret);
                     self.rechain(expr, ret)
                 }
                 None => {
@@ -52,14 +57,19 @@ impl Checker<'_> {
                 let recv = self.expr(object, None);
                 let fix = (Span::new(member.span.start - 2, member.span.start), ".");
                 // `viewPost.authors?.map(…)` where TS says `authors` is always there: kept.
+                let mut claim = self.is_claim_only(object);
                 let recv = match self.resolve(&recv) {
                     Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown => recv,
-                    other if self.ts_claimed(object, &recv) => Ty::Option(Box::new(other)),
+                    other if self.ts_claimed(object, &recv) => {
+                        claim = true;
+                        Ty::Option(Box::new(other))
+                    }
                     _ => recv,
                 };
                 match self.optional_target(&recv, member.span, fix) {
                     Some(inner) => {
                         let ret = self.member_call(expr, call, &inner, member, object.span, false, true);
+                        self.claim_link(expr, claim, &ret);
                         self.rechain(expr, ret)
                     }
                     None => {

@@ -1,0 +1,4 @@
+// A TS value TS types as optional stays optional where TS takes a present one.
+import { type ClaimPost, permalink } from "@/types/claims"
+
+public func slug(_ post: ClaimPost) -> String { permalink(post.metadata?.slug) }
