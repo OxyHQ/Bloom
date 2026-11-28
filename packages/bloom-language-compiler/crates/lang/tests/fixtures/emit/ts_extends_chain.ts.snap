@@ -1,0 +1,6 @@
+import { makePicker } from "@/picker";
+
+export function picker(day: Date | undefined, today: Date): string {
+return makePicker({ value: day, disabled: false, minDate: today });
+}
+

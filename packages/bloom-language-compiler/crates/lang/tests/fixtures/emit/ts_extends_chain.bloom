@@ -1,0 +1,6 @@
+// A TS interface's fields are its whole `extends` chain's: `minDate` is two bases up.
+import { makePicker } from "@/picker"
+
+public func picker(day: Foreign<"Date">?, today: Foreign<"Date">) -> String {
+  makePicker(value: day, disabled: false, minDate: today)
+}
