@@ -60,6 +60,8 @@ pub struct SourceFile {
 pub struct Module {
     pub name: String,
     pub files: Vec<SourceFile>,
+    /// The standard library's module (`Bloom`): emitted into the runtime's package.
+    pub std: bool,
 }
 
 /// A checked package, ready for a backend.
@@ -311,6 +313,13 @@ fn package_name(manifest: &str) -> Option<String> {
 /// Reads, parses and checks the package at `dir`. Check errors are problems: a backend
 /// never sees a program the main compiler rejects.
 pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
+    load_with_std(dir, &[])
+}
+
+/// [`load`], with the standard library's modules `std` (`"JSON"`, `"Core"`) as the module
+/// `Bloom`, which the Kotlin backend emits into `so.oxy.bloom.std`: the written-in-Bloom parts
+/// of the standard library compile through the backend, and only their `extern`s are Kotlin.
+pub fn load_with_std(dir: &Path, std: &[&str]) -> Result<Program, Vec<Problem>> {
     let manifest_path = dir.join("Package.bloom");
     let manifest = std::fs::read_to_string(&manifest_path).map_err(|e| {
         vec![Problem { file: manifest_path.clone(), span: Span::default(), message: e.to_string() }]
@@ -327,6 +336,7 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
     let mut problems = Vec::new();
     let mut modules = Vec::new();
     let mut decls = Decls::default();
+    let mut sets: Vec<(String, Vec<PathBuf>, bool)> = Vec::new();
     for module_dir in module_dirs {
         let module_name = module_dir.file_name().unwrap_or_default().to_string_lossy().into_owned();
         let mut paths: Vec<PathBuf> = std::fs::read_dir(&module_dir)
@@ -336,6 +346,17 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
             .filter(|p| p.extension().is_some_and(|x| x == "bloom"))
             .collect();
         paths.sort();
+        sets.push((module_name, paths, false));
+    }
+    if !std.is_empty() {
+        let files = bloom_lang::stdlib::ensure(dir);
+        let chosen = files
+            .into_iter()
+            .filter(|p| std.iter().any(|n| p.file_stem().is_some_and(|s| s == *n)))
+            .collect();
+        sets.push((bloom_lang::stdlib::MODULE.to_string(), chosen, true));
+    }
+    for (module_name, paths, is_std) in sets {
         let mut files = Vec::new();
         for path in paths {
             let source = match std::fs::read_to_string(&path) {
@@ -358,7 +379,7 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
             let types = checked.result.types(&source).into_iter().collect();
             files.push(SourceFile { path, source, ast, types, checked: checked.result });
         }
-        modules.push(Module { name: module_name, files });
+        modules.push(Module { name: module_name, files, std: is_std });
     }
     decls.resolve();
     if problems.is_empty() { Ok(Program { name, modules, decls }) } else { Err(problems) }

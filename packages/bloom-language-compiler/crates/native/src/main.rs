@@ -22,6 +22,7 @@ fn main() -> ExitCode {
     let mut out = None;
     let mut project = None;
     let mut app_id = None;
+    let mut std_modules: Vec<String> = Vec::new();
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -41,13 +42,20 @@ fn main() -> ExitCode {
                 i += 1;
                 app_id = args.get(i).cloned();
             }
+            // `--std JSON,Core`: those standard library modules, compiled through the backend.
+            "--std" => {
+                i += 1;
+                std_modules =
+                    args.get(i).map(|s| s.split(',').map(String::from).collect()).unwrap_or_default();
+            }
             other => package = Some(PathBuf::from(other)),
         }
         i += 1;
     }
     let (Some(target), Some(package)) = (target, package) else { return usage() };
     let started = std::time::Instant::now();
-    let program = match bloom_native::load(&package) {
+    let std: Vec<&str> = std_modules.iter().map(String::as_str).collect();
+    let program = match bloom_native::load_with_std(&package, &std) {
         Ok(p) => p,
         Err(problems) => {
             for p in problems {

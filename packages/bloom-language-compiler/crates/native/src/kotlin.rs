@@ -75,9 +75,12 @@ pub fn emit(program: &Program) -> Result<Vec<Emitted>, Vec<Problem>> {
 pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
     let mut out = Vec::new();
     let mut problems = Vec::new();
-    let packages: Vec<String> = program.modules.iter().map(|m| package_of(&program.name, &m.name)).collect();
+    let package_for = |m: &crate::Module| {
+        if m.std { "so.oxy.bloom.std".to_string() } else { package_of(&program.name, &m.name) }
+    };
+    let packages: Vec<String> = program.modules.iter().filter(|m| !m.std).map(package_for).collect();
     for module in &program.modules {
-        let package = package_of(&program.name, &module.name);
+        let package = package_for(module);
         for file in &module.files {
             let mut e = Emitter::new(&program.decls, file);
             let text = e.file(&package, &packages);
