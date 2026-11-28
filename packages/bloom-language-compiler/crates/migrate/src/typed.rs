@@ -798,6 +798,45 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((start, end, format!("!{text}.isEmpty")))
             }
+            // `.id(community.id || index)`: a number after a string's `||` is its text (a key reads
+            // the same either way in JS).
+            ("B0201", _)
+                if matches!(
+                    d.message.as_str(),
+                    "expected `String?`, found `Int`"
+                        | "expected `String`, found `Int`"
+                        | "expected `String?`, found `Float`"
+                        | "expected `String`, found `Float`"
+                ) && source[..start].ends_with("|| ")
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_') =>
+            {
+                Some((start, end, format!("\"${{{text}}}\"")))
+            }
+            // JS's truthiness of an optional list is its presence, empty or not.
+            ("B0201", _)
+                if d.message.starts_with("expected `Bool`, found `")
+                    && d.message.ends_with("?`")
+                    && (d.message.contains("found `[")) =>
+            {
+                let bare =
+                    |t: &str| !t.is_empty() && t.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
+                let inner = text.strip_prefix('(').and_then(|t| t.strip_suffix(')')).unwrap_or(text);
+                if !bare(inner) {
+                    None
+                } else if inner != text {
+                    if source[..start].ends_with('!') {
+                        Some((start - 1, end, format!("({inner} == none)")))
+                    } else {
+                        Some((start, end, format!("({inner} != none)")))
+                    }
+                } else if source[..start].ends_with("!(") && source[end..].starts_with(')') {
+                    Some((start - 2, end + 1, format!("({text} == none)")))
+                } else if source[..start].ends_with('!') {
+                    Some((start - 1, end, format!("({text} == none)")))
+                } else {
+                    Some((start, end, format!("({text} != none)")))
+                }
+            }
             // A test of an optional TS read for its truthiness (`if (members.find(…))`): an object
             // or a non-empty literal is truthy, so it is whether it is there; a `Bool?` whether it is `true`.
             ("B0201", _)
@@ -946,6 +985,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     Some(Decl::Present(at)) => Some((at.0, at.1, at.2)),
                     Some(Decl::Narrowed) => guard.map(|(a, b, t)| (a, b, t.to_string())),
                     None => None,
+                }
+            }
+            // `!communities` on a list the codemod declared from TS's type: the source guards it, so
+            // it is declared optional, as a `?.` guard makes it (its truthiness is then spelled).
+            ("B0201", _)
+                if d.message.starts_with("expected `Bool`, found `[")
+                    && !d.message.ends_with("?`")
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    && (source[..start].ends_with("!(") || source[..start].ends_with('!')) =>
+            {
+                let shown = d.message.split("found `").nth(1).map(|t| t.trim_end_matches('`')).unwrap_or("");
+                match guarded_decl(source, text, shown) {
+                    Some(Decl::Present(at)) => Some(at),
+                    _ => None,
                 }
             }
             // `new Set(s)` copies `s`; a Bloom `Set` is a value, so the copy is `s`.
