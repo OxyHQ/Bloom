@@ -1,0 +1,3503 @@
+{
+  "differences" : [
+    {
+      "input" : "en-GB -1500",
+      "kind" : "compact",
+      "node" : "-1.5k",
+      "swift" : "-1.5K"
+    },
+    {
+      "input" : "en-GB 1000",
+      "kind" : "compact",
+      "node" : "1k",
+      "swift" : "1K"
+    },
+    {
+      "input" : "en-GB 1050000000",
+      "kind" : "compact",
+      "node" : "1.1bn",
+      "swift" : "1.1B"
+    },
+    {
+      "input" : "en-GB 1234",
+      "kind" : "compact",
+      "node" : "1.2k",
+      "swift" : "1.2K"
+    },
+    {
+      "input" : "en-GB 12345",
+      "kind" : "compact",
+      "node" : "12.3k",
+      "swift" : "12.3K"
+    },
+    {
+      "input" : "en-GB 123456",
+      "kind" : "compact",
+      "node" : "123.5k",
+      "swift" : "123.5K"
+    },
+    {
+      "input" : "en-GB 1234567",
+      "kind" : "compact",
+      "node" : "1.2m",
+      "swift" : "1.2M"
+    },
+    {
+      "input" : "en-GB 2500000000000",
+      "kind" : "compact",
+      "node" : "2.5tn",
+      "swift" : "2.5T"
+    },
+    {
+      "input" : "en-GB 9999",
+      "kind" : "compact",
+      "node" : "10k",
+      "swift" : "10K"
+    },
+    {
+      "input" : "en-GB 99999",
+      "kind" : "compact",
+      "node" : "100k",
+      "swift" : "100K"
+    },
+    {
+      "input" : "en-GB 999999",
+      "kind" : "compact",
+      "node" : "1m",
+      "swift" : "1M"
+    },
+    {
+      "input" : "ar-EG full/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG full/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG full/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG full/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "الخميس، ٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG full/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م التوقيت العالمي المنسق",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG full/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص التوقيت العالمي المنسق",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG full/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م التوقيت العالمي المنسق",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG full/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الجمعة، ١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق",
+      "swift" : "الجمعة، ١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG full/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م غرينتش-٤",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤"
+    },
+    {
+      "input" : "ar-EG full/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص غرينتش-٥",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG full/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م غرينتش-٥",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG full/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م غرينتش-٥",
+      "swift" : "الخميس، ٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG full/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م UTC",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م UTC"
+    },
+    {
+      "input" : "ar-EG full/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص UTC",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص UTC"
+    },
+    {
+      "input" : "ar-EG full/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م UTC",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م UTC"
+    },
+    {
+      "input" : "ar-EG full/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الجمعة، ١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص UTC",
+      "swift" : "الجمعة، ١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص UTC"
+    },
+    {
+      "input" : "ar-EG full/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG full/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG full/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG full/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م",
+      "swift" : "الخميس، ٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG full/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG full/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG full/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG full/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الجمعة، ١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص",
+      "swift" : "الجمعة، ١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG full/omitted America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩"
+    },
+    {
+      "input" : "ar-EG full/omitted America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤"
+    },
+    {
+      "input" : "ar-EG full/omitted America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG full/omitted America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٣١ ديسمبر ٢٠٢٦",
+      "swift" : "الخميس، ٣١ ديسمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG full/omitted UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩"
+    },
+    {
+      "input" : "ar-EG full/omitted UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤"
+    },
+    {
+      "input" : "ar-EG full/omitted UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG full/omitted UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الجمعة، ١ يناير ٢٠٢٧",
+      "swift" : "الجمعة، ١ يناير، ٢٠٢٧"
+    },
+    {
+      "input" : "ar-EG full/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ٧:٥٩ م",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ٧:٥٩ م"
+    },
+    {
+      "input" : "ar-EG full/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ١٢:٠٧ ص",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ١٢:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG full/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ١:٣٠ م",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ١:٣٠ م"
+    },
+    {
+      "input" : "ar-EG full/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٣١ ديسمبر ٢٠٢٦ في ٧:٠٠ م",
+      "swift" : "الخميس، ٣١ ديسمبر، ٢٠٢٦، ٧:٠٠ م"
+    },
+    {
+      "input" : "ar-EG full/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "الأحد، ٤ يوليو ١٩٩٩ في ١١:٥٩ م",
+      "swift" : "الأحد، ٤ يوليو، ١٩٩٩، ١١:٥٩ م"
+    },
+    {
+      "input" : "ar-EG full/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٩ فبراير ٢٠٢٤ في ٥:٠٧ ص",
+      "swift" : "الخميس، ٢٩ فبراير، ٢٠٢٤، ٥:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG full/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "الخميس، ٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠ م",
+      "swift" : "الخميس، ٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠ م"
+    },
+    {
+      "input" : "ar-EG full/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "الجمعة، ١ يناير ٢٠٢٧ في ١٢:٠٠ ص",
+      "swift" : "الجمعة، ١ يناير، ٢٠٢٧، ١٢:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG long/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية",
+      "swift" : "٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG long/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG long/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG long/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG long/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م التوقيت العالمي المنسق",
+      "swift" : "٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG long/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص التوقيت العالمي المنسق",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG long/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م التوقيت العالمي المنسق",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG long/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق",
+      "swift" : "١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG long/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م غرينتش-٤",
+      "swift" : "٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤"
+    },
+    {
+      "input" : "ar-EG long/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص غرينتش-٥",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG long/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م غرينتش-٥",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG long/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م غرينتش-٥",
+      "swift" : "٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG long/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م UTC",
+      "swift" : "٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م UTC"
+    },
+    {
+      "input" : "ar-EG long/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص UTC",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص UTC"
+    },
+    {
+      "input" : "ar-EG long/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م UTC",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م UTC"
+    },
+    {
+      "input" : "ar-EG long/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص UTC",
+      "swift" : "١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص UTC"
+    },
+    {
+      "input" : "ar-EG long/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ٧:٥٩:٥٩ م",
+      "swift" : "٤ يوليو، ١٩٩٩، ٧:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG long/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ١٢:٠٧:٠٩ ص",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ١٢:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG long/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ١:٣٠:٠٠ م",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ١:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG long/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١ ديسمبر ٢٠٢٦ في ٧:٠٠:٠٠ م",
+      "swift" : "٣١ ديسمبر، ٢٠٢٦، ٧:٠٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG long/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ١١:٥٩:٥٩ م",
+      "swift" : "٤ يوليو، ١٩٩٩، ١١:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG long/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ٥:٠٧:٠٩ ص",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ٥:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG long/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠:٠٠ م",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG long/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١ يناير ٢٠٢٧ في ١٢:٠٠:٠٠ ص",
+      "swift" : "١ يناير، ٢٠٢٧، ١٢:٠٠:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG long/omitted America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩",
+      "swift" : "٤ يوليو، ١٩٩٩"
+    },
+    {
+      "input" : "ar-EG long/omitted America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤",
+      "swift" : "٢٩ فبراير، ٢٠٢٤"
+    },
+    {
+      "input" : "ar-EG long/omitted America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG long/omitted America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١ ديسمبر ٢٠٢٦",
+      "swift" : "٣١ ديسمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG long/omitted UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩",
+      "swift" : "٤ يوليو، ١٩٩٩"
+    },
+    {
+      "input" : "ar-EG long/omitted UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤",
+      "swift" : "٢٩ فبراير، ٢٠٢٤"
+    },
+    {
+      "input" : "ar-EG long/omitted UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦"
+    },
+    {
+      "input" : "ar-EG long/omitted UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١ يناير ٢٠٢٧",
+      "swift" : "١ يناير، ٢٠٢٧"
+    },
+    {
+      "input" : "ar-EG long/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ٧:٥٩ م",
+      "swift" : "٤ يوليو، ١٩٩٩، ٧:٥٩ م"
+    },
+    {
+      "input" : "ar-EG long/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ١٢:٠٧ ص",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ١٢:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG long/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ١:٣٠ م",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ١:٣٠ م"
+    },
+    {
+      "input" : "ar-EG long/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١ ديسمبر ٢٠٢٦ في ٧:٠٠ م",
+      "swift" : "٣١ ديسمبر، ٢٠٢٦، ٧:٠٠ م"
+    },
+    {
+      "input" : "ar-EG long/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤ يوليو ١٩٩٩ في ١١:٥٩ م",
+      "swift" : "٤ يوليو، ١٩٩٩، ١١:٥٩ م"
+    },
+    {
+      "input" : "ar-EG long/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩ فبراير ٢٠٢٤ في ٥:٠٧ ص",
+      "swift" : "٢٩ فبراير، ٢٠٢٤، ٥:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG long/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦ نوفمبر ٢٠٢٦ في ٦:٣٠ م",
+      "swift" : "٢٦ نوفمبر، ٢٠٢٦، ٦:٣٠ م"
+    },
+    {
+      "input" : "ar-EG long/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١ يناير ٢٠٢٧ في ١٢:٠٠ ص",
+      "swift" : "١ يناير، ٢٠٢٧، ١٢:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG medium/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG medium/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG medium/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق",
+      "swift" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤"
+    },
+    {
+      "input" : "ar-EG medium/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG medium/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG medium/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م UTC",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م UTC"
+    },
+    {
+      "input" : "ar-EG medium/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص UTC",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص UTC"
+    },
+    {
+      "input" : "ar-EG medium/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م UTC",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م UTC"
+    },
+    {
+      "input" : "ar-EG medium/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص UTC",
+      "swift" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص UTC"
+    },
+    {
+      "input" : "ar-EG medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG medium/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG medium/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG medium/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG medium/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG medium/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG medium/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص",
+      "swift" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩ م",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ٧:٥٩ م"
+    },
+    {
+      "input" : "ar-EG medium/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧ ص",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ١٢:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG medium/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠ م"
+    },
+    {
+      "input" : "ar-EG medium/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠ م",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠ م"
+    },
+    {
+      "input" : "ar-EG medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩ م",
+      "swift" : "٠٤‏/٠٧‏/١٩٩٩، ١١:٥٩ م"
+    },
+    {
+      "input" : "ar-EG medium/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧ ص",
+      "swift" : "٢٩‏/٠٢‏/٢٠٢٤، ٥:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG medium/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠ م"
+    },
+    {
+      "input" : "ar-EG medium/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠ ص",
+      "swift" : "٠١‏/٠١‏/٢٠٢٧، ١٢:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG omitted/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية",
+      "swift" : "٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG omitted/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG omitted/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG omitted/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG omitted/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "١١:٥٩:٥٩ م التوقيت العالمي المنسق",
+      "swift" : "١١:٥٩:٥٩ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG omitted/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٥:٠٧:٠٩ ص التوقيت العالمي المنسق",
+      "swift" : "٥:٠٧:٠٩ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG omitted/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٦:٣٠:٠٠ م التوقيت العالمي المنسق",
+      "swift" : "٦:٣٠:٠٠ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG omitted/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١٢:٠٠:٠٠ ص التوقيت العالمي المنسق",
+      "swift" : "١٢:٠٠:٠٠ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG omitted/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٧:٥٩:٥٩ م غرينتش-٤",
+      "swift" : "٧:٥٩:٥٩ م غرينتش-٤"
+    },
+    {
+      "input" : "ar-EG omitted/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "١٢:٠٧:٠٩ ص غرينتش-٥",
+      "swift" : "١٢:٠٧:٠٩ ص غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG omitted/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "١:٣٠:٠٠ م غرينتش-٥",
+      "swift" : "١:٣٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG omitted/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٧:٠٠:٠٠ م غرينتش-٥",
+      "swift" : "٧:٠٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG omitted/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "١١:٥٩:٥٩ م UTC",
+      "swift" : "١١:٥٩:٥٩ م UTC"
+    },
+    {
+      "input" : "ar-EG omitted/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٥:٠٧:٠٩ ص UTC",
+      "swift" : "٥:٠٧:٠٩ ص UTC"
+    },
+    {
+      "input" : "ar-EG omitted/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٦:٣٠:٠٠ م UTC",
+      "swift" : "٦:٣٠:٠٠ م UTC"
+    },
+    {
+      "input" : "ar-EG omitted/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١٢:٠٠:٠٠ ص UTC",
+      "swift" : "١٢:٠٠:٠٠ ص UTC"
+    },
+    {
+      "input" : "ar-EG omitted/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٧:٥٩:٥٩ م",
+      "swift" : "٧:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG omitted/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "١٢:٠٧:٠٩ ص",
+      "swift" : "١٢:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG omitted/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "١:٣٠:٠٠ م",
+      "swift" : "١:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٧:٠٠:٠٠ م",
+      "swift" : "٧:٠٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "١١:٥٩:٥٩ م",
+      "swift" : "١١:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG omitted/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٥:٠٧:٠٩ ص",
+      "swift" : "٥:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG omitted/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٦:٣٠:٠٠ م",
+      "swift" : "٦:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١٢:٠٠:٠٠ ص",
+      "swift" : "١٢:٠٠:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG omitted/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٧:٥٩ م",
+      "swift" : "٧:٥٩ م"
+    },
+    {
+      "input" : "ar-EG omitted/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "١٢:٠٧ ص",
+      "swift" : "١٢:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG omitted/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "١:٣٠ م",
+      "swift" : "١:٣٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٧:٠٠ م",
+      "swift" : "٧:٠٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "١١:٥٩ م",
+      "swift" : "١١:٥٩ م"
+    },
+    {
+      "input" : "ar-EG omitted/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٥:٠٧ ص",
+      "swift" : "٥:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG omitted/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٦:٣٠ م",
+      "swift" : "٦:٣٠ م"
+    },
+    {
+      "input" : "ar-EG omitted/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١٢:٠٠ ص",
+      "swift" : "١٢:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG short/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية",
+      "swift" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م التوقيت الصيفي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG short/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG short/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG short/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م التوقيت الرسمي الشرقي لأمريكا الشمالية"
+    },
+    {
+      "input" : "ar-EG short/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق",
+      "swift" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG short/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG short/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG short/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق",
+      "swift" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص التوقيت العالمي المنسق"
+    },
+    {
+      "input" : "ar-EG short/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤",
+      "swift" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م غرينتش-٤"
+    },
+    {
+      "input" : "ar-EG short/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG short/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG short/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م غرينتش-٥"
+    },
+    {
+      "input" : "ar-EG short/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م UTC",
+      "swift" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م UTC"
+    },
+    {
+      "input" : "ar-EG short/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص UTC",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص UTC"
+    },
+    {
+      "input" : "ar-EG short/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م UTC",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م UTC"
+    },
+    {
+      "input" : "ar-EG short/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص UTC",
+      "swift" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص UTC"
+    },
+    {
+      "input" : "ar-EG short/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م",
+      "swift" : "٤‏/٧‏/١٩٩٩، ٧:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG short/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG short/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG short/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG short/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م",
+      "swift" : "٤‏/٧‏/١٩٩٩، ١١:٥٩:٥٩ م"
+    },
+    {
+      "input" : "ar-EG short/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧:٠٩ ص"
+    },
+    {
+      "input" : "ar-EG short/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠:٠٠ م"
+    },
+    {
+      "input" : "ar-EG short/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص",
+      "swift" : "١‏/١‏/٢٠٢٧، ١٢:٠٠:٠٠ ص"
+    },
+    {
+      "input" : "ar-EG short/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ٧:٥٩ م",
+      "swift" : "٤‏/٧‏/١٩٩٩، ٧:٥٩ م"
+    },
+    {
+      "input" : "ar-EG short/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧ ص",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ١٢:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG short/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ١:٣٠ م"
+    },
+    {
+      "input" : "ar-EG short/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠ م",
+      "swift" : "٣١‏/١٢‏/٢٠٢٦، ٧:٠٠ م"
+    },
+    {
+      "input" : "ar-EG short/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "٤‏/٧‏/١٩٩٩، ١١:٥٩ م",
+      "swift" : "٤‏/٧‏/١٩٩٩، ١١:٥٩ م"
+    },
+    {
+      "input" : "ar-EG short/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧ ص",
+      "swift" : "٢٩‏/٢‏/٢٠٢٤، ٥:٠٧ ص"
+    },
+    {
+      "input" : "ar-EG short/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠ م",
+      "swift" : "٢٦‏/١١‏/٢٠٢٦، ٦:٣٠ م"
+    },
+    {
+      "input" : "ar-EG short/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "١‏/١‏/٢٠٢٧، ١٢:٠٠ ص",
+      "swift" : "١‏/١‏/٢٠٢٧، ١٢:٠٠ ص"
+    },
+    {
+      "input" : "en-GB medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 19:59:59 Eastern Daylight Time",
+      "swift" : "4 Jul 1999 at 19:59:59 Eastern Daylight Time"
+    },
+    {
+      "input" : "en-GB medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 00:07:09 Eastern Standard Time",
+      "swift" : "29 Feb 2024 at 00:07:09 Eastern Standard Time"
+    },
+    {
+      "input" : "en-GB medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 13:30:00 Eastern Standard Time",
+      "swift" : "26 Nov 2026 at 13:30:00 Eastern Standard Time"
+    },
+    {
+      "input" : "en-GB medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 Dec 2026, 19:00:00 Eastern Standard Time",
+      "swift" : "31 Dec 2026 at 19:00:00 Eastern Standard Time"
+    },
+    {
+      "input" : "en-GB medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 23:59:59 Coordinated Universal Time",
+      "swift" : "4 Jul 1999 at 23:59:59 Coordinated Universal Time"
+    },
+    {
+      "input" : "en-GB medium/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 05:07:09 Coordinated Universal Time",
+      "swift" : "29 Feb 2024 at 05:07:09 Coordinated Universal Time"
+    },
+    {
+      "input" : "en-GB medium/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 18:30:00 Coordinated Universal Time",
+      "swift" : "26 Nov 2026 at 18:30:00 Coordinated Universal Time"
+    },
+    {
+      "input" : "en-GB medium/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 Jan 2027, 00:00:00 Coordinated Universal Time",
+      "swift" : "1 Jan 2027 at 00:00:00 Coordinated Universal Time"
+    },
+    {
+      "input" : "en-GB medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 19:59:59 GMT-4",
+      "swift" : "4 Jul 1999 at 19:59:59 GMT-4"
+    },
+    {
+      "input" : "en-GB medium/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 00:07:09 GMT-5",
+      "swift" : "29 Feb 2024 at 00:07:09 GMT-5"
+    },
+    {
+      "input" : "en-GB medium/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 13:30:00 GMT-5",
+      "swift" : "26 Nov 2026 at 13:30:00 GMT-5"
+    },
+    {
+      "input" : "en-GB medium/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 Dec 2026, 19:00:00 GMT-5",
+      "swift" : "31 Dec 2026 at 19:00:00 GMT-5"
+    },
+    {
+      "input" : "en-GB medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 23:59:59 UTC",
+      "swift" : "4 Jul 1999 at 23:59:59 UTC"
+    },
+    {
+      "input" : "en-GB medium/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 05:07:09 UTC",
+      "swift" : "29 Feb 2024 at 05:07:09 UTC"
+    },
+    {
+      "input" : "en-GB medium/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 18:30:00 UTC",
+      "swift" : "26 Nov 2026 at 18:30:00 UTC"
+    },
+    {
+      "input" : "en-GB medium/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 Jan 2027, 00:00:00 UTC",
+      "swift" : "1 Jan 2027 at 00:00:00 UTC"
+    },
+    {
+      "input" : "en-GB medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 19:59:59",
+      "swift" : "4 Jul 1999 at 19:59:59"
+    },
+    {
+      "input" : "en-GB medium/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 00:07:09",
+      "swift" : "29 Feb 2024 at 00:07:09"
+    },
+    {
+      "input" : "en-GB medium/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 13:30:00",
+      "swift" : "26 Nov 2026 at 13:30:00"
+    },
+    {
+      "input" : "en-GB medium/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 Dec 2026, 19:00:00",
+      "swift" : "31 Dec 2026 at 19:00:00"
+    },
+    {
+      "input" : "en-GB medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 23:59:59",
+      "swift" : "4 Jul 1999 at 23:59:59"
+    },
+    {
+      "input" : "en-GB medium/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 05:07:09",
+      "swift" : "29 Feb 2024 at 05:07:09"
+    },
+    {
+      "input" : "en-GB medium/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 18:30:00",
+      "swift" : "26 Nov 2026 at 18:30:00"
+    },
+    {
+      "input" : "en-GB medium/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 Jan 2027, 00:00:00",
+      "swift" : "1 Jan 2027 at 00:00:00"
+    },
+    {
+      "input" : "en-GB medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 19:59",
+      "swift" : "4 Jul 1999 at 19:59"
+    },
+    {
+      "input" : "en-GB medium/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 00:07",
+      "swift" : "29 Feb 2024 at 00:07"
+    },
+    {
+      "input" : "en-GB medium/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 13:30",
+      "swift" : "26 Nov 2026 at 13:30"
+    },
+    {
+      "input" : "en-GB medium/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 Dec 2026, 19:00",
+      "swift" : "31 Dec 2026 at 19:00"
+    },
+    {
+      "input" : "en-GB medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 Jul 1999, 23:59",
+      "swift" : "4 Jul 1999 at 23:59"
+    },
+    {
+      "input" : "en-GB medium/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 Feb 2024, 05:07",
+      "swift" : "29 Feb 2024 at 05:07"
+    },
+    {
+      "input" : "en-GB medium/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 Nov 2026, 18:30",
+      "swift" : "26 Nov 2026 at 18:30"
+    },
+    {
+      "input" : "en-GB medium/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 Jan 2027, 00:00",
+      "swift" : "1 Jan 2027 at 00:00"
+    },
+    {
+      "input" : "en-US medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 7:59:59 PM Eastern Daylight Time",
+      "swift" : "Jul 4, 1999 at 7:59:59 PM Eastern Daylight Time"
+    },
+    {
+      "input" : "en-US medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 12:07:09 AM Eastern Standard Time",
+      "swift" : "Feb 29, 2024 at 12:07:09 AM Eastern Standard Time"
+    },
+    {
+      "input" : "en-US medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 1:30:00 PM Eastern Standard Time",
+      "swift" : "Nov 26, 2026 at 1:30:00 PM Eastern Standard Time"
+    },
+    {
+      "input" : "en-US medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Dec 31, 2026, 7:00:00 PM Eastern Standard Time",
+      "swift" : "Dec 31, 2026 at 7:00:00 PM Eastern Standard Time"
+    },
+    {
+      "input" : "en-US medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 11:59:59 PM Coordinated Universal Time",
+      "swift" : "Jul 4, 1999 at 11:59:59 PM Coordinated Universal Time"
+    },
+    {
+      "input" : "en-US medium/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 5:07:09 AM Coordinated Universal Time",
+      "swift" : "Feb 29, 2024 at 5:07:09 AM Coordinated Universal Time"
+    },
+    {
+      "input" : "en-US medium/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 6:30:00 PM Coordinated Universal Time",
+      "swift" : "Nov 26, 2026 at 6:30:00 PM Coordinated Universal Time"
+    },
+    {
+      "input" : "en-US medium/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Jan 1, 2027, 12:00:00 AM Coordinated Universal Time",
+      "swift" : "Jan 1, 2027 at 12:00:00 AM Coordinated Universal Time"
+    },
+    {
+      "input" : "en-US medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 7:59:59 PM EDT",
+      "swift" : "Jul 4, 1999 at 7:59:59 PM EDT"
+    },
+    {
+      "input" : "en-US medium/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 12:07:09 AM EST",
+      "swift" : "Feb 29, 2024 at 12:07:09 AM EST"
+    },
+    {
+      "input" : "en-US medium/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 1:30:00 PM EST",
+      "swift" : "Nov 26, 2026 at 1:30:00 PM EST"
+    },
+    {
+      "input" : "en-US medium/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Dec 31, 2026, 7:00:00 PM EST",
+      "swift" : "Dec 31, 2026 at 7:00:00 PM EST"
+    },
+    {
+      "input" : "en-US medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 11:59:59 PM UTC",
+      "swift" : "Jul 4, 1999 at 11:59:59 PM UTC"
+    },
+    {
+      "input" : "en-US medium/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 5:07:09 AM UTC",
+      "swift" : "Feb 29, 2024 at 5:07:09 AM UTC"
+    },
+    {
+      "input" : "en-US medium/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 6:30:00 PM UTC",
+      "swift" : "Nov 26, 2026 at 6:30:00 PM UTC"
+    },
+    {
+      "input" : "en-US medium/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Jan 1, 2027, 12:00:00 AM UTC",
+      "swift" : "Jan 1, 2027 at 12:00:00 AM UTC"
+    },
+    {
+      "input" : "en-US medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 7:59:59 PM",
+      "swift" : "Jul 4, 1999 at 7:59:59 PM"
+    },
+    {
+      "input" : "en-US medium/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 12:07:09 AM",
+      "swift" : "Feb 29, 2024 at 12:07:09 AM"
+    },
+    {
+      "input" : "en-US medium/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 1:30:00 PM",
+      "swift" : "Nov 26, 2026 at 1:30:00 PM"
+    },
+    {
+      "input" : "en-US medium/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Dec 31, 2026, 7:00:00 PM",
+      "swift" : "Dec 31, 2026 at 7:00:00 PM"
+    },
+    {
+      "input" : "en-US medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 11:59:59 PM",
+      "swift" : "Jul 4, 1999 at 11:59:59 PM"
+    },
+    {
+      "input" : "en-US medium/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 5:07:09 AM",
+      "swift" : "Feb 29, 2024 at 5:07:09 AM"
+    },
+    {
+      "input" : "en-US medium/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 6:30:00 PM",
+      "swift" : "Nov 26, 2026 at 6:30:00 PM"
+    },
+    {
+      "input" : "en-US medium/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Jan 1, 2027, 12:00:00 AM",
+      "swift" : "Jan 1, 2027 at 12:00:00 AM"
+    },
+    {
+      "input" : "en-US medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 7:59 PM",
+      "swift" : "Jul 4, 1999 at 7:59 PM"
+    },
+    {
+      "input" : "en-US medium/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 12:07 AM",
+      "swift" : "Feb 29, 2024 at 12:07 AM"
+    },
+    {
+      "input" : "en-US medium/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 1:30 PM",
+      "swift" : "Nov 26, 2026 at 1:30 PM"
+    },
+    {
+      "input" : "en-US medium/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Dec 31, 2026, 7:00 PM",
+      "swift" : "Dec 31, 2026 at 7:00 PM"
+    },
+    {
+      "input" : "en-US medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "Jul 4, 1999, 11:59 PM",
+      "swift" : "Jul 4, 1999 at 11:59 PM"
+    },
+    {
+      "input" : "en-US medium/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "Feb 29, 2024, 5:07 AM",
+      "swift" : "Feb 29, 2024 at 5:07 AM"
+    },
+    {
+      "input" : "en-US medium/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "Nov 26, 2026, 6:30 PM",
+      "swift" : "Nov 26, 2026 at 6:30 PM"
+    },
+    {
+      "input" : "en-US medium/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "Jan 1, 2027, 12:00 AM",
+      "swift" : "Jan 1, 2027 at 12:00 AM"
+    },
+    {
+      "input" : "es-ES long/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 19:59:59 (hora de verano oriental)",
+      "swift" : "4 de julio de 1999, 19:59:59 (hora de verano oriental)"
+    },
+    {
+      "input" : "es-ES long/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 0:07:09 (hora estándar oriental)",
+      "swift" : "29 de febrero de 2024, 0:07:09 (hora estándar oriental)"
+    },
+    {
+      "input" : "es-ES long/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 13:30:00 (hora estándar oriental)",
+      "swift" : "26 de noviembre de 2026, 13:30:00 (hora estándar oriental)"
+    },
+    {
+      "input" : "es-ES long/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 de diciembre de 2026 a las 19:00:00 (hora estándar oriental)",
+      "swift" : "31 de diciembre de 2026, 19:00:00 (hora estándar oriental)"
+    },
+    {
+      "input" : "es-ES long/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 23:59:59 (tiempo universal coordinado)",
+      "swift" : "4 de julio de 1999, 23:59:59 (tiempo universal coordinado)"
+    },
+    {
+      "input" : "es-ES long/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 5:07:09 (tiempo universal coordinado)",
+      "swift" : "29 de febrero de 2024, 5:07:09 (tiempo universal coordinado)"
+    },
+    {
+      "input" : "es-ES long/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 18:30:00 (tiempo universal coordinado)",
+      "swift" : "26 de noviembre de 2026, 18:30:00 (tiempo universal coordinado)"
+    },
+    {
+      "input" : "es-ES long/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 de enero de 2027 a las 0:00:00 (tiempo universal coordinado)",
+      "swift" : "1 de enero de 2027, 0:00:00 (tiempo universal coordinado)"
+    },
+    {
+      "input" : "es-ES long/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 19:59:59 GMT-4",
+      "swift" : "4 de julio de 1999, 19:59:59 GMT-4"
+    },
+    {
+      "input" : "es-ES long/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 0:07:09 GMT-5",
+      "swift" : "29 de febrero de 2024, 0:07:09 GMT-5"
+    },
+    {
+      "input" : "es-ES long/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 13:30:00 GMT-5",
+      "swift" : "26 de noviembre de 2026, 13:30:00 GMT-5"
+    },
+    {
+      "input" : "es-ES long/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 de diciembre de 2026 a las 19:00:00 GMT-5",
+      "swift" : "31 de diciembre de 2026, 19:00:00 GMT-5"
+    },
+    {
+      "input" : "es-ES long/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 23:59:59 UTC",
+      "swift" : "4 de julio de 1999, 23:59:59 UTC"
+    },
+    {
+      "input" : "es-ES long/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 5:07:09 UTC",
+      "swift" : "29 de febrero de 2024, 5:07:09 UTC"
+    },
+    {
+      "input" : "es-ES long/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 18:30:00 UTC",
+      "swift" : "26 de noviembre de 2026, 18:30:00 UTC"
+    },
+    {
+      "input" : "es-ES long/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 de enero de 2027 a las 0:00:00 UTC",
+      "swift" : "1 de enero de 2027, 0:00:00 UTC"
+    },
+    {
+      "input" : "es-ES long/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 19:59:59",
+      "swift" : "4 de julio de 1999, 19:59:59"
+    },
+    {
+      "input" : "es-ES long/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 0:07:09",
+      "swift" : "29 de febrero de 2024, 0:07:09"
+    },
+    {
+      "input" : "es-ES long/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 13:30:00",
+      "swift" : "26 de noviembre de 2026, 13:30:00"
+    },
+    {
+      "input" : "es-ES long/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 de diciembre de 2026 a las 19:00:00",
+      "swift" : "31 de diciembre de 2026, 19:00:00"
+    },
+    {
+      "input" : "es-ES long/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 23:59:59",
+      "swift" : "4 de julio de 1999, 23:59:59"
+    },
+    {
+      "input" : "es-ES long/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 5:07:09",
+      "swift" : "29 de febrero de 2024, 5:07:09"
+    },
+    {
+      "input" : "es-ES long/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 18:30:00",
+      "swift" : "26 de noviembre de 2026, 18:30:00"
+    },
+    {
+      "input" : "es-ES long/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 de enero de 2027 a las 0:00:00",
+      "swift" : "1 de enero de 2027, 0:00:00"
+    },
+    {
+      "input" : "es-ES long/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 19:59",
+      "swift" : "4 de julio de 1999, 19:59"
+    },
+    {
+      "input" : "es-ES long/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 0:07",
+      "swift" : "29 de febrero de 2024, 0:07"
+    },
+    {
+      "input" : "es-ES long/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 13:30",
+      "swift" : "26 de noviembre de 2026, 13:30"
+    },
+    {
+      "input" : "es-ES long/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 de diciembre de 2026 a las 19:00",
+      "swift" : "31 de diciembre de 2026, 19:00"
+    },
+    {
+      "input" : "es-ES long/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 de julio de 1999 a las 23:59",
+      "swift" : "4 de julio de 1999, 23:59"
+    },
+    {
+      "input" : "es-ES long/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 de febrero de 2024 a las 5:07",
+      "swift" : "29 de febrero de 2024, 5:07"
+    },
+    {
+      "input" : "es-ES long/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 de noviembre de 2026 a las 18:30",
+      "swift" : "26 de noviembre de 2026, 18:30"
+    },
+    {
+      "input" : "es-ES long/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 de enero de 2027 a las 0:00",
+      "swift" : "1 de enero de 2027, 0:00"
+    },
+    {
+      "input" : "fr-FR medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 19:59:59 heure d’été de l’Est nord-américain",
+      "swift" : "4 juil. 1999 à 19:59:59 heure d’été de l’Est nord-américain"
+    },
+    {
+      "input" : "fr-FR medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 00:07:09 heure normale de l’Est nord-américain",
+      "swift" : "29 févr. 2024 à 00:07:09 heure normale de l’Est nord-américain"
+    },
+    {
+      "input" : "fr-FR medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 13:30:00 heure normale de l’Est nord-américain",
+      "swift" : "26 nov. 2026 à 13:30:00 heure normale de l’Est nord-américain"
+    },
+    {
+      "input" : "fr-FR medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 déc. 2026, 19:00:00 heure normale de l’Est nord-américain",
+      "swift" : "31 déc. 2026 à 19:00:00 heure normale de l’Est nord-américain"
+    },
+    {
+      "input" : "fr-FR medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 23:59:59 temps universel coordonné",
+      "swift" : "4 juil. 1999 à 23:59:59 temps universel coordonné"
+    },
+    {
+      "input" : "fr-FR medium/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 05:07:09 temps universel coordonné",
+      "swift" : "29 févr. 2024 à 05:07:09 temps universel coordonné"
+    },
+    {
+      "input" : "fr-FR medium/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 18:30:00 temps universel coordonné",
+      "swift" : "26 nov. 2026 à 18:30:00 temps universel coordonné"
+    },
+    {
+      "input" : "fr-FR medium/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 janv. 2027, 00:00:00 temps universel coordonné",
+      "swift" : "1 janv. 2027 à 00:00:00 temps universel coordonné"
+    },
+    {
+      "input" : "fr-FR medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 19:59:59 UTC−4",
+      "swift" : "4 juil. 1999 à 19:59:59 UTC−4"
+    },
+    {
+      "input" : "fr-FR medium/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 00:07:09 UTC−5",
+      "swift" : "29 févr. 2024 à 00:07:09 UTC−5"
+    },
+    {
+      "input" : "fr-FR medium/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 13:30:00 UTC−5",
+      "swift" : "26 nov. 2026 à 13:30:00 UTC−5"
+    },
+    {
+      "input" : "fr-FR medium/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 déc. 2026, 19:00:00 UTC−5",
+      "swift" : "31 déc. 2026 à 19:00:00 UTC−5"
+    },
+    {
+      "input" : "fr-FR medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 23:59:59 UTC",
+      "swift" : "4 juil. 1999 à 23:59:59 UTC"
+    },
+    {
+      "input" : "fr-FR medium/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 05:07:09 UTC",
+      "swift" : "29 févr. 2024 à 05:07:09 UTC"
+    },
+    {
+      "input" : "fr-FR medium/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 18:30:00 UTC",
+      "swift" : "26 nov. 2026 à 18:30:00 UTC"
+    },
+    {
+      "input" : "fr-FR medium/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 janv. 2027, 00:00:00 UTC",
+      "swift" : "1 janv. 2027 à 00:00:00 UTC"
+    },
+    {
+      "input" : "fr-FR medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 19:59:59",
+      "swift" : "4 juil. 1999 à 19:59:59"
+    },
+    {
+      "input" : "fr-FR medium/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 00:07:09",
+      "swift" : "29 févr. 2024 à 00:07:09"
+    },
+    {
+      "input" : "fr-FR medium/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 13:30:00",
+      "swift" : "26 nov. 2026 à 13:30:00"
+    },
+    {
+      "input" : "fr-FR medium/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 déc. 2026, 19:00:00",
+      "swift" : "31 déc. 2026 à 19:00:00"
+    },
+    {
+      "input" : "fr-FR medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 23:59:59",
+      "swift" : "4 juil. 1999 à 23:59:59"
+    },
+    {
+      "input" : "fr-FR medium/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 05:07:09",
+      "swift" : "29 févr. 2024 à 05:07:09"
+    },
+    {
+      "input" : "fr-FR medium/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 18:30:00",
+      "swift" : "26 nov. 2026 à 18:30:00"
+    },
+    {
+      "input" : "fr-FR medium/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 janv. 2027, 00:00:00",
+      "swift" : "1 janv. 2027 à 00:00:00"
+    },
+    {
+      "input" : "fr-FR medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 19:59",
+      "swift" : "4 juil. 1999 à 19:59"
+    },
+    {
+      "input" : "fr-FR medium/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 00:07",
+      "swift" : "29 févr. 2024 à 00:07"
+    },
+    {
+      "input" : "fr-FR medium/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 13:30",
+      "swift" : "26 nov. 2026 à 13:30"
+    },
+    {
+      "input" : "fr-FR medium/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 déc. 2026, 19:00",
+      "swift" : "31 déc. 2026 à 19:00"
+    },
+    {
+      "input" : "fr-FR medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 juil. 1999, 23:59",
+      "swift" : "4 juil. 1999 à 23:59"
+    },
+    {
+      "input" : "fr-FR medium/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 févr. 2024, 05:07",
+      "swift" : "29 févr. 2024 à 05:07"
+    },
+    {
+      "input" : "fr-FR medium/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 nov. 2026, 18:30",
+      "swift" : "26 nov. 2026 à 18:30"
+    },
+    {
+      "input" : "fr-FR medium/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 janv. 2027, 00:00",
+      "swift" : "1 janv. 2027 à 00:00"
+    },
+    {
+      "input" : "hi-IN full/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 7:59:59 pm उत्तरी अमेरिकी पूर्वी डेलाइट समय बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 7:59:59 उत्तरी अमेरिकी पूर्वी डेलाइट समय"
+    },
+    {
+      "input" : "hi-IN full/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 12:07:09 am उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 12:07:09 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN full/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 1:30:00 pm उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 1:30:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN full/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 31 दिसंबर 2026 को 7:00:00 pm उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "गुरुवार, 31 दिसंबर 2026, अ 7:00:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN full/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 11:59:59 pm समन्वित वैश्विक समय बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 11:59:59 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN full/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 5:07:09 am समन्वित वैश्विक समय बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 5:07:09 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN full/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 6:30:00 pm समन्वित वैश्विक समय बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 6:30:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN full/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "शुक्रवार, 1 जनवरी 2027 को 12:00:00 am समन्वित वैश्विक समय बजे",
+      "swift" : "शुक्रवार, 1 जनवरी 2027, पू 12:00:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN full/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 7:59:59 pm GMT-4 बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 7:59:59 GMT-4"
+    },
+    {
+      "input" : "hi-IN full/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 12:07:09 am GMT-5 बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 12:07:09 GMT-5"
+    },
+    {
+      "input" : "hi-IN full/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 1:30:00 pm GMT-5 बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 1:30:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN full/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 31 दिसंबर 2026 को 7:00:00 pm GMT-5 बजे",
+      "swift" : "गुरुवार, 31 दिसंबर 2026, अ 7:00:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN full/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 11:59:59 pm UTC बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 11:59:59 UTC"
+    },
+    {
+      "input" : "hi-IN full/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 5:07:09 am UTC बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 5:07:09 UTC"
+    },
+    {
+      "input" : "hi-IN full/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 6:30:00 pm UTC बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 6:30:00 UTC"
+    },
+    {
+      "input" : "hi-IN full/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "शुक्रवार, 1 जनवरी 2027 को 12:00:00 am UTC बजे",
+      "swift" : "शुक्रवार, 1 जनवरी 2027, पू 12:00:00 UTC"
+    },
+    {
+      "input" : "hi-IN full/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 7:59:59 pm बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 7:59:59"
+    },
+    {
+      "input" : "hi-IN full/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 12:07:09 am बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 12:07:09"
+    },
+    {
+      "input" : "hi-IN full/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 1:30:00 pm बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 1:30:00"
+    },
+    {
+      "input" : "hi-IN full/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 31 दिसंबर 2026 को 7:00:00 pm बजे",
+      "swift" : "गुरुवार, 31 दिसंबर 2026, अ 7:00:00"
+    },
+    {
+      "input" : "hi-IN full/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 11:59:59 pm बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 11:59:59"
+    },
+    {
+      "input" : "hi-IN full/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 5:07:09 am बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 5:07:09"
+    },
+    {
+      "input" : "hi-IN full/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 6:30:00 pm बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 6:30:00"
+    },
+    {
+      "input" : "hi-IN full/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "शुक्रवार, 1 जनवरी 2027 को 12:00:00 am बजे",
+      "swift" : "शुक्रवार, 1 जनवरी 2027, पू 12:00:00"
+    },
+    {
+      "input" : "hi-IN full/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 7:59 pm बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 7:59"
+    },
+    {
+      "input" : "hi-IN full/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 12:07 am बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 12:07"
+    },
+    {
+      "input" : "hi-IN full/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 1:30 pm बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 1:30"
+    },
+    {
+      "input" : "hi-IN full/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 31 दिसंबर 2026 को 7:00 pm बजे",
+      "swift" : "गुरुवार, 31 दिसंबर 2026, अ 7:00"
+    },
+    {
+      "input" : "hi-IN full/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "रविवार, 4 जुलाई 1999 को 11:59 pm बजे",
+      "swift" : "रविवार, 4 जुलाई 1999, अ 11:59"
+    },
+    {
+      "input" : "hi-IN full/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 29 फ़रवरी 2024 को 5:07 am बजे",
+      "swift" : "गुरुवार, 29 फ़रवरी 2024, पू 5:07"
+    },
+    {
+      "input" : "hi-IN full/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "गुरुवार, 26 नवंबर 2026 को 6:30 pm बजे",
+      "swift" : "गुरुवार, 26 नवंबर 2026, अ 6:30"
+    },
+    {
+      "input" : "hi-IN full/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "शुक्रवार, 1 जनवरी 2027 को 12:00 am बजे",
+      "swift" : "शुक्रवार, 1 जनवरी 2027, पू 12:00"
+    },
+    {
+      "input" : "hi-IN long/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 7:59:59 pm उत्तरी अमेरिकी पूर्वी डेलाइट समय बजे",
+      "swift" : "4 जुलाई 1999, अ 7:59:59 उत्तरी अमेरिकी पूर्वी डेलाइट समय"
+    },
+    {
+      "input" : "hi-IN long/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 12:07:09 am उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "29 फ़रवरी 2024, पू 12:07:09 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN long/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 1:30:00 pm उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "26 नवंबर 2026, अ 1:30:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN long/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिसंबर 2026 को 7:00:00 pm उत्तरी अमेरिकी पूर्वी मानक समय बजे",
+      "swift" : "31 दिसंबर 2026, अ 7:00:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN long/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 11:59:59 pm समन्वित वैश्विक समय बजे",
+      "swift" : "4 जुलाई 1999, अ 11:59:59 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN long/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 5:07:09 am समन्वित वैश्विक समय बजे",
+      "swift" : "29 फ़रवरी 2024, पू 5:07:09 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN long/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 6:30:00 pm समन्वित वैश्विक समय बजे",
+      "swift" : "26 नवंबर 2026, अ 6:30:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN long/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जनवरी 2027 को 12:00:00 am समन्वित वैश्विक समय बजे",
+      "swift" : "1 जनवरी 2027, पू 12:00:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN long/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 7:59:59 pm GMT-4 बजे",
+      "swift" : "4 जुलाई 1999, अ 7:59:59 GMT-4"
+    },
+    {
+      "input" : "hi-IN long/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 12:07:09 am GMT-5 बजे",
+      "swift" : "29 फ़रवरी 2024, पू 12:07:09 GMT-5"
+    },
+    {
+      "input" : "hi-IN long/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 1:30:00 pm GMT-5 बजे",
+      "swift" : "26 नवंबर 2026, अ 1:30:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN long/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिसंबर 2026 को 7:00:00 pm GMT-5 बजे",
+      "swift" : "31 दिसंबर 2026, अ 7:00:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN long/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 11:59:59 pm UTC बजे",
+      "swift" : "4 जुलाई 1999, अ 11:59:59 UTC"
+    },
+    {
+      "input" : "hi-IN long/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 5:07:09 am UTC बजे",
+      "swift" : "29 फ़रवरी 2024, पू 5:07:09 UTC"
+    },
+    {
+      "input" : "hi-IN long/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 6:30:00 pm UTC बजे",
+      "swift" : "26 नवंबर 2026, अ 6:30:00 UTC"
+    },
+    {
+      "input" : "hi-IN long/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जनवरी 2027 को 12:00:00 am UTC बजे",
+      "swift" : "1 जनवरी 2027, पू 12:00:00 UTC"
+    },
+    {
+      "input" : "hi-IN long/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 7:59:59 pm बजे",
+      "swift" : "4 जुलाई 1999, अ 7:59:59"
+    },
+    {
+      "input" : "hi-IN long/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 12:07:09 am बजे",
+      "swift" : "29 फ़रवरी 2024, पू 12:07:09"
+    },
+    {
+      "input" : "hi-IN long/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 1:30:00 pm बजे",
+      "swift" : "26 नवंबर 2026, अ 1:30:00"
+    },
+    {
+      "input" : "hi-IN long/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिसंबर 2026 को 7:00:00 pm बजे",
+      "swift" : "31 दिसंबर 2026, अ 7:00:00"
+    },
+    {
+      "input" : "hi-IN long/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 11:59:59 pm बजे",
+      "swift" : "4 जुलाई 1999, अ 11:59:59"
+    },
+    {
+      "input" : "hi-IN long/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 5:07:09 am बजे",
+      "swift" : "29 फ़रवरी 2024, पू 5:07:09"
+    },
+    {
+      "input" : "hi-IN long/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 6:30:00 pm बजे",
+      "swift" : "26 नवंबर 2026, अ 6:30:00"
+    },
+    {
+      "input" : "hi-IN long/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जनवरी 2027 को 12:00:00 am बजे",
+      "swift" : "1 जनवरी 2027, पू 12:00:00"
+    },
+    {
+      "input" : "hi-IN long/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 7:59 pm बजे",
+      "swift" : "4 जुलाई 1999, अ 7:59"
+    },
+    {
+      "input" : "hi-IN long/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 12:07 am बजे",
+      "swift" : "29 फ़रवरी 2024, पू 12:07"
+    },
+    {
+      "input" : "hi-IN long/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 1:30 pm बजे",
+      "swift" : "26 नवंबर 2026, अ 1:30"
+    },
+    {
+      "input" : "hi-IN long/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिसंबर 2026 को 7:00 pm बजे",
+      "swift" : "31 दिसंबर 2026, अ 7:00"
+    },
+    {
+      "input" : "hi-IN long/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुलाई 1999 को 11:59 pm बजे",
+      "swift" : "4 जुलाई 1999, अ 11:59"
+    },
+    {
+      "input" : "hi-IN long/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़रवरी 2024 को 5:07 am बजे",
+      "swift" : "29 फ़रवरी 2024, पू 5:07"
+    },
+    {
+      "input" : "hi-IN long/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नवंबर 2026 को 6:30 pm बजे",
+      "swift" : "26 नवंबर 2026, अ 6:30"
+    },
+    {
+      "input" : "hi-IN long/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जनवरी 2027 को 12:00 am बजे",
+      "swift" : "1 जनवरी 2027, पू 12:00"
+    },
+    {
+      "input" : "hi-IN medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 7:59:59 pm उत्तरी अमेरिकी पूर्वी डेलाइट समय",
+      "swift" : "4 जुल॰ 1999, अ 7:59:59 उत्तरी अमेरिकी पूर्वी डेलाइट समय"
+    },
+    {
+      "input" : "hi-IN medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 12:07:09 am उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "29 फ़र॰ 2024, पू 12:07:09 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 1:30:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "26 नव॰ 2026, अ 1:30:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिस॰ 2026, 7:00:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "31 दिस॰ 2026, अ 7:00:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 11:59:59 pm समन्वित वैश्विक समय",
+      "swift" : "4 जुल॰ 1999, अ 11:59:59 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN medium/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 5:07:09 am समन्वित वैश्विक समय",
+      "swift" : "29 फ़र॰ 2024, पू 5:07:09 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN medium/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 6:30:00 pm समन्वित वैश्विक समय",
+      "swift" : "26 नव॰ 2026, अ 6:30:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN medium/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जन॰ 2027, 12:00:00 am समन्वित वैश्विक समय",
+      "swift" : "1 जन॰ 2027, पू 12:00:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 7:59:59 pm GMT-4",
+      "swift" : "4 जुल॰ 1999, अ 7:59:59 GMT-4"
+    },
+    {
+      "input" : "hi-IN medium/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 12:07:09 am GMT-5",
+      "swift" : "29 फ़र॰ 2024, पू 12:07:09 GMT-5"
+    },
+    {
+      "input" : "hi-IN medium/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 1:30:00 pm GMT-5",
+      "swift" : "26 नव॰ 2026, अ 1:30:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN medium/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिस॰ 2026, 7:00:00 pm GMT-5",
+      "swift" : "31 दिस॰ 2026, अ 7:00:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 11:59:59 pm UTC",
+      "swift" : "4 जुल॰ 1999, अ 11:59:59 UTC"
+    },
+    {
+      "input" : "hi-IN medium/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 5:07:09 am UTC",
+      "swift" : "29 फ़र॰ 2024, पू 5:07:09 UTC"
+    },
+    {
+      "input" : "hi-IN medium/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 6:30:00 pm UTC",
+      "swift" : "26 नव॰ 2026, अ 6:30:00 UTC"
+    },
+    {
+      "input" : "hi-IN medium/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जन॰ 2027, 12:00:00 am UTC",
+      "swift" : "1 जन॰ 2027, पू 12:00:00 UTC"
+    },
+    {
+      "input" : "hi-IN medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 7:59:59 pm",
+      "swift" : "4 जुल॰ 1999, अ 7:59:59"
+    },
+    {
+      "input" : "hi-IN medium/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 12:07:09 am",
+      "swift" : "29 फ़र॰ 2024, पू 12:07:09"
+    },
+    {
+      "input" : "hi-IN medium/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 1:30:00 pm",
+      "swift" : "26 नव॰ 2026, अ 1:30:00"
+    },
+    {
+      "input" : "hi-IN medium/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिस॰ 2026, 7:00:00 pm",
+      "swift" : "31 दिस॰ 2026, अ 7:00:00"
+    },
+    {
+      "input" : "hi-IN medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 11:59:59 pm",
+      "swift" : "4 जुल॰ 1999, अ 11:59:59"
+    },
+    {
+      "input" : "hi-IN medium/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 5:07:09 am",
+      "swift" : "29 फ़र॰ 2024, पू 5:07:09"
+    },
+    {
+      "input" : "hi-IN medium/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 6:30:00 pm",
+      "swift" : "26 नव॰ 2026, अ 6:30:00"
+    },
+    {
+      "input" : "hi-IN medium/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जन॰ 2027, 12:00:00 am",
+      "swift" : "1 जन॰ 2027, पू 12:00:00"
+    },
+    {
+      "input" : "hi-IN medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 7:59 pm",
+      "swift" : "4 जुल॰ 1999, अ 7:59"
+    },
+    {
+      "input" : "hi-IN medium/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 12:07 am",
+      "swift" : "29 फ़र॰ 2024, पू 12:07"
+    },
+    {
+      "input" : "hi-IN medium/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 1:30 pm",
+      "swift" : "26 नव॰ 2026, अ 1:30"
+    },
+    {
+      "input" : "hi-IN medium/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31 दिस॰ 2026, 7:00 pm",
+      "swift" : "31 दिस॰ 2026, अ 7:00"
+    },
+    {
+      "input" : "hi-IN medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 जुल॰ 1999, 11:59 pm",
+      "swift" : "4 जुल॰ 1999, अ 11:59"
+    },
+    {
+      "input" : "hi-IN medium/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29 फ़र॰ 2024, 5:07 am",
+      "swift" : "29 फ़र॰ 2024, पू 5:07"
+    },
+    {
+      "input" : "hi-IN medium/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26 नव॰ 2026, 6:30 pm",
+      "swift" : "26 नव॰ 2026, अ 6:30"
+    },
+    {
+      "input" : "hi-IN medium/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1 जन॰ 2027, 12:00 am",
+      "swift" : "1 जन॰ 2027, पू 12:00"
+    },
+    {
+      "input" : "hi-IN omitted/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "7:59:59 pm उत्तरी अमेरिकी पूर्वी डेलाइट समय",
+      "swift" : "अ 7:59:59 उत्तरी अमेरिकी पूर्वी डेलाइट समय"
+    },
+    {
+      "input" : "hi-IN omitted/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "12:07:09 am उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "पू 12:07:09 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "1:30:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "अ 1:30:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "7:00:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "अ 7:00:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "11:59:59 pm समन्वित वैश्विक समय",
+      "swift" : "अ 11:59:59 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "5:07:09 am समन्वित वैश्विक समय",
+      "swift" : "पू 5:07:09 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "6:30:00 pm समन्वित वैश्विक समय",
+      "swift" : "अ 6:30:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN omitted/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "12:00:00 am समन्वित वैश्विक समय",
+      "swift" : "पू 12:00:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN omitted/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "7:59:59 pm GMT-4",
+      "swift" : "अ 7:59:59 GMT-4"
+    },
+    {
+      "input" : "hi-IN omitted/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "12:07:09 am GMT-5",
+      "swift" : "पू 12:07:09 GMT-5"
+    },
+    {
+      "input" : "hi-IN omitted/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "1:30:00 pm GMT-5",
+      "swift" : "अ 1:30:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN omitted/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "7:00:00 pm GMT-5",
+      "swift" : "अ 7:00:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN omitted/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "11:59:59 pm UTC",
+      "swift" : "अ 11:59:59 UTC"
+    },
+    {
+      "input" : "hi-IN omitted/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "5:07:09 am UTC",
+      "swift" : "पू 5:07:09 UTC"
+    },
+    {
+      "input" : "hi-IN omitted/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "6:30:00 pm UTC",
+      "swift" : "अ 6:30:00 UTC"
+    },
+    {
+      "input" : "hi-IN omitted/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "12:00:00 am UTC",
+      "swift" : "पू 12:00:00 UTC"
+    },
+    {
+      "input" : "hi-IN omitted/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "7:59:59 pm",
+      "swift" : "अ 7:59:59"
+    },
+    {
+      "input" : "hi-IN omitted/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "12:07:09 am",
+      "swift" : "पू 12:07:09"
+    },
+    {
+      "input" : "hi-IN omitted/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "1:30:00 pm",
+      "swift" : "अ 1:30:00"
+    },
+    {
+      "input" : "hi-IN omitted/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "7:00:00 pm",
+      "swift" : "अ 7:00:00"
+    },
+    {
+      "input" : "hi-IN omitted/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "11:59:59 pm",
+      "swift" : "अ 11:59:59"
+    },
+    {
+      "input" : "hi-IN omitted/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "5:07:09 am",
+      "swift" : "पू 5:07:09"
+    },
+    {
+      "input" : "hi-IN omitted/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "6:30:00 pm",
+      "swift" : "अ 6:30:00"
+    },
+    {
+      "input" : "hi-IN omitted/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "12:00:00 am",
+      "swift" : "पू 12:00:00"
+    },
+    {
+      "input" : "hi-IN omitted/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "7:59 pm",
+      "swift" : "अ 7:59"
+    },
+    {
+      "input" : "hi-IN omitted/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "12:07 am",
+      "swift" : "पू 12:07"
+    },
+    {
+      "input" : "hi-IN omitted/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "1:30 pm",
+      "swift" : "अ 1:30"
+    },
+    {
+      "input" : "hi-IN omitted/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "7:00 pm",
+      "swift" : "अ 7:00"
+    },
+    {
+      "input" : "hi-IN omitted/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "11:59 pm",
+      "swift" : "अ 11:59"
+    },
+    {
+      "input" : "hi-IN omitted/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "5:07 am",
+      "swift" : "पू 5:07"
+    },
+    {
+      "input" : "hi-IN omitted/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "6:30 pm",
+      "swift" : "अ 6:30"
+    },
+    {
+      "input" : "hi-IN omitted/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "12:00 am",
+      "swift" : "पू 12:00"
+    },
+    {
+      "input" : "hi-IN short/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 7:59:59 pm उत्तरी अमेरिकी पूर्वी डेलाइट समय",
+      "swift" : "4/7/99, अ 7:59:59 उत्तरी अमेरिकी पूर्वी डेलाइट समय"
+    },
+    {
+      "input" : "hi-IN short/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 12:07:09 am उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "29/2/24, पू 12:07:09 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN short/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 1:30:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "26/11/26, अ 1:30:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN short/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31/12/26, 7:00:00 pm उत्तरी अमेरिकी पूर्वी मानक समय",
+      "swift" : "31/12/26, अ 7:00:00 उत्तरी अमेरिकी पूर्वी मानक समय"
+    },
+    {
+      "input" : "hi-IN short/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 11:59:59 pm समन्वित वैश्विक समय",
+      "swift" : "4/7/99, अ 11:59:59 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN short/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 5:07:09 am समन्वित वैश्विक समय",
+      "swift" : "29/2/24, पू 5:07:09 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN short/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 6:30:00 pm समन्वित वैश्विक समय",
+      "swift" : "26/11/26, अ 6:30:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN short/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1/1/27, 12:00:00 am समन्वित वैश्विक समय",
+      "swift" : "1/1/27, पू 12:00:00 समन्वित वैश्विक समय"
+    },
+    {
+      "input" : "hi-IN short/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 7:59:59 pm GMT-4",
+      "swift" : "4/7/99, अ 7:59:59 GMT-4"
+    },
+    {
+      "input" : "hi-IN short/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 12:07:09 am GMT-5",
+      "swift" : "29/2/24, पू 12:07:09 GMT-5"
+    },
+    {
+      "input" : "hi-IN short/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 1:30:00 pm GMT-5",
+      "swift" : "26/11/26, अ 1:30:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN short/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31/12/26, 7:00:00 pm GMT-5",
+      "swift" : "31/12/26, अ 7:00:00 GMT-5"
+    },
+    {
+      "input" : "hi-IN short/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 11:59:59 pm UTC",
+      "swift" : "4/7/99, अ 11:59:59 UTC"
+    },
+    {
+      "input" : "hi-IN short/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 5:07:09 am UTC",
+      "swift" : "29/2/24, पू 5:07:09 UTC"
+    },
+    {
+      "input" : "hi-IN short/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 6:30:00 pm UTC",
+      "swift" : "26/11/26, अ 6:30:00 UTC"
+    },
+    {
+      "input" : "hi-IN short/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1/1/27, 12:00:00 am UTC",
+      "swift" : "1/1/27, पू 12:00:00 UTC"
+    },
+    {
+      "input" : "hi-IN short/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 7:59:59 pm",
+      "swift" : "4/7/99, अ 7:59:59"
+    },
+    {
+      "input" : "hi-IN short/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 12:07:09 am",
+      "swift" : "29/2/24, पू 12:07:09"
+    },
+    {
+      "input" : "hi-IN short/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 1:30:00 pm",
+      "swift" : "26/11/26, अ 1:30:00"
+    },
+    {
+      "input" : "hi-IN short/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31/12/26, 7:00:00 pm",
+      "swift" : "31/12/26, अ 7:00:00"
+    },
+    {
+      "input" : "hi-IN short/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 11:59:59 pm",
+      "swift" : "4/7/99, अ 11:59:59"
+    },
+    {
+      "input" : "hi-IN short/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 5:07:09 am",
+      "swift" : "29/2/24, पू 5:07:09"
+    },
+    {
+      "input" : "hi-IN short/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 6:30:00 pm",
+      "swift" : "26/11/26, अ 6:30:00"
+    },
+    {
+      "input" : "hi-IN short/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1/1/27, 12:00:00 am",
+      "swift" : "1/1/27, पू 12:00:00"
+    },
+    {
+      "input" : "hi-IN short/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 7:59 pm",
+      "swift" : "4/7/99, अ 7:59"
+    },
+    {
+      "input" : "hi-IN short/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 12:07 am",
+      "swift" : "29/2/24, पू 12:07"
+    },
+    {
+      "input" : "hi-IN short/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 1:30 pm",
+      "swift" : "26/11/26, अ 1:30"
+    },
+    {
+      "input" : "hi-IN short/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "31/12/26, 7:00 pm",
+      "swift" : "31/12/26, अ 7:00"
+    },
+    {
+      "input" : "hi-IN short/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4/7/99, 11:59 pm",
+      "swift" : "4/7/99, अ 11:59"
+    },
+    {
+      "input" : "hi-IN short/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "29/2/24, 5:07 am",
+      "swift" : "29/2/24, पू 5:07"
+    },
+    {
+      "input" : "hi-IN short/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "26/11/26, 6:30 pm",
+      "swift" : "26/11/26, अ 6:30"
+    },
+    {
+      "input" : "hi-IN short/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "1/1/27, 12:00 am",
+      "swift" : "1/1/27, पू 12:00"
+    },
+    {
+      "input" : "ja-JP full/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 19時59分59秒 米国東部夏時間",
+      "swift" : "1999年7月4日 日曜日 19時59分59秒 アメリカ東部夏時間"
+    },
+    {
+      "input" : "ja-JP full/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 0時07分09秒 米国東部標準時",
+      "swift" : "2024年2月29日 木曜日 0時07分09秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP full/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 13時30分00秒 米国東部標準時",
+      "swift" : "2026年11月26日 木曜日 13時30分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP full/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日木曜日 19時00分00秒 米国東部標準時",
+      "swift" : "2026年12月31日 木曜日 19時00分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP full/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 23時59分59秒 協定世界時",
+      "swift" : "1999年7月4日 日曜日 23時59分59秒 協定世界時"
+    },
+    {
+      "input" : "ja-JP full/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 5時07分09秒 協定世界時",
+      "swift" : "2024年2月29日 木曜日 5時07分09秒 協定世界時"
+    },
+    {
+      "input" : "ja-JP full/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 18時30分00秒 協定世界時",
+      "swift" : "2026年11月26日 木曜日 18時30分00秒 協定世界時"
+    },
+    {
+      "input" : "ja-JP full/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日金曜日 0時00分00秒 協定世界時",
+      "swift" : "2027年1月1日 金曜日 0時00分00秒 協定世界時"
+    },
+    {
+      "input" : "ja-JP full/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 19:59:59 GMT-4",
+      "swift" : "1999年7月4日 日曜日 19:59:59 GMT-4"
+    },
+    {
+      "input" : "ja-JP full/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 0:07:09 GMT-5",
+      "swift" : "2024年2月29日 木曜日 0:07:09 GMT-5"
+    },
+    {
+      "input" : "ja-JP full/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 13:30:00 GMT-5",
+      "swift" : "2026年11月26日 木曜日 13:30:00 GMT-5"
+    },
+    {
+      "input" : "ja-JP full/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日木曜日 19:00:00 GMT-5",
+      "swift" : "2026年12月31日 木曜日 19:00:00 GMT-5"
+    },
+    {
+      "input" : "ja-JP full/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 23:59:59 UTC",
+      "swift" : "1999年7月4日 日曜日 23:59:59 UTC"
+    },
+    {
+      "input" : "ja-JP full/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 5:07:09 UTC",
+      "swift" : "2024年2月29日 木曜日 5:07:09 UTC"
+    },
+    {
+      "input" : "ja-JP full/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 18:30:00 UTC",
+      "swift" : "2026年11月26日 木曜日 18:30:00 UTC"
+    },
+    {
+      "input" : "ja-JP full/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日金曜日 0:00:00 UTC",
+      "swift" : "2027年1月1日 金曜日 0:00:00 UTC"
+    },
+    {
+      "input" : "ja-JP full/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 19:59:59",
+      "swift" : "1999年7月4日 日曜日 19:59:59"
+    },
+    {
+      "input" : "ja-JP full/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 0:07:09",
+      "swift" : "2024年2月29日 木曜日 0:07:09"
+    },
+    {
+      "input" : "ja-JP full/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 13:30:00",
+      "swift" : "2026年11月26日 木曜日 13:30:00"
+    },
+    {
+      "input" : "ja-JP full/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日木曜日 19:00:00",
+      "swift" : "2026年12月31日 木曜日 19:00:00"
+    },
+    {
+      "input" : "ja-JP full/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 23:59:59",
+      "swift" : "1999年7月4日 日曜日 23:59:59"
+    },
+    {
+      "input" : "ja-JP full/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 5:07:09",
+      "swift" : "2024年2月29日 木曜日 5:07:09"
+    },
+    {
+      "input" : "ja-JP full/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 18:30:00",
+      "swift" : "2026年11月26日 木曜日 18:30:00"
+    },
+    {
+      "input" : "ja-JP full/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日金曜日 0:00:00",
+      "swift" : "2027年1月1日 金曜日 0:00:00"
+    },
+    {
+      "input" : "ja-JP full/omitted America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日",
+      "swift" : "1999年7月4日 日曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日",
+      "swift" : "2024年2月29日 木曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日",
+      "swift" : "2026年11月26日 木曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日木曜日",
+      "swift" : "2026年12月31日 木曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日",
+      "swift" : "1999年7月4日 日曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日",
+      "swift" : "2024年2月29日 木曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日",
+      "swift" : "2026年11月26日 木曜日"
+    },
+    {
+      "input" : "ja-JP full/omitted UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日金曜日",
+      "swift" : "2027年1月1日 金曜日"
+    },
+    {
+      "input" : "ja-JP full/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 19:59",
+      "swift" : "1999年7月4日 日曜日 19:59"
+    },
+    {
+      "input" : "ja-JP full/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 0:07",
+      "swift" : "2024年2月29日 木曜日 0:07"
+    },
+    {
+      "input" : "ja-JP full/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 13:30",
+      "swift" : "2026年11月26日 木曜日 13:30"
+    },
+    {
+      "input" : "ja-JP full/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日木曜日 19:00",
+      "swift" : "2026年12月31日 木曜日 19:00"
+    },
+    {
+      "input" : "ja-JP full/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日日曜日 23:59",
+      "swift" : "1999年7月4日 日曜日 23:59"
+    },
+    {
+      "input" : "ja-JP full/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日木曜日 5:07",
+      "swift" : "2024年2月29日 木曜日 5:07"
+    },
+    {
+      "input" : "ja-JP full/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日木曜日 18:30",
+      "swift" : "2026年11月26日 木曜日 18:30"
+    },
+    {
+      "input" : "ja-JP full/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日金曜日 0:00",
+      "swift" : "2027年1月1日 金曜日 0:00"
+    },
+    {
+      "input" : "ja-JP long/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日 19時59分59秒 米国東部夏時間",
+      "swift" : "1999年7月4日 19時59分59秒 アメリカ東部夏時間"
+    },
+    {
+      "input" : "ja-JP long/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日 0時07分09秒 米国東部標準時",
+      "swift" : "2024年2月29日 0時07分09秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP long/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日 13時30分00秒 米国東部標準時",
+      "swift" : "2026年11月26日 13時30分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP long/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日 19時00分00秒 米国東部標準時",
+      "swift" : "2026年12月31日 19時00分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999/07/04 19時59分59秒 米国東部夏時間",
+      "swift" : "1999/07/04 19時59分59秒 アメリカ東部夏時間"
+    },
+    {
+      "input" : "ja-JP medium/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024/02/29 0時07分09秒 米国東部標準時",
+      "swift" : "2024/02/29 0時07分09秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP medium/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026/11/26 13時30分00秒 米国東部標準時",
+      "swift" : "2026/11/26 13時30分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP medium/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026/12/31 19時00分00秒 米国東部標準時",
+      "swift" : "2026/12/31 19時00分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP omitted/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "19時59分59秒 米国東部夏時間",
+      "swift" : "19時59分59秒 アメリカ東部夏時間"
+    },
+    {
+      "input" : "ja-JP omitted/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "0時07分09秒 米国東部標準時",
+      "swift" : "0時07分09秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP omitted/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "13時30分00秒 米国東部標準時",
+      "swift" : "13時30分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP omitted/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "19時00分00秒 米国東部標準時",
+      "swift" : "19時00分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP short/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999/07/04 19時59分59秒 米国東部夏時間",
+      "swift" : "1999/07/04 19時59分59秒 アメリカ東部夏時間"
+    },
+    {
+      "input" : "ja-JP short/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024/02/29 0時07分09秒 米国東部標準時",
+      "swift" : "2024/02/29 0時07分09秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP short/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026/11/26 13時30分00秒 米国東部標準時",
+      "swift" : "2026/11/26 13時30分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ja-JP short/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026/12/31 19時00分00秒 米国東部標準時",
+      "swift" : "2026/12/31 19時00分00秒 アメリカ東部標準時"
+    },
+    {
+      "input" : "ru-RU medium/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 19:59:59 Восточная Америка, летнее время",
+      "swift" : "4 июля 1999 г., 19:59:59 Восточная Америка, летнее время"
+    },
+    {
+      "input" : "ru-RU medium/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 23:59:59 Всемирное координированное время",
+      "swift" : "4 июля 1999 г., 23:59:59 Всемирное координированное время"
+    },
+    {
+      "input" : "ru-RU medium/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 19:59:59 GMT-4",
+      "swift" : "4 июля 1999 г., 19:59:59 GMT-4"
+    },
+    {
+      "input" : "ru-RU medium/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 23:59:59 UTC",
+      "swift" : "4 июля 1999 г., 23:59:59 UTC"
+    },
+    {
+      "input" : "ru-RU medium/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 19:59:59",
+      "swift" : "4 июля 1999 г., 19:59:59"
+    },
+    {
+      "input" : "ru-RU medium/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 23:59:59",
+      "swift" : "4 июля 1999 г., 23:59:59"
+    },
+    {
+      "input" : "ru-RU medium/omitted America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г.",
+      "swift" : "4 июля 1999 г."
+    },
+    {
+      "input" : "ru-RU medium/omitted UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г.",
+      "swift" : "4 июля 1999 г."
+    },
+    {
+      "input" : "ru-RU medium/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 19:59",
+      "swift" : "4 июля 1999 г., 19:59"
+    },
+    {
+      "input" : "ru-RU medium/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "4 июл. 1999 г., 23:59",
+      "swift" : "4 июля 1999 г., 23:59"
+    },
+    {
+      "input" : "zh-CN full/full America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 北美东部夏令时间 19:59:59",
+      "swift" : "1999年7月4日 星期日 北美东部夏令时间 19:59:59"
+    },
+    {
+      "input" : "zh-CN full/full America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 北美东部标准时间 00:07:09",
+      "swift" : "2024年2月29日 星期四 北美东部标准时间 00:07:09"
+    },
+    {
+      "input" : "zh-CN full/full America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 北美东部标准时间 13:30:00",
+      "swift" : "2026年11月26日 星期四 北美东部标准时间 13:30:00"
+    },
+    {
+      "input" : "zh-CN full/full America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日星期四 北美东部标准时间 19:00:00",
+      "swift" : "2026年12月31日 星期四 北美东部标准时间 19:00:00"
+    },
+    {
+      "input" : "zh-CN full/full UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 协调世界时 23:59:59",
+      "swift" : "1999年7月4日 星期日 协调世界时 23:59:59"
+    },
+    {
+      "input" : "zh-CN full/full UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 协调世界时 05:07:09",
+      "swift" : "2024年2月29日 星期四 协调世界时 05:07:09"
+    },
+    {
+      "input" : "zh-CN full/full UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 协调世界时 18:30:00",
+      "swift" : "2026年11月26日 星期四 协调世界时 18:30:00"
+    },
+    {
+      "input" : "zh-CN full/full UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日星期五 协调世界时 00:00:00",
+      "swift" : "2027年1月1日 星期五 协调世界时 00:00:00"
+    },
+    {
+      "input" : "zh-CN full/long America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 GMT-4 19:59:59",
+      "swift" : "1999年7月4日 星期日 GMT-4 19:59:59"
+    },
+    {
+      "input" : "zh-CN full/long America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 GMT-5 00:07:09",
+      "swift" : "2024年2月29日 星期四 GMT-5 00:07:09"
+    },
+    {
+      "input" : "zh-CN full/long America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 GMT-5 13:30:00",
+      "swift" : "2026年11月26日 星期四 GMT-5 13:30:00"
+    },
+    {
+      "input" : "zh-CN full/long America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日星期四 GMT-5 19:00:00",
+      "swift" : "2026年12月31日 星期四 GMT-5 19:00:00"
+    },
+    {
+      "input" : "zh-CN full/long UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 UTC 23:59:59",
+      "swift" : "1999年7月4日 星期日 UTC 23:59:59"
+    },
+    {
+      "input" : "zh-CN full/long UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 UTC 05:07:09",
+      "swift" : "2024年2月29日 星期四 UTC 05:07:09"
+    },
+    {
+      "input" : "zh-CN full/long UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 UTC 18:30:00",
+      "swift" : "2026年11月26日 星期四 UTC 18:30:00"
+    },
+    {
+      "input" : "zh-CN full/long UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日星期五 UTC 00:00:00",
+      "swift" : "2027年1月1日 星期五 UTC 00:00:00"
+    },
+    {
+      "input" : "zh-CN full/medium America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 19:59:59",
+      "swift" : "1999年7月4日 星期日 19:59:59"
+    },
+    {
+      "input" : "zh-CN full/medium America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 00:07:09",
+      "swift" : "2024年2月29日 星期四 00:07:09"
+    },
+    {
+      "input" : "zh-CN full/medium America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 13:30:00",
+      "swift" : "2026年11月26日 星期四 13:30:00"
+    },
+    {
+      "input" : "zh-CN full/medium America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日星期四 19:00:00",
+      "swift" : "2026年12月31日 星期四 19:00:00"
+    },
+    {
+      "input" : "zh-CN full/medium UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 23:59:59",
+      "swift" : "1999年7月4日 星期日 23:59:59"
+    },
+    {
+      "input" : "zh-CN full/medium UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 05:07:09",
+      "swift" : "2024年2月29日 星期四 05:07:09"
+    },
+    {
+      "input" : "zh-CN full/medium UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 18:30:00",
+      "swift" : "2026年11月26日 星期四 18:30:00"
+    },
+    {
+      "input" : "zh-CN full/medium UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日星期五 00:00:00",
+      "swift" : "2027年1月1日 星期五 00:00:00"
+    },
+    {
+      "input" : "zh-CN full/omitted America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日",
+      "swift" : "1999年7月4日 星期日"
+    },
+    {
+      "input" : "zh-CN full/omitted America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四",
+      "swift" : "2024年2月29日 星期四"
+    },
+    {
+      "input" : "zh-CN full/omitted America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四",
+      "swift" : "2026年11月26日 星期四"
+    },
+    {
+      "input" : "zh-CN full/omitted America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日星期四",
+      "swift" : "2026年12月31日 星期四"
+    },
+    {
+      "input" : "zh-CN full/omitted UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日",
+      "swift" : "1999年7月4日 星期日"
+    },
+    {
+      "input" : "zh-CN full/omitted UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四",
+      "swift" : "2024年2月29日 星期四"
+    },
+    {
+      "input" : "zh-CN full/omitted UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四",
+      "swift" : "2026年11月26日 星期四"
+    },
+    {
+      "input" : "zh-CN full/omitted UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日星期五",
+      "swift" : "2027年1月1日 星期五"
+    },
+    {
+      "input" : "zh-CN full/short America/New_York 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 19:59",
+      "swift" : "1999年7月4日 星期日 19:59"
+    },
+    {
+      "input" : "zh-CN full/short America/New_York 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 00:07",
+      "swift" : "2024年2月29日 星期四 00:07"
+    },
+    {
+      "input" : "zh-CN full/short America/New_York 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 13:30",
+      "swift" : "2026年11月26日 星期四 13:30"
+    },
+    {
+      "input" : "zh-CN full/short America/New_York 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2026年12月31日星期四 19:00",
+      "swift" : "2026年12月31日 星期四 19:00"
+    },
+    {
+      "input" : "zh-CN full/short UTC 1999-07-04T23:59:59.999Z",
+      "kind" : "date",
+      "node" : "1999年7月4日星期日 23:59",
+      "swift" : "1999年7月4日 星期日 23:59"
+    },
+    {
+      "input" : "zh-CN full/short UTC 2024-02-29T05:07:09.123Z",
+      "kind" : "date",
+      "node" : "2024年2月29日星期四 05:07",
+      "swift" : "2024年2月29日 星期四 05:07"
+    },
+    {
+      "input" : "zh-CN full/short UTC 2026-11-26T18:30:00.000Z",
+      "kind" : "date",
+      "node" : "2026年11月26日星期四 18:30",
+      "swift" : "2026年11月26日 星期四 18:30"
+    },
+    {
+      "input" : "zh-CN full/short UTC 2027-01-01T00:00:00.000Z",
+      "kind" : "date",
+      "node" : "2027年1月1日星期五 00:00",
+      "swift" : "2027年1月1日 星期五 00:00"
+    },
+    {
+      "input" : "hi-IN 1 day",
+      "kind" : "relative",
+      "node" : "कल",
+      "swift" : "आने वाला कल"
+    },
+    {
+      "input" : "hi-IN 2 day",
+      "kind" : "relative",
+      "node" : "परसों",
+      "swift" : "आने वाला परसों"
+    }
+  ],
+  "expected" : "Node 24.21.0, ICU 78.3, CLDR 48.0"
+}

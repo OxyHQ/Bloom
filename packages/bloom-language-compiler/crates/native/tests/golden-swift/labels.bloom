@@ -1,0 +1,19 @@
+// Argument labels: Swift's own, `_`, defaults. (Overloads that differ only by label are
+// Swift's too, once the checker takes them: today it reports B0217.)
+public struct Point: Equatable {
+  public var x: Double
+  public var y: Double
+}
+
+extension Point {
+  func moved(by dx: Double, _ dy: Double = 0.0) -> Point { Point(x: self.x + dx, y: self.y + dy) }
+}
+
+func move(_ p: Point, to other: Point) -> Point { other }
+
+func handle(of name: String, in domain: String = "oxy.so") -> String { "@\(name)@\(domain)" }
+
+func demo() -> String {
+  let p = move(Point(x: 0.0, y: 0.0).moved(by: 2.0), to: Point(x: 1.0, y: 1.0))
+  "\(p.x) \(handle(of: "ada")) \(handle(of: "bob", in: "mention.earth"))"
+}

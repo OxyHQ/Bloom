@@ -7,7 +7,7 @@ use std::process::ExitCode;
 
 fn usage() -> ExitCode {
     eprintln!(
-        "usage: bloom-native emit --target kotlin-compose|swiftui <package dir> --out <dir> [--android-project <dir> --app-id <id>]"
+        "usage: bloom-native emit --target kotlin-compose|swiftui <package dir> --out <dir> [--android-project <dir> | --ios-project <dir>] [--app-id <id>]"
     );
     ExitCode::from(2)
 }
@@ -23,6 +23,7 @@ fn main() -> ExitCode {
     let mut project = None;
     let mut app_id = None;
     let mut std_modules: Vec<String> = Vec::new();
+    let mut ios_project: Option<PathBuf> = None;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -37,6 +38,10 @@ fn main() -> ExitCode {
             "--android-project" => {
                 i += 1;
                 project = args.get(i).map(PathBuf::from);
+            }
+            "--ios-project" => {
+                i += 1;
+                ios_project = args.get(i).map(PathBuf::from);
             }
             "--app-id" => {
                 i += 1;
@@ -79,6 +84,23 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    // `--ios-project`: the Xcode project around the Swift (what `bloom build ios --target native` writes).
+    if let Some(dir) = &ios_project {
+        let id =
+            app_id.clone().unwrap_or_else(|| format!("so.bloom.{}.swiftui", program.name.to_lowercase()));
+        if let Err(e) = bloom_native::swift::project::write_project(dir, &program, &emitted, &id) {
+            eprintln!("bloom-native: {e}");
+            return ExitCode::FAILURE;
+        }
+        eprintln!(
+            "bloom-native: wrote the iOS project for {} at {} ({} file(s), {} ms); on the Mac: xcodegen generate",
+            program.name,
+            dir.display(),
+            emitted.len(),
+            started.elapsed().as_millis()
+        );
+        return ExitCode::SUCCESS;
+    }
     let root = match (&project, &out) {
         (Some(project), _) => project.join("app/src/main/kotlin"),
         (None, Some(out)) => out.clone(),

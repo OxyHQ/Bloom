@@ -1,0 +1,8 @@
+// Strings: interpolation, escapes, and a count of user-perceived characters.
+func greeting(_ name: String, _ n: Int) -> String { "Hello, \(name)! You have \(n) new \"posts\".\n" }
+
+func length(_ s: String) -> Int { s.count }
+
+func shout(_ s: String) -> String { s.uppercased() + "!" }
+
+func path(_ a: String, _ b: String) -> String { "\(a)\\\(b)" }

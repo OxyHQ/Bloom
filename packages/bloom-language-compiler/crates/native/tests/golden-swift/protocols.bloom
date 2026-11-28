@@ -1,0 +1,31 @@
+// Protocols: requirements, conformance in an extension, constrained generics, `any P`.
+public protocol Titled {
+  var title: String { get }
+  func badge(_ count: Int) -> String
+}
+
+public struct Note {
+  public let text: String
+}
+
+extension Note: Titled {
+  public var title: String { text }
+  public func badge(_ count: Int) -> String { "\(title) (\(count))" }
+}
+
+func label<T: Titled>(_ item: T) -> String { item.badge(1) }
+
+func describe(_ item: any Titled) -> String { item.title }
+
+func firstIndex<T: Equatable>(_ items: [T], of item: T) -> Int? {
+  var index = 0
+  for candidate in items {
+    if candidate == item { return index }
+    index += 1
+  }
+  return none
+}
+
+public struct Page<T> {
+  public let items: [T]
+}
