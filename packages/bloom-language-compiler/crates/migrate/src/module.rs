@@ -658,6 +658,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         .collect::<Vec<_>>()
         .join("\n\n")
         + "\n";
+    let out = memo_exports_as_views(&out);
     Translated {
         text: out,
         reasons: tr.reasons,
@@ -3301,4 +3302,68 @@ fn only_member_reads(body: &oxc_ast::ast::FunctionBody, name: &str) -> bool {
     let mut reads = Reads { name, members: 0, all: 0 };
     reads.visit_function_body(body);
     reads.all > 0 && reads.all == reads.members
+}
+
+/// `export const X = memo(Named)` of a local view is `pub let X = Named`: in TS the alias is a
+/// view struct's type, a class (`X(…)` is "Cannot call a class as a function"). A view is
+/// memoized already, so the view itself takes the exported name: `pub view X`, the alias gone.
+fn memo_exports_as_views(text: &str) -> String {
+    let mut out = text.to_string();
+    let aliases: Vec<(String, String)> = text
+        .lines()
+        .filter_map(|line| {
+            let rest = line.strip_prefix("pub let ")?;
+            let (alias, named) = rest.split_once(" = ")?;
+            let ident = |s: &str| !s.is_empty() && s.chars().all(|c| c.is_alphanumeric() || c == '_');
+            (ident(alias) && ident(named)).then(|| (alias.to_string(), named.to_string()))
+        })
+        .collect();
+    for (alias, named) in aliases {
+        let declares = |line: &str| {
+            let line = line.strip_prefix("private ").unwrap_or(line);
+            line.strip_prefix("view ").is_some_and(|r| {
+                r.strip_prefix(named.as_str()).is_some_and(|t| t.starts_with(['(', ' ', '{', '<']))
+            })
+        };
+        // The view is this file's own, and not exported under its own name too.
+        if !out.lines().any(declares) || out.lines().any(|l| l.starts_with(&format!("pub view {named}"))) {
+            continue;
+        }
+        let mut lines: Vec<String> = Vec::new();
+        for line in out.lines() {
+            if line == format!("pub let {alias} = {named}") {
+                continue;
+            }
+            if declares(line) {
+                let line = line.strip_prefix("private ").unwrap_or(line);
+                lines.push(format!("pub {line}"));
+            } else {
+                lines.push(line.to_string());
+            }
+        }
+        let joined = lines.join("\n") + "\n";
+        out = rename_word(&joined, &named, &alias);
+    }
+    out
+}
+
+/// `text` with each whole-word `from` as `to` (an identifier: not inside a longer name or a
+/// member access's right side).
+fn rename_word(text: &str, from: &str, to: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(at) = rest.find(from) {
+        let before = rest[..at].chars().next_back();
+        let after = rest[at + from.len()..].chars().next();
+        let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_');
+        out.push_str(&rest[..at]);
+        if word(before) || word(after) || before == Some('.') {
+            out.push_str(from);
+        } else {
+            out.push_str(to);
+        }
+        rest = &rest[at + from.len()..];
+    }
+    out.push_str(rest);
+    out
 }
