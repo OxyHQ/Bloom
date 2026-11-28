@@ -5173,6 +5173,40 @@ impl<'o> Checker<'o> {
             self.ref_object = false;
             return ty;
         }
+        // `onLayout: IS_WEB ? none : { event in … }`, `header: c ? Text(…) : routeHeader`: each
+        // branch is TS's to check where TS's type is expected, as one given alone is (a closure's
+        // parameters from TS, a view crossing as an element), never typed from its sibling.
+        if let ExprKind::Ternary(cond, then, otherwise) = &expr.kind
+            && matches!(hint, None | Some(Ty::Foreign(_)))
+            // A node's child or text run keeps its own rules (`HStack(c ? rows : none)`).
+            && !self.child_slots.contains(&expr.id)
+            && !self.run_slots.contains(&expr.id)
+        {
+            let hint = hint.clone();
+            self.expr(cond, Some(&Ty::Bool));
+            self.hook_allowed = false;
+            self.push();
+            self.narrow_present(cond);
+            let a = self.boundary(then, hint.as_ref());
+            self.pop();
+            self.push();
+            self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+            let b = self.boundary(otherwise, hint.as_ref());
+            self.pop();
+            // The branches together, quietly (TS checks them): `View` and `View?` are `View?`,
+            // so a view in either crosses as an element where one is taken.
+            let (ra, rb) = (self.resolve(&a), self.resolve(&b));
+            let ty = if self.coerce(&rb, &ra) {
+                ra
+            } else if self.coerce(&ra, &rb) {
+                rb
+            } else {
+                hint.unwrap_or_else(|| Ty::Foreign("".into()))
+            };
+            self.out.types.insert(expr.id, ty.clone());
+            self.span_type((expr.span, ty.clone()));
+            return ty;
+        }
         let ty = match (&expr.kind, &hint) {
             (ExprKind::Closure(c), None | Some(Ty::Foreign(_))) => {
                 let ty = self.closure(c, None, true);
