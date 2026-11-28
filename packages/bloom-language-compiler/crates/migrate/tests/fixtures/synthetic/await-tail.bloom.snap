@@ -1,0 +1,22 @@
+// `const ok = await tsCall(); if (!ok) return; await other();` is `match await`: the `.ok` case's
+// last statement, a TS `await` nothing reads, is discarded (`let _ = await other()`), so both
+// cases give nothing.
+
+import { alertDialog, confirmDialog } from "./dialogs"
+
+public struct ClearCache: View {
+  func clear() async {
+    // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+    switch await confirmDialog(title: "Clear the cache?") {
+    case let .ok(confirmed):
+      if !confirmed { return }
+      let _ = await alertDialog(title: "Cleared", message: "The cache is empty.")
+    case .err(_):
+      break
+    }
+  }
+
+  var body: some View {
+    Button(Text("Clear")).onPress(clear)
+  }
+}
