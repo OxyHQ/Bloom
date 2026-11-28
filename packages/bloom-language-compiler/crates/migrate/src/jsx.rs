@@ -139,6 +139,38 @@ impl Tr<'_> {
             match attribute {
                 // `{...p}`: its fields as arguments, where JSX put them (a later prop wins).
                 JSXAttributeItem::SpreadAttribute(s) => {
+                    // `{...props}` of props written out (2.0 has no `..props`): each stored
+                    // property by name, but those a later prop gives (JSX's later prop wins).
+                    if let Expression::Identifier(id) = s.argument.without_parentheses()
+                        && let Some(fields) = self.whole_props_fields(&id.name)
+                    {
+                        let later: Vec<String> = el
+                            .opening_element
+                            .attributes
+                            .iter()
+                            .skip_while(|a| a.span() != attribute.span())
+                            .filter_map(|a| match a {
+                                JSXAttributeItem::Attribute(a) => match &a.name {
+                                    JSXAttributeName::Identifier(k) => Some(k.name.to_string()),
+                                    _ => None,
+                                },
+                                _ => None,
+                            })
+                            .collect();
+                        // The callee's literal defaults are this view's too, so the forward fits.
+                        if let Some(defaults) = self.literal_defaults.get(name.as_str()).cloned() {
+                            for (key, value) in defaults {
+                                if fields.contains(&key) && !self.scope.field_defaults.iter().any(|(k, _)| *k == key) {
+                                    self.scope.field_defaults.push((key, value));
+                                }
+                            }
+                        }
+                        for f in fields.iter().filter(|f| !later.contains(f)) {
+                            let value = self.name(f, id.span);
+                            props.push(format!("{f}: {value}"));
+                        }
+                        continue;
+                    }
                     let value = self.expr(&s.argument);
                     props.push(format!("{note}..{value}"));
                 }

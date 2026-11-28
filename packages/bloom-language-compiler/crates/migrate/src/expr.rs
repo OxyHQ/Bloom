@@ -1331,7 +1331,7 @@ impl Tr<'_> {
     }
 
     /// The written-out props of the view's props parameter `name` (see [`Scope::props_fields`]).
-    fn whole_props_fields(&self, name: &str) -> Option<Vec<String>> {
+    pub fn whole_props_fields(&self, name: &str) -> Option<Vec<String>> {
         (self.scope.props.as_deref() == Some(name) && !self.scope.props_fields.is_empty())
             .then(|| self.scope.props_fields.clone())
     }
