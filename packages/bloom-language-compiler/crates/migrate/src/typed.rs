@@ -1596,8 +1596,18 @@ fn promise_statement(source: &str, start: usize, end: usize) -> Option<(usize, u
     if !(lead.is_empty() || lead.ends_with('{') || lead == "await") || at == start - 1 {
         return None;
     }
-    let close = block_end(source, end)?;
-    let inner = source[end..close].trim().strip_prefix('{')?.strip_suffix('}')?.trim().to_string();
+    // `p.then({ v in … })` (a closure in parentheses, a setter handed on): the closure is the block.
+    let (open, close) = if source[end..].starts_with("({") {
+        let close = block_end(source, end + 1)?;
+        if !source[close..].starts_with(')') {
+            return None;
+        }
+        (end + 1, close + 1)
+    } else {
+        (end, block_end(source, end)?)
+    };
+    let inner_end = if open == end { close } else { close - 1 };
+    let inner = source[open..inner_end].trim().strip_prefix('{')?.strip_suffix('}')?.trim().to_string();
     let after = source[close..].trim_start_matches([' ', '\t']);
     if !(after.is_empty() || after.starts_with('\n') || after.starts_with('}')) {
         return None;

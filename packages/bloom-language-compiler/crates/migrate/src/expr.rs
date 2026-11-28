@@ -123,6 +123,10 @@ impl Tr<'_> {
             Expression::BooleanLiteral(b) => b.value.to_string(),
             Expression::NullLiteral(_) => "none".into(),
             Expression::NumericLiteral(n) => number(n.value),
+            // A key that names a struct's field: its key path (`crate::keypaths`).
+            Expression::StringLiteral(s) if self.key_paths.literals.contains(&s.span.start) => {
+                format!("\\.{}", s.value.as_str().unwrap_or_default())
+            }
             Expression::StringLiteral(s) => quote(s.value.as_str().unwrap_or_default()),
             Expression::TemplateLiteral(t) => self.template(t),
             Expression::Identifier(id) => self.ident(&id.name, id.span),
@@ -251,6 +255,15 @@ impl Tr<'_> {
                 self.static_member(&m.object, &m.property.name, m.optional, m.span)
             }
             Expression::ComputedMemberExpression(m) => {
+                // `prefs[key]` of a key path: `prefs[keyPath: key]` (`crate::keypaths`).
+                if let Expression::Identifier(key) = &m.expression
+                    && !m.optional
+                    && self.key_paths.names.contains(key.name.as_str())
+                {
+                    let object = self.expr(&m.object);
+                    let key = self.ident(&key.name, key.span);
+                    return format!("{object}[keyPath: {key}]");
+                }
                 if let Expression::StringLiteral(key) = &m.expression
                     && crate::module::is_identifier(key.value.as_str().unwrap_or_default())
                 {
@@ -555,7 +568,7 @@ impl Tr<'_> {
         }
     }
 
-    fn ident(&mut self, name: &str, span: Span) -> String {
+    pub fn ident(&mut self, name: &str, span: Span) -> String {
         if let Some(renamed) = self.scope.renames.get(name) {
             return renamed.clone();
         }

@@ -24,6 +24,7 @@ mod inline;
 mod intl;
 mod json;
 mod jsx;
+mod keypaths;
 mod module;
 mod props;
 pub mod report;

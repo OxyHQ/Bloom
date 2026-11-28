@@ -1382,6 +1382,18 @@ impl Tr<'_> {
                 }
             }
         }
+        // `const next = { ...base, [key]: value }` of a key path (`crate::keypaths`).
+        if let BindingPattern::BindingIdentifier(id) = &d.id
+            && d.type_annotation.is_none()
+            && let Some(text) = {
+                let name = id.name.to_string();
+                self.key_path_update(&name, init)
+            }
+        {
+            self.scope.renames.remove(id.name.as_str());
+            let _ = self.bind(&id.name, id.span);
+            return text;
+        }
         let keyword = if immutable { "let" } else { "var" };
         let mut ty = d
             .type_annotation
@@ -2155,7 +2167,10 @@ impl Tr<'_> {
             {
                 self.scope.types.insert(id.name.to_string(), tid.name.to_string());
             }
-            let ty = self.ty(&t.type_annotation);
+            let ty = match self.key_path_param(param) {
+                Some(path) => path,
+                None => self.ty(&t.type_annotation),
+            };
             // A function's `ReactNode` parameter takes nothing too (`undefined`, `null`): `View?`.
             // One that every call gives text and that only goes to a TS component's prop is that
             // text (`Tr::text_params`): the component draws it in its own `Text`, as the TS did.

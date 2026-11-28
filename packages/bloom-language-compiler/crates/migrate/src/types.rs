@@ -278,6 +278,10 @@ impl Tr<'_> {
             TSType::TSTypePredicate(p) if !p.asserts => "Bool".into(),
             // `X['k']`, `keyof X`, `typeof f`, `ReturnType<…>`: the TS type, kept as a `Foreign`.
             TSType::TSIndexedAccessType(_) | TSType::TSTypeOperatorType(_) | TSType::TSTypeQuery(_) => {
+                // `keyof X` where the file says its value type: a key path (`crate::keypaths`).
+                if let Some(path) = self.keyof_key_path(ty) {
+                    return path;
+                }
                 let text = self.slice(ty.span()).to_string();
                 self.foreign_ty(&text)
             }

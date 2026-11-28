@@ -240,6 +240,8 @@ pub struct Tr<'s> {
     pub json_errors: HashMap<String, HashMap<String, &'static str>>,
     /// The `as { … }` casts (by start) written as the error's `jsValue`.
     pub json_casts: HashSet<u32>,
+    /// TS's computed-key updates as key paths (`crate::keypaths`).
+    pub key_paths: crate::keypaths::KeyPaths,
     /// The file's `async` functions and arrows (`const f = async () => …`, `useCallback(async …)`).
     pub async_fns: HashSet<String>,
     /// `const isServer = item.origin === 'server'`: a discriminant test TS narrows `item` by
@@ -472,6 +474,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         keyed_objects: HashSet::new(),
         json_errors: HashMap::new(),
         json_casts: HashSet::new(),
+        key_paths: Default::default(),
         async_fns: HashSet::new(),
         discriminant_aliases: HashMap::new(),
         module_init: None,
@@ -583,6 +586,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     tr.scan_tanstack(&program.body);
     tr.scan_throwing(&program);
     tr.scan_keyed_objects(&program);
+    tr.key_paths = crate::keypaths::scan(source, &program);
     tr.scan_json_errors(&program);
     tr.scan_async_fns(&program);
     tr.scan_discriminant_aliases(&program);
