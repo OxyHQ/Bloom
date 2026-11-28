@@ -34,6 +34,8 @@ impl Tr<'_> {
                     },
                     // Several children: the fragment's children, one `Group`.
                     [_, _, ..] => self.fragment_value(fragment),
+                    // `Embed(<></>)`: an element that draws nothing, an empty `Group`.
+                    [] => format!("{} {{}}", self.name("Group", fragment.span)),
                     _ => self.refuse(
                         "embed:fragment",
                         "an `Embed` fragment that is not one `toElement(…)`",
