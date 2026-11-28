@@ -7128,6 +7128,21 @@ impl<'o> Checker<'o> {
     }
 
     /// A closure; `boundary`: TS takes it, so untyped parameters are TS's to infer.
+    /// A closure's result where TS takes a React element: a Bloom view it gives crosses as one.
+    pub(crate) fn element_tail(&mut self, c: &Closure) {
+        let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last() else { return };
+        // `{ nested in (Row(post: nested)) }`: the view inside the parentheses.
+        let mut tail: &Expr = tail;
+        while let ExprKind::Paren(inner) = &tail.kind {
+            tail = inner;
+        }
+        if let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
+            && matches!(self.resolve(&tail_ty), Ty::View(_))
+        {
+            self.out.elements.insert(tail.id);
+        }
+    }
+
     pub fn closure(&mut self, c: &Closure, expected: Option<&Ty>, boundary: bool) -> Ty {
         let expected_fn = match expected.map(|e| self.resolve(e)) {
             Some(Ty::Fn(f)) => Some(f),
@@ -7297,19 +7312,8 @@ impl<'o> Checker<'o> {
         self.trying = trying;
         // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
         // as one.
-        if is_element(&ret_resolved)
-            && let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last()
-        {
-            // `{ nested in (Row(post: nested)) }`: the view inside the parentheses.
-            let mut tail: &Expr = tail;
-            while let ExprKind::Paren(inner) = &tail.kind {
-                tail = inner;
-            }
-            if let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
-                && matches!(self.resolve(&tail_ty), Ty::View(_))
-            {
-                self.out.elements.insert(tail.id);
-            }
+        if is_element(&ret_resolved) {
+            self.element_tail(c);
         }
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =

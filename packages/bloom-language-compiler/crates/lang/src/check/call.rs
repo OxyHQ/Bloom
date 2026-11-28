@@ -2459,6 +2459,10 @@ impl Checker<'_> {
             // a Bloom view given to one is an element there (`header: toElement(Header(…))`).
             if fields.is_none() {
                 self.element(&arg.value);
+                // A callback prop of one (`FlatList`'s `renderItem`): the view it gives, too.
+                if let ExprKind::Closure(c) = &arg.value.kind {
+                    self.element_tail(c);
+                }
             }
         }
         if let Some(fields) = fields.as_ref().filter(|_| !spread) {

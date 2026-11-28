@@ -1,0 +1,21 @@
+// A FlatList row closure giving a Bloom view (closure-view-to-reactelement).
+import { FlatList } from "react-native"
+
+private struct Row: View {
+  let title: String
+  var body: some View { Text(title) }
+}
+
+public struct Titles: View {
+  let titles: [String]
+  var body: some View {
+    FlatList(
+      data: titles,
+      keyExtractor: { item in item },
+      renderItem: { arg in
+        let { item } = arg
+        Row(title: item)
+      },
+    )
+  }
+}
