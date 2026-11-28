@@ -301,9 +301,21 @@ pub(crate) fn rewrite_importers(
             let Some(len) = rest[i + 1..].find(quote) else { break };
             let spec = &rest[i + 1..i + 1 + len];
             let head = rest[..i].trim_end();
-            let is_specifier = ["from", "import(", "require(", "jest.mock(", "jest.requireActual("]
-                .iter()
-                .any(|k| head.ends_with(k));
+            // `jest.requireActual<typeof import('./X')>('./X')`: the call's type argument before it
+            // (whose own string was copied already, so the call is read from what is written).
+            let context = if head.ends_with(">(") { format!("{out}{}", &rest[..i]) } else { String::new() };
+            let typed_require = head.ends_with(">(")
+                && ["jest.requireActual<", "require<"]
+                    .iter()
+                    .filter_map(|k| context.rfind(k))
+                    .max()
+                    .is_some_and(|at| !context[at..].contains([';', '\n']));
+            let is_specifier = typed_require
+                || ["from", "import(", "require(", "jest.mock(", "jest.requireActual("]
+                    .iter()
+                    .any(|k| head.ends_with(k));
+            let required =
+                typed_require || head.ends_with("require(") || head.ends_with("jest.requireActual(");
             out.push_str(&rest[..=i]);
             // A `.bloom` module migrated from 0.x is imported as `X.bloom` already.
             let bare = spec.strip_suffix(".bloom").unwrap_or(spec);
@@ -355,7 +367,7 @@ pub(crate) fn rewrite_importers(
                 // `require('./X').default` (a mock factory taking the real module) reads the default
                 // 2.0 exports by name: `require('./X.bloom').Name`.
                 if let Some(name) = name
-                    && (head.ends_with("require(") || head.ends_with("jest.requireActual("))
+                    && required
                     && let Some(tail) = rest[i + 1 + len + 1..].strip_prefix(").default")
                     && !tail.starts_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$')
                 {
@@ -377,7 +389,31 @@ pub(crate) fn rewrite_importers(
                     continue;
                 }
                 let statement = &head[head.rfind("import").unwrap_or(head.len())..];
-                let mut names = imported_names(statement);
+                let mut names = if required {
+                    // `const { X } = jest.requireActual(…)`: the names it destructures.
+                    let written = if typed_require { context.as_str() } else { head };
+                    let line = &written[written.rfind("const ").unwrap_or(written.len())..];
+                    line.strip_prefix("const ")
+                        .and_then(|l| l.trim_start().strip_prefix('{'))
+                        .and_then(|l| l.split_once('}'))
+                        .filter(|(_, after)| {
+                            after.trim_start().strip_prefix('=').is_some_and(|call| {
+                                let call = call.trim_start();
+                                (call.starts_with("jest.requireActual") || call.starts_with("require"))
+                                    && !call.contains(';')
+                            })
+                        })
+                        .map(|(names, _)| {
+                            names
+                                .split(',')
+                                .map(|part| part.rsplit(':').next().unwrap_or(part).trim().to_string())
+                                .filter(|n| !n.is_empty())
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                } else {
+                    imported_names(statement)
+                };
                 if screens[index] {
                     let local = match name {
                         Some(name) => statement
@@ -868,5 +904,36 @@ mod tests {
                Other: require('./Attachments/Embed.bloom').defaultValue,\n\
              }));\n"
         );
+    }
+
+    #[test]
+    fn a_typed_require_actual_is_a_specifier_and_its_views_are_drawn_as_nodes() {
+        let root = std::env::temp_dir().join(format!("bloomc-typed-require-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("Notes")).unwrap();
+        std::fs::write(
+            root.join("Notes/Card.d.bloom.ts"),
+            "export declare const Card: (props: CardProps) => ComposedView;\n",
+        )
+        .unwrap();
+        let caller = root.join("flows.test.tsx");
+        std::fs::write(
+            &caller,
+            "import { render } from './render';\n\
+             const { t } = useT();\n\
+             it('draws', () => {\n  \
+               const { Card } =\n    \
+                 jest.requireActual<typeof import('./Notes/Card')>('./Notes/Card');\n  \
+               render(<Card note={1} />);\n\
+             });\n",
+        )
+        .unwrap();
+        rewrite_importers(&root, &[(PathBuf::from("Notes/Card.bloom"), None)]).unwrap();
+        let out = std::fs::read_to_string(&caller).unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
+        assert!(
+            out.contains("jest.requireActual<typeof import('./Notes/Card.bloom')>('./Notes/Card.bloom')"),
+            "{out}"
+        );
+        assert!(out.contains("toElement(Card({ note: 1 }))"), "{out}");
     }
 }
