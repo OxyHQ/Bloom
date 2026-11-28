@@ -181,10 +181,84 @@ const COROUTINES: &str = "1.10.2";
 const MEDIA3: &str = "1.9.1";
 
 /// The Kotlin runtime's sources, as files under a source root (`so/oxy/bloom/ui/Views.kt`).
+/// Bloom's colour engine, written once in Bloom (`packages/bloom-theme-engine`) and emitted by this
+/// backend (`scripts/emit-runtime.sh`), with the standard library's `Math` and `Core` it calls: the theme of
+/// a seed on the device, with the code the TypeScript goldens hold (`tests/theme_engine.rs` keeps
+/// this copy fresh).
+pub const THEME_ENGINE: &[(&str, &str)] = &[
+    ("so/oxy/bloom/std/Math.kt", include_str!("../runtime/android/so/oxy/bloom/std/Math.kt")),
+    ("so/oxy/bloom/std/Core.kt", include_str!("../runtime/android/so/oxy/bloom/std/Core.kt")),
+    (
+        "bloom/bloomthemeengine/colorengine/Cam16.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/Cam16.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/ColorPolicy.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorPolicy.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/ColorRoles.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorRoles.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/ColorUtils.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ColorUtils.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/Contrast.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/Contrast.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/DynamicScheme.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/DynamicScheme.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/GenerateRoleColors.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/GenerateRoleColors.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/Hct.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/Hct.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/HctSolver.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/HctSolver.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/ImageSeed.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ImageSeed.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/MathUtils.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/MathUtils.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/PresetLabels.generated.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/PresetLabels.generated.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/SchemeVariants.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/SchemeVariants.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/SeedTheme.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/SeedTheme.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/TonalPalette.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/TonalPalette.kt"),
+    ),
+    (
+        "bloom/bloomthemeengine/colorengine/ViewingConditions.kt",
+        include_str!("../runtime/android/bloom/bloomthemeengine/colorengine/ViewingConditions.kt"),
+    ),
+];
+
 pub fn runtime_sources() -> Vec<crate::Emitted> {
     RUNTIME
         .iter()
         .chain(ENGINE)
+        .chain(THEME_ENGINE)
         .map(|(path, text)| crate::Emitted { path: path.into(), text: (*text).to_string() })
         .collect()
 }
@@ -320,7 +394,7 @@ dependencies {{
             "{header}package {id}\n\nimport android.os.Bundle\nimport androidx.activity.ComponentActivity\nimport androidx.activity.compose.setContent\nimport androidx.activity.enableEdgeToEdge\nimport {app_package}.App\nimport so.oxy.bloom.ui.BloomThemeProvider\n\nclass MainActivity : ComponentActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    enableEdgeToEdge()\n    super.onCreate(savedInstanceState)\n    setContent {{ BloomThemeProvider {{ App() }} }}\n  }}\n}}\n"
         ),
     )?;
-    for (path, text) in RUNTIME.iter().chain(ENGINE) {
+    for (path, text) in RUNTIME.iter().chain(ENGINE).chain(THEME_ENGINE) {
         write(&dir.join("app/src/main/kotlin").join(path), text)?;
     }
     Ok(())

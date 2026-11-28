@@ -12,3 +12,9 @@ section: Added
   was not. Bloom's colour engine written in Bloom (`packages/bloom-theme-engine`, private) is
   their first user: it compiles to TypeScript and to Kotlin and is held to the TypeScript engine's
   goldens on both.
+- The native runtime ships the colour engine (its Kotlin as this backend emits it from
+  `packages/bloom-theme-engine`, with the standard library's `Math` and `Core` it calls;
+  `scripts/emit-runtime.sh` writes it, and `tests/theme_engine.rs` fails while it is stale):
+  `BloomThemeProvider(seed:, secondarySeed:, tertiarySeed:)` resolves a seed's palette on the
+  device with the code the TypeScript goldens hold (`seedPaletteColors`). The runtime's own
+  `replacing` and `sorted(by:)`, which collided with `Core`'s, are gone.
