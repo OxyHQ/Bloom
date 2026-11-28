@@ -1,4 +1,4 @@
-//! Experimental native backends for `.bloom` (ADR 0003, draft).
+//! Native backends for `.bloom` (ADR 0003, accepted: full native, Android and iOS).
 //!
 //! bloomc's main pipeline emits TypeScript that runs on Hermes and draws React Native views.
 //! This crate is a measured prototype of the other road: the same checked program emitted as
@@ -16,7 +16,7 @@
 //! rows); anything else is a diagnostic naming the construct, so coverage is measurable. The
 //! main compiler stack does not depend on it.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
 use bloom_lang::Ast;
@@ -50,6 +50,10 @@ pub struct SourceFile {
     pub ast: Ast,
     /// The checker's type of each expression and binding, by span, as Bloom writes it.
     pub types: HashMap<Span, String>,
+    /// The checked IR: the checker's side tables (each expression's type, what each call,
+    /// field and name resolved to, the definitions), keyed by the parser's expression ids,
+    /// exactly what the TypeScript emitter reads (`bloom_lang::backend`).
+    pub checked: bloom_lang::backend::CheckResult,
 }
 
 /// A directory module: `Sources/Feed/*.bloom` is `Feed`.
@@ -129,6 +133,28 @@ pub struct Decls {
     pub computed: BTreeMap<(String, String), ()>,
     /// Views and their props.
     pub views: BTreeMap<String, Vec<ParamInfo>>,
+    /// The structs, enums and classes the program declares: their members (their own and
+    /// every extension's in the program) are emitted inside the Kotlin class.
+    pub declared: BTreeSet<String>,
+    /// `extension T { … }` / `extension T: P { … }` bodies, by `T`.
+    pub extensions: BTreeMap<String, Vec<TypeBody>>,
+    /// Each type's protocols: its declaration's and its extensions'.
+    pub conforms: BTreeMap<String, Vec<String>>,
+    /// Each protocol's requirements' names, with its inherited protocols' (an implementation
+    /// of one is an `override`).
+    pub protocols: BTreeMap<String, Vec<String>>,
+    /// Protocols' direct parents, resolved into `protocols` once every file is read.
+    pub inherits: BTreeMap<String, Vec<String>>,
+    /// The classes (reference types: their fields are written in place).
+    pub classes: BTreeSet<String>,
+}
+
+/// A written type's name (`Titled` in `extension Post: Titled`).
+pub(crate) fn type_name(t: &TypeExpr) -> Option<String> {
+    match &t.kind {
+        TypeKind::Named { name, .. } => Some(name.name.clone()),
+        _ => None,
+    }
 }
 
 fn param_info(p: &Param, func: bool) -> ParamInfo {
@@ -156,8 +182,10 @@ impl Decls {
                         })
                         .collect();
                     self.structs.insert(s.name.name.clone(), fields);
+                    self.declared.insert(s.name.name.clone());
                     if let Some(surface) = &s.surface {
                         self.members(&s.name.name, surface);
+                        self.conformances(&s.name.name, &surface.conformances);
                     }
                 }
                 ItemKind::Enum(e) => {
@@ -177,6 +205,20 @@ impl Decls {
                         })
                         .collect();
                     self.enums.insert(e.name.name.clone(), EnumInfo { cases });
+                    self.declared.insert(e.name.name.clone());
+                    self.conformances(&e.name.name, &e.conformances);
+                }
+                ItemKind::Class(c) => {
+                    self.declared.insert(c.name.name.clone());
+                    self.classes.insert(c.name.name.clone());
+                    self.members(&c.name.name, &c.body);
+                    self.conformances(&c.name.name, &c.body.conformances);
+                }
+                ItemKind::Protocol(p) => {
+                    let names = p.requirements.iter().map(|r| r.name().name.clone()).collect();
+                    self.protocols.insert(p.name.name.clone(), names);
+                    self.inherits
+                        .insert(p.name.name.clone(), p.inherits.iter().filter_map(type_name).collect());
                 }
                 ItemKind::Fn(f) => {
                     self.funcs.insert(
@@ -188,10 +230,49 @@ impl Decls {
                     let props = v.params.iter().flatten().map(|p| param_info(p, false)).collect();
                     self.views.insert(v.name.name.clone(), props);
                 }
-                ItemKind::Extension(x) => self.members(&x.name.name, &x.body),
+                ItemKind::Extension(x) => {
+                    self.members(&x.name.name, &x.body);
+                    self.conformances(&x.name.name, &x.body.conformances);
+                    self.extensions.entry(x.name.name.clone()).or_default().push(x.body.clone());
+                }
                 _ => {}
             }
         }
+    }
+
+    fn conformances(&mut self, ty: &str, written: &[TypeExpr]) {
+        let list = self.conforms.entry(ty.to_string()).or_default();
+        for name in written.iter().filter_map(type_name) {
+            if !list.contains(&name) {
+                list.push(name);
+            }
+        }
+    }
+
+    /// Folds each protocol's inherited requirements into it.
+    fn resolve(&mut self) {
+        let names: Vec<String> = self.protocols.keys().cloned().collect();
+        for name in names {
+            let mut seen = BTreeSet::new();
+            let mut stack = vec![name.clone()];
+            let mut all = Vec::new();
+            while let Some(p) = stack.pop() {
+                if !seen.insert(p.clone()) {
+                    continue;
+                }
+                all.extend(self.protocols.get(&p).cloned().unwrap_or_default());
+                stack.extend(self.inherits.get(&p).cloned().unwrap_or_default());
+            }
+            self.protocols.insert(name, all);
+        }
+    }
+
+    /// Whether `member` of `ty` implements a requirement of one of its protocols.
+    pub fn is_requirement(&self, ty: &str, member: &str) -> bool {
+        self.conforms.get(ty).into_iter().flatten().any(|p| {
+            self.protocols.get(p).is_some_and(|r| r.iter().any(|n| n == member))
+                || (p == "Identifiable" && member == "id")
+        })
     }
 
     fn members(&mut self, ty: &str, body: &TypeBody) {
@@ -257,7 +338,7 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
                 }
             };
             let shown = path.to_string_lossy().into_owned();
-            let checked = bloom_lang::check(&source, &shown, &options);
+            let checked = bloom_lang::backend::checked(&source, &shown, &options);
             for d in &checked.diagnostics {
                 problems.push(Problem { file: path.clone(), span: d.span, message: d.rendered.clone() });
             }
@@ -266,11 +347,12 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
                 problems.push(Problem { file: path.clone(), span: d.span, message: d.rendered.clone() });
             }
             decls.collect(&ast);
-            let types = checked.types.into_iter().collect();
-            files.push(SourceFile { path, source, ast, types });
+            let types = checked.result.types(&source).into_iter().collect();
+            files.push(SourceFile { path, source, ast, types, checked: checked.result });
         }
         modules.push(Module { name: module_name, files });
     }
+    decls.resolve();
     if problems.is_empty() { Ok(Program { name, modules, decls }) } else { Err(problems) }
 }
 
