@@ -745,7 +745,9 @@ impl Tr<'_> {
                 ("weekday", "short") => ".abbreviated",
                 ("weekday", "narrow") => ".narrow",
                 ("year" | "day" | "hour" | "minute" | "second", "numeric") => "",
-                ("year" | "day" | "hour" | "minute" | "second", "2-digit") => ".twoDigits",
+                // The locale's clock with its day period where it has one (Intl with no `hour12`).
+                ("hour", "2-digit") => ".twoDigits(amPM: .abbreviated)",
+                ("year" | "day" | "minute" | "second", "2-digit") => ".twoDigits",
                 (key, v) => return Err(format!("the date option `{key}: '{v}'`")),
             };
             fields.push((key_static(key), style.to_string()));

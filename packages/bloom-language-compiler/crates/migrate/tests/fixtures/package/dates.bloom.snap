@@ -77,7 +77,7 @@ public struct When: View {
       )
       Text(
         ((try? Date(at, strategy: .iso8601))?.formatted(
-          .dateTime.hour(.twoDigits).minute(.twoDigits),
+          .dateTime.hour(.twoDigits(amPM: .abbreviated)).minute(.twoDigits),
           locale: locale,
         ) ??
           "Invalid Date"),
