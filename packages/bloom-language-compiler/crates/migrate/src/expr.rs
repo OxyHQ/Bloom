@@ -2127,7 +2127,16 @@ impl Tr<'_> {
         let mut prelude = Vec::new();
         let several = params.items.len() > 1;
         for (index, param) in params.items.iter().enumerate() {
-            let ty = param.type_annotation.as_ref().map(|t| format!(": {}", self.ty(&t.type_annotation)));
+            // `(a, b?: T) =>`: Swift's closures take no defaults, so `b` is a `T?` its callers pass
+            // (`crate::typed` writes `none` where a call leaves it out).
+            let ty = param.type_annotation.as_ref().map(|t| {
+                let ty = self.ty(&t.type_annotation);
+                if param.optional && param.initializer.is_none() {
+                    format!(": {}", crate::module::optional_ty(&ty))
+                } else {
+                    format!(": {ty}")
+                }
+            });
             let name = match &param.pattern {
                 BindingPattern::BindingIdentifier(id) => {
                     self.scope.renames.remove(id.name.as_str());

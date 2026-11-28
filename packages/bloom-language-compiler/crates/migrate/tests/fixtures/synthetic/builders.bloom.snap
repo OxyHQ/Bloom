@@ -1,0 +1,28 @@
+// A value built by a local closure (`const push = (…) => { xs.push(…) }`, then its calls) is one
+// member computed in place; the closure's optional parameters are `T?`, and a call that leaves
+// them out passes `none`. A modifier constant used inside another is inlined there too.
+
+public struct Stats: View {
+  let likes: Float
+  let boosts: Float
+  let onLikesPress: () -> Unit
+  let entries = {
+    var entries: [{ key: String, count: Float, onPress: (() -> Unit)? }] = []
+    let push = { key: String, count: Float, onPress: (() -> Unit)? in
+      if count < 0 { return }
+      entries = [..entries, { key: key, count: count, onPress: onPress }]
+    }
+    push("likes", likes, onLikesPress)
+    push("boosts", boosts, none)
+    return entries
+  }()
+
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    VStack {
+      for e in entries {
+        Text(e.key).padding(.bottom, .md).padding(.horizontal, .md).padding(.top, .md)
+      }
+    }
+  }
+}

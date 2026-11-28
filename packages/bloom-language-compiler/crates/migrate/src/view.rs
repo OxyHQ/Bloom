@@ -2058,8 +2058,30 @@ impl Tr<'_> {
         }
         let text = |s: &Statement| &self.src[s.span().start as usize..s.span().end as usize];
         let mut last = None;
+        // Local closures that build it (`const push = (…) => { x.push(…) }`), and their calls.
+        let mut writers: Vec<&str> = Vec::new();
         for (j, statement) in statements.iter().enumerate().skip(i + 1) {
             let t = text(statement);
+            if let Statement::VariableDeclaration(w) = statement
+                && w.kind == VariableDeclarationKind::Const
+                && let [wd] = w.declarations.as_slice()
+                && let BindingPattern::BindingIdentifier(wid) = &wd.id
+                && matches!(
+                    wd.init.as_ref().map(|e| e.without_parentheses()),
+                    Some(Expression::ArrowFunctionExpression(_))
+                )
+                && writes_name(t, name)
+            {
+                writers.push(wid.name.as_str());
+                last = Some(j);
+                continue;
+            }
+            let calls_writer = matches!(statement, Statement::ExpressionStatement(_))
+                && writers.iter().any(|w| t.strip_prefix(w).is_some_and(|r| r.starts_with('(')));
+            if calls_writer {
+                last = Some(j);
+                continue;
+            }
             if !writes_name(t, name) {
                 break;
             }
