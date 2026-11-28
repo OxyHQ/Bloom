@@ -580,9 +580,9 @@ impl Lexer<'_> {
             Diagnostic::error(
                 "B0105",
                 Span::new(start as u32, self.pos as u32),
-                "this integer does not fit in an Int",
+                "this integer is not exact on the JS backend",
             )
-            .label("an Int is a 53-bit safe integer")
+            .label("an Int is 64-bit; on the JS backend it is exact within ±(2^53 − 1)")
             .help("use a Float (`2e60`) or a smaller number")
             .spec("41-the-types"),
         );

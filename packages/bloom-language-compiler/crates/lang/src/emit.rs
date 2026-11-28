@@ -215,6 +215,8 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// The `Int` arithmetic being emitted inside its dev-build check (`$int(…)`).
+    int_checked: Option<ExprId>,
     /// Optional-chain links emitted as a guard (`(t == null ? undefined : …)`), not as JS's own
     /// `?.`: a member read on one has to carry on with `?.`, as JS's chain would have.
     guarded: HashSet<ExprId>,
@@ -282,6 +284,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         names,
         enumerated: false,
         range_index: false,
+        int_checked: None,
         guarded: HashSet::default(),
         memo_group: None,
         hook_fn: None,
@@ -463,6 +466,9 @@ fn helper_text(name: &str) -> &'static str {
     match name {
         "at" => {
             "function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {\n  const out = items.slice();\n  out[at] = item;\n  return out;\n}"
+        }
+        "int" => {
+            "function $int(value: number): number {\n  if (Number.isSafeInteger(value)) return value;\n  throw new RangeError(`Int overflow: ${value} is outside ±(2^53 − 1), where an Int is exact on the JS backend`);\n}"
         }
         "get" => {
             "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
@@ -1653,12 +1659,28 @@ impl<'a> Emitter<'a> {
             self.push_stmt(line);
             value = Frag::of(temp);
         }
+        // `n += k` on an `Int`: a dev build traps a result outside ±(2^53 − 1), as `n + k` does.
+        let int_check = self.options.dev
+            && op.is_some()
+            && matches!(self.ck.types.get(&a.value.id), Some(Ty::Int))
+            && match (&a.target.kind, &res) {
+                (
+                    ExprKind::Name(_),
+                    AssignRes::Var { local, .. }
+                    | AssignRes::State { local, .. }
+                    | AssignRes::Bound { local },
+                ) => matches!(self.ck.locals[*local].ty, Ty::Int),
+                _ => matches!(self.ck.types.get(&a.target.id), Some(Ty::Int)),
+            };
+        if int_check {
+            self.helpers.insert("int");
+        }
         let combine = |current: Frag, value: Frag| -> Frag {
             match op {
                 Some(op) => {
                     let mut out = current;
                     out.s(&format!(" {op} ")).f(value.wrap("(", ")"));
-                    out
+                    if int_check { out.wrap("$int(", ")") } else { out }
                 }
                 None => value,
             }
@@ -2726,6 +2748,20 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // An `Int` is 64-bit, exact on the JS backend within ±(2^53 − 1): a dev build traps a
+        // `+`, `-` or `*` whose result leaves that range, as Swift traps an overflow.
+        if self.options.dev
+            && matches!(op, BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul)
+            && self.int_checked != Some(expr.id)
+            && matches!(self.ck.types.get(&expr.id), Some(Ty::Int))
+            && !self.ck.date_arithmetic.contains(&expr.id)
+        {
+            let outer = self.int_checked.replace(expr.id);
+            let inner = self.binary(op, lhs, rhs, expr);
+            self.int_checked = outer;
+            self.helpers.insert("int");
+            return inner.wrap("$int(", ")");
+        }
         // `0...3` as a `ClosedRange`: its bounds.
         if op == BinaryOp::Closed && matches!(self.ck.calls.get(&expr.id), Some(CallRes::Struct(_))) {
             let mut out = Frag::at(expr.span, "{ lowerBound: ");
