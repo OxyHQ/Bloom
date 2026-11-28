@@ -1,0 +1,42 @@
+// #1057's two regressions (lang-mention-10's iife-regressions). A sibling's inferred type is never
+// an expected type: the list's first record does not type the `map` closure's (explore/trending).
+// A record a callback gives takes an expected TS type with its extra fields, as TS checks no excess
+// property on a callback's result (Feed/PostItem's `collabAvatars` through `useMemo` and `map`).
+import { useMemo } from "react"
+import { type AvatarItem } from "@/corpus"
+
+struct Section {
+  let title: String
+  let data: [String]
+}
+
+type Row = Foreign<"{ kind: string; title: string } | { kind: string; title: string; item: string; index: number }">
+
+func rows(_ sections: [Section]) -> [Row] {
+  let all = sections.flatMap { section in
+    [
+      { kind: "header", title: section.title },
+      ..section.data.enumerated().map { (index, item) in ({ kind: "item", title: section.title, item: item, index: index }) },
+    ]
+  }
+  return all
+}
+
+func heading(_ section: Section, _ wide: Bool) -> Int {
+  let first = wide ? { title: section.title } : section.data.map { d in ({ title: d, more: true }) }.first!
+  return first.title.count
+}
+
+struct Member {
+  let id: String
+  let avatar: String?
+  let color: String
+  let username: String
+}
+
+func useCollab(_ members: [Member]) -> Int {
+  let collabAvatars: [AvatarItem] = useMemo({
+    members.count > 1 ? members.map { m in ({ id: m.id, uri: m.avatar, color: m.color, username: m.username }) } : []
+  }, [members])
+  return collabAvatars.count
+}
