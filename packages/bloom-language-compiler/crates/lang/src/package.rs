@@ -310,6 +310,10 @@ pub struct Target {
     pub dependencies: Vec<(String, Span)>,
     /// `path:`: the directory, relative to the package root, when not the default.
     pub path: Option<String>,
+    /// `.module("FeedIsland", native: .island)`: the module is also compiled to the platform's
+    /// own UI (Kotlin + Compose on Android, ADR 0003) and hosted inside the React Native app as
+    /// a native island (`bloom build android`'s `:bloom-islands` library).
+    pub island: bool,
     pub span: Span,
     /// Where a new dependency goes (as [`Manifest::insert_dependency_at`]).
     pub insert_dependency_at: InsertAt,
@@ -1182,6 +1186,7 @@ impl Eval<'_> {
         let labels: &[&str] = match kind.as_str() {
             "bindings" => &["name", "npm", "path"],
             "native" => &["name", "dependencies", "path", "kotlin", "swift"],
+            "module" => &["name", "dependencies", "path", "native"],
             _ => &["name", "dependencies", "path"],
         };
         let mut args = self.labeled(value, &what, Some("name"), labels)?;
@@ -1230,9 +1235,13 @@ impl Eval<'_> {
             }
         }
         let path = self.take(&mut args, "path").and_then(|v| self.string(v, "`path:`")).map(|(s, _)| s);
+        // `native: .island`: the only native compilation a module takes today.
+        let island = self
+            .take(&mut args, "native")
+            .is_some_and(|v| self.member(&v, "native compilation of a module", &["island"]).is_some());
         let (name, name_span) = name?;
         self.module_name(&name, name_span, "target");
-        Some(Target { kind, name, name_span, dependencies, path, span, insert_dependency_at: insert })
+        Some(Target { kind, name, name_span, dependencies, path, island, span, insert_dependency_at: insert })
     }
 
     /// Unique names, known dependencies, nothing depends on an app or tests, and no cycles.
@@ -1590,6 +1599,19 @@ let package = Package(
         assert_eq!(levels[1], ["Posts"]);
         assert_eq!(levels[2], ["Feed", "PostsTests"]);
         assert_eq!(levels[3], ["Mention"]);
+    }
+
+    #[test]
+    fn a_module_marked_native_island_is_an_island() {
+        let source = MENTION.replace(r#".module("Settings"),"#, r#".module("Settings", native: .island),"#);
+        let manifest = parse(&source, "Package.bloom").unwrap();
+        let islands: Vec<&str> =
+            manifest.targets.iter().filter(|t| t.island).map(|t| t.name.as_str()).collect();
+        assert_eq!(islands, ["Settings"]);
+        let bad = MENTION.replace(r#".module("Settings"),"#, r#".module("Settings", native: .compose),"#);
+        assert_eq!(errors(&bad), ["B0811: `.compose` is not a native compilation of a module"]);
+        let tests = MENTION.replace(r#".tests("PostsTests","#, r#".tests("PostsTests", native: .island,"#);
+        assert_eq!(errors(&tests), ["B0811: `.tests` has no argument `native:`"]);
     }
 
     #[test]
