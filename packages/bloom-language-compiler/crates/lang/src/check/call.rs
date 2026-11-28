@@ -687,6 +687,10 @@ impl Checker<'_> {
             // Swift's `s.contains(regex)` and `s.split(separator: regex)`: the standard
             // library's `Regex` overloads of the string's own methods.
             Ty::Str if member.name == "contains" && self.regex_arg(call) => false,
+            // `xs.min(by:)` / `xs.max(by:)`: the standard library's; `xs.min()` is the list's own.
+            Ty::List(_) if matches!(member.name.as_str(), "min" | "max") => {
+                call.args.is_empty() && call.trailing.is_none()
+            }
             Ty::Str
                 if member.name == "split"
                     && call.args.iter().any(|a| a.label.as_ref().is_some_and(|l| l.name == "separator")) =>
@@ -3386,6 +3390,37 @@ impl Checker<'_> {
             };
             let _ = self.unify(&ret, &target);
         }
+        // `xs.sorted()`, `xs.min()`, `xs.max()` (Swift's, for `Comparable` elements): numbers,
+        // strings and dates, in their natural order.
+        let natural = recv_kind == Recv::List
+            && matches!(method, "sorted" | "min" | "max")
+            && call.args.is_empty()
+            && call.trailing.is_none();
+        if natural {
+            let element = match self.resolve(recv) {
+                Ty::List(item) => self.resolve(&item),
+                _ => Ty::Unknown,
+            };
+            if !matches!(
+                element,
+                Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Date | Ty::Unknown | Ty::Var(_)
+            ) {
+                let shown = self.show(&element);
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        name.span,
+                        format!("`{}()` compares the elements, and {shown} is not `Comparable`", name.name),
+                    )
+                    .label("numbers, strings and dates compare")
+                    .help(format!("pass the order: `.{}(by: {{ $0.x < $1.x }})`", name.name))
+                    .spec("12-standard-library-surface-draft"),
+                );
+            }
+            self.out.natural_orders.insert(expr.id);
+            self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
+            return if method == "sorted" { ret } else { Ty::Option(Box::new(element)) };
+        }
         // `xs.dropFirst()` / `xs.dropLast()`: one element, Swift's default.
         let params = if recv_kind == Recv::List
             && matches!(method, "dropFirst" | "dropLast")
@@ -3475,6 +3510,8 @@ impl Checker<'_> {
                     "findIndex" => (vec![f(vec![t.clone()], Ty::Bool)], opt(Ty::Int)),
                     "contains" => (vec![t.clone()], Ty::Bool),
                     "sorted" => (vec![f(vec![t.clone(), t.clone()], Ty::Bool)], list(t)),
+                    // `xs.min()` / `xs.max()`: a `Comparable` element's least or greatest.
+                    "min" | "max" => (vec![], opt(t.clone())),
                     "reversed" => (vec![], list(t)),
                     "prefix" | "suffix" | "dropFirst" | "dropLast" => (vec![Ty::Int], list(t)),
                     "appending" => (vec![t.clone()], list(t)),
@@ -3569,6 +3606,8 @@ pub fn method_names(ty: &Ty) -> Vec<&'static str> {
             "suffix",
             "dropFirst",
             "dropLast",
+            "min",
+            "max",
             "appending",
             "inserting",
             "removing",

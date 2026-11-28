@@ -548,6 +548,15 @@ fn helper_text(name: &str) -> &'static str {
         "cancellation" => {
             "function $cancellation(signal: AbortSignal | undefined): Promise<void> {\n  return new Promise((resolve) => {\n    if (signal === undefined || signal.aborted) resolve();\n    else signal.addEventListener(\"abort\", () => resolve(), { once: true });\n  });\n}"
         }
+        "sortedNatural" => {
+            "function $sortedNatural<T>(items: readonly T[]): readonly T[] {\n  return [...items].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));\n}"
+        }
+        "minOf" => {
+            "function $minOf<T>(items: readonly T[]): T | undefined {\n  let out: T | undefined;\n  for (const item of items) if (out === undefined || item < out) out = item;\n  return out;\n}"
+        }
+        "maxOf" => {
+            "function $maxOf<T>(items: readonly T[]): T | undefined {\n  let out: T | undefined;\n  for (const item of items) if (out === undefined || item > out) out = item;\n  return out;\n}"
+        }
         "dropLast" => {
             "function $dropLast<T>(items: readonly T[], n: number): readonly T[] {\n  return items.slice(0, Math.max(0, items.length - Math.max(0, n)));\n}"
         }
@@ -4454,11 +4463,14 @@ impl<'a> Emitter<'a> {
                 call_on(object, "reduce", vec![f, initial])
             }
             (Recv::List, "contains") => call_on(object, "includes", args),
+            (Recv::List, "sorted") if args.is_empty() => helper(self, "sortedNatural", vec![object]),
             (Recv::List, "sorted") => {
                 let mut values = vec![object];
                 values.extend(args);
                 helper(self, "sorted", values)
             }
+            (Recv::List, "min") => helper(self, "minOf", vec![object]),
+            (Recv::List, "max") => helper(self, "maxOf", vec![object]),
             (Recv::List, "reversed") => object.wrap("[...", "].reverse()"),
             (Recv::List, "prefix") => {
                 let mut values = vec![Frag::of("0")];

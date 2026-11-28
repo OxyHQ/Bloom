@@ -398,6 +398,8 @@ pub struct CheckResult {
     /// `x as? JSError` (or `HTTPError`) on a TS value: the cast's argument is that value, which
     /// TS takes as an `Error` there (`x as unknown as Error`).
     pub foreign_casts: HashSet<ExprId>,
+    /// `xs.sorted()`, `xs.min()`, `xs.max()` with no order given: the elements' natural order.
+    pub natural_orders: HashSet<ExprId>,
     /// `.modifier(X(…))` with `X` a `struct X: ViewModifier` (2.0): the `.modifier` call's id,
     /// and whether `X` keeps state (hooks, `@State`, effects), so its function is called once
     /// per render at the top of the view applying it, where a stateless one is called in place.

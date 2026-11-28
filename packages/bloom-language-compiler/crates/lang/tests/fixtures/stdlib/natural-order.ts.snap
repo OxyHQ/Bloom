@@ -1,0 +1,40 @@
+import { Array$max } from "../../.bloom/std/Bloom/Core.bloom";
+import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
+function $maxOf<T>(items: readonly T[]): T | undefined {
+  let out: T | undefined;
+  for (const item of items) if (out === undefined || item > out) out = item;
+  return out;
+}
+function $minOf<T>(items: readonly T[]): T | undefined {
+  let out: T | undefined;
+  for (const item of items) if (out === undefined || item < out) out = item;
+  return out;
+}
+function $sortedNatural<T>(items: readonly T[]): readonly T[] {
+  return [...items].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+export function ascendingInts(xs: readonly number[]): readonly number[] {
+return $sortedNatural(xs);
+}
+
+export function ascendingNames(xs: readonly string[]): readonly string[] {
+return $sortedNatural(xs);
+}
+
+export function leastInt(xs: readonly number[]): number | undefined {
+return $minOf(xs);
+}
+
+export function greatestFloat(xs: readonly number[]): number | undefined {
+return $maxOf(xs);
+}
+
+export function latest(xs: readonly Date[]): Date | undefined {
+return $maxOf(xs);
+}
+
+export function longestName(xs: readonly string[]): string | undefined {
+return Array$max(xs, ($0: string, $1: string) => $0.length < $1.length);
+}
+

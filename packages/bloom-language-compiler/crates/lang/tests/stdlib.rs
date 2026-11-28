@@ -995,3 +995,20 @@ fn lists_and_strings_slice_as_swift_does() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `sorted()`, `min()`, `max()` for `Comparable` elements. The runtime test is
+/// `test/natural-order.test.ts`.
+const NATURAL_ORDER: &str = include_str!("../../../test/packages/format-app/Sources/App/NaturalOrder.bloom");
+
+#[test]
+fn comparable_elements_order_naturally() {
+    let root = package("natural-order", &[("Sources/Model/NaturalOrder.bloom", NATURAL_ORDER)]);
+    let path = root.join("Sources/Model/NaturalOrder.bloom");
+    let out = compile(NATURAL_ORDER, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/natural-order.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
