@@ -32,6 +32,14 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((start, end + 1, "formatted(fractionDigits: ".to_string()))
             }
+            // `n.toLocaleString()`: JS's default is 0 to 3 fraction digits (FormatStyle, #1065); an
+            // `Int` has none.
+            ("B0209", "toLocaleString")
+                if matches!(receiver, Some("Int" | "Float")) && source[end..].starts_with("()") =>
+            {
+                let digits = if receiver == Some("Float") { "fractionDigits: 0...3" } else { "" };
+                Some((start, end + 2, format!("formatted({digits})")))
+            }
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
             // `m.values()`, `m.keys()`, `m.entries()`: a Bloom `Map`/`Set`'s lists.
             ("B0209", "values" | "keys" | "entries") if collection && source[end..].starts_with("()") => {

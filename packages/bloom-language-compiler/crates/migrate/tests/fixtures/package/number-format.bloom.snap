@@ -1,0 +1,18 @@
+// JS's locale number formatting is FormatStyle (#1065): `toLocaleString()` is 0 to 3 fraction
+// digits, an `Intl.NumberFormat` is a closure that formats (and its `format(x)` a call of it), and
+// one formatted in place is `x.formatted(…)`.
+
+public struct Totals: View {
+  let total: Float
+  let price: Float
+  let locale: String
+  let number = { value: Float in value.formatted(fractionDigits: 0...1, locale: locale) }
+
+  var body: some View {
+    VStack {
+      Text(total.formatted(fractionDigits: 0...3))
+      Text(number(total / 7))
+      Text(price.formatted(currency: "USD", locale: locale))
+    }
+  }
+}

@@ -437,6 +437,8 @@ impl Tr<'_> {
                         .collect();
                     format!("{}({})", id.name, args.join(", "))
                 }
+                // `new Intl.NumberFormat(l, o)`: a closure that formats a number (`crate::intl`).
+                Expression::StaticMemberExpression(_) if let Some(text) = self.intl_formatter(n) => text,
                 _ => self.refuse("new", format!("`new {}`", self.slice(n.callee.span())), n.span),
             },
             Expression::SequenceExpression(s) => self.refuse("operator:comma", "a comma expression", s.span),
@@ -1011,6 +1013,22 @@ impl Tr<'_> {
     }
 
     pub fn call(&mut self, call: &CallExpression) -> String {
+        // `new Intl.NumberFormat(…).format(x)`: `x.formatted(…)`.
+        if let Some(text) = self.intl_format_call(call) {
+            return text;
+        }
+        // `number.format(x)` of a `const number = new Intl.NumberFormat(…)`: a call of its closure.
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && m.property.name == "format"
+            && let Expression::Identifier(id) = &m.object
+            && let [arg] = call.arguments.as_slice()
+            && let Some(value) = arg.as_expression()
+            && self.src.contains(&format!("{} = new Intl.NumberFormat(", id.name))
+        {
+            let f = self.expr(&m.object);
+            let v = self.expr(value);
+            return format!("{f}({v})");
+        }
         let ts = self.ts_callee(&call.callee);
         let saved = std::mem::replace(&mut self.ts_args, ts);
         let text = self.call_inner(call);
