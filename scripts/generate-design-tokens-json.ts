@@ -14,6 +14,11 @@
  *   bun run generate:tokens-json
  *
  * Wired as a `prebuild` step so `bun run build` always regenerates it.
+ *
+ * The native theme's data comes from the same source, so it is written with the JSON: the Swift
+ * `BloomTheme` package's `Generated/` (presets, their resolved palettes, canonical tokens, roles,
+ * gradients; `scripts/generate-swift-theme.ts`, also runnable alone with `--check`). CI's
+ * "Generated sources are committed" step then fails a stale native copy as it fails a stale JSON.
  */
 
 import { writeFileSync } from 'node:fs';
@@ -32,3 +37,6 @@ writeFileSync(OUT_PATH, json);
 console.log(
   `[generate-design-tokens-json] wrote ${relative(REPO_ROOT, OUT_PATH)} (${json.length} bytes)`,
 );
+
+// The Swift theme data, from the same theme source (see the header).
+await import('./generate-swift-theme');
