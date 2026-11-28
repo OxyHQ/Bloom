@@ -829,8 +829,9 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
   `try?`, `try!`; one `try` or `try!` covers the whole expression to its right: `try g(a) + h(b)`,
-  `try ok() ? a() : b()`), or it is B0223. A `try?` covers its operand only, so `try? f() ?? x` is
-  `(try? f()) ?? x`. A plain
+  `try ok() ? a() : b()`), or it is B0223. A `try?` does too (Swift's reading): `try? f() ?? x` is
+  `try? (f() ?? x)`, so of an `f()` that is never `none` the `??` never falls back, which is
+  B0225 (a warning) with `(try? f()) ?? x` as its fix. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
@@ -1424,7 +1425,8 @@ help: did you mean `"md"`?
 Code ranges: B01xx syntax, B02xx types, B03xx patterns, B04xx state and effects, B05xx UI
 (nodes, modifiers, tokens), B06xx interop, B09xx style warnings. Assigned so far include B0201
 (mismatched type, with the annotation to write), B0203 (nested optional), B0210 (structural
-`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0231 (a
+`==`), B0223/B0224 (a throwing call without `try` / a `try` nothing catches), B0225 (a warning: a `??`
+the `try?` before it covers, which never falls back), B0231 (a
 requirement of a conformance not met), B0232 (a type argument or `any P` value that does not
 conform), B0220 (`?` inside a condition), B0301/B0302 (non-exhaustive / unreachable `match`), B0402
 (captured `var`), B0403/B0404 (an immutable place / a `private(set)` field written outside its class), B0410 (state read after write), B0411 (a `@ref` used while the view draws), B0420 (hook not a view member), B0430 (async

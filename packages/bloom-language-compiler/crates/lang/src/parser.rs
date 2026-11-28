@@ -2677,6 +2677,16 @@ impl<'s, 'i> Parser<'s, 'i> {
 
     fn expr(&mut self, ctx: Ctx) -> Expr {
         match self.tok() {
+            // `try g(a) + h(b)`, `try? f() ?? x` (Swift's): a `try` that starts an expression
+            // covers all of it to its right, the conditional too. One inside an operand
+            // (`a + try f()`) covers that operand (`unary`).
+            Tok::Ident(word) if word == "try" && self.try_ahead() => {
+                let start = self.bump();
+                let kind = self.try_kind();
+                let operand = self.expr(ctx);
+                let span = start.to(operand.span);
+                return self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span);
+            }
             Tok::Kw(Kw::If) => {
                 let expr = self.if_expr();
                 return self.postfix_after(expr, ctx);
@@ -2801,6 +2811,19 @@ impl<'s, 'i> Parser<'s, 'i> {
         lhs
     }
 
+    /// After `try`: `?` (`try?`), `!` (`try!`) against it, or a plain `try`.
+    fn try_kind(&mut self) -> TryKind {
+        if self.at(P::Question) && !self.token().space_before {
+            self.bump();
+            TryKind::Optional
+        } else if self.at(P::Bang) && !self.token().space_before {
+            self.bump();
+            TryKind::Force
+        } else {
+            TryKind::Plain
+        }
+    }
+
     fn unary(&mut self, ctx: Ctx) -> Expr {
         let start = self.span();
         match self.tok() {
@@ -2819,15 +2842,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             // `try f()`, `try? f()`, `try! f()` (2.0).
             Tok::Ident(word) if word == "try" && self.try_ahead() => {
                 self.bump();
-                let kind = if self.at(P::Question) && !self.token().space_before {
-                    self.bump();
-                    TryKind::Optional
-                } else if self.at(P::Bang) && !self.token().space_before {
-                    self.bump();
-                    TryKind::Force
-                } else {
-                    TryKind::Plain
-                };
+                let kind = self.try_kind();
                 let operand = self.unary(ctx);
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Throwing(kind, Box::new(operand)), span)

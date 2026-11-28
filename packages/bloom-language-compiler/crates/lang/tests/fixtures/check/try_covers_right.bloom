@@ -1,5 +1,6 @@
-// A `try` covers what is to its right, never what is to its left; a `try?` covers its operand only.
+// A `try` covers what is to its right, never what is to its left. `try? f() ?? x` covers the `??`
+// too, so of an `f()` that is never `none` it warns (B0225) and offers `(try? f()) ?? x`.
 func g(_ a: Int) throws -> Int { a }
 func h(_ b: Int) throws -> Int { b }
 public func bad(_ a: Int) throws -> Int { g(a) + (try h(a)) }
-public func bad2(_ a: Int) -> Int { (try? g(a) ?? h(a)) ?? 0 }
+public func never(_ a: Int) -> Int? { try? g(a) ?? h(a) }
