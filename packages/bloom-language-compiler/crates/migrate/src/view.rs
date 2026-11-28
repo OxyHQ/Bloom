@@ -1161,6 +1161,16 @@ impl Tr<'_> {
                     None => format!("@state {name} = {init}"),
                 }
             }
+            // `const id = useId()`: the view's identity, a `UniqueID` state (one per view, kept
+            // across renders, never set), read as its string.
+            "useId" if call.arguments.is_empty() => {
+                let BindingPattern::BindingIdentifier(id) = &d.id else {
+                    return self.refuse("react:useId", "a destructured `useId`", d.span);
+                };
+                let name = self.bind(&id.name, id.span);
+                self.scope.renames.insert(id.name.to_string(), format!("{name}.string"));
+                format!("@state {name} = UniqueID()")
+            }
             "useRef" => {
                 let BindingPattern::BindingIdentifier(id) = &d.id else {
                     return self.refuse("react:useRef", "a destructured `useRef`", d.span);
