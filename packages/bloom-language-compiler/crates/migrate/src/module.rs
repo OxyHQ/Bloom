@@ -67,9 +67,6 @@ pub struct Scope {
     pub decl: HashMap<String, String>,
     /// `useRef` names: `r.current` is the `@ref r`.
     pub refs: HashSet<String>,
-    /// Names bound from an Axios-shaped cast (`error as { response?: { data?: … } }`): an
-    /// `HTTPError?`, whose `response.data` fields are read from its decoded body (`Tr::http_error`).
-    pub http_errors: HashSet<String>,
     /// Names bound to a `new Map`/`new Set`: their in-place changes reassign them.
     pub collections: HashMap<String, String>,
     /// Member functions of the view being translated.
@@ -227,9 +224,6 @@ pub struct Tr<'s> {
     /// `actions(…)`/`menu(…)` constants written as `MenuActions`/`MenuContent` structs: a
     /// call of one takes labelled arguments, as a view's does.
     pub menu_structs: HashSet<String>,
-    /// The fields TS read off an Axios error's `response.data`, with their Bloom types: the
-    /// module's `ServerErrorBody` struct, which `HTTPResponse.decode` reads (`Tr::http_error`).
-    pub server_error_fields: Vec<(String, String)>,
     /// Translating a `MenuActions`/`MenuContent` struct (`Tr::menu_struct`).
     pub in_menu: bool,
     /// Each menu struct's stored properties, in order: `F(options)` of a whole value passes each.
@@ -441,7 +435,6 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         hoisted: Vec::new(),
         hoisted_names: HashSet::new(),
         menu_structs: HashSet::new(),
-        server_error_fields: Vec::new(),
         in_menu: false,
         menu_fields: HashMap::new(),
         pattern_defaults: Vec::new(),
@@ -560,15 +553,6 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         items.push(comments + &item);
     }
     let trailing = pending + &tr.comments.rest();
-    if !tr.server_error_fields.is_empty() {
-        let fields: Vec<String> =
-            tr.server_error_fields.iter().map(|(k, t)| format!("var {k}: {t} = none")).collect();
-        // Above every item: bloomc derives `Codable` for a struct declared before its `T.self`.
-        items.insert(0, format!(
-            "/// The server's error JSON, as TS read it off an Axios error's `response.data`.\nstruct ServerErrorBody: Codable {{\n{}\n}}",
-            fields.join("\n")
-        ));
-    }
     let items = hoist_lets(items);
 
     // Sections one empty line apart: the header, the imports, each item, what trails.

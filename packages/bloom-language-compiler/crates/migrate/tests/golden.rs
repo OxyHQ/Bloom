@@ -1,4 +1,4 @@
-//! Golden tests: every `fixtures/{synthetic,mention,package}/*.tsx` migrates to its
+//! Golden tests: every `fixtures/{synthetic,mention}/*.tsx` migrates to its
 //! `.bloom.snap` (the `.bloom` it compiles to, or the refusal and its
 //! reasons). The `mention` fixtures are copies of Mention modules, with stub
 //! declarations for what they import. `BLOOM_BLESS=1 cargo test -p bloom_migrate`
@@ -11,22 +11,6 @@ use bloom_migrate::{Status, migrate};
 
 fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
-}
-
-/// A fixture of `package/` is a file of an app package (its `Package.bloom`): it sees the
-/// standard library, in the migration mode, as an app's file does.
-fn options_for(dir: &str) -> bloom_lang::Options {
-    if dir == "package" {
-        bloom_lang::Options { package: Some(fixtures().join("package")), allow_ts_imports: true, ..options() }
-    } else {
-        options()
-    }
-}
-
-/// The name a fixture is migrated as: a package's file by its absolute path, which the package
-/// resolves its target from.
-fn file_name(dir: &str, name: &str) -> String {
-    if dir == "package" { fixtures().join(name).to_string_lossy().into_owned() } else { name.to_string() }
 }
 
 fn options() -> bloom_lang::Options {
@@ -63,7 +47,7 @@ fn golden() {
     let bless = std::env::var_os("BLOOM_BLESS").is_some();
     let mut failures = Vec::new();
     let mut count = 0;
-    for dir in ["synthetic", "mention", "package"] {
+    for dir in ["synthetic", "mention"] {
         let mut files: Vec<PathBuf> = std::fs::read_dir(fixtures().join(dir))
             .expect("the fixtures")
             .map(|e| e.expect("an entry").path())
@@ -74,7 +58,7 @@ fn golden() {
             count += 1;
             let source = std::fs::read_to_string(&path).expect("the fixture");
             let name = format!("{dir}/{}", path.file_name().expect("a name").to_string_lossy());
-            let actual = render(&migrate(&source, &file_name(dir, &name), &options_for(dir)));
+            let actual = render(&migrate(&source, &name, &options()));
             let snap = path.with_extension("bloom.snap");
             if bless {
                 std::fs::write(&snap, &actual).expect("write the snapshot");
@@ -93,7 +77,7 @@ fn golden() {
 /// A migrated fixture's `.bloom` is formatted: `bloomc fmt` leaves it alone.
 #[test]
 fn output_is_formatted() {
-    for dir in ["synthetic", "mention", "package"] {
+    for dir in ["synthetic", "mention"] {
         for entry in std::fs::read_dir(fixtures().join(dir)).expect("the fixtures") {
             let path = entry.expect("an entry").path();
             if path.extension().is_none_or(|e| e != "tsx") {
@@ -101,7 +85,7 @@ fn output_is_formatted() {
             }
             let source = std::fs::read_to_string(&path).expect("the fixture");
             let name = format!("{dir}/{}", path.file_name().expect("a name").to_string_lossy());
-            let m = migrate(&source, &file_name(dir, &name), &options_for(dir));
+            let m = migrate(&source, &name, &options());
             if let (Status::Migrated | Status::NeedsReview, Some(bloom)) = (&m.status, &m.bloom) {
                 let again = bloom_fmt::format(bloom, "x.bloom").expect("it parses");
                 assert_eq!(&again, bloom, "{name} is not formatted");
