@@ -10,3 +10,8 @@ export declare const stats: { columns: { label: string; value: number }[] };
 export type DraftItem =
   | { origin: 'server'; id: string; post: { id: string } }
   | { origin: 'device'; id: string; draft: { id: string } };
+export declare function Rows(props: {
+  count: number;
+  renderItem: (index: number) => React.ReactElement | null;
+  header?: React.ReactNode;
+}): React.JSX.Element;

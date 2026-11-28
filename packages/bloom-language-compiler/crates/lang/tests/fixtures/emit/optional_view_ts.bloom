@@ -1,0 +1,20 @@
+// A `View?` fits where TS takes a React element that may be nothing: a TS render callback's
+// `ReactElement | null` result (`none` is `null`), a `ReactNode` prop, and a VirtualList's row.
+import { Rows } from "@/store"
+
+let ITEMS = ["tabs", "posts"]
+
+public struct Profile: View {
+  var tabs: View? = none
+  var content: View? = none
+
+  var body: some View {
+    VStack {
+      Rows(count: 2, renderItem: { index in index == 0 ? tabs : content }, header: content)
+      VirtualList(ITEMS, { arg in
+        let { item } = arg
+        if item == "tabs" { tabs } else { content }
+      })
+    }
+  }
+}

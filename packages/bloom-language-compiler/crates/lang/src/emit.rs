@@ -2515,7 +2515,7 @@ impl<'a> Emitter<'a> {
                 Ty::Fn(f) => {
                     if matches!(f.ret, Ty::Option(_)) {
                         Frag::of(format!(
-                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? undefined : toElement($v); }})",
+                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? null : toElement($v); }})",
                             out.text
                         ))
                     } else {
@@ -2525,17 +2525,18 @@ impl<'a> Emitter<'a> {
                         ))
                     }
                 }
-                // `meta: View?`: `none` stays `undefined` (`toElement(undefined)` is an element
-                // drawing nothing, which TS reads as present).
+                // `meta: View?`: `none` is `null`, never `toElement(undefined)` (an element drawing
+                // nothing, which TS reads as present): a `ReactNode` takes it, and so does a
+                // render callback's `ReactElement | null`.
                 Ty::Option(_) if is_path_text(&out.text) => {
-                    Frag::of(format!("({0} == null ? undefined : toElement({0}))", out.text))
+                    Frag::of(format!("({0} == null ? null : toElement({0}))", out.text))
                 }
                 Ty::Option(_) => {
                     let name = self.temp();
                     let mut stmt = Frag::of(format!("const {name} = "));
                     stmt.f(out).s(";");
                     self.push_stmt(stmt);
-                    Frag::of(format!("({name} == null ? undefined : toElement({name}))"))
+                    Frag::of(format!("({name} == null ? null : toElement({name}))"))
                 }
                 _ => out.wrap("toElement(", ")"),
             };
