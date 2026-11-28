@@ -1979,6 +1979,16 @@ impl<'s> Tr<'s> {
         let outer = self.module_init.replace(own);
         let out = self.constant_item(name, annotation, init, vis, body);
         self.module_init = outer;
+        // `[{ key, url }, { key, url, label }]` with no annotation: TS's element type is the union
+        // of the shapes, so a key some items leave out is optional (`label: String?`).
+        if annotation.is_none()
+            && let Some(record) = shapes_record(init)
+        {
+            let decl = format!("let {name} = ");
+            if let Some(at) = out.find(&decl) {
+                return format!("{}let {name}: [{record}] = {}", &out[..at], &out[at + decl.len()..]);
+            }
+        }
         out
     }
 
@@ -2487,4 +2497,47 @@ fn draft_parts(draft: &str, vis: &str, name: &str) -> Option<(Vec<String>, Strin
         })
         .collect();
     Some((stored, members.to_string(), body_part["body {".len()..].to_string()))
+}
+
+/// The record type of a list of object literals whose items differ in their keys (each value a
+/// string, number or boolean literal): every key, `T?` where an item leaves it out. `None` when
+/// the items agree (bloomc types them already) or a value is not a literal.
+fn shapes_record(init: &Expression) -> Option<String> {
+    let init = match init.without_parentheses() {
+        Expression::TSAsExpression(a) => a.expression.without_parentheses(),
+        other => other,
+    };
+    let Expression::ArrayExpression(a) = init else { return None };
+    let mut keys: Vec<(String, &'static str, usize)> = Vec::new();
+    let mut items = 0;
+    for element in &a.elements {
+        let Some(Expression::ObjectExpression(o)) = element.as_expression() else { return None };
+        items += 1;
+        for p in &o.properties {
+            let oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p) = p else { return None };
+            if p.computed || p.method || p.shorthand {
+                return None;
+            }
+            let key = crate::view::key_name(&p.key)?;
+            let ty = match p.value.without_parentheses() {
+                Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => "String",
+                Expression::NumericLiteral(_) => "Float",
+                Expression::BooleanLiteral(_) => "Bool",
+                _ => return None,
+            };
+            match keys.iter_mut().find(|(k, _, _)| *k == key) {
+                Some((_, t, n)) if *t == ty => *n += 1,
+                Some(_) => return None,
+                None => keys.push((key, ty, 1)),
+            }
+        }
+    }
+    if items < 2 || keys.iter().all(|(_, _, n)| *n == items) {
+        return None;
+    }
+    let fields: Vec<String> = keys
+        .iter()
+        .map(|(k, t, n)| if *n == items { format!("{k}: {t}") } else { format!("{k}: {t}?") })
+        .collect();
+    Some(format!("{{ {} }}", fields.join(", ")))
 }
