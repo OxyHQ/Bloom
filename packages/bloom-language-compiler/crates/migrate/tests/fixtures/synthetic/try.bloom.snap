@@ -2,7 +2,6 @@
 // block of several awaits (a `Result` closure, each await propagating).
 
 import { confirm, load, save, saveLogger, unsave } from "./api"
-import { RegExp } from "js"
 
 private func resolveUrl(_ id: String) async -> String {
   do {
@@ -11,13 +10,13 @@ private func resolveUrl(_ id: String) async -> String {
   } catch { return id }
 }
 
-/// Outside a `try`, a rejection stops the block; a global regex is the `"js"` `RegExp`.
+/// Outside a `try`, a rejection stops the block; a global regex is the stdlib `Regex`.
 private func warm(_ id: String) async {
   // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
   switch await load(id) {
   case let .ok(value):
     let { data } = value
-    saveLogger.debug(data.url.replace(RegExp("^https?:\\/\\/", "g"), ""))
+    saveLogger.debug(Regex(pattern: "^https?:\\/\\/").replacing(in: data.url, with: ""))
   case .err(_):
     break
   }

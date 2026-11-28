@@ -1,12 +1,12 @@
 // `!Array.isArray(x)` is `!(x is [Foreign])`: `is` binds looser than `!`.
 
-public func count(_ media: Foreign) -> Float {
+public func count(_ media: Foreign<"unknown">) -> Float {
   if !(media is [Foreign]) { return 0 }
   1
 }
 
 public struct Count: View {
-  let media: Foreign
+  let media: Foreign<"unknown">
   var body: some View {
     Text("\(count(media))")
   }

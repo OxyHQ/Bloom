@@ -470,7 +470,22 @@ impl Tr<'_> {
                 {
                     d.value()
                 }
-                // `new RegExp(x)`: construction is a call of the `"js"` import.
+                // `new RegExp(p, f)`: the stdlib's `Regex(pattern: p, flags: f)`.
+                Expression::Identifier(id)
+                    if id.name == "RegExp"
+                        && !self.imported.contains("RegExp")
+                        && (1..=2).contains(&n.arguments.len())
+                        && n.arguments.iter().all(|a| a.as_expression().is_some()) =>
+                {
+                    let args: Vec<String> =
+                        n.arguments.iter().filter_map(|a| a.as_expression()).map(|e| self.expr(e)).collect();
+                    match args.as_slice() {
+                        [p] => format!("Regex(pattern: {p})"),
+                        [p, f] => format!("Regex(pattern: {p}, flags: {f})"),
+                        _ => unreachable!("one or two arguments"),
+                    }
+                }
+                // `new URL(x)`: construction is a call of the `"js"` import.
                 Expression::Identifier(id)
                     if GLOBALS.contains(&id.name.as_str()) && !self.imported.contains(id.name.as_str()) =>
                 {
@@ -494,17 +509,9 @@ impl Tr<'_> {
             Expression::TaggedTemplateExpression(t) => {
                 self.refuse("template:tagged", "a tagged template", t.span)
             }
-            // `/a+/g`: `RegExp("a+", "g")`, the `"js"` import's constructor.
-            Expression::RegExpLiteral(r) => {
-                self.js.insert("RegExp".into());
-                let pattern = quote(r.regex.pattern.text.as_str());
-                let flags = r.regex.flags.to_string();
-                if flags.is_empty() {
-                    format!("RegExp({pattern})")
-                } else {
-                    format!("RegExp({pattern}, {})", quote(&flags))
-                }
-            }
+            // `/a+/i`: the stdlib's `Regex(pattern: "a+", flags: "i")` (the lead's decision). `g` is
+            // what a method does (`replacing` replaces every match), not a flag of the value.
+            Expression::RegExpLiteral(r) => regex_value(r),
             Expression::ThisExpression(t) => self.refuse("class", "`this`", t.span),
             Expression::ImportExpression(i)
                 if self.dynamic_import
@@ -698,6 +705,20 @@ impl Tr<'_> {
                     "number" => "Float",
                     "boolean" => "Bool",
                     "undefined" => return format!("{value} {op} none"),
+                    // On TS's `unknown` (`JSONValue`), with `null` ruled out by its chain: an
+                    // object or an array, as JS's `typeof` says (lenient reads, `none` otherwise).
+                    "object"
+                        if self.object_tests.contains(&b.span.start)
+                            && self
+                                .declared_type(&u.argument)
+                                .is_some_and(|t| t.trim_end_matches('?') == "Foreign<\"unknown\">") =>
+                    {
+                        return if op == "==" {
+                            format!("({value}.object != none || {value}.array != none)")
+                        } else {
+                            format!("({value}.object == none && {value}.array == none)")
+                        };
+                    }
                     other => {
                         return self.refuse("operator:typeof", format!("`typeof … === \"{other}\"`"), b.span);
                     }
@@ -1120,6 +1141,75 @@ impl Tr<'_> {
         text
     }
 
+    /// A JS regex's methods as the stdlib `Regex`'s: `/p/.test(s)` is `isMatch(s)`, `s.replace(/p/g,
+    /// r)` (or a `/^p/` that matches once) `replacing(in: s, with: r)`, `s.split(/p/)` `split(s)`.
+    /// A replacement function, a `replace` of the first of several matches, and `exec`/`match`
+    /// on a literal stay as they were.
+    fn regex_call(&mut self, call: &CallExpression) -> Option<String> {
+        let Expression::StaticMemberExpression(m) = &call.callee else { return None };
+        let args: Vec<&Expression> = call.arguments.iter().filter_map(|a| a.as_expression()).collect();
+        if args.len() != call.arguments.len() {
+            return None;
+        }
+        match (m.property.name.as_str(), args.as_slice()) {
+            // `/p/.test(s)`: `g`/`y` make JS's `test` stateful (`lastIndex`).
+            ("test", [text]) => {
+                let Expression::RegExpLiteral(r) = m.object.without_parentheses() else { return None };
+                let flags = r.regex.flags.to_string();
+                if flags.contains(['g', 'y']) || m.optional {
+                    return None;
+                }
+                let text = self.expr(text);
+                Some(format!("{}.isMatch({text})", regex_value(r)))
+            }
+            ("replace" | "split", [pattern, ..])
+                if args.len() == if m.property.name == "replace" { 2 } else { 1 } =>
+            {
+                let with = args.get(1).copied();
+                let Expression::RegExpLiteral(r) = pattern.without_parentheses() else { return None };
+                let flags = r.regex.flags.to_string();
+                let replace = m.property.name == "replace";
+                if replace
+                    && !(flags.contains('g')
+                        || (matches_once(r.regex.pattern.text.as_str()) && !flags.contains('m')))
+                {
+                    return None;
+                }
+                if replace
+                    && !with.is_some_and(|w| {
+                        matches!(
+                            w.without_parentheses(),
+                            Expression::StringLiteral(_)
+                                | Expression::TemplateLiteral(_)
+                                | Expression::Identifier(_)
+                                | Expression::StaticMemberExpression(_)
+                        )
+                    })
+                {
+                    return None;
+                }
+                let regex = regex_value(r);
+                let object = self.expr(&m.object);
+                let receiver = if m.optional { format!("{object}!") } else { object.clone() };
+                let text = if let Some(with) = with {
+                    let with = self.expr(with);
+                    format!("{regex}.replacing(in: {receiver}, with: {with})")
+                } else {
+                    format!("{regex}.split({receiver})")
+                };
+                if !m.optional {
+                    return Some(text);
+                }
+                // `s?.replace(…)`: `none` when `s` is.
+                if !is_postfix_text(&object) || object.contains('(') {
+                    return None;
+                }
+                Some(format!("({object} != none ? {text} : none)"))
+            }
+            _ => None,
+        }
+    }
+
     /// JS's `Number(x)` where the file says what `x` is, and `Number.isNaN(x)` of a number: a
     /// string is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)` (JS reads a blank string as 0
     /// and text that is no number as `NaN`; `Float(s)` is `none` for both), an `Int` is
@@ -1265,6 +1355,9 @@ impl Tr<'_> {
                 return format!("{value} is [Foreign]");
             }
         }
+        if let Some(text) = self.regex_call(call) {
+            return text;
+        }
         // JS `s.replace(a, b)` replaces the first match; Bloom's `replace` is `replaceAll`.
         if let Expression::StaticMemberExpression(m) = &call.callee
             && m.property.name == "replace"
@@ -1276,16 +1369,7 @@ impl Tr<'_> {
                 // so every match is the first.
                 Some(Expression::RegExpLiteral(r))
                     if matches_once(r.regex.pattern.text.as_str())
-                        && !r.regex.flags.to_string().contains('m') =>
-                {
-                    self.js.insert("RegExp".into());
-                    let pattern = quote(r.regex.pattern.text.as_str());
-                    let flags = quote(&format!("g{}", r.regex.flags));
-                    let object = self.expr(&m.object);
-                    let optional = if m.optional { "?" } else { "" };
-                    let with = call.arguments[1].as_expression().map(|e| self.expr(e)).unwrap_or_default();
-                    return format!("{object}{optional}.replace(RegExp({pattern}, {flags}), {with})");
-                }
+                        && !r.regex.flags.to_string().contains('m') => {}
                 Some(Expression::RegExpLiteral(r)) => {
                     return self.refuse(
                         "string:replace",
@@ -2829,4 +2913,77 @@ fn optional_string_call(e: &Expression) -> bool {
     };
     matches!(&call.callee, Expression::StaticMemberExpression(m)
         if STRING_METHODS.contains(&m.property.name.as_str()) && call.arguments.is_empty())
+}
+
+/// Marks the `typeof x === "object"` operands of a `&&` chain that also tests `x` (or
+/// `x !== null`), and the `typeof x !== "object"` operands of a `||` chain with `!x`.
+pub fn object_tests(src: &str, l: &oxc_ast::ast::LogicalExpression) -> Vec<u32> {
+    if l.operator == LogicalOperator::Coalesce {
+        return Vec::new();
+    }
+    let mut operands = Vec::new();
+    fn flatten<'b, 'a>(e: &'b Expression<'a>, op: LogicalOperator, out: &mut Vec<&'b Expression<'a>>) {
+        match e.without_parentheses() {
+            Expression::LogicalExpression(l) if l.operator == op => {
+                flatten(&l.left, op, out);
+                flatten(&l.right, op, out);
+            }
+            e => out.push(e),
+        }
+    }
+    flatten(&l.left, l.operator, &mut operands);
+    flatten(&l.right, l.operator, &mut operands);
+    let and = l.operator == LogicalOperator::And;
+    let text = |e: &Expression| src[e.span().start as usize..e.span().end as usize].to_string();
+    let mut found = Vec::new();
+    for test in &operands {
+        let Expression::BinaryExpression(b) = test else { continue };
+        let wanted = if and {
+            matches!(b.operator, BinaryOperator::StrictEquality | BinaryOperator::Equality)
+        } else {
+            matches!(b.operator, BinaryOperator::StrictInequality | BinaryOperator::Inequality)
+        };
+        let (Expression::UnaryExpression(u), Expression::StringLiteral(kind)) =
+            (b.left.without_parentheses(), b.right.without_parentheses())
+        else {
+            continue;
+        };
+        if !wanted || u.operator != UnaryOperator::Typeof || kind.value.as_str() != Some("object") {
+            continue;
+        }
+        let x = text(&u.argument);
+        let guarded = operands.iter().any(|o| match o {
+            // `x && …` / `!x || …`
+            e if and && text(e) == x => true,
+            Expression::UnaryExpression(n) if !and && n.operator == UnaryOperator::LogicalNot => {
+                text(n.argument.without_parentheses()) == x
+            }
+            // `x !== null && …` / `x === null || …`
+            Expression::BinaryExpression(c) => {
+                let null = matches!(c.right.without_parentheses(), Expression::NullLiteral(_));
+                let op = if and {
+                    matches!(c.operator, BinaryOperator::StrictInequality | BinaryOperator::Inequality)
+                } else {
+                    matches!(c.operator, BinaryOperator::StrictEquality | BinaryOperator::Equality)
+                };
+                null && op && text(&c.left) == x
+            }
+            _ => false,
+        });
+        if guarded {
+            found.push(b.span.start);
+        }
+    }
+    found
+}
+
+/// `/p/f` as the stdlib's `Regex(pattern: "p", flags: "f")`, `g` and `y` left to its methods.
+fn regex_value(r: &oxc_ast::ast::RegExpLiteral) -> String {
+    let pattern = quote(r.regex.pattern.text.as_str());
+    let flags: String = r.regex.flags.to_string().chars().filter(|c| !matches!(c, 'g' | 'y')).collect();
+    if flags.is_empty() {
+        format!("Regex(pattern: {pattern})")
+    } else {
+        format!("Regex(pattern: {pattern}, flags: {})", quote(&flags))
+    }
 }

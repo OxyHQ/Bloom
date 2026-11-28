@@ -147,6 +147,9 @@ pub struct Tr<'s> {
     /// TS component's prop, every call passing text (a string, a fragment of text, nothing):
     /// `String?`, so the component draws the same text the TS gave it (no nested `Text`).
     pub text_params: HashSet<u32>,
+    /// `typeof x === "object"` tests (by span start) whose chain also rules out `null` (`x &&
+    /// typeof x === "object"`, `!x || typeof x !== "object"`): `x.object != none || x.array != none`.
+    pub object_tests: HashSet<u32>,
     /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
     /// name and the own props; a call's other fields are the rest's record.
     pub rest_views: HashMap<String, (String, Vec<String>)>,
@@ -419,6 +422,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
         text_params: HashSet::new(),
+        object_tests: HashSet::new(),
         rest_views: HashMap::new(),
         rest_bases: HashMap::new(),
         tanstack: HashSet::new(),
@@ -540,6 +544,19 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     }
     tr.scan_labelled(&program.body);
     tr.scan_text_params(&program.body);
+    {
+        use oxc_ast_visit::Visit;
+        struct Tests<'s>(&'s str, Vec<u32>);
+        impl<'a> Visit<'a> for Tests<'_> {
+            fn visit_logical_expression(&mut self, l: &oxc_ast::ast::LogicalExpression<'a>) {
+                self.1.extend(crate::expr::object_tests(self.0, l));
+                oxc_ast_visit::walk::walk_logical_expression(self, l);
+            }
+        }
+        let mut tests = Tests(source, Vec::new());
+        program.body.iter().for_each(|s| tests.visit_statement(s));
+        tr.object_tests.extend(tests.1);
+    }
     tr.scan_tanstack(&program.body);
     tr.scan_throwing(&program);
     let mut items = Vec::new();

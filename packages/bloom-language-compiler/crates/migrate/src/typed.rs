@@ -41,6 +41,22 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 Some((start, end + 2, format!("formatted({digits})")))
             }
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
+            // A JS regex's `re.test(s)` / `re.exec(s)` on the stdlib's `Regex`.
+            ("B0209" | "B0205", "test") if receiver == Some("Regex") => {
+                Some((start, end, "isMatch".to_string()))
+            }
+            // `m[n]` of a JS match (`exec`'s): the stdlib match's `group(n)`.
+            ("B0201", n)
+                if d.message == "expected `KeyPath<RegexMatch, _>`, found `Int`"
+                    && n.chars().all(|c| c.is_ascii_digit())
+                    && source[..start].ends_with('[')
+                    && source[end..].starts_with(']') =>
+            {
+                Some((start - 1, end + 1, format!(".group({n})")))
+            }
+            ("B0209" | "B0205", "exec") if receiver == Some("Regex") && source[end..].starts_with('(') => {
+                Some((start, end + 1, "firstMatch(in: ".to_string()))
+            }
             // `a === b` on what has no equality (a TS object holding a function, a class
             // instance): JS compared the references, which is Swift's `===` (`!==`).
             ("B0210", _)
@@ -1650,8 +1666,18 @@ fn promise_catch(source: &str, start: usize, end: usize) -> Option<(usize, usize
     let close = block_end(source, end)?;
     let closure = source[end..close].trim();
     let inner = closure.strip_prefix('{')?.strip_suffix('}')?.trim();
-    let (name, body) = match inner.split_once(" in ") {
-        Some((params, body)) if !params.contains(['(', '{', '"']) => (params.split(':').next()?.trim(), body),
+    // `{ e in … }`, its `in` at the end of the line when the parameter is long.
+    let split = [" in ", " in\n"].iter().filter_map(|sep| inner.find(sep).map(|i| (i, sep.len()))).min();
+    let (name, body) = match split.map(|(i, n)| (&inner[..i], &inner[i + n..])) {
+        // One name, maybe annotated (`error: Foreign<"unknown">`): not a pattern.
+        Some((params, body))
+            if params.split(':').next().is_some_and(|n| {
+                let n = n.trim();
+                !n.is_empty() && n.chars().all(|c| c.is_alphanumeric() || c == '_')
+            }) =>
+        {
+            (params.split(':').next()?.trim(), body)
+        }
         _ => ("", inner),
     };
     if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
@@ -2334,5 +2360,19 @@ mod tests {
         assert_eq!(end.as_deref(), Some("let a = name.trimmingEnd()\nlet b = name.trimStart()\n"));
         let start = fixed(source, "B0209", "trimStart", "`String` has no method `trimStart`");
         assert_eq!(start.as_deref(), Some("let a = name.trimEnd()\nlet b = name.trimmingStart()\n"));
+    }
+
+    // `.catch { error: Foreign<"unknown"> in … }` (a TS `unknown` error) is a task's `catch let`.
+    #[test]
+    fn an_annotated_catch_is_a_task() {
+        let source =
+            "fn f() {\n  update([field: value])\n  .catch { error: Foreign<\"unknown\"> in log(error) }\n}\n";
+        let fixed = fixed(source, "B0209", "catch", "`Promise<Unit>` has no method `catch`");
+        assert_eq!(
+            fixed.as_deref(),
+            Some(
+                "fn f() {\n  task {\ndo {\ntry await update([field: value])\n} catch let error {\nlog(error)\n}\n}\n}\n"
+            )
+        );
     }
 }

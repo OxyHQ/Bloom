@@ -275,7 +275,11 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
     // (`VStack(spacing: .sm) { … }`): each kept when the file still checks.
     let mut bloom = bloom;
     let mut compiled = compiled;
-    let passes: [Pass; 6] = [
+    let passes: [Pass; 7] = [
+        // TS's `unknown` by the stdlib's name for it (`JSONValue` is `Foreign<"unknown">`).
+        &|text| {
+            text.contains("Foreign<\"unknown\">").then(|| text.replace("Foreign<\"unknown\">", "JSONValue"))
+        },
         &|text| swiftui::private_items(text, &target),
         &|text| i18n::localize(text, &target),
         &|text| stdlib::globals(text, &target),

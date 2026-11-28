@@ -263,8 +263,9 @@ impl Tr<'_> {
             TSType::TSAnyKeyword(_) => self.foreign_ty("any"),
             // `object`: a TS value Bloom passes on as it is.
             TSType::TSObjectKeyword(_) => self.foreign_ty("object"),
-            // `unknown` is exactly a `Foreign` (bloomc writes it back as `unknown`).
-            TSType::TSUnknownKeyword(_) => "Foreign".into(),
+            // `unknown` is the stdlib's `JSONValue` (`Foreign<"unknown">`), read leniently:
+            // `x.object`, `x.string`, `x["k"]` are `none` on a mismatch (the lead's decision).
+            TSType::TSUnknownKeyword(_) => "Foreign<\"unknown\">".into(),
             TSType::TSNullKeyword(t) => self.refuse("type:null", "`null` alone", t.span),
             // `(x): x is T`: a test, so a `Bool`. TS's narrowing at the call is bloomc's to
             // check (an `is`/`!= none` test narrows; anything else it refuses).
