@@ -20,6 +20,8 @@ const f = require('./packages/format-app/Sources/App/FormatStyle.bloom') as {
   dateOnly: (d: D, locale: string) => string;
   plain: (d: D, locale: string) => string;
   relative: (d: D, now: D) => string;
+  numericDate: (d: D, locale: string) => string;
+  numericDateTime: (d: D, locale: string) => string;
 };
 
 const LOCALES = ['en', 'es', 'ja', 'ar'];
@@ -88,4 +90,12 @@ describe.each(LOCALES)('%s', (locale) => {
 it('keeps formatted(fractionDigits: n) as toFixed, and .relative', () => {
   expect(f.fixed(3.14159)).toBe('3.14');
   expect(f.relative(date, new Date(ms + 120_000))).toBe('2 minutes ago');
+});
+
+it("writes DateStyle.numeric as Swift does: the full year, not Intl's short style", () => {
+  // Swift's `Date.FormatStyle(date: .numeric)` in en_US: "11/26/2026", and with
+  // `time: .shortened` "11/26/2026, 6:05 PM" (Intl's `short` style would write "11/26/26").
+  expect(f.numericDate(date, 'en-US')).toBe('11/26/2026');
+  expect(f.numericDateTime(date, 'en-US')).toBe('11/26/2026, 6:05 PM');
+  expect(f.numericDate(date, 'es')).toBe('26/11/2026');
 });

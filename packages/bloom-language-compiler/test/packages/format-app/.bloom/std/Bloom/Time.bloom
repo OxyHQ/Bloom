@@ -55,7 +55,8 @@ public struct Duration: Equatable {
 public enum DateStyle {
   /// No date.
   case omitted
-  /// "11/26/26" (Intl's `short`).
+  /// "11/26/2026": the numeric date with the full year, as Swift writes it (Intl's numeric
+  /// `year`, `month` and `day`, not its `short` style's "11/26/26").
   case numeric
   /// "Nov 26, 2026" (Intl's `medium`).
   case abbreviated
@@ -258,7 +259,7 @@ private func dateStyleName(_ style: DateStyle) -> String {
   case .omitted:
     "omitted"
   case .numeric:
-    "short"
+    "numeric"
   case .abbreviated:
     "medium"
   case .long:

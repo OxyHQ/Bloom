@@ -205,8 +205,22 @@ export function formatDate(
   timeZone: string,
 ): string {
   const options: Intl.DateTimeFormatOptions = {};
-  if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
-  if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  if (date === 'numeric') {
+    // Swift's `.numeric` is the numeric date with the full year ("11/26/2026"), not Intl's
+    // `short` ("11/26/26"); Intl takes no style beside fields, so the time is its fields too.
+    options.year = 'numeric';
+    options.month = 'numeric';
+    options.day = 'numeric';
+    if (time !== 'omitted') {
+      options.hour = 'numeric';
+      options.minute = '2-digit';
+      if (time !== 'short') options.second = '2-digit';
+      if (time === 'long') options.timeZoneName = 'short';
+    }
+  } else {
+    if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
+    if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  }
   if (timeZone) options.timeZone = timeZone;
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
 }
