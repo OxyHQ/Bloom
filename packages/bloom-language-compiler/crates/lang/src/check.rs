@@ -377,6 +377,10 @@ pub struct CheckResult {
     /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
     /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
     pub map_writes: HashSet<ExprId>,
+    /// Locals bound to a value optional only through a guard kept on a TS value TS says is
+    /// present (`let postId = viewPost?.id`): a cache of one declares no type, so TS's (`string`)
+    /// is the one it reads.
+    pub claim_only: HashSet<LocalId>,
     /// `{}` where a TS object type Bloom does not map is expected: the empty object, not a closure.
     pub empty_objects: HashSet<ExprId>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
@@ -548,6 +552,9 @@ pub struct Checker<'o> {
     binding_stmt: bool,
     /// `let path = pathOf()` with a TS value: the local holds TS's claim (`ts_claimed`).
     ts_claimed_locals: HashSet<LocalId>,
+    /// Values optional only through a guard kept on a TS value TS says is present
+    /// (`viewPost?.id`, `viewPost` a TS `HydratedPost`): TS's own type is the present one.
+    claim_only: HashSet<ExprId>,
     /// Calls of a shape-bounded generic, checked once their type arguments are known: each
     /// type argument, its shape, where, and the shapes in scope there.
     pending_shapes: Vec<PendingShape>,
@@ -652,6 +659,7 @@ impl<'o> Checker<'o> {
             literal_record: false,
             binding_stmt: false,
             ts_claimed_locals: HashSet::default(),
+            claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
@@ -2427,6 +2435,9 @@ impl<'o> Checker<'o> {
                         && self.ts_claimed(&stmt.value, &ty)
                     {
                         self.ts_claimed_locals.insert(*local);
+                        if self.is_claim_only(&stmt.value) {
+                            self.out.claim_only.insert(*local);
+                        }
                     }
                     locals
                 }
@@ -2933,6 +2944,9 @@ impl<'o> Checker<'o> {
                     && self.ts_claimed(&l.value, &ty)
                 {
                     self.ts_claimed_locals.insert(*local);
+                    if self.is_claim_only(&l.value) {
+                        self.out.claim_only.insert(*local);
+                    }
                 }
             }
             StmtKind::Var(v) => {
@@ -4427,6 +4441,10 @@ impl<'o> Checker<'o> {
                 || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
                 // A list of TS values, or a function given one: TS checks it here too.
                 || self.fits_through_ts(&ty, &hint)
+                // `postPermalink(viewPost?.id)` with a TS `viewPost` TS says is there: optional only
+                // by the guard Bloom kept, and `string` in TS's own type, which TS checks here.
+                || matches!(self.resolve(&ty), Ty::Option(inner)
+                    if !matches!(hint, Ty::Option(_)) && self.is_claim_only(expr) && self.coerce(&inner, &hint))
                 || self.coerce(&ty, &hint);
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
@@ -4750,6 +4768,8 @@ impl<'o> Checker<'o> {
                 match self.resolve(&ty) {
                     Ty::Option(inner) => {
                         let field = self.member(expr, &inner, name, object.span);
+                        let claim = self.is_claim_only(object);
+                        self.claim_link(expr, claim, &field);
                         self.rechain(expr, field)
                     }
                     Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[\"{}\"]", name.name)),
@@ -4757,6 +4777,7 @@ impl<'o> Checker<'o> {
                     // `viewPost?.authors` where TS says `viewPost` is always there: kept, as a guard.
                     other if self.ts_claimed(object, &ty) => {
                         let field = self.member(expr, &other, name, object.span);
+                        self.claim_link(expr, true, &field);
                         self.rechain(expr, field)
                     }
                     other => {
@@ -6080,6 +6101,8 @@ impl<'o> Checker<'o> {
         let out = match self.unchain(object, &ty) {
             Some(inner) => {
                 let field = self.member(expr, &inner, name, object.span);
+                let claim = self.is_claim_only(object);
+                self.claim_link(expr, claim, &field);
                 self.rechain(expr, field)
             }
             None => self.member(expr, &ty, name, object.span),
@@ -6145,6 +6168,26 @@ impl<'o> Checker<'o> {
 
     /// A link of an optional chain: `none` when an earlier `?.` was. Marks it when the
     /// option is the chain's own, so the next link reads through it.
+    /// A link of an optional chain read through a guard TS says never fires (`claim`), whose own
+    /// member is present: optional only by the guard.
+    pub(super) fn claim_link(&mut self, expr: &Expr, claim: bool, member: &Ty) {
+        if claim && !matches!(self.resolve(member), Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.claim_only.insert(expr.id);
+        }
+    }
+
+    /// Whether `expr` is optional only through guards kept on TS values TS says are present.
+    pub(super) fn is_claim_only(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.is_claim_only(inner),
+            ExprKind::Name(_) => matches!(
+                self.out.names.get(&expr.id),
+                Some(NameRes::Local(l)) if self.out.claim_only.contains(l)
+            ),
+            _ => self.claim_only.contains(&expr.id),
+        }
+    }
+
     pub(super) fn rechain(&mut self, expr: &Expr, ty: Ty) -> Ty {
         match self.resolve(&ty) {
             Ty::Option(_) | Ty::Unit | Ty::Unknown | Ty::Never => ty,

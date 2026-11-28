@@ -1,0 +1,18 @@
+// An optional only by a guard Bloom kept on a TS value TS types as present fits a TS parameter
+// (Mention's postMenuActions: `postPermalink(viewPost?.id)`): TS's own type is `string`, and TS
+// checks it there. A `let` of one declares no type in a cache, so TS's is the one it reads.
+import { type ClaimPost, permalink } from "@/types/claims"
+
+public func link(_ post: ClaimPost) -> String {
+  let id = post?.id
+  return permalink(id)
+}
+
+public func direct(_ post: ClaimPost) -> String { permalink(post?.user.name) }
+
+public struct Share: View {
+  let post: ClaimPost
+  let id = post?.id
+  let url = permalink(id)
+  var body: some View { Text(url) }
+}

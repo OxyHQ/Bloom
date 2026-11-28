@@ -5404,7 +5404,7 @@ impl<'a> Emitter<'a> {
             let closure = matches!(l.value.kind, ExprKind::Closure(_));
             let ty = match annotation {
                 Some(ty) => Some(ty),
-                None if destructure || closure => None,
+                None if destructure || closure || self.ck.claim_only.contains(&locals[0]) => None,
                 None => Some(self.ck.locals[locals[0]].ty.clone()),
             };
             let ty = ty.map(|t| self.ts_type(&t)).filter(|t| t != "unknown");
@@ -5974,9 +5974,11 @@ impl<'a> Emitter<'a> {
                     PatternKind::Bind(name) => (js_name(&name.name), false),
                     _ => (self.temp(), true),
                 };
+                // One optional only by a guard TS says never fires (`viewPost?.id`) declares no
+                // type: TS's own (`string`) is what the assignment gives it.
                 let ty = locals
                     .first()
-                    .filter(|_| !destructure)
+                    .filter(|l| !destructure && !self.ck.claim_only.contains(l))
                     .map(|l| self.ck.locals[*l].ty.clone())
                     .or(annotation);
                 let ty = ty.map(|t| self.ts_type(&t));
