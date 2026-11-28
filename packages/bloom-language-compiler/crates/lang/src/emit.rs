@@ -854,10 +854,7 @@ impl<'a> Emitter<'a> {
 
     fn ts_operand(&mut self, ty: &Ty) -> String {
         let text = self.ts_type(ty);
-        if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_))
-            || text.contains(" | ") && !text.starts_with('(')
-            || text.starts_with("readonly ")
-        {
+        if matches!(ty, Ty::Option(_) | Ty::Fn(_) | Ty::Strings(_)) || !ts_atomic(&text) {
             format!("({text})")
         } else {
             text
@@ -7300,4 +7297,48 @@ fn mentions_param(ty: &Ty) -> bool {
         None
     });
     found
+}
+
+/// Whether TS type text binds tighter than a postfix `[]` or `[K]`: no union, intersection,
+/// function or conditional type at its top level, and no prefix operator (`readonly`, `keyof`,
+/// `typeof`). `(typeof NAMES)[number] | 'shop'` starts with a parenthesis and is still a union.
+fn ts_atomic(text: &str) -> bool {
+    let text = text.trim();
+    if ["readonly ", "keyof ", "typeof ", "unique ", "infer ", "new ", "asserts "]
+        .iter()
+        .any(|prefix| text.starts_with(prefix))
+    {
+        return false;
+    }
+    let bytes = text.as_bytes();
+    let mut depth = 0i32;
+    let mut quote: Option<u8> = None;
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if let Some(q) = quote {
+            if c == b'\\' {
+                i += 1;
+            } else if c == q {
+                quote = None;
+            }
+        } else {
+            match c {
+                b'\'' | b'"' | b'`' => quote = Some(c),
+                b'(' | b'[' | b'{' | b'<' => depth += 1,
+                b')' | b']' | b'}' => depth -= 1,
+                // `=>` is not a closing angle bracket.
+                b'>' if i > 0 && bytes[i - 1] == b'=' => {
+                    if depth == 0 {
+                        return false;
+                    }
+                }
+                b'>' => depth -= 1,
+                b'|' | b'&' | b'?' if depth == 0 => return false,
+                _ => {}
+            }
+        }
+        i += 1;
+    }
+    true
 }
