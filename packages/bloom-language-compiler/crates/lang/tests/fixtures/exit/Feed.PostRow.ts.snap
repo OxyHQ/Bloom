@@ -18,24 +18,24 @@ export interface PostRowProps {
 }
 export const PostRow = view(function PostRow(props: PostRowProps) {
 "use no memo";
-const $ = $c(27);
+const $ = $c(29);
 const { post, onLike } = props;
 let $t0;
-if ($[18] !== post.author.avatar || $[19] !== post.author.name || $[20] !== post.author.isVerified || $[21] !== post.createdAt || $[22] !== post.text || $[23] !== post.isLiked || $[24] !== post.likes || $[25] !== onLike) {
-$t0 = HStack(Avatar(post.author.avatar).size("md"), ($[10] !== post.author.name || $[11] !== post.author.isVerified || $[12] !== post.createdAt || $[13] !== post.text || $[14] !== post.isLiked || $[15] !== post.likes || $[16] !== onLike ? ($[10] = post.author.name, $[11] = post.author.isVerified, $[12] = post.createdAt, $[13] = post.text, $[14] = post.isLiked, $[15] = post.likes, $[16] = onLike, $[17] = VStack(($[2] !== post.author.name || $[3] !== post.author.isVerified || $[4] !== post.createdAt ? ($[2] = post.author.name, $[3] = post.author.isVerified, $[4] = post.createdAt, $[5] = HStack(Text(post.author.name).weight("semibold").lines(1), (post.author.isVerified) ? $view0 : null, $view1, ($[0] !== post.createdAt ? ($[0] = post.createdAt, $[1] = Text(Date$formatted(post.createdAt, "relative")).foreground("muted")) : $[1])).spacing("xs")) : $[5]), Text(post.text), ($[6] !== post.isLiked || $[7] !== post.likes || $[8] !== onLike ? ($[6] = post.isLiked, $[7] = post.likes, $[8] = onLike, $[9] = Button(Icon(post.isLiked ? RiHeartFill : RiHeartLine), Text(`${post.likes}`)).style("plain").size("sm").onPress(() => void (async () => {
+if ($[20] !== post.author.avatar || $[21] !== post.author.name || $[22] !== post.author.isVerified || $[23] !== post.createdAt || $[24] !== post.text || $[25] !== post.isLiked || $[26] !== post.likes || $[27] !== onLike) {
+$t0 = HStack(Avatar(post.author.avatar).size("md"), ($[12] !== post.author.name || $[13] !== post.author.isVerified || $[14] !== post.createdAt || $[15] !== post.text || $[16] !== post.isLiked || $[17] !== post.likes || $[18] !== onLike ? ($[12] = post.author.name, $[13] = post.author.isVerified, $[14] = post.createdAt, $[15] = post.text, $[16] = post.isLiked, $[17] = post.likes, $[18] = onLike, $[19] = VStack(($[2] !== post.author.name || $[3] !== post.author.isVerified || $[4] !== post.createdAt ? ($[2] = post.author.name, $[3] = post.author.isVerified, $[4] = post.createdAt, $[5] = HStack(Text(post.author.name).weight("semibold").lines(1), (post.author.isVerified) ? $view0 : null, $view1, ($[0] !== post.createdAt ? ($[0] = post.createdAt, $[1] = Text(Date$formatted(post.createdAt, "relative")).foreground("muted")) : $[1])).spacing("xs")) : $[5]), Text(post.text), ($[8] !== post.isLiked || $[9] !== post.likes || $[10] !== onLike ? ($[8] = post.isLiked, $[9] = post.likes, $[10] = onLike, $[11] = Button(($[6] !== post.isLiked ? ($[6] = post.isLiked, $[7] = Icon(post.isLiked ? RiHeartFill : RiHeartLine)) : $[7]), Text(`${post.likes}`)).style("plain").size("sm").onPress(() => void (async () => {
 await (onLike());
-})()).tint(post.isLiked ? ("danger") : ("neutral"))) : $[9])).align("start").spacing("xs")) : $[17])).align("start").spacing("sm").padding("md");
-$[18] = post.author.avatar;
-$[19] = post.author.name;
-$[20] = post.author.isVerified;
-$[21] = post.createdAt;
-$[22] = post.text;
-$[23] = post.isLiked;
-$[24] = post.likes;
-$[25] = onLike;
-$[26] = $t0;
+})()).tint(post.isLiked ? ("danger") : ("neutral"))) : $[11])).align("start").spacing("xs")) : $[19])).align("start").spacing("sm").padding("md");
+$[20] = post.author.avatar;
+$[21] = post.author.name;
+$[22] = post.author.isVerified;
+$[23] = post.createdAt;
+$[24] = post.text;
+$[25] = post.isLiked;
+$[26] = post.likes;
+$[27] = onLike;
+$[28] = $t0;
 } else {
-$t0 = $[26];
+$t0 = $[28];
 }
 return $t0;
 }, (a: PostRowProps, b: PostRowProps): boolean => {
