@@ -83,6 +83,22 @@ export function tokenSetsOf(spec) {
   };
 }
 
+/** The types a typed object's field may name besides a token set. */
+export const FIELD_TYPES = ['string', 'number', 'boolean', 'action', 'value'];
+
+/**
+ * The spec's object parameters, each with its keys: a typed object (`fields`) has its
+ * fields' keys, and its values are free (`value`) but where a field names a token set.
+ */
+export function objectsOf(spec) {
+  return Object.fromEntries(
+    Object.entries(withoutComment(spec.objects)).map(([name, object]) => [
+      name,
+      object.fields ? { keys: Object.keys(object.fields), tokens: 'value', ...object } : object,
+    ]),
+  );
+}
+
 /** Parameter types that take no token: a view, a boolean. A string written there is never valid. */
 export const NO_TOKEN = ['view', 'boolean'];
 

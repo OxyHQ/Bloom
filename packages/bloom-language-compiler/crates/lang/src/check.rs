@@ -947,6 +947,24 @@ impl<'o> Checker<'o> {
         Ty::Adt(def, Vec::new())
     }
 
+    /// A spec object parameter's type (`dialogButton`), by its name: a record of `fields`.
+    pub(crate) fn object_type(&mut self, name: &str, fields: Vec<FieldDef>) -> Ty {
+        if let Some(&def) = self.records.get(name) {
+            return Ty::Adt(def, Vec::new());
+        }
+        self.out.defs.push(Def {
+            name: name.to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Record,
+            class: None,
+            tagged: None,
+        });
+        let def = self.out.defs.len() - 1;
+        self.records.insert(name.to_string(), def);
+        Ty::Adt(def, Vec::new())
+    }
+
     /// A record (or struct) fits a record type when it has each of its fields (an optional one
     /// may be absent), each fitting.
     fn fits_record(

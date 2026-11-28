@@ -110,6 +110,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("cornerSide", &["all", "top", "bottom", "leading", "trailing", "top-leading", "top-trailing", "bottom-leading", "bottom-trailing", "left", "right", "top-left", "top-right", "bottom-left", "bottom-right"]),
     ("dividerStyle", &["single", "double", "fill"]),
     ("dialogPlacement", &["center", "left", "right", "start", "end", "bottom"]),
+    ("dialogActionColor", &["default", "cancel", "destructive"]),
     ("alertDefault", &["confirm", "cancel"]),
     ("floatingSide", &["top", "bottom", "left", "right"]),
     ("floatingAlign", &["start", "center", "end"]),
@@ -1026,7 +1027,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "menuSection", constructors: &["Section"], modifiers: &["title", "selection", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[] },
     NodeSpec { kind: "divider", constructors: &["Divider"], modifiers: &["padding", "safeAreaPadding", "frame", "aspectRatio", "grow", "shrink", "alignSelf", "position", "sticky", "cursor", "offset", "zIndex", "hidden", "basis", "flex", "margin", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "borderStyle", "ring", "corner", "cornerCurve", "clipped", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "pressFade", "label", "hint", "role", "accessibilityState", "accessibilityValue", "liveRegion", "accessibilityHidden", "accessibilityElement", "focusable", "collapsable", "hitSlop", "testID", "ref", "onLayout", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "animatesColors", "transition", "keyframes", "repeatForever", "delay", "anchor", "matchedGeometry", "drag", "swipe", "pinch", "onDoubleTap", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "replacesBottomBar", "screenBackground", "reselectTop", "initialHeaderHeight", "initialFooterHeight", "colorScope", "keyboardAvoiding", "provider", "ownScreen", "fullScreenCover", "glassID", "glassUnion", "glassTransition", "inContent", "disabled", "environment", "controlSize", "buttonStyle", "modifier", "confirmationDialog", "phases", "lineStyle", "align", "spacing", "tint", "axis"], densities: &[], size: None, tint: Some("colorRole"), style: None, shape: None, blend: None, params: &[("align", &["dividerAlign"])] },
     NodeSpec { kind: "alert", constructors: &["Alert"], modifiers: &["message", "confirmLabel", "cancelLabel", "onConfirm", "onCancel", "destructive", "hideCancel", "defaultAction", "dismissible", "testID", "icon", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[] },
-    NodeSpec { kind: "dialog", constructors: &["Dialog"], modifiers: &["title", "message", "label", "buttons", "presentAt", "dismissOnBackdrop", "scrollable", "testID", "header", "footer", "page", "frame", "padding", "sideGutter", "maxHeightRatio", "onDismissed", "presented", "control", "detached", "panelFrame", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[("padding", &["space"])] },
+    NodeSpec { kind: "dialog", constructors: &["Dialog"], modifiers: &["title", "message", "label", "buttons", "presentAt", "dismissOnBackdrop", "scrollable", "testID", "header", "footer", "page", "frame", "padding", "sideGutter", "maxHeightRatio", "onDismissed", "presented", "control", "detached", "panelFrame", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[("padding", &["space"]), ("buttons", &["[dialogButton]"])] },
     NodeSpec { kind: "popover", constructors: &["Popover"], modifiers: &["label", "side", "testID", "sideOffset", "alignOffset", "frame", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[] },
     NodeSpec { kind: "connectionStatus", constructors: &["ConnectionStatus"], modifiers: &["offlineMessage", "reconnectingMessage", "restoredMessage", "reconnectingDelay", "restoredDuration", "id"], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[] },
     NodeSpec { kind: "menuContent", constructors: &[], modifiers: &[], densities: &[], size: None, tint: None, style: None, shape: None, blend: None, params: &[] },
@@ -1895,6 +1896,7 @@ pub const GLASS_VALUE: &[(&str, &[&str])] = &[
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
 /// the token set every value is in, and whether one token on its own is the object too.
 pub const OBJECTS: &[(&str, &[&str], &str, bool)] = &[
+    ("dialogButton", &["label", "color", "onPress", "disabled", "loading", "shouldCloseOnPress", "initialFocus", "testID"], "value", false),
     ("refresh", &["refreshing", "onRefresh"], "value", false),
     ("accessibilityValue", &["min", "max", "now", "text"], "value", false),
     ("accessibilityState", &["selected", "checked", "busy", "expanded", "disabled"], "accessibilityChecked", false),
@@ -1904,4 +1906,10 @@ pub const OBJECTS: &[(&str, &[&str], &str, bool)] = &[
     ("placement", &["sm", "md", "lg", "xl"], "dialogPlacement", false),
     ("refreshTint", &["ios", "android"], "color", true),
     ("meterReveal", &["visible", "once", "delay"], "duration", false),
+];
+
+/// A typed object (`dialogButton`): each key's type (`string`, `number`, `boolean`, `action`,
+/// `value` or a token set), with `?` when it may be left out. A parameter `[name]` is a list of it.
+pub const OBJECT_FIELDS: &[(&str, &[(&str, &str)])] = &[
+    ("dialogButton", &[("label", "string"), ("color", "dialogActionColor?"), ("onPress", "action?"), ("disabled", "boolean?"), ("loading", "boolean?"), ("shouldCloseOnPress", "boolean?"), ("initialFocus", "boolean?"), ("testID", "string?")]),
 ];
