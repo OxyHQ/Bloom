@@ -746,6 +746,15 @@ fn element_value(
             element_value(&c.consequent, to_element, elements, depth)
                 && element_value(&c.alternate, to_element, elements, depth)
         }
+        // `children as React.ReactElement`: the children, drawn as they are.
+        Expression::TSAsExpression(a)
+            if matches!(a.expression.without_parentheses(), Expression::Identifier(id) if id.name == "children")
+                && matches!(&a.type_annotation, TSType::TSTypeReference(r)
+                    if matches!(&r.type_name, TSTypeName::QualifiedName(q) if q.right.name == "ReactElement" || q.right.name == "Element")
+                        || matches!(&r.type_name, TSTypeName::IdentifierReference(n) if n.name == "ReactElement")) =>
+        {
+            true
+        }
         Expression::Identifier(id) if depth == 0 => elements
             .iter()
             .find(|(n, _)| *n == id.name.as_str())

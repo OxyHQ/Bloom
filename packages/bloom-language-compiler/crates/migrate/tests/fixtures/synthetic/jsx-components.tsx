@@ -21,3 +21,11 @@ const List: React.FC<ListProps> = ({ title, count }) => {
 const Status: React.FC<{ ok: boolean }> = ({ ok }) => (ok ? <Card title="Ready" /> : <Card title="Waiting" />);
 
 export { List, Status };
+
+// A component that hands its children back (`children as React.ReactElement`) draws them.
+export function Hover({ title, children }: { title?: string; children: React.ReactNode }) {
+  if (!title) {
+    return children as React.ReactElement;
+  }
+  return <Card title={title}>{children}</Card>;
+}

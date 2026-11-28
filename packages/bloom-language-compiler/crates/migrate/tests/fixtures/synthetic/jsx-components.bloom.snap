@@ -20,3 +20,17 @@ public struct Status: View {
     if ok { Card(title: "Ready") } else { Card(title: "Waiting") }
   }
 }
+
+// A component that hands its children back (`children as React.ReactElement`) draws them.
+public struct Hover: View {
+  var title: String? = none
+  let children: View
+  var body: some View {
+    if title == none || title.isEmpty {
+      // bloom: review: `as React.ReactElement` dropped: annotate where the value lands if tsc needs it
+      children
+    } else {
+      Card(title: title!) { children }
+    }
+  }
+}
