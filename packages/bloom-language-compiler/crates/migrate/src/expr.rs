@@ -1741,7 +1741,17 @@ impl Tr<'_> {
         let children = &args[split..];
         let conditional = children.iter().any(|a| a.as_expression().is_some_and(|e| is_conditional_child(e)));
         // A spread child (`...xs.map(…)`) is a `for` line, which only a builder takes.
-        let spread = children.iter().any(|a| matches!(a, Argument::SpreadElement(_)));
+        // A spread of a name (`Text(...runs)`) stays a spread argument.
+        let spread = children.iter().any(|a| match a {
+            Argument::SpreadElement(s) => match s.argument.without_parentheses() {
+                Expression::CallExpression(_)
+                | Expression::ConditionalExpression(_)
+                | Expression::LogicalExpression(_)
+                | Expression::ArrayExpression(_) => true,
+                _ => false,
+            },
+            _ => false,
+        });
         let builder =
             !children.is_empty() && (children.len() >= 2 || conditional || spread || STACKS.contains(&ctor));
         let leading = if builder { &args[..split] } else { &args[..] };
