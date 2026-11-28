@@ -2180,7 +2180,9 @@ impl<'a> Emitter<'a> {
                     if let ExprKind::Record(entries) = &a.value.kind {
                         for entry in entries {
                             match entry {
-                                RecordEntry::Field { key, value } if matches!(key.name.as_str(), "name" | "initials") => {
+                                RecordEntry::Field { key, value }
+                                    if matches!(key.name.as_str(), "name" | "initials") =>
+                                {
                                     args.push(format!("{} = {}", key.name, self.expr(value)));
                                 }
                                 RecordEntry::Field { key, .. } => {
