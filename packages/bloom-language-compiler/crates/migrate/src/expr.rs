@@ -360,6 +360,14 @@ impl Tr<'_> {
             }
             Expression::BinaryExpression(b) => self.binary(b),
             Expression::UnaryExpression(u) => match u.operator {
+                // `!!x?.trim()`: `Boolean(x?.trim())`, an optional string's truthiness.
+                UnaryOperator::LogicalNot
+                    if let Expression::UnaryExpression(inner) = u.argument.without_parentheses()
+                        && inner.operator == UnaryOperator::LogicalNot
+                        && optional_string_call(&inner.argument) =>
+                {
+                    self.boolean(&inner.argument)
+                }
                 // `!x` is always a boolean in JS: the negated truthiness of `x`.
                 UnaryOperator::LogicalNot => self.test_negated(&u.argument),
                 UnaryOperator::UnaryNegation => format!("-{}", self.expr(&u.argument)),

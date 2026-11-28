@@ -1,0 +1,27 @@
+// An optional string drawn among a text's runs draws nothing when absent, `x?.trim()` is its
+// truthiness, and a `Record<K, V>` read destructured is a `V` (every key is present).
+
+public type Size = "sm" | "md"
+
+private struct SizeSpec {
+  let font: "sm" | "md"
+  let gap: Float
+}
+
+// bloom: review: `Record<Size, SizeSpec>` is a `[String: SizeSpec]`: its keys are no longer checked
+private let SIZES: [String: SizeSpec] = { sm: { font: "sm", gap: 2 }, md: { font: "md", gap: 4 } }
+
+public struct Handle: View {
+  var handle: String? = none
+  var name: String? = none
+  let size: Size
+  let { font, gap } = SIZES[size]!
+  let hasName = ((name?.trimmed() ?? "") != "")
+
+  var body: some View {
+    VStack {
+      RawText("@", (handle ?? "")).foreground("muted")
+      Text(hasName ? "named" : "anonymous").font(font).padding("top", gap > 2 ? "sm" : "xs")
+    }
+  }
+}

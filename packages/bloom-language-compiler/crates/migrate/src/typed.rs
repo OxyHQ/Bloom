@@ -831,6 +831,35 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((start, end, format!("\"${{{text}}}\"")))
             }
+            // `RawText("@", handle)` of an optional string: JS draws nothing for `undefined`.
+            ("B0201", _)
+                if d.message == "`String?` may be `none` here"
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                    && source[..start].trim_end().ends_with([',', '('])
+                    && source[..start]
+                        .rfind("RawText(")
+                        .is_some_and(|at| !source[at..start].contains(')')) =>
+            {
+                Some((start, end, format!("({text} ?? \"\")")))
+            }
+            // `let { a, b } = SIZES[size]` of a TS `Record<K, V>` (every key present): the read is `V`.
+            ("B0303", _)
+                if d.message.starts_with("a struct cannot match `")
+                    && d.message.ends_with("?`")
+                    && text.starts_with('{') =>
+            {
+                let line_end = source[end..].find('\n').map_or(source.len(), |i| end + i);
+                let value = source[end..line_end].trim_end();
+                let record =
+                    value.strip_prefix(" = ").and_then(|v| v.split_once('[')).map(|(name, _)| name.trim());
+                match record {
+                    Some(name) if value.ends_with(']') && ts.contains(&format!("const {name}: Record<")) => {
+                        let at = end + source[end..line_end].trim_end().len();
+                        Some((at, at, "!".to_string()))
+                    }
+                    _ => None,
+                }
+            }
             // JS's truthiness of an optional list is its presence, empty or not.
             ("B0201", _)
                 if d.message.starts_with("expected `Bool`, found `")
