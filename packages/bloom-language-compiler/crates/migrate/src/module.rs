@@ -1969,14 +1969,30 @@ impl<'s> Tr<'s> {
 
     /// The fields of an interface's bases when each is a plain type imported from another TS
     /// file the codemod can read (`interface A extends B, C`), in order; `None` otherwise.
-    fn imported_bases(&mut self, interface: &oxc_ast::ast::TSInterfaceDeclaration) -> Option<Vec<crate::props::Field>> {
+    pub fn imported_bases(&mut self, interface: &oxc_ast::ast::TSInterfaceDeclaration) -> Option<Vec<crate::props::Field>> {
         let mut out: Vec<crate::props::Field> = Vec::new();
         for heritage in &interface.extends {
             let TSTypeName::IdentifierReference(base) = &heritage.type_name else { return None };
-            if heritage.type_arguments.is_some() || !self.imported.contains(base.name.as_str()) {
+            // `extends Omit<B, 'k'>` / `Pick<B, 'a'>`: B's fields but those, or those.
+            let (base, keys): (&str, Option<(bool, Vec<String>)>) = match &heritage.type_arguments {
+                None => (base.name.as_str(), None),
+                Some(args) if matches!(base.name.as_str(), "Pick" | "Omit") => {
+                    let [TSType::TSTypeReference(inner), keys] = args.params.as_slice() else { return None };
+                    if inner.type_arguments.is_some() {
+                        return None;
+                    }
+                    let TSTypeName::IdentifierReference(inner) = &inner.type_name else { return None };
+                    let keys = crate::view::string_literals(keys)?;
+                    (inner.name.as_str(), Some((base.name == "Pick", keys)))
+                }
+                Some(_) => return None,
+            };
+            if !self.imported.contains(base) {
                 return None;
             }
-            for field in self.external_props(&base.name)? {
+            let fields = self.external_props(base)?;
+            let fields = fields.into_iter().filter(|f| keys.as_ref().is_none_or(|(pick, k)| k.contains(&f.name) == *pick));
+            for field in fields.collect::<Vec<_>>() {
                 out.retain(|f| f.name != field.name);
                 out.push(field);
             }
