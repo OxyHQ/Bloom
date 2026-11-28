@@ -1965,6 +1965,9 @@ impl Checker<'_> {
             if param == "..." || param == "view" || ctor == "Embed" {
                 self.child_slots.insert(arg.value.id);
             }
+            if param == "..." && matches!(ctor, "Text" | "RawText") {
+                self.run_slots.insert(arg.value.id);
+            }
             self.node_arg(&arg.value, param);
             // `Embed(c ? Text(…) : rows)`: Embed takes a React node, so Bloom views (one, or a
             // list of them) cross as one, `toElement(…)`, as where any TS takes an element.

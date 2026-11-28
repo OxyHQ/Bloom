@@ -1,0 +1,8 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface NameProps {
+  readonly linked: boolean;
+  readonly verified: boolean;
+  readonly name: string | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Name())`), or from TSX as `toElement(Name())`. */
+export declare const Name: (props: NameProps) => ComposedView;

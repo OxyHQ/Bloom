@@ -327,6 +327,9 @@ pub struct CheckResult {
     /// `VirtualList(posts) { post in … }`: the trailing row closures, handed FlashList's
     /// `{ item }` (`{ item, index }` when `true`: `VirtualList(posts.enumerated()) { i, post in … }`).
     pub row_closures: HashMap<Span, bool>,
+    /// `RawText(c ? Text("v") : s)`: a text run that is a view in one branch and a string in
+    /// the other, emitted as is (one Text host whose child is either).
+    pub mixed_runs: HashSet<ExprId>,
     /// Pattern span → the type it matches; binding span → its local.
     pub pattern_tys: HashMap<Span, Ty>,
     pub pattern_locals: HashMap<Span, LocalId>,
@@ -542,6 +545,9 @@ pub struct Checker<'o> {
     /// Expressions in a child's place (a builder line, a node's children, `Embed`'s value, and
     /// the branches of a conditional there): a list of views is a child (TS's `Child` is).
     child_slots: HashSet<ExprId>,
+    /// A text run's place (`Text(…)`, `RawText(…)`): a conditional there may be a view in one
+    /// branch and a string in the other (TS's `<Text>{c ? <Link/> : s}</Text>`).
+    pub(super) run_slots: HashSet<ExprId>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -680,6 +686,7 @@ impl<'o> Checker<'o> {
             chained: HashSet::default(),
             ref_object: false,
             child_slots: HashSet::default(),
+            run_slots: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -4864,6 +4871,35 @@ impl<'o> Checker<'o> {
                 let slot = self.child_slots.contains(&expr.id);
                 if slot {
                     self.child_slots.extend([then.id, otherwise.id]);
+                }
+                // A text run: each branch is a run of its own, a view or a string (`RawText(c ?
+                // Text("v") : s ?? "")`), as TS's `<Text>{c ? <Link/> : s}</Text>` is.
+                if self.run_slots.contains(&expr.id) {
+                    self.run_slots.extend([then.id, otherwise.id]);
+                    self.expr(cond, Some(&Ty::Bool));
+                    self.hook_allowed = false;
+                    self.push();
+                    self.narrow_present(cond);
+                    let a = self.expr(then, None);
+                    self.pop();
+                    self.push();
+                    self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+                    let b = self.expr(otherwise, None);
+                    self.pop();
+                    let run = |this: &Self, ty: &Ty| {
+                        let ty = match this.resolve(ty) {
+                            Ty::Option(inner) => this.resolve(&inner),
+                            other => other,
+                        };
+                        matches!(ty, Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Float | Ty::Unknown | Ty::Never)
+                            || this.is_view(&ty)
+                    };
+                    // A view and a string: a run either way. Two of a kind join as anywhere.
+                    if run(self, &a) && run(self, &b) && self.is_view(&a) != self.is_view(&b) {
+                        self.out.mixed_runs.insert(expr.id);
+                        return Ty::View(None);
+                    }
+                    return self.join(&a, &b, expr.span);
                 }
                 self.expr(cond, Some(&Ty::Bool));
                 // A hook in a branch runs only sometimes (B0420).
