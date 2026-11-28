@@ -41,3 +41,8 @@ section: Added
   - `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` and `Intl.DateTimeFormat` are `formatted(…)` with ECMA-402's defaults written out, `?.formatted(…) ?? "Invalid Date"` for a parse that may fail (needs the compiler's #1066);
   - what TS's flow proved is read so bloomc narrows it: `!Array.isArray(x)` is `x == none`, a tested operand `p!.w!`, an aliased test (`hasName ? name!`), and a TS callback's index `xs[i.truncated()]`;
   - rest props that are exactly a local base interface (`interface P extends B`) are one stored property of `B`; a function's string returns in a `switch` type it `String`.
+- Round 13 (lang-mention-13):
+  - a hook function's `useState` is its hook-local `@State var x` (read as `x`, written as `x = …`); an object TS holds for its identity stays React's `useState`;
+  - `break`/`continue` in a loop are Swift's; `!=` on a type parameter makes it `T: Equatable`; a `slice` bound is `n.truncated()`; `x?.[0]` on a present tuple is `x.0`; `f<T>()` returning `G<T>` is typed `G<T>`;
+  - `{ data: xs = [] }` binds `xsOrNone` (no `let` shadows another in its scope); a `screen()` the route draws inside a wrapper is refused until `ViewModifier`;
+  - `--write`: a migrated route's screen stays `<X />` in its TS importers, `.bloom` importers take a default by its name, and a `jest.mock` of a migrated module's views draws each mocked component as the view's node.
