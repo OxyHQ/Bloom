@@ -1843,43 +1843,8 @@ impl<'s> Tr<'s> {
         let outer = std::mem::replace(&mut self.in_menu, true);
         let draft = self.view_item(name, call, vis, body);
         self.in_menu = outer;
-        let head = format!("{vis}view {name}");
-        let Some(rest) = draft.strip_prefix(head.as_str()) else { return draft };
-        // `(a: T, b: U = v) {` → stored properties; the members and `body { … }` follow.
-        let (params, rest) = match rest.strip_prefix('(') {
-            Some(after) => {
-                let mut depth = 1usize;
-                let mut end = 0;
-                for (i, c) in after.char_indices() {
-                    match c {
-                        '(' | '[' | '{' => depth += 1,
-                        ')' | ']' | '}' => {
-                            depth -= 1;
-                            if depth == 0 {
-                                end = i;
-                                break;
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-                (&after[..end], &after[end + 1..])
-            }
-            None => ("", rest),
-        };
-        let Some(inner) = rest.trim_start().strip_prefix('{') else { return draft };
-        let Some(at) = inner.rfind("body {") else { return draft };
-        let (members, body_part) = inner.split_at(at);
-        let body_part = &body_part["body {".len()..];
+        let Some((stored, members, body_part)) = draft_parts(&draft, vis, name) else { return draft };
         let result_type = if protocol == "MenuActions" { "[String: () -> Unit]" } else { "some View" };
-        let stored: Vec<String> = split_top_level(params)
-            .into_iter()
-            .filter(|p| !p.trim().is_empty())
-            .map(|p| {
-                let p = p.trim();
-                if p.contains('=') { format!("var {p}") } else { format!("let {p}") }
-            })
-            .collect();
         let fields: Vec<String> = stored
             .iter()
             .filter_map(|line| {
@@ -1893,6 +1858,19 @@ impl<'s> Tr<'s> {
         let vis = vis.replace("pub ", "public ");
         format!(
             "{vis}struct {name}: {protocol} {{\n{}\n{}var body: {result_type} {{{body_part}",
+            stored.join("\n"),
+            members
+        )
+    }
+
+    /// A generic component (`function Shell<TItem>(props: P<TItem>)`): drafted as a view, then
+    /// written as 2.0's `struct Shell<TItem>: View`, since a 0.x `view` takes no type parameters.
+    pub fn generic_view(&mut self, draft: String, vis: &str, name: &str, generics: &[String]) -> String {
+        let Some((stored, members, body_part)) = draft_parts(&draft, vis, name) else { return draft };
+        let vis = vis.replace("pub ", "public ");
+        format!(
+            "{vis}struct {name}<{}>: View {{\n{}\n{}var body: some View {{{body_part}",
+            generics.join(", "),
             stored.join("\n"),
             members
         )
@@ -2272,4 +2250,43 @@ fn split_top_level(text: &str) -> Vec<&str> {
     }
     out.push(&text[start..]);
     out
+}
+
+/// A drafted `{vis}view Name(a: T, b: U = v) { members body { … } }`: its props as stored
+/// properties (`let a: T`, `var b: U = v`), its members, and its body from after `body {`.
+fn draft_parts(draft: &str, vis: &str, name: &str) -> Option<(Vec<String>, String, String)> {
+    let rest = draft.strip_prefix(format!("{vis}view {name}").as_str())?;
+    let (params, rest) = match rest.strip_prefix('(') {
+        Some(after) => {
+            let mut depth = 1usize;
+            let mut end = 0;
+            for (i, c) in after.char_indices() {
+                match c {
+                    '(' | '[' | '{' => depth += 1,
+                    ')' | ']' | '}' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            end = i;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            (&after[..end], &after[end + 1..])
+        }
+        None => ("", rest),
+    };
+    let inner = rest.trim_start().strip_prefix('{')?;
+    let at = inner.rfind("body {")?;
+    let (members, body_part) = inner.split_at(at);
+    let stored: Vec<String> = split_top_level(params)
+        .into_iter()
+        .filter(|p| !p.trim().is_empty())
+        .map(|p| {
+            let p = p.trim();
+            if p.contains('=') { format!("var {p}") } else { format!("let {p}") }
+        })
+        .collect();
+    Some((stored, members.to_string(), body_part["body {".len()..].to_string()))
 }

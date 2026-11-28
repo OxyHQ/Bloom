@@ -1374,7 +1374,16 @@ impl Tr<'_> {
         if self.components.contains(name) {
             return match Body::of_function(f) {
                 Some(body) => {
-                    self.view_decl_typed("view", name, vis, &f.params, props_ty, body, module, f.span)
+                    let draft =
+                        self.view_decl_typed("view", name, vis, &f.params, props_ty, body, module, f.span);
+                    match f.type_parameters.as_deref() {
+                        Some(p) if !p.params.is_empty() => {
+                            let generics: Vec<String> =
+                                p.params.iter().map(|t| t.name.name.to_string()).collect();
+                            self.generic_view(draft, vis, name, &generics)
+                        }
+                        _ => draft,
+                    }
                 }
                 None => self.refuse("fn:declare", "a function without a body", f.span),
             };
