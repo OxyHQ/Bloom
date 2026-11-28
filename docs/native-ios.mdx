@@ -5,7 +5,7 @@ description: The iOS lane of ADR 0003. The Swift backend, the runtime (Bloom, Bl
 
 # Native iOS: `.bloom` to Swift + SwiftUI
 
-Status: in progress, 2026-11-28 (lang-native-iOS-1). [ADR 0003](./adr/0003-native-backends.md) decided
+Status: in progress, 2026-11-28 (lang-native-iOS-1, lang-native-ios-2). [ADR 0003](./adr/0003-native-backends.md) decided
 that `.bloom` compiles straight to native code, with no JavaScript on the device. The shapes both
 platforms share are in [the native runtime API](./native-runtime-api.mdx); this page covers what is
 specific to iOS.
@@ -15,13 +15,14 @@ specific to iOS.
 | Part | Where | State |
 |---|---|---|
 | The Swift backend | `packages/bloom-language-compiler/crates/native/src/swift/` | NativeBench emits with nothing left uncovered; across the goldens, 16 constructs are recorded as uncovered (mostly structural records) |
-| Golden tests, one per construct | `crates/native/tests/golden-swift/` (`cargo test -p bloom_native --test golden_swift`) | 13 own cases, plus every TypeScript emitter fixture with no TS import (the Kotlin goldens' selection): 55 cases. 33 type-check as Swift; 21 are queued in `NOT_YET_SWIFT` with their reasons; 1 is TS-only. |
+| Golden tests, one per construct | `crates/native/tests/golden-swift/` (`cargo test -p bloom_native --test golden_swift`) | 18 own cases, plus every TypeScript emitter fixture with no TS import (the Kotlin goldens' selection): 67 cases. 55 type-check as Swift; 11 are queued in `NOT_YET_SWIFT` with their reasons; 1 is TS-only. |
 | `Bloom`: the standard library on Foundation | `crates/native/runtime/ios/Sources/Bloom` | Ported; see its tests |
 | `BloomTheme`: the colour engine, roles, presets, ambient, scopes, persistence | `runtime/ios/Sources/BloomTheme` | Byte-identical to the TS goldens (`swift test --filter BloomThemeTests`) |
-| `BloomUI`: BloomUI on SwiftUI | `runtime/ios/Sources/BloomUI` | The feed's and Settings' nodes, the material, the router |
+| `BloomUI`: BloomUI on SwiftUI | `runtime/ios/Sources/BloomUI` | The feed's and Settings' nodes, Mention's feed row, the material and its effects (the tab bar, the header scrim, the detached sheet, the progressive blur band, menu rows), screens' chrome, the router |
+| Regex conformance | `packages/bloom-language-compiler/conformance/regex/` (Node records `expected.json`) | Swift: 58 of 59 cases match JS (`RegexTranslate` over ICU); the one left is in `known-differences.swift.json` |
 | Tokens, glyphs and the node table, generated | `scripts/generate-swift-tokens.mjs`, `crates/native/scripts/icons.py`, `scripts/generate-swift-theme.ts` | From `spec/language.json`, `src/icons` and `src/theme`; nothing copied by hand |
 | `bloom-native emit --target swiftui <package> --ios-project <dir>` | `src/swift/project.rs` | A SwiftPM package of the app's modules, an XcodeGen `project.yml`, the `@main` app, the fonts, and a UI-test target that measures the bench |
-| Islands | `BloomUI/Island.swift`, `stdlib/Bloom/Native/BloomIsland/ios/` | The Swift side type-checks. The Fabric component is written but not built. |
+| Islands | `BloomUI/Island.swift`, `stdlib/Bloom/Native/BloomIsland/ios/` | Android's contract (the `BloomIsland` view, the `BloomIslands` module's keyed channel, `BloomIslandEvent`). Mention's `FeedIsland` emits with its `FeedIsland__island` entry and type-checks. The Fabric component and the module are written but not built. |
 
 ## The mapping
 
@@ -61,6 +62,27 @@ proposal is the right one.
 **TS-only on Swift.** `surface_protocols`' `static let self: Codec<Post>` and `T.self.name` are the
 TypeScript backend's codec witnesses, with no Swift meaning. They are listed in
 `tests/golden-swift/KNOWN_NOT_SWIFT` rather than imitated.
+
+### From the checker's IR (core12)
+
+| Bloom | Swift |
+|---|---|
+| `struct X: ViewModifier`, `.modifier(X())` | SwiftUI's own `ViewModifier` and `.modifier(_:)` |
+| a hook function with `@State var` (`VarStmt.state`) | a `DynamicProperty` struct (`useCounter` is `UseCounter`): its states `@State`, set in its `init`; a view's `let counter = useCounter(start)` stores it, assigned in the view's `init`, and reads its `value` |
+| flow narrowing (`if x != none`, a ternary, `guard`) | `x!` where the checker narrowed: its own local of the same declaration, or `narrowed_paths` for a member chain |
+| `a \|\| b` of an optional that is not a `Bool` | `bloomOr(a, b)` (JS's value `\|\|`: `""`, `0`, `NaN` fall through) |
+| `a === b`, `a !== b` | the same |
+| `s.with(field: v)` | the memberwise `init`, the other fields read from `s` |
+| `@Transparent struct UserID { let raw: String }` | a struct coded as its field (`"u1"`, not `{"raw":"u1"}`) |
+| `value["key"]` of a `JSONValue` (`json_reads`) | `value.read("key")`, `none` where absent |
+| `await Task.cancellation` | the runtime's `Task.cancellation` (`withTaskCancellationHandler`); its `defer` runs on cancel |
+| a `catch` in a task (`.task`, `Task { }`) | `if Task.isCancelled { return }` first: a cancelled request runs no catch |
+| `.task { … }` | `{ @MainActor in … }`, whatever the SDK infers for `@isolated(any)` |
+| `fatal()` | `Never`; `x ?? fatal()` takes the disfavoured generic one |
+| `try Regex("…")`, `wholeMatch(of:)`, optional captures | `BloomRegex` with Swift's API by name and label; the pattern is ECMAScript's, rewritten for ICU |
+| `public let Alias = SomeView` | `typealias`, never more visible than its type |
+| `xs.sorted()`, `min()`, `max()` (`natural_orders`) | Swift's own |
+| label overloads (core13, `name$0$label`) | Swift's own overloads: the backend prints names and labels as written |
 
 ## BloomUI on SwiftUI
 
@@ -124,6 +146,35 @@ What iOS's system effects do not give directly, and the plan for each:
 | The detached sheet (16 pt gaps, radius 24), its dismiss physics, backdrop blur 80 at dim 0.28 | The system `.sheet` with detents; the detached sheet as a custom presentation |
 | The progressive blur band under the bottom bar | Stacked masked materials |
 
+**Built (lang-native-ios-2), all through the one material** (`BloomUI/Material/`; numbers from
+today's sources, cited in each file):
+
+- **`BloomTabBar`** (TabBar.swift): the floating capsule on glass, 62 tall (44 minimized), the items
+  88 at most, the highlight the shadow tone 4 inside. A drag along the bar (past 6, giving way past
+  14 across) moves the highlight 1:1 with a light haptic at each tab boundary; the release springs
+  to the nearest tab (`select`: 0.42, 0.82) and selects it; a tap selects. Scrolling minimizes it
+  (top zone 24, a step of 3, `expand`: 0.38, 1). The navigation draws it by default;
+  `.bloomTabBarStyle(.system)` keeps the system `TabView` for the side-by-side recordings.
+- **`BloomHeaderScrim`** (Effects.swift): EdgeScrim's 17 smoothstep stops after the status bar's
+  hold, over the header row and 12 more, faded in by `clamp(scrollY / 20)`, under the system
+  header of every screen. `ScrollView` and `VirtualList` report the offset (`BloomScrollOffsetKey`).
+- **`.bloomDetachedSheet`** (Sheet.swift): 16 from the sides and the bottom (the home indicator's
+  inset plus 16), radius 20 (SheetShell's), max width 500, the grabber; the backdrop
+  (`BloomBackdrop`: dark blur, dim 0.7); the sheet springs (mass 0.8, stiffness 300, damping 25;
+  leave 250), the fade 250 ms, a 0.3 overdrag, a 1 → 0.95 scale over travel, and pan-dismiss's
+  rule (`v > 900`, or past `max(140, 0.25 × h)` unless flung back above −300).
+- **`BloomProgressiveBlur`** (Effects.swift): ten stacked masked layers at 100…16% of the band, and
+  the surface fill's tail (0.7, 0.32, 0.08, 0 at 0, 42, 68, 88%), under the tab bar.
+- **Menu rows** (Menu.swift): `BloomMenuRow` (44 tall, radius 10, gap 8, the check and radio gutter
+  36, the material's instant press, no haptic, as today), separators, group labels, swatches
+  (28 → 32 pressed, the ring mixed 22%) and inline sub-menus; `.bloomMenu` presents them on the
+  detached sheet, as menus are on iOS today.
+- **The engagement action**: the pop when a press turns it on (dip 0.7, swell 1.2, the ring,
+  outExpo 300 ms) and the count's roll (`numericText`).
+
+To compare on the Mac: the system's own scroll edge effect (iOS 26) under Bloom's scrim, and the
+system tab bar's own scrub on iOS 26 against Bloom's bar.
+
 **Decided by the owner, 2026-11-28: Liquid Glass for everything on iOS**
 ([surface material study](./surface-material-study.mdx), decision 7). Buttons, the FAB, header
 controls, the bottom bar, tabs and menus all draw through the one material, as on Android: system
@@ -141,14 +192,19 @@ Side-by-side recordings on the Mac are the evidence that it is at least as good 
 - **`crates/native/scripts/typecheck-swift.sh`** type-checks, in Swift 6 mode:
   - `BloomUI`;
   - every golden except the TS-only one and those queued in `tests/golden-swift/NOT_YET_SWIFT`
-    (each with its reason: flow narrowing, TS-shaped records, nodes not on SwiftUI yet, a few
-    emitter gaps);
-  - the bench's three modules (Feed, Settings, NativeBench) and its `@main` app.
+    (each with its reason: TS-shaped records, nodes not on SwiftUI yet, two emitter gaps);
+  - the bench's three modules (Feed, Settings, NativeBench) and its `@main` app;
+  - with `SWIFT_ISLANDS="<package dir>:<Module>"`, an app's island modules and their entries
+    (Mention's `packages/frontend:FeedIsland` type-checks).
+- **`swift test`** also runs the regex conformance corpus (`RegexConformanceTests`) and
+  `Task.cancellation`.
 
   It checks against `runtime/ios/Stubs/SwiftUI`, SwiftUI's signatures for what BloomUI uses, copied
   from the SDK, with their availability and isolation.
 - **What this does not prove:** layout and drawing, the SDK's full overload set and its
-  concurrency annotations, ImageIO, UIKit, the island's Fabric component, and anything about speed.
+  concurrency annotations, ImageIO, UIKit (`BloomIslandController`, `BloomIslandChannel` are behind
+  `canImport(UIKit)`), the island's Fabric component and module, the effects' feel (gestures,
+  springs, haptics), and anything about speed.
   The stub never ships (`--ios-project` leaves it out).
 
 ## What the Mac lane needs (hangar phase 6)
@@ -193,6 +249,22 @@ day.
     (`kCMIOHardwarePropertyAllowScreenCaptureDevices`), recorded with `ffmpeg -f avfoundation`, and
     `simctl io recordVideo` for simulators, for the side-by-side recordings of glass and motion.
 
+**What the Mac lane builds and checks first** (in this order):
+
+1. `swift build` of `runtime/ios` against the real SDK, then `typecheck-swift.sh` (it skips the stub
+   on Darwin): the SDK's overloads and isolation against what the stub assumed (`.task`'s closure,
+   `onScrollGeometryChange`, `withAnimation(_:completionCriteria:_:completion:)`, `Animatable`).
+2. `bench/native/swiftui-build.sh simulator`, then `swiftui-bench.sh`.
+3. `BLOOM_BLESS=1 swift test --filter IntlParity` (Apple's ICU differences), and the regex corpus
+   on Apple's ICU (`swift test --filter RegexConformance`).
+4. The island host: React Native 0.88's iOS codegen over `BloomIslandViewNativeComponent.ts`, the
+   Fabric component and `BloomIslandsModule.mm` built into Mention's iOS app, with the island
+   modules as a pod (the iOS counterpart of Android's `:bloom-islands`) that calls each
+   `<Island>__register()` at launch; then Mention's feed with `EXPO_PUBLIC_BLOOM_ISLAND_FEED`.
+5. Side-by-side recordings, today's build against the SwiftUI one: the tab bar (scrub, haptics,
+   minimize), the header scrim, the detached sheet and menus (open, drag, dismiss), the band, the
+   engagement pop, and glass on iOS 26 and the fallback on iOS 17.
+
 ## Measuring on the Mac
 
 `bench/native/swiftui-build.sh simulator|device` writes the project and builds it.
@@ -213,12 +285,12 @@ and sheets.
 
 ## For the checker's owners
 
-Found while writing the goldens:
+Found while writing the goldens, and where each stands:
 
-- **Overloads that differ only by label are rejected:** `B0217`, "`Point$moved` is declared twice",
-  for methods (extension mangling) and for free functions. ADR 0003 lists label overloading in the
-  2.0 language. Swift needs nothing once the checker takes them.
-- **Function types drop `throws`:** `(T) async throws -> U` parses with no record of `throws`. The
-  Swift backend reads it from the source span. A flag on `TypeKind::Fn` would make that exact.
-- **Bloom's built-in `sorted()` takes a comparator:** `xs.sorted()` is `B0207`, where Swift and the
-  2.0 surface read `sorted()` as the natural order.
+- **Label overloads:** core13 lowers them to `name$0$label` (#1081). Swift needs nothing: the
+  backend prints names and labels as written. A golden will confirm it after the rebase.
+- **Function types' `throws`:** core13 adds `TypeKind::Fn { throws }` (#1081). Until then the
+  backend reads it from the source span (`fn_type_throws`); it reads the flag after the rebase.
+- **`sorted()` with no comparator:** taken now (`natural_orders`); Swift's own.
+- **Offsets:** a match's `start` and every String offset count graphemes on every backend
+  (decided 2026-11-28), as Swift's do; `.utf16` is Swift's `String.UTF16View`.

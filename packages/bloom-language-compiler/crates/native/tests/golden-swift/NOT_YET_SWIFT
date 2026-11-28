@@ -1,8 +1,6 @@
 # Goldens that emit but do not type-check as Swift yet: the Swift backend's work queue, each with
 # the reason. scripts/typecheck-swift.sh skips them; a case leaves this list when it type-checks.
 #
-# Flow narrowing: Bloom narrows an optional after `if x != none`, `x || y`, a ternary; Swift needs
-# `if let` or `!`. Needs the checker's name resolution (bloom_lang::backend NameRes), not spans.
 # TypeScript-shaped data with no Swift meaning yet (structural records, `Partial`, JS `Map`).
 records            # structural records, `Partial<T>`
 record_types       # a record type alias
@@ -10,7 +8,7 @@ record_key_index   # a record indexed by key
 record_spread_override  # a record spread with an override
 keyed_match        # `Partial<T>`
 collections        # JS `Map<K, V>`
-# BloomUI nodes and screen chrome not on SwiftUI yet.
+# BloomUI nodes not on SwiftUI yet.
 inline_view        # ErrorBoundary
 mixed_runs         # RawText
 optional_binding   # MenuContent

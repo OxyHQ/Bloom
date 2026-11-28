@@ -43,9 +43,10 @@ cargo build -q --manifest-path "$C/Cargo.toml" -p bloom_native
 TARGET=${CARGO_TARGET_DIR:-$C/target}
 failed=0
 queued=0
+known=0
 for golden in "$HERE"/tests/golden-swift/*.swift; do
   case=$(basename "$golden" .swift)
-  if grep -q "^$case\b" "$HERE/tests/golden-swift/KNOWN_NOT_SWIFT"; then continue; fi
+  if grep -q "^$case\b" "$HERE/tests/golden-swift/KNOWN_NOT_SWIFT"; then known=$((known + 1)); continue; fi
   if grep -q "^$case\b" "$HERE/tests/golden-swift/NOT_YET_SWIFT"; then queued=$((queued + 1)); continue; fi
   name=$(echo "$case" | awk -F_ '{for(i=1;i<=NF;i++) printf "%s%s", toupper(substr($i,1,1)), substr($i,2)}')
   if ! swiftc $FLAGS -typecheck -module-name "Golden$name" "$golden" 2>"$OUT/$case.log"; then
@@ -78,4 +79,4 @@ for spec in ${SWIFT_ISLANDS:-}; do
 done
 count=$(ls "$HERE"/tests/golden-swift/*.swift | wc -l)
 if [ "$failed" -gt 0 ]; then echo "typecheck-swift: $failed of $count goldens + 3 bench modules failed"; exit 1; fi
-echo "typecheck-swift: $((count - queued)) goldens and the bench type-check ($queued queued in tests/golden-swift/NOT_YET_SWIFT)"
+echo "typecheck-swift: $((count - queued - known)) of $count goldens and the bench type-check ($queued queued in tests/golden-swift/NOT_YET_SWIFT, $known TS-only)"
