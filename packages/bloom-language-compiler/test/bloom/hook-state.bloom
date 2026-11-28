@@ -3,12 +3,21 @@
 public func useCounter(_ start: Int) -> (Int, () -> Void, Binding<Int>) {
   @State var count = start
   @State var presses = 0
+  @State var seen = counted(start)
   let bump = {
     count += 1
     presses = presses + 1
   }
-  return (count * 10 + presses, bump, $count)
+  return (count * 10 + presses + seen * 0, bump, $count)
 }
+
+// How many times an initial value is computed: once per hook instance, as Swift's `@State`.
+private var computed = 0
+private func counted(_ n: Int) -> Int {
+  computed += 1
+  return n
+}
+public func initialsComputed() -> Int { computed }
 
 public struct Counter: View {
   let start: Int

@@ -1444,8 +1444,27 @@ impl<'a> Emitter<'a> {
                 let ty = self.ck.locals[local].ty.clone();
                 let ty = self.ts_type(&ty);
                 let value = self.value_expr(&v.value);
+                // The initial value is computed once, on the first call, as a view's `@State`'s
+                // is (`useState(() => v)`); a literal is its own value.
+                let constant = matches!(
+                    v.value.kind,
+                    ExprKind::Int(_)
+                        | ExprKind::Float(_)
+                        | ExprKind::Bool(_)
+                        | ExprKind::None
+                        | ExprKind::Str { .. }
+                ) || is_ident(&value.text);
                 let mut line = Frag::at(stmt.span, format!("const [{name}, {setter}] = useState<{ty}>("));
-                line.f(value).s(");");
+                if constant {
+                    line.f(value);
+                } else {
+                    line.s("() => ").f(if value.text.starts_with('{') {
+                        value.wrap("(", ")")
+                    } else {
+                        value
+                    });
+                }
+                line.s(");");
                 self.push_stmt(line);
             }
             StmtKind::Var(v) => {

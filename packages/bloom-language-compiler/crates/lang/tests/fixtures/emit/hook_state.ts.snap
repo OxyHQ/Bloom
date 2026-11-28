@@ -9,6 +9,7 @@ export function useCounter(start: number): readonly [number, () => void, Binding
 const $ = $c(2);
 const [count, setCount] = useState<number>(start);
 const [presses, setPresses] = useState<number>(0);
+const [seen, setSeen] = useState<number>(() => counted(start));
 let bump;
 if ($[0] !== presses) {
 bump = () => {
@@ -20,7 +21,18 @@ $[1] = bump;
 } else {
 bump = $[1];
 }
-return [(count * 10) + presses, bump, [count, setCount] as const] as const;
+return [((count * 10) + presses) + (seen * 0), bump, [count, setCount] as const] as const;
+}
+
+let computed = 0;
+
+function counted(n: number): number {
+computed = computed + (1);
+return n;
+}
+
+export function initialsComputed(): number {
+return computed;
 }
 
 const $view0 = Button(Text("Add"));

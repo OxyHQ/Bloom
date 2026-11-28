@@ -1,5 +1,6 @@
 import type { Binding, ComposedView } from "@oxy.so/bloom-language";
 export declare function useCounter(start: number): readonly [number, () => void, Binding<number>];
+export declare function initialsComputed(): number;
 export interface CounterProps {
   readonly start: number;
 }

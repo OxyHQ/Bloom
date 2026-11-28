@@ -9,8 +9,9 @@ import TestRenderer, { act } from 'react-test-renderer';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Required, not imported: see bloom.cost.test.tsx.
-const { Counter } = require('./bloom/hook-state.bloom') as {
+const { Counter, initialsComputed } = require('./bloom/hook-state.bloom') as {
   Counter: (props: { start: number }) => Parameters<typeof toElement>[0];
+  initialsComputed: () => number;
 };
 
 it('keeps, writes and binds a hook function’s state', () => {
@@ -35,4 +36,6 @@ it('keeps, writes and binds a hook function’s state', () => {
   expect(shown()).toBe('72');
   press(1);
   expect(shown()).toBe('2');
+  // Four renders, one initial value computed.
+  expect(initialsComputed()).toBe(1);
 });
