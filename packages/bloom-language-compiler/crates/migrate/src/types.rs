@@ -97,6 +97,12 @@ impl Tr<'_> {
                         );
                     }
                 };
+                // The language's own node types (`ScrollViewNode`, `VStackNode`) are views: a node
+                // of that kind is handed to it, and its modifiers chain on it (core14's answer to
+                // repros/mention16/runtime-node-types).
+                if name.ends_with("Node") && name.len() > 4 && self.lang.contains_key(name.as_str()) {
+                    return "View".into();
+                }
                 // TS's utility types have no Bloom spelling: the TS type, kept as a `Foreign`.
                 const UTILITY: &[&str] = &[
                     "ReturnType",

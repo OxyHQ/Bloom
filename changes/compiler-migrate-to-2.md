@@ -67,3 +67,4 @@ section: Added
   - JS regex literals in Swift's spelling: `try! Regex("p")`, and on a `String` `s.firstMatch(of:)`, `s.replacing(_:with:)`, `s.split(separator:)` (a TS value keeps the regex's own methods).
   - an object literal read by a key that is not a field name (`pages["edit-profile"]`, `PRESETS[key]`) and never iterated is a dictionary literal.
   - a caught value cast to an Axios-like shape (`error as { response?: … }`) is `error.jsValue`, read `err?["response"]?["data"]?["error"]?.string`; a statement's `ok && asyncFn()` is an `if`; a type-guard `filter` on a TS array stays JS's `filter`.
+  - the language's node types (`ScrollViewNode`) are `View`; a ternary of two record shapes gives each branch the other's fields as `none`.

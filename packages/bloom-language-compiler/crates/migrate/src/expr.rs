@@ -302,6 +302,27 @@ impl Tr<'_> {
                     a
                 };
                 let b = self.expr(&c.alternate);
+                // `own ? { mine: true } : { userId: id }` (TS's union of two shapes): one record
+                // type, each branch with the other's fields `none` (JS's absent key reads
+                // `undefined`).
+                let (a, b) = match (record_keys(&c.consequent), record_keys(&c.alternate)) {
+                    (Some(ka), Some(kb)) if ka != kb && a.ends_with('}') && b.ends_with('}') => {
+                        let pad = |text: String, own: &[String], other: &[String]| {
+                            let missing: Vec<String> = other
+                                .iter()
+                                .filter(|k| !own.contains(k))
+                                .map(|k| format!("{k}: none"))
+                                .collect();
+                            if missing.is_empty() {
+                                return text;
+                            }
+                            let body = text[..text.len() - 1].trim_end().trim_end_matches(',').to_string();
+                            format!("{body}, {} }}", missing.join(", "))
+                        };
+                        (pad(a, &ka, &kb), pad(b, &kb, &ka))
+                    }
+                    _ => (a, b),
+                };
                 format!("{test} ? {a} : {b}")
             }
             Expression::LogicalExpression(l) => {
@@ -3064,4 +3085,22 @@ fn regex_value(r: &oxc_ast::ast::RegExpLiteral) -> String {
     } else {
         format!("Regex(pattern: {pattern}, flags: {})", quote(&flags))
     }
+}
+
+/// The field names of a plain record literal (`{ a: 1, b }`: no spread, no computed key).
+fn record_keys(e: &Expression) -> Option<Vec<String>> {
+    let Expression::ObjectExpression(o) = e.without_parentheses() else { return None };
+    if o.properties.is_empty() {
+        return None;
+    }
+    o.properties
+        .iter()
+        .map(|p| match p {
+            ObjectPropertyKind::ObjectProperty(p) if !p.computed && !p.method => match &p.key {
+                PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect()
 }
