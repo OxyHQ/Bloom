@@ -130,6 +130,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.Event
 import java.lang.ref.WeakReference
 import so.oxy.bloom.ui.BloomThemeProvider
+import so.oxy.bloom.ui.parseThemeColors
 import so.oxy.bloom.ui.DEFAULT_PRESET
 
 /** Registers the `BloomIsland` view and the `BloomIslands` module (autolinked by `bloom build android`). */
@@ -157,7 +158,7 @@ class BloomIslandPackage : BaseReactPackage() {
 
 /**
  * `BloomIslands`: a keyed island's data, set off React's commit. `setProps(key, json)` and
- * `setTheme(key, preset, scheme)` reach the island's composition directly (a snapshot write,
+ * `setTheme(key, preset, scheme, colors)` reach the island's composition directly (a snapshot write,
  * drawn on the next frame), whether or not a host for the key is mounted yet; a keyed island's
  * intents are the device event `BloomIslandEvent` (`{ key, name, payload }`).
  */
@@ -170,9 +171,10 @@ class BloomIslandsModule(context: ReactApplicationContext) : NativeBloomIslandsS
     BloomIslands.slot(key).props = json
   }
 
-  override fun setTheme(key: String, preset: String?, scheme: String?) {
+  override fun setTheme(key: String, preset: String?, scheme: String?, colors: String?) {
     val slot = BloomIslands.slot(key)
     slot.themePreset = preset
+    slot.themeColors = parseThemeColors(colors)
     slot.themeDark = darkOf(scheme)
   }
 
@@ -230,6 +232,8 @@ class IslandSlot(val key: String?) {
   var props by mutableStateOf<String?>(null)
   var themePreset by mutableStateOf<String?>(null)
   var themeDark by mutableStateOf<Boolean?>(null)
+  /** The host app's resolved colours (its accents, seed or ambient colour), over the preset's. */
+  var themeColors by mutableStateOf<Map<String, Long>?>(null)
 
   private val hosts = ArrayList<BloomIslandView>()
   private var view: ComposeView? = null
@@ -275,7 +279,7 @@ class IslandSlot(val key: String?) {
     val entry = island?.let { IslandRegistry.islands[it] } ?: return
     val json = props ?: return
     val dark = themeDark ?: isSystemInDarkTheme()
-    BloomThemeProvider(preset = themePreset ?: DEFAULT_PRESET, dark = dark) { entry(json, ::send) }
+    BloomThemeProvider(preset = themePreset ?: DEFAULT_PRESET, dark = dark, colors = themeColors) { entry(json, ::send) }
   }
 
   private fun send(name: String, payload: String) {
@@ -300,6 +304,7 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayou
   private var props: String? = null
   private var themePreset: String? = null
   private var themeScheme: String? = null
+  private var themeColors: Map<String, Long>? = null
   private var themeSet = false
 
   internal val reactApplicationContext: ReactContext get() = reactContext.reactApplicationContext
@@ -320,6 +325,7 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayou
   fun setProps(value: String?) { props = value; push() }
   fun setThemePreset(value: String?) { themePreset = value; themeSet = true; push() }
   fun setThemeScheme(value: String?) { themeScheme = value; themeSet = true; push() }
+  fun setThemeColors(value: String?) { themeColors = parseThemeColors(value); themeSet = true; push() }
 
   // What this host was given, written through to its island: a keyed island's data may come
   // from the module instead, so a prop this host was not given leaves it as it is.
@@ -329,6 +335,7 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayou
     json?.let { if (slot.props != it) slot.props = it }
     if (themeSet) {
       if (slot.themePreset != themePreset) slot.themePreset = themePreset
+      if (slot.themeColors != themeColors) slot.themeColors = themeColors
       val dark = darkOf(themeScheme)
       if (slot.themeDark != dark) slot.themeDark = dark
     }
@@ -396,7 +403,8 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayou
 
 /**
  * `BloomIsland`: its props are `island` (the registry's name), `props` (JSON), the theme
- * (`themePreset`, `themeScheme`) and `islandKey` (a shared, keyed island).
+ * (`themePreset`, `themeScheme`, `themeColors`: the app's resolved colours as JSON) and
+ * `islandKey` (a shared, keyed island).
  */
 class BloomIslandViewManager : SimpleViewManager<BloomIslandView>() {
   override fun getName(): String = NAME
@@ -424,6 +432,11 @@ class BloomIslandViewManager : SimpleViewManager<BloomIslandView>() {
   }
 
   /** `"dark"`, `"light"`, or none for the system's scheme. */
+  @ReactProp(name = "themeColors")
+  fun setThemeColors(view: BloomIslandView, colors: String?) {
+    view.setThemeColors(colors)
+  }
+
   @ReactProp(name = "themeScheme")
   fun setThemeScheme(view: BloomIslandView, scheme: String?) {
     view.setThemeScheme(scheme)
@@ -446,7 +459,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
   setProps(key: string, json: string): void;
-  setTheme(key: string, preset: string | null, scheme: string | null): void;
+  setTheme(key: string, preset: string | null, scheme: string | null, colors: string | null): void;
 }
 
 export default TurboModuleRegistry.get<Spec>('BloomIslands');
@@ -655,7 +668,9 @@ mod tests {
             "{text}"
         );
         assert!(
-            text.contains("override fun setTheme(key: String, preset: String?, scheme: String?)"),
+            text.contains(
+                "override fun setTheme(key: String, preset: String?, scheme: String?, colors: String?)"
+            ),
             "{text}"
         );
         assert!(MODULE_SPEC.contains("setProps(key: string, json: string): void;"), "{MODULE_SPEC}");
