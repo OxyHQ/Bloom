@@ -10,7 +10,7 @@ import so.oxy.bloom.ui.*
 import so.oxy.bloom.std.*
 
 @Composable
-fun Badge(title: String, detail: String, modifier: Modifier = Modifier) {
+inline fun Badge(title: String, detail: String, modifier: Modifier = Modifier) {
   VStack(spacing = Space._2xl, modifier = modifier.bloomPadding(Space.md)) {
     Text(title, font = Font.headline, foreground = Colors.primary)
     Text(detail, font = Font.caption1, foreground = Colors.muted.copy(alpha = 0.1f))
@@ -18,7 +18,7 @@ fun Badge(title: String, detail: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun LikeButton(liked: Boolean, modifier: Modifier = Modifier) {
+inline fun LikeButton(liked: Boolean, modifier: Modifier = Modifier) {
   HStack(alignment = VAlign.start, modifier = modifier) {
     Button({
       Text("Like")

@@ -81,6 +81,7 @@ name = "bloom_native"
 version = "0.0.0"
 dependencies = [
  "bloom_lang",
+ "bloom_language_compiler",
 ]
 
 [[package]]

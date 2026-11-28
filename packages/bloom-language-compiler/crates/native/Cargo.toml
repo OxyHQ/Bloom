@@ -12,3 +12,4 @@ path = "src/main.rs"
 
 [dependencies]
 bloom_lang = { path = "../lang" }
+bloom_language_compiler = { path = "../compiler" }
