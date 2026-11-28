@@ -1,0 +1,23 @@
+// `==` and `!=` on a literal union narrow it in both branches (TS's narrowing, Swift's switch).
+
+public type AppearanceMode = "light" | "dark" | "system" | "adaptive"
+public type AppearanceTheme = "system" | "light" | "dark"
+public type AppearanceShade = "light" | "dark"
+
+public func appearanceTheme(_ mode: AppearanceMode) -> AppearanceTheme {
+  mode == "adaptive" || mode == "system" ? "system" : mode
+}
+
+public func appearanceShade(_ mode: AppearanceMode) -> AppearanceShade? {
+  if mode != "light" && mode != "dark" {
+    return none
+  }
+  return mode
+}
+
+public func appearanceFallback(_ mode: AppearanceTheme) -> AppearanceShade {
+  if mode == "system" {
+    return "light"
+  }
+  return mode
+}

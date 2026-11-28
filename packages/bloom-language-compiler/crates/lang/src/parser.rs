@@ -2225,16 +2225,16 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.expect_close(P::RParen, open);
                 // `() async throws -> T` (2.0).
                 let is_async = is_async || self.eat_kw(Kw::Async);
-                if matches!(self.tok(), Tok::Ident(w) if w == "throws")
-                    && matches!(self.nth(1), Tok::P(P::Arrow))
-                {
+                let throws = matches!(self.tok(), Tok::Ident(w) if w == "throws")
+                    && matches!(self.nth(1), Tok::P(P::Arrow));
+                if throws {
                     self.bump();
                 }
                 if self.eat(P::Arrow) {
                     let ret = self.type_expr();
                     return TypeExpr {
                         span: start.to(ret.span),
-                        kind: TypeKind::Fn { is_async, params: items, ret: Box::new(ret) },
+                        kind: TypeKind::Fn { is_async, throws, params: items, ret: Box::new(ret) },
                     };
                 }
                 if is_async {

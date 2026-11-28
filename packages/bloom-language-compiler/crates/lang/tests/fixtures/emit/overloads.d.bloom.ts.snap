@@ -1,0 +1,14 @@
+export declare function describe$0$count(count: number): string;
+export declare function describe$0$name(name: string): string;
+export declare function describe$0$_$of(value: number, total?: number): string;
+export declare function alone(x: number): number;
+export interface Temp {
+  readonly c: number;
+}
+export declare function Temp$$make$0$celsius(celsius: number): Temp;
+export declare function Temp$$make$0$fahrenheit(fahrenheit: number): Temp;
+export declare function Temp$shown$0$unit(self: Temp, unit?: string): string;
+export declare function Temp$shown$0$_(self: Temp, f: (p0: number) => string): string;
+export declare function Double$spelled$0$digits(self: number, digits: number): string;
+export declare function Double$spelled$0$currency(self: number, currency: string): string;
+export declare function run(): readonly string[];

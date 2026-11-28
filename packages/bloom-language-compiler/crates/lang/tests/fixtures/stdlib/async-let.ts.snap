@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 import { sleep } from "../../.bloom/std/Bloom/Concurrency.bloom";
 import { type Duration, Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
 
@@ -7,7 +8,7 @@ return `profile ${id}`;
 }
 
 export async function count(id: string): Promise<number> {
-return id.length;
+return $characterCount(id);
 }
 
 export async function header(id: string): Promise<string> {

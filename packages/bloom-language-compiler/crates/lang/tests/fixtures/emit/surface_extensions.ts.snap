@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 
 export interface Post {
   readonly id: string;
@@ -15,7 +16,7 @@ return `${self.likes} likes`;
 
 export function String$padded(self: string, width: number): string {
 let out = self;
-while (out.length < width) {
+while ($characterCount(out) < width) {
 out = " " + out;
 }
 return out;
@@ -27,7 +28,7 @@ return (self.trim().length === 0);
 
 export function String$$repeating(s: string, count: number): string {
 let out = "";
-while (out.length < (s.length * count)) {
+while ($characterCount(out) < ($characterCount(s) * count)) {
 out = out + s;
 }
 return out;

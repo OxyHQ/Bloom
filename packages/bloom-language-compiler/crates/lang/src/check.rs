@@ -602,6 +602,14 @@ pub struct Checker<'o> {
     /// JS's globals imported from "js" (`Number`, `Math`): functions and namespaces, never a
     /// TS component, whatever their case.
     pub(super) js_globals: HashSet<LocalId>,
+    /// The names declared overloaded by their labels (`describe` of `describe$0$count`,
+    /// `Double$formatted` of `Double$formatted$0$digits`): a call picks one by its labels.
+    pub(super) overloaded: HashSet<String>,
+    /// The closure being checked has a `try` or a `throw` nothing in it catches: its function
+    /// type throws.
+    escaped_throw: bool,
+    /// The closures (by span) whose function type throws.
+    pub(super) throwing_closures: HashSet<Span>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -746,6 +754,9 @@ impl<'o> Checker<'o> {
             child_slots: HashSet::default(),
             run_slots: HashSet::default(),
             js_globals: HashSet::default(),
+            overloaded: HashSet::default(),
+            escaped_throw: false,
+            throwing_closures: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -1257,7 +1268,11 @@ impl<'o> Checker<'o> {
                 } else {
                     f.is_async == g.is_async && self.coerce(&f.ret, &g.ret)
                 };
-                params_ok && ret_ok
+                // `() throws -> T` is a type of its own (Swift's): a function that throws never fits
+                // where one that does not is expected (its caller writes no `try`); one that does not
+                // throw fits either. A TS callback may throw (JS has no checked errors).
+                let throws_ok = !f.throws || g.throws || g.ts;
+                params_ok && ret_ok && throws_ok
             }
             _ => self.unify(&a, &e),
         }
@@ -1356,6 +1371,9 @@ impl<'o> Checker<'o> {
         });
         self.span_type((name.span, ty));
         if name.name != "_" {
+            if let Some(base) = crate::extensions::overload_base(&name.name).filter(|b| !b.is_empty()) {
+                self.overloaded.insert(base.to_string());
+            }
             self.scopes.last_mut().expect("a scope").insert(name.name.clone(), id);
         }
         id
@@ -1439,7 +1457,7 @@ impl<'o> Checker<'o> {
             }
             TypeKind::Tuple(items) if items.is_empty() => Ty::Unit,
             TypeKind::Tuple(items) => Ty::Tuple(items.iter().map(|t| self.resolve_type(t)).collect()),
-            TypeKind::Fn { is_async, params, ret } => {
+            TypeKind::Fn { is_async, throws, params, ret } => {
                 let params = params
                     .iter()
                     .map(|p| ParamTy {
@@ -1458,7 +1476,7 @@ impl<'o> Checker<'o> {
                     is_async: *is_async,
                     generics: 0,
                     ts: false,
-                    throws: false,
+                    throws: *throws,
                     bounds: Vec::new(),
                     shapes: Vec::new(),
                 }))
@@ -1925,17 +1943,33 @@ impl<'o> Checker<'o> {
     }
 
     fn duplicate(&mut self, name: &Ident) {
+        self.duplicate_of(name, false);
+    }
+
+    /// `fns`: two functions (overloads with the same labels, Swift's invalid redeclaration).
+    fn duplicate_of(&mut self, name: &Ident, fns: bool) {
+        let overload = fns || crate::extensions::overload_base(&name.name).is_some();
         self.report(
-            Diagnostic::error("B0217", name.span, format!("`{}` is declared twice", name.name))
-                .label("a second declaration")
-                .help("rename one of them")
+            Diagnostic::error(
+                "B0217",
+                name.span,
+                format!("`{}` is declared twice", crate::extensions::overload_display(&name.name)),
+            )
+            .label("a second declaration")
+            .help(if overload {
+                "overloads are told apart by their argument labels, not their types: give one other labels, or rename it"
+            } else {
+                "rename one of them"
+            })
                 .spec("10-modules-and-interop"),
         );
     }
 
     fn declare_unique(&mut self, name: &Ident, ty: Ty, kind: LocalKind) -> LocalId {
-        if self.scopes.last().is_some_and(|s| s.contains_key(&name.name)) {
-            self.duplicate(name);
+        if let Some(&earlier) = self.scopes.last().and_then(|s| s.get(&name.name)) {
+            let fns = matches!(kind, LocalKind::ModuleFn)
+                && matches!(self.out.locals[earlier].kind, LocalKind::ModuleFn);
+            self.duplicate_of(name, fns);
         }
         self.declare(name, ty, kind)
     }
@@ -2155,7 +2189,14 @@ impl<'o> Checker<'o> {
 
     /// A call of a function that throws: written in a `try`.
     pub(super) fn throwing_call(&mut self, span: Span, f: &FnTy) {
-        if f.throws && !self.trying {
+        if f.throws {
+            self.throwing_span(span);
+        }
+    }
+
+    /// A call at `span` that throws: written in a `try`.
+    pub(super) fn throwing_span(&mut self, span: Span) {
+        if !self.trying {
             self.report(
                 Diagnostic::error("B0223", span, "this call can throw, and it is not marked with `try`")
                     .label("a throwing call")
@@ -2170,6 +2211,9 @@ impl<'o> Checker<'o> {
     /// outside a `do { … } catch`.
     fn unhandled_try(&mut self, span: Span) {
         let Some(frame) = self.frames.last() else { return };
+        if frame.closure && frame.handled == 0 {
+            self.escaped_throw = true;
+        }
         if frame.closure || frame.raises.is_some() || frame.handled > 0 || frame.throws {
             return;
         }
@@ -2209,8 +2253,10 @@ impl<'o> Checker<'o> {
             handled: 0,
         });
         // A type's member (`T$m`): what an observable `self` it reads; an `init` makes `self`.
-        let outer_member =
-            std::mem::replace(&mut self.member_fn, f.name.name.contains('$').then(|| f.name.name.clone()));
+        let outer_member = std::mem::replace(
+            &mut self.member_fn,
+            crate::extensions::demangle(&f.name.name).map(|_| f.name.name.clone()),
+        );
         // A class's `init` makes `self`; a built-in type's gives the value its body ends with.
         let init = f.name.name.ends_with("$$init")
             && !crate::extensions::demangle(&f.name.name)
@@ -3333,6 +3379,9 @@ impl<'o> Checker<'o> {
                 // `throw e` in a `func … throws(E)`: `e` is an `E`.
                 let raises = self.frames.last().and_then(|f| f.raises.clone()).filter(|t| *t != Ty::Unknown);
                 let handled = self.frames.last().is_some_and(|f| f.handled > 0);
+                if !handled && self.frames.last().is_some_and(|f| f.closure) {
+                    self.escaped_throw = true;
+                }
                 match raises {
                     Some(ty) if !handled => {
                         self.expr(value, Some(&ty));
@@ -4251,25 +4300,35 @@ impl<'o> Checker<'o> {
         if let ExprKind::Paren(inner) = &expr.kind {
             return self.narrow(inner, test, join);
         }
+        // `!(x == "a")`: what holds is the inner test's other branch.
+        if let ExprKind::Unary(UnaryOp::Not, inner) = &expr.kind {
+            let flip = |op| if op == BinaryOp::Ne { BinaryOp::Eq } else { BinaryOp::Ne };
+            let other = if join == BinaryOp::And { BinaryOp::Or } else { BinaryOp::And };
+            return self.narrow(inner, flip(test), other);
+        }
         let ExprKind::Binary(op, lhs, rhs) = &expr.kind else { return };
+        // Where the test holds (`test` is `!=`: the branch that runs when it is true).
+        let holds = test == BinaryOp::Ne;
         match op {
             op if *op == join => {
                 self.narrow(lhs, test, join);
                 self.narrow(rhs, test, join);
             }
+            // `mode == "adaptive" || mode == "system"` holding: `mode` is one of the two.
+            BinaryOp::And | BinaryOp::Or => self.narrow_any_of(expr, holds),
             // `rows.kind == "sources"` (where `!= none` would narrow) on a TS discriminated
-            // union: `rows` is that member there, as TS narrows it.
-            op if (*op == BinaryOp::Eq && test == BinaryOp::Ne)
-                || (*op == BinaryOp::Ne && test == BinaryOp::Eq) =>
-            {
-                let (subject, literal) = match (&lhs.kind, &rhs.kind) {
-                    (_, ExprKind::Str { parts, .. }) => (lhs, parts),
-                    (ExprKind::Str { parts, .. }, _) => (rhs, parts),
-                    _ => return,
-                };
-                let [StrPart::Text(value)] = literal.as_slice() else { return };
-                let value = value.clone();
-                self.narrow_tag(expr.id, subject, &value);
+            // union: `rows` is that member there, as TS narrows it; where `rows.kind !=
+            // "sources"` holds, it is the other member. A literal union (`mode == "system"`) is
+            // that value, or the others.
+            BinaryOp::Eq | BinaryOp::Ne if literal_side(lhs, rhs).is_some() => {
+                let (subject, value) = literal_side(lhs, rhs).expect("checked");
+                let equal = (*op == BinaryOp::Eq) == holds;
+                if equal {
+                    self.narrow_tag(expr.id, subject, &value);
+                } else {
+                    self.narrow_tag_except(expr.id, subject, &value);
+                }
+                self.narrow_strings(subject, &[value], equal);
             }
             op if *op == test => {
                 let subject = match (&lhs.kind, &rhs.kind) {
@@ -4302,6 +4361,97 @@ impl<'o> Checker<'o> {
                 self.out.narrowed.insert(subject.id, (narrowed, original));
             }
             _ => {}
+        }
+    }
+
+    /// `x == "a" || x == "b"` holding (`holds`; or `x != "a" && x != "b"` not holding): a
+    /// literal union `x` is one of those values.
+    fn narrow_any_of(&mut self, expr: &Expr, holds: bool) {
+        let ExprKind::Binary(any, ..) = &expr.kind else { return };
+        let mut leaves = Vec::new();
+        any_leaves(expr, *any, &mut leaves);
+        let mut subject: Option<(&Expr, LocalId)> = None;
+        let mut values = Vec::new();
+        for leaf in leaves {
+            let ExprKind::Binary(op @ (BinaryOp::Eq | BinaryOp::Ne), lhs, rhs) = &leaf.kind else { return };
+            let Some((side, value)) = literal_side(lhs, rhs) else { return };
+            if (*op == BinaryOp::Eq) != holds {
+                return;
+            }
+            // One name throughout (`&&` narrows its right side by its left, so each `mode` may
+            // read another local of that name).
+            let Some(NameRes::Local(local)) = self.out.names.get(&side.id).cloned() else { return };
+            match subject {
+                Some((_, first)) if self.out.locals[first].name != self.out.locals[local].name => return,
+                None => subject = Some((side, local)),
+                _ => {}
+            }
+            values.push(value);
+        }
+        if let Some((side, _)) = subject {
+            self.narrow_strings(side, &values, true);
+        }
+    }
+
+    /// A name of a literal union narrowed to `values` (`keep`) or to its other values: declared
+    /// again with that union, as `!= none` narrows an optional.
+    fn narrow_strings(&mut self, subject: &Expr, values: &[String], keep: bool) {
+        let ExprKind::Name(name) = &subject.kind else { return };
+        let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned() else { return };
+        if !matches!(
+            self.out.locals[original].kind,
+            LocalKind::Let
+                | LocalKind::Param
+                | LocalKind::Prop
+                | LocalKind::Derived
+                | LocalKind::Hook
+                | LocalKind::State
+        ) {
+            return;
+        }
+        // What it is here (an earlier test of the same condition may have narrowed it).
+        let current = self.lookup(name).unwrap_or(original);
+        let (set, optional) = match self.resolve(&self.out.locals[current].ty.clone()) {
+            Ty::Strings(set) if !set.token => (set, false),
+            Ty::Option(inner) => match self.resolve(&inner) {
+                Ty::Strings(set) if !set.token => (set, true),
+                _ => return,
+            },
+            _ => return,
+        };
+        let left: Vec<String> = set.values.iter().filter(|v| values.contains(v) == keep).cloned().collect();
+        if left.is_empty() || left.len() == set.values.len() {
+            return;
+        }
+        let shown = left.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+        let narrowed = Ty::Strings(Rc::new(StrSet { name: shown, values: left, token: false }));
+        // `x == "a"` holding: `x` is present too.
+        let ty = if optional && !keep { Ty::Option(Box::new(narrowed)) } else { narrowed };
+        let ident = Ident { name: name.clone(), span: self.out.locals[original].span };
+        let local = self.declare(&ident, ty, LocalKind::Let);
+        self.out.narrowed.insert(subject.id, (local, original));
+    }
+
+    /// `item.origin != "server"` holding on a TS discriminated union of two members: the other
+    /// one, as TS narrows it.
+    fn narrow_tag_except(&mut self, id: ExprId, subject: &Expr, value: &str) {
+        let other = |tagged: &Tagged| -> Option<Ty> {
+            let rest: Vec<&(String, Ty)> = tagged.members.iter().filter(|(v, _)| v != value).collect();
+            match rest.as_slice() {
+                [(_, member)] if rest.len() < tagged.members.len() => Some(member.clone()),
+                _ => None,
+            }
+        };
+        if let Some((_, original, tagged)) = self.tagged_subject(subject) {
+            let Some(member) = other(&tagged) else { return };
+            let ident =
+                Ident { name: self.out.locals[original].name.clone(), span: self.out.locals[original].span };
+            let narrowed = self.declare(&ident, member, LocalKind::Let);
+            self.out.narrowed.insert(id, (narrowed, original));
+        } else if let Some((root, path, tagged)) = self.tagged_path(subject) {
+            let Some(member) = other(&tagged) else { return };
+            let depth = self.scopes.len();
+            self.paths.push((depth, root, path, member));
         }
     }
 
@@ -5701,6 +5851,16 @@ impl<'o> Checker<'o> {
     }
 
     fn unknown_name(&mut self, span: Span, name: &str) {
+        if self.overloaded.contains(name) {
+            let shown = self.overloads_of(name).join("`, `");
+            self.report(
+                Diagnostic::error("B0202", span, format!("`{name}` is overloaded: name one by its labels"))
+                    .label("more than one function has this name")
+                    .help(format!("call one of `{shown}`"))
+                    .spec("5-values-functions-and-closures"),
+            );
+            return;
+        }
         let names = self.names_in_scope();
         let help =
             closest(name, names.iter().map(String::as_str)).map(|near| format!("did you mean `{near}`?"));
@@ -6696,6 +6856,13 @@ impl<'o> Checker<'o> {
     }
 
     fn field(&mut self, expr: &Expr, object: &Expr, name: &Ident) -> Ty {
+        // `Card.fallback`: a view's `static let`, the type's constant `Card$$fallback`.
+        if let ExprKind::Name(type_name) = &object.kind
+            && self.lookup(type_name).is_some_and(|l| self.out.locals[l].kind == LocalKind::View)
+            && let Some(ty) = self.static_member(expr, type_name, name)
+        {
+            return ty;
+        }
         // `Type.case` and `Task.signal`, before values.
         if let ExprKind::Name(type_name) = &object.kind
             && self.lookup(type_name).is_none()
@@ -7386,8 +7553,10 @@ impl<'o> Checker<'o> {
             closure_results(&c.body, true, &mut self.callback_results);
         }
         let trying = std::mem::take(&mut self.trying);
+        let outer_escaped = std::mem::take(&mut self.escaped_throw);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
+        let escaped = std::mem::replace(&mut self.escaped_throw, outer_escaped);
         // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
         // as one.
         if is_element(&ret_resolved) {
@@ -7415,16 +7584,50 @@ impl<'o> Checker<'o> {
         self.pop();
         let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
+        let throws = escaped && expected_fn.as_ref().is_none_or(|f| f.throws);
+        if throws {
+            self.throwing_closures.insert(c.span);
+        }
         Ty::Fn(Rc::new(FnTy {
             params: param_tys,
             ret,
             is_async: frame.is_async,
             generics: 0,
             ts: false,
-            throws: false,
+            // A closure whose `try` or `throw` nothing in it catches throws (Swift's inference),
+            // where a throwing function, or any, is expected. Where TS or a Bloom function expects
+            // one that does not throw it is typed so, as before (its error reaches the caller as
+            // a JS exception).
+            throws,
             bounds: Vec::new(),
             shapes: Vec::new(),
         }))
+    }
+}
+
+/// `a == "x"` / `"x" == a`: the side tested and the literal.
+fn literal_side<'e>(lhs: &'e Expr, rhs: &'e Expr) -> Option<(&'e Expr, String)> {
+    let (subject, parts) = match (&lhs.kind, &rhs.kind) {
+        (_, ExprKind::Str { parts, .. }) => (lhs, parts),
+        (ExprKind::Str { parts, .. }, _) => (rhs, parts),
+        _ => return None,
+    };
+    match parts.as_slice() {
+        [StrPart::Text(value)] => Some((subject, value.clone())),
+        [] => Some((subject, String::new())),
+        _ => None,
+    }
+}
+
+/// The leaves of a chain of `op` (`a || b || c`), through parentheses.
+fn any_leaves<'e>(expr: &'e Expr, op: BinaryOp, out: &mut Vec<&'e Expr>) {
+    match &expr.kind {
+        ExprKind::Paren(inner) => any_leaves(inner, op, out),
+        ExprKind::Binary(o, lhs, rhs) if *o == op => {
+            any_leaves(lhs, op, out);
+            any_leaves(rhs, op, out);
+        }
+        _ => out.push(expr),
     }
 }
 

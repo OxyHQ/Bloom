@@ -1,0 +1,154 @@
+#!/usr/bin/env node
+/**
+ * The grapheme cluster break classes (Unicode's UAX #29) of every code point, as ranges, for
+ * `src/text.ts`'s segmenter where the engine has no `Intl.Segmenter` (Hermes). Read from this
+ * Node's own Unicode data through `\p{…}` regular expressions, so the table follows the Unicode
+ * version of the Node that writes it:
+ *
+ *   node scripts/generate-graphemes.mjs           # writes src/generated/graphemes.generated.ts
+ *   node scripts/generate-graphemes.mjs --check   # fails when the committed table differs
+ *
+ * Classes (`src/text.ts` reads them by number): 1 CR, 2 LF, 3 Control, 4 Extend, 5 ZWJ,
+ * 6 Regional_Indicator, 7 Prepend, 8 SpacingMark, 9 L, 10 V, 11 T, 12 LV, 13 LVT,
+ * 14 Extended_Pictographic. Unlisted code points are Other.
+ *
+ * And each code point's Indic_Conjunct_Break (GB9c: 1 Consonant, 2 Linker, 3 Extend), which
+ * `\p{…}` does not name: read off this Node's own `Intl.Segmenter` (ICU), by what joins after
+ * DEVANAGARI LETTER KA (U+0915) and its VIRAMA (U+094D).
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const out = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../src/generated/graphemes.generated.ts',
+);
+const check = process.argv.includes('--check');
+
+const is = (property) => {
+  const re = new RegExp(`^\\p{${property}}$`, 'u');
+  return (s) => re.test(s);
+};
+const extend = is('Grapheme_Extend');
+const modifier = is('Emoji_Modifier');
+const pictographic = is('Extended_Pictographic');
+const mc = is('Mc');
+const control = (s) => /^[\p{Cc}\p{Zl}\p{Zp}\p{Cf}]$/u.test(s);
+
+// UAX #29's SpacingMark: Mc that is not Grapheme_Extend, less a few, plus U+0E33 and U+0EB3.
+const NOT_SPACING = new Set([
+  0x102b, 0x102c, 0x1038, 0x1062, 0x1063, 0x1064, 0x1067, 0x1068, 0x1069, 0x106a, 0x106b, 0x106c,
+  0x106d, 0x1083, 0x1087, 0x1088, 0x1089, 0x108a, 0x108b, 0x108c, 0x108f, 0x109a, 0x109b, 0x109c,
+  0x1a61, 0x1a63, 0x1a64, 0xaa7b, 0xaa7d, 0x11720, 0x11721,
+]);
+// UAX #29's Prepend: Prepended_Concatenation_Mark (which `\p{…}` does not name) and
+// Indic_Syllabic_Category's.
+const PREPEND = new Set([
+  0x0600, 0x0601, 0x0602, 0x0603, 0x0604, 0x0605, 0x06dd, 0x070f, 0x0890, 0x0891, 0x08e2, 0x110bd,
+  0x110cd, 0x0d4e, 0x111c2, 0x111c3, 0x1193f, 0x11941, 0x11a3a, 0x11a84, 0x11a85, 0x11a86, 0x11a87,
+  0x11a88, 0x11a89, 0x11d46, 0x11f02,
+]);
+
+function classOf(cp) {
+  if (cp === 0x0d) return 1;
+  if (cp === 0x0a) return 2;
+  if (cp === 0x200d) return 5;
+  if (cp >= 0x1f1e6 && cp <= 0x1f1ff) return 6;
+  if ((cp >= 0x1100 && cp <= 0x115f) || (cp >= 0xa960 && cp <= 0xa97c)) return 9;
+  if ((cp >= 0x1160 && cp <= 0x11a7) || (cp >= 0xd7b0 && cp <= 0xd7c6)) return 10;
+  if ((cp >= 0x11a8 && cp <= 0x11ff) || (cp >= 0xd7cb && cp <= 0xd7fb)) return 11;
+  if (cp >= 0xac00 && cp <= 0xd7a3) return (cp - 0xac00) % 28 === 0 ? 12 : 13;
+  if (cp >= 0xd800 && cp <= 0xdfff) return 3;
+  const s = String.fromCodePoint(cp);
+  if (extend(s) || modifier(s)) return 4;
+  if (PREPEND.has(cp)) return 7;
+  if (cp === 0x200c) return 4;
+  if (control(s)) return 3;
+  if (cp === 0x0e33 || cp === 0x0eb3 || (mc(s) && !NOT_SPACING.has(cp))) return 8;
+  if (pictographic(s)) return 14;
+  return 0;
+}
+
+// Ranges of one class, as `start, length, class` triples (Other left out).
+const ranges = [];
+let start = 0;
+let current = classOf(0);
+for (let cp = 1; cp <= 0x110000; cp++) {
+  const c = cp === 0x110000 ? -1 : classOf(cp);
+  if (c !== current) {
+    if (current !== 0) ranges.push(start, cp - start, current);
+    start = cp;
+    current = c;
+  }
+}
+
+// Indic_Conjunct_Break, by what ICU's segmenter joins: `K c K` one character makes `c` a Linker;
+// `K V c` one character, `c` of class Other, a Consonant; `K V c K` one character, `c` an Extend.
+const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+const one = (s) => {
+  let n = 0;
+  for (const _ of segmenter.segment(s)) n++;
+  return n === 1;
+};
+const K = '\u0915';
+const VIRAMA = '\u094d';
+const candidate = /^[\p{L}\p{M}\p{Nd}\u200d]$/u;
+function conjunctOf(cp) {
+  if (cp >= 0xd800 && cp <= 0xdfff) return 0;
+  const c = String.fromCodePoint(cp);
+  if (!candidate.test(c)) return 0;
+  const cls = classOf(cp);
+  if (cp !== 0x200d && one(K + c + K)) return 2;
+  if (cls === 0 && one(K + VIRAMA + c)) return 1;
+  if ((cls === 4 || cls === 5) && one(K + VIRAMA + c + K)) return 3;
+  return 0;
+}
+const conjuncts = [];
+start = 0;
+current = conjunctOf(0);
+for (let cp = 1; cp <= 0x110000; cp++) {
+  const c = cp === 0x110000 ? -1 : conjunctOf(cp);
+  if (c !== current) {
+    if (current !== 0) conjuncts.push(start, cp - start, current);
+    start = cp;
+    current = c;
+  }
+}
+
+const rows = (xs) => {
+  const lines = [];
+  for (let i = 0; i < xs.length; i += 24) lines.push(`  ${xs.slice(i, i + 24).join(',')},`);
+  return lines.join('\n');
+};
+const text = `// Generated by scripts/generate-graphemes.mjs from Node ${process.versions.node}'s data: do not edit.
+// The grapheme cluster break class of each code point (UAX #29), as \`start, length, class\`
+// triples in code point order; \`src/text.ts\` reads the classes by number.
+
+/** The Unicode version the tables are of. */
+export const GRAPHEME_UNICODE = '${process.versions.unicode}';
+
+export const GRAPHEME_BREAKS: readonly number[] = [
+${rows(ranges)}
+];
+
+/** Indic_Conjunct_Break (GB9c): 1 Consonant, 2 Linker, 3 Extend. */
+export const CONJUNCT_BREAKS: readonly number[] = [
+${rows(conjuncts)}
+];
+`;
+
+if (check) {
+  const committed = readFileSync(out, 'utf8');
+  // The header names the Node that wrote it: the table is what is compared.
+  const body = (s) => s.slice(s.indexOf('export'));
+  if (body(committed) !== body(text)) {
+    console.error(`${out} is stale: run node scripts/generate-graphemes.mjs`);
+    process.exit(1);
+  }
+} else {
+  writeFileSync(out, text);
+  console.log(
+    `generate-graphemes: ${ranges.length / 3} break ranges, ${conjuncts.length / 3} conjunct ranges`,
+  );
+}

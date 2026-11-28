@@ -1,0 +1,36 @@
+// `() throws -> T` is a type of its own (Swift's): a call of a value of it is written `try`, a
+// function that does not throw fits it, and `try xs.map(parse)` rethrows.
+
+public struct BadNumber: Error {
+  public let text: String
+}
+
+public func parsed(_ s: String) throws -> Int {
+  guard let n = Int(s) else { throw BadNumber(text: s) }
+  return n
+}
+
+public func doubled(_ s: String) -> Int { (Int(s) ?? 0) * 2 }
+
+public func runThrowing(_ f: (String) throws -> Int, _ s: String) throws -> Int { try f(s) }
+
+public func loadThrowing(_ f: () async throws -> Int) async throws -> Int { try await f() }
+
+public func all() throws -> [Int] {
+  let strict: (String) throws -> Int = parsed
+  let lenient: (String) throws -> Int = doubled
+  let later = { try parsed("5") }
+  let a = try runThrowing(parsed, "1")
+  let b = try runThrowing(doubled, "2")
+  let c = try runThrowing({ s in try parsed(s) + 1 }, "3")
+  let mapped = try ["4", "6"].map(parsed)
+  return [a, b, c, try strict("7"), try lenient("8"), try later(), mapped[0], mapped[1]]
+}
+
+public func caught(_ s: String) -> Int {
+  do {
+    return try runThrowing(parsed, s)
+  } catch {
+    return -1
+  }
+}

@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 
 type Point = { x: number; y: number };
 
@@ -21,6 +22,6 @@ const $t0 = { x: 3, y: 4, label: "c" };
 const b = extent($t0);
 const c: { x: number; y: number } = { x: 5, y: 6 };
 const t = describe({ title: "t" });
-return ((a + b) + extent(c)) + t.length;
+return ((a + b) + extent(c)) + $characterCount(t);
 }
 

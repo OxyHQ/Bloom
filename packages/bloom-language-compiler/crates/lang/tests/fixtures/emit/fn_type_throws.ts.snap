@@ -1,0 +1,48 @@
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+export interface BadNumber {
+  readonly text: string;
+}
+
+export function parsed(s: string): number {
+const $t0 = $toInt(s);
+if (!($t0 != null)) {
+throw { text: s };
+}
+return $t0;
+}
+
+export function doubled(s: string): number {
+return ($toInt(s) ?? 0) * 2;
+}
+
+export function runThrowing(f: (p0: string) => number, s: string): number {
+return f(s);
+}
+
+export async function loadThrowing(f: () => Promise<number>): Promise<number> {
+return await (f());
+}
+
+export function all(): readonly number[] {
+const strict: (p0: string) => number = parsed;
+const lenient: (p0: string) => number = doubled;
+const later = () => parsed("5");
+const a = runThrowing(parsed, "1");
+const b = runThrowing(doubled, "2");
+const c = runThrowing((s: string) => (parsed(s)) + 1, "3");
+const mapped = ["4", "6"].map((v0) => (parsed)(v0));
+return [a, b, c, strict("7"), lenient("8"), later(), mapped[0]!, mapped[1]!];
+}
+
+export function caught(s: string): number {
+try {
+return runThrowing(parsed, s);
+} catch (error) {
+return -1;
+}
+}
+

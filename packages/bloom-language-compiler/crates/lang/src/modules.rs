@@ -467,7 +467,11 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
                     format!("`{name}` is also declared in {}", display(other, &graph.root)),
                 )
                 .label("a second declaration in this module")
-                .help("a module's files share one namespace: rename one of them")
+                .help(if matches!(item.kind, crate::ast::ItemKind::Fn(_)) {
+                    "a module's files share one namespace: rename one of them, or declare a function's overloads (told apart by their labels) in one file"
+                } else {
+                    "a module's files share one namespace: rename one of them"
+                })
                 .toolchain(SPEC),
             );
         }
@@ -520,6 +524,15 @@ fn import_uses(
         {
             // Its own span: the type is named where a type goes, its `cast` is a value.
             uses.push((name.clone(), crate::codable::synthetic(*span)));
+            continue;
+        }
+        // `describe(count: 2)`: each overload of a free function the file calls
+        // (`describe$0$count`), picked among by the checker.
+        if let Some(base) = crate::extensions::overload_base(name)
+            && !base.contains('$')
+            && let Some(span) = called.get(base)
+        {
+            uses.push((name.clone(), *span));
             continue;
         }
         if let Some((_, member, _)) = crate::extensions::demangle(name)

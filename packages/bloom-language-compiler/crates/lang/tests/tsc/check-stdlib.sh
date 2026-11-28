@@ -21,6 +21,11 @@ declare module '@oxy.so/bloom-language' {
   export type Binding<T> = readonly [value: T, set: (value: T) => void];
   export function Embed(content: unknown): Child;
   export function toElement(view: Child): import('react').ReactElement | null;
+  export function characterCount(s: string): number;
+  export function characterSlice(s: string, start: number, end?: number): string;
+  export function characters(s: string): string[];
+  export function characterOffset(s: string, u: number): number;
+  export function utf16Offset(s: string, n: number): number;
 }
 TS
 # What the Bloom router (router.ts) draws with beyond React and React Native, as far as it

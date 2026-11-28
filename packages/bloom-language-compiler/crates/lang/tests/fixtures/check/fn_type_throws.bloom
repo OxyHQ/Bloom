@@ -1,0 +1,9 @@
+public func parsed(_ s: String) throws -> Int { 1 }
+public func runPlain(_ f: (String) -> Int) -> Int { f("1") }
+
+public func bad() -> Int {
+  let f: (String) -> Int = parsed
+  let later = { try parsed("5") }
+  let mapped = ["4"].map(parsed)
+  return runPlain(parsed) + later() + f("x") + mapped[0]
+}

@@ -1,0 +1,51 @@
+
+export function describe$0$count(count: number): string {
+return `n=${count}`;
+}
+
+export function describe$0$name(name: string): string {
+return `s=${name}`;
+}
+
+export function describe$0$_$of(value: number, total: number = 100): string {
+return `${value}/${total}`;
+}
+
+export function alone(x: number): number {
+return x;
+}
+
+export interface Temp {
+  readonly c: number;
+}
+
+export function Temp$$make$0$celsius(celsius: number): Temp {
+return { c: celsius };
+}
+
+export function Temp$$make$0$fahrenheit(fahrenheit: number): Temp {
+return { c: (fahrenheit - 32) / 1.8 };
+}
+
+export function Temp$shown$0$unit(self: Temp, unit: string = "C"): string {
+return `${self.c}${unit}`;
+}
+
+export function Temp$shown$0$_(self: Temp, f: (p0: number) => string): string {
+return f(self.c);
+}
+
+export function Double$spelled$0$digits(self: number, digits: number): string {
+return `d${digits}`;
+}
+
+export function Double$spelled$0$currency(self: number, currency: string): string {
+return `c${currency}`;
+}
+
+export function run(): readonly string[] {
+const t = Temp$$make$0$celsius(20);
+const u: Temp = (Temp$$make$0$fahrenheit)(50);
+return [describe$0$count(2), describe$0$name("x"), describe$0$_$of(1), describe$0$_$of(1, 2), `${alone(1)}`, Temp$shown$0$unit(t), Temp$shown$0$_(t, (d: number) => `${d}!`), Temp$shown$0$unit(u, "K"), Double$spelled$0$digits(1.5, 2), Double$spelled$0$currency(2.0, "EUR")];
+}
+

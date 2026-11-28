@@ -1,0 +1,33 @@
+error[B0201]: expected `(String) -> Int`, found `(String) throws -> Int`
+ --> check/fn_type_throws.bloom:5:28
+  |
+5 |   let f: (String) -> Int = parsed
+  |                            ^^^^^^ this is `(String) throws -> Int`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0223]: this call can throw, and it is not marked with `try`
+ --> check/fn_type_throws.bloom:7:16
+  |
+7 |   let mapped = ["4"].map(parsed)
+  |                ^^^^^^^^^^^^^^^^^ a throwing call
+  |
+help: write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow
+
+error[B0201]: expected `(String) -> Int`, found `(String) throws -> Int`
+ --> check/fn_type_throws.bloom:8:19
+  |
+8 |   return runPlain(parsed) + later() + f("x") + mapped[0]
+  |                   ^^^^^^ this is `(String) throws -> Int`
+  |
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0223]: this call can throw, and it is not marked with `try`
+ --> check/fn_type_throws.bloom:8:29
+  |
+8 |   return runPlain(parsed) + later() + f("x") + mapped[0]
+  |                             ^^^^^^^ a throwing call
+  |
+help: write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow

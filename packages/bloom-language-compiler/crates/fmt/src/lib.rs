@@ -99,7 +99,10 @@ fn labels(file: &bloom_lang::ast::File) -> std::collections::HashMap<String, Vec
             }
         }
     });
+    // A 2.0 `func` has its labels already (and may be overloaded by them): only a 0.x `fn`'s are
+    // read off its calls.
     fns.into_iter()
+        .filter(|f| !f.func)
         .map(|f| {
             let labels = f
                 .params

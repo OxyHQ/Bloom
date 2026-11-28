@@ -11,7 +11,7 @@ struct Draft {
   sensitive: Bool = false
 }
 
-pub view Composer(maxLength: Int = 500, onSend: async (Draft) -> Result<Unit, String>) {
+pub view Composer(maxLength: Int = 500, onSend: (Draft) async -> Result<Unit, String>) {
   let { t } = useTranslation()
   @state draft = Draft()
   @state sending = false

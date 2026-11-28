@@ -1,0 +1,1281 @@
+{
+  "node": "24.21.0",
+  "v8": "13.6.233.17-node.53",
+  "replacement": "[$&|$1|$$|$<user>]",
+  "results": [
+    {
+      "pattern": "@(\\w+)",
+      "flags": "",
+      "text": "hi @nate and @ana_b!",
+      "error": false,
+      "matches": [
+        {
+          "text": "@nate",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": ["nate"],
+          "named": {}
+        },
+        {
+          "text": "@ana_b",
+          "start": 13,
+          "startGraphemes": 13,
+          "groups": ["ana_b"],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "hi [@nate|nate|$|$<user>] and [@ana_b|ana_b|$|$<user>]!",
+      "split": ["hi ", "nate", " and ", "ana_b", "!"]
+    },
+    {
+      "pattern": "(?<user>\\w+)@(?<host>[a-z.]+)",
+      "flags": "i",
+      "text": "Mail NATE@oxy.so or ana@x.io",
+      "error": false,
+      "matches": [
+        {
+          "text": "NATE@oxy.so",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": ["NATE", "oxy.so"],
+          "named": {
+            "user": "NATE",
+            "host": "oxy.so"
+          }
+        },
+        {
+          "text": "ana@x.io",
+          "start": 20,
+          "startGraphemes": 20,
+          "groups": ["ana", "x.io"],
+          "named": {
+            "user": "ana",
+            "host": "x.io"
+          }
+        }
+      ],
+      "whole": null,
+      "replaced": "Mail [NATE@oxy.so|NATE|$|NATE] or [ana@x.io|ana|$|ana]",
+      "split": ["Mail ", "NATE", "oxy.so", " or ", "ana", "x.io", ""]
+    },
+    {
+      "pattern": "\\s+",
+      "flags": "",
+      "text": "  a  b\tc  ",
+      "error": false,
+      "matches": [
+        {
+          "text": "  ",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "  ",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "\t",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "  ",
+          "start": 8,
+          "startGraphemes": 8,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[  |$1|$|$<user>]a[  |$1|$|$<user>]b[\t|$1|$|$<user>]c[  |$1|$|$<user>]",
+      "split": ["", "a", "b", "c", ""]
+    },
+    {
+      "pattern": "(\\d)",
+      "flags": "",
+      "text": "a1b2c3",
+      "error": false,
+      "matches": [
+        {
+          "text": "1",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": ["1"],
+          "named": {}
+        },
+        {
+          "text": "2",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": ["2"],
+          "named": {}
+        },
+        {
+          "text": "3",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": ["3"],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[1|1|$|$<user>]b[2|2|$|$<user>]c[3|3|$|$<user>]",
+      "split": ["a", "1", "b", "2", "c", "3", ""]
+    },
+    {
+      "pattern": "",
+      "flags": "",
+      "text": "abc",
+      "error": false,
+      "matches": [
+        {
+          "text": "",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[|$1|$|$<user>]a[|$1|$|$<user>]b[|$1|$|$<user>]c[|$1|$|$<user>]",
+      "split": ["a", "b", "c"]
+    },
+    {
+      "pattern": "x*",
+      "flags": "",
+      "text": "axxb",
+      "error": false,
+      "matches": [
+        {
+          "text": "",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "xx",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[|$1|$|$<user>]a[xx|$1|$|$<user>][|$1|$|$<user>]b[|$1|$|$<user>]",
+      "split": ["a", "b"]
+    },
+    {
+      "pattern": "^b",
+      "flags": "m",
+      "text": "a\nb\nbc",
+      "error": false,
+      "matches": [
+        {
+          "text": "b",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "b",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a\n[b|$1|$|$<user>]\n[b|$1|$|$<user>]c",
+      "split": ["a\n", "\n", "c"]
+    },
+    {
+      "pattern": "a.c",
+      "flags": "s",
+      "text": "a\nc abc",
+      "error": false,
+      "matches": [
+        {
+          "text": "a\nc",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "abc",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a\nc|$1|$|$<user>] [abc|$1|$|$<user>]",
+      "split": ["", " ", ""]
+    },
+    {
+      "pattern": "(a)|(b)",
+      "flags": "",
+      "text": "ab",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": ["a", null],
+          "named": {}
+        },
+        {
+          "text": "b",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [null, "b"],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a|a|$|$<user>][b||$|$<user>]",
+      "split": ["", "a", null, "", null, "b", ""]
+    },
+    {
+      "pattern": "[",
+      "flags": "",
+      "text": "x",
+      "error": true
+    },
+    {
+      "pattern": "\\d+",
+      "flags": "",
+      "text": "x ١٢٣ 456",
+      "error": false,
+      "matches": [
+        {
+          "text": "456",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "x ١٢٣ [456|$1|$|$<user>]",
+      "split": ["x ١٢٣ ", ""]
+    },
+    {
+      "pattern": "\\d+",
+      "flags": "u",
+      "text": "x ١٢٣ 456",
+      "error": false,
+      "matches": [
+        {
+          "text": "456",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "x ١٢٣ [456|$1|$|$<user>]",
+      "split": ["x ١٢٣ ", ""]
+    },
+    {
+      "pattern": "\\w+",
+      "flags": "",
+      "text": "café naïve",
+      "error": false,
+      "matches": [
+        {
+          "text": "caf",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "na",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "ve",
+          "start": 8,
+          "startGraphemes": 8,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[caf|$1|$|$<user>]é [na|$1|$|$<user>]ï[ve|$1|$|$<user>]",
+      "split": ["", "é ", "ï", ""]
+    },
+    {
+      "pattern": "\\bé",
+      "flags": "",
+      "text": "café é",
+      "error": false,
+      "matches": [
+        {
+          "text": "é",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "caf[é|$1|$|$<user>] é",
+      "split": ["caf", " é"]
+    },
+    {
+      "pattern": "a\\B",
+      "flags": "",
+      "text": "ab a",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a|$1|$|$<user>]b a",
+      "split": ["", "b a"]
+    },
+    {
+      "pattern": "\\s",
+      "flags": "",
+      "text": "a b﻿c de",
+      "error": false,
+      "matches": [
+        {
+          "text": " ",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "﻿",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": " ",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[ |$1|$|$<user>]b[﻿|$1|$|$<user>]c[ |$1|$|$<user>]de",
+      "split": ["a", "b", "c", "de"]
+    },
+    {
+      "pattern": "a$",
+      "flags": "",
+      "text": "a\n",
+      "error": false,
+      "matches": [],
+      "whole": null,
+      "replaced": "a\n",
+      "split": ["a\n"]
+    },
+    {
+      "pattern": "a$",
+      "flags": "m",
+      "text": "a\na",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "a",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a|$1|$|$<user>]\n[a|$1|$|$<user>]",
+      "split": ["", "\n", ""]
+    },
+    {
+      "pattern": "^",
+      "flags": "m",
+      "text": "a\r\nb",
+      "error": false,
+      "matches": [
+        {
+          "text": "",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 3,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[|$1|$|$<user>]a\r[|$1|$|$<user>]\n[|$1|$|$<user>]b",
+      "split": ["a\r", "\n", "b"]
+    },
+    {
+      "pattern": ".",
+      "flags": "",
+      "text": "a\rb cd",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "b",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "c",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "d",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a|$1|$|$<user>]\r[b|$1|$|$<user>] [c|$1|$|$<user>][|$1|$|$<user>][d|$1|$|$<user>]",
+      "split": ["", "\r", " ", "", "", ""]
+    },
+    {
+      "pattern": "[^]",
+      "flags": "",
+      "text": "a\n",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "\n",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[a|$1|$|$<user>][\n|$1|$|$<user>]",
+      "split": ["", "", ""]
+    },
+    {
+      "pattern": "[]a]",
+      "flags": "",
+      "text": "a]",
+      "error": false,
+      "matches": [],
+      "whole": null,
+      "replaced": "a]",
+      "split": ["a]"]
+    },
+    {
+      "pattern": ".",
+      "flags": "",
+      "text": "😀",
+      "error": false,
+      "matches": [
+        {
+          "text": "�",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "�",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[�|$1|$|$<user>][�|$1|$|$<user>]",
+      "split": ["", "", ""]
+    },
+    {
+      "pattern": ".",
+      "flags": "u",
+      "text": "😀",
+      "error": false,
+      "matches": [
+        {
+          "text": "😀",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "😀",
+      "replaced": "[😀|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "\\u{1F600}",
+      "flags": "u",
+      "text": "x😀",
+      "error": false,
+      "matches": [
+        {
+          "text": "😀",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "x[😀|$1|$|$<user>]",
+      "split": ["x", ""]
+    },
+    {
+      "pattern": "\\p{L}+",
+      "flags": "u",
+      "text": "héllo 世界 42",
+      "error": false,
+      "matches": [
+        {
+          "text": "héllo",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "世界",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[héllo|$1|$|$<user>] [世界|$1|$|$<user>] 42",
+      "split": ["", " ", " 42"]
+    },
+    {
+      "pattern": "\\p{L}",
+      "flags": "",
+      "text": "p{L}",
+      "error": false,
+      "matches": [
+        {
+          "text": "p{L}",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "p{L}",
+      "replaced": "[p{L}|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "ß",
+      "flags": "i",
+      "text": "SS ß ẞ",
+      "error": false,
+      "matches": [
+        {
+          "text": "ß",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "SS [ß|$1|$|$<user>] ẞ",
+      "split": ["SS ", " ẞ"]
+    },
+    {
+      "pattern": "k",
+      "flags": "i",
+      "text": "K k K",
+      "error": false,
+      "matches": [
+        {
+          "text": "K",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "k",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[K|$1|$|$<user>] [k|$1|$|$<user>] K",
+      "split": ["", " ", " K"]
+    },
+    {
+      "pattern": "k",
+      "flags": "iu",
+      "text": "K k K",
+      "error": false,
+      "matches": [
+        {
+          "text": "K",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "k",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "K",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[K|$1|$|$<user>] [k|$1|$|$<user>] [K|$1|$|$<user>]",
+      "split": ["", " ", " ", ""]
+    },
+    {
+      "pattern": "(a)\\1",
+      "flags": "",
+      "text": "aa ab",
+      "error": false,
+      "matches": [
+        {
+          "text": "aa",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": ["a"],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[aa|a|$|$<user>] ab",
+      "split": ["", "a", " ab"]
+    },
+    {
+      "pattern": "(?<c>.)\\k<c>",
+      "flags": "",
+      "text": "xyyz",
+      "error": false,
+      "matches": [
+        {
+          "text": "yy",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": ["y"],
+          "named": {
+            "c": "y"
+          }
+        }
+      ],
+      "whole": null,
+      "replaced": "x[yy|y|$|]z",
+      "split": ["x", "y", "z"]
+    },
+    {
+      "pattern": "(?<=\\$)\\d+",
+      "flags": "",
+      "text": "cost $42 or 7",
+      "error": false,
+      "matches": [
+        {
+          "text": "42",
+          "start": 6,
+          "startGraphemes": 6,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "cost $[42|$1|$|$<user>] or 7",
+      "split": ["cost $", " or 7"]
+    },
+    {
+      "pattern": "(?<=a+)b",
+      "flags": "",
+      "text": "aaab",
+      "error": false,
+      "matches": [
+        {
+          "text": "b",
+          "start": 3,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "aaa[b|$1|$|$<user>]",
+      "split": ["aaa", ""]
+    },
+    {
+      "pattern": "(?<!x)y",
+      "flags": "",
+      "text": "xy ay",
+      "error": false,
+      "matches": [
+        {
+          "text": "y",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "xy a[y|$1|$|$<user>]",
+      "split": ["xy a", ""]
+    },
+    {
+      "pattern": "a+?",
+      "flags": "",
+      "text": "aaa",
+      "error": false,
+      "matches": [
+        {
+          "text": "a",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "a",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "a",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "aaa",
+      "replaced": "[a|$1|$|$<user>][a|$1|$|$<user>][a|$1|$|$<user>]",
+      "split": ["", "", "", ""]
+    },
+    {
+      "pattern": "a{2,}",
+      "flags": "",
+      "text": "a aa aaaa",
+      "error": false,
+      "matches": [
+        {
+          "text": "aa",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "aaaa",
+          "start": 5,
+          "startGraphemes": 5,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a [aa|$1|$|$<user>] [aaaa|$1|$|$<user>]",
+      "split": ["a ", " ", ""]
+    },
+    {
+      "pattern": "a{",
+      "flags": "",
+      "text": "a{",
+      "error": false,
+      "matches": [
+        {
+          "text": "a{",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "a{",
+      "replaced": "[a{|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "a{,2}",
+      "flags": "",
+      "text": "a{,2}",
+      "error": false,
+      "matches": [
+        {
+          "text": "a{,2}",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "a{,2}",
+      "replaced": "[a{,2}|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "(?i)a",
+      "flags": "",
+      "text": "A",
+      "error": true
+    },
+    {
+      "pattern": "a++",
+      "flags": "",
+      "text": "aa",
+      "error": true
+    },
+    {
+      "pattern": "(?>a)",
+      "flags": "",
+      "text": "a",
+      "error": true
+    },
+    {
+      "pattern": "\\Qa.b\\E",
+      "flags": "",
+      "text": "Qa.bE",
+      "error": false,
+      "matches": [
+        {
+          "text": "Qa.bE",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "Qa.bE",
+      "replaced": "[Qa.bE|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "\\h",
+      "flags": "",
+      "text": "h \t",
+      "error": false,
+      "matches": [
+        {
+          "text": "h",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[h|$1|$|$<user>] \t",
+      "split": ["", " \t"]
+    },
+    {
+      "pattern": "a\\z",
+      "flags": "",
+      "text": "az a",
+      "error": false,
+      "matches": [
+        {
+          "text": "az",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[az|$1|$|$<user>] a",
+      "split": ["", " a"]
+    },
+    {
+      "pattern": "[[:alpha:]]+",
+      "flags": "",
+      "text": "ab:]",
+      "error": false,
+      "matches": [
+        {
+          "text": ":]",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "ab[:]|$1|$|$<user>]",
+      "split": ["ab", ""]
+    },
+    {
+      "pattern": "\\cJ",
+      "flags": "",
+      "text": "a\nb",
+      "error": false,
+      "matches": [
+        {
+          "text": "\n",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[\n|$1|$|$<user>]b",
+      "split": ["a", "b"]
+    },
+    {
+      "pattern": "[\\b]",
+      "flags": "",
+      "text": "a\bb",
+      "error": false,
+      "matches": [
+        {
+          "text": "\b",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[\b|$1|$|$<user>]b",
+      "split": ["a", "b"]
+    },
+    {
+      "pattern": "\\0",
+      "flags": "",
+      "text": "a\u0000b",
+      "error": false,
+      "matches": [
+        {
+          "text": "\u0000",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[\u0000|$1|$|$<user>]b",
+      "split": ["a", "b"]
+    },
+    {
+      "pattern": "\\x41\\u0042",
+      "flags": "",
+      "text": "AB",
+      "error": false,
+      "matches": [
+        {
+          "text": "AB",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "AB",
+      "replaced": "[AB|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "(?:a|b)+",
+      "flags": "y",
+      "text": "abc",
+      "error": false,
+      "matches": [
+        {
+          "text": "ab",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[ab|$1|$|$<user>]c",
+      "split": ["", "c"]
+    },
+    {
+      "pattern": "a",
+      "flags": "gimsud",
+      "text": "A",
+      "error": false,
+      "matches": [
+        {
+          "text": "A",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": "A",
+      "replaced": "[A|$1|$|$<user>]",
+      "split": ["", ""]
+    },
+    {
+      "pattern": "a",
+      "flags": "ii",
+      "text": "a",
+      "error": true
+    },
+    {
+      "pattern": "(\\w+)\\s(\\w+)",
+      "flags": "",
+      "text": "John Smith",
+      "error": false,
+      "matches": [
+        {
+          "text": "John Smith",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": ["John", "Smith"],
+          "named": {}
+        }
+      ],
+      "whole": "John Smith",
+      "replaced": "[John Smith|John|$|$<user>]",
+      "split": ["", "John", "Smith", ""]
+    },
+    {
+      "pattern": "x(y)?",
+      "flags": "",
+      "text": "x xy",
+      "error": false,
+      "matches": [
+        {
+          "text": "x",
+          "start": 0,
+          "startGraphemes": 0,
+          "groups": [null],
+          "named": {}
+        },
+        {
+          "text": "xy",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": ["y"],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "[x||$|$<user>] [xy|y|$|$<user>]",
+      "split": ["", null, " ", "y", ""]
+    },
+    {
+      "pattern": ",",
+      "flags": "",
+      "text": "a,,b,",
+      "error": false,
+      "matches": [
+        {
+          "text": ",",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": ",",
+          "start": 2,
+          "startGraphemes": 2,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": ",",
+          "start": 4,
+          "startGraphemes": 4,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[,|$1|$|$<user>][,|$1|$|$<user>]b[,|$1|$|$<user>]",
+      "split": ["a", "", "b", ""]
+    },
+    {
+      "pattern": "(,)",
+      "flags": "",
+      "text": "a,b",
+      "error": false,
+      "matches": [
+        {
+          "text": ",",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [","],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[,|,|$|$<user>]b",
+      "split": ["a", ",", "b"]
+    },
+    {
+      "pattern": "😀",
+      "flags": "",
+      "text": "a😀b😀",
+      "error": false,
+      "matches": [
+        {
+          "text": "😀",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        },
+        {
+          "text": "😀",
+          "start": 4,
+          "startGraphemes": 3,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "a[😀|$1|$|$<user>]b[😀|$1|$|$<user>]",
+      "split": ["a", "b", ""]
+    },
+    {
+      "pattern": "👍🏽",
+      "flags": "",
+      "text": "x👍🏽y",
+      "error": false,
+      "matches": [
+        {
+          "text": "👍🏽",
+          "start": 1,
+          "startGraphemes": 1,
+          "groups": [],
+          "named": {}
+        }
+      ],
+      "whole": null,
+      "replaced": "x[👍🏽|$1|$|$<user>]y",
+      "split": ["x", "y"]
+    }
+  ]
+}

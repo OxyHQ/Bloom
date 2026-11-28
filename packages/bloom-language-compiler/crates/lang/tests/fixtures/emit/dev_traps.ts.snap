@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 function $get<T>(items: readonly T[], index: number): T {
   if (index >= 0 && index < items.length) return items[index] as T;
   throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);
@@ -20,6 +21,6 @@ return $get(xs, 0) ?? (-1);
 }
 
 export function forced(name: string | undefined): number {
-return $unwrap(name).length;
+return $characterCount($unwrap(name));
 }
 

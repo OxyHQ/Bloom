@@ -624,6 +624,10 @@ checked as such: `Identifiable` needs an `id`, `CaseIterable` an enum whose case
 Members and extensions (section 5) are statically dispatched: an instance member `m` of `T`
 compiles to the function `T$m(self, …)`, a static one to `T$$m`, and inside a member a name of
 one of `T`'s members that the body binds nowhere itself reads `self` (Swift's implicit `self`).
+A view's `static let x = v` is the type's constant `T$$x` too: `Card.fallback` reads it anywhere,
+and the view's own body reads it unqualified. A value type's `init` in an extension is
+`T$$init$<labels>` (`Regex$$init$_`), called by its labels beside the memberwise one, its body
+giving the value it makes; a class's `init` makes `self` (`T$$init`).
 
 ### 4.9 Classes and observable models
 
@@ -703,7 +707,16 @@ in any order after the positional ones.
 **2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
 unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
 is called `move(p, to: q)`. A positional argument where a label is due is B0207 ("missing
-argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. A closure without
+argument label `to:`", with the fix). A 0.x `fn` keeps positional calls. **Overloading by labels
+(Swift's rule):** functions of one name in one file, free functions or one type's methods (static
+or instance), may differ by their labels: `func describe(count: Int)` beside
+`func describe(name: String)`, `func formatted(digits:)` beside `formatted(currency:)`. A call
+takes the overload its labels fit (defaults may be left out; the one leaving out fewest wins); none
+fitting, or two fitting equally, is B0207 with the overloads listed. Two with the same labels are
+B0217 (overloads differ by labels, not by types), and so is an overloaded name read without a call
+(B0202). Each overload is emitted named by its labels (`describe$0$count`,
+`Double$formatted$0$digits`); a name declared once keeps its name. A directory module's files share
+one namespace, so a function's overloads are declared in one file (B0807 otherwise). A closure without
 `in` names its arguments `$0`, `$1`…: `points.map { $0.x }`, `reduce(0) { $0 + $1 }` (B0101
 outside a closure). A string interpolates with `\(expr)`: `"at \(p.x)"` (0.x `${expr}` still
 parses). Visibility is `public` (other modules), `internal` (unwritten: the module) and
@@ -794,6 +807,14 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
+  **A function type keeps its effects** (Swift's): `(String) throws -> Int` and
+  `() async throws -> T` are types of their own. A call of a value of a throwing type is a
+  throwing call (`try f(s)`); a function that does not throw fits a throwing type, and one that
+  throws where a non-throwing one is expected is B0201 (a TS callback may throw: JS has no checked
+  errors). A closure whose `try` or `throw` nothing in it catches is throwing where a throwing
+  type, or none, is expected (`let load = { try parse(s) }` is called `try load()`). The standard
+  library's list methods rethrow: `try xs.map(parse)`. `Codec.decode` is
+  `(JSONValue, String) throws -> T`, and `JSON.decode(_:from:)` throws.
 - A thrown JS `Error` (a `TypeError`, a TS library's own) is the standard library's `JSError`:
   `error as? JSError` and `catch let e as JSError` give its `name`, `message` and `stack`
   (`String?`). Any thrown value is `error.jsValue`, a `JSONValue?` (`none` for `null` or
@@ -1330,7 +1351,7 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 
 | Type | Members (each compiles to the JS intrinsic, inline) |
 |---|---|
-| `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
+| `String` | `count` (user-perceived characters, Swift's: `"👍🏽".count` is 1 on every backend; `s.utf16.count` is JS's `length`, 4), `isEmpty`, `slice(a, b)` (in characters), `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?`. Every offset and length of a string API is in characters, as `count` is: `firstIndex(of:)`, `lastIndex(of:)`, `prefix`/`suffix`/`dropFirst`/`dropLast`, `paddingStart(to:)`/`paddingEnd(to:)` and a regex match's `start`/`end`, so one read off one API indexes another. `s.utf16` (Swift's `UTF16View`, the string itself at run time) has JS's units: `count`, `slice(a, b)`, `prefix`/`suffix`, `firstIndex(of:)`/`lastIndex(of:)`, `paddingStart`/`paddingEnd`, for what counts UTF-16 units (a server's length limit). The TS backend counts with `characterCount` (`@oxy.so/bloom-language`: `Intl.Segmenter`, or UAX #29's rules where the engine has none, as Hermes; a string with nothing at or past U+0300 is counted without segmenting) |
 | `Int`/`Float` | `Double.infinity`, `Double.nan` (JS's `Infinity`, `NaN`), `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `formatted(digits:locale:)` (Intl, localized), `formatted(fractionDigits: 0...3, locale:)` (Intl: at least 0, at most 3 decimals, JS's `toLocaleString()`), `formatted(currency: "USD", locale:)` (Intl's currency style), `formatted(fractionDigits: n)` (JS's `toFixed(n)`: exactly `n` decimals, never localized, `"3.14"`); a range `a...b` where a `ClosedRange` is expected is that value, `{ lowerBound, upperBound }`, and an implicit member chain (`.dateTime.month(.abbreviated).day()` where a `DateFormat` is expected) starts from that type's static member, as Swift's does |
 | `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |

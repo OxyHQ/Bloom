@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, Text, view } from "@oxy.so/bloom-language";
+import { Button, Text, characterCount as $characterCount, view } from "@oxy.so/bloom-language";
 
 export interface Tagged {
   readonly tags: readonly string[];
@@ -20,7 +20,7 @@ return { tags: rows, actions: handlers };
 export function total(tags: readonly string[]): number {
 let count = 0;
 tags.map((t: string) => {
-count = count + (t.length);
+count = count + ($characterCount(t));
 });
 return count;
 }

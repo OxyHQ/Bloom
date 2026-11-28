@@ -1,8 +1,9 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 
 export type Handle = string;
 
 export function Handle$short(self: Handle): string {
-return (self.length > 4) ? "long" : self;
+return ($characterCount(self) > 4) ? "long" : self;
 }
 
 export type Box<T> = T;

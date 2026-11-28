@@ -38,15 +38,22 @@ A stable identity for a view's life: a label paired with its field, a key into a
 
 - `let string: String`: The identity as text, unique within the app while the view lives.
 
+### `struct UTF16View: Equatable, Hashable`
+
+A string's UTF-16 code units (Swift's `String.UTF16View`): JS's own lengths and offsets, for what counts them (a server's length limit, a TS API's offsets). `s.utf16.count` is JS's `s.length`; it costs nothing (`@Transparent`: the string itself at run time).
+
+- `let string: String`: The string viewed.
+
 ### `extension String`
 
-- `var characters: [Character]`: The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1` where `count` (UTF-16 units) is 4.
-- `var characterCount: Int`: How many user-perceived characters the string has.
+- `var characters: [Character]`: The user-perceived characters: `"👍🏽".characters == ["👍🏽"]`.
+- `var characterCount: Int`: How many user-perceived characters the string has: `count`, by its older name.
+- `var utf16: UTF16View`: The string's UTF-16 code units: `s.utf16.count` is JS's `length`.
 - `var isBlank: Bool`: Whether the string is empty or only whitespace.
 - `func hasPrefix(_ prefix: String) -> Bool`: Whether the string starts with `prefix` (Swift's name for `startsWith`).
 - `func hasSuffix(_ suffix: String) -> Bool`: Whether the string ends with `suffix`.
-- `func firstIndex(of sub: String, from: Int = 0) -> Int?`: The UTF-16 offset of the first `sub` at or after `from`, or `none`.
-- `func lastIndex(of sub: String) -> Int?`: The UTF-16 offset of the last `sub`, or `none`.
+- `func firstIndex(of sub: String, from: Int = 0) -> Int?`: The character offset of the first `sub` at or after character `from`, or `none`.
+- `func lastIndex(of sub: String) -> Int?`: The character offset of the last `sub`, or `none`.
 - `func replacingOccurrences(of target: String, with replacement: String) -> String`: Every `target` replaced with `replacement`.
 - `func components(separatedBy separator: String) -> [String]`: The parts between each `separator`.
 - `func droppingPrefix(_ prefix: String) -> String`: The string without `prefix`, when it starts with it.
@@ -58,12 +65,24 @@ A stable identity for a view's life: a label paired with its field, a key into a
 - `func truncated(to length: Int, ellipsis: String = "…") -> String`: At most `length` characters, with `ellipsis` in place of the rest.
 - `func trimmingStart() -> String`: Leading whitespace removed.
 - `func trimmingEnd() -> String`: Trailing whitespace removed.
-- `func paddingStart(to length: Int, with pad: String = " ") -> String`: Padded at the start with `pad` to `length` UTF-16 units.
-- `func paddingEnd(to length: Int, with pad: String = " ") -> String`: Padded at the end with `pad` to `length` UTF-16 units.
+- `func paddingStart(to length: Int, with pad: String = " ") -> String`: Padded at the start with `pad`'s characters to `length` characters.
+- `func paddingEnd(to length: Int, with pad: String = " ") -> String`: Padded at the end with `pad`'s characters to `length` characters.
 - `var capitalized: String`: The first character upper-cased.
 - `var lines: [String]`: The string's lines.
 - `func compare(_ other: String, locale: String = "") -> Int`: Ordered as a person reading `locale` expects (`""`: the device's locale): `-1`, `0` or `1`.
 - `static func repeating(_ s: String, count: Int) -> String`: `s` repeated `count` times.
+
+### `extension UTF16View`
+
+- `var count: Int`: How many UTF-16 code units the string has (JS's `length`).
+- `var isEmpty: Bool`: Whether the string has no code units.
+- `func slice(_ start: Int, _ end: Int) -> String`: The units from `start` up to `end`, as a string (JS's `slice`: a negative offset counts from the end).
+- `func prefix(_ n: Int) -> String`: The first `n` units, as a string.
+- `func suffix(_ n: Int) -> String`: The last `n` units, as a string.
+- `func firstIndex(of sub: String, from: Int = 0) -> Int?`: The UTF-16 offset of the first `sub` at or after unit `from`, or `none` (JS's `indexOf`).
+- `func lastIndex(of sub: String) -> Int?`: The UTF-16 offset of the last `sub`, or `none` (JS's `lastIndexOf`).
+- `func paddingStart(to length: Int, with pad: String = " ") -> String`: The string padded at the start with `pad` to `length` units (JS's `padStart`).
+- `func paddingEnd(to length: Int, with pad: String = " ") -> String`: The string padded at the end with `pad` to `length` units (JS's `padEnd`).
 
 ### `extension Array`
 
@@ -528,7 +547,7 @@ Why a JSON value did not decode: at `at` (`Post.author`), `expected` was wanted 
 
 How a type decodes from JSON and encodes to it: `T.self` for a `Codable` type.
 
-- `let decode: (JSONValue, String) -> T`: The value `json` holds; `at` names the field for errors.
+- `let decode: (JSONValue, String) throws -> T`: The value `json` holds; `at` names the field for errors.
 - `let encode: (T) -> JSONValue`: The value as JSON.
 
 ### `func decodingFailure<T>(_ value: JSONValue, _ at: String, _ expected: String) -> T`
@@ -581,24 +600,24 @@ The member `key` of the object `value` (absent when it has none).
 
 ### `extension Array`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Element) -> [Element]`: Each item decoded by `element`.
+- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Element) throws -> [Element]`: Each item decoded by `element`.
 - `static func encode(_ value: [Element], _ element: (Element) -> JSONValue) -> JSONValue`
-- `static func decoder(_ element: (JSONValue, String) -> Element) -> (JSONValue, String) -> [Element]`: The decoder of arrays of what `element` decodes (for nested types).
+- `static func decoder(_ element: (JSONValue, String) throws -> Element) -> (JSONValue, String) throws -> [Element]`: The decoder of arrays of what `element` decodes (for nested types).
 - `static func encoder(_ element: (Element) -> JSONValue) -> ([Element]) -> JSONValue`: The encoder of arrays of what `element` encodes.
 - `static func codec(_ element: Codec<Element>) -> Codec<[Element]>`: The codec of arrays of `element`'s type: `Codec.array(Post.self)` is `[Post]`'s.
 
 ### `extension Optional`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) -> Wrapped) -> Wrapped?`: `none` when absent or null; else what `wrapped` decodes.
+- `static func decode(_ value: JSONValue, _ at: String, _ wrapped: (JSONValue, String) throws -> Wrapped) throws -> Wrapped?`: `none` when absent or null; else what `wrapped` decodes.
 - `static func encode(_ value: Wrapped?, _ wrapped: (Wrapped) -> JSONValue) -> JSONValue`: Absent (left out of its object) when `none`.
-- `static func decoder(_ wrapped: (JSONValue, String) -> Wrapped) -> (JSONValue, String) -> Wrapped?`
+- `static func decoder(_ wrapped: (JSONValue, String) throws -> Wrapped) -> (JSONValue, String) throws -> Wrapped?`
 - `static func encoder(_ wrapped: (Wrapped) -> JSONValue) -> (Wrapped?) -> JSONValue`
 
 ### `extension Dictionary`
 
-- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) -> Value) -> [String: Value]`: Each member decoded by `element`.
+- `static func decode(_ value: JSONValue, _ at: String, _ element: (JSONValue, String) throws -> Value) throws -> [String: Value]`: Each member decoded by `element`.
 - `static func encode(_ value: [String: Value], _ element: (Value) -> JSONValue) -> JSONValue`
-- `static func decoder(_ element: (JSONValue, String) -> Value) -> (JSONValue, String) -> [String: Value]`
+- `static func decoder(_ element: (JSONValue, String) throws -> Value) -> (JSONValue, String) throws -> [String: Value]`
 - `static func encoder(_ element: (Value) -> JSONValue) -> ([String: Value]) -> JSONValue`
 
 ### `func decodeCase<T>(_ value: JSONValue, _ at: String, _ cases: [T], _ expected: String) -> T`
@@ -613,7 +632,7 @@ A case-only enum's value as its case name.
 
 - `static func parse(_ text: String) -> JSONValue`: `text` parsed (throws on invalid JSON).
 - `static func stringify(_ value: JSONValue, indent: Int = 0) -> String`: `value` as JSON text; `indent` spaces per level (0: on one line).
-- `static func decode<T>(_ codec: Codec<T>, from text: String) -> T`: The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
+- `static func decode<T>(_ codec: Codec<T>, from text: String) throws -> T`: The `T` that `text` holds (`JSON.decode(Post.self, from: text)`).
 - `static func encode<T>(_ codec: Codec<T>, _ value: T, indent: Int = 0) -> String`: `value` as JSON text.
 
 ## HTTP
@@ -954,7 +973,7 @@ A regular expression: its pattern and its flags (`i` ignores case, `m` multiline
 
 ### `struct RegexMatch: Equatable`
 
-One match: its text, where it starts (UTF-16 offset) and its groups.
+One match: its text, where it starts (a character offset, as `String.count` counts; Swift's model on every backend) and its groups.
 
 - `let text: String`
 - `let start: Int`
@@ -990,7 +1009,7 @@ A pattern that is not a valid expression.
 ### `extension RegexMatch`
 
 - `func group(_ n: Int) -> String?`: Group `n` (1 is the first, 0 the whole match), or `none`: past the last group, or where the group did not take part in the match.
-- `var end: Int`: Where the match ends (UTF-16 offset, exclusive).
+- `var end: Int`: Where the match ends (a character offset, exclusive).
 
 ## Logger
 

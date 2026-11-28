@@ -1,0 +1,31 @@
+// Swift's overloading by argument labels: each overload is named by its labels.
+
+public func describe(count: Int) -> String { "n=\(count)" }
+public func describe(name: String) -> String { "s=\(name)" }
+public func describe(_ value: Int, of total: Int = 100) -> String { "\(value)/\(total)" }
+
+// A name declared once keeps its name.
+public func alone(x: Int) -> Int { x }
+
+public struct Temp {
+  public let c: Double
+  public static func make(celsius: Double) -> Temp { Temp(c: celsius) }
+  public static func make(fahrenheit: Double) -> Temp { Temp(c: (fahrenheit - 32) / 1.8) }
+  public func shown(unit: String = "C") -> String { "\(c)\(unit)" }
+  public func shown(_ f: (Double) -> String) -> String { f(c) }
+}
+
+extension Double {
+  public func spelled(digits: Int) -> String { "d\(digits)" }
+  public func spelled(currency: String) -> String { "c\(currency)" }
+}
+
+public func run() -> [String] {
+  let t = Temp.make(celsius: 20)
+  let u: Temp = .make(fahrenheit: 50)
+  return [
+    describe(count: 2), describe(name: "x"), describe(1), describe(1, of: 2), "\(alone(x: 1))",
+    t.shown(), t.shown { d in "\(d)!" }, u.shown(unit: "K"),
+    1.5.spelled(digits: 2), 2.0.spelled(currency: "EUR"),
+  ]
+}

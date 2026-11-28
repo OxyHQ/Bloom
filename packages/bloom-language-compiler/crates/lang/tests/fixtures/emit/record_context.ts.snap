@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, characterCount as $characterCount, view } from "@oxy.so/bloom-language";
 import { Dialog } from "@oxy.so/bloom-language/overlays";
 import { useState } from "react";
 import { tagItems, transformed } from "@/corpus";
@@ -39,7 +39,7 @@ export interface Tag {
 export function tags(wide: boolean): number {
 const annotated: readonly Tag[] = [{ id: "a", label: "A" }, { id: "b", count: 2 }];
 const branch: Tag = wide ? ({ id: "w", label: "Wide" }) : ({ id: "n", count: 1 });
-return (annotated.length + branch.id.length) + tagItems([{ id: "a", label: "A" }, { id: "b", count: 2 }]);
+return (annotated.length + $characterCount(branch.id)) + tagItems([{ id: "a", label: "A" }, { id: "b", count: 2 }]);
 }
 
 export function moved(y: number): number {

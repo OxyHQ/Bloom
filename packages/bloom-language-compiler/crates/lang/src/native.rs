@@ -329,7 +329,7 @@ fn event_of(t: &TypeExpr) -> Option<Result<Vec<(String, Type)>, String>> {
         TypeKind::Optional(inner) => inner,
         _ => t,
     };
-    let TypeKind::Fn { params, ret, is_async } = &t.kind else { return None };
+    let TypeKind::Fn { params, ret, is_async, .. } = &t.kind else { return None };
     let void = matches!(&ret.kind, TypeKind::Named { name, args } if args.is_empty() && name.name == "Void")
         || matches!(&ret.kind, TypeKind::Tuple(items) if items.is_empty());
     if *is_async || !void {
@@ -448,7 +448,7 @@ pub fn modules(source: &str) -> Result<Vec<Module>, String> {
 
 /// Whether `t` is `() -> Void`: what removes a listener.
 fn is_remover(t: &TypeExpr) -> bool {
-    let TypeKind::Fn { params, ret, is_async } = &t.kind else { return false };
+    let TypeKind::Fn { params, ret, is_async, .. } = &t.kind else { return false };
     !*is_async
         && params.is_empty()
         && (matches!(&ret.kind, TypeKind::Named { name, args } if args.is_empty() && name.name == "Void")

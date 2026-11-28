@@ -47,7 +47,10 @@ pub fn key(name: &str) -> &str {
 }
 
 /// The member an extension function was lowered from (`String$padded` → `("String", "padded", false)`).
+/// An overload's (`Double$formatted$0$digits`) is its base's member; a free function's overload
+/// (`describe$0$count`) is no member.
 pub fn demangle(name: &str) -> Option<(&str, &str, bool)> {
+    let name = overload_base(name).unwrap_or(name);
     if let Some((owner, member)) = name.split_once("$$") {
         return Some((owner, member.strip_prefix("get$").unwrap_or(member), true));
     }
@@ -264,6 +267,56 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
     out.push(Item { visibility, modifiers, kind, span: member.span });
 }
 
+/// A view's `static let x = v` (`struct Card: View { static let fallback = "…" }`): the type's
+/// constant `Card$$fallback`, which `Card.fallback` reads, as a struct's is; the view's own
+/// unqualified `fallback` reads it too.
+fn view_statics(file: &mut File, ids: &mut Ids) {
+    let mut consts = Vec::new();
+    for item in &mut file.items {
+        let ItemKind::View(v) = &mut item.kind else { continue };
+        let Some(surface) = v.surface.as_deref() else { continue };
+        for member in &surface.members {
+            let TypeMemberKind::Stored { name, ty, value: Some(_), mutable: false } = &member.kind else {
+                continue;
+            };
+            if !member.modifiers.is_static {
+                continue;
+            }
+            let Some(slot) = v.members.iter_mut().find_map(|m| match m {
+                Member::Let(l) if matches!(&l.pattern.kind, PatternKind::Bind(n) if n.name == name.name) => {
+                    Some(l)
+                }
+                _ => None,
+            }) else {
+                continue;
+            };
+            let constant = mangle(&v.name.name, &name.name, true);
+            let read = Expr { id: ids.next(), kind: ExprKind::Name(constant.clone()), span: slot.value.span };
+            let value = std::mem::replace(&mut slot.value, read);
+            consts.push(Item {
+                visibility: member.visibility,
+                modifiers: Modifiers {
+                    visibility_span: member.modifiers.visibility_span,
+                    ..Modifiers::default()
+                },
+                kind: ItemKind::Const(ConstDecl {
+                    mutable: false,
+                    name: Ident { name: constant, span: name.span },
+                    ty: ty.clone(),
+                    value,
+                    span: member.span,
+                }),
+                span: member.span,
+            });
+        }
+    }
+    // Before the views, so a view's body (and the module's functions) read them declared.
+    if !consts.is_empty() {
+        consts.append(&mut file.items);
+        file.items = consts;
+    }
+}
+
 /// The standard library's queues an actor's methods run through (to import as written
 /// names are: the source never spells them).
 pub fn actor_runners(file: &File) -> Vec<String> {
@@ -474,9 +527,82 @@ fn member_names(file: &File) -> Vec<(String, Vec<String>)> {
     out
 }
 
-/// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place.
+/// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place;
+/// then names each overload by its labels ([`overloads`]).
 pub fn lower(file: &mut File) {
+    lower_members(file);
+    overloads(file);
+}
+
+/// The marker between an overloaded function's name and its labels (`describe$0$count`). No
+/// other lowered name has it: every other `$` is followed by a name, and a name never starts
+/// with a digit.
+pub const OVERLOAD: &str = "$0";
+
+/// An overload's name, by the labels its call writes (`_` for an unlabelled parameter; `self`,
+/// a member's receiver, is not one): `describe(count:)` is `describe$0$count`, `f()` is `f$0`.
+pub fn overload_name<'a>(name: &str, labels: impl Iterator<Item = &'a str>) -> String {
+    let mut out = format!("{name}{OVERLOAD}");
+    for label in labels {
+        out.push('$');
+        out.push_str(label);
+    }
+    out
+}
+
+/// The name an overload was lowered from (`describe$0$count` → `describe`).
+pub fn overload_base(name: &str) -> Option<&str> {
+    name.split_once(OVERLOAD).map(|(base, _)| base)
+}
+
+/// An overload's name as Swift writes it: `describe$0$count` is `describe(count:)`,
+/// `Double$formatted$0$digits` is `formatted(digits:)`. Any other name is itself.
+pub fn overload_display(name: &str) -> String {
+    let Some((base, labels)) = name.split_once(OVERLOAD) else { return name.to_string() };
+    let member = demangle(base).map_or(base, |(_, member, _)| member);
+    let labels: String = labels.split('$').filter(|l| !l.is_empty()).map(|l| format!("{l}:")).collect();
+    format!("{member}({labels})")
+}
+
+/// Swift's overloading by argument labels: functions of one name in one file (free functions,
+/// and the members [`lower_members`] made of one type's methods) whose calls write different
+/// labels are each named by their labels ([`overload_name`]); the checker picks one by a call's
+/// labels. A name declared once keeps its name; two declarations with the same labels stay a
+/// redeclaration (B0217).
+fn overloads(file: &mut File) {
+    let labels_of = |f: &FnDecl| -> Vec<String> {
+        f.params
+            .iter()
+            .enumerate()
+            .filter(|(i, p)| !(*i == 0 && p.name.name == "self"))
+            .map(|(_, p)| p.label.as_ref().map_or(p.name.name.clone(), |l| l.name.clone()))
+            .collect()
+    };
+    let mut groups: std::collections::HashMap<String, Vec<Vec<String>>> = std::collections::HashMap::new();
+    for item in &file.items {
+        if let ItemKind::Fn(f) = &item.kind
+            && !f.name.name.contains("$$init")
+        {
+            groups.entry(f.name.name.clone()).or_default().push(labels_of(f));
+        }
+    }
+    groups.retain(|_, sets| sets.len() > 1 && sets.iter().any(|s| *s != sets[0]));
+    if groups.is_empty() {
+        return;
+    }
+    for item in &mut file.items {
+        if let ItemKind::Fn(f) = &mut item.kind
+            && groups.contains_key(&f.name.name)
+        {
+            let labels = labels_of(f);
+            f.name.name = overload_name(&f.name.name, labels.iter().map(String::as_str));
+        }
+    }
+}
+
+fn lower_members(file: &mut File) {
     let mut ids = Ids(u32::MAX / 2);
+    view_statics(file, &mut ids);
     for item in &mut file.items {
         if let ItemKind::Class(c) = &mut item.kind
             && c.actor

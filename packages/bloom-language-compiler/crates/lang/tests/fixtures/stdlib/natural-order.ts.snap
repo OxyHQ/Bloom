@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 import { Array$max } from "../../.bloom/std/Bloom/Core.bloom";
 import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
 function $maxOf<T>(items: readonly T[]): T | undefined {
@@ -35,6 +36,6 @@ return $maxOf(xs);
 }
 
 export function longestName(xs: readonly string[]): string | undefined {
-return Array$max(xs, ($0: string, $1: string) => $0.length < $1.length);
+return Array$max(xs, ($0: string, $1: string) => $characterCount($0) < $characterCount($1));
 }
 

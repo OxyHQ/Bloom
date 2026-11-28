@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
+import { Button, Text, VStack, characterCount as $characterCount, inlineView, view } from "@oxy.so/bloom-language";
 import { useCallback, useMemo } from "react";
 import { useInsets } from "@/hooks/useInsets";
 
@@ -62,7 +62,7 @@ if ($[8] !== item.tags) {
 longest = (() => {
 let best = "";
 for (const tag of item.tags) {
-if (tag.length > best.length) {
+if ($characterCount(tag) > $characterCount(best)) {
 best = tag;
 }
 }

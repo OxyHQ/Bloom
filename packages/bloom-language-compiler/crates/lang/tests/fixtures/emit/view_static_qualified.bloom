@@ -1,0 +1,14 @@
+// A view's `static let` is the type's constant (`Card$$fallback`), read qualified (`Card.fallback`,
+// Swift's) in the view and outside it, and unqualified in the view's own body.
+public struct Card: View {
+  public static let fallback = "Untitled"
+  let title: String?
+  var body: some View { Text(title ?? Card.fallback) }
+}
+
+public func cardLabel(_ title: String?) -> String { title ?? Card.fallback }
+
+public struct Plain: View {
+  static let spacing = 4
+  var body: some View { Text("\(spacing)") }
+}

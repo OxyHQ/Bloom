@@ -1,3 +1,4 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
 import { joinClasses } from "@/api";
 function $toInt(text: string): number | undefined {
   const value = Number(text.trim());
@@ -18,7 +19,8 @@ return (s == null ? undefined : $toInt(s));
 }
 
 function size(b: Box | undefined): number | undefined {
-return b?.label.length;
+const $t0 = b?.label;
+return ($t0 == null ? undefined : $characterCount($t0));
 }
 
 function noted(b: Box | undefined): string | undefined {

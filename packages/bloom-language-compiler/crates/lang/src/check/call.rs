@@ -4,7 +4,7 @@
 
 use std::rc::Rc;
 
-use super::{CallRes, Checker, ClosureInfo, FieldRes, LocalKind, NameRes, Recv, TypeName};
+use super::{CallRes, Checker, ClosureInfo, FieldRes, LocalId, LocalKind, NameRes, Recv, TypeName};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, closest};
 use crate::types::*;
@@ -112,7 +112,16 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Name(name) => {
-                if let Some(local) = self.lookup(name) {
+                // `describe(count: 2)` beside `describe(name:)`: the overload its labels name.
+                let found = match self.lookup(name) {
+                    Some(local) => Some(local),
+                    None => match self.overload(name, call, false) {
+                        Some(None) => return Ty::Unknown,
+                        Some(found) => found,
+                        None => None,
+                    },
+                };
+                if let Some(local) = found {
                     self.out.names.insert(call.callee.id, NameRes::Local(local));
                     let info = self.out.locals[local].clone();
                     self.out.types.insert(call.callee.id, info.ty.clone());
@@ -445,7 +454,7 @@ impl Checker<'_> {
                 // `Type.m(…)`: an extension's static function.
                 if let ExprKind::Name(type_name) = &object.kind
                     && self.lookup(type_name).is_none()
-                    && let Some(ty) = self.static_member(&call.callee, type_name, member)
+                    && let Some(ty) = self.static_call_member(call, type_name, member)
                 {
                     self.out.types.insert(call.callee.id, ty.clone());
                     return self.value_call(expr, call, &ty);
@@ -702,7 +711,17 @@ impl Checker<'_> {
         if shadowed {
             return None;
         }
-        let (func, local) = self.extension_fn(recv, &member.name, false)?;
+        let (func, local) = match self.extension_fn(recv, &member.name, false) {
+            Some(found) => found,
+            // `x.formatted(digits: 2)` beside `formatted(currency:)`: the overload its labels name.
+            None => {
+                let owner = self.extension_owner(recv)?;
+                let base = crate::extensions::mangle(&owner, &member.name, false);
+                let local = self.overload(&base, call, true)?;
+                let Some(local) = local else { return Some(Ty::Unknown) };
+                (self.out.locals[local].name.as_str().into(), local)
+            }
+        };
         let fn_ty = self.out.locals[local].ty.clone();
         let Ty::Fn(f) = self.instantiate(&fn_ty) else { return None };
         let (first, params) = f.params.split_first()?;
@@ -894,7 +913,9 @@ impl Checker<'_> {
     }
 
     /// Positional arguments of fixed types (prelude functions, methods).
-    fn positional(&mut self, call: &Call, params: &[Ty]) {
+    /// Checks the arguments against `params`: whether one is a function that throws (a function
+    /// named, or a closure whose `try` nothing in it catches).
+    fn positional(&mut self, call: &Call, params: &[Ty]) -> bool {
         let count = call.args.len() + usize::from(call.trailing.is_some());
         if count != params.len() {
             let span = call.args.first().map_or(call.callee.span, |a| a.span);
@@ -908,15 +929,24 @@ impl Checker<'_> {
                 .spec("5-values-functions-and-closures"),
             );
         }
+        let throws = |this: &Self, ty: &Ty| matches!(this.resolve(ty), Ty::Fn(f) if f.throws);
+        let mut throwing = false;
         for (arg, ty) in call.args.iter().zip(params) {
             self.expr(&arg.value, Some(ty));
+            throwing |= match (&arg.value.kind, self.out.names.get(&arg.value.id)) {
+                (ExprKind::Name(_), Some(NameRes::Local(local))) => throws(self, &self.out.locals[*local].ty),
+                (ExprKind::Closure(c), _) => self.throwing_closures.contains(&c.span),
+                _ => false,
+            };
         }
         if let (Some(trailing), Some(ty)) = (&call.trailing, params.get(call.args.len())) {
             let closure = self.closure(trailing, Some(ty), false);
             if !self.coerce(&closure, ty) {
                 self.mismatch(trailing.span, &closure, ty);
             }
+            throwing |= throws(self, &closure);
         }
+        throwing
     }
 
     /// `fail(e)`: throws `e` from a closure TS calls (or `catching { … }`'s block),
@@ -1049,6 +1079,165 @@ impl Checker<'_> {
     /// a trailing closure is the next parameter that takes a function.
     /// `props`: a view's call, where `..r` spreads a record's fields as its props (JSX's
     /// `{...r}`); a later prop of the same name wins.
+    /// `T.m(…)` with `m` a static function of an extension of `T`, an overload by the call's
+    /// labels included (`T$$make$0$from`).
+    fn static_call_member(&mut self, call: &Call, type_name: &str, name: &Ident) -> Option<Ty> {
+        let base = crate::extensions::mangle(crate::extensions::key(type_name), &name.name, true);
+        if self.lookup(&base).is_none()
+            && let Some(found) = self.overload(&base, call, false)
+        {
+            let Some(local) = found else { return Some(Ty::Unknown) };
+            let func: Rc<str> = self.out.locals[local].name.as_str().into();
+            self.out.fields.insert(call.callee.id, FieldRes::Static(func));
+            let ty = self.out.locals[local].ty.clone();
+            return Some(self.instantiate(&ty));
+        }
+        self.static_member(&call.callee, type_name, name)
+    }
+
+    /// The overloads of `base` in scope, as Swift writes them (`describe(count:)`).
+    pub(super) fn overloads_of(&self, base: &str) -> Vec<String> {
+        let mut shown: Vec<String> = self
+            .overload_locals(base)
+            .into_iter()
+            .map(|l| crate::extensions::overload_display(&self.out.locals[l].name))
+            .collect();
+        shown.sort();
+        shown
+    }
+
+    fn overload_locals(&self, base: &str) -> Vec<LocalId> {
+        let mut names: Vec<&String> = self
+            .scopes
+            .iter()
+            .flat_map(|s| s.keys())
+            .filter(|k| crate::extensions::overload_base(k) == Some(base))
+            .collect();
+        names.sort();
+        names.dedup();
+        names.into_iter().filter_map(|n| self.lookup(n)).collect()
+    }
+
+    /// Swift's overloading by labels: the overload of `base` a call's labels name (`skip_self`:
+    /// a member's, whose first parameter is its receiver). `None` when `base` is not
+    /// overloaded; `Some(None)` when no overload, or more than one, fits (reported).
+    pub(super) fn overload(&mut self, base: &str, call: &Call, skip_self: bool) -> Option<Option<LocalId>> {
+        if !self.overloaded.contains(base) {
+            return None;
+        }
+        let mut fitting: Vec<(usize, LocalId)> = Vec::new();
+        for local in self.overload_locals(base) {
+            let ty = self.out.locals[local].ty.clone();
+            let Ty::Fn(f) = self.resolve(&ty) else { continue };
+            let params = if skip_self { f.params.get(1..).unwrap_or_default() } else { &f.params[..] };
+            if let Some(defaulted) = self.fits_labels(call, params) {
+                fitting.push((defaulted, local));
+            }
+        }
+        fitting.sort_by_key(|(defaulted, _)| *defaulted);
+        let shown = || -> String {
+            let member = crate::extensions::demangle(base).map_or(base, |(_, m, _)| m);
+            member.to_string()
+        };
+        match fitting.as_slice() {
+            [(_, local)] => Some(Some(*local)),
+            [(a, local), (b, _), ..] if a < b => Some(Some(*local)),
+            [] => {
+                let written: String = call
+                    .args
+                    .iter()
+                    .map(|a| a.label.as_ref().map_or("_:".to_string(), |l| format!("{}:", l.name)))
+                    .collect();
+                let candidates = self.overloads_of(base).join("`, `");
+                self.report(
+                    Diagnostic::error(
+                        "B0207",
+                        call.callee.span,
+                        format!("no `{}` takes the labels `({written})`", shown()),
+                    )
+                    .label("not one of its overloads")
+                    .help(format!("its overloads are `{candidates}`"))
+                    .spec("5-values-functions-and-closures"),
+                );
+                self.args_unchecked(call);
+                Some(None)
+            }
+            _ => {
+                let candidates: Vec<String> = fitting
+                    .iter()
+                    .map(|(_, l)| crate::extensions::overload_display(&self.out.locals[*l].name))
+                    .collect();
+                self.report(
+                    Diagnostic::error(
+                        "B0207",
+                        call.callee.span,
+                        format!("this call of `{}` is ambiguous", shown()),
+                    )
+                    .label("more than one overload takes these labels")
+                    .help(format!("`{}` all fit: write the labels of one in full", candidates.join("`, `")))
+                    .spec("5-values-functions-and-closures"),
+                );
+                self.args_unchecked(call);
+                Some(None)
+            }
+        }
+    }
+
+    /// Whether a call's labels fit `params` (by Swift's rules, without checking the values): the
+    /// number of defaulted parameters it leaves out, or `None` when it does not fit.
+    fn fits_labels(&self, call: &Call, params: &[ParamTy]) -> Option<usize> {
+        let mut filled = vec![false; params.len()];
+        let rest = params.last().is_some_and(|p| p.rest);
+        let mut next = 0;
+        for arg in &call.args {
+            if arg.spread {
+                if rest {
+                    continue;
+                }
+                return None;
+            }
+            match &arg.label {
+                Some(label) => {
+                    let slot = params.iter().enumerate().position(|(i, p)| {
+                        !filled[i] && !p.positional && p.name.as_deref() == Some(label.name.as_str())
+                    })?;
+                    filled[slot] = true;
+                }
+                None => {
+                    while next < params.len() && filled[next] {
+                        next += 1;
+                    }
+                    if next >= params.len() || params[next].rest {
+                        if rest {
+                            continue;
+                        }
+                        return None;
+                    }
+                    if params[next].labelled {
+                        return None;
+                    }
+                    filled[next] = true;
+                }
+            }
+        }
+        if call.trailing.is_some() {
+            let slot = (0..params.len())
+                .rev()
+                .find(|&i| !filled[i] && matches!(self.resolve(&params[i].ty), Ty::Fn(_)))?;
+            filled[slot] = true;
+        }
+        let mut defaulted = 0;
+        for (i, p) in params.iter().enumerate() {
+            if !filled[i] {
+                if !(p.optional || p.rest) {
+                    return None;
+                }
+                defaulted += 1;
+            }
+        }
+        Some(defaulted)
+    }
+
     fn bloom_args(&mut self, call: &Call, f: &FnTy, props: bool) -> (Vec<Option<usize>>, Vec<usize>) {
         let mut order: Vec<Option<usize>> = vec![None; f.params.len()];
         let mut spread_given = vec![false; f.params.len()];
@@ -1958,7 +2147,7 @@ impl Checker<'_> {
         // `.milliseconds(300)` where a `Duration` is expected: the type's static function, as
         // Swift's implicit member expression reads any static member giving the type.
         if !d.variants().iter().any(|v| v.name == name.name)
-            && let Some(ty) = self.static_member(&call.callee, &d.name, name)
+            && let Some(ty) = self.static_call_member(call, &d.name, name)
         {
             let ret = self.value_call(expr, call, &ty);
             if let Some(want) = expected
@@ -3431,7 +3620,10 @@ impl Checker<'_> {
         } else {
             params
         };
-        self.positional(call, &params);
+        // Swift's `rethrows`: `try xs.map(parse)` with a function that throws throws itself.
+        if self.positional(call, &params) {
+            self.throwing_span(expr.span);
+        }
         self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
         ret
     }
@@ -3455,7 +3647,8 @@ impl Checker<'_> {
                 is_async: false,
                 generics: 0,
                 ts: false,
-                throws: false,
+                // Swift's `rethrows`: a function that throws fits (the call then throws).
+                throws: true,
                 bounds: Vec::new(),
                 shapes: Vec::new(),
             }))

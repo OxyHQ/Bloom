@@ -308,3 +308,13 @@ export type {
 
 export { toast } from './toast';
 export type { ToastContent } from './toast';
+
+// Strings in characters (Swift's): what compiled `.bloom` code counts, slices and indexes by.
+export {
+  characterBoundaries,
+  characterCount,
+  characterOffset,
+  characters,
+  characterSlice,
+  utf16Offset,
+} from './text';

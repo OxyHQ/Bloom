@@ -1,0 +1,41 @@
+// `==` and `!=` on a literal union narrow it in both branches, through `||`, `&&` and `!`, as TS
+// narrows them; and the other branch of a test on a TS discriminated union's tag is the other
+// member (lang-mention-10's union-eq-narrowing: Mention's appearance page, DraftsList).
+import { type DraftItem } from "@/types/draft-items"
+
+public type BloomMode = "light" | "dark" | "system" | "adaptive"
+public type ThemeMode = "system" | "light" | "dark"
+public type Shade = "light" | "dark"
+
+public func themeMode(_ mode: BloomMode) -> ThemeMode {
+  mode == "adaptive" || mode == "system" ? "system" : mode
+}
+
+public func shadeOf(_ mode: BloomMode) -> Shade? {
+  if mode != "light" && mode != "dark" {
+    return none
+  }
+  return mode
+}
+
+public func shadeAfterGuard(_ mode: ThemeMode) -> Shade {
+  if mode == "system" {
+    return "light"
+  }
+  return mode
+}
+
+public func notSystem(_ mode: ThemeMode) -> Shade {
+  !(mode == "system") ? mode : "dark"
+}
+
+public func label(_ item: DraftItem) -> String {
+  item.origin == "server" ? item.post.title : item.draft.name
+}
+
+public func deviceName(_ item: DraftItem) -> String {
+  if item.origin != "device" {
+    return item.post.title
+  }
+  return item.draft.name
+}

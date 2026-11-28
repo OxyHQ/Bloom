@@ -1,0 +1,16 @@
+// Calls of `Overloads.bloom`'s overloads from another file of the module.
+
+public func overloadedFree() -> [String] {
+  [measured(count: 3), measured(name: "x"), measured(7), measured(7, of: 10)]
+}
+
+public func overloadedMembers() -> [String] {
+  let warm = Gauge.make(celsius: 20)
+  let cold: Gauge = .make(fahrenheit: 32)
+  return [
+    warm.reading(unit: "C"),
+    cold.reading { c in "\(c)!" },
+    2.spelled(plural: "items"),
+    7.spelled(digits: 3),
+  ]
+}

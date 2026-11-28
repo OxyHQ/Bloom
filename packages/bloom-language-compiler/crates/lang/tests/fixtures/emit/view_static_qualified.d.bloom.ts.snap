@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare const Card$$fallback: string;
+export interface CardProps {
+  readonly title: string | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Card())`), or from TSX as `toElement(Card())`. */
+export declare const Card: (props: CardProps) => ComposedView;
+export declare function cardLabel(title: string | undefined | null): string;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Plain())`), or from TSX as `toElement(Plain())`. */
+export declare const Plain: () => ComposedView;
