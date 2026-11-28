@@ -192,10 +192,11 @@ pub(crate) fn pack_link(name: &str, dir: &Path, out: &Path) -> Result<PathBuf, S
     let bytes = std::fs::read(&packed).map_err(|e| format!("{}: {e}", packed.display()))?;
     let slug: String = name.chars().map(|c| if c.is_ascii_alphanumeric() { c } else { '-' }).collect();
     let tarball = out.join(format!("{slug}-{:016x}.tgz", crate::build::hash(&[&bytes]) as u64));
-    // Only the current pack of each link is kept.
+    // Only the current pack of each link is kept: `<slug>-<16 hex digits>.tgz` exactly, so
+    // `@oxy.so/bloom-language`'s never takes `@oxy.so/bloom-language-compiler`'s.
     for old in std::fs::read_dir(out).into_iter().flatten().flatten() {
         let old = old.path();
-        let stale = old.file_name().is_some_and(|n| n.to_string_lossy().starts_with(&format!("{slug}-")));
+        let stale = old.file_name().is_some_and(|n| is_pack_of(&slug, &n.to_string_lossy()));
         if stale && old != tarball {
             let _ = std::fs::remove_file(&old);
         }
@@ -203,6 +204,13 @@ pub(crate) fn pack_link(name: &str, dir: &Path, out: &Path) -> Result<PathBuf, S
     std::fs::rename(&packed, &tarball).map_err(|e| format!("{}: {e}", tarball.display()))?;
     let _ = std::fs::remove_dir_all(&stage);
     Ok(tarball)
+}
+
+/// Whether `file` is a pack of the link whose slug is `slug`: `<slug>-<16 hex digits>.tgz`.
+fn is_pack_of(slug: &str, file: &str) -> bool {
+    file.strip_prefix(&format!("{slug}-"))
+        .and_then(|rest| rest.strip_suffix(".tgz"))
+        .is_some_and(|hash| hash.len() == 16 && hash.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
 /// The generated app's `package.json`.
@@ -416,6 +424,15 @@ pub fn add(package: &Package, name: &str, from: Option<&str>, npm: Option<&str>)
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_links_pack_is_never_another_links() {
+        // `@oxy.so/bloom-language`'s cleanup once deleted `@oxy.so/bloom-language-compiler`'s pack.
+        let language = "-oxy-so-bloom-language";
+        assert!(super::is_pack_of(language, "-oxy-so-bloom-language-fd8d051b35efbc21.tgz"));
+        assert!(!super::is_pack_of(language, "-oxy-so-bloom-language-compiler-1e91592db01274ef.tgz"));
+        assert!(!super::is_pack_of(language, "-oxy-so-bloom-language-fd8d.tgz"));
+    }
+
     use super::*;
 
     #[test]
