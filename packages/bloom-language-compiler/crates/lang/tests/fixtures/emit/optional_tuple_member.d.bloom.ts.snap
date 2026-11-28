@@ -1,0 +1,5 @@
+export interface P {
+  readonly c?: (readonly [number, number]) | undefined;
+}
+export declare function f(p: P | undefined | null): boolean;
+export declare function g(c: (readonly [number, number]) | undefined | null): number;

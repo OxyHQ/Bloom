@@ -467,7 +467,14 @@ impl Lexer<'_> {
             (b'.', b'.') if self.peek(2) == b'<' => (P::DotDotLt, 3),
             (b'.', b'.') if self.peek(2) == b'.' => (P::DotDotDot, 3),
             (b'.', b'.') => (P::DotDot, 2),
-            (b'?', b'.') if !self.peek(2).is_ascii_digit() => (P::QuestionDot, 2),
+            // `x?.0` (Swift's optional chaining to a tuple member) when the `?` is against what
+            // it chains; `c ? .5 : 1` keeps its spaces.
+            (b'?', b'.')
+                if !self.peek(2).is_ascii_digit()
+                    || (self.pos > 0 && !self.src[self.pos - 1].is_ascii_whitespace()) =>
+            {
+                (P::QuestionDot, 2)
+            }
             (b'?', b'?') => (P::QuestionQuestion, 2),
             (b'-', b'>') => (P::Arrow, 2),
             (b'=', b'>') => (P::FatArrow, 2),

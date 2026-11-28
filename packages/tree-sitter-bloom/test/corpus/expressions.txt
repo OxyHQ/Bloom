@@ -584,3 +584,28 @@ let d = f(-x)
         (value_argument
           (prefix_expression
             (identifier)))))))
+
+====================
+Optional tuple members
+====================
+
+let a = p?.c?.0
+let b = c?.1 ?? 0
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (navigation_expression
+      (navigation_expression
+        (identifier)
+        (identifier))
+      (integer_literal)))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (navigation_expression
+        (identifier)
+        (integer_literal))
+      (integer_literal))))

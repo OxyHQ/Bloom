@@ -3064,7 +3064,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 Tok::P(P::QuestionDot) => {
                     self.bump();
-                    let name = self.name_or_keyword("a member name");
+                    // `c?.0`: a tuple's member, when the tuple is there.
+                    let name = match self.tok().clone() {
+                        Tok::Int(index) => {
+                            let span = self.bump();
+                            Ident { name: index.to_string(), span }
+                        }
+                        _ => self.name_or_keyword("a member name"),
+                    };
                     let span = expr.span.to(name.span);
                     expr = self.expr_node(ExprKind::OptField(Box::new(expr), name), span);
                 }
