@@ -15,8 +15,8 @@
 
 pub use crate::ast::ExprId;
 pub use crate::check::{
-    AssignRes, AwaitRes, CallRes, CheckResult, ClosureInfo, FieldRes, Local, LocalId, LocalKind, NameRes,
-    Recv, TryRes, ViewInfo,
+    AssignRes, AwaitRes, Bound, CallRes, CheckResult, ClosureInfo, Conformance, FieldRes, Local, LocalId,
+    LocalKind, NameRes, Recv, TryRes, ViewInfo, WitnessArg, Witnessed,
 };
 pub use crate::extensions::{demangle, mangle};
 pub use crate::types::{
