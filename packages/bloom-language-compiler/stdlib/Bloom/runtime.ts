@@ -70,6 +70,20 @@ export function formatNumber(
   });
 }
 
+/** `n` in `currency`; a negative fraction bound is the currency's own. */
+export function formatCurrency(
+  n: number,
+  locale: string,
+  currency: string,
+  minFraction: number,
+  maxFraction: number,
+): string {
+  const options: Intl.NumberFormatOptions = { style: 'currency', currency };
+  if (minFraction >= 0) options.minimumFractionDigits = minFraction;
+  if (maxFraction >= 0) options.maximumFractionDigits = maxFraction;
+  return n.toLocaleString(locale || undefined, options);
+}
+
 export function formatCompact(n: number, locale: string): string {
   return new Intl.NumberFormat(locale || undefined, {
     notation: 'compact',
@@ -182,6 +196,18 @@ export function formatDate(
   if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
   if (timeZone) options.timeZone = timeZone;
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
+}
+
+/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+export function formatDateFields(
+  ms: number,
+  locale: string,
+  options: Readonly<Record<string, string>>,
+  timeZone: string,
+): string {
+  const all: Intl.DateTimeFormatOptions = { ...options };
+  if (timeZone) all.timeZone = timeZone;
+  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {

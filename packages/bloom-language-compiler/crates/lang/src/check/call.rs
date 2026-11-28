@@ -502,6 +502,8 @@ impl Checker<'_> {
             && let [arg] = call.args.as_slice()
             && arg.label.as_ref().is_some_and(|l| l.name == "fractionDigits")
             && !arg.spread
+            // `formatted(fractionDigits: 0...3)` is the localized one, a `ClosedRange` (stdlib).
+            && !matches!(&arg.value.kind, ExprKind::Binary(op, ..) if op.is_range())
         {
             self.expr(&arg.value, Some(&Ty::Int));
             let recv_kind = if self.resolve(recv) == Ty::Int { Recv::Int } else { Recv::Float };
