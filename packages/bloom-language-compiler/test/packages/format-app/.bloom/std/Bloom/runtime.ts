@@ -4,12 +4,9 @@
 // each one states its type, and tsc checks the crossing.
 
 import { useSyncExternalStore } from 'react';
-import {
-  characterCount,
-  characterOffset,
-  characters as segment,
-  utf16Offset,
-} from '@oxy.so/bloom-language';
+// The language's string helpers, written beside this file (`text.ts`, the same source): not the
+// language's index, which loads the whole UI runtime.
+import { characterCount, characterOffset, characters as segment, utf16Offset } from './text';
 
 // ---- strings ----------------------------------------------------------------
 //

@@ -38,6 +38,13 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("routing-expo.ts", include_str!("../../../stdlib/Bloom/routing-expo.ts")),
     ("router.ts", include_str!("../../../stdlib/Bloom/router.ts")),
     ("models.ts", include_str!("../../../stdlib/Bloom/models.ts")),
+    // The language's string helpers, as they are (one source): `runtime.ts` and a package's
+    // emitted files read them here, so counting a string never loads the UI runtime.
+    ("text.ts", include_str!("../../../../bloom-language/src/text.ts")),
+    (
+        "generated/graphemes.generated.ts",
+        include_str!("../../../../bloom-language/src/generated/graphemes.generated.ts"),
+    ),
 ];
 
 /// The standard library's own manifest: its module and its native modules (`.native`).
@@ -199,6 +206,24 @@ pub fn ensure(root: &Path) -> Vec<PathBuf> {
         }
     }
     SOURCES.iter().filter(|(n, _)| n.ends_with(".bloom")).map(|(n, _)| dir.join(n)).collect()
+}
+
+/// Where the file at `path` imports the string helpers from: the standard library's `text.ts`
+/// in a package whose standard library is written (`./text` from the standard library itself),
+/// `None` elsewhere (the language's index has them too).
+pub fn text_module(path: &Path) -> Option<String> {
+    let path = crate::modules::absolute(path);
+    if contains(&path) {
+        return Some("./text".into());
+    }
+    let root = crate::modules::find_root(&path)?;
+    let text = dir(&root).join("text.ts");
+    if !text.is_file() {
+        return None;
+    }
+    let from = path.parent()?;
+    let specifier = crate::modules::relative_specifier(from, &dir(&root).join("text"));
+    Some(specifier)
 }
 
 /// `path` is one of the standard library's files.

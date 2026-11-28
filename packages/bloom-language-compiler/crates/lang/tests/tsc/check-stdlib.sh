@@ -14,6 +14,10 @@ out="$here/out-stdlib"
 rm -rf "$out" && mkdir -p "$out"
 # The runtime files (runtime.ts, routing.ts, router.ts, …) as written, the emitted files beside them.
 cp "$compiler"/stdlib/Bloom/*.ts "$out/"
+# The language's string helpers the standard library carries (`text.ts`, embedded: the source
+# tree's `text.ts` is a re-export for checks in place) and their break table.
+cp "$std/text.ts" "$out/text.ts"
+mkdir -p "$out/generated" && cp "$std"/generated/*.ts "$out/generated/"
 # The language's runtime, as far as the standard library names it.
 cat > "$out/bloom-language.d.ts" <<'TS'
 declare module '@oxy.so/bloom-language' {

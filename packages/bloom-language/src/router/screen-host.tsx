@@ -98,6 +98,33 @@ function drawnBranch(group: Node): Node | undefined {
   return only.kind === 'group' ? (drawnBranch(only) ?? only) : only;
 }
 
+/** `node` without its test id. */
+function withoutTestID(node: Node): Node {
+  return new Node(
+    node.kind,
+    node.props,
+    node.children,
+    node.modifiers.filter((modifier) => modifier.kind !== 'testID'),
+  );
+}
+
+/** `children` with `branch` (through nested groups) replaced by `replacement`. */
+function withBranch(children: readonly Child[], branch: Node, replacement: Node): Child[] {
+  return children.map((child): Child => {
+    if (child === branch) return replacement;
+    if (Array.isArray(child)) return withBranch(child, branch, replacement) as unknown as Child;
+    if (isNode(child) && child.kind === 'group') {
+      return new Node(
+        child.kind,
+        child.props,
+        withBranch(child.children, branch, replacement),
+        child.modifiers,
+      );
+    }
+    return child;
+  });
+}
+
 /**
  * A screen whose root is a `Group` drawing one branch (`Group { if loading { Skeleton()
  * .header(false) } else { Page().title("Job") } }`): the header the drawn branch declares, as
@@ -129,17 +156,34 @@ function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
   if (!isNode(root)) return chrome;
   const values = withBranchChrome(root, valuesOf(root));
   chrome.values = values;
-  for (const modifier of root.modifiers) {
+  // The drawn branch's chrome too (a root `Group`'s, as SwiftUI reads it from any branch): its
+  // sheets, and its footer, floating action and test id where the root has none of its own.
+  const branch = root.kind === 'group' ? drawnBranch(root) : undefined;
+  const rootHas = (kind: string) => root.modifiers.some((m) => m.kind === kind);
+  const branchChrome = (branch?.modifiers ?? []).filter(
+    (modifier) =>
+      modifier.kind === 'sheet' ||
+      ((modifier.kind === 'footer' ||
+        modifier.kind === 'floatingAction' ||
+        modifier.kind === 'testID') &&
+        !rootHas(modifier.kind)),
+  );
+  for (const modifier of [...root.modifiers, ...branchChrome]) {
     if (modifier.kind === 'sheet') chrome.sheets.push(modifier);
     else if (modifier.kind === 'footer') chrome.footer = modifier;
     else if (modifier.kind === 'floatingAction') chrome.action = modifier;
     else if (modifier.kind === 'testID') chrome.testID = modifier.value;
   }
   if (chrome.testID !== undefined) {
+    // The test id names the screen: off the root, and off the branch that gave it.
+    const branchTestID = branch !== undefined && branchChrome.some((m) => m.kind === 'testID');
+    const children = branchTestID
+      ? withBranch(root.children, branch, withoutTestID(branch))
+      : root.children;
     chrome.content = new Node(
       root.kind,
       root.props,
-      root.children,
+      children,
       root.modifiers.filter((modifier) => modifier.kind !== 'testID'),
     );
   }

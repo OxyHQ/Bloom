@@ -1,4 +1,4 @@
-import { characterCount as $characterCount } from "@oxy.so/bloom-language";
+import { characterCount as $characterCount } from "../../.bloom/std/Bloom/text";
 import { Array$max } from "../../.bloom/std/Bloom/Core.bloom";
 import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
 function $maxOf<T>(items: readonly T[]): T | undefined {

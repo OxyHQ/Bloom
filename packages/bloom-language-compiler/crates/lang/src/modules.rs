@@ -1018,7 +1018,7 @@ fn offer(offered: &mut BTreeMap<String, Vec<Offer>>, name: &str, offer: Offer) {
 }
 
 /// `./Row.bloom` or `../Posts/Row.bloom`: `to` from the directory `from`.
-fn relative_specifier(from: &Path, to: &Path) -> String {
+pub(crate) fn relative_specifier(from: &Path, to: &Path) -> String {
     let from: Vec<Component> = from.components().collect();
     let to_parts: Vec<Component> = to.components().collect();
     let common = from.iter().zip(&to_parts).take_while(|(a, b)| a == b).count();

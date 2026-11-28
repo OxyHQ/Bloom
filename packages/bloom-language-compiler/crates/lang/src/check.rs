@@ -3007,6 +3007,10 @@ impl<'o> Checker<'o> {
             }
             match module.values.get(&name.name) {
                 Some((ty, kind)) => {
+                    // An imported `struct X: ViewModifier` is applied with `.modifier(X(…))` here too.
+                    if let Some(&stateful) = module.modifiers.get(&name.name) {
+                        self.modifier_decls.insert(local.name.clone(), stateful);
+                    }
                     self.declare_unique(local, shift(ty, offset), kind.clone());
                 }
                 None => {
@@ -3238,6 +3242,21 @@ impl<'o> Checker<'o> {
             return expected;
         }
         if discard { Ty::Unit } else { ty }
+    }
+
+    /// The `@State` a narrowed name is (`report` inside `if report != none`), through every
+    /// narrowing of it: what a write or a `$` binding of the name names.
+    fn narrowed_state(&self, local: LocalId) -> Option<LocalId> {
+        let mut at = local;
+        let mut steps = 0;
+        while let Some(&(_, original)) = self.out.narrowed.values().find(|(narrowed, _)| *narrowed == at) {
+            if original == at || steps > 16 {
+                break;
+            }
+            at = original;
+            steps += 1;
+        }
+        (at != local && self.out.locals[at].kind == LocalKind::State).then_some(at)
     }
 
     fn stmt(&mut self, stmt: &Stmt) {
@@ -3689,6 +3708,8 @@ impl<'o> Checker<'o> {
             self.expr(&a.value, None);
             return;
         };
+        // `report = none` inside `if report != none { … }`: the write is the state's.
+        let local = self.narrowed_state(local).unwrap_or(local);
         let info = self.out.locals[local].clone();
         // A field of a TS value (an expo-video player, a DOM node): TS's own object.
         let mut through = info.ty.clone();
@@ -6042,7 +6063,14 @@ impl<'o> Checker<'o> {
             self.unknown_name(root.span, &root.name);
             return Ty::Unknown;
         };
-        let info = self.out.locals[local].clone();
+        // `$report` inside `if report != none { … }`: a binding of the state, of the narrowed
+        // type (TS's `[report, setReport]` with `report: string` there).
+        let narrowed_ty = self.narrowed_state(local).map(|_| self.out.locals[local].ty.clone());
+        let local = self.narrowed_state(local).unwrap_or(local);
+        let mut info = self.out.locals[local].clone();
+        if let Some(ty) = narrowed_ty {
+            info.ty = ty;
+        }
         if info.kind == LocalKind::Bound && path.len() == 1 {
             self.out.bindings.insert(expr.id, (local, Vec::new()));
             return Ty::Binding(Box::new(info.ty.clone()));
@@ -6529,6 +6557,14 @@ impl<'o> Checker<'o> {
     /// optional one is, branch by branch (`bare ? none : Text("foot")`), and otherwise whole.
     pub(super) fn element(&mut self, expr: &Expr) {
         if matches!(expr.kind, ExprKind::None) {
+            return;
+        }
+        // A component named, not called (`icon: RiLinkM` where TS takes a `ComponentType`): the
+        // component itself, never an element of it.
+        if let ExprKind::Name(_) = &expr.kind
+            && let Some(NameRes::Local(local)) = self.out.names.get(&expr.id)
+            && matches!(self.out.locals[*local].kind, LocalKind::Component { .. } | LocalKind::View)
+        {
             return;
         }
         let Some(ty) = self.out.types.get(&expr.id).cloned() else { return };
@@ -7642,6 +7678,8 @@ struct Signatures {
     values: HashMap<String, (Ty, LocalKind)>,
     /// Its `@Transparent` structs.
     transparent: HashSet<DefId>,
+    /// Its `struct X: ViewModifier`s: whether each keeps state.
+    modifiers: HashMap<String, bool>,
     files: Vec<(PathBuf, ts::Stamp)>,
     checked: std::cell::Cell<u64>,
 }
@@ -7737,6 +7775,7 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         aliases,
         values,
         transparent: std::mem::take(&mut sub.out.transparent),
+        modifiers: std::mem::take(&mut sub.modifier_decls),
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),
     });

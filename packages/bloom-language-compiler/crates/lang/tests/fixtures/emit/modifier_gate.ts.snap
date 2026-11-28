@@ -1,0 +1,13 @@
+import { Text } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+
+const $view0 = Text("Held");
+export function Gate(): (content: ComposedView) => Child {
+"use no memo";
+const [open, setOpen] = useState<boolean>(false);
+return (content: ComposedView): Child => ((open) ? content : $view0.onPress(() => {
+setOpen(true);
+}));
+}
+

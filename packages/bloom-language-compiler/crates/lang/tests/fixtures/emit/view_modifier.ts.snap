@@ -28,7 +28,6 @@ setReady(true);
 }).header(false) : (!allow) ? $view1 : content);
 }
 
-const $view2 = Card();
 interface FeedsProps {
   readonly names: readonly string[];
 }
@@ -39,7 +38,7 @@ const { names } = props;
 const $mod0 = Gate({ allow: names.length < 3 });
 let $t0;
 if ($[0] !== names || $[1] !== $mod0) {
-$t0 = $mod0(VStack(...names.map((name) => $view2(Text(name)))).title("Feeds"));
+$t0 = $mod0(VStack(...names.map((name) => Card()(Text(name)))).title("Feeds"));
 $[0] = names;
 $[1] = $mod0;
 $[2] = $t0;

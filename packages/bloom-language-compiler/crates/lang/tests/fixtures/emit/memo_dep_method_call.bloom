@@ -1,0 +1,10 @@
+// A memoized `let` that calls a method on an optional (`x?.trimmed()`) depends on its receiver,
+// `x`, never on the method's name read as a JS property (`x?.trimmed`, always undefined).
+public struct Title: View {
+  @State private var title: String? = none
+
+  var body: some View {
+    let trimmed = title?.trimmed()
+    Text(trimmed ?? "none").onPress { title = " Loaded " }
+  }
+}

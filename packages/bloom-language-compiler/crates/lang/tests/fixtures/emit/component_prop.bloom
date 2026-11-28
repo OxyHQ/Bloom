@@ -1,0 +1,11 @@
+// A TS component given by name to a TS component's prop (`icon: RiLinkM`, the prop a
+// `ComponentType`) is passed as it is, even where Bloom cannot read the props; a view there
+// (`footer: Text(…)`) crosses as an element.
+import { RiLinkM } from "@oxy.so/bloom/icons/RiLinkM"
+import { EmptyState } from "@/empty-state"
+
+public struct Empty: View {
+  var body: some View {
+    EmptyState(title: "No sources", icon: RiLinkM, footer: Text("Add one"))
+  }
+}

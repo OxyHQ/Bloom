@@ -169,6 +169,10 @@ struct Emitter<'a> {
     temps: usize,
     imports: BTreeMap<&'static str, BTreeSet<String>>,
     type_imports: BTreeMap<String, BTreeSet<String>>,
+    /// Where a package's file reads the string helpers (`crate::stdlib::text_module`), and the
+    /// ones it reads.
+    text_module: Option<String>,
+    text_imports: BTreeSet<String>,
     helpers: BTreeSet<&'static str>,
     /// Module constants hoisted out of the current item.
     hoisted: Vec<Frag>,
@@ -264,6 +268,8 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         temps: 0,
         imports: BTreeMap::new(),
         type_imports: BTreeMap::new(),
+        text_module: crate::stdlib::text_module(std::path::Path::new(filename)),
+        text_imports: BTreeSet::new(),
         helpers: BTreeSet::new(),
         hoisted: Vec::new(),
         view_generics: String::new(),
@@ -575,6 +581,18 @@ impl<'a> Emitter<'a> {
         self.imports.entry(module).or_default().insert(name.to_string());
     }
 
+    /// A string helper (`characterCount`, `characterSlice`): in a package, from the standard
+    /// library's own copy of the language's `text.ts` (`.bloom/std/Bloom/text.ts`), which loads
+    /// nothing else; elsewhere from the language, whose index loads the whole UI runtime.
+    fn import_text(&mut self, name: &str) {
+        match self.text_module.clone() {
+            Some(_) => {
+                self.text_imports.insert(name.to_string());
+            }
+            None => self.import_name(LANGUAGE, name),
+        }
+    }
+
     fn header(&mut self) -> Frag {
         let mut out = Frag::default();
         let compiler = self.imports.remove("react/compiler-runtime");
@@ -593,6 +611,12 @@ impl<'a> Emitter<'a> {
             if names.is_empty() {
                 continue;
             }
+            out.s(&format!("import {{ {} }} from {};\n", names.join(", "), string_literal(module)));
+        }
+        if let Some(module) = &self.text_module
+            && !self.text_imports.is_empty()
+        {
+            let names: Vec<&str> = self.text_imports.iter().map(String::as_str).collect();
             out.s(&format!("import {{ {} }} from {};\n", names.join(", "), string_literal(module)));
         }
         for (module, names) in &self.type_imports {
@@ -3224,7 +3248,7 @@ impl<'a> Emitter<'a> {
             Some(FieldRes::Prop { recv, name: prop }) => match (recv, prop) {
                 // A string counts its characters (Swift's): `s.utf16.count` is JS's `length`.
                 (Recv::Str, "count") => {
-                    self.import_name(LANGUAGE, "characterCount as $characterCount");
+                    self.import_text("characterCount as $characterCount");
                     object.wrap("$characterCount(", ")")
                 }
                 (Recv::List, "count") => suffix(object, "length"),
@@ -4400,7 +4424,7 @@ impl<'a> Emitter<'a> {
             (Recv::Str, "contains") => call_on(object, "includes", args),
             // In characters, as `count` is (JS's `slice` on the `utf16` view).
             (Recv::Str, "slice") => {
-                self.import_name(LANGUAGE, "characterSlice as $characterSlice");
+                self.import_text("characterSlice as $characterSlice");
                 let mut values = vec![object];
                 values.extend(args);
                 let mut out = Frag::of("$characterSlice(");
@@ -5368,7 +5392,7 @@ impl<'a> Emitter<'a> {
                 }
                 // A method reads its receiver whole.
                 match &call.callee.kind {
-                    ExprKind::Field(receiver, _) => go(receiver),
+                    ExprKind::Field(receiver, _) | ExprKind::OptField(receiver, _) => go(receiver),
                     _ => go(&call.callee),
                 }
                 call.args.iter().for_each(|a| go(&a.value));
@@ -5595,7 +5619,11 @@ impl<'a> Emitter<'a> {
                         only
                     })
                 });
-                node && callee && args && trailing
+                // A stateful `.modifier(Gate())` (and the `Gate()` it is given) runs once per
+                // render, at the top of the view applying it: never a module constant.
+                let stateful = self.ck.view_modifiers.get(&expr.id) == Some(&true)
+                    || matches!(self.ck.types.get(&expr.id), Some(Ty::View(Some("viewModifier"))));
+                node && callee && args && trailing && !stateful
             }
             _ => false,
         };
