@@ -12,10 +12,10 @@ import { RiAlertLine, RiExchangeLine } from "@oxy.so/bloom/icons/RiAlertLine"
 public type Mode = "alert" | "exchange"
 
 // bloom: review: `Record<Mode, typeof RiAlertLine>` is a `[String: Foreign<"typeof RiAlertLine">]`: its keys are no longer checked
-private let ICONS: [String: Foreign<"typeof RiAlertLine">] = {
-  alert: RiAlertLine,
-  exchange: RiExchangeLine,
-}
+private let ICONS: [String: Foreign<"typeof RiAlertLine">] = [
+  "alert": RiAlertLine,
+  "exchange": RiExchangeLine,
+]
 
 private func toTrend(_ topic: TrendingTopic) -> Trend {
   // bloom: review: `as Trend['type']` dropped: annotate where the value lands if tsc needs it

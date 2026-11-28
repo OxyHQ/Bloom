@@ -1910,7 +1910,7 @@ impl Tr<'_> {
             matches!(p, ObjectPropertyKind::ObjectProperty(p) if p.computed
                 && !matches!(p.key, PropertyKey::StringLiteral(_) | PropertyKey::NumericLiteral(_)))
         };
-        if !props.iter().any(computed) {
+        if !props.iter().any(computed) && !self.keyed_objects.contains(&object.span.start) {
             return None;
         }
         let (base, rest) = match props.first() {

@@ -5,10 +5,10 @@
 import { defineModifier } from "@oxy.so/bloom-language"
 import { type ViewModifier } from "@oxy.so/bloom-language"
 
-private let padding = {
-  default: defineModifier { v: View in v.padding(.lg) },
-  compact: defineModifier { v: View in v.padding(.md) },
-}
+private let padding = [
+  "default": defineModifier { v: View in v.padding(.lg) },
+  "compact": defineModifier { v: View in v.padding(.md) },
+]
 
 private func nudged(_ y: "xs" | "sm") -> ViewModifier {
   defineModifier { v: View in v.offset(y: y) }

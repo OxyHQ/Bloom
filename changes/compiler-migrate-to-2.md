@@ -65,3 +65,4 @@ section: Added
   - a route that only draws its `screen()` inside a gate with a `.bloom` `struct Gate: ViewModifier` is that screen with `.modifier(Gate(…))` on its root (was `route:wrapped-screen`); `x.slice(-n)` is `x.suffix(n)`, a string's on its `utf16` view.
   - a wrapper that draws a state of its own before its screen (`if (!c) return held; return <X />`) is a file-local `ViewModifier` whose held state is `.ownScreen()`.
   - JS regex literals in Swift's spelling: `try! Regex("p")`, and on a `String` `s.firstMatch(of:)`, `s.replacing(_:with:)`, `s.split(separator:)` (a TS value keeps the regex's own methods).
+  - an object literal read by a key that is not a field name (`pages["edit-profile"]`, `PRESETS[key]`) and never iterated is a dictionary literal.

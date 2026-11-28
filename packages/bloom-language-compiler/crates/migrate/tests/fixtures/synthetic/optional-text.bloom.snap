@@ -9,7 +9,7 @@ private struct SizeSpec {
 }
 
 // bloom: review: `Record<Size, SizeSpec>` is a `[String: SizeSpec]`: its keys are no longer checked
-private let SIZES: [String: SizeSpec] = { sm: { font: "sm", gap: 2 }, md: { font: "md", gap: 4 } }
+private let SIZES: [String: SizeSpec] = ["sm": { font: "sm", gap: 2 }, "md": { font: "md", gap: 4 }]
 
 public struct Handle: View {
   var handle: String? = none

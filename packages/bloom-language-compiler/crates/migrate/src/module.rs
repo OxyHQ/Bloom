@@ -232,6 +232,9 @@ pub struct Tr<'s> {
     /// A gate a route's screen is drawn inside, as its `.modifier(…)`: (the gate's local name, its
     /// TS specifier, its `.bloom` specifier).
     pub gate_imports: Vec<(String, String, String)>,
+    /// The object literals (by start) a `const` binds that the file reads by a key that is not a
+    /// field name (`pages["edit-profile"]`, `PRESETS[key]`): written as dictionaries.
+    pub keyed_objects: HashSet<u32>,
     /// The module constant initialiser being translated (`Tr::constant`): an `as const` list
     /// that is one is the module constant itself.
     pub module_init: Option<Span>,
@@ -455,6 +458,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         import_renames: HashMap::new(),
         pending_equal: None,
         gate_imports: Vec::new(),
+        keyed_objects: HashSet::new(),
         module_init: None,
         hoisted: Vec::new(),
         hoisted_names: HashSet::new(),
@@ -563,6 +567,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     }
     tr.scan_tanstack(&program.body);
     tr.scan_throwing(&program);
+    tr.scan_keyed_objects(&program);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -1266,6 +1271,68 @@ impl<'s> Tr<'s> {
     /// `undefined`/`null`), `queryFn: ({ pageParam }) => …` and a one-page `getNextPageParam`.
     /// [`Tr::throwing`]: `async function f(…): Promise<T>` (or `const f = async (…): Promise<T> =>`),
     /// `T` not `void`, whose body awaits a TS call at its own level, outside any `try`.
+    /// `const X = { … }` read as `X[k]` with `k` not a field name, and never iterated
+    /// (`Object.keys(X)`, `for … in X`: a dictionary's order is not a literal's on every backend):
+    /// the literal is a dictionary, as TS's `Record<string, T>` it stands for.
+    fn scan_keyed_objects(&mut self, program: &oxc_ast::ast::Program) {
+        use oxc_ast_visit::Visit;
+        #[derive(Default)]
+        struct Scan {
+            literals: HashMap<String, u32>,
+            keyed: HashSet<String>,
+            iterated: HashSet<String>,
+        }
+        impl<'a> Visit<'a> for Scan {
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &d.id
+                    && let Some(Expression::ObjectExpression(o)) =
+                        d.init.as_ref().map(|e| e.without_parentheses())
+                    && !o.properties.is_empty()
+                    && o.properties.iter().all(|p| {
+                        matches!(p, oxc_ast::ast::ObjectPropertyKind::ObjectProperty(p)
+                        if !p.computed && !p.method && !p.shorthand)
+                    })
+                {
+                    self.literals.insert(id.name.to_string(), o.span.start);
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+            fn visit_computed_member_expression(&mut self, m: &oxc_ast::ast::ComputedMemberExpression<'a>) {
+                if let Expression::Identifier(id) = m.object.without_parentheses() {
+                    let field = matches!(&m.expression, Expression::StringLiteral(k)
+                        if crate::module::is_identifier(k.value.as_str().unwrap_or_default()));
+                    if !field {
+                        self.keyed.insert(id.name.to_string());
+                    }
+                }
+                oxc_ast_visit::walk::walk_computed_member_expression(self, m);
+            }
+            fn visit_call_expression(&mut self, c: &oxc_ast::ast::CallExpression<'a>) {
+                if let Expression::StaticMemberExpression(m) = &c.callee
+                    && matches!(&m.object, Expression::Identifier(o) if o.name == "Object")
+                    && let Some(Expression::Identifier(id)) =
+                        c.arguments.first().and_then(|a| a.as_expression())
+                {
+                    self.iterated.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_call_expression(self, c);
+            }
+            fn visit_for_in_statement(&mut self, f: &oxc_ast::ast::ForInStatement<'a>) {
+                if let Expression::Identifier(id) = f.right.without_parentheses() {
+                    self.iterated.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_for_in_statement(self, f);
+            }
+        }
+        let mut scan = Scan::default();
+        scan.visit_program(program);
+        for (name, at) in scan.literals {
+            if scan.keyed.contains(&name) && !scan.iterated.contains(&name) {
+                self.keyed_objects.insert(at);
+            }
+        }
+    }
+
     fn scan_throwing(&mut self, program: &oxc_ast::ast::Program) {
         use oxc_ast_visit::Visit;
         struct Scan<'s> {
