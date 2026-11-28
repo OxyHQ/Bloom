@@ -237,12 +237,13 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((start, end, "slice".to_string()))
             }
-            // `s.trimEnd()` / `s.trimStart()`: JS's `\s` is the set `trim` strips.
+            // `s.trimEnd()` / `s.trimStart()`: the standard library's `trimmingEnd()` /
+            // `trimmingStart()` (JS's own, so the same whitespace).
             ("B0209", "trimEnd" | "trimStart")
                 if receiver == Some("String") && source[end..].starts_with("()") =>
             {
-                let re = if text == "trimEnd" { r"\\s+$" } else { r"^\\s+" };
-                Some((start, end + 2, format!("replace(Regex(\"{re}\"), \"\")")))
+                let name = if text == "trimEnd" { "trimmingEnd" } else { "trimmingStart" };
+                Some((start, end, name.to_string()))
             }
             // Named arguments to a function whose one parameter is unnamed (a TS
             // options object, `(data: { text: string }) => void`): the record itself.
@@ -1661,4 +1662,25 @@ fn type_end(source: &str, start: usize) -> usize {
         }
     }
     source.len()
+}
+
+#[cfg(test)]
+mod tests {
+    use bloom_lang::{Diagnostic, Span};
+
+    fn fixed(source: &str, code: &'static str, at: &str, message: &str) -> Option<String> {
+        let start = source.find(at).expect("the span") as u32;
+        let span = Span { start, end: start + at.len() as u32 };
+        super::fix(source, &[Diagnostic::error(code, span, message)], "")
+    }
+
+    // The standard library's (`Core.bloom`), which a package's files see: a golden is not in one.
+    #[test]
+    fn trim_end_and_start_are_the_standard_librarys() {
+        let source = "let a = name.trimEnd()\nlet b = name.trimStart()\n";
+        let end = fixed(source, "B0209", "trimEnd", "`String` has no method `trimEnd`");
+        assert_eq!(end.as_deref(), Some("let a = name.trimmingEnd()\nlet b = name.trimStart()\n"));
+        let start = fixed(source, "B0209", "trimStart", "`String` has no method `trimStart`");
+        assert_eq!(start.as_deref(), Some("let a = name.trimEnd()\nlet b = name.trimmingStart()\n"));
+    }
 }
