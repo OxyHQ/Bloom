@@ -1,0 +1,13 @@
+/// A `@State` optional narrowed where it is present.
+public struct Picker: View {
+  @State var selected: String? = none
+
+  func label(_ s: String) -> String { "Picked \(s)" }
+
+  var body: some View {
+    VStack {
+      Text(selected == none ? "None" : label(selected))
+      Button(Text("Pick")).onPress { selected = "a" }.testID("pick")
+    }
+  }
+}

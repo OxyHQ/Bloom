@@ -1,0 +1,39 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+
+function f(s: string): string {
+return s;
+}
+
+const $view0 = Button(Text("Rate"));
+const $view1 = Button(Text("Pick"));
+export interface FoldersProps {
+  readonly onSubmit: (p0: number) => void;
+}
+export const Folders = view(function Folders(props: FoldersProps) {
+"use no memo";
+const $ = $c(11);
+const { onSubmit } = props;
+const [selected, setSelected] = useState<string | undefined>(undefined);
+const [rating, setRating] = useState<number | undefined>(undefined);
+let $t0;
+if ($[7] !== selected || $[8] !== rating || $[9] !== onSubmit) {
+$t0 = VStack(($[0] !== selected ? ($[0] = selected, $[1] = Text((selected == null) ? "All" : f(selected))) : $[1]), (selected != null) ? ($[2] !== selected ? ($[2] = selected, $[3] = Text(f(selected))) : $[3]) : null, ($[4] !== rating || $[5] !== onSubmit ? ($[4] = rating, $[5] = onSubmit, $[6] = $view0.onPress(() => {
+if (rating != null) {
+onSubmit(rating);
+}
+})) : $[6]), $view1.onPress(() => {
+setSelected("a");
+}));
+$[7] = selected;
+$[8] = rating;
+$[9] = onSubmit;
+$[10] = $t0;
+} else {
+$t0 = $[10];
+}
+return $t0;
+});
+
