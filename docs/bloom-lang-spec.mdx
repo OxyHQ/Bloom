@@ -784,8 +784,11 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   pattern's lowercase names bind either way), `where` adds a condition, `default:` matches the
   rest, and `break` is an empty case. Exhaustiveness is checked as for `match` (B0301).
 - `guard cond else { … }` and `guard let x = optional else { … }`: the block must leave with
-  `return`, `throw`, `break`, `continue` or `fatalError(…)` (B0110), and what the condition binds
-  is in scope after it. It compiles to `if (!(cond)) { … }`.
+  `return`, `throw`, `break`, `continue`, a call that returns `Never` (`fatal(…)`, Swift's
+  `fatalError`) or a `do` whose body and every `catch` leave (B0110), and what the condition binds
+  is in scope after it. The same ends a path anywhere a value is expected: a function or closure
+  whose last statement is one, or a `do`/`catch` whose body and catches each end with one, needs
+  no value after it. It compiles to `if (!(cond)) { … }`.
 - An `enum` may write Swift's `case` before its cases (`case loading, failed(Error)`).
 - Errors are JS exceptions, free on the happy path: `throw e` is a JS `throw`; `try f()` is the
   call; `try? f()` is the value or `none` (an IIFE with `try`/`catch`, `async` under `await`);

@@ -3228,7 +3228,7 @@ impl<'o> Checker<'o> {
         if let Some(expected) = expected
             && !discard
             && !matches!(stmts.last().map(|s| &s.kind), Some(StmtKind::Expr(_) | StmtKind::Return(_)))
-            && !stmts.last().is_some_and(always_exits)
+            && !stmts.last().is_some_and(|s| self.always_exits(s))
         {
             let expected = expected.clone();
             if !self.coerce(&Ty::Unit, &expected) {
@@ -3262,6 +3262,33 @@ impl<'o> Checker<'o> {
             steps += 1;
         }
         (at != local && self.out.locals[at].kind == LocalKind::State).then_some(at)
+    }
+
+    /// A statement no path falls out of: `return`, `throw`, `break`, `continue`, a call that
+    /// returns `Never` (`fatal(…)`, Swift's `fatalError`), or a `do` whose body and catches all
+    /// end so. Read after the statement is checked, from its call's type.
+    fn always_exits(&self, stmt: &Stmt) -> bool {
+        match &stmt.kind {
+            StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
+            StmtKind::Expr(e) => self.never_call(e),
+            StmtKind::Do(d) => {
+                d.body.stmts.last().is_some_and(|s| self.always_exits(s))
+                    && !d.catches.is_empty()
+                    && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(|s| self.always_exits(s)))
+            }
+            _ => false,
+        }
+    }
+
+    /// A call (under `try` or `await`) whose type is `Never`.
+    fn never_call(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Try(inner) | ExprKind::Await(inner) | ExprKind::Paren(inner) => self.never_call(inner),
+            ExprKind::Call(_) => {
+                self.out.types.get(&expr.id).is_some_and(|t| matches!(self.resolve(t), Ty::Never))
+            }
+            _ => false,
+        }
     }
 
     fn stmt(&mut self, stmt: &Stmt) {
@@ -3389,7 +3416,7 @@ impl<'o> Checker<'o> {
             // scope for the statements after the guard.
             StmtKind::Guard(g) => {
                 self.block(&g.otherwise, Some(&Ty::Unit));
-                if !g.otherwise.stmts.last().is_some_and(exits) {
+                if !g.otherwise.stmts.last().is_some_and(|s| self.always_exits(s)) {
                     self.report(
                         Diagnostic::error("B0110", g.otherwise.span, "a `guard`'s `else` must leave")
                             .label("this block falls through")
@@ -8273,18 +8300,6 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
     }
 }
 
-/// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
-fn exits(stmt: &Stmt) -> bool {
-    match &stmt.kind {
-        StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
-        StmtKind::Expr(e) => match &e.kind {
-            ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
-            _ => false,
-        },
-        _ => false,
-    }
-}
-
 /// Whether a TS type is a React element (`ReactNode`, `ReactElement`, `JSX.Element`), which a
 /// Bloom view crosses into as `toElement(view)`.
 pub(crate) fn is_element(ty: &Ty) -> bool {
@@ -8430,18 +8445,6 @@ fn ends_in_none(expr: &Expr) -> bool {
         ExprKind::Paren(inner) => ends_in_none(inner),
         ExprKind::Ternary(_, then, otherwise) => ends_in_none(then) || ends_in_none(otherwise),
         _ => false,
-    }
-}
-
-/// A statement no path falls out of: an exit, or a `do` whose body and catches all exit.
-fn always_exits(stmt: &Stmt) -> bool {
-    match &stmt.kind {
-        StmtKind::Do(d) => {
-            d.body.stmts.last().is_some_and(always_exits)
-                && !d.catches.is_empty()
-                && d.catches.iter().all(|c| c.body.stmts.last().is_some_and(always_exits))
-        }
-        _ => exits(stmt),
     }
 }
 

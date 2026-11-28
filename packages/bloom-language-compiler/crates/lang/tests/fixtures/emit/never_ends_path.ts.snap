@@ -1,0 +1,64 @@
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+interface Failure {
+  readonly message: string;
+}
+
+function fail(message: string): never {
+throw { message: message };
+}
+
+function parse(s: string): number {
+const $t0 = $toInt(s);
+if (!($t0 != null)) {
+throw { message: s };
+}
+return $t0;
+}
+
+export function count(s: string, retry: boolean): number {
+try {
+return parse(s);
+} catch (error) {
+if (retry) {
+return 0;
+}
+fail("not a number");
+}
+}
+
+export function positive(n: number): number {
+if (!(n > 0)) {
+fail("negative");
+}
+return n;
+}
+
+export function checked(s: string): number {
+if ((s.length === 0)) {
+return 0;
+}
+return fail("unchecked");
+}
+
+export function loader(retry: boolean): () => Promise<readonly number[]> {
+return async () => {
+try {
+const n = await (fetchCount());
+return [n];
+} catch (error) {
+if (retry) {
+return [];
+}
+fail("offline");
+}
+};
+}
+
+async function fetchCount(): Promise<number> {
+return 1;
+}
+
