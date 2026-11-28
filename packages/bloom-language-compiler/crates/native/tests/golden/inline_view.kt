@@ -40,7 +40,7 @@ fun Counted(modifier: Modifier = Modifier) {
 @Composable
 fun Loaded(id: String, modifier: Modifier = Modifier) {
   Text(id, modifier = modifier)
-  LaunchedEffect(Unit) {
+  LaunchedEffect(id) {
   }
 }
 
