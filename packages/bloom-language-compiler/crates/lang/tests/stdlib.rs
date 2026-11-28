@@ -285,6 +285,26 @@ public func code(_ error: Error) -> Int { (error as? HTTPError)?.response.status
 }
 
 #[test]
+fn a_private_codable_struct_is_read_above_its_declaration() {
+    // Swift reads a file's declarations in any order: `ServerErrorBody.self` above the private
+    // struct is its derived codec (lang-mention-11's codable-order).
+    const ORDER: &str = r#"public func serverError(_ error: Error) -> String? {
+  let body = try? (error as? HTTPError)?.response.decode(ServerErrorBody.self)
+  return body?.error
+}
+
+private struct ServerErrorBody: Codable {
+  var error: String? = none
+}
+"#;
+    let root = package("codable-order", &[("Sources/Model/Order.bloom", ORDER)]);
+    let path = root.join("Sources/Model/Order.bloom");
+    let out = compile(ORDER, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("ServerErrorBody$$self"), "{}", out.code);
+}
+
+#[test]
 fn a_plural_count_is_a_double() {
     // M4: a TS number is a `Double`, and CLDR plural rules take decimals, so `count:` does;
     // an `Int` widens to it.

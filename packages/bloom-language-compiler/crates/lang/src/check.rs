@@ -573,6 +573,8 @@ pub struct Checker<'o> {
     /// TS error classes imported by name (`class PollContractError extends Error`): each one's
     /// TS type text, and the name its class is read by (`err is PollContractError`).
     error_classes: HashMap<String, String>,
+    /// The derived `Codable` codecs (`T.self`) declared ahead of their place, by name span.
+    codecs_ahead: HashMap<Span, LocalId>,
     /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
     modifier_arg: Option<ExprId>,
     /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
@@ -750,6 +752,7 @@ impl<'o> Checker<'o> {
             modifier_site: None,
             modifier_arg: None,
             error_classes: HashMap::default(),
+            codecs_ahead: HashMap::default(),
             hook_args: HashSet::default(),
             hook_body: None,
             unique_id_state: None,
@@ -1845,6 +1848,15 @@ impl<'o> Checker<'o> {
                     let ty = self.view_type(v);
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
+                // `T.self` of a `Codable` struct declared below its use (Swift reads a file's
+                // declarations in any order): the derived codec's type is written, so it is
+                // declared with the functions; its value is checked in order below.
+                ItemKind::Const(c) if crate::codable::is_synthetic(c.name.span) && c.ty.is_some() => {
+                    let ty = self.resolve_type(c.ty.as_ref().expect("checked"));
+                    let local = self.declare_unique(&c.name, ty, LocalKind::ModuleConst);
+                    self.codecs_ahead.insert(c.name.span, local);
+                    Some(local)
+                }
                 _ => None,
             };
             if let Some(local) = local {
@@ -1855,6 +1867,10 @@ impl<'o> Checker<'o> {
         let mut screens = 0;
         for (index, item) in file.items.iter().enumerate() {
             match &item.kind {
+                ItemKind::Const(c) if self.codecs_ahead.contains_key(&c.name.span) => {
+                    let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
+                    self.const_value(&c.value, declared.as_ref());
+                }
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = self.const_value(&c.value, declared.as_ref());
