@@ -96,6 +96,9 @@ impl Tr<'_> {
 
     /// `<C a={x} b>…</C>` as `C(a: x, b: true) { … }`.
     pub fn component(&mut self, el: &JSXElement) -> String {
+        if let Some(gated) = self.gated_element(el) {
+            return gated;
+        }
         let name = match &el.opening_element.name {
             JSXElementName::IdentifierReference(id) => {
                 // A local memo alias draws its view (`Tr::view_aliases`).
@@ -262,6 +265,39 @@ impl Tr<'_> {
 
     /// JSX children as builder lines: `{toElement(x)}` is `x`, `{cond && x}` an `if`,
     /// `{xs.map(…)}` a `for`, an element a node, a fragment its children.
+    /// `<Gate flag><X … /></Gate>`, `Gate` a TS import with a `.bloom` `struct Gate: ViewModifier`
+    /// (`props::view_modifier_module`): the child with the gate applied, `X(…).modifier(Gate(flag:
+    /// true))`, as a modifier is never drawn itself (B0421).
+    fn gated_element(&mut self, el: &JSXElement) -> Option<String> {
+        use oxc_ast::ast::{JSXAttributeItem, JSXAttributeName, JSXAttributeValue};
+        let JSXElementName::IdentifierReference(gate) = &el.opening_element.name else { return None };
+        let specifier = self.import_sources.get(gate.name.as_str())?.clone();
+        let bloom = crate::props::view_modifier_module(&self.filename, &specifier, &gate.name)?;
+        let mut inner = el.children.iter().filter(|c| match c {
+            JSXChild::Text(t) => !t.value.trim().is_empty(),
+            _ => true,
+        });
+        let (Some(JSXChild::Element(child)), None) = (inner.next(), inner.next()) else { return None };
+        let mut args = Vec::new();
+        for attr in &el.opening_element.attributes {
+            let JSXAttributeItem::Attribute(a) = attr else { return None };
+            let JSXAttributeName::Identifier(key) = &a.name else { return None };
+            let value = match &a.value {
+                None => "true".to_string(),
+                Some(JSXAttributeValue::ExpressionContainer(c)) => self.expr(c.expression.as_expression()?),
+                Some(JSXAttributeValue::StringLiteral(l)) => format!("{:?}", l.value.as_str()),
+                _ => return None,
+            };
+            args.push(format!("{}: {value}", key.name));
+        }
+        let drawn = self.component(child);
+        self.used.insert(gate.name.to_string());
+        if !self.gate_imports.iter().any(|(n, ..)| *n == gate.name.as_str()) {
+            self.gate_imports.push((gate.name.to_string(), specifier, bloom));
+        }
+        Some(format!("{drawn}.modifier({}({}))", gate.name, args.join(", ")))
+    }
+
     pub fn jsx_children(&mut self, children: &oxc_allocator::Vec<JSXChild>) -> String {
         let mut lines = Vec::new();
         for child in children {
