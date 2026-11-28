@@ -49,4 +49,5 @@ section: Added
 - Round 14 (lang-mention-14):
   - a Bloom list method on a TS value Bloom could not type (B0601) types the value's binding, `let names: [String]` for `joined`, `[Foreign]` otherwise (a closure's parameter too); on a member chain the renamed member is TS's own again;
   - `x || undefined` of a member is JS's falsy `none`; `Boolean(x)` of a TS value stays `!!x` where it is a value (`enabled:`), and is dropped where bloomc types `x` a `Bool` or in an `if` head;
+  - React's `useId` is the view's `UniqueID` state, read as `id.string`;
   - `--write`: `export { default } from` and `lazy(() => import(…))` take the default by its name; a non-route module's default `screen()` is named; a renamed default with a platform fork beside it is refused (`module:platform-fork`), and a forked module's importers keep the bare path.
