@@ -3,12 +3,21 @@
 //
 // - **Stack.** react-native-screens' native stack (`ScreenStack`): each route a native screen,
 //   pushed with the platform's transition; a `sheets:` route is the platform's form sheet.
+// - **Screens.** Each route's view is a Bloom `Screen` drawn by the language's screen host
+//   (`@oxy.so/bloom-language/screen-host`, which imports no expo-router): its `.title()`,
+//   `.toolbar()`, `.header()`, `.footer()` and `.sheet()` are its chrome, as under
+//   expo-router's `screen()`. A route's view is a `view()` (`struct PostScreen: View`): it is
+//   drawn through (`throughViews`), so the chrome its body's root declares is the screen's.
+//   A pushed route's header offers Back (the route in front pops).
 //   Android's back (the button and the predictive gesture) pops the route in front, then
 //   returns to the first tab, then leaves the app.
 // - **Tabs.** Bloom's look: the pages side by side (`react-native-pager-view`, swiped between)
 //   under Bloom's `BottomBar`, its highlight following the pager frame by frame.
 // - **Deep links.** `<scheme>://post/42` (the manifest's schemes) and the app's web URLs open
-//   the route their path names (`routeOfPath`), over the root.
+//   the route their path names (`routeOfPath`), over the root. The link that starts the app
+//   is read before the stack's first frame, so the stack starts with its route: a push in
+//   the stack's first frames is lost (react-native-screens: the app stayed on the feed with
+//   the post rendered behind it, on the emulator).
 //
 // `bloom build android` writes the spec from the app's `Routable` enum and installs
 // `bloomRouter(spec)` with `registerNavigation`. Only a Bloom build bundles this file.
@@ -28,12 +37,11 @@ import PagerView from 'react-native-pager-view';
 import { useSharedValue } from 'react-native-reanimated';
 import { ScreenStack, ScreenStackItem } from 'react-native-screens';
 import { BottomBar } from '@oxy.so/bloom/bottom-bar';
-import { Screen } from '@oxy.so/bloom/screen';
 import { useThemeColor } from '@oxy.so/bloom/theme';
 import { type Child, toElement } from '@oxy.so/bloom-language';
+import { drawScreen } from '@oxy.so/bloom-language/screen-host';
 
 import {
-  insideSafeArea,
   type NavigationDriver,
   type NavigationTable,
   type Route,
@@ -166,10 +174,18 @@ function useRouterState(store: RouterStore): State {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
-/** A route drawn as a Bloom screen: edge to edge, its content below the status bar. */
-function RouteScreen({ route }: { route: Route }): ReactNode {
+const throughViews = true;
+const VIEWS = { throughViews } as const;
+
+/**
+ * A route drawn as a Bloom screen, edge to edge: its root's chrome (title, toolbar, header,
+ * footer, sheets) around its content, the header below the status bar (an empty one is the
+ * status bar's height, so the content starts below it). `back`: the Back a pushed route's
+ * header offers, unless its root says its own (`.onBack()`).
+ */
+function RouteScreen({ route, back }: { route: Route; back?: () => void }): ReactNode {
   const destination = useDestination();
-  return createElement(Screen, null, toElement(insideSafeArea(destination(route) as Child)));
+  return drawScreen(destination(route) as Child, back ? { back, throughViews } : VIEWS);
 }
 
 /** A sheet's route: its own height, on the page's background. */
@@ -255,27 +271,47 @@ function Tabs({ store, spec }: { store: RouterStore; spec: RouterSpec }): ReactN
 
 const HIDDEN_HEADER = { hidden: true } as const;
 
+/**
+ * How long the stack waits for the link that started the app before it draws without one.
+ * `getInitialURL` answers within a few ms; the wait only bounds a launch it never answers.
+ */
+const INITIAL_LINK_WAIT_MS = 1000;
+
 function Navigator({ store, spec }: { store: RouterStore; spec: RouterSpec }): ReactNode {
   const { entries } = useRouterState(store);
+  // One Back for every pushed route's header (a stable function: the headers do not redraw).
+  const goBack = useMemo(() => () => void store.back(), [store]);
+  // The stack draws once the link that started the app (if any) is open in the store.
+  const [started, setStarted] = useState(false);
   // Android's back: the route in front, then the first tab, then the system's (leave the app).
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => store.back());
     return () => subscription.remove();
   }, [store]);
-  // Deep links: the one that started the app, then each one while it runs.
+  // Deep links: the one that started the app, before the stack draws, then each one while it runs.
   useEffect(() => {
     let live = true;
+    const start = () => {
+      if (live) setStarted(true);
+    };
+    const wait = setTimeout(start, INITIAL_LINK_WAIT_MS);
     Linking.getInitialURL()
       .then((url) => {
         if (live && url) store.open(url);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        clearTimeout(wait);
+        start();
+      });
     const subscription = Linking.addEventListener('url', ({ url }) => store.open(url));
     return () => {
       live = false;
+      clearTimeout(wait);
       subscription.remove();
     };
   }, [store]);
+  if (!started) return null;
   return createElement(
     ScreenStack,
     { style: styles.fill },
@@ -296,7 +332,7 @@ function Navigator({ store, spec }: { store: RouterStore; spec: RouterSpec }): R
           ? createElement(Tabs, { store, spec })
           : entry.sheet
             ? createElement(SheetContent, { route: entry.route })
-            : createElement(RouteScreen, { route: entry.route }),
+            : createElement(RouteScreen, { route: entry.route, back: i > 0 ? goBack : undefined }),
       ),
     ),
   );
