@@ -1,0 +1,31 @@
+error[B0201]: expected `AvatarSource`, found `NoId`
+  --> check/struct_to_ts_interface.bloom:24:54
+   |
+24 | func missing(_ s: NoId) -> String { placeholderColor(s) }
+   |                                                      ^ this is `NoId`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `UserHandleInput?`, found `Unrelated`
+  --> check/struct_to_ts_interface.bloom:25:56
+   |
+25 | func weak(_ u: Unrelated) -> String { normalizedHandle(u) ?? "" }
+   |                                                        ^ this is `Unrelated`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `AvatarSource`, found `WrongType`
+  --> check/struct_to_ts_interface.bloom:26:57
+   |
+26 | func wrong(_ w: WrongType) -> String { placeholderColor(w) }
+   |                                                         ^ this is `WrongType`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: expected `Other`, found `Card`
+  --> check/struct_to_ts_interface.bloom:27:36
+   |
+27 | func nominal(_ c: Card) -> Other { c }
+   |                                    ^ this is `Card`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
