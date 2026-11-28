@@ -264,8 +264,9 @@ export function formatDate(
 
 /**
  * `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`).
- * Two are the standard library's: `hour12: 'true'` is Intl's `hour12: true` (an hour with its
- * AM/PM), and `amPM: 'omitted'` drops the day period from the text (Swift's `amPM: .omitted`).
+ * An hour is in the locale's clock, as Swift's is. Three keys are the standard library's: `locale`
+ * (a style's `.locale(_:)`, over `locale`), `hourCycle` (its clock: Intl's `h11`, `h12`, `h23` or
+ * `h24`), and `amPM: 'omitted'`, which drops the day period from the text (Swift's `amPM: .omitted`).
  */
 export function formatDateFields(
   ms: number,
@@ -273,11 +274,11 @@ export function formatDateFields(
   options: Readonly<Record<string, string>>,
   timeZone: string,
 ): string {
-  const { hour12, amPM, ...fields } = options;
+  const { amPM, hourCycle, locale: styleLocale, ...fields } = options;
   const all: Intl.DateTimeFormatOptions = { ...fields };
-  if (hour12 !== undefined) all.hour12 = hour12 === 'true';
+  if (hourCycle) all.hourCycle = hourCycle as Intl.DateTimeFormatOptions['hourCycle'];
   if (timeZone) all.timeZone = timeZone;
-  const format = new Intl.DateTimeFormat(locale || undefined, all);
+  const format = new Intl.DateTimeFormat(styleLocale || locale || undefined, all);
   if (amPM !== 'omitted') return format.format(ms);
   // The parts without the day period, and the space that set it apart.
   const parts = format.formatToParts(ms);

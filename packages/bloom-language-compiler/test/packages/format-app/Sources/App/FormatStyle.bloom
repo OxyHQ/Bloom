@@ -27,8 +27,16 @@ public func numericDate(_ d: Date, _ locale: String) -> String {
 public func numericDateTime(_ d: Date, _ locale: String) -> String {
   d.formatted(date: .numeric, time: .shortened, locale: locale, timeZone: "UTC")
 }
-public func clock12(_ d: Date, _ locale: String) -> String {
+public func clockAMPM(_ d: Date, _ locale: String) -> String {
   d.formatted(.dateTime.hour(.twoDigits(amPM: .abbreviated)).minute(.twoDigits), locale: locale, timeZone: "UTC")
+}
+public func clock12(_ d: Date, _ locale: String) -> String {
+  let style = DateFormat.dateTime.hour(.twoDigits(amPM: .abbreviated)).minute(.twoDigits)
+  return d.formatted(style.locale(Locale(identifier: locale, hourCycle: .oneToTwelve)), timeZone: "UTC")
+}
+public func clock24(_ d: Date, _ locale: String) -> String {
+  let style = DateFormat.dateTime.hour(.twoDigits(amPM: .abbreviated)).minute(.twoDigits)
+  return d.formatted(style.locale(Locale(identifier: locale, hourCycle: .zeroToTwentyThree)), timeZone: "UTC")
 }
 public func hourOnly(_ d: Date, _ locale: String) -> String {
   d.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)), locale: locale, timeZone: "UTC")

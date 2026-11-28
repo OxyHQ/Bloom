@@ -84,7 +84,8 @@ public enum DigitStyle {
   case twoDigits
 }
 
-/// Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`).
+/// Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`),
+/// in a locale whose clock has one: a 24-hour locale's hour has none.
 public enum AMPMStyle {
   /// No AM/PM: "6", in the locale's clock.
   case omitted
@@ -97,14 +98,15 @@ public enum AMPMStyle {
 }
 
 /// How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM.
-/// A shown AM/PM is the 12-hour clock (Intl's `hour12: true`), in every locale.
+/// The hour is in the locale's clock, as Swift's is ("6 PM" in English, "18" in Spanish); a
+/// style's `.locale(_:)` with an `HourCycle` chooses another.
 public struct HourStyle: Equatable {
   let digits: String
   let amPM: AMPMStyle
 
-  /// "6 PM" ("6" with `.omitted`).
+  /// "6 PM", or "18" in a 24-hour locale ("6" with `.omitted`).
   public static func defaultDigits(amPM: AMPMStyle) -> HourStyle { HourStyle(digits: "numeric", amPM: amPM) }
-  /// "06 PM" ("06" with `.omitted`).
+  /// "06 PM", or "18" in a 24-hour locale ("06" with `.omitted`).
   public static func twoDigits(amPM: AMPMStyle) -> HourStyle { HourStyle(digits: "2-digit", amPM: amPM) }
   /// "6", or "18" in a 24-hour locale: no AM/PM.
   public static var defaultDigitsNoAMPM: HourStyle { HourStyle(digits: "numeric", amPM: .omitted) }
@@ -161,17 +163,25 @@ public struct DateFormat: Equatable {
   public func day(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("day", digits(style)) }
   /// The weekday, "Thu" by default.
   public func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat { self.field("weekday", weekdayName(style)) }
-  /// The hour: in the locale's clock ("6 PM", "18") with no style; `.defaultDigits(amPM:)` and
-  /// `.twoDigits(amPM:)` choose its digits and its AM/PM.
+  /// The hour, in the locale's clock ("6 PM", "18"); `.defaultDigits(amPM:)` and
+  /// `.twoDigits(amPM:)` choose its digits and whether it shows its AM/PM.
   public func hour(_ style: HourStyle? = none) -> DateFormat {
     guard let style = style else { return self.field("hour", "numeric") }
     let hour = self.field("hour", style.digits)
-    return style.amPM == .omitted ? hour.field("amPM", "omitted") : hour.field("hour12", "true")
+    return style.amPM == .omitted ? hour.field("amPM", "omitted") : hour
   }
   /// The minute: "30".
   public func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("minute", digits(style)) }
   /// The second: "05".
   public func second(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("second", digits(style)) }
+  /// Written for `locale` (Swift's `Date.FormatStyle.locale(_:)`), over `formatted`'s `locale:`;
+  /// its hour cycle, if it has one, is the clock: `.locale(Locale(identifier: "en").hourCycle(.zeroToTwentyThree))`
+  /// is "18:30".
+  public func locale(_ locale: Locale) -> DateFormat {
+    let written = self.field("locale", locale.identifier)
+    guard let cycle = locale.hourCycle else { return written }
+    return written.field("hourCycle", hourCycleName(cycle))
+  }
 
   func field(_ name: String, _ value: String) -> DateFormat {
     DateFormat(kind: "fields", fields: self.fields.setting(name, value))
@@ -285,6 +295,19 @@ extension Date {
 
   /// The calendar fields in the device's time zone (in UTC with `utc`).
   public func components(utc: Bool = false) -> DateComponents { dateParts(self.millisecondsSince1970, utc) }
+}
+
+private func hourCycleName(_ cycle: HourCycle) -> String {
+  switch cycle {
+  case .zeroToEleven:
+    "h11"
+  case .oneToTwelve:
+    "h12"
+  case .zeroToTwentyThree:
+    "h23"
+  case .oneToTwentyFour:
+    "h24"
+  }
 }
 
 private func dateStyleName(_ style: DateStyle) -> String {
