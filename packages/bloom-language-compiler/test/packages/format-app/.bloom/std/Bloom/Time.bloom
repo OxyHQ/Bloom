@@ -84,6 +84,34 @@ public enum DigitStyle {
   case twoDigits
 }
 
+/// Whether and how an hour shows its AM/PM (Swift's `Date.FormatStyle.Symbol.Hour.AMPMStyle`).
+public enum AMPMStyle {
+  /// No AM/PM: "6", in the locale's clock.
+  case omitted
+  /// The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+  case narrow
+  /// The AM/PM: "6 PM".
+  case abbreviated
+  /// The AM/PM: "6 PM" (Intl writes one width of it, the locale's).
+  case wide
+}
+
+/// How an hour is written (Swift's `Date.FormatStyle.Symbol.Hour`): its digits, and its AM/PM.
+/// A shown AM/PM is the 12-hour clock (Intl's `hour12: true`), in every locale.
+public struct HourStyle: Equatable {
+  let digits: String
+  let amPM: AMPMStyle
+
+  /// "6 PM" ("6" with `.omitted`).
+  public static func defaultDigits(amPM: AMPMStyle) -> HourStyle { HourStyle(digits: "numeric", amPM: amPM) }
+  /// "06 PM" ("06" with `.omitted`).
+  public static func twoDigits(amPM: AMPMStyle) -> HourStyle { HourStyle(digits: "2-digit", amPM: amPM) }
+  /// "6", or "18" in a 24-hour locale: no AM/PM.
+  public static var defaultDigitsNoAMPM: HourStyle { HourStyle(digits: "numeric", amPM: .omitted) }
+  /// "06", or "18" in a 24-hour locale: no AM/PM.
+  public static var twoDigitsNoAMPM: HourStyle { HourStyle(digits: "2-digit", amPM: .omitted) }
+}
+
 /// How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
 public enum MonthStyle {
   /// "11" (Intl's `numeric`).
@@ -133,8 +161,13 @@ public struct DateFormat: Equatable {
   public func day(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("day", digits(style)) }
   /// The weekday, "Thu" by default.
   public func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat { self.field("weekday", weekdayName(style)) }
-  /// The hour, in the locale's clock: "6 PM".
-  public func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("hour", digits(style)) }
+  /// The hour: in the locale's clock ("6 PM", "18") with no style; `.defaultDigits(amPM:)` and
+  /// `.twoDigits(amPM:)` choose its digits and its AM/PM.
+  public func hour(_ style: HourStyle? = none) -> DateFormat {
+    guard let style = style else { return self.field("hour", "numeric") }
+    let hour = self.field("hour", style.digits)
+    return style.amPM == .omitted ? hour.field("amPM", "omitted") : hour.field("hour12", "true")
+  }
   /// The minute: "30".
   public func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat { self.field("minute", digits(style)) }
   /// The second: "05".
