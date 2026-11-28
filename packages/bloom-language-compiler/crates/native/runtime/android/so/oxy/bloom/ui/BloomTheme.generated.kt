@@ -399,6 +399,25 @@ class BloomPalette(private val argb: LongArray) {
   val warningForeground: Color get() = Color(argb[71])
   val warningSubtle: Color get() = Color(argb[72])
   val warningText: Color get() = Color(argb[73])
+
+  /**
+   * This palette with some colours replaced, by field name (`background`): a theme resolved
+   * elsewhere, such as React Native's for an island (`useColorTokens()`'s names). An unknown name
+   * is ignored.
+   */
+  fun with(colors: Map<String, Long>): BloomPalette {
+    val next = argb.copyOf()
+    for ((name, value) in colors) {
+      val index = FIELDS.indexOf(name)
+      if (index >= 0) next[index] = value
+    }
+    return BloomPalette(next)
+  }
+
+  companion object {
+    /** The fields, in the order of the palette's values. */
+    val FIELDS: List<String> = listOf("accent", "accentForeground", "background", "border", "card", "cardForeground", "chart1", "chart1Active", "chart2", "chart2Active", "chart3", "chart3Active", "chart4", "chart4Active", "chart5", "chart5Active", "chart6", "chart6Active", "chart7", "chart7Active", "chart8", "chart8Active", "chart9", "chart9Active", "contentArea", "destructive", "error", "errorForeground", "errorSubtle", "errorText", "faintForeground", "foreground", "info", "infoForeground", "infoSubtle", "infoText", "input", "muted", "mutedForeground", "popover", "popoverForeground", "primary", "primaryForeground", "primarySubtle", "primaryText", "ring", "secondary", "secondaryForeground", "secondarySubtle", "secondaryText", "sidebar", "sidebarAccent", "sidebarAccentForeground", "sidebarBorder", "sidebarForeground", "sidebarPrimary", "sidebarPrimaryForeground", "sidebarRing", "success", "successForeground", "successSubtle", "successText", "surface", "surfaceForeground", "tertiary", "tertiaryForeground", "tertiarySubtle", "tertiaryText", "vivid", "vividForeground", "warning", "warningForeground", "warningSubtle", "warningText")
+  }
 }
 
 /** Every preset Bloom ships, light and dark, as the colour engine resolves them. */
