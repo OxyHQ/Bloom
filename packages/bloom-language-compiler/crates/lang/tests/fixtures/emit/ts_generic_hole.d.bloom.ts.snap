@@ -1,0 +1,4 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Trends())`), or from TSX as `toElement(Trends())`. */
+export declare const Trends: () => ComposedView;
+export declare function sortedColumns(): readonly unknown[];
