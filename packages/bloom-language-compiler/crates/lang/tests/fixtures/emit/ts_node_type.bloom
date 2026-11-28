@@ -1,0 +1,19 @@
+// The language's node types read as views of their kind: a `ScrollViewNode` prop takes the
+// `ScrollView { … }` a caller builds, and the modifiers a scroll view takes (Mention's
+// AccountInfoScreen, its page handed its scroll view to chrome).
+import { type ScrollViewNode } from "@oxy.so/bloom-language"
+
+public struct AccountPage: View {
+  let content: ScrollViewNode
+
+  var body: some View {
+    content.screenScroll("content").padding(.md)
+  }
+}
+
+public struct AccountScreen: View {
+  var body: some View {
+    let content = ScrollView { Text("About") }
+    AccountPage(content: content)
+  }
+}
