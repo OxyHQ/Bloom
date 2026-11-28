@@ -197,7 +197,7 @@ members after `.` and the names of a struct's or a protocol's properties may be 
 
 | Bloom | Meaning | Runtime representation (zero-cost) | `.d.ts` emitted |
 |---|---|---|---|
-| `Int` | 53-bit safe integer | JS number | `number` |
+| `Int` | 64-bit signed integer (Swift's `Int`); exact within ±(2^53 − 1) on the JS backend (4.3) | JS number (Kotlin `Long`, Swift `Int` on the native backends) | `number` |
 | `Float` | IEEE double | JS number | `number` |
 | `Bool`, `String`, `Unit` | | boolean, string, `undefined` | `boolean`, `string`, `void` |
 | `[T]` | immutable list | frozen-in-dev JS array | `readonly T[]` |
@@ -259,7 +259,7 @@ since TS does not keep a property's narrowing inside a closure.
 Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
 TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
 fields too (`[Int]` fits `[Float]`). It costs nothing and loses nothing: both are JS numbers
-and an `Int` stays within 2^53, so no conversion is emitted. An integer literal is a `Float`
+and an `Int` is exact within 2^53 on the JS backend (4.3), so no conversion is emitted. An integer literal is a `Float`
 where one is expected (`let x: Float = 0`). Arithmetic with an `Int` and a `Float` operand
 is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even where a `Float`
 is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
@@ -292,6 +292,13 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
   optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
   Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
+- `Int` is a 64-bit signed integer, as Swift's is on every platform Bloom targets: the native
+  backends (ADR 0003) compile it to Kotlin's `Long` and Swift's `Int`. The JS backend keeps it a
+  JS `number` (zero-cost, and what TS reads), which is exact within ±(2^53 − 1)
+  (`Number.MAX_SAFE_INTEGER`). A program whose `Int` leaves that range is in error there: an
+  integer literal outside it is B0105, `Int(s)` of text outside it is `none`, and a dev build
+  traps an `Int` `+`, `-` or `*` (and `+=`, `-=`, `*=`) whose result leaves it (`$int`, a
+  `RangeError`), as Swift traps an overflow; a release build does not check.
 - An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
   programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
   `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.

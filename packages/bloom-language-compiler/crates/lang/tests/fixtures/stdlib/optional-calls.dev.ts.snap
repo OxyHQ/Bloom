@@ -4,6 +4,10 @@ function $get<T>(items: readonly T[], index: number): T {
   if (index >= 0 && index < items.length) return items[index] as T;
   throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);
 }
+function $int(value: number): number {
+  if (Number.isSafeInteger(value)) return value;
+  throw new RangeError(`Int overflow: ${value} is outside ±(2^53 − 1), where an Int is exact on the JS backend`);
+}
 
 export interface Pair {
   readonly n: number;
@@ -13,7 +17,7 @@ export interface Pair {
 }
 
 export function Pair$twice(self: Pair, k: number): number {
-return self.n * k;
+return $int(self.n * k);
 }
 
 export function Pair$step(self: Pair): Pair | undefined {
