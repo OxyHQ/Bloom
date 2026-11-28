@@ -308,7 +308,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             // `if let x = x { x }` the codemod wrote for an optional child, where bloomc has
             // narrowed `x` present (`tabBar ? Sticky { tabBar } : none`): the child itself.
             ("B0303", _)
-                if d.message.starts_with("`if let ") && d.message.ends_with("unwraps an optional, and this is `View`") =>
+                if d.message.starts_with("`if let ")
+                    && d.message.ends_with("unwraps an optional, and this is `View`") =>
             {
                 let name = d.message["`if let ".len()..].split(' ').next().unwrap_or_default();
                 let whole = format!("if let {name} = {name} {{ {name} }}");

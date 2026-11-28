@@ -160,7 +160,9 @@ impl Tr<'_> {
                         // The callee's literal defaults are this view's too, so the forward fits.
                         if let Some(defaults) = self.literal_defaults.get(name.as_str()).cloned() {
                             for (key, value) in defaults {
-                                if fields.contains(&key) && !self.scope.field_defaults.iter().any(|(k, _)| *k == key) {
+                                if fields.contains(&key)
+                                    && !self.scope.field_defaults.iter().any(|(k, _)| *k == key)
+                                {
                                     self.scope.field_defaults.push((key, value));
                                 }
                             }
