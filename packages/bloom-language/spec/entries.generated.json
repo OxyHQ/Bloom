@@ -79,6 +79,7 @@
       "defineTokens",
       "environmentValues",
       "identity",
+      "inlineView",
       "isNode",
       "menu",
       "move",

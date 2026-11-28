@@ -1,0 +1,53 @@
+// Mention's PostErrorBoundary (a React class around every feed row) in Bloom's ErrorBoundary:
+// a stateless view whose body is one node, so it costs no fiber of its own (`inlineView`).
+private struct PostErrorFallback: View {
+  let onRetry: () -> Void
+  var body: some View {
+    VStack {
+      Text("This post could not be displayed.").foreground("muted")
+      Button(Text("Tap to retry")).onPress(onRetry)
+    }
+  }
+}
+
+public struct PostErrorBoundary: View {
+  let children: View
+  var postId: String? = none
+  var onCrash: (String) -> Void = { _ in }
+  var body: some View {
+    ErrorBoundary { children }
+    .resetKey(postId)
+    .onError { error, info in onCrash("[PostErrorBoundary] Post \(postId ?? "unknown") crashed: \(error.message)") }
+    .fallback { context in PostErrorFallback(onRetry: context.retry) }
+  }
+}
+
+// Each of these keeps its component: state, an effect, a comparator, a method, its own `.id()`,
+// or a body that is not one node.
+public struct Counted: View {
+  @State private var count = 0
+  var body: some View { Button(Text("\(count)")).onPress { count += 1 } }
+}
+
+public struct Loaded: View {
+  let id: String
+  var body: some View { Text(id).task(id: id) { } }
+}
+
+public struct Keyed: View {
+  let id: String
+  var body: some View { Text(id).id(id) }
+}
+
+public struct Chosen: View {
+  let on: Bool
+  var body: some View {
+    if on { Text("on") } else { Text("off") }
+  }
+}
+
+public struct Helped: View {
+  let name: String
+  func shout() -> String { name.uppercased() }
+  var body: some View { Text(shout()) }
+}

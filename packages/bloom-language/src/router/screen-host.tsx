@@ -167,8 +167,9 @@ export interface ScreenHostOptions {
 export function drawScreen(root: Child, options?: ScreenHostOptions): ReactNode {
   if (root === null || root === undefined || root === false) return null;
   if (options?.throughViews && isNode(root) && root.kind === 'view') {
-    const { body, props } = root.props as ViewNodeProps;
-    if (body) return <ViewScreen body={body} props={props} outer={root} options={options} />;
+    const view = root.props as ViewNodeProps;
+    if (view.component !== undefined && view.body)
+      return <ViewScreen body={view.body} props={view.props} outer={root} options={options} />;
   }
   if (!isNode(root) || valuesOf(root).ownScreen !== true)
     return <ScreenHost root={root} back={options?.back} />;
@@ -203,7 +204,7 @@ function ViewScreen({
   outer,
   options,
 }: {
-  body: NonNullable<ViewNodeProps['body']>;
+  body: NonNullable<Extract<ViewNodeProps, { component: object }>['body']>;
   props: object;
   outer: Node;
   options: ScreenHostOptions;

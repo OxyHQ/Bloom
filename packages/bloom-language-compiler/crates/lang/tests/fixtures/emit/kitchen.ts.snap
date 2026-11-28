@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, HStack, Spacer, Text, VStack, toast, view } from "@oxy.so/bloom-language";
+import { Button, HStack, Spacer, Text, VStack, inlineView, toast, view } from "@oxy.so/bloom-language";
 import { TextField, Toggle } from "@oxy.so/bloom-language/inputs";
 import { useEffect, useState } from "react";
 type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
@@ -142,7 +142,7 @@ return $t4;
 });
 
 const $view2 = Text("a");
-export const Badge = view(function Badge() {
+export const Badge = inlineView(function Badge() {
 "use no memo";
 return $view2;
 });

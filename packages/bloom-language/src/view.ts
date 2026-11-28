@@ -62,3 +62,19 @@ export function view<P extends object = Record<string, never>>(
   return (...args) =>
     new Node('view', { component, props: args[0] ?? NO_PROPS, body: read }, NO_CHILDREN);
 }
+
+/**
+ * A view with no component of its own: what the language compiler emits for
+ * a stateless view whose body is one node (no state, hooks, effects or
+ * comparator). Calling it builds the body there, in the caller's render, and
+ * the view is drawn where it is placed, in its caller's tree, so it costs no
+ * fiber and no hook slot. Modifiers chained on it apply around its body, as
+ * they do around a `view()`'s, and its `.id()` is its key.
+ *
+ * The body must call no hook: it runs wherever the view is called.
+ */
+export function inlineView<P extends object = Record<string, never>>(
+  body: (props: P) => Child,
+): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => ComposedView {
+  return (...args) => new Node('view', { body: body((args[0] ?? NO_PROPS) as P) }, NO_CHILDREN);
+}

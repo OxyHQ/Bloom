@@ -1,9 +1,9 @@
-import { VStack, view } from "@oxy.so/bloom-language";
+import { VStack, inlineView } from "@oxy.so/bloom-language";
 import { Row } from "@/rows/row.bloom";
 import { Row as Again } from "@/rows";
 
 const $view0 = VStack(Row({ title: "One" }), Again({ title: "Two" }));
-export const Rows = view(function Rows() {
+export const Rows = inlineView(function Rows() {
 "use no memo";
 return $view0;
 });

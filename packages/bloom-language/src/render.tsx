@@ -3324,7 +3324,10 @@ function drawPresentedDialog(
  * reaches the body, as it reaches the nodes of this one.
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
-  const { component, props } = node.props as ViewNodeProps;
+  const view = node.props as ViewNodeProps;
+  // An inlined view (`inlineView`): its body, drawn here in this tree, as a view's body is drawn in its own.
+  if (view.component === undefined) return renderChild(view.body, ctx, key) as ReactElement;
+  const { component, props } = view;
   let element: ReactElement = draw(component, props as Record<string, unknown>);
   if (ctx.env !== ctx.provided || ctx.animation !== ctx.scoped)
     element = draw(EnvContext.Provider, { value: carrying(ctx.env, ctx.animation) }, element);
@@ -4041,6 +4044,11 @@ function nodeReads(node: Node): number {
       return READS_BOTH;
   }
   let reads = modifierReads(node.kind, node.modifiers);
+  // An inlined view's body is drawn in this tree: what it reads, this tree reads.
+  if (node.kind === 'view') {
+    const view = node.props as ViewNodeProps;
+    if (view.component === undefined) reads |= readsOf(view.body);
+  }
   for (const child of node.children) {
     if (reads === READS_BOTH) break;
     reads |= readsOf(child);
@@ -4201,7 +4209,9 @@ function LanguageSheets(): ReactNode {
 export function toElement(node: Child, key?: string | number): ReactElement {
   adoptLanguageSheet();
   if (isNode(node) && node.kind === 'view' && node.modifiers.length === 0) {
-    const { component, props } = node.props as ViewNodeProps;
+    const view = node.props as ViewNodeProps;
+    if (view.component === undefined) return toElement(view.body, key);
+    const { component, props } = view;
     return draw(
       component,
       key === undefined ? (props as Record<string, unknown>) : { ...props, key },

@@ -1,0 +1,139 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
+import { ErrorBoundary } from "@oxy.so/bloom-language/containers";
+import { useEffect, useState } from "react";
+import type { Child } from "@oxy.so/bloom-language";
+
+const $view0 = Text("This post could not be displayed.").foreground("muted");
+const $view1 = Button(Text("Tap to retry"));
+interface PostErrorFallbackProps {
+  readonly onRetry: () => void;
+}
+const PostErrorFallback = inlineView(function PostErrorFallback(props: PostErrorFallbackProps) {
+"use no memo";
+const { onRetry } = props;
+return VStack($view0, $view1.onPress(onRetry));
+});
+
+const $fn0 = (_: string) => {
+};
+export interface PostErrorBoundaryProps {
+  readonly children: Child;
+  readonly postId?: string | undefined;
+  readonly onCrash?: (p0: string) => void;
+}
+export const PostErrorBoundary = inlineView(function PostErrorBoundary(props: PostErrorBoundaryProps) {
+"use no memo";
+const { children, postId = undefined, onCrash = $fn0 } = props;
+return ErrorBoundary(children).resetKey(postId).onError((error, info) => onCrash(`[PostErrorBoundary] Post ${postId ?? "unknown"} crashed: ${error.message}`)).fallback((context) => PostErrorFallback({ onRetry: (context.retry satisfies () => void) }));
+});
+
+export const Counted = view(function Counted() {
+"use no memo";
+const $ = $c(2);
+const [count, setCount] = useState<number>(0);
+let $t0;
+if ($[0] !== count) {
+$t0 = Button(Text(`${count}`)).onPress(() => {
+setCount((count) => count + (1));
+});
+$[0] = count;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+export interface LoadedProps {
+  readonly id: string;
+}
+export const Loaded = view(function Loaded(props: LoadedProps) {
+"use no memo";
+const $ = $c(2);
+const { id } = props;
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+})();
+return () => $controller.abort();
+}, [id]);
+let $t1;
+if ($[0] !== id) {
+$t1 = Text(id);
+$[0] = id;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+
+export interface KeyedProps {
+  readonly id: string;
+}
+export const Keyed = view(function Keyed(props: KeyedProps) {
+"use no memo";
+const $ = $c(2);
+const { id } = props;
+let $t2;
+if ($[0] !== id) {
+$t2 = Text(id).id(id);
+$[0] = id;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+
+const $view2 = Text("on");
+const $view3 = Text("off");
+export interface ChosenProps {
+  readonly on: boolean;
+}
+export const Chosen = view(function Chosen(props: ChosenProps) {
+"use no memo";
+const $ = $c(2);
+const { on } = props;
+let $t3;
+if ($[0] !== on) {
+$t3 = (on) ? $view2 : $view3;
+$[0] = on;
+$[1] = $t3;
+} else {
+$t3 = $[1];
+}
+return $t3;
+});
+
+export interface HelpedProps {
+  readonly name: string;
+}
+export const Helped = view(function Helped(props: HelpedProps) {
+"use no memo";
+const $ = $c(4);
+const { name } = props;
+let shout: () => string;
+if ($[0] !== name) {
+shout = (): string => {
+return name.toUpperCase();
+};
+$[0] = name;
+$[1] = shout;
+} else {
+shout = $[1];
+}
+let $t4;
+if ($[2] !== shout) {
+$t4 = Text(shout());
+$[2] = shout;
+$[3] = $t4;
+} else {
+$t4 = $[3];
+}
+return $t4;
+});
+

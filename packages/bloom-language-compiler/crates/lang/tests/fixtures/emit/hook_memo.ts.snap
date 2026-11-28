@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
 import { useCallback, useMemo } from "react";
 import { useInsets } from "@/hooks/useInsets";
 
@@ -112,17 +112,9 @@ function log(s: string): void {
 const $view0 = Text("Static");
 const $view1 = Button(Text("Go"));
 const $fn2 = () => log("go");
-export const Hint = view(function Hint() {
+export const Hint = inlineView(function Hint() {
 "use no memo";
-const $ = $c(1);
-let $t2;
-if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-$t2 = VStack($view0, $view1.onPress($fn2));
-$[0] = $t2;
-} else {
-$t2 = $[0];
-}
-return $t2;
+return VStack($view0, $view1.onPress($fn2));
 });
 
 const $view2 = Text("Two");
@@ -130,19 +122,10 @@ const $fn3 = () => log("a");
 export interface Hint2Props {
   readonly n: number;
 }
-export const Hint2 = view(function Hint2(props: Hint2Props) {
+export const Hint2 = inlineView(function Hint2(props: Hint2Props) {
 "use no memo";
-const $ = $c(2);
 const { n } = props;
-let $t3;
-if ($[0] !== n) {
-$t3 = VStack($view2, Button(Text(`${n}`)).onPress($fn3));
-$[0] = n;
-$[1] = $t3;
-} else {
-$t3 = $[1];
-}
-return $t3;
+return VStack($view2, Button(Text(`${n}`)).onPress($fn3));
 });
 
 export function useHandlers(n: number): { first: () => void; second: () => void; doubled: number } {
