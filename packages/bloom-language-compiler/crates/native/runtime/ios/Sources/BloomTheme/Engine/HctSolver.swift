@@ -9,12 +9,12 @@ private func sanitizeRadians(_ angle: Double) -> Double {
 
 private func trueDelinearized(_ rgbComponent: Double) -> Double {
   let normalized = rgbComponent / 100.0
-  let delin = normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * pow(normalized, 1.0 / 2.4) - 0.055
+  let delin = normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * jsPow(normalized, 1.0 / 2.4) - 0.055
   return delin * 255.0
 }
 
 private func chromaticAdaptation(_ component: Double) -> Double {
-  let af = pow(abs(component), 0.42)
+  let af = jsPow(abs(component), 0.42)
   return (signum(component) * 400.0 * af) / (af + 27.13)
 }
 
@@ -25,7 +25,7 @@ private func hueOf(_ linrgb: Vec3) -> Double {
   let bA = chromaticAdaptation(linrgb.0 * m[2][0] + linrgb.1 * m[2][1] + linrgb.2 * m[2][2])
   let a = (11.0 * rA + -12.0 * gA + bA) / 11.0
   let b = (rA + gA - 2.0 * bA) / 9.0
-  return atan2(b, a)
+  return jsAtan2(b, a)
 }
 
 private func areInCyclicOrder(_ a: Double, _ b: Double, _ c: Double) -> Bool {
@@ -162,22 +162,22 @@ private func bisectToLimit(_ y: Double, _ targetHue: Double) -> Vec3 {
 private func inverseChromaticAdaptation(_ adapted: Double) -> Double {
   let adaptedAbs = abs(adapted)
   let base = jsMax(0, (27.13 * adaptedAbs) / (400.0 - adaptedAbs))
-  return signum(adapted) * pow(base, 1.0 / 0.42)
+  return signum(adapted) * jsPow(base, 1.0 / 0.42)
 }
 
 private func findResultByJ(_ hueRadians: Double, _ chroma: Double, _ y: Double) -> ARGB {
   var j = y.squareRoot() * 11.0
   let vc = ViewingConditions.standard
   let tInnerCoeff = 1 / vc.chromaFactor
-  let eHue = 0.25 * (cos(hueRadians + 2.0) + 3.8)
+  let eHue = 0.25 * (jsCos(hueRadians + 2.0) + 3.8)
   let p1 = eHue * (50000.0 / 13.0) * vc.nc * vc.ncb
-  let hSin = sin(hueRadians)
-  let hCos = cos(hueRadians)
+  let hSin = jsSin(hueRadians)
+  let hCos = jsCos(hueRadians)
   for iterationRound in 0..<5 {
     let jNormalized = j / 100.0
     let alpha = chroma == 0.0 || j == 0.0 ? 0.0 : chroma / jNormalized.squareRoot()
-    let t = pow(alpha * tInnerCoeff, 1.0 / 0.9)
-    let ac = vc.aw * pow(jNormalized, 1.0 / vc.c / vc.z)
+    let t = jsPow(alpha * tInnerCoeff, 1.0 / 0.9)
+    let ac = vc.aw * jsPow(jNormalized, 1.0 / vc.c / vc.z)
     let p2 = ac / vc.nbb
     let gamma = (23.0 * (p2 + 0.305) * t) / (23.0 * p1 + 11 * t * hCos + 108.0 * t * hSin)
     let a = gamma * hCos

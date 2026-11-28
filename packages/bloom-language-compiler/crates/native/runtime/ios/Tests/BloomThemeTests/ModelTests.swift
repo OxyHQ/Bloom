@@ -18,13 +18,21 @@ import Testing
     }
   }
 
-  /// preset-accent-hues.test.ts: the generated table IS the search, to the bit.
+  /// preset-accent-hues.test.ts: the generated table is the search, to 9 decimals as the TS
+  /// test holds it. The table was solved under bun (JSC, glibc's maths), so a few entries differ
+  /// from V8's search in the last bit; both runtimes READ the table for a preset, so they agree.
   @Test func presetAccentHueTableEqualsTheSearch() {
+    var lastBit: [AppColorName] = []
     for preset in BloomThemeData.colorPresetRegistry {
       let hue = Hct.fromInt(argbFromHex(preset.hex)).hue
-      let table = BloomThemeData.presetAccentHues[preset.hex.lowercased()]
-      #expect(table == deriveAccentHues(hue), "\(preset.name)")
+      let table = BloomThemeData.presetAccentHues[preset.hex.lowercased()]!
+      let searched = deriveAccentHues(hue)
+      #expect(abs(table.secondary - searched.secondary) < 5e-10, "\(preset.name)")
+      #expect(abs(table.tertiary - searched.tertiary) < 5e-10, "\(preset.name)")
+      if table != searched { lastBit.append(preset.name) }
     }
+    #expect(lastBit.count <= 1, "last-bit entries: \(lastBit)")
+    print("preset accent hues differing from V8's search in the last bit:", lastBit)
   }
 
   @Test func registryShape() {

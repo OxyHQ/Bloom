@@ -34,7 +34,7 @@ func rgbaString(_ argb: ARGB, _ alpha: Double) -> String {
 func contrastOf(_ argb: ARGB, onWhite: Bool) -> Double {
   func channel(_ v: Int) -> Double {
     let c = Double(v) / 255
-    return c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
+    return c <= 0.03928 ? c / 12.92 : jsPow((c + 0.055) / 1.055, 2.4)
   }
   let luminance =
     0.2126 * channel(redFromArgb(argb)) + 0.7152 * channel(greenFromArgb(argb))

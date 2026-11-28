@@ -292,9 +292,11 @@ public struct ThemeSelection: Sendable, Hashable {
     }
   }
 
-  /// The effective dynamic seed: an ambient seed overrides the static one.
+  /// The effective dynamic seed: an ambient seed overrides the static one; an empty one is no
+  /// seed (the provider tests it for truthiness).
   public var effectiveSeed: String? {
-    ambient.seed != nil ? ambient.seed : (seed?.isEmpty == false ? seed : nil)
+    let candidate = ambient.seed != nil ? ambient.seed : seed
+    return candidate?.isEmpty == false ? candidate : nil
   }
 
   /// Ambient accents replace the static accent props entirely while ambient is active.

@@ -124,7 +124,7 @@ private func solveLinearized(_ rgbComponent: Double) -> Double {
   let normalized = rgbComponent / 255.0
   return normalized <= 0.040449936
     ? (normalized / 12.92) * 100.0
-    : pow((normalized + 0.055) / 1.055, 2.4) * 100.0
+    : jsPow((normalized + 0.055) / 1.055, 2.4) * 100.0
 }
 
 private let linearizedTable: [Double] = (0..<256).map { solveLinearized(Double($0)) }
@@ -133,7 +133,7 @@ private let linearizedTable: [Double] = (0..<256).map { solveLinearized(Double($
 /// 0, as `NaN & 255` is.
 func delinearized(_ rgbComponent: Double) -> Int {
   let normalized = rgbComponent / 100.0
-  let delin = normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * pow(normalized, 1.0 / 2.4) - 0.055
+  let delin = normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * jsPow(normalized, 1.0 / 2.4) - 0.055
   let rounded = jsRound(delin * 255.0)
   if rounded.isNaN { return 0 }
   return rounded < 0 ? 0 : rounded > 255 ? 255 : Int(rounded)
@@ -142,7 +142,7 @@ func delinearized(_ rgbComponent: Double) -> Int {
 private func labF(_ t: Double) -> Double {
   let e = 216.0 / 24389.0
   let kappa = 24389.0 / 27.0
-  return t > e ? pow(t, 1.0 / 3.0) : (kappa * t + 16) / 116
+  return t > e ? jsPow(t, 1.0 / 3.0) : (kappa * t + 16) / 116
 }
 
 private func labInvf(_ ft: Double) -> Double {

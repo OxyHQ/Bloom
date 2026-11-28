@@ -238,11 +238,11 @@ public struct Rgb: Sendable, Hashable {
 }
 
 private func srgbGamma(_ x: Double) -> Double {
-  x <= 0.0031308 ? 12.92 * x : 1.055 * pow(x, 1 / 2.4) - 0.055
+  x <= 0.0031308 ? 12.92 * x : 1.055 * jsPow(x, 1 / 2.4) - 0.055
 }
 
 private func srgbLinear(_ x: Double) -> Double {
-  x <= 0.04045 ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4)
+  x <= 0.04045 ? x / 12.92 : jsPow((x + 0.055) / 1.055, 2.4)
 }
 
 /// `clamp` (styles/clamp.ts): `Math.max(min, Math.min(value, max))`.
@@ -253,12 +253,12 @@ private func clampUnit(_ value: Double, _ lo: Double, _ hi: Double) -> Double {
 /// `oklchToSrgb`.
 public func oklchToSrgb(_ color: Oklch) -> Rgb {
   let hr = (color.h * Double.pi) / 180
-  let a = color.c * cos(hr)
-  let b2 = color.c * sin(hr)
+  let a = color.c * jsCos(hr)
+  let b2 = color.c * jsSin(hr)
   let l_ = color.l + 0.3963377774 * a + 0.2158037573 * b2
   let m_ = color.l - 0.1055613458 * a - 0.0638541728 * b2
   let s_ = color.l - 0.0894841775 * a - 1.291485548 * b2
-  let lc = pow(l_, 3), mc = pow(m_, 3), sc = pow(s_, 3)
+  let lc = jsPow(l_, 3), mc = jsPow(m_, 3), sc = jsPow(s_, 3)
   let lr = +4.0767416621 * lc - 3.3077115913 * mc + 0.2309699292 * sc
   let lg = -1.2684380046 * lc + 2.6097574011 * mc - 0.3413193965 * sc
   let lb = -0.0041960863 * lc - 0.7034186147 * mc + 1.707614701 * sc
@@ -273,14 +273,14 @@ public func srgbToOklch(_ color: Rgb) -> Oklch {
   let lr = srgbLinear(color.r / 255)
   let lg = srgbLinear(color.g / 255)
   let lb = srgbLinear(color.b / 255)
-  let l_ = cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb)
-  let m_ = cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb)
-  let s_ = cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb)
+  let l_ = jsCbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb)
+  let m_ = jsCbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb)
+  let s_ = jsCbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb)
   let l = 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_
   let a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_
   let bb = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_
   let c = (a * a + bb * bb).squareRoot()
-  let h = (atan2(bb, a) * 180) / Double.pi
+  let h = (jsAtan2(bb, a) * 180) / Double.pi
   return Oklch(l: l, c: c, h: h < 0 ? h + 360 : h)
 }
 
@@ -317,7 +317,7 @@ public func parseRgbString(_ s: String) -> Rgb? {
 
 /// `deltaE`: a cheap sRGB distance.
 public func deltaE(_ a: Rgb, _ b: Rgb) -> Double {
-  (pow(a.r - b.r, 2) + pow(a.g - b.g, 2) + pow(a.b - b.b, 2)).squareRoot() / (3.0).squareRoot()
+  (jsPow(a.r - b.r, 2) + jsPow(a.g - b.g, 2) + jsPow(a.b - b.b, 2)).squareRoot() / (3.0).squareRoot()
 }
 
 /// `oklchToRgbString`: chroma reduced until the round trip holds lightness and chroma.
