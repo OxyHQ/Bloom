@@ -1,0 +1,43 @@
+// An optional call of an extension or standard library method runs only when its receiver is
+// not `none` (Swift's optional chaining): `p?.twice(2)` is `none` for a `none` `p`.
+public struct Pair {
+  public let n: Int
+  public var next: Pair? = none
+  public var xs: [Int] = []
+  public var f: ((Int) -> Int)? = none
+}
+
+extension Pair {
+  public func twice(_ k: Int) -> Int { self.n * k }
+  public func step() -> Pair? { self.next }
+  public func items() -> [Int] { self.xs }
+  public var half: Int { self.n / 2 }
+}
+
+public protocol Named {
+  func name() -> String
+}
+
+public struct Tag: Named {
+  public let text: String
+  public func name() -> String { self.text }
+}
+
+public func twice(_ p: Pair?) -> Int { p?.twice(2) ?? 0 }
+public func chained(_ p: Pair?) -> Int? { p?.step()?.twice(3) }
+public func throughField(_ p: Pair?) -> Int? { p?.next?.twice(5) }
+public func getter(_ p: Pair?) -> Int? { p?.step()?.half }
+public func stored(_ p: Pair?) -> Int? { p?.f?(2) }
+public func subscripted(_ p: Pair?) -> Int? { p?.xs[0] }
+public func calledSubscript(_ p: Pair?) -> Int? { p?.items()[0] }
+public func witnessed<T: Named>(_ t: T?) -> String? { t?.name() }
+public func tagName(_ t: Tag?) -> String? { witnessed(t) }
+public func since(_ d: Date?) -> Float { d?.timeIntervalSince(Date(timeIntervalSince1970: 0.0)) ?? -1.0 }
+public func shown(_ s: String) -> String {
+  (try? Date(s, strategy: .iso8601))?.formatted(date: .numeric, time: .omitted, locale: "en", timeZone: "UTC") ?? "Invalid Date"
+}
+
+// An implicit member after `??` is the left side's type's, as in Swift.
+public func orNaN(_ x: Float?) -> Float { x ?? .nan }
+public func orZero(_ x: Int?) -> Int { x ?? .zero }
+public func secondsOrNaN(_ d: Date?) -> Float { d?.timeIntervalSince1970 ?? .nan }

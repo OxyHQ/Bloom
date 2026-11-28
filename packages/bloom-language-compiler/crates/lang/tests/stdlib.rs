@@ -823,3 +823,25 @@ fn date_is_the_standard_librarys_over_a_js_date() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `p?.twice(2)`, `d?.timeIntervalSince(x)`, `a?.b()?.c()`, `p?.xs[0]`: a method lowered to a
+/// function of its receiver runs only when the receiver is not `none`, and `x ?? .nan` reads
+/// `.nan` from the left side's type. The runtime test is `test/optional-calls.test.ts`.
+const OPTIONAL_CALLS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/OptionalCalls.bloom");
+
+#[test]
+fn an_optional_call_guards_its_receiver() {
+    let root = package("optional-calls", &[("Sources/Model/OptionalCalls.bloom", OPTIONAL_CALLS)]);
+    let path = root.join("Sources/Model/OptionalCalls.bloom");
+    for (dev, name) in [(false, "optional-calls"), (true, "optional-calls.dev")] {
+        let out = compile(OPTIONAL_CALLS, &path.to_string_lossy(), &Options { dev, ..Options::default() });
+        assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+        let golden =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("tests/fixtures/stdlib/{name}.ts.snap"));
+        if std::env::var_os("BLOOM_BLESS").is_some() {
+            std::fs::write(&golden, &out.code).unwrap();
+        }
+        assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+    }
+}

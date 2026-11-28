@@ -2645,22 +2645,33 @@ impl<'a> Emitter<'a> {
             }
             // `xs[i]`: the element. A dev build traps out of range (Swift's check); a
             // release build reads it as is, and TS reads it present.
+            // `q?.xs[0]`, a link of an optional chain: `none` when the chain was.
             ExprKind::Index(object, index) if self.ck.list_reads.contains_key(&expr.id) => {
-                let optional = self.ck.list_reads[&expr.id];
+                let chained = self.ck.chain_links.contains(&object.id);
+                let optional = self.ck.list_reads[&expr.id] || chained;
                 if self.options.dev {
                     self.helpers.insert("get");
+                    // `$get` is a function of the list: run only when the chain has one.
+                    let guard = chained.then(|| self.path_or_temp(object));
+                    let list = match &guard {
+                        Some(name) => Frag::of(name.clone()),
+                        None => self.expr(object),
+                    };
                     let mut out = Frag::of("$get(");
-                    out.f(self.expr(object)).s(", ").f(self.expr(index)).s(")");
-                    out
+                    out.f(list).s(", ").f(self.expr(index)).s(")");
+                    self.guarded_call(expr, guard, out)
                 } else {
+                    // The object first: emitting it is what marks it guarded.
                     let mut out = self.operand(object);
-                    out.s("[").f(self.expr(index)).s(if optional { "]" } else { "]!" });
+                    let open = if self.guarded.contains(&object.id) { "?.[" } else { "[" };
+                    out.s(open).f(self.expr(index)).s(if optional { "]" } else { "]!" });
                     out
                 }
             }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
-                out.s("[").f(self.expr(index)).s("]");
+                let open = if self.guarded.contains(&object.id) { "?.[" } else { "[" };
+                out.s(open).f(self.expr(index)).s("]");
                 out
             }
             ExprKind::OptIndex(object, index) => {
@@ -3383,10 +3394,12 @@ impl<'a> Emitter<'a> {
                 let (ExprKind::Field(object, _) | ExprKind::OptField(object, _)) = &call.callee.kind else {
                     unreachable!("a witness call is a member call")
                 };
+                // `x?.m(…)`: `x` is read once, and the call runs only when it is not `none`.
+                let guard = self.receiver_guard(call);
                 let (receiver, witness) = match witness {
-                    Some(w) => (self.expr(object), w),
+                    Some(w) => (guard.clone().map_or_else(|| self.expr(object), Frag::of), w),
                     None => {
-                        let value = self.path_or_temp(object);
+                        let value = guard.clone().unwrap_or_else(|| self.path_or_temp(object));
                         (Frag::of(format!("{value}.self")), format!("{value}.w"))
                     }
                 };
@@ -3394,18 +3407,25 @@ impl<'a> Emitter<'a> {
                 values.extend(self.ordered_args(call, &order, &rest));
                 let mut out = Frag::of(member_path(&witness, &name));
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
-                out
+                self.guarded_call(expr, guard, out)
             }
             CallRes::Extension { func, order, rest } => {
                 let (ExprKind::Field(object, _) | ExprKind::OptField(object, _)) = &call.callee.kind else {
                     unreachable!("an extension call is a member call")
                 };
+                // `x?.m(…)`: an extension is a function of `x`, so `x` is read once, and the
+                // call (its arguments too, as `?.` would) runs only when it is not `none`.
+                let guard = self.receiver_guard(call);
+                let receiver = match &guard {
+                    Some(name) => Frag::of(name.clone()),
+                    None => self.expr(object),
+                };
                 let mut values = self.ordered_args(call, &order, &rest);
                 self.push_witnesses(expr, &order, &rest, &mut values);
-                values.insert(0, self.expr(object));
+                values.insert(0, receiver);
                 let mut out = Frag::of(func.to_string());
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
-                out
+                self.guarded_call(expr, guard, out)
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
@@ -3760,6 +3780,28 @@ impl<'a> Emitter<'a> {
     }
 
     /// `fail(e)`'s error.
+    /// A member call lowered to a function of its receiver (`P$twice(x, …)`), on a receiver
+    /// that may be `none` here (`x?.m(…)`, or by the chain before it: `a?.b.m(…)`): the name
+    /// it is read into once, for [`Self::guarded_call`]. JS's `?.` cannot guard a function of
+    /// the receiver, so the emitter does.
+    fn receiver_guard(&mut self, call: &Call) -> Option<String> {
+        let (object, optional) = match &call.callee.kind {
+            ExprKind::Field(object, _) => (object, false),
+            ExprKind::OptField(object, _) => (object, true),
+            _ => return None,
+        };
+        (optional || self.ck.chain_links.contains(&object.id)).then(|| self.path_or_temp(object))
+    }
+
+    /// `lowered`, run only when the receiver `guard` names is not `none`; `none` otherwise.
+    fn guarded_call(&mut self, expr: &Expr, guard: Option<String>, lowered: Frag) -> Frag {
+        let Some(name) = guard else { return lowered };
+        let mut out = Frag::of(format!("({name} == null ? undefined : "));
+        out.f(lowered).s(")");
+        self.guarded.insert(expr.id);
+        out
+    }
+
     fn fail_value(&mut self, call: &Call) -> Frag {
         call.args.first().map_or(Frag::of("new Error()"), |a| self.expr(&a.value))
     }
