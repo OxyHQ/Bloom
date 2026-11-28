@@ -130,6 +130,8 @@ struct Emitter<'a> {
     actor: bool,
     /// `return` inside a lambda body (an actor's `isolated { }`): `return@label`.
     return_label: Option<String>,
+    /// In a `ViewModifier`'s body: its `content` parameter (the view it wraps).
+    modifier_content: Option<String>,
     /// The type parameters of the type whose members are being emitted.
     owner_generics: Vec<String>,
     /// The Kotlin package of the file being emitted.
@@ -260,6 +262,7 @@ impl<'a> Emitter<'a> {
             scopes: Vec::new(),
             actor: false,
             return_label: None,
+            modifier_content: None,
             owner_generics: Vec::new(),
             binding_props: Default::default(),
             package: String::new(),
@@ -550,6 +553,8 @@ impl<'a> Emitter<'a> {
                     "Float" | "Double" => "Double".to_string(),
                     "String" | "Character" => "String".to_string(),
                     "Void" | "Unit" => "Unit".to_string(),
+                    // `fatal()`: it never returns.
+                    "Never" => "Nothing".to_string(),
                     // A view value (a prop, a builder's result): something to draw.
                     "View" => return "@Composable () -> Unit".into(),
                     "Self" => return "Self".into(),
@@ -1307,6 +1312,14 @@ impl<'a> Emitter<'a> {
             }
         }
         props.push("modifier: Modifier = Modifier".into());
+        // `struct X: ViewModifier`: the view it wraps, drawn with the modifier its body gives it
+        // (last, so a call site passes it as a trailing lambda).
+        let content = (v.kind == ViewKind::Modifier)
+            .then(|| v.content.as_ref().map_or_else(|| "content".to_string(), |c| kw(&c.name)));
+        if let Some(c) = &content {
+            props.push(format!("{c}: @Composable (Modifier) -> Unit"));
+        }
+        let outer_content = std::mem::replace(&mut self.modifier_content, content);
         self.locals.push(scope);
         let mut body = String::new();
         for m in &v.members {
@@ -1367,6 +1380,7 @@ impl<'a> Emitter<'a> {
             }
         }
         let drawn = self.view_block(&v.body.stmts, 1, Some("modifier"));
+        self.modifier_content = outer_content;
         self.locals.pop();
         let scope_line = if self.needs_scope { "  val scope = rememberCoroutineScope()\n" } else { "" };
         // A stateless one-node view (the TypeScript backend's `inlineView`) is an inline
@@ -1831,7 +1845,11 @@ impl<'a> Emitter<'a> {
             ExprKind::If(i) => self.if_stmt(i, indent, Mode::View, modifier),
             ExprKind::Match(m) => self.match_stmt(m, indent, Mode::View, modifier),
             ExprKind::Paren(inner) => self.view_stmt(inner, indent, modifier),
-            // A view value (`content`, a prop of type `View`): drawn by calling it.
+            // A modifier's `content`: drawn with the modifier it is given.
+            ExprKind::Name(n) if self.modifier_content.as_deref() == Some(kw(n).as_str()) => {
+                self.content_expr(e, indent, modifier).unwrap_or_default()
+            }
+            // A view value (a prop of type `View`): drawn by calling it.
             ExprKind::Name(n) if matches!(self.ty_of(e), Some(Ty::View(_))) => format!("{p}{}()\n", kw(n)),
             _ => match self.view_expr(e, indent, modifier) {
                 Some(text) => text,
@@ -1846,7 +1864,40 @@ impl<'a> Emitter<'a> {
 
     /// A view expression (a node or view call with its modifiers), drawn at `indent`.
     fn view_expr(&mut self, e: &Expr, indent: usize, outer: Option<&str>) -> Option<String> {
+        if let Some(drawn) = self.content_expr(e, indent, outer) {
+            return Some(drawn);
+        }
         let chain = unwind(e)?;
+        // `v.modifier(X(…))`: `X` wraps `v` (everything before it); what follows applies to `X`.
+        if let Some(k) = chain.mods.iter().rposition(|(name, _)| *name == "modifier")
+            && let ExprKind::Field(inner, _) = &chain.mods[k].1.callee.kind
+            && let Some(arg) = chain.mods[k].1.args.first()
+            && let ExprKind::Call(wrap) = &arg.value.kind
+            && let ExprKind::Name(wrapper) = &wrap.callee.kind
+        {
+            let p = pad(indent);
+            let mut layout = Vec::new();
+            for (name, call) in &chain.mods[k + 1..] {
+                if universal(name) {
+                    layout.push(self.layout_modifier(wrapper, name, call));
+                } else {
+                    self.unsupported(call.callee.span, format!("`.{name}` after `.modifier(…)`"));
+                }
+            }
+            layout.reverse();
+            let mut args = self.call_args(wrapper, wrap);
+            match (outer, layout.is_empty()) {
+                (Some(o), _) => args.push(format!("modifier = {o}{}", layout.concat())),
+                (None, false) => args.push(format!("modifier = Modifier{}", layout.concat())),
+                (None, true) => {}
+            }
+            let content = self.view_expr(inner, indent + 1, Some("contentModifier")).unwrap_or_default();
+            return Some(format!(
+                "{p}{}({}) {{ contentModifier ->\n{content}{p}}}\n",
+                kw(wrapper),
+                args.join(", ")
+            ));
+        }
         let p = pad(indent);
         // Effects ride on the view: emitted beside it, in the same composable.
         let mut effects = String::new();
@@ -1922,6 +1973,40 @@ impl<'a> Emitter<'a> {
             return None;
         };
         Some(format!("{drawn}{effects}"))
+    }
+
+    /// In a `ViewModifier`'s body, `content` with its modifiers (`content.padding(.md)`): the
+    /// wrapped view, drawn with them.
+    fn content_expr(&mut self, e: &Expr, indent: usize, outer: Option<&str>) -> Option<String> {
+        let content = self.modifier_content.clone()?;
+        let mut mods = Vec::new();
+        let mut at = e;
+        loop {
+            match &at.kind {
+                ExprKind::Call(call) => match &call.callee.kind {
+                    ExprKind::Field(inner, name) => {
+                        mods.push((name.name.as_str(), call));
+                        at = inner;
+                    }
+                    _ => return None,
+                },
+                ExprKind::Name(n) if kw(n) == content => break,
+                ExprKind::Paren(inner) => at = inner,
+                _ => return None,
+            }
+        }
+        mods.reverse();
+        let mut layout = Vec::new();
+        for (name, call) in mods {
+            if universal(name) {
+                layout.push(self.layout_modifier("content", name, call));
+            } else {
+                self.unsupported(call.callee.span, format!("`.{name}` on a modifier's content"));
+            }
+        }
+        layout.reverse();
+        let modifier = format!("{}{}", outer.unwrap_or("Modifier"), layout.concat());
+        Some(format!("{}{content}({modifier})\n", pad(indent)))
     }
 
     fn is_local_view_fn(&self, name: &str) -> bool {
