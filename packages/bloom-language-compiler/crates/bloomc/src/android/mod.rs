@@ -478,6 +478,18 @@ fn schemes(package: &Package) -> Vec<String> {
     }
 }
 
+/// The package managers' lockfiles beside the `node_modules` directories the bundle resolves
+/// from, as they are now.
+fn lockfiles(modules: &[PathBuf]) -> Vec<PathBuf> {
+    const NAMES: &[&str] = &["bun.lock", "bun.lockb", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"];
+    modules
+        .iter()
+        .filter_map(|m| m.parent())
+        .flat_map(|dir| NAMES.iter().map(move |n| dir.join(n)))
+        .filter(|p| p.is_file())
+        .collect()
+}
+
 fn xml(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
@@ -821,6 +833,10 @@ tasks.matching {{ it.name.startsWith("createBundle") && it.name.endsWith("JsAndA
   // How bloom bundles (its Metro driver and config, an adopted app's Babel transformer): a
   // change there is a new bundle too.
   inputs.files(fileTree(file("../..")) {{ include "*.js" }}).withPropertyName("bloomMetro").withPathSensitivity(PathSensitivity.RELATIVE)
+  // What the package manager installed (the lockfiles beside each `node_modules` the bundle
+  // resolves from): a dependency bumped or swapped for a local pack is a new bundle. Without
+  // them `node_modules` (left out above) changes under an UP-TO-DATE bundle.
+  inputs.files({lockfiles}).withPropertyName("bloomLockfiles").withPathSensitivity(PathSensitivity.ABSOLUTE)
 }}
 
 android {{
@@ -872,6 +888,7 @@ dependencies {{
                 .as_ref()
                 .map(|f| format!("\n// The app's own build additions (Package.bloom `adopt:` overrides).\napply from: {}\n", quote(&f.to_string_lossy())))
                 .unwrap_or_default(),
+            lockfiles = lockfiles(&layout.modules).iter().map(|p| quote(&p.to_string_lossy())).collect::<Vec<_>>().join(", "),
             react_root = quote(&layout.root.to_string_lossy()),
             react_native = quote(&react_native.to_string_lossy()),
             codegen = quote(&codegen.to_string_lossy()),
@@ -1121,6 +1138,19 @@ pub fn run(package: &Package, mode: &Mode) -> Result<bool, String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn the_bundle_tracks_the_lockfiles_beside_each_node_modules() {
+        let dir = std::env::temp_dir().join(format!("bloom-lockfiles-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("app/node_modules")).unwrap();
+        std::fs::create_dir_all(dir.join("node_modules")).unwrap();
+        std::fs::write(dir.join("bun.lock"), "{}").unwrap();
+        std::fs::write(dir.join("app/package-lock.json"), "{}").unwrap();
+        let found = lockfiles(&[dir.join("app/node_modules"), dir.join("node_modules")]);
+        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(found, [dir.join("app/package-lock.json"), dir.join("bun.lock")]);
+    }
+
     use super::*;
 
     fn package(name: &str, manifest: &str, files: &[(&str, &str)]) -> Package {

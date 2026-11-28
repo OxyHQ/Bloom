@@ -28,7 +28,10 @@ use crate::project::write;
 /// Bloom replacement a Bloom build already has are not stopgaps.
 const REPLACED: &[(&str, &str)] = &[
     ("expo-video", "BloomVideo, Bloom's video view"),
-    ("expo-splash-screen", "the manifest's splash (`App(splash:splashImage:)`)"),
+    (
+        "expo-splash-screen",
+        "the manifest's splash, held by Bloom's splash hold (`BloomSplash`) until `hideAsync`",
+    ),
     ("expo-dev-client", "`bloom run`"),
     ("expo-build-properties", "Package.bloom and the overrides"),
 ];
