@@ -25,10 +25,9 @@ data class Post(
   override fun badge(count: Long): String {
     return "${title} (${count})"
   }
-  companion object {
-    val self: Codec<Post> = Codec("post")
-  }
 }
+
+val Post__self: Codec<Post> = Codec("post")
 
 enum class PrefKey {
   likes, replies;
@@ -74,12 +73,10 @@ data class Codec<T>(
 @Immutable
 data class Page<T>(
   val items: List<T>,
-) {
-  companion object {
-    fun <T> codec(item: Codec<T>): Codec<Page<T>> {
-      return Codec("page of ${item.name}")
-    }
-  }
+)
+
+fun <T> Page__codec(item: Codec<T>): Codec<Page<T>> {
+  return Codec("page of ${item.name}")
 }
 
 @Immutable
@@ -97,7 +94,7 @@ fun <T> codecName(value: T, _w_T_Codable: Codec<T>): String {
 
 fun demo(post: Post): String {
   val api = API("/feeds")
-  val names = "${codecName(post, Post.self)} ${api.describe(Page(listOf(post)), Page.codec(Post.self))}"
+  val names = "${codecName(post, Post__self)} ${api.describe(Page(listOf(post)), Page__codec(Post__self))}"
   val titles = PrefKey.entries.map({ it.title })
   val at = firstIndex(PrefKey.entries, PrefKey.replies) ?: -1L
   val found = firstIndex(listOf(post), post) ?: -1L

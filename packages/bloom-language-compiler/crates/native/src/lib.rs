@@ -54,6 +54,10 @@ pub struct SourceFile {
     /// field and name resolved to, the definitions), keyed by the parser's expression ids,
     /// exactly what the TypeScript emitter reads (`bloom_lang::backend`).
     pub checked: bloom_lang::backend::CheckResult,
+    /// The tree the checker checked (`Checked::lowered`): the parser's items with 2.0's type
+    /// members lowered to free functions, plus what the compiler derives (`Codable`'s
+    /// `T$$decode`, `T$$encode`, `T$$self`), with synthetic spans the checker typed.
+    pub lowered: Ast,
 }
 
 /// A directory module: `Sources/Feed/*.bloom` is `Feed`.
@@ -138,8 +142,12 @@ pub struct Decls {
     /// The structs, enums and classes the program declares: their members (their own and
     /// every extension's in the program) are emitted inside the Kotlin class.
     pub declared: BTreeSet<String>,
-    /// `extension T { … }` / `extension T: P { … }` bodies, by `T`.
-    pub extensions: BTreeMap<String, Vec<TypeBody>>,
+    /// `extension T { … }` / `extension T: P { … }` bodies, by `T`, each with its file: one
+    /// in `T`'s own file is emitted inside `T`'s class, one elsewhere in its own file (its
+    /// expressions are typed by that file's checker).
+    pub extensions: BTreeMap<String, Vec<(PathBuf, TypeBody)>>,
+    /// The file that declares each struct, enum and class.
+    pub declared_in: BTreeMap<String, PathBuf>,
     /// Each type's protocols: its declaration's and its extensions'.
     pub conforms: BTreeMap<String, Vec<String>>,
     /// Each protocol's requirements' names, with its inherited protocols' (an implementation
@@ -151,6 +159,33 @@ pub struct Decls {
     pub classes: BTreeSet<String>,
     /// The app's environment keys (`let session = EnvironmentKey(…)`).
     pub env_keys: BTreeSet<String>,
+    /// Every static member, by its lowered name (`Post$$decode`, `String$$self`): a static
+    /// function is a top-level Kotlin function `Post__decode`, a static `let` a top-level `val`.
+    pub static_fns: BTreeSet<String>,
+    pub static_lets: BTreeSet<String>,
+    /// Static computed properties, lowered `T$$get$m` (Kotlin's `val T__m`).
+    pub static_getters: BTreeSet<String>,
+}
+
+/// Derived code's spans (`codable.rs`'s `SYNTHETIC`): at or past `0xF000_0000`.
+pub fn is_synthetic(span: Span) -> bool {
+    span.start >= 0xF000_0000
+}
+
+/// A lowered static member's Kotlin name: `Post$$decode` is `Post__decode`.
+pub fn static_name(lowered: &str) -> String {
+    lowered.replace("$$", "__").replace('$', "_")
+}
+
+/// A built-in type's `init` as the checker lowers it (`extensions::init_name`): `T$$init`, then
+/// `$label` per parameter (`_` for none): `Date$$init$timeIntervalSince1970`.
+pub fn init_name<'a>(owner: &str, labels: impl Iterator<Item = Option<&'a str>>) -> String {
+    let mut name = bloom_lang::backend::mangle(owner, "init", true);
+    for label in labels {
+        name.push('$');
+        name.push_str(label.unwrap_or("_"));
+    }
+    name
 }
 
 /// A written type's name (`Titled` in `extension Post: Titled`).
@@ -172,7 +207,20 @@ fn param_info(p: &Param, func: bool) -> ParamInfo {
 }
 
 impl Decls {
-    fn collect(&mut self, file: &Ast) {
+    /// Whether `ty` is declared in the file at `path` (its extensions there go in its class).
+    pub fn declared_here(&self, ty: &str, path: &Path) -> bool {
+        self.declared_in.get(ty).is_some_and(|p| p == path)
+    }
+
+    fn collect(&mut self, file: &Ast, path: &Path) {
+        for item in &file.items {
+            if let ItemKind::Struct(StructDecl { name, .. })
+            | ItemKind::Enum(EnumDecl { name, .. })
+            | ItemKind::Class(ClassDecl { name, .. }) = &item.kind
+            {
+                self.declared_in.insert(name.name.clone(), path.to_path_buf());
+            }
+        }
         for item in &file.items {
             match &item.kind {
                 ItemKind::Struct(s) => {
@@ -243,7 +291,35 @@ impl Decls {
                 ItemKind::Extension(x) => {
                     self.members(&x.name.name, &x.body);
                     self.conformances(&x.name.name, &x.body.conformances);
-                    self.extensions.entry(x.name.name.clone()).or_default().push(x.body.clone());
+                    self.extensions
+                        .entry(x.name.name.clone())
+                        .or_default()
+                        .push((path.to_path_buf(), x.body.clone()));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// The lowered tree's top-level `T$$m` items: every static member, written or derived.
+    fn collect_statics(&mut self, lowered: &Ast) {
+        for item in &lowered.items {
+            match &item.kind {
+                ItemKind::Fn(f) if f.name.name.contains("$$get$") => {
+                    self.static_getters.insert(f.name.name.clone());
+                }
+                ItemKind::Fn(f) if f.name.name.contains("$$") => {
+                    self.static_fns.insert(f.name.name.clone());
+                    if let Some((owner, member, _)) = bloom_lang::backend::demangle(&f.name.name)
+                        && is_synthetic(f.span)
+                    {
+                        // A derived member's labels, for its call sites (`Post.decode(v, at)`).
+                        let params = f.params.iter().map(|p| param_info(p, f.func)).collect();
+                        self.methods.entry((owner.to_string(), member.to_string())).or_insert(params);
+                    }
+                }
+                ItemKind::Const(c) if c.name.name.contains("$$") => {
+                    self.static_lets.insert(c.name.name.clone());
                 }
                 _ => {}
             }
@@ -320,6 +396,55 @@ pub fn load(dir: &Path) -> Result<Program, Vec<Problem>> {
 /// `Bloom`, which the Kotlin backend emits into `so.oxy.bloom.std`: the written-in-Bloom parts
 /// of the standard library compile through the backend, and only their `extern`s are Kotlin.
 pub fn load_with_std(dir: &Path, std: &[&str]) -> Result<Program, Vec<Problem>> {
+    load_modules(dir, std, None)
+}
+
+/// The standard library modules a module's Bloom code calls into: `JSON`'s coders read `URL`s
+/// and `Date`s (`Time`). `--std JSON` brings them.
+const STD_DEPENDS: &[(&str, &[&str])] =
+    &[("JSON", &["Core", "URL", "Time"]), ("URL", &["Core"]), ("Time", &["Core"])];
+
+/// `std` and the standard library modules they depend on, in a stable order.
+fn std_closure(std: &[&str]) -> Vec<String> {
+    let mut out: BTreeSet<String> = BTreeSet::new();
+    let mut stack: Vec<&str> = std.to_vec();
+    while let Some(m) = stack.pop() {
+        if out.insert(m.to_string()) {
+            stack.extend(STD_DEPENDS.iter().filter(|(n, _)| *n == m).flat_map(|(_, d)| d.iter().copied()));
+        }
+    }
+    out.into_iter().collect()
+}
+
+/// The modules `only` names and every package module they import, transitively (`import Feed`).
+fn module_closure(sets: &[(String, Vec<PathBuf>, bool)], only: &[String]) -> BTreeSet<String> {
+    let mut keep: BTreeSet<String> = BTreeSet::new();
+    let mut stack: Vec<String> = only.to_vec();
+    while let Some(name) = stack.pop() {
+        if !keep.insert(name.clone()) {
+            continue;
+        }
+        let Some((_, paths, _)) = sets.iter().find(|(n, _, _)| *n == name) else { continue };
+        for path in paths {
+            let Ok(source) = std::fs::read_to_string(path) else { continue };
+            let (ast, _, _) = bloom_lang::parse(&source, &path.to_string_lossy());
+            for import in &ast.imports {
+                if sets.iter().any(|(n, _, std)| !std && *n == import.source) {
+                    stack.push(import.source.clone());
+                }
+            }
+        }
+    }
+    keep
+}
+
+/// [`load_with_std`], with only the modules `only` names and the package modules they import
+/// (`--module FeedIsland`): the others are neither checked nor emitted, so an island compiles
+/// while the rest of the app is TypeScript the native backend cannot read.
+pub fn load_modules(dir: &Path, std: &[&str], only: Option<&[String]>) -> Result<Program, Vec<Problem>> {
+    // Absolute: the checker resolves the standard library's own imports (`./URL.bloom`) from
+    // each file's path, which a relative package path breaks.
+    let dir = &std::fs::canonicalize(dir).unwrap_or_else(|_| dir.to_path_buf());
     let manifest_path = dir.join("Package.bloom");
     let manifest = std::fs::read_to_string(&manifest_path).map_err(|e| {
         vec![Problem { file: manifest_path.clone(), span: Span::default(), message: e.to_string() }]
@@ -349,12 +474,29 @@ pub fn load_with_std(dir: &Path, std: &[&str]) -> Result<Program, Vec<Problem>> 
         sets.push((module_name, paths, false));
     }
     if !std.is_empty() {
+        let std = std_closure(std);
+        let std: Vec<&str> = std.iter().map(String::as_str).collect();
         let files = bloom_lang::stdlib::ensure(dir);
         let chosen = files
             .into_iter()
             .filter(|p| std.iter().any(|n| p.file_stem().is_some_and(|s| s == *n)))
             .collect();
         sets.push((bloom_lang::stdlib::MODULE.to_string(), chosen, true));
+    }
+    if let Some(only) = only {
+        let missing: Vec<&String> = only.iter().filter(|m| !sets.iter().any(|(n, _, _)| n == *m)).collect();
+        if !missing.is_empty() {
+            return Err(missing
+                .into_iter()
+                .map(|m| Problem {
+                    file: sources.clone(),
+                    span: Span::default(),
+                    message: format!("no module `{m}` in Sources/"),
+                })
+                .collect());
+        }
+        let keep = module_closure(&sets, only);
+        sets.retain(|(n, _, is_std)| *is_std || keep.contains(n));
     }
     for (module_name, paths, is_std) in sets {
         let mut files = Vec::new();
@@ -375,9 +517,17 @@ pub fn load_with_std(dir: &Path, std: &[&str]) -> Result<Program, Vec<Problem>> 
             for d in &syntax {
                 problems.push(Problem { file: path.clone(), span: d.span, message: d.rendered.clone() });
             }
-            decls.collect(&ast);
+            decls.collect(&ast, &path);
+            decls.collect_statics(&checked.lowered);
             let types = checked.result.types(&source).into_iter().collect();
-            files.push(SourceFile { path, source, ast, types, checked: checked.result });
+            files.push(SourceFile {
+                path,
+                source,
+                ast,
+                types,
+                checked: checked.result,
+                lowered: checked.lowered,
+            });
         }
         modules.push(Module { name: module_name, files, std: is_std });
     }

@@ -29,7 +29,7 @@ fun page(posts: List<Post>, at: Long): List<Post> {
 }
 
 fun place(ids: List<String>, id: String): Long {
-  return ids.indexOf(id) ?: -1L
+  return ids.bloomIndexOf(id) ?: -1L
 }
 
 fun numbered(ids: List<String>): List<String> {

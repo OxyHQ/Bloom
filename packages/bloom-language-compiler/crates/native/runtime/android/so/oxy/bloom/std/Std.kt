@@ -1,10 +1,11 @@
-// Bloom's standard library for the kotlin-compose backend (ADR 0003): the parts of
-// stdlib/Bloom/*.bloom the bench calls, as Kotlin. Names and labels are Bloom's, so the
-// emitter passes arguments through unchanged.
+// The compiler's built-ins for the kotlin-compose backend (ADR 0003): what the checker
+// knows without a standard library file (`count`, `xs[i]`, `trimmed()`, `print`, `Binding`,
+// actors), as Kotlin. What `stdlib/Bloom/*.bloom` writes in Bloom is compiled through the
+// backend (`--std JSON,Core`) into this package, and its externs are `Externs.kt`. Names and
+// labels are Bloom's, so the emitter passes arguments through unchanged.
 package so.oxy.bloom.std
 
 import android.util.Log
-import kotlinx.coroutines.delay
 
 /** `Identifiable`: a value with a stable `id` (a list's key). */
 interface Identifiable {
@@ -18,11 +19,6 @@ class BloomError(val value: Any?) : Exception(value.toString())
 fun print(message: String) {
   Log.i("Bloom", message)
 }
-
-/** `range(n)`: `[0, 1, …, n-1]`. */
-fun range(n: Long): List<Long> = List(n.toInt()) { it.toLong() }
-
-fun stride(from: Long, to: Long, by: Long = 1L): List<Long> = (from until to step by).toList()
 
 // `Int` is 64-bit (ADR 0003): counts and indices are `Long`; the JVM's collections take `Int`.
 
@@ -57,16 +53,6 @@ fun <T> List<T>.at(index: Long): T? = if (index in 0 until size) get(index.toInt
 /** `xs.enumerated()`: `(offset, element)` pairs. */
 fun <T> List<T>.enumerated(): List<Pair<Long, T>> = mapIndexed { i, x -> i.toLong() to x }
 
-/** `xs.updating(where:_:)`: a copy with the matching elements replaced. */
-fun <T> List<T>.updating(where: (T) -> Boolean, update: (T) -> T): List<T> =
-  map { if (where(it)) update(it) else it }
-
-fun <T> List<T>.replacing(at: Long, with: T): List<T> = mapIndexed { i, x -> if (i.toLong() == at) with else x }
-
-fun String.replacingOccurrences(of: String, with: String): String = replace(of, with)
-
-fun String.hasPrefix(prefix: String): Boolean = startsWith(prefix)
-
 // The compiler's built-in members of String and Array (spec 4), as Kotlin.
 
 /** `s.trimmed()`: without leading and trailing whitespace. */
@@ -82,31 +68,13 @@ fun String.split(separator: String): List<String> = split(separator, ignoreCase 
 /** `xs.joined(separator: ", ")`. */
 fun List<String>.joined(separator: String = ""): String = joinToString(separator)
 
-fun String.hasSuffix(suffix: String): Boolean = endsWith(suffix)
-
-/** `Duration`: a length of time. */
-data class Duration(val seconds: Double) {
-  val milliseconds: Double get() = seconds * 1000.0
-
-  companion object {
-    fun milliseconds(n: Double) = Duration(n / 1000.0)
-    fun seconds(n: Double) = Duration(n)
-    val zero = Duration(0.0)
-  }
-}
-
-/** `ContinuousClock`: a monotonic instant, in milliseconds. */
-data class ContinuousClock(val milliseconds: Double) {
-  val elapsed: Duration get() = Duration.milliseconds(now.milliseconds - milliseconds)
-
-  companion object {
-    val now: ContinuousClock get() = ContinuousClock(System.nanoTime() / 1_000_000.0)
-  }
-}
-
-/** `sleep(for:)`: suspends, cancellably. */
+/**
+ * `sleep(for:)`: suspends, cancellably (the coroutine's cancellation is the task's). Hand-written
+ * until `Concurrency.bloom` compiles through the backend (its `Foreign` handles need typed
+ * runtime classes first).
+ */
 suspend fun sleep(`for`: Duration) {
-  delay((`for`.seconds * 1000.0).toLong())
+  kotlinx.coroutines.delay(`for`.milliseconds.toLong())
 }
 
 /** `Binding(get:set:)`, `$state`: a value and its setter. */

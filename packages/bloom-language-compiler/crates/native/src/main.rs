@@ -7,7 +7,7 @@ use std::process::ExitCode;
 
 fn usage() -> ExitCode {
     eprintln!(
-        "usage: bloom-native emit --target kotlin-compose|swiftui <package dir> --out <dir> [--android-project <dir> --app-id <id>]"
+        "usage: bloom-native emit --target kotlin-compose|swiftui <package dir> --out <dir> [--module A,B] [--std JSON,Core] [--runtime] [--android-project <dir> --app-id <id>]"
     );
     ExitCode::from(2)
 }
@@ -23,6 +23,8 @@ fn main() -> ExitCode {
     let mut project = None;
     let mut app_id = None;
     let mut std_modules: Vec<String> = Vec::new();
+    let mut only: Option<Vec<String>> = None;
+    let mut runtime = false;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -48,6 +50,14 @@ fn main() -> ExitCode {
                 std_modules =
                     args.get(i).map(|s| s.split(',').map(String::from).collect()).unwrap_or_default();
             }
+            // `--module FeedIsland,…`: only those modules and the package modules they import.
+            "--module" => {
+                i += 1;
+                only = args.get(i).map(|s| s.split(',').map(String::from).collect());
+            }
+            // `--runtime`: Bloom's Kotlin runtime (`so.oxy.bloom.ui`, `so.oxy.bloom.std`) into `--out`
+            // too, so the output is a complete source set (`bloom build`'s `:bloom-islands`).
+            "--runtime" => runtime = true,
             other => package = Some(PathBuf::from(other)),
         }
         i += 1;
@@ -55,7 +65,7 @@ fn main() -> ExitCode {
     let (Some(target), Some(package)) = (target, package) else { return usage() };
     let started = std::time::Instant::now();
     let std: Vec<&str> = std_modules.iter().map(String::as_str).collect();
-    let program = match bloom_native::load_with_std(&package, &std) {
+    let program = match bloom_native::load_modules(&package, &std, only.as_deref()) {
         Ok(p) => p,
         Err(problems) => {
             for p in problems {
@@ -90,6 +100,10 @@ fn main() -> ExitCode {
             eprintln!("bloom-native: {e}");
             return ExitCode::FAILURE;
         }
+    }
+    let mut emitted = emitted;
+    if runtime {
+        emitted.extend(bloom_native::android::runtime_sources());
     }
     for file in &emitted {
         let path = root.join(&file.path);

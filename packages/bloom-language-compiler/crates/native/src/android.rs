@@ -10,6 +10,9 @@ use crate::Program;
 /// The runtime's sources, embedded so the binary writes a complete project.
 const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/std/Std.kt", include_str!("../runtime/android/so/oxy/bloom/std/Std.kt")),
+    ("so/oxy/bloom/std/Externs.kt", include_str!("../runtime/android/so/oxy/bloom/std/Externs.kt")),
+    ("so/oxy/bloom/std/TimeExterns.kt", include_str!("../runtime/android/so/oxy/bloom/std/TimeExterns.kt")),
+    ("so/oxy/bloom/std/Builtins.kt", include_str!("../runtime/android/so/oxy/bloom/std/Builtins.kt")),
     ("so/oxy/bloom/ui/Tokens.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Tokens.kt")),
     (
         "so/oxy/bloom/ui/BloomTheme.generated.kt",
@@ -29,6 +32,14 @@ const COMPOSE: &str = "1.12.1";
 const ACTIVITY: &str = "1.11.0";
 const PROFILEINSTALLER: &str = "1.4.0";
 const COROUTINES: &str = "1.10.2";
+
+/// The Kotlin runtime's sources, as files under a source root (`so/oxy/bloom/ui/Views.kt`).
+pub fn runtime_sources() -> Vec<crate::Emitted> {
+    RUNTIME
+        .iter()
+        .map(|(path, text)| crate::Emitted { path: path.into(), text: (*text).to_string() })
+        .collect()
+}
 
 fn write(path: &Path, text: &str) -> Result<(), String> {
     if let Some(dir) = path.parent() {
