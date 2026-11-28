@@ -51,6 +51,26 @@ const objects = objectsOf(spec);
 const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const universal = new Set(spec.universal);
+/** Each modifier's category (`spec.modifierCategories`): a universal one's is listed, every other's is `node`. */
+const categoryOf = (() => {
+  const { categories, universal: listed } = spec.modifierCategories;
+  const of = new Map();
+  for (const [category, names] of Object.entries(listed)) {
+    if (!(category in categories))
+      throw new Error(`modifierCategories: unknown category ${category}`);
+    for (const name of names) {
+      if (!universal.has(name))
+        throw new Error(`modifierCategories: ${name} is not a universal modifier`);
+      if (of.has(name)) throw new Error(`modifierCategories: ${name} is listed twice`);
+      of.set(name, category);
+    }
+  }
+  for (const name of universal) {
+    if (!of.has(name))
+      throw new Error(`modifierCategories: the universal modifier ${name} has no category`);
+  }
+  return (name) => of.get(name) ?? 'node';
+})();
 const glassValue = withoutComment(spec.glassValue);
 
 const NODES_DOC = 'bloom-language-nodes.mdx';
@@ -401,6 +421,7 @@ function modifiersPage() {
     const doc = declared?.find((d) => d.doc)?.doc;
     if (doc) lines.push(prose(doc), '');
     lines.push(
+      `- Category: ${code(categoryOf(name))}, ${spec.modifierCategories.categories[categoryOf(name)]}`,
       `- Parameters: ${params.length ? params.map((p) => paramType(p, MODIFIERS_DOC)).join('; ') : 'none'}`,
     );
     if (declared) {
