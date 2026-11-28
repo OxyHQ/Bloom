@@ -10,12 +10,14 @@ import so.oxy.bloom.ui.*
 import so.oxy.bloom.std.*
 
 @Composable
-fun Card(title: String, children: @Composable () -> Unit? = null, modifier: Modifier = Modifier) {
+fun Card(title: String, children: (@Composable () -> Unit)? = null, modifier: Modifier = Modifier) {
   VStack(modifier = modifier) {
     Text(title)
-    if (children.let { v1 = it; true } ?: false) {
-      val children = v1!!
-      children()
+    run {
+      val children = children
+      if (children != null) {
+        children()
+      }
     }
   }
 }
@@ -30,9 +32,11 @@ fun Panel(content: @Composable () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun Page(signedIn: Boolean, names: List<String>, modifier: Modifier = Modifier) {
   VStack(modifier = modifier) {
-    Card("Hi", { Text("inside") })
+    Card("Hi", {
+    Text("inside")
+  })
     Card("Empty")
-    Panel({ 
+    Panel({
     Text("Names")
     if (signedIn) {
       Text("Welcome")
@@ -40,7 +44,7 @@ fun Page(signedIn: Boolean, names: List<String>, modifier: Modifier = Modifier) 
     for (name in names) {
       Text(name)
     }
-})
+  })
   }
 }
 

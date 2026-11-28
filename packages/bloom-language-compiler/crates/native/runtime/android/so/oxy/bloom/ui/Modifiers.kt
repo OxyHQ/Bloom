@@ -46,3 +46,12 @@ fun Modifier.bloomOpacity(value: Double): Modifier = alpha(value.toFloat())
 fun Modifier.bloomAspectRatio(ratio: Double): Modifier = aspectRatio(ratio.toFloat())
 
 fun Modifier.bloomOnPress(action: () -> Unit): Modifier = clickable(onClick = action)
+
+/** Bloom's inherited `.disabled()`: a subtree's controls stop taking input. */
+val LocalDisabled = androidx.compose.runtime.compositionLocalOf { false }
+
+/** The built-in environment values (`@Environment(\.disabled)`). */
+object Environment {
+  val disabled: Boolean
+    @androidx.compose.runtime.Composable get() = LocalDisabled.current
+}
