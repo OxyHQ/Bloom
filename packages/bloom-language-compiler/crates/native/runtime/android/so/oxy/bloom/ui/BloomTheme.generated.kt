@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -104,7 +105,7 @@ enum class IconSize(val dp: Dp) { _10(10.dp), _11(11.dp), _13(13.dp), _14(14.dp)
 /** An avatar's size (`spec.scales.avatarSize`). */
 enum class AvatarSize(val dp: Dp) { xs(20.dp), sm(24.dp), md(32.dp), lg(36.dp), xl(40.dp) }
 
-/** The type ramp, the spec's `typeRamp`: each family at each weight, and the family's regular. */
+/** The type ramp, the spec's `typeRamp`: each family at each weight, and the family's regular; then the size rungs (`spec.scales.fontSize`). */
 object Font {
   private fun ramp(size: Int, line: Int, tracking: Double, weight: Int) =
     TextStyle(fontSize = size.sp, lineHeight = line.sp, letterSpacing = (tracking / size).em, fontWeight = FontWeight(weight))
@@ -174,6 +175,71 @@ object Font {
   val body2 = ramp(13, 18, 0.0, 400)
   val caption1 = ramp(12, 16, 0.15, 400)
   val caption2 = ramp(11, 15, 0.2, 400)
+  val _9 = TextStyle(fontSize = 9.sp)
+  val _11 = TextStyle(fontSize = 11.sp)
+  val _14 = TextStyle(fontSize = 14.sp)
+  val _16 = TextStyle(fontSize = 16.sp)
+  val _18 = TextStyle(fontSize = 18.sp)
+  val _24 = TextStyle(fontSize = 24.sp)
+  val _28 = TextStyle(fontSize = 28.sp)
+  val _30 = TextStyle(fontSize = 30.sp)
+  val _36 = TextStyle(fontSize = 36.sp)
+  val _42 = TextStyle(fontSize = 42.sp)
+  val _96 = TextStyle(fontSize = 96.sp)
+  val _2xs = TextStyle(fontSize = 10.sp)
+  val xs = TextStyle(fontSize = 12.sp)
+  val sm = TextStyle(fontSize = 13.sp)
+  val md = TextStyle(fontSize = 15.sp)
+  val lg = TextStyle(fontSize = 17.sp)
+  val xl = TextStyle(fontSize = 20.sp)
+  val _2xl = TextStyle(fontSize = 22.sp)
+  val _3xl = TextStyle(fontSize = 26.sp)
+  val _4xl = TextStyle(fontSize = 32.sp)
+  val _5xl = TextStyle(fontSize = 40.sp)
+  val _12_5 = TextStyle(fontSize = 12.5.sp)
+}
+
+/** A text's weight (`spec.scales.weight`). */
+object Weight {
+  val light = FontWeight(300)
+  val regular = FontWeight(400)
+  val medium = FontWeight(500)
+  val semibold = FontWeight(600)
+  val bold = FontWeight(700)
+  val extrabold = FontWeight(800)
+}
+
+/** A text's line height (`spec.scales.leading`, a multiple of its size, and `leadingPx`). */
+object Leading {
+  val tight: TextUnit = 1.15.em
+  val close: TextUnit = 1.25.em
+  val snug: TextUnit = 1.3.em
+  val easy: TextUnit = 1.375.em
+  val normal: TextUnit = 1.5.em
+  val relaxed: TextUnit = 1.625.em
+  val _14px: TextUnit = 14.sp
+  val _16px: TextUnit = 16.sp
+  val _18px: TextUnit = 18.sp
+  val _20px: TextUnit = 20.sp
+  val _22px: TextUnit = 22.sp
+  val _24px: TextUnit = 24.sp
+  val _28px: TextUnit = 28.sp
+  val _32px: TextUnit = 32.sp
+  val _36px: TextUnit = 36.sp
+  val _40px: TextUnit = 40.sp
+  val _96px: TextUnit = 96.sp
+}
+
+/** A border's width (`spec.scales.borderWidth`): `hairline` is the screen's thinnest line. */
+object BorderWidth {
+  val _3: Dp = 3.dp
+  val _4: Dp = 4.dp
+  val hairline: Dp = Dp.Hairline
+  val thin: Dp = 1.dp
+  val thick: Dp = 2.dp
+  val _0_5: Dp = 0.5.dp
+  val _1_5: Dp = 1.5.dp
+  val _2_5: Dp = 2.5.dp
 }
 
 /** The language's colour roles (`spec.colors`), each its palette token in the theme in scope. */
