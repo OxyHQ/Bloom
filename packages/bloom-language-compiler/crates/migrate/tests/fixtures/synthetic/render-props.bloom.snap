@@ -1,0 +1,16 @@
+// An `Embed` render prop's `render(x)` handed to a TS component's prop is the view `x`, as
+// `toElement(x)` is; React's `<Activity>` is a component (a value import), as `<Suspense>` is.
+
+import { Slot } from "./slots"
+import { Activity } from "react"
+
+public struct Titled: View {
+  let title: String
+  let visible: Bool
+  var body: some View {
+    VStack {
+      Slot(title: title, leading: Text("•").foreground(.muted))
+      Activity(mode: visible ? "visible" : "hidden") { Text(title) }
+    }
+  }
+}
