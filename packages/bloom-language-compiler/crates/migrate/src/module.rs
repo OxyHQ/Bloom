@@ -2865,7 +2865,8 @@ impl Tr<'_> {
         while let Some(at) = rest.find("//").into_iter().chain(rest.find("/*")).min() {
             bare.push_str(&rest[..at]);
             let after = &rest[at..];
-            let end = if after.starts_with("//") { after.find('\n') } else { after.find("*/").map(|e| e + 2) };
+            let end =
+                if after.starts_with("//") { after.find('\n') } else { after.find("*/").map(|e| e + 2) };
             rest = end.map_or("", |e| &after[e..]);
         }
         bare.push_str(rest);

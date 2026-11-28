@@ -94,9 +94,9 @@ fn keyof_of<'s>(src: &'s str, t: &TSType) -> Option<&'s str> {
 
 fn literal_union(t: &TSType) -> bool {
     match t {
-        TSType::TSUnionType(u) => u.types.iter().all(|t| {
-            matches!(t, TSType::TSLiteralType(l) if matches!(l.literal, TSLiteral::StringLiteral(_)))
-        }),
+        TSType::TSUnionType(u) => u.types.iter().all(
+            |t| matches!(t, TSType::TSLiteralType(l) if matches!(l.literal, TSLiteral::StringLiteral(_))),
+        ),
         _ => false,
     }
 }
@@ -206,10 +206,10 @@ impl<'a> Visit<'a> for Scan<'_> {
                 },
                 _ => None,
             };
-            if let Some(a) = arrow {
-                if let ArrowFunctionBody::FunctionBody(body) = &a.body {
-                    self.function(Some(&id.name), &a.params, Some(body));
-                }
+            if let Some(a) = arrow
+                && let ArrowFunctionBody::FunctionBody(body) = &a.body
+            {
+                self.function(Some(&id.name), &a.params, Some(body));
             }
         }
         oxc_ast_visit::walk::walk_variable_declarator(self, d);
@@ -276,12 +276,8 @@ pub fn scan(src: &str, program: &Program) -> KeyPaths {
         }
     }
     // A record field typed `keyof X`, where a function says `X`'s value type: a key path too.
-    let fields: HashSet<String> = scan
-        .fields
-        .into_iter()
-        .filter(|(_, x)| out.keyof_value.contains_key(x))
-        .map(|(f, _)| f)
-        .collect();
+    let fields: HashSet<String> =
+        scan.fields.into_iter().filter(|(_, x)| out.keyof_value.contains_key(x)).map(|(f, _)| f).collect();
     for (field, at) in scan.props {
         if fields.contains(&field) {
             out.literals.insert(at);
@@ -306,7 +302,9 @@ impl Tr<'_> {
         let (root, value) = self.key_paths.params.get(&param.span.start)?.clone();
         let v = value_type(&value)?;
         let root = match root {
-            Root::Type => return param.type_annotation.as_ref().and_then(|t| self.keyof_key_path(&t.type_annotation)),
+            Root::Type => {
+                return param.type_annotation.as_ref().and_then(|t| self.keyof_key_path(&t.type_annotation));
+            }
             Root::Base(t) if crate::module::is_identifier(&t) && t.starts_with(char::is_uppercase) => t,
             Root::Base(base) => self.scope.decl.get(&base)?.trim_end_matches('?').to_string(),
         };
@@ -316,7 +314,8 @@ impl Tr<'_> {
     /// `const next = { ...base, [key]: value }`: `var next = base` and `next[keyPath: key] = value`.
     pub fn key_path_update(&mut self, name: &str, init: &Expression) -> Option<String> {
         let Expression::ObjectExpression(o) = init.without_parentheses() else { return None };
-        let [ObjectPropertyKind::SpreadProperty(s), ObjectPropertyKind::ObjectProperty(p)] = o.properties.as_slice()
+        let [ObjectPropertyKind::SpreadProperty(s), ObjectPropertyKind::ObjectProperty(p)] =
+            o.properties.as_slice()
         else {
             return None;
         };

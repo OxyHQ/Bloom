@@ -1529,8 +1529,11 @@ impl Tr<'_> {
         // (`let a = item.a`, `let c = item.b`); a record pattern is not Swift's.
         let fields = match &d.id {
             BindingPattern::ObjectPattern(_) if ty.is_empty() && crate::expr::is_postfix_text(&value) => {
-                pattern.strip_prefix("{ ").and_then(|p| p.strip_suffix(" }")).filter(|p| !p.contains(['{', '(', '['])).map(
-                    |p| {
+                pattern
+                    .strip_prefix("{ ")
+                    .and_then(|p| p.strip_suffix(" }"))
+                    .filter(|p| !p.contains(['{', '(', '[']))
+                    .map(|p| {
                         p.split(", ")
                             .map(|part| match part.split_once(": ") {
                                 Some((key, bound)) => format!("{keyword} {bound} = {value}.{key}"),
@@ -1538,8 +1541,7 @@ impl Tr<'_> {
                             })
                             .collect::<Vec<_>>()
                             .join("\n")
-                    },
-                )
+                    })
             }
             _ => None,
         };

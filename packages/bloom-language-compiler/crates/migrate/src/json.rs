@@ -24,7 +24,9 @@ fn is_postfix_text(text: &str) -> bool {
     crate::expr::is_postfix_text(text)
         || (!text.starts_with('[')
             && !text.contains(' ')
-            && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '$' | '[' | ']' | '"' | '-')))
+            && text
+                .chars()
+                .all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '$' | '[' | ']' | '"' | '-')))
 }
 use crate::module::Tr;
 
@@ -224,7 +226,11 @@ impl Tr<'_> {
 
     /// `object.property` read off a JSON value: the value read and what it is (a cast of a
     /// `JSONValue` to an object type, or a `[String: JSONValue]`).
-    fn json_member_of<'b, 'a>(&self, object: &'b Expression<'a>, property: &str) -> Option<(&'b Expression<'a>, Json)> {
+    fn json_member_of<'b, 'a>(
+        &self,
+        object: &'b Expression<'a>,
+        property: &str,
+    ) -> Option<(&'b Expression<'a>, Json)> {
         match object.without_parentheses() {
             Expression::TSAsExpression(a) if unknown_object_type(&a.type_annotation, Some(property)) => {
                 let kind = self.json_kind(&a.expression).filter(|k| k.is_value())?;
@@ -361,10 +367,8 @@ impl Tr<'_> {
             && let Some((x, k)) = typeof_test(&l.left)
         {
             (x, Some(&l.right), kind_read(k)?)
-        } else if let Some(x) = is_array_test(&c.test) {
-            (x, None, "array")
         } else {
-            return None;
+            (is_array_test(&c.test)?, None, "array")
         };
         let (name, kind) = self.json_name(narrow)?;
         let ty = match read {
@@ -402,7 +406,10 @@ impl Tr<'_> {
 
     /// The test of a `&&`/`||` that guards a JSON value's `typeof x === "object"` with `x` (or
     /// `!x`): the guard says nothing more (`.object` and `.array` are `none` for `null`).
-    pub fn json_guarded_object_test<'b, 'a>(&self, l: &'b LogicalExpression<'a>) -> Option<&'b Expression<'a>> {
+    pub fn json_guarded_object_test<'b, 'a>(
+        &self,
+        l: &'b LogicalExpression<'a>,
+    ) -> Option<&'b Expression<'a>> {
         let (guard, test) = (&l.left, &l.right);
         let x = match guard.without_parentheses() {
             Expression::Identifier(_) if l.operator == LogicalOperator::And => guard,
@@ -450,7 +457,8 @@ impl Tr<'_> {
             && exits(&s.consequent)
             && let Expression::UnaryExpression(n) = s.test.without_parentheses()
             && n.operator == UnaryOperator::LogicalNot
-            && let Some(Expression::Identifier(x)) = is_array_test(&n.argument).map(|e| e.without_parentheses())
+            && let Some(Expression::Identifier(x)) =
+                is_array_test(&n.argument).map(|e| e.without_parentheses())
             && x.name == id.name
         {
             let value = self.json_as(init, kind, "array");
