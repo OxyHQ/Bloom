@@ -1,10 +1,26 @@
-// A VirtualList's row closure is handed FlashList's `{ item, index }`: `row.item` is the item.
+// A VirtualList's row. Swift's trailing form is handed the item (`{ person in … }`), and with
+// `.enumerated()` its index too; a row closure passed as the argument is handed FlashList's
+// `{ item, index }` (`row.item`), as a function value or TS's `renderItem` is.
 public struct Person: Identifiable {
   public let id: String
   public let name: String
 }
 
 public struct People: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people) { person in Text(person.name) }
+  }
+}
+
+public struct NumberedPeople: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people.enumerated()) { i, person in Text("\(i + 1). \(person.name)") }
+  }
+}
+
+public struct RowPeople: View {
   let people: [Person]
   var body: some View {
     VirtualList(people, { row in Text("\(row.index + 1). \(row.item.name)") })
