@@ -20,6 +20,7 @@
 [
   "!"
   "!="
+  "!=="
   "%"
   "&&"
   "*"
@@ -37,6 +38,7 @@
   "<="
   "="
   "=="
+  "==="
   "=>"
   ">"
   ">="
@@ -186,7 +188,18 @@
 (for_statement
   "in" @keyword.repeat)
 
-(control_transfer_statement) @keyword.repeat
+(control_transfer_statement
+  [
+    "break"
+    "continue"
+  ] @keyword.repeat)
+
+; `outer: for …` and `break outer`: a loop's label.
+(labeled_statement
+  label: (identifier) @label)
+
+(control_transfer_statement
+  label: (identifier) @label)
 
 [
   "try"

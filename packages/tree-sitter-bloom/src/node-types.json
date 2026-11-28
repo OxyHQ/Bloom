@@ -290,11 +290,19 @@
         "named": true
       },
       {
+        "type": "labeled_statement",
+        "named": true
+      },
+      {
         "type": "let_declaration",
         "named": true
       },
       {
         "type": "return_statement",
+        "named": true
+      },
+      {
+        "type": "state_statement",
         "named": true
       },
       {
@@ -317,6 +325,10 @@
     "subtypes": [
       {
         "type": "array_type",
+        "named": true
+      },
+      {
+        "type": "composition_type",
         "named": true
       },
       {
@@ -525,6 +537,10 @@
             "named": false
           },
           {
+            "type": "!==",
+            "named": false
+          },
+          {
             "type": "%",
             "named": false
           },
@@ -566,6 +582,10 @@
           },
           {
             "type": "==",
+            "named": false
+          },
+          {
+            "type": "===",
             "named": false
           },
           {
@@ -953,10 +973,20 @@
     "fields": {
       "name": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "_type",
             "named": true
           }
         ]
@@ -974,9 +1004,35 @@
     }
   },
   {
+    "type": "composition_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "control_transfer_statement",
     "named": true,
-    "fields": {}
+    "fields": {
+      "label": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "default_modifier",
@@ -2179,6 +2235,36 @@
     }
   },
   {
+    "type": "labeled_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "for_statement",
+            "named": true
+          },
+          {
+            "type": "while_statement",
+            "named": true
+          }
+        ]
+      },
+      "label": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "let_declaration",
     "named": true,
     "fields": {
@@ -3154,6 +3240,25 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "state_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attribute",
+          "named": true
+        },
+        {
+          "type": "var_declaration",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -4221,6 +4326,10 @@
     "named": false
   },
   {
+    "type": "!==",
+    "named": false
+  },
+  {
     "type": "\"",
     "named": false
   },
@@ -4330,6 +4439,10 @@
   },
   {
     "type": "==",
+    "named": false
+  },
+  {
+    "type": "===",
     "named": false
   },
   {

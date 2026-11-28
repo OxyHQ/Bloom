@@ -49,6 +49,36 @@ pub const KEYWORDS: &[&str] = &[
     "true", "type", "var", "view", "while",
 ];
 
+/// The 2.0 words that are keywords where they stand but names elsewhere (Swift's contextual
+/// keywords): what an editor offers and highlights beside `KEYWORDS`.
+pub const CONTEXTUAL_KEYWORDS: &[&str] = &[
+    "actor",
+    "any",
+    "break",
+    "catch",
+    "class",
+    "continue",
+    "do",
+    "extension",
+    "fileprivate",
+    "final",
+    "func",
+    "guard",
+    "init",
+    "internal",
+    "private",
+    "protocol",
+    "public",
+    "rethrows",
+    "self",
+    "some",
+    "static",
+    "switch",
+    "throw",
+    "throws",
+    "try",
+];
+
 impl Kw {
     pub fn from_word(word: &str) -> Option<Kw> {
         Some(match word {

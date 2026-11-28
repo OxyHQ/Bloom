@@ -106,3 +106,22 @@ let j: Foreign<"ReturnType<typeof setTimeout>"> = t
           (string_literal
             (string_content)))))
     (identifier)))
+
+================================================================================
+A protocol composition
+================================================================================
+
+public type NamedCounted = Named & Counted
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (typealias_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (composition_type
+      (user_type
+        (type_identifier))
+      (user_type
+        (type_identifier)))))

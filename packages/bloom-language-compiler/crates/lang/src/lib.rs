@@ -52,6 +52,7 @@ pub use diagnostic::{Diagnostic, Label, Severity};
 
 /// The language's keywords (spec section 2), for editors and highlighters.
 pub const KEYWORDS: &[&str] = lexer::KEYWORDS;
+pub const CONTEXTUAL_KEYWORDS: &[&str] = lexer::CONTEXTUAL_KEYWORDS;
 
 /// What a compile needs from its host. Small on purpose.
 #[derive(Debug, Clone, Default)]
