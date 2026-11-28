@@ -1,0 +1,30 @@
+// Reference types: an `@Observable final class` with `init` and `private(set)`.
+public struct Item: Equatable {
+  public let id: String
+  public var done: Bool
+}
+
+@Observable
+public final class TodoModel {
+  public private(set) var items: [Item] = []
+  public var filter = ""
+  private let owner: String
+
+  public init(owner: String) {
+    self.owner = owner
+  }
+
+  public var isEmpty: Bool { items.isEmpty }
+
+  public func add(_ id: String) {
+    items = items.appending(Item(id: id, done: false))
+  }
+
+  public func toggle(_ id: String) {
+    for (i, item) in items.enumerated() {
+      if item.id == id {
+        items[i].done = !item.done
+      }
+    }
+  }
+}

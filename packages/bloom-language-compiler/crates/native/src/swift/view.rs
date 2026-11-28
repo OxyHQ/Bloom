@@ -50,10 +50,14 @@ impl Emitter<'_> {
 
     /// `struct PostRow: View { … }`: its members as written, with an `init` of its props.
     fn struct_view(&mut self, vis: &str, v: &ViewDecl, surface: &TypeBody) -> String {
-        let generics = self.generics(&v.generics, &v.constraints);
         let conforms = self.conformances(&surface.conformances);
-        let mut out = format!("{vis}struct {}{generics}: {} {{\n", kw(&v.name.name), conforms.join(", "));
+        let mut out = String::new();
+        // `let content: View`: children, a type parameter of the view (`Content: View`) its
+        // `init` takes as a `@ViewBuilder` closure.
+        let mut children: Vec<(String, String, bool)> = Vec::new();
+        let mut builders: Vec<(String, String, String)> = Vec::new();
         let saved = self.enter_type(&v.name.name, vis == "public ", &conforms);
+        let was_in_view = std::mem::replace(&mut self.in_view, true);
         let mut props: Vec<Param> = Vec::new();
         let has_init = surface.members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"));
         for m in &surface.members {
@@ -76,6 +80,18 @@ impl Emitter<'_> {
                         }
                         Some(attr_name @ ("Environment" | "Query")) => {
                             let a = attr.expect("an attribute");
+                            // Bloom's built-in environment values are BloomUI's (`\.disabled` is
+                            // `\.bloomDisabled`: SwiftUI's own `controlSize` is another type).
+                            let mut a = a.clone();
+                            for arg in &mut a.args {
+                                if let ExprKind::KeyPath { root: None, path } = &mut arg.value.kind
+                                    && let [only] = path.as_mut_slice()
+                                    && matches!(only.name.as_str(), "disabled" | "controlSize" | "buttonStyle")
+                                {
+                                    only.name = format!("bloom{}", crate::upper_first(&only.name));
+                                }
+                            }
+                            let a = &a;
                             let args = self.args(&Call {
                                 callee: Box::new(Expr { id: ExprId(0), kind: ExprKind::Unit, span: a.span }),
                                 args: a.args.clone(),
@@ -101,6 +117,30 @@ impl Emitter<'_> {
                                 }
                             }
                         }
+                        // Children: a view-typed prop.
+                        None if ty.as_ref().and_then(view_prop).is_some() => {
+                            let optional = ty.as_ref().and_then(view_prop).unwrap_or(false);
+                            let mut param = crate::upper_first(&name.name);
+                            if param == v.name.name {
+                                param.push_str("Content");
+                            }
+                            let q = if optional { "?" } else { "" };
+                            let _ = writeln!(out, "  {mvis}let {}: {param}{q}", kw(&name.name));
+                            children.push((name.name.clone(), param, optional));
+                        }
+                        // `let rows: (Post) -> View`: a view builder the view calls, generic too.
+                        None if matches!(ty.as_ref().map(|t| &t.kind), Some(TypeKind::Fn { ret, .. }) if view_prop(ret) == Some(false)) => {
+                            let Some(TypeKind::Fn { params, is_async, .. }) = ty.as_ref().map(|t| &t.kind) else { unreachable!() };
+                            let mut param = crate::upper_first(&name.name);
+                            if param == v.name.name {
+                                param.push_str("Content");
+                            }
+                            let args: Vec<String> = params.iter().map(|p| self.ty(p)).collect();
+                            let a = if *is_async { " async" } else { "" };
+                            let fn_ty = format!("({}){a} -> {param}", args.join(", "));
+                            let _ = writeln!(out, "  {mvis}let {}: {fn_ty}", kw(&name.name));
+                            builders.push((name.name.clone(), param, fn_ty));
+                        }
                         // A prop.
                         None => {
                             let word = if *mutable { "var" } else { "let" };
@@ -120,17 +160,40 @@ impl Emitter<'_> {
                 _ => out.push_str(&self.type_member(m, 1, false)),
             }
         }
-        if !has_init && (!props.is_empty() || !vis.is_empty()) {
-            out.push_str(&self.view_init(vis, &props));
+        if !has_init && (!props.is_empty() || !vis.is_empty() || !children.is_empty() || !builders.is_empty()) {
+            self.view_builders = builders.clone();
+            out.push_str(&self.view_init(vis, &props, &children, None));
+            for (i, (_, param, optional)) in children.iter().enumerate() {
+                if *optional {
+                    out.push_str(&self.view_init(vis, &props, &children, Some((i, param))));
+                }
+            }
         }
         out.push_str("}\n");
         self.witness_names = saved;
-        out
+        self.in_view = was_in_view;
+        let mut generics = self.generics(&v.generics, &v.constraints);
+        self.view_builders.clear();
+        if !children.is_empty() || !builders.is_empty() {
+            let own: Vec<String> = children
+                .iter()
+                .map(|(_, p, _)| format!("{p}: View"))
+                .chain(builders.iter().map(|(_, p, _)| format!("{p}: View")))
+                .collect();
+            generics = if generics.is_empty() {
+                format!("<{}>", own.join(", "))
+            } else {
+                format!("{}, {}>", generics.trim_end_matches('>'), own.join(", "))
+            };
+        }
+        format!("{vis}struct {}{generics}: {} {{\n{out}", kw(&v.name.name), conforms.join(", "))
     }
 
-    /// The view's `init`: each prop labelled by its name, a `@Binding`'s through `_name`.
-    fn view_init(&mut self, vis: &str, props: &[Param]) -> String {
-        let params: Vec<String> = props
+    /// The view's `init`: each prop labelled by its name, a `@Binding`'s through `_name`, its
+    /// children last as `@ViewBuilder` closures. `without`: the `init` that leaves out the
+    /// optional children `i` (`where Children == EmptyView`).
+    fn view_init(&mut self, vis: &str, props: &[Param], children: &[(String, String, bool)], without: Option<(usize, &String)>) -> String {
+        let mut params: Vec<String> = props
             .iter()
             .map(|p| {
                 let ty = self.param_type(&p.ty);
@@ -138,7 +201,28 @@ impl Emitter<'_> {
                 format!("{}: {ty}{default}", kw(&p.name.name))
             })
             .collect();
-        let mut out = format!("\n  {vis}init({}) {{\n", params.join(", "));
+        for (i, (name, param, _)) in children.iter().enumerate() {
+            if without.is_some_and(|(w, _)| w == i) {
+                continue;
+            }
+            params.push(format!("@ViewBuilder {}: () -> {param}", kw(name)));
+        }
+        for (name, _, fn_ty) in self.view_builders.clone() {
+            params.push(format!("@ViewBuilder {}: @escaping {fn_ty}", kw(&name)));
+        }
+        let clause = without.map(|(_, p)| format!(" where {p} == EmptyView")).unwrap_or_default();
+        let mut out = format!("\n  {vis}init({}){clause} {{\n", params.join(", "));
+        for (name, _, _) in self.view_builders.clone() {
+            let _ = writeln!(out, "    self.{n} = {n}", n = kw(&name));
+        }
+        for (i, (name, _, _)) in children.iter().enumerate() {
+            let n = kw(name);
+            if without.is_some_and(|(w, _)| w == i) {
+                let _ = writeln!(out, "    self.{n} = nil");
+            } else {
+                let _ = writeln!(out, "    self.{n} = {n}()");
+            }
+        }
         for p in props {
             let n = kw(&p.name.name);
             if p.rest {
@@ -216,7 +300,7 @@ impl Emitter<'_> {
         }
         let _ = write!(out, "\n  var body: some View {{\n{body}\n  }}\n");
         if !props.is_empty() || !vis.is_empty() {
-            out.push_str(&self.view_init(vis, &props));
+            out.push_str(&self.view_init(vis, &props, &[], None));
         }
         out.push_str("}\n");
         out
@@ -279,7 +363,7 @@ impl Emitter<'_> {
         let (mut own, mut rest) = (Vec::new(), Vec::new());
         for (name, call, span) in &chain.mods {
             let is_own = ctor.as_deref().is_some_and(|c| nodes::is_own(c, &name.name));
-            let text = self.modifier(name, call, *span, indent);
+            let text = self.modifier(name, call, *span, indent, is_own);
             if is_own { own.push(text) } else { rest.push(text) }
         }
         let mut out = base;
@@ -289,7 +373,7 @@ impl Emitter<'_> {
         out
     }
 
-    fn modifier(&mut self, name: &Ident, call: &Call, span: Span, indent: usize) -> String {
+    fn modifier(&mut self, name: &Ident, call: &Call, span: Span, indent: usize, own: bool) -> String {
         let args: Vec<String> = call
             .args
             .iter()
@@ -309,7 +393,7 @@ impl Emitter<'_> {
             None => String::new(),
         };
         let parens = if args.is_empty() && call.trailing.is_some() && !call.parens { String::new() } else { format!("({})", args.join(", ")) };
-        format!("\n{}.{}{parens}{trailing}", pad(indent), kw(&name.name))
+        format!("\n{}.{}{parens}{trailing}", pad(indent), swift_modifier(&name.name, own))
     }
 
     /// An argument that may be a view (`.trailing(Toggle(…).label(t))`): drawn as one.
@@ -363,6 +447,7 @@ impl Emitter<'_> {
     /// Whether a view of the program takes children (a `content` prop of a builder type).
     fn view_has_children(&self, name: &str) -> bool {
         self.decls.views.get(name).is_some_and(|props| props.iter().any(|p| p.name == "content" || p.name == "children"))
+            || self.takes_view_children(name)
     }
 
     /// `{ route in switch route { … } }`: a closure that draws.
@@ -372,6 +457,28 @@ impl Emitter<'_> {
         let head = if params.is_empty() || shorthand { String::new() } else { format!(" {} in", params.join(", ")) };
         let body = self.view_block(&c.body, indent + 1);
         format!("{{{head}\n{body}{}}}", pad(indent))
+    }
+}
+
+/// A modifier's Swift name: SwiftUI's for an effect, `bloom<Name>` for a universal modifier
+/// (kept out of SwiftUI's overloads of `padding`, `frame`, `font`…), whether or not the node
+/// gives it its own meaning (then it is the node's method of that name: `GroupedSection`'s
+/// `bloomTitle`), and the spec's name for a node's own modifier (its method in BloomUI).
+fn swift_modifier(name: &str, own: bool) -> String {
+    if nodes::is_effect(name) {
+        return name.to_string();
+    }
+    let spec = nodes::spec_name(name);
+    let _ = own;
+    if nodes::is_universal(name) { format!("bloom{}", crate::upper_first(spec)) } else { kw(spec) }
+}
+
+/// Whether a prop's type is a view (`View`), and whether it is optional (`View?`).
+fn view_prop(t: &TypeExpr) -> Option<bool> {
+    match &t.kind {
+        TypeKind::Named { name, args } if name.name == "View" && args.is_empty() => Some(false),
+        TypeKind::Optional(inner) => view_prop(inner).filter(|o| !o).map(|_| true),
+        _ => None,
     }
 }
 

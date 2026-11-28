@@ -7,7 +7,7 @@
 
 public enum Tokens {
   /// `accentTone`: 9 token(s).
-  public enum AccentTone: String, Sendable, CaseIterable {
+  public enum AccentTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case primary = "primary"
     case vivid = "vivid"
@@ -17,71 +17,101 @@ public enum Tokens {
     case warning = "warning"
     case error = "error"
     case info = "info"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `accessibilityChecked`: 1 token(s).
-  public enum AccessibilityChecked: String, Sendable, CaseIterable {
+  public enum AccessibilityChecked: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case mixed = "mixed"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .mixed }
   }
 
   /// `actionPlacement`: 3 token(s).
-  public enum ActionPlacement: String, Sendable, CaseIterable {
+  public enum ActionPlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `activityFeedGrouping`: 2 token(s).
-  public enum ActivityFeedGrouping: String, Sendable, CaseIterable {
+  public enum ActivityFeedGrouping: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case day = "day"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .day }
   }
 
   /// `admonitionStyle`: 5 token(s).
-  public enum AdmonitionStyle: String, Sendable, CaseIterable {
+  public enum AdmonitionStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case info = "info"
     case tip = "tip"
     case warning = "warning"
     case error = "error"
     case apology = "apology"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .info }
   }
 
   /// `agentMood`: 2 token(s).
-  public enum AgentMood: String, Sendable, CaseIterable {
+  public enum AgentMood: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case neutral = "neutral"
     case sad = "sad"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .neutral }
   }
 
   /// `agentThinkingStyle`: 4 token(s).
-  public enum AgentThinkingStyle: String, Sendable, CaseIterable {
+  public enum AgentThinkingStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case wave = "wave"
     case spin = "spin"
     case stars = "stars"
     case infinity = "infinity"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .wave }
   }
 
   /// `agentThinkingTone`: 4 token(s).
-  public enum AgentThinkingTone: String, Sendable, CaseIterable {
+  public enum AgentThinkingTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case subtle = "subtle"
     case `default` = "default"
     case primary = "primary"
     case accent = "accent"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .subtle }
   }
 
   /// `aiChatLineTone`: 2 token(s).
-  public enum AiChatLineTone: String, Sendable, CaseIterable {
+  public enum AiChatLineTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case primary = "primary"
     case secondary = "secondary"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .primary }
   }
 
   /// `alertDefault`: 2 token(s).
-  public enum AlertDefault: String, Sendable, CaseIterable {
+  public enum AlertDefault: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case confirm = "confirm"
     case cancel = "cancel"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .confirm }
   }
 
   /// `alignment`: 5 token(s).
-  public enum Alignment: String, Sendable, CaseIterable {
+  public enum Alignment: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
@@ -92,10 +122,13 @@ public enum Tokens {
     public static let bottom: Alignment = .end
     public static let trailing: Alignment = .end
     public static let firstTextBaseline: Alignment = .baseline
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `anchor`: 9 token(s).
-  public enum Anchor: String, Sendable, CaseIterable {
+  public enum Anchor: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case center = "center"
     case top = "top"
     case bottom = "bottom"
@@ -105,10 +138,13 @@ public enum Tokens {
     case topTrailing = "top-trailing"
     case bottomLeading = "bottom-leading"
     case bottomTrailing = "bottom-trailing"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .center }
   }
 
   /// `appColorName`: 149 token(s).
-  public enum AppColorName: String, Sendable, CaseIterable {
+  public enum AppColorName: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case transparent = "transparent"
     case aliceblue = "aliceblue"
     case antiquewhite = "antiquewhite"
@@ -258,86 +294,122 @@ public enum Tokens {
     case whitesmoke = "whitesmoke"
     case yellow = "yellow"
     case yellowgreen = "yellowgreen"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .transparent }
   }
 
   /// `appearance`: 4 token(s).
-  public enum Appearance: String, Sendable, CaseIterable {
+  public enum Appearance: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case subtle = "subtle"
     case outline = "outline"
     case plain = "plain"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `areaVariant`: 3 token(s).
-  public enum AreaVariant: String, Sendable, CaseIterable {
+  public enum AreaVariant: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case stacked = "stacked"
     case overlap = "overlap"
     case percent = "percent"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .stacked }
   }
 
   /// `arrowsPlacement`: 3 token(s).
-  public enum ArrowsPlacement: String, Sendable, CaseIterable {
+  public enum ArrowsPlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case header = "header"
     case overlay = "overlay"
     case footer = "footer"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .header }
   }
 
   /// `arrowsVisibility`: 2 token(s).
-  public enum ArrowsVisibility: String, Sendable, CaseIterable {
+  public enum ArrowsVisibility: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case always = "always"
     case hover = "hover"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .always }
   }
 
   /// `attachmentLayout`: 2 token(s).
-  public enum AttachmentLayout: String, Sendable, CaseIterable {
+  public enum AttachmentLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case grid = "grid"
     case list = "list"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .grid }
   }
 
   /// `autocapitalize`: 4 token(s).
-  public enum Autocapitalize: String, Sendable, CaseIterable {
+  public enum Autocapitalize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case sentences = "sentences"
     case words = "words"
     case characters = "characters"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `avatarColor`: 4 token(s).
-  public enum AvatarColor: String, Sendable, CaseIterable {
+  public enum AvatarColor: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case neutral = "neutral"
     case blue = "blue"
     case lime = "lime"
     case pink = "pink"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .neutral }
   }
 
   /// `avatarLayout`: 4 token(s).
-  public enum AvatarLayout: String, Sendable, CaseIterable {
+  public enum AvatarLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case stack = "stack"
     case row = "row"
     case cluster = "cluster"
     case conversation = "conversation"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .stack }
   }
 
   /// `avatarMotion`: 3 token(s).
-  public enum AvatarMotion: String, Sendable, CaseIterable {
+  public enum AvatarMotion: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case always = "always"
     case never = "never"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `avatarOverflow`: 2 token(s).
-  public enum AvatarOverflow: String, Sendable, CaseIterable {
+  public enum AvatarOverflow: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case count = "count"
     case truncate = "truncate"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .count }
   }
 
   /// `avatarSize`: 5 token(s).
-  public enum AvatarSize: String, Sendable, CaseIterable {
+  public enum AvatarSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xs = "xs"
     case sm = "sm"
     case md = "md"
     case lg = "lg"
     case xl = "xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xs }
 
     /// The token's value in points (the spec's `scales.avatarSize`).
     public var value: Double {
@@ -352,39 +424,51 @@ public enum Tokens {
   }
 
   /// `axis`: 2 token(s).
-  public enum Axis: String, Sendable, CaseIterable {
+  public enum Axis: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case horizontal = "horizontal"
     case vertical = "vertical"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .horizontal }
   }
 
   /// `badgePlacement`: 4 token(s).
-  public enum BadgePlacement: String, Sendable, CaseIterable {
+  public enum BadgePlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case topRight = "top-right"
     case topLeft = "top-left"
     case bottomRight = "bottom-right"
     case bottomLeft = "bottom-left"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .topRight }
   }
 
   /// `badgeSize`: 6 token(s).
-  public enum BadgeSize: String, Sendable, CaseIterable {
+  public enum BadgeSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xs = "xs"
     case sm = "sm"
     case md = "md"
     case lg = "lg"
     case labelSmall = "label-small"
     case labelMedium = "label-medium"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xs }
   }
 
   /// `badgeStyle`: 4 token(s).
-  public enum BadgeStyle: String, Sendable, CaseIterable {
+  public enum BadgeStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case subtle = "subtle"
     case outlined = "outlined"
     case onMedia = "onMedia"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `blend`: 17 token(s).
-  public enum Blend: String, Sendable, CaseIterable {
+  public enum Blend: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case normal = "normal"
     case multiply = "multiply"
     case screen = "screen"
@@ -402,10 +486,13 @@ public enum Tokens {
     case color = "color"
     case luminosity = "luminosity"
     case plusLighter = "plus-lighter"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .normal }
   }
 
   /// `borderEdge`: 7 token(s).
-  public enum BorderEdge: String, Sendable, CaseIterable {
+  public enum BorderEdge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case all = "all"
     case top = "top"
     case bottom = "bottom"
@@ -413,20 +500,29 @@ public enum Tokens {
     case trailing = "trailing"
     case left = "left"
     case right = "right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .all }
   }
 
   /// `borderStyle`: 3 token(s).
-  public enum BorderStyle: String, Sendable, CaseIterable {
+  public enum BorderStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case dashed = "dashed"
     case dotted = "dotted"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `borderWidth`: 3 token(s).
-  public enum BorderWidth: String, Sendable, CaseIterable {
+  public enum BorderWidth: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case hairline = "hairline"
     case thin = "thin"
     case thick = "thick"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .hairline }
 
     /// The token's value in points (the spec's `scales.borderWidth`); `nil` for a token with no fixed value.
     public var value: Double? {
@@ -439,61 +535,82 @@ public enum Tokens {
   }
 
   /// `buttonMaterial`: 4 token(s).
-  public enum ButtonMaterial: String, Sendable, CaseIterable {
+  public enum ButtonMaterial: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case surface = "surface"
     case flat = "flat"
     case shared = "shared"
     case lens = "lens"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .surface }
   }
 
   /// `buttonShape`: 3 token(s).
-  public enum ButtonShape: String, Sendable, CaseIterable {
+  public enum ButtonShape: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case circle = "circle"
     case pill = "pill"
     case fit = "fit"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .circle }
   }
 
   /// `buttonStyle`: 6 token(s).
-  public enum ButtonStyle: String, Sendable, CaseIterable {
+  public enum ButtonStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case subtle = "subtle"
     case outline = "outline"
     case plain = "plain"
     case glass = "glass"
     case glassProminent = "glassProminent"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `callControlSize`: 3 token(s).
-  public enum CallControlSize: String, Sendable, CaseIterable {
+  public enum CallControlSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `callMode`: 2 token(s).
-  public enum CallMode: String, Sendable, CaseIterable {
+  public enum CallMode: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case voice = "voice"
     case video = "video"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .voice }
   }
 
   /// `cardBorder`: 4 token(s).
-  public enum CardBorder: String, Sendable, CaseIterable {
+  public enum CardBorder: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case hairline = "hairline"
     case thin = "thin"
     case medium = "medium"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `cardElevation`: 4 token(s).
-  public enum CardElevation: String, Sendable, CaseIterable {
+  public enum CardElevation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case s = "s"
     case m = "m"
     case floating = "floating"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `cardRadius`: 12 token(s).
-  public enum CardRadius: String, Sendable, CaseIterable {
+  public enum CardRadius: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -506,48 +623,69 @@ public enum Tokens {
     case full = "full"
     case panel = "panel"
     case concentric = "concentric"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `carouselAlign`: 2 token(s).
-  public enum CarouselAlign: String, Sendable, CaseIterable {
+  public enum CarouselAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `chartShape`: 2 token(s).
-  public enum ChartShape: String, Sendable, CaseIterable {
+  public enum ChartShape: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case curved = "curved"
     case sharp = "sharp"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .curved }
   }
 
   /// `chatBackgroundStyle`: 4 token(s).
-  public enum ChatBackgroundStyle: String, Sendable, CaseIterable {
+  public enum ChatBackgroundStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case pattern = "pattern"
     case gradient = "gradient"
     case image = "image"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `chatDateHeaderStyle`: 2 token(s).
-  public enum ChatDateHeaderStyle: String, Sendable, CaseIterable {
+  public enum ChatDateHeaderStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case floating = "floating"
     case inline = "inline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .floating }
   }
 
   /// `chatInfoPanelStyle`: 2 token(s).
-  public enum ChatInfoPanelStyle: String, Sendable, CaseIterable {
+  public enum ChatInfoPanelStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case pane = "pane"
     case screen = "screen"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .pane }
   }
 
   /// `chatStatusTone`: 2 token(s).
-  public enum ChatStatusTone: String, Sendable, CaseIterable {
+  public enum ChatStatusTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case muted = "muted"
     case accent = "accent"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .muted }
   }
 
   /// `chipHue`: 12 token(s).
-  public enum ChipHue: String, Sendable, CaseIterable {
+  public enum ChipHue: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case lime = "lime"
     case rose = "rose"
     case yellow = "yellow"
@@ -560,47 +698,65 @@ public enum Tokens {
     case neutral = "neutral"
     case gray = "gray"
     case soft = "soft"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .lime }
   }
 
   /// `chipSize`: 6 token(s).
-  public enum ChipSize: String, Sendable, CaseIterable {
+  public enum ChipSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xs = "xs"
     case sm = "sm"
     case md = "md"
     case lg = "lg"
     case xl = "xl"
     case xxl = "2xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xs }
   }
 
   /// `chipStyle`: 5 token(s).
-  public enum ChipStyle: String, Sendable, CaseIterable {
+  public enum ChipStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case subtle = "subtle"
     case outline = "outline"
     case plain = "plain"
     case inverted = "inverted"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `choiceListStyle`: 2 token(s).
-  public enum ChoiceListStyle: String, Sendable, CaseIterable {
+  public enum ChoiceListStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case list = "list"
     case picker = "picker"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .list }
   }
 
   /// `chromePlacement`: 2 token(s).
-  public enum ChromePlacement: String, Sendable, CaseIterable {
+  public enum ChromePlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case inset = "inset"
     case overlay = "overlay"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .inset }
   }
 
   /// `codeLinesSize`: 2 token(s).
-  public enum CodeLinesSize: String, Sendable, CaseIterable {
+  public enum CodeLinesSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `color`: 32 token(s).
-  public enum Color: String, Sendable, CaseIterable {
+  public enum Color: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case foreground = "foreground"
     case muted = "muted"
     case textTertiary = "textTertiary"
@@ -633,10 +789,52 @@ public enum Tokens {
     case errorText = "errorText"
     case infoText = "infoText"
     case surfaceFill = "surfaceFill"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .foreground }
+
+    /// The theme colour this role paints from (`ThemeColors`' key, the spec's `colors`);
+    /// `nil` for a colour that is not the theme's (the surface fill a container publishes).
+    public var themeKey: String? {
+      switch self {
+      case .foreground: "text"
+      case .muted: "textSecondary"
+      case .textTertiary: "textTertiary"
+      case .primary: "primary"
+      case .primaryText: "primarySubtleForeground"
+      case .onPrimary: "primaryForeground"
+      case .secondary: "secondary"
+      case .onSecondary: "secondaryForeground"
+      case .tertiary: "tertiary"
+      case .onTertiary: "tertiaryForeground"
+      case .background: "background"
+      case .surface: "backgroundSecondary"
+      case .popover: "backgroundTertiary"
+      case .border: "border"
+      case .input: "borderLight"
+      case .success: "success"
+      case .successText: "successSubtleForeground"
+      case .warning: "warning"
+      case .warningText: "warningSubtleForeground"
+      case .error: "error"
+      case .info: "info"
+      case .mutedFill: "contrast50"
+      case .card: "card"
+      case .destructive: "destructive"
+      case .white: "white"
+      case .black: "black"
+      case .transparent: "transparent"
+      case .onSurface: "surfaceForeground"
+      case .accent: "accent"
+      case .errorText: "errorSubtleForeground"
+      case .infoText: "infoSubtleForeground"
+      case .surfaceFill: "surfaceFill"
+      }
+    }
   }
 
   /// `colorPreset`: 65 token(s).
-  public enum ColorPreset: String, Sendable, CaseIterable {
+  public enum ColorPreset: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case teal = "teal"
     case blue = "blue"
     case green = "green"
@@ -702,10 +900,13 @@ public enum Tokens {
     case charcoalLime = "charcoal-lime"
     case pewterCurrent = "pewter-current"
     case gemies = "gemies"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .teal }
   }
 
   /// `colorRole`: 32 token(s).
-  public enum ColorRole: String, Sendable, CaseIterable {
+  public enum ColorRole: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case foreground = "foreground"
     case muted = "muted"
     case textTertiary = "textTertiary"
@@ -738,16 +939,61 @@ public enum Tokens {
     case errorText = "errorText"
     case infoText = "infoText"
     case surfaceFill = "surfaceFill"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .foreground }
+
+    /// The theme colour this role paints from (`ThemeColors`' key, the spec's `colors`);
+    /// `nil` for a colour that is not the theme's (the surface fill a container publishes).
+    public var themeKey: String? {
+      switch self {
+      case .foreground: "text"
+      case .muted: "textSecondary"
+      case .textTertiary: "textTertiary"
+      case .primary: "primary"
+      case .primaryText: "primarySubtleForeground"
+      case .onPrimary: "primaryForeground"
+      case .secondary: "secondary"
+      case .onSecondary: "secondaryForeground"
+      case .tertiary: "tertiary"
+      case .onTertiary: "tertiaryForeground"
+      case .background: "background"
+      case .surface: "backgroundSecondary"
+      case .popover: "backgroundTertiary"
+      case .border: "border"
+      case .input: "borderLight"
+      case .success: "success"
+      case .successText: "successSubtleForeground"
+      case .warning: "warning"
+      case .warningText: "warningSubtleForeground"
+      case .error: "error"
+      case .info: "info"
+      case .mutedFill: "contrast50"
+      case .card: "card"
+      case .destructive: "destructive"
+      case .white: "white"
+      case .black: "black"
+      case .transparent: "transparent"
+      case .onSurface: "surfaceForeground"
+      case .accent: "accent"
+      case .errorText: "errorSubtleForeground"
+      case .infoText: "infoSubtleForeground"
+      case .surfaceFill: "surfaceFill"
+      }
+    }
   }
 
   /// `colorScopeMode`: 2 token(s).
-  public enum ColorScopeMode: String, Sendable, CaseIterable {
+  public enum ColorScopeMode: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case light = "light"
     case dark = "dark"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .light }
   }
 
   /// `columnWidth`: 12 token(s).
-  public enum ColumnWidth: String, Sendable, CaseIterable {
+  public enum ColumnWidth: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -760,21 +1006,30 @@ public enum Tokens {
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
     case fit = "fit"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `columnWidthExtra`: 1 token(s).
-  public enum ColumnWidthExtra: String, Sendable, CaseIterable {
+  public enum ColumnWidthExtra: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case fit = "fit"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .fit }
   }
 
   /// `composerButtonTone`: 2 token(s).
-  public enum ComposerButtonTone: String, Sendable, CaseIterable {
+  public enum ComposerButtonTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case accent = "accent"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `condition`: 14 token(s).
-  public enum Condition: String, Sendable, CaseIterable {
+  public enum Condition: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
@@ -789,31 +1044,43 @@ public enum Tokens {
     case native = "native"
     case ios = "ios"
     case android = "android"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `contentAlignment`: 2 token(s).
-  public enum ContentAlignment: String, Sendable, CaseIterable {
+  public enum ContentAlignment: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `contentFit`: 5 token(s).
-  public enum ContentFit: String, Sendable, CaseIterable {
+  public enum ContentFit: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case cover = "cover"
     case contain = "contain"
     case fill = "fill"
     case none = "none"
     case scaleDown = "scale-down"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .cover }
   }
 
   /// `contentTransition`: 2 token(s).
-  public enum ContentTransition: String, Sendable, CaseIterable {
+  public enum ContentTransition: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case roll = "roll"
     case numeric = "numeric"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .roll }
   }
 
   /// `contentType`: 14 token(s).
-  public enum ContentType: String, Sendable, CaseIterable {
+  public enum ContentType: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case off = "off"
     case email = "email"
     case username = "username"
@@ -828,18 +1095,24 @@ public enum Tokens {
     case postalCode = "postal-code"
     case streetAddress = "street-address"
     case url = "url"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .off }
   }
 
   /// `controlSize`: 4 token(s).
-  public enum ControlSize: String, Sendable, CaseIterable {
+  public enum ControlSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xs = "xs"
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xs }
   }
 
   /// `corner`: 12 token(s).
-  public enum Corner: String, Sendable, CaseIterable {
+  public enum Corner: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -852,6 +1125,9 @@ public enum Tokens {
     case full = "full"
     case concentric = "concentric"
     case infinite = "infinite"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
 
     /// The token's value in points (the spec's `scales.corner`); `nil` for a token with no fixed value.
     public var value: Double? {
@@ -872,19 +1148,25 @@ public enum Tokens {
   }
 
   /// `cornerCurve`: 2 token(s).
-  public enum CornerCurve: String, Sendable, CaseIterable {
+  public enum CornerCurve: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case round = "round"
     case smooth = "smooth"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .round }
   }
 
   /// `cornerExtra`: 2 token(s).
-  public enum CornerExtra: String, Sendable, CaseIterable {
+  public enum CornerExtra: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case concentric = "concentric"
     case infinite = "infinite"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .concentric }
   }
 
   /// `cornerRadius`: 11 token(s).
-  public enum CornerRadius: String, Sendable, CaseIterable {
+  public enum CornerRadius: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -896,10 +1178,13 @@ public enum Tokens {
     case xxxl = "3xl"
     case full = "full"
     case infinite = "infinite"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `cornerSide`: 15 token(s).
-  public enum CornerSide: String, Sendable, CaseIterable {
+  public enum CornerSide: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case all = "all"
     case top = "top"
     case bottom = "bottom"
@@ -915,10 +1200,13 @@ public enum Tokens {
     case topRight = "top-right"
     case bottomLeft = "bottom-left"
     case bottomRight = "bottom-right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .all }
   }
 
   /// `cursor`: 8 token(s).
-  public enum Cursor: String, Sendable, CaseIterable {
+  public enum Cursor: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case `default` = "default"
     case pointer = "pointer"
@@ -927,81 +1215,117 @@ public enum Tokens {
     case text = "text"
     case move = "move"
     case notAllowed = "not-allowed"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `dataTableStyle`: 2 token(s).
-  public enum DataTableStyle: String, Sendable, CaseIterable {
+  public enum DataTableStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case table = "table"
     case inset = "inset"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .table }
   }
 
   /// `dialogPlacement`: 6 token(s).
-  public enum DialogPlacement: String, Sendable, CaseIterable {
+  public enum DialogPlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case center = "center"
     case left = "left"
     case right = "right"
     case start = "start"
     case end = "end"
     case bottom = "bottom"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .center }
   }
 
   /// `directionsDensity`: 2 token(s).
-  public enum DirectionsDensity: String, Sendable, CaseIterable {
+  public enum DirectionsDensity: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case comfortable = "comfortable"
     case compact = "compact"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .comfortable }
   }
 
   /// `dismissIcon`: 2 token(s).
-  public enum DismissIcon: String, Sendable, CaseIterable {
+  public enum DismissIcon: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case close = "close"
     case unpin = "unpin"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .close }
   }
 
   /// `dividerAlign`: 3 token(s).
-  public enum DividerAlign: String, Sendable, CaseIterable {
+  public enum DividerAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `dividerStyle`: 3 token(s).
-  public enum DividerStyle: String, Sendable, CaseIterable {
+  public enum DividerStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case single = "single"
     case double = "double"
     case fill = "fill"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .single }
   }
 
   /// `dotsShape`: 2 token(s).
-  public enum DotsShape: String, Sendable, CaseIterable {
+  public enum DotsShape: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case pill = "pill"
     case dot = "dot"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .pill }
   }
 
   /// `dotsStyle`: 2 token(s).
-  public enum DotsStyle: String, Sendable, CaseIterable {
+  public enum DotsStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case onMedia = "onMedia"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `dragAction`: 3 token(s).
-  public enum DragAction: String, Sendable, CaseIterable {
+  public enum DragAction: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case copy = "copy"
     case move = "move"
     case link = "link"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .copy }
   }
 
   /// `dragIndicator`: 2 token(s).
-  public enum DragIndicator: String, Sendable, CaseIterable {
+  public enum DragIndicator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case visible = "visible"
     case hidden = "hidden"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .visible }
   }
 
   /// `duration`: 4 token(s).
-  public enum Duration: String, Sendable, CaseIterable {
+  public enum Duration: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case instant = "instant"
     case fast = "fast"
     case normal = "normal"
     case slow = "slow"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .instant }
 
     /// The token's value in points (the spec's `scales.duration`).
     public var value: Double {
@@ -1015,7 +1339,7 @@ public enum Tokens {
   }
 
   /// `edge`: 9 token(s).
-  public enum Edge: String, Sendable, CaseIterable {
+  public enum Edge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case all = "all"
     case horizontal = "horizontal"
     case vertical = "vertical"
@@ -1025,10 +1349,13 @@ public enum Tokens {
     case trailing = "trailing"
     case left = "left"
     case right = "right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .all }
   }
 
   /// `edgeDistance`: 11 token(s).
-  public enum EdgeDistance: String, Sendable, CaseIterable {
+  public enum EdgeDistance: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -1040,28 +1367,40 @@ public enum Tokens {
     case xxxl = "3xl"
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `emptyStateMedia`: 2 token(s).
-  public enum EmptyStateMedia: String, Sendable, CaseIterable {
+  public enum EmptyStateMedia: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case glyph = "glyph"
     case circle = "circle"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .glyph }
   }
 
   /// `emptyStateStyle`: 2 token(s).
-  public enum EmptyStateStyle: String, Sendable, CaseIterable {
+  public enum EmptyStateStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case comfortable = "comfortable"
     case compact = "compact"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .comfortable }
   }
 
   /// `engagementBarTone`: 2 token(s).
-  public enum EngagementBarTone: String, Sendable, CaseIterable {
+  public enum EngagementBarTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case onImage = "onImage"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `engagementTone`: 8 token(s).
-  public enum EngagementTone: String, Sendable, CaseIterable {
+  public enum EngagementTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case primary = "primary"
     case vivid = "vivid"
     case secondary = "secondary"
@@ -1070,72 +1409,102 @@ public enum Tokens {
     case warning = "warning"
     case error = "error"
     case info = "info"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .primary }
   }
 
   /// `expandableTextStyle`: 2 token(s).
-  public enum ExpandableTextStyle: String, Sendable, CaseIterable {
+  public enum ExpandableTextStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case below = "below"
     case inline = "inline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .below }
   }
 
   /// `fabShape`: 3 token(s).
-  public enum FabShape: String, Sendable, CaseIterable {
+  public enum FabShape: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case circle = "circle"
     case rounded = "rounded"
     case squircle = "squircle"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .circle }
   }
 
   /// `featureFilterStyle`: 2 token(s).
-  public enum FeatureFilterStyle: String, Sendable, CaseIterable {
+  public enum FeatureFilterStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case chips = "chips"
     case checkboxes = "checkboxes"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .chips }
   }
 
   /// `fileMessageStyle`: 2 token(s).
-  public enum FileMessageStyle: String, Sendable, CaseIterable {
+  public enum FileMessageStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case bubble = "bubble"
     case compact = "compact"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .bubble }
   }
 
   /// `filterTriggerSize`: 3 token(s).
-  public enum FilterTriggerSize: String, Sendable, CaseIterable {
+  public enum FilterTriggerSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `flex`: 4 token(s).
-  public enum Flex: String, Sendable, CaseIterable {
+  public enum Flex: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case initial = "initial"
     case none = "none"
     case grow = "grow"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `floatingAlign`: 3 token(s).
-  public enum FloatingAlign: String, Sendable, CaseIterable {
+  public enum FloatingAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `floatingSide`: 4 token(s).
-  public enum FloatingSide: String, Sendable, CaseIterable {
+  public enum FloatingSide: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case top = "top"
     case bottom = "bottom"
     case left = "left"
     case right = "right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .top }
   }
 
   /// `followButtonSize`: 3 token(s).
-  public enum FollowButtonSize: String, Sendable, CaseIterable {
+  public enum FollowButtonSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `font`: 26 token(s).
-  public enum Font: String, Sendable, CaseIterable {
+  public enum Font: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case largeTitle = "large-title"
     case display1 = "display-1"
     case display2 = "display-2"
@@ -1162,47 +1531,68 @@ public enum Tokens {
     case mono = "mono"
     case display = "display"
     case systemMono = "system-mono"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .largeTitle }
   }
 
   /// `fontFamily`: 3 token(s).
-  public enum FontFamily: String, Sendable, CaseIterable {
+  public enum FontFamily: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case mono = "mono"
     case display = "display"
     case systemMono = "system-mono"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .mono }
   }
 
   /// `footerPinning`: 4 token(s).
-  public enum FooterPinning: String, Sendable, CaseIterable {
+  public enum FooterPinning: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case absolute = "absolute"
     case document = "document"
     case inline = "inline"
     case sticky = "sticky"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .absolute }
   }
 
   /// `galleryIndicator`: 2 token(s).
-  public enum GalleryIndicator: String, Sendable, CaseIterable {
+  public enum GalleryIndicator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case dots = "dots"
     case thumbnails = "thumbnails"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .dots }
   }
 
   /// `galleryStyle`: 2 token(s).
-  public enum GalleryStyle: String, Sendable, CaseIterable {
+  public enum GalleryStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case overlay = "overlay"
     case page = "page"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .overlay }
   }
 
   /// `glassMaterial`: 2 token(s).
-  public enum GlassMaterial: String, Sendable, CaseIterable {
+  public enum GlassMaterial: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case regular = "regular"
     case clear = "clear"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .regular }
   }
 
   /// `glassOpacity`: 4 token(s).
-  public enum GlassOpacity: String, Sendable, CaseIterable {
+  public enum GlassOpacity: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case subtle = "subtle"
     case dim = "dim"
     case medium = "medium"
     case strong = "strong"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .subtle }
 
     /// The token's value in points (the spec's `scales.glassOpacity`).
     public var value: Double {
@@ -1216,61 +1606,88 @@ public enum Tokens {
   }
 
   /// `glassTransition`: 2 token(s).
-  public enum GlassTransition: String, Sendable, CaseIterable {
+  public enum GlassTransition: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case matchedGeometry = "matchedGeometry"
     case materialize = "materialize"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .matchedGeometry }
   }
 
   /// `gridFlow`: 2 token(s).
-  public enum GridFlow: String, Sendable, CaseIterable {
+  public enum GridFlow: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case rows = "rows"
     case columns = "columns"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .rows }
   }
 
   /// `groupCallLayout`: 2 token(s).
-  public enum GroupCallLayout: String, Sendable, CaseIterable {
+  public enum GroupCallLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case grid = "grid"
     case spotlight = "spotlight"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .grid }
   }
 
   /// `groupedSectionStyle`: 2 token(s).
-  public enum GroupedSectionStyle: String, Sendable, CaseIterable {
+  public enum GroupedSectionStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case filled = "filled"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `groupedSeparator`: 3 token(s).
-  public enum GroupedSeparator: String, Sendable, CaseIterable {
+  public enum GroupedSeparator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case space = "space"
     case line = "line"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .space }
   }
 
   /// `guestPickerSize`: 2 token(s).
-  public enum GuestPickerSize: String, Sendable, CaseIterable {
+  public enum GuestPickerSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `headerPresentation`: 3 token(s).
-  public enum HeaderPresentation: String, Sendable, CaseIterable {
+  public enum HeaderPresentation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case floating = "floating"
     case bar = "bar"
     case navigation = "navigation"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .floating }
   }
 
   /// `headerTone`: 2 token(s).
-  public enum HeaderTone: String, Sendable, CaseIterable {
+  public enum HeaderTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case onImage = "onImage"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `hitSlop`: 4 token(s).
-  public enum HitSlop: String, Sendable, CaseIterable {
+  public enum HitSlop: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
 
     /// The token's value in points (the spec's `scales.hitSlop`).
     public var value: Double {
@@ -1284,13 +1701,16 @@ public enum Tokens {
   }
 
   /// `hitTesting`: 2 token(s).
-  public enum HitTesting: String, Sendable, CaseIterable {
+  public enum HitTesting: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case children = "children"
     case `self` = "self"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .children }
   }
 
   /// `iconCircleSize`: 8 token(s).
-  public enum IconCircleSize: String, Sendable, CaseIterable {
+  public enum IconCircleSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xxs = "2xs"
     case xs = "xs"
     case sm = "sm"
@@ -1299,10 +1719,13 @@ public enum Tokens {
     case xl = "xl"
     case xxl = "2xl"
     case xxxl = "3xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xxs }
   }
 
   /// `iconSize`: 8 token(s).
-  public enum IconSize: String, Sendable, CaseIterable {
+  public enum IconSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xxs = "2xs"
     case xs = "xs"
     case sm = "sm"
@@ -1311,6 +1734,9 @@ public enum Tokens {
     case xl = "xl"
     case xxl = "2xl"
     case xxxl = "3xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xxs }
 
     /// The token's value in points (the spec's `scales.iconSize`).
     public var value: Double {
@@ -1328,13 +1754,16 @@ public enum Tokens {
   }
 
   /// `incomingCallAnswer`: 2 token(s).
-  public enum IncomingCallAnswer: String, Sendable, CaseIterable {
+  public enum IncomingCallAnswer: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case buttons = "buttons"
     case slide = "slide"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .buttons }
   }
 
   /// `inputMode`: 8 token(s).
-  public enum InputMode: String, Sendable, CaseIterable {
+  public enum InputMode: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case text = "text"
     case decimal = "decimal"
@@ -1343,32 +1772,44 @@ public enum Tokens {
     case search = "search"
     case email = "email"
     case url = "url"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `insetEdge`: 2 token(s).
-  public enum InsetEdge: String, Sendable, CaseIterable {
+  public enum InsetEdge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case top = "top"
     case bottom = "bottom"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .top }
   }
 
   /// `justify`: 6 token(s).
-  public enum Justify: String, Sendable, CaseIterable {
+  public enum Justify: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
     case between = "between"
     case around = "around"
     case evenly = "evenly"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `kbdSize`: 2 token(s).
-  public enum KbdSize: String, Sendable, CaseIterable {
+  public enum KbdSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `keyboard`: 8 token(s).
-  public enum Keyboard: String, Sendable, CaseIterable {
+  public enum Keyboard: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case emailAddress = "email-address"
     case numeric = "numeric"
@@ -1377,24 +1818,33 @@ public enum Tokens {
     case phonePad = "phone-pad"
     case url = "url"
     case webSearch = "web-search"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `keyboardDismiss`: 3 token(s).
-  public enum KeyboardDismiss: String, Sendable, CaseIterable {
+  public enum KeyboardDismiss: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case never = "never"
     case immediately = "immediately"
     case interactively = "interactively"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .never }
   }
 
   /// `keyboardTaps`: 3 token(s).
-  public enum KeyboardTaps: String, Sendable, CaseIterable {
+  public enum KeyboardTaps: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case always = "always"
     case never = "never"
     case handled = "handled"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .always }
   }
 
   /// `labelFont`: 23 token(s).
-  public enum LabelFont: String, Sendable, CaseIterable {
+  public enum LabelFont: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case largeTitle = "large-title"
     case display1 = "display-1"
     case display2 = "display-2"
@@ -1418,23 +1868,32 @@ public enum Tokens {
     case xxxl = "3xl"
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .largeTitle }
   }
 
   /// `labelSize`: 3 token(s).
-  public enum LabelSize: String, Sendable, CaseIterable {
+  public enum LabelSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case xs = "xs"
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .xs }
   }
 
   /// `leading`: 6 token(s).
-  public enum Leading: String, Sendable, CaseIterable {
+  public enum Leading: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case tight = "tight"
     case close = "close"
     case snug = "snug"
     case easy = "easy"
     case normal = "normal"
     case relaxed = "relaxed"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .tight }
 
     /// The token's value in points (the spec's `scales.leading`).
     public var value: Double {
@@ -1450,7 +1909,7 @@ public enum Tokens {
   }
 
   /// `length`: 14 token(s).
-  public enum Length: String, Sendable, CaseIterable {
+  public enum Length: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -1465,120 +1924,174 @@ public enum Tokens {
     case full = "full"
     case fit = "fit"
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `linkTone`: 3 token(s).
-  public enum LinkTone: String, Sendable, CaseIterable {
+  public enum LinkTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case primary = "primary"
     case secondary = "secondary"
     case text = "text"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .primary }
   }
 
   /// `listingCardLayout`: 2 token(s).
-  public enum ListingCardLayout: String, Sendable, CaseIterable {
+  public enum ListingCardLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case vertical = "vertical"
     case horizontal = "horizontal"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .vertical }
   }
 
   /// `listingHeaderSize`: 2 token(s).
-  public enum ListingHeaderSize: String, Sendable, CaseIterable {
+  public enum ListingHeaderSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case large = "large"
     case medium = "medium"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .large }
   }
 
   /// `listingPhotoLayout`: 3 token(s).
-  public enum ListingPhotoLayout: String, Sendable, CaseIterable {
+  public enum ListingPhotoLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case grid = "grid"
     case carousel = "carousel"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `listMarker`: 2 token(s).
-  public enum ListMarker: String, Sendable, CaseIterable {
+  public enum ListMarker: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case disc = "disc"
     case decimal = "decimal"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .disc }
   }
 
   /// `listSeparator`: 3 token(s).
-  public enum ListSeparator: String, Sendable, CaseIterable {
+  public enum ListSeparator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case line = "line"
     case inset = "inset"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `liveRegion`: 3 token(s).
-  public enum LiveRegion: String, Sendable, CaseIterable {
+  public enum LiveRegion: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case polite = "polite"
     case assertive = "assertive"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .polite }
   }
 
   /// `liveRole`: 2 token(s).
-  public enum LiveRole: String, Sendable, CaseIterable {
+  public enum LiveRole: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case alert = "alert"
     case status = "status"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .alert }
   }
 
   /// `loadingStyle`: 3 token(s).
-  public enum LoadingStyle: String, Sendable, CaseIterable {
+  public enum LoadingStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case spinner = "spinner"
     case top = "top"
     case inline = "inline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .spinner }
   }
 
   /// `locationPuckMode`: 3 token(s).
-  public enum LocationPuckMode: String, Sendable, CaseIterable {
+  public enum LocationPuckMode: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case following = "following"
     case compass = "compass"
     case navigating = "navigating"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .following }
   }
 
   /// `lockupSize`: 3 token(s).
-  public enum LockupSize: String, Sendable, CaseIterable {
+  public enum LockupSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `loop`: 2 token(s).
-  public enum Loop: String, Sendable, CaseIterable {
+  public enum Loop: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case spin = "spin"
     case pulse = "pulse"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .spin }
   }
 
   /// `mailComposeStyle`: 2 token(s).
-  public enum MailComposeStyle: String, Sendable, CaseIterable {
+  public enum MailComposeStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sheet = "sheet"
     case docked = "docked"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sheet }
   }
 
   /// `mapAttributionStyle`: 2 token(s).
-  public enum MapAttributionStyle: String, Sendable, CaseIterable {
+  public enum MapAttributionStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case island = "island"
     case inline = "inline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .island }
   }
 
   /// `mapControlsAlign`: 2 token(s).
-  public enum MapControlsAlign: String, Sendable, CaseIterable {
+  public enum MapControlsAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case end = "end"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `mapMarkerState`: 3 token(s).
-  public enum MapMarkerState: String, Sendable, CaseIterable {
+  public enum MapMarkerState: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case active = "active"
     case visited = "visited"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `mapPriceMarkerSize`: 2 token(s).
-  public enum MapPriceMarkerSize: String, Sendable, CaseIterable {
+  public enum MapPriceMarkerSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case compact = "compact"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `margin`: 12 token(s).
-  public enum Margin: String, Sendable, CaseIterable {
+  public enum Margin: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -1591,86 +2104,125 @@ public enum Tokens {
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `marginExtra`: 1 token(s).
-  public enum MarginExtra: String, Sendable, CaseIterable {
+  public enum MarginExtra: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `markdownSize`: 3 token(s).
-  public enum MarkdownSize: String, Sendable, CaseIterable {
+  public enum MarkdownSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `mediaContentFit`: 2 token(s).
-  public enum MediaContentFit: String, Sendable, CaseIterable {
+  public enum MediaContentFit: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case contain = "contain"
     case cover = "cover"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .contain }
   }
 
   /// `menuStyle`: 2 token(s).
-  public enum MenuStyle: String, Sendable, CaseIterable {
+  public enum MenuStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case platform = "platform"
     case dropdown = "dropdown"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .platform }
   }
 
   /// `messageMediaFit`: 3 token(s).
-  public enum MessageMediaFit: String, Sendable, CaseIterable {
+  public enum MessageMediaFit: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case bleed = "bleed"
     case inset = "inset"
     case bare = "bare"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .bleed }
   }
 
   /// `messagePosition`: 4 token(s).
-  public enum MessagePosition: String, Sendable, CaseIterable {
+  public enum MessagePosition: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case single = "single"
     case first = "first"
     case middle = "middle"
     case last = "last"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .single }
   }
 
   /// `messageTone`: 2 token(s).
-  public enum MessageTone: String, Sendable, CaseIterable {
+  public enum MessageTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case incoming = "incoming"
     case outgoing = "outgoing"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .incoming }
   }
 
   /// `meterCap`: 2 token(s).
-  public enum MeterCap: String, Sendable, CaseIterable {
+  public enum MeterCap: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case round = "round"
     case butt = "butt"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .round }
   }
 
   /// `methodTitleAlign`: 2 token(s).
-  public enum MethodTitleAlign: String, Sendable, CaseIterable {
+  public enum MethodTitleAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case left = "left"
     case center = "center"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .left }
   }
 
   /// `modePresentation`: 2 token(s).
-  public enum ModePresentation: String, Sendable, CaseIterable {
+  public enum ModePresentation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case segmented = "segmented"
     case toggle = "toggle"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .segmented }
   }
 
   /// `modesPresentation`: 2 token(s).
-  public enum ModesPresentation: String, Sendable, CaseIterable {
+  public enum ModesPresentation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case segmented = "segmented"
     case toggle = "toggle"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .segmented }
   }
 
   /// `mortgageLayout`: 3 token(s).
-  public enum MortgageLayout: String, Sendable, CaseIterable {
+  public enum MortgageLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case stacked = "stacked"
     case split = "split"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `motion`: 15 token(s).
-  public enum Motion: String, Sendable, CaseIterable {
+  public enum Motion: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case press = "press"
     case select = "select"
     case expand = "expand"
@@ -1686,47 +2238,68 @@ public enum Tokens {
     case restack = "restack"
     case spin = "spin"
     case pulse = "pulse"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .press }
   }
 
   /// `navigationScope`: 3 token(s).
-  public enum NavigationScope: String, Sendable, CaseIterable {
+  public enum NavigationScope: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case inherit = "inherit"
     case shared = "shared"
     case isolated = "isolated"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .inherit }
   }
 
   /// `noteToolbarSize`: 2 token(s).
-  public enum NoteToolbarSize: String, Sendable, CaseIterable {
+  public enum NoteToolbarSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case md = "md"
     case sm = "sm"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .md }
   }
 
   /// `notificationStatus`: 5 token(s).
-  public enum NotificationStatus: String, Sendable, CaseIterable {
+  public enum NotificationStatus: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case neutral = "neutral"
     case information = "information"
     case success = "success"
     case warning = "warning"
     case error = "error"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .neutral }
   }
 
   /// `offeringBadgeSize`: 2 token(s).
-  public enum OfferingBadgeSize: String, Sendable, CaseIterable {
+  public enum OfferingBadgeSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `offeringBadgeStyle`: 2 token(s).
-  public enum OfferingBadgeStyle: String, Sendable, CaseIterable {
+  public enum OfferingBadgeStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case tinted = "tinted"
     case onMedia = "onMedia"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .tinted }
   }
 
   /// `opacity`: 3 token(s).
-  public enum Opacity: String, Sendable, CaseIterable {
+  public enum Opacity: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case transparent = "transparent"
     case half = "half"
     case opaque = "opaque"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .transparent }
 
     /// The token's value in points (the spec's `scales.opacity`).
     public var value: Double {
@@ -1739,25 +2312,34 @@ public enum Tokens {
   }
 
   /// `orderStatusBarStyle`: 2 token(s).
-  public enum OrderStatusBarStyle: String, Sendable, CaseIterable {
+  public enum OrderStatusBarStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case surface = "surface"
     case plain = "plain"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .surface }
   }
 
   /// `otpCharacters`: 2 token(s).
-  public enum OtpCharacters: String, Sendable, CaseIterable {
+  public enum OtpCharacters: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case numeric = "numeric"
     case alphanumeric = "alphanumeric"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .numeric }
   }
 
   /// `outlineNavStyle`: 2 token(s).
-  public enum OutlineNavStyle: String, Sendable, CaseIterable {
+  public enum OutlineNavStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case full = "full"
     case compact = "compact"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .full }
   }
 
   /// `overlayAlignment`: 9 token(s).
-  public enum OverlayAlignment: String, Sendable, CaseIterable {
+  public enum OverlayAlignment: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case center = "center"
     case top = "top"
     case bottom = "bottom"
@@ -1767,10 +2349,13 @@ public enum Tokens {
     case topTrailing = "top-trailing"
     case bottomLeading = "bottom-leading"
     case bottomTrailing = "bottom-trailing"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .center }
   }
 
   /// `padding`: 11 token(s).
-  public enum Padding: String, Sendable, CaseIterable {
+  public enum Padding: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -1782,26 +2367,35 @@ public enum Tokens {
     case xxxl = "3xl"
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `panelRole`: 6 token(s).
-  public enum PanelRole: String, Sendable, CaseIterable {
+  public enum PanelRole: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case main = "main"
     case collection = "collection"
     case detail = "detail"
     case inspector = "inspector"
     case context = "context"
     case canvas = "canvas"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .main }
   }
 
   /// `paymentStatusStyle`: 2 token(s).
-  public enum PaymentStatusStyle: String, Sendable, CaseIterable {
+  public enum PaymentStatusStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case surface = "surface"
     case plain = "plain"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .surface }
   }
 
   /// `physicalEdge`: 7 token(s).
-  public enum PhysicalEdge: String, Sendable, CaseIterable {
+  public enum PhysicalEdge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case all = "all"
     case top = "top"
     case bottom = "bottom"
@@ -1809,147 +2403,213 @@ public enum Tokens {
     case vertical = "vertical"
     case left = "left"
     case right = "right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .all }
   }
 
   /// `placeCardStyle`: 2 token(s).
-  public enum PlaceCardStyle: String, Sendable, CaseIterable {
+  public enum PlaceCardStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case row = "row"
     case detail = "detail"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .row }
   }
 
   /// `playbackTimes`: 2 token(s).
-  public enum PlaybackTimes: String, Sendable, CaseIterable {
+  public enum PlaybackTimes: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case inline = "inline"
     case below = "below"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .inline }
   }
 
   /// `playButtonSize`: 3 token(s).
-  public enum PlayButtonSize: String, Sendable, CaseIterable {
+  public enum PlayButtonSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `playButtonStyle`: 3 token(s).
-  public enum PlayButtonStyle: String, Sendable, CaseIterable {
+  public enum PlayButtonStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case accent = "accent"
     case inverse = "inverse"
     case plain = "plain"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .accent }
   }
 
   /// `presence`: 4 token(s).
-  public enum Presence: String, Sendable, CaseIterable {
+  public enum Presence: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case online = "online"
     case idle = "idle"
     case busy = "busy"
     case offline = "offline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .online }
   }
 
   /// `pressOpenTab`: 2 token(s).
-  public enum PressOpenTab: String, Sendable, CaseIterable {
+  public enum PressOpenTab: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case report = "report"
     case reselect = "reselect"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .report }
   }
 
   /// `priceLineTone`: 3 token(s).
-  public enum PriceLineTone: String, Sendable, CaseIterable {
+  public enum PriceLineTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case discount = "discount"
     case muted = "muted"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `priceScale`: 2 token(s).
-  public enum PriceScale: String, Sendable, CaseIterable {
+  public enum PriceScale: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case linear = "linear"
     case log = "log"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .linear }
   }
 
   /// `primaryActionPlacement`: 2 token(s).
-  public enum PrimaryActionPlacement: String, Sendable, CaseIterable {
+  public enum PrimaryActionPlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case bottom = "bottom"
     case top = "top"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .bottom }
   }
 
   /// `radarLegend`: 3 token(s).
-  public enum RadarLegend: String, Sendable, CaseIterable {
+  public enum RadarLegend: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case bottom = "bottom"
     case top = "top"
     case overlay = "overlay"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .bottom }
   }
 
   /// `radarVariant`: 4 token(s).
-  public enum RadarVariant: String, Sendable, CaseIterable {
+  public enum RadarVariant: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case filled = "filled"
     case dots = "dots"
     case lines = "lines"
     case score = "score"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .filled }
   }
 
   /// `radioStyle`: 4 token(s).
-  public enum RadioStyle: String, Sendable, CaseIterable {
+  public enum RadioStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case card = "card"
     case chip = "chip"
     case swatch = "swatch"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `railLabels`: 2 token(s).
-  public enum RailLabels: String, Sendable, CaseIterable {
+  public enum RailLabels: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case visible = "visible"
     case hidden = "hidden"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .visible }
   }
 
   /// `railSelection`: 2 token(s).
-  public enum RailSelection: String, Sendable, CaseIterable {
+  public enum RailSelection: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case pill = "pill"
     case icon = "icon"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .pill }
   }
 
   /// `ratingCountStyle`: 2 token(s).
-  public enum RatingCountStyle: String, Sendable, CaseIterable {
+  public enum RatingCountStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case parenthesis = "parenthesis"
     case reviews = "reviews"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .parenthesis }
   }
 
   /// `ratingInputSize`: 3 token(s).
-  public enum RatingInputSize: String, Sendable, CaseIterable {
+  public enum RatingInputSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `ratingSize`: 2 token(s).
-  public enum RatingSize: String, Sendable, CaseIterable {
+  public enum RatingSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `ratingStyle`: 2 token(s).
-  public enum RatingStyle: String, Sendable, CaseIterable {
+  public enum RatingStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case compact = "compact"
     case stars = "stars"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .compact }
   }
 
   /// `reactionPickerSize`: 2 token(s).
-  public enum ReactionPickerSize: String, Sendable, CaseIterable {
+  public enum ReactionPickerSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `rentOutstandingTone`: 2 token(s).
-  public enum RentOutstandingTone: String, Sendable, CaseIterable {
+  public enum RentOutstandingTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `default` = "default"
     case error = "error"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`default` }
   }
 
   /// `resizeHandleStyle`: 2 token(s).
-  public enum ResizeHandleStyle: String, Sendable, CaseIterable {
+  public enum ResizeHandleStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case grip = "grip"
     case pill = "pill"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .grip }
   }
 
   /// `ring`: 33 token(s).
-  public enum Ring: String, Sendable, CaseIterable {
+  public enum Ring: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case foreground = "foreground"
     case muted = "muted"
     case textTertiary = "textTertiary"
@@ -1983,15 +2643,21 @@ public enum Tokens {
     case infoText = "infoText"
     case surfaceFill = "surfaceFill"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .foreground }
   }
 
   /// `ringExtra`: 1 token(s).
-  public enum RingExtra: String, Sendable, CaseIterable {
+  public enum RingExtra: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `role`: 18 token(s).
-  public enum Role: String, Sendable, CaseIterable {
+  public enum Role: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case button = "button"
     case link = "link"
     case header = "header"
@@ -2010,13 +2676,19 @@ public enum Tokens {
     case summary = "summary"
     case option = "option"
     case listbox = "listbox"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .button }
   }
 
   /// `rotation`: 3 token(s).
-  public enum Rotation: String, Sendable, CaseIterable {
+  public enum Rotation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case quarter = "quarter"
     case half = "half"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
 
     /// The token's value in points (the spec's `scales.rotation`).
     public var value: Double {
@@ -2029,23 +2701,32 @@ public enum Tokens {
   }
 
   /// `rowActionStyle`: 2 token(s).
-  public enum RowActionStyle: String, Sendable, CaseIterable {
+  public enum RowActionStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case outline = "outline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `safeArea`: 2 token(s).
-  public enum SafeArea: String, Sendable, CaseIterable {
+  public enum SafeArea: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case device = "device"
     case content = "content"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .device }
   }
 
   /// `scale`: 4 token(s).
-  public enum Scale: String, Sendable, CaseIterable {
+  public enum Scale: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case dip = "dip"
     case pressed = "pressed"
     case full = "full"
     case swell = "swell"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .dip }
 
     /// The token's value in points (the spec's `scales.scale`).
     public var value: Double {
@@ -2059,126 +2740,180 @@ public enum Tokens {
   }
 
   /// `screenKind`: 5 token(s).
-  public enum ScreenKind: String, Sendable, CaseIterable {
+  public enum ScreenKind: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case document = "document"
     case collection = "collection"
     case table = "table"
     case canvas = "canvas"
     case form = "form"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .document }
   }
 
   /// `screenScroll`: 3 token(s).
-  public enum ScreenScroll: String, Sendable, CaseIterable {
+  public enum ScreenScroll: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case content = "content"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `scrimFalloff`: 2 token(s).
-  public enum ScrimFalloff: String, Sendable, CaseIterable {
+  public enum ScrimFalloff: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case smooth = "smooth"
     case linear = "linear"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .smooth }
   }
 
   /// `scrollbarSide`: 2 token(s).
-  public enum ScrollbarSide: String, Sendable, CaseIterable {
+  public enum ScrollbarSide: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case end = "end"
     case start = "start"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .end }
   }
 
   /// `scrollbarSize`: 2 token(s).
-  public enum ScrollbarSize: String, Sendable, CaseIterable {
+  public enum ScrollbarSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `scrollbarVisibility`: 4 token(s).
-  public enum ScrollbarVisibility: String, Sendable, CaseIterable {
+  public enum ScrollbarVisibility: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case scroll = "scroll"
     case hover = "hover"
     case always = "always"
     case never = "never"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .scroll }
   }
 
   /// `scrollEdge`: 3 token(s).
-  public enum ScrollEdge: String, Sendable, CaseIterable {
+  public enum ScrollEdge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case always = "always"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `scrollIndicators`: 3 token(s).
-  public enum ScrollIndicators: String, Sendable, CaseIterable {
+  public enum ScrollIndicators: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case automatic = "automatic"
     case visible = "visible"
     case hidden = "hidden"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .automatic }
   }
 
   /// `scrollSurfaceStyle`: 3 token(s).
-  public enum ScrollSurfaceStyle: String, Sendable, CaseIterable {
+  public enum ScrollSurfaceStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case primary = "primary"
     case secondary = "secondary"
     case full = "full"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .primary }
   }
 
   /// `searchCollapse`: 1 token(s).
-  public enum SearchCollapse: String, Sendable, CaseIterable {
+  public enum SearchCollapse: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `searchModeTabsStyle`: 2 token(s).
-  public enum SearchModeTabsStyle: String, Sendable, CaseIterable {
+  public enum SearchModeTabsStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case tabs = "tabs"
     case segmented = "segmented"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .tabs }
   }
 
   /// `segmentedStyle`: 2 token(s).
-  public enum SegmentedStyle: String, Sendable, CaseIterable {
+  public enum SegmentedStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case solid = "solid"
     case plain = "plain"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .solid }
   }
 
   /// `selectedChipsLayout`: 2 token(s).
-  public enum SelectedChipsLayout: String, Sendable, CaseIterable {
+  public enum SelectedChipsLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case scroll = "scroll"
     case wrap = "wrap"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .scroll }
   }
 
   /// `selectionIndicator`: 2 token(s).
-  public enum SelectionIndicator: String, Sendable, CaseIterable {
+  public enum SelectionIndicator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case check = "check"
     case radio = "radio"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .check }
   }
 
   /// `separator`: 4 token(s).
-  public enum Separator: String, Sendable, CaseIterable {
+  public enum Separator: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case space = "space"
     case line = "line"
     case none = "none"
     case inset = "inset"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .space }
   }
 
   /// `settingsPresentation`: 2 token(s).
-  public enum SettingsPresentation: String, Sendable, CaseIterable {
+  public enum SettingsPresentation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case bar = "bar"
     case floating = "floating"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .bar }
   }
 
   /// `settingsView`: 2 token(s).
-  public enum SettingsView: String, Sendable, CaseIterable {
+  public enum SettingsView: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case navigation = "navigation"
     case page = "page"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .navigation }
   }
 
   /// `shadow`: 3 token(s).
-  public enum Shadow: String, Sendable, CaseIterable {
+  public enum Shadow: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case s = "s"
     case m = "m"
     case floating = "floating"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .s }
   }
 
   /// `shapeName`: 29 token(s).
-  public enum ShapeName: String, Sendable, CaseIterable {
+  public enum ShapeName: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case circle = "circle"
     case squircle = "squircle"
     case square = "square"
@@ -2208,49 +2943,70 @@ public enum Tokens {
     case pixelTriangle = "pixel-triangle"
     case bun = "bun"
     case heart = "heart"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .circle }
   }
 
   /// `sheetMaterial`: 2 token(s).
-  public enum SheetMaterial: String, Sendable, CaseIterable {
+  public enum SheetMaterial: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case surface = "surface"
     case flat = "flat"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .surface }
   }
 
   /// `sheetSizing`: 2 token(s).
-  public enum SheetSizing: String, Sendable, CaseIterable {
+  public enum SheetSizing: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case content = "content"
     case fill = "fill"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .content }
   }
 
   /// `shelfLayout`: 3 token(s).
-  public enum ShelfLayout: String, Sendable, CaseIterable {
+  public enum ShelfLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case row = "row"
     case grid = "grid"
     case paged = "paged"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .row }
   }
 
   /// `shellLayout`: 6 token(s).
-  public enum ShellLayout: String, Sendable, CaseIterable {
+  public enum ShellLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case workspace = "workspace"
     case collectionDetail = "collection-detail"
     case feed = "feed"
     case deck = "deck"
     case catalog = "catalog"
     case mapBrowser = "map-browser"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .workspace }
   }
 
   /// `shellPresentation`: 3 token(s).
-  public enum ShellPresentation: String, Sendable, CaseIterable {
+  public enum ShellPresentation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case continuous = "continuous"
     case framed = "framed"
     case floating = "floating"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .continuous }
   }
 
   /// `shrink`: 3 token(s).
-  public enum Shrink: String, Sendable, CaseIterable {
+  public enum Shrink: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case never = "never"
     case normal = "normal"
     case first = "first"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .never }
 
     /// The token's value in points (the spec's `scales.shrink`).
     public var value: Double {
@@ -2263,47 +3019,65 @@ public enum Tokens {
   }
 
   /// `sidebarSize`: 3 token(s).
-  public enum SidebarSize: String, Sendable, CaseIterable {
+  public enum SidebarSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `sidebarSurface`: 3 token(s).
-  public enum SidebarSurface: String, Sendable, CaseIterable {
+  public enum SidebarSurface: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case card = "card"
     case plain = "plain"
     case docked = "docked"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .card }
   }
 
   /// `sidebarVariant`: 2 token(s).
-  public enum SidebarVariant: String, Sendable, CaseIterable {
+  public enum SidebarVariant: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case panel = "panel"
     case rail = "rail"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .panel }
   }
 
   /// `socialButtonSize`: 2 token(s).
-  public enum SocialButtonSize: String, Sendable, CaseIterable {
+  public enum SocialButtonSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case md = "md"
     case sm = "sm"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .md }
   }
 
   /// `socialButtonStyle`: 3 token(s).
-  public enum SocialButtonStyle: String, Sendable, CaseIterable {
+  public enum SocialButtonStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case colorful = "colorful"
     case black = "black"
     case white = "white"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .colorful }
   }
 
   /// `socialIntent`: 3 token(s).
-  public enum SocialIntent: String, Sendable, CaseIterable {
+  public enum SocialIntent: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case `continue` = "continue"
     case signIn = "signIn"
     case signUp = "signUp"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .`continue` }
   }
 
   /// `space`: 11 token(s).
-  public enum Space: String, Sendable, CaseIterable {
+  public enum Space: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case xxs = "2xs"
     case xs = "xs"
@@ -2315,6 +3089,9 @@ public enum Tokens {
     case xxxl = "3xl"
     case xxxxl = "4xl"
     case xxxxxl = "5xl"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
 
     /// The token's value in points (the spec's `scales.space`).
     public var value: Double {
@@ -2335,119 +3112,167 @@ public enum Tokens {
   }
 
   /// `sparklineTone`: 4 token(s).
-  public enum SparklineTone: String, Sendable, CaseIterable {
+  public enum SparklineTone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case accent = "accent"
     case positive = "positive"
     case negative = "negative"
     case neutral = "neutral"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .accent }
   }
 
   /// `statCardsVariant`: 2 token(s).
-  public enum StatCardsVariant: String, Sendable, CaseIterable {
+  public enum StatCardsVariant: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case footer = "footer"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `stepperSize`: 2 token(s).
-  public enum StepperSize: String, Sendable, CaseIterable {
+  public enum StepperSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `stepperStyle`: 2 token(s).
-  public enum StepperStyle: String, Sendable, CaseIterable {
+  public enum StepperStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case separate = "separate"
     case outline = "outline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .separate }
   }
 
   /// `stickyEdge`: 2 token(s).
-  public enum StickyEdge: String, Sendable, CaseIterable {
+  public enum StickyEdge: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case top = "top"
     case bottom = "bottom"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .top }
   }
 
   /// `submitLabel`: 5 token(s).
-  public enum SubmitLabel: String, Sendable, CaseIterable {
+  public enum SubmitLabel: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case done = "done"
     case go = "go"
     case next = "next"
     case search = "search"
     case send = "send"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .done }
   }
 
   /// `swipeDirection`: 4 token(s).
-  public enum SwipeDirection: String, Sendable, CaseIterable {
+  public enum SwipeDirection: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case left = "left"
     case right = "right"
     case up = "up"
     case down = "down"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .left }
   }
 
   /// `tableAlign`: 3 token(s).
-  public enum TableAlign: String, Sendable, CaseIterable {
+  public enum TableAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `tableSize`: 2 token(s).
-  public enum TableSize: String, Sendable, CaseIterable {
+  public enum TableSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `tableSort`: 3 token(s).
-  public enum TableSort: String, Sendable, CaseIterable {
+  public enum TableSort: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case ascending = "ascending"
     case descending = "descending"
     case none = "none"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .ascending }
   }
 
   /// `tabsStyle`: 3 token(s).
-  public enum TabsStyle: String, Sendable, CaseIterable {
+  public enum TabsStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case underline = "underline"
     case pill = "pill"
     case filled = "filled"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .underline }
   }
 
   /// `teamPlacement`: 2 token(s).
-  public enum TeamPlacement: String, Sendable, CaseIterable {
+  public enum TeamPlacement: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case footer = "footer"
     case header = "header"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .footer }
   }
 
   /// `tenancyLayout`: 3 token(s).
-  public enum TenancyLayout: String, Sendable, CaseIterable {
+  public enum TenancyLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case wide = "wide"
     case narrow = "narrow"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `textAlign`: 6 token(s).
-  public enum TextAlign: String, Sendable, CaseIterable {
+  public enum TextAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
     case end = "end"
     case justify = "justify"
     case left = "left"
     case right = "right"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `textareaResize`: 2 token(s).
-  public enum TextareaResize: String, Sendable, CaseIterable {
+  public enum TextareaResize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case vertical = "vertical"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `textCase`: 3 token(s).
-  public enum TextCase: String, Sendable, CaseIterable {
+  public enum TextCase: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case uppercase = "uppercase"
     case lowercase = "lowercase"
     case capitalize = "capitalize"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .uppercase }
   }
 
   /// `textContentType`: 43 token(s).
-  public enum TextContentType: String, Sendable, CaseIterable {
+  public enum TextContentType: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case none = "none"
     case addressCity = "addressCity"
     case addressCityAndState = "addressCityAndState"
@@ -2491,10 +3316,13 @@ public enum Tokens {
     case dateTime = "dateTime"
     case flightNumber = "flightNumber"
     case shipmentTrackingNumber = "shipmentTrackingNumber"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .none }
   }
 
   /// `textStyle`: 14 token(s).
-  public enum TextStyle: String, Sendable, CaseIterable {
+  public enum TextStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case title = "title"
     case subtitle = "subtitle"
     case h1 = "h1"
@@ -2509,18 +3337,24 @@ public enum Tokens {
     case small = "small"
     case muted = "muted"
     case blockquote = "blockquote"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .title }
   }
 
   /// `themeToggleStyle`: 4 token(s).
-  public enum ThemeToggleStyle: String, Sendable, CaseIterable {
+  public enum ThemeToggleStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sidebar = "sidebar"
     case segmented = "segmented"
     case sidebarSegmented = "sidebar-segmented"
     case bareSegmented = "bare-segmented"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sidebar }
   }
 
   /// `timedMotion`: 13 token(s).
-  public enum TimedMotion: String, Sendable, CaseIterable {
+  public enum TimedMotion: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case press = "press"
     case present = "present"
     case dismiss = "dismiss"
@@ -2534,55 +3368,79 @@ public enum Tokens {
     case restack = "restack"
     case spin = "spin"
     case pulse = "pulse"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .press }
   }
 
   /// `timeFieldSize`: 2 token(s).
-  public enum TimeFieldSize: String, Sendable, CaseIterable {
+  public enum TimeFieldSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `titleAlign`: 2 token(s).
-  public enum TitleAlign: String, Sendable, CaseIterable {
+  public enum TitleAlign: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case start = "start"
     case center = "center"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .start }
   }
 
   /// `titleAppearance`: 2 token(s).
-  public enum TitleAppearance: String, Sendable, CaseIterable {
+  public enum TitleAppearance: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case plain = "plain"
     case capsule = "capsule"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .plain }
   }
 
   /// `titleDisplay`: 2 token(s).
-  public enum TitleDisplay: String, Sendable, CaseIterable {
+  public enum TitleDisplay: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case large = "large"
     case inline = "inline"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .large }
   }
 
   /// `titleLayout`: 2 token(s).
-  public enum TitleLayout: String, Sendable, CaseIterable {
+  public enum TitleLayout: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case inline = "inline"
     case stacked = "stacked"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .inline }
   }
 
   /// `titleReveal`: 4 token(s).
-  public enum TitleReveal: String, Sendable, CaseIterable {
+  public enum TitleReveal: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case always = "always"
     case onScroll = "onScroll"
     case onDock = "onDock"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `titleVisibility`: 3 token(s).
-  public enum TitleVisibility: String, Sendable, CaseIterable {
+  public enum TitleVisibility: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case automatic = "automatic"
     case visible = "visible"
     case hidden = "hidden"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .automatic }
   }
 
   /// `tone`: 9 token(s).
-  public enum Tone: String, Sendable, CaseIterable {
+  public enum Tone: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case neutral = "neutral"
     case accent = "accent"
     case vivid = "vivid"
@@ -2592,32 +3450,47 @@ public enum Tokens {
     case warning = "warning"
     case danger = "danger"
     case info = "info"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .neutral }
   }
 
   /// `toolbarSpacer`: 2 token(s).
-  public enum ToolbarSpacer: String, Sendable, CaseIterable {
+  public enum ToolbarSpacer: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case fixed = "fixed"
     case flexible = "flexible"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .fixed }
   }
 
   /// `tooltipSide`: 2 token(s).
-  public enum TooltipSide: String, Sendable, CaseIterable {
+  public enum TooltipSide: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case top = "top"
     case bottom = "bottom"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .top }
   }
 
   /// `tooltipSize`: 2 token(s).
-  public enum TooltipSize: String, Sendable, CaseIterable {
+  public enum TooltipSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `tracking`: 4 token(s).
-  public enum Tracking: String, Sendable, CaseIterable {
+  public enum Tracking: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case tight = "tight"
     case wide = "wide"
     case wider = "wider"
     case widest = "widest"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .tight }
 
     /// The token's value in points (the spec's `scales.tracking`).
     public var value: Double {
@@ -2631,22 +3504,28 @@ public enum Tokens {
   }
 
   /// `tripCardOrientation`: 3 token(s).
-  public enum TripCardOrientation: String, Sendable, CaseIterable {
+  public enum TripCardOrientation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
     case horizontal = "horizontal"
     case vertical = "vertical"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// `truncation`: 4 token(s).
-  public enum Truncation: String, Sendable, CaseIterable {
+  public enum Truncation: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case head = "head"
     case middle = "middle"
     case tail = "tail"
     case clip = "clip"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .head }
   }
 
   /// `typeRamp`: 52 token(s).
-  public enum TypeRamp: String, Sendable, CaseIterable {
+  public enum TypeRamp: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case largeTitleRegular = "large-title-regular"
     case largeTitleMedium = "large-title-medium"
     case largeTitleSemibold = "large-title-semibold"
@@ -2699,50 +3578,71 @@ public enum Tokens {
     case caption2Medium = "caption-2-medium"
     case caption2Semibold = "caption-2-semibold"
     case caption2Bold = "caption-2-bold"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .largeTitleRegular }
   }
 
   /// `videoMessageStyle`: 2 token(s).
-  public enum VideoMessageStyle: String, Sendable, CaseIterable {
+  public enum VideoMessageStyle: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case thumbnail = "thumbnail"
     case videoNote = "videoNote"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .thumbnail }
   }
 
   /// `videoSurface`: 2 token(s).
-  public enum VideoSurface: String, Sendable, CaseIterable {
+  public enum VideoSurface: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case textureView = "textureView"
     case surfaceView = "surfaceView"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .textureView }
   }
 
   /// `voiceSize`: 3 token(s).
-  public enum VoiceSize: String, Sendable, CaseIterable {
+  public enum VoiceSize: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case sm = "sm"
     case md = "md"
     case lg = "lg"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .sm }
   }
 
   /// `weight`: 6 token(s).
-  public enum Weight: String, Sendable, CaseIterable {
+  public enum Weight: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case light = "light"
     case regular = "regular"
     case medium = "medium"
     case semibold = "semibold"
     case bold = "bold"
     case extrabold = "extrabold"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .light }
   }
 
   /// `wordBreak`: 2 token(s).
-  public enum WordBreak: String, Sendable, CaseIterable {
+  public enum WordBreak: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case all = "all"
     case words = "words"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .all }
   }
 
   /// `zIndex`: 5 token(s).
-  public enum ZIndex: String, Sendable, CaseIterable {
+  public enum ZIndex: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case base = "base"
     case raised = "raised"
     case floating = "floating"
     case dropdown = "dropdown"
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .base }
 
     /// The token's value in points (the spec's `scales.zIndex`); `nil` for a token with no fixed value.
     public var value: Double? {
@@ -2757,8 +3657,11 @@ public enum Tokens {
   }
 
   /// `zIndexExtra`: 1 token(s).
-  public enum ZIndexExtra: String, Sendable, CaseIterable {
+  public enum ZIndexExtra: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
     case auto = "auto"
+
+    /// A token written as its string (`.spacing("xs")`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .auto }
   }
 
   /// A step of the type ramp: `[fontSize, lineHeight, letterSpacing, fontWeight]`.
@@ -2824,4 +3727,40 @@ public enum Tokens {
     "caption-2-semibold": TypeStyle(size: 11, lineHeight: 15, tracking: 0.2, weight: 600),
     "caption-2-bold": TypeStyle(size: 11, lineHeight: 15, tracking: 0.2, weight: 700),
   ]
+}
+
+/// Every colour role as a `BloomColor`, so `.primary.opacity(0.1)` reads as `.bloom` writes it.
+extension BloomColor {
+  public static var foreground: BloomColor { BloomColor(.foreground) }
+  public static var muted: BloomColor { BloomColor(.muted) }
+  public static var textTertiary: BloomColor { BloomColor(.textTertiary) }
+  public static var primary: BloomColor { BloomColor(.primary) }
+  public static var primaryText: BloomColor { BloomColor(.primaryText) }
+  public static var onPrimary: BloomColor { BloomColor(.onPrimary) }
+  public static var secondary: BloomColor { BloomColor(.secondary) }
+  public static var onSecondary: BloomColor { BloomColor(.onSecondary) }
+  public static var tertiary: BloomColor { BloomColor(.tertiary) }
+  public static var onTertiary: BloomColor { BloomColor(.onTertiary) }
+  public static var background: BloomColor { BloomColor(.background) }
+  public static var surface: BloomColor { BloomColor(.surface) }
+  public static var popover: BloomColor { BloomColor(.popover) }
+  public static var border: BloomColor { BloomColor(.border) }
+  public static var input: BloomColor { BloomColor(.input) }
+  public static var success: BloomColor { BloomColor(.success) }
+  public static var successText: BloomColor { BloomColor(.successText) }
+  public static var warning: BloomColor { BloomColor(.warning) }
+  public static var warningText: BloomColor { BloomColor(.warningText) }
+  public static var error: BloomColor { BloomColor(.error) }
+  public static var info: BloomColor { BloomColor(.info) }
+  public static var mutedFill: BloomColor { BloomColor(.mutedFill) }
+  public static var card: BloomColor { BloomColor(.card) }
+  public static var destructive: BloomColor { BloomColor(.destructive) }
+  public static var white: BloomColor { BloomColor(.white) }
+  public static var black: BloomColor { BloomColor(.black) }
+  public static var transparent: BloomColor { BloomColor(.transparent) }
+  public static var onSurface: BloomColor { BloomColor(.onSurface) }
+  public static var accent: BloomColor { BloomColor(.accent) }
+  public static var errorText: BloomColor { BloomColor(.errorText) }
+  public static var infoText: BloomColor { BloomColor(.infoText) }
+  public static var surfaceFill: BloomColor { BloomColor(.surfaceFill) }
 }

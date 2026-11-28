@@ -121,9 +121,10 @@ impl Emitter<'_> {
             ExprKind::Spread(inner) => self.expr(inner),
             ExprKind::Map(entries) if entries.is_empty() => "[:]".into(),
             ExprKind::Map(entries) => {
+                // Bloom's maps keep insertion order: an `OrderedDictionary`, whatever the context.
                 let items: Vec<String> =
                     entries.iter().map(|(k, v)| format!("{}: {}", self.expr(k), self.expr(v))).collect();
-                format!("[{}]", items.join(", "))
+                format!("([{}] as OrderedDictionary)", items.join(", "))
             }
             ExprKind::Is(inner, t) => format!("{} is {}", self.operand(inner), self.ty(t)),
             ExprKind::CastAs(inner, t) => format!("({} as? {})", self.operand(inner), self.ty(t)),
@@ -329,13 +330,16 @@ impl Emitter<'_> {
         self.type_at(e.span).map(|t| t.to_string())
     }
 
-    /// `x.count` on a string: its UTF-16 length, as Bloom defines it on every backend.
+    /// `x.field`. A string's `count` is Swift's own: grapheme clusters, as Bloom defines it on
+    /// every backend (ADR 0003).
     fn field(&mut self, base: &Expr, field: &Ident) -> String {
         let ty = self.receiver_type(base).unwrap_or_default();
         let b = self.postfix_base(base);
         match field.name.as_str() {
-            "count" if ty == "String" => format!("{b}.utf16.count"),
-            name => format!("{b}.{}", kw(name)),
+            name => {
+                let _ = ty;
+                format!("{b}.{}", kw(name))
+            }
         }
     }
 
@@ -398,8 +402,19 @@ impl Emitter<'_> {
         let trailing = self.trailing(call, e.span);
         let text = if call.parens || call.trailing.is_none() {
             format!("{callee}{q}({args}){trailing}")
+        } else if call.args.iter().all(|a| a.label.is_some() && matches!(a.value.kind, ExprKind::Closure(_))) {
+            // `row { } label: { "Go" }`: Swift's labelled trailing closures, as written.
+            let rest: Vec<String> = call
+                .args
+                .iter()
+                .map(|a| {
+                    let value = self.arg_value(&a.value);
+                    format!("{}: {value}", label(&a.label.as_ref().map(|l| l.name.clone()).unwrap_or_default()))
+                })
+                .collect();
+            format!("{callee}{q}{trailing} {}", rest.join(" "))
         } else {
-            format!("{callee}{q}{trailing}")
+            format!("{callee}{q}({args}){trailing}")
         };
         // `xs.prefix(2)` is an `ArraySlice` in Swift, `[T]` in Bloom.
         if let ExprKind::Field(base, method) = &call.callee.kind

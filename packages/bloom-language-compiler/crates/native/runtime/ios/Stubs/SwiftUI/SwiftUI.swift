@@ -6,13 +6,14 @@
 // real SwiftUI is imported. When BloomUI starts using an API not declared here, declare it
 // here with the SDK's signature (from the Xcode SDK's SwiftUI.swiftinterface), never a
 // looser one: a looser stub lets through code the real SDK rejects. Availability
-// annotations are kept so the iOS 26 paths read as they do in the SDK.
+// annotations are kept so the iOS 26 paths read as they do in the SDK. SwiftUI re-exports
+// CoreGraphics (`CGFloat`, `CGRect`); on Linux those are Foundation's, so it re-exports that.
 //
 // What this does NOT prove: layout, drawing, the real overload resolution of SwiftUI's
 // thousands of members, or the Apple SDK's concurrency annotations in full. The Mac lane
 // (ADR 0003, "iOS") builds against the real SDK.
 
-import Foundation
+@_exported import Foundation
 
 // ---- geometry ------------------------------------------------------------------------
 
@@ -166,6 +167,7 @@ public struct AnyView: _PrimitiveView {
   public init<V: View>(erasing view: V) {}
 }
 
+@MainActor @preconcurrency
 public protocol ViewModifier {
   associatedtype Body: View
   typealias Content = _ViewModifier_Content<Self>
@@ -509,7 +511,7 @@ public struct CGAffineTransform: Sendable {
 }
 
 public protocol Shape: Sendable, View {
-  func path(in rect: CGRect) -> Path
+  nonisolated func path(in rect: CGRect) -> Path
 }
 extension Shape {
   public var body: _ShapeView<Self, Color> { _ShapeView() }
@@ -526,24 +528,24 @@ public struct StrokeStyle: Sendable {
 public enum CGLineCap: Sendable { case butt, round, square }
 public enum CGLineJoin: Sendable { case miter, round, bevel }
 
-public struct Rectangle: Shape { public init() {}; public func path(in rect: CGRect) -> Path { Path() } }
-public struct Circle: Shape { public init() {}; public func path(in rect: CGRect) -> Path { Path() } }
+public struct Rectangle: Shape { public init() {}; nonisolated public func path(in rect: CGRect) -> Path { Path() } }
+public struct Circle: Shape { public init() {}; nonisolated public func path(in rect: CGRect) -> Path { Path() } }
 public struct Capsule: Shape {
   public init(style: RoundedCornerStyle = .continuous) {}
-  public func path(in rect: CGRect) -> Path { Path() }
+  nonisolated public func path(in rect: CGRect) -> Path { Path() }
 }
 public struct RoundedRectangle: Shape {
   public init(cornerRadius: CGFloat, style: RoundedCornerStyle = .continuous) {}
   public init(cornerSize: CGSize, style: RoundedCornerStyle = .continuous) {}
-  public func path(in rect: CGRect) -> Path { Path() }
+  nonisolated public func path(in rect: CGRect) -> Path { Path() }
 }
 public struct UnevenRoundedRectangle: Shape {
   public init(topLeadingRadius: CGFloat = 0, bottomLeadingRadius: CGFloat = 0, bottomTrailingRadius: CGFloat = 0, topTrailingRadius: CGFloat = 0, style: RoundedCornerStyle = .continuous) {}
-  public func path(in rect: CGRect) -> Path { Path() }
+  nonisolated public func path(in rect: CGRect) -> Path { Path() }
 }
 public struct AnyShape: Shape {
   public init<S: Shape>(_ shape: S) {}
-  public func path(in rect: CGRect) -> Path { Path() }
+  nonisolated public func path(in rect: CGRect) -> Path { Path() }
 }
 extension Shape where Self == Rectangle { public static var rect: Rectangle { Rectangle() } }
 extension Shape where Self == Capsule { public static var capsule: Capsule { Capsule() } }
@@ -828,4 +830,9 @@ public protocol Scene {}
 }
 public struct WindowGroup<Content: View>: Scene {
   public init(@ViewBuilder content: () -> Content) {}
+}
+
+public struct TextField<Label: View>: _PrimitiveView {}
+extension TextField where Label == Text {
+  public init<S: StringProtocol>(_ title: S, text: Binding<String>) {}
 }

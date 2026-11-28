@@ -83,7 +83,9 @@ const children = new Set();
 for (const [kind, node] of Object.entries(spec.nodes)) {
   if (kind === '$comment') continue;
   for (const constructor of node.constructors ?? []) {
-    const own = (node.modifiers ?? []).filter((m) => node.universal === false || !universal.includes(m));
+    // Every modifier the node lists is its own (a method of the node in BloomUI), a universal
+    // name included: the node's meaning of it (`GroupedSection.title`) is not the universal one.
+    const own = node.modifiers ?? [];
     ownModifiers.push([constructor, own]);
     const signature = spec.signatures[constructor] ?? [];
     if (signature.includes('...children')) children.add(constructor);
@@ -111,6 +113,8 @@ pub const UNIVERSAL: &[&str] = ${rustList(universal)};
 
 // ---- BloomUI's tokens, as Swift --------------------------------------------------------
 
+const withoutCommentOf = (table) =>
+  Object.fromEntries(Object.entries(table).filter(([key]) => key !== '$comment'));
 const SWIFT_KEYWORDS = new Set([
   'default', 'in', 'is', 'as', 'self', 'Self', 'init', 'Type', 'case', 'class', 'func', 'let',
   'var', 'if', 'else', 'for', 'while', 'return', 'switch', 'where', 'do', 'repeat', 'true',
@@ -167,12 +171,38 @@ ${arms.join('\n')}${total ? '' : '\n      default: nil'}
       }
     }`;
   }
+  if (set === 'color' || set === 'colorRole') {
+    const colorTable = withoutCommentOf(spec.colors);
+    const arms = primary.map(([name, token]) => {
+      const entry = colorTable[token];
+      const key = Array.isArray(entry) && typeof entry[0] === 'string' ? JSON.stringify(entry[0]) : 'nil';
+      return `      case .${swiftCase(name)}: ${key}`;
+    });
+    values += `
+
+    /// The theme colour this role paints from (\`ThemeColors\`' key, the spec's \`colors\`);
+    /// \`nil\` for a colour that is not the theme's (the surface fill a container publishes).
+    public var themeKey: String? {
+      switch self {
+${arms.join('\n')}
+      }
+    }`;
+  }
   swiftEnums.push(`  /// \`${set}\`: ${primary.length} token(s).
-  public enum ${typeName(set)}: String, Sendable, CaseIterable {
-${lines.join('\n')}${values}
+  public enum ${typeName(set)}: String, Sendable, CaseIterable, ExpressibleByStringLiteral {
+${lines.join('\n')}
+
+    /// A token written as its string (\`.spacing("xs")\`), which the checker has validated.
+    public init(stringLiteral value: String) { self = Self(rawValue: value) ?? .${swiftCase(primary[0][0])} }${values}
   }`);
 }
 const ramp = Object.entries(spec.typeRamp).filter(([k]) => k !== '$comment');
+const colorRoles = Object.keys(withoutCommentOf(spec.colors))
+  .map((token) => swiftName(token))
+  .filter((name) => name !== null);
+const colorValues = colorRoles
+  .map((name) => `  public static var ${swiftCase(name)}: BloomColor { BloomColor(.${swiftCase(name)}) }`)
+  .join('\n');
 const rampLines = ramp.map(
   ([name, [size, line, tracking, weight]]) =>
     `    ${JSON.stringify(name)}: TypeStyle(size: ${size}, lineHeight: ${line}, tracking: ${tracking}, weight: ${Number(weight)}),`,
@@ -199,6 +229,11 @@ ${swiftEnums.join('\n\n')}
   public static let typeRamp: [String: TypeStyle] = [
 ${rampLines.join('\n')}
   ]
+}
+
+/// Every colour role as a \`BloomColor\`, so \`.primary.opacity(0.1)\` reads as \`.bloom\` writes it.
+extension BloomColor {
+${colorValues}
 }
 `;
 

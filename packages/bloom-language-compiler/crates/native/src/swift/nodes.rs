@@ -23,6 +23,21 @@ pub fn is_own(constructor: &str, modifier: &str) -> bool {
     }
 }
 
+/// The spec's name of a modifier written in its 2.0 (SwiftUI) spelling.
+pub fn spec_name(modifier: &str) -> &str {
+    canonical(modifier)
+}
+
+/// Whether `modifier` is one every node takes (a `View` extension in BloomUI, `bloom`-prefixed).
+pub fn is_universal(modifier: &str) -> bool {
+    table::UNIVERSAL.contains(&canonical(modifier))
+}
+
+/// The modifiers whose meaning is SwiftUI's own, emitted as SwiftUI writes them.
+pub fn is_effect(modifier: &str) -> bool {
+    matches!(modifier, "task" | "onAppear" | "onDisappear" | "onChange" | "onOpenURL")
+}
+
 /// Whether `name` is one of BloomUI's constructors.
 pub fn is_node(name: &str) -> bool {
     table::OWN_MODIFIERS.binary_search_by(|(c, _)| c.cmp(&name)).is_ok() || EXTRA.contains(&name)

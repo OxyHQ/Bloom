@@ -1,0 +1,33 @@
+// Errors: an error type, `throws` and typed `throws(E)`, `do`/`catch`, `try?`, `defer`, `guard`.
+public enum APIError: Error, Equatable {
+  case offline
+  case status(Int)
+}
+
+func fetch(_ ok: Bool) throws(APIError) -> Int {
+  guard ok else { throw .offline }
+  return 200
+}
+
+func load(_ ok: Bool) -> String {
+  do {
+    let code = try fetch(ok)
+    return "ok \(code)"
+  } catch let error as APIError {
+    return error == .offline ? "offline" : "failed"
+  } catch {
+    return "unknown"
+  }
+}
+
+func maybe(_ ok: Bool) -> Int {
+  let value = try? fetch(ok)
+  return value ?? -1
+}
+
+func counted(_ log: [String]) -> Int {
+  var n = 0
+  defer { print("counted \(n)") }
+  for _ in log { n += 1 }
+  return n
+}
