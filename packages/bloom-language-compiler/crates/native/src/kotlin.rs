@@ -761,6 +761,15 @@ impl<'a> Emitter<'a> {
         if fields.is_empty() && s.generics.is_empty() {
             return format!("{vis}data object {name}{supers}{}", Self::braces(body));
         }
+        // `@Transparent` (one field, the value is that field's): a `@JvmInline value class`,
+        // its field's value at runtime, `==` the field's.
+        let transparent = self.file.checked.defs.iter().enumerate().any(|(id, d)| {
+            d.name == *name && self.file.checked.transparent.contains(&id)
+        });
+        if transparent && fields.len() == 1 && s.generics.is_empty() {
+            let field = fields[0].trim().trim_end_matches(',');
+            return format!("@JvmInline\n{vis}value class {name}({field}){supers}{}", Self::braces(body));
+        }
         format!(
             "@Immutable\n{vis}data class {name}{}(\n{}\n){supers}{}",
             Self::generics(&s.generics),
@@ -2306,7 +2315,12 @@ impl<'a> Emitter<'a> {
                 }
             }
             // A top-level function as a value (`xs.map(format)`): a function reference.
-            ExprKind::Name(n) if self.decls.funcs.contains_key(n) && !self.is_local(e) => {
+            // (A name the checker types as a value, a member field named as a function, is the field.)
+            ExprKind::Name(n)
+                if self.decls.funcs.contains_key(n)
+                    && !self.is_local(e)
+                    && !matches!(self.ty_of(e), Some(t) if !matches!(t, Ty::Fn(_))) =>
+            {
                 format!("::{}", kw(n))
             }
             ExprKind::Name(n) => kw(&n.replace('$', "p")),
