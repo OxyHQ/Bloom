@@ -1686,8 +1686,12 @@ impl Checker<'_> {
             self.args_unchecked(call);
             return Ty::Unknown;
         }
-        self.expr(&call.args[0].value, Some(&value));
+        // The setter first: it says what a chosen value is (`{ value in onChange([value]) }`, a
+        // `ReplyPermission`). The getter may be that or `none`, as SwiftUI's optional selection
+        // is (`.selection(Binding(get: c ? "anyone" : none, set: …))`: no row chosen).
         self.expr(&call.args[1].value, Some(&setter));
+        let optional = Ty::Option(Box::new(value.clone()));
+        self.expr(&call.args[0].value, Some(&optional));
         self.out.calls.insert(expr.id, CallRes::Binding);
         Ty::Binding(Box::new(value))
     }
