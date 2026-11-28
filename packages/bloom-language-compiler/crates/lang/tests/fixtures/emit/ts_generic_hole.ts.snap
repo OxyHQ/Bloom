@@ -1,0 +1,28 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { stats, useShallow, useTrendsStore } from "@/store";
+function $sorted<T>(items: readonly T[], before: (a: T, b: T) => boolean): readonly T[] {
+  return [...items].sort((a, b) => (before(a, b) ? -1 : before(b, a) ? 1 : 0));
+}
+
+const $fn0 = (state: any) => ({ trends: state.trends, summary: state.summary });
+export const Trends = view(function Trends() {
+"use no memo";
+const $ = $c(2);
+const picked = useTrendsStore(useShallow($fn0));
+let $t0;
+if ($[0] !== picked.summary) {
+$t0 = Text(picked.summary);
+$[0] = picked.summary;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+export function sortedColumns(): readonly unknown[] {
+return $sorted([...stats.columns], (a: typeof stats["columns"][number], b: typeof stats["columns"][number]) => b.value > a.value);
+}
+
