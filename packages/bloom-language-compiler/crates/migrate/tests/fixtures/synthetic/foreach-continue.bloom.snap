@@ -1,0 +1,20 @@
+// `xs.forEach((x, i) => { if (…) return; … })` is a `for` whose bare `return`s are `continue`s
+// (Swift's form). A callback that returns inside a loop of its own stays a closure call.
+
+public func keys(_ items: [{ id: String?, url: String? }]) -> [String] {
+  var out: [String] = []
+  for (i, item) in items.enumerated() {
+    let key = item.id || item.url
+    if key == none || key.isEmpty { continue }
+    // bloom: review: an optional interpolated as `?? ""`: JS printed `undefined` for it
+    out = [..out, "\(i):\(key ?? "")"]
+  }
+  out
+}
+
+public struct Keys: View {
+  let items: [{ id: String?, url: String? }]
+  var body: some View {
+    Text(keys(items).joined(", "))
+  }
+}

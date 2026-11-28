@@ -112,6 +112,16 @@ pub fn exposed_types(source: &str) -> Vec<String> {
     visibility::exposed(&file, source)
 }
 
+/// A token's Swift name in token set `set` (`"2xl"` in `space` → `xxl`), from the generated
+/// table: what `bloom migrate` writes for a string token (`.padding(.xxl)`).
+pub fn swift_token_name(set: &str, token: &str) -> Option<&'static str> {
+    swift_tokens::SWIFT_TOKENS
+        .iter()
+        .find(|(name, _)| *name == set)
+        .and_then(|(_, pairs)| pairs.iter().find(|(_, t)| *t == token))
+        .map(|(name, _)| *name)
+}
+
 pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
     let (file, comments, mut diagnostics) = parser::parse(source);
     // The syntax errors; a 0.x form's deprecation (a warning) is the checker's to report.

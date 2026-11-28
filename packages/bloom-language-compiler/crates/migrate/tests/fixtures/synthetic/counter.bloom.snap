@@ -1,0 +1,26 @@
+// A view with state, a handler, a functional update and a binding.
+
+// Where the count starts.
+
+public struct Counter: View {
+  let start: Float
+  var label: String? = none
+  @State private var count = start
+  @State private var loud = false
+  let shown = "\(label ?? "Count"): \(count)"
+
+  func increment() { count = count + 1 }
+
+  var body: some View {
+    VStack {
+      Text(shown).foreground(loud ? .primary : .muted)
+      HStack {
+        Button(Text("+")).onPress(increment)
+        Button(Text("reset")).onPress { count = start }
+      }
+      .spacing(.sm)
+      Toggle($loud).label("Loud")
+    }
+    .spacing(.md)
+  }
+}

@@ -1,0 +1,59 @@
+// `actions(function …)` and `menu(function …)` are structs conforming to `MenuActions` and
+// `MenuContent` (#1046): the props are stored `let`s, the hooks members, the result `body`.
+// Rows are builder lines; a props object handed on whole is rebuilt from the stored `let`s.
+
+import { console } from "js"
+import { useTranslation } from "react-i18next"
+
+public struct MoreProps {
+  let id: String
+  let title: String?
+  let canEdit: Bool
+  let label: String
+}
+
+public struct MoreActionsProps {
+  let id: String
+  let onEdit: () -> Unit
+}
+
+private func table(_ props: MoreActionsProps, _ open: (String) -> Unit) -> [String: () -> Unit] {
+  { open: { open(props.id) }, edit: props.onEdit }
+}
+
+public struct MoreActions: MenuActions {
+  let id: String
+  let onEdit: () -> Unit
+
+  let { t } = useTranslation()
+
+  var body: [String: () -> Unit] {
+    table({ id: id, onEdit: onEdit }, { id in console.log(t("menu.opened"), id) })
+  }
+}
+
+struct MoreRows: MenuContent {
+  let id: String
+  let canEdit: Bool
+  let title: String
+
+  var body: some View {
+    Item("Open").tag("open")
+    if canEdit {
+      Divider()
+      Item("Edit \(id)").tag("edit")
+    }
+  }
+}
+
+public func MoreMenu(_ trigger: View, _ arg1: MoreProps) -> View? {
+  let { id, title, canEdit, label } = arg1
+  if title != none && !title.isEmpty {
+    Menu(trigger, MoreRows(id: id, title: title, canEdit: canEdit)).label(label)
+  }
+}
+
+public func Heading(_ arg: { title: String }) -> View {
+  let { title } = arg
+  Text(title)
+}

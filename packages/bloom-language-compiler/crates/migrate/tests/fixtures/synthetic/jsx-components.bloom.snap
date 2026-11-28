@@ -1,0 +1,36 @@
+// A React component is a view when each return is an element: JSX, `toElement(…)`, `null`, a
+// body constant that is one (`const empty = … ? <A/> : null; … return empty`), or an arrow's
+// expression body (`(p) => p.ok ? <A/> : <B/>`).
+
+import { Card } from "./card"
+
+public struct List: View {
+  let title: String
+  let count: Float
+  let empty = count == 0 ? Card(title: "Nothing yet") : none
+
+  var body: some View {
+    if let empty = empty { empty } else { Text("\(title): \(count)") }
+  }
+}
+
+public struct Status: View {
+  let ok: Bool
+  var body: some View {
+    if ok { Card(title: "Ready") } else { Card(title: "Waiting") }
+  }
+}
+
+// A component that hands its children back (`children as React.ReactElement`) draws them.
+public struct Hover: View {
+  var title: String? = none
+  let children: View
+  var body: some View {
+    if title == none || title.isEmpty {
+      // bloom: review: `as React.ReactElement` dropped: annotate where the value lands if tsc needs it
+      children
+    } else {
+      Card(title: title!) { children }
+    }
+  }
+}

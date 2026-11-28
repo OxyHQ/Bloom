@@ -1,0 +1,348 @@
+//! `Embed(…)`: the boundary to React disappears where `.bloom` has the same
+//! thing. A TS component is a node with its props by name (spec 7.2), which
+//! bloomc compiles back to `Embed(jsx(C, props))`; an embedded tree
+//! (`Embed(<>{toElement(x)}</>)`) is the tree itself; a render-prop
+//! (`Embed((render) => <Link …>{render(x)}</Link>)`) is the component with `x`
+//! as its builder, compiled to the same render-prop.
+
+use oxc_ast::ast::{
+    Argument, BindingPattern, CallExpression, Expression, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXFragment,
+    JSXMemberExpressionObject,
+};
+use oxc_span::GetSpan;
+
+use crate::module::Tr;
+
+impl Tr<'_> {
+    pub fn embed(&mut self, call: &CallExpression) -> String {
+        let [arg] = call.arguments.as_slice() else {
+            return self.refuse("embed:arity", "`Embed` with other than one argument", call.span);
+        };
+        match arg {
+            Argument::JSXElement(el) => self.component(el),
+            Argument::JSXFragment(fragment) => {
+                let children: Vec<&JSXChild> = fragment.children.iter().filter(|c| !is_blank(c)).collect();
+                match children.as_slice() {
+                    [JSXChild::ExpressionContainer(c)] => match self.to_element_arg(&c.expression) {
+                        Some(inner) => self.expr(inner),
+                        None => self.refuse(
+                            "embed:fragment",
+                            "an `Embed` fragment that is not one `toElement(…)`",
+                            fragment.span,
+                        ),
+                    },
+                    // Several children: the fragment's children, one `Group`.
+                    [_, _, ..] => self.fragment_value(fragment),
+                    // `Embed(<></>)`: an element that draws nothing, an empty `Group`.
+                    [] => format!("{} {{}}", self.name("Group", fragment.span)),
+                    _ => self.refuse(
+                        "embed:fragment",
+                        "an `Embed` fragment that is not one `toElement(…)`",
+                        fragment.span,
+                    ),
+                }
+            }
+            Argument::ArrowFunctionExpression(arrow) => {
+                let param = match arrow.params.items.as_slice() {
+                    [p] => match &p.pattern {
+                        BindingPattern::BindingIdentifier(id) => Some(id.name.to_string()),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let (Some(param), Some(Expression::JSXElement(el))) =
+                    (param, arrow.get_expression().map(|e| e.without_parentheses()))
+                else {
+                    return self.refuse(
+                        "embed:render",
+                        "an `Embed` render function that is not one element",
+                        arrow.span,
+                    );
+                };
+                let saved = self.scope.render.replace(param);
+                let out = self.component(el);
+                self.scope.render = saved;
+                out
+            }
+            // JSX (or a conditional of it) is a node now: the boundary goes.
+            // (A mapped list stays a value: `xs.map { … }`, one `[View]`.)
+            other if self.is_view(other.to_expression()) => match other.to_expression().without_parentheses()
+            {
+                Expression::CallExpression(call) if crate::expr::is_map(call) => {
+                    self.expr(other.to_expression())
+                }
+                e => self.child(e),
+            },
+            other => {
+                // A TS value that is already a React node: it stays embedded.
+                let value = self.expr(other.to_expression());
+                format!("{}({value})", self.name("Embed", call.callee.span()))
+            }
+        }
+    }
+
+    /// `toElement(x)` (or the render prop's `render(x)`): `x`.
+    fn to_element_arg<'a>(&self, e: &'a JSXExpression<'a>) -> Option<&'a Expression<'a>> {
+        let Some(Expression::CallExpression(call)) = e.as_expression() else { return None };
+        let Expression::Identifier(id) = &call.callee else { return None };
+        let renders =
+            self.is_lang(&id.name, "toElement") || self.scope.render.as_deref() == Some(id.name.as_str());
+        match call.arguments.as_slice() {
+            [arg] if renders => arg.as_expression(),
+            _ => None,
+        }
+    }
+
+    /// `<C a={x} b>…</C>` as `C(a: x, b: true) { … }`.
+    pub fn component(&mut self, el: &JSXElement) -> String {
+        let name = match &el.opening_element.name {
+            JSXElementName::IdentifierReference(id) => {
+                // A local memo alias draws its view (`Tr::view_aliases`).
+                let name =
+                    self.view_aliases.get(id.name.as_str()).cloned().unwrap_or_else(|| id.name.to_string());
+                self.import_name(&name, id.span)
+            }
+            JSXElementName::MemberExpression(m) => {
+                let mut parts = vec![m.property.name.to_string()];
+                let mut object = &m.object;
+                loop {
+                    match object {
+                        JSXMemberExpressionObject::IdentifierReference(id) => {
+                            parts.push(self.import_name(&id.name, id.span));
+                            break;
+                        }
+                        JSXMemberExpressionObject::MemberExpression(inner) => {
+                            parts.push(inner.property.name.to_string());
+                            object = &inner.object;
+                        }
+                        JSXMemberExpressionObject::ThisExpression(t) => {
+                            return self.refuse("class", "`this` in JSX", t.span);
+                        }
+                    }
+                }
+                parts.reverse();
+                parts.join(".")
+            }
+            JSXElementName::Identifier(id) => {
+                return self.refuse("jsx:host", format!("the host element `<{}>`", id.name), id.span);
+            }
+            other => return self.refuse("jsx:name", "a namespaced JSX name", other.span()),
+        };
+        if el.opening_element.type_arguments.is_some() {
+            return self.refuse("ts:type-arguments", "type arguments on a JSX element", el.span);
+        }
+        let mut props = Vec::new();
+        let mut node_id = None;
+        for attribute in &el.opening_element.attributes {
+            let note = self.note(attribute.span().start);
+            match attribute {
+                // `{...p}`: its fields as arguments, where JSX put them (a later prop wins).
+                JSXAttributeItem::SpreadAttribute(s) => {
+                    // `{...props}` of props written out (2.0 has no `..props`): each stored
+                    // property by name, but those a later prop gives (JSX's later prop wins).
+                    if let Expression::Identifier(id) = s.argument.without_parentheses()
+                        && let Some(fields) = self.whole_props_fields(&id.name)
+                    {
+                        let later: Vec<String> = el
+                            .opening_element
+                            .attributes
+                            .iter()
+                            .skip_while(|a| a.span() != attribute.span())
+                            .filter_map(|a| match a {
+                                JSXAttributeItem::Attribute(a) => match &a.name {
+                                    JSXAttributeName::Identifier(k) => Some(k.name.to_string()),
+                                    _ => None,
+                                },
+                                _ => None,
+                            })
+                            .collect();
+                        // The callee's literal defaults are this view's too, so the forward fits.
+                        if let Some(defaults) = self.literal_defaults.get(name.as_str()).cloned() {
+                            for (key, value) in defaults {
+                                if fields.contains(&key)
+                                    && !self.scope.field_defaults.iter().any(|(k, _)| *k == key)
+                                {
+                                    self.scope.field_defaults.push((key, value));
+                                }
+                            }
+                        }
+                        for f in fields.iter().filter(|f| !later.contains(f)) {
+                            let value = self.name(f, id.span);
+                            props.push(format!("{f}: {value}"));
+                        }
+                        continue;
+                    }
+                    let value = self.expr(&s.argument);
+                    props.push(format!("{note}..{value}"));
+                }
+                JSXAttributeItem::Attribute(a) => {
+                    let JSXAttributeName::Identifier(key) = &a.name else {
+                        props.push(self.refuse("jsx:name", "a namespaced prop", a.span));
+                        continue;
+                    };
+                    if key.name == "key" {
+                        // A JSX `key` is the node's `.id(…)`.
+                        node_id = Some(match &a.value {
+                            Some(JSXAttributeValue::StringLiteral(s)) => {
+                                crate::expr::quote(s.value.as_str().unwrap_or_default())
+                            }
+                            Some(JSXAttributeValue::ExpressionContainer(c)) => {
+                                match c.expression.as_expression() {
+                                    Some(e) => self.expr(e),
+                                    None => self.refuse("jsx:key", "an empty `key`", a.span),
+                                }
+                            }
+                            _ => self.refuse("jsx:key", "a `key` that is not a value", a.span),
+                        });
+                        continue;
+                    }
+                    let value = match &a.value {
+                        None => "true".to_string(),
+                        Some(JSXAttributeValue::StringLiteral(s)) => {
+                            crate::expr::quote(s.value.as_str().unwrap_or_default())
+                        }
+                        Some(JSXAttributeValue::ExpressionContainer(c)) => match c.expression.as_expression()
+                        {
+                            Some(e) => self.prop_value(e),
+                            None => self.refuse("jsx:empty", "an empty prop expression", c.span),
+                        },
+                        Some(other) => self.refuse("jsx:element-prop", "an element as a prop", other.span()),
+                    };
+                    // `aria-pressed={x}`: a name Bloom cannot label, passed as JSX passes it (a
+                    // spread of a one-entry dictionary).
+                    if key.name.contains('-') {
+                        props.push(format!("{note}..[{}: {value}]", crate::expr::quote(&key.name)));
+                        continue;
+                    }
+                    props.push(format!("{note}{}: {value}", key.name));
+                }
+            }
+        }
+        let lines = self.jsx_children(&el.children);
+        // `<React.Fragment key={k}>…</React.Fragment>`: its children, one keyed `Group`.
+        let fragment = match name.split_once('.') {
+            Some((ns, "Fragment")) => self.react.get(ns).is_some_and(|e| e == "default" || e == "*"),
+            None => self.react.get(&name).is_some_and(|e| e == "Fragment"),
+            _ => false,
+        };
+        if fragment && props.is_empty() {
+            self.used.remove(name.split('.').next().unwrap_or_default());
+            let group = format!("{} {{\n{lines}\n}}", self.name("Group", el.span));
+            return match node_id {
+                Some(key) => format!("{group}.id({key})"),
+                None => group,
+            };
+        }
+        // A view of this module takes its children as the `children` prop (a `View`):
+        // one view, or a `Group` of them.
+        if !lines.is_empty() && self.views.contains(name.as_str()) {
+            let single = el.children.iter().filter(|c| !is_blank(c)).count() == 1
+                && !lines.starts_with("if ")
+                && !lines.starts_with("for ");
+            let children = if single {
+                lines.clone()
+            } else {
+                format!("{} {{\n{lines}\n}}", self.name("Group", el.span))
+            };
+            props.push(format!("children: {children}"));
+            let node = format!("{name}({})", props.join(", "));
+            return match node_id {
+                Some(key) => format!("{node}.id({key})"),
+                None => node,
+            };
+        }
+        let head = format!("{name}({})", props.join(", "));
+        let node = if lines.is_empty() { head } else { format!("{head} {{\n{lines}\n}}") };
+        match node_id {
+            Some(key) => format!("{node}.id({key})"),
+            None => node,
+        }
+    }
+
+    /// JSX children as builder lines: `{toElement(x)}` is `x`, `{cond && x}` an `if`,
+    /// `{xs.map(…)}` a `for`, an element a node, a fragment its children.
+    pub fn jsx_children(&mut self, children: &oxc_allocator::Vec<JSXChild>) -> String {
+        let mut lines = Vec::new();
+        for child in children {
+            if is_blank(child) {
+                continue;
+            }
+            let line = match child {
+                JSXChild::ExpressionContainer(c) => match self.to_element_arg(&c.expression) {
+                    Some(inner) => self.child(inner),
+                    None => match c.expression.as_expression() {
+                        Some(e) => self.child(e),
+                        None => continue,
+                    },
+                },
+                JSXChild::Element(inner) => self.component(inner),
+                JSXChild::Fragment(f) => self.jsx_children(&f.children),
+                JSXChild::Text(t) => self.refuse("jsx:text", "text inside a TS component", t.span),
+                JSXChild::Spread(s) => self.refuse("jsx:child", "a spread child `{...xs}`", s.span),
+            };
+            lines.push(line);
+        }
+        lines.join("\n")
+    }
+
+    /// A fragment as one value: its only child, or a `Group` of them.
+    pub fn fragment_value(&mut self, f: &JSXFragment) -> String {
+        let count = f.children.iter().filter(|c| !is_blank(c)).count();
+        // `<>{time}{count > 1 ? " · n" : ""}</>` (a prop): text of values, one string.
+        let text_only = count > 1
+            && f.children.iter().filter(|c| !is_blank(c)).all(|c| match c {
+                JSXChild::ExpressionContainer(e) => e
+                    .expression
+                    .as_expression()
+                    .is_some_and(|e| !self.is_view(e) && !crate::expr::is_nothing(e)),
+                JSXChild::Text(_) => true,
+                _ => false,
+            });
+        if text_only {
+            let mut out = String::from("\"");
+            for child in f.children.iter().filter(|c| !is_blank(c)) {
+                match child {
+                    JSXChild::ExpressionContainer(e) => {
+                        // `{' · '}`: its text in the string.
+                        if let Some(Expression::StringLiteral(s)) =
+                            e.expression.as_expression().map(|x| x.without_parentheses())
+                        {
+                            out.push_str(&crate::expr::escape(s.value.as_str().unwrap_or_default()));
+                            continue;
+                        }
+                        let value = self.expr(e.expression.to_expression());
+                        out.push_str(&format!("${{{value}}}"));
+                    }
+                    JSXChild::Text(t) => out.push_str(&crate::expr::escape(t.value.as_str())),
+                    _ => {}
+                }
+            }
+            out.push('"');
+            return out;
+        }
+        let lines = self.jsx_children(&f.children);
+        match count {
+            0 => self.refuse("jsx:fragment", "an empty fragment", f.span),
+            1 => lines,
+            _ => format!("Group {{\n{lines}\n}}"),
+        }
+    }
+
+    /// A prop: a JSX element there is a component node too.
+    fn prop_value(&mut self, e: &Expression) -> String {
+        match e.without_parentheses() {
+            Expression::JSXElement(el) => self.component(el),
+            Expression::JSXFragment(f) => self.fragment_value(f),
+            other => self.expr(other),
+        }
+    }
+}
+
+fn is_blank(child: &JSXChild) -> bool {
+    match child {
+        JSXChild::Text(t) => t.value.trim().is_empty(),
+        JSXChild::ExpressionContainer(c) => matches!(c.expression, JSXExpression::EmptyExpression(_)),
+        _ => false,
+    }
+}

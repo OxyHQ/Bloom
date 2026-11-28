@@ -1,0 +1,21 @@
+// Early returns become the body's `if`/`else`; truthiness is spelled out.
+
+public type Tone = "calm" | "loud"
+
+/// A badge: nothing without a title.
+public struct Badge: View {
+  let title: String
+  var subtitle: String? = none
+  let tone: Tone
+  let count: Float
+  var body: some View {
+    if !title.isEmpty {
+      let heading = tone == "loud" ? title.uppercased() : title
+      VStack {
+        Text(heading).font(.lg)
+        if let subtitle = subtitle { if !subtitle.isEmpty { Text(subtitle).foreground(.muted) } }
+        if count != 0 { Text("\(count)") }
+      }
+    }
+  }
+}

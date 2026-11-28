@@ -1154,7 +1154,9 @@ Formatting is idempotent and preserves comments.
 `bloomc migrate --from 0.x [--check] <paths…>` rewrites 0.x files in 2.0's forms, mechanically:
 `fn` → `func` (a parameter a call in the file labels keeps its label, the others become `_ name`,
 and a positional argument to a labelled one gets the label), `pub` → `public` (and the file's
-types a `public` declaration names become `public`), `${x}` → `\(x)`, `match … =>` → `switch …:`,
+types a `public` declaration names become `public`), `pub default view X` → the named `public
+struct X` (2.0's only default export is a route's; the TS files under the working directory that
+import or `jest.mock` it take it by name), `${x}` → `\(x)`, `match … =>` → `switch …:`,
 enum cases → `case`, struct fields → `let` / `var` (a field with a default), and
 `view X(p: T) { @state s = v; body { … } }` → `struct X: View { let p: T; @State private var s = v;
 var body: some View { … } }` (`@env` → `@Environment(…)`, `equal(a, b)` → `static func ==`). What

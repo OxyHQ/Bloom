@@ -1,0 +1,14 @@
+// A state setter in a statement's `?:` or `&&` (a handler's body): an `if`.
+
+public struct Steps: View {
+  let onClose: () -> Unit
+  @State private var step: "edit" | "review" = "edit"
+  @State private var seen = false
+
+  var body: some View {
+    VStack {
+      Button("Back").onPress { if step == "review" { step = "edit" } else { onClose() } }
+      Button("Seen").onPress { if !seen { seen = true } }
+    }
+  }
+}

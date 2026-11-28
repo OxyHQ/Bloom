@@ -1,0 +1,21 @@
+// Object literals are records, inline object types record types, and
+// string-literal unions stay unions.
+
+private type Size = "sm" | "lg"
+
+private func describe(_ item: { name: String, size: Size? }) -> { label: String, wide: Bool } {
+  let base = { label: item.name, wide: false }
+  { ..base, wide: item.size == "lg" }
+}
+
+public struct Item: View {
+  let name: String
+  let size: "sm" | "lg"
+  var body: some View {
+    Text(describe({ name: name, size: size }).label)
+  }
+}
+
+public func submitNote(_ onSubmit: ({ text: String, url: String }) -> Unit, _ text: String) {
+  onSubmit({ text: text.trimmed(), url: text })
+}

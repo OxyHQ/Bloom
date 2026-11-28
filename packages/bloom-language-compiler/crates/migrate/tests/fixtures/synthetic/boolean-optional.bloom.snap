@@ -1,0 +1,8 @@
+// `Boolean(x?.trim())`: an optional string's truthiness, `(x?.trimmed() ?? "") != ""`.
+
+public struct Alt: View {
+  var alt: String? = none
+  var body: some View {
+    Text(((alt?.trimmed() ?? "") != "") ? "Has alt text" : "No alt text")
+  }
+}

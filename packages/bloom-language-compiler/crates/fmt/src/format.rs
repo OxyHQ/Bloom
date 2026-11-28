@@ -33,6 +33,8 @@ pub struct Migration {
     /// Types a `public` declaration names: they become `public` too (0.x `pub` could name them).
     pub publicize: Vec<String>,
     pub notes: Vec<(Span, String)>,
+    /// The value refs (`@ref x = v`) of the view being printed: `Ref(v)` in `@State`, read as `x.value`.
+    pub refs: Vec<String>,
 }
 
 fn line() -> Doc {
@@ -341,9 +343,20 @@ impl<'a> Formatter<'a> {
     fn item(&mut self, item: &Item) -> Doc {
         let publicize = self.migrate.as_ref().is_some_and(|m| m.publicize.contains(&item.kind.name().name))
             && item.modifiers.visibility_span.is_none();
+        // A screen or a layout is its route file's default export in 2.0 without `default`.
+        let visibility = match &item.kind {
+            ItemKind::View(v)
+                if self.migrating_now()
+                    && item.visibility == Visibility::PubDefault
+                    && v.kind != ViewKind::View =>
+            {
+                Visibility::Public
+            }
+            _ => item.visibility,
+        };
         let modifiers = concat(vec![
             if publicize { text("public ") } else { Doc::Nil },
-            self.modifiers(item.visibility, &item.modifiers, false),
+            self.modifiers(visibility, &item.modifiers, false),
         ]);
         let kind = match &item.kind {
             ItemKind::Struct(StructDecl { name, generics: g, surface: Some(body), .. }) => {
@@ -547,7 +560,11 @@ impl<'a> Formatter<'a> {
                 }
             },
         );
-        concat(vec![head, self.braced(lines, span.end)])
+        let out = concat(vec![head, self.braced(lines, span.end)]);
+        if let Some(m) = &mut self.migrate {
+            m.refs.clear();
+        }
+        out
     }
 
     /// `: View, Equatable`.
@@ -691,9 +708,6 @@ impl<'a> Formatter<'a> {
                 Member::Effect(_) => {
                     why = Some("an `effect` becomes `.task(id:)`, `.onChange(of:)` or `.onAppear` by hand")
                 }
-                Member::State(state) if state.attr == StateAttr::Ref => {
-                    why = Some("an `@ref` becomes a `class` held in `@State` by hand")
-                }
                 Member::State(state) if matches!(state.attr, StateAttr::List | StateAttr::Record) => {
                     why = Some("`@list`/`@record` wait for BloomData's 2.0 `@Model`")
                 }
@@ -729,6 +743,22 @@ impl<'a> Formatter<'a> {
         let equatable =
             if v.members.iter().any(|m| matches!(m, Member::Equal(_))) { ", Equatable" } else { "" };
         let head = text(format!("struct {}: {protocol}{equatable} ", v.name.name));
+        let view_text = self.slice(span);
+        let refs: Vec<String> = v
+            .members
+            .iter()
+            .filter_map(|m| match m {
+                Member::State(state)
+                    if state.attr == StateAttr::Ref && host_ref(state, view_text).is_none() =>
+                {
+                    Some(state.name.name.clone())
+                }
+                _ => None,
+            })
+            .collect();
+        if let Some(m) = &mut self.migrate {
+            m.refs = refs;
+        }
         let lines = self.lines(
             &entries,
             |e| e.0,
@@ -745,6 +775,22 @@ impl<'a> Formatter<'a> {
                         parts.push(this.expr(default));
                     }
                     concat(parts)
+                }
+                // `@ref field: T? = none` a host view fills (`.ref(field)`): `ViewRef<T>()`;
+                // any other `@ref x = v`: a `Ref(v)`, read as `x.value`.
+                Entry::Member(Member::State(state)) if state.attr == StateAttr::Ref => {
+                    let name = state.name.name.clone();
+                    let value = match host_ref(state, view_text) {
+                        Some(inner) => text(format!("ViewRef<{}>()", this.slice(inner))),
+                        None => concat(vec![text("Ref("), this.expr(&state.value), text(")")]),
+                    };
+                    // A typed ref is annotated (`Ref<T>`): a type argument in an expression
+                    // could not hold a generic TS type (`Foreign<"…">`).
+                    let annotation = match (host_ref(state, view_text), &state.ty) {
+                        (None, Some(ty)) => format!(": Ref<{}>", this.slice(ty.span)),
+                        _ => String::new(),
+                    };
+                    concat(vec![text(format!("@State private var {name}{annotation} = ")), value])
                 }
                 Entry::Member(Member::State(state)) => {
                     let (attr, value) = match state.attr {
@@ -943,6 +989,9 @@ impl<'a> Formatter<'a> {
             ExprKind::None => text("none"),
             ExprKind::Unit => text("()"),
             ExprKind::Task(b) => concat(vec![text("task "), self.block(b, Layout::Own)]),
+            ExprKind::Name(name) if self.migrate.as_ref().is_some_and(|m| m.refs.contains(name)) => {
+                text(format!("{name}.value"))
+            }
             ExprKind::Name(name) => text(name.clone()),
             ExprKind::ImplicitMember(name) => text(format!(".{}", name.name)),
             ExprKind::Binding(path) => {
@@ -1242,7 +1291,19 @@ impl<'a> Formatter<'a> {
 
     fn if_chain(&mut self, i: &IfExpr) -> Doc {
         let cond = self.cond(&i.cond);
-        let mut parts = vec![text("if "), cond, text(" "), self.block(&i.then, Layout::Shared)];
+        // `if let r = r.value { … }`: inside, `r` is the unwrapped value, not the ref.
+        let shadowed = match &i.cond {
+            Cond::Let(Pattern { kind: PatternKind::Bind(name), .. }, _) => self
+                .migrate
+                .as_mut()
+                .and_then(|m| m.refs.iter().position(|r| *r == name.name).map(|at| m.refs.remove(at))),
+            _ => None,
+        };
+        let then = self.block(&i.then, Layout::Shared);
+        if let (Some(name), Some(m)) = (shadowed, self.migrate.as_mut()) {
+            m.refs.push(name);
+        }
+        let mut parts = vec![text("if "), cond, text(" "), then];
         if let Some(otherwise) = &i.otherwise {
             parts.push(text(" else "));
             parts.push(match otherwise.as_ref() {
@@ -1570,4 +1631,26 @@ fn swift_interpolation(literal: &str) -> String {
         i += ch.len_utf8();
     }
     out
+}
+
+/// The `T` of `@ref field: T? = none` when the view hands the ref to a host view
+/// (`.ref(field)`, `.inputRef(field)`, `ref: field`): its instance, a `ViewRef<T>()`.
+fn host_ref(state: &StateDecl, view: &str) -> Option<Span> {
+    let ty = state.ty.as_ref()?;
+    if !matches!(state.value.kind, ExprKind::None) {
+        return None;
+    }
+    let inner = match &ty.kind {
+        TypeKind::Optional(inner) => inner.span,
+        _ => return None,
+    };
+    let name = &state.name.name;
+    let handed =
+        [format!(".ref({name})"), format!(".inputRef({name})"), format!("ref: {name}")].iter().any(|form| {
+            view.match_indices(form.as_str()).any(|(i, _)| {
+                let after = view[i + form.len()..].chars().next();
+                after.is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
+            })
+        });
+    handed.then_some(inner)
 }

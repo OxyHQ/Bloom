@@ -1,0 +1,15 @@
+// `([['owned', 'Owned'], ['joined', 'Joined']] as const).map(([key, label]) => …)`: TS's readonly
+// tuples are Bloom tuples.
+
+public struct Sections: View {
+  let counts: [String: Float]
+  var body: some View {
+    VStack {
+      ([("owned", "Owned"), ("joined", "Joined")])
+      .map { arg in
+        let (key, label) = arg
+        Text("\(label): \(counts[key] ?? 0)").id(key)
+      }
+    }
+  }
+}

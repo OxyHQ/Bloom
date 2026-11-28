@@ -1,0 +1,25 @@
+// Guards the source had are kept, even where TS types the value present: JS reads them at run
+// time (a cache, a test's `as never`). A field the codemod declares from TS's type and the source
+// guards is written optional; its own fallbacks for a narrowed value are dropped.
+
+import { pathOf, type GuardPost } from "./guards"
+
+public struct Guards: View {
+  let post: GuardPost
+  let engagement: { likes: Float }?
+  var views: Float? = none
+  var onRate: ((Float) -> Unit)? = none
+  let ids = post?.authors?.map { a in a.id } ?? []
+  let first = post?.tags?[0] ?? ""
+  let path = pathOf()
+  let about = path?.endsWith("/about") ?? false
+  let likes = engagement?.likes ?? 0
+  let viewsLabel = views != none && views > 0 ? "\(views)" : ""
+
+  var body: some View {
+    VStack {
+      Text("\(ids.count) \(first) \(about) \(likes) \(viewsLabel)")
+      if let onRate = onRate { Text("rate").onPress { onRate(1) } }
+    }
+  }
+}

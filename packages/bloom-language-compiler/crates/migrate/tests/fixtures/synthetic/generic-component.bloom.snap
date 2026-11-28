@@ -1,0 +1,14 @@
+// A generic React component (`function Shell<TItem>(…)`) is 2.0's `struct Shell<TItem>: View`,
+// its members in 2.0's forms too (`@State private var`).
+
+public struct Shell<TItem>: View {
+  let items: [TItem]
+  let keyOf: (TItem) -> String
+  @State private var chosen = ""
+
+  var body: some View {
+    VStack {
+      for item in items { Text(keyOf(item)).id(keyOf(item)).onPress { chosen = keyOf(item) } }
+    }
+  }
+}

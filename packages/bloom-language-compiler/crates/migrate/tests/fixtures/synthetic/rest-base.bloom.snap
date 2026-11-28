@@ -1,0 +1,39 @@
+// `{ kind, ...visual }: P` where `interface P extends B` and the rest is exactly B's fields: the
+// rest is one stored property of `B`, and `X(props)` passes the own props by name and B's as a record.
+
+private struct Visual {
+  var size: String? = none
+  var tone: ("foreground" | "muted")? = none
+}
+
+public struct BadgeProps {
+  var size: String? = none
+  var tone: ("foreground" | "muted")? = none
+  var kind: String? = none
+  var isFederated: Bool? = none
+}
+
+private func marker(_ label: String, _ arg1: Visual) -> View {
+  let { size: sizeOrNone, tone } = arg1
+  let size = sizeOrNone ?? "15"
+  Text("\(label) \(size) \(tone ?? "muted")")
+}
+
+private struct BadgeMarker: View {
+  var kind: String? = none
+  var isFederated: Bool? = none
+  let visual: Visual
+  var body: some View {
+    VStack { marker(isFederated == true ? "remote" : (kind ?? "local"), visual) }
+  }
+}
+
+public struct Badge: View {
+  var size: String? = none
+  var tone: ("foreground" | "muted")? = none
+  var kind: String? = none
+  var isFederated: Bool? = none
+  var body: some View {
+    BadgeMarker(isFederated: isFederated, kind: kind, visual: { size: size, tone: tone })
+  }
+}

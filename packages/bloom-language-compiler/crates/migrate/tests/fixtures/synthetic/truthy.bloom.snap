@@ -1,0 +1,31 @@
+// JS truthiness of values the codemod cannot type is spelled from bloomc's types.
+
+import { useSession } from "./session"
+import { JSON } from "js"
+
+private func initial(_ nick: String? = none) -> String {
+  if nick == none || nick.isEmpty { return "" }
+  nick.slice(0, 1)
+}
+
+private func trimmedNick(_ nick: String? = none) -> String { nick != none ? nick.trimmed() : "" }
+
+private func titleOf(_ raw: String) -> String {
+  let parsed = JSON.parse(raw)
+  parsed.title || "Untitled"
+}
+
+public struct Greeting: View {
+  let session = useSession()
+  let signedIn = session.user != none
+  let nick = session.nick
+
+  var body: some View {
+    VStack {
+      if !session.title.isEmpty { Text(session.title) }
+      if signedIn && session.count == 0 { Text("Welcome") }
+      if nick != none && !nick.isEmpty { Text(nick) }
+      Text(initial(nick) + trimmedNick(nick) + titleOf(session.title))
+    }
+  }
+}

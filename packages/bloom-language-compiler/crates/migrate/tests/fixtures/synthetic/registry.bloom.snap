@@ -1,0 +1,16 @@
+// A module `let` of this file alone (a registry its one host fills) is Swift's file-scope
+// `private var`; an exported one stays refused.
+
+private var globalShowInfo: (() -> Unit)? = none
+
+public func showInfo() { globalShowInfo?.() }
+
+public struct InfoHost: View {
+  @State private var open = false
+
+  var body: some View {
+    Text(open ? "Open" : "Closed")
+    .onAppear { globalShowInfo = { open = true } }
+    .onDisappear { globalShowInfo = none }
+  }
+}

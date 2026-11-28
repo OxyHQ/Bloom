@@ -1,0 +1,30 @@
+// What a view did while drawing, done after the render instead: a call under a test runs when the
+// test turns true (a ref kept to the render's value is set the same way; `Ref` needs a package). A closure
+// typed by its declaration (`const f: F`, `useCallback<F>`) takes its parameters' types from it.
+
+import { logger, type OnUpdated, type Reporter, report } from "./reporter"
+
+public struct Band: View {
+  let trends: [String]
+  let failed: Bool
+  // bloom: review: TS did this on every render while the test held; here after the render it turns true in
+
+  let onEvent: Reporter = { event, position in report(event, position + trends.count) }
+  let onCard: Reporter = { event, position in
+    if event != "impression" { return }
+    onEvent(event, position)
+  }
+  let onUpdated: OnUpdated = { id, arg1 in
+    let { cleared } = arg1
+    if cleared { logger.warn(id) }
+  }
+
+  var body: some View {
+    Text("\(trends.count)")
+    .onPress {
+      onCard("press", 0)
+      onUpdated("x", cleared: true)
+    }
+    .task(id: failed) { if failed { logger.warn("Band: trends failed") } }
+  }
+}

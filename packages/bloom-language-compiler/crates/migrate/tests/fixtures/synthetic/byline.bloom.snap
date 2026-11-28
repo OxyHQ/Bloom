@@ -1,0 +1,60 @@
+// A list of a string and nodes spread into a text (PostItem's collaborators' byline): its
+// strings are text nodes. Props destructured from `props` are field reads, not the whole value.
+
+public struct Author {
+  let firstName: String
+  var href: String? = none
+}
+
+public struct Byline: View {
+  let authors: [Author]
+  let joiner: String
+  var body: some View {
+    HStack {
+      RawText {
+        authors
+        .enumerated()
+        .flatMap { (i, a) in
+          // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+          let separator = i == 0 ? "" : joiner
+          return [
+            RawText(separator),
+            a.href != none && !a.href.isEmpty ? Text(a.firstName).weight(.semibold) : RawText(
+              a.firstName,
+            ),
+          ]
+        }
+      }
+    }
+  }
+}
+
+public struct Variant {
+  let label: String
+  let rendered: Bool
+}
+
+// A ternary item: of two strings, its text; of a string and a node, the string branch's.
+public struct Variants: View {
+  let variants: [Variant]
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    RawText {
+      variants
+      .enumerated()
+      .flatMap {
+        (index, variant) in
+        [
+          RawText(index > 0 ? " · " : ""),
+          variant.rendered ? RawText(variant.label) : Text(variant.label).foreground(.muted),
+        ]
+      }
+    }
+  }
+}
+
+// A spread of a name (PostItem's context line) is the text's runs, not a builder line.
+public func runsText(..runs: [String?]) -> View {
+  // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+  Text(runs).weight(.semibold)
+}

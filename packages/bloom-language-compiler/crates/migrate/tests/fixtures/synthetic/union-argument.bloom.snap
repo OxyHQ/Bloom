@@ -1,0 +1,16 @@
+// `push(c ? { pathname, params } : "/search")` as a statement: a TS union argument whose
+// branches have no one Bloom type, so the call is made in each branch.
+
+import { push } from "./nav"
+
+public struct Search: View {
+  let query: String
+  func submit() {
+    let term = query.trimmed()
+    if !term.isEmpty { push({ pathname: "/search", params: { q: term } }) } else { push("/search") }
+  }
+
+  var body: some View {
+    Button("Search").onPress(submit)
+  }
+}

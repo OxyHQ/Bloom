@@ -1,0 +1,59 @@
+// Statements with a `.bloom` form: a `switch` is a `match`, `continue` a guard,
+// a local object or list built in place a `var` its writes reassign, a computed
+// key a dictionary, and a value `||` chain spelled from the types.
+
+private type Tab = "all" | "mentions" | "likes"
+
+public struct Profile {
+  var name: String? = none
+  var handle: String? = none
+}
+
+private func label(_ tab: Tab) -> String {
+  switch tab {
+  case "all":
+    return "All"
+  case "mentions", "likes":
+    return "Activity"
+  case _:
+    return "Other"
+  }
+}
+
+private func count(_ tags: [String]) -> [String: Float] {
+  var counts: [String: Float] = [:]
+  var seen: [String] = []
+  for tag in tags {
+    if tag != "" {
+      counts = counts.setting(tag, (counts[tag] ?? 0) + 1)
+      seen = [..seen, tag]
+    }
+  }
+  counts.setting(seen.count > 0 ? "last" : "none", seen.count)
+}
+
+public struct Header: View {
+  var profile: Profile? = none
+  let title: String
+  @State private var shown = title
+  @State private var synced = title
+  // bloom: review: TS adjusted state while drawing; here an effect does it after the render (one render with the earlier state)
+
+  let name = ((profile?.name ?? "") == "" ? ((profile?.handle ?? "") ==
+    "" ? title : profile?.handle ?? "") : profile?.name ?? "")
+
+  var body: some View {
+    VStack {
+      Text(name)
+      Text(shown)
+      Text(label("all"))
+    }
+    .onChange(of: title) {
+      _, _ in
+      if synced != title {
+        synced = title
+        shown = title
+      }
+    }
+  }
+}

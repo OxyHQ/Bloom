@@ -1,0 +1,47 @@
+// A private hook with an effect, used by one view, is the view's own code: its effect is the
+// view's `.task(id:)`, and a name the view already uses is renamed after the hook. A closure that
+// reads a name declared below it moves below that name. An indexed `every` takes the pairs, and
+// an async call a `then` callback ends with is a task.
+
+import { prefetch, revalidate } from "./prefetch"
+
+public struct Thread: View {
+  let postId: String
+  let ids: [String]
+  @State private var parents: [String] = []
+
+  // Starts the replies' read as soon as the screen knows its post.
+  let prefetchPostId: String = !postId.isEmpty ? "\(postId)" : ""
+  let depth: Float = 2
+
+  let ready = prefetchPostId.count > 0
+
+  func loadParent(_ parentId: String) async {
+    // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+    switch await revalidate(parentId) {
+    case let .ok(fresh):
+      parents = [..parents, fresh?.parentId ?? parentId]
+    case .err(_):
+      break
+    }
+  }
+  let heading = ids.enumerated().all({ (index, part) in part.count > index }) ? "Thread" : "Replies"
+  func title() -> String { "\(heading) (\(parents.count))" }
+
+  var body: some View {
+    VStack { Text(title()) }
+    .onPress {
+      task {
+        do {
+          let fresh = try await revalidate(postId)
+          if fresh == none { return }
+          loadParent(fresh.parentId ?? postId)
+        } catch {}
+      }
+    }
+    .task(id: (prefetchPostId, ready, depth)) {
+      if !ready { return }
+      prefetch(prefetchPostId, depth)
+    }
+  }
+}

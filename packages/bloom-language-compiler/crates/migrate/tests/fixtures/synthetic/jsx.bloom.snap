@@ -1,0 +1,22 @@
+// A React component that draws JSX is a view: TS components are nodes with
+// their props by name, a `key` is `.id(…)`, `memo` goes (a view is memoised)
+// and `toElement` disappears.
+
+import { Card } from "./card"
+
+public struct NameList: View {
+  let names: [String]
+  var footer: View? = none
+  var body: some View {
+    if names.count == 0 {
+      Card(title: "Nobody")
+    } else {
+      // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+      Card(title: "People") {
+        VStack { for n in names { Text(n).id(n) } }
+        for n in names { Card(title: n).id(n) }
+        if let footer = footer { footer }
+      }
+    }
+  }
+}

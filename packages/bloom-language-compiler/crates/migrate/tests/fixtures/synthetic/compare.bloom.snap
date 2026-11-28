@@ -1,0 +1,11 @@
+// A memo comparator is the view's `equal` member.
+
+public struct Row: View, Equatable {
+  let id: String
+  let title: String
+  static func == (prev: Self, next: Self) -> Bool { prev.id == next.id }
+
+  var body: some View {
+    Text(title)
+  }
+}

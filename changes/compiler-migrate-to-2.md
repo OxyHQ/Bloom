@@ -1,0 +1,60 @@
+---
+package: '@oxy.so/bloom-language-compiler'
+bump: minor
+section: Added
+---
+
+- `bloom migrate <paths…>` takes embedded-language `.tsx` modules to Bloom 2.0. A file is migrated only when its 2.0 text compiles with 0 errors in the migration mode, and the rest are refused with reasons (`--report`). The forms it writes:
+  - `struct X: View`, typed tokens, SwiftUI's names and effects as `.onAppear`/`.task(id:)`/`.onChange(of:)`;
+  - `do`/`catch` and `String(localized:)`;
+  - `xs.at(i)` where TS read past the end, `x!` where TS's flow proved a value present, and `Ref(v)`/`ViewRef<T>()` for refs;
+  - React's stale reads as snapshots;
+  - JS's member names kept on `Foreign` values.
+- `bloom migrate --from 0.x` writes a `pub default view X` as the named `public struct X`, and the TS files that import or `jest.mock` it take it by name.
+- The migration mode in a build: `@oxy.so/bloom-language-compiler/jest` takes `{ allowTsImports: true }` and `withBloomLanguage(config, { allowTsImports: true })` passes it to Metro (`bloom-lang-dts --allow-ts-imports` for the declarations), so an app with a `Package.bloom` can run `bloom migrate`'s output (which still imports TS by path) while its port is under way.
+- `bloom migrate --write` draws a migrated view's JSX in the files that import it as `toElement(X({ … }))` (a `key` is `toElement`'s second argument), importing `toElement` where needed.
+- A view that hands its props on whole has them written out, and passes each one (`Row(post: post, …)`). Rest props (`{ label, ...menu }: P & { label }`) are one stored property of `P`. A local function of one destructured object takes labelled parameters.
+- TanStack's `useQuery({ queryKey, queryFn })` is drawn with an app's `TanStackQuery` binding module (`useQuery(QueryOptions(…))`) when the file reads only the options and result fields the binding declares.
+- `actions(function …)` and `menu(function …)` are `struct X: MenuActions` and `struct X: MenuContent`, and a generic component is `struct X<T>: View`. An intersection alias of the file's object types is one struct. A menu's row list, `{c && xs?.map(…)}` and a setter in a statement's `?:` or `&&` are written as builder lines and `if`s.
+- More TS forms with a 2.0 spelling:
+  - an inline `as const` string list is a module constant of its literals' union, and an `as const` list of pairs is a list of tuples;
+  - `padStart`/`padEnd` are `paddingStart`/`paddingEnd`;
+  - `Boolean(x?.trim())` and a value `a && "…"` keep JS's truthiness;
+  - `[value, onValueChange]` is a `Binding`;
+  - a keyed write is a subscript set, and a `switch` that returns from every case has no `case _`.
+- Round 10 (lang-mention-10):
+  - reads TS had typed are spelled as Bloom types them: `x as T['k']` where a union is expected, a called `Record` read (`ICONS[k]!`), `s.slice(n)`, i18next's `t(key, "default", { … })`, optional members tested for their truthiness (narrowed), and a type-guard `filter` (`compactMap`);
+  - a value built by a local closure is one member; a closure's optional parameter is `T?`, passed as `none`;
+  - a `defineModifier` made in place, or inside another, is a modifier value; a list pattern with defaults reads `at(i) ?? d`; `function f<T>` keeps its type parameters, and a generic view's members are 2.0's;
+  - a `switch`'s `never` default is Swift's exhaustive `switch`; a TS component's `aria-pressed` is `..["aria-pressed": x]`; `ReadonlySet` is `Set`; `Embed(<></>)` is an empty `Group`;
+  - a module `let` of one file is a file-scope `private var` (needs the compiler's #1058).
+- Round 11 (lang-mention-11):
+  - a private hook with an effect, used by one view, is spliced into it (its effect the view's `.task(id:)`); a closure that reads a name declared below it moves below it;
+  - what a view did while drawing runs after the render: a ref kept to the render's value and a call under a test are `.task(id:)`;
+  - a closure typed by its declaration (`const f: F`, `useCallback<F>`) takes its parameters' types from it;
+  - a record list whose items differ in their keys is TS's union of shapes (`label: String?`); a function's `ReactNode` parameter is `View?`, and a string there is `RawText`;
+  - a list the source tests is optional; an optional string among a text's runs, `!!x?.trim()`, a `Record` read destructured;
+  - an imported base type's fields are written out (`extends`, intersections, `Pick`/`Omit`); a React component returning an element is a view; a JSX spread of written-out props passes each field;
+  - JS's locale number formatting is FormatStyle (`toLocaleString()`, `Intl.NumberFormat`; needs the compiler's #1065).
+- Round 12 (lang-mention-12):
+  - JS's `Date` is the standard library's (a JS `Date` itself): `new Date()` is `Date.now`, `new Date(ms)` `Date(millisecondsSince1970:)`, `new Date(iso)` `try? Date(s, strategy: .iso8601)` (JS's Invalid Date as a value), the getters `components()`'s fields, `new Date(y, m, d)` and `Date.UTC` the calendar's `date(year:month:day:)`, and `setDate` on a local midnight its day's date;
+  - `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` and `Intl.DateTimeFormat` are `formatted(…)` with ECMA-402's defaults written out, `?.formatted(…) ?? "Invalid Date"` for a parse that may fail (needs the compiler's #1066);
+  - what TS's flow proved is read so bloomc narrows it: `!Array.isArray(x)` is `x == none`, a tested operand `p!.w!`, an aliased test (`hasName ? name!`), and a TS callback's index `xs[i.truncated()]`;
+  - rest props that are exactly a local base interface (`interface P extends B`) are one stored property of `B`; a function's string returns in a `switch` type it `String`.
+- Round 13 (lang-mention-13):
+  - a hook function's `useState` is its hook-local `@State var x` (read as `x`, written as `x = …`); an object TS holds for its identity stays React's `useState`;
+  - `break`/`continue` in a loop are Swift's; `!=` on a type parameter makes it `T: Equatable`; a `slice` bound is `n.truncated()`; `x?.[0]` on a present tuple is `x.0`; `f<T>()` returning `G<T>` is typed `G<T>`;
+  - `{ data: xs = [] }` binds `xsOrNone` (no `let` shadows another in its scope); a `screen()` the route draws inside a wrapper is refused until `ViewModifier`;
+  - `--write`: a migrated route's screen stays `<X />` in its TS importers, `.bloom` importers take a default by its name, and a `jest.mock` of a migrated module's views draws each mocked component as the view's node.
+- Round 14 (lang-mention-14):
+  - a Bloom list method on a TS value Bloom could not type (B0601) types the value's binding, `let names: [String]` for `joined`, `[Foreign]` otherwise (a closure's parameter too); on a member chain the renamed member is TS's own again;
+  - `x || undefined` of a member is JS's falsy `none`; `Boolean(x)` of a TS value stays `!!x` where it is a value (`enabled:`), and is dropped where bloomc types `x` a `Bool` or in an `if` head;
+  - React's `useId` is the view's `UniqueID` state, read as `id.string`;
+  - `--write`: `export { default } from` and `lazy(() => import(…))` take the default by its name; a non-route module's default `screen()` is named; a renamed default with a platform fork beside it is refused (`module:platform-fork`), and a forked module's importers keep the bare path.
+- Round 15 (lang-mention-15):
+  - `e instanceof Error ? e.message : fallback` is `(e as? JSError)?.message ?? fallback` (needs the compiler's #1066); a TS `===` on an object that holds what has no equality is Swift's `===`;
+  - a local function's `ReactNode` parameter that only goes to a TS component's prop, every call giving it text, is `String?`: the component draws the TS's text in its own `Text`, with no nested `Text`; a fragment's string literals are part of its string;
+  - JS's `Number(s)` of a string the file types is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)` (JS's blank 0 and `NaN`), of an `Int` `n.toFloat()`; `Number.isNaN`, `Number.NaN` and `Number.MAX_SAFE_INTEGER` are the stdlib's or the number.
+  - an `effect(id:)` whose top-level `defer` would run as soon as its `.task` body returns (React ran it on unmount or a deps change) is refused until the stdlib's `Task.cancellation` (`repros/mention15/task-defer-runs-at-once`);
+  - TS `unknown` is the stdlib's `JSONValue`, and `typeof x === "object"` on one, with `null` ruled out by its chain, is `x.object != none || x.array != none`;
+  - JS regexes are the stdlib `Regex`: `Regex(pattern:flags:)`, `isMatch`, `firstMatch(in:)` and `group(n)`, `replacing(in:with:)` and `split`.

@@ -1,0 +1,14 @@
+// `x || ''` on a value TS types present (a type argument's record) is a guard: the codemod
+// writes `x ?? ""` and, since bloomc finds nothing to fall back from, declares the record's
+// field optional, so the guard stays.
+
+import { useParams } from "./params"
+
+public struct Topic: View {
+  let { name }: { name: String? } = useParams()
+  let term = name ?? ""
+
+  var body: some View {
+    Text(term)
+  }
+}
