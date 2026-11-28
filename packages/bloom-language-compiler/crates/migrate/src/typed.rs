@@ -252,6 +252,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     .then(|| (end, end, format!(", {receiver}.count")))
                 })
             }
+            // A closure's optional parameters (`(a, b?: T) =>`, written `b: T?`) the call leaves out:
+            // `none`, as JS passes `undefined`. (bloomc points at the last argument given.)
+            ("B0207", _)
+                if d.message.starts_with("missing argument(s): `")
+                    && d.message != "missing argument(s): ``"
+                    && source[end..].starts_with(')') =>
+            {
+                let missing = d.message.matches('`').count() / 2;
+                Some((end, end, ", none".repeat(missing)))
+            }
             ("B0207", _) if d.message == "missing argument(s): ``" => call_args(source, start, end)
                 .filter(|(a, b)| {
                     let inner = &source[*a..*b];
