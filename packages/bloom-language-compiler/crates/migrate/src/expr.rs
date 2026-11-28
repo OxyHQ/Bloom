@@ -1218,15 +1218,18 @@ impl Tr<'_> {
             let body = self.closure_body(arrow);
             return format!("({range}).{} {{ {i} in\n{body}\n}}", member.property.name);
         }
-        // `xs.map((x, i) => …)`: `xs.enumerated().map { (i, x) in … }`.
-        if let Some((member, x, i, arrow)) = indexed_callback(call, &["map", "flatMap"]) {
+        // `xs.map((x, i) => …)`: `xs.enumerated().map { (i, x) in … }`. `every`/`some` give a
+        // `Bool` either way, so they take the pairs too (then `all`/`any`).
+        if let Some((member, x, i, arrow)) = indexed_callback(call, &["map", "flatMap", "every", "some"]) {
             let list = self.expr(&member.object);
             let (x, i) = (self.bind(x, arrow.span), self.bind(i, arrow.span));
             let body = self.closure_body(arrow);
-            return format!(
-                "{list}.enumerated().{}{{ ({i}, {x}) in\n{body}\n}}",
-                member.property.name.as_str().to_owned() + " "
-            );
+            let method = member.property.name.as_str();
+            // A test reads in a condition, where a trailing closure would be the `if`'s block.
+            if matches!(method, "every" | "some") {
+                return format!("{list}.enumerated().{method}({{ ({i}, {x}) in\n{body}\n}})");
+            }
+            return format!("{list}.enumerated().{method} {{ ({i}, {x}) in\n{body}\n}}");
         }
         match self.callee(call) {
             Callee::Embed => self.embed(call),
@@ -1742,15 +1745,14 @@ impl Tr<'_> {
         let conditional = children.iter().any(|a| a.as_expression().is_some_and(|e| is_conditional_child(e)));
         // A spread child (`...xs.map(…)`) is a `for` line, which only a builder takes.
         // A spread of a name (`Text(...runs)`) stays a spread argument.
-        let spread = children.iter().any(|a| match a {
-            Argument::SpreadElement(s) => match s.argument.without_parentheses() {
+        let spread = children.iter().any(|a| {
+            matches!(a, Argument::SpreadElement(s) if matches!(
+                s.argument.without_parentheses(),
                 Expression::CallExpression(_)
-                | Expression::ConditionalExpression(_)
-                | Expression::LogicalExpression(_)
-                | Expression::ArrayExpression(_) => true,
-                _ => false,
-            },
-            _ => false,
+                    | Expression::ConditionalExpression(_)
+                    | Expression::LogicalExpression(_)
+                    | Expression::ArrayExpression(_)
+            ))
         });
         let builder =
             !children.is_empty() && (children.len() >= 2 || conditional || spread || STACKS.contains(&ctor));

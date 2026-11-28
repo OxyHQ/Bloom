@@ -210,6 +210,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 }
             }
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
+            // An async call a closure ends with, where the closure gives `Unit` (TS's unawaited
+            // promise in a `then` callback): started as a task.
+            ("B0201", _)
+                if d.message == "expected `Unit`, found `async Unit`"
+                    && text.ends_with(')')
+                    && !text.starts_with('{')
+                    && !source[..start].ends_with("await ") =>
+            {
+                Some((start, end, format!("task {{\nawait {text}\n}}")))
+            }
             // `await f()` of a call that is not async (TS awaited a plain value): the
             // call; a `task { await f() }` around it alone is the call too.
             ("B0215", _)
