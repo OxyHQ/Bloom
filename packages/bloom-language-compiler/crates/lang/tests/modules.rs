@@ -92,6 +92,25 @@ fn a_path_import_of_an_own_file_is_dropped() {
     assert!(!out.warnings.iter().any(|d| d.code == "B0901"), "{:?}", out.warnings);
 }
 
+/// A `@jsOptions` function of another file of the module is called with one object there too.
+#[test]
+fn a_js_options_function_is_called_with_an_object_from_a_sibling() {
+    let root = package(
+        "js-options",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Scroll.bloom",
+                "@jsOptions\npublic func shouldScroll(tab: String, isWeb: Bool = false) -> Bool { !isWeb && tab == \"a\" }\n",
+            ),
+            ("Sources/Feed/Use.bloom", "func use() -> Bool { shouldScroll(tab: \"a\") }\n"),
+        ],
+    );
+    let out = build(&root, "Sources/Feed/Use.bloom", &Options::default());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(out.code.contains("shouldScroll({ tab: \"a\" })"), "{}", out.code);
+}
+
 #[test]
 fn app_modules_import_no_paths() {
     let root = package(

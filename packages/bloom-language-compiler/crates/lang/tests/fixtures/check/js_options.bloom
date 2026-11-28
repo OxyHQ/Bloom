@@ -1,0 +1,16 @@
+// `@jsOptions` names each parameter's field by its label: `_` and a rest have none.
+@jsOptions
+public func positional(_ tab: String, isWeb: Bool) -> Bool { isWeb }
+
+@jsOptions
+public func rest(..tags: [String]) -> Int { tags.count }
+
+public func calls() -> Bool {
+  // Bloom calls it with labels, as any function.
+  shouldScroll(tab: "a")
+}
+
+@jsOptions
+func shouldScroll(tab: String) -> Bool { tab == "a" }
+
+public func wrong() -> Bool { shouldScroll("a") }
