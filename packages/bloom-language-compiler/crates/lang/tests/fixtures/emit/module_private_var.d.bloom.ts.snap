@@ -1,0 +1,4 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function showChannelInfo(): void;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ChannelInfoHost())`), or from TSX as `toElement(ChannelInfoHost())`. */
+export declare const ChannelInfoHost: () => ComposedView;

@@ -491,6 +491,9 @@ pub struct ConstDecl {
     pub ty: Option<TypeExpr>,
     pub value: Expr,
     pub span: Span,
+    /// `private var x: T = v` at file scope (2.0): the module's own mutable value, a JS module
+    /// `let`. Nothing re-renders on it: it is no dependency and no state.
+    pub mutable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

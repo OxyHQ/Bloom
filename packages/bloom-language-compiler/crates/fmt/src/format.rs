@@ -368,7 +368,8 @@ impl<'a> Formatter<'a> {
             ItemKind::Fn(f) => self.fn_decl(f),
             ItemKind::View(v) => self.view_decl(v),
             ItemKind::Const(c) => {
-                self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
+                let keyword = if c.mutable { "var " } else { "let " };
+                self.binding_decl(keyword, text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
             ItemKind::Class(c) => {

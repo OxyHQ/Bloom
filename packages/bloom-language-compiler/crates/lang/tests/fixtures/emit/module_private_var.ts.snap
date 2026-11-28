@@ -1,0 +1,26 @@
+import { Text, view } from "@oxy.so/bloom-language";
+import { useEffect, useState } from "react";
+
+let globalShowChannelInfo: (() => void) | undefined = undefined;
+
+export function showChannelInfo(): void {
+globalShowChannelInfo?.();
+}
+
+const $view0 = Text("Channels");
+export const ChannelInfoHost = view(function ChannelInfoHost() {
+"use no memo";
+const [open, setOpen] = useState<boolean>(false);
+useEffect(() => {
+globalShowChannelInfo = () => {
+setOpen(true);
+};
+}, []);
+useEffect(() => {
+return () => {
+globalShowChannelInfo = undefined;
+};
+}, []);
+return $view0;
+});
+

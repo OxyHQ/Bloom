@@ -890,8 +890,11 @@ impl<'a> Emitter<'a> {
                 if literal && !matches!(c.value.kind, ExprKind::List(_)) {
                     value.s(" as const");
                 }
-                let mut out =
-                    Frag::at(item.span, format!("{export}const {}{annotation} = ", js_name(&c.name.name)));
+                let keyword = if c.mutable { "let" } else { "const" };
+                let mut out = Frag::at(
+                    item.span,
+                    format!("{export}{keyword} {}{annotation} = ", js_name(&c.name.name)),
+                );
                 out.f(value).s(";\n");
                 out
             }
