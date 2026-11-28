@@ -1,0 +1,17 @@
+// A function that does not await fits an `async` function type (Swift's): the call site still
+// gets a promise. One that does not throw fits a `throws` type too.
+func count() -> Int { 2 }
+
+public let one: () async -> Int = { 1 }
+
+public let two: () async throws -> Int = count
+
+public func run(_ work: () async -> Int) async -> Int { await work() }
+
+public func both() async -> Int {
+  let a = await run { 3 }
+  let b = await run(count)
+  return a + b
+}
+
+public let checked: (String) throws -> Int = { s in s.count }
