@@ -1,0 +1,15 @@
+/// A section whose selection may be no row (ReplySettingsMenu).
+public type ReplyPermission = "anyone" | "followers" | "nobody"
+
+public struct Rows: MenuContent {
+  let anyone: Bool
+  let nobody: Bool
+  let onChange: ([ReplyPermission]) -> Unit
+  var body: some View {
+    Section {
+      Item("Anyone").tag("anyone")
+      Item("Nobody").tag("nobody")
+    }
+    .selection(Binding(get: anyone ? "anyone" : nobody ? "nobody" : none, set: { value in onChange([value]) }))
+  }
+}

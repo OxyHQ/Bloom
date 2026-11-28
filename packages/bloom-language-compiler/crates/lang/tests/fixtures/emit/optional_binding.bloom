@@ -1,0 +1,30 @@
+// A binding's getter may be the value or `none`, as SwiftUI's optional selection is (lang-mention-9's
+// optional-selection, Mention's ReplySettingsMenu): the setter says what a chosen value is, and
+// `.selection` takes `[T | undefined, (value: T) => void]`, `undefined` being no row chosen.
+public type ReplyPermission = "anyone" | "followers" | "nobody"
+
+public struct Rows: MenuContent {
+  let anyone: Bool
+  let nobody: Bool
+  let onChange: ([ReplyPermission]) -> Unit
+  var body: some View {
+    Section {
+      Item("Anyone").tag("anyone")
+      Item("Nobody").tag("nobody")
+    }
+    .selection(Binding(get: anyone ? "anyone" : nobody ? "nobody" : none, set: { value in onChange([value]) }))
+  }
+}
+
+// A present getter is one too.
+public struct Picker: View {
+  @State var choice: ReplyPermission = "anyone"
+  var body: some View {
+    Menu(Text("Who")) {
+      Section {
+        Item("Anyone").tag("anyone")
+      }
+      .selection(Binding(get: choice, set: { value in choice = value }))
+    }
+  }
+}
