@@ -24,11 +24,33 @@ export function both(p: Prefs): Prefs {
 return toggled(toggled(p, "hideLikes"), "hideReplies");
 }
 
+export function readWritable(p: Prefs, key: $KeyPath<Prefs, boolean>): boolean {
+return read(p, key);
+}
+
+export interface Counts {
+  readonly likes: number;
+  readonly title: string;
+  readonly id: string;
+}
+
+export function bumped(c: Counts, key: $KeyPath<Counts, number>): Counts {
+let next = c;
+next = ({ ...next, [key]: next[key] + (1) } as typeof next);
+next = ({ ...next, ["title"]: next["title"] + ("!") } as typeof next);
+return next;
+}
+
+export function identity(c: Counts): string {
+return c["id"];
+}
+
 const $view0 = Button(Text("Likes"));
 export const PrivacyToggles = view(function PrivacyToggles() {
 "use no memo";
-const $ = $c(4);
+const $ = $c(7);
 const [prefs, setPrefs] = useState<Prefs>(() => ({ hideLikes: false, hideReplies: false, name: "" }));
+const [counts, setCounts] = useState<Counts>(() => ({ likes: 0, title: "", id: "" }));
 let flip: (key: $KeyPath<Prefs, boolean>) => void;
 if ($[0] !== prefs) {
 flip = (key: $KeyPath<Prefs, boolean>): void => {
@@ -39,13 +61,27 @@ $[1] = flip;
 } else {
 flip = $[1];
 }
-let $t0;
-if ($[2] !== flip) {
-$t0 = $view0.onPress(() => flip("hideLikes"));
-$[2] = flip;
-$[3] = $t0;
+let bump: (key: $KeyPath<Counts, number>) => void;
+if ($[2] !== counts) {
+bump = (key: $KeyPath<Counts, number>): void => {
+setCounts((counts) => ({ ...counts, [key]: counts[key] + (2) } as typeof counts));
+};
+$[2] = counts;
+$[3] = bump;
 } else {
-$t0 = $[3];
+bump = $[3];
+}
+let $t0;
+if ($[4] !== flip || $[5] !== bump) {
+$t0 = $view0.onPress(() => {
+flip("hideLikes");
+bump("likes");
+});
+$[4] = flip;
+$[5] = bump;
+$[6] = $t0;
+} else {
+$t0 = $[6];
 }
 return $t0;
 });

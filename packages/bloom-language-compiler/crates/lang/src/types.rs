@@ -46,7 +46,9 @@ pub enum Ty {
     View(Option<&'static str>),
     Binding(Box<Ty>),
     /// `KeyPath<S, V>`: a field of the struct `S` whose type is `V` (at runtime, its name).
-    KeyPath(Box<Ty>, Box<Ty>),
+    /// `WritableKeyPath<S, V>` when the third is `true` (a stored `var`): Swift's subtype, which
+    /// fits where a `KeyPath` is expected and also writes, `x[keyPath: k] = v`.
+    KeyPath(Box<Ty>, Box<Ty>, bool),
     /// A closed set of strings: a token set of the spec, or a TS literal union.
     Strings(Rc<StrSet>),
     /// A TS value Bloom could not type: its TS type's text.
@@ -133,6 +135,10 @@ pub struct FieldDef {
     pub name: String,
     pub ty: Ty,
     pub default: FieldDefault,
+    /// A `var` (Swift's stored `var`): written in a `var` copy, and named by a
+    /// `WritableKeyPath`. A struct's `let` is set once, when the struct is made (Kotlin's `val`).
+    /// A TS object type's and a record's fields are `var`s.
+    pub mutable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -266,9 +272,9 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             let a = go(a);
             Ty::Result(a, go(b))
         }
-        Ty::KeyPath(a, b) => {
+        Ty::KeyPath(a, b, writable) => {
             let a = go(a);
-            Ty::KeyPath(a, go(b))
+            Ty::KeyPath(a, go(b), *writable)
         }
         Ty::Tuple(items) => Ty::Tuple(items.iter().map(|t| map_ty(t, f)).collect()),
         Ty::Adt(def, args) => Ty::Adt(*def, args.iter().map(|t| map_ty(t, f)).collect()),
@@ -371,7 +377,13 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::Promise(t) => write!(f, "Promise<{}>", Display { ty: t, defs }),
         Ty::View(_) => f.write_str("View"),
         Ty::Binding(t) => write!(f, "Binding<{}>", Display { ty: t, defs }),
-        Ty::KeyPath(a, b) => write!(f, "KeyPath<{}, {}>", Display { ty: a, defs }, Display { ty: b, defs }),
+        Ty::KeyPath(a, b, writable) => write!(
+            f,
+            "{}KeyPath<{}, {}>",
+            if *writable { "Writable" } else { "" },
+            Display { ty: a, defs },
+            Display { ty: b, defs }
+        ),
         Ty::Strings(set) if set.token => f.write_str(&token_type_name(&set.name)),
         Ty::Strings(set) => f.write_str(&set.name),
         Ty::Foreign(text) if text.is_empty() => f.write_str("Foreign"),

@@ -55,5 +55,7 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
   next[keyPath: key] = next[keyPath: key] + accounts.count
 //     ^^^^^^^ variable.parameter.bloom
 //                          ^^^^^^^ variable.parameter.bloom
+  next[keyPath: key] += 1
+//                   ^^ keyword.operator.assignment.compound.bloom
   return [next, Account(name: next[keyPath: read])]
 }

@@ -1873,7 +1873,12 @@ impl Checker<'_> {
                         }
                     };
                     fields.retain(|f| f.name != key.name);
-                    fields.push(FieldDef { name: key.name.clone(), ty, default: FieldDefault::None });
+                    fields.push(FieldDef {
+                        name: key.name.clone(),
+                        ty,
+                        default: FieldDefault::None,
+                        mutable: true,
+                    });
                 }
                 RecordEntry::Spread(value) => {
                     spreads += 1;
@@ -1886,7 +1891,12 @@ impl Checker<'_> {
                             for field in self.out.defs[def].fields().to_vec() {
                                 fields.retain(|f| f.name != field.name);
                                 let ty = substitute(&field.ty, &args);
-                                fields.push(FieldDef { name: field.name, ty, default: FieldDefault::None });
+                                fields.push(FieldDef {
+                                    name: field.name,
+                                    ty,
+                                    default: FieldDefault::None,
+                                    mutable: true,
+                                });
                             }
                         }
                         Ty::Foreign(_) | Ty::Unknown => {}
@@ -2129,7 +2139,10 @@ impl Checker<'_> {
     fn keyed(&mut self, expr: &Expr, call: &Call, def: DefId, targs: Vec<Ty>, partial: bool) -> Ty {
         let ty = Ty::Adt(def, targs);
         let value = self.fresh();
-        self.expr(&call.args[0].value, Some(&Ty::KeyPath(Box::new(ty.clone()), Box::new(value.clone()))));
+        self.expr(
+            &call.args[0].value,
+            Some(&Ty::KeyPath(Box::new(ty.clone()), Box::new(value.clone()), false)),
+        );
         self.expr(&call.args[1].value, Some(&value));
         self.out.calls.insert(expr.id, CallRes::Keyed { partial });
         if partial { Ty::Partial(Box::new(ty)) } else { ty }
@@ -2557,8 +2570,8 @@ impl Checker<'_> {
         let item = self.resolve(&item);
         let name = format!("VirtualListRow<{}>", self.show(&item).trim_matches('`'));
         let fields = vec![
-            FieldDef { name: "item".into(), ty: item, default: FieldDefault::None },
-            FieldDef { name: "index".into(), ty: Ty::Int, default: FieldDefault::None },
+            FieldDef { name: "item".into(), ty: item, default: FieldDefault::None, mutable: true },
+            FieldDef { name: "index".into(), ty: Ty::Int, default: FieldDefault::None, mutable: true },
         ];
         let row = self.object_type(&name, fields);
         Some(Ty::Fn(Rc::new(FnTy {
@@ -2642,7 +2655,7 @@ impl Checker<'_> {
                 };
                 let ty = if optional && ty != Ty::Unknown { Ty::Option(Box::new(ty)) } else { ty };
                 let default = if optional { FieldDefault::Undefined } else { FieldDefault::None };
-                FieldDef { name: key.to_string(), ty, default }
+                FieldDef { name: key.to_string(), ty, default, mutable: true }
             })
             .collect();
         let ty = self.object_type(object, fields);
