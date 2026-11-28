@@ -40,9 +40,11 @@
       },
     ],
     // An enum case or token where a value is expected: `= .loading`, `.padding(.md)`,
-    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`.
+    // `[.iOS(17), .web]`, `c ? .danger : .neutral`, `case .ready(x)`, `catch .offline`; never the
+    // member of `user?.name`, whose `?` against a value chains.
     'implicit-member': {
-      pattern: /((?:[=(,:?[!]|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_]\w*/,
+      pattern:
+        /((?:[=(,:[!]|(?:^|[^\w)\]!])\?|=>|&&|\|\||\b(?:return|case|catch|throw|in|let|var))\s*)\.[a-z_]\w*/,
       lookbehind: true,
       alias: 'constant',
     },
@@ -50,8 +52,16 @@
     attribute: { pattern: /@[A-Za-z_]\w*/, alias: 'atrule' },
     // A test macro: `#expect(…)`.
     macro: { pattern: /#[A-Za-z_]\w*/, alias: 'property' },
-    // A key path: `\.likes`, `\Post.title`.
-    'key-path': { pattern: /\\(?:[A-Z]\w*)?\.[A-Za-z_]\w*/, alias: 'property' },
+    // A key path: `\.likes`, `\Post.title`, `\Post.author.name`; its root is a type.
+    'key-path': {
+      pattern: /\\(?:[A-Z]\w*)?(?:\.[A-Za-z_]\w*)+/,
+      alias: 'property',
+      inside: {
+        operator: /^\\/,
+        'class-name': /^[A-Z]\w*/,
+        punctuation: /\./,
+      },
+    },
     'class-name': {
       // `struct Post`, `class FeedModel`, `actor Counter`, `view Composer`, `import Bloom`.
       pattern:
