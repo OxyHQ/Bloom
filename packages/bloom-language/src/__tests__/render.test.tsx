@@ -626,7 +626,7 @@ describe('interop', () => {
 
   it('an image of a ratio with no width or height takes the width its column offers', () => {
     // SwiftUI's: `VStack(alignment: .leading) { Image(…).aspectRatio(16 / 9) }` is as wide as the stack.
-    const r = mount(toElement(VStack(Image('a.jpg').aspectRatio(16 / 9)).alignment('leading')));
+    const r = mount(toElement(VStack(Image('a.jpg').aspectRatio(16 / 9)).align('start')));
     expect(hosts(r, 'BloomImage')[0]?.props.style).toEqual({
       aspectRatio: 16 / 9,
       alignSelf: 'stretch',
