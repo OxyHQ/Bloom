@@ -124,10 +124,12 @@ What iOS's system effects do not give directly, and the plan for each:
 | The detached sheet (16 pt gaps, radius 24), its dismiss physics, backdrop blur 80 at dim 0.28 | The system `.sheet` with detents; the detached sheet as a custom presentation |
 | The progressive blur band under the bottom bar | Stacked masked materials |
 
-`docs/surface-material-study.mdx` still says "No Liquid Glass". Today's iOS draws buttons, the FAB
-and header controls as opaque tinted pills; only floating surfaces blur. Moving controls to system
-glass changes how they look, so side-by-side recordings on the Mac must show it is at least as good
-before it ships.
+**Decided by the owner, 2026-11-28: Liquid Glass for everything on iOS**
+([surface material study](./surface-material-study.mdx), decision 7). Buttons, the FAB, header
+controls, the bottom bar, tabs and menus all draw through the one material, as on Android: system
+Liquid Glass on iOS 26 and later, the blur fallback before. BloomUI's `Button` paints its solid
+style as `glassProminent` and its subtle and outline styles as tinted glass; plain stays flat.
+Side-by-side recordings on the Mac are the evidence that it is at least as good as today.
 
 ## Verified without a Mac (SuperPC, Linux)
 

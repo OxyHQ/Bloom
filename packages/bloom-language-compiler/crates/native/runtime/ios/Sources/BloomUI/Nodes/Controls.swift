@@ -100,10 +100,10 @@ public struct Toggle: View {
 
 // ---- Button ------------------------------------------------------------------------------
 
-/// A pill: xs 24 / sm 32 / md 36 / lg 44 tall, padding 8 (12 at lg); `solid` accent by default
-/// (`primary` fill, `primaryForeground` label), `subtle` (`primarySubtle` and its foreground),
-/// `outline` (the subtle tint, no border), `plain` (transparent, its tint when pressed); `glass`
-/// and `glassProminent` on the material at lg. No scale on press: the paint changes.
+/// A pill: xs 24 / sm 32 / md 36 / lg 44 tall, padding 8 (12 at lg), on the shared material
+/// (Liquid Glass on iOS 26): `solid` accent by default (prominent glass, `primaryForeground`
+/// label), `subtle` and `outline` (glass tinted with the accent, its subtle foreground), `plain`
+/// (no material, its tint when pressed); `glass` and `glassProminent` at lg.
 public struct Button<Label: View>: View {
   let label: Label
   var action: (@MainActor () -> Void)?
@@ -131,13 +131,16 @@ public struct Button<Label: View>: View {
     }
   }
 
+  /// Every button is the one shared material (the owner's decision, 2026-11-28: Liquid Glass
+  /// for everything on iOS): solid is prominent glass in the accent, subtle and outline are
+  /// glass tinted with it, plain draws nothing until pressed. Before iOS 26, and under reduce
+  /// transparency or increased contrast, the material paints its fallback.
   var material: BloomMaterial {
     switch appearance {
-    case .solid: .solid(.primary)
-    case .subtle, .outline: .fill(themeKey: "primarySubtle")
+    case .solid, .glassProminent: .glassProminent(.primary)
+    case .subtle, .outline: .glass(.regular, tint: .primary, opacity: MaterialTokens.opacity(.subtle), interactive: true)
     case .plain: .flat
     case .glass: .glass(.regular, interactive: true)
-    case .glassProminent: .glassProminent(.primary)
     }
   }
 
