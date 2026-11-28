@@ -304,4 +304,36 @@ public struct RuntimeError: Error, Equatable, Hashable, Sendable, LocalizedError
 
 /// Stops the program: a state the code holds impossible was reached. (On the web this
 /// throws a `RuntimeError`; in Swift it traps, as `fatalError`.)
+/// `fatal()` is `Never`: a statement after it is unreachable, and a function whose last line
+/// it is returns nothing more.
+public func fatal(_ message: String = "unreachable") -> Never { fatalError(message) }
+
+/// `x ?? fatal()`: Swift's `??` takes a value of `x`'s type, which `Never` is not, so a `fatal()`
+/// in a value's place is this one (Bloom's `Never` converts to every type).
+@_disfavoredOverload
 public func fatal<T>(_ message: String = "unreachable") -> T { fatalError(message) }
+
+// MARK: - `a || b` of optionals
+
+/// `a || b` where `a` is an optional that is not a `Bool` (spec 4.7, JS's value `||`): `a` when
+/// it is present and truthy, else `b`. A truthy value is not `""`, `0` or `NaN`.
+public func bloomOr<T>(_ a: T?, _ b: @autoclosure () throws -> T?) rethrows -> T? {
+  if let a, !isFalsy(a) { return a }
+  return try b()
+}
+
+/// `a || b` whose other side is present: present.
+public func bloomOr<T>(_ a: T?, _ b: @autoclosure () throws -> T) rethrows -> T {
+  if let a, !isFalsy(a) { return a }
+  return try b()
+}
+
+private func isFalsy(_ value: Any) -> Bool {
+  switch value {
+  case let s as String: s.isEmpty
+  case let n as Int: n == 0
+  case let d as Double: d == 0 || d.isNaN
+  case let b as Bool: !b
+  default: false
+  }
+}

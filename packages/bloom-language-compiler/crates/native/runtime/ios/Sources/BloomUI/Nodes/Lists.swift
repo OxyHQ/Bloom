@@ -46,6 +46,20 @@ public struct VirtualList<Item, Row: View>: View {
     self.id = { _, item in AnyHashable(item.id) }
   }
 
+  /// `VirtualList(people.enumerated()) { i, person in … }`: each row handed its index and item.
+  public init<T>(_ pairs: [(Int, T)], _ row: @escaping (Int, T) -> Row) where Item == (Int, T) {
+    self.items = pairs
+    self.row = { r in row(r.item.0, r.item.1) }
+    self.id = { i, _ in AnyHashable(i) }
+  }
+
+  /// The same, keyed by each item's `id`.
+  public init<T: Identifiable>(_ pairs: [(Int, T)], _ row: @escaping (Int, T) -> Row) where Item == (Int, T) {
+    self.items = pairs
+    self.row = { r in row(r.item.0, r.item.1) }
+    self.id = { _, pair in AnyHashable(pair.1.id) }
+  }
+
   struct Entry: Identifiable {
     let id: AnyHashable
     let index: Int

@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -104,7 +106,7 @@ public struct FeedScreen: View {
 
   public var body: some View {
     Text("\(feed.count)")
-    .task {
+    .task { @MainActor in
       feed = await refresh(feed)
     }
   }

@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -37,7 +39,7 @@ public struct NoticeRow: View {
   let type: String
   let body: String
 
-  var body: some View {
+  public var body: some View {
     Group {
       Text("\(type) \(body)")
     }
@@ -58,7 +60,7 @@ public struct Composer: View {
   @State private var body = ""
   private var type: String { "note" }
 
-  var body: some View {
+  public var body: some View {
     Group {
       VStack {
         Text("\(type) from \(from): \(body)")

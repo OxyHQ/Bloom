@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -71,7 +73,7 @@ public struct Inbox: View {
         }
       }
     }
-    .task { await refresh() }
+    .task { @MainActor in await refresh() }
     .onChange(of: muted) { old, new in print("muted \(old) -> \(new)") }
   }
 

@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -36,7 +38,7 @@ public struct PostRow: View {
     return old.post.id == new.post.id && old.post.likes == new.post.likes && old.compact == new.compact
   }
 
-  var body: some View {
+  public var body: some View {
     Group {
       Text("\(post.id): \(post.likes) (\(seen))")
       .bloomPadding(compact ? 4 : 8)

@@ -16,14 +16,31 @@ fn swift_precedence(op: BinaryOp) -> (u8, bool) {
         BinaryOp::Default => (5, true),
         // `RangeFormationPrecedence`: below `+`, above `??`.
         BinaryOp::HalfOpen | BinaryOp::Closed => (6, false),
-        BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge | BinaryOp::Eq | BinaryOp::Ne => (4, false),
+        BinaryOp::Lt
+        | BinaryOp::Le
+        | BinaryOp::Gt
+        | BinaryOp::Ge
+        | BinaryOp::Eq
+        | BinaryOp::Ne
+        | BinaryOp::Identical
+        | BinaryOp::NotIdentical => (4, false),
         BinaryOp::And => (3, false),
         BinaryOp::Or => (2, false),
     }
 }
 
 fn is_comparison(op: BinaryOp) -> bool {
-    matches!(op, BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge | BinaryOp::Eq | BinaryOp::Ne)
+    matches!(
+        op,
+        BinaryOp::Lt
+            | BinaryOp::Le
+            | BinaryOp::Gt
+            | BinaryOp::Ge
+            | BinaryOp::Eq
+            | BinaryOp::Ne
+            | BinaryOp::Identical
+            | BinaryOp::NotIdentical
+    )
 }
 
 /// The members of a list or a string that Swift answers with a slice (`ArraySlice`,
@@ -101,11 +118,14 @@ impl Emitter<'_> {
             ExprKind::None => "nil".into(),
             ExprKind::Unit => "()".into(),
             ExprKind::Str { parts, .. } => self.string(parts),
-            ExprKind::Name(n) => match value_rename(n) {
-                Some(s) => s,
-                None if n.starts_with('$') => n.clone(),
-                None => kw(n),
-            },
+            ExprKind::Name(n) => {
+                let text = match value_rename(n) {
+                    Some(s) => s,
+                    None if n.starts_with('$') => n.clone(),
+                    None => kw(n),
+                };
+                if self.narrowed(e) { format!("{text}!") } else { text }
+            }
             ExprKind::ImplicitMember(name) => format!(".{}", kw(&name.name)),
             ExprKind::Binding(path) => {
                 let place: Vec<String> = path.iter().map(|i| kw(&i.name)).collect();
@@ -165,8 +185,19 @@ impl Emitter<'_> {
             }
             ExprKind::Force(inner) => format!("{}!", self.postfix_base(inner)),
             ExprKind::Throwing(kind, inner) => format!("{} {}", try_word(*kind), self.expr(inner)),
-            ExprKind::Field(base, field) => self.field(base, field),
+            ExprKind::Field(base, field) => {
+                let text = self.field(base, field);
+                // A member chain read where the checker narrowed it present (`u.name!`).
+                if self.file.checked.narrowed_paths.contains(&e.id) { format!("{text}!") } else { text }
+            }
             ExprKind::OptField(base, field) => format!("{}?.{}", self.postfix_base(base), kw(&field.name)),
+            // A `JSONValue`'s member or element, `none` where it has none (a lenient read).
+            ExprKind::Index(base, index) if self.file.checked.json_reads.contains(&e.id) => {
+                format!("{}.read({})", self.postfix_base(base), self.expr(index))
+            }
+            ExprKind::OptIndex(base, index) if self.file.checked.json_reads.contains(&e.id) => {
+                format!("{}?.read({})", self.postfix_base(base), self.expr(index))
+            }
             ExprKind::Index(base, index) => format!("{}[{}]", self.postfix_base(base), self.expr(index)),
             ExprKind::OptIndex(base, index) => format!("{}?[{}]", self.postfix_base(base), self.expr(index)),
             ExprKind::Call(call) => self.call(e, call),
@@ -189,11 +220,33 @@ impl Emitter<'_> {
             ExprKind::Match(_) => self.immediate(e, self.indent),
             ExprKind::Task(block) => {
                 let at = self.indent;
+                let was = std::mem::replace(&mut self.in_task, true);
                 let body = self.block(&block.stmts, at + 1, Mode::Unit);
+                self.in_task = was;
                 format!("Task {{\n{body}{}}}", pad(at))
             }
             ExprKind::Error => self.unsupported(e.span, "an unreadable expression"),
         }
+    }
+
+    /// Whether `e` reads a local of an optional type where Bloom's flow narrowing made it present
+    /// (after `x != none`, in `x == none ? … : x`, past `guard x != none`): Swift narrows only
+    /// through `if let`, so the read is `x!`, which the checker proved holds.
+    fn narrowed(&self, e: &Expr) -> bool {
+        use bloom_lang::backend::{NameRes, Ty};
+        let ck = &self.file.checked;
+        if ck.assign_targets.contains(&e.id) {
+            return false;
+        }
+        let Some(NameRes::Local(id)) = ck.names.get(&e.id) else { return false };
+        let Some(local) = ck.locals.get(*id) else { return false };
+        if matches!(local.ty, Ty::Option(_)) {
+            return ck.types.get(&e.id).is_some_and(|t| !matches!(t, Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never));
+        }
+        // The checker narrows by a local of its own: the same name and declaration, present.
+        ck.locals[..*id]
+            .iter()
+            .any(|o| o.name == local.name && o.span == local.span && matches!(o.ty, Ty::Option(_)))
     }
 
     fn branch_value(&mut self, b: &Block) -> String {
@@ -244,6 +297,14 @@ impl Emitter<'_> {
     }
 
     fn binary(&mut self, op: BinaryOp, a: &Expr, b: &Expr) -> String {
+        // `a || b` of an optional that is not a `Bool`: JS's value `||` (spec 4.7), `a` when it
+        // is present and truthy, else `b` (`Bloom.bloomOr`).
+        if op == BinaryOp::Or
+            && let Some(bloom_lang::backend::Ty::Option(inner)) = self.file.checked.types.get(&a.id)
+            && !matches!(**inner, bloom_lang::backend::Ty::Bool)
+        {
+            return format!("bloomOr({}, {})", self.expr(a), self.expr(b));
+        }
         let (prec, right) = swift_precedence(op);
         let side = |this: &mut Self, child: &Expr, is_right: bool| -> String {
             let text = this.expr(child);
@@ -398,7 +459,38 @@ impl Emitter<'_> {
         }
     }
 
+    /// `s.with(field: v)`: Bloom's copy-and-change, the memberwise `init` with the other fields
+    /// read from `s` (evaluated once).
+    fn with_call(&mut self, call: &Call, def: bloom_lang::backend::DefId) -> Option<String> {
+        let ExprKind::Field(base, _) = &call.callee.kind else { return None };
+        let name = self.file.checked.defs.get(def)?.name.to_string();
+        let fields = self.decls.structs.get(&name)?.clone();
+        let path = is_path(base);
+        let b = if path { self.postfix_base(base) } else { "base".to_string() };
+        let mut args = Vec::new();
+        for f in &fields {
+            let given = call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == f.name));
+            let value = match given {
+                Some(a) => self.arg_value(&a.value),
+                None => format!("{b}.{}", kw(&f.name)),
+            };
+            args.push(format!("{}: {value}", label(&f.name)));
+        }
+        let made = format!("{}({})", kw(&name), args.join(", "));
+        if path {
+            Some(made)
+        } else {
+            let value = self.expr(base);
+            Some(format!("{{ let base = {value}; return {made} }}()"))
+        }
+    }
+
     fn call(&mut self, e: &Expr, call: &Call) -> String {
+        if let Some(bloom_lang::backend::CallRes::With(def)) = self.file.checked.calls.get(&e.id)
+            && let Some(text) = self.with_call(call, *def)
+        {
+            return text;
+        }
         // `Binding(get: v, set: f)`: SwiftUI's getter is a closure.
         if let ExprKind::Name(n) = &call.callee.kind
             && n == "Binding"
@@ -449,6 +541,15 @@ impl Emitter<'_> {
         } else {
             format!("{callee}{q}({args}){trailing}")
         };
+        // `xs.enumerated()` is Bloom's list of pairs, `[(Int, T)]`; Swift's is a sequence of
+        // `(offset:element:)`.
+        if let ExprKind::Field(base, method) = &call.callee.kind
+            && method.name == "enumerated"
+            && call.args.is_empty()
+            && self.receiver_type(base).is_some_and(|t| t.starts_with('[') && !t.contains(':'))
+        {
+            return format!("{text}.map {{ ($0.offset, $0.element) }}");
+        }
         // `xs.prefix(2)` is an `ArraySlice` in Swift, `[T]` in Bloom.
         if let ExprKind::Field(base, method) = &call.callee.kind
             && SLICING.contains(&method.name.as_str())
@@ -497,6 +598,15 @@ impl Emitter<'_> {
         let mode = if returns == Some(true) { Mode::Value } else { Mode::Unit };
         let body = self.block(&c.body, indent + 1, mode);
         format!("{{{head}\n{body}{}}}", pad(indent))
+    }
+}
+
+/// A name or a chain of fields of one (`a.handle`): read again without effects.
+fn is_path(e: &Expr) -> bool {
+    match &e.kind {
+        ExprKind::Name(_) => true,
+        ExprKind::Field(b, _) => is_path(b),
+        _ => false,
     }
 }
 

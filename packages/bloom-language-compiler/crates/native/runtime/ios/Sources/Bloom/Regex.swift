@@ -1,6 +1,16 @@
-// Bloom: `Regex`, regular expressions in JS's syntax, over `NSRegularExpression` (ICU).
-// Swift's own `Regex<Output>` is another type (typed captures, Swift's syntax), so Bloom's is
-// `BloomRegex`. Matches, replacements and splits follow JS's `matchAll`, `replace` and `split`.
+// Bloom: `Regex`, regular expressions in JS's syntax and Swift's shape, over
+// `NSRegularExpression` (ICU):
+//
+//     let digits = try Regex("^\\d+$")                       // throws a RegexError when invalid
+//     s.wholeMatch(of: digits), s.firstMatch(of: r)?.group(1), s.matches(of: r)
+//     s.contains(r), s.replacing(r, with: " "), s.split(separator: r)
+//
+// The calls are Swift's `Regex` API by name and label. The engine is not Swift's `Regex<Output>`:
+// that one reads Swift's syntax (extended, Unicode-first) and has typed captures, where Bloom's
+// patterns are JS's on every backend, and ICU reads JS's patterns as JS does far more often (the
+// differences are below). So Bloom's type is `BloomRegex` (`Renames.swift`), and a group that did
+// not take part in a match is `nil`, as Swift's optional captures are. Matches, replacements and
+// splits follow JS's `matchAll`, `replace` and `split`.
 //
 // JS and ICU read most patterns alike. Where they differ (documented, not translated):
 // - `\d`, `\w`, `\b` and `\s` are Unicode-aware in ICU, ASCII in JS (without `u`, `\d` in JS
@@ -29,12 +39,12 @@ public struct BloomRegex: Equatable, Hashable, Sendable {
 public struct RegexMatch: Equatable, Hashable, Sendable {
   public let text: String
   public let start: Int
-  /// The numbered groups, from group 1 (`""` where a group did not take part).
-  public let groups: [String]
+  /// The numbered groups, from group 1 (`nil` where a group did not take part).
+  public let groups: [String?]
   /// The named groups (`(?<handle>\\w+)`) that took part.
   public let named: OrderedDictionary<String, String>
 
-  public init(text: String, start: Int, groups: [String], named: OrderedDictionary<String, String>) {
+  public init(text: String, start: Int, groups: [String?], named: OrderedDictionary<String, String>) {
     self.text = text
     self.start = start
     self.groups = groups
@@ -42,7 +52,11 @@ public struct RegexMatch: Equatable, Hashable, Sendable {
   }
 
   /// Group `n` (0 is the whole match, 1 the first group), or `none`.
-  public func group(_ n: Int) -> String? { n == 0 ? text : groups.at(n - 1) }
+  public func group(_ n: Int) -> String? {
+    if n == 0 { return text }
+    guard n > 0, n <= groups.count else { return nil }
+    return groups[n - 1]
+  }
 
   /// Where the match ends (character offset, exclusive).
   public var end: Int { start + text.count }
@@ -73,6 +87,12 @@ private final class CompiledRegex: @unchecked Sendable {
 private let compiledRegexes = Locked([String: CompiledRegex]())
 
 extension BloomRegex {
+  /// `try Regex("…")`, Swift's spelling: the expression `pattern`, checked (throws a
+  /// `RegexError` when it is invalid).
+  public init(_ pattern: String) throws {
+    self = try BloomRegex.compile(pattern)
+  }
+
   /// The expression, checked: throws a `RegexError` when `pattern` or `flags` is invalid.
   public static func compile(_ pattern: String, flags: String = "") throws -> BloomRegex {
     let regex = BloomRegex(pattern: pattern, flags: flags)
@@ -181,9 +201,9 @@ extension BloomRegex {
       let r = m.range(withName: name)
       if r.location != NSNotFound { named[name] = ns.substring(with: r) }
     }
-    let groups = (0..<Swift.max(0, m.numberOfRanges - 1)).map { g -> String in
+    let groups = (0..<Swift.max(0, m.numberOfRanges - 1)).map { g -> String? in
       let r = m.range(at: g + 1)
-      return r.location == NSNotFound ? "" : ns.substring(with: r)
+      return r.location == NSNotFound ? nil : ns.substring(with: r)
     }
     let prefix = ns.substring(to: m.range.location)
     return RegexMatch(text: ns.substring(with: m.range), start: prefix.count, groups: groups, named: named)
@@ -275,4 +295,31 @@ private func groupNames(_ pattern: String) -> [String] {
     i += 1
   }
   return names
+}
+
+// Swift's `Regex` calls on a string, by name and label.
+extension String {
+  /// The match of `regex` spanning the whole string, or `nil`.
+  public func wholeMatch(of regex: BloomRegex) -> RegexMatch? {
+    let whole = BloomRegex(pattern: "^(?:\(regex.pattern))$", flags: regex.flags.replacingOccurrences(of: "m", with: ""))
+    guard let found = whole.firstMatch(in: self), found.text.count == count else { return nil }
+    return found
+  }
+
+  /// The first match of `regex`, or `nil`.
+  public func firstMatch(of regex: BloomRegex) -> RegexMatch? { regex.firstMatch(in: self) }
+
+  /// Every match of `regex`, in order.
+  public func matches(of regex: BloomRegex) -> [RegexMatch] { regex.matches(in: self) }
+
+  /// Whether `regex` matches somewhere in the string.
+  public func contains(_ regex: BloomRegex) -> Bool { regex.isMatch(self) }
+
+  /// The string with every match of `regex` replaced (`$1`, `$<name>` insert groups, as JS's).
+  public func replacing(_ regex: BloomRegex, with replacement: String) -> String {
+    regex.replacing(in: self, with: replacement)
+  }
+
+  /// The parts of the string between the matches of `separator` (JS's `split`).
+  public func split(separator: BloomRegex) -> [String] { separator.split(self) }
 }

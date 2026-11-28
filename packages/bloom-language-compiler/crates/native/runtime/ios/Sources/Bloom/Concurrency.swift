@@ -73,6 +73,46 @@ extension Task where Success == Never, Failure == Never {
   /// The running task's cancellation as a `TaskSignal` (what `.task { }` passes as
   /// `Task.signal`): aborted once the task reading it is cancelled.
   public static var signal: TaskSignal { TaskSignal(followingCurrentTask: true) }
+
+  /// `await Task.cancellation`: returns once the running task is cancelled (the view left, the
+  /// `.task(id:)`'s id changed), at once when it already is. A `defer` before it runs exactly
+  /// then: React's effect cleanup, the coroutine's `awaitCancellation()` on Android.
+  public static var cancellation: Void {
+    get async {
+      let waiter = CancellationWaiter()
+      await withTaskCancellationHandler {
+        await waiter.wait()
+      } onCancel: {
+        waiter.cancel()
+      }
+    }
+  }
+}
+
+/// One wait for a task's cancellation: `wait()` returns when `cancel()` is called (before or
+/// after it).
+private final class CancellationWaiter: @unchecked Sendable {
+  private let state = Locked<(cancelled: Bool, waiting: CheckedContinuation<Void, Never>?)>((false, nil))
+
+  func wait() async {
+    await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+      let resume = state.withLock { s -> Bool in
+        if s.cancelled || Task.isCancelled { return true }
+        s.waiting = c
+        return false
+      }
+      if resume { c.resume() }
+    }
+  }
+
+  func cancel() {
+    let waiting = state.withLock { s -> CheckedContinuation<Void, Never>? in
+      s.cancelled = true
+      defer { s.waiting = nil }
+      return s.waiting
+    }
+    waiting?.resume()
+  }
 }
 
 extension Task where Failure == any Error {

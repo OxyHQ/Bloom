@@ -5,7 +5,7 @@ import Bloom
 import BloomUI
 
 public func handle(_ username: String?, _ handle: String?) -> String? {
-  return username || handle
+  return bloomOr(username, handle)
 }
 
 func `open`(_ url: String) -> String {
@@ -13,10 +13,10 @@ func `open`(_ url: String) -> String {
 }
 
 public func link(_ apply: String?, _ source: String?, _ canonical: String, _ alt: String) -> String {
-  return `open`(apply || (source || (canonical.isEmpty ? alt : canonical)))
+  return `open`(bloomOr(apply, (bloomOr(source, (canonical.isEmpty ? alt : canonical)))))
 }
 
 public func label(_ name: String?, _ nick: String?) -> String {
-  return (name || nick) ?? "anonymous"
+  return (bloomOr(name, nick)) ?? "anonymous"
 }
 

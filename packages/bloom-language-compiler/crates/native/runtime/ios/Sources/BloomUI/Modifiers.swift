@@ -101,6 +101,9 @@ extension View {
 
   public func bloomPadding(_ space: Tokens.Padding) -> some View { padding(.all, space.points) }
 
+  /// `.padding(8)`: points on every edge.
+  public func bloomPadding(_ points: Double) -> some View { padding(.all, CGFloat(points)) }
+
   /// `.padding(12)`: points.
   public func bloomPadding(_ edge: Tokens.Edge = .all, _ points: Double) -> some View {
     padding(edge.set, CGFloat(points))

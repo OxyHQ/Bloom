@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -20,7 +22,7 @@ import struct SwiftUI.Spacer
 public struct WelcomeScreen: Screen {
   let name: String
 
-  var body: some View {
+  public var body: some View {
     Text("Welcome, \(name)")
   }
 

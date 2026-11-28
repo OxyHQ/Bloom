@@ -90,7 +90,11 @@ impl Emitter<'_> {
             }
             StmtKind::For(f) => {
                 let pat = self.binding_pattern(&f.pattern);
-                let iter = self.expr(&f.iter);
+                // Swift's own `enumerated()` is the sequence a `for` takes.
+                let iter = match super::view::enumerated_base(&f.iter) {
+                    Some(base) => format!("{}.enumerated()", self.postfix_base(base)),
+                    None => self.expr(&f.iter),
+                };
                 let body = self.block(&f.body.stmts, indent + 1, Mode::Unit);
                 let label = f.label.as_ref().map(|l| format!("{}: ", kw(&l.name))).unwrap_or_default();
                 format!("{p}{label}for {pat} in {iter} {{\n{body}{p}}}\n")
@@ -113,7 +117,12 @@ impl Emitter<'_> {
                         (Some(n), None, None) => format!(" let {}", kw(&n.name)),
                         (None, None, None) => String::new(),
                     };
-                    let inner = self.block(&c.body.stmts, indent + 1, mode);
+                    let mut inner = self.block(&c.body.stmts, indent + 1, mode);
+                    // In a task, a throw once it is cancelled (an aborted request) is the
+                    // cancellation itself: the task stops, and no `catch` runs.
+                    if self.in_task {
+                        inner = format!("{}if Task.isCancelled {{ return }}\n{inner}", pad(indent + 1));
+                    }
                     let _ = write!(out, " catch{head} {{\n{inner}{p}}}");
                 }
                 out.push('\n');

@@ -1,0 +1,30 @@
+// A `.task`'s setup and teardown: `defer` before `await Task.cancellation` runs when the task is
+// cancelled (the view leaves, or its id changes), as React's effect cleanup did. And a debounce:
+// `sleep(for:)` in a `.task` takes the task's cancellation, so a superseded wait never finishes.
+public struct Subscription: View {
+  let room: String
+  let onStart: (String) -> Unit
+  let onStop: (String) -> Unit
+  var body: some View {
+    Text(room)
+      .task(id: room) {
+        onStart(room)
+        defer { onStop(room) }
+        await Task.cancellation
+      }
+  }
+}
+
+public struct Debounced: View {
+  let query: String
+  let onSearch: (String) -> Unit
+  var body: some View {
+    Text(query)
+      .task(id: query) {
+        do {
+          try await sleep(for: .milliseconds(50))
+          onSearch(query)
+        } catch {}
+      }
+  }
+}

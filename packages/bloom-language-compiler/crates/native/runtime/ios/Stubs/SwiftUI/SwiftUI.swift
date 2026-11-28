@@ -115,6 +115,11 @@ public enum LayoutDirection: Sendable { case leftToRight, rightToLeft }
 public enum ColorScheme: Sendable, Hashable { case light, dark }
 public enum ColorSchemeContrast: Sendable { case standard, increased }
 public enum Visibility: Sendable { case automatic, visible, hidden }
+public struct ToolbarPlacement: Sendable {
+  public static let navigationBar = ToolbarPlacement()
+  public static let tabBar = ToolbarPlacement()
+  public static let bottomBar = ToolbarPlacement()
+}
 public enum RoundedCornerStyle: Sendable { case circular, continuous }
 public enum DynamicTypeSize: Sendable, Comparable { case xSmall, small, medium, large, xLarge, xxLarge, xxxLarge, accessibility1, accessibility2, accessibility3, accessibility4, accessibility5 }
 
@@ -759,6 +764,8 @@ extension View {
   public func scrollIndicators(_ visibility: ScrollIndicatorVisibility, axes: Axis.Set = [.vertical, .horizontal]) -> some View { self }
   public func contentMargins(_ edges: Edge.Set = .all, _ length: CGFloat?, for placement: ContentMarginPlacement = .automatic) -> some View { self }
   public func navigationTitle(_ title: String) -> some View { self }
+  public func toolbar(_ visibility: Visibility, for bars: ToolbarPlacement...) -> some View { self }
+  public func accessibilityIdentifier(_ identifier: String) -> some View { self }
   public func navigationDestination<D: Hashable, C: View>(for data: D.Type, @ViewBuilder destination: @escaping (D) -> C) -> some View { self }
   public func toolbar<Content: View>(@ViewBuilder content: () -> Content) -> some View { self }
   public func tabItem<V: View>(@ViewBuilder _ label: () -> V) -> some View { self }

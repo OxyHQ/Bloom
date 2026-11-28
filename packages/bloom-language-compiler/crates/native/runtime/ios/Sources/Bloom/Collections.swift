@@ -373,6 +373,13 @@ public struct UniqueID: Hashable, Sendable, Codable, CustomStringConvertible, Co
   /// The identifier `rawValue` (from a server, a record).
   public init(_ rawValue: String) { self.rawValue = rawValue }
 
+  /// Bloom's field (`@Transparent public struct UniqueID { public let string: String }`): the
+  /// identity as text. `@State private var id = UniqueID()` keeps one for a view's life.
+  public init(string: String) { self.rawValue = string }
+
+  /// The identity as text (Bloom's `id.string`).
+  public var string: String { rawValue }
+
   public var description: String { rawValue }
 
   public static func < (a: UniqueID, b: UniqueID) -> Bool { a.rawValue < b.rawValue }

@@ -59,6 +59,7 @@ impl Emitter<'_> {
         let saved = self.enter_type(&v.name.name, vis == "public ", &conforms);
         let was_in_view = std::mem::replace(&mut self.in_view, true);
         let mut props: Vec<Param> = Vec::new();
+        let mut hooks_of_view: Vec<(String, String)> = Vec::new();
         let has_init = surface
             .members
             .iter()
@@ -114,6 +115,30 @@ impl Emitter<'_> {
                         }
                         Some(other) => {
                             self.unsupported(a_span(attr), format!("`@{other}` on a view's property"));
+                        }
+                        // `let counter = useCounter(start)`: the hook's state, stored, read as its value.
+                        None if !*mutable
+                            && value.as_ref().is_some_and(|v| {
+                                self.hooks.is_some_and(|h| super::hooks::hook_call(v, h).is_some())
+                            }) =>
+                        {
+                            let hooks = self.hooks.cloned().unwrap_or_default();
+                            let call = super::hooks::hook_call(value.as_ref().expect("a value"), &hooks)
+                                .expect("a hook call");
+                            let ExprKind::Name(callee) = &call.callee.kind else { unreachable!() };
+                            let hook = super::hooks::hook_type(callee);
+                            let construction = self.hook_construction(call);
+                            let rt = ty_text.or_else(|| self.type_at(name.span).map(|t| self.swift_type_text(t)));
+                            let _ = writeln!(out, "  private let _{}: {hook}", name.name);
+                            match rt {
+                                Some(rt) => {
+                                    let _ = writeln!(out, "  {mvis}var {}: {rt} {{ _{}.value }}", kw(&name.name), name.name);
+                                }
+                                None => {
+                                    self.unsupported(name.span, "a view's hook `let` whose type is unknown");
+                                }
+                            }
+                            hooks_of_view.push((name.name.clone(), construction));
                         }
                         // `let x = v`: computed each render, so a computed property.
                         None if !*mutable && value.is_some() => {
@@ -177,9 +202,15 @@ impl Emitter<'_> {
                 _ => out.push_str(&self.type_member(m, 1, false)),
             }
         }
-        if !has_init && (!props.is_empty() || !vis.is_empty() || !children.is_empty() || !builders.is_empty())
+        if !has_init
+            && (!props.is_empty()
+                || !vis.is_empty()
+                || !children.is_empty()
+                || !builders.is_empty()
+                || !hooks_of_view.is_empty())
         {
             self.view_builders = builders.clone();
+            self.view_hooks = hooks_of_view;
             out.push_str(&self.view_init(vis, &props, &children, None));
             for (i, (_, param, optional)) in children.iter().enumerate() {
                 if *optional {
@@ -192,6 +223,7 @@ impl Emitter<'_> {
         self.in_view = was_in_view;
         let mut generics = self.generics(&v.generics, &v.constraints);
         self.view_builders.clear();
+        self.view_hooks.clear();
         if !children.is_empty() || !builders.is_empty() {
             let own: Vec<String> = children
                 .iter()
@@ -257,6 +289,10 @@ impl Emitter<'_> {
                 let _ = writeln!(out, "    self.{n} = {n}");
             }
         }
+        // The hooks last: their arguments read the props (the `init`'s parameters).
+        for (name, construction) in self.view_hooks.clone() {
+            let _ = writeln!(out, "    self._{name} = {construction}");
+        }
         out.push_str("  }\n");
         out
     }
@@ -317,17 +353,20 @@ impl Emitter<'_> {
         let drawn = self.view_block(&v.body.stmts, 3);
         let mut body = format!("    Group {{\n{drawn}    }}");
         for e in &effects {
+            let was = std::mem::replace(&mut self.in_task, true);
             let inner = self.block(&e.body.stmts, 3, Mode::Unit);
+            self.in_task = was;
             match &e.id {
                 Some(id) if !matches!(id.kind, ExprKind::Unit) => {
-                    let _ = write!(body, "\n    .task(id: {}) {{\n{inner}    }}", self.expr(id));
+                    let _ = write!(body, "\n    .task(id: {}) {{ @MainActor in\n{inner}    }}", self.expr(id));
                 }
                 _ => {
-                    let _ = write!(body, "\n    .task {{\n{inner}    }}");
+                    let _ = write!(body, "\n    .task {{ @MainActor in\n{inner}    }}");
                 }
             }
         }
-        let _ = write!(out, "\n  var body: some View {{\n{body}\n  }}\n");
+        let body_vis = if vis == "public " { "public " } else { "" };
+        let _ = write!(out, "\n  {body_vis}var body: some View {{\n{body}\n  }}\n");
         if !props.is_empty() || !vis.is_empty() {
             out.push_str(&self.view_init(vis, &props, &[], None));
         }
@@ -355,6 +394,25 @@ impl Emitter<'_> {
     /// backend keys it.
     fn for_each(&mut self, f: &ForStmt, indent: usize) -> String {
         let p = pad(indent);
+        // `for (i, x) in xs.enumerated()`: the positions are the pairs' own.
+        if let PatternKind::Tuple(items) = &f.pattern.kind
+            && let [a, b] = items.as_slice()
+            && let Some(base) = enumerated_base(&f.iter)
+        {
+            let base = self.postfix_base(base);
+            let names: Vec<String> = [a, b]
+                .iter()
+                .map(|x| match &x.kind {
+                    PatternKind::Bind(n) => kw(&n.name),
+                    _ => "_".into(),
+                })
+                .collect();
+            let body = self.view_block(&f.body.stmts, indent + 1);
+            return format!(
+                "{p}ForEach(Array({base}.enumerated()), id: \\.offset) {{ {}, {} in\n{body}{p}}}\n",
+                names[0], names[1]
+            );
+        }
         let iter = self.postfix_base(&f.iter);
         let name = match &f.pattern.kind {
             PatternKind::Bind(n) => kw(&n.name),
@@ -429,6 +487,14 @@ impl Emitter<'_> {
                 ) =>
             {
                 format!(" {}", self.view_closure(c, indent))
+            }
+            // A view's task runs on the main actor, as the view's code does (SwiftUI's `.task`
+            // closure is `@isolated(any)`: written `@MainActor`, whatever the SDK infers).
+            Some(c) if name.name == "task" => {
+                let was = std::mem::replace(&mut self.in_task, true);
+                let text = main_actor(&self.closure(c, c.span.to(span), indent));
+                self.in_task = was;
+                format!(" {text}")
             }
             Some(c) => format!(" {}", self.closure(c, c.span.to(span), indent)),
             None => String::new(),
@@ -524,6 +590,23 @@ fn swift_modifier(name: &str, own: bool) -> String {
     let spec = nodes::spec_name(name);
     let _ = own;
     if nodes::is_universal(name) { format!("bloom{}", crate::upper_first(spec)) } else { kw(spec) }
+}
+
+/// `xs` of `xs.enumerated()`.
+pub(crate) fn enumerated_base(e: &Expr) -> Option<&Expr> {
+    let ExprKind::Call(call) = &e.kind else { return None };
+    let ExprKind::Field(base, m) = &call.callee.kind else { return None };
+    (m.name == "enumerated" && call.args.is_empty() && call.trailing.is_none()).then_some(&**base)
+}
+
+/// A closure with no parameters, isolated to the main actor (`{ @MainActor in … }`).
+fn main_actor(closure: &str) -> String {
+    match closure.strip_prefix('{') {
+        Some(rest) if !rest.trim_start().starts_with('@') && !rest.lines().next().unwrap_or("").contains(" in") => {
+            format!("{{ @MainActor in{rest}")
+        }
+        _ => closure.to_string(),
+    }
 }
 
 /// Whether a prop's type is a view (`View`), and whether it is optional (`View?`).

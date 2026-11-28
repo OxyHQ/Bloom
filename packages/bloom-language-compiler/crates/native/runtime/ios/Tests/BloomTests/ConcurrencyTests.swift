@@ -23,6 +23,27 @@ private struct Boom: Error, Equatable {}
     #expect(try await task.value() == 42)
   }
 
+  /// `await Task.cancellation` returns once the task is cancelled, and its `defer` runs then
+  /// (React's effect cleanup); a task cancelled before it waits returns at once.
+  @Test func cancellationReturnsWhenTheTaskIsCancelled() async throws {
+    let stopped = Locked(false)
+    let task = Task {
+      defer { stopped.withLock { $0 = true } }
+      await Task.cancellation
+    }
+    try await Task.sleep(for: .milliseconds(20))
+    #expect(!stopped.withLock { $0 })
+    task.cancel()
+    await task.value
+    #expect(stopped.withLock { $0 })
+    let early = Task {
+      withUnsafeCurrentTask { $0?.cancel() }
+      await Task.cancellation
+      return true
+    }
+    #expect(await early.value)
+  }
+
   @Test func sleepStopsWhenItsSignalFires() async throws {
     let signal = TaskSignal()
     let clock = ContinuousClock.now

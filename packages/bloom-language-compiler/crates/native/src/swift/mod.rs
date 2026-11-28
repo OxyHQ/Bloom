@@ -29,6 +29,7 @@
 //! `BloomUI`, and never SwiftUI itself: BloomUI's `Text` is the only `Text` in scope.
 
 mod expr;
+mod hooks;
 mod nodes;
 pub mod project;
 mod stmt;
@@ -41,6 +42,7 @@ use std::path::PathBuf;
 use bloom_lang::ast::*;
 
 use crate::{Decls, Emitted, Problem, Program, SourceFile, escape};
+use hooks::hook_functions;
 
 /// Swift's keywords a Bloom name may collide with (escaped with backticks).
 const KEYWORDS: &[&str] = &[
@@ -186,6 +188,8 @@ const SWIFTUI_IMPORTS: &[&str] = &[
     "struct SwiftUI.Environment",
     "struct SwiftUI.EnvironmentValues",
     "protocol SwiftUI.EnvironmentKey",
+    "protocol SwiftUI.ViewModifier",
+    "protocol SwiftUI.DynamicProperty",
     "struct SwiftUI.EmptyView",
     "struct SwiftUI.AnyView",
     "struct SwiftUI.ForEach",
@@ -212,10 +216,12 @@ pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
     let modules: Vec<String> = program.modules.iter().map(|m| m.name.clone()).collect();
     let sendable = sendable_types(program);
     let witnesses = Witnesses::of(program);
+    let hooks = hook_functions(program);
     for module in &program.modules {
         for file in &module.files {
             let mut e = Emitter::new(&program.decls, file, &sendable);
             e.program_witnesses = Some(&witnesses);
+            e.hooks = Some(&hooks);
             let text = e.file(&module.name, &modules);
             problems.extend(e.problems);
             let stem = file.path.file_stem().unwrap_or_default().to_string_lossy().into_owned();
@@ -259,6 +265,15 @@ pub(crate) struct Emitter<'a> {
     /// The view being emitted's view-builder props (`let rows: () -> View`): name, type
     /// parameter, function type.
     pub(crate) view_builders: Vec<(String, String, String)>,
+    /// The view being emitted's hook members (`let counter = useCounter(start)`): the stored
+    /// hook's name and its construction, which the view's `init` assigns.
+    pub(crate) view_hooks: Vec<(String, String)>,
+    /// The program's hook functions (see [`hook_functions`]): each is a `DynamicProperty`.
+    pub(crate) hooks: Option<&'a HashSet<String>>,
+    /// Inside a task's body (`.task { }`, `Task { }`): a `catch` once the task is cancelled
+    /// runs nothing (the cancellation stops the task, as the TypeScript backend's
+    /// `if (signal.aborted) return`).
+    pub(crate) in_task: bool,
 }
 
 pub(crate) fn pad(indent: usize) -> String {
@@ -278,6 +293,9 @@ impl<'a> Emitter<'a> {
             witness_names: HashSet::new(),
             in_view: false,
             view_builders: Vec::new(),
+            view_hooks: Vec::new(),
+            hooks: None,
+            in_task: false,
         }
     }
 
@@ -585,6 +603,7 @@ impl<'a> Emitter<'a> {
         match &item.kind {
             ItemKind::Struct(s) => self.struct_decl(vis, &item.modifiers, s),
             ItemKind::Enum(e) => self.enum_decl(vis, e),
+            ItemKind::Fn(f) if self.is_hook(&f.name.name) => self.hook_struct(vis, f),
             ItemKind::Fn(f) => {
                 let attrs = self.attrs(&item.modifiers, &[]);
                 format!("{attrs}{}", self.func(vis, f, false, 0, None))
@@ -593,17 +612,33 @@ impl<'a> Emitter<'a> {
             ItemKind::Const(c) if self.environment_key(c).is_some() => {
                 self.environment_key(c).unwrap_or_default()
             }
+            // `public let RowAlias = Row`: another name of a type (a view's), a `typealias`.
+            ItemKind::Const(c) if self.names_type(&c.value) => {
+                let ExprKind::Name(n) = &c.value.kind else { unreachable!() };
+                // Never more visible than the type it names (`public let Card = CardContent` of a
+                // private view is private).
+                let target = self.file.ast.items.iter().find(|i| i.kind.name().name == *n).map(|i| i.visibility);
+                let vis = match target {
+                    Some(Visibility::Private) => "private ",
+                    Some(Visibility::Internal) if vis == "public " => "",
+                    _ => vis,
+                };
+                format!("{vis}typealias {} = {}\n", kw(&c.name.name), kw(n))
+            }
             ItemKind::Const(c) => {
                 let ty = c.ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
                 let value = self.expr_value(&c.value, 0);
                 // A module-level value Swift cannot prove `Sendable` (a closure): Bloom code runs
                 // on the main actor, as a view's does.
+                // `private var x = …` at module level is a `ConstDecl` too: its word is the source's.
+                let word = if self.source_of(item.span).split_whitespace().any(|w| w == "var") { "var" } else { "let" };
+                // A module-level `var` is shared mutable state Swift 6 will not let a nonisolated
+                // function touch: Bloom code runs on the main actor, so it is unchecked.
                 let unsafe_global = match &c.ty {
+                    _ if word == "var" => "nonisolated(unsafe) ",
                     Some(t) if !sendable_ty(t, self.sendable_types, 0) => "nonisolated(unsafe) ",
                     _ => "",
                 };
-                // `private var x = …` at module level is a `ConstDecl` too: its word is the source's.
-                let word = if self.source_of(item.span).split_whitespace().any(|w| w == "var") { "var" } else { "let" };
                 format!("{unsafe_global}{vis}{word} {}{ty} = {value}\n", kw(&c.name.name))
             }
             ItemKind::Extension(x) => self.extension(x),
@@ -703,7 +738,28 @@ impl<'a> Emitter<'a> {
             let _ = writeln!(out, "\n  {vis}init() {{}}");
         }
         let decodes = conforms.iter().any(|c| c == "Codable" || c == "Decodable");
-        if decodes && !has_init && s.fields.iter().any(|f| f.default.is_some()) {
+        let encodes = conforms.iter().any(|c| c == "Codable" || c == "Encodable");
+        let transparent = self.file.checked.defs.iter().enumerate().any(|(id, d)| {
+            *d.name == *s.name.name && self.file.checked.transparent.contains(&id)
+        });
+        if transparent && let [field] = s.fields.as_slice() {
+            // `@Transparent`: the value is its one field, on the wire too (`"u1"`, not
+            // `{"raw":"u1"}`), as the TypeScript backend's `type UserID = string` is.
+            let name = kw(&field.name.name);
+            let ty = self.ty(&field.ty);
+            if decodes {
+                let _ = write!(
+                    out,
+                    "\n  {vis}init(from decoder: any Decoder) throws {{\n    self.{name} = try decoder.singleValueContainer().decode({ty}.self)\n  }}\n"
+                );
+            }
+            if encodes {
+                let _ = write!(
+                    out,
+                    "\n  {vis}func encode(to encoder: any Encoder) throws {{\n    var c = encoder.singleValueContainer()\n    try c.encode({name})\n  }}\n"
+                );
+            }
+        } else if decodes && !has_init && s.fields.iter().any(|f| f.default.is_some()) {
             out.push_str(&self.decoding_init(vis, &s.fields));
         }
         for m in &members {
@@ -775,16 +831,16 @@ impl<'a> Emitter<'a> {
         let payload_tys: Vec<&TypeExpr> =
             e.variants.iter().flat_map(|v| v.payload.iter().map(|p| &p.ty)).collect();
         let recursive = payload_tys.iter().any(|t| self.mentions(t, &e.name.name));
-        if e.generics.is_empty()
-            && !recursive
-            && self.sendable(&payload_tys, 0)
-            && !conforms.iter().any(|c| c == "Sendable")
-        {
+        // An `indirect` enum's payloads name itself: values all the same, so it is `Sendable` and
+        // `Equatable` when the rest of its payloads are.
+        let mut known = self.sendable_types.clone();
+        known.insert(e.name.name.clone());
+        let values = payload_tys.iter().all(|t| sendable_ty(t, &known, 0));
+        if e.generics.is_empty() && values && !conforms.iter().any(|c| c == "Sendable") {
             conforms.push("Sendable".into());
         }
         if e.generics.is_empty()
-            && !recursive
-            && self.sendable(&payload_tys, 0)
+            && values
             && !conforms.iter().any(|c| c == "Equatable" || c == "Hashable" || c == "BloomCaseCodable")
         {
             conforms.push("Equatable".into());
@@ -1126,6 +1182,15 @@ impl<'a> Emitter<'a> {
         format!("{builder}func {name}{space}{generics}({params}){asynchronous}{throws}{ret}")
     }
 
+    /// Whether `e` names one of the program's types (`Row` in `let RowAlias = Row`).
+    fn names_type(&self, e: &Expr) -> bool {
+        let ExprKind::Name(n) = &e.kind else { return false };
+        self.decls.views.contains_key(n)
+            || self.decls.structs.contains_key(n)
+            || self.decls.enums.contains_key(n)
+            || self.decls.classes.contains(n)
+    }
+
     /// Whether `t` names a type of the program that is not public (Swift will not let a public
     /// declaration name it; Bloom's module boundary does).
     pub(crate) fn names_internal(&self, t: &TypeExpr) -> bool {
@@ -1162,7 +1227,11 @@ impl<'a> Emitter<'a> {
             .ret
             .as_ref()
             .is_some_and(|t| matches!(&t.kind, TypeKind::Named { name, .. } if name.name == "View"));
-        let sig = self.signature(f, returns_view && f.body.stmts.len() > 1);
+        let branches = matches!(
+            f.body.stmts.as_slice(),
+            [Stmt { kind: StmtKind::Expr(Expr { kind: ExprKind::If(_) | ExprKind::Match(_), .. }), .. }]
+        );
+        let sig = self.signature(f, returns_view && (f.body.stmts.len() > 1 || branches));
         let returns = f.ret.as_ref().is_some_and(|t| !matches!(&t.kind, TypeKind::Tuple(items) if items.is_empty()))
             && !f.ret.as_ref().is_some_and(|t| matches!(&t.kind, TypeKind::Named { name, .. } if name.name == "Void" || name.name == "Unit"));
         let mode = if returns_view {
@@ -1175,7 +1244,12 @@ impl<'a> Emitter<'a> {
         let body = self.block(&f.body.stmts, indent + 1, mode);
         let p = pad(indent);
         let st = if is_static { "static " } else { "" };
-        format!("{p}{vis}{st}{sig} {{\n{body}{p}}}\n")
+        // An attribute comes before the declaration's modifiers (`@ViewBuilder public func`).
+        let (attr, sig) = match sig.strip_prefix("@ViewBuilder ") {
+            Some(rest) => ("@ViewBuilder ", rest.to_string()),
+            None => ("", sig),
+        };
+        format!("{p}{attr}{vis}{st}{sig} {{\n{body}{p}}}\n")
     }
 }
 
@@ -1345,7 +1419,7 @@ fn throw_sites_expr(e: &Expr, out: &mut Vec<Span>) {
 /// The requirements of Swift's own protocols a Bloom type conforms to.
 fn system_requirements(protocol: &str) -> Option<&'static [&'static str]> {
     Some(match protocol {
-        "View" => &["body"],
+        "View" | "ViewModifier" | "Screen" => &["body"],
         "Equatable" => &["=="],
         "Hashable" => &["==", "hash", "hashValue"],
         "Comparable" => &["<", "=="],
@@ -1397,19 +1471,20 @@ fn sendable_types(program: &Program) -> HashSet<String> {
         let before = known.len();
         for item in program.modules.iter().flat_map(|m| m.files.iter()).flat_map(|f| f.ast.items.iter()) {
             match &item.kind {
+                // A type whose fields name itself (`children: [Tree]`) is a value all the same.
                 ItemKind::Struct(s) if s.generics.is_empty() => {
-                    if s.fields.iter().all(|f| sendable_ty(&f.ty, &known, 0)) {
+                    let mut with = known.clone();
+                    with.insert(s.name.name.clone());
+                    if s.fields.iter().all(|f| sendable_ty(&f.ty, &with, 0)) {
                         known.insert(s.name.name.clone());
                     }
                 }
-                ItemKind::Enum(e)
-                    if e.generics.is_empty()
-                        && e.variants
-                            .iter()
-                            .flat_map(|v| v.payload.iter())
-                            .all(|p| sendable_ty(&p.ty, &known, 0)) =>
-                {
-                    known.insert(e.name.name.clone());
+                ItemKind::Enum(e) if e.generics.is_empty() => {
+                    let mut with = known.clone();
+                    with.insert(e.name.name.clone());
+                    if e.variants.iter().flat_map(|v| v.payload.iter()).all(|p| sendable_ty(&p.ty, &with, 0)) {
+                        known.insert(e.name.name.clone());
+                    }
                 }
                 _ => {}
             }

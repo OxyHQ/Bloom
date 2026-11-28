@@ -20,7 +20,7 @@ enum Shape: Sendable, Equatable {
   case polygon([Point])
 }
 
-struct Tree {
+struct Tree: Sendable, Equatable {
   let label: String
   let children: [Tree]
 

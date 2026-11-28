@@ -42,6 +42,20 @@ extension JSONValue {
     return .absent
   }
 
+  /// `value["key"]` in Bloom: the member `key` of an object, `none` when the value is not an
+  /// object or has nothing there (a lenient read, the checker's `json_reads`).
+  public func read(_ key: String) -> JSONValue? {
+    if case .object(let o) = self { return o[key] }
+    return nil
+  }
+
+  /// `value[i]` in Bloom: the item at `index` of an array, `none` past its ends or when the value
+  /// is not an array.
+  public func read(_ index: Int) -> JSONValue? {
+    if case .array(let a) = self, index >= 0, index < a.count { return a[index] }
+    return nil
+  }
+
   /// The string, when it is one.
   public var stringValue: String? {
     if case .string(let s) = self { return s }

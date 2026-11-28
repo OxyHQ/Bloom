@@ -16,7 +16,7 @@ public enum Media: Equatable, Sendable {
   case video(String)
 }
 
-public indirect enum Tree {
+public indirect enum Tree: Sendable, Equatable {
   case leaf(Int)
   case node(Tree, Tree)
 }

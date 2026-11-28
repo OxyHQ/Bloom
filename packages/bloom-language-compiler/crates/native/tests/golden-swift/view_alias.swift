@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -31,7 +33,7 @@ public struct RowContent: View {
   }
 }
 
-public let Row = RowContent
+public typealias Row = RowContent
 
 private struct CardContent: View {
   let label: String
@@ -49,5 +51,5 @@ private struct CardContent: View {
   }
 }
 
-public let Card = CardContent
+private typealias Card = CardContent
 

@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -59,7 +61,7 @@ public struct Tags: View {
   let seen: Seen
   @State private var picked = Set<String>()
 
-  var body: some View {
+  public var body: some View {
     Group {
       VStack {
         ForEach(Array(seen.ids.enumerated()), id: \.offset) { _, id in

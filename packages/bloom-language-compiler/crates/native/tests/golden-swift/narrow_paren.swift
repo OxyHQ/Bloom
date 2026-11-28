@@ -18,7 +18,7 @@ func take(_ status: String) -> String {
 
 public func shown(_ room: Room?) -> String {
   if (room != nil) {
-    return take((room.status != nil) ? room.status : "scheduled")
+    return take((room!.status != nil) ? room!.status! : "scheduled")
   }
   return ""
 }

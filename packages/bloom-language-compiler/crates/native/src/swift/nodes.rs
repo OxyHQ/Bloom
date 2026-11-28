@@ -36,7 +36,7 @@ pub fn is_universal(modifier: &str) -> bool {
 
 /// The modifiers whose meaning is SwiftUI's own, emitted as SwiftUI writes them.
 pub fn is_effect(modifier: &str) -> bool {
-    matches!(modifier, "task" | "onAppear" | "onDisappear" | "onChange" | "onOpenURL")
+    matches!(modifier, "task" | "onAppear" | "onDisappear" | "onChange" | "onOpenURL" | "modifier")
 }
 
 /// Whether `name` is one of BloomUI's constructors.

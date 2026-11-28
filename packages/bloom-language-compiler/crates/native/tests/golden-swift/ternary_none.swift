@@ -11,6 +11,8 @@ import struct SwiftUI.Bindable
 import struct SwiftUI.Environment
 import struct SwiftUI.EnvironmentValues
 import protocol SwiftUI.EnvironmentKey
+import protocol SwiftUI.ViewModifier
+import protocol SwiftUI.DynamicProperty
 import struct SwiftUI.EmptyView
 import struct SwiftUI.AnyView
 import struct SwiftUI.ForEach
@@ -41,7 +43,7 @@ public struct Badge: View {
 }
 
 public func salary(a: Int?, b: Int?) -> String {
-  let amount = a != nil && b != nil ? "\(a)–\(b)" : (a != nil ? "\(a)+" : (b != nil ? "Up to \(b)" : nil))
+  let amount = a != nil && b != nil ? "\(a!)–\(b!)" : (a != nil ? "\(a!)+" : (b != nil ? "Up to \(b!)" : nil))
   return amount ?? ""
 }
 
@@ -50,7 +52,7 @@ func place(_ s: String) -> String {
 }
 
 public func parts(location: String?, title: String) -> [String] {
-  let items = [location != nil ? place(location) : nil, title]
+  let items = [location != nil ? place(location!) : nil, title]
   return items.compactMap { $0 }
 }
 
