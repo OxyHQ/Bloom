@@ -64,37 +64,22 @@ jobs:
           VERIFY_SHA: ${{ github.sha }}
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/merge-queue-verified.sh
-
-  # The Seldon race (OxyHQ/oxy docs/engineering/build-and-deploy.md, CI on
-  # Seldon), opt-in with the repository variable CI_SELDON_RACE=true. Unset,
-  # every job runs hosted as before and none of the race's jobs takes a runner.
-  # Set, the raced jobs (build, language, language-parity, tests) run on the
-  # self-hosted seldon-ci pool; a lane still queued 3 minutes after it was
-  # created gets a hosted twin of the same name (the `-hosted` jobs), the lane
-  # that starts first wins, and race-finish cancels the other through its
-  # job-level concurrency group. A fork's pull request never runs on Seldon.
-  # Pull requests and the merge queue only, never a push: the release trusts a
-  # push run that concluded `success`, and a cancelled loser would make it
-  # conclude `cancelled`.
-  # A Seldon lane that fails, whatever the reason (the house network drops new
-  # connections in bursts), reruns hosted in its `-rescue` job, which fails
-  # again on a genuine failure. CI complete takes the raced jobs' verdict from
-  # the race, so neither a cancelled loser nor a rescued lane is a red.
-  race:
-    needs: provenance
-    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
-    uses: OxyHQ/oxy/.github/workflows/seldon-race-start.yml@main
-    permissions:
-      actions: read
-
-  race-finish:
-    needs: race
-    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
-    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
-    uses: OxyHQ/oxy/.github/workflows/seldon-race-finish.yml@main
-    permissions:
-      actions: read
-
+  # Seldon-first routing (OxyHQ/oxy docs/engineering/build-and-deploy.md,
+  # "Seldon-first routing"; the router is OxyHQ/oxy-infra runbook 70). The
+  # heavy jobs (build, language, language-parity, tests, android) run on the
+  # self-hosted seldon-ci pool only while the org variable SELDON_CI_ROUTE
+  # reads `seldon-ci`, and only on the first attempt of a same-repository pull
+  # request or of a merge group (phase 2). Anything else runs hosted: the
+  # variable unset, push, dispatch, a re-run, a fork. A merge group stuck on an
+  # offline Seldon is force-cancelled by the router's watchdog, which puts its
+  # pull request back in the queue (oxy-infra runbook 70). The router writes `seldon-ci` only while
+  # Seldon's heartbeat is fresh and its queue is short, and its watchdog
+  # cancels a pull request run stuck on an offline Seldon and re-runs it, which
+  # attempt 2 sends hosted. A heavy job that fails on Seldon, whatever the
+  # reason (the house network drops connections in bursts), reruns hosted in
+  # its `-rescue` job (the same name, strategy and steps), which fails again on
+  # a genuine failure; CI complete judges each family on the rescue verdict.
+  # Nothing races and there are no twins.
   build:
     name: Build, package and types
     needs: provenance
@@ -103,23 +88,19 @@ jobs:
     # dispatch run) would otherwise skip the dependent too; it runs unless
     # provenance positively answered verified.
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    # Each raced lane: Seldon when the race is on (never for a fork), its own
-    # concurrency group (the race cancels a loser by queuing into it; the name
-    # must be the job's display name), and the guard as its first step.
-    runs-on: &seldon-lane ${{ vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
+    runs-on: &seldon-lane ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
     timeout-minutes: 20
-    permissions: &race-lane-permissions
+    permissions: &lane-permissions
       contents: read
-      actions: read
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Build, package and types
-    steps: &build-steps # A lane that starts after its twin waits here to be cancelled.
-      - &race-guard
-        name: Seldon race guard
-        if: vars.CI_SELDON_RACE == 'true' && !endsWith(github.job, '-rescue')
-        uses: OxyHQ/oxy/.github/actions/seldon-race@main
-        with:
-          mode: guard
+    # Where the job ran, for its rescue's condition (any shard speaks for a
+    # matrix: every shard is routed at once).
+    outputs: &lane-outputs
+      lane: ${{ steps.lane.outputs.lane }}
+    steps: &build-steps
+      - &lane-step
+        id: lane
+        name: Seldon lane
+        run: echo "lane=${{ runner.environment == 'self-hosted' && 'seldon' || 'hosted' }}" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -195,27 +176,15 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
-  # build's hosted twin in the Seldon race: the same name, strategy and steps.
-  build-hosted:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Build, package and types' || 'Build, package and types (seldon twin, off)' }}
-    needs: race
-    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
-    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Build, package and types
-    steps: *build-steps
-
-  # build's rescue: reruns it hosted when a Seldon lane of it failed.
+  # build's rescue: reruns it hosted when it failed on Seldon.
   build-rescue:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Build, package and types' || 'Build, package and types (seldon rescue, off)' }}
+    name: Build, package and types
     needs: [provenance, build]
-    if: ${{ !cancelled() && needs.build.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.build.result == 'failure' && (needs.build.outputs.lane == 'seldon' || (needs.build.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions: *race-lane-permissions
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     steps: *build-steps
 
   # The language packages: the language (its unit suite; its parity suite runs
@@ -229,11 +198,10 @@ jobs:
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
     runs-on: *seldon-lane
     timeout-minutes: 45
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Language packages
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     steps: &language-steps
-      - *race-guard
+      - *lane-step
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -296,6 +264,8 @@ jobs:
           name: bloom-vscode-vsix
           path: packages/bloom-vscode/bloom-vscode.vsix
           if-no-files-found: error
+          # A hosted rescue of this job uploads it again under the same name.
+          overwrite: true
       # The language's web weight: the root reaches no family of nodes, and stays
       # within its budget; each family is an entry an app pays for by importing it.
       - name: Language bundle weight
@@ -319,26 +289,15 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
-  language-hosted:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Language packages' || 'Language packages (seldon twin, off)' }}
-    needs: race
-    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
-    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Language packages
-    steps: *language-steps
-
-  # language's rescue: reruns it hosted when a Seldon lane of it failed.
+  # language's rescue: reruns it hosted when it failed on Seldon.
   language-rescue:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Language packages' || 'Language packages (seldon rescue, off)' }}
+    name: Language packages
     needs: [provenance, language]
-    if: ${{ !cancelled() && needs.language.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.language.result == 'failure' && (needs.language.outputs.lane == 'seldon' || (needs.language.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    permissions: *race-lane-permissions
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     steps: *language-steps
 
   # The language's parity suite: every family rendered as the language and as
@@ -352,15 +311,14 @@ jobs:
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
     runs-on: *seldon-lane
     timeout-minutes: 35
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Language parity (${{ matrix.shard }}/2)
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     strategy: &language-parity-strategy
       fail-fast: false
       matrix:
         shard: [1, 2]
     steps: &language-parity-steps
-      - *race-guard
+      - *lane-step
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -377,27 +335,15 @@ jobs:
       - name: Language parity suite
         run: cd packages/bloom-language && bun run test:parity --shard=${{ matrix.shard }}/2
 
-  language-parity-hosted:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Language parity ({0}/2)', matrix.shard) || format('Language parity ({0}/2) (seldon twin, off)', matrix.shard) }}
-    needs: race
-    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
-    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Language parity (${{ matrix.shard }}/2)
-    strategy: *language-parity-strategy
-    steps: *language-parity-steps
-
-  # language-parity's rescue: reruns it hosted when a Seldon lane of it failed.
+  # language-parity's rescue: reruns it hosted when it failed on Seldon.
   language-parity-rescue:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Language parity ({0}/2)', matrix.shard) || format('Language parity ({0}/2) (seldon rescue, off)', matrix.shard) }}
+    name: Language parity (${{ matrix.shard }}/2)
     needs: [provenance, language-parity]
-    if: ${{ !cancelled() && needs.language-parity.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.language-parity.result == 'failure' && (needs.language-parity.outputs.lane == 'seldon' || (needs.language-parity.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    permissions: *race-lane-permissions
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     strategy: *language-parity-strategy
     steps: *language-parity-steps
 
@@ -409,15 +355,14 @@ jobs:
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
     runs-on: *seldon-lane
     timeout-minutes: 20
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-seldon-Tests (${{ matrix.shard }}/5)
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     strategy: &tests-strategy
       fail-fast: false
       matrix:
         shard: [1, 2, 3, 4, 5]
     steps: &tests-steps
-      - *race-guard
+      - *lane-step
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -436,31 +381,22 @@ jobs:
       # worker and with FEWER workers, not with memory (AGENTS.md).
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
 
-  tests-hosted:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Tests ({0}/5)', matrix.shard) || format('Tests ({0}/5) (seldon twin, off)', matrix.shard) }}
-    needs: race
-    # `!cancelled()`: an ancestor skipped on this event (provenance, a twin) must not skip it.
-    if: ${{ !cancelled() && needs.race.outputs.race == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions: *race-lane-permissions
-    concurrency:
-      group: seldon-race-${{ github.run_id }}-${{ github.run_attempt }}-hosted-Tests (${{ matrix.shard }}/5)
-    strategy: *tests-strategy
-    steps: *tests-steps
-
-  # tests's rescue: reruns it hosted when a Seldon lane of it failed.
+  # tests's rescue: reruns it hosted when it failed on Seldon.
   tests-rescue:
-    name: ${{ vars.CI_SELDON_RACE == 'true' && format('Tests ({0}/5)', matrix.shard) || format('Tests ({0}/5) (seldon rescue, off)', matrix.shard) }}
+    name: Tests (${{ matrix.shard }}/5)
     needs: [provenance, tests]
-    if: ${{ !cancelled() && needs.tests.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.tests.result == 'failure' && (needs.tests.outputs.lane == 'seldon' || (needs.tests.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions: *race-lane-permissions
+    permissions: *lane-permissions
+    outputs: *lane-outputs
     strategy: *tests-strategy
     steps: *tests-steps
 
-  # The Android gates, one variant each. Their steps are the local action
+  # The Android gates, one variant each, routed like the other heavy jobs (no
+  # emulator: Gradle compiles and Robolectric unit tests, so no KVM). On Seldon
+  # they restore the same Actions cache entries (SDK, NDK, Robolectric, Gradle
+  # modules) and Gradle resolves through the host's Maven cache. Their steps are the local action
   # .github/actions/android-native-check, which gradle-dependency-cache below
   # runs too. Gradle's dependency cache (~/.gradle/caches/modules-2) is restored
   # from main, where that job saves it: this job never runs on a queue-verified
@@ -473,13 +409,19 @@ jobs:
     name: Android (${{ matrix.variant }})
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    # Measured on Seldon 2026-11-28 (two runs, PR 1075): legacy 6 min, default
+    # 5 min, predictive 12 min, against 1, 3 and 8 to 9 hosted. Slower, so the
+    # router sends them here only while Seldon is the sooner start.
+    runs-on: *seldon-lane
     timeout-minutes: 60
-    strategy:
+    permissions: *lane-permissions
+    outputs: *lane-outputs
+    strategy: &android-strategy
       fail-fast: false
       matrix:
         variant: [legacy, default, predictive]
-    steps:
+    steps: &android-steps
+      - *lane-step
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -498,6 +440,18 @@ jobs:
         with:
           variant: ${{ matrix.variant }}
           gradle-version: ${{ steps.gradle-cache.outputs.gradle-version }}
+
+  # android's rescue: reruns it hosted when it failed on Seldon.
+  android-rescue:
+    name: Android (${{ matrix.variant }})
+    needs: [provenance, android]
+    if: ${{ !cancelled() && needs.android.result == 'failure' && (needs.android.outputs.lane == 'seldon' || (needs.android.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions: *lane-permissions
+    outputs: *lane-outputs
+    strategy: *android-strategy
+    steps: *android-steps
 
   # Keeps each Android variant's Gradle dependency cache in main's Actions
   # cache, as Warm Android caches below does for the SDK, NDK and Robolectric:
@@ -627,51 +581,45 @@ jobs:
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
   # legitimate skip is a push whose exact SHA already passed this job in the
   # merge queue (provenance verified) — and then the heavy jobs MUST be
-  # skipped, so a gating bug that ran them anyway is a red too. When the Seldon
-  # race or a rescue ran, a raced job passes when the race's verdict says each
-  # of its names passed in some lane and failed in no hosted lane: the loser's
-  # cancellation makes the job's own result `cancelled`, and a Seldon lane that
-  # failed on the network is excused by its rescue's success. It does not need
-  # race-finish, whose reapers only follow the cancellation.
+  # skipped, so a gating bug that ran them anyway is a red too. A heavy job
+  # that failed on Seldon and whose hosted rescue passed is a pass (the
+  # seldon-route verdict); a failed or cancelled rescue, or a rescue over a job
+  # that did not fail, is a red.
   ci-complete:
     name: CI complete
     if: always()
     needs:
       [
         provenance,
-        race,
         build,
-        build-hosted,
         build-rescue,
         language,
-        language-hosted,
         language-rescue,
         language-parity,
-        language-parity-hosted,
         language-parity-rescue,
         tests,
-        tests-hosted,
         tests-rescue,
         android,
+        android-rescue,
       ]
-    runs-on: ubuntu-latest
+    # A jq script over `needs`: a light Seldon VM under the same route as the
+    # heavy jobs, so a pull request's gate does not wait for one of the org's
+    # 20 hosted slots. An offline Seldon leaves it queued; the router's watchdog
+    # cancels the run and re-runs it, and attempt 2 is hosted.
+    runs-on: ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci-light' || 'ubuntu-latest' }}
     timeout-minutes: 5
-    permissions:
-      actions: read
+    permissions: {}
     steps:
-      # Whenever the race is on: a rescue can run without the race.
-      - name: Seldon race verdict
-        id: race
-        if: vars.CI_SELDON_RACE == 'true'
-        uses: OxyHQ/oxy/.github/actions/seldon-race@main
+      - name: Seldon route verdict
+        id: route
+        uses: OxyHQ/oxy/.github/actions/seldon-route@main
         with:
-          mode: verdict
+          needs: ${{ toJSON(needs) }}
       - name: Every job passed
         env:
           RESULTS: ${{ toJSON(needs) }}
           EVENT_NAME: ${{ github.event_name }}
-          RACED: ${{ needs.race.outputs.race }}
-          RACE_VERDICT: ${{ steps.race.outputs.outcome }}
+          FAMILIES: ${{ steps.route.outputs.families }}
         run: |
           set -euo pipefail
           failures=()
@@ -689,19 +637,19 @@ jobs:
           fi
 
           for job in build language language-parity tests android; do
-            result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             case "$job" in
-              build | language | language-parity | tests)
-                twin="$(jq -r --arg job "$job-hosted" '.[$job].result' <<<"$RESULTS")"
-                rescue="$(jq -r --arg job "$job-rescue" '.[$job].result' <<<"$RESULTS")"
-                # The family {job, job-hosted, job-rescue} stands on the race's
-                # verdict when the race or the rescue ran; otherwise the job is
-                # judged alone and its twin and rescue must not have run.
-                if [ "$RACED" = true ] || [ "$rescue" != skipped ]; then
-                  result="$RACE_VERDICT"
-                else
-                  [ "$twin" = skipped ] || failures+=("$job-hosted ran although the race did not: $twin")
-                fi
+              # The family {job, job-rescue} stands on the route verdict:
+              # passed or rescued is a pass, skipped is a skip.
+              build | language | language-parity | tests | android)
+                case "$(jq -r --arg job "$job" '.[$job] // "missing"' <<<"$FAMILIES")" in
+                  passed | rescued) result=success ;;
+                  skipped) result=skipped ;;
+                  *) result=failure ;;
+                esac
+                ;;
+              *)
+                echo "::error::$job has no rescue family"
+                exit 1
                 ;;
             esac
             if [ "$verified" = true ]; then
