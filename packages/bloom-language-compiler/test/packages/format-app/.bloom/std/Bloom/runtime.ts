@@ -190,6 +190,18 @@ export const acos = Math.acos;
 export const atan = Math.atan;
 export const atan2 = Math.atan2;
 export const hypot = (a: number, b: number): number => Math.hypot(a, b);
+export const sinh = Math.sinh;
+export const cosh = Math.cosh;
+export const tanh = Math.tanh;
+export const asinh = Math.asinh;
+export const acosh = Math.acosh;
+export const atanh = Math.atanh;
+export const exp2 = (x: number): number => 2 ** x;
+export const expm1 = Math.expm1;
+export const log1p = Math.log1p;
+export const trunc = Math.trunc;
+/** C's `fmod`: JS's `%` on numbers is exactly it (the result has `x`'s sign). */
+export const fmod = (x: number, y: number): number => x % y;
 export const random = Math.random;
 export const isFiniteNumber = (n: number): boolean => Number.isFinite(n);
 export const isNaNNumber = (n: number): boolean => Number.isNaN(n);

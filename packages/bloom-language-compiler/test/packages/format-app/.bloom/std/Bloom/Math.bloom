@@ -1,7 +1,10 @@
 // Bloom (math): constants and functions over `Double` and `Int`.
 //
 // `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
-// (`rounded()`, `clamped(…)`, …) are the compiler's; these complete them.
+// (`rounded()`, `clamped(…)`, …) are the compiler's; these complete them, with Foundation's
+// names and meaning. Each is the same double on every backend: TypeScript computes it with
+// V8's fdlibm port (`Math.cbrt`, …), Kotlin with the JVM's `StrictMath` (fdlibm), and Swift
+// with the same algorithms (not Darwin's libm, which differs in the last bit).
 
 extern module "./runtime" {
   private let PI: Double
@@ -10,7 +13,8 @@ extern module "./runtime" {
   private let NAN: Double
   /// The square root of `x`.
   public func sqrt(_ x: Double) -> Double
-  private func cbrt(_ x: Double) -> Double
+  /// The cube root of `x` (negative for a negative `x`, unlike `pow(x, 1.0 / 3.0)`).
+  public func cbrt(_ x: Double) -> Double
   /// `x` to the power `y`.
   public func pow(_ x: Double, _ y: Double) -> Double
   /// `e` to the power `x`.
@@ -27,13 +31,38 @@ extern module "./runtime" {
   public func cos(_ x: Double) -> Double
   /// The tangent of `x` (radians).
   public func tan(_ x: Double) -> Double
-  private func asin(_ x: Double) -> Double
-  private func acos(_ x: Double) -> Double
-  private func atan(_ x: Double) -> Double
+  /// The arc sine of `x` (radians, in -π/2...π/2; NaN outside -1...1).
+  public func asin(_ x: Double) -> Double
+  /// The arc cosine of `x` (radians, in 0...π; NaN outside -1...1).
+  public func acos(_ x: Double) -> Double
+  /// The arc tangent of `x` (radians, in -π/2...π/2).
+  public func atan(_ x: Double) -> Double
   /// The angle of the point (`x`, `y`) from the x axis (radians).
   public func atan2(_ y: Double, _ x: Double) -> Double
   /// The length of the vector (`a`, `b`).
   public func hypot(_ a: Double, _ b: Double) -> Double
+  /// The hyperbolic sine of `x`.
+  public func sinh(_ x: Double) -> Double
+  /// The hyperbolic cosine of `x`.
+  public func cosh(_ x: Double) -> Double
+  /// The hyperbolic tangent of `x`.
+  public func tanh(_ x: Double) -> Double
+  /// The inverse hyperbolic sine of `x`.
+  public func asinh(_ x: Double) -> Double
+  /// The inverse hyperbolic cosine of `x` (NaN below 1).
+  public func acosh(_ x: Double) -> Double
+  /// The inverse hyperbolic tangent of `x` (NaN outside -1...1).
+  public func atanh(_ x: Double) -> Double
+  /// 2 to the power `x`.
+  public func exp2(_ x: Double) -> Double
+  /// `exp(x) - 1`, exact for an `x` near 0.
+  public func expm1(_ x: Double) -> Double
+  /// `log(1 + x)`, exact for an `x` near 0.
+  public func log1p(_ x: Double) -> Double
+  /// `x` without its fraction, toward zero (`trunc(-2.7)` is `-2.0`).
+  public func trunc(_ x: Double) -> Double
+  /// The remainder of `x / y` with `x`'s sign (C's `fmod`, Swift's `truncatingRemainder`).
+  public func fmod(_ x: Double, _ y: Double) -> Double
   private func random() -> Double
   private func randomInt(_ from: Int, _ to: Int) -> Int
   private func isFiniteNumber(_ n: Double) -> Bool
@@ -44,6 +73,9 @@ extern module "./runtime" {
 }
 
 extension Double {
+  /// The remainder of dividing by `other`, with this value's sign (Swift's `%` on `Double`).
+  public func truncatingRemainder(dividingBy other: Double) -> Double { fmod(self, other) }
+
   /// π.
   public static let pi: Double = PI
 
