@@ -126,3 +126,17 @@ export interface Transformed {
   opacity?: number;
 }
 export declare function transformed(style: Transformed): number;
+/** A component whose props extend a mapped type Bloom does not read (as `ScrollViewProps` extend `ViewProps`). */
+interface BoxStyle {
+  borderBottomWidth?: number;
+  maxHeight?: number;
+  borderColor?: string;
+}
+interface BoxBase {
+  style?: BoxStyle | readonly BoxStyle[];
+  testID?: string;
+}
+export interface StyledBoxProps extends Omit<BoxBase, 'testID'> {
+  horizontal?: boolean;
+}
+export declare function StyledBox(props: StyledBoxProps): ReactNode;
