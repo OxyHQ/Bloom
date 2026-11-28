@@ -395,4 +395,4 @@ extension Error {
 }
 
 /// Stops the program: a state the code holds impossible was reached.
-public func fatal<T>(_ message: String = "unreachable") -> T { throw RuntimeError(message: message) }
+public func fatal(_ message: String = "unreachable") -> Never { throw RuntimeError(message: message) }

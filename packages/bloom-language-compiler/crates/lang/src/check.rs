@@ -1514,6 +1514,8 @@ impl<'o> Checker<'o> {
             "Bool" => Some(Ty::Bool),
             "String" => Some(Ty::Str),
             "Unit" | "Void" => Some(Ty::Unit),
+            // What does not return (`fatal()`, a function that always throws): fits anywhere.
+            "Never" => Some(Ty::Never),
             "Double" => Some(Ty::Float),
             "View" => Some(Ty::View(None)),
             "Error" => Some(Ty::JsError),

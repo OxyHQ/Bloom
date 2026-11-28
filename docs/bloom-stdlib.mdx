@@ -164,7 +164,7 @@ A JS `Error` (a `TypeError`, a `RangeError`, a TS library's own): its name, mess
 
 - `var localizedDescription: String`: What the error says (JS's `message`, or the thrown value as text).
 
-### `func fatal<T>(_ message: String = "unreachable") -> T`
+### `func fatal(_ message: String = "unreachable") -> Never`
 
 Stops the program: a state the code holds impossible was reached.
 

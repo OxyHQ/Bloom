@@ -686,6 +686,7 @@ impl Checker<'_> {
         self.witnesses_of(expr, member.span, &f);
         let rest = FnTy { params: params.to_vec(), ..(*f).clone() };
         let (order, rest_args) = self.bloom_args(call, &rest, false);
+        self.task_signal(expr, &rest.params, &order);
         self.out.calls.insert(expr.id, CallRes::Extension { func, order, rest: rest_args });
         Some(if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() })
     }
@@ -889,6 +890,21 @@ impl Checker<'_> {
         Ty::Never
     }
 
+    /// In a `.task`, work that takes a cancellation (`cancellation: TaskSignal?`) and is given
+    /// none takes the task's, as Swift's child work is cancelled with its task.
+    fn task_signal(&mut self, expr: &Expr, params: &[ParamTy], order: &[Option<usize>]) {
+        if self.frames.iter().any(|frame| frame.task)
+            && let Some(slot) = params.iter().position(|p| {
+                p.labelled
+                    && p.name.as_deref() == Some("cancellation")
+                    && matches!(&p.ty, Ty::Option(inner) if matches!(&**inner, Ty::Foreign(t) if &**t == "AbortSignal"))
+            })
+            && order.get(slot) == Some(&None)
+        {
+            self.out.implicit_signals.insert(expr.id, slot);
+        }
+    }
+
     /// Calling a value of type `ty`: a Bloom function, a TS function, or a foreign value.
     fn value_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         match self.resolve(ty) {
@@ -900,17 +916,7 @@ impl Checker<'_> {
                 self.throwing_call(expr.span, &f);
                 self.witnesses_of(expr, call.callee.span, &f);
                 let (order, rest) = self.bloom_args(call, &f, false);
-                // In a `.task`, work that takes a cancellation and is given none takes the task's.
-                if self.frames.iter().any(|frame| frame.task)
-                    && let Some(slot) = f.params.iter().position(|p| {
-                        p.labelled
-                            && p.name.as_deref() == Some("cancellation")
-                            && matches!(&p.ty, Ty::Option(inner) if matches!(&**inner, Ty::Foreign(t) if &**t == "AbortSignal"))
-                    })
-                    && order.get(slot) == Some(&None)
-                {
-                    self.out.implicit_signals.insert(expr.id, slot);
-                }
+                self.task_signal(expr, &f.params, &order);
                 self.out.calls.insert(expr.id, CallRes::Bloom { order, rest });
                 if f.is_async { Ty::Async(Box::new(f.ret.clone())) } else { f.ret.clone() }
             }

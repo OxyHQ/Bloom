@@ -940,3 +940,22 @@ fn a_task_awaits_its_cancellation_and_hands_it_to_sleep() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// An HTTP request in a `.task` takes the task's cancellation, and a throw once the task is
+/// cancelled runs no `catch`. The runtime test is `test/task-http.test.tsx`.
+const TASK_HTTP: &str = include_str!("../../../test/packages/format-app/Sources/App/TaskHTTP.bloom");
+
+#[test]
+fn a_tasks_request_is_cancelled_with_it_and_runs_no_catch() {
+    let root = package("task-http", &[("Sources/Model/TaskHTTP.bloom", TASK_HTTP)]);
+    let path = root.join("Sources/Model/TaskHTTP.bloom");
+    let out = compile(TASK_HTTP, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("path, undefined, undefined, $signal)"), "{}", out.code);
+    assert!(out.code.contains("} catch (error) {\nif ($signal.aborted) return;"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/task-http.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

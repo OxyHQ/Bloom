@@ -66,6 +66,9 @@ await (sleep((Duration$$milliseconds)(50), $signal));
 if ($signal.aborted) return;
 onSearch(query);
 } catch (error) {
+if ($signal.aborted) return;
+{
+}
 }
 })();
 return () => $controller.abort();

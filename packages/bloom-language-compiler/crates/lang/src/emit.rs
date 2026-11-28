@@ -1644,10 +1644,24 @@ impl<'a> Emitter<'a> {
             [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
-                line.s(&format!(" catch ({name}) ")).f(body);
+                match &signal {
+                    // In a task, a throw once it is cancelled (an aborted request) is the
+                    // cancellation itself: the task stops, and no `catch` runs.
+                    Some(signal) => {
+                        line.s(&format!(" catch ({name}) {{\nif ({signal}.aborted) return;\n"))
+                            .f(body)
+                            .s("\n}");
+                    }
+                    None => {
+                        line.s(&format!(" catch ({name}) ")).f(body);
+                    }
+                }
             }
             catches => {
                 line.s(" catch ($error) {\n");
+                if let Some(signal) = &signal {
+                    line.s(&format!("if ({signal}.aborted) return;\n"));
+                }
                 let mut caught_all = false;
                 for (index, catch) in catches.iter().enumerate() {
                     // `catch let e as HTTPError`: what `HTTPError$$cast` makes of the error, when
@@ -3547,6 +3561,20 @@ impl<'a> Emitter<'a> {
     }
 
     /// A Bloom call's argument values, in its parameters' order (`CallRes::Bloom`).
+    /// A `.task`'s work given no cancellation takes the task's (`sleep(for:)`, `HTTPClient`'s
+    /// calls): `Task.signal` in the slot of its `cancellation:` parameter.
+    fn task_signal_arg(&mut self, expr: &Expr, rest: &[usize], values: &mut Vec<Frag>) {
+        if let Some(&slot) = self.ck.implicit_signals.get(&expr.id)
+            && let Some(signal) = self.signal.clone()
+            && rest.is_empty()
+        {
+            while values.len() <= slot {
+                values.push(Frag::of("undefined"));
+            }
+            values[slot] = Frag::of(signal);
+        }
+    }
+
     fn ordered_args(&mut self, call: &Call, order: &[Option<usize>], rest: &[usize]) -> Vec<Frag> {
         let mut values: Vec<Frag> = order
             .iter()
@@ -3632,6 +3660,7 @@ impl<'a> Emitter<'a> {
                     None => self.expr(object),
                 };
                 let mut values = self.ordered_args(call, &order, &rest);
+                self.task_signal_arg(expr, &rest, &mut values);
                 self.push_witnesses(expr, &order, &rest, &mut values);
                 values.insert(0, receiver);
                 let mut out = Frag::of(func.to_string());
@@ -3640,16 +3669,7 @@ impl<'a> Emitter<'a> {
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
-                // A `.task`'s work given no cancellation takes the task's (`sleep(for:)`).
-                if let Some(&slot) = self.ck.implicit_signals.get(&expr.id)
-                    && let Some(signal) = self.signal.clone()
-                    && rest.is_empty()
-                {
-                    while values.len() <= slot {
-                        values.push(Frag::of("undefined"));
-                    }
-                    values[slot] = Frag::of(signal);
-                }
+                self.task_signal_arg(expr, &rest, &mut values);
                 self.push_witnesses(expr, &order, &rest, &mut values);
                 let mut out = self.operand(&call.callee);
                 out.f(Frag::join(values, ", ").wrap(open, ")"));
