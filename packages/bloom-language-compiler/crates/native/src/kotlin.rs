@@ -290,6 +290,8 @@ fn token_class(node: &str, param: &str) -> &'static str {
         ("Button", "style" | "buttonStyle") => "ButtonStyle",
         ("Tabs", "style") => "TabsStyle",
         (_, "contentFit") => "ContentFit",
+        ("Video", "videoGravity") => "VideoGravity",
+        ("Video", "controls") => "VideoControls",
         (_, "corner") => "Corner",
         (_, "tint") => "Tone",
         (_, "icon") => "Icons",
@@ -331,6 +333,16 @@ impl<'a> Emitter<'a> {
             inout_boxes: HashMap::new(),
             boxed_target: None,
             init_mode: None,
+        }
+    }
+
+    /// A `URL` (or `URL?`) as the text the runtime's media views load (`absoluteString`).
+    fn url_text(&mut self, e: &Expr) -> String {
+        let v = self.expr(e);
+        match self.ty_of(e) {
+            Some(Ty::Option(_)) => format!("{v}?.absoluteString"),
+            Some(Ty::Str | Ty::Strings(_)) => v,
+            _ => format!("{v}.absoluteString"),
         }
     }
 
@@ -2547,6 +2559,8 @@ impl<'a> Emitter<'a> {
                     }
                 }
                 ("NavigationStack", Some("root")) => format!("root = {}", self.expr(&a.value)),
+                // `Video(url:, poster:)` take the stdlib's `URL`s; the runtime plays their text.
+                ("Video", Some(l @ ("url" | "poster"))) => format!("{l} = {}", self.url_text(&a.value)),
                 // `Avatar(url, { name: n, initials: i })`: the fallback disc's name and initials.
                 ("Avatar", None) if positional == 1 => {
                     positional += 1;
@@ -2610,6 +2624,7 @@ impl<'a> Emitter<'a> {
                     None => arg.map(|a| self.expr(&a.value)).unwrap_or_default(),
                 },
                 (_, "lineLimit", Some(a)) => self.expr(&a.value),
+                ("Video", "poster", Some(a)) => self.url_text(&a.value),
                 (_, mname, Some(a)) => self.token_or_expr(node, mname, &a.value),
                 (_, _, None) => "true".to_string(),
             };
@@ -3264,6 +3279,14 @@ impl<'a> Emitter<'a> {
                     let body = self.block(&c.body, 2, Mode::Unit);
                     return format!("scope.launch {{\n{body}  }}");
                 }
+                // The stdlib's `VideoPlayer(url:)`: the runtime's media3 player, of the URL's text.
+                if n == "VideoPlayer"
+                    && !self.decls.declared.contains(n)
+                    && let [a] = call.args.as_slice()
+                    && a.label.as_ref().is_some_and(|l| l.name == "url")
+                {
+                    return format!("VideoPlayer({})", self.url_text(&a.value));
+                }
                 if n == "Binding" {
                     let get = call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == "get"));
                     let set = call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == "set"));
@@ -3281,10 +3304,18 @@ impl<'a> Emitter<'a> {
                             .get(*l)
                             .map(|l| l.name.clone())
                             .filter(|r| r.contains("$$") && r != n)
-                            // A class's `init` is its Kotlin constructor; a value type's is its factory.
+                            // A class's `init` is its Kotlin constructor (one the runtime gives too,
+                            // `VideoPlayer`); a value type's is its factory.
                             .filter(|r| {
-                                bloom_lang::backend::demangle(r)
-                                    .is_some_and(|(o, _, _)| !self.decls.classes.contains(o))
+                                bloom_lang::backend::demangle(r).is_some_and(|(o, _, _)| {
+                                    !self.decls.classes.contains(o)
+                                        && !self
+                                            .file
+                                            .checked
+                                            .defs
+                                            .iter()
+                                            .any(|d| d.name == o && d.class.is_some())
+                                })
                             })
                     }
                     _ => None,

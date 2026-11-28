@@ -1,0 +1,33 @@
+// The language's `video` node (core16's Bloom.Video): `Video(url:, poster:)` owning its player,
+// muted, looping and autoplaying as a feed's video does, and `Video(player:)` driven by a
+// `VideoPlayer` the view holds, fitted and with its controls hidden. The runtime takes the URLs'
+// text.
+public struct Clip: Codable, Equatable {
+  let video: String
+  let poster: String
+}
+
+public struct Clips: View {
+  let clips: [Clip]
+  var body: some View {
+    VStack {
+      for clip in clips {
+        if let url = URL.parse(clip.video) {
+          Video(url: url, poster: URL.parse(clip.poster)).muted().loops().autoplay()
+        }
+      }
+    }
+  }
+}
+
+struct Driven: View {
+  @State var player = VideoPlayer(url: URL.parse("https://example.com/a.mp4")!)
+  var body: some View {
+    VStack {
+      Video(player: player).videoGravity(.fit).controls(.hidden).poster(URL.parse("https://example.com/a.jpg"))
+      Button("Play") { player.play() }
+      Button("Back") { player.seek(to: 0) }
+      Text("\(player.currentTime) of \(player.duration)")
+    }
+  }
+}

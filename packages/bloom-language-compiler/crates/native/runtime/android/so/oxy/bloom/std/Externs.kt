@@ -283,6 +283,28 @@ internal fun padEnd(s: String, length: Long, pad: String): String {
   return s + pad.repeat(missing / pad.length + 1).take(missing)
 }
 
+// The `utf16` view (Core's `s.utf16`): JavaScript's offsets and lengths, which Kotlin's strings
+// share (both are UTF-16 code units).
+
+internal fun utf16Length(s: String): Long = s.length.toLong()
+
+/** JavaScript's `slice`: a negative offset counts from the end; both are clamped to the string. */
+internal fun utf16Slice(s: String, start: Long, end: Long): String {
+  fun at(i: Long): Int = (if (i < 0) s.length + i else i).coerceIn(0, s.length.toLong()).toInt()
+  val from = at(start)
+  val to = at(end)
+  return if (from < to) s.substring(from, to) else ""
+}
+
+internal fun utf16IndexOf(s: String, sub: String, from: Long): Long =
+  s.indexOf(sub, from.coerceIn(0, s.length.toLong()).toInt()).toLong()
+
+internal fun utf16LastIndexOf(s: String, sub: String): Long = s.lastIndexOf(sub).toLong()
+
+internal fun utf16PadStart(s: String, length: Long, pad: String): String = padStart(s, length, pad)
+
+internal fun utf16PadEnd(s: String, length: Long, pad: String): String = padEnd(s, length, pad)
+
 internal fun repeatString(s: String, count: Long): String = s.repeat(count.toInt().coerceAtLeast(0))
 
 /** `-1`, `0` or `1`, by the locale's collation (the device's when `locale` is empty). */

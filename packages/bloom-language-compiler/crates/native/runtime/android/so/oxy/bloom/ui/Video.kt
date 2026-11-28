@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,69 +20,110 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.delay
 
 /**
- * `VideoPlayer(url:)` (the stdlib's `@Observable` player): what plays, muted or not, looping or
- * not, and whether it is asked to play. The picture and the decoders are the [Video] that shows
- * it: a player holds no decoder of its own, so a feed's players cost nothing until one plays.
+ * `VideoPlayer(url:)` (the stdlib's `@Observable` player, AVPlayer's shape): what plays, muted or
+ * not, looping or not, whether it is playing, and where. The picture and the decoder are the
+ * [Video] that shows it: a player holds no decoder of its own, so a feed's players cost nothing
+ * until one plays, and one that gives its decoder up keeps its position and resumes from there.
+ * It is the Kotlin runtime's: the stdlib's `url` is a `URL`, and the backend passes its text.
  */
 @Stable
 class VideoPlayer(val url: String) {
   var isMuted by mutableStateOf(false)
   var loops by mutableStateOf(false)
 
-  /** Whether it is asked to play (`play()`), not whether a frame is moving yet. */
+  /** Whether it is playing (asked to play and holding a decoder, or about to take one). */
   var isPlaying by mutableStateOf(false)
     private set
+
+  /** The position, in seconds from the start. */
+  var currentTime by mutableStateOf(0.0)
+    internal set
+
+  /** The video's length in seconds, once known (0 before). */
+  var duration by mutableStateOf(0.0)
+    internal set
+
+  /** The decoder it plays on now, lent by [VideoPool] to its [Video]. */
+  internal var decoder: ExoPlayer? = null
 
   fun play() {
     isPlaying = true
   }
 
   fun pause() {
+    decoder?.let { currentTime = it.currentPosition / 1000.0 }
     isPlaying = false
+  }
+
+  fun seek(to: Double) {
+    currentTime = maxOf(0.0, to)
+    decoder?.seekTo((currentTime * 1000).toLong())
   }
 }
 
+/** `.videoGravity(…)`: `fill` covers the box (cropped), `fit` shows the whole picture. */
+enum class VideoGravity { fill, fit }
+
+/** `.controls(…)`: `hidden` draws none; `automatic`'s playback controls are not drawn yet. */
+enum class VideoControls { hidden, automatic }
+
 /**
- * The decoders every [Video] borrows while it plays: at most [MAX] ExoPlayers for the app (a
- * feed plays one or two at a time). A view lends its player back when it stops playing or
- * leaves; the oldest lender gives way when all are out.
+ * The decoders every [Video] borrows while its player plays: one for the app by default (the
+ * ruled contract; [max] raises it). A player that starts takes the decoder of the least
+ * recently played one, which pauses, gives its source up and keeps its position, to resume
+ * from there when it plays again.
  */
 internal object VideoPool {
-  private const val MAX = 3
+  var max = 1
   private val free = ArrayDeque<ExoPlayer>()
-  private val lent = LinkedHashMap<Any, ExoPlayer>()
 
-  fun acquire(context: Context, owner: Any, evict: (Any) -> Unit): ExoPlayer {
-    lent[owner]?.let { return it }
-    val player = free.removeFirstOrNull() ?: if (lent.size + free.size < MAX) {
+  /** Lent decoders by their views, least recently played first. */
+  private val lent = LinkedHashMap<Any, Pair<ExoPlayer, VideoPlayer>>()
+
+  fun acquire(context: Context, owner: Any, player: VideoPlayer): ExoPlayer {
+    lent.remove(owner)?.let { (exo, _) ->
+      lent[owner] = exo to player
+      return exo
+    }
+    val exo = free.removeFirstOrNull() ?: if (lent.size + free.size < max) {
       ExoPlayer.Builder(context.applicationContext).build()
     } else {
-      // All lent: the longest-held one is taken back.
-      val (oldest, taken) = lent.entries.first()
+      val (oldest, entry) = lent.entries.first()
       lent.remove(oldest)
-      evict(oldest)
+      val (taken, from) = entry
+      from.pause()
+      from.decoder = null
       taken.stop()
       taken.clearMediaItems()
+      taken.clearVideoSurface()
       taken
     }
-    lent[owner] = player
-    return player
+    lent[owner] = exo to player
+    return exo
   }
 
   fun release(owner: Any) {
-    val player = lent.remove(owner) ?: return
-    player.stop()
-    player.clearMediaItems()
-    player.clearVideoSurface()
-    player.clearMediaItems()
-    free.addLast(player)
+    val (exo, player) = lent.remove(owner) ?: return
+    if (player.decoder === exo) {
+      player.currentTime = exo.currentPosition / 1000.0
+      player.decoder = null
+    }
+    exo.stop()
+    exo.clearMediaItems()
+    exo.clearVideoSurface()
+    free.addLast(exo)
   }
+
+  /** How many decoders exist (lent or free): the pool's bound, for the bench. */
+  fun decoders(): Int = lent.size + free.size
 }
 
 /**
@@ -140,24 +182,36 @@ private class VideoSlot {
 
 /**
  * `Video(player:)`: the picture of [player], on a TextureView (it clips and scrolls with the
- * page), with its `.poster(url)` until the first frame is on screen. It borrows decoders from
- * the app's pool only while its player is asked to play.
+ * page), with its `.poster(url)` until the first frame is on screen, fitted by `.videoGravity`
+ * (or `contentFit`). It borrows the pool's decoder only while its player plays.
  */
 @Composable
-fun Video(player: VideoPlayer, poster: String? = null, contentFit: ContentFit = ContentFit.cover, modifier: Modifier = Modifier) {
+fun Video(
+  player: VideoPlayer,
+  poster: String? = null,
+  contentFit: ContentFit = ContentFit.cover,
+  videoGravity: VideoGravity? = null,
+  controls: VideoControls = VideoControls.hidden,
+  modifier: Modifier = Modifier,
+) {
   val context = LocalContext.current
   val slot = remember(player) { VideoSlot() }
-  slot.fit = contentFit
+  slot.fit = when (videoGravity) {
+    VideoGravity.fill -> ContentFit.cover
+    VideoGravity.fit -> ContentFit.contain
+    null -> contentFit
+  }
   val playing = player.isPlaying
   val muted = player.isMuted
   val loops = player.loops
   DisposableEffect(player, playing) {
     if (playing) {
-      val exo = VideoPool.acquire(context, slot) { player.pause() }
+      val exo = VideoPool.acquire(context, slot, player)
       slot.player = exo
+      player.decoder = exo
       exo.addListener(slot.listener)
       slot.texture?.let { exo.setVideoTextureView(it) }
-      exo.setMediaItem(mediaItem(player.url))
+      exo.setMediaItem(mediaItem(player.url), (player.currentTime * 1000).toLong())
       exo.prepare()
       exo.playWhenReady = true
     }
@@ -172,6 +226,16 @@ fun Video(player: VideoPlayer, poster: String? = null, contentFit: ContentFit = 
     exo.volume = if (muted) 0f else 1f
     exo.repeatMode = if (loops) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
   }
+  // The position and the length, while it plays.
+  LaunchedEffect(player, playing) {
+    while (playing) {
+      slot.player?.let { exo ->
+        player.currentTime = exo.currentPosition / 1000.0
+        if (exo.duration != C.TIME_UNSET) player.duration = exo.duration / 1000.0
+      }
+      delay(250)
+    }
+  }
   // Clipped: a covering picture is scaled past the box (the TextureView's transform).
   Box(modifier.clipToBounds()) {
     AndroidView(
@@ -185,15 +249,16 @@ fun Video(player: VideoPlayer, poster: String? = null, contentFit: ContentFit = 
       modifier = Modifier.fillMaxSize(),
     )
     if (poster != null && !slot.firstFrame) {
-      BloomImage(poster, contentFit, Modifier.fillMaxSize(), benchMark = false)
+      BloomImage(poster, slot.fit, Modifier.fillMaxSize(), benchMark = false)
     }
   }
 }
 
 /**
  * `Video(url:, poster:)` with `.muted()`, `.loops()` and `.autoplay()`: a player of its own;
- * autoplaying, it plays while at least half of it is on screen (in its window) and pauses as it
- * leaves, as a feed's video does.
+ * autoplaying, it plays as it comes half on screen (in its window) and pauses as it leaves, as
+ * a feed's video does. It acts on those changes only: a video another one took the decoder from
+ * stays paused until it comes on screen again.
  */
 @Composable
 fun Video(
@@ -203,24 +268,30 @@ fun Video(
   loops: Boolean = false,
   autoplay: Boolean = false,
   contentFit: ContentFit = ContentFit.cover,
+  videoGravity: VideoGravity? = null,
+  controls: VideoControls = VideoControls.hidden,
   modifier: Modifier = Modifier,
 ) {
   val player = remember(url) { VideoPlayer(url) }
   player.isMuted = muted
   player.loops = loops
   val view = LocalView.current
+  val shown = remember(player) { booleanArrayOf(false) }
   val watch = if (!autoplay) {
     Modifier
   } else {
     Modifier.onGloballyPositioned { coordinates ->
       val bounds = coordinates.boundsInWindow()
       val area = coordinates.size.width.toFloat() * coordinates.size.height
-      val shown = bounds.width * bounds.height
+      val visible = bounds.width * bounds.height
       val window = android.graphics.Rect().also { view.getWindowVisibleDisplayFrame(it) }
-      val onScreen = area > 0f && shown / area >= 0.5f && bounds.bottom > window.top && bounds.top < window.bottom
-      if (onScreen && !player.isPlaying) player.play() else if (!onScreen && player.isPlaying) player.pause()
+      val onScreen = area > 0f && visible / area >= 0.5f && bounds.bottom > window.top && bounds.top < window.bottom
+      if (onScreen != shown[0]) {
+        shown[0] = onScreen
+        if (onScreen) player.play() else player.pause()
+      }
     }
   }
   DisposableEffect(player) { onDispose { player.pause() } }
-  Video(player, poster, contentFit, modifier.then(watch))
+  Video(player, poster, contentFit, videoGravity, controls, modifier.then(watch))
 }
