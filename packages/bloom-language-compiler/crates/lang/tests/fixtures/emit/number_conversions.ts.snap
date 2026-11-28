@@ -1,0 +1,33 @@
+function $toFloat(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && !Number.isNaN(value) ? value : undefined;
+}
+function $toInt(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && Number.isSafeInteger(value) ? value : undefined;
+}
+
+export function whole(x: number): number {
+return Math.trunc(x);
+}
+
+export function asDouble(n: number): number {
+return n;
+}
+
+export function asFloat(n: number): number {
+return n / 2;
+}
+
+export function parsedInt(s: string): number {
+return $toInt(s) ?? (-1);
+}
+
+export function parsedDouble(s: string): number {
+return $toFloat(s) ?? 0;
+}
+
+export function ratio(a: number, b: number): number {
+return Math.trunc((a / b) * 100);
+}
+

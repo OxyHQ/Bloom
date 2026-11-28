@@ -1,0 +1,1 @@
+public func bad(_ flag: Bool) -> Int? { Int(flag) }
