@@ -33,7 +33,7 @@ fun place(ids: List<String>, id: String): Long {
 }
 
 fun numbered(ids: List<String>): List<String> {
-  return ids.enumerated().map({ i, id -> "${i + 1L}. ${id}" })
+  return ids.enumerated().map({ (i, id) -> "${i + 1L}. ${id}" })
 }
 
 fun pairs(ids: List<String>): List<Pair<Long, String>> {
