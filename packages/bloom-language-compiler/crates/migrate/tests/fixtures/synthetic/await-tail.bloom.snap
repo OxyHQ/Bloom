@@ -10,7 +10,7 @@ public struct ClearCache: View {
     switch await confirmDialog(title: "Clear the cache?") {
     case let .ok(confirmed):
       if !confirmed { return }
-      let _ = await alertDialog(title: "Cleared", message: "The cache is empty.")
+      await alertDialog(title: "Cleared", message: "The cache is empty.")
     case .err(_):
       break
     }
