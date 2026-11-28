@@ -444,6 +444,91 @@ Next in this track:
 2. The language router's nodes over the Bloom router, for Mention's route tree.
 3. Then the inventory above, in order.
 
+#### Mention on `bloom build android`: hybrid mode (measured 2026-11-28)
+
+Mention is an Expo Router app (157 route files, 36 `expo*` packages, its own Expo modules). It
+now builds with `bloom build android`, without a rewrite (#1053):
+
+- **`bloom init --adopt`** wrote its `Package.bloom` from `package.json` and the app config
+  (evaluated once by Expo's CLI): the app settings, `reactNativeFromSource: true` (Mention
+  patches React Native), `adopt: Expo(entry: "expo-router/entry")`, and 35 stopgaps. The app
+  config plugins' native config is an override layer in `Native/android/`: the App Links and
+  share filters, the Oxy identity queries and permissions, the updates and notification
+  meta-data, strings, colours, Gradle properties and ProGuard rules.
+- **Hybrid mode.** The JS stays where Bun installed it and bundles over Mention's own Metro
+  config (with its tsconfig path aliases). `bloom` writes and drives the Gradle project. The
+  stopgaps are linked through Expo Modules autolinking limited to them and what they depend
+  on (46 modules linked, 6 left out), with Expo's lifecycle wrappers.
+- **Not stopgaps.** `expo-video` (BloomVideo, through the `expo-video` shim of #1034),
+  `expo-splash-screen` (the manifest's splash), `expo-dev-client` and `expo-build-properties`.
+  An import of an Expo package that is neither linked nor shimmed fails the bundle and names
+  the line to add.
+- **The routes** stay on expo-router, which is a stopgap. Its replacement by the Bloom router
+  (Mention's route tree into `NavigationStack`/`TabView`) is not done: see "Next" below.
+
+Measured on hangar-test-36 (x86_64), release APKs of the same commit (OTA updates off, signed
+out, the production API):
+
+- The Expo path is `expo prebuild` and Gradle. The Bloom path is `bloom build android
+  --release` in hybrid mode.
+- **Cold start.** Each run starts after a force-stop. The times are from `am start` to React
+  Native's `main`, to the first feed row committed and to the first feed image loaded (logcat
+  marks under `EXPO_PUBLIC_BLOOM_BENCH=1`).
+- **Scroll.** 20 s of swipes per run (gfxinfo), and the PSS after them.
+- Each figure is the median of 10 runs, 5 per half of an ABBA session.
+
+| | Expo path | Bloom, hybrid (BloomVideo) | Bloom, hybrid (expo-video as a stopgap) |
+|---|---|---|---|
+| APK, release (x86_64) | 109.3 MB | 109.7 MB | |
+| `am start -W` TotalTime | 962 ms | 356 ms | 329 ms |
+| Launch → JS `main` | **471 ms** | 621 ms | 568 ms |
+| Launch → first feed row | **898 ms** | 1,397 ms | 1,295 ms |
+| Launch → first feed image | **1,356 ms** | 1,772 ms | 1,582 ms |
+| Scroll: janky / p50 / p90 / p99 | 43.9% / 25 / 33 / 53 ms | 49.2% / 27 / 35 / 57 ms | 42.6% / 26 / 36 / 59 ms |
+| PSS after the scroll | 317 MB | 309 MB | 308 MB |
+
+What the numbers say:
+
+- **The hybrid build is not yet at parity at startup.** It reaches `main` ~150 ms later and the
+  first feed row ~500 ms later. A second session, with the bundle transformed for Hermes
+  (`hermes-stable`, and Expo's Babel preset told the engine), had the same gap: 840 against
+  493 ms to `main`, 1,927 against 850 ms to the first row.
+  - The gap opens before JS. From SoLoader's start to Hermes loading takes 170 ms against 80 ms.
+    The likeliest cause is the generated application's warm-up thread (#1036), which loads the
+    WebView cookie store while React Native starts.
+  - The bundle is the second suspect. The Expo path bundles with Expo's CLI (`export:embed`),
+    the hybrid build with React Native's bundle command over the same Metro config.
+- **TotalTime is not comparable.** The Expo path holds its splash (expo-splash-screen) until
+  the route tree lays out; the Bloom build draws its first frame at once.
+- **Scroll and memory are at parity.** The APK is the same size: the hybrid build leaves out
+  expo-dev-client's release stubs, expo-video and Fresco's GIF and WebP decoders, and adds
+  Bloom's three native modules and an uncompressed splash.
+- **Video.** In the same hybrid build, BloomVideo against expo-video as a stopgap: 1,397
+  against 1,295 ms to the first row and 1,772 against 1,582 ms to the first image (noisy, one
+  session), with the same scroll and memory.
+
+**expo-image (Mention #2061).** Mention's 18 files (38 uses) now draw `@oxy.so/bloom/image`'s
+`BloomImage`.
+
+- `expo-image` stays a stopgap. Bloom's own `MediaSurface` and `LinkPreviewCard`, and
+  `@oxy.so/services`, still import it.
+- Built against a local Bloom pack with the native image view (#1027, #1036), the hybrid build
+  drew no avatar and no link poster: blank, with no error in logcat. The Expo path, on expo-image
+  from the same pack, drew them. The before and after numbers wait for that fix; the switch
+  ships with the Bloom release that has it.
+
+Next in this track:
+
+1. The hybrid build's startup gap: the warm-up thread first, then Expo's CLI as the bundler of
+   an adopted app.
+2. Bloom's image view in Mention: avatars and posters blank.
+3. Mention's route tree on the Bloom router. The router needs nested layouts (Mention's
+   `_layout` files: `AppLayout`, `Stack`, `TabView`, `Slot`), groups and dynamic segments, and
+   the expo-router API Mention and Bloom's adapters use (`Slot`, `Redirect`, `useRouter`,
+   `usePathname`, `useLocalSearchParams`, `useFocusEffect`, `Link`) over the screen host
+   (#1029). Then `expo-router` and `expo-linking` leave the stopgaps.
+4. Then the stopgaps, one line at a time.
+
 ## Consequences
 
 - **Kept:** the lexer, parser, recovery, checker, inference, the memo emitter, source maps,
