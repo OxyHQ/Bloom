@@ -2822,9 +2822,20 @@ impl Checker<'_> {
             // a Bloom view given to one is an element there (`header: toElement(Header(…))`).
             if fields.is_none() {
                 self.element(&arg.value);
-                // A callback prop of one (`FlatList`'s `renderItem`): the view it gives, too.
+                // A callback prop of one (`FlatList`'s `renderItem`): the view it gives, too,
+                // a closure's and a function value's (`renderItem: renderRow`, a `func` or a
+                // `let` closure giving a view), which crosses through a wrapper.
                 if let ExprKind::Closure(c) = &arg.value.kind {
                     self.element_tail(c);
+                } else if let Some(ty) = self.out.types.get(&arg.value.id).cloned()
+                    && let Ty::Fn(given) = self.resolve(&ty)
+                    && match self.resolve(&given.ret) {
+                        Ty::View(_) => true,
+                        Ty::Option(inner) => matches!(self.resolve(&inner), Ty::View(_)),
+                        _ => false,
+                    }
+                {
+                    self.out.elements.insert(arg.value.id);
                 }
             }
         }

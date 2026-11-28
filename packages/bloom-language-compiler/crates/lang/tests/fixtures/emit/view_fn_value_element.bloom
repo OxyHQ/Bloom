@@ -1,0 +1,25 @@
+// A function value that gives a view, handed by name to a TS component's callback prop Bloom
+// cannot type (React Native's `FlatList`'s `renderItem`; here a stub whose props have an index
+// signature): what it gives crosses as an element, as a closure literal's does. Mention:
+// DraftsList, ScheduledPostsList, CollaboratorsList, GifPickerSheet.
+import { RowList } from "@/ui/rowlist"
+
+public struct ByName: View {
+  let titles: [String]
+
+  func renderItem(_ arg: { item: String }) -> View {
+    Text(arg.item)
+  }
+
+  var body: some View {
+    RowList(data: titles, renderItem: renderItem)
+  }
+}
+
+public struct ByLet: View {
+  let titles: [String]
+  var body: some View {
+    let row = { (arg: { item: String }) -> View in Text(arg.item) }
+    RowList(data: titles, renderItem: row)
+  }
+}

@@ -1,6 +1,6 @@
 // Views crossing into TS element props: a generic component's `emptyComponent` (optional) and
 // `renderCell` (a function giving views), and an optional `meta: View?` that is `none`.
-import { Grid, Card } from "./element-hosts"
+import { Grid, Card, RowList } from "./element-hosts"
 
 public struct Item { let postId: String }
 
@@ -17,4 +17,12 @@ public struct Row: View {
   let title: String
   var meta: View? = none
   var body: some View { Card(title: title, meta: meta) }
+}
+
+/// A `func` giving a view, handed by name to a callback prop Bloom cannot type (`FlatList`'s
+/// `renderItem`): each view it gives crosses as an element, as a closure literal's does.
+public struct Rows: View {
+  let titles: [String]
+  func renderItem(_ arg: { item: String }) -> View { Text("row " + arg.item) }
+  var body: some View { RowList(data: titles, renderItem: renderItem) }
 }
