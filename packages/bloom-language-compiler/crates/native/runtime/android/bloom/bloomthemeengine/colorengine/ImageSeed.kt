@@ -29,7 +29,7 @@ fun assignToRepresentatives(representatives: List<Long>, counts: Map<Long, Long>
     return Map()
   }
   val repPoints = representatives.map({ r -> labFromInt(r) })
-  var populations: List<Long> = representatives.map({ _ -> 0L })
+  var populations: MutableList<Long> = representatives.map({ _ -> 0L }).toMutableList()
   for ((pixel, count) in counts.toList()) {
     val point = labFromInt(pixel)
     var best = 0L
@@ -41,7 +41,7 @@ fun assignToRepresentatives(representatives: List<Long>, counts: Map<Long, Long>
         best = i
       }
     }
-    populations = populations.replacing(best, populations[best] + count)
+    populations[best] = populations[best] + count
   }
   var result: Map<Long, Long> = Map()
   for (i in 0L ..< representatives.count) {
@@ -80,21 +80,21 @@ data class ScoredHct(
 fun score(colorsToPopulation: Map<Long, Long>, options: ScoreOptions = ScoreOptions()): List<Long> {
   val desired = options.desired
   var colorsHct: List<Hct> = listOf<Hct>()
-  var huePopulation: List<Long> = (0L ..< 360L).map({ _ -> 0L })
+  var huePopulation: MutableList<Long> = (0L ..< 360L).map({ _ -> 0L }).toMutableList()
   var populationSum = 0L
   for ((argb, population) in colorsToPopulation.toList()) {
     val hct = hctFromInt(argb)
     colorsHct = colorsHct.appending(hct)
     val hueIndex = hct.hue.floor()
-    huePopulation = huePopulation.replacing(hueIndex, huePopulation[hueIndex] + population)
+    huePopulation[hueIndex] = huePopulation[hueIndex] + population
     populationSum = populationSum + population
   }
-  var hueExcitedProportions: List<Double> = (0L ..< 360L).map({ _ -> 0.0 })
+  var hueExcitedProportions: MutableList<Double> = (0L ..< 360L).map({ _ -> 0.0 }).toMutableList()
   for (hue in 0L ..< 360L) {
     val proportion = huePopulation[hue].toDouble() / populationSum.toDouble()
     for (i in (hue - 14L) ..< (hue + 16L)) {
       val index = sanitizeDegreesInt(i)
-      hueExcitedProportions = hueExcitedProportions.replacing(index, hueExcitedProportions[index] + proportion)
+      hueExcitedProportions[index] = hueExcitedProportions[index] + proportion
     }
   }
   var scoredHct: List<ScoredHct> = listOf<ScoredHct>()

@@ -24,7 +24,7 @@ trap 'rm -rf "$OUT"' EXIT
 "$BLOOM_NATIVE" emit --target kotlin-compose "$PKG" --out "$OUT/src" --std Math
 STD="$NATIVE/runtime/android/so/oxy/bloom/std"
 java -cp "$CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-stdlib -no-reflect -classpath "$STDLIB:$COROUTINES" -d "$OUT/classes" \
-  $(find "$OUT/src" -name '*.kt') "$STD/Std.kt" "$STD/Builtins.kt" "$STD/MathExterns.kt" "$PKG"/test/jvm/*.kt 2>&1 | grep -v "^warning" || true
+  $(find "$OUT/src" -name '*.kt') "$STD/Std.kt" "$STD/Builtins.kt" "$STD/InPlace.kt" "$STD/MathExterns.kt" "$PKG"/test/jvm/*.kt 2>&1 | grep -v "^warning" || true
 # HARNESS: the golden checks to run (default: every slice's).
 status=0
 for harness in ${HARNESS:-Slice1ConformanceKt Slice2ConformanceKt Slice3ConformanceKt ImageSeedConformanceKt}; do
