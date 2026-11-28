@@ -305,6 +305,20 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     .filter(|_| name.chars().all(|c| c.is_alphanumeric() || c == '_'))
                     .map(|at| (line + at, line + at + bind.len(), format!("if {name} ")))
             }
+            // `if let x = x { x }` the codemod wrote for an optional child, where bloomc has
+            // narrowed `x` present (`tabBar ? Sticky { tabBar } : none`): the child itself.
+            ("B0303", _)
+                if d.message.starts_with("`if let ") && d.message.ends_with("unwraps an optional, and this is `View`") =>
+            {
+                let name = d.message["`if let ".len()..].split(' ').next().unwrap_or_default();
+                let whole = format!("if let {name} = {name} {{ {name} }}");
+                let line = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                let line_end = source[start..].find('\n').map_or(source.len(), |i| start + i);
+                source[line..line_end]
+                    .find(&whole)
+                    .filter(|_| name.chars().all(|c| c.is_alphanumeric() || c == '_'))
+                    .map(|at| (line + at, line + at + whole.len(), name.to_string()))
+            }
             // A function value TS typed with an optional parameter (`t: (key: string, o?: O) =>
             // string`) called without it: a Swift function type has no defaults, so it is `none`.
             ("B0207", _)
