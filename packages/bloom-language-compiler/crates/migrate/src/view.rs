@@ -1020,6 +1020,27 @@ impl Tr<'_> {
 
     /// `const pattern = value` as `let`: a name, or a record pattern.
     fn let_decl(&mut self, d: &VariableDeclarator, init: &Expression, immutable: bool) -> String {
+        // `const err = error as { response?: { data?: { error?: string } } }` (an Axios error read
+        // as TS shapes it): the standard library's `HTTPError`, and its body decoded once.
+        if let (BindingPattern::BindingIdentifier(id), Expression::TSAsExpression(cast)) =
+            (&d.id, init.without_parentheses())
+            && let Some(fields) = axios_error_fields(&cast.type_annotation)
+        {
+            let name = self.bind(&id.name, id.span);
+            self.scope.http_errors.insert(id.name.to_string());
+            let value = self.expr(&cast.expression);
+            let value = if crate::expr::is_postfix_text(&value) { value } else { format!("({value})") };
+            let mut out = format!("let {name} = {value} as? HTTPError");
+            if !fields.is_empty() {
+                for (key, ty) in fields {
+                    if !self.server_error_fields.iter().any(|(k, _)| *k == key) {
+                        self.server_error_fields.push((key, ty));
+                    }
+                }
+                out.push_str(&format!("\nlet {name}Body = try? {name}?.response.decode(ServerErrorBody.self)"));
+            }
+            return out;
+        }
         if self.hook_fn
             && let Expression::CallExpression(call) = init.without_parentheses()
             && let Expression::Identifier(callee) = &call.callee
@@ -3161,6 +3182,51 @@ fn local_extends<'b, 'a>(
         }
     }
     None
+}
+
+/// `{ response?: { data?: D; status?: number } }`, TS's shape of an Axios error: `D`'s fields
+/// with their Bloom types (each optional), or none for an untyped `data`. A field of another
+/// type than a string, number or boolean is not this shape.
+pub fn axios_error_fields(ty: &TSType) -> Option<Vec<(String, String)>> {
+    fn members<'b, 'a>(t: &'b TSType<'a>) -> Option<Vec<(String, &'b oxc_ast::ast::TSPropertySignature<'a>)>> {
+        match t {
+            TSType::TSTypeLiteral(l) => Some(
+                l.members
+                    .iter()
+                    .filter_map(|m| match m {
+                        TSSignature::TSPropertySignature(p) => Some((key_name(&p.key)?, &**p)),
+                        _ => None,
+                    })
+                    .collect(),
+            ),
+            _ => None,
+        }
+    }
+    let outer = members(ty)?;
+    let [(key, response)] = outer.as_slice() else { return None };
+    if key != "response" {
+        return None;
+    }
+    let inner = members(&response.type_annotation.as_ref()?.type_annotation)?;
+    if inner.is_empty() || inner.iter().any(|(k, _)| !matches!(k.as_str(), "data" | "status")) {
+        return None;
+    }
+    let Some((_, data)) = inner.iter().find(|(k, _)| k == "data") else { return Some(Vec::new()) };
+    let data = &data.type_annotation.as_ref()?.type_annotation;
+    if matches!(data, TSType::TSUnknownKeyword(_) | TSType::TSAnyKeyword(_)) {
+        return Some(Vec::new());
+    }
+    let mut out = Vec::new();
+    for (key, field) in members(data)? {
+        let ty = match &field.type_annotation.as_ref()?.type_annotation {
+            TSType::TSStringKeyword(_) => "String?",
+            TSType::TSNumberKeyword(_) => "Float?",
+            TSType::TSBooleanKeyword(_) => "Bool?",
+            _ => return None,
+        };
+        out.push((key, ty.to_string()));
+    }
+    Some(out)
 }
 
 pub fn key_name(key: &PropertyKey) -> Option<String> {
