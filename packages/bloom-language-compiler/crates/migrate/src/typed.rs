@@ -271,6 +271,48 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             // options object, `(data: { text: string }) => void`): the record itself.
             // `t("k", defaultValue: "x")`, `f(id, kind: k)` to a TS function whose last parameter
             // is an options object: the trailing named arguments are that record.
+            // `if let x = x` the codemod wrote for an optional's truthiness, where `x` is now a
+            // `Bool` (spelled since): its truthiness, `if x`.
+            ("B0303", _)
+                if d.message.starts_with("`if let ")
+                    && d.message.ends_with("unwraps an optional, and this is `Bool`") =>
+            {
+                let name = d.message["`if let ".len()..].split(' ').next().unwrap_or_default();
+                let bind = format!("if let {name} = {name} ");
+                let line = source[..start].rfind('\n').map_or(0, |i| i + 1);
+                let line_end = source[start..].find('\n').map_or(source.len(), |i| start + i);
+                source[line..line_end]
+                    .find(&bind)
+                    .filter(|_| name.chars().all(|c| c.is_alphanumeric() || c == '_'))
+                    .map(|at| (line + at, line + at + bind.len(), format!("if {name} ")))
+            }
+            // A function value TS typed with an optional parameter (`t: (key: string, o?: O) =>
+            // string`) called without it: a Swift function type has no defaults, so it is `none`.
+            ("B0207", _)
+                if d.message.starts_with("missing argument(s): the ")
+                    && d.message.split(", ").all(|m| m.ends_with("(unlabelled)"))
+                    && source[..start].ends_with('(')
+                    && source[end..].starts_with(')')
+                    && options_record(source, start, end).is_none() =>
+            {
+                let callee: String = source[..start - 1]
+                    .chars()
+                    .rev()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .rev()
+                    .collect();
+                let missing = d.message.matches("(unlabelled)").count();
+                let function_typed = !callee.is_empty()
+                    && !source[..start - 1 - callee.len()].ends_with('.')
+                    && source.contains(&format!("{callee}: ("));
+                function_typed.then(|| {
+                    let nones = vec!["none"; missing].join(", ");
+                    let added = if text.trim().is_empty() { nones } else { format!(", {nones}") };
+                    (end, end, added)
+                })
+            }
             ("B0207", _)
                 if d.message.starts_with("no parameter is named `")
                     || (d.message.starts_with("missing argument(s): the ")
@@ -409,7 +451,8 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 match (op, n) {
                     (">", Some(n)) if n >= 0.0 && simple => Some((start, end, format!("({text} ?? 0)"))),
                     (">=", Some(n)) if n > 0.0 && simple => Some((start, end, format!("({text} ?? 0)"))),
-                    _ => None,
+                    // `i >= 0` on an index (`findIndex`): whether it was found.
+                    _ => index_test(source, start, end, text),
                 }
             }
             // `{}` where a dictionary is expected: the empty dictionary `[:]` (`{}` is a closure).
@@ -558,14 +601,7 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     || d.message == "`>` does not apply to `Int?`")
                     && crate::expr::is_postfix_text(text) =>
             {
-                let rest = &source[end..];
-                [(" < 0", "== none"), (" >= 0", "!= none"), (" > -1", "!= none"), (" <= -1", "== none")]
-                    .iter()
-                    .find(|(op, _)| {
-                        rest.starts_with(op)
-                            && rest[op.len()..].chars().next().is_none_or(|c| !c.is_ascii_digit() && c != '.')
-                    })
-                    .map(|(op, test)| (start, end + op.len(), format!("{text} {test}")))
+                index_test(source, start, end, text)
             }
             // A function read from a `Record<K, F>` that TS typed present (`const Glyph =
             // ICONS[mode]`), then called: JS calls it as it is, so the read is `ICONS[mode]!`.
@@ -609,6 +645,34 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 if d.message.ends_with("` cannot be indexed") && receiver.is_some_and(is_tuple_type) =>
             {
                 tuple_index(source, end).map(|(n, close)| (end, close, format!(".{n}")))
+            }
+            // `(a ?? b) != none` (TS's truthiness of `a ?? b`) of an object `a` and a string `b`:
+            // `a` is truthy when present, else `b` when not empty.
+            ("B0201", _)
+                if d.message.starts_with("expected `")
+                    && d.message.ends_with("?`, found `String?`")
+                    && crate::expr::is_postfix_text(text)
+                    && source[..start].ends_with("?? ") =>
+            {
+                let object = &d.message["expected `".len()..d.message.len() - "?`, found `String?`".len()];
+                let plain_object = object.starts_with(|c: char| c.is_ascii_uppercase())
+                    && !["String", "Float", "Int", "Bool", "Double", "Foreign"]
+                        .iter()
+                        .any(|p| object.starts_with(p));
+                enclosing_group(source, start, end).and_then(|(open, close)| {
+                    let inner = &source[open + 1..close - 1];
+                    let (a, b) = inner.split_once(" ?? ")?;
+                    // The test the codemod spelled, or TS's `Boolean(a ?? b)` (its `!!` dropped).
+                    let tested = if source[close..].starts_with(" != none") {
+                        close + " != none".len()
+                    } else if ts.contains(&format!("Boolean({a} ?? {b})")) {
+                        close
+                    } else {
+                        return None;
+                    };
+                    (plain_object && b == text && crate::expr::is_postfix_text(a))
+                        .then(|| (open, tested, format!("({a} != none || {b} != none && !{b}.isEmpty)")))
+                })
             }
             // Arithmetic on a `Record<K, number>` read TS typed present: `d[k]!`.
             ("B0201", _)
@@ -1635,6 +1699,19 @@ fn statement_end(source: &str, start: usize) -> usize {
         }
     }
     bytes.len()
+}
+
+/// `i < 0`, `i >= 0` (and `> -1`, `<= -1`) on an `Int?` index Bloom gives as `none` where JS
+/// gives `-1`: `i == none`, `i != none`.
+fn index_test(source: &str, start: usize, end: usize, text: &str) -> Option<(usize, usize, String)> {
+    let rest = &source[end..];
+    [(" < 0", "== none"), (" >= 0", "!= none"), (" > -1", "!= none"), (" <= -1", "== none")]
+        .iter()
+        .find(|(op, _)| {
+            rest.starts_with(op)
+                && rest[op.len()..].chars().next().is_none_or(|c| !c.is_ascii_digit() && c != '.')
+        })
+        .map(|(op, test)| (start, end + op.len(), format!("{text} {test}")))
 }
 
 /// Whether a bloomc type is a tuple, `(A, B)` (not a function type or a group).

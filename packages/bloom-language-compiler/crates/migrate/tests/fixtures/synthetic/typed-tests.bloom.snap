@@ -1,0 +1,48 @@
+// Tests and reads bloomc types, written so they keep TS's answer:
+// - an `as const satisfies readonly T[]` module list is the constant's own `as const`, and two
+//   lists hoisted from different items get different names;
+// - `const xs = ys as readonly T[]` annotates the binding `[T]`;
+// - `i >= 0` on a `findIndex` result is `i != none`;
+// - the truthiness of `a ?? b`, an object `a` and a string `b`: `a != none || b != none && !b.isEmpty`;
+// - a function value TS typed with an optional parameter, called without it, passes `none`;
+// - an `if let x = x` over a value that is now a `Bool` is `if x`.
+
+import { type Draft, type Tab, rows } from "./drafts"
+import { RiAlertLine } from "@oxy.so/bloom/icons/RiAlertLine"
+
+private let HIDDEN = ["likes", "media"]
+
+private let ALL = ["posts", "replies", "likes", "media"]
+
+private let POSTS_REPLIES = ["posts", "replies"]
+
+public func visibleTabs() -> [Tab] {
+  // bloom: review: `as readonly Tab[]` dropped: annotate where the value lands if tsc needs it
+  let hidden: [Tab] = HIDDEN
+  rows(POSTS_REPLIES.map { tab in tab })
+  ALL.filter { tab in !hidden.contains(tab) }
+}
+
+public func tabIndex(_ drafts: [Draft], _ key: String) -> Float {
+  let index = drafts.findIndex { draft in draft.key == key }
+  index != none ? index : 0
+}
+
+private func label(_ draft: Draft, _ t: (String, { count: Float? }?) -> String) -> String {
+  if (draft.poll != none || draft.pollId != none && !draft.pollId.isEmpty) {
+    return t("draft.poll", none)
+  }
+  t("draft.empty", { count: 0 })
+}
+
+public struct DraftRow: View {
+  let draft: Draft
+  let hasPoll = (draft.poll != none || draft.pollId != none && !draft.pollId.isEmpty)
+
+  var body: some View {
+    VStack {
+      Text(label(draft, { key in key }))
+      if hasPoll { Icon(RiAlertLine) }
+    }
+  }
+}
