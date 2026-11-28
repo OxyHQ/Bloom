@@ -3,6 +3,9 @@
  * Codable neither writes nor reads an `"empty"` key. A class's and an enum's statics alike.
  */
 
+// A module, so its names are its own (tsc checks the tests together).
+export {};
+
 // Required, not imported: see bloom.cost.test.tsx.
 const m = require('./packages/format-app/Sources/App/StaticMembers.bloom') as {
   encoded: (note: { id: string; pinned: boolean }) => string;

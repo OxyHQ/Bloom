@@ -1,5 +1,8 @@
 /** A list or record literal is typed from its context: each element and branch on its own. */
 
+// A module, so its names are its own (tsc checks the tests together).
+export {};
+
 type Modifier = { kind: string; value: unknown };
 type Built = { modifiers: readonly Modifier[] };
 
@@ -35,7 +38,7 @@ it('gives the dialog its buttons, the second without onPress', () => {
     ['Discard', 'destructive', 'function'],
     ['Keep editing', 'cancel', 'undefined'],
   ]);
-  buttons[0].onPress?.();
+  buttons[0]?.onPress?.();
   expect(discarded).toBe(1);
 });
 

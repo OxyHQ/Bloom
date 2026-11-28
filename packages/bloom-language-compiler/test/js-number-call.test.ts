@@ -3,6 +3,9 @@
  * component: `Number(capacity) > 1000000` is JS's conversion (`""` is 0, garbage NaN).
  */
 
+// A module, so its names are its own (tsc checks the tests together).
+export {};
+
 // Required, not imported: see bloom.cost.test.tsx.
 const m = require('./bloom/js-number-call.bloom') as {
   tooBig: (capacity: string) => boolean;

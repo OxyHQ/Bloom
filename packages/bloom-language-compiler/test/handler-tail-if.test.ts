@@ -1,5 +1,8 @@
 /** A handler's last `if … else` or `switch` runs as statements: each branch's line runs. */
 
+// A module, so its names are its own (tsc checks the tests together).
+export {};
+
 type Built = { modifiers: readonly { kind: string; value: unknown }[] };
 
 // Required, not imported: see bloom.cost.test.tsx.
