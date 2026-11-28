@@ -607,6 +607,18 @@ impl Tr<'_> {
                     );
                     format!("{}effect {{\n{text}\n}}", self.take_reviews())
                 }
+                // `if (q.isError) logger.warn(…)` while drawing: what TS did on each render the test
+                // held, done after the render it turns true in.
+                Statement::IfStatement(s) if s.alternate.is_none() && only_side_calls(&s.consequent) => {
+                    let saved = self.scope.clone();
+                    let id = self.expr(&s.test);
+                    let text = self.block_stmts(std::slice::from_ref(statement), span.end, false);
+                    self.scope = saved;
+                    self.review(
+                        "TS did this on every render while the test held; here after the render it turns true in".into(),
+                    );
+                    format!("{}effect(id: {id}) {{\n{text}\n}}", self.take_reviews())
+                }
                 Statement::VariableDeclaration(v) => {
                     if v.kind != VariableDeclarationKind::Const {
                         self.refuse(
@@ -697,6 +709,24 @@ impl Tr<'_> {
                         let hook = self.name(&hook.name, hook.span);
                         format!("{f}\nlet _ = {hook}({name})")
                     }
+                    // `latest.current = value` while drawing (a ref kept to the render's value, read
+                    // later by a stable handler): set after each render whose value changed.
+                    Expression::AssignmentExpression(a)
+                        if a.operator == oxc_syntax::operator::AssignmentOperator::Assign
+                            && let AssignmentTarget::StaticMemberExpression(m) = &a.left
+                            && m.property.name == "current"
+                            && matches!(&m.object, Expression::Identifier(o) if self.scope.refs.contains(o.name.as_str())) =>
+                    {
+                        let saved = self.scope.clone();
+                        let id = self.expr(&a.right);
+                        let text = self.block_stmts(std::slice::from_ref(statement), span.end, false);
+                        self.scope = saved;
+                        self.review(
+                            "TS set the ref while drawing; here after the render that changed its value"
+                                .into(),
+                        );
+                        format!("{}effect(id: {id}) {{\n{text}\n}}", self.take_reviews())
+                    }
                     // A TS hook called for what it does: a member whose value is unused.
                     Expression::CallExpression(call) if matches!(&call.callee, Expression::Identifier(id) if is_hook_name(&id.name)) =>
                     {
@@ -738,6 +768,12 @@ impl Tr<'_> {
         match (&d.id, init) {
             (BindingPattern::BindingIdentifier(id), Expression::ArrowFunctionExpression(arrow)) => {
                 let name = id.name.to_string();
+                // `const f: Reporter = (event, position) => …`: its type types its parameters.
+                if let Some(t) = &d.type_annotation
+                    && let Some(text) = self.typed_closure(&name, id.span, &t.type_annotation, arrow)
+                {
+                    return text;
+                }
                 self.scope.member_fns.insert(name.clone());
                 self.arrow_fn(&name, "", arrow)
             }
@@ -970,7 +1006,14 @@ impl Tr<'_> {
                     );
                 };
                 let name = id.name.to_string();
-                let out = if hook == "useCallback" {
+                // `useCallback<Reporter>((event, position) => …)`: the type types its parameters.
+                let typed = match call.type_arguments.as_deref().map(|t| t.params.as_slice()) {
+                    Some([ty]) if hook == "useCallback" => self.typed_closure(&name, id.span, ty, arrow),
+                    _ => None,
+                };
+                let out = if let Some(typed) = typed {
+                    typed
+                } else if hook == "useCallback" {
                     self.scope.member_fns.insert(name.clone());
                     self.arrow_fn(&name, "", arrow)
                 } else {
@@ -1509,6 +1552,40 @@ impl Tr<'_> {
             ));
         }
         None
+    }
+
+    /// A closure whose parameters TS types from its declared function type: `let f: F = { a, b in … }`.
+    /// `None` when a parameter has a type, a default or a pattern of its own.
+    fn typed_closure(
+        &mut self,
+        name: &str,
+        span: Span,
+        ty: &TSType,
+        arrow: &ArrowFunctionExpression,
+    ) -> Option<String> {
+        if arrow.r#async
+            || arrow.type_parameters.is_some()
+            || arrow.params.rest.is_some()
+            || arrow.params.items.is_empty()
+            || !matches!(ty, TSType::TSTypeReference(_))
+        {
+            return None;
+        }
+        let mut names = Vec::new();
+        for p in &arrow.params.items {
+            let BindingPattern::BindingIdentifier(id) = &p.pattern else { return None };
+            if p.type_annotation.is_some() || p.initializer.is_some() || p.optional {
+                return None;
+            }
+            names.push((id.name.as_str(), id.span));
+        }
+        let ty = self.ty(ty);
+        let saved = self.scope.clone();
+        let params: Vec<String> = names.iter().map(|(n, s)| self.bind(n, *s)).collect();
+        let body = self.closure_body(arrow);
+        self.scope = saved;
+        let name = self.bind(name, span);
+        Some(format!("let {name}: {ty} = {{ {} in\n{body}\n}}", params.join(", ")))
     }
 
     fn arrow_fn(&mut self, name: &str, vis: &'static str, arrow: &ArrowFunctionExpression) -> String {
@@ -2525,6 +2602,19 @@ impl Tr<'_> {
                         let Expression::Identifier(o) = &m.object else { unreachable!() };
                         self.name(&o.name, o.span)
                     }
+                    // `r.current[k] = v`: a keyed write into a ref's value, a subscript set.
+                    AssignmentTarget::ComputedMemberExpression(m)
+                        if let Expression::StaticMemberExpression(inner) = m.object.without_parentheses()
+                            && inner.property.name == "current"
+                            && let Expression::Identifier(o) = &inner.object
+                            && self.scope.refs.contains(o.name.as_str())
+                            && op == "=" =>
+                    {
+                        let name = self.name(&o.name, o.span);
+                        let key = self.expr(&m.expression);
+                        let value = self.expr(&a.right);
+                        return format!("{name}[{key}] = {value}");
+                    }
                     // `params.q = v` on a local object literal: `params = { ..params, q: v }`.
                     AssignmentTarget::StaticMemberExpression(m)
                         if let Expression::Identifier(o) = &m.object
@@ -3318,6 +3408,31 @@ fn literal_type(e: &Expression) -> Option<&'static str> {
         Expression::NumericLiteral(_) => Some("Float"),
         Expression::BooleanLiteral(_) => Some("Bool"),
         _ => None,
+    }
+}
+
+/// A block of plain calls (a log, a report): no hook, no state setter, no write or `return`.
+fn only_side_calls(statement: &Statement) -> bool {
+    let call = |s: &Statement| match s {
+        Statement::ExpressionStatement(e) => match &e.expression {
+            Expression::CallExpression(c) => match &c.callee {
+                Expression::Identifier(id) => {
+                    let n = id.name.as_str();
+                    !is_hook_name(n)
+                        && !(n.len() > 3
+                            && n.starts_with("set")
+                            && n[3..].starts_with(|c: char| c.is_ascii_uppercase()))
+                }
+                Expression::StaticMemberExpression(_) => true,
+                _ => false,
+            },
+            _ => false,
+        },
+        _ => false,
+    };
+    match statement {
+        Statement::BlockStatement(b) => !b.body.is_empty() && b.body.iter().all(call),
+        other => call(other),
     }
 }
 
