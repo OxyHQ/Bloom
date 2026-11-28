@@ -142,7 +142,20 @@ impl Tr<'_> {
                 if ty != "const" {
                     self.review(format!("`as {ty}` dropped: annotate where the value lands if tsc needs it"));
                 }
-                let text = self.expr(&a.expression);
+                // `[['owned', a], ['joined', b]] as const`: a list of pairs, each a tuple (TS's
+                // readonly tuples), as a `Map`'s entries are.
+                let pairs = ty == "const"
+                    && matches!(a.expression.without_parentheses(), Expression::ArrayExpression(list)
+                        if !list.elements.is_empty() && list.elements.iter().all(|e| matches!(e,
+                            oxc_ast::ast::ArrayExpressionElement::ArrayExpression(p) if p.elements.len() == 2)));
+                let text = if pairs {
+                    let outer = std::mem::replace(&mut self.pairs, true);
+                    let text = self.entries(&a.expression);
+                    self.pairs = outer;
+                    text
+                } else {
+                    self.expr(&a.expression)
+                };
                 // `(['a', 'b'] as const)` inside a function: a module constant, which keeps the
                 // literals' union (a local list of strings is `[String]`).
                 if ty == "const"
