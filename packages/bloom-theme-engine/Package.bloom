@@ -1,0 +1,12 @@
+// Bloom's colour engine written once in Bloom (the owner's rule, ADR 0003's theme): bloomc compiles
+// it to TypeScript and bloom-native to Kotlin (kotlin-compose) and Swift, and each backend is held to
+// the TypeScript engine's goldens (src/theme/__tests__). Private and unpublished: the TypeScript
+// engine (src/theme/color-engine) stays in production until this one's TypeScript passes the goldens
+// identically. Gates: `bun test` here (the TypeScript backend) and scripts/kotlin-golden.sh (the JVM).
+let package = Package(
+  name: "BloomThemeEngine",
+  platforms: [.iOS(17), .android(26), .web],
+  targets: [
+    .module("ColorEngine"),
+  ]
+)

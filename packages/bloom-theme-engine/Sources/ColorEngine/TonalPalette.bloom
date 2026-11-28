@@ -1,0 +1,97 @@
+// Bloom's colour engine, in Bloom: tonal palettes (src/theme/color-engine/tonal-palette.ts).
+//
+// A palette holds a hue and a chroma and gives a colour for any tone (0–100). Its tones are
+// solved once each, and its key colour on first read.
+import Bloom
+
+public final class TonalPalette {
+  public let hue: Double
+  public let chroma: Double
+  private var key: Hct?
+  private var cache: Map<Double, Int> = Map()
+
+  public init(hue: Double, chroma: Double, key: Hct?) {
+    self.hue = hue
+    self.chroma = chroma
+    self.key = key
+  }
+
+  /// The palette's key colour, solved on first read (a binary search of HCT solves at max
+  /// chroma); most palettes only ever read tones.
+  public func keyColor() -> Hct {
+    if let known = key { return known }
+    let made = KeyColor(hue: hue, requestedChroma: chroma).create()
+    key = made
+    return made
+  }
+
+  /// The ARGB of this palette at `tone`.
+  public func tone(_ tone: Double) -> Int {
+    if let known = cache.get(tone) { return known }
+    // The solver's own result: `hctFrom(…).toInt()` is exactly this integer.
+    let argb = solveToInt(hue, chroma, tone)
+    cache = cache.setting(tone, argb)
+    return argb
+  }
+
+  /// The HCT of this palette at `tone`.
+  public func getHct(_ tone: Double) -> Hct { hctFromInt(self.tone(tone)) }
+}
+
+public func tonalPaletteFromInt(_ argb: Int) -> TonalPalette {
+  tonalPaletteFromHct(hctFromInt(argb))
+}
+
+public func tonalPaletteFromHct(_ hct: Hct) -> TonalPalette {
+  TonalPalette(hue: hct.hue, chroma: hct.chroma, key: hct)
+}
+
+public func tonalPaletteFromHueAndChroma(_ hue: Double, _ chroma: Double) -> TonalPalette {
+  TonalPalette(hue: hue, chroma: chroma, key: none)
+}
+
+/// The colour that represents a palette's hue and chroma (searched from T50).
+final class KeyColor {
+  let hue: Double
+  let requestedChroma: Double
+  private var chromaCache: Map<Int, Double> = Map()
+  let maxChromaValue = 200.0
+
+  init(hue: Double, requestedChroma: Double) {
+    self.hue = hue
+    self.requestedChroma = requestedChroma
+  }
+
+  func create() -> Hct {
+    let pivotTone = 50
+    let toneStepSize = 1
+    let epsilon = 0.01
+    var lowerTone = 0
+    var upperTone = 100
+    while lowerTone < upperTone {
+      let midTone = (lowerTone + upperTone) / 2
+      let isAscending = maxChroma(midTone) < maxChroma(midTone + toneStepSize)
+      let sufficientChroma = maxChroma(midTone) >= requestedChroma - epsilon
+      if sufficientChroma {
+        if abs(lowerTone - pivotTone) < abs(upperTone - pivotTone) {
+          upperTone = midTone
+        } else {
+          if lowerTone == midTone { return hctFrom(hue, requestedChroma, lowerTone.toFloat()) }
+          lowerTone = midTone
+        }
+      } else if isAscending {
+        lowerTone = midTone + toneStepSize
+      } else {
+        upperTone = midTone
+      }
+    }
+    return hctFrom(hue, requestedChroma, lowerTone.toFloat())
+  }
+
+  func maxChroma(_ tone: Int) -> Double {
+    if let cached = chromaCache.get(tone) { return cached }
+    let chroma = hctFrom(hue, maxChromaValue, tone.toFloat()).chroma
+    chromaCache = chromaCache.setting(tone, chroma)
+    return chroma
+  }
+}

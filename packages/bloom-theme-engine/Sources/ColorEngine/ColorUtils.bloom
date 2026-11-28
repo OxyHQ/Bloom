@@ -1,0 +1,185 @@
+// Bloom's colour engine, in Bloom: colour-science conversions (src/theme/color-engine/color-utils.ts).
+//
+// ARGB is an `Int` holding the unsigned 32-bit value (the TypeScript's `>>> 0`), always in
+// `0..<2^32`. Bloom has no bit operators, so packing and unpacking are the same integer maths
+// written with `*`, `/` and `%`: on a value in that range they give the bits' results exactly.
+import Bloom
+
+let SRGB_TO_XYZ = Mat3(
+  r0: Vec3(x: 0.41233895, y: 0.35762064, z: 0.18051042),
+  r1: Vec3(x: 0.2126, y: 0.7152, z: 0.0722),
+  r2: Vec3(x: 0.01932141, y: 0.11916382, z: 0.95034478),
+)
+
+let XYZ_TO_SRGB = Mat3(
+  r0: Vec3(x: 3.2413774792388685, y: -1.5376652402851851, z: -0.49885366846268053),
+  r1: Vec3(x: -0.9691452513005321, y: 1.8758853451067872, z: 0.04156585616912061),
+  r2: Vec3(x: 0.05562093689691305, y: -0.20395524564742123, z: 1.0571799111220335),
+)
+
+let WHITE_POINT_D65 = Vec3(x: 95.047, y: 100.0, z: 108.883)
+
+let HEX_DIGITS: [String] = [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+]
+
+/// `x & 255`, for any `Int` (two's complement), without a bit operator.
+func lowByte(_ x: Int) -> Int { (x % 256 + 256) % 256 }
+
+/// An opaque ARGB colour from 0–255 red, green and blue.
+public func argbFromRgb(_ red: Int, _ green: Int, _ blue: Int) -> Int {
+  4278190080 + lowByte(red) * 65536 + lowByte(green) * 256 + lowByte(blue)
+}
+
+/// An opaque ARGB colour from linear RGB (0–100 per channel).
+public func argbFromLinrgb(_ linrgb: Vec3) -> Int {
+  argbFromRgb(delinearized(linrgb.x), delinearized(linrgb.y), delinearized(linrgb.z))
+}
+
+public func alphaFromArgb(_ argb: Int) -> Int { argb / 16777216 % 256 }
+
+public func redFromArgb(_ argb: Int) -> Int { argb / 65536 % 256 }
+
+public func greenFromArgb(_ argb: Int) -> Int { argb / 256 % 256 }
+
+public func blueFromArgb(_ argb: Int) -> Int { argb % 256 }
+
+public func isOpaque(_ argb: Int) -> Bool { alphaFromArgb(argb) >= 255 }
+
+/// A hex digit's value (`0` for a character that is not one).
+func hexDigit(_ c: String) -> Int { HEX_DIGITS.indexOf(c.lowercased()) ?? 0 }
+
+/// The ARGB of a `#rrggbb` (or `#aarrggbb`) hex string.
+public func argbFromHex(_ hex: String) -> Int {
+  let h = hex.startsWith("#") ? hex.slice(1, hex.count) : hex
+  let v = h.count == 6 ? "ff\(h)" : h
+  var argb = 0
+  for i in 0..<v.count { argb = argb * 16 + hexDigit(v.slice(i, i + 1)) }
+  return argb
+}
+
+func hexByte(_ n: Int) -> String { "\(HEX_DIGITS[n / 16])\(HEX_DIGITS[n % 16])" }
+
+/// An ARGB colour as `#rrggbb`.
+public func hexFromArgb(_ argb: Int) -> String {
+  "#\(hexByte(redFromArgb(argb)))\(hexByte(greenFromArgb(argb)))\(hexByte(blueFromArgb(argb)))"
+}
+
+/// XYZ to ARGB.
+public func argbFromXyz(_ x: Double, _ y: Double, _ z: Double) -> Int {
+  let m = XYZ_TO_SRGB
+  let linearR = m.r0.x * x + m.r0.y * y + m.r0.z * z
+  let linearG = m.r1.x * x + m.r1.y * y + m.r1.z * z
+  let linearB = m.r2.x * x + m.r2.y * y + m.r2.z * z
+  return argbFromRgb(delinearized(linearR), delinearized(linearG), delinearized(linearB))
+}
+
+/// ARGB to XYZ.
+public func xyzFromArgb(_ argb: Int) -> Vec3 {
+  let r = linearized(redFromArgb(argb))
+  let g = linearized(greenFromArgb(argb))
+  let b = linearized(blueFromArgb(argb))
+  return matrixMultiply(Vec3(x: r, y: g, z: b), SRGB_TO_XYZ)
+}
+
+/// L*a*b* to ARGB.
+public func argbFromLab(_ l: Double, _ a: Double, _ b: Double) -> Int {
+  let wp = WHITE_POINT_D65
+  let fy = (l + 16.0) / 116.0
+  let fx = a / 500.0 + fy
+  let fz = fy - b / 200.0
+  let x = labInvf(fx) * wp.x
+  let y = labInvf(fy) * wp.y
+  let z = labInvf(fz) * wp.z
+  return argbFromXyz(x, y, z)
+}
+
+/// ARGB to L*a*b* (`x` is L*, `y` a*, `z` b*).
+public func labFromArgb(_ argb: Int) -> Vec3 {
+  let linearR = linearized(redFromArgb(argb))
+  let linearG = linearized(greenFromArgb(argb))
+  let linearB = linearized(blueFromArgb(argb))
+  let m = SRGB_TO_XYZ
+  let x = m.r0.x * linearR + m.r0.y * linearG + m.r0.z * linearB
+  let y = m.r1.x * linearR + m.r1.y * linearG + m.r1.z * linearB
+  let z = m.r2.x * linearR + m.r2.y * linearG + m.r2.z * linearB
+  let wp = WHITE_POINT_D65
+  let fx = labF(x / wp.x)
+  let fy = labF(y / wp.y)
+  let fz = labF(z / wp.z)
+  return Vec3(x: 116.0 * fy - 16.0, y: 500.0 * (fx - fy), z: 200.0 * (fy - fz))
+}
+
+/// The grey of lightness `lstar`.
+public func argbFromLstar(_ lstar: Double) -> Int {
+  let component = delinearized(yFromLstar(lstar))
+  return argbFromRgb(component, component, component)
+}
+
+/// ARGB to L*.
+public func lstarFromArgb(_ argb: Int) -> Double {
+  let y = xyzFromArgb(argb).y
+  return 116.0 * labF(y / 100.0) - 16.0
+}
+
+/// L* to Y (XYZ luminance).
+public func yFromLstar(_ lstar: Double) -> Double { 100.0 * labInvf((lstar + 16.0) / 116.0) }
+
+/// Y (XYZ luminance) to L*.
+public func lstarFromY(_ y: Double) -> Double { labF(y / 100.0) * 116.0 - 16.0 }
+
+func solveLinearized(_ rgbComponent: Int) -> Double {
+  let normalized = rgbComponent.toFloat() / 255.0
+  return normalized <= 0.040449936 ? (normalized / 12.92) * 100.0 : pow(
+    (normalized + 0.055) / 1.055,
+    2.4,
+  ) *
+    100.0
+}
+
+/// Every channel an ARGB can hold, linearized once (the TypeScript's `LINEARIZED`).
+let LINEARIZED: [Double] = (0..<256).map { i in solveLinearized(i) }
+
+/// An sRGB component (0–255) to linear (0–100).
+public func linearized(_ rgbComponent: Int) -> Double {
+  LINEARIZED.at(rgbComponent) ?? solveLinearized(rgbComponent)
+}
+
+/// A linear component (0–100) to sRGB (0–255).
+public func delinearized(_ rgbComponent: Double) -> Int {
+  let normalized = rgbComponent / 100.0
+  let delin = normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * pow(normalized, 1.0 / 2.4) -
+    0.055
+  return clampInt(0, 255, (delin * 255.0).rounded())
+}
+
+/// The D65 white point.
+public func whitePointD65() -> Vec3 { WHITE_POINT_D65 }
+
+func labF(_ t: Double) -> Double {
+  let e = 216.0 / 24389.0
+  let kappa = 24389.0 / 27.0
+  return t > e ? pow(t, 1.0 / 3.0) : (kappa * t + 16.0) / 116.0
+}
+
+func labInvf(_ ft: Double) -> Double {
+  let e = 216.0 / 24389.0
+  let kappa = 24389.0 / 27.0
+  let ft3 = ft * ft * ft
+  return ft3 > e ? ft3 : (116.0 * ft - 16.0) / kappa
+}

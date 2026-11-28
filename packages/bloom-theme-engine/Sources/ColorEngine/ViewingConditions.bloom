@@ -1,0 +1,88 @@
+// Bloom's colour engine, in Bloom: CAM16 viewing conditions
+// (src/theme/color-engine/viewing-conditions.ts). The CAM16 intermediates that depend only on the
+// environment; Bloom only ever uses the sRGB `standard` conditions.
+import Bloom
+
+public struct ViewingConditions: Equatable {
+  public let n: Double
+  public let aw: Double
+  public let nbb: Double
+  public let ncb: Double
+  public let c: Double
+  public let nc: Double
+  public let rgbD: Vec3
+  public let fl: Double
+  public let fLRoot: Double
+  public let z: Double
+  /// CAM16's `(1.64 - 0.29^n)^0.73`, which every chroma conversion multiplies or divides by.
+  public let chromaFactor: Double
+}
+
+/// The cube root of the standard conditions' `5 × adapting luminance`, as JavaScript's
+/// `Math.cbrt` gives it. The standard library's `cbrt` is private (Bloom.Math); until it is
+/// public this is `pow(x, 1/3)` with one Newton step, which gives `Math.cbrt`'s double for the one
+/// input the engine computes (the golden holds it), not for every input.
+func cubeRoot(_ x: Double) -> Double {
+  let y = pow(x, 1.0 / 3.0)
+  return y - (y * y * y - x) / (3.0 * y * y)
+}
+
+/// Viewing conditions for a white point, an adapting luminance, a background L* and a surround.
+public func makeViewingConditions(
+  whitePoint: Vec3 = whitePointD65(),
+  adaptingLuminance: Double = ((200.0 / Double.pi) * yFromLstar(50.0)) / 100.0,
+  backgroundLstar: Double = 50.0,
+  surround: Double = 2.0,
+  discountingIlluminant: Bool = false,
+) -> ViewingConditions {
+  let xyz = whitePoint
+  let rW = xyz.x * 0.401288 + xyz.y * 0.650173 + xyz.z * -0.051461
+  let gW = xyz.x * -0.250268 + xyz.y * 1.204414 + xyz.z * 0.045854
+  let bW = xyz.x * -0.002079 + xyz.y * 0.048952 + xyz.z * 0.953127
+  let f = 0.8 + surround / 10.0
+  let c = f >= 0.9 ? lerp(0.59, 0.69, (f - 0.9) * 10.0) : lerp(0.525, 0.59, (f - 0.8) * 10.0)
+  var d = discountingIlluminant ? 1.0 : f *
+    (1.0 - (1.0 / 3.6) * exp((-adaptingLuminance - 42.0) / 92.0))
+  d = d > 1.0 ? 1.0 : d < 0.0 ? 0.0 : d
+  let nc = f
+  let rgbD = Vec3(
+    x: d * (100.0 / rW) + 1.0 - d,
+    y: d * (100.0 / gW) + 1.0 - d,
+    z: d * (100.0 / bW) + 1.0 - d,
+  )
+  let k = 1.0 / (5.0 * adaptingLuminance + 1.0)
+  let k4 = k * k * k * k
+  let k4F = 1.0 - k4
+  let fl = k4 * adaptingLuminance + 0.1 * k4F * k4F * cubeRoot(5.0 * adaptingLuminance)
+  let n = yFromLstar(backgroundLstar) / whitePoint.y
+  let z = 1.48 + sqrt(n)
+  let nbb = 0.725 / pow(n, 0.2)
+  let ncb = nbb
+  let rgbAFactors = Vec3(
+    x: pow((fl * rgbD.x * rW) / 100.0, 0.42),
+    y: pow((fl * rgbD.y * gW) / 100.0, 0.42),
+    z: pow((fl * rgbD.z * bW) / 100.0, 0.42),
+  )
+  let rgbA = Vec3(
+    x: (400.0 * rgbAFactors.x) / (rgbAFactors.x + 27.13),
+    y: (400.0 * rgbAFactors.y) / (rgbAFactors.y + 27.13),
+    z: (400.0 * rgbAFactors.z) / (rgbAFactors.z + 27.13),
+  )
+  let aw = (2.0 * rgbA.x + rgbA.y + 0.05 * rgbA.z) * nbb
+  return ViewingConditions(
+    n: n,
+    aw: aw,
+    nbb: nbb,
+    ncb: ncb,
+    c: c,
+    nc: nc,
+    rgbD: rgbD,
+    fl: fl,
+    fLRoot: pow(fl, 0.25),
+    z: z,
+    chromaFactor: pow(1.64 - pow(0.29, n), 0.73),
+  )
+}
+
+/// sRGB-like viewing conditions: the only ones Bloom uses (the TypeScript's `DEFAULT`).
+public let standardViewingConditions: ViewingConditions = makeViewingConditions()
