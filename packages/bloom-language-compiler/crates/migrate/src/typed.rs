@@ -116,6 +116,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") },
                 ))
             }
+            // `xs[i]` with a TS callback's `index: number` (a `Float` that is a whole number): the
+            // element at `i.truncated()`.
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Float`"
+                    && (source[..start].ends_with('[') || source[..start].ends_with("?["))
+                    && source[end..].starts_with(']')
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_') =>
+            {
+                Some((start, end, format!("{text}.truncated()")))
+            }
             // `n = value` where `@state n = 7` took an `Int` from its literal but TS's state is a
             // `number`: the state is a `Float` (`@state n: Float = 7`).
             ("B0201", _)
@@ -269,6 +279,17 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     None => false,
                 };
                 match tested {
+                    // `!(x is T)`: `x == none`, which narrows `x` after it as TS's test does.
+                    Some(t)
+                        if same && source[..start].ends_with("!(") && {
+                            let close = end + " is ".len() + t.len();
+                            source[close..].starts_with(')')
+                        } =>
+                    {
+                        let close = end + " is ".len() + t.len() + 1;
+                        let test = if ty.ends_with('?') { format!("{text} == none") } else { "false".into() };
+                        Some((start - 2, close, test))
+                    }
                     Some(t) if same => {
                         let close = end + " is ".len() + t.len();
                         let test = if ty.ends_with('?') { format!("{text} != none") } else { "true".into() };
@@ -577,6 +598,24 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     && !source[..start].ends_with("?.") =>
             {
                 Some((start - 1, start - 1, "!".to_string()))
+            }
+            // `p?.w && p?.h ? p.w / p.h : 1`: an operand TS's flow proved present by a test just
+            // before it (`p?.w != none`), read as `p!.w!` (a release build emits TS's own `p.w`).
+            ("B0201", _)
+                if (d.message.ends_with("does not apply to `Float?`")
+                    || d.message.ends_with("does not apply to `Int?`")
+                    || (matches!(
+                        d.message.as_str(),
+                        "expected `Float`, found `Float?`" | "expected `Int`, found `Int?`"
+                    ) && (["/ ", "* ", "- ", "+ ", "% "]
+                        .iter()
+                        .any(|op| source[..start].ends_with(op))
+                        || [" / ", " * ", " - ", " + ", " % "]
+                            .iter()
+                            .any(|op| source[end..].starts_with(op)))))
+                    && proven_operand(source, start, text) =>
+            {
+                Some((end, end, "!".to_string()))
             }
             // `labels[kind]` where TS typed the value present (`Record<Kind, string>`): `labels[kind]!`.
             ("B0201", _)
@@ -1965,6 +2004,17 @@ fn type_end(source: &str, start: usize) -> usize {
         }
     }
     source.len()
+}
+
+/// Whether `text` (`p!.w`) is a member path a test of the same expression proved present
+/// (`p?.w != none` within the text before it).
+fn proven_operand(source: &str, start: usize, text: &str) -> bool {
+    let simple = text.contains('.')
+        && !text.ends_with('!')
+        && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '!' | '?'));
+    let before = &source[start.saturating_sub(400)..start];
+    let path = text.replace("!.", "?.");
+    simple && (before.contains(&format!("{path} != none")) || before.contains(&format!("{text} != none")))
 }
 
 #[cfg(test)]

@@ -144,6 +144,9 @@ pub struct Tr<'s> {
     /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
     /// name and the own props; a call's other fields are the rest's record.
     pub rest_views: HashMap<String, (String, Vec<String>)>,
+    /// Views whose rest is a local base interface (`interface P extends B`): B's fields, which a
+    /// call `X(props)` passes as the rest's record.
+    pub rest_bases: HashMap<String, Vec<String>>,
     /// `useQuery({ … })` and `useInfiniteQuery({ … })` calls drawn with Mention's `TanStackQuery`
     /// binding module (their span starts): every one of the file, each with options and result reads the
     /// binding declares (`Tr::scan_tanstack`).
@@ -408,6 +411,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
         rest_views: HashMap::new(),
+        rest_bases: HashMap::new(),
         tanstack: HashSet::new(),
         view_defaults: HashMap::new(),
         literal_defaults: HashMap::new(),

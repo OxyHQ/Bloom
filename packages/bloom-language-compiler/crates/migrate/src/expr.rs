@@ -1292,6 +1292,28 @@ impl Tr<'_> {
                         format!("{callee}({})", self.rest_args(o, &rest, &own))
                     }
                     [Argument::ObjectExpression(o)] => format!("{callee}({})", self.named_args(o)),
+                    // `X(props)` of a view whose rest is a base interface (`Tr::rest_bases`): its own
+                    // props by name, then the base's fields as the rest's record.
+                    [Argument::Identifier(v)]
+                        if let Expression::Identifier(id) = &call.callee
+                            && let Some(base) = self.rest_bases.get(id.name.as_str()).cloned()
+                            && let Some((rest, own)) = self.rest_views.get(id.name.as_str()).cloned() =>
+                    {
+                        // Props written out (`Tr::whole_props_fields`) are read by name.
+                        let whole = self.whole_props_fields(&v.name).is_some();
+                        let value = self.name(&v.name, v.span);
+                        let mut read = |f: &String| {
+                            if whole {
+                                format!("{f}: {}", self.name(f, v.span))
+                            } else {
+                                format!("{f}: {value}.{f}")
+                            }
+                        };
+                        let mut args: Vec<String> = own.iter().map(&mut read).collect();
+                        let fields: Vec<String> = base.iter().map(&mut read).collect();
+                        args.push(format!("{rest}: {{ {} }}", fields.join(", ")));
+                        format!("{callee}({})", args.join(", "))
+                    }
                     // `X(props)` in a view whose props are written out: each one, by name.
                     [Argument::Identifier(v)] if let Some(fields) = self.whole_props_fields(&v.name) => {
                         // The callee's TS defaults are this view's too (`Tr::view_defaults`).

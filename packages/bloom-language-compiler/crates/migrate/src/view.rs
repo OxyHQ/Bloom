@@ -275,7 +275,7 @@ impl Tr<'_> {
         let mut spread = None;
         // Fields of a props type written in another TS file, written out (2.0 has no `..Props`).
         let mut external: Vec<crate::props::Field> = Vec::new();
-        let members: Vec<&TSSignature> = match annotation {
+        let mut members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
             TSType::TSTypeReference(reference)
                 if !matches!(&reference.type_name, TSTypeName::IdentifierReference(u)
@@ -489,6 +489,44 @@ impl Tr<'_> {
                             self.rest_views.insert(view.to_string(), (name.clone(), taken.clone()));
                             rest_field = Some(format!("{name}: {base}"));
                             spread = None;
+                        }
+                        // `{ kind, ...visual }: P` with `interface P extends B` (B an object type
+                        // here) and the rest exactly B's fields: the rest is one stored property
+                        // of `B`, and B's fields are not the view's own.
+                        (BindingPattern::BindingIdentifier(id), None)
+                            if taken.len() == pattern.properties.len()
+                                && let TSType::TSTypeReference(r) = annotation
+                                && let TSTypeName::IdentifierReference(props_ty) = &r.type_name
+                                && let Some(base) = local_base(module, &props_ty.name)
+                                && let Some(base_members) = local_object(module, &base)
+                                && let base_keys = base_members
+                                    .iter()
+                                    .filter_map(|m| match m {
+                                        TSSignature::TSPropertySignature(p) => key_name(&p.key),
+                                        _ => None,
+                                    })
+                                    .collect::<Vec<_>>()
+                                && base_keys.len() == base_members.len()
+                                && {
+                                    let mut rest_keys: Vec<&String> =
+                                        own.iter().filter(|k| !taken.contains(k)).collect();
+                                    let mut sorted: Vec<&String> = base_keys.iter().collect();
+                                    rest_keys.sort();
+                                    sorted.sort();
+                                    rest_keys == sorted && !taken.iter().any(|k| base_keys.contains(k))
+                                } =>
+                        {
+                            let name = self.bind_param(&id.name, id.span);
+                            self.rest_views.insert(view.to_string(), (name.clone(), taken.clone()));
+                            self.rest_bases.insert(view.to_string(), base_keys.clone());
+                            let ty = self.name(&base, id.span);
+                            rest_field = Some(format!("{name}: {ty}"));
+                            members.retain(|m| match m {
+                                TSSignature::TSPropertySignature(p) => {
+                                    key_name(&p.key).is_none_or(|k| !base_keys.contains(&k))
+                                }
+                                _ => true,
+                            });
                         }
                         _ => {
                             return Some(self.refuse(
@@ -3381,6 +3419,27 @@ fn local_interface<'b, 'a>(
             _ => None,
         }
     })
+}
+
+/// `B` of a local `interface P extends B`, B an object type here.
+pub fn local_base(module: &[Statement], name: &str) -> Option<String> {
+    for statement in module {
+        let declaration = match statement {
+            Statement::ExportDeclaration(e) => Some(&e.declaration),
+            other => other.as_declaration(),
+        };
+        if let Some(Declaration::TSInterfaceDeclaration(i)) = declaration
+            && i.id.name == name
+            && let [heritage] = i.extends.as_slice()
+            && heritage.type_arguments.is_none()
+            && let TSTypeName::IdentifierReference(base) = &heritage.type_name
+            && base.name != name
+            && local_object(module, &base.name).is_some()
+        {
+            return Some(base.name.to_string());
+        }
+    }
+    None
 }
 
 pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&'b TSSignature<'a>>> {

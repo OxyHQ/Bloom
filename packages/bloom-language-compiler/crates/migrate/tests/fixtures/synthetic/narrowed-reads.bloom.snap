@@ -1,0 +1,30 @@
+// What TS's flow proved, read as Bloom's: `!Array.isArray(xs)` is `xs == none` (bloomc narrows `xs`
+// after it), an operand `p?.w && …` tested is `p!.w!`, and a TS callback's `index: number` reads a
+// list at `index.truncated()`.
+
+private func total(_ xs: [Float]?) -> Float {
+  if xs == none || xs.count == 0 { return 0 }
+  sum(xs)
+}
+
+private func sum(_ xs: [Float]) -> Float { xs.count }
+
+private func ratio(_ p: { w: Float?, h: Float? }? = none) -> Float {
+  p?.w != none && p?.w != 0 && p?.h != none && p?.h != 0 ? p!.w! / p!.h! : 1.5
+}
+
+private func label(_ names: [String], _ pick: ((Float) -> String) -> String) -> String {
+  pick { i in names[i.truncated()] }
+}
+
+public struct Totals: View {
+  var xs: [Float]? = none
+  let names: [String]
+  var body: some View {
+    VStack {
+      Text("\(total(xs))")
+      Text("\(ratio({ w: 4, h: 3 }))")
+      Text(label(names, { f in f(0) }))
+    }
+  }
+}
