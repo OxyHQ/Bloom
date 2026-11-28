@@ -1,0 +1,4 @@
+import { type ClaimUser, handleOf } from "./claims"
+
+/// A value `||` with a present last side, in parentheses (postMenuActions).
+public func name(_ user: ClaimUser) -> String { handleOf(user) || (user.displayName || "user") }

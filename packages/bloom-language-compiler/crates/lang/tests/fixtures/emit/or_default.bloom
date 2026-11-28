@@ -1,0 +1,15 @@
+// A value `||` whose last right side is present is present, in parentheses or not (lang-mention-10's
+// or-default, postMenuActions): `handleOf(u) || (u.displayName || "user")` is a `String`, as JS's
+// `||` with a non-empty literal last never gives `undefined`.
+import { type ClaimUser, handleOf } from "@/types/claims"
+
+func mute(_ username: String) -> String { username }
+
+public func grouped(_ user: ClaimUser) -> String {
+  let name = handleOf(user) || (user.displayName || "user")
+  return mute(name)
+}
+
+public func flat(_ user: ClaimUser) -> String {
+  mute(handleOf(user) || user.displayName || "user")
+}
