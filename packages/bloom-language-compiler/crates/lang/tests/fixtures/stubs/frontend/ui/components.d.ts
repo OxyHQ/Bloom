@@ -49,6 +49,11 @@ export interface PresentRow {
   trailing: ReactNode;
 }
 export declare function present(options: PresentOptions): void;
+/** The same rows as an anonymous object type inside the array. */
+export declare function presentInline(options: {
+  title: string;
+  rows?: { label: string; trailing: ReactNode }[];
+}): void;
 
 /** A generic TS component whose props take React elements and a render function. */
 export interface GridEntry {
