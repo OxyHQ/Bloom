@@ -1,0 +1,14 @@
+import { characterCount as $characterCount } from "@oxy.so/bloom-language";
+
+export function byId(ids: readonly string[]): unknown {
+return new Map(ids.map((id: string) => [id, $characterCount(id)] as const));
+}
+
+export function unique(ids: readonly string[]): unknown {
+return new Set(ids);
+}
+
+export function shown(n: number): unknown {
+return String(n);
+}
+
