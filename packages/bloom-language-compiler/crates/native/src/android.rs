@@ -24,6 +24,7 @@ const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/ui/Image.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Image.kt")),
     ("so/oxy/bloom/ui/Icons.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Icons.kt")),
     ("so/oxy/bloom/ui/Material.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Material.kt")),
+    ("so/oxy/bloom/color/Hct.kt", include_str!("../runtime/android/so/oxy/bloom/color/Hct.kt")),
 ];
 
 /// The lens engine the runtime's material draws through (bloom-lens's `android-engine`, free of
