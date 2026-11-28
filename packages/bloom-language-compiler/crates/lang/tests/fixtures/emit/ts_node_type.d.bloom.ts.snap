@@ -1,0 +1,9 @@
+import type { ScrollViewNode } from "@oxy.so/bloom-language";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface AccountPageProps {
+  readonly content: ScrollViewNode;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(AccountPage())`), or from TSX as `toElement(AccountPage())`. */
+export declare const AccountPage: (props: AccountPageProps) => ComposedView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(AccountScreen())`), or from TSX as `toElement(AccountScreen())`. */
+export declare const AccountScreen: () => ComposedView;

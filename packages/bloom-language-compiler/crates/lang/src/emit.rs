@@ -830,6 +830,14 @@ impl<'a> Emitter<'a> {
                 format!("({}) => {ret}", params.join(", "))
             }
             Ty::Async(t) | Ty::Promise(t) => format!("Promise<{}>", self.ts_return(t, false)),
+            // A scroll view, as the language types it (`ScrollView(…)` is a `ScrollViewNode`), so
+            // its own modifiers type-check on a prop of it.
+            Ty::View(Some("scrollView")) => {
+                if !self.ck.type_imports.iter().any(|name| name == "ScrollViewNode") {
+                    self.type_imports.entry(LANGUAGE.into()).or_default().insert("ScrollViewNode".into());
+                }
+                "ScrollViewNode".into()
+            }
             Ty::View(_) => {
                 self.type_imports.entry(LANGUAGE.into()).or_default().insert("Child".into());
                 "Child".into()

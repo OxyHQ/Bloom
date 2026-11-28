@@ -1240,6 +1240,13 @@ impl Mapper<'_> {
                 ..Mapped::default()
             });
         }
+        // The language's node types (`ScrollViewNode`): a view of that kind (see `reference`).
+        if file.path.to_string_lossy().contains("bloom-language")
+            && let Some(constructor) = local.strip_suffix("Node")
+            && let Some(node) = crate::ui::node_by_constructor(constructor)
+        {
+            return Some(Mapped { ty: Some(Ty::View(Some(node.kind))), ..Mapped::default() });
+        }
         self.local(file, &local, path, depth)
     }
 
@@ -1830,6 +1837,13 @@ impl Mapper<'_> {
         // The embedded language's view types, now followed through its re-exports: a view.
         if matches!(name, "ViewNode" | "AnyView") {
             return Ty::View(None);
+        }
+        // A node's own type (`ScrollViewNode`, what `ScrollView(…)` returns): a view of that kind,
+        // which takes its modifiers, as SwiftUI's `ScrollView<Content>` is its own view type.
+        if let Some(constructor) = name.strip_suffix("Node")
+            && let Some(node) = crate::ui::node_by_constructor(constructor)
+        {
+            return Ty::View(Some(node.kind));
         }
         if file.decls.contains_key(name) {
             let mapped: Vec<Ty> =
