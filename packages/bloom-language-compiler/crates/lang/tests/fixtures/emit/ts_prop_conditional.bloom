@@ -1,0 +1,21 @@
+// A conditional given to a TS component's prop is TS's to check branch by branch, as one branch
+// given alone is: a closure's parameter is typed from TS (`onLayout`'s event), and a view crosses
+// as an element beside `none` or an optional view (`header?: ReactNode`).
+import { View as RNView } from "react-native"
+import { Screen } from "@oxy.so/bloom/screen"
+
+let IS_WEB = false
+
+public struct Shell: View {
+  @State private var height: Float = 0
+  let drawing: Bool
+  var routeHeader: View? = none
+
+  var body: some View {
+    Screen(header: drawing ? Text("Profile") : routeHeader) {
+      RNView(onLayout: IS_WEB ? none : { event in height = event.nativeEvent.layout.height }) {
+        Text("\(height)")
+      }
+    }
+  }
+}
