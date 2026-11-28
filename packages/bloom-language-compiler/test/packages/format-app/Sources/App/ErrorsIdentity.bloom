@@ -1,0 +1,42 @@
+// Errors and identity: a JS `Error` as `JSError`, the thrown value read leniently as a `JSONValue`
+// (`error.jsValue?["response"]?["data"]?["error"]?.string`, mention11 http-error-shape), and
+// Swift's `===` / `!==` for objects.
+
+public final class Session {
+  public var token: String = ""
+}
+
+public func serverMessage(_ error: Error) -> String {
+  error.jsValue?["response"]?["data"]?["error"]?.string ?? "Could not save"
+}
+
+public func statusOf(_ error: Error) -> Int? { error.jsValue?["response"]?["status"]?.int }
+
+public func firstString(_ v: JSONValue) -> String? { v[0]?.string }
+
+public func describeError(_ error: Error) -> String {
+  if let e = error as? JSError { return e.name + ": " + e.message }
+  return "?"
+}
+
+public func caughtError() -> String {
+  do {
+    try risky()
+    return "ok"
+  } catch let e as JSError {
+    return e.stack ?? e.message
+  } catch {
+    return "other"
+  }
+}
+
+public func parsedJSON(_ text: String) -> JSONValue { JSON.parse(text) }
+public func numberField(_ v: JSONValue) -> Double? { v["n"]?.number }
+public func flagsOf(_ v: JSONValue) -> [Bool] { (v["flags"]?.array ?? []).map { $0.bool ?? false } }
+public func objectKeys(_ v: JSONValue) -> [String] { (v.object ?? [:]).keys.sorted(by: { $0 < $1 }) }
+
+/// Throws a JS `SyntaxError`, as `JSON.parse` does on bad text.
+func risky() throws { let _ = JSON.parse("{") }
+
+public func sameSession(_ a: Session, _ b: Session?) -> Bool { a === b }
+public func otherSession(_ a: Session, _ b: Session) -> Bool { a !== b }

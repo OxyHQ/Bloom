@@ -2686,6 +2686,8 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::P(P::Ge) => BinaryOp::Ge,
             Tok::P(P::EqEq) => BinaryOp::Eq,
             Tok::P(P::Ne) => BinaryOp::Ne,
+            Tok::P(P::EqEqEq) => BinaryOp::Identical,
+            Tok::P(P::NeEq) => BinaryOp::NotIdentical,
             Tok::P(P::AndAnd) => BinaryOp::And,
             Tok::P(P::OrOr) => BinaryOp::Or,
             Tok::P(P::QuestionQuestion) => BinaryOp::Default,

@@ -430,6 +430,9 @@ pub struct CheckResult {
     /// id. A stable identity for the view's life, React's `useId()` on the TS backend; the
     /// state has no setter.
     pub unique_ids: HashSet<ExprId>,
+    /// `value["key"]` / `value[i]` / `value?["key"]` of a `JSONValue`: a lenient read, `none`
+    /// when the value is not an object (an array) or has nothing there (`Index`/`OptIndex`).
+    pub json_reads: HashSet<ExprId>,
 }
 
 impl CheckResult {
@@ -5261,6 +5264,15 @@ impl<'o> Checker<'o> {
                         Some(other)
                     }
                 };
+                let json = match &inner {
+                    Some(Ty::Foreign(text)) => is_json(text),
+                    None => matches!(self.resolve(&ty), Ty::Foreign(text) if is_json(&text)),
+                    _ => false,
+                };
+                if json {
+                    let read = self.json_read(expr, index);
+                    return self.rechain(expr, read);
+                }
                 match inner {
                     Some(Ty::List(elem)) => {
                         self.expr(index, Some(&Ty::Int));
@@ -5378,6 +5390,7 @@ impl<'o> Checker<'o> {
                             other => other,
                         }
                     }
+                    Ty::Foreign(text) if is_json(&text) => self.json_read(expr, index),
                     Ty::Foreign(text) => {
                         self.boundary(index, None);
                         foreign_of(&text, |t| format!("{t}[number]"))
@@ -6111,6 +6124,42 @@ impl<'o> Checker<'o> {
                 }
                 Ty::Bool
             }
+            // `a === b`: the same object, as Swift's `===` (a class instance, a TS object); a
+            // value type has no identity.
+            BinaryOp::Identical | BinaryOp::NotIdentical => {
+                let left = self.expr(lhs, None);
+                // `a === b` with either optional, as Swift's `AnyObject?`.
+                let hint = match self.resolve(&left) {
+                    Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never => left.clone(),
+                    other => Ty::Option(Box::new(other)),
+                };
+                self.expr(rhs, Some(&hint));
+                let right = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
+                let value = [(lhs, left), (rhs, right)]
+                    .into_iter()
+                    .filter(|(side, _)| !matches!(side.kind, ExprKind::None))
+                    .map(|(side, ty)| (side.span, self.zonk(&ty)))
+                    .find(|(_, ty)| !self.has_identity(ty));
+                if let Some((span, ty)) = value {
+                    let shown = self.show(&ty);
+                    self.report(
+                        Diagnostic::error(
+                            "B0210",
+                            span,
+                            format!("`{}` compares objects, and {shown} is a value", op.text()),
+                        )
+                        .label(
+                            "no identity: a struct, an enum, a number, a string or a collection is its value",
+                        )
+                        .help(format!(
+                            "compare it with `{}`",
+                            if op == BinaryOp::Identical { "==" } else { "!=" }
+                        ))
+                        .spec("43-soundness-rules"),
+                    );
+                }
+                Ty::Bool
+            }
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => {
                 let left = self.expr(lhs, None);
                 let left = self.resolve(&left);
@@ -6759,9 +6808,48 @@ impl<'o> Checker<'o> {
             Ty::Result(..) => "Result".into(),
             Ty::JsError => "Error".into(),
             Ty::Date => "Date".into(),
+            // `JSONValue` (`Foreign<"unknown">`): the standard library's lenient reads.
+            Ty::Foreign(text) if is_json(text) => "JSONValue".into(),
             Ty::Adt(def, _) => self.out.defs[*def].name.clone(),
             _ => return None,
         })
+    }
+
+    /// Whether a value of `ty` is an object `===` compares by identity: a class instance, a TS
+    /// object, an error (an optional of one too).
+    fn has_identity(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::Option(inner) => self.has_identity(&inner),
+            Ty::Adt(def, _) => {
+                self.out.defs[def].class.is_some() || matches!(self.out.defs[def].origin, Origin::Ts { .. })
+            }
+            Ty::Foreign(text) => !matches!(&*text, "string" | "number" | "boolean" | "bigint"),
+            Ty::JsError | Ty::Unknown | Ty::Never | Ty::Var(_) => true,
+            _ => false,
+        }
+    }
+
+    /// `value["key"]` / `value[i]` of a `JSONValue`: its member or element, `none` when the value
+    /// is not an object (an array) or has none there.
+    fn json_read(&mut self, expr: &Expr, index: &Expr) -> Ty {
+        let key = self.expr(index, None);
+        match self.resolve(&key) {
+            Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Unknown => {}
+            other => self.report(
+                Diagnostic::error(
+                    "B0205",
+                    index.span,
+                    format!(
+                        "a `JSONValue` is read by a `String` key or an `Int` index, and this is {}",
+                        self.show(&other)
+                    ),
+                )
+                .label("not a key")
+                .spec("12-standard-library-surface-draft"),
+            ),
+        }
+        self.out.json_reads.insert(expr.id);
+        Ty::Option(Box::new(Ty::Foreign("unknown".into())))
     }
 
     /// The lowered function of `ty`'s extension member `name`, when there is one in scope.
@@ -7552,6 +7640,11 @@ fn view_alias<'f>(file: &'f File, value: &Expr) -> Option<&'f ViewDecl> {
         }
         _ => None,
     })
+}
+
+/// A `JSONValue` (`Foreign<"unknown">`, TS's `unknown`).
+fn is_json(text: &str) -> bool {
+    text == "unknown"
 }
 
 /// `@Transparent struct X { let field: T }`: a struct emitted as its one stored field.

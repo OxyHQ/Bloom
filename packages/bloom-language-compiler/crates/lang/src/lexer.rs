@@ -147,6 +147,10 @@ pub enum P {
     Eq,
     EqEq,
     Ne,
+    /// `===`: reference identity (Swift's).
+    EqEqEq,
+    /// `!==`.
+    NeEq,
     Lt,
     Le,
     Gt,
@@ -195,6 +199,8 @@ impl P {
             P::Eq => "=",
             P::EqEq => "==",
             P::Ne => "!=",
+            P::EqEqEq => "===",
+            P::NeEq => "!==",
             P::Lt => "<",
             P::Le => "<=",
             P::Gt => ">",
@@ -232,6 +238,8 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::EqEqEq
+                | P::NeEq
                 | P::Lt
                 | P::Le
                 | P::Ge
@@ -260,6 +268,8 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::EqEqEq
+                | P::NeEq
                 | P::Lt
                 | P::Le
                 | P::Gt
@@ -431,6 +441,8 @@ impl Lexer<'_> {
             (b'?', b'?') => (P::QuestionQuestion, 2),
             (b'-', b'>') => (P::Arrow, 2),
             (b'=', b'>') => (P::FatArrow, 2),
+            (b'=', b'=') if self.peek(2) == b'=' => (P::EqEqEq, 3),
+            (b'!', b'=') if self.peek(2) == b'=' => (P::NeEq, 3),
             (b'=', b'=') => (P::EqEq, 2),
             (b'!', b'=') => (P::Ne, 2),
             (b'<', b'=') => (P::Le, 2),

@@ -490,6 +490,9 @@ fn helper_text(name: &str) -> &'static str {
         "get" => {
             "function $get<T>(items: readonly T[], index: number): T {\n  if (index >= 0 && index < items.length) return items[index] as T;\n  throw new RangeError(`Index out of range: ${index} is not in 0..<${items.length}`);\n}"
         }
+        "json" => {
+            "function $json(value: unknown, key: string | number): unknown {\n  if (typeof key === \"number\") return Array.isArray(value) ? (value[key] ?? undefined) : undefined;\n  return value !== null && typeof value === \"object\" && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, key)\n    ? ((value as Record<string, unknown>)[key] ?? undefined)\n    : undefined;\n}"
+        }
         "unwrap" => {
             "function $unwrap<T>(value: T | null | undefined): T {\n  if (value == null) throw new TypeError(\"Unexpectedly found none while unwrapping an optional (`!`)\");\n  return value;\n}"
         }
@@ -2791,6 +2794,15 @@ impl<'a> Emitter<'a> {
             // `xs[i]`: the element. A dev build traps out of range (Swift's check); a
             // release build reads it as is, and TS reads it present.
             // `q?.xs[0]`, a link of an optional chain: `none` when the chain was.
+            // `value["key"]` of a `JSONValue`: its member, `undefined` when it has none there.
+            ExprKind::Index(object, index) | ExprKind::OptIndex(object, index)
+                if self.ck.json_reads.contains(&expr.id) =>
+            {
+                self.helpers.insert("json");
+                let mut out = Frag::of("$json(");
+                out.f(self.expr(object)).s(", ").f(self.expr(index)).s(")");
+                out
+            }
             ExprKind::Index(object, index) if self.ck.list_reads.contains_key(&expr.id) => {
                 let chained = self.ck.chain_links.contains(&object.id);
                 let optional = self.ck.list_reads[&expr.id] || chained;

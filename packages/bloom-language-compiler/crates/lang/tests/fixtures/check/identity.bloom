@@ -1,0 +1,14 @@
+// `===` / `!==` compare objects (a class instance, a TS object); a value type has no identity.
+public final class Session {
+  public var token: String = ""
+}
+
+public struct Point: Equatable {
+  public let x: Int
+}
+
+public func values(_ a: Point, _ b: Point, _ n: Int, _ s: String) -> Bool {
+  a === b || n !== 1 || s === "x"
+}
+
+public func objects(_ a: Session, _ b: Session?) -> Bool { a === b && b !== none }

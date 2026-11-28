@@ -148,6 +148,18 @@ An error with a message: what `throw` takes when no domain error type fits.
 
 - `let message: String`
 
+### `struct JSError: Equatable`
+
+A JS `Error` (a `TypeError`, a `RangeError`, a TS library's own): its name, message and stack trace. `error as? JSError` and `catch let e as JSError` read one from any thrown JS `Error`.
+
+- `let name: String`: `"TypeError"`, `"AbortError"`, …
+- `let message: String`
+- `let stack: String?`: The engine's stack trace, when it keeps one.
+
+### `extension JSError`
+
+- `static func cast(_ error: Error) -> JSError?`: The `JSError` an error is, or `none` when it is not a JS `Error`.
+
 ### `extension Error`
 
 - `var localizedDescription: String`: What the error says (JS's `message`, or the thrown value as text).
@@ -485,6 +497,21 @@ throws a `DecodingError` naming the type and the field.
 ### `type JSONValue`
 
 A JSON value as parsed: what the derived decoders read.
+
+### `extension JSONValue`
+
+Lenient reads of a JSON value, each `none` when the value is not of that type, so a chain of them never throws: `body?["error"]?["message"]?.string`. `value["key"]` is the member of an object (`none` when it is not an object, or has no such key, or it is `null`), `value[i]` the element of an array.
+
+- `var string: String?`: The value as a string.
+- `var number: Double?`: The value as a number (finite).
+- `var int: Int?`: The value as an integer (a number with no fraction, within `Int`'s exact range).
+- `var bool: Bool?`: The value as a Boolean.
+- `var array: [JSONValue]?`: The value as an array's elements.
+- `var object: [String: JSONValue]?`: The value as an object's members.
+
+### `extension Error`
+
+- `var jsValue: JSONValue?`: The thrown value itself, to read leniently where no type fits it (a TS library's error object): `error.jsValue?["response"]?["data"]?["error"]?.string`. `none` when the thrown value was `null` or `undefined`.
 
 ### `struct DecodingError: Equatable`
 

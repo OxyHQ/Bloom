@@ -1,0 +1,26 @@
+error[B0210]: `===` compares objects, and `Point` is a value
+  --> check/identity.bloom:11:3
+   |
+11 |   a === b || n !== 1 || s === "x"
+   |   ^ no identity: a struct, an enum, a number, a string or a collection is its value
+   |
+help: compare it with `==`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0210]: `!==` compares objects, and `Int` is a value
+  --> check/identity.bloom:11:14
+   |
+11 |   a === b || n !== 1 || s === "x"
+   |              ^ no identity: a struct, an enum, a number, a string or a collection is its value
+   |
+help: compare it with `!=`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0210]: `===` compares objects, and `String` is a value
+  --> check/identity.bloom:11:25
+   |
+11 |   a === b || n !== 1 || s === "x"
+   |                         ^ no identity: a struct, an enum, a number, a string or a collection is its value
+   |
+help: compare it with `==`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

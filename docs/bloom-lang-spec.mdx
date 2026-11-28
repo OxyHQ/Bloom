@@ -727,7 +727,7 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | additive | `+` `-` (`+` also joins `String`s) | left |
 | range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
-| equality | `==` `!=` | none |
+| equality | `==` `!=` `===` `!==` | none |
 | and | `&&` | left |
 | or | `\|\|` | left |
 | default | `??` | right |
@@ -794,6 +794,17 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
+- A thrown JS `Error` (a `TypeError`, a TS library's own) is the standard library's `JSError`:
+  `error as? JSError` and `catch let e as JSError` give its `name`, `message` and `stack`
+  (`String?`). Any thrown value is `error.jsValue`, a `JSONValue?` (`none` for `null` or
+  `undefined`), read leniently where no type fits it: `value["key"]` is an object's own member and
+  `value[i]` an array's element, each `none` when the value is not one or has nothing there (a
+  JSON `null` too), and `.string`, `.number`, `.int`, `.bool`, `.array`, `.object` are the value
+  as that type or `none`, so `error.jsValue?["response"]?["data"]?["error"]?.string ?? "Could
+  not save"` never throws, whatever the server sent. Any other key is B0205.
+- `a === b` / `a !== b` (Swift's identity) is whether two references are the same object: a class
+  instance, a TS object or an `Error`, an optional of one too (JS's `===`). A struct, an enum, a
+  number, a string or a collection is a value with no identity: B0210 (compare it with `==`).
 
 An `if … else` or a `switch` on a line of its own is a statement, its branches' lines statements,
 and so is the last one of a closure TS calls whose type is unknown (a handler, `.onPress { … }`): an

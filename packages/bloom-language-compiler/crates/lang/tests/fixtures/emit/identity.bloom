@@ -1,0 +1,7 @@
+// Swift's `===` / `!==`: the same object (a class instance), JS's `===`.
+public final class Player {
+  public var name: String = ""
+}
+
+public func isCurrent(_ p: Player, _ current: Player?) -> Bool { p === current }
+public func changed(_ a: Player, _ b: Player) -> Bool { a !== b }

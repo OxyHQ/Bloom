@@ -660,6 +660,10 @@ pub enum BinaryOp {
     Ge,
     Eq,
     Ne,
+    /// `a === b`: the same object (Swift's identity), for classes and TS objects.
+    Identical,
+    /// `a !== b`.
+    NotIdentical,
     And,
     Or,
     Default,
@@ -683,6 +687,8 @@ impl BinaryOp {
             BinaryOp::Ge => ">=",
             BinaryOp::Eq => "==",
             BinaryOp::Ne => "!=",
+            BinaryOp::Identical => "===",
+            BinaryOp::NotIdentical => "!==",
             BinaryOp::And => "&&",
             BinaryOp::Or => "||",
             BinaryOp::Default => "??",
@@ -704,7 +710,7 @@ impl BinaryOp {
             // Swift's `RangeFormationPrecedence`: below `+`, above the comparisons.
             BinaryOp::HalfOpen | BinaryOp::Closed => 6,
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => 5,
-            BinaryOp::Eq | BinaryOp::Ne => 4,
+            BinaryOp::Eq | BinaryOp::Ne | BinaryOp::Identical | BinaryOp::NotIdentical => 4,
             BinaryOp::And => 3,
             BinaryOp::Or => 2,
             BinaryOp::Default => 1,

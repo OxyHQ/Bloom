@@ -901,3 +901,21 @@ public func useLate(_ on: Bool) -> Int {\n  let k = UniqueID()\n  return 0\n}\n"
     assert_eq!(out.diagnostics.len(), 3, "{text}");
     assert!(text.contains("the view's identity for its life"), "{text}");
 }
+
+/// `JSError`, `error.jsValue` with lenient `JSONValue` reads, and `===` (mention11
+/// http-error-shape). The runtime test is `test/errors-identity.test.ts`.
+const ERRORS_IDENTITY: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/ErrorsIdentity.bloom");
+
+#[test]
+fn errors_read_leniently_and_objects_compare_by_identity() {
+    let root = package("errors-identity", &[("Sources/Model/ErrorsIdentity.bloom", ERRORS_IDENTITY)]);
+    let path = root.join("Sources/Model/ErrorsIdentity.bloom");
+    let out = compile(ERRORS_IDENTITY, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/errors-identity.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
