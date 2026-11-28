@@ -77,6 +77,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "bloom_native"
+version = "0.0.0"
+dependencies = [
+ "bloom_lang",
+ "bloom_language_compiler",
+]
+
+[[package]]
 name = "bloomc"
 version = "0.0.0"
 dependencies = [

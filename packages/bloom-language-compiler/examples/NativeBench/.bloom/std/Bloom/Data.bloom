@@ -1,0 +1,201 @@
+// Bloom (data): `@Model` types held by key, read by `@Query`, filled by a `Source`,
+// changed optimistically by a `Mutation`, and fed by `Realtime` events.
+//
+//     @Model public struct Post: Codable {
+//       @Attribute(.unique) public let id: String
+//       public var likes: Int
+//       public let createdAt: Date
+//     }
+//
+//     Post.store.insert(post)
+//     Post.store.update(post.id) { $0.liked(true) }
+//
+//     struct Feed: View {
+//       @Query(Post.self, sort: \.createdAt, order: .reverse) var posts: [Post]
+//       var body: some View { List(posts) { post in PostRow(post: post) } }
+//     }
+//
+// `@Model` derives `Post.store` at compile time, beside `Codable`'s `Post.self`, keyed by
+// the `@Attribute(.unique)` field (else `id`). A view's `@Query` re-renders when one of
+// its records changes, and only then. Records persist across launches: Android and iOS
+// copy them to SQLite in the background (`@oxy.so/bloom-data/sqlite` on `expo-sqlite`);
+// the web and tests keep them in memory.
+
+extern module "./models" {
+  private func modelRegister<T>(_ name: String, _ key: KeyPath<T, String>, _ persist: Bool) -> ModelHandle<T>
+  private func modelGet<T>(_ model: ModelHandle<T>, _ id: String) -> T?
+  private func modelInsert<T>(_ model: ModelHandle<T>, _ records: [T])
+  private func modelUpdate<T>(_ model: ModelHandle<T>, _ id: String, _ change: (T) -> T) -> Bool
+  private func modelDelete<T>(_ model: ModelHandle<T>, _ id: String) -> Bool
+  private func modelAll<T>(_ model: ModelHandle<T>) -> [T]
+  private func modelLoad<T>(_ model: ModelHandle<T>) async throws
+  private func useModelQuery<T>(_ model: ModelHandle<T>, _ sort: String?, _ reverse: Bool, _ filter: ((T) -> Bool)?) -> [T]
+  private func useModelRecord<T>(_ model: ModelHandle<T>, _ id: String?) -> T?
+  private func sourceMake<T>(_ model: ModelHandle<T>, _ name: String, _ load: (String?, TaskSignal) async throws -> SourcePage<T>) -> SourceHandle<T>
+  private func sourceRefresh<T>(_ source: SourceHandle<T>) async throws
+  private func sourceMore<T>(_ source: SourceHandle<T>) async throws
+  private func useSourceQuery<T>(_ source: SourceHandle<T>) -> [T]
+  private func actionMake<A, R>(_ name: String, _ optimistic: ((A) -> Unit)?, _ perform: (A) async throws -> R) -> MutationHandle<A, R>
+  private func actionRun<A, R>(_ mutation: MutationHandle<A, R>, _ argument: A) async throws -> R?
+  private func keyName<T, V>(_ path: KeyPath<T, V>?) -> String?
+  private func realtimeListen(_ socket: EventSocket, _ handlers: [String: (JSONValue) -> Unit]) -> () -> Unit
+}
+
+/// The data layer's records of one `@Model` type.
+public type ModelHandle<T> = Foreign<"any">
+
+/// The data layer's server list.
+public type SourceHandle<T> = Foreign<"any">
+
+/// The data layer's mutation (its `action`).
+public type MutationHandle<A, R> = Foreign<"any">
+
+/// What `Realtime` listens on: a socket with `on(event, listener)` and `off` (socket.io's).
+public type EventSocket = Foreign<"import('@oxy.so/bloom-data').EventSocket">
+
+/// A `@Query`'s order.
+public enum SortOrder {
+  case forward
+  case reverse
+}
+
+/// The records of one `@Model` type, by key: what `@Model` derives as `T.store`.
+public struct ModelStore<T> {
+  /// The type's name: its records' namespace on disk.
+  public let name: String
+  let handle: ModelHandle<T>
+}
+
+/// What `@Model` writes for `T.store`: the records of `name`, keyed by `key`.
+public func modelStore<T>(_ name: String, key: KeyPath<T, String>, persist: Bool = true) -> ModelStore<T> {
+  ModelStore(name: name, handle: modelRegister(name, key, persist))
+}
+
+extension ModelStore {
+  /// The record with key `id`, or `none`.
+  public func get(_ id: String) -> T? { modelGet(self.handle, id) }
+
+  /// Stores `record`, replacing the one with its key.
+  public func insert(_ record: T) { modelInsert(self.handle, [record]) }
+
+  /// Stores every one of `records`.
+  public func insertAll(_ records: [T]) { modelInsert(self.handle, records) }
+
+  /// Replaces the record `id` by `change` of it. Inside a `Mutation`'s `optimistic`, the
+  /// change is the action's, rolled back when it fails. Whether `id` was held.
+  public func update(_ id: String, _ change: (T) -> T) -> Bool { modelUpdate(self.handle, id, change) }
+
+  /// Removes the record `id`, in memory and on disk. Whether it was held.
+  public func delete(_ id: String) -> Bool { modelDelete(self.handle, id) }
+
+  /// Every record held, in the order they were first inserted.
+  public var all: [T] { modelAll(self.handle) }
+
+  /// Reads the records from the device's copy (a `@Query` does this on its first read).
+  public func load() async throws { try await modelLoad(self.handle) }
+}
+
+/// What `@Query(T.self, sort:order:filter:)` lowers onto: `store`'s records, filtered and
+/// sorted (by a number, string, `Bool` or `Date` field), re-read when one of them changes.
+public func useQuery<T, V>(
+  _ store: ModelStore<T>,
+  sort: KeyPath<T, V>? = none,
+  order: SortOrder = .forward,
+  filter: ((T) -> Bool)? = none,
+) -> [T] {
+  useModelQuery(store.handle, keyName(sort), order == .reverse, filter)
+}
+
+/// What `@Query(T.store, id: x)` lowers onto: one record, re-read when it changes.
+public func useRecordQuery<T>(_ store: ModelStore<T>, id: String?) -> T? {
+  useModelRecord(store.handle, id)
+}
+
+/// One page of a `Source`: its records and the next page's cursor (`none`: the last).
+public struct SourcePage<T> {
+  public let items: [T]
+  public let next: String?
+}
+
+/// A server list of a `@Model` type's records, read a page at a time and kept on the
+/// device. `@Query(source)` in a view reads it when it is due.
+///
+///     let home = Source(Post.store, name: "home") { cursor, signal in
+///       let page = try await api.get("feeds/home", as: FeedPage.self, query: ["cursor": cursor ?? ""], cancellation: signal)
+///       return SourcePage(items: page.items, next: page.nextCursor)
+///     }
+public struct Source<T> {
+  public let name: String
+  let handle: SourceHandle<T>
+}
+
+extension Source {
+  /// The list `name` of `store`'s records, whose pages `load(cursor, cancellation)` reads.
+  public static func make(
+    _ store: ModelStore<T>,
+    name: String,
+    _ load: (String?, TaskSignal) async throws -> SourcePage<T>,
+  ) -> Source<T> {
+    Source(name: name, handle: sourceMake(store.handle, name, load))
+  }
+
+  /// Reads the first page again (a failure keeps the list as it was).
+  public func refresh() async {
+    do { try await sourceRefresh(self.handle) } catch {}
+  }
+
+  /// Reads the next page, if there is one.
+  public func loadMore() async {
+    do { try await sourceMore(self.handle) } catch {}
+  }
+}
+
+/// What `@Query(source)` lowers onto: the source's records, in its order.
+public func useSource<T>(_ source: Source<T>) -> [T] { useSourceQuery(source.handle) }
+
+/// A change shown at once (`optimistic`, on `@Model` stores) and settled by `perform`: when
+/// it throws, the optimistic change is rolled back. (Named as Services' `run`; BloomUI's
+/// `Action` is the action bar's node.)
+///
+///     let like = Mutation.make("like", optimistic: { (post: Post) in
+///       _ = Post.store.update(post.id) { $0.liked(!post.isLiked) }
+///     }) { post in try await api.post("posts/\(post.id)/like") }
+///     await like.run(post)
+public struct Mutation<Input, Output> {
+  public let name: String
+  let handle: MutationHandle<Input, Output>
+}
+
+extension Mutation {
+  public static func make(
+    _ name: String,
+    optimistic: ((Input) -> Unit)? = none,
+    _ perform: (Input) async throws -> Output,
+  ) -> Mutation<Input, Output> {
+    Mutation(name: name, handle: actionMake(name, optimistic, perform))
+  }
+
+  /// Runs the mutation: its result, or `none` when it failed (and was rolled back).
+  public func run(_ input: Input) async -> Output? {
+    do {
+      return try await actionRun(self.handle, input)
+    } catch {
+      return none
+    }
+  }
+}
+
+/// A socket's events written into `@Model` stores, applied together once per frame.
+public struct Realtime {
+  let stop: () -> Unit
+}
+
+extension Realtime {
+  /// Calls each handler with its event's payload; `cancel()` stops listening.
+  public static func listen(_ socket: EventSocket, _ handlers: [String: (JSONValue) -> Unit]) -> Realtime {
+    Realtime(stop: realtimeListen(socket, handlers))
+  }
+
+  /// Stops listening.
+  public func cancel() { self.stop() }
+}

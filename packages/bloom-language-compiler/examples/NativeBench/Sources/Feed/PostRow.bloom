@@ -1,0 +1,58 @@
+// A row of the feed: Mention's PostItem (PR #2049) for text and image posts: the avatar,
+// the header, the text, the image, and the action bar.
+
+public struct PostRow: View, Equatable {
+  let post: Post
+  let onLike: (Post) -> Void
+
+  var body: some View {
+    HStack(alignment: .start, spacing: .sm) {
+      Avatar(post.author.avatar).size(.md)
+      VStack(alignment: .leading, spacing: .xs) {
+        HStack(spacing: .xs) {
+          Text(post.author.name).font(.headline).lineLimit(1)
+          if post.author.isVerified { Icon(.verifiedBadgeFill).foregroundStyle(.primary) }
+          Text("@\(post.author.handle) · \(post.age)").foregroundStyle(.muted).lineLimit(1)
+        }
+        Text(post.text)
+        switch post.kind {
+        case .text:
+          none
+        case .image(let url, let aspect):
+          Image(url).contentFit(.cover).frame(width: .full).aspectRatio(aspect).corner(.lg)
+        }
+        ActionBar {
+          Action(.reply, "Reply").count(post.replies)
+          Action(.repost, "Repost").count(post.reposts)
+          Action(.like, "Like").count(post.likes).active(post.isLiked).tint(.error).onPress { onLike(post) }
+          Action(.share, "Share")
+        }
+      }
+      .shrink(.normal)
+      .grow()
+    }
+    .padding(.horizontal, .lg)
+    .padding(.vertical, .sm)
+  }
+
+  static func == (a: Self, b: Self) -> Bool { a.post == b.post }
+}
+
+/// A post's body with its links and tags in the primary ink (Mention's linkified text): runs of
+/// one text, each a string or a styled `Text`.
+struct LinkedBody: View {
+  let words: [String]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: .xs) {
+      // A name line: the handle gives way first, then the name; the time never does.
+      HStack(spacing: .none) {
+        Text("A long display name").weight(.bold).lineLimit(1).shrink(.normal)
+        Text(" @a.long.handle").foregroundStyle(.muted).lineLimit(1).shrink(.first)
+        Text(" · 5m").foregroundStyle(.muted)
+      }
+      Text("Read ", Text("this").foregroundStyle(.primary).weight(.semibold), " and ")
+      Text(..words.map { w in w.hasPrefix("#") ? Text(w).foregroundStyle(.primary) : Text(w) })
+    }
+  }
+}

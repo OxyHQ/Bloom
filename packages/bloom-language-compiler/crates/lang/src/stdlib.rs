@@ -27,6 +27,7 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("Image.bloom", include_str!("../../../stdlib/Bloom/Image.bloom")),
     ("Video.bloom", include_str!("../../../stdlib/Bloom/Video.bloom")),
     ("Splash.bloom", include_str!("../../../stdlib/Bloom/Splash.bloom")),
+    ("Island.bloom", include_str!("../../../stdlib/Bloom/Island.bloom")),
     ("Concurrency.bloom", include_str!("../../../stdlib/Bloom/Concurrency.bloom")),
     ("Regex.bloom", include_str!("../../../stdlib/Bloom/Regex.bloom")),
     ("Logger.bloom", include_str!("../../../stdlib/Bloom/Logger.bloom")),

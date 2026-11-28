@@ -8,19 +8,10 @@ import {
   edgeGlowMask,
   edgeLightFilter,
   materialFilter,
-  type SurfaceLook,
 } from './optics';
-
-type GlowStop = readonly [px: number, opacity: number];
+import { NATIVE_RIM_LINE, type GlowStop, glowStops, nativeGlowShadow } from './native-edge';
 
 const white = (opacity: number) => `rgba(255, 255, 255, ${opacity})`;
-
-/**
- * Where an Android inset shadow `inset 0 Y B -B` reaches half its colour, as a
- * share of `B` back from `Y`; it is clear again at about `Y`. Measured on React
- * Native 0.88's Android renderer.
- */
-const INSET_HALF_BACK = 0.82;
 
 /**
  * Native has no backdrop to brighten, so it paints the same edge as white light:
@@ -34,17 +25,7 @@ const INSET_HALF_BACK = 0.82;
  * and fades out along the sides as the measured edge light does.
  */
 function nativeGlow(stops: readonly GlowStop[]): string {
-  const gain = stops[0]?.[1] ?? 0;
-  const reach = stops[stops.length - 1]?.[0] ?? 0;
-  let halfDepth = reach;
-  for (let index = 1; index < stops.length; index++) {
-    const [x0, g0] = stops[index - 1] ?? [0, gain];
-    const [x1, g1] = stops[index] ?? [reach, 0];
-    if (g1 > gain / 2) continue;
-    halfDepth = g0 === g1 ? x1 : x0 + ((x1 - x0) * (g0 - gain / 2)) / (g0 - g1);
-    break;
-  }
-  const blur = Math.round(((reach - halfDepth) / INSET_HALF_BACK) * 100) / 100;
+  const { reach, blur, gain } = nativeGlowShadow(stops);
   const edge = (sign: string) => `inset 0 ${sign}${reach}px ${blur}px -${blur}px ${white(gain)}`;
   return `${edge('')}, ${edge('-')}`;
 }
@@ -53,14 +34,11 @@ function nativeRim(line: number): string {
   return [`inset 0 1px 0 ${white(line)}`, `inset 0 -1px 0 ${white(line)}`].join(', ');
 }
 
-const glowStops = (look: SurfaceLook): GlowStop[] =>
-  look.rim.glow.map(([px, gain]) => [px, Math.min(1, gain)] as const);
-
 export const SURFACE_FILTER = materialFilter(SURFACE_LOOKS.light);
 export const SURFACE_HIGHLIGHT_FILTER = edgeLightFilter(SURFACE_LOOKS.light);
 export const SURFACE_EDGE_GLOW = edgeGlowMask(SURFACE_LOOKS.light.rim);
 export const SURFACE_SHEEN_SHADOW = nativeGlow(glowStops(SURFACE_LOOKS.light));
-export const SURFACE_RIM = nativeRim(0.7);
+export const SURFACE_RIM = nativeRim(NATIVE_RIM_LINE.light);
 
 export interface SurfaceOptics {
   filter: string;
@@ -84,7 +62,7 @@ const DARK_OPTICS: SurfaceOptics = {
   highlightFilter: edgeLightFilter(SURFACE_LOOKS.dark),
   glow: edgeGlowMask(SURFACE_LOOKS.dark.rim),
   sheenShadow: nativeGlow(glowStops(SURFACE_LOOKS.dark)),
-  rim: nativeRim(0.4),
+  rim: nativeRim(NATIVE_RIM_LINE.dark),
 };
 
 const FROSTED_OPTICS = new Map<string, SurfaceOptics>();

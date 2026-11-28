@@ -1,0 +1,50 @@
+// Bloom (UI): a Compose island in a React Native screen (ADR 0003).
+//
+//     Island("FeedIsland", props: JSON.encode(FeedProps.self, props)) { name, payload in
+//       if name == "onIntent" { handle(try JSON.decode(FeedIntent.self, from: payload)) }
+//     }
+//
+// A module marked `.module("FeedIsland", native: .island)` in `Package.bloom` is compiled by
+// the native backend (Kotlin and Jetpack Compose, no JavaScript) into `bloom build`'s
+// `:bloom-islands` library, and drawn here: its view named after the module, with `props` (its
+// props as a JSON object, each decoded by its type's `Codable`), and each of its event props
+// (`(T) -> Void`) reaching `onEvent` as the prop's name and the value's JSON. The React Native
+// side keeps the network and the stores; the island draws and reports intents.
+
+/// The island host view. Its Android side is `bloom build`'s `BloomIslandViewManager` (in the
+/// generated `:bloom-islands` library, with the island registry), so this interface ships no
+/// view manager of its own: it gives Fabric the component's spec.
+extern native "BloomIsland" {
+  @extern("BloomIsland")
+  private func islandView(
+    island: String,
+    props: String,
+    themePreset: String?,
+    themeScheme: String?,
+    onIslandEvent: (({ name: String, payload: String }) -> Void)?
+  ) -> View
+}
+
+/// The island `name` (a module marked `native: .island`), drawn from its props as one JSON
+/// object (`props`), its events to `onEvent` as `(prop name, value as JSON)`. It draws in the
+/// app's theme: `preset` (an `AppColorName`) and `scheme` (`"light"` or `"dark"`; none, the
+/// system's), Bloom's default preset when none is given.
+public struct Island: View {
+  let name: String
+  let props: String
+  var preset: String? = none
+  var scheme: String? = none
+  var onEvent: ((String, String) -> Void)? = none
+
+  var body: some View {
+    islandView(
+      island: name,
+      props: props,
+      themePreset: preset,
+      themeScheme: scheme,
+      onIslandEvent: { event in
+        if let handle = onEvent { handle(event.name, event.payload) }
+      },
+    )
+  }
+}

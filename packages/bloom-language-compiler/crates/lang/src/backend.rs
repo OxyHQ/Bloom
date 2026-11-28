@@ -18,10 +18,14 @@ pub use crate::check::{
     AssignRes, AwaitRes, Bound, CallRes, CheckResult, ClosureInfo, Conformance, FieldRes, Local, LocalId,
     LocalKind, NameRes, Recv, TryRes, ViewInfo, WitnessArg, Witnessed,
 };
+/// Copy-on-write ([`crate::cow`]): which `var`s own their array or dictionary and which reads copy
+/// it. The Kotlin backend holds an owned `var` as a `MutableList`/`MutableMap`, as the TypeScript
+/// one holds a JS array, so it reads the same analysis.
+pub use crate::cow::{Cow, analyze as copy_on_write};
 pub use crate::extensions::{demangle, mangle};
 pub use crate::types::{
-    ClassDef, Def, DefId, DefKind, Display, FieldDef, FnTy, Origin, ParamTy, RequirementDef, StrSet, Ty,
-    VariantDef,
+    ClassDef, Def, DefId, DefKind, Display, FieldDef, FieldDefault, FnTy, Origin, ParamTy, RequirementDef,
+    StrSet, Ty, VariantDef,
 };
 use crate::{Ast, Diagnostic, Options};
 

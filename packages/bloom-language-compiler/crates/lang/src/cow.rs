@@ -16,8 +16,9 @@
 //!
 //! Only the top level is shared-free: an element write rebuilds the levels below it
 //! (`grid[i][j] = v` is `grid[i] = $at(grid[i], j, v)`), so an element read out earlier
-//! (`let row = grid[i]`) never changes. Kotlin and Swift have value semantics of their own and
-//! do not read this.
+//! (`let row = grid[i]`) never changes. The Kotlin backend reads this too (`backend::copy_on_write`):
+//! an owned `var` is a `MutableList`/`MutableMap` there, and a copy is `toList()`/`toMap()`. Swift
+//! has value semantics of its own and does not.
 
 use std::collections::{HashMap, HashSet};
 

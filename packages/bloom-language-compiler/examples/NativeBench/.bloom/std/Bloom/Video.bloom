@@ -1,0 +1,103 @@
+// Bloom (media): the native video player and its view, behind `expo-video` in a Bloom build.
+//
+// A `bloom build` answers `expo-video` with a shim over this module (crates/bloomc's
+// `shims/expo-video.js`): `useVideoPlayer`, `createVideoPlayer` and `VideoView` keep their
+// API, so an app's call sites need no edits. Underneath is androidx media3 (ExoPlayer), the
+// library expo-video ships, without Expo's module core.
+
+/// The native player and its view (ADR 0002, section 7). The Kotlin side
+/// (`Native/BloomVideo/android`) conforms to the specs the toolchain generates from this
+/// interface. A player is a number the JS side picks; every call names it, and every event
+/// says which player it is about.
+extern native "BloomVideo" {
+  /// The view of `player`'s picture, fitted by `contentFit`. `onFirstFrame` runs when the
+  /// first frame of a source is on screen.
+  @extern("BloomVideoView")
+  private func videoView(
+    player: Int,
+    contentFit: "contain" | "cover" | "fill" = "contain",
+    onFirstFrame: (({ player: Int }) -> Void)?
+  ) -> View
+
+  /// A new player `id` of `source` (a URL, or nothing yet), with request `headers` as
+  /// `[name, value, …]`.
+  @extern("create") private func nativeCreate(_ id: Int, _ source: String?, _ headers: [String])
+  /// `id` plays `source` instead (nothing stops it).
+  @extern("replace") private func nativeReplace(_ id: Int, _ source: String?, _ headers: [String])
+  @extern("play") private func nativePlay(_ id: Int)
+  @extern("pause") private func nativePause(_ id: Int)
+  /// Moves to `seconds` from the start.
+  @extern("seek") private func nativeSeek(_ id: Int, _ seconds: Double)
+  @extern("setMuted") private func nativeSetMuted(_ id: Int, _ muted: Bool)
+  @extern("setLoop") private func nativeSetLoop(_ id: Int, _ loop: Bool)
+  @extern("setVolume") private func nativeSetVolume(_ id: Int, _ volume: Double)
+  @extern("setRate") private func nativeSetRate(_ id: Int, _ rate: Double)
+  /// How often `onTime` reports, in seconds (0 for never).
+  @extern("setTimeInterval") private func nativeSetTimeInterval(_ id: Int, _ seconds: Double)
+  /// Frees `id` and its decoders.
+  @extern("release") private func nativeRelease(_ id: Int)
+
+  /// `idle`, `loading`, `readyToPlay` or `error` (with its message).
+  @extern("onStatus") private func onNativeStatus(_ listener: ({ player: Int, status: String, error: String? }) -> Void) -> () -> Void
+  @extern("onPlaying") private func onNativePlaying(_ listener: ({ player: Int, playing: Bool }) -> Void) -> () -> Void
+  /// The position and the buffered position, in seconds, every `setTimeInterval`.
+  @extern("onTime") private func onNativeTime(_ listener: ({ player: Int, currentTime: Double, buffered: Double }) -> Void) -> () -> Void
+  @extern("onEnd") private func onNativeEnd(_ listener: ({ player: Int }) -> Void) -> () -> Void
+  /// A source's duration (seconds) and picture size (pixels), once known.
+  @extern("onSource") private func onNativeSource(_ listener: ({ player: Int, duration: Double, width: Double, height: Double }) -> Void) -> () -> Void
+}
+
+// ---- the player and its view (SwiftUI/AVKit's shape) ------------------------------------
+//
+//     @State private var player = VideoPlayer(url: clip.url)
+//     Video(player: player).videoGravity(.fill).controls(.hidden)
+//     Button("Play") { player.play() }
+//
+//     Video(url: clip.url, poster: clip.thumbnail).muted().loops().autoplay()
+//
+// A `VideoPlayer` is the app's: it plays, pauses and seeks, and its `currentTime`, `duration`
+// and `isPlaying` follow the playback (an `@Observable`, so a view that reads them draws again).
+// `Video(url:poster:)` builds and owns one for as long as the view is drawn. The runtime pools
+// the decoders under the players, so a feed of videos keeps one decoding at a time: a player
+// that starts takes the decoder from the one that played before, which pauses and gives its
+// source up until it plays again. On the web and in tests the players are expo-video's (Bloom's
+// `VideoView`); a `bloom build` draws them with `BloomVideo` above (media3 on Android).
+
+extern module "./players" {
+  private func videoAttach(_ player: VideoPlayer, _ url: String)
+  private func videoPlay(_ player: VideoPlayer)
+  private func videoPause(_ player: VideoPlayer)
+  private func videoSeek(_ player: VideoPlayer, _ seconds: Double)
+}
+
+/// A player of one video, AVPlayer's shape: the app makes it, holds it in a `@State`, hands it
+/// to `Video(player:)` and drives it.
+@Observable
+public final class VideoPlayer {
+  /// What it plays.
+  public let url: URL
+  /// Whether its sound is off.
+  public var isMuted: Bool = false
+  /// Whether it starts again from the beginning when it ends.
+  public var loops: Bool = false
+  /// The position, in seconds from the start.
+  public private(set) var currentTime: Double = 0
+  /// The video's length in seconds, once known (0 before).
+  public private(set) var duration: Double = 0
+  /// Whether it is playing now.
+  public private(set) var isPlaying: Bool = false
+
+  public init(url: URL) {
+    self.url = url
+    videoAttach(self, url.absoluteString)
+  }
+
+  /// Starts or resumes playing, taking the pool's decoder.
+  public func play() { videoPlay(self) }
+
+  /// Pauses, keeping the position.
+  public func pause() { videoPause(self) }
+
+  /// Moves to `seconds` from the start.
+  public func seek(to seconds: Double) { videoSeek(self, seconds) }
+}
