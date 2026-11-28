@@ -14,10 +14,24 @@ let package = Package(
     .library(name: "BloomUI", targets: ["BloomUI"]),
   ],
   targets: [
-    .target(name: "Bloom", path: "Sources/Bloom"),
+    .target(
+      name: "Bloom",
+      path: "Sources/Bloom",
+      linkerSettings: [
+        // Linux: ICU's relative-time formatter (`ureldatefmt`) is reached through Foundation's
+        // own ICU, which swift-corelibs-foundation does not wrap. Apple platforms use Foundation.
+        .linkedLibrary("_FoundationICU", .when(platforms: [.linux]))
+      ]
+    ),
     .target(name: "BloomTheme", path: "Sources/BloomTheme"),
     .target(name: "BloomUI", dependencies: ["Bloom", "BloomTheme"], path: "Sources/BloomUI"),
-    .testTarget(name: "BloomTests", dependencies: ["Bloom"], path: "Tests/BloomTests"),
+    .testTarget(
+      name: "BloomTests",
+      dependencies: ["Bloom"],
+      path: "Tests/BloomTests",
+      // The fixtures are read from the source tree (`#filePath`), not bundled.
+      exclude: ["Fixtures"]
+    ),
     .testTarget(name: "BloomThemeTests", dependencies: ["BloomTheme"], path: "Tests/BloomThemeTests"),
   ]
 )
