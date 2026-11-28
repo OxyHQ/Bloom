@@ -1,0 +1,25 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { pinnedTrends, recentTitles, trendIds } from "@/stores/trends";
+
+export const Shelf = view(function Shelf() {
+"use no memo";
+const $ = $c(2);
+let pinned: readonly ReturnType<typeof pinnedTrends>[number][];
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+pinned = pinnedTrends();
+$[0] = pinned;
+} else {
+pinned = $[0];
+}
+let $t0;
+if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
+$t0 = VStack(pinned.map((trend, index) => Text(`${index} ${trend.title}`)), Text(`${pinned.length} ${(recentTitles().length === 0)} ${trendIds()[0] ?? ""}`));
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

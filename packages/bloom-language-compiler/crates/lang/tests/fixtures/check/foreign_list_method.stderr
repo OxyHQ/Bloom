@@ -1,0 +1,8 @@
+error[B0601]: `.enumerated` is a Bloom list's, and this is a TS value Bloom could not type
+ --> check/foreign_list_method.bloom:5:32
+  |
+5 |   for (index, trend) in trends.enumerated() { out = [..out, "\(index)"] }
+  |                                ^^^^^^^^^^ a JS array has no such method
+  |
+help: give it its Bloom type first (`let items: [Item] = …`), and `.enumerated` is the list's
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary

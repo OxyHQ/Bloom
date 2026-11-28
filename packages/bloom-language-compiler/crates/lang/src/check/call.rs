@@ -574,6 +574,33 @@ impl Checker<'_> {
                 let (def, targs) = (*def, targs.clone());
                 self.with_update(expr, call, def, targs)
             }
+            // `trends.enumerated()` on a TS value Bloom could not type (`Foreign`): a Bloom list's
+            // method JS does not have, which would throw at run time ("enumerated is not a
+            // function"). TS's own members (`map`, `filter`, `slice`) stay TS's to check.
+            Ty::Foreign(text)
+                if SWIFT_ONLY_MEMBERS.contains(&member.name.as_str())
+                    && !super::is_element(&Ty::Foreign(text.clone())) =>
+            {
+                let help = format!(
+                    "give it its Bloom type first (`let items: [Item] = …`), and `.{}` is the list's",
+                    member.name
+                );
+                self.report(
+                    Diagnostic::error(
+                        "B0601",
+                        member.span,
+                        format!(
+                            "`.{}` is a Bloom list's, and this is a TS value Bloom could not type",
+                            member.name
+                        ),
+                    )
+                    .label("a JS array has no such method")
+                    .help(help)
+                    .spec("47-the-foreign-boundary"),
+                );
+                self.args_unchecked(call);
+                Ty::Unknown
+            }
             Ty::Foreign(_) | Ty::Adt(..) => {
                 let field = self.member(&call.callee, recv, member, object_span);
                 self.out.types.insert(call.callee.id, field.clone());
@@ -3419,3 +3446,20 @@ fn contains_var(ty: &Ty) -> bool {
     });
     found
 }
+
+/// Swift collection methods a JS array does not have: called on a `Foreign` value they would
+/// throw at run time (B0601).
+const SWIFT_ONLY_MEMBERS: &[&str] = &[
+    "enumerated",
+    "compactMap",
+    "firstIndex",
+    "lastIndex",
+    "allSatisfy",
+    "dropFirst",
+    "dropLast",
+    "reversed",
+    "sorted",
+    "removingDuplicates",
+    "chunked",
+    "joined",
+];
