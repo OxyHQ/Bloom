@@ -65,3 +65,16 @@ suspend fun sleep(`for`: Duration) {
 class Binding<T>(val get: () -> T, val set: (T) -> Unit) {
   val value: T get() = get()
 }
+
+/**
+ * `actor` (2.0): an actor's methods run on its own serial dispatcher, one at a time, as Swift
+ * isolates an actor's state. A method calling another of the same actor's re-enters the same
+ * dispatcher (no deadlock, unlike a `Mutex`); suspension points interleave as Swift's do.
+ */
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+abstract class BloomActor {
+  private val dispatcher = kotlinx.coroutines.Dispatchers.Default.limitedParallelism(1)
+
+  protected suspend fun <T> isolated(block: suspend () -> T): T =
+    kotlinx.coroutines.withContext(dispatcher) { block() }
+}
