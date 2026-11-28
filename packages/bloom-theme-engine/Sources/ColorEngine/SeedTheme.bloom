@@ -59,11 +59,17 @@ public struct SeedThemeOptions: Equatable {
   public var tertiarySeed: String? = none
 }
 
+/// The variant a seed's tokens use: the one asked for, else `vivid` (every preset's), or
+/// `monochrome` for a seed with no colour.
+func seedVariant(_ o: SeedThemeOptions) -> SchemeVariant {
+  if let asked = o.variant { return asked }
+  return isColourlessSeed(o.seed) ? SchemeVariant.monochrome : SchemeVariant.vivid
+}
+
 func roleOptions(_ o: SeedThemeOptions) -> GenerateOptions {
   GenerateOptions(
     seed: o.seed,
-    variant: o.variant ??
-      (isColourlessSeed(o.seed) ? SchemeVariant.monochrome : SchemeVariant.vivid),
+    variant: seedVariant(o),
     isDark: o.isDark,
     contrastLevel: o.contrastLevel,
     secondarySeed: o.secondarySeed,
