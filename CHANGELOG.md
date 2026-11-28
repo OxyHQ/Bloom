@@ -1,5 +1,20 @@
 # Changelog
 
+## 23.11.0
+
+`@oxy.so/bloom-data` 0.1.3, `@oxy.so/bloom-language` 2.2.0 and `@oxy.so/bloom-language-compiler` 1.9.0 ship beside it.
+
+### Changed
+
+- `BloomImage` draws with Bloom's own native image view (`BloomImageView`) in a build that links
+  it (`bloom build android`), before expo-image and react-native's `Image`; `prefetchImage` and
+  `getImageSize` use its cache. Its props and events are unchanged, and an Expo build still draws
+  with expo-image.
+
+### Fixed
+
+- `BloomImage` draws with Bloom's native image view in an app whose Metro lists `ts` before `tsx` (Expo's default `sourceExts`). Its web half, `bloom-image-view-draw.ts`, was found before the native `bloom-image-view-draw.native.tsx`, because Metro tries each extension before each platform. So every `BloomImage` in Mention's Bloom build drew nothing, with no error. The web file is now `.tsx`, and a test holds every platform file in `src/` to its default file's extension.
+
 ## 23.10.1
 
 ### Fixed

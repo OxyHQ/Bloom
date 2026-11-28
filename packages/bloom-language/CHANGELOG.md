@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.2.0
+
+### Added
+
+- `inlineView(body)`: a view with no component of its own, what the language compiler emits for a stateless view whose body is one node. Calling it builds the body there, and the view is drawn in its caller's tree with no fiber, hook slot or context read of its own; modifiers chained on it apply around its body, as around a `view()`'s, and its `.id()` is its key. The body must call no hook.
+- The spec gives each modifier a category (`modifierCategories` in `spec/language.json`), for a backend that draws modifiers itself, the native runtimes of ADR 0003: `layout`, `paint`, `text`, `interaction`, `accessibility`, `motion`, `presentation`, `screen`, `environment` and `identity` for the universal modifiers, each listed (the reference generator fails on one that is not), and `node` for every other, an option its node's own implementation reads. The modifiers reference shows each one's category.
+- **A screen's chrome from the branch it draws:** a screen whose root is a `Group` drawing one branch (`Group { if loading { Skeleton().header(false) } else { Page().title("Job") } }`) takes the header the drawn branch declares (`.title`, `.header`, `.toolbar`, …), read synchronously as the root's is, as SwiftUI's `.navigationTitle` works from any branch; the `Group`'s own chrome comes first. A screen like jobs/[id] showed an empty default header.
+- `@oxy.so/bloom-language/screen-host`: `drawScreen(root, { back })` and `ScreenHost`, what `screen()` draws its body with (a Bloom `Screen` with the root's `.title`, `.toolbar`, `.header`, `.footer` and `.sheet` as its chrome), for a navigator that is not expo-router's. Nothing it reaches imports expo-router. `back` is the Back a pushed screen's header offers when its root names none. `throughViews` draws a `view()` root through, so its body's chrome is the screen's. A test walks its imports on every platform.
+- `characterCount`, `characters`, `characterSlice`, `characterBoundaries`, `characterOffset` and `utf16Offset`: strings in user-perceived characters, what compiled `.bloom` code counts by. They use `Intl.Segmenter` where the engine has it and UAX #29's rules (GB3 to GB13, Indic conjuncts' GB9c included, over generated break and Indic_Conjunct_Break tables, `scripts/generate-graphemes.mjs`) where it does not, as on Hermes; tested against `Intl.Segmenter` on emoji ZWJ sequences, skin tones, flags, combining marks, Indic conjuncts, Hangul and CR LF.
+- The spec's typed object kinds: an object parameter may declare `fields` (each key's type, `?` when it may be left out) in place of `keys`, and a parameter `[name]` is a list of that object. The first is `dialogButton` (Bloom's `DialogAction`), with the token set `dialogActionColor` (`default`, `cancel`, `destructive`), which `Dialog().buttons(…)` takes as `[dialogButton]`. The reference documents both.
+
+### Changed
+
+- The className census and its generated table (`codemod/classnames.generated.json`) no longer
+  count Schedio, a retired app: 27 apps, 1,909 utilities.
+- `spec/language.json` lists `noneModifiers`, generated from `Node`'s methods: the modifiers whose value takes `undefined`. The language compiler lets a `.bloom` token argument be `none` there. (Its code already shipped in 2.1.0, whose notes left it out.)
+
+### Fixed
+
+- **A React element where a view goes is drawn, not dropped:** a TS caller that hands a Bloom view's `View`/`View?`/`[View]` prop a React element (`slot={<Text>Scheduled</Text>}`, Mention's composer handing PostHeader its schedule label) got nothing drawn, silently, as the runtime skipped any child that was not a node. Such an element is drawn in place, as an `Embed` of it (mention14 element-to-view-prop).
+- A screen whose root `Group` draws one branch takes that branch's chrome, as SwiftUI reads it from any branch: its `.sheet`s, and its `.footer`, `.floatingAction` and `.testID` where the root has none of its own (the title and toolbar already were). They were dropped (Mention's feeds FAB, PostDetailScreen's reply footer and `post-screen` test id). The branch's test id names the screen and is taken off the branch inside it, so it is found once.
+
 ## 2.1.0
 
 ### Added

@@ -14,14 +14,14 @@ use bloom_lang::package::{Platform, TargetKind};
 use crate::project::{CheckOptions, Package, check_modules, write};
 
 /// The Bloom release this toolchain builds against (`bloom new` writes it).
-pub const BLOOM_VERSION: &str = "23.10.1";
+pub const BLOOM_VERSION: &str = "23.11.0";
 
 /// The runtime under a Bloom app, pinned as Bloom's own repository pins it
 /// (a test keeps this table equal to Bloom's `package.json` files).
 pub const RUNTIME: &[(&str, &str)] = &[
     ("@oxy.so/bloom", BLOOM_VERSION),
-    ("@oxy.so/bloom-language", "2.1.0"),
-    ("@oxy.so/bloom-language-compiler", "1.8.0"),
+    ("@oxy.so/bloom-language", "2.2.0"),
+    ("@oxy.so/bloom-language-compiler", "1.9.0"),
     ("expo", "~58.0.23"),
     ("expo-blur", "~58.0.5"),
     ("expo-font", "~58.0.11"),
@@ -50,7 +50,7 @@ pub const STDLIB_NATIVE: &[(&str, &str)] =
 
 /// The data layer under the standard library's `@Model`, `@Query`, `Source` and `Action`
 /// (`stdlib/Bloom/models.ts`), its SQLite copy on `expo-sqlite` above. Bloom's own package.
-pub const STDLIB_DATA: &[(&str, &str)] = &[("@oxy.so/bloom-data", "0.1.2")];
+pub const STDLIB_DATA: &[(&str, &str)] = &[("@oxy.so/bloom-data", "0.1.3")];
 
 /// The native modules of today's router under `NavigationStack`: Bloom's tab pager swipes
 /// and selects its pages on `react-native-pager-view` (Bloom's optional peer, which an app
