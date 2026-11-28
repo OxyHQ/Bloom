@@ -1,0 +1,49 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, toElement, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { RowList } from "@/ui/rowlist";
+
+const $renderItem = (arg: { item: string }): Child => {
+return Text(arg.item);
+};
+export interface ByNameProps {
+  readonly titles: readonly string[];
+}
+export const ByName = view(function ByName(props: ByNameProps) {
+"use no memo";
+const $ = $c(2);
+const { titles } = props;
+let $t0;
+if ($[0] !== titles) {
+$t0 = Embed($jsx(RowList, { data: titles, renderItem: ((...$a: Parameters<typeof $renderItem>) => toElement($renderItem(...$a))) } satisfies ComponentProps<typeof RowList>));
+$[0] = titles;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+const $fn1 = (arg: { item: string }) => Text(arg.item);
+export interface ByLetProps {
+  readonly titles: readonly string[];
+}
+export const ByLet = view(function ByLet(props: ByLetProps) {
+"use no memo";
+const $ = $c(2);
+const { titles } = props;
+let $t1;
+if ($[0] !== titles) {
+const row = $fn1;
+$t1 = Embed($jsx(RowList, { data: titles, renderItem: ((...$a: Parameters<typeof row>) => toElement(row(...$a))) } satisfies ComponentProps<typeof RowList>));
+$[0] = titles;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

@@ -28,3 +28,19 @@ export function Card(props: { title: string; meta?: ReactNode }): ReactElement {
     </View>
   );
 }
+/** Props Bloom cannot type (an index signature, as `FlatList`'s generic props): `renderItem` is a
+ * TS callback that returns an element. */
+export interface RowListProps {
+  data: readonly string[];
+  renderItem: (info: { item: string; index: number }) => ReactElement | null;
+  [prop: string]: unknown;
+}
+export function RowList(props: RowListProps): ReactElement {
+  return (
+    <View>
+      {props.data.map((item, index) => (
+        <View key={item}>{props.renderItem({ item, index })}</View>
+      ))}
+    </View>
+  );
+}
