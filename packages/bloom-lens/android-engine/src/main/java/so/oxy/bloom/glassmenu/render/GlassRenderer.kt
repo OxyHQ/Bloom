@@ -24,7 +24,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-internal class GlassRenderer(private val density: Float, private val minimumFieldStep: Float) {
+class GlassRenderer(private val density: Float, private val minimumFieldStep: Float) {
   private val material = RuntimeShader(GlassMaterialShader)
   private val shadow = RuntimeShader(GlassShadowShader)
   private val shadowPaint = Paint().apply { shader = shadow }

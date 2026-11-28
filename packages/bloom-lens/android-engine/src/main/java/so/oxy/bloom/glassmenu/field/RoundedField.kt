@@ -6,7 +6,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-internal class RoundedField {
+class RoundedField {
   private var centerX = 0f
   private var centerY = 0f
   private var inverseAxisX = 1f

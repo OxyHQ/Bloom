@@ -6,7 +6,7 @@ import kotlin.math.min
 // A glass that is several shapes (a group of glasses on one base): each shape's rect and corner radius, in the
 // surface's pixels, blended into one another within [blend] px (a smooth union: shapes closer than it flow together,
 // and 0 joins them only where they overlap). Empty, the glass is its one rect, as every glass but a group's is.
-internal class GlassShapes {
+class GlassShapes {
   val rects = Array(Capacity) { RectF() }
   val radii = FloatArray(Capacity)
   var count = 0

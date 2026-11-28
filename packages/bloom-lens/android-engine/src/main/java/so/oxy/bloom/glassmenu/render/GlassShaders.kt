@@ -167,7 +167,7 @@ float nativeCasdfHighlightCoverage(float signedDistance, float2 gradient,
         + nativeHighlightBias(diffuseFill, 11.333333333333334);
 }
 """
-internal const val GlassMaterialShader = """
+const val GlassMaterialShader = """
 uniform shader content;
 uniform float2 nodeOrigin;
 uniform float2 sampleExtent;
@@ -272,7 +272,7 @@ half4 main(float2 coord) {
     return half4(covered * surfaceOpacity);
 }
 """
-internal const val GlassPortalShader = """
+const val GlassPortalShader = """
 uniform shader content;
 uniform float2 nodeOrigin;
 uniform float height;
@@ -292,7 +292,7 @@ half4 main(float2 coord) {
 }
 """
 
-internal const val GlassShadowShader = """
+const val GlassShadowShader = """
 uniform float4 shadowParams;
 uniform float surfaceOpacity;
 """ + FieldFunctions + EdgeFunctions + """

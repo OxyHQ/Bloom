@@ -27,7 +27,7 @@ import java.util.WeakHashMap
 //
 // A surface samples the page through a lens of its own (GlassLens), which holds the page only while the region behind
 // the surface changes. Before each frame the backdrop finds what changed, in window rects, and tells every lens.
-internal class GlassBackdrop private constructor(private val root: ViewGroup) :
+class GlassBackdrop private constructor(private val root: ViewGroup) :
   ViewTreeObserver.OnPreDrawListener, ViewTreeObserver.OnGlobalLayoutListener {
   val node = RenderNode("GlassBackdrop")
 

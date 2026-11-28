@@ -4,9 +4,12 @@
   "description": "Bloom's native lens material for Android: the overlay, refraction and motion that menus, selects and prominent controls use when the app's binary has it.",
   "license": "SEE LICENSE IN LICENSE",
   "files": [
+    "!android-engine/build",
+    "!android-engine/.gradle",
     "!android/.gradle",
     "!android/build",
     "android",
+    "android-engine",
     "expo-module.config.json",
     "patches",
     "src",

@@ -1,9 +1,12 @@
 package so.oxy.bloom.glassmenu
 
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
+import so.oxy.bloom.glassmenu.records.GlassMenuConfigProps
+import so.oxy.bloom.glassmenu.records.toEngine
 import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
 import so.oxy.bloom.glassmenu.records.GlassMemberRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
+import so.oxy.bloom.glassmenu.records.GlassTriggerConfigProps
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
@@ -35,11 +38,11 @@ class GlassMenuAndroidModule : Module() {
       Prop("fontFamily") { view: GlassMenuAndroidView, family: String? ->
         view.fontFamily = family
       }
-      Prop("config") { view: GlassMenuAndroidView, config: GlassMenuConfigRecord? ->
-        view.config = config ?: GlassMenuConfigRecord()
+      Prop("config") { view: GlassMenuAndroidView, config: GlassMenuConfigProps? ->
+        view.config = config?.toEngine() ?: GlassMenuConfigRecord()
       }
-      Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
-        view.triggerConfig = config ?: GlassTriggerConfigRecord()
+      Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigProps? ->
+        view.triggerConfig = config?.toEngine() ?: GlassTriggerConfigRecord()
       }
       Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
         view.openWithItems = open ?: false

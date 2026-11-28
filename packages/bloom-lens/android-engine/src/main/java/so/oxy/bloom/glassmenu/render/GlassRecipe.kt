@@ -1,6 +1,6 @@
 package so.oxy.bloom.glassmenu.render
 
-internal class GlassRecipe(
+class GlassRecipe(
   val saturation: Float,
   val black: Float,
   val white: Float,

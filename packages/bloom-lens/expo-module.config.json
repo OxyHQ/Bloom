@@ -5,6 +5,12 @@
       "so.oxy.bloom.glassmenu.GlassMenuAndroidModule",
       "so.oxy.bloom.glassmenu.chrome.GlassChromeModule",
       "so.oxy.bloom.glassmenu.chrome.SurfaceNodesModule"
+    ],
+    "projects": [
+      {
+        "name": "oxy.so-bloom-lens-engine",
+        "path": "android-engine"
+      }
     ]
   }
 }

@@ -1,0 +1,23 @@
+// The glass engine, free of React Native and Expo (split-engine.mjs writes its sources from the synced upstream).
+// Bloom's Expo adapter (../android) and Bloom's native runtime (Compose) both draw through it.
+apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
+
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+android {
+  namespace "so.oxy.bloom.glassmenu.engine"
+  compileSdk safeExtGet("compileSdkVersion", 36)
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  implementation "androidx.annotation:annotation:1.9.1"
+}
