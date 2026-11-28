@@ -1,4 +1,8 @@
+import { Embed, inlineView } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
 import { showBoth, showPlain } from "@/ui/action-menu";
+import { Wrapped } from "@/ui/action-menu";
 
 function open(unread: boolean): void {
 showPlain({ label: "Options", groups: [unread ? [{ label: "Read", onPress: () => {
@@ -8,4 +12,17 @@ showBoth({ label: "Options", groups: [unread ? [{ label: "Read", onPress: () => 
 } }] : [], [{ label: "Delete", color: "red", onPress: () => {
 } }]] });
 }
+
+export interface Row {
+  readonly key: string;
+}
+
+export interface RowsProps {
+  readonly rows: readonly Row[];
+}
+export const Rows = inlineView(function Rows(props: RowsProps) {
+"use no memo";
+const { rows } = props;
+return Embed($jsx(Wrapped, { data: rows, keyExtractor: (item, index) => `row-${index}` } satisfies ComponentProps<typeof Wrapped>));
+});
 

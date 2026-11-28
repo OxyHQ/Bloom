@@ -14,3 +14,17 @@ private func open(_ unread: Bool) {
     ],
   )
 }
+
+import { Wrapped } from "@/ui/action-menu"
+
+public struct Row {
+  let key: String
+}
+
+/// A generic component's props in an intersection stay TS's: the closure's item is TS's `T`.
+public struct Rows: View {
+  let rows: [Row]
+  var body: some View {
+    Wrapped(data: rows, keyExtractor: { item, index in "row-\(index)" })
+  }
+}

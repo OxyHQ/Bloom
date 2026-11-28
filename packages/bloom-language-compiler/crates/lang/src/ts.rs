@@ -2210,7 +2210,15 @@ impl Mapper<'_> {
         path: &str,
         depth: usize,
     ) -> Ty {
-        if depth > 8 {
+        // Only an inline object or a named, non-generic type is flattened: a generic's props
+        // (`Parameters<typeof VirtualList>[0]`) type their fields by a type parameter TS infers at
+        // the use, which only TS can check.
+        let flat = |item: &TsType| match item {
+            TsType::Object(_) => true,
+            TsType::Ref(_, args) => args.is_empty(),
+            _ => false,
+        };
+        if depth > 8 || !items.iter().all(flat) {
             return Ty::Foreign(path.into());
         }
         let mut fields: Vec<FieldDef> = Vec::new();
