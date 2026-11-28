@@ -269,7 +269,10 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
 - No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
   `.floor()`, `.ceil()` or `.truncated()` (B0201). `Int` → `Float` widens implicitly (4.2).
 - Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
-- Values are immutable. `var` exists only as a local. A closure may capture, read and write a
+- Values are immutable. `var` exists only as a local, and as a file's own `private var x: T = v`
+  (2.0), a JS module `let` any of its functions and closures may write (a registry callback); it
+  is no dependency and no state, so nothing re-renders on it. Any other module `var` is B0106.
+  Swift's `f?()` calls an optional function when it is present (`f?.()` in JS). A closure may capture, read and write a
   function's (or a closure's, a handler's) own `var`, as Swift's does: `handlers[tag] = run` in a
   closure is seen by the function once it ran, and each write is a new value (a `var` holding
   another name's list or dictionary never changes it). A `var` of a view's render or of a hook

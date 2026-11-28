@@ -1648,6 +1648,11 @@ impl<'o> Checker<'o> {
                             Ty::View(Some("embed")),
                             LocalKind::Component { props },
                         ),
+                        // `private var`: the file's own, which any function or closure may write.
+                        None if c.mutable => {
+                            self.capturable.insert(c.name.span);
+                            self.declare_unique(&c.name, ty, LocalKind::Var)
+                        }
                         None => self.declare_unique(&c.name, ty, LocalKind::ModuleConst),
                     };
                     if let Some(value) = self.env_values.get(&c.value.id).cloned() {

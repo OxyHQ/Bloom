@@ -693,12 +693,18 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
+            // `private var x: T = v` (2.0): the file's own mutable value (a registry callback).
+            Tok::Kw(Kw::Var) if visibility == Visibility::Private => {
+                let mut decl = self.const_decl();
+                decl.mutable = true;
+                ItemKind::Const(decl)
+            }
             Tok::Kw(Kw::Var) => {
                 let span = self.span();
                 self.error(
                     Diagnostic::error("B0106", span, "a module has no `var`")
                         .label("module-level values are constants")
-                        .help("write `let`; shared state lives in bloom-data stores")
+                        .help("write `let`, or `private var` for the file's own mutable value; shared state lives in bloom-data stores")
                         .fix(span, "let")
                         .spec("10-modules-and-interop"),
                 );
@@ -1374,6 +1380,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             // `let version: String` in an extern module: the package's value of that name.
             let value = Expr { id: self.id(), kind: ExprKind::Name(name.name.clone()), span: name.span };
             return ConstDecl {
+                mutable: false,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
                 name,
                 ty,
@@ -1382,7 +1389,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
-        ConstDecl { name, ty, span: start.to(value.span), value }
+        ConstDecl { name, ty, span: start.to(value.span), value, mutable: false }
     }
 
     /// `extension Name[<T>][: P] { members }`.
@@ -3003,6 +3010,26 @@ impl<'s, 'i> Parser<'s, 'i> {
                     self.expect_close(P::RBracket, open);
                     let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
                     expr = self.expr_node(ExprKind::OptIndex(Box::new(expr), Box::new(index)), span);
+                }
+                // `f?()` (Swift's optional call): a call only when `f` is not `none`, as `f?.()`.
+                Tok::P(P::Question)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::P(P::LParen))
+                        && self.tokens.get(self.pos + 1).is_some_and(|t| !t.space_before) =>
+                {
+                    self.bump();
+                    let (args, end) = self.args();
+                    let span = expr.span.to(end);
+                    expr = self.expr_node(
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing: None,
+                            optional: true,
+                        }),
+                        span,
+                    );
                 }
                 Tok::P(P::Question) if !self.token().space_before => {
                     let end = self.bump();
