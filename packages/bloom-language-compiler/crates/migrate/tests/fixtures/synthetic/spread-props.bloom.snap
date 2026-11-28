@@ -1,0 +1,27 @@
+// `<Body {...props} color={c} />` in a view whose props are written out: each stored property
+// by name, but those a later prop gives, and the callee's literal defaults are the view's own
+// too (Body is below Shell, so they are read before either is written).
+
+import { type StyleProp, type ViewStyle } from "react-native"
+
+public struct Shell: View {
+  let title: String
+  var variant: "person" | "channel" = "person"
+  var count: Float? = none
+  let c = count ?? 0
+
+  var body: some View {
+    Body(title: title, variant: variant, count: count, color: c)
+  }
+}
+
+private struct Body: View {
+  let title: String
+  var variant: "person" | "channel" = "person"
+  var count: Float? = none
+  let color: Float
+  var style: StyleProp<ViewStyle>? = none
+  var body: some View {
+    Text("\(title) \(variant) \(color)")
+  }
+}

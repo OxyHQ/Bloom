@@ -410,6 +410,9 @@ impl Tr<'_> {
                                     external.retain(|e| e.name != f.name);
                                     external.push(f);
                                 }
+                            } else if let Some(field) = self.native_style_pick(&base.name, pick, &keys) {
+                                external.retain(|e| e.name != field.name);
+                                external.push(field);
                             } else {
                                 return Some(self.refuse(
                                     "view:props-type",
@@ -593,6 +596,27 @@ impl Tr<'_> {
             });
         }
         Some(out.join(", "))
+    }
+
+    /// `Pick<ViewProps, 'style'>` of React Native's props (`ViewProps`, `TextProps`,
+    /// `ImageProps`): the `style` field, `StyleProp<ViewStyle>?` as a written `style?:` is.
+    fn native_style_pick(&mut self, base: &str, pick: bool, keys: &[String]) -> Option<crate::props::Field> {
+        let style = match base {
+            "ViewProps" => "ViewStyle",
+            "TextProps" => "TextStyle",
+            "ImageProps" => "ImageStyle",
+            _ => return None,
+        };
+        if !pick || keys != ["style"] || self.import_sources.get(base).map(String::as_str) != Some("react-native") {
+            return None;
+        }
+        for ty in ["StyleProp", style] {
+            self.used.insert(ty.to_string());
+            if !self.imported.contains(ty) && !self.extra_imports.iter().any(|(_, t)| t == ty) {
+                self.extra_imports.push(("react-native".to_string(), ty.to_string()));
+            }
+        }
+        Some(crate::props::Field { name: "style".into(), ty: format!("StyleProp<{style}>"), optional: true })
     }
 
     /// The fields of a props type imported from another TS file, with the types they

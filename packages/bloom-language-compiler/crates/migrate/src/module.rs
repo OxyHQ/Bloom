@@ -152,6 +152,10 @@ pub struct Tr<'s> {
     /// Views whose written-out props took TS destructure defaults (`Scope::field_defaults`): a
     /// view that hands its props to one on whole takes the same defaults, so the forward fits.
     pub view_defaults: HashMap<String, Vec<(String, String)>>,
+    /// Each local function's destructured props defaults that are literals (`{ active = true }`),
+    /// read before any is translated: a view that spreads its props into one (`<Body {...props} />`)
+    /// takes them, so the forward fits whichever comes first in the file.
+    pub literal_defaults: HashMap<String, Vec<(String, String)>>,
     /// `const X = memo(Named, compare)` of a local view: the file's own reads of `X` name the
     /// view (`Named`), since a module `let` is in scope only below it and the view is above.
     pub view_aliases: HashMap<String, String>,
@@ -410,6 +414,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         rest_views: HashMap::new(),
         tanstack: HashSet::new(),
         view_defaults: HashMap::new(),
+        literal_defaults: HashMap::new(),
         view_aliases: HashMap::new(),
         reviews: Vec::new(),
         quiet: false,
@@ -1544,6 +1549,56 @@ impl<'s> Tr<'s> {
                 self.note_function_props(f);
             }
         }
+        // Literal destructure defaults of each local function's props (`Tr::literal_defaults`).
+        for statement in body {
+            let declaration = match statement {
+                Statement::ExportDeclaration(export) => Some(&export.declaration),
+                _ => statement.as_declaration(),
+            };
+            let found: Option<(String, &oxc_ast::ast::FormalParameters)> = match declaration {
+                Some(Declaration::FunctionDeclaration(f)) => f.id.as_ref().map(|id| (id.name.to_string(), &*f.params)),
+                Some(Declaration::VariableDeclaration(v)) => v.declarations.first().and_then(|d| {
+                    let BindingPattern::BindingIdentifier(id) = &d.id else { return None };
+                    let mut init = d.init.as_ref()?;
+                    if let Some(m) = memo_call(init, &self.react) {
+                        init = m.function;
+                    }
+                    if let Expression::CallExpression(c) = init.without_parentheses()
+                        && let Some(first) = c.arguments.first().and_then(|a| a.as_expression())
+                    {
+                        init = first;
+                    }
+                    match init.without_parentheses() {
+                        Expression::ArrowFunctionExpression(a) => Some((id.name.to_string(), &*a.params)),
+                        Expression::FunctionExpression(f) => Some((id.name.to_string(), &*f.params)),
+                        _ => None,
+                    }
+                }),
+                _ => None,
+            };
+            let Some((name, params)) = found else { continue };
+            let Some(BindingPattern::ObjectPattern(pattern)) = params.items.first().map(|p| &p.pattern) else {
+                continue;
+            };
+            let defaults: Vec<(String, String)> = pattern
+                .properties
+                .iter()
+                .filter_map(|p| {
+                    let key = crate::view::key_name(&p.key)?;
+                    let BindingPattern::AssignmentPattern(a) = &p.value else { return None };
+                    let value = match a.right.without_parentheses() {
+                        Expression::StringLiteral(s) => crate::expr::quote(s.value.as_str().unwrap_or_default()),
+                        Expression::BooleanLiteral(b) => b.value.to_string(),
+                        Expression::NumericLiteral(n) => n.raw.as_ref()?.to_string(),
+                        _ => return None,
+                    };
+                    Some((key, value))
+                })
+                .collect();
+            if !defaults.is_empty() {
+                self.literal_defaults.insert(name, defaults);
+            }
+        }
         // React components that only return `toElement(tree)`: views.
         for statement in body {
             let declaration = match statement {
@@ -2492,7 +2547,9 @@ pub fn props_used_whole(src: &str, span: Span, name: &str) -> bool {
         let before = text[..i].chars().next_back();
         let after = &text[i + name.len()..];
         let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$');
-        if word(before) || before == Some('.') || word(after.chars().next()) {
+        // `{...props}` is a whole use; `a.props` is not this name.
+        let member = before == Some('.') && !text[..i].ends_with("...");
+        if word(before) || member || word(after.chars().next()) {
             return false;
         }
         let after = after.trim_start();
