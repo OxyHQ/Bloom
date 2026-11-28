@@ -1726,9 +1726,11 @@ impl Mapper<'_> {
                 Ty::List(element) => *element,
                 _ => Ty::Foreign(path.into()),
             },
-            TsType::Null | TsType::Any | TsType::Unknown | TsType::Intersection(_) | TsType::Other => {
-                Ty::Foreign(path.into())
-            }
+            // `Req & { signal?: AbortSignal }` of object types: one record of every member's
+            // fields (the first member's where two name one), so a labelled call's arguments,
+            // and the literals in them, are checked against each field's type.
+            TsType::Intersection(items) => self.intersection(file, items, scope, path, depth),
+            TsType::Null | TsType::Any | TsType::Unknown | TsType::Other => Ty::Foreign(path.into()),
         }
     }
 
@@ -2196,6 +2198,47 @@ impl Mapper<'_> {
             own_init: false,
         });
         Some(Ty::Adt(id, Vec::new()))
+    }
+
+    /// An intersection of object types as one record of their fields; `Foreign` when a member
+    /// is anything else (a type parameter, a function, a primitive).
+    fn intersection(
+        &mut self,
+        file: &Rc<TsFile>,
+        items: &[TsType],
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Ty {
+        if depth > 8 {
+            return Ty::Foreign(path.into());
+        }
+        let mut fields: Vec<FieldDef> = Vec::new();
+        for item in items {
+            let Ty::Adt(def, args) = self.ty(file, item, scope, path, depth + 1) else {
+                return Ty::Foreign(path.into());
+            };
+            let DefKind::Struct(own) = &self.defs[def].kind else { return Ty::Foreign(path.into()) };
+            if !args.is_empty() || self.defs[def].class.is_some() {
+                return Ty::Foreign(path.into());
+            }
+            for field in own.clone() {
+                if !fields.iter().any(|f| f.name == field.name) {
+                    fields.push(field);
+                }
+            }
+        }
+        let id = self.defs.len();
+        self.defs.push(Def {
+            name: "{…}".to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Ts { path: path.to_string() },
+            class: None,
+            tagged: None,
+            own_init: false,
+        });
+        Ty::Adt(id, Vec::new())
     }
 
     fn object(

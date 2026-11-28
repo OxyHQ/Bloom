@@ -1,0 +1,16 @@
+// A TS parameter that is an intersection of object types (`Req & { signal?: AbortSignal }`) is
+// one record of both members' fields: a labelled call's arguments, and the literals in them, are
+// checked against each field's type (here `Act[][]`, whose `color` is optional). Mention:
+// NotificationItem's `showCancelableActionMenu`.
+import { showBoth, showPlain } from "@/ui/action-menu"
+
+private func open(_ unread: Bool) {
+  showPlain(label: "Options", groups: [unread ? [{ label: "Read", onPress: {} }] : [], [{ label: "Delete", color: "red", onPress: {} }]])
+  showBoth(
+    label: "Options",
+    groups: [
+      unread ? [{ label: "Read", onPress: {} }] : [],
+      [{ label: "Delete", color: "red", onPress: {} }],
+    ],
+  )
+}
