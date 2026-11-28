@@ -2855,7 +2855,17 @@ pub fn is_identifier(text: &str) -> bool {
 /// The names it mentions stay imported.
 impl Tr<'_> {
     pub fn foreign_ty(&mut self, text: &str) -> String {
-        let text = text.split_whitespace().collect::<Vec<_>>().join(" ").replace('"', "'");
+        // A TS comment inside the type (a `// …` line, a `/* … */`) is not the type's.
+        let mut bare = String::new();
+        let mut rest = text;
+        while let Some(at) = rest.find("//").into_iter().chain(rest.find("/*")).min() {
+            bare.push_str(&rest[..at]);
+            let after = &rest[at..];
+            let end = if after.starts_with("//") { after.find('\n') } else { after.find("*/").map(|e| e + 2) };
+            rest = end.map_or("", |e| &after[e..]);
+        }
+        bare.push_str(rest);
+        let text = bare.split_whitespace().collect::<Vec<_>>().join(" ").replace('"', "'");
         for word in text.split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$')) {
             if word.chars().next().is_some_and(|c| c.is_alphabetic() || c == '_') {
                 self.used.insert(word.to_string());

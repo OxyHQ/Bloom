@@ -1416,8 +1416,14 @@ impl Tr<'_> {
                 if self.is_view(init) {
                     self.scope.view_values.insert(id.name.to_string());
                 }
+                let json = if ty.is_empty() { self.json_kind(init) } else { None };
                 self.scope.renames.remove(id.name.as_str());
-                self.bind(&id.name, id.span)
+                let name = self.bind(&id.name, id.span);
+                // A JSON read (`x["k"]`) is a `JSONValue?` (`crate::json`).
+                if let Some(kind) = json {
+                    self.scope.decl.insert(name.clone(), kind.ty().to_string());
+                }
+                name
             }
             BindingPattern::ObjectPattern(pattern) if immutable => self.record_pattern(pattern),
             // `const [x] = xs.splice(i, 1)`: the element, then the list without it.
@@ -2270,6 +2276,7 @@ impl Tr<'_> {
         let loop_block = std::mem::replace(&mut self.loop_block, false);
         let mut lines = Vec::new();
         let mut previous: Option<u32> = None;
+        let mut skip = 0;
         for (i, statement) in statements.iter().enumerate() {
             let span = statement.span();
             let note = self.note(span.start);
@@ -2278,6 +2285,17 @@ impl Tr<'_> {
             }
             previous = Some(span.end);
             let last = i + 1 == statements.len();
+            if skip > 0 {
+                skip -= 1;
+                continue;
+            }
+            // A JSON value narrowed by its kind (`crate::json`): `if let x = x.string`, `guard let`.
+            if let Some((text, taken)) = self.json_statement(statements, i) {
+                let reviews = self.take_reviews();
+                lines.push(format!("{note}{reviews}{text}"));
+                skip = taken - 1;
+                continue;
+            }
             // `const x = await tsCall()` outside a `try`: the rest of the block runs on
             // `.ok(x)`; a rejection stops it (TS: an unhandled rejection).
             if !self.propagate
@@ -2378,7 +2396,7 @@ impl Tr<'_> {
         lines.join("\n")
     }
 
-    fn stmt(&mut self, statement: &Statement) -> String {
+    pub fn stmt(&mut self, statement: &Statement) -> String {
         match statement {
             Statement::VariableDeclaration(v) => {
                 let immutable = v.kind == VariableDeclarationKind::Const;
@@ -2494,6 +2512,10 @@ impl Tr<'_> {
                     return self.refuse("statement:for-pattern", "a `for…of` over a pattern", f.span);
                 };
                 let list = self.head_expr(&f.right);
+                // An item of a JSON array is a JSON value (`crate::json`).
+                if pattern.is_none() && self.json_kind(&f.right) == Some(crate::json::Json::Array) {
+                    self.scope.decl.insert(item.clone(), crate::json::VALUE.to_string());
+                }
                 self.loop_block = true;
                 self.loops += 1;
                 let body = self.block_of(&f.body);
@@ -2757,7 +2779,7 @@ impl Tr<'_> {
         out
     }
 
-    fn block_of(&mut self, statement: &Statement) -> String {
+    pub fn block_of(&mut self, statement: &Statement) -> String {
         match statement {
             Statement::BlockStatement(b) => self.block_stmts(&b.body, b.span.end, false),
             other => self.stmt(other),

@@ -22,6 +22,7 @@ mod i18n;
 mod importers;
 mod inline;
 mod intl;
+mod json;
 mod jsx;
 mod module;
 mod props;

@@ -265,6 +265,10 @@ impl Tr<'_> {
                 format!("{object}[{}]", self.expr(&m.expression))
             }
             Expression::ConditionalExpression(c) => {
+                // A ternary on a JSON value's kind (`crate::json`).
+                if let Some(text) = self.json_ternary(c) {
+                    return text;
+                }
                 // `e instanceof Error ? e.message : fallback`: a thrown JS `Error` is the stdlib's
                 // `JSError`, so `(e as? JSError)?.message ?? fallback`.
                 if let Expression::BinaryExpression(b) = c.test.without_parentheses()
@@ -627,6 +631,10 @@ impl Tr<'_> {
         if let Some(text) = self.json_read(object, property) {
             return text;
         }
+        // `(x as { k?: unknown }).k`, `r.k` of a `Record<string, unknown>`: `x["k"]` (`crate::json`).
+        if let Some(text) = self.json_member(object, property, optional) {
+            return text;
+        }
         // `Number.NaN`, `Number.MAX_SAFE_INTEGER`, …: the stdlib's or the number itself.
         if let Expression::Identifier(o) = object.without_parentheses()
             && o.name == "Number"
@@ -709,6 +717,10 @@ impl Tr<'_> {
     }
 
     fn binary(&mut self, b: &oxc_ast::ast::BinaryExpression) -> String {
+        // `typeof x === "string"` of a JSON value, `r.k === "video"` (`crate::json`).
+        if let Some(text) = self.json_binary(b) {
+            return text;
+        }
         // `e instanceof C`: `e is C`, Swift's type test.
         if b.operator == BinaryOperator::Instanceof
             && let Expression::Identifier(class) = b.right.without_parentheses()
@@ -943,6 +955,12 @@ impl Tr<'_> {
             return Test::Plain(self.test_negated(&u.argument));
         }
         // In a condition, `a && b` / `a || b` is the truthiness of each side.
+        // `x && typeof x === "object"` of a JSON value: the `typeof` test alone (`crate::json`).
+        if let Expression::LogicalExpression(l) = e.without_parentheses()
+            && let Some(test) = self.json_guarded_object_test(l)
+        {
+            return self.test_parts_inner(test, binds);
+        }
         if let Expression::LogicalExpression(l) = e.without_parentheses()
             && l.operator != LogicalOperator::Coalesce
         {
@@ -1403,6 +1421,9 @@ impl Tr<'_> {
     }
 
     fn call_inner(&mut self, call: &CallExpression) -> String {
+        if let Some(text) = self.json_filter(call) {
+            return text;
+        }
         // `xs.filter((x): x is T => test)`: TS narrows the list's element type by the guard, which
         // Swift spells `compactMap { x in test ? x : none }` (the element is `T`, not `T?`).
         if let Expression::StaticMemberExpression(m) = &call.callee
@@ -1464,6 +1485,13 @@ impl Tr<'_> {
                         call.span,
                     ),
                 };
+            }
+            if object.name == "Array"
+                && m.property.name == "isArray"
+                && call.arguments.len() == 1
+                && let Some(text) = self.json_is_array(call.arguments[0].to_expression())
+            {
+                return format!("({text})");
             }
             if object.name == "Array" && m.property.name == "isArray" && call.arguments.len() == 1 {
                 let value = self.expr(call.arguments[0].to_expression());
