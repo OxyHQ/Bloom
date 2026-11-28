@@ -1,0 +1,10 @@
+// A `ViewModifier` imported from another module is applied with `.modifier(Gate())`, as one of
+// the same file is; a stateful one runs per render in the view applying it, never as a module
+// constant (its hooks would run at import).
+import { Gate } from "./modifier_gate.bloom"
+
+public struct Gated: View {
+  var body: some View {
+    VStack { Text("hi") }.modifier(Gate())
+  }
+}

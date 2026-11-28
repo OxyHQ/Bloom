@@ -5619,7 +5619,11 @@ impl<'a> Emitter<'a> {
                         only
                     })
                 });
-                node && callee && args && trailing
+                // A stateful `.modifier(Gate())` (and the `Gate()` it is given) runs once per
+                // render, at the top of the view applying it: never a module constant.
+                let stateful = self.ck.view_modifiers.get(&expr.id) == Some(&true)
+                    || matches!(self.ck.types.get(&expr.id), Some(Ty::View(Some("viewModifier"))));
+                node && callee && args && trailing && !stateful
             }
             _ => false,
         };

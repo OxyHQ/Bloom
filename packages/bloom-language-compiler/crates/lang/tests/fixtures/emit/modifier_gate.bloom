@@ -1,0 +1,9 @@
+// A stateful `ViewModifier` another module applies (`imported_modifier.bloom`): a gate that holds
+// its content until it is opened.
+public struct Gate: ViewModifier {
+  @State private var open = false
+
+  func body(content: Content) -> some View {
+    if open { content } else { Text("Held").onPress { open = true } }
+  }
+}

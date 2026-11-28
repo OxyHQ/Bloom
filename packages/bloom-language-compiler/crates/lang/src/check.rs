@@ -3007,6 +3007,10 @@ impl<'o> Checker<'o> {
             }
             match module.values.get(&name.name) {
                 Some((ty, kind)) => {
+                    // An imported `struct X: ViewModifier` is applied with `.modifier(X(…))` here too.
+                    if let Some(&stateful) = module.modifiers.get(&name.name) {
+                        self.modifier_decls.insert(local.name.clone(), stateful);
+                    }
                     self.declare_unique(local, shift(ty, offset), kind.clone());
                 }
                 None => {
@@ -7674,6 +7678,8 @@ struct Signatures {
     values: HashMap<String, (Ty, LocalKind)>,
     /// Its `@Transparent` structs.
     transparent: HashSet<DefId>,
+    /// Its `struct X: ViewModifier`s: whether each keeps state.
+    modifiers: HashMap<String, bool>,
     files: Vec<(PathBuf, ts::Stamp)>,
     checked: std::cell::Cell<u64>,
 }
@@ -7769,6 +7775,7 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         aliases,
         values,
         transparent: std::mem::take(&mut sub.out.transparent),
+        modifiers: std::mem::take(&mut sub.modifier_decls),
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),
     });

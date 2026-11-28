@@ -1,0 +1,3 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom `ViewModifier`: `Gate(props)(view)` wraps a view; one that keeps state is called once per render, as a hook. */
+export declare function Gate(): (content: ComposedView) => Child;
