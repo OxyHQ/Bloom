@@ -598,7 +598,11 @@ jobs:
         android,
         android-rescue,
       ]
-    runs-on: ubuntu-latest
+    # A jq script over `needs`: a light Seldon VM under the same route as the
+    # heavy jobs, so a pull request's gate does not wait for one of the org's
+    # 20 hosted slots. An offline Seldon leaves it queued; the router's watchdog
+    # cancels the run and re-runs it, and attempt 2 is hosted.
+    runs-on: ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && 'seldon-ci-light' || 'ubuntu-latest' }}
     timeout-minutes: 5
     permissions: {}
     steps:
