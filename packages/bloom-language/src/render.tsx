@@ -3837,9 +3837,21 @@ function renderChildren(children: readonly Child[], ctx: Context): ReactNode[] {
   const out: ReactNode[] = [];
   for (const child of children) {
     if (Array.isArray(child)) out.push(draw(Presence, { items: renderList(child, ctx) }));
-    else out.push(isNode(child) ? renderNode(child, ctx, undefined) : null);
+    else
+      out.push(isNode(child) ? renderNode(child, ctx, undefined) : embedded(child, ctx, undefined));
   }
   return out;
+}
+
+/**
+ * A React element where a view goes (TS handing `slot={<Text … />}` to a Bloom view's `View?`
+ * prop): drawn as an `Embed` of it, as Swift takes a value as the type its receiver declares.
+ * Anything else that is not a node draws nothing.
+ */
+function embedded(child: unknown, ctx: Context, key: string | number | undefined): ReactNode {
+  if (!isValidElement(child)) return null;
+  const element = drawEmbedded(child, ctx);
+  return key === undefined ? element : draw(Fragment, { key }, element);
 }
 
 function renderList(children: readonly Child[], ctx: Context): ReactNode[] {
@@ -3848,6 +3860,7 @@ function renderList(children: readonly Child[], ctx: Context): ReactNode[] {
     const child = children[i];
     if (Array.isArray(child)) out.push(draw(Fragment, { key: `l${i}` }, ...renderList(child, ctx)));
     else if (isNode(child)) out.push(renderNode(child, ctx, i));
+    else if (isValidElement(child)) out.push(embedded(child, ctx, i));
   }
   return out;
 }
@@ -3883,7 +3896,7 @@ function renderTree(child: Child, ctx: Context): ReactNode {
 /** Draws any child in a context: what `Embed`'s render function hands out. */
 function renderChild(child: Child, ctx: Context, key: string | number | undefined): ReactNode {
   if (Array.isArray(child)) return renderList(child, ctx);
-  return isNode(child) ? renderNode(child, ctx, key) : null;
+  return isNode(child) ? renderNode(child, ctx, key) : embedded(child, ctx, key);
 }
 
 // ── Entry points ─────────────────────────────────────────────────
@@ -4003,7 +4016,8 @@ function readsOf(child: Child): number {
     for (const item of child) reads |= readsOf(item);
     return reads;
   }
-  if (!isNode(child)) return 0;
+  // A React element is its own; a language root placed here reads where it is drawn.
+  if (!isNode(child)) return isValidElement(child) && child.type === LanguageRoot ? READS_BOTH : 0;
   let reads = child.reads;
   if (reads === undefined) {
     reads = nodeReads(child);

@@ -1,0 +1,11 @@
+// A Bloom view's `View?` prop that a TS caller hands a React element (element-to-view-prop).
+public struct SlotRow: View {
+  let name: String
+  var slot: View? = none
+  var body: some View {
+    HStack {
+      Text(name)
+      if let slot = slot { slot }
+    }
+  }
+}
