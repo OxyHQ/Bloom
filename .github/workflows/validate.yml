@@ -66,7 +66,7 @@ jobs:
         run: bash .github/scripts/merge-queue-verified.sh
   # Seldon-first routing (OxyHQ/oxy docs/engineering/build-and-deploy.md,
   # "Seldon-first routing"; the router is OxyHQ/oxy-infra runbook 70). The
-  # heavy jobs (build, language, language-parity, tests) run on the
+  # heavy jobs (build, language, language-parity, tests, android) run on the
   # self-hosted seldon-ci pool only while the org variable SELDON_CI_ROUTE
   # reads `seldon-ci`, and only on the first attempt of a same-repository pull
   # request. Anything else runs hosted: the variable unset, merge_group, push,
@@ -262,6 +262,8 @@ jobs:
           name: bloom-vscode-vsix
           path: packages/bloom-vscode/bloom-vscode.vsix
           if-no-files-found: error
+          # A hosted rescue of this job uploads it again under the same name.
+          overwrite: true
       # The language's web weight: the root reaches no family of nodes, and stays
       # within its budget; each family is an entry an app pays for by importing it.
       - name: Language bundle weight
@@ -389,9 +391,10 @@ jobs:
     strategy: *tests-strategy
     steps: *tests-steps
 
-  # The Android gates, one variant each. They stay hosted under Seldon-first
-  # routing: they restore the Android SDK, NDK and Gradle caches that hosted
-  # runners keep, and run up to an hour. Their steps are the local action
+  # The Android gates, one variant each, routed like the other heavy jobs (no
+  # emulator: Gradle compiles and Robolectric unit tests, so no KVM). On Seldon
+  # they restore the same Actions cache entries (SDK, NDK, Robolectric, Gradle
+  # modules) and Gradle resolves through the host's Maven cache. Their steps are the local action
   # .github/actions/android-native-check, which gradle-dependency-cache below
   # runs too. Gradle's dependency cache (~/.gradle/caches/modules-2) is restored
   # from main, where that job saves it: this job never runs on a queue-verified
@@ -404,13 +407,17 @@ jobs:
     name: Android (${{ matrix.variant }})
     needs: provenance
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: ubuntu-latest
+    # TEST: forced onto Seldon to measure it; the final commit uses *seldon-lane.
+    runs-on: seldon-ci
     timeout-minutes: 60
-    strategy:
+    permissions: *lane-permissions
+    outputs: *lane-outputs
+    strategy: &android-strategy
       fail-fast: false
       matrix:
         variant: [legacy, default, predictive]
-    steps:
+    steps: &android-steps
+      - *lane-step
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -429,6 +436,18 @@ jobs:
         with:
           variant: ${{ matrix.variant }}
           gradle-version: ${{ steps.gradle-cache.outputs.gradle-version }}
+
+  # android's rescue: reruns it hosted when it failed on Seldon.
+  android-rescue:
+    name: Android (${{ matrix.variant }})
+    needs: [provenance, android]
+    if: ${{ !cancelled() && needs.android.result == 'failure' && (needs.android.outputs.lane == 'seldon' || (needs.android.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions: *lane-permissions
+    outputs: *lane-outputs
+    strategy: *android-strategy
+    steps: *android-steps
 
   # Keeps each Android variant's Gradle dependency cache in main's Actions
   # cache, as Warm Android caches below does for the SDK, NDK and Robolectric:
@@ -577,6 +596,7 @@ jobs:
         tests,
         tests-rescue,
         android,
+        android-rescue,
       ]
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -612,14 +632,17 @@ jobs:
             case "$job" in
               # The family {job, job-rescue} stands on the route verdict:
               # passed or rescued is a pass, skipped is a skip.
-              build | language | language-parity | tests)
+              build | language | language-parity | tests | android)
                 case "$(jq -r --arg job "$job" '.[$job] // "missing"' <<<"$FAMILIES")" in
                   passed | rescued) result=success ;;
                   skipped) result=skipped ;;
                   *) result=failure ;;
                 esac
                 ;;
-              *) result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")" ;;
+              *)
+                echo "::error::$job has no rescue family"
+                exit 1
+                ;;
             esac
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
