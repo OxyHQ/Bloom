@@ -1,0 +1,55 @@
+// 500 posts of fixture data, the same on every backend (no server, no JSON).
+
+let names: [String] = [
+  "Ada Lovelace", "Alan Turing", "Grace Hopper", "Edsger Dijkstra", "Barbara Liskov",
+  "Donald Knuth", "Margaret Hamilton", "Ken Thompson", "Frances Allen", "Dennis Ritchie",
+  "Radia Perlman", "John McCarthy", "Hedy Lamarr", "Tim Berners-Lee", "Katherine Johnson",
+  "Linus Torvalds",
+]
+
+let texts: [String] = [
+  "Bloom 2.0 reads like Swift.",
+  "Modules, not paths. One CLI: bloom build, bloom run, bloom test.",
+  "Shipping the feed on a native list today. Scrolling 500 rows should never drop a frame, and the image rows decode at the size they are drawn.",
+  "Coffee first.",
+  "A value type copies on write; a view is a function of its state. That is the whole model.",
+  "Anyone else measuring cold start on a mid-range phone? The numbers are humbling.",
+  "Read the ADR before the code. Then read the code.",
+  "The best bug report is a failing test.",
+  "Typed routes mean a deep link can't name a screen that doesn't exist. The compiler checks it.",
+  "Long post incoming. We moved the settings screens to the new language and the update time halved; the next step is the feed, where most of the time goes, and where every millisecond of a row is paid five hundred times.",
+  "Small PRs, every day.",
+  "Toggle latency is a feeling before it is a number.",
+]
+
+
+func handle(of name: String) -> String {
+  name.lowercased().replacingOccurrences(of: " ", with: "")
+}
+
+func makePost(_ i: Int) -> Post {
+  let name = names[i % names.count]
+  let author = Author(
+    name: name,
+    handle: handle(of: name),
+    avatar: avatarImages[i % names.count],
+    isVerified: i % 5 == 0,
+  )
+  let kind = i % 3 == 1 ? PostKind.image(url: postImages[i % postImages.count], aspect: 4.0 / 3.0) : PostKind.text
+  return Post(
+    id: "p\(i)",
+    author: author,
+    text: texts[(i * 7) % texts.count],
+    kind: kind,
+    minutesAgo: i * 13 % 4000 + 1,
+    replies: i * 3 % 40,
+    reposts: i * 5 % 90,
+    likes: i * 11 % 700,
+    isLiked: i % 4 == 0,
+  )
+}
+
+/// The feed's first `count` posts.
+public func fixturePosts(_ count: Int) -> [Post] {
+  range(count).map { i in makePost(i) }
+}

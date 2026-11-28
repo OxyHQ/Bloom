@@ -1,0 +1,50 @@
+// A feed post, as Mention's PostItem draws it: text posts and image posts (PR #2049).
+
+public struct Author: Equatable {
+  public let name: String
+  public let handle: String
+  public let avatar: String
+  public let isVerified: Bool
+}
+
+/// What a post carries below its text.
+public enum PostKind: Equatable {
+  case text
+  case image(url: String, aspect: Double)
+}
+
+public struct Post: Identifiable, Equatable {
+  public let id: String
+  public let author: Author
+  public let text: String
+  public let kind: PostKind
+  public let minutesAgo: Int
+  public var replies: Int = 0
+  public var reposts: Int = 0
+  public var likes: Int = 0
+  public var isLiked: Bool = false
+}
+
+extension Post {
+  /// The post liked or unliked: what a like does to the counter.
+  public func liked(_ on: Bool) -> Post {
+    Post(
+      id: self.id,
+      author: self.author,
+      text: self.text,
+      kind: self.kind,
+      minutesAgo: self.minutesAgo,
+      replies: self.replies,
+      reposts: self.reposts,
+      likes: self.likes + (on == self.isLiked ? 0 : (on ? 1 : -1)),
+      isLiked: on,
+    )
+  }
+
+  /// "5m", "3h", "2d".
+  public var age: String {
+    if self.minutesAgo < 60 { return "\(self.minutesAgo)m" }
+    if self.minutesAgo < 1440 { return "\(self.minutesAgo / 60)h" }
+    return "\(self.minutesAgo / 1440)d"
+  }
+}

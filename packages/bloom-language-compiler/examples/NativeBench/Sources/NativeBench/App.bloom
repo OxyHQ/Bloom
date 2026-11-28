@@ -1,0 +1,26 @@
+import Bloom
+import Feed
+import Settings
+
+/// The bench's screens: the feed first, the settings as the second tab.
+public enum Route: Routable {
+  case feed
+  case settings
+}
+
+public struct App: View {
+  var body: some View {
+    NavigationStack(
+      root: Route.feed,
+      tabs: [
+        Tab(route: Route.feed, title: "Home", icon: "home"),
+        Tab(route: Route.settings, title: "Settings", icon: "settings"),
+      ]
+    ) { route in
+      switch route {
+      case .feed: FeedScreen()
+      case .settings: NotificationSettings()
+      }
+    }
+  }
+}

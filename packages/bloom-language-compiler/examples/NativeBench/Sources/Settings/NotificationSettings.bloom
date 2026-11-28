@@ -1,0 +1,140 @@
+// Settings → Notifications (Mention's `notifications.bloom`, PR #2046), written without
+// Mention's TS: the preferences are a fixture and the save is a simulated round trip.
+
+public enum LoadState {
+  case loading
+  case ready
+}
+
+public enum PrefKey {
+  case pushEnabled
+  case likes
+  case boosts
+  case follows
+  case mentions
+  case replies
+  case quotes
+}
+
+/// The viewer's notification preferences; a field the server has not stored is on.
+public struct Prefs: Equatable {
+  public var pushEnabled: Bool = true
+  public var likes: Bool = true
+  public var boosts: Bool = true
+  public var follows: Bool = true
+  public var mentions: Bool = true
+  public var replies: Bool = true
+  public var quotes: Bool = true
+}
+
+extension Prefs {
+  func isOn(_ key: PrefKey) -> Bool {
+    switch key {
+    case .pushEnabled:
+      self.pushEnabled
+    case .likes:
+      self.likes
+    case .boosts:
+      self.boosts
+    case .follows:
+      self.follows
+    case .mentions:
+      self.mentions
+    case .replies:
+      self.replies
+    case .quotes:
+      self.quotes
+    }
+  }
+
+  func setting(_ key: PrefKey, _ on: Bool) -> Prefs {
+    Prefs(
+      pushEnabled: key == .pushEnabled ? on : self.pushEnabled,
+      likes: key == .likes ? on : self.likes,
+      boosts: key == .boosts ? on : self.boosts,
+      follows: key == .follows ? on : self.follows,
+      mentions: key == .mentions ? on : self.mentions,
+      replies: key == .replies ? on : self.replies,
+      quotes: key == .quotes ? on : self.quotes,
+    )
+  }
+}
+
+/// What the server answers: the stored preferences (two were turned off).
+func loadPrefs() async -> Prefs {
+  Prefs(boosts: false, quotes: false)
+}
+
+public struct NotificationSettings: View {
+  @State private var state = LoadState.loading
+  @State private var prefs = Prefs()
+  @State private var isSaving = false
+  @State private var opened = 0
+  @State private var tappedAt = 0.0
+
+  /// A switch flipped: the preference changes at once, then the save runs.
+  func save(_ key: PrefKey, _ on: Bool) async {
+    tappedAt = ContinuousClock.now.milliseconds
+    isSaving = true
+    prefs = prefs.setting(key, on)
+    try? await sleep(for: Duration.milliseconds(300.0))
+    isSaving = false
+  }
+
+  /// A preference's row: its title, what it does, and its switch.
+  func row(_ key: PrefKey, _ title: String, _ detail: String) -> some View {
+    GroupedSectionItem(title)
+      .wrapControl()
+      .description(detail)
+      .trailing(
+        Toggle(Binding(get: prefs.isOn(key), set: { on in task { await save(key, on) } }))
+          .label(title)
+      )
+  }
+
+  var body: some View {
+    ScrollView {
+      VStack(spacing: .lg) {
+        switch state {
+        case .loading:
+          ProgressView()
+        case .ready:
+          if isSaving { ProgressView().controlSize(.sm) }
+          GroupedSection {
+            row(.pushEnabled, "Push notifications", "Receive push notifications on your device")
+          }
+          .title("General")
+          GroupedSection {
+            GroupedSectionItem("Activity notifications")
+              .wrapControl()
+              .description("Accounts that notify you when they post")
+              .trailing(
+                Button("Open") { opened = opened + 1 }
+                  .size(.sm)
+                  .style(.subtle)
+              )
+          }
+          .title("Activity from others")
+          GroupedSection {
+            row(.likes, "Likes", "When someone likes your post")
+            row(.boosts, "Boosts", "When someone boosts your post")
+            row(.follows, "New followers", "When someone follows you")
+            row(.mentions, "Mentions", "When someone mentions you in a post")
+            row(.replies, "Replies", "When someone replies to your post")
+            row(.quotes, "Quote posts", "When someone quotes your post")
+          }
+          .title("Notification types")
+        }
+      }
+      .padding(.horizontal, .lg)
+    }
+    .task {
+      prefs = await loadPrefs()
+      state = .ready
+      print("BENCH settings-ready")
+    }
+    .onChange(of: prefs) { old, new in
+      if tappedAt > 0.0 { print("BENCH toggle \(ContinuousClock.now.milliseconds - tappedAt)") }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+// BloomUI (navigation): `NavigationStack` with typed routes, tabs, sheets and deep links.
+//
+//     public enum Route: Routable {
+//       case feed                 // the first case is the root: "/"
+//       case post(id: String)     // "/post/[id]"; demo://post/42 opens it
+//       case settings
+//     }
+//
+//     NavigationStack(root: Route.feed, sheets: [Route.settings]) { route in
+//       switch route {
+//       case .feed: FeedScreen()
+//       case .post(let id): PostScreen(id: id)
+//       case .settings: SettingsScreen()
+//       }
+//     }
+//
+//     NavigationLink(Route.post(id: post.id)) { PostRow(post: post) }
+//     Button("Settings") { push(Route.settings) }
+//
+// The routes are the enum's cases: `bloom build` reads the enum from the module graph and
+// writes the router's route table from it (each case a route, its associated values the
+// route's typed parameters, `sheets:` presented over the stack, `tabs:` the tab bar's
+// pages), so a deep link (`<app>://post/42`, a web URL) opens the screen the
+// `destination` draws for `Route.post(id: "42")`.
+
+extern module "./routing" {
+  private func navigationRoot<R>(_ destination: (R) -> View) -> View
+  private func navigationPush<R>(_ route: R)
+  private func navigationReplace<R>(_ route: R)
+  private func navigationBack()
+  private func navigationHref<R>(_ route: R) -> String
+}
+
+/// An enum whose cases are the app's screens: `NavigationStack`'s routes.
+public protocol Routable {}
+
+/// A page of the tab bar: its route (a case without associated values), its title and its icon (a
+/// Bloom icon name, `"home"`, `"settings"`).
+public struct Tab<R> {
+  public let route: R
+  public let title: String
+  public let icon: String
+}
+
+/// The app's navigation: `root` first, every other route pushed over it (`sheets:` presented as
+/// sheets), each drawn by `destination`. With `tabs:`, the root is the tab bar's pages.
+public func NavigationStack<R>(root: R, tabs: [Tab<R>] = [], sheets: [R] = [], destination: (R) -> View) -> View {
+  navigationRoot(destination)
+}
+
+/// Goes to `route`: pushed, or presented when it is one of the stack's `sheets:`.
+public func push<R>(_ route: R) { navigationPush(route) }
+
+/// Goes to `route` in place of the screen in front.
+public func replace<R>(_ route: R) { navigationReplace(route) }
+
+/// Back to the screen under this one (or closes the sheet in front).
+public func dismiss() { navigationBack() }
+
+/// The address of `route` (`"/post/42"`): what a deep link or a web URL to it reads.
+public func href<R>(_ route: R) -> String { navigationHref(route) }
