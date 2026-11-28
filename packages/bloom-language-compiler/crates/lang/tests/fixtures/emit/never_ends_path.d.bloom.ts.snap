@@ -1,0 +1,4 @@
+export declare function count(s: string, retry: boolean): number;
+export declare function positive(n: number): number;
+export declare function checked(s: string): number;
+export declare function loader(retry: boolean): () => Promise<readonly number[]>;
