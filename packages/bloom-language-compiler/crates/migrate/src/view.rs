@@ -1198,6 +1198,12 @@ impl Tr<'_> {
             self.scope.collections.insert(id.name.to_string(), "Array".to_string());
             immutable = false;
         }
+        // `const d = new Date(s)`: its reads are the standard library's (`crate::dates`).
+        if let BindingPattern::BindingIdentifier(id) = &d.id
+            && let Some(kind) = self.date_local_kind(init)
+        {
+            self.scope.dates.insert(id.name.to_string(), kind);
+        }
         let keyword = if immutable { "let" } else { "var" };
         let mut ty = d
             .type_annotation

@@ -69,6 +69,8 @@ pub struct Scope {
     pub refs: HashSet<String>,
     /// Names bound to a `new Map`/`new Set`: their in-place changes reassign them.
     pub collections: HashMap<String, String>,
+    /// Locals bound to a date (`const d = new Date(s)`), by what they may hold (`crate::dates`).
+    pub dates: HashMap<String, crate::dates::DateKind>,
     /// Member functions of the view being translated.
     pub member_fns: HashSet<String>,
     /// Object literals whose fields are then written (`params.q = v`, `counts[k] += 1`):

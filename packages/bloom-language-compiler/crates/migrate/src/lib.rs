@@ -16,6 +16,7 @@
 //! errors is refused too, with bloomc's first error as the reason.
 
 mod comments;
+mod dates;
 mod expr;
 mod i18n;
 mod importers;

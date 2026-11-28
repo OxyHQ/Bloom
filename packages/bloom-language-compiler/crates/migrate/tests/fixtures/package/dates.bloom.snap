@@ -1,0 +1,75 @@
+// JS's `Date` is the standard library's (#1066), a JS `Date` itself: `new Date()` is `Date.now`, a
+// number of milliseconds `Date(millisecondsSince1970:)`, and an ISO string `try? Date(s, strategy:
+// .iso8601)`, JS's Invalid Date where it is not one. `toLocale…String` and `Intl.DateTimeFormat`
+// are FormatStyle with ECMA-402's defaults written out; JS prints "Invalid Date" where Intl throws.
+
+import { formatRelativeTime } from "@/utils/time"
+
+private func isPast(_ at: String) -> Bool {
+  ((try? Date(at, strategy: .iso8601))?.millisecondsSince1970 ?? Float.nan) <=
+    Date.now.millisecondsSince1970
+}
+
+private func dayKey() -> String {
+  let now = Date.now
+  let month = "\(now.components().month)".paddingStart(to: 2, with: "0")
+  "\(now.components().year)-\(month)-\(now.components().day)"
+}
+
+private func sameDay(_ a: Date, _ b: Date) -> Bool {
+  Calendar.current.startOfDay(a).millisecondsSince1970 == b.millisecondsSince1970
+}
+
+private func tomorrow() -> String {
+  Date(millisecondsSince1970: Date.now.millisecondsSince1970 + 86400000).iso8601
+}
+
+private func drafted(_ timestamp: String) -> String {
+  let date = ((try? Date(timestamp, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan))
+  (date.millisecondsSince1970.isNaN ? "Invalid Date" : date.formatted(
+    .dateTime.year().month(.defaultDigits).day(),
+  ))
+}
+
+public struct When: View {
+  let at: String
+  let locale: String
+  let short = { date: Date in date.formatted(.dateTime.month(.abbreviated).day(), locale: locale) }
+
+  var body: some View {
+    VStack {
+      Text(
+        ((try? Date(at, strategy: .iso8601)).map {
+          $0.formatted(.dateTime.year().month(.defaultDigits).day().hour().minute().second())
+        } ??
+          "Invalid Date"),
+      )
+      Text(
+        ((try? Date(at, strategy: .iso8601)).map {
+          $0.formatted(.dateTime.month(.wide).year(), locale: "en-US")
+        } ??
+          "Invalid Date"),
+      )
+      Text(
+        ((try? Date(at, strategy: .iso8601)).map {
+          $0.formatted(.dateTime.hour(.twoDigits).minute(.twoDigits), locale: locale)
+        } ??
+          "Invalid Date"),
+      )
+      Text(short(((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan))))
+      Text(
+        ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan)).formatted(
+          date: .abbreviated,
+          time: .shortened,
+          locale: locale,
+        ),
+      )
+      Text(
+        formatRelativeTime(
+          ((try? Date(at, strategy: .iso8601)) ?? Date(millisecondsSince1970: Float.nan)),
+          locale,
+        ),
+      )
+    }
+  }
+}

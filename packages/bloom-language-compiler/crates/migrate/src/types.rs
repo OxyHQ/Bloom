@@ -114,8 +114,8 @@ impl Tr<'_> {
                     "ComponentPropsWithoutRef",
                 ];
                 // JS's own classes and DOM types as types: the TS type, kept as a `Foreign`.
+                // (`Date` is the standard library's, a JS `Date` itself.)
                 const JS_TYPES: &[&str] = &[
-                    "Date",
                     "RegExp",
                     "Error",
                     "URL",

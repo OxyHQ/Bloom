@@ -8,8 +8,7 @@
 //! A formatter object (`const number = new Intl.NumberFormat(…)`) is a closure, and its
 //! `number.format(x)` a call of it. An option with no FormatStyle form is refused.
 //!
-//! Dates wait: TS's `new Date(x)` is JS's `Date` (the `"js"` import), which shadows the standard
-//! library's `Date` in the file, so `Intl.DateTimeFormat` and `toLocaleDateString` stay refused.
+//! Dates are `crate::dates`'s (`toLocaleDateString`, `Intl.DateTimeFormat`).
 
 use oxc_ast::ast::*;
 use oxc_span::GetSpan;
@@ -25,7 +24,7 @@ fn string_value<'b>(e: &'b Expression) -> Option<&'b str> {
 
 impl Tr<'_> {
     /// `locale: l` of a TS locale argument, or nothing for `undefined`/`'default'`/none.
-    fn locale_arg(&mut self, locale: Option<&Argument>) -> Result<Option<String>, String> {
+    pub fn locale_arg(&mut self, locale: Option<&Argument>) -> Result<Option<String>, String> {
         let Some(arg) = locale else { return Ok(None) };
         let Some(e) = arg.as_expression() else { return Err("a spread locale".into()) };
         match e.without_parentheses() {
@@ -36,7 +35,7 @@ impl Tr<'_> {
         }
     }
 
-    fn options<'b, 'a>(
+    pub fn options<'b, 'a>(
         &self,
         options: Option<&'b Argument<'a>>,
     ) -> Result<Vec<(String, &'b Expression<'a>)>, String> {

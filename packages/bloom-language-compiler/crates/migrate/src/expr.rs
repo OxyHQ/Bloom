@@ -358,6 +358,8 @@ impl Tr<'_> {
                 let right = self.expr(&l.right);
                 format!("{left} {op} {right}")
             }
+            // `d.getMonth() + 1`: the calendar's 1-based month itself (`crate::dates`).
+            Expression::BinaryExpression(b) if let Some(text) = self.date_month(b) => text,
             Expression::BinaryExpression(b) => self.binary(b),
             Expression::UnaryExpression(u) => match u.operator {
                 // `!!x?.trim()`: `Boolean(x?.trim())`, an optional string's truthiness.
@@ -422,7 +424,14 @@ impl Tr<'_> {
                     self.pairs = pairs;
                     format!("{}{targs}({})", id.name, args.join(", "))
                 }
-                // `new Date(x)`: construction is a call of the `"js"` import.
+                // `new Date(…)`: the standard library's `Date` (`crate::dates`).
+                Expression::Identifier(id)
+                    if id.name == "Date"
+                        && let Some(d) = self.date_val(e) =>
+                {
+                    d.value()
+                }
+                // `new RegExp(x)`: construction is a call of the `"js"` import.
                 Expression::Identifier(id)
                     if GLOBALS.contains(&id.name.as_str()) && !self.imported.contains(id.name.as_str()) =>
                 {
@@ -439,6 +448,7 @@ impl Tr<'_> {
                 }
                 // `new Intl.NumberFormat(l, o)`: a closure that formats a number (`crate::intl`).
                 Expression::StaticMemberExpression(_) if let Some(text) = self.intl_formatter(n) => text,
+                Expression::StaticMemberExpression(_) if let Some(text) = self.date_formatter(n) => text,
                 _ => self.refuse("new", format!("`new {}`", self.slice(n.callee.span())), n.span),
             },
             Expression::SequenceExpression(s) => self.refuse("operator:comma", "a comma expression", s.span),
@@ -843,7 +853,7 @@ impl Tr<'_> {
 
     /// A condition operand the codemod cannot type: written as is, and recorded,
     /// so that bloomc's types spell its truthiness (`crate::truthiness`).
-    fn condition(&mut self, e: &Expression) -> String {
+    pub fn condition(&mut self, e: &Expression) -> String {
         let text = self.optional_read(e);
         if !is_boolean_shaped(e) {
             self.conditions.insert(text.clone());
@@ -1013,6 +1023,10 @@ impl Tr<'_> {
     }
 
     pub fn call(&mut self, call: &CallExpression) -> String {
+        // `Date.now()`, `d.getTime()`, `d.toLocaleDateString(l, o)`: the standard library's `Date`.
+        if let Some(text) = self.date_call(call) {
+            return text;
+        }
         // `new Intl.NumberFormat(…).format(x)`: `x.formatted(…)`.
         if let Some(text) = self.intl_format_call(call) {
             return text;

@@ -3,7 +3,6 @@
 //! | TS (`import { … } from "js"`) | Bloom 2.0 |
 //! |---|---|
 //! | `encodeURIComponent(s)`, `decodeURIComponent(s)` | `percentEncoded(s)`, `percentDecoded(s)` |
-//! | `Date.now()` | `Date.now.millisecondsSince1970` |
 //!
 //! The `"js"` import of a name goes once nothing reads it.
 
@@ -42,17 +41,6 @@ pub fn globals(source: &str, filename: &str) -> Option<String> {
                     let span = call.callee.span;
                     edits.insert(span.start as usize, (span.end as usize, to.to_string()));
                 }
-            }
-            ExprKind::Field(object, member)
-                if member.name == "now"
-                    && call.args.is_empty()
-                    && call.trailing.is_none()
-                    && matches!(&object.kind, ExprKind::Name(n) if n == "Date") =>
-            {
-                edits.insert(
-                    e.span.start as usize,
-                    (e.span.end as usize, "Date.now.millisecondsSince1970".into()),
-                );
             }
             _ => {}
         }
