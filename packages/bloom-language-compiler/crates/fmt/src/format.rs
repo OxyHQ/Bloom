@@ -1028,7 +1028,8 @@ impl<'a> Formatter<'a> {
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
             | ExprKind::Index(..)
-            | ExprKind::OptIndex(..) => self.chain(e, context),
+            | ExprKind::OptIndex(..)
+            | ExprKind::KeyPathIndex(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1115,6 +1116,10 @@ impl<'a> Formatter<'a> {
                     links.push(Link::Index(index, true));
                     current = inner;
                 }
+                ExprKind::KeyPathIndex(inner, key) => {
+                    links.push(Link::KeyPath(key));
+                    current = inner;
+                }
                 ExprKind::Try(inner) => {
                     links.push(Link::Try);
                     current = inner;
@@ -1148,6 +1153,10 @@ impl<'a> Formatter<'a> {
                     let index = self.expr(index);
                     let open = if *optional { "?[" } else { "[" };
                     lines.last_mut().expect("head").extend([text(open), index, text("]")]);
+                }
+                Link::KeyPath(key) => {
+                    let key = self.expr(key);
+                    lines.last_mut().expect("head").extend([text("[keyPath: "), key, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
                 Link::Force => lines.last_mut().expect("head").push(text("!")),
@@ -1524,6 +1533,8 @@ enum Link<'e> {
     },
     /// `[i]`, or `?[i]` (optional).
     Index(&'e Expr, bool),
+    /// `[keyPath: k]`.
+    KeyPath(&'e Expr),
     Try,
     Force,
 }

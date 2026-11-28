@@ -1826,6 +1826,26 @@ impl<'a> Emitter<'a> {
             }
         };
         match res {
+            // `next[keyPath: key] = v`: a copy with that field (a value type's write), typed as
+            // the value it replaces (TS widens a computed key).
+            AssignRes::KeyPath { local, state } => {
+                let ExprKind::KeyPathIndex(_, key) = &a.target.kind else { return };
+                let name = self.local_name(local);
+                let key = self.expr(key);
+                let mut copy = Frag::of(format!("({{ ...{name}, ["));
+                copy.f(key).s("]: ").f(value).s(&format!(" }} as typeof {name})"));
+                let line = if state {
+                    let setter = self.setter(local);
+                    let mut line = Frag::at(span, format!("{setter}(({name}) => "));
+                    line.f(copy).s(");");
+                    line
+                } else {
+                    let mut line = Frag::at(span, format!("{name} = "));
+                    line.f(copy).s(";");
+                    line
+                };
+                self.push_stmt(line);
+            }
             AssignRes::Bound { local } => {
                 let name = self.local_name(local);
                 let new = combine(Frag::of(format!("{name}[0]")), value);
@@ -2900,6 +2920,12 @@ impl<'a> Emitter<'a> {
                     out.s(open).f(self.expr(index)).s(if optional { "]" } else { "]!" });
                     out
                 }
+            }
+            // `x[keyPath: key]`: a key path is its field's name, so the field is `x[key]`.
+            ExprKind::KeyPathIndex(object, key) => {
+                let mut out = self.operand(object);
+                out.s("[").f(self.expr(key)).s("]");
+                out
             }
             ExprKind::Index(object, index) => {
                 let mut out = self.operand(object);
@@ -5204,9 +5230,10 @@ fn expr_awaits(expr: &Expr) -> bool {
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => expr_awaits(e),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
-            expr_awaits(a) || expr_awaits(b)
-        }
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => expr_awaits(a) || expr_awaits(b),
         ExprKind::Ternary(a, b, c) => expr_awaits(a) || expr_awaits(b) || expr_awaits(c),
         ExprKind::Call(call) => expr_awaits(&call.callee) || call.args.iter().any(|a| expr_awaits(&a.value)),
         ExprKind::If(i) => {
@@ -5441,7 +5468,10 @@ impl<'a> Emitter<'a> {
                 go(k);
                 go(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+            ExprKind::Binary(_, a, b)
+            | ExprKind::Index(a, b)
+            | ExprKind::OptIndex(a, b)
+            | ExprKind::KeyPathIndex(a, b) => {
                 go(a);
                 go(b);
             }

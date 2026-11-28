@@ -1,0 +1,30 @@
+// Swift's key paths: `\.field` and `\T.field`, `KeyPath<T, V>` / `WritableKeyPath<T, V>`, and
+// `x[keyPath: k]` read and written on a value type's `var` copy (or a `@State`). A key path is its
+// field's name in TS.
+public struct Prefs {
+  var hideLikes: Bool = false
+  var hideReplies: Bool = false
+  var name: String = ""
+}
+
+public func read(_ p: Prefs, _ key: KeyPath<Prefs, Bool>) -> Bool { p[keyPath: key] }
+
+public func toggled(_ p: Prefs, _ key: WritableKeyPath<Prefs, Bool>) -> Prefs {
+  var next = p
+  next[keyPath: key] = !p[keyPath: key]
+  return next
+}
+
+public func both(_ p: Prefs) -> Prefs { toggled(toggled(p, \.hideLikes), \Prefs.hideReplies) }
+
+public struct PrivacyToggles: View {
+  @State private var prefs = Prefs()
+
+  func flip(_ key: WritableKeyPath<Prefs, Bool>) {
+    prefs[keyPath: key] = !prefs[keyPath: key]
+  }
+
+  var body: some View {
+    Button(Text("Likes")).onPress { flip(\.hideLikes) }
+  }
+}

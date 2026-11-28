@@ -3392,6 +3392,16 @@
           }
         ]
       },
+      "label": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
       "target": {
         "multiple": false,
         "required": true,

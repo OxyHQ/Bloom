@@ -609,3 +609,52 @@ let b = c?.1 ?? 0
         (identifier)
         (integer_literal))
       (integer_literal))))
+
+====================
+Key path subscripts
+====================
+
+func f(p: P, k: WritableKeyPath<P, Bool>) -> P {
+  var next = p
+  next[keyPath: k] = !p[keyPath: k]
+  return next
+}
+
+---
+
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier)
+          (type_arguments
+            (user_type
+              (type_identifier))
+            (user_type
+              (type_identifier))))))
+    (user_type
+      (type_identifier))
+    (block
+      (var_declaration
+        (identifier)
+        (identifier))
+      (assignment
+        (subscript_expression
+          (identifier)
+          (identifier)
+          (identifier))
+        (prefix_expression
+          (subscript_expression
+            (identifier)
+            (identifier)
+            (identifier))))
+      (return_statement
+        (identifier)))))
