@@ -103,6 +103,46 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 let method = if text == "add" { "inserting" } else { "removing" };
                 Some((open, end, format!("{set}.{method}")))
             }
+            // `const x = f<T>(…)` where `f` returns a generic `G<T>`, not `T` itself
+            // (`useInfiniteCatalogSearch<Row>(…)`): the binding is typed `G<T>`.
+            ("B0201", _)
+                if let Some((expected, found)) = d
+                    .message
+                    .strip_prefix("expected `")
+                    .and_then(|m| m.split_once("`, found `"))
+                    .and_then(|(e, f)| Some((e, f.strip_suffix('`')?)))
+                    && found.ends_with("<_>")
+                    && found.matches('_').count() == 1
+                    && !expected.contains('_')
+                    && text.ends_with(')')
+                    && let Some(annotation) =
+                        source[..start].strip_suffix(" = ").and_then(|b| b.strip_suffix(expected))
+                    && annotation.ends_with(": ")
+                    && annotation[annotation.rfind('\n').map_or(0, |i| i + 1)..]
+                        .trim_start()
+                        .starts_with("let ") =>
+            {
+                let at = annotation.len();
+                let generic = &found[..found.len() - 3];
+                // `G` comes from the callee's module: imported beside it, as a type.
+                let callee = &text[..text.find('(').unwrap_or(0)];
+                let imported = |line: &str| {
+                    line.starts_with("import {") && line.split(['{', '}', ',', ' ']).any(|w| w == generic)
+                };
+                if !source.lines().any(imported)
+                    && let Some(line) = source.lines().find(|l| {
+                        l.starts_with("import {") && l.split(['{', '}', ',', ' ']).any(|w| w == callee)
+                    })
+                    && let Some(close) = line.rfind(" }")
+                {
+                    let line_at = line.as_ptr() as usize - source.as_ptr() as usize;
+                    let insert = line_at + close;
+                    if !edits.iter().any(|(a, _, t)| *a == insert && t.contains(generic)) {
+                        edits.push((insert, insert, format!(", type {generic}")));
+                    }
+                }
+                Some((at, at + expected.len(), found.replace('_', expected)))
+            }
             // `0..<n` with a `Float` bound (a TS `number` given to `Array.from({ length })`, which
             // truncates it): `0..<n.truncated()`.
             ("B0201", _)
@@ -115,6 +155,44 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     end,
                     if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") },
                 ))
+            }
+            // `a !== b` of a function's type parameter `T`: Swift's `<T: Equatable>`. (A caller's
+            // `T` that is not `Equatable`, a TS object compared by identity, stays an error.)
+            ("B0210", _)
+                if let Some(param) = d
+                    .message
+                    .strip_prefix("`==` cannot compare `")
+                    .or_else(|| d.message.strip_prefix("`!=` cannot compare `"))
+                    .and_then(|m| m.strip_suffix('`'))
+                    && param.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    && let Some(fn_at) = source[..start].rfind("fn ")
+                    && let Some(open) = source[fn_at..].find('<').map(|i| fn_at + i)
+                    && let Some(close) = source[open..].find('>').map(|i| open + i)
+                    && source[fn_at + 3..open].chars().all(|c| c.is_alphanumeric() || c == '_')
+                    && let Some(at) = source[open + 1..close]
+                        .split(',')
+                        .scan(open + 1, |pos, part| {
+                            let here = *pos;
+                            *pos += part.len() + 1;
+                            Some((here, part))
+                        })
+                        .find(|(_, part)| part.trim() == param)
+                        .map(|(here, part)| here + part.find(param).unwrap_or(0)) =>
+            {
+                let insert = at + param.len();
+                if !edits.iter().any(|(a, _, t)| *a == insert && t == ": Equatable") {
+                    edits.push((insert, insert, ": Equatable".to_string()));
+                }
+                None
+            }
+            // `xs.slice(0, n)` with a TS `number` bound: JS's `slice` truncates it, `n.truncated()`.
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Float`"
+                    && text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                    && (source[end..].starts_with(')') || source[end..].starts_with(','))
+                    && enclosing_call(source, start).is_some_and(|callee| callee.ends_with(".slice")) =>
+            {
+                Some((start, end, format!("{text}.truncated()")))
             }
             // `xs[i]` with a TS callback's `index: number` (a `Float` that is a whole number): the
             // element at `i.truncated()`.
@@ -771,6 +849,18 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 if d.message.ends_with("` cannot be indexed") && receiver.is_some_and(is_tuple_type) =>
             {
                 tuple_index(source, end).map(|(n, close)| (end, close, format!(".{n}")))
+            }
+            // `p?.coordinates?.[0]` where bloomc types `coordinates` a tuple that is present (not
+            // optional): the `?` TS kept is a no-op, and the read is `coordinates.0`.
+            ("B0205", _)
+                if d.message.ends_with("` has no subscript")
+                    && receiver.is_some_and(is_tuple_type)
+                    && source[..start].ends_with("?[")
+                    && source[end..].starts_with(']')
+                    && !text.is_empty()
+                    && text.chars().all(|c| c.is_ascii_digit()) =>
+            {
+                Some((start - 2, end + 1, format!(".{text}")))
             }
             // `(a ?? b) != none` (TS's truthiness of `a ?? b`) of an object `a` and a string `b`:
             // `a` is truthy when present, else `b` when not empty.
@@ -2110,4 +2200,26 @@ mod tests {
         let start = fixed(source, "B0209", "trimStart", "`String` has no method `trimStart`");
         assert_eq!(start.as_deref(), Some("let a = name.trimEnd()\nlet b = name.trimmingStart()\n"));
     }
+}
+
+/// The callee of the call whose arguments `at` is inside (`xs.slice` for `xs.slice(0, |n)`).
+fn enclosing_call(source: &str, at: usize) -> Option<&str> {
+    let mut depth = 0usize;
+    for (i, c) in source[..at].char_indices().rev() {
+        match c {
+            ')' | ']' | '}' => depth += 1,
+            '(' if depth == 0 => {
+                let before = &source[..i];
+                let start = before
+                    .rfind(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.' || c == '?'))
+                    .map_or(0, |j| j + 1);
+                return Some(&before[start..]);
+            }
+            '[' | '{' if depth == 0 => return None,
+            '(' | '[' | '{' => depth -= 1,
+            '\n' if depth == 0 && source[i..at].trim().is_empty() => {}
+            _ => {}
+        }
+    }
+    None
 }

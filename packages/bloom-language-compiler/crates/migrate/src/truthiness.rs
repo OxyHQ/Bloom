@@ -34,7 +34,8 @@ pub fn spell(
             Some(rest) if !conditions.contains(text) => (true, rest),
             _ => (false, text),
         };
-        if !conditions.contains(operand) {
+        // A condition's tuple read may have been respelled since (`xs?[0]` is `xs.0`, typed.rs).
+        if !conditions.contains(operand) && !conditions.iter().any(|c| tuple_reads(c) == operand) {
             continue;
         }
         // A `!` written before the operand (`!x`, not part of the span) negates it too.
@@ -313,6 +314,29 @@ fn group_len(source: &str) -> Option<usize> {
 }
 
 /// Text without its layout: no whitespace, no trailing commas.
+/// `c` with each `?[N]` (a constant index of a tuple bloomc typed present) read as `.N`.
+fn tuple_reads(c: &str) -> String {
+    let mut out = String::with_capacity(c.len());
+    let mut rest = c;
+    while let Some(i) = rest.find("?[") {
+        let tail = &rest[i + 2..];
+        match tail.find(']') {
+            Some(close) if close > 0 && tail[..close].chars().all(|ch| ch.is_ascii_digit()) => {
+                out.push_str(&rest[..i]);
+                out.push('.');
+                out.push_str(&tail[..close]);
+                rest = &tail[close + 1..];
+            }
+            _ => {
+                out.push_str(&rest[..i + 2]);
+                rest = tail;
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
 pub fn squeeze(text: &str) -> String {
     let flat: String = text.chars().filter(|c| !c.is_whitespace()).collect();
     flat.replace(",)", ")").replace(",]", "]").replace(",}", "}")
