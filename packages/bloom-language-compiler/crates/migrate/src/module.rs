@@ -729,24 +729,55 @@ fn memo_of(call: &oxc_ast::ast::CallExpression) -> Option<String> {
 }
 
 /// Whether every return of a component body is `toElement(…)` or nothing.
-fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> bool) -> bool {
-    fn value_ok(e: &Expression, to_element: &dyn Fn(&str) -> bool) -> bool {
-        match e.without_parentheses() {
-            Expression::NullLiteral(_) | Expression::JSXElement(_) | Expression::JSXFragment(_) => true,
-            Expression::CallExpression(call) => {
-                matches!(&call.callee, Expression::Identifier(id) if to_element(&id.name))
-            }
-            Expression::ConditionalExpression(c) => {
-                value_ok(&c.consequent, to_element) && value_ok(&c.alternate, to_element)
-            }
-            _ => false,
+/// Whether `e` is an element (JSX, `toElement(…)`, `null`, a conditional of them, or a body
+/// constant `elements` names that is one).
+fn element_value(
+    e: &Expression,
+    to_element: &dyn Fn(&str) -> bool,
+    elements: &[(&str, &Expression)],
+    depth: u8,
+) -> bool {
+    match e.without_parentheses() {
+        Expression::NullLiteral(_) | Expression::JSXElement(_) | Expression::JSXFragment(_) => true,
+        Expression::CallExpression(call) => {
+            matches!(&call.callee, Expression::Identifier(id) if to_element(&id.name))
         }
+        Expression::ConditionalExpression(c) => {
+            element_value(&c.consequent, to_element, elements, depth)
+                && element_value(&c.alternate, to_element, elements, depth)
+        }
+        Expression::Identifier(id) if depth == 0 => elements
+            .iter()
+            .find(|(n, _)| *n == id.name.as_str())
+            .is_some_and(|(_, init)| element_value(init, to_element, elements, 1)),
+        _ => false,
     }
-    fn walk(statements: &[Statement], to_element: &dyn Fn(&str) -> bool, any: &mut bool) -> bool {
+}
+
+fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> bool) -> bool {
+    // `const empty = c ? <A/> : null; … return empty`: a body constant that is an element.
+    let elements: Vec<(&str, &Expression)> = statements
+        .iter()
+        .filter_map(|s| match s {
+            Statement::VariableDeclaration(v) if v.kind == VariableDeclarationKind::Const => Some(v),
+            _ => None,
+        })
+        .flat_map(|v| v.declarations.iter())
+        .filter_map(|d| match (&d.id, &d.init) {
+            (BindingPattern::BindingIdentifier(id), Some(init)) => Some((id.name.as_str(), init)),
+            _ => None,
+        })
+        .collect();
+    let value_ok = |e: &Expression| -> bool { element_value(e, to_element, &elements, 0) };
+    fn walk(
+        statements: &[Statement],
+        value_ok: &dyn Fn(&Expression) -> bool,
+        any: &mut bool,
+    ) -> bool {
         for statement in statements {
             match statement {
                 Statement::ReturnStatement(r) => match &r.argument {
-                    Some(v) if value_ok(v, to_element) => *any |= !matches!(v, Expression::NullLiteral(_)),
+                    Some(v) if value_ok(v) => *any |= !matches!(v, Expression::NullLiteral(_)),
                     Some(_) => return false,
                     None => {}
                 },
@@ -757,7 +788,7 @@ fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> boo
                             Statement::BlockStatement(b) => &b.body,
                             other => std::slice::from_ref(other),
                         };
-                        if !walk(inner, to_element, any) {
+                        if !walk(inner, value_ok, any) {
                             return false;
                         }
                     }
@@ -768,7 +799,7 @@ fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> boo
         true
     }
     let mut any = false;
-    walk(statements, to_element, &mut any) && any
+    walk(statements, &value_ok, &mut any) && any
 }
 
 impl<'s> Tr<'s> {
@@ -1539,9 +1570,10 @@ impl<'s> Tr<'s> {
                         };
                         match init {
                             Expression::ArrowFunctionExpression(a) => {
+                                // `(p) => c ? <A {…p} /> : <B />`: an element, not only `toElement(…)`.
                                 expression_body = a.get_expression().is_some_and(|e| {
-                                    matches!(e.without_parentheses(), Expression::CallExpression(c)
-                                        if matches!(&c.callee, Expression::Identifier(t) if self.is_lang(&t.name, "toElement")))
+                                    !matches!(e.without_parentheses(), Expression::NullLiteral(_))
+                                        && element_value(e, &|n| self.is_lang(n, "toElement"), &[], 1)
                                 });
                                 Some((id.name.to_string(), crate::view::arrow_statements(a), a.span))
                             }
