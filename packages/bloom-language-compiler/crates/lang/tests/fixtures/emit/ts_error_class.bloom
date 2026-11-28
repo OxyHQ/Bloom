@@ -1,0 +1,17 @@
+// A TS error class is a type for `is` and `as?`, tested with `instanceof` (Swift's `e is C`).
+import { PollClosedError, PollContractError, vote } from "@/poll"
+
+public func record(id: String) async -> String {
+  do {
+    try await vote(id)
+    return "ok"
+  } catch let err {
+    if err is PollClosedError {
+      return "closed"
+    }
+    if let contract = err as? PollContractError {
+      return contract.code
+    }
+    return err is PollContractError ? "not understood" : "failed"
+  }
+}
