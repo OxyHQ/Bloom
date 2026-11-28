@@ -312,6 +312,25 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
             written.push(ModuleImport { segments: segments.clone(), span: import.span });
             continue;
         }
+        // `import { type ListCardData } from "@/components/ListCard"` of a file of this module
+        // (a TS import the codemod kept, written before that file was Bloom too): its names are
+        // in scope already, as a sibling's are, so the import is dropped rather than read as TS,
+        // which would hide them.
+        if let Some(sibling) = own_file_import(&import, &path, options)
+            && graph.files(index).iter().any(|f| same_file(f, &sibling))
+        {
+            out.diagnostics.push(
+                Diagnostic::warning(
+                    "B0901",
+                    import.source_span,
+                    format!("\"{}\" is a file of this module: its names are in scope", import.source),
+                )
+                .label("remove this import")
+                .help("a module's files see each other's declarations without importing them")
+                .toolchain(SPEC),
+            );
+            continue;
+        }
         let bloom_file = import.source.ends_with(".bloom") || import.source == crate::testing::RUNTIME;
         if !bindings
             && !options.allow_ts_imports
@@ -1042,6 +1061,26 @@ fn display(path: &Path, root: &Path) -> String {
 /// A built-in type whose codec a `<T: Codable>` call may pass without naming it.
 fn builtin_codec(owner: &str) -> Option<()> {
     matches!(owner, "String" | "Int" | "Double" | "Bool" | "Array" | "Optional" | "Dictionary").then_some(())
+}
+
+/// The `.bloom` file a TS-style import names (`"@/zz/Card"` or `"./Card"`, no extension,
+/// resolved through the `paths` map as `Card.bloom`), when it names one; `None` for an import
+/// that renames a name (`{ Card as C }`), which only an import can do.
+fn own_file_import(import: &Import, from: &Path, options: &Options) -> Option<PathBuf> {
+    let ImportKind::Named(specs) = &import.kind else { return None };
+    if specs.iter().any(|spec| spec.local().name != spec.name.name) {
+        return None;
+    }
+    let source = import.source.as_str();
+    if source.ends_with(".bloom") || Path::new(source).extension().is_some() || source.is_empty() {
+        return None;
+    }
+    let found = crate::ts::resolve(from, &format!("{source}.bloom"), options)?;
+    (found.extension().is_some_and(|e| e == "bloom") && found.is_file()).then_some(found)
+}
+
+fn same_file(a: &Path, b: &Path) -> bool {
+    a == b || matches!((a.canonicalize(), b.canonicalize()), (Ok(x), Ok(y)) if x == y)
 }
 
 #[cfg(test)]
