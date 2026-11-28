@@ -662,6 +662,12 @@ fn write_fonts(bloom: Option<PathBuf>, assets: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// The bundle task's input for the environment Metro inlines into the JS: Expo's
+/// `EXPO_PUBLIC_*` variables and `NODE_ENV`, read when Gradle configures the build. Gradle does
+/// not track the environment, so a flag changed alone (`EXPO_PUBLIC_FEATURE=1 bloom build`) left
+/// `createBundle…JsAndAssets` UP-TO-DATE and the APK shipped the bundle built with the old value.
+pub(crate) const BUNDLE_PUBLIC_ENV: &str = "  // The environment the bundle inlines (`EXPO_PUBLIC_*`, `NODE_ENV`): a value changed alone is a\n  // new bundle, though Gradle does not track the environment itself.\n  inputs.property(\"bloomPublicEnv\", System.getenv().findAll { k, v -> k.startsWith(\"EXPO_PUBLIC_\") || k == \"NODE_ENV\" }.sort().toString())\n";
+
 /// Writes `.bloom/build/android/`.
 /// A package React Native depends on: under its own `node_modules`, else where the app's resolve.
 fn react_native_dependency(layout: &hybrid::Layout, react_native: &Path, name: &str) -> Option<PathBuf> {
@@ -847,7 +853,7 @@ tasks.matching {{ it.name.startsWith("createBundle") && it.name.endsWith("JsAndA
   // resolves from): a dependency bumped or swapped for a local pack is a new bundle. Without
   // them `node_modules` (left out above) changes under an UP-TO-DATE bundle.
   inputs.files({lockfiles}).withPropertyName("bloomLockfiles").withPathSensitivity(PathSensitivity.ABSOLUTE)
-}}
+{public_env}}}
 
 android {{
   ndkVersion rootProject.ext.ndkVersion
@@ -905,6 +911,7 @@ dependencies {{
             entry = quote(&layout.entry.to_string_lossy()),
             hermes = quote(&hermes.to_string_lossy()),
             package_root = quote(&package.root.to_string_lossy()),
+            public_env = BUNDLE_PUBLIC_ENV,
             id = quote(&id),
             version = quote(&version(package)),
         ),
@@ -1170,6 +1177,14 @@ mod tests {
     }
 
     use super::*;
+
+    /// A bundle built with one `EXPO_PUBLIC_*` value is not reused for another: the bundle task
+    /// takes the public environment as an input (Gradle does not track the environment).
+    #[test]
+    fn the_bundle_tracks_the_public_environment() {
+        // An argument of the template's `format!`, so written as it is (single braces).
+        assert!(BUNDLE_PUBLIC_ENV.contains("inputs.property(\"bloomPublicEnv\", System.getenv().findAll { k, v -> k.startsWith(\"EXPO_PUBLIC_\") || k == \"NODE_ENV\" }.sort().toString())"));
+    }
 
     fn package(name: &str, manifest: &str, files: &[(&str, &str)]) -> Package {
         let root = std::env::temp_dir().join(format!("bloom-android-{name}-{}", std::process::id()));
