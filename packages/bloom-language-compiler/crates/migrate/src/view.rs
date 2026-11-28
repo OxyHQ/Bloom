@@ -1241,6 +1241,13 @@ impl Tr<'_> {
             && let Some(kind) = self.date_local_kind(init)
         {
             self.scope.dates.insert(id.name.to_string(), kind);
+            if self.is_midnight(init) {
+                self.scope.midnights.insert(id.name.to_string());
+                // `d.setDate(n)` reassigns it.
+                if self.src.contains(&format!("{}.setDate(", id.name)) {
+                    immutable = false;
+                }
+            }
         }
         let keyword = if immutable { "let" } else { "var" };
         let mut ty = d

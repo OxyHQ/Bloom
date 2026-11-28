@@ -71,6 +71,8 @@ pub struct Scope {
     pub collections: HashMap<String, String>,
     /// Locals bound to a date (`const d = new Date(s)`), by what they may hold (`crate::dates`).
     pub dates: HashMap<String, crate::dates::DateKind>,
+    /// Date locals that are a local midnight (`crate::dates`): `setDate` keeps them one.
+    pub midnights: HashSet<String>,
     /// Member functions of the view being translated.
     pub member_fns: HashSet<String>,
     /// Object literals whose fields are then written (`params.q = v`, `counts[k] += 1`):

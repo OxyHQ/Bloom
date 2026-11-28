@@ -20,6 +20,17 @@ private func sameDay(_ a: Date, _ b: Date) -> Bool {
   Calendar.current.startOfDay(a).millisecondsSince1970 == b.millisecondsSince1970
 }
 
+private func isYesterday(_ d: Date) -> Bool {
+  let today = Calendar.current.startOfDay(Date.now)
+  var yesterday = today
+  yesterday = Calendar.current.date(
+    year: yesterday.components().year,
+    month: yesterday.components().month,
+    day: yesterday.components().day - 1,
+  )
+  Calendar.current.startOfDay(d).millisecondsSince1970 == yesterday.millisecondsSince1970
+}
+
 private func tomorrow() -> String {
   Date(millisecondsSince1970: Date.now.millisecondsSince1970 + 86400000).iso8601
 }

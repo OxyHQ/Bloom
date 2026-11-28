@@ -215,6 +215,22 @@ impl Tr<'_> {
         }
     }
 
+    /// Whether `init` is a local midnight: a date of its year, month and day only, a day's start,
+    /// or a copy of a local midnight.
+    pub fn is_midnight(&self, init: &Expression) -> bool {
+        match init.without_parentheses() {
+            Expression::NewExpression(n) if matches!(&n.callee, Expression::Identifier(id) if id.name == "Date") => {
+                match n.arguments.as_slice() {
+                    [y, m, d] => [y, m, d].iter().all(|a| a.as_expression().is_some()),
+                    [one] => matches!(one.as_expression().map(|e| e.without_parentheses()),
+                        Some(Expression::Identifier(id)) if self.scope.midnights.contains(id.name.as_str())),
+                    _ => false,
+                }
+            }
+            _ => false,
+        }
+    }
+
     /// The kind a local bound to `init` holds (`const d = new Date(s)`), read from its shape.
     pub fn date_local_kind(&self, init: &Expression) -> Option<DateKind> {
         if !self.is_date_expr(init) {
@@ -505,6 +521,22 @@ impl Tr<'_> {
                 }))
             });
         let setter = method.starts_with("set") && dated;
+        // `d.setDate(n)` of a local midnight (`Tr::is_midnight`): the same local midnight on day `n`
+        // of its month (JS's overflow included: the calendar's `date` takes day 0 and day 32 as
+        // JS does), the local reassigned.
+        if setter
+            && method == "setDate"
+            && let Expression::Identifier(id) = &m.object
+            && self.scope.midnights.contains(id.name.as_str())
+            && let [day] = call.arguments.as_slice()
+            && let Some(day) = day.as_expression()
+        {
+            let name = self.expr(&m.object);
+            let day = self.expr(day);
+            return Some(format!(
+                "{name} = Calendar.current.date(year: {name}.components().year, month: {name}.components().month, day: {day})"
+            ));
+        }
         if setter {
             return Some(self.refuse(
                 "date:set",

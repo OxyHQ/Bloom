@@ -19,6 +19,13 @@ function sameDay(a: Date, b: Date): boolean {
   return new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime() === b.getTime();
 }
 
+function isYesterday(d: Date): boolean {
+  const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() === yesterday.getTime();
+}
+
 function tomorrow(): string {
   return new Date(Date.now() + 86400000).toISOString();
 }
