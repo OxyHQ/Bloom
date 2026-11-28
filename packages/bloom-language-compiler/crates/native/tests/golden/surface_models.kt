@@ -76,7 +76,7 @@ fun FeedScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun FilterBar(model: FeedModel, modifier: Modifier = Modifier) {
+inline fun FilterBar(model: FeedModel, modifier: Modifier = Modifier) {
   HStack(modifier = modifier) {
     Text(model.filter)
     Button({

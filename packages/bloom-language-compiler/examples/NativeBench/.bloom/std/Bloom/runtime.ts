@@ -3,6 +3,8 @@
 // app code never does. Each export is small and typed: the Bloom declaration of
 // each one states its type, and tsc checks the crossing.
 
+import { useSyncExternalStore } from 'react';
+
 // ---- strings ----------------------------------------------------------------
 
 type Segmenter = { segment(s: string): Iterable<{ segment: string }> };
@@ -68,6 +70,20 @@ export function formatNumber(
   });
 }
 
+/** `n` in `currency`; a negative fraction bound is the currency's own. */
+export function formatCurrency(
+  n: number,
+  locale: string,
+  currency: string,
+  minFraction: number,
+  maxFraction: number,
+): string {
+  const options: Intl.NumberFormatOptions = { style: 'currency', currency };
+  if (minFraction >= 0) options.minimumFractionDigits = minFraction;
+  if (maxFraction >= 0) options.maximumFractionDigits = maxFraction;
+  return n.toLocaleString(locale || undefined, options);
+}
+
 export function formatCompact(n: number, locale: string): string {
   return new Intl.NumberFormat(locale || undefined, {
     notation: 'compact',
@@ -120,6 +136,8 @@ export function subtracting<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): ReadonlySe
 
 export const PI = Math.PI;
 export const E = Math.E;
+export const INFINITY = Number.POSITIVE_INFINITY;
+export const NAN = Number.NaN;
 export const sqrt = Math.sqrt;
 export const cbrt = Math.cbrt;
 export const pow = Math.pow;
@@ -146,6 +164,19 @@ export function randomInt(from: number, to: number): number {
 }
 
 // ---- time ---------------------------------------------------------------------
+
+/** The standard library's `Date` is a JS `Date`. */
+export function dateNow(): Date {
+  return new Date();
+}
+
+export function dateOfMs(ms: number): Date {
+  return new Date(ms);
+}
+
+export function msOfDate(date: Date): number {
+  return date.getTime();
+}
 
 export function nowMs(): number {
   return Date.now();
@@ -174,10 +205,36 @@ export function formatDate(
   timeZone: string,
 ): string {
   const options: Intl.DateTimeFormatOptions = {};
-  if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
-  if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  if (date === 'numeric') {
+    // Swift's `.numeric` is the numeric date with the full year ("11/26/2026"), not Intl's
+    // `short` ("11/26/26"); Intl takes no style beside fields, so the time is its fields too.
+    options.year = 'numeric';
+    options.month = 'numeric';
+    options.day = 'numeric';
+    if (time !== 'omitted') {
+      options.hour = 'numeric';
+      options.minute = '2-digit';
+      if (time !== 'short') options.second = '2-digit';
+      if (time === 'long') options.timeZoneName = 'short';
+    }
+  } else {
+    if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
+    if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  }
   if (timeZone) options.timeZone = timeZone;
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
+}
+
+/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+export function formatDateFields(
+  ms: number,
+  locale: string,
+  options: Readonly<Record<string, string>>,
+  timeZone: string,
+): string {
+  const all: Intl.DateTimeFormatOptions = { ...options };
+  if (timeZone) all.timeZone = timeZone;
+  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {
@@ -688,6 +745,18 @@ type Catalog = Readonly<Record<string, string | Readonly<Record<string, string>>
 
 const catalogs = new Map<string, Catalog>();
 let preferred: string | undefined;
+/** The views reading the preferred locale (`useLocalization`), told when it changes. */
+const localeListeners = new Set<() => void>();
+
+function subscribeLocale(listener: () => void): () => void {
+  localeListeners.add(listener);
+  return () => localeListeners.delete(listener);
+}
+
+/** `useLocalization()`: the preferred locale, re-read by the view when it changes. */
+export function useLocaleIdentifier(): string {
+  return useSyncExternalStore(subscribeLocale, preferredLocale, preferredLocale);
+}
 
 /** Registers the strings of `locale` (`bloom build` registers the package's catalogs). */
 export function registerCatalog(locale: string, catalog: unknown): void {
@@ -695,7 +764,9 @@ export function registerCatalog(locale: string, catalog: unknown): void {
 }
 
 export function setPreferredLocale(locale: string): void {
+  const before = preferredLocale();
   preferred = locale || undefined;
+  if (preferredLocale() !== before) for (const listener of [...localeListeners]) listener();
 }
 
 export function preferredLocale(): string {
@@ -719,14 +790,22 @@ export function localize(
   key: string,
   args: Readonly<Record<string, string>>,
   count: number | undefined,
+  inLocale?: string,
 ): string {
-  const locale = preferredLocale();
+  const locale = inLocale ?? preferredLocale();
   const found = lookup(key, locale);
   let text: string;
   if (found === undefined) text = key;
   else if (typeof found === 'string') text = found;
   else {
-    const category = count === undefined ? 'other' : new Intl.PluralRules(locale).select(count);
+    // A count of exactly 0 takes a `zero` form where the catalog has one, in every language
+    // (as i18next's `_zero`), before the CLDR category (only Arabic's has `zero`).
+    const category =
+      count === undefined
+        ? 'other'
+        : count === 0 && found.zero !== undefined
+          ? 'zero'
+          : new Intl.PluralRules(locale).select(count);
     text = found[category] ?? found.other ?? key;
   }
   return text.replace(

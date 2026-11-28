@@ -48,7 +48,7 @@ fun Account(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Section(title: String, rows: @Composable () -> Unit, modifier: Modifier = Modifier) {
+inline fun Section(title: String, noinline rows: @Composable () -> Unit, modifier: Modifier = Modifier) {
   VStack(modifier = modifier) {
     Text(title)
     rows()
