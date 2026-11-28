@@ -69,8 +69,10 @@ jobs:
   # heavy jobs (build, language, language-parity, tests, android) run on the
   # self-hosted seldon-ci pool only while the org variable SELDON_CI_ROUTE
   # reads `seldon-ci`, and only on the first attempt of a same-repository pull
-  # request. Anything else runs hosted: the variable unset, merge_group, push,
-  # dispatch, a re-run, a fork. The router writes `seldon-ci` only while
+  # request or of a merge group (phase 2). Anything else runs hosted: the
+  # variable unset, push, dispatch, a re-run, a fork. A merge group stuck on an
+  # offline Seldon is force-cancelled by the router's watchdog, which puts its
+  # pull request back in the queue (oxy-infra runbook 70). The router writes `seldon-ci` only while
   # Seldon's heartbeat is fresh and its queue is short, and its watchdog
   # cancels a pull request run stuck on an offline Seldon and re-runs it, which
   # attempt 2 sends hosted. A heavy job that fails on Seldon, whatever the
@@ -86,7 +88,7 @@ jobs:
     # dispatch run) would otherwise skip the dependent too; it runs unless
     # provenance positively answered verified.
     if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
-    runs-on: &seldon-lane ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
+    runs-on: &seldon-lane ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci' || 'ubuntu-latest' }}
     timeout-minutes: 20
     permissions: &lane-permissions
       contents: read
@@ -178,7 +180,7 @@ jobs:
   build-rescue:
     name: Build, package and types
     needs: [provenance, build]
-    if: ${{ !cancelled() && needs.build.result == 'failure' && (needs.build.outputs.lane == 'seldon' || (needs.build.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.build.result == 'failure' && (needs.build.outputs.lane == 'seldon' || (needs.build.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions: *lane-permissions
@@ -291,7 +293,7 @@ jobs:
   language-rescue:
     name: Language packages
     needs: [provenance, language]
-    if: ${{ !cancelled() && needs.language.result == 'failure' && (needs.language.outputs.lane == 'seldon' || (needs.language.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.language.result == 'failure' && (needs.language.outputs.lane == 'seldon' || (needs.language.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions: *lane-permissions
@@ -337,7 +339,7 @@ jobs:
   language-parity-rescue:
     name: Language parity (${{ matrix.shard }}/2)
     needs: [provenance, language-parity]
-    if: ${{ !cancelled() && needs.language-parity.result == 'failure' && (needs.language-parity.outputs.lane == 'seldon' || (needs.language-parity.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.language-parity.result == 'failure' && (needs.language-parity.outputs.lane == 'seldon' || (needs.language-parity.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     permissions: *lane-permissions
@@ -383,7 +385,7 @@ jobs:
   tests-rescue:
     name: Tests (${{ matrix.shard }}/5)
     needs: [provenance, tests]
-    if: ${{ !cancelled() && needs.tests.result == 'failure' && (needs.tests.outputs.lane == 'seldon' || (needs.tests.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.tests.result == 'failure' && (needs.tests.outputs.lane == 'seldon' || (needs.tests.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions: *lane-permissions
@@ -443,7 +445,7 @@ jobs:
   android-rescue:
     name: Android (${{ matrix.variant }})
     needs: [provenance, android]
-    if: ${{ !cancelled() && needs.android.result == 'failure' && (needs.android.outputs.lane == 'seldon' || (needs.android.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
+    if: ${{ !cancelled() && needs.android.result == 'failure' && (needs.android.outputs.lane == 'seldon' || (needs.android.outputs.lane == '' && vars.SELDON_CI_ROUTE == 'seldon-ci')) && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.provenance.outputs.verified != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: *lane-permissions
@@ -604,7 +606,7 @@ jobs:
     # heavy jobs, so a pull request's gate does not wait for one of the org's
     # 20 hosted slots. An offline Seldon leaves it queued; the router's watchdog
     # cancels the run and re-runs it, and attempt 2 is hosted.
-    runs-on: ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && 'seldon-ci-light' || 'ubuntu-latest' }}
+    runs-on: ${{ vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && 'seldon-ci-light' || 'ubuntu-latest' }}
     timeout-minutes: 5
     permissions: {}
     steps:
