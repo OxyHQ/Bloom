@@ -2276,67 +2276,6 @@
       "distributedBinary": "unknown"
     },
     {
-      "repository": "Schedio",
-      "ref": "origin/main",
-      "sha": "104bffc95660780f24761f3a9828901ea51fca1f",
-      "fetch": "succeeded",
-      "checkoutSha": "4217ba36f7c74894cf1a58578c94f2f43bdfdd46",
-      "checkoutDirtyEntries": 0,
-      "packages": [
-        {
-          "manifest": "package.json",
-          "name": "schedio",
-          "declarations": {
-            "dependencies": "17.22.0"
-          },
-          "catalog": null,
-          "installed": {
-            "version": "1.0.0",
-            "packagePath": "Schedio/node_modules/@oxy.so/bloom"
-          },
-          "localDeclaration": {
-            "dependencies": "17.4.0"
-          }
-        },
-        {
-          "manifest": "packages/frontend/package.json",
-          "name": "@schedio/frontend",
-          "declarations": {
-            "dependencies": "17.22.0"
-          },
-          "catalog": null,
-          "installed": {
-            "version": "1.0.0",
-            "packagePath": "Schedio/node_modules/@oxy.so/bloom"
-          },
-          "localDeclaration": {
-            "dependencies": "17.4.0"
-          }
-        }
-      ],
-      "historicalManifests": [],
-      "locks": [
-        {
-          "path": "bun.lock",
-          "versions": [
-            "17.22.0"
-          ],
-          "status": "text locator evidence; per-workspace resolution not inferred"
-        }
-      ],
-      "importFileCount": 9,
-      "ownershipCandidates": [
-        "packages/frontend/app/_layout.tsx",
-        "packages/frontend/components/layout/FloatingActionButton.tsx",
-        "packages/frontend/components/providers/AppProviders.tsx"
-      ],
-      "adoption": "not verified: source candidates require route ancestry and runtime review",
-      "web": "not run",
-      "ios": "not run",
-      "android": "not run",
-      "distributedBinary": "unknown"
-    },
-    {
       "repository": "Syra",
       "ref": "origin/main",
       "sha": "9b715e239f6cd00bbd8632e75391891a99cffc8a",

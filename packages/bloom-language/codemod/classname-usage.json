@@ -133,12 +133,6 @@
       "files": 162,
       "utilities": 4313
     },
-    "Schedio": {
-      "ref": "origin/main",
-      "commit": "a5b81b6",
-      "files": 18,
-      "utilities": 927
-    },
     "Syra": {
       "ref": "origin/main",
       "commit": "9e7f6a12",
@@ -256,7 +250,7 @@
       ]
     },
     "items-center": {
-      "count": 2876,
+      "count": 2738,
       "apps": [
         "Alia",
         "Astro",
@@ -279,7 +273,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -288,7 +281,7 @@
       ]
     },
     "flex-row": {
-      "count": 2530,
+      "count": 2445,
       "apps": [
         "Alia",
         "Atlas",
@@ -309,7 +302,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -318,7 +310,7 @@
       ]
     },
     "text-sm": {
-      "count": 1955,
+      "count": 1951,
       "apps": [
         "Astro",
         "Atlas",
@@ -335,7 +327,6 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -344,7 +335,7 @@
       ]
     },
     "flex-1": {
-      "count": 1914,
+      "count": 1819,
       "apps": [
         "Alia",
         "Astro",
@@ -367,7 +358,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -404,7 +394,7 @@
       ]
     },
     "text-xs": {
-      "count": 1489,
+      "count": 1488,
       "apps": [
         "Alia",
         "Astro",
@@ -423,7 +413,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -432,7 +421,7 @@
       ]
     },
     "gap-2": {
-      "count": 1279,
+      "count": 1277,
       "apps": [
         "Alia",
         "Astro",
@@ -454,7 +443,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -493,7 +481,7 @@
       ]
     },
     "font-semibold": {
-      "count": 996,
+      "count": 985,
       "apps": [
         "Astro",
         "Atlas",
@@ -512,7 +500,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -544,7 +531,7 @@
       ]
     },
     "justify-center": {
-      "count": 889,
+      "count": 836,
       "apps": [
         "Alia",
         "Astro",
@@ -565,7 +552,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -574,7 +560,7 @@
       ]
     },
     "border": {
-      "count": 857,
+      "count": 828,
       "apps": [
         "Astro",
         "Clarity",
@@ -592,7 +578,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -601,7 +586,7 @@
       ]
     },
     "px-4": {
-      "count": 645,
+      "count": 620,
       "apps": [
         "Alia",
         "Astro",
@@ -622,7 +607,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -631,7 +615,7 @@
       ]
     },
     "flex-wrap": {
-      "count": 599,
+      "count": 598,
       "apps": [
         "Alia",
         "Astro",
@@ -652,7 +636,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -690,33 +673,8 @@
         "tnp"
       ]
     },
-    "font-medium": {
-      "count": 546,
-      "apps": [
-        "Astro",
-        "Clarity",
-        "Codea",
-        "CrowdSource",
-        "FAIRWallet",
-        "Gemies",
-        "Homiio",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Vibbr",
-        "Willo",
-        "oxy",
-        "tnp"
-      ]
-    },
     "rounded-full": {
-      "count": 542,
+      "count": 536,
       "apps": [
         "Astro",
         "Clarity",
@@ -733,7 +691,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -741,12 +698,10 @@
         "tnp"
       ]
     },
-    "text-base": {
-      "count": 501,
+    "font-medium": {
+      "count": 511,
       "apps": [
         "Astro",
-        "Atlas",
-        "Authenticator",
         "Clarity",
         "Codea",
         "CrowdSource",
@@ -758,16 +713,17 @@
         "Moovo",
         "Nilo",
         "Noted",
+        "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
-        "oxy"
+        "oxy",
+        "tnp"
       ]
     },
     "text-center": {
-      "count": 499,
+      "count": 496,
       "apps": [
         "Alia",
         "Astro",
@@ -787,7 +743,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -824,36 +779,6 @@
         "tnp"
       ]
     },
-    "justify-between": {
-      "count": 490,
-      "apps": [
-        "Alia",
-        "Astro",
-        "Atlas",
-        "Authenticator",
-        "Clarity",
-        "Codea",
-        "CrowdSource",
-        "FAIRWallet",
-        "Gemies",
-        "GoWay",
-        "Homiio",
-        "Inbox",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Vibbr",
-        "Willo",
-        "oxy",
-        "tnp"
-      ]
-    },
     "gap-1": {
       "count": 476,
       "apps": [
@@ -879,6 +804,30 @@
         "Willo",
         "oxy",
         "tnp"
+      ]
+    },
+    "text-base": {
+      "count": 473,
+      "apps": [
+        "Astro",
+        "Atlas",
+        "Authenticator",
+        "Clarity",
+        "Codea",
+        "CrowdSource",
+        "FAIRWallet",
+        "Gemies",
+        "Homiio",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Vibbr",
+        "Willo",
+        "oxy"
       ]
     },
     "bg-surface": {
@@ -914,7 +863,7 @@
       ]
     },
     "p-4": {
-      "count": 458,
+      "count": 457,
       "apps": [
         "Alia",
         "Astro",
@@ -934,7 +883,6 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -942,24 +890,33 @@
         "tnp"
       ]
     },
-    "rounded-2xl": {
-      "count": 435,
+    "justify-between": {
+      "count": 454,
       "apps": [
+        "Alia",
+        "Astro",
+        "Atlas",
         "Authenticator",
         "Clarity",
         "Codea",
+        "CrowdSource",
         "FAIRWallet",
         "Gemies",
+        "GoWay",
+        "Homiio",
+        "Inbox",
         "Mention",
         "Mercaria",
         "Moovo",
+        "Nilo",
         "Noted",
+        "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
-        "oxy"
+        "oxy",
+        "tnp"
       ]
     },
     "bg-background": {
@@ -986,6 +943,25 @@
         "Willo",
         "oxy",
         "tnp"
+      ]
+    },
+    "rounded-2xl": {
+      "count": 411,
+      "apps": [
+        "Authenticator",
+        "Clarity",
+        "Codea",
+        "FAIRWallet",
+        "Gemies",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Vibbr",
+        "Willo",
+        "oxy"
       ]
     },
     "flex": {
@@ -1027,7 +1003,7 @@
       ]
     },
     "font-bold": {
-      "count": 314,
+      "count": 309,
       "apps": [
         "Atlas",
         "Authenticator",
@@ -1043,14 +1019,13 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "oxy"
       ]
     },
     "px-3": {
-      "count": 308,
+      "count": 306,
       "apps": [
         "Astro",
         "Atlas",
@@ -1070,7 +1045,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
         "oxy",
@@ -1109,7 +1083,7 @@
       "apps": ["Dropsea", "Gemies", "Mercaria", "oxy"]
     },
     "py-2": {
-      "count": 268,
+      "count": 267,
       "apps": [
         "Alia",
         "Astro",
@@ -1128,30 +1102,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
-        "Syra",
-        "Vibbr",
-        "Willo",
-        "oxy",
-        "tnp"
-      ]
-    },
-    "rounded-xl": {
-      "count": 267,
-      "apps": [
-        "Astro",
-        "Authenticator",
-        "Clarity",
-        "FAIRWallet",
-        "Gemies",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "OxyOS",
-        "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -1204,35 +1154,14 @@
         "tnp"
       ]
     },
-    "text-[13px]": {
-      "count": 258,
+    "rounded-xl": {
+      "count": 264,
       "apps": [
-        "Dropsea",
-        "FAIRWallet",
-        "Homiio",
-        "Mention",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy"
-      ]
-    },
-    "overflow-hidden": {
-      "count": 245,
-      "apps": [
-        "Alia",
         "Astro",
         "Authenticator",
         "Clarity",
-        "Codea",
-        "CrowdSource",
-        "Dropsea",
         "FAIRWallet",
         "Gemies",
-        "GoWay",
-        "Homiio",
         "Mention",
         "Mercaria",
         "Moovo",
@@ -1240,32 +1169,8 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
-        "Willo",
-        "oxy"
-      ]
-    },
-    "py-3": {
-      "count": 244,
-      "apps": [
-        "Alia",
-        "Astro",
-        "Clarity",
-        "CrowdSource",
-        "FAIRWallet",
-        "Gemies",
-        "Homiio",
-        "Inbox",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
         "Willo",
         "oxy",
         "tnp"
@@ -1291,9 +1196,59 @@
         "tnp"
       ]
     },
+    "py-3": {
+      "count": 235,
+      "apps": [
+        "Alia",
+        "Astro",
+        "Clarity",
+        "CrowdSource",
+        "FAIRWallet",
+        "Gemies",
+        "Homiio",
+        "Inbox",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy",
+        "tnp"
+      ]
+    },
     "text-shop-caption": {
       "count": 228,
       "apps": ["Mercaria"]
+    },
+    "overflow-hidden": {
+      "count": 226,
+      "apps": [
+        "Alia",
+        "Astro",
+        "Authenticator",
+        "Clarity",
+        "Codea",
+        "CrowdSource",
+        "Dropsea",
+        "FAIRWallet",
+        "Gemies",
+        "GoWay",
+        "Homiio",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "OxyOS",
+        "Peable",
+        "Syra",
+        "Vibbr",
+        "Willo",
+        "oxy"
+      ]
     },
     "gap-space-8": {
       "count": 224,
@@ -1302,6 +1257,20 @@
     "text-text": {
       "count": 220,
       "apps": ["Mercaria", "oxy"]
+    },
+    "text-[13px]": {
+      "count": 219,
+      "apps": [
+        "Dropsea",
+        "FAIRWallet",
+        "Homiio",
+        "Mention",
+        "OxyOS",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy"
+      ]
     },
     "rounded-lg": {
       "count": 217,
@@ -1326,7 +1295,7 @@
       ]
     },
     "mt-1": {
-      "count": 215,
+      "count": 214,
       "apps": [
         "Astro",
         "Authenticator",
@@ -1341,7 +1310,6 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -1457,23 +1425,6 @@
         "tnp"
       ]
     },
-    "text-[15px]": {
-      "count": 194,
-      "apps": [
-        "Astro",
-        "Atlas",
-        "CrowdSource",
-        "FAIRWallet",
-        "Homiio",
-        "Mention",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy"
-      ]
-    },
     "gap-6": {
       "count": 185,
       "apps": [
@@ -1573,8 +1524,28 @@
         "oxy"
       ]
     },
+    "text-[15px]": {
+      "count": 165,
+      "apps": [
+        "Astro",
+        "Atlas",
+        "CrowdSource",
+        "FAIRWallet",
+        "Homiio",
+        "Mention",
+        "OxyOS",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy"
+      ]
+    },
+    "text-text-tertiary": {
+      "count": 161,
+      "apps": ["Gemies", "Homiio", "Mercaria", "oxy"]
+    },
     "mb-3": {
-      "count": 162,
+      "count": 160,
       "apps": [
         "Astro",
         "Clarity",
@@ -1585,17 +1556,12 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
         "oxy",
         "tnp"
       ]
-    },
-    "text-text-tertiary": {
-      "count": 161,
-      "apps": ["Gemies", "Homiio", "Mercaria", "oxy"]
     },
     "px-5": {
       "count": 156,
@@ -1617,7 +1583,7 @@
       ]
     },
     "text-lg": {
-      "count": 151,
+      "count": 149,
       "apps": [
         "Atlas",
         "Clarity",
@@ -1631,7 +1597,6 @@
         "Moovo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -1640,7 +1605,7 @@
       ]
     },
     "uppercase": {
-      "count": 151,
+      "count": 149,
       "apps": [
         "Astro",
         "Clarity",
@@ -1653,7 +1618,6 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "tnp"
@@ -1683,7 +1647,7 @@
       ]
     },
     "py-1": {
-      "count": 143,
+      "count": 142,
       "apps": [
         "Astro",
         "Authenticator",
@@ -1699,7 +1663,6 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
         "oxy",
@@ -1707,7 +1670,7 @@
       ]
     },
     "mt-3": {
-      "count": 142,
+      "count": 136,
       "apps": [
         "Astro",
         "Clarity",
@@ -1720,72 +1683,8 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
-        "tnp"
-      ]
-    },
-    "mt-0.5": {
-      "count": 139,
-      "apps": [
-        "Astro",
-        "Clarity",
-        "Codea",
-        "FAIRWallet",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "tnp"
-      ]
-    },
-    "py-4": {
-      "count": 137,
-      "apps": [
-        "Alia",
-        "Astro",
-        "Atlas",
-        "Clarity",
-        "CrowdSource",
-        "FAIRWallet",
-        "Gemies",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy",
-        "tnp"
-      ]
-    },
-    "mt-4": {
-      "count": 136,
-      "apps": [
-        "Astro",
-        "Authenticator",
-        "Clarity",
-        "CrowdSource",
-        "FAIRWallet",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy",
         "tnp"
       ]
     },
@@ -1816,8 +1715,28 @@
         "tnp"
       ]
     },
-    "mb-2": {
+    "mt-4": {
       "count": 133,
+      "apps": [
+        "Astro",
+        "Authenticator",
+        "Clarity",
+        "CrowdSource",
+        "FAIRWallet",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy",
+        "tnp"
+      ]
+    },
+    "mb-2": {
+      "count": 132,
       "apps": [
         "Authenticator",
         "Clarity",
@@ -1829,10 +1748,27 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
         "oxy",
+        "tnp"
+      ]
+    },
+    "mt-0.5": {
+      "count": 125,
+      "apps": [
+        "Astro",
+        "Clarity",
+        "Codea",
+        "FAIRWallet",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Willo",
         "tnp"
       ]
     },
@@ -1853,6 +1789,28 @@
         "Noted",
         "Peable",
         "Syra",
+        "oxy",
+        "tnp"
+      ]
+    },
+    "py-4": {
+      "count": 122,
+      "apps": [
+        "Alia",
+        "Astro",
+        "Atlas",
+        "Clarity",
+        "CrowdSource",
+        "FAIRWallet",
+        "Gemies",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Willo",
         "oxy",
         "tnp"
       ]
@@ -1985,7 +1943,7 @@
       ]
     },
     "mb-4": {
-      "count": 110,
+      "count": 109,
       "apps": [
         "Astro",
         "Clarity",
@@ -1996,7 +1954,6 @@
         "Moovo",
         "Nilo",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
         "oxy",
@@ -2026,7 +1983,7 @@
       ]
     },
     "px-8": {
-      "count": 103,
+      "count": 102,
       "apps": [
         "Authenticator",
         "FAIRWallet",
@@ -2035,7 +1992,6 @@
         "Mercaria",
         "Moovo",
         "Peable",
-        "Schedio",
         "Syra",
         "Willo",
         "oxy"
@@ -2073,23 +2029,6 @@
         "Noted",
         "Peable",
         "Syra",
-        "oxy",
-        "tnp"
-      ]
-    },
-    "mb-6": {
-      "count": 96,
-      "apps": [
-        "Clarity",
-        "FAIRWallet",
-        "Homiio",
-        "Mention",
-        "Mercaria",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
         "oxy",
         "tnp"
       ]
@@ -2156,8 +2095,24 @@
       "count": 94,
       "apps": ["GoWay", "oxy"]
     },
+    "mb-6": {
+      "count": 93,
+      "apps": [
+        "Clarity",
+        "FAIRWallet",
+        "Homiio",
+        "Mention",
+        "Mercaria",
+        "Noted",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy",
+        "tnp"
+      ]
+    },
     "text-xl": {
-      "count": 92,
+      "count": 91,
       "apps": [
         "Astro",
         "Authenticator",
@@ -2172,7 +2127,6 @@
         "Nilo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -2217,7 +2171,7 @@
       ]
     },
     "text-white": {
-      "count": 89,
+      "count": 88,
       "apps": [
         "Clarity",
         "FAIRWallet",
@@ -2227,7 +2181,6 @@
         "Moovo",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
@@ -2235,7 +2188,7 @@
       ]
     },
     "py-16": {
-      "count": 88,
+      "count": 87,
       "apps": [
         "Atlas",
         "Clarity",
@@ -2245,32 +2198,8 @@
         "Moovo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "tnp"
-      ]
-    },
-    "h-10": {
-      "count": 82,
-      "apps": [
-        "Alia",
-        "Astro",
-        "Clarity",
-        "Codea",
-        "FAIRWallet",
-        "Gemies",
-        "Homiio",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy"
       ]
     },
     "py-2.5": {
@@ -2294,23 +2223,6 @@
         "tnp"
       ]
     },
-    "leading-5": {
-      "count": 81,
-      "apps": [
-        "Atlas",
-        "Clarity",
-        "CrowdSource",
-        "FAIRWallet",
-        "Gemies",
-        "Homiio",
-        "Mention",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Willo",
-        "oxy"
-      ]
-    },
     "border-t": {
       "count": 80,
       "apps": [
@@ -2331,6 +2243,44 @@
         "Syra",
         "oxy",
         "tnp"
+      ]
+    },
+    "h-10": {
+      "count": 80,
+      "apps": [
+        "Alia",
+        "Astro",
+        "Clarity",
+        "Codea",
+        "FAIRWallet",
+        "Gemies",
+        "Homiio",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "OxyOS",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy"
+      ]
+    },
+    "leading-5": {
+      "count": 80,
+      "apps": [
+        "Atlas",
+        "Clarity",
+        "CrowdSource",
+        "FAIRWallet",
+        "Gemies",
+        "Homiio",
+        "Mention",
+        "Noted",
+        "Peable",
+        "Willo",
+        "oxy"
       ]
     },
     "pt-2": {
@@ -2419,8 +2369,12 @@
         "Willo"
       ]
     },
+    "hidden": {
+      "count": 72,
+      "apps": ["Astro", "Clarity", "Homiio", "Mention", "Mercaria", "Moovo", "Willo", "oxy", "tnp"]
+    },
     "p-6": {
-      "count": 73,
+      "count": 72,
       "apps": [
         "Alia",
         "Allo",
@@ -2434,37 +2388,12 @@
         "Nilo",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra",
         "Vibbr",
         "Willo",
         "oxy",
         "tnp"
       ]
-    },
-    "py-1.5": {
-      "count": 73,
-      "apps": [
-        "Astro",
-        "Clarity",
-        "Codea",
-        "Dropsea",
-        "FAIRWallet",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "oxy",
-        "tnp"
-      ]
-    },
-    "hidden": {
-      "count": 72,
-      "apps": ["Astro", "Clarity", "Homiio", "Mention", "Mercaria", "Moovo", "Willo", "oxy", "tnp"]
     },
     "pb-4": {
       "count": 72,
@@ -2502,6 +2431,25 @@
         "OxyOS",
         "Peable",
         "Willo",
+        "tnp"
+      ]
+    },
+    "py-1.5": {
+      "count": 71,
+      "apps": [
+        "Astro",
+        "Clarity",
+        "Codea",
+        "Dropsea",
+        "FAIRWallet",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "oxy",
         "tnp"
       ]
     },
@@ -2603,26 +2551,8 @@
       ]
     },
     "py-3.5": {
-      "count": 66,
-      "apps": ["FAIRWallet", "Mention", "Mercaria", "Peable", "Schedio", "Syra"]
-    },
-    "w-10": {
-      "count": 65,
-      "apps": [
-        "Clarity",
-        "FAIRWallet",
-        "Gemies",
-        "Homiio",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "tnp"
-      ]
+      "count": 64,
+      "apps": ["FAIRWallet", "Mention", "Mercaria", "Peable", "Syra"]
     },
     "text-[14px]": {
       "count": 64,
@@ -2645,6 +2575,23 @@
         "Peable",
         "Willo",
         "oxy",
+        "tnp"
+      ]
+    },
+    "w-10": {
+      "count": 63,
+      "apps": [
+        "Clarity",
+        "FAIRWallet",
+        "Gemies",
+        "Homiio",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Peable",
+        "Syra",
+        "Willo",
         "tnp"
       ]
     },
@@ -2671,8 +2618,16 @@
         "oxy"
       ]
     },
-    "px-1": {
+    "tracking-wider": {
       "count": 61,
+      "apps": ["Clarity", "FAIRWallet", "Mercaria", "Nilo", "Noted", "Peable", "tnp"]
+    },
+    "bg-popover": {
+      "count": 60,
+      "apps": ["Codea", "Syra", "oxy"]
+    },
+    "px-1": {
+      "count": 60,
       "apps": [
         "Astro",
         "Clarity",
@@ -2686,19 +2641,10 @@
         "Noted",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Willo",
         "oxy",
         "tnp"
       ]
-    },
-    "tracking-wider": {
-      "count": 61,
-      "apps": ["Clarity", "FAIRWallet", "Mercaria", "Nilo", "Noted", "Peable", "tnp"]
-    },
-    "bg-popover": {
-      "count": 60,
-      "apps": ["Codea", "Syra", "oxy"]
     },
     "bg-transparent": {
       "count": 58,
@@ -3010,12 +2956,8 @@
       "apps": ["FAIRWallet", "Gemies", "Mention", "Mercaria", "Moovo", "Peable", "Vibbr", "Willo"]
     },
     "mb-8": {
-      "count": 44,
-      "apps": ["Clarity", "FAIRWallet", "Mercaria", "Peable", "Schedio", "tnp"]
-    },
-    "mr-3": {
       "count": 43,
-      "apps": ["Clarity", "FAIRWallet", "Mention", "Moovo", "Peable", "Schedio"]
+      "apps": ["Clarity", "FAIRWallet", "Mercaria", "Peable", "tnp"]
     },
     "px-screen-margin": {
       "count": 43,
@@ -3284,10 +3226,6 @@
         "oxy"
       ]
     },
-    "h-[1px]": {
-      "count": 36,
-      "apps": ["Clarity", "Noted", "Schedio"]
-    },
     "h-px": {
       "count": 36,
       "apps": [
@@ -3304,10 +3242,6 @@
     "text-surface-foreground": {
       "count": 36,
       "apps": ["Moovo", "Noted"]
-    },
-    "mx-4": {
-      "count": 35,
-      "apps": ["Alia", "Authenticator", "Gemies", "Mention", "Mercaria", "Schedio", "Syra"]
     },
     "rounded-3xl": {
       "count": 35,
@@ -3418,10 +3352,6 @@
         "oxy"
       ]
     },
-    "mb-0.5": {
-      "count": 33,
-      "apps": ["Clarity", "Gemies", "Mention", "Schedio", "Syra"]
-    },
     "pointer-events-none": {
       "count": 33,
       "apps": ["Astro", "Codea", "CrowdSource", "Homiio", "Mention", "oxy"]
@@ -3438,22 +3368,12 @@
       "count": 32,
       "apps": ["Clarity", "CrowdSource", "FAIRWallet", "Homiio", "Mention", "Peable", "Syra", "oxy"]
     },
-    "ml-2": {
-      "count": 32,
-      "apps": [
-        "Clarity",
-        "Codea",
-        "FAIRWallet",
-        "Mention",
-        "Nilo",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "tnp"
-      ]
+    "min-w-56": {
+      "count": 31,
+      "apps": ["Peable"]
     },
     "mt-1.5": {
-      "count": 32,
+      "count": 31,
       "apps": [
         "Clarity",
         "FAIRWallet",
@@ -3462,13 +3382,12 @@
         "Moovo",
         "Noted",
         "Peable",
-        "Schedio",
         "Syra",
         "oxy"
       ]
     },
     "mt-5": {
-      "count": 32,
+      "count": 31,
       "apps": [
         "Astro",
         "Authenticator",
@@ -3477,13 +3396,8 @@
         "Mercaria",
         "Moovo",
         "Peable",
-        "Schedio",
         "Willo"
       ]
-    },
-    "min-w-56": {
-      "count": 31,
-      "apps": ["Peable"]
     },
     "p-0": {
       "count": 31,
@@ -3540,18 +3454,13 @@
       "count": 30,
       "apps": ["Clarity", "Nilo"]
     },
-    "ml-3": {
+    "ml-2": {
       "count": 30,
-      "apps": [
-        "Authenticator",
-        "Clarity",
-        "FAIRWallet",
-        "Mention",
-        "Peable",
-        "Schedio",
-        "oxy",
-        "tnp"
-      ]
+      "apps": ["Clarity", "Codea", "FAIRWallet", "Mention", "Nilo", "OxyOS", "Peable", "tnp"]
+    },
+    "mr-3": {
+      "count": 30,
+      "apps": ["Clarity", "FAIRWallet", "Mention", "Moovo", "Peable"]
     },
     "opacity-60": {
       "count": 30,
@@ -3613,28 +3522,6 @@
       "count": 28,
       "apps": ["Willo"]
     },
-    "leading-[18px]": {
-      "count": 28,
-      "apps": ["Homiio", "Mention", "Mercaria", "Schedio", "Syra", "Willo", "oxy"]
-    },
-    "py-12": {
-      "count": 28,
-      "apps": [
-        "Astro",
-        "Clarity",
-        "FAIRWallet",
-        "Mention",
-        "Mercaria",
-        "Moovo",
-        "Nilo",
-        "Noted",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "oxy",
-        "tnp"
-      ]
-    },
     "text-shop-bodyTitleSmall": {
       "count": 28,
       "apps": ["Mercaria"]
@@ -3643,26 +3530,20 @@
       "count": 27,
       "apps": ["Astro", "oxy", "tnp"]
     },
-    "mb-5": {
+    "leading-[18px]": {
       "count": 27,
-      "apps": [
-        "FAIRWallet",
-        "Homiio",
-        "Mention",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy"
-      ]
+      "apps": ["Homiio", "Mention", "Mercaria", "Syra", "Willo", "oxy"]
     },
     "space-y-3": {
       "count": 27,
       "apps": ["oxy", "tnp"]
     },
+    "w-11": {
+      "count": 26,
+      "apps": ["FAIRWallet", "GoWay", "Mention", "Mercaria", "Moovo", "Peable", "Willo"]
+    },
     "w-16": {
-      "count": 27,
+      "count": 26,
       "apps": [
         "Astro",
         "Clarity",
@@ -3672,13 +3553,8 @@
         "Mercaria",
         "OxyOS",
         "Peable",
-        "Schedio",
         "Syra"
       ]
-    },
-    "w-11": {
-      "count": 26,
-      "apps": ["FAIRWallet", "GoWay", "Mention", "Mercaria", "Moovo", "Peable", "Willo"]
     },
     "font-sans": {
       "count": 25,
@@ -3691,6 +3567,23 @@
     "pt-6": {
       "count": 25,
       "apps": ["Astro", "Atlas", "FAIRWallet", "Homiio", "Mention", "Mercaria", "Peable"]
+    },
+    "py-12": {
+      "count": 25,
+      "apps": [
+        "Astro",
+        "Clarity",
+        "FAIRWallet",
+        "Mention",
+        "Mercaria",
+        "Moovo",
+        "Nilo",
+        "Noted",
+        "Peable",
+        "Syra",
+        "oxy",
+        "tnp"
+      ]
     },
     "rounded-[24px]": {
       "count": 25,
@@ -3707,6 +3600,10 @@
     "w-56": {
       "count": 25,
       "apps": ["Astro", "Clarity", "Codea", "Mercaria", "Peable"]
+    },
+    "mb-5": {
+      "count": 24,
+      "apps": ["FAIRWallet", "Homiio", "Mention", "OxyOS", "Peable", "Syra", "Willo", "oxy"]
     },
     "py-space-4": {
       "count": 24,
@@ -3748,21 +3645,6 @@
       "count": 22,
       "apps": ["Astro", "Clarity", "Codea", "Noted", "oxy", "tnp"]
     },
-    "h-16": {
-      "count": 22,
-      "apps": [
-        "CrowdSource",
-        "FAIRWallet",
-        "Mention",
-        "Mercaria",
-        "OxyOS",
-        "Peable",
-        "Schedio",
-        "Syra",
-        "Willo",
-        "oxy"
-      ]
-    },
     "max-w-sm": {
       "count": 22,
       "apps": [
@@ -3779,6 +3661,10 @@
         "oxy",
         "tnp"
       ]
+    },
+    "ml-3": {
+      "count": 22,
+      "apps": ["Authenticator", "Clarity", "FAIRWallet", "Mention", "Peable", "oxy", "tnp"]
     },
     "mt-space-4": {
       "count": 22,
@@ -3833,6 +3719,20 @@
       "count": 21,
       "apps": ["GoWay", "Mercaria", "oxy"]
     },
+    "h-16": {
+      "count": 21,
+      "apps": [
+        "CrowdSource",
+        "FAIRWallet",
+        "Mention",
+        "Mercaria",
+        "OxyOS",
+        "Peable",
+        "Syra",
+        "Willo",
+        "oxy"
+      ]
+    },
     "h-6": {
       "count": 21,
       "apps": [
@@ -3854,9 +3754,9 @@
       "count": 21,
       "apps": ["Astro", "oxy", "tnp"]
     },
-    "mr-": {
+    "mx-4": {
       "count": 21,
-      "apps": ["Schedio"]
+      "apps": ["Alia", "Authenticator", "Gemies", "Mention", "Mercaria", "Syra"]
     },
     "px-space-8": {
       "count": 21,
@@ -3910,10 +3810,6 @@
     "p-3.5": {
       "count": 20,
       "apps": ["FAIRWallet", "Peable", "Willo"]
-    },
-    "pr-3": {
-      "count": 20,
-      "apps": ["CrowdSource", "FAIRWallet", "Mention", "Peable", "Schedio", "Syra"]
     },
     "shadow-sm": {
       "count": 20,
@@ -4151,10 +4047,6 @@
       "count": 15,
       "apps": ["Astro", "Clarity", "Codea", "Gemies", "Homiio", "Mercaria", "OxyOS", "Willo", "oxy"]
     },
-    "gap-8": {
-      "count": 15,
-      "apps": ["Astro", "Atlas", "Gemies", "Homiio", "Mercaria", "Moovo", "Schedio", "oxy", "tnp"]
-    },
     "h-5": {
       "count": 15,
       "apps": [
@@ -4239,6 +4131,10 @@
       "count": 14,
       "apps": ["Astro", "Codea", "oxy"]
     },
+    "gap-8": {
+      "count": 14,
+      "apps": ["Astro", "Atlas", "Gemies", "Homiio", "Mercaria", "Moovo", "oxy", "tnp"]
+    },
     "leading-7": {
       "count": 14,
       "apps": ["Clarity", "Gemies", "Mention", "Nilo", "Willo"]
@@ -4250,10 +4146,6 @@
     "leading-snug": {
       "count": 14,
       "apps": ["Astro", "Clarity", "Codea", "Mention", "oxy"]
-    },
-    "mx-": {
-      "count": 14,
-      "apps": ["Schedio"]
     },
     "py-space-24": {
       "count": 14,
@@ -4319,6 +4211,10 @@
       "count": 13,
       "apps": ["Mercaria", "oxy"]
     },
+    "mb-0.5": {
+      "count": 13,
+      "apps": ["Clarity", "Gemies", "Mention", "Syra"]
+    },
     "min-h-screen": {
       "count": 13,
       "apps": ["Mercaria", "Moovo", "tnp"]
@@ -4326,6 +4222,10 @@
     "p-8": {
       "count": 13,
       "apps": ["Authenticator", "Codea", "Mention", "Moovo", "Vibbr", "Willo", "oxy"]
+    },
+    "pr-3": {
+      "count": 13,
+      "apps": ["CrowdSource", "FAIRWallet", "Mention", "Peable", "Syra"]
     },
     "py-space-16": {
       "count": 13,
@@ -4396,10 +4296,6 @@
     "leading-[20px]": {
       "count": 12,
       "apps": ["Mention", "Mercaria", "Willo", "oxy"]
-    },
-    "ml-1": {
-      "count": 12,
-      "apps": ["Clarity", "Codea", "FAIRWallet", "Mention", "Noted", "Peable", "Schedio"]
     },
     "mt-space-8": {
       "count": 12,
@@ -4677,10 +4573,6 @@
       "count": 9,
       "apps": ["Clarity", "Homiio", "Vibbr"]
     },
-    "mb-": {
-      "count": 9,
-      "apps": ["Schedio"]
-    },
     "mb-2.5": {
       "count": 9,
       "apps": ["Mention", "Syra"]
@@ -4696,6 +4588,10 @@
     "min-w-64": {
       "count": 9,
       "apps": ["Mercaria", "Peable"]
+    },
+    "ml-1": {
+      "count": 9,
+      "apps": ["Clarity", "Codea", "FAIRWallet", "Mention", "Noted", "Peable"]
     },
     "mt-10": {
       "count": 9,
@@ -4812,6 +4708,10 @@
     "gap-x-3": {
       "count": 8,
       "apps": ["Astro", "Homiio", "Peable"]
+    },
+    "h-[1px]": {
+      "count": 8,
+      "apps": ["Clarity", "Noted"]
     },
     "inset-y-0": {
       "count": 8,
@@ -5081,10 +4981,6 @@
       "count": 7,
       "apps": ["Astro", "Codea"]
     },
-    "svgIcon": {
-      "count": 7,
-      "apps": ["Schedio"]
-    },
     "text-[28px]": {
       "count": 7,
       "apps": ["CrowdSource", "FAIRWallet", "Mention", "Peable"]
@@ -5253,10 +5149,6 @@
       "count": 6,
       "apps": ["Astro", "Clarity", "Mention"]
     },
-    "pb-": {
-      "count": 6,
-      "apps": ["Schedio"]
-    },
     "pb-space-16": {
       "count": 6,
       "apps": ["GoWay", "Mercaria"]
@@ -5272,10 +5164,6 @@
     "pr-2.5": {
       "count": 6,
       "apps": ["Alia", "Clarity", "Nilo"]
-    },
-    "pt-": {
-      "count": 6,
-      "apps": ["Schedio"]
     },
     "pt-16": {
       "count": 6,
@@ -7004,10 +6892,6 @@
     "framed": {
       "count": 2,
       "apps": ["CrowdSource"]
-    },
-    "gap-": {
-      "count": 2,
-      "apps": ["Schedio"]
     },
     "gap-10": {
       "count": 2,
@@ -9621,10 +9505,6 @@
       "count": 1,
       "apps": ["Homiio"]
     },
-    "pb-4.5": {
-      "count": 1,
-      "apps": ["Schedio"]
-    },
     "pb-7": {
       "count": 1,
       "apps": ["oxy"]
@@ -9825,10 +9705,6 @@
       "count": 1,
       "apps": ["Astro"]
     },
-    "pt-4.5": {
-      "count": 1,
-      "apps": ["Schedio"]
-    },
     "pt-[10px]": {
       "count": 1,
       "apps": ["oxy"]
@@ -9849,10 +9725,6 @@
       "count": 1,
       "apps": ["oxy"]
     },
-    "px-": {
-      "count": 1,
-      "apps": ["Schedio"]
-    },
     "px-[16px]": {
       "count": 1,
       "apps": ["oxy"]
@@ -9860,10 +9732,6 @@
     "px-space-20": {
       "count": 1,
       "apps": ["oxy"]
-    },
-    "py-": {
-      "count": 1,
-      "apps": ["Schedio"]
     },
     "py-14": {
       "count": 1,

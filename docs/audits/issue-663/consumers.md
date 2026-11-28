@@ -36,14 +36,14 @@ product activity or adoption. `ownershipCandidates` are review entry points,
 not a completed route matrix. The generated snapshot preserves failed fetches
 and skipped repositories rather than silently declaring them current.
 
-The refreshed 2026-11-09 snapshot contains 30 repository candidates and 74
-direct dependency manifests after excluding historical audit manifests. All 30
-candidate default refs fetched successfully. The census finds 3,918 source
-import files and 477 ownership-candidate files; these are search leads, not
+The refreshed 2026-11-09 snapshot contains 29 repository candidates and 72
+direct dependency manifests after excluding historical audit manifests. All 29
+candidate default refs fetched successfully. The census finds 3,909 source
+import files and 474 ownership-candidate files; these are search leads, not
 route coverage or adoption results. Ten manifests have no Bloom installation
-resolvable from their local checkout. Of the 64 with a resolvable installation,
-55 are outside at least one range declared by the fetched source manifests;
-source and checkout declarations differ for 49 manifests. Thirteen checkouts
+resolvable from their local checkout. Of the 62 with a resolvable installation,
+53 are outside at least one range declared by the fetched source manifests;
+source and checkout declarations differ for 47 manifests. Thirteen checkouts
 have local changes, including 95 entries in Mention; source evidence still comes
 from the fetched git refs, while installed versions and dirty counts describe
 this host. None of these local package versions proves what a distributed app

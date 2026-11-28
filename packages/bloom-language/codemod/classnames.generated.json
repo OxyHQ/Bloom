@@ -18,26 +18,26 @@
    "language": ".foreground('muted')"
   },
   "items-center": {
-   "count": 2876,
-   "apps": 27,
+   "count": 2738,
+   "apps": 26,
    "status": "mapped",
    "language": ".align('center')"
   },
   "flex-row": {
-   "count": 2530,
-   "apps": 25,
+   "count": 2445,
+   "apps": 24,
    "status": "structure",
    "language": "HStack(…)"
   },
   "text-sm": {
-   "count": 1955,
-   "apps": 21,
+   "count": 1951,
+   "apps": 20,
    "status": "mapped",
    "language": ".font('14').leading('20px')"
   },
   "flex-1": {
-   "count": 1914,
-   "apps": 27,
+   "count": 1819,
+   "apps": 26,
    "status": "mapped",
    "language": ".flex('1')"
   },
@@ -48,14 +48,14 @@
    "language": ".foreground('foreground')"
   },
   "text-xs": {
-   "count": 1489,
-   "apps": 23,
+   "count": 1488,
+   "apps": 22,
    "status": "mapped",
    "language": ".font('xs').leading('16px')"
   },
   "gap-2": {
-   "count": 1279,
-   "apps": 26,
+   "count": 1277,
+   "apps": 25,
    "status": "mapped",
    "language": ".spacing('sm')"
   },
@@ -66,8 +66,8 @@
    "language": ".spacing('md')"
   },
   "font-semibold": {
-   "count": 996,
-   "apps": 22,
+   "count": 985,
+   "apps": 21,
    "status": "mapped",
    "language": ".weight('semibold')"
   },
@@ -78,26 +78,26 @@
    "language": ".border('border')"
   },
   "justify-center": {
-   "count": 889,
-   "apps": 25,
+   "count": 836,
+   "apps": 24,
    "status": "mapped",
    "language": ".justify('center')"
   },
   "border": {
-   "count": 857,
-   "apps": 22,
+   "count": 828,
+   "apps": 21,
    "status": "mapped",
    "language": ".border(role, 'thin')"
   },
   "px-4": {
-   "count": 645,
-   "apps": 25,
+   "count": 620,
+   "apps": 24,
    "status": "mapped",
    "language": ".padding('horizontal', 'lg')"
   },
   "flex-wrap": {
-   "count": 599,
-   "apps": 25,
+   "count": 598,
+   "apps": 24,
    "status": "mapped",
    "language": ".wrap()"
   },
@@ -107,27 +107,21 @@
    "status": "mapped",
    "language": ".spacing('lg')"
   },
-  "font-medium": {
-   "count": 546,
-   "apps": 20,
-   "status": "mapped",
-   "language": ".weight('medium')"
-  },
   "rounded-full": {
-   "count": 542,
-   "apps": 21,
+   "count": 536,
+   "apps": 20,
    "status": "mapped",
    "language": ".corner('infinite')"
   },
-  "text-base": {
-   "count": 501,
-   "apps": 20,
+  "font-medium": {
+   "count": 511,
+   "apps": 19,
    "status": "mapped",
-   "language": ".font('16').leading('normal')"
+   "language": ".weight('medium')"
   },
   "text-center": {
-   "count": 499,
-   "apps": 24,
+   "count": 496,
+   "apps": 23,
    "status": "mapped",
    "language": ".textAlign('center')"
   },
@@ -137,17 +131,17 @@
    "status": "mapped",
    "language": ".frame({ width: 'full' })"
   },
-  "justify-between": {
-   "count": 490,
-   "apps": 25,
-   "status": "mapped",
-   "language": ".justify('between')"
-  },
   "gap-1": {
    "count": 476,
    "apps": 22,
    "status": "mapped",
    "language": ".spacing('xs')"
+  },
+  "text-base": {
+   "count": 473,
+   "apps": 19,
+   "status": "mapped",
+   "language": ".font('16').leading('normal')"
   },
   "bg-surface": {
    "count": 470,
@@ -162,22 +156,28 @@
    "language": ".font('mono')"
   },
   "p-4": {
-   "count": 458,
-   "apps": 24,
+   "count": 457,
+   "apps": 23,
    "status": "mapped",
    "language": ".padding('all', 'lg')"
   },
-  "rounded-2xl": {
-   "count": 435,
-   "apps": 15,
+  "justify-between": {
+   "count": 454,
+   "apps": 24,
    "status": "mapped",
-   "language": ".corner('lg')"
+   "language": ".justify('between')"
   },
   "bg-background": {
    "count": 430,
    "apps": 21,
    "status": "mapped",
    "language": ".background('background')"
+  },
+  "rounded-2xl": {
+   "count": 411,
+   "apps": 14,
+   "status": "mapped",
+   "language": ".corner('lg')"
   },
   "flex": {
    "count": 342,
@@ -192,14 +192,14 @@
    "language": ".background('mutedFill')"
   },
   "font-bold": {
-   "count": 314,
-   "apps": 18,
+   "count": 309,
+   "apps": 17,
    "status": "mapped",
    "language": ".weight('bold')"
   },
   "px-3": {
-   "count": 308,
-   "apps": 23,
+   "count": 306,
+   "apps": 22,
    "status": "mapped",
    "language": ".padding('horizontal', 'md')"
   },
@@ -216,16 +216,10 @@
    "language": ".foreground('muted')"
   },
   "py-2": {
-   "count": 268,
-   "apps": 23,
+   "count": 267,
+   "apps": 22,
    "status": "mapped",
    "language": ".padding('vertical', 'sm')"
-  },
-  "rounded-xl": {
-   "count": 267,
-   "apps": 18,
-   "status": "mapped",
-   "language": ".corner('md')"
   },
   "min-w-0": {
    "count": 265,
@@ -239,23 +233,11 @@
    "status": "mapped",
    "language": ".background('card')"
   },
-  "text-[13px]": {
-   "count": 258,
-   "apps": 10,
+  "rounded-xl": {
+   "count": 264,
+   "apps": 17,
    "status": "mapped",
-   "language": ".font('sm')"
-  },
-  "overflow-hidden": {
-   "count": 245,
-   "apps": 23,
-   "status": "mapped",
-   "language": ".clipped()"
-  },
-  "py-3": {
-   "count": 244,
-   "apps": 19,
-   "status": "mapped",
-   "language": ".padding('vertical', 'md')"
+   "language": ".corner('md')"
   },
   "text-destructive": {
    "count": 239,
@@ -263,11 +245,23 @@
    "status": "mapped",
    "language": ".foreground('destructive')"
   },
+  "py-3": {
+   "count": 235,
+   "apps": 18,
+   "status": "mapped",
+   "language": ".padding('vertical', 'md')"
+  },
   "text-shop-caption": {
    "count": 228,
    "apps": 1,
    "status": "app",
    "language": "not a Bloom or Tailwind utility (an app’s own class)"
+  },
+  "overflow-hidden": {
+   "count": 226,
+   "apps": 22,
+   "status": "mapped",
+   "language": ".clipped()"
   },
   "gap-space-8": {
    "count": 224,
@@ -281,6 +275,12 @@
    "status": "mapped",
    "language": ".foreground('foreground')"
   },
+  "text-[13px]": {
+   "count": 219,
+   "apps": 9,
+   "status": "mapped",
+   "language": ".font('sm')"
+  },
   "rounded-lg": {
    "count": 217,
    "apps": 17,
@@ -288,8 +288,8 @@
    "language": ".corner('sm')"
   },
   "mt-1": {
-   "count": 215,
-   "apps": 19,
+   "count": 214,
+   "apps": 18,
    "status": "mapped",
    "language": ".margin('top', 'xs')"
   },
@@ -323,12 +323,6 @@
    "status": "mapped",
    "language": ".corner('6')"
   },
-  "text-[15px]": {
-   "count": 194,
-   "apps": 12,
-   "status": "mapped",
-   "language": ".font('md')"
-  },
   "gap-6": {
    "count": 185,
    "apps": 20,
@@ -359,17 +353,23 @@
    "status": "mapped",
    "language": ".opacity('70')"
   },
-  "mb-3": {
-   "count": 162,
-   "apps": 15,
+  "text-[15px]": {
+   "count": 165,
+   "apps": 11,
    "status": "mapped",
-   "language": ".margin('bottom', 'md')"
+   "language": ".font('md')"
   },
   "text-text-tertiary": {
    "count": 161,
    "apps": 4,
    "status": "mapped",
    "language": ".foreground('muted')"
+  },
+  "mb-3": {
+   "count": 160,
+   "apps": 14,
+   "status": "mapped",
+   "language": ".margin('bottom', 'md')"
   },
   "px-5": {
    "count": 156,
@@ -378,14 +378,14 @@
    "language": ".padding('horizontal', 'xl')"
   },
   "text-lg": {
-   "count": 151,
-   "apps": 18,
+   "count": 149,
+   "apps": 17,
    "status": "mapped",
    "language": ".font('18').leading('28px')"
   },
   "uppercase": {
-   "count": 151,
-   "apps": 15,
+   "count": 149,
+   "apps": 14,
    "status": "mapped",
    "language": ".textCase('uppercase')"
   },
@@ -396,34 +396,16 @@
    "language": ".padding('horizontal', '2xl')"
   },
   "py-1": {
-   "count": 143,
-   "apps": 19,
+   "count": 142,
+   "apps": 18,
    "status": "mapped",
    "language": ".padding('vertical', 'xs')"
   },
   "mt-3": {
-   "count": 142,
-   "apps": 15,
-   "status": "mapped",
-   "language": ".margin('top', 'md')"
-  },
-  "mt-0.5": {
-   "count": 139,
+   "count": 136,
    "apps": 14,
    "status": "mapped",
-   "language": ".margin('top', '2xs')"
-  },
-  "py-4": {
-   "count": 137,
-   "apps": 18,
-   "status": "mapped",
-   "language": ".padding('vertical', 'lg')"
-  },
-  "mt-4": {
-   "count": 136,
-   "apps": 16,
-   "status": "mapped",
-   "language": ".margin('top', 'lg')"
+   "language": ".margin('top', 'md')"
   },
   "px-2": {
    "count": 135,
@@ -431,17 +413,35 @@
    "status": "mapped",
    "language": ".padding('horizontal', 'sm')"
   },
-  "mb-2": {
+  "mt-4": {
    "count": 133,
    "apps": 15,
    "status": "mapped",
+   "language": ".margin('top', 'lg')"
+  },
+  "mb-2": {
+   "count": 132,
+   "apps": 14,
+   "status": "mapped",
    "language": ".margin('bottom', 'sm')"
+  },
+  "mt-0.5": {
+   "count": 125,
+   "apps": 13,
+   "status": "mapped",
+   "language": ".margin('top', '2xs')"
   },
   "gap-0.5": {
    "count": 124,
    "apps": 16,
    "status": "mapped",
    "language": ".spacing('2xs')"
+  },
+  "py-4": {
+   "count": 122,
+   "apps": 17,
+   "status": "mapped",
+   "language": ".padding('vertical', 'lg')"
   },
   "bg-primary": {
    "count": 121,
@@ -492,8 +492,8 @@
    "language": ".font('11')"
   },
   "mb-4": {
-   "count": 110,
-   "apps": 14,
+   "count": 109,
+   "apps": 13,
    "status": "mapped",
    "language": ".margin('bottom', 'lg')"
   },
@@ -510,8 +510,8 @@
    "language": ".margin('bottom', 'xs')"
   },
   "px-8": {
-   "count": 103,
-   "apps": 11,
+   "count": 102,
+   "apps": 10,
    "status": "mapped",
    "language": ".padding('horizontal', '3xl')"
   },
@@ -539,12 +539,6 @@
    "status": "mapped",
    "language": ".align('end')"
   },
-  "mb-6": {
-   "count": 96,
-   "apps": 12,
-   "status": "mapped",
-   "language": ".margin('bottom', '2xl')"
-  },
   "bg-primary/10": {
    "count": 95,
    "apps": 12,
@@ -569,9 +563,15 @@
    "status": "mapped",
    "language": ".font('11').leading('14px')"
   },
+  "mb-6": {
+   "count": 93,
+   "apps": 11,
+   "status": "mapped",
+   "language": ".margin('bottom', '2xl')"
+  },
   "text-xl": {
-   "count": 92,
-   "apps": 19,
+   "count": 91,
+   "apps": 18,
    "status": "mapped",
    "language": ".font('xl').leading('28px')"
   },
@@ -588,22 +588,16 @@
    "language": ".cursor('pointer')"
   },
   "text-white": {
-   "count": 89,
-   "apps": 13,
+   "count": 88,
+   "apps": 12,
    "status": "mapped",
    "language": ".foreground('white')"
   },
   "py-16": {
-   "count": 88,
-   "apps": 11,
+   "count": 87,
+   "apps": 10,
    "status": "mapped",
    "language": ".padding('vertical', '64')"
-  },
-  "h-10": {
-   "count": 82,
-   "apps": 18,
-   "status": "mapped",
-   "language": ".frame({ height: '4xl' })"
   },
   "py-2.5": {
    "count": 82,
@@ -611,17 +605,23 @@
    "status": "mapped",
    "language": ".padding('vertical', '10')"
   },
-  "leading-5": {
-   "count": 81,
-   "apps": 12,
-   "status": "mapped",
-   "language": ".leading('20px')"
-  },
   "border-t": {
    "count": 80,
    "apps": 17,
    "status": "mapped",
    "language": ".border(role, 'thin', 'top')"
+  },
+  "h-10": {
+   "count": 80,
+   "apps": 17,
+   "status": "mapped",
+   "language": ".frame({ height: '4xl' })"
+  },
+  "leading-5": {
+   "count": 80,
+   "apps": 11,
+   "status": "mapped",
+   "language": ".leading('20px')"
   },
   "pt-2": {
    "count": 79,
@@ -653,23 +653,17 @@
    "status": "mapped",
    "language": ".frame({ height: '36' })"
   },
-  "p-6": {
-   "count": 73,
-   "apps": 18,
-   "status": "mapped",
-   "language": ".padding('all', '2xl')"
-  },
-  "py-1.5": {
-   "count": 73,
-   "apps": 15,
-   "status": "mapped",
-   "language": ".padding('vertical', '6')"
-  },
   "hidden": {
    "count": 72,
    "apps": 9,
    "status": "mapped",
    "language": ".hidden() (or a conditional child, `show && view`)"
+  },
+  "p-6": {
+   "count": 72,
+   "apps": 17,
+   "status": "mapped",
+   "language": ".padding('all', '2xl')"
   },
   "pb-4": {
    "count": 72,
@@ -682,6 +676,12 @@
    "apps": 17,
    "status": "mapped",
    "language": ".padding('bottom', 'sm')"
+  },
+  "py-1.5": {
+   "count": 71,
+   "apps": 14,
+   "status": "mapped",
+   "language": ".padding('vertical', '6')"
   },
   "self-center": {
    "count": 70,
@@ -720,16 +720,10 @@
    "language": ".padding('vertical', '2xs')"
   },
   "py-3.5": {
-   "count": 66,
-   "apps": 6,
+   "count": 64,
+   "apps": 5,
    "status": "mapped",
    "language": ".padding('vertical', '14')"
-  },
-  "w-10": {
-   "count": 65,
-   "apps": 13,
-   "status": "mapped",
-   "language": ".frame({ width: '4xl' })"
   },
   "text-[14px]": {
    "count": 64,
@@ -743,6 +737,12 @@
    "status": "mapped",
    "language": ".padding('top', 'md')"
   },
+  "w-10": {
+   "count": 63,
+   "apps": 12,
+   "status": "mapped",
+   "language": ".frame({ width: '4xl' })"
+  },
   "text-shop-bodySmall": {
    "count": 62,
    "apps": 1,
@@ -755,12 +755,6 @@
    "status": "mapped",
    "language": ".background('border')"
   },
-  "px-1": {
-   "count": 61,
-   "apps": 16,
-   "status": "mapped",
-   "language": ".padding('horizontal', 'xs')"
-  },
   "tracking-wider": {
    "count": 61,
    "apps": 7,
@@ -772,6 +766,12 @@
    "apps": 3,
    "status": "mapped",
    "language": ".background('popover')"
+  },
+  "px-1": {
+   "count": 60,
+   "apps": 15,
+   "status": "mapped",
+   "language": ".padding('horizontal', 'xs')"
   },
   "bg-transparent": {
    "count": 58,
@@ -924,16 +924,10 @@
    "language": ".background('white')"
   },
   "mb-8": {
-   "count": 44,
-   "apps": 6,
+   "count": 43,
+   "apps": 5,
    "status": "mapped",
    "language": ".margin('bottom', '3xl')"
-  },
-  "mr-3": {
-   "count": 43,
-   "apps": 6,
-   "status": "mapped",
-   "language": ".margin('right', 'md')"
   },
   "px-screen-margin": {
    "count": 43,
@@ -1079,12 +1073,6 @@
    "status": "mapped",
    "language": ".frame({ height: '28' })"
   },
-  "h-[1px]": {
-   "count": 36,
-   "apps": 3,
-   "status": "mapped",
-   "language": ".frame({ height: '1' })"
-  },
   "h-px": {
    "count": 36,
    "apps": 8,
@@ -1096,12 +1084,6 @@
    "apps": 2,
    "status": "mapped",
    "language": ".foreground('onSurface')"
-  },
-  "mx-4": {
-   "count": 35,
-   "apps": 7,
-   "status": "mapped",
-   "language": ".margin('horizontal', 'lg')"
   },
   "rounded-3xl": {
    "count": 35,
@@ -1157,12 +1139,6 @@
    "status": "mapped",
    "language": ".position({ bottom: 'none' })"
   },
-  "mb-0.5": {
-   "count": 33,
-   "apps": 5,
-   "status": "mapped",
-   "language": ".margin('bottom', '2xs')"
-  },
   "pointer-events-none": {
    "count": 33,
    "apps": 6,
@@ -1187,29 +1163,23 @@
    "status": "mapped",
    "language": ".margin('bottom', '6')"
   },
-  "ml-2": {
-   "count": 32,
-   "apps": 9,
-   "status": "mapped",
-   "language": ".margin('left', 'sm')"
-  },
-  "mt-1.5": {
-   "count": 32,
-   "apps": 10,
-   "status": "mapped",
-   "language": ".margin('top', '6')"
-  },
-  "mt-5": {
-   "count": 32,
-   "apps": 9,
-   "status": "mapped",
-   "language": ".margin('top', 'xl')"
-  },
   "min-w-56": {
    "count": 31,
    "apps": 1,
    "status": "mapped",
    "language": ".frame({ minWidth: '224' })"
+  },
+  "mt-1.5": {
+   "count": 31,
+   "apps": 9,
+   "status": "mapped",
+   "language": ".margin('top', '6')"
+  },
+  "mt-5": {
+   "count": 31,
+   "apps": 8,
+   "status": "mapped",
+   "language": ".margin('top', 'xl')"
   },
   "p-0": {
    "count": 31,
@@ -1253,11 +1223,17 @@
    "status": "mapped",
    "language": ".border('border/60')"
   },
-  "ml-3": {
+  "ml-2": {
    "count": 30,
    "apps": 8,
    "status": "mapped",
-   "language": ".margin('left', 'md')"
+   "language": ".margin('left', 'sm')"
+  },
+  "mr-3": {
+   "count": 30,
+   "apps": 5,
+   "status": "mapped",
+   "language": ".margin('right', 'md')"
   },
   "opacity-60": {
    "count": 30,
@@ -1313,18 +1289,6 @@
    "status": "app",
    "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
-  "leading-[18px]": {
-   "count": 28,
-   "apps": 7,
-   "status": "mapped",
-   "language": ".leading('18px')"
-  },
-  "py-12": {
-   "count": 28,
-   "apps": 13,
-   "status": "mapped",
-   "language": ".padding('vertical', '48')"
-  },
   "text-shop-bodyTitleSmall": {
    "count": 28,
    "apps": 1,
@@ -1337,11 +1301,11 @@
    "status": "structure",
    "language": "Grid(…).columns(n)"
   },
-  "mb-5": {
+  "leading-[18px]": {
    "count": 27,
-   "apps": 9,
+   "apps": 6,
    "status": "mapped",
-   "language": ".margin('bottom', 'xl')"
+   "language": ".leading('18px')"
   },
   "space-y-3": {
    "count": 27,
@@ -1349,17 +1313,17 @@
    "status": "mapped",
    "language": ".childSpacing('vertical', 'md')"
   },
-  "w-16": {
-   "count": 27,
-   "apps": 10,
-   "status": "mapped",
-   "language": ".frame({ width: '64' })"
-  },
   "w-11": {
    "count": 26,
    "apps": 7,
    "status": "mapped",
    "language": ".frame({ width: '44' })"
+  },
+  "w-16": {
+   "count": 26,
+   "apps": 9,
+   "status": "mapped",
+   "language": ".frame({ width: '64' })"
   },
   "font-sans": {
    "count": 25,
@@ -1378,6 +1342,12 @@
    "apps": 7,
    "status": "mapped",
    "language": ".padding('top', '2xl')"
+  },
+  "py-12": {
+   "count": 25,
+   "apps": 12,
+   "status": "mapped",
+   "language": ".padding('vertical', '48')"
   },
   "rounded-[24px]": {
    "count": 25,
@@ -1402,6 +1372,12 @@
    "apps": 5,
    "status": "mapped",
    "language": ".frame({ width: '224' })"
+  },
+  "mb-5": {
+   "count": 24,
+   "apps": 8,
+   "status": "mapped",
+   "language": ".margin('bottom', 'xl')"
   },
   "py-space-4": {
    "count": 24,
@@ -1463,17 +1439,17 @@
    "status": "mapped",
    "language": ".cursor('not-allowed')"
   },
-  "h-16": {
-   "count": 22,
-   "apps": 10,
-   "status": "mapped",
-   "language": ".frame({ height: '64' })"
-  },
   "max-w-sm": {
    "count": 22,
    "apps": 12,
    "status": "mapped",
    "language": ".frame({ maxWidth: '384' })"
+  },
+  "ml-3": {
+   "count": 22,
+   "apps": 7,
+   "status": "mapped",
+   "language": ".margin('left', 'md')"
   },
   "mt-space-4": {
    "count": 22,
@@ -1535,6 +1511,12 @@
    "status": "mapped",
    "language": ".spacing('2xl')"
   },
+  "h-16": {
+   "count": 21,
+   "apps": 9,
+   "status": "mapped",
+   "language": ".frame({ height: '64' })"
+  },
   "h-6": {
    "count": 21,
    "apps": 12,
@@ -1547,11 +1529,11 @@
    "status": "structure",
    "language": "a stack (HStack or VStack)"
   },
-  "mr-": {
+  "mx-4": {
    "count": 21,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "apps": 6,
+   "status": "mapped",
+   "language": ".margin('horizontal', 'lg')"
   },
   "px-space-8": {
    "count": 21,
@@ -1614,12 +1596,6 @@
    "apps": 3,
    "status": "mapped",
    "language": ".padding('all', '14')"
-  },
-  "pr-3": {
-   "count": 20,
-   "apps": 6,
-   "status": "mapped",
-   "language": ".padding('right', 'md')"
   },
   "shadow-sm": {
    "count": 20,
@@ -1899,12 +1875,6 @@
    "status": "mapped",
    "language": ".weight('regular')"
   },
-  "gap-8": {
-   "count": 15,
-   "apps": 9,
-   "status": "mapped",
-   "language": ".spacing('3xl')"
-  },
   "h-5": {
    "count": 15,
    "apps": 9,
@@ -1985,6 +1955,12 @@
    "status": "motion",
    "language": "opacity, the insertion of .transition(…) (the motion layer)"
   },
+  "gap-8": {
+   "count": 14,
+   "apps": 8,
+   "status": "mapped",
+   "language": ".spacing('3xl')"
+  },
   "leading-7": {
    "count": 14,
    "apps": 5,
@@ -2002,12 +1978,6 @@
    "apps": 5,
    "status": "mapped",
    "language": ".leading('easy')"
-  },
-  "mx-": {
-   "count": 14,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "py-space-24": {
    "count": 14,
@@ -2107,6 +2077,12 @@
    "status": "mapped",
    "language": ".leading('24px')"
   },
+  "mb-0.5": {
+   "count": 13,
+   "apps": 4,
+   "status": "mapped",
+   "language": ".margin('bottom', '2xs')"
+  },
   "min-h-screen": {
    "count": 13,
    "apps": 3,
@@ -2118,6 +2094,12 @@
    "apps": 7,
    "status": "mapped",
    "language": ".padding('all', '3xl')"
+  },
+  "pr-3": {
+   "count": 13,
+   "apps": 5,
+   "status": "mapped",
+   "language": ".padding('right', 'md')"
   },
   "py-space-16": {
    "count": 13,
@@ -2208,12 +2190,6 @@
    "apps": 4,
    "status": "mapped",
    "language": ".leading('20px')"
-  },
-  "ml-1": {
-   "count": 12,
-   "apps": 7,
-   "status": "mapped",
-   "language": ".margin('left', 'xs')"
   },
   "mt-space-8": {
    "count": 12,
@@ -2643,12 +2619,6 @@
    "status": "mapped",
    "language": ".frame({ maxWidth: '720' })"
   },
-  "mb-": {
-   "count": 9,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
-  },
   "mb-2.5": {
    "count": 9,
    "apps": 2,
@@ -2672,6 +2642,12 @@
    "apps": 2,
    "status": "mapped",
    "language": ".frame({ minWidth: '256' })"
+  },
+  "ml-1": {
+   "count": 9,
+   "apps": 6,
+   "status": "mapped",
+   "language": ".margin('left', 'xs')"
   },
   "mt-10": {
    "count": 9,
@@ -2854,6 +2830,12 @@
    "apps": 3,
    "status": "mapped",
    "language": ".horizontalSpacing('md')"
+  },
+  "h-[1px]": {
+   "count": 8,
+   "apps": 2,
+   "status": "mapped",
+   "language": ".frame({ height: '1' })"
   },
   "inset-y-0": {
    "count": 8,
@@ -3267,12 +3249,6 @@
    "status": "mapped",
    "language": ".frame({ width: '28', height: '28' })"
   },
-  "svgIcon": {
-   "count": 7,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
-  },
   "text-[28px]": {
    "count": 7,
    "apps": 4,
@@ -3537,12 +3513,6 @@
    "status": "mapped",
    "language": ".padding('all', '10')"
   },
-  "pb-": {
-   "count": 6,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
-  },
   "pb-space-16": {
    "count": 6,
    "apps": 2,
@@ -3566,12 +3536,6 @@
    "apps": 3,
    "status": "mapped",
    "language": ".padding('right', '10')"
-  },
-  "pt-": {
-   "count": 6,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "pt-16": {
    "count": 6,
@@ -6286,12 +6250,6 @@
    "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "framed": {
-   "count": 2,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
-  },
-  "gap-": {
    "count": 2,
    "apps": 1,
    "status": "app",
@@ -10507,14 +10465,6 @@
    "status": "mapped",
    "language": ".padding('bottom', '80')"
   },
-  "pb-4.5": {
-   "count": 1,
-   "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "18px",
-   "language": ".padding('bottom', …)"
-  },
   "pb-7": {
    "count": 1,
    "apps": 1,
@@ -10819,14 +10769,6 @@
    "status": "mapped",
    "language": ".padding('top', '14')"
   },
-  "pt-4.5": {
-   "count": 1,
-   "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "18px",
-   "language": ".padding('top', …)"
-  },
   "pt-[10px]": {
    "count": 1,
    "apps": 1,
@@ -10859,12 +10801,6 @@
    "status": "mapped",
    "language": ".padding('top', '5xl')"
   },
-  "px-": {
-   "count": 1,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
-  },
   "px-[16px]": {
    "count": 1,
    "apps": 1,
@@ -10876,12 +10812,6 @@
    "apps": 1,
    "status": "mapped",
    "language": ".padding('horizontal', 'xl')"
-  },
-  "py-": {
-   "count": 1,
-   "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "py-14": {
    "count": 1,
