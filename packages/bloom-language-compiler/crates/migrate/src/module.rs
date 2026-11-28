@@ -209,6 +209,8 @@ pub struct Tr<'s> {
     pub menu_structs: HashSet<String>,
     /// Translating a `MenuActions`/`MenuContent` struct (`Tr::menu_struct`).
     pub in_menu: bool,
+    /// Each menu struct's stored properties, in order: `F(options)` of a whole value passes each.
+    pub menu_fields: HashMap<String, Vec<String>>,
 }
 
 impl<'s> Tr<'s> {
@@ -411,6 +413,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         hoisted: Vec::new(),
         menu_structs: HashSet::new(),
         in_menu: false,
+        menu_fields: HashMap::new(),
         pattern_defaults: Vec::new(),
         typed_calls: HashSet::new(),
         conditions: HashSet::new(),
@@ -1278,6 +1281,31 @@ impl<'s> Tr<'s> {
                 if self.is_lang(callee, "defineModifier") {
                     self.define_modifier(&name, call);
                 }
+                // A menu's actions or content: a struct, called with labels; its props type's
+                // fields, for a call that hands it one value (`Rows(options)`).
+                if self.is_lang(callee, "actions") || self.is_lang(callee, "menu") {
+                    self.views.insert(name.clone());
+                    if let Some(Expression::FunctionExpression(f)) = call
+                        .arguments
+                        .first()
+                        .and_then(|a| a.as_expression())
+                        .map(|e| e.without_parentheses())
+                        && let [param] = f.params.items.as_slice()
+                        && let Some(annotation) = param.type_annotation.as_ref()
+                        && let TSType::TSTypeReference(r) = &annotation.type_annotation
+                        && let TSTypeName::IdentifierReference(ty) = &r.type_name
+                        && let Some(members) = crate::view::local_object(body, &ty.name)
+                    {
+                        let fields: Vec<String> = members
+                            .iter()
+                            .filter_map(|m| match m {
+                                TSSignature::TSPropertySignature(p) => crate::view::key_name(&p.key),
+                                _ => None,
+                            })
+                            .collect();
+                        self.menu_fields.insert(name.clone(), fields);
+                    }
+                }
             }
         }
         // `export default view(function X(props: P) { … })`: P types the props too.
@@ -1670,6 +1698,16 @@ impl<'s> Tr<'s> {
                     let fields = self.struct_fields(&literal.members.iter().collect::<Vec<_>>());
                     return format!("{vis}struct {name}{generics} {{\n{fields}}}");
                 }
+                // `type P = Q & { t: T }` of object types here: one struct of all their fields.
+                if matches!(alias.type_annotation, TSType::TSIntersectionType(_))
+                    && let Some(members) = crate::view::local_object(body, &name)
+                {
+                    if self.props_types.contains(&name) && vis.is_empty() {
+                        return String::new();
+                    }
+                    let fields = self.struct_fields(&members);
+                    return format!("{vis}struct {name} {{\n{fields}}}");
+                }
                 let generics = self.generics(alias.type_parameters.as_deref());
                 let ty = self.ty(&alias.type_annotation);
                 format!("{vis}type {name}{generics} = {ty}")
@@ -1842,6 +1880,14 @@ impl<'s> Tr<'s> {
                 if p.contains('=') { format!("var {p}") } else { format!("let {p}") }
             })
             .collect();
+        let fields: Vec<String> = stored
+            .iter()
+            .filter_map(|line| {
+                let rest = line.strip_prefix("let ").or_else(|| line.strip_prefix("var "))?;
+                Some(rest.split(':').next()?.trim().to_string())
+            })
+            .collect();
+        self.menu_fields.entry(name.to_string()).or_insert(fields);
         self.menu_structs.insert(name.to_string());
         self.views.insert(name.to_string());
         let vis = vis.replace("pub ", "public ");
