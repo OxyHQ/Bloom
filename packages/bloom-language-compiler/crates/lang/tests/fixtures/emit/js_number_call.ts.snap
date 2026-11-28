@@ -1,0 +1,9 @@
+
+export function tooBig(capacity: string): boolean {
+return (Number(capacity) satisfies number) > 1000000;
+}
+
+export function counted(n: number): string {
+return (String(n) satisfies string);
+}
+

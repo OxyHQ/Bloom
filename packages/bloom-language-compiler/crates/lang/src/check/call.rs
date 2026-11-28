@@ -144,7 +144,8 @@ impl Checker<'_> {
                         LocalKind::Import { hook: false }
                             if matches!(self.resolve(&info.ty), Ty::Foreign(_))
                                 && name.starts_with(|c: char| c.is_ascii_uppercase())
-                                && !self.out.constructors.contains(&local) =>
+                                && !self.out.constructors.contains(&local)
+                                && !self.js_globals.contains(&local) =>
                         {
                             self.component_call(expr, call, &Ty::Foreign("".into()))
                         }
