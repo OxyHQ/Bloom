@@ -795,12 +795,18 @@ export default grammar({
         ),
       ),
 
-    /** `let x = optional` in an `if` or a `guard`. */
+    /** `let x = optional` in an `if` or a `guard`, or Swift 5.7's `let x` (the name unwrapped). */
     optional_binding: ($) =>
-      seq('let', field('pattern', $._pattern), '=', field('value', $._expression)),
+      choice(
+        seq('let', field('pattern', $._pattern), '=', field('value', $._expression)),
+        seq('let', field('pattern', $.identifier)),
+      ),
 
     _head_optional_binding: ($) =>
-      seq('let', field('pattern', $._pattern), '=', field('value', $._head_expression)),
+      choice(
+        seq('let', field('pattern', $._pattern), '=', field('value', $._head_expression)),
+        seq('let', field('pattern', $.identifier)),
+      ),
 
     /** 0.x: `match x { case .a(v) => … }`. */
     match_expression: ($) =>

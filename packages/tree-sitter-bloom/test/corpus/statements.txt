@@ -407,3 +407,43 @@ func useCounter(start: Int) -> Int {
                       (identifier)))))))))
       (return_statement
         (identifier)))))
+
+====================
+Optional binding shorthand
+====================
+
+func f(x: Int?) -> Int {
+  guard let x else { return 0 }
+  if let x { return x }
+  return x
+}
+
+---
+
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (optional_type
+          (user_type
+            (type_identifier)))))
+    (user_type
+      (type_identifier))
+    (block
+      (guard_statement
+        (optional_binding
+          (identifier))
+        (block
+          (return_statement
+            (integer_literal))))
+      (if_expression
+        (optional_binding
+          (identifier))
+        (block
+          (return_statement
+            (identifier))))
+      (return_statement
+        (identifier)))))

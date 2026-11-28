@@ -1,0 +1,31 @@
+
+export function greet(name: string | undefined): string {
+if (name != null) {
+return `Hi ${name}`;
+}
+return "Hi";
+}
+
+export function count(items: (readonly string[]) | undefined): number {
+if (!(items != null)) {
+return 0;
+}
+return items.length;
+}
+
+export function label(title: string | undefined): string {
+if (title != null) {
+return title;
+} else {
+return "Untitled";
+}
+}
+
+export function full(first: string | undefined): string {
+if (first != null) {
+return first;
+} else {
+return "";
+}
+}
+

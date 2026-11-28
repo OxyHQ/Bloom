@@ -1,0 +1,14 @@
+// Swift 5.7's shorthand: `if let x { … }` and `guard let x else { … }` unwrap `x` into itself.
+public func greet(_ name: String?) -> String {
+  if let name { return "Hi \(name)" }
+  return "Hi"
+}
+
+public func count(_ items: [String]?) -> Int {
+  guard let items else { return 0 }
+  return items.count
+}
+
+public func label(_ title: String?) -> String { if let title { title } else { "Untitled" } }
+
+public func full(_ first: String?) -> String { if let first = first { first } else { "" } }
