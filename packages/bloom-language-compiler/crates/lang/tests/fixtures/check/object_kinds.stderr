@@ -1,0 +1,42 @@
+error[B0205]: `accessibilityValue` has no field `step`
+  --> check/object_kinds.bloom:11:39
+   |
+11 |         .accessibilityValue({ now: 1, step: 2 })
+   |                                       ^^^^ no such field
+   |
+help: its fields are `min`, `max`, `now`, `text`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0206]: `dialogButton` needs `label`
+  --> check/object_kinds.bloom:14:11
+   |
+14 |           { color: "cancel" },
+   |           ^^^^^^^^^^^^^^^^^^^ missing field(s) without a default
+   |
+help: write it: `{ label: … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0502]: `"danger"` is not a dialogActionColor token
+  --> check/object_kinds.bloom:15:33
+   |
+15 |           { label: "Go", color: "danger", hidden: true },
+   |                                 ^^^^^^^^ expected one of: default cancel destructive
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#dialogactioncolor
+
+error[B0205]: `dialogButton` has no field `hidden`
+  --> check/object_kinds.bloom:15:43
+   |
+15 |           { label: "Go", color: "danger", hidden: true },
+   |                                           ^^^^^^ no such field
+   |
+help: its fields are `label`, `color`, `onPress`, `disabled`, `loading`, `shouldCloseOnPress`, `initialFocus`, `testID`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0201]: expected `String`, found `Int`
+  --> check/object_kinds.bloom:16:20
+   |
+16 |           { label: 1, onPress: { open = false } },
+   |                    ^ this is `Int`
+   |
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

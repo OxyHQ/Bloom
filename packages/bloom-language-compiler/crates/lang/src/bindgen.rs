@@ -41,7 +41,13 @@ pub fn generate(npm: &str, version: &str, from: &Path, options: &Options) -> Res
             skipped.push((name.clone(), "not a Bloom name".into()));
             continue;
         }
-        let mut mapper = crate::ts::Mapper { defs: &mut defs, options, named: &mut named, reads: &mut reads };
+        let mut mapper = crate::ts::Mapper {
+            defs: &mut defs,
+            options,
+            named: &mut named,
+            reads: &mut reads,
+            module: None,
+        };
         let Some(mapped) = mapper.export(&file, name, name, 0) else {
             skipped.push((name.clone(), "its declaration could not be read".into()));
             continue;

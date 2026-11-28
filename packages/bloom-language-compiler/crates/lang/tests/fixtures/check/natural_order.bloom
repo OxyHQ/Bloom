@@ -1,0 +1,5 @@
+struct Point {
+  let x: Int
+}
+
+func ordered(_ points: [Point]) -> [Point] { points.sorted() }

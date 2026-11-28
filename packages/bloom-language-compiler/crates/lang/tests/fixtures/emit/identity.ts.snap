@@ -1,0 +1,13 @@
+
+export class Player {
+  name: string = "";
+}
+
+export function isCurrent(p: Player, current: Player | undefined): boolean {
+return p === current;
+}
+
+export function changed(a: Player, b: Player): boolean {
+return a !== b;
+}
+

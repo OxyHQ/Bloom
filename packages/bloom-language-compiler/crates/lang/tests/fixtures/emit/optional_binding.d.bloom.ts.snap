@@ -1,0 +1,10 @@
+import type { ComposedView, MenuContentView } from "@oxy.so/bloom-language";
+export type ReplyPermission = "anyone" | "followers" | "nobody";
+export interface RowsProps {
+  readonly anyone: boolean;
+  readonly nobody: boolean;
+  readonly onChange: (p0: readonly ("anyone" | "followers" | "nobody")[]) => void;
+}
+export declare const Rows: (props: RowsProps) => MenuContentView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Picker())`), or from TSX as `toElement(Picker())`. */
+export declare const Picker: () => ComposedView;

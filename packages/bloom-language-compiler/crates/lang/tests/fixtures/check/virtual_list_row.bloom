@@ -1,0 +1,19 @@
+// A VirtualList's row is `{ item, index }`: the item's fields are read through `.item`.
+public struct Person: Identifiable {
+  public let id: String
+  public let name: String
+}
+
+public struct People: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people, { person in Text(person.name) })
+  }
+}
+
+public struct Counted: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people) { i, person in Text(person.name) }
+  }
+}

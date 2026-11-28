@@ -1,0 +1,14 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface RowContentProps {
+  readonly title: string;
+  readonly dense?: boolean | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(RowContent())`), or from TSX as `toElement(RowContent())`. */
+export declare const RowContent: (props: RowContentProps) => ComposedView;
+export declare const Row: typeof RowContent;
+interface CardContentProps {
+  readonly label: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(CardContent())`), or from TSX as `toElement(CardContent())`. */
+declare const CardContent: (props: CardContentProps) => ComposedView;
+export declare const Card: typeof CardContent;

@@ -124,6 +124,13 @@ pub fn complete(text: &str, offset: u32, analyze: &dyn Fn(&str) -> Analysis) -> 
         }
     }
     items.extend(bloom_lang::KEYWORDS.iter().map(|k| Item::new(*k, kind::KEYWORD, None)));
+    // The 2.0 contextual keywords (`func`, `guard`, `break`, `continue`, …), unless a name here
+    // is spelled so.
+    for word in bloom_lang::CONTEXTUAL_KEYWORDS {
+        if seen.insert((*word).to_string()) {
+            items.push(Item::new(*word, kind::KEYWORD, None));
+        }
+    }
     items
 }
 

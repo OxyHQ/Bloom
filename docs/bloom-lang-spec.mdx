@@ -197,7 +197,7 @@ members after `.` and the names of a struct's or a protocol's properties may be 
 
 | Bloom | Meaning | Runtime representation (zero-cost) | `.d.ts` emitted |
 |---|---|---|---|
-| `Int` | 53-bit safe integer | JS number | `number` |
+| `Int` | 64-bit signed integer (Swift's `Int`); exact within ±(2^53 − 1) on the JS backend (4.3) | JS number (Kotlin `Long`, Swift `Int` on the native backends) | `number` |
 | `Float` | IEEE double | JS number | `number` |
 | `Bool`, `String`, `Unit` | | boolean, string, `undefined` | `boolean`, `string`, `void` |
 | `[T]` | immutable list | frozen-in-dev JS array | `readonly T[]` |
@@ -225,11 +225,29 @@ members after `.` and the names of a struct's or a protocol's properties may be 
 Local bidirectional inference with unification (Hindley–Milner without let-generalisation of
 locals). Signatures are required at module level (parameters and results of `fn`, fields,
 view parameters), inferred everywhere inside: `let`, closure parameters (from the expected
-function type), generic arguments at call sites, empty collections from use. A literal
+function type), generic arguments at call sites, empty collections from use. What is expected
+reaches in: a closure called at once (`let all: [Item] = { … }()`) gives it, so each `return` is
+checked against `[Item]`, and a generic method's result meets it before its arguments are read
+(`uris.map { u in ({ id: u }) }` builds `Item`s). Only a declared type (an annotation, a
+parameter's, a modifier's) reaches a generic method's result this way, never one inferred from a
+sibling (a list literal's earlier item, a ternary's first branch). A record a closure gives (its
+last line or a `return`, its result type not written) takes an expected struct or TS type with
+any extra fields, as TS checks no excess property on a callback's result; a literal written where
+the type is declared (`let x: [T] = [{ … }]`) is checked for them (B0205). Swift's signature writes a closure's result
+type by hand: `{ () -> [Item] in … }`, `{ (n: Int) -> Int in n * 2 }`. A list or record literal
+is checked against its context as Swift checks one: each element and each ternary branch on its
+own against the expected type (an annotation, a TS parameter's, or a spec object parameter's),
+never against its sibling's. A spec object parameter is a record of its keys:
+`.accessibilityValue(c ? { text } : { min, max, now })`, and a typed one names each key's type
+(`Dialog().buttons([…])` takes `[dialogButton]`, `{ label: String, color?, onPress?, … }`: a
+button without `label` is B0206, an unknown key B0205). Where a TS type is expected, each list
+element and each field of a record literal is TS's to check on its own (tsc does, on the emitted
+code): `let s: Style = { transform: [{ scale: 0.5 }, { translateY: y }] }`. A literal
 `"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a
-local, parameter or prop `x` is present in the block, as TS narrows it: `if onEnd != none {
+local, parameter, prop or `@State` `x` is present in the block, as TS narrows it (a state's value
+is the render's, as a `let`'s is): `if onEnd != none {
 onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
 p.x : d`, `p == none ? d : p.x`); and after a guard
@@ -241,7 +259,7 @@ since TS does not keep a property's narrowing inside a closure.
 Numbers: an `Int` widens to `Float` wherever a `Float` is expected, Bloom to Bloom and at the
 TS boundary (a TS `number` reads as `Float`), inside lists, optionals, dictionaries and record
 fields too (`[Int]` fits `[Float]`). It costs nothing and loses nothing: both are JS numbers
-and an `Int` stays within 2^53, so no conversion is emitted. An integer literal is a `Float`
+and an `Int` is exact within 2^53 on the JS backend (4.3), so no conversion is emitted. An integer literal is a `Float`
 where one is expected (`let x: Float = 0`). Arithmetic with an `Int` and a `Float` operand
 is `Float`; `i / j` of two `Int`s stays integer division (it truncates) even where a `Float`
 is expected, while `7 / 2` there is `3.5` (its literals are `Float`s). A conditional with an
@@ -259,14 +277,28 @@ type (`c ? "x" : d ? 1 : none` is B0201). A chain of any length does (`a ? "\(x)
 - No `any`, no implicit null, no implicit narrowing: `Float` → `Int` is `.rounded()`,
   `.floor()`, `.ceil()` or `.truncated()` (B0201). `Int` → `Float` widens implicitly (4.2).
 - Exhaustive `match` (B0301 lists the missing cases); unreachable arms warn (B0302).
-- Values are immutable. `var` exists only as a function-local; it cannot be captured by a
-  closure (B0402), so no closure observes a mutation.
+- Values are immutable. `var` exists only as a local, and as a file's own `private var x: T = v`
+  (2.0), a JS module `let` any of its functions and closures may write (a registry callback); it
+  is no dependency and no state, so nothing re-renders on it. Any other module `var` is B0106.
+  Swift's `f?()` calls an optional function when it is present (`f?.()` in JS). A closure may capture, read and write a
+  function's (or a closure's, a handler's) own `var`, as Swift's does: `handlers[tag] = run` in a
+  closure is seen by the function once it ran, and each write is a new value (a `var` holding
+  another name's list or dictionary never changes it). A `var` of a view's render or of a hook
+  function is not capturable (B0402): their closures are cached across renders, and would keep a
+  stale binding.
 - Equality `==` is defined on `Int`, `Float`, `Bool`, `String`, fieldless enums and `none`
   checks; on structs and payload enums it is structural and compiled to a field comparison
   (phase 1; phase 0 rejects it with B0210). `x == none` / `x != none` tests presence on any
   optional, a function's too. `T == T?` compares as optionals (`a == b` with `b: Int?`), as
   Swift does.
 - Integer division `/` on `Int` truncates toward zero; `%` follows the dividend's sign.
+- `Int` is a 64-bit signed integer, as Swift's is on every platform Bloom targets: the native
+  backends (ADR 0003) compile it to Kotlin's `Long` and Swift's `Int`. The JS backend keeps it a
+  JS `number` (zero-cost, and what TS reads), which is exact within ±(2^53 − 1)
+  (`Number.MAX_SAFE_INTEGER`). A program whose `Int` leaves that range is in error there: an
+  integer literal outside it is B0105, `Int(s)` of text outside it is `none`, and a dev build
+  traps an `Int` `+`, `-` or `*` (and `+=`, `-=`, `*=`) whose result leaves it (`$int`, a
+  `RangeError`), as Swift traps an overflow; a release build does not check.
 - An array's subscript `xs[i]` is a `T` (2.0, Swift's rule): reading past the end is a
   programming error, a trap, not a `none`. A dev build checks the bounds (`$get(xs, i)`, a
   `RangeError` naming the index and the count); a release build emits `xs[i]` and does not.
@@ -288,8 +320,44 @@ A field without a default is required at construction. `Partial<S>` is the struc
 field optional (a patch), built with `S.patch(field: v, …)`. Construction compiles to an object
 literal (no function call). A spread `..p` of a `Partial<S>` fills only the fields `p` has: an
 absent or `undefined` field keeps the default (compiled per field, `p?.likes ?? true`), unlike a
-JS object spread; an optional patch (`Partial<S>?`) spreads the same way. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
+JS object spread; an optional patch (`Partial<S>?`) spreads the same way. A field whose
+default is `none` that a construction leaves out (or gives as `none`) is left out of the
+object, as TS's `x?: T` is: `QueryOptions(queryKey: k, queryFn: f)` is `{ queryKey: k,
+queryFn: f }`, never `{ staleTime: undefined, … }`, which overrides a library's default where
+it merges `{ ...defaults, ...options }`. The record literal `{ ..p, likes: false }` is the same
+copy-and-change: a key written after the spread replaces the spread's field (JS's
+`{ ...p, likes: false }`, Rust's struct update), only a key written twice is B0208, and when the
+first entry spreads a struct and every key written is one of its fields, the literal is that
+struct, each key checked against its field's type, with or without an expected type. Keyed field access (`prefs[key]`, key paths) is phase 1; until then an
 exhaustive `match` on a fieldless enum maps a key to a field.
+
+**`@Transparent` structs** (Rust's `#[repr(transparent)]`, a Swift tagged type):
+
+```bloom
+@Transparent
+public struct UserID: Codable, Equatable, Hashable {
+  public let raw: String
+  public var isGuest: Bool { raw.hasPrefix("guest-") }
+}
+let id = UserID(raw: "u1")   // the string "u1" at run time
+id.raw                        // the value itself
+```
+
+A struct marked `@Transparent` has exactly one stored property, a `let` (B0106 for none, a
+second one or a `var`; B0106 on anything that is not a struct). It is a type of its own to the
+checker (a `UserID` is not a `String`), and that field at run time: its TS type is the field's
+(`export type UserID = string`), `UserID(raw: v)` is `v`, `id.raw` is `id`, `id.with(raw: v)` is
+`v`, and `==` (`Equatable`, `Hashable`) compares the field. A derived `Codable` is the field's
+codec (`"u1"`, not `{ "raw": "u1" }`). Computed properties and methods are its own, called with
+the field's value as `self`. The Kotlin backend writes a `@JvmInline value class`, the Swift
+one a struct (`CheckResult.transparent`).
+
+**`UniqueID`** is the standard library's transparent identity, `struct UniqueID { let string:
+String }`. `@State private var id = UniqueID()` (a view's state, or a hook function's
+`@State var`) is the view's identity for its life, made once when it first appears: React's
+`useId()` on the TS backend (`const id = useId()`, no setter, hydration-safe), read as
+`id.string` (a label paired with its field, a key into a registry). `UniqueID()` anywhere else
+is B0420, and assigning the state is B0403.
 
 ### 4.5 Enums, Option and Result
 
@@ -310,9 +378,24 @@ fn area(s: Shape) -> Float {
 `if let v = x { … }`. A `?.` short-circuits the rest of its chain, as in JS: in
 `b?.label.uppercased()` the `.uppercased()` reads `b`'s label and the whole is `String?`. A
 link whose own type is optional is not read through (`b?.note.trimmed()` with `note: String?`
-is B0209; write `b?.note?.trimmed()`). `?.` on a value that is never `none` is B0201. A method
+is B0209; write `b?.note?.trimmed()`). `xs?[i]` is Swift's optional subscript (JS's
+`xs?.[i]`), `none` from there through the chain. `?.`, `?[…]` and `??` on a value that is never
+`none` are B0201, for a Bloom type: **Bloom's types are guarantees, TS's are claims.** On a
+value whose type comes from TS (a `Foreign`, a type read from a `.d.ts`, or what is read from
+one, `viewPost.authors`), TS may say it is always there while the data at run time lacks it, so
+`viewPost?.authors?.map { … } ?? []` keeps each guard as written, silently, and a guarded link
+is optional from there on. `{}` is the empty record where a struct, or its optional, is
+expected (`viewPost?.metadata ?? {}`); where a TS type with required fields is expected, `ts.state
+?? {}` is TS's `State | {}`, a `Partial<State>` whose fields read as optional. A `let` (a view member too) keeps the
+claim of the TS value it holds. A closure's parameter may be wider than the one expected (`{ file:
+File? in … }` for `(File) -> Unit`), as Swift's `(T?) -> U` fits `(T) -> U`. A method
 JS has compiles to `x?.m(…)`; any other (`s?.toInt()`) reads `x` once and runs only when it
-is not `none`. An optional call of a Unit function is Unit.
+is not `none`. A member Bloom respells keeps its spelling through `?.` and the chain after it,
+whatever the generic it came through: `query.data?.count` with `data: T?` and `T = [Post]` is
+`query.data?.length`, `xs?.first` is `xs?.[0]`. A member that wraps its object (`isEmpty`, a
+dictionary's `keys`, an extension's property, `a?.s.toInt()`) reads it once and is `none` when
+it is, so `feed?.items.isEmpty ?? true` is `true` for no feed; a cache depends on the object,
+not on the respelled member. An optional call of a Unit function is Unit.
 `x!` (2.0, Swift's force unwrap, written against its operand) is the value of an optional;
 `none` there is a trap. A dev build checks it (`$unwrap(x)`, a `TypeError`); a release build
 emits TS's `x!`, so it costs nothing. `!` on a value that is never `none` is B0201.
@@ -332,7 +415,9 @@ other arguments, so `T` is what a typed argument says (a TS literal union) and t
 checked against it; alone, they make it a `String`.
 
 A type parameter may be constrained (2.0): `func firstIndex<T: Equatable>(_ xs: [T], of x: T)`,
-`<T: Titled & Equatable>`, `where T: Titled`. Inside the function, a `T: P` value reads `P`'s
+`<T: Titled & Equatable>`, `where T: Titled & Equatable`, or a module's `type TitledValue =
+Titled & Equatable` named in one (`<T: TitledValue>`): a composition is one constraint per
+protocol, and only a constraint (B0232 as a value's type; `any P & Q` is not yet). Inside the function, a `T: P` value reads `P`'s
 requirements (section 4.8) and a `T: Equatable` value compares with `==`. Dispatch is static:
 each constraint is one more parameter, a *witness* (`$w_T_P`), which the call site fills for
 the type it inferred: the conformance's witness object `Post$$Titled`, or for `Equatable` the
@@ -355,7 +440,12 @@ parameters take no constraints (B0106); a function's and a view's do.
 A TS import is typed from its `.d.ts` (section 10). Declarations bloomc can map (primitives,
 arrays, `T | undefined | null`, object types, interfaces, string-literal unions, function
 types, `Promise<T>`, generic functions and interfaces without conditional or mapped types)
-get Bloom types. Anything else is `Foreign`: a value you may pass back to TS, call, or read
+get Bloom types. A discriminated union of object types (`{ kind: "sources"; sources: … } | {
+kind: "lane"; … }`, a field every member has as a distinct string literal) is a type whose one
+field is the tag: a `match` on it (`switch rows.kind { case "sources": … }`) is exhaustive over
+the tags, and each arm reads its member's fields (`rows.sources`), as an `if rows.kind ==
+"sources"` block and the rest after `if rows.kind != "lane" { return … }` do, the way TS narrows
+it. Anything else is `Foreign`: a value you may pass back to TS, call, or read
 members from (each read is `Foreign` again). **A `Foreign` value is accepted wherever a Bloom
 type is expected** (an argument, a modifier, a condition, an annotated `let`, a field, a
 return), and there the emitter writes a checked boundary, `(expr satisfies T)`, so the
@@ -422,8 +512,13 @@ cases are an enum's, matched with `match`. A Bloom file reads no JS global impli
 come from the prelude (section 12), timers are `task { await sleep(ms) … }`, and any other global
 is imported by name, `import { encodeURIComponent, JSON } from "js"`: nothing is emitted for
 the import, and its names are `Foreign`, typed by TypeScript (lib.es, lib.dom) where they cross.
-A JS class imported so (`Date`, `URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
-built by a call: `Date(at)` is `new Date(at)`; Bloom has no `new`. `Foreign<"T">` writes out a
+A JS class imported so (`URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
+built by a call: `URL(at)` is `new URL(at)`; Bloom has no `new`. `Date` is the standard library's
+(Swift's), a JS `Date` at runtime and in TS in both directions, as Swift's `Date` bridges to
+`NSDate`: a TS `Date` parameter takes it and a TS `Date` result is one. Its initializers are told
+apart by their labels, `Date()`, `Date(timeIntervalSince1970:)`, `Date(millisecondsSince1970:)`,
+`try Date(text, strategy: .iso8601)` (JS's `Date.parse`); two are `==` at the same instant, compare
+with `<`, and move with `+`/`-` in seconds. A `"js"` import of `Date` does not shadow it. `Foreign<"T">` writes out a
 TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
 `Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
 and the emitted TS names the type as written, so TS checks every use.
@@ -486,6 +581,15 @@ typed, the type `Foreign`; a const whose type is, through aliases and `&`, a fun
 to a node is a component (`TextInput(value: v)`). As a type, such a component is its instance,
 as a ref holds it (`@ref input: TextInput? = none`; read from its `ref` prop, else React's
 `ComponentRef`), and `ref: input` passes a TS component the `@ref` itself.
+
+An untyped `Foreign` is TS's `unknown`, and so is what a call, a member read or an index of one
+gives (never `ReturnType<>`); TS refuses to use an `unknown`, so a value TS checks is typed
+(`Foreign<"(value: string | undefined) => void">`).
+An unannotated `.tsx` function is a component, unless what it returns is an embedded-language
+`view()`'s node (or `null` beside one): that is a node factory, called as TS calls it.
+A TS value given where a TS generic takes its type parameter (`mergeIdentity<T extends
+IdentityHolder>(actor: T, …): T` called with a `Foreign` actor) makes `T` that value's type, so
+the result is one too and its members are read as TS's.
 
 ### 4.8 Protocols
 
@@ -571,12 +675,20 @@ A class declared in another file of the module is imported with its `init` (`Box
 
 ```bloom
 let x = 1                  // immutable
-var total = 0              // function-local, mutable, not capturable
+var total = 0              // local, mutable; a closure of its function may write it
 fn double(x: Int) -> Int { x * 2 }       // the last expression is the result
 async fn load(id: String) -> Result<Post, String> { … }
 let inc = { n in n + 1 }                 // closure: (Int) -> Int from use
 xs.map { p in p.title }                  // trailing closure
 ```
+
+A `let` or `var` may shadow a parameter, a view's prop or an outer local, as in Swift (`let
+isNested = isNested ?? false`): its initializer reads the outer one, and the new binding takes
+a JS name of its own (`isNested$1`), since JS has one scope for a function's parameters and body
+and `const x = x` reads the new `x` before it is set.
+
+A list given where a node takes its rest children (`Text(runs)`, `RawText(parts)`) is spread
+into them, as TS's `Text(...runs)`.
 
 A rest parameter `..xs: [T]` comes last, has no default, and takes any number of `T`s after
 the other positional arguments; in the body it is a `[T]`. A call spreads a list into a rest
@@ -615,7 +727,7 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | additive | `+` `-` (`+` also joins `String`s) | left |
 | range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
-| equality | `==` `!=` | none |
+| equality | `==` `!=` `===` `!==` | none |
 | and | `&&` | left |
 | or | `\|\|` | left |
 | default | `??` | right |
@@ -669,13 +781,39 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   `static func cast(_ error: Error) -> T?`, as the standard library's `HTTPError` has) is tested:
   `catch let e as HTTPError { … e.response.status … }` runs for an `HTTPError` only (one
   `HTTPClient` threw, or a TS client's, as Axios throws it), and `error as? HTTPError` is the
-  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). `as?` to a type
-  with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
+  `HTTPError?` (Swift's conditional cast, at the comparisons' precedence). A cast to a string
+  literal union tests membership: `raw as? Tab` (with `type Tab = "videos" | "following"`) is
+  `raw` when it is one of `Tab`'s values and `none` otherwise (`raw === "videos" || raw ===
+  "following" ? raw : undefined`, `raw` read once); its subject is a `String`, a `String?`,
+  another literal union or a TS value. `raw as! Tab` is the `Tab` itself: a dev build traps
+  when it is not one (`$cast(raw, [...])` throws a `TypeError`), and a release build is TS's
+  plain `raw as Tab`, at no cost, as `x!` is. `as!` to anything else, and a cast of a
+  non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
   `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
+- A thrown JS `Error` (a `TypeError`, a TS library's own) is the standard library's `JSError`:
+  `error as? JSError` and `catch let e as JSError` give its `name`, `message` and `stack`
+  (`String?`). Any thrown value is `error.jsValue`, a `JSONValue?` (`none` for `null` or
+  `undefined`), read leniently where no type fits it: `value["key"]` is an object's own member and
+  `value[i]` an array's element, each `none` when the value is not one or has nothing there (a
+  JSON `null` too), and `.string`, `.number`, `.int`, `.bool`, `.array`, `.object` are the value
+  as that type or `none`, so `error.jsValue?["response"]?["data"]?["error"]?.string ?? "Could
+  not save"` never throws, whatever the server sent. Any other key is B0205.
+- `a === b` / `a !== b` (Swift's identity) is whether two references are the same object: a class
+  instance, a TS object or an `Error`, an optional of one too (JS's `===`). A struct, an enum, a
+  number, a string or a collection is a value with no identity: B0210 (compare it with `==`).
+
+An `if … else` or a `switch` on a line of its own is a statement, its branches' lines statements,
+and so is the last one of a closure TS calls whose type is unknown (a handler, `.onPress { … }`): an
+`if` is a value only where one is expected. `break` and `continue` are Swift's, emitted as JS's own: `continue` starts the innermost loop's
+next turn, `break` leaves the innermost loop, and an unnamed `break` in a `switch` case leaves the
+`switch` (a `break` last in a case, or alone, is an empty case). A loop may be named,
+`outer: for row in grid { … }`, and `break outer` / `continue outer` leave or continue it from a
+loop inside. Outside a loop (or `switch`), and inside a closure whose loop is outside it, either
+is B0219, as is a name no loop around it has.
 
 ## 7. Views
 
@@ -773,6 +911,22 @@ fiber as 0.x `view X(…)`: its stored `let`s, and `var`s with a default, are th
 is the body; `static func ==` is the memo comparator (0.x `equal(old, new)`); and `.onAppear` /
 `.onDisappear` at the end of the body are an effect with no dependencies and its cleanup.
 `.task`, `.task(id:)` and `.onChange(of:) { old, new in }` stay node modifiers (section 8).
+React's `useMemo`/`useCallback` written as a member (`let f = useCallback({ … }, [deps])`), or as
+a hook function's top-level `let` (section 7.3), is a plain member, memoised in the view's (or the
+hook function's) cache on its exact dependencies, with no hook slot; the written dependencies are
+not read.
+A prop's default is written on it (`var isNested: Bool = false`, emitted `const { isNested =
+false } = props`, TS's own default); a member of a stored property's name (`let isNested =
+isNested ?? false`) declares it twice and is B0217.
+A menu's actions and content conform to `MenuActions` and `MenuContent`, as a view conforms to
+`View`. Their stored `let`s are the props, their members may call hooks, and `body` is the result.
+`struct PostMenuActions: MenuActions { let post: Post; let router = useRouter(); var body: [String:
+() -> Unit] { ["open": { router.push("/p/\\(post.id)") }] } }` is the embedded language's
+`actions(function PostMenuActions(props) { … })`: the tag → action table a chosen row runs, given
+as `Menu(…) { Item("Open").tag("open") }.actions(PostMenuActions(post: post))`. A `struct PostMenu:
+MenuContent` is `menu(function PostMenu(props) { … })`: its `body` is the rows (builder lines), built
+only while the menu is open, given as a `Menu`'s child. Neither has a memo cache or a fiber of its
+own, and neither takes a view's modifiers (B0501).
 A `struct X: Screen` (or `Layout`) is the file's default export only in a route, a file under the
 app's router folder (`app/`), as Expo Router takes it; anywhere else it is its named export, so a
 route that renders it imports it by name (`import { WelcomeScreen }`).
@@ -846,6 +1000,9 @@ other than `body`, and `Button`'s trailing action (its label is the trailing blo
   (`c ? "md" : gutter`), so either fits a token set. A module constant's record literal written
   without a type keeps its string literals' types (`let SIDES = { small: "fit", large: "full" }`
   is `{ small: "fit", large: "full" }`, emitted `as const`), so `SIDES[size]` fits a token set.
+  A module constant's list of string literals is a list of their union (`let TABS = ["videos",
+  "following"]` is `["videos" | "following"]`, emitted `as const`, frozen inside in a dev
+  build), so `for tab in TABS` gives a `"videos" | "following"`, as TS's `as const` tab lists.
   With nothing expected, `c ? s : opt?.x` is the optional of `s`'s type: an optional chain may be
   `none`, as a branch written `none` is. `defineModifier { v in … }` reads `v` as a
   `View` (TS's `V extends ViewModifiers<V>`); the recipe is a value (`.modifier(look ?? card)`).
@@ -898,6 +1055,40 @@ condition may choose between two tokens (`.tint(isLiked ? .danger : .neutral)`).
 set is B0502 with the closest name; an opacity not on the scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
 `.background(_:)` as a style) are BloomUI's, phase B.
 
+### 7.2b View modifiers
+
+`struct X: ViewModifier` (SwiftUI's) is a reusable wrapper: its stored properties are its
+props, it may keep `@State`, read `@Environment` and call hooks in `let` members as a view does,
+and `func body(content: Content) -> some View` draws it around `content`, the view it is applied
+to. `view.modifier(X(…))` applies it:
+
+```swift
+struct SupervisedGate: ViewModifier {
+  var allowSupervised = false
+  let state = useSupervisionState()
+  func body(content: Content) -> some View {
+    if !state.ready { DetailSkeleton().header(false) }
+    else if state.supervised && !allowSupervised { LockedState().header(false) }
+    else { content }
+  }
+}
+
+FeedsList().title("Feeds").modifier(SupervisedGate())
+```
+
+- Its result is the view's place in the tree. On a screen's root it is the root, so the screen's
+  chrome is the drawn view's: `content` keeps its `.title`/`.toolbar`/`.header`, and a state
+  drawn instead declares its own (`.header(false)` hides the header and its toolbar).
+- A modifier with no member but `func`s (and no `.task`/`.onChange` on its body) keeps no
+  state: it is called where it is applied (`X({ … })(view)`), rows included.
+- One that keeps state is called once per render at the top of the view applying it (`const
+  $mod0 = X({ … })`, before the body), so its state and hooks are that view's. It is applied in
+  the view's `body` itself (an `if` branch is fine), not in a closure, a `for` row or a member,
+  and its arguments read only names declared before the body (props, state, members): B0422.
+- `X(…)` anywhere but `.modifier(X(…))` is B0421: a modifier is not a view.
+- TS sees `function X(props): (content: ComposedView) => Child`. The native backends emit a
+  Swift `ViewModifier` and a Kotlin `@Composable` wrapper.
+
 ### 7.3 Reactivity (compile-time)
 
 | Declaration | Meaning | Compiles to |
@@ -915,7 +1106,8 @@ checker: state, props, hook results and other members. The emitter then writes t
 itself (`react/compiler-runtime`'s `c(n)`, the slot array the React Compiler uses) with exact
 dependencies, and marks the body `"use no memo"` so the React Compiler skips it. Because values
 are immutable, a dependency is the value itself (no mutation analysis, no proxies, no
-subscriptions at runtime). Static subtrees are hoisted to module scope by the existing language
+subscriptions at runtime). A narrowed name (`sliceKey` inside `if sliceKey != none`, `x` inside
+`if x is T`) is the value it narrows, so a child that reads it depends on it. Static subtrees are hoisted to module scope by the existing language
 compiler pass, which runs on bloomc's output in the same process.
 
 The cache is kept small. Members written one after another on the same dependencies share one
@@ -935,8 +1127,17 @@ construction. A hook given directly as an argument of such a call is one too
 same order. One in a branch (`c ? useA() : useB()`) or on the right of `&&`, `||` or `??` runs on
 only some renders, and is B0420 even as a view member's value. A **hook function** is a `fn` named `use[A-Z]…`: its top-level `let`s and its
 result may call hooks (not a branch, a loop or a closure), and calling it is calling a hook. A
-`.bloom` module of `pub fn useX(…)` is a module of hooks. A hook function written without
-`-> T` has the type of its last line (nothing when that is not a value).
+`.bloom` module of `pub fn useX(…)` is a module of hooks. A hook function's state is
+`@State var x = v` at the top of its body (2.0), as a view's `@State` is: one `useState`, read as
+`x`, written as `x = …` (or `x += 1`) in its closures, never in its body itself (B0401), and `$x`
+its binding; the setter is never a value of its own. Anywhere else (a branch, a loop, a closure,
+a function that is not a hook) it is B0420. A hook function written without
+`-> T` has the type of its last line (nothing when that is not a value). Its top-level `let`s are
+memoised in one cache on their exact dependencies, as a view's members are (its parameters, and
+what it binds, are what changes between calls); a `let` that calls a hook, a cheap read (a name,
+a field, a short string), a class instance and a value a later statement writes in place
+(`m.set(k, v)`) stay plain. So React's `useMemo`/`useCallback` there are plain `let`s too, with no
+hook slot, and the function holds no hook of its own for them.
 
 **Refs.** `@ref x = v` keeps a value across renders without causing one (`useRef`). It is read
 and written as `x` (emitted `x.current`; Bloom code never writes `.current`), in handlers,
@@ -993,7 +1194,13 @@ in those closures throws the same way (4.5).
   start async work with `task { … }`, or use `.task`. It compiles to exactly one `useEffect`.
 - **`.task { … }` on a view's body** starts when the view appears and is cancelled when it
   disappears. `.task(id: value) { … }` restarts when `value` changes. Inside, `Task.signal` is the
-  `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops.
+  `AbortSignal` to hand to `fetch`/bloom-data, and after every `await` a cancelled task stops. A
+  Bloom call in it that takes `cancellation: TaskSignal?` and is given none takes `Task.signal`
+  (`sleep(for:)`, `HTTPClient`'s calls), as Swift's child work is cancelled with its task.
+  `await Task.cancellation` returns once the task is cancelled: a top-level `defer` before it
+  runs exactly then (the id changes, the view leaves), as a React effect's cleanup does
+  (`let s = start(); defer { stop(s) }; await Task.cancellation`). Without it, the `defer` runs
+  when the body returns, as any `defer` does.
   Compiles to one `useEffect` with an `AbortController` (what a careful hand-written effect does).
 - **`.onChange(of: value) { old, new in … }`** runs after a change (one `useEffect`, comparing in a
   ref only when `old` is used).
@@ -1040,6 +1247,11 @@ so a wrong path is a compile error.
   per platform as Metro picks them, not siblings: they declare the same names without B0807. The
   module's other files import them by the base name (`./X`), which the checker reads from the
   first of `native`, `ios`, `android`, `web` that exists.
+- **File scope (2.0):** a directory module's files share one namespace, so two `internal` or
+  `public` declarations of one name are B0807. A `private` declaration is its file's only, as
+  TS's file scope is: it may share a sibling's name, which it shadows inside its own file (the
+  sibling's is not imported there), and every other file of the module reads the sibling's.
+  `bloom migrate` writes a TS file's non-exported declarations `private`.
 - **Bloom standard modules:** `import { … } from "bloom/data"` (bloom-data),
   `"bloom/router"`, `"bloom/motion"`; they compile to the matching `@oxy.so/*` import.
 - **TS/npm modules:** `import { useAuth } from "@oxy.so/services/ui/client"`; typed from its
@@ -1053,7 +1265,12 @@ so a wrong path is a compile error.
   returning an element, `memo(Inner)` or `memo(function Inner(props: P) { … })` (`Inner`'s
   props), or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
   props are TS's to check), or, when it is `Foreign`, when its name is `UpperCamel` and it is
-  used as a node. A TS interface with a call signature (`ToastFn`) or an index signature
+  used as a node. A TS object type with call signatures beside members (zustand's store hook,
+  `{ (): S; <U>(selector: (state: S) => U): U; getState(): S }`) is callable by each signature,
+  as a Swift value with `callAsFunction` overloads is: a call takes the first signature its
+  arguments fit by count, a generic one instantiated (`useStore { s in s.items }` is the
+  selector's `[Item]`), and the members stay members (`useStore.getState()`). One with only a
+  call signature (`ToastFn`), a construct signature or an index signature
   (`[key: string]: unknown`) is `Foreign`: callable, and taking any keys, checked by TS.
 - **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
   packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).
@@ -1064,7 +1281,11 @@ so a wrong path is a compile error.
   `bloom-lang-dts --root . <dirs>` writes them beside the sources (`bloomc build --out` writes
   them into its out directory). A `view` is a node factory, as in the embedded language: TSX draws it with
   `toElement(Composer({ maxLength: 280 }))`, not `<Composer />`; inside the embedded language it
-  is a node like any other.
+  is a node like any other. A module constant that names a view (`public let PostItem =
+  PostItemContent`, TS's `memo(PostItemContent, eq)`) is declared as that view, `typeof
+  PostItemContent`, and a private view it names is declared beside it, unexported. A view's
+  `T?` prop and a function's `T?` parameter are declared `T | undefined | null`: TS's `null`
+  is `none` to Bloom, so a TS caller may pass either.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
@@ -1110,14 +1331,14 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 | Type | Members (each compiles to the JS intrinsic, inline) |
 |---|---|
 | `String` | `count`, `isEmpty`, `slice(a, b)`, `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?` |
-| `Int`/`Float` | `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `format(…)` (Intl) |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `reversed()`, `prefix(n)`, `dropFirst(n)`, `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `Int`/`Float` | `Double.infinity`, `Double.nan` (JS's `Infinity`, `NaN`), `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `formatted(digits:locale:)` (Intl, localized), `formatted(fractionDigits: 0...3, locale:)` (Intl: at least 0, at most 3 decimals, JS's `toLocaleString()`), `formatted(currency: "USD", locale:)` (Intl's currency style), `formatted(fractionDigits: n)` (JS's `toFixed(n)`: exactly `n` decimals, never localized, `"3.14"`); a range `a...b` where a `ClosedRange` is expected is that value, `{ lowerBound, upperBound }`, and an implicit member chain (`.dateTime.month(.abbreviated).day()` where a `DateFormat` is expected) starts from that type's static member, as Swift's does |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
 | `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
 | prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |
 | `Option`/`Result` | as in 4.5 |
-| tasks | `Task.signal`, `all`, `race`, `sleep`, `Task.isCancelled` |
+| tasks | `Task.signal`, `Task.cancellation`, `all`, `race`, `sleep`, `Task.isCancelled` |
 | UI | the nodes, modifiers and tokens of `spec/language.json`; `defineTokens` in a `let` |
 | data (BloomData) | `@Model` stores, `@Query`, `Source`, `Realtime`, and `Mutation.make(name, optimistic:) { … }` with `run(input)`, an optimistic change (named as Services' `run`; `Action` is BloomUI's action-bar node) |
 

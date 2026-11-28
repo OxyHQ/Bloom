@@ -1,0 +1,9 @@
+
+export function previewChars(detail: boolean): number | undefined {
+return detail ? (((Infinity) ?? undefined) satisfies number | undefined) : undefined;
+}
+
+export function missing(): number {
+return (NaN satisfies number);
+}
+

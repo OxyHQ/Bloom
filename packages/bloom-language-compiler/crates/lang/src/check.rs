@@ -196,6 +196,9 @@ pub enum FieldRes {
     TaskSignal,
     /// `Task.isCancelled`.
     TaskCancelled,
+    /// `Task.cancellation`: awaited, it returns once the task is cancelled (the view leaves or
+    /// the id changes), so a `defer` before it runs exactly then (React's effect cleanup).
+    TaskCancellation,
     /// `x.p`, an extension's computed property: `func(x)`.
     Extension(Rc<str>),
     /// `T.m`, an extension's static member: the lowered name.
@@ -297,9 +300,17 @@ pub struct CheckResult {
     pub is_tests: HashMap<ExprId, Ty>,
     /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
     pub casts: HashMap<ExprId, Rc<str>>,
+    /// `x as? Tab` / `x as! Tab` with `Tab` a string literal union: its values, tested at run
+    /// time (`as!` only in a dev build).
+    pub union_casts: HashMap<ExprId, Rc<StrSet>>,
     /// `catch let e as T` with a `T` that casts (keyed by the catch's span): its `cast`, which
     /// tests the error (a catch of any other `T` types it, as a typed `throws(T)` does).
     pub catch_casts: HashMap<Span, Rc<str>>,
+    /// A `break` (by its span) that leaves a `switch` (by its scrutinee's span), Swift's
+    /// `break` in a case: the `switch`'s statement takes a label and the `break` names it.
+    pub switch_breaks: HashMap<Span, Span>,
+    /// `date + seconds` / `date - seconds`: a `Date` that much later or earlier.
+    pub date_arithmetic: HashSet<ExprId>,
     /// `if x is T`: the narrowed local and the one it narrows.
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
@@ -316,9 +327,24 @@ pub struct CheckResult {
     pub async_lets: HashSet<LocalId>,
     pub tries: HashMap<ExprId, TryRes>,
     pub closures: HashMap<Span, ClosureInfo>,
+    /// `VirtualList(posts) { post in … }`: the trailing row closures, handed FlashList's
+    /// `{ item }` (`{ item, index }` when `true`: `VirtualList(posts.enumerated()) { i, post in … }`).
+    pub row_closures: HashMap<Span, bool>,
+    /// `RawText(c ? Text("v") : s)`: a text run that is a view in one branch and a string in
+    /// the other, emitted as is (one Text host whose child is either).
+    pub mixed_runs: HashSet<ExprId>,
+    /// `@State var x = v` in a hook function's body, by the statement's span: its local (one
+    /// `useState`; `x = …` is `AssignRes::State`, `$x` its binding).
+    pub hook_states: HashMap<Span, LocalId>,
     /// Pattern span → the type it matches; binding span → its local.
     pub pattern_tys: HashMap<Span, Ty>,
     pub pattern_locals: HashMap<Span, LocalId>,
+    /// A `let`/`var` that shadows a parameter, a prop or an outer local (`let x = x ?? 0`), by
+    /// its name's span: its JS name (`x$1`). JS has one scope for a function's parameters and
+    /// body, and `const x = x` reads the new `x` before it is set.
+    pub renamed: HashMap<Span, String>,
+    /// `ts.state ?? {}` with a TS type of required fields: the `{}`, a patch typed as one in TS.
+    pub partial_fallbacks: HashSet<ExprId>,
     /// Item index → its locals: a fn's parameters, a view's info.
     pub fn_params: HashMap<Span, Vec<LocalId>>,
     pub views: HashMap<usize, ViewInfo>,
@@ -348,6 +374,9 @@ pub struct CheckResult {
     pub elements: HashSet<ExprId>,
     /// Member chains read where they were narrowed present (emitted `u.name!`).
     pub narrowed_paths: HashSet<ExprId>,
+    /// Objects a member or method reads through an optional chain (`a?.b` in `a?.b.c`): `none`
+    /// at run time when an earlier `?.` was.
+    pub chain_links: HashSet<ExprId>,
     /// Trailing builders that fill a view's `View`/`View?` property (emitted as its children).
     pub builder_props: HashSet<Span>,
     /// Trailing builders of a TS component that fill a node prop other than `children`
@@ -359,8 +388,31 @@ pub struct CheckResult {
     /// `xs[i]` on an array: an element, bounds-checked in dev (`$get`), read as is in
     /// release. The value says whether the element type is itself optional.
     pub list_reads: HashMap<ExprId, bool>,
-    /// A view's `let`s whose value calls a hook (drawn every render, never in a memo scope).
+    /// A view's `let`s, and a hook function's top-level ones, whose value calls a hook (drawn
+    /// every render, never in a memo scope).
     pub hook_lets: HashSet<Span>,
+    /// A Bloom call in a `.task` that leaves out its `cancellation: TaskSignal?` (`sleep(for:)`,
+    /// `HTTPClient`'s): the call's id and that parameter's slot, which takes `Task.signal`, so the
+    /// work is cancelled with the task, as Swift's child work is.
+    pub implicit_signals: HashMap<ExprId, usize>,
+    /// `x as? JSError` (or `HTTPError`) on a TS value: the cast's argument is that value, which
+    /// TS takes as an `Error` there (`x as unknown as Error`).
+    pub foreign_casts: HashSet<ExprId>,
+    /// `xs.sorted()`, `xs.min()`, `xs.max()` with no order given: the elements' natural order.
+    pub natural_orders: HashSet<ExprId>,
+    /// `.modifier(X(…))` with `X` a `struct X: ViewModifier` (2.0): the `.modifier` call's id,
+    /// and whether `X` keeps state (hooks, `@State`, effects), so its function is called once
+    /// per render at the top of the view applying it, where a stateless one is called in place.
+    pub view_modifiers: HashMap<ExprId, bool>,
+    /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
+    /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
+    pub map_writes: HashSet<ExprId>,
+    /// Locals bound to a value optional only through a guard kept on a TS value TS says is
+    /// present (`let postId = viewPost?.id`): a cache of one declares no type, so TS's (`string`)
+    /// is the one it reads.
+    pub claim_only: HashSet<LocalId>,
+    /// `{}` where a TS object type Bloom does not map is expected: the empty object, not a closure.
+    pub empty_objects: HashSet<ExprId>,
     /// `a == b` / `a != b` on a type compared field by field: the type.
     pub structural: HashMap<ExprId, Ty>,
     /// Module constants whose record literal keeps its string literals' types (`let SIZES =
@@ -385,9 +437,31 @@ pub struct CheckResult {
     /// A generic function's or view's shape-bounded type parameters (by its span): each
     /// one's index and shape, which TS writes `T extends Shape`.
     pub shapes: HashMap<Span, Vec<(u32, Ty)>>,
+    /// `@Transparent` structs (Rust's `#[repr(transparent)]`): exactly one stored field, and a
+    /// value of the struct is that field's value (TS: `type UniqueID = string`; Kotlin: a
+    /// `@JvmInline value class`; Swift: a struct). Construction is the field's value, a read of
+    /// the field is the value itself, and `==` compares the field.
+    pub transparent: HashSet<DefId>,
+    /// `UniqueID()` as a `@State`'s initial value (a view's, or a hook function's): the call's
+    /// id. A stable identity for the view's life, React's `useId()` on the TS backend; the
+    /// state has no setter.
+    pub unique_ids: HashSet<ExprId>,
+    /// `value["key"]` / `value[i]` / `value?["key"]` of a `JSONValue`: a lenient read, `none`
+    /// when the value is not an object (an array) or has nothing there (`Index`/`OptIndex`).
+    pub json_reads: HashSet<ExprId>,
 }
 
 impl CheckResult {
+    /// Whether `ty` is a `@Transparent` struct: its stored field and that field's type.
+    pub fn transparent_field(&self, ty: &Ty) -> Option<(String, Ty)> {
+        let Ty::Adt(def, args) = ty else { return None };
+        if !self.transparent.contains(def) {
+            return None;
+        }
+        let field = self.defs[*def].fields().first()?;
+        Some((field.name.clone(), substitute(&field.ty, args)))
+    }
+
     pub fn types(&self, _source: &str) -> Vec<(Span, String)> {
         let mut out: Vec<(Span, String)> = self
             .spans
@@ -422,6 +496,15 @@ struct Frame {
     raises: Option<Ty>,
     /// The `do { … } catch` blocks around this point of the frame: a `try` here is caught.
     handled: u32,
+}
+
+/// What a `break` or `continue` leaves.
+#[derive(Debug, Clone)]
+enum Breakable {
+    /// A `for` or `while`, and its name (`outer: for …`).
+    Loop(Option<String>),
+    /// A `switch` statement, by its scrutinee's span.
+    Switch(Span),
 }
 
 /// A generic call waiting for its witnesses: the call, its type arguments, its constraints,
@@ -476,12 +559,29 @@ pub struct Checker<'o> {
     pending: HashMap<LocalId, (bool, usize)>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
+    /// The `struct X: ViewModifier`s in scope, by name: whether each keeps state.
+    modifier_decls: HashMap<String, bool>,
+    /// Checking a view's `body` directly (not a member, a closure or a `for` row): the first
+    /// local the body declares. A stateful modifier is applied only here, reading what is
+    /// declared before it.
+    modifier_site: Option<usize>,
+    /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
+    modifier_arg: Option<ExprId>,
     /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
     /// run on every render, in the same order, as the call does.
     hook_args: HashSet<ExprId>,
     /// In a hook function (`fn useX`): the scope depth of its body, whose `let`s and result
     /// may call hooks.
     hook_body: Option<usize>,
+    /// The `@State`'s initial value being checked: `UniqueID()` may be it (B0420 elsewhere).
+    unique_id_state: Option<ExprId>,
+    /// The frame of the hook function being checked: its closures are cached across calls, so
+    /// a `var` of its own is not one they may capture.
+    hook_frame: Option<usize>,
+    /// `var`s a closure may capture, read and write (Swift's): one declared in a function, a
+    /// closure or a handler, by its name's span. Not one of a view's render or of a hook
+    /// function, whose closures are cached across renders and would keep a stale binding.
+    capturable: HashSet<Span>,
     /// Whether the call just checked was a hook.
     was_hook: bool,
     /// The body's root chain may carry `.task`.
@@ -496,6 +596,12 @@ pub struct Checker<'o> {
     /// Expressions in a child's place (a builder line, a node's children, `Embed`'s value, and
     /// the branches of a conditional there): a list of views is a child (TS's `Child` is).
     child_slots: HashSet<ExprId>,
+    /// A text run's place (`Text(…)`, `RawText(…)`): a conditional there may be a view in one
+    /// branch and a string in the other (TS's `<Text>{c ? <Link/> : s}</Text>`).
+    pub(super) run_slots: HashSet<ExprId>,
+    /// JS's globals imported from "js" (`Number`, `Math`): functions and namespaces, never a
+    /// TS component, whatever their case.
+    pub(super) js_globals: HashSet<LocalId>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -519,6 +625,29 @@ pub struct Checker<'o> {
     shapes_in_scope: Vec<(String, Ty)>,
     /// Checking a module constant's record literal: its string literal fields keep their types.
     literal_record: bool,
+    /// Declaring a `let`/`var` statement's names: one that shadows is renamed (`renamed`).
+    binding_stmt: bool,
+    /// `let path = pathOf()` with a TS value: the local holds TS's claim (`ts_claimed`).
+    ts_claimed_locals: HashSet<LocalId>,
+    /// What each call is expected to give (by its id), for a generic method's result.
+    call_expected: HashMap<ExprId, Ty>,
+    /// Calls whose expected type is only inferred, from a sibling (a list literal's earlier item,
+    /// a ternary's first branch): it is not met with a generic method's result, which only a
+    /// declared type (an annotation, a parameter's) is.
+    inferred_expected: HashSet<ExprId>,
+    /// The loops and `switch`es around this point, innermost last, each with the frame it is
+    /// in: what `break` and `continue` leave.
+    breakables: Vec<(usize, Breakable)>,
+    /// The base of an implicit member chain (`.dateTime` of `.dateTime.month()`), by its id: the
+    /// type the whole chain is expected to be.
+    implicit_chains: HashMap<ExprId, Ty>,
+    /// Record literals a closure gives (its tail, its `return`s) when its result type is not
+    /// written: an expected struct types them but takes their extra fields, as TS checks no
+    /// excess property on a callback's result.
+    callback_results: HashSet<ExprId>,
+    /// Values optional only through a guard kept on a TS value TS says is present
+    /// (`viewPost?.id`, `viewPost` a TS `HydratedPost`): TS's own type is the present one.
+    claim_only: HashSet<ExprId>,
     /// Calls of a shape-bounded generic, checked once their type arguments are known: each
     /// type argument, its shape, where, and the shapes in scope there.
     pending_shapes: Vec<PendingShape>,
@@ -601,14 +730,22 @@ impl<'o> Checker<'o> {
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
+            modifier_decls: HashMap::default(),
+            modifier_site: None,
+            modifier_arg: None,
             hook_args: HashSet::default(),
             hook_body: None,
+            unique_id_state: None,
+            hook_frame: None,
+            capturable: HashSet::default(),
             was_hook: false,
             task_allowed: false,
             reported: HashSet::default(),
             chained: HashSet::default(),
             ref_object: false,
             child_slots: HashSet::default(),
+            run_slots: HashSet::default(),
+            js_globals: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -619,6 +756,14 @@ impl<'o> Checker<'o> {
             bounds_in_scope: Vec::new(),
             shapes_in_scope: Vec::new(),
             literal_record: false,
+            binding_stmt: false,
+            ts_claimed_locals: HashSet::default(),
+            call_expected: HashMap::default(),
+            inferred_expected: HashSet::default(),
+            implicit_chains: HashMap::default(),
+            breakables: Vec::new(),
+            callback_results: HashSet::default(),
+            claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
             env_values: HashMap::default(),
@@ -697,7 +842,7 @@ impl<'o> Checker<'o> {
         format!("`{}`", Display { ty: &ty, defs: &self.out.defs })
     }
 
-    fn mismatch(&mut self, span: Span, actual: &Ty, expected: &Ty) {
+    pub(super) fn mismatch(&mut self, span: Span, actual: &Ty, expected: &Ty) {
         let actual = self.zonk(actual);
         let expected = self.zonk(expected);
         if matches!(actual, Ty::Unknown) || matches!(expected, Ty::Unknown) {
@@ -886,9 +1031,28 @@ impl<'o> Checker<'o> {
             kind: DefKind::Struct(fields),
             origin: Origin::Record,
             class: None,
+            tagged: None,
         });
         let def = self.out.defs.len() - 1;
         self.records.insert(name, def);
+        Ty::Adt(def, Vec::new())
+    }
+
+    /// A spec object parameter's type (`dialogButton`), by its name: a record of `fields`.
+    pub(crate) fn object_type(&mut self, name: &str, fields: Vec<FieldDef>) -> Ty {
+        if let Some(&def) = self.records.get(name) {
+            return Ty::Adt(def, Vec::new());
+        }
+        self.out.defs.push(Def {
+            name: name.to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Record,
+            class: None,
+            tagged: None,
+        });
+        let def = self.out.defs.len() - 1;
+        self.records.insert(name.to_string(), def);
         Ty::Adt(def, Vec::new())
     }
 
@@ -1000,6 +1164,13 @@ impl<'o> Checker<'o> {
                 self.coerce(&shape, &e)
             }
             (Ty::Foreign(_), _) => false,
+            // A function where a callable TS object type is wanted (`{ (): S; getState(): S }`):
+            // TS checks it has the members, as it checks any value passed to TS.
+            (Ty::Fn(_), Ty::Adt(def, _))
+                if self.out.defs[*def].fields().iter().any(|f| f.name == crate::ts::CALL) =>
+            {
+                true
+            }
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
             (Ty::Strings(_), Ty::Str) => true,
@@ -1123,6 +1294,57 @@ impl<'o> Checker<'o> {
     }
 
     fn declare(&mut self, name: &Ident, ty: Ty, kind: LocalKind) -> LocalId {
+        // `let { data: xs } = load()` then `let xs = xs ?? []` in one scope: Swift's invalid
+        // redeclaration (JS would declare `xs` twice in one function). A shadow of a parameter,
+        // a prop or an outer scope's local stays one (`let x = x ?? 0`, renamed in JS).
+        if matches!(kind, LocalKind::Let | LocalKind::Var | LocalKind::Derived | LocalKind::Hook)
+            && name.name != "_"
+            && let Some(&earlier) = self.scopes.last().and_then(|scope| scope.get(&name.name))
+            && matches!(
+                self.out.locals[earlier].kind,
+                LocalKind::Let
+                    | LocalKind::Var
+                    | LocalKind::Derived
+                    | LocalKind::Hook
+                    | LocalKind::State
+                    | LocalKind::Ref
+                    | LocalKind::Handler
+            )
+            && !crate::codable::is_synthetic(name.span)
+            // A narrowing (`if x == none { return }`, then `x` is `T`) declares the narrowed
+            // local at the original's own span: the same declaration, never a second one.
+            && self.out.locals[earlier].span != name.span
+        {
+            let first = self.out.locals[earlier].span;
+            self.report(
+                Diagnostic::error("B0217", name.span, format!("`{}` is declared twice in one scope", name.name))
+                    .label("a second declaration")
+                    .with_label(first, "first declared here")
+                    .help(format!(
+                        "give the first another name and read it here: `let {{ data: {0}Value }} = …` then `let {0} = {0}Value ?? …`",
+                        name.name
+                    ))
+                    .fix(first, format!("{}Value", name.name))
+                    .spec("43-soundness-rules"),
+            );
+        }
+        if self.binding_stmt
+            && matches!(kind, LocalKind::Let | LocalKind::Var)
+            && name.name != "_"
+            && let Some(outer) = self.lookup(&name.name)
+            && !matches!(
+                self.out.locals[outer].kind,
+                LocalKind::ModuleFn
+                    | LocalKind::ModuleConst
+                    | LocalKind::View
+                    | LocalKind::Import { .. }
+                    | LocalKind::Component { .. }
+            )
+        {
+            let taken =
+                self.out.renamed.values().filter(|n| n.starts_with(&format!("{}$", name.name))).count();
+            self.out.renamed.insert(name.span, format!("{}${}", name.name, taken + 1));
+        }
         let id = self.out.locals.len();
         self.out.locals.push(Local {
             name: name.name.clone(),
@@ -1164,6 +1386,15 @@ impl<'o> Checker<'o> {
     fn resolve_type_inner(&mut self, te: &TypeExpr) -> Ty {
         match &te.kind {
             TypeKind::Error => Ty::Unknown,
+            TypeKind::Composition(_) => {
+                self.report(
+                    Diagnostic::error("B0232", te.span, "a protocol composition is a constraint, not a type")
+                        .label("`P & Q` constrains a type parameter")
+                        .help("write `func f<T: P & Q>(_ x: T)`, or `where T: P & Q`")
+                        .spec("46-generics"),
+                );
+                Ty::Unknown
+            }
             TypeKind::List(t) => Ty::List(Box::new(self.resolve_type(t))),
             TypeKind::Map(k, v) => {
                 let key = self.resolve_type(k);
@@ -1303,9 +1534,13 @@ impl<'o> Checker<'o> {
             "Bool" => Some(Ty::Bool),
             "String" => Some(Ty::Str),
             "Unit" | "Void" => Some(Ty::Unit),
+            // What does not return (`fatal()`, a function that always throws): fits anywhere.
+            "Never" => Some(Ty::Never),
             "Double" => Some(Ty::Float),
             "View" => Some(Ty::View(None)),
             "Error" => Some(Ty::JsError),
+            // The standard library's `Date`, unless the package declares its own.
+            "Date" if !self.type_names.contains_key("Date") => Some(Ty::Date),
             "Foreign" => Some(Ty::Foreign("".into())),
             _ => None,
         };
@@ -1495,7 +1730,11 @@ impl<'o> Checker<'o> {
                 kind,
                 origin: Origin::Local,
                 class,
+                tagged: None,
             });
+            if is_transparent(item) {
+                self.out.transparent.insert(def);
+            }
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
             self.span_type((name.span, Ty::Adt(def, Vec::new())));
         }
@@ -1514,6 +1753,7 @@ impl<'o> Checker<'o> {
                 ItemKind::Class(c) => self.class_fields(c),
                 _ => {}
             }
+            self.transparent_rules(item);
         }
         for item in &file.items {
             if let ItemKind::Protocol(p) = &item.kind {
@@ -1543,6 +1783,9 @@ impl<'o> Checker<'o> {
                     Some(self.declare_unique(&f.name, ty, LocalKind::ModuleFn))
                 }
                 ItemKind::View(v) => {
+                    if v.kind == ViewKind::Modifier {
+                        self.modifier_decls.insert(v.name.name.clone(), modifier_keeps_state(v));
+                    }
                     let ty = self.view_type(v);
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
@@ -1559,13 +1802,23 @@ impl<'o> Checker<'o> {
                 ItemKind::Const(c) => {
                     let declared = c.ty.as_ref().map(|t| self.resolve_type(t));
                     let ty = self.const_value(&c.value, declared.as_ref());
+                    // `public let PostItem = PostItemContent`: the view itself, called as it is
+                    // (its props as named arguments).
+                    let alias = view_alias(file, &c.value).is_some()
+                        && matches!(self.out.types.get(&c.value.id), Some(t) if !matches!(t, Ty::Unknown));
                     let local = match self.lazy_props(&c.value) {
+                        _ if alias => self.declare_unique(&c.name, ty, LocalKind::View),
                         // `let X = lazy(() => import("./X"))`: a component, with the module's props.
                         Some(props) => self.declare_unique(
                             &c.name,
                             Ty::View(Some("embed")),
                             LocalKind::Component { props },
                         ),
+                        // `private var`: the file's own, which any function or closure may write.
+                        None if c.mutable => {
+                            self.capturable.insert(c.name.span);
+                            self.declare_unique(&c.name, ty, LocalKind::Var)
+                        }
                         None => self.declare_unique(&c.name, ty, LocalKind::ModuleConst),
                     };
                     if let Some(value) = self.env_values.get(&c.value.id).cloned() {
@@ -1579,7 +1832,7 @@ impl<'o> Checker<'o> {
                     self.fn_body(f, false);
                 }
                 ItemKind::View(v) => {
-                    if v.kind != ViewKind::View {
+                    if matches!(v.kind, ViewKind::Screen | ViewKind::Layout) {
                         screens += 1;
                         if screens > 1 {
                             self.report(
@@ -1620,6 +1873,29 @@ impl<'o> Checker<'o> {
     /// literals' types (`let SIZES = { small: "8", large: "12" }` is `{ small: "8", large:
     /// "12" }`), as TS's `as const` does, so a field read is a token where one is taken (R6).
     fn const_value(&mut self, value: &Expr, declared: Option<&Ty>) -> Ty {
+        // `let TABS = ["videos", "following"]`: a list of string literals is a list of their
+        // union (`["videos", "following"] as const`), so `TABS[i]` and `for tab in TABS` are
+        // a `"videos" | "following"`, as TS's `as const` tab lists are.
+        if declared.is_none()
+            && let ExprKind::List(items) = &value.kind
+            && !items.is_empty()
+            && let Some(literals) = items.iter().map(string_literal).collect::<Option<Vec<_>>>()
+        {
+            let mut values: Vec<String> = Vec::new();
+            for ty in literals {
+                if let Ty::Strings(set) = ty
+                    && !values.contains(&set.values[0])
+                {
+                    values.push(set.values[0].clone());
+                }
+            }
+            let name = values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | ");
+            let elem = Ty::Strings(Rc::new(StrSet { name, values, token: false }));
+            let list = Ty::List(Box::new(elem));
+            let ty = self.expr(value, Some(&list));
+            self.out.literal_consts.insert(value.id);
+            return ty;
+        }
         let literal = declared.is_none() && matches!(value.kind, ExprKind::Record(_));
         let outer = std::mem::replace(&mut self.literal_record, literal);
         let ty = self.expr(value, declared);
@@ -1628,6 +1904,24 @@ impl<'o> Checker<'o> {
             self.out.literal_consts.insert(value.id);
         }
         ty
+    }
+
+    /// `let isNested = isNested ?? false` beside a stored `var isNested: Bool? = none`: one name
+    /// declared twice in the struct (Swift's invalid redeclaration), not a shadow.
+    fn member_beside_prop(&mut self, name: &Ident) {
+        let Some(prop) = self.scopes.last().and_then(|s| s.get(&name.name)).copied() else { return };
+        if !matches!(self.out.locals[prop].kind, LocalKind::Prop | LocalKind::Bound) {
+            return;
+        }
+        self.report(
+            Diagnostic::error("B0217", name.span, format!("`{}` is a stored property already", name.name))
+                .label("a second declaration in the struct")
+                .help(format!(
+                    "give the stored property its default (`var {}: T = …`): a prop left out takes it, as TS's `{{ {} = … }} = props` does",
+                    name.name, name.name
+                ))
+                .spec("71a-a-view-the-20-way"),
+        );
     }
 
     fn duplicate(&mut self, name: &Ident) {
@@ -1917,7 +2211,10 @@ impl<'o> Checker<'o> {
         // A type's member (`T$m`): what an observable `self` it reads; an `init` makes `self`.
         let outer_member =
             std::mem::replace(&mut self.member_fn, f.name.name.contains('$').then(|| f.name.name.clone()));
-        let init = f.name.name.ends_with("$$init");
+        // A class's `init` makes `self`; a built-in type's gives the value its body ends with.
+        let init = f.name.name.ends_with("$$init")
+            && !crate::extensions::demangle(&f.name.name)
+                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner));
         let outer_init = std::mem::replace(&mut self.in_init, init);
         if init {
             let self_ty = fn_ty.ret.clone();
@@ -1954,8 +2251,11 @@ impl<'o> Checker<'o> {
         let ret = if init { Ty::Unit } else { fn_ty.ret.clone() };
         let hook = is_hook_name(&f.name.name).then_some(self.scopes.len() + 1);
         let outer_hook = std::mem::replace(&mut self.hook_body, hook);
+        let frame = is_hook_name(&f.name.name).then_some(self.frames.len() - 1);
+        let outer_frame = std::mem::replace(&mut self.hook_frame, frame);
         self.block(&f.body, Some(&ret));
         self.hook_body = outer_hook;
+        self.hook_frame = outer_frame;
         self.frames.pop();
         self.pop();
         self.bounds_in_scope = outer_bounds;
@@ -2110,9 +2410,17 @@ impl<'o> Checker<'o> {
             self.out.shapes.insert(v.span, shaped);
         }
         self.generics = outer;
+        // A menu's actions (`.actions(…)`) or content (a `Menu`'s child) is that node, not a view.
+        let node = match v.kind {
+            ViewKind::MenuActions => "menuActions",
+            ViewKind::MenuContent => "menuContent",
+            // Applied with `.modifier(X(…))`, never drawn itself (B0421).
+            ViewKind::Modifier => "viewModifier",
+            _ => "view",
+        };
         Ty::Fn(Rc::new(FnTy {
             params,
-            ret: Ty::View(Some("view")),
+            ret: Ty::View(Some(node)),
             is_async: false,
             generics: v.generics.len() as u32,
             ts: false,
@@ -2283,7 +2591,13 @@ impl<'o> Checker<'o> {
                     };
                     let ty = match state.attr {
                         _ if ty != Ty::Unknown || self.out.env_keys.contains_key(&state.span) => ty,
-                        StateAttr::State | StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
+                        StateAttr::State => {
+                            let saved = self.unique_id_state.replace(state.value.id);
+                            let ty = self.expr(&state.value, declared.as_ref());
+                            self.unique_id_state = saved;
+                            ty
+                        }
+                        StateAttr::Ref => self.expr(&state.value, declared.as_ref()),
                         // A bloom-data store or an environment key: its value is the store's.
                         _ => {
                             self.boundary(&state.value, None);
@@ -2291,6 +2605,8 @@ impl<'o> Checker<'o> {
                         }
                     };
                     let kind = match state.attr {
+                        // `@State private var id = UniqueID()`: a stable identity, never set.
+                        StateAttr::State if self.out.unique_ids.contains(&state.value.id) => LocalKind::Hook,
                         StateAttr::State => LocalKind::State,
                         StateAttr::Ref => LocalKind::Ref,
                         _ => LocalKind::Hook,
@@ -2307,7 +2623,20 @@ impl<'o> Checker<'o> {
                     if self.was_hook {
                         self.out.hook_lets.insert(stmt.span);
                     }
-                    self.bind_irrefutable(&stmt.pattern, &ty, kind)
+                    if let PatternKind::Bind(name) = &stmt.pattern.kind {
+                        self.member_beside_prop(name);
+                    }
+                    let locals = self.bind_irrefutable(&stmt.pattern, &ty, kind);
+                    // `let path = usePathname()`: the member keeps the TS value's claim.
+                    if let ([local], PatternKind::Bind(_)) = (locals.as_slice(), &stmt.pattern.kind)
+                        && self.ts_claimed(&stmt.value, &ty)
+                    {
+                        self.ts_claimed_locals.insert(*local);
+                        if self.is_claim_only(&stmt.value) {
+                            self.out.claim_only.insert(*local);
+                        }
+                    }
+                    locals
                 }
                 Member::Fn(f) => {
                     let ty = self.fn_signature(f);
@@ -2327,7 +2656,38 @@ impl<'o> Checker<'o> {
             info.members.push(locals);
         }
         self.out.views.insert(index, info);
-        self.body(&v.body);
+        match v.kind {
+            // The tag → action table a chosen row runs (`MenuActionTable`).
+            ViewKind::MenuActions => {
+                let action = Ty::Fn(Rc::new(FnTy {
+                    params: Vec::new(),
+                    ret: Ty::Unit,
+                    is_async: false,
+                    generics: 0,
+                    ts: false,
+                    throws: false,
+                    bounds: Vec::new(),
+                    shapes: Vec::new(),
+                }));
+                self.block(&v.body, Some(&Ty::Map(Box::new(action))));
+            }
+            // A menu's rows: builder lines, as a container's children.
+            ViewKind::MenuContent => {
+                self.push();
+                self.builder(&v.body.stmts);
+                self.pop();
+            }
+            // A modifier's body: the view it wraps (`content`) in scope.
+            ViewKind::Modifier => {
+                self.push();
+                if let Some(content) = &v.content {
+                    self.declare(content, Ty::View(None), LocalKind::Let);
+                }
+                self.body(&v.body);
+                self.pop();
+            }
+            _ => self.body(&v.body),
+        }
         self.frames.pop();
         self.pop();
         self.view = None;
@@ -2335,6 +2695,12 @@ impl<'o> Checker<'o> {
 
     /// A view's `body { … }`: one view, whose root chain may carry `.task`.
     fn body(&mut self, block: &Block) {
+        let site = self.modifier_site.replace(self.out.locals.len());
+        self.body_in_site(block);
+        self.modifier_site = site;
+    }
+
+    fn body_in_site(&mut self, block: &Block) {
         self.push();
         let mut views = 0;
         for stmt in &block.stmts {
@@ -2427,6 +2793,7 @@ impl<'o> Checker<'o> {
                     let local = spec.local().clone();
                     let value = Ty::Foreign(format!("typeof globalThis.{}", spec.name.name).into());
                     let id = self.declare_unique(&local, value, LocalKind::Import { hook: false });
+                    self.js_globals.insert(id);
                     // A JS class is constructed by a call: `Date(x)` is `new Date(x)`.
                     if JS_CLASSES.contains(&spec.name.name.as_str()) {
                         self.out.constructors.insert(id);
@@ -2486,6 +2853,7 @@ impl<'o> Checker<'o> {
                                 options: self.options,
                                 named: &mut self.ts_named,
                                 reads: &mut self.out.dependencies,
+                                module: Some((file.path.clone(), specifier.to_string())),
                             };
                             let mapped = mapper.export(file, &spec.name.name, &local.name, 0);
                             if mapped.is_none()
@@ -2576,6 +2944,7 @@ impl<'o> Checker<'o> {
         // Its types are numbered from 0 there: after this module's here.
         let offset = self.out.defs.len();
         self.out.defs.extend(module.defs.iter().map(|d| shift_def(d, offset)));
+        self.out.transparent.extend(module.transparent.iter().map(|d| d + offset));
         self.out.dependencies.extend(module.files.iter().map(|(p, _)| p.clone()));
         for (name, local, spec_span) in names {
             if let Some(def) = module.types.get(&name.name) {
@@ -2610,6 +2979,51 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `@Transparent`: on a struct with exactly one stored field, a `let` (B0106).
+    fn transparent_rules(&mut self, item: &Item) {
+        let Some(attr) = item.modifiers.attrs.iter().find(|a| a.name.name == "Transparent") else { return };
+        let ItemKind::Struct(s) = &item.kind else {
+            self.report(
+                Diagnostic::error("B0106", attr.span, "`@Transparent` is a struct's")
+                    .label("not a struct")
+                    .help("write it on a `struct` with one stored `let`: `@Transparent struct UserID { let raw: String }`")
+                    .spec("44-structs"),
+            );
+            return;
+        };
+        if s.fields.len() != 1 {
+            let span = s.fields.get(1).map_or(s.name.span, |f| f.name.span);
+            let found = if s.fields.is_empty() { "none".to_string() } else { s.fields.len().to_string() };
+            self.report(
+                Diagnostic::error(
+                    "B0106",
+                    span,
+                    format!("a `@Transparent` struct has exactly one stored property; `{}` has {found}", s.name.name),
+                )
+                .label(if s.fields.is_empty() { "no stored property" } else { "a second stored property" })
+                .help("a transparent struct is its one field at run time; make the others computed properties, or drop `@Transparent`")
+                .spec("44-structs"),
+            );
+            return;
+        }
+        let mutable = s.surface.as_ref().and_then(|body| {
+            body.members.iter().find_map(|m| match &m.kind {
+                TypeMemberKind::Stored { mutable: true, name, .. } if !m.modifiers.is_static => {
+                    Some(name.span)
+                }
+                _ => None,
+            })
+        });
+        if let Some(span) = mutable {
+            self.report(
+                Diagnostic::error("B0106", span, "a `@Transparent` struct's stored property is a `let`")
+                    .label("a `var`")
+                    .help("write `let`; a new value is a new struct: `UserID(raw: text)`")
+                    .spec("44-structs"),
+            );
+        }
+    }
+
     /// Another module's `pub` types and signatures, for an import.
     fn declare_signatures(&mut self, file: &File, specifier: &str) {
         // Its imports name the types its signatures use: `.bloom` ones too (their
@@ -2638,7 +3052,11 @@ impl<'o> Checker<'o> {
                 kind,
                 origin: Origin::Bloom { specifier: specifier.to_string() },
                 class,
+                tagged: None,
             });
+            if is_transparent(item) {
+                self.out.transparent.insert(def);
+            }
             self.type_names.insert(name.name.clone(), TypeName::Def(def));
         }
         for item in &file.items {
@@ -2683,9 +3101,19 @@ impl<'o> Checker<'o> {
                     let ty = self.fn_signature(f);
                     self.declare(&f.name, ty, LocalKind::ModuleFn);
                 }
-                ItemKind::View(v) if v.kind == ViewKind::View => {
+                ItemKind::View(v)
+                    if v.kind == ViewKind::View || v.kind.is_menu() || v.kind == ViewKind::Modifier =>
+                {
+                    if v.kind == ViewKind::Modifier {
+                        self.modifier_decls.insert(v.name.name.clone(), modifier_keeps_state(v));
+                    }
                     let ty = self.view_type(v);
                     self.declare(&v.name, ty, LocalKind::View);
+                }
+                // `public let PostItem = PostItemContent`: the view itself, called as it is.
+                ItemKind::Const(c) if let Some(v) = view_alias(file, &c.value) => {
+                    let ty = self.view_type(v);
+                    self.declare(&c.name, ty, LocalKind::View);
                 }
                 ItemKind::Const(c) => {
                     let ty = match &c.ty {
@@ -2772,15 +3200,63 @@ impl<'o> Checker<'o> {
             StmtKind::Let(l) => {
                 let declared = l.ty.as_ref().map(|t| self.resolve_type(t));
                 // A hook function's top-level `let` may call a hook, as a view member does.
-                self.hook_allowed = self.hook_body == Some(self.scopes.len());
+                let top = self.hook_body == Some(self.scopes.len());
+                self.hook_allowed = top;
+                let outer_hook = std::mem::take(&mut self.was_hook);
                 let ty = self.expr(&l.value, declared.as_ref());
                 self.hook_allowed = false;
-                self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
+                // Drawn on every call, never in the hook function's memo cache.
+                if top && self.was_hook {
+                    self.out.hook_lets.insert(l.span);
+                }
+                self.was_hook |= outer_hook;
+                self.binding_stmt = true;
+                let locals = self.bind_irrefutable(&l.pattern, &ty, LocalKind::Let);
+                self.binding_stmt = false;
+                if let ([local], PatternKind::Bind(_)) = (locals.as_slice(), &l.pattern.kind)
+                    && self.ts_claimed(&l.value, &ty)
+                {
+                    self.ts_claimed_locals.insert(*local);
+                    if self.is_claim_only(&l.value) {
+                        self.out.claim_only.insert(*local);
+                    }
+                }
+            }
+            // `@State var x = v` in a hook function's body: its state, as a view's `@State` is.
+            StmtKind::Var(v) if let Some(attr) = v.state => {
+                let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
+                let in_hook = self.hook_body == Some(self.scopes.len());
+                let saved = std::mem::replace(&mut self.unique_id_state, in_hook.then_some(v.value.id));
+                let ty = self.expr(&v.value, declared.as_ref());
+                self.unique_id_state = saved;
+                if self.hook_body != Some(self.scopes.len()) {
+                    self.report(
+                        Diagnostic::error("B0420", attr.to(v.name.span), format!("`@State var {}` is outside a hook function's body", v.name.name))
+                            .label("a state is a hook: it is kept across renders, in the same order")
+                            .help("declare it at the top of a hook function (`func useX`), or as a view's `@State private var`")
+                            .spec("73-reactivity-compile-time"),
+                    );
+                }
+                // `@State var id = UniqueID()`: a stable identity, never set (`useId()`).
+                let unique = self.out.unique_ids.contains(&v.value.id);
+                self.binding_stmt = true;
+                let local =
+                    self.declare(&v.name, ty, if unique { LocalKind::Hook } else { LocalKind::State });
+                self.binding_stmt = false;
+                if !unique {
+                    self.out.hook_states.insert(v.span, local);
+                }
             }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
                 let ty = self.expr(&v.value, declared.as_ref());
+                self.binding_stmt = true;
                 self.declare(&v.name, ty, LocalKind::Var);
+                self.binding_stmt = false;
+                let frame = self.frames.len() - 1;
+                if !self.frames[frame].render && self.hook_frame != Some(frame) {
+                    self.capturable.insert(v.name.span);
+                }
             }
             StmtKind::Assign(a) => self.assign(a),
             StmtKind::Return(_) if self.frames.last().is_some_and(|f| f.cleanup) => {
@@ -2817,14 +3293,24 @@ impl<'o> Checker<'o> {
             }
             StmtKind::While(w) => {
                 self.expr(&w.cond, Some(&Ty::Bool));
+                self.breakables
+                    .push((self.frames.len(), Breakable::Loop(w.label.as_ref().map(|l| l.name.clone()))));
                 self.block(&w.body, Some(&Ty::Unit));
+                self.breakables.pop();
             }
             StmtKind::For(f) => {
                 let elem = self.iterable(&f.iter);
                 self.push();
                 self.bind_irrefutable(&f.pattern, &elem, LocalKind::Let);
+                self.breakables
+                    .push((self.frames.len(), Breakable::Loop(f.label.as_ref().map(|l| l.name.clone()))));
                 self.stmts(&f.body.stmts, Some(&Ty::Unit), f.body.span);
+                self.breakables.pop();
                 self.pop();
+            }
+            StmtKind::Break(label) | StmtKind::Continue(label) => {
+                let is_break = matches!(stmt.kind, StmtKind::Break(_));
+                self.leave(stmt.span, label.as_ref(), is_break);
             }
             StmtKind::Defer(block) => {
                 self.block(block, Some(&Ty::Unit));
@@ -2894,7 +3380,10 @@ impl<'o> Checker<'o> {
                 }
             }
             StmtKind::Expr(expr) => {
-                let ty = self.expr(expr, None);
+                // An `if … else` or a `switch` on a line of its own is a statement: each branch's
+                // lines are statements (an async call in one is B0430 there), never a value.
+                let statement = matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_));
+                let ty = self.expr(expr, statement.then_some(&Ty::Unit));
                 // A node on a line of its own outside a builder (a closure that is not a
                 // builder, a function's body): built, then dropped, so nothing draws it.
                 if matches!(self.resolve(&ty), Ty::View(_)) {
@@ -2936,7 +3425,7 @@ impl<'o> Checker<'o> {
             Ty::Set(elem) => *elem,
             Ty::Unknown => Ty::Unknown,
             // A TS iterable: its items are TS's too.
-            Ty::Foreign(text) => Ty::Foreign(format!("{text}[number]").into()),
+            Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[number]")),
             Ty::Var(_) => {
                 let elem = self.fresh();
                 self.unify(&ty, &Ty::List(Box::new(elem.clone())));
@@ -2994,6 +3483,17 @@ impl<'o> Checker<'o> {
         if !bound && !model && !indexed {
             return false;
         }
+        // An element of a TS value (`patch[key] = "show"`, `patch` a TS `Partial<Record<K, V>>`
+        // Bloom does not map): TS's own object, written in place as TS writes it; tsc checks it.
+        if indexed && matches!(self.resolve(&info.ty), Ty::Foreign(_)) && info.kind != LocalKind::State {
+            if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+                self.var_captured(&info, a.target.span);
+            }
+            self.expr(&a.target, None);
+            self.boundary(&a.value, None);
+            self.out.assigns.insert(a.span, AssignRes::Foreign);
+            return true;
+        }
         self.out.assign_targets.insert(root.id);
         self.out.names.insert(root.id, NameRes::Local(local));
         if !bound && !model && info.kind != LocalKind::Var {
@@ -3041,6 +3541,7 @@ impl<'o> Checker<'o> {
                 }
                 (Seg::Index(i), Ty::Map(value)) => {
                     self.expr(i, Some(&Ty::Str));
+                    self.out.map_writes.insert(i.id);
                     *value
                 }
                 (_, Ty::Unknown) => Ty::Unknown,
@@ -3167,7 +3668,14 @@ impl<'o> Checker<'o> {
         }
         let mutable = matches!(info.kind, LocalKind::State | LocalKind::Var | LocalKind::Ref);
         if !mutable {
+            let identity = info.kind == LocalKind::Hook
+                && self.out.transparent_field(&info.ty).is_some()
+                && matches!(&info.ty, Ty::Adt(def, _) if self.out.defs[*def].name == "UniqueID");
             let help = match info.kind {
+                _ if identity => {
+                    "a `UniqueID` is the view's identity for its life; keep a `@State var` of another type for a value that changes"
+                        .to_string()
+                }
                 LocalKind::Let | LocalKind::Derived => format!(
                     "declare it with `var {name} = …` (in a function) or make it `@state {name} = …` (in a view)"
                 ),
@@ -3216,7 +3724,10 @@ impl<'o> Checker<'o> {
         if info.kind == LocalKind::Ref && self.frames.last().is_some_and(|f| f.render) {
             self.ref_in_render(name, a.target.span);
         }
-        if info.kind == LocalKind::State && self.frames.last().is_some_and(|f| f.render) {
+        if info.kind == LocalKind::State
+            && (self.frames.last().is_some_and(|f| f.render)
+                || self.hook_frame == Some(self.frames.len() - 1))
+        {
             self.report(
                 Diagnostic::error(
                     "B0401",
@@ -3272,6 +3783,10 @@ impl<'o> Checker<'o> {
     }
 
     fn var_captured(&mut self, info: &Local, span: Span) {
+        // A function's own `var`: its closures capture the binding, as Swift's do (JS's `let`).
+        if self.capturable.contains(&info.span) {
+            return;
+        }
         self.report(
             Diagnostic::error(
                 "B0402",
@@ -3280,7 +3795,7 @@ impl<'o> Checker<'o> {
             )
             .label("captured here")
             .with_label(info.span, "declared here")
-            .help("bind its value to a `let` before the closure, or make it `@state`")
+            .help("bind its value to a `let` before the closure, or make it `@state` (a function's own `var` may be captured; a view's render and a hook function's may not)")
             .spec("43-soundness-rules"),
         );
     }
@@ -3304,7 +3819,10 @@ impl<'o> Checker<'o> {
                 let elem = self.iterable(&f.iter);
                 self.push();
                 self.bind_irrefutable(&f.pattern, &elem, LocalKind::Let);
+                // A row: no stateful modifier is applied in it (one call per render, B0422).
+                let site = self.modifier_site.take();
                 self.builder(&f.body.stmts);
+                self.modifier_site = site;
                 self.pop();
             }
             _ => self.report(
@@ -3433,7 +3951,7 @@ impl<'o> Checker<'o> {
                                 }
                             }
                         }
-                        Ty::Foreign(text) => Ty::Foreign(format!("{text}[\"{}\"]", name.name).into()),
+                        Ty::Foreign(text) => foreign_of(text, |t| format!("{t}[\"{}\"]", name.name)),
                         Ty::Unknown => Ty::Unknown,
                         _ => {
                             self.pattern_mismatch(pattern, "a struct", &resolved);
@@ -3580,8 +4098,16 @@ impl<'o> Checker<'o> {
             Ty::Adt(def, _) => self.out.defs[def].fields().iter().map(|f| f.name.clone()).collect(),
             _ => Vec::new(),
         };
-        let help = closest(&name.name, fields.iter().map(String::as_str))
-            .map(|near| format!("did you mean `{near}`?"))
+        // `VirtualList(posts, { post in post.title })`: the row is not the item.
+        let row = matches!(self.resolve(ty), Ty::Adt(def, _) if self.out.defs[def].name.starts_with("VirtualListRow<"));
+        let help = (row && name.name != "item" && name.name != "index")
+            .then(|| {
+                format!("a row is `{{ item, index }}`: the item's `{}` is `.item.{}`", name.name, name.name)
+            })
+            .or_else(|| {
+                closest(&name.name, fields.iter().map(String::as_str))
+                    .map(|near| format!("did you mean `{near}`?"))
+            })
             .or_else(|| {
                 (!fields.is_empty()).then(|| {
                     format!(
@@ -3671,24 +4197,41 @@ impl<'o> Checker<'o> {
         }
         let closure = match (call.args.as_slice(), &call.trailing) {
             ([arg], None) => match &arg.value.kind {
-                ExprKind::Closure(c) => c,
-                _ => return None,
+                ExprKind::Closure(c) => Some(c),
+                // `lazy(loadReport)`: a loader of its own.
+                _ => None,
             },
-            ([], Some(c)) => c,
+            ([], Some(c)) => Some(&**c),
             _ => return None,
         };
-        let [Stmt { kind: StmtKind::Expr(body), .. }] = closure.body.as_slice() else { return None };
-        let ExprKind::Call(import) = &body.kind else { return None };
-        if !matches!(&import.callee.kind, ExprKind::Name(n) if n == "import") {
-            return None;
-        }
-        let [arg] = import.args.as_slice() else { return None };
-        let ExprKind::Str { parts, .. } = &arg.value.kind else { return None };
-        let [StrPart::Text(specifier)] = parts.as_slice() else { return None };
-        // The module is TS's to read: the component's props are checked by the emitted
+        // Whatever the loader gives, React's `lazy` makes a component of it. Its module, when
+        // the loader is `import("./X")` or a chain on it (`import("pkg").then { m in … }`), is
+        // TS's to read: the component's props are checked by the emitted
         // `satisfies ComponentProps<typeof X>`.
-        if let Some(path) = ts::resolve(&self.path, specifier, self.options) {
-            self.out.dependencies.insert(path);
+        let mut root = match closure.map(|c| c.body.as_slice()) {
+            Some([Stmt { kind: StmtKind::Expr(body), .. }]) => Some(body),
+            _ => None,
+        };
+        while let Some(expr) = root {
+            match &expr.kind {
+                ExprKind::Call(import) if matches!(&import.callee.kind, ExprKind::Name(n) if n == "import") =>
+                {
+                    if let [arg] = import.args.as_slice()
+                        && let ExprKind::Str { parts, .. } = &arg.value.kind
+                        && let [StrPart::Text(specifier)] = parts.as_slice()
+                        && let Some(path) = ts::resolve(&self.path, specifier, self.options)
+                    {
+                        self.out.dependencies.insert(path);
+                    }
+                    break;
+                }
+                ExprKind::Call(call) => match &call.callee.kind {
+                    ExprKind::Field(object, _) | ExprKind::OptField(object, _) => root = Some(&**object),
+                    _ => break,
+                },
+                ExprKind::Await(inner) | ExprKind::Paren(inner) => root = Some(&**inner),
+                _ => break,
+            }
         }
         Some(Ty::Foreign("".into()))
     }
@@ -3714,6 +4257,20 @@ impl<'o> Checker<'o> {
                 self.narrow(lhs, test, join);
                 self.narrow(rhs, test, join);
             }
+            // `rows.kind == "sources"` (where `!= none` would narrow) on a TS discriminated
+            // union: `rows` is that member there, as TS narrows it.
+            op if (*op == BinaryOp::Eq && test == BinaryOp::Ne)
+                || (*op == BinaryOp::Ne && test == BinaryOp::Eq) =>
+            {
+                let (subject, literal) = match (&lhs.kind, &rhs.kind) {
+                    (_, ExprKind::Str { parts, .. }) => (lhs, parts),
+                    (ExprKind::Str { parts, .. }, _) => (rhs, parts),
+                    _ => return,
+                };
+                let [StrPart::Text(value)] = literal.as_slice() else { return };
+                let value = value.clone();
+                self.narrow_tag(expr.id, subject, &value);
+            }
             op if *op == test => {
                 let subject = match (&lhs.kind, &rhs.kind) {
                     (_, ExprKind::None) => lhs,
@@ -3726,6 +4283,8 @@ impl<'o> Checker<'o> {
                 }
                 let ExprKind::Name(name) = &subject.kind else { return };
                 let Some(NameRes::Local(original)) = self.out.names.get(&subject.id).cloned() else { return };
+                // A `@State` too: its value is the render's, as a `let`'s is (a write in a handler
+                // is read again only after it, which is B0410).
                 if !matches!(
                     self.out.locals[original].kind,
                     LocalKind::Let
@@ -3733,6 +4292,7 @@ impl<'o> Checker<'o> {
                         | LocalKind::Prop
                         | LocalKind::Derived
                         | LocalKind::Hook
+                        | LocalKind::State
                 ) {
                     return;
                 }
@@ -3763,6 +4323,7 @@ impl<'o> Checker<'o> {
                             | LocalKind::Prop
                             | LocalKind::Derived
                             | LocalKind::Hook
+                            | LocalKind::State
                     ) =>
                 {
                     Some((*local, Vec::new()))
@@ -3789,8 +4350,11 @@ impl<'o> Checker<'o> {
         else {
             return ty;
         };
-        if !matches!(self.resolve(&ty), Ty::Option(_)) {
-            return ty;
+        match self.resolve(&ty) {
+            Ty::Option(_) => {}
+            // A TS discriminated union narrowed on its tag: the member, read as it is.
+            Ty::Adt(def, _) if self.out.defs[def].tagged.is_some() => return present,
+            _ => return ty,
         }
         self.out.narrowed_paths.insert(expr.id);
         present
@@ -3920,6 +4484,47 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// A `match`'s subject that is a TS discriminated union's tag (`rows.kind`, `rows` a local):
+    /// the subject's id, the local, and the union.
+    fn tagged_subject(&self, scrutinee: &Expr) -> Option<(ExprId, LocalId, Rc<Tagged>)> {
+        let ExprKind::Field(object, field) = &scrutinee.kind else { return None };
+        let ExprKind::Name(_) = &object.kind else { return None };
+        let Some(NameRes::Local(local)) = self.out.names.get(&object.id).cloned() else { return None };
+        let Ty::Adt(def, _) = self.resolve(&self.out.locals[local].ty) else { return None };
+        let tagged = self.out.defs[def].tagged.clone()?;
+        (tagged.tag == field.name).then_some((scrutinee.id, local, tagged))
+    }
+
+    /// A tag read on a member chain (`item.media.mode`, `item.media` a TS discriminated union):
+    /// the chain as a path, and the union. Values are immutable, so the chain narrows as a name
+    /// does.
+    fn tagged_path(&self, scrutinee: &Expr) -> Option<(LocalId, FieldPath, Rc<Tagged>)> {
+        let ExprKind::Field(object, field) = &scrutinee.kind else { return None };
+        if matches!(object.kind, ExprKind::Name(_)) {
+            return None;
+        }
+        let (root, path) = self.path_of(object)?;
+        let ty = self.out.types.get(&object.id)?;
+        let Ty::Adt(def, _) = self.resolve(ty) else { return None };
+        let tagged = self.out.defs[def].tagged.clone()?;
+        (tagged.tag == field.name).then_some((root, path, tagged))
+    }
+
+    /// Narrows a tag test's subject (a name or a member chain) to the member `value` names.
+    fn narrow_tag(&mut self, id: ExprId, subject: &Expr, value: &str) {
+        if let Some((_, original, tagged)) = self.tagged_subject(subject) {
+            let Some((_, member)) = tagged.members.iter().find(|(v, _)| v == value) else { return };
+            let ident =
+                Ident { name: self.out.locals[original].name.clone(), span: self.out.locals[original].span };
+            let narrowed = self.declare(&ident, member.clone(), LocalKind::Let);
+            self.out.narrowed.insert(id, (narrowed, original));
+        } else if let Some((root, path, tagged)) = self.tagged_path(subject) {
+            let Some((_, member)) = tagged.members.iter().find(|(v, _)| v == value) else { return };
+            let depth = self.scopes.len();
+            self.paths.push((depth, root, path, member.clone()));
+        }
+    }
+
     /// Checks a `match`'s arms (exhaustive, reachable); `arm` checks each body.
     fn match_arms(
         &mut self,
@@ -3933,10 +4538,21 @@ impl<'o> Checker<'o> {
         let mut rows: Vec<Vec<Pat>> = Vec::new();
         let mut tys = Vec::new();
         let zonked = self.zonk(&scrutinee);
+        let tagged = self.tagged_subject(&m.scrutinee).is_some() || self.tagged_path(&m.scrutinee).is_some();
         for a in &m.arms {
             self.push();
             let mut locals = Vec::new();
             self.bind(&a.pattern, &scrutinee, &LocalKind::Let, &mut locals);
+            // `switch rows.kind { case "sources": … }` on a TS discriminated union: `rows` is that
+            // member in the arm, as TS narrows it (`rows.sources`).
+            if tagged
+                && let PatternKind::Literal(literal) = &a.pattern.kind
+                && let ExprKind::Str { parts, .. } = &literal.kind
+                && let [StrPart::Text(value)] = parts.as_slice()
+            {
+                let value = value.clone();
+                self.narrow_tag(literal.id, &m.scrutinee, &value);
+            }
             if let Some(guard) = &a.guard {
                 self.expr(guard, Some(&Ty::Bool));
             }
@@ -3992,7 +4608,54 @@ impl<'o> Checker<'o> {
         tys
     }
 
+    /// `break` / `continue` (with a loop's name or not): what it leaves, which is a loop of this
+    /// frame (a closure's body is not its loop's), or for an unnamed `break` a `switch`.
+    fn leave(&mut self, span: Span, label: Option<&Ident>, is_break: bool) {
+        let word = if is_break { "break" } else { "continue" };
+        let depth = self.frames.len();
+        let here: Vec<Breakable> =
+            self.breakables.iter().rev().take_while(|(d, _)| *d == depth).map(|(_, b)| b.clone()).collect();
+        match label {
+            Some(label) => {
+                if !here.iter().any(|b| matches!(b, Breakable::Loop(Some(n)) if *n == label.name)) {
+                    self.report(
+                        Diagnostic::error(
+                            "B0219",
+                            label.span,
+                            format!("no loop named `{}` is around this `{word}`", label.name),
+                        )
+                        .label("not the name of an enclosing loop")
+                        .help(format!("name the loop: `{}: for … {{ … }}`", label.name))
+                        .spec("62-control-flow-and-errors-20"),
+                    );
+                }
+            }
+            None => match here.iter().find(|b| is_break || matches!(b, Breakable::Loop(_))) {
+                Some(Breakable::Switch(scrutinee)) => {
+                    self.out.switch_breaks.insert(span, *scrutinee);
+                }
+                Some(Breakable::Loop(_)) => {}
+                None => {
+                    let what = if is_break { "a loop or a `switch`" } else { "a loop" };
+                    self.report(
+                        Diagnostic::error("B0219", span, format!("`{word}` is only valid inside {what}"))
+                            .label("nothing here to leave")
+                            .help("a closure's body is not its loop's: `return` leaves the closure")
+                            .spec("62-control-flow-and-errors-20"),
+                    );
+                }
+            },
+        }
+    }
+
     fn match_expr(&mut self, m: &MatchExpr, expected: Option<&Ty>, span: Span) -> Ty {
+        self.breakables.push((self.frames.len(), Breakable::Switch(m.scrutinee.span)));
+        let ty = self.match_value(m, expected, span);
+        self.breakables.pop();
+        ty
+    }
+
+    fn match_value(&mut self, m: &MatchExpr, expected: Option<&Ty>, span: Span) -> Ty {
         let expected = expected.cloned();
         let tys = self.match_arms(m, span, &mut |checker, body| match body {
             ArmBody::Expr(e) => checker.expr(e, expected.as_ref()),
@@ -4150,7 +4813,11 @@ impl<'o> Checker<'o> {
                 if matches!(expr.kind, ExprKind::Closure(_)) {
                     self.closure_throws = true;
                 }
-                let ty = self.infer(expr, hint.as_ref().filter(|h| !matches!(h, Ty::Foreign(_))));
+                // A literal where a TS type is expected (`tsFunc([{ a }, { b }])`): each element and
+                // field is TS's to check on its own, not typed from its sibling.
+                let foreign_literal = literal_shaped(expr);
+                let ty = self
+                    .infer(expr, hint.as_ref().filter(|h| foreign_literal || !matches!(h, Ty::Foreign(_))));
                 if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty()
                 {
                     self.narrowed_path(expr, ty)
@@ -4164,13 +4831,35 @@ impl<'o> Checker<'o> {
         if hint.as_ref().is_some_and(is_element) {
             self.element(expr);
         }
+        // A function value (not a closure, which crosses its own result) where TS takes one
+        // returning a React element (`renderCell: (item: T) => ReactElement`): what it gives
+        // crosses as an element.
+        if let Some(Ty::Fn(want)) = hint.as_ref().map(|h| self.resolve(h))
+            && is_element(&self.resolve(&want.ret))
+            && !matches!(expr.kind, ExprKind::Closure(_))
+            && let Ty::Fn(given) = self.resolve(&ty)
+            && match self.resolve(&given.ret) {
+                Ty::View(_) => true,
+                Ty::Option(inner) => matches!(self.resolve(&inner), Ty::View(_)),
+                _ => false,
+            }
+        {
+            self.out.elements.insert(expr.id);
+        }
         if let Some(hint) = hint {
-            let fits = matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
+            // `merge<T extends Holder>(actor: T)` given a TS value: `T` is that value's type, so
+            // the result is one too (it was left unsolved, `_`).
+            let fits = (matches!(hint, Ty::Var(_)) && self.coerce(&ty, &hint))
+                || matches!((self.resolve(&ty), &hint), (Ty::Int, Ty::Float))
                 || matches!(self.resolve(&ty), Ty::Foreign(_))
                 // A `Foreign?` where TS takes an optional (`account: account`): TS checks it.
                 || matches!((self.resolve(&ty), &hint), (Ty::Option(inner), Ty::Option(_)) if matches!(self.resolve(&inner), Ty::Foreign(_)))
                 // A list of TS values, or a function given one: TS checks it here too.
                 || self.fits_through_ts(&ty, &hint)
+                // `postPermalink(viewPost?.id)` with a TS `viewPost` TS says is there: optional only
+                // by the guard Bloom kept, and `string` in TS's own type, which TS checks here.
+                || matches!(self.resolve(&ty), Ty::Option(inner)
+                    if !matches!(hint, Ty::Option(_)) && self.is_claim_only(expr) && self.coerce(&inner, &hint))
                 || self.coerce(&ty, &hint);
             if !fits {
                 self.mismatch(expr.span, &ty, &hint);
@@ -4189,6 +4878,14 @@ impl<'o> Checker<'o> {
 
     fn infer(&mut self, expr: &Expr, expected: Option<&Ty>) -> Ty {
         let expected_resolved = expected.map(|e| self.resolve(e));
+        // Swift's implicit member chain: `.dateTime.month(.abbreviated)` where a `DateFormat` is
+        // expected starts from `DateFormat.dateTime`.
+        if let Some(expected) = &expected_resolved
+            && matches!(expr.kind, ExprKind::Call(_) | ExprKind::Field(..))
+            && let Some(root) = implicit_root(expr)
+        {
+            self.implicit_chains.entry(root.id).or_insert_with(|| expected.clone());
+        }
         match &expr.kind {
             ExprKind::Error => Ty::Unknown,
             ExprKind::Int(_) => match expected_resolved {
@@ -4244,10 +4941,56 @@ impl<'o> Checker<'o> {
                 )
             }
             ExprKind::List(items) => {
+                // Where a `[T]?` is expected (`xs ?? ["anyone"]` beside a TS `ReplyPermission[]`), the
+                // list is a `[T]`: its literals take `T` (a string literal union) as one would.
                 let elem = match &expected_resolved {
                     Some(Ty::List(elem)) => (**elem).clone(),
+                    Some(Ty::Option(inner)) => match self.resolve(inner) {
+                        Ty::List(elem) => *elem,
+                        _ => self.fresh(),
+                    },
                     _ => self.fresh(),
                 };
+                // Where a TS type is expected, each literal item is TS's to check on its own (as a
+                // TS value), never typed from its sibling; the list is that TS type.
+                // (A TS prop that may be absent, `style?: StyleProp<ViewStyle>`, is `Foreign?`.)
+                let foreign_expected = match &expected_resolved {
+                    Some(foreign @ Ty::Foreign(_)) => Some(foreign.clone()),
+                    Some(Ty::Option(inner)) => match self.resolve(inner) {
+                        foreign @ Ty::Foreign(_) => Some(foreign),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                if let Some(foreign) = foreign_expected
+                    && items.iter().any(literal_shaped)
+                {
+                    let item_ty = Ty::Foreign("".into());
+                    for item in items {
+                        let (inner, spread) = match &item.kind {
+                            ExprKind::Spread(inner) => (&**inner, true),
+                            _ => (item, false),
+                        };
+                        let ty = if literal_shaped(inner) {
+                            self.expr(inner, Some(&item_ty))
+                        } else {
+                            self.expr(inner, None)
+                        };
+                        if spread {
+                            self.out.types.insert(item.id, ty);
+                        }
+                    }
+                    return foreign;
+                }
+                // With no declared item type, an item's expected type is its siblings': inferred.
+                if matches!(self.resolve(&elem), Ty::Var(_)) {
+                    for item in items {
+                        match &item.kind {
+                            ExprKind::Spread(inner) => inferred_calls(inner, &mut self.inferred_expected),
+                            _ => inferred_calls(item, &mut self.inferred_expected),
+                        }
+                    }
+                }
                 for item in items {
                     if let ExprKind::Spread(inner) = &item.kind {
                         let list = Ty::List(Box::new(elem.clone()));
@@ -4294,12 +5037,39 @@ impl<'o> Checker<'o> {
                 self.out.is_tests.insert(expr.id, ty);
                 Ty::Bool
             }
-            ExprKind::CastAs(subject, te) => {
+            ExprKind::CastAs(subject, te, forced) => {
                 let target = self.resolve_type(te);
                 let value = self.expr(subject, None);
+                if let Ty::Strings(set) = self.resolve(&target)
+                    && !set.token
+                {
+                    return self.union_cast(expr, subject, &value, &target, set, *forced);
+                }
+                if *forced {
+                    self.report(
+                        Diagnostic::error(
+                            "B0213",
+                            te.span,
+                            format!(
+                                "`as!` casts to a string literal union, and {} is not one",
+                                self.show(&target)
+                            ),
+                        )
+                        .label("not a literal union")
+                        .help("write `as?` and handle `none`, or `x!` on an optional")
+                        .spec("62-control-flow-and-errors-20"),
+                    );
+                    return target;
+                }
                 match self.cast_fn(&target) {
                     Some((func, f)) => {
-                        if let Some(param) = f.params.first()
+                        // `error as? JSError` on a TS value (a `.catch` callback's error, a
+                        // `JSONValue`): the cast tests it at run time, as Swift's `Any as? Error`.
+                        let foreign_error = matches!(self.resolve(&value), Ty::Foreign(_))
+                            && f.params.first().is_some_and(|p| self.resolve(&p.ty) == Ty::JsError);
+                        if foreign_error {
+                            self.out.foreign_casts.insert(expr.id);
+                        } else if let Some(param) = f.params.first()
                             && !self.coerce(&value, &param.ty)
                         {
                             self.mismatch(subject.span, &value, &param.ty);
@@ -4373,10 +5143,58 @@ impl<'o> Checker<'o> {
                     }
                     return joined;
                 }
+                // Where a TS type is expected (`minHeight: web ? "var(…)" : 384`, RN's
+                // `DimensionValue`): each branch is TS's to check against it, as a literal's
+                // elements are, never joined to the other's type.
+                if let Some(foreign @ Ty::Foreign(_)) = expected_resolved.as_ref().map(|e| match e {
+                    Ty::Option(inner) => self.resolve(inner),
+                    other => other.clone(),
+                }) {
+                    self.expr(cond, Some(&Ty::Bool));
+                    self.hook_allowed = false;
+                    self.push();
+                    self.narrow_present(cond);
+                    self.boundary(then, Some(&foreign));
+                    self.pop();
+                    self.push();
+                    self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+                    self.boundary(otherwise, Some(&foreign));
+                    self.pop();
+                    return expected_resolved.clone().unwrap_or(foreign);
+                }
                 // In a child's place, so are its branches (`c ? Text(…) : xs.map(f)`).
                 let slot = self.child_slots.contains(&expr.id);
                 if slot {
                     self.child_slots.extend([then.id, otherwise.id]);
+                }
+                // A text run: each branch is a run of its own, a view or a string (`RawText(c ?
+                // Text("v") : s ?? "")`), as TS's `<Text>{c ? <Link/> : s}</Text>` is.
+                if self.run_slots.contains(&expr.id) {
+                    self.run_slots.extend([then.id, otherwise.id]);
+                    self.expr(cond, Some(&Ty::Bool));
+                    self.hook_allowed = false;
+                    self.push();
+                    self.narrow_present(cond);
+                    let a = self.expr(then, None);
+                    self.pop();
+                    self.push();
+                    self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
+                    let b = self.expr(otherwise, None);
+                    self.pop();
+                    let run = |this: &Self, ty: &Ty| {
+                        let ty = match this.resolve(ty) {
+                            Ty::Option(inner) => this.resolve(&inner),
+                            other => other,
+                        };
+                        matches!(ty, Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Float | Ty::Unknown | Ty::Never)
+                            || this.is_view(&ty)
+                    };
+                    // A view and a string: a run either way. Two of a kind join as anywhere.
+                    if run(self, &a) && run(self, &b) && self.is_view(&a) != self.is_view(&b) {
+                        self.out.mixed_runs.insert(expr.id);
+                        return Ty::View(None);
+                    }
+                    return self.join(&a, &b, expr.span);
                 }
                 self.expr(cond, Some(&Ty::Bool));
                 // A hook in a branch runs only sometimes (B0420).
@@ -4411,6 +5229,10 @@ impl<'o> Checker<'o> {
                     _ if optional_a.is_some() => optional_a.as_ref(),
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
+                // The first branch's type held to the other is inferred, not declared.
+                if expected.is_none() {
+                    inferred_calls(otherwise, &mut self.inferred_expected);
+                }
                 self.push();
                 self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
                 let b = self.expr(otherwise, hint);
@@ -4467,10 +5289,18 @@ impl<'o> Checker<'o> {
                 match self.resolve(&ty) {
                     Ty::Option(inner) => {
                         let field = self.member(expr, &inner, name, object.span);
+                        let claim = self.is_claim_only(object);
+                        self.claim_link(expr, claim, &field);
                         self.rechain(expr, field)
                     }
-                    Ty::Foreign(text) => Ty::Foreign(format!("{text}[\"{}\"]", name.name).into()),
+                    Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[\"{}\"]", name.name)),
                     Ty::Unknown => Ty::Unknown,
+                    // `viewPost?.authors` where TS says `viewPost` is always there: kept, as a guard.
+                    other if self.ts_claimed(object, &ty) => {
+                        let field = self.member(expr, &other, name, object.span);
+                        self.claim_link(expr, true, &field);
+                        self.rechain(expr, field)
+                    }
                     other => {
                         self.report(
                             Diagnostic::error(
@@ -4487,9 +5317,80 @@ impl<'o> Checker<'o> {
                     }
                 }
             }
+            ExprKind::OptIndex(object, index) => {
+                let ty = self.expr(object, None);
+                let inner = match self.resolve(&ty) {
+                    Ty::Option(inner) => Some(self.resolve(&inner)),
+                    Ty::Foreign(_) | Ty::Unknown => None,
+                    // `post.tags?[0]` where TS says `tags` is always there: kept, as a guard.
+                    other if self.ts_claimed(object, &ty) => Some(other),
+                    other => {
+                        self.report(
+                            Diagnostic::error(
+                                "B0201",
+                                index.span,
+                                format!("`?[…]` reads an optional, and this is {}", self.show(&other)),
+                            )
+                            .label("never `none`")
+                            .help("write `[…]`")
+                            .spec("45-enums-option-and-result"),
+                        );
+                        Some(other)
+                    }
+                };
+                let json = match &inner {
+                    Some(Ty::Foreign(text)) => is_json(text),
+                    None => matches!(self.resolve(&ty), Ty::Foreign(text) if is_json(&text)),
+                    _ => false,
+                };
+                if json {
+                    let read = self.json_read(expr, index);
+                    return self.rechain(expr, read);
+                }
+                match inner {
+                    Some(Ty::List(elem)) => {
+                        self.expr(index, Some(&Ty::Int));
+                        self.rechain(expr, *elem)
+                    }
+                    Some(Ty::Map(value)) => {
+                        self.expr(index, Some(&Ty::Str));
+                        self.rechain(expr, Ty::Option(value))
+                    }
+                    Some(Ty::Foreign(text)) => {
+                        self.boundary(index, None);
+                        foreign_of(&text, |t| format!("{t}[number]"))
+                    }
+                    None => {
+                        self.boundary(index, None);
+                        match self.resolve(&ty) {
+                            Ty::Foreign(text) => foreign_of(&text, |t| format!("{t}[number]")),
+                            _ => Ty::Unknown,
+                        }
+                    }
+                    Some(Ty::Unknown) => Ty::Unknown,
+                    Some(other) => {
+                        self.expr(index, None);
+                        self.report(
+                            Diagnostic::error(
+                                "B0205",
+                                index.span,
+                                format!("{} has no subscript", self.show(&other)),
+                            )
+                            .label("not a list or a dictionary")
+                            .spec("12-standard-library-surface-draft"),
+                        );
+                        Ty::Unknown
+                    }
+                }
+            }
             ExprKind::Index(object, index) => {
                 let ty = self.expr(object, None);
-                match self.resolve(&ty) {
+                // `q?.xs[0]`: a subscript is a link of the chain, as Swift's is.
+                let (ty, chained) = match self.unchain(object, &ty) {
+                    Some(inner) => (inner, true),
+                    None => (ty, false),
+                };
+                let read = match self.resolve(&ty) {
                     // `xs[i]` is the element, as in Swift: out of range is a trap (dev
                     // builds check it), and `xs.at(i)` is the optional read.
                     Ty::List(elem) => {
@@ -4563,9 +5464,10 @@ impl<'o> Checker<'o> {
                             other => other,
                         }
                     }
+                    Ty::Foreign(text) if is_json(&text) => self.json_read(expr, index),
                     Ty::Foreign(text) => {
                         self.boundary(index, None);
-                        Ty::Foreign(format!("{text}[number]").into())
+                        foreign_of(&text, |t| format!("{t}[number]"))
                     }
                     Ty::Unknown => Ty::Unknown,
                     other => {
@@ -4580,16 +5482,40 @@ impl<'o> Checker<'o> {
                         );
                         Ty::Unknown
                     }
-                }
+                };
+                if chained { self.rechain(expr, read) } else { read }
             }
             ExprKind::Call(call) => self.call(expr, call, expected_resolved.as_ref()),
-            // `{}` where a struct (or a patch) is expected is an empty record, not a closure.
+            // `{}` where a struct (or a patch) is expected is an empty record, not a closure;
+            // where its optional is expected too (`viewPost?.metadata ?? {}`, a TS type whose
+            // fields are all optional).
             ExprKind::Closure(c)
                 if c.params.is_empty()
                     && c.body.is_empty()
                     && matches!(&expected_resolved, Some(Ty::Adt(..) | Ty::Partial(_))) =>
             {
                 self.record_literal(expr, &[], expected)
+            }
+            ExprKind::Closure(c)
+                if c.params.is_empty()
+                    && c.body.is_empty()
+                    && let Some(Ty::Option(inner)) = &expected_resolved
+                    && matches!(self.resolve(inner), Ty::Adt(..) | Ty::Partial(_)) =>
+            {
+                let inner = self.resolve(inner);
+                self.record_literal(expr, &[], Some(&inner))
+            }
+            // Where a TS object type Bloom does not map is expected (`var patch: Prefs = {}`, a
+            // `Partial<Record<K, V>>`): the empty object, as TS's `{}`. A TS function type Bloom
+            // maps is a function, so a `Foreign` here is an object unless its text says otherwise.
+            ExprKind::Closure(c)
+                if c.params.is_empty()
+                    && c.body.is_empty()
+                    && matches!(&expected_resolved, Some(Ty::Foreign(text))
+                        if !text.is_empty() && !text.contains("=>") && !text.contains("Parameters<")) =>
+            {
+                self.out.empty_objects.insert(expr.id);
+                expected_resolved.clone().expect("matched")
             }
             ExprKind::Closure(c) => self.closure(c, expected_resolved.as_ref(), false),
             ExprKind::If(if_expr) => self.if_expr(if_expr, expected, expr.span),
@@ -4815,9 +5741,11 @@ impl<'o> Checker<'o> {
     }
 
     fn implicit_member(&mut self, expr: &Expr, name: &Ident, expected: Option<&Ty>) -> Ty {
-        let target = match expected {
+        // The base of a chain (`.dateTime.month(.abbreviated).day()`): the chain's expected type.
+        let chained = self.implicit_chains.remove(&expr.id);
+        let target = match expected.or(chained.as_ref()) {
             Some(Ty::Option(inner)) => self.resolve(inner),
-            Some(other) => other.clone(),
+            Some(other) => self.resolve(other),
             None => Ty::Unknown,
         };
         match &target {
@@ -4846,6 +5774,25 @@ impl<'o> Checker<'o> {
                         Ty::Unknown
                     }
                 }
+            }
+            // `.relative`, `.dateTime` where a `DateFormat` is expected: a static member of the
+            // struct, as Swift's implicit member expression reads one.
+            Ty::Adt(def, _)
+                if matches!(self.out.defs[*def].kind, DefKind::Struct(_))
+                    && let Some(ty) = {
+                        let owner = self.out.defs[*def].name.clone();
+                        self.static_member(expr, &owner, name)
+                    } =>
+            {
+                ty
+            }
+            // `.nan` where a `Double` is expected, `.zero` where an `Int` is: a static member of
+            // the built-in type's extension.
+            other
+                if let Some(owner) = self.extension_owner(other)
+                    && let Some(ty) = self.static_member(expr, &owner, name) =>
+            {
+                ty
             }
             _ => {
                 self.report(
@@ -4993,6 +5940,22 @@ impl<'o> Checker<'o> {
         match op {
             // `a..<b`, `a...b`: a collection of `Int`s, typed `[Int]`. A `for` over it and its
             // `.map` build no array of their own (section 6.3).
+            // `0...3` where a `ClosedRange<Int>` is expected (`formatted(fractionDigits: 0...3)`):
+            // Swift's range value, its two bounds.
+            BinaryOp::Closed
+                if let Some(Ty::Adt(def, args)) = expected.map(|e| match self.resolve(e) {
+                    Ty::Option(inner) => self.resolve(&inner),
+                    other => other,
+                }) && self.out.defs[def].name == "ClosedRange"
+                    && matches!(self.out.defs[def].kind, DefKind::Struct(_)) =>
+            {
+                let bound = args.first().cloned().unwrap_or(Ty::Int);
+                for side in [lhs, rhs] {
+                    self.expr(side, Some(&bound));
+                }
+                self.out.calls.insert(expr.id, CallRes::Struct(def));
+                Ty::Adt(def, args)
+            }
             BinaryOp::HalfOpen | BinaryOp::Closed => {
                 for side in [lhs, rhs] {
                     let ty = self.expr(side, Some(&Ty::Int));
@@ -5072,17 +6035,57 @@ impl<'o> Checker<'o> {
                 let left = self.expr(lhs, None);
                 // A hook on the right runs only sometimes (B0420).
                 self.hook_allowed = false;
+                // `ts.authors ?? []` where TS says `authors` is always there: TS's claim, so the
+                // fallback is kept, as for an optional.
+                let left = match self.resolve(&left) {
+                    Ty::Option(_) | Ty::Unknown | Ty::Foreign(_) | Ty::Var(_) => left,
+                    other if self.ts_claimed(lhs, &left) => Ty::Option(Box::new(other)),
+                    _ => left,
+                };
                 match self.resolve(&left) {
+                    // `viewPost?.metadata ?? {}` where TS's type has required fields: TS's
+                    // `State | {}`, every field optional, so it is a `Partial<State>`.
+                    Ty::Option(inner)
+                        if is_empty_braces(rhs)
+                            && expected.is_none_or(|e| matches!(self.resolve(e), Ty::Var(_)))
+                            && self.ts_claimed(lhs, &left)
+                            && matches!(self.resolve(&inner), Ty::Adt(def, _)
+                                if matches!(self.out.defs[def].kind, DefKind::Struct(_))
+                                    && self.out.defs[def].fields().iter().any(|f| f.default == FieldDefault::None
+                                        && !matches!(f.ty, Ty::Option(_)))) =>
+                    {
+                        let partial = Ty::Partial(inner.clone());
+                        self.expr(rhs, Some(&partial));
+                        self.out.partial_fallbacks.insert(rhs.id);
+                        partial
+                    }
                     Ty::Option(inner) => {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
                         // `"x" | ""`: the two are joined (R3).
                         let literal = matches!(self.resolve(&inner), Ty::Strings(set) if !set.token);
+                        // `x ?? .nan`: an implicit member is the left side's type's, as in Swift.
+                        let implicit = matches!(rhs.kind, ExprKind::ImplicitMember(_))
+                            || (matches!(rhs.kind, ExprKind::Call(_) | ExprKind::Field(..))
+                                && implicit_root(rhs).is_some());
                         let hint = match expected {
+                            _ if implicit && !matches!(self.resolve(&inner), Ty::Var(_) | Ty::Unknown) => {
+                                (*inner).clone()
+                            }
                             Some(e) => e.clone(),
                             None if literal => Ty::Str,
                             None => (*inner).clone(),
                         };
-                        let right = self.expr(rhs, Some(&Ty::Option(Box::new(hint.clone()))));
+                        // `x ?? (c ? a : b)` with no `none` branch: the branches are the value
+                        // (Swift's `T? ?? T` is `T`), so they are not read as optionals.
+                        let mut inner_rhs = rhs;
+                        while let ExprKind::Paren(e) = &inner_rhs.kind {
+                            inner_rhs = e;
+                        }
+                        let plain_ternary =
+                            matches!(inner_rhs.kind, ExprKind::Ternary(..)) && !ends_in_none(inner_rhs);
+                        let rhs_expected =
+                            if plain_ternary { hint.clone() } else { Ty::Option(Box::new(hint.clone())) };
+                        let right = self.expr(rhs, Some(&rhs_expected));
                         let _ = right;
                         // `x ?? y` is optional only when `y` is.
                         let right_ty = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
@@ -5205,6 +6208,42 @@ impl<'o> Checker<'o> {
                 }
                 Ty::Bool
             }
+            // `a === b`: the same object, as Swift's `===` (a class instance, a TS object); a
+            // value type has no identity.
+            BinaryOp::Identical | BinaryOp::NotIdentical => {
+                let left = self.expr(lhs, None);
+                // `a === b` with either optional, as Swift's `AnyObject?`.
+                let hint = match self.resolve(&left) {
+                    Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never => left.clone(),
+                    other => Ty::Option(Box::new(other)),
+                };
+                self.expr(rhs, Some(&hint));
+                let right = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
+                let value = [(lhs, left), (rhs, right)]
+                    .into_iter()
+                    .filter(|(side, _)| !matches!(side.kind, ExprKind::None))
+                    .map(|(side, ty)| (side.span, self.zonk(&ty)))
+                    .find(|(_, ty)| !self.has_identity(ty));
+                if let Some((span, ty)) = value {
+                    let shown = self.show(&ty);
+                    self.report(
+                        Diagnostic::error(
+                            "B0210",
+                            span,
+                            format!("`{}` compares objects, and {shown} is a value", op.text()),
+                        )
+                        .label(
+                            "no identity: a struct, an enum, a number, a string or a collection is its value",
+                        )
+                        .help(format!(
+                            "compare it with `{}`",
+                            if op == BinaryOp::Identical { "==" } else { "!=" }
+                        ))
+                        .spec("43-soundness-rules"),
+                    );
+                }
+                Ty::Bool
+            }
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => {
                 let left = self.expr(lhs, None);
                 let left = self.resolve(&left);
@@ -5227,8 +6266,10 @@ impl<'o> Checker<'o> {
                     }
                     return Ty::Bool;
                 }
-                if !matches!(left, Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Unknown | Ty::Var(_))
-                {
+                if !matches!(
+                    left,
+                    Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Date | Ty::Unknown | Ty::Var(_)
+                ) {
                     self.operand_error(lhs.span, &format!("`{}`", op.text()), &left);
                 }
                 let hint = if matches!(left, Ty::Strings(_)) { Ty::Str } else { left };
@@ -5260,6 +6301,13 @@ impl<'o> Checker<'o> {
                     Ty::Float => {
                         self.expr(rhs, Some(&left));
                         left
+                    }
+                    // Swift's `date + seconds`, `date - seconds`: the instant that much later or
+                    // earlier.
+                    Ty::Date if matches!(op, BinaryOp::Add | BinaryOp::Sub) => {
+                        self.expr(rhs, Some(&Ty::Float));
+                        self.out.date_arithmetic.insert(expr.id);
+                        Ty::Date
                     }
                     // `Int` with a `Float` is a `Float` (the `Int` widens).
                     Ty::Int => {
@@ -5351,8 +6399,13 @@ impl<'o> Checker<'o> {
             ExprKind::Ternary(_, then, otherwise) => {
                 self.may_be_absent(then) || self.may_be_absent(otherwise)
             }
+            // `a || "user"` of an optional or a TS value (`displayName || "user"`): absent only when
+            // its right side may be, in parentheses or not.
             ExprKind::Binary(BinaryOp::Or | BinaryOp::Default, lhs, rhs)
-                if matches!(self.out.types.get(&lhs.id).map(|t| self.resolve(t)), Some(Ty::Option(_))) =>
+                if matches!(
+                    self.out.types.get(&lhs.id).map(|t| self.resolve(t)),
+                    Some(Ty::Option(_) | Ty::Foreign(_))
+                ) =>
             {
                 self.may_be_absent(rhs)
             }
@@ -5512,7 +6565,7 @@ impl<'o> Checker<'o> {
             }
             Ty::Foreign(text) => {
                 self.out.awaits.insert(expr.id, AwaitRes::Ts);
-                Ty::Result(Box::new(Ty::Foreign(format!("Awaited<{text}>").into())), Box::new(Ty::JsError))
+                Ty::Result(Box::new(foreign_of(&text, |t| format!("Awaited<{t}>"))), Box::new(Ty::JsError))
             }
             Ty::Unknown => Ty::Unknown,
             other => {
@@ -5647,7 +6700,8 @@ impl<'o> Checker<'o> {
         if let ExprKind::Name(type_name) = &object.kind
             && self.lookup(type_name).is_none()
         {
-            if type_name == "Task" && matches!(name.name.as_str(), "signal" | "isCancelled") {
+            if type_name == "Task" && matches!(name.name.as_str(), "signal" | "isCancelled" | "cancellation")
+            {
                 if !self.frames.iter().any(|f| f.task) {
                     self.report(
                         Diagnostic::error(
@@ -5663,6 +6717,10 @@ impl<'o> Checker<'o> {
                 if name.name == "isCancelled" {
                     self.out.fields.insert(expr.id, FieldRes::TaskCancelled);
                     return Ty::Bool;
+                }
+                if name.name == "cancellation" {
+                    self.out.fields.insert(expr.id, FieldRes::TaskCancellation);
+                    return Ty::Async(Box::new(Ty::Unit));
                 }
                 self.out.fields.insert(expr.id, FieldRes::TaskSignal);
                 return Ty::Foreign("AbortSignal".into());
@@ -5689,6 +6747,8 @@ impl<'o> Checker<'o> {
         let out = match self.unchain(object, &ty) {
             Some(inner) => {
                 let field = self.member(expr, &inner, name, object.span);
+                let claim = self.is_claim_only(object);
+                self.claim_link(expr, claim, &field);
                 self.rechain(expr, field)
             }
             None => self.member(expr, &ty, name, object.span),
@@ -5701,19 +6761,79 @@ impl<'o> Checker<'o> {
         out
     }
 
+    /// Whether `expr`'s type is TS's claim, not Bloom's guarantee: a TS value, a value of a type
+    /// read from a `.d.ts`, or what is read from one (`viewPost.authors`, a TS call's result).
+    /// TS says `authors` is always there; the data at run time may lack it, so a `?.` or `??`
+    /// written on it is kept (lead decision, 2026-11-27).
+    pub(super) fn ts_claimed(&self, expr: &Expr, ty: &Ty) -> bool {
+        let from_ts = |checker: &Self, ty: &Ty| {
+            let ty = match checker.resolve(ty) {
+                Ty::Option(inner) => checker.resolve(&inner),
+                other => other,
+            };
+            match ty {
+                Ty::Foreign(_) => true,
+                Ty::Adt(def, _) => matches!(checker.out.defs[def].origin, Origin::Ts { .. }),
+                _ => false,
+            }
+        };
+        if from_ts(self, ty) {
+            return true;
+        }
+        let ty_of = |e: &Expr| self.out.types.get(&e.id).cloned().unwrap_or(Ty::Unknown);
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.ts_claimed(inner, &ty_of(inner)),
+            ExprKind::Field(object, _)
+            | ExprKind::OptField(object, _)
+            | ExprKind::Index(object, _)
+            | ExprKind::OptIndex(object, _) => self.ts_claimed(object, &ty_of(object)),
+            ExprKind::Call(_) => matches!(self.out.calls.get(&expr.id), Some(CallRes::Ts)),
+            ExprKind::Name(_) => matches!(
+                self.out.names.get(&expr.id),
+                Some(NameRes::Local(l))
+                    if matches!(self.out.locals[*l].kind, LocalKind::Import { .. })
+                        || self.ts_claimed_locals.contains(l)
+            ),
+            _ => false,
+        }
+    }
+
     /// The value an optional chain carries on, when `object` is optional only by a `?.` in it.
     pub(super) fn unchain(&mut self, object: &Expr, ty: &Ty) -> Option<Ty> {
         if !self.chained.contains(&object.id) {
             return None;
         }
         match self.resolve(ty) {
-            Ty::Option(inner) => Some(self.resolve(&inner)),
+            Ty::Option(inner) => {
+                self.out.chain_links.insert(object.id);
+                Some(self.resolve(&inner))
+            }
             _ => None,
         }
     }
 
     /// A link of an optional chain: `none` when an earlier `?.` was. Marks it when the
     /// option is the chain's own, so the next link reads through it.
+    /// A link of an optional chain read through a guard TS says never fires (`claim`), whose own
+    /// member is present: optional only by the guard.
+    pub(super) fn claim_link(&mut self, expr: &Expr, claim: bool, member: &Ty) {
+        if claim && !matches!(self.resolve(member), Ty::Option(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.claim_only.insert(expr.id);
+        }
+    }
+
+    /// Whether `expr` is optional only through guards kept on TS values TS says are present.
+    pub(super) fn is_claim_only(&self, expr: &Expr) -> bool {
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.is_claim_only(inner),
+            ExprKind::Name(_) => matches!(
+                self.out.names.get(&expr.id),
+                Some(NameRes::Local(l)) if self.out.claim_only.contains(l)
+            ),
+            _ => self.claim_only.contains(&expr.id),
+        }
+    }
+
     pub(super) fn rechain(&mut self, expr: &Expr, ty: Ty) -> Ty {
         match self.resolve(&ty) {
             Ty::Option(_) | Ty::Unit | Ty::Unknown | Ty::Never => ty,
@@ -5776,9 +6896,49 @@ impl<'o> Checker<'o> {
             Ty::Option(_) => "Optional".into(),
             Ty::Result(..) => "Result".into(),
             Ty::JsError => "Error".into(),
+            Ty::Date => "Date".into(),
+            // `JSONValue` (`Foreign<"unknown">`): the standard library's lenient reads.
+            Ty::Foreign(text) if is_json(text) => "JSONValue".into(),
             Ty::Adt(def, _) => self.out.defs[*def].name.clone(),
             _ => return None,
         })
+    }
+
+    /// Whether a value of `ty` is an object `===` compares by identity: a class instance, a TS
+    /// object, an error (an optional of one too).
+    fn has_identity(&self, ty: &Ty) -> bool {
+        match self.resolve(ty) {
+            Ty::Option(inner) => self.has_identity(&inner),
+            Ty::Adt(def, _) => {
+                self.out.defs[def].class.is_some() || matches!(self.out.defs[def].origin, Origin::Ts { .. })
+            }
+            Ty::Foreign(text) => !matches!(&*text, "string" | "number" | "boolean" | "bigint"),
+            Ty::JsError | Ty::Unknown | Ty::Never | Ty::Var(_) => true,
+            _ => false,
+        }
+    }
+
+    /// `value["key"]` / `value[i]` of a `JSONValue`: its member or element, `none` when the value
+    /// is not an object (an array) or has none there.
+    fn json_read(&mut self, expr: &Expr, index: &Expr) -> Ty {
+        let key = self.expr(index, None);
+        match self.resolve(&key) {
+            Ty::Str | Ty::Strings(_) | Ty::Int | Ty::Unknown => {}
+            other => self.report(
+                Diagnostic::error(
+                    "B0205",
+                    index.span,
+                    format!(
+                        "a `JSONValue` is read by a `String` key or an `Int` index, and this is {}",
+                        self.show(&other)
+                    ),
+                )
+                .label("not a key")
+                .spec("12-standard-library-surface-draft"),
+            ),
+        }
+        self.out.json_reads.insert(expr.id);
+        Ty::Option(Box::new(Ty::Foreign("unknown".into())))
     }
 
     /// The lowered function of `ty`'s extension member `name`, when there is one in scope.
@@ -5800,6 +6960,42 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `x as? Tab`: `x` (a `String`, a `String?`, another literal union or a TS value) when it is
+    /// one of `Tab`'s values, else `none`. `x as! Tab`: `x` as a `Tab`, a trap in a dev build
+    /// when it is not one (a plain cast in a release build, as `x!` is).
+    fn union_cast(
+        &mut self,
+        expr: &Expr,
+        subject: &Expr,
+        value: &Ty,
+        target: &Ty,
+        set: Rc<StrSet>,
+        forced: bool,
+    ) -> Ty {
+        let inner = match self.resolve(value) {
+            Ty::Option(inner) => self.resolve(&inner),
+            other => other,
+        };
+        if !matches!(inner, Ty::Str | Ty::Strings(_) | Ty::Foreign(_) | Ty::Unknown) {
+            self.report(
+                Diagnostic::error(
+                    "B0213",
+                    subject.span,
+                    format!(
+                        "a cast to {} tests a string, and this is {}",
+                        self.show(target),
+                        self.show(value)
+                    ),
+                )
+                .label("not a string")
+                .help("cast a `String` (or a `String?`)")
+                .spec("62-control-flow-and-errors-20"),
+            );
+        }
+        self.out.union_casts.insert(expr.id, set);
+        if forced { target.clone() } else { Ty::Option(Box::new(target.clone())) }
+    }
+
     fn no_cast(&mut self, span: Span, ty: &Ty) {
         let shown = self.show(ty);
         self.report(
@@ -5813,7 +7009,7 @@ impl<'o> Checker<'o> {
     }
 
     /// `T.m` with `m` a static member of an extension of `T` (`T$$m`).
-    fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
+    pub(super) fn static_member(&mut self, expr: &Expr, type_name: &str, name: &Ident) -> Option<Ty> {
         let owner = crate::extensions::key(type_name);
         let getter = crate::extensions::mangle(owner, &format!("get${}", name.name), true);
         if let Some(local) = self.lookup(&getter) {
@@ -5963,7 +7159,7 @@ impl<'o> Checker<'o> {
             }
             (Ty::Foreign(text), _) => {
                 self.out.fields.insert(expr.id, FieldRes::Field);
-                Ty::Foreign(format!("{text}[\"{}\"]", name.name).into())
+                foreign_of(text, |t| format!("{t}[\"{}\"]", name.name))
             }
             (Ty::Unknown, _) => Ty::Unknown,
             (Ty::Option(_), _) => {
@@ -6010,6 +7206,21 @@ impl<'o> Checker<'o> {
     }
 
     /// A closure; `boundary`: TS takes it, so untyped parameters are TS's to infer.
+    /// A closure's result where TS takes a React element: a Bloom view it gives crosses as one.
+    pub(crate) fn element_tail(&mut self, c: &Closure) {
+        let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last() else { return };
+        // `{ nested in (Row(post: nested)) }`: the view inside the parentheses.
+        let mut tail: &Expr = tail;
+        while let ExprKind::Paren(inner) = &tail.kind {
+            tail = inner;
+        }
+        if let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
+            && matches!(self.resolve(&tail_ty), Ty::View(_))
+        {
+            self.out.elements.insert(tail.id);
+        }
+    }
+
     pub fn closure(&mut self, c: &Closure, expected: Option<&Ty>, boundary: bool) -> Ty {
         let expected_fn = match expected.map(|e| self.resolve(e)) {
             Some(Ty::Fn(f)) => Some(f),
@@ -6071,7 +7282,12 @@ impl<'o> Checker<'o> {
             let ty = match (&param.ty, expected_param) {
                 (Some(te), Some(want)) => {
                     let ty = self.resolve_type(te);
-                    if !self.unify(&ty, &want) {
+                    // `{ file: File? in … }` where `(File) -> …` is expected: a parameter may
+                    // take more than it is given, as Swift's `(T?) -> U` fits `(T) -> U`.
+                    let wider = matches!(self.resolve(&ty), Ty::Option(_))
+                        && !matches!(self.resolve(&want), Ty::Option(_) | Ty::Var(_))
+                        && self.coerce(&want, &ty);
+                    if !wider && !self.unify(&ty, &want) {
                         self.mismatch(te.span, &ty, &want);
                     }
                     ty
@@ -6102,7 +7318,33 @@ impl<'o> Checker<'o> {
                 rest: false,
             }];
         }
-        let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
+        // A closure TS calls whose type Bloom does not know (`.onPress { … }`): a last `if … else`
+        // or `switch` is a statement, as in a handler, not a value (Swift reads an `if` as a value
+        // only where one is expected), so each branch's lines are statements.
+        let statement_tail = boundary
+            && expected_fn.is_none()
+            && c.ret.is_none()
+            && match c.body.last().map(|s| &s.kind) {
+                Some(StmtKind::Expr(e)) => match &e.kind {
+                    ExprKind::If(i) => i.otherwise.is_some(),
+                    ExprKind::Match(_) => true,
+                    _ => false,
+                },
+                _ => false,
+            };
+        let mut ret = match &expected_fn {
+            Some(f) => f.ret.clone(),
+            None if statement_tail => Ty::Unit,
+            None => self.fresh(),
+        };
+        // `{ () -> [Item] in … }`: the written result type, which each `return` is checked against.
+        if let Some(written) = &c.ret {
+            let declared = self.resolve_type(written);
+            if expected_fn.is_some() && !self.coerce(&declared, &ret) {
+                self.mismatch(written.span, &declared, &ret);
+            }
+            ret = declared;
+        }
         // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): a closure that returns
         // nothing, or one that awaits (its promise), fits it (R1).
         if let Ty::Option(inner) = self.resolve(&ret) {
@@ -6140,17 +7382,16 @@ impl<'o> Checker<'o> {
             locals.push(self.declare(&param.name, ty, LocalKind::Param));
         }
         let ret_resolved = self.resolve(&ret);
+        if c.ret.is_none() {
+            closure_results(&c.body, true, &mut self.callback_results);
+        }
         let trying = std::mem::take(&mut self.trying);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
         // A TS callback that returns a React element (`(surface) => ReactNode`): its view crosses
         // as one.
-        if is_element(&ret_resolved)
-            && let Some(Stmt { kind: StmtKind::Expr(tail), .. }) = c.body.last()
-            && let Some(tail_ty) = self.out.types.get(&tail.id).cloned()
-            && matches!(self.resolve(&tail_ty), Ty::View(_))
-        {
-            self.out.elements.insert(tail.id);
+        if is_element(&ret_resolved) {
+            self.element_tail(c);
         }
         // A Bloom async call is awaited or started as a task, never returned unawaited.
         if let (Ty::Async(_), Some(Stmt { kind: StmtKind::Expr(tail), .. })) =
@@ -6196,6 +7437,8 @@ struct Signatures {
     /// Its exported `type X = …` aliases: the type and how many parameters it takes.
     aliases: HashMap<String, (Ty, usize)>,
     values: HashMap<String, (Ty, LocalKind)>,
+    /// Its `@Transparent` structs.
+    transparent: HashSet<DefId>,
     files: Vec<(PathBuf, ts::Stamp)>,
     checked: std::cell::Cell<u64>,
 }
@@ -6290,6 +7533,7 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         types,
         aliases,
         values,
+        transparent: std::mem::take(&mut sub.out.transparent),
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),
     });
@@ -6380,7 +7624,8 @@ pub fn interface(file: &File, source: &str, path: &Path, options: &Options) -> S
         }
         let mut line = format!("{} {name}", who(level));
         if let Some(TypeName::Def(def)) = sub.type_names.get(name) {
-            line.push_str(&format!(" type {}", keys[*def]));
+            let transparent = if sub.out.transparent.contains(def) { "@Transparent " } else { "" };
+            line.push_str(&format!(" {transparent}type {}", keys[*def]));
         }
         if let Some(id) = sub.scopes[0].get(name) {
             let local = &sub.out.locals[*id];
@@ -6470,7 +7715,57 @@ fn shift_def(def: &Def, offset: usize) -> Def {
             requirements.iter().map(|r| RequirementDef { ty: shift(&r.ty, offset), ..r.clone() }).collect(),
         ),
     };
-    Def { kind, ..def.clone() }
+    let tagged = def.tagged.as_ref().map(|t| {
+        Rc::new(Tagged {
+            tag: t.tag.clone(),
+            members: t.members.iter().map(|(v, ty)| (v.clone(), shift(ty, offset))).collect(),
+        })
+    });
+    Def { kind, tagged, ..def.clone() }
+}
+
+/// Whether a `struct X: ViewModifier` keeps state, so it is called once per render at the top of
+/// the view applying it: a member other than a `func` (`@State`, `@Environment`, a `let`, which
+/// may call a hook, an effect), or a `.task`/`.onChange` on its body.
+pub fn modifier_keeps_state(v: &ViewDecl) -> bool {
+    if v.members.iter().any(|m| !matches!(m, Member::Fn(_))) {
+        return true;
+    }
+    let mut effects = false;
+    for stmt in &v.body.stmts {
+        crate::analysis::walk_stmt(stmt, &mut |node| {
+            if let crate::analysis::Node::Expr(e) = node
+                && let ExprKind::Call(call) = &e.kind
+                && let ExprKind::Field(_, name) = &call.callee.kind
+                && matches!(name.name.as_str(), "task" | "onChange")
+            {
+                effects = true;
+            }
+        });
+    }
+    effects
+}
+
+/// `let Alias = SomeView` where `SomeView` is a view this file declares: that view.
+fn view_alias<'f>(file: &'f File, value: &Expr) -> Option<&'f ViewDecl> {
+    let ExprKind::Name(name) = &value.kind else { return None };
+    file.items.iter().find_map(|item| match &item.kind {
+        ItemKind::View(v) if v.name.name == *name && (v.kind == ViewKind::View || v.kind.is_menu()) => {
+            Some(v)
+        }
+        _ => None,
+    })
+}
+
+/// A `JSONValue` (`Foreign<"unknown">`, TS's `unknown`).
+fn is_json(text: &str) -> bool {
+    text == "unknown"
+}
+
+/// `@Transparent struct X { let field: T }`: a struct emitted as its one stored field.
+fn is_transparent(item: &Item) -> bool {
+    matches!(item.kind, ItemKind::Struct(_))
+        && item.modifiers.attrs.iter().any(|a| a.name.name == "Transparent")
 }
 
 /// How `==` compares values of a type (spec 4.3).
@@ -6515,6 +7810,8 @@ fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
             Equality::Identity => Equality::Identity,
             other => other,
         },
+        // Two `Date`s are equal at the same instant (a JS `Date` is an object).
+        Ty::Date => Equality::Structural,
         // A class is compared by identity, as Swift's `===`; an existential has no `==`.
         Ty::Adt(def, _) if defs[*def].class.is_some() => Equality::Identity,
         Ty::Any(_) => Equality::None(ty.clone()),
@@ -6606,7 +7903,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
-        | ExprKind::CastAs(e, _)
+        | ExprKind::CastAs(e, ..)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
@@ -6620,7 +7917,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             walk_names(k, f);
             walk_names(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
             walk_names(a, f);
             walk_names(b, f);
         }
@@ -6704,6 +8001,7 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
             }
             StmtKind::Return(Some(e)) | StmtKind::Expr(e) => walk_names(e, f),
             StmtKind::Return(None) => {}
+            StmtKind::Break(_) | StmtKind::Continue(_) => {}
             StmtKind::Defer(block) => walk_stmts(&block.stmts, f),
             StmtKind::While(w) => {
                 walk_names(&w.cond, f);
@@ -6731,9 +8029,8 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
 /// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
 fn exits(stmt: &Stmt) -> bool {
     match &stmt.kind {
-        StmtKind::Return(_) | StmtKind::Throw(_) => true,
+        StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
         StmtKind::Expr(e) => match &e.kind {
-            ExprKind::Name(n) => n == "break" || n == "continue",
             ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
             _ => false,
         },
@@ -6753,16 +8050,133 @@ pub(crate) fn is_element(ty: &Ty) -> bool {
 
 /// Whether `expr` is an optional chain (`selected?.label`, `user?.name.count`, `f?()`), which
 /// gives `none` when what it reads through is.
+/// `{}`: an empty record where a struct is expected (else a closure of nothing).
+fn is_empty_braces(expr: &Expr) -> bool {
+    matches!(&expr.kind, ExprKind::Closure(c) if c.params.is_empty() && c.body.is_empty())
+}
+
 fn optional_chain(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::OptField(..) => true,
-        ExprKind::Paren(inner) | ExprKind::Field(inner, _) => optional_chain(inner),
+        ExprKind::OptField(..) | ExprKind::OptIndex(..) => true,
+        ExprKind::Paren(inner) | ExprKind::Field(inner, _) | ExprKind::Index(inner, _) => {
+            optional_chain(inner)
+        }
         ExprKind::Call(call) => call.optional || optional_chain(&call.callee),
         _ => false,
     }
 }
 
 /// Whether a conditional chain gives `none` in one of its branches (`d ? y : none`).
+/// The calls `expr` gives, through parentheses, branches and `??`: their expected type is
+/// inferred from a sibling.
+fn inferred_calls(expr: &Expr, out: &mut HashSet<ExprId>) {
+    match &expr.kind {
+        ExprKind::Call(_) => {
+            out.insert(expr.id);
+        }
+        ExprKind::Paren(inner) | ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Force(inner) => {
+            inferred_calls(inner, out);
+        }
+        ExprKind::Ternary(_, then, otherwise) | ExprKind::Binary(BinaryOp::Default, then, otherwise) => {
+            inferred_calls(then, out);
+            inferred_calls(otherwise, out);
+        }
+        _ => {}
+    }
+}
+
+/// The record literals a closure's body gives: its tail (when `tail`) and its `return`s, through
+/// parentheses, branches, `??` and list literals, not inside a nested closure.
+fn closure_results(stmts: &[Stmt], tail: bool, out: &mut HashSet<ExprId>) {
+    fn given(expr: &Expr, out: &mut HashSet<ExprId>) {
+        match &expr.kind {
+            ExprKind::Record(_) => {
+                out.insert(expr.id);
+            }
+            ExprKind::Paren(inner) => given(inner, out),
+            ExprKind::Ternary(_, then, otherwise) | ExprKind::Binary(BinaryOp::Default, then, otherwise) => {
+                given(then, out);
+                given(otherwise, out);
+            }
+            ExprKind::List(items) => items.iter().for_each(|item| given(item, out)),
+            ExprKind::If(i) => {
+                closure_results(&i.then.stmts, true, out);
+                match i.otherwise.as_deref() {
+                    Some(Else::If(e)) => given(e, out),
+                    Some(Else::Block(b)) => closure_results(&b.stmts, true, out),
+                    None => {}
+                }
+            }
+            ExprKind::Match(m) => m.arms.iter().for_each(|arm| match &arm.body {
+                ArmBody::Expr(e) => given(e, out),
+                ArmBody::Block(b) => closure_results(&b.stmts, true, out),
+            }),
+            _ => {}
+        }
+    }
+    /// The `return`s inside a statement-level `if` or `switch`.
+    fn returns(expr: &Expr, out: &mut HashSet<ExprId>) {
+        match &expr.kind {
+            ExprKind::If(i) => {
+                closure_results(&i.then.stmts, false, out);
+                match i.otherwise.as_deref() {
+                    Some(Else::If(e)) => returns(e, out),
+                    Some(Else::Block(b)) => closure_results(&b.stmts, false, out),
+                    None => {}
+                }
+            }
+            ExprKind::Match(m) => m.arms.iter().for_each(|arm| {
+                if let ArmBody::Block(b) = &arm.body {
+                    closure_results(&b.stmts, false, out);
+                }
+            }),
+            _ => {}
+        }
+    }
+    for (index, stmt) in stmts.iter().enumerate() {
+        match &stmt.kind {
+            StmtKind::Return(Some(e)) => given(e, out),
+            StmtKind::Expr(e) if tail && index + 1 == stmts.len() => given(e, out),
+            StmtKind::Expr(e) => returns(e, out),
+            StmtKind::While(w) => closure_results(&w.body.stmts, false, out),
+            StmtKind::For(f) => closure_results(&f.body.stmts, false, out),
+            StmtKind::Guard(g) => closure_results(&g.otherwise.stmts, false, out),
+            StmtKind::Do(d) => {
+                closure_results(&d.body.stmts, false, out);
+                d.catches.iter().for_each(|c| closure_results(&c.body.stmts, false, out));
+            }
+            _ => {}
+        }
+    }
+}
+
+/// The implicit member a chain of member reads and calls starts from (`.dateTime` of
+/// `.dateTime.month(.abbreviated).day()`), if it starts from one.
+fn implicit_root(expr: &Expr) -> Option<&Expr> {
+    let mut at = expr;
+    loop {
+        at = match &at.kind {
+            ExprKind::Call(call) => match &call.callee.kind {
+                ExprKind::Field(object, _) => object,
+                _ => return None,
+            },
+            ExprKind::Field(object, _) => object,
+            ExprKind::ImplicitMember(_) if !std::ptr::eq(at, expr) => return Some(at),
+            _ => return None,
+        };
+    }
+}
+
+/// A literal Swift types from its context: a list, a record, or a ternary or parentheses of them.
+fn literal_shaped(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::List(_) | ExprKind::Record(_) => true,
+        ExprKind::Paren(inner) => literal_shaped(inner),
+        ExprKind::Ternary(_, then, otherwise) => literal_shaped(then) || literal_shaped(otherwise),
+        _ => false,
+    }
+}
+
 fn ends_in_none(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::None => true,
@@ -6784,7 +8198,7 @@ fn always_exits(stmt: &Stmt) -> bool {
     }
 }
 
-fn is_hook_name(name: &str) -> bool {
+pub(crate) fn is_hook_name(name: &str) -> bool {
     name.strip_prefix("use").and_then(|rest| rest.chars().next()).is_some_and(|c| c.is_ascii_uppercase())
 }
 

@@ -1,0 +1,51 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack } from "@oxy.so/bloom-language";
+import { screen } from "@oxy.so/bloom-language/router";
+import { useState } from "react";
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+
+export interface CardProps {
+  readonly padded?: boolean;
+}
+export function Card(props: CardProps = {}): (content: ComposedView) => Child {
+"use no memo";
+const { padded = true } = props;
+return (content: ComposedView): Child => (content.padding("md").background("surface").disabled(!padded));
+}
+
+const $view0 = Button(Text("Loading"));
+const $view1 = Text("Unavailable").header(false);
+export interface GateProps {
+  readonly allow?: boolean;
+}
+export function Gate(props: GateProps = {}): (content: ComposedView) => Child {
+"use no memo";
+const { allow = false } = props;
+const [ready, setReady] = useState<boolean>(false);
+return (content: ComposedView): Child => ((!ready) ? $view0.onPress(() => {
+setReady(true);
+}).header(false) : (!allow) ? $view1 : content);
+}
+
+const $view2 = Card();
+interface FeedsProps {
+  readonly names: readonly string[];
+}
+export const Feeds = screen(function Feeds(props: FeedsProps) {
+"use no memo";
+const $ = $c(3);
+const { names } = props;
+const $mod0 = Gate({ allow: names.length < 3 });
+let $t0;
+if ($[0] !== names || $[1] !== $mod0) {
+$t0 = $mod0(VStack(...names.map((name) => $view2(Text(name)))).title("Feeds"));
+$[0] = names;
+$[1] = $mod0;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+

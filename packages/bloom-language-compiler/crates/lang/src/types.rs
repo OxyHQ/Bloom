@@ -18,6 +18,9 @@ pub enum Ty {
     Never,
     /// JavaScript's `Error`, the error of a rejected TS promise.
     JsError,
+    /// The standard library's `Date` (Swift's): a JS `Date`, which it is at runtime and in TS, in
+    /// both directions, as Swift's `Date` bridges to `NSDate`.
+    Date,
     List(Box<Ty>),
     /// `[String: V]`.
     Map(Box<Ty>),
@@ -182,6 +185,16 @@ pub struct Def {
     pub origin: Origin,
     /// A class (a reference type): its fields are written in place.
     pub class: Option<ClassDef>,
+    /// A TS discriminated union (`{ kind: "a"; … } | { kind: "b"; … }`): its tag field and each
+    /// member's type by its tag. The def's own field is the tag, a union of the members' tags;
+    /// a `match` on it narrows the value to the member each arm names.
+    pub tagged: Option<std::rc::Rc<Tagged>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Tagged {
+    pub tag: String,
+    pub members: Vec<(String, Ty)>,
 }
 
 impl Def {
@@ -210,6 +223,13 @@ impl Def {
     pub fn is_fieldless(&self) -> bool {
         matches!(&self.kind, DefKind::Enum(variants) if variants.iter().all(|v| v.payload.is_empty()))
     }
+}
+
+/// A TS type built from a `Foreign`'s text (`ReturnType<T>`, `T["k"]`, `T[number]`). An
+/// untyped `Foreign` (no text, TS's `unknown`) stays untyped: `ReturnType<>` and `["k"]` are no
+/// TS types (Babel: "Type argument list cannot be empty").
+pub fn foreign_of(text: &str, f: impl FnOnce(&str) -> String) -> Ty {
+    if text.is_empty() { Ty::Foreign("".into()) } else { Ty::Foreign(f(text).into()) }
 }
 
 /// Replaces `Ty::Param(i)` with `args[i]`.
@@ -307,6 +327,7 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::Unit => f.write_str("Unit"),
         Ty::Never => f.write_str("Never"),
         Ty::JsError => f.write_str("Error"),
+        Ty::Date => f.write_str("Date"),
         Ty::List(t) => write!(f, "[{}]", Display { ty: t, defs }),
         Ty::Map(t) => write!(f, "[String: {}]", Display { ty: t, defs }),
         Ty::JsMap(k, v) => write!(f, "Map<{}, {}>", Display { ty: k, defs }, Display { ty: v, defs }),

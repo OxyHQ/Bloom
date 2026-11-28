@@ -1,0 +1,14 @@
+// A TS component with hooks drawn only in a branch: an element, so its hooks are its own.
+import { Toggle } from "./hooked-toggle"
+
+public struct Panel: View {
+  @State private var shown = false
+  var body: some View {
+    VStack {
+      Button(Text("Show")).onPress { shown = !shown }
+      if shown {
+        Toggle(label: "On")
+      }
+    }
+  }
+}

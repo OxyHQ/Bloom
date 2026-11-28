@@ -70,6 +70,20 @@ export function formatNumber(
   });
 }
 
+/** `n` in `currency`; a negative fraction bound is the currency's own. */
+export function formatCurrency(
+  n: number,
+  locale: string,
+  currency: string,
+  minFraction: number,
+  maxFraction: number,
+): string {
+  const options: Intl.NumberFormatOptions = { style: 'currency', currency };
+  if (minFraction >= 0) options.minimumFractionDigits = minFraction;
+  if (maxFraction >= 0) options.maximumFractionDigits = maxFraction;
+  return n.toLocaleString(locale || undefined, options);
+}
+
 export function formatCompact(n: number, locale: string): string {
   return new Intl.NumberFormat(locale || undefined, {
     notation: 'compact',
@@ -122,6 +136,8 @@ export function subtracting<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): ReadonlySe
 
 export const PI = Math.PI;
 export const E = Math.E;
+export const INFINITY = Number.POSITIVE_INFINITY;
+export const NAN = Number.NaN;
 export const sqrt = Math.sqrt;
 export const cbrt = Math.cbrt;
 export const pow = Math.pow;
@@ -148,6 +164,19 @@ export function randomInt(from: number, to: number): number {
 }
 
 // ---- time ---------------------------------------------------------------------
+
+/** The standard library's `Date` is a JS `Date`. */
+export function dateNow(): Date {
+  return new Date();
+}
+
+export function dateOfMs(ms: number): Date {
+  return new Date(ms);
+}
+
+export function msOfDate(date: Date): number {
+  return date.getTime();
+}
 
 export function nowMs(): number {
   return Date.now();
@@ -176,10 +205,36 @@ export function formatDate(
   timeZone: string,
 ): string {
   const options: Intl.DateTimeFormatOptions = {};
-  if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
-  if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  if (date === 'numeric') {
+    // Swift's `.numeric` is the numeric date with the full year ("11/26/2026"), not Intl's
+    // `short` ("11/26/26"); Intl takes no style beside fields, so the time is its fields too.
+    options.year = 'numeric';
+    options.month = 'numeric';
+    options.day = 'numeric';
+    if (time !== 'omitted') {
+      options.hour = 'numeric';
+      options.minute = '2-digit';
+      if (time !== 'short') options.second = '2-digit';
+      if (time === 'long') options.timeZoneName = 'short';
+    }
+  } else {
+    if (date !== 'omitted') options.dateStyle = date as Intl.DateTimeFormatOptions['dateStyle'];
+    if (time !== 'omitted') options.timeStyle = time as Intl.DateTimeFormatOptions['timeStyle'];
+  }
   if (timeZone) options.timeZone = timeZone;
   return new Intl.DateTimeFormat(locale || undefined, options).format(ms);
+}
+
+/** `ms` with the fields `options` names (Intl's own options: `{ month: 'short', day: 'numeric' }`). */
+export function formatDateFields(
+  ms: number,
+  locale: string,
+  options: Readonly<Record<string, string>>,
+  timeZone: string,
+): string {
+  const all: Intl.DateTimeFormatOptions = { ...options };
+  if (timeZone) all.timeZone = timeZone;
+  return new Intl.DateTimeFormat(locale || undefined, all).format(ms);
 }
 
 export function formatRelative(value: number, unit: string, locale: string, style: string): string {
@@ -325,6 +380,38 @@ export function jsonMember(value: JSONValue, key: string): JSONValue {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, JSONValue>)[key]
     : undefined;
+}
+
+/** Lenient reads (`value.string`, `value.int`, …): the value as that type, or `undefined`. */
+export function jsonAsString(value: JSONValue): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+export function jsonAsNumber(value: JSONValue): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+export function jsonAsInt(value: JSONValue): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) ? value : undefined;
+}
+
+export function jsonAsBool(value: JSONValue): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+export function jsonAsArray(value: JSONValue): readonly JSONValue[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
+export function jsonAsObject(value: JSONValue): Readonly<Record<string, JSONValue>> | undefined {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, JSONValue>)
+    : undefined;
+}
+
+/** What was thrown, as is (`error.jsValue`): `undefined` for `null` or `undefined`. */
+export function errorValue(error: unknown): JSONValue {
+  return error ?? undefined;
 }
 
 export function jsonKeys(value: JSONValue): readonly string[] {
@@ -537,6 +624,27 @@ export function isCancellation(error: unknown): boolean {
   );
 }
 
+/** A JS `Error` (`as? JSError`): its name, message and stack, or `undefined`. */
+export function jsErrorFrom(
+  error: unknown,
+): { name: string; message: string; stack: string | undefined } | undefined {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack ?? undefined };
+  }
+  // Another realm's `Error` (an iframe's, a VM context's): its shape.
+  if (error !== null && typeof error === 'object') {
+    const e = error as { name?: unknown; message?: unknown; stack?: unknown };
+    if (
+      typeof e.name === 'string' &&
+      typeof e.message === 'string' &&
+      typeof e.stack === 'string'
+    ) {
+      return { name: e.name, message: e.message, stack: e.stack };
+    }
+  }
+  return undefined;
+}
+
 export function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (
@@ -585,9 +693,16 @@ export function channel<T>(): Channel<T> {
 export type RegexMatch = {
   readonly text: string;
   readonly start: number;
-  readonly groups: readonly string[];
+  readonly groups: readonly (string | undefined)[];
   readonly named: Readonly<Record<string, string>>;
 };
+
+function matchOf(m: RegExpMatchArray): RegexMatch {
+  const named: Record<string, string> = {};
+  for (const [name, value] of Object.entries(m.groups ?? {}))
+    if (value !== undefined) named[name] = value;
+  return { text: m[0], start: m.index ?? 0, groups: m.slice(1), named };
+}
 
 const compiled = new Map<string, RegExp>();
 
@@ -621,15 +736,16 @@ export function regexMatches(
   const re = regex(pattern, flags);
   const out: RegexMatch[] = [];
   for (const m of s.matchAll(re)) {
-    out.push({
-      text: m[0],
-      start: m.index ?? 0,
-      groups: m.slice(1).map((g) => g ?? ''),
-      named: (m.groups ?? {}) as Record<string, string>,
-    });
+    out.push(matchOf(m));
     if (limit > 0 && out.length >= limit) break;
   }
   return out;
+}
+
+/** The match of `pattern` spanning all of `s` (Swift's `wholeMatch(of:)`), or `undefined`. */
+export function regexWhole(pattern: string, flags: string, s: string): RegexMatch | undefined {
+  const m = new RegExp(`^(?:${pattern})$`, flags.replace(/[gmy]/g, '')).exec(s);
+  return m ? matchOf(m) : undefined;
 }
 
 export function regexReplace(

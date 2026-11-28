@@ -25,6 +25,19 @@ compiler's; these extend them, statically dispatched (`crate::extensions`).
 
 One user-perceived character: an extended grapheme cluster, as a string.
 
+### `struct ClosedRange<Bound>`
+
+The values from `lowerBound` up to and including `upperBound`: the value of `a...b` where one is expected (`1234.5.formatted(fractionDigits: 0...2)`). Elsewhere `a...b` is its `Int`s.
+
+- `let lowerBound: Bound`
+- `let upperBound: Bound`
+
+### `struct UniqueID: Equatable, Hashable`
+
+A stable identity for a view's life: a label paired with its field, a key into a registry. Made only as a view's state, once, when the view first appears: `@State private var id = UniqueID()`, then read `id.string`. It is its string at run time (`@Transparent`): React's `useId()` on the web and in React Native (hydration-safe).
+
+- `let string: String`: The identity as text, unique within the app while the view lives.
+
 ### `extension String`
 
 - `var characters: [Character]`: The user-perceived characters, Unicode-correct: `"👍🏽".characters.count == 1` where `count` (UTF-16 units) is 4.
@@ -40,6 +53,8 @@ One user-perceived character: an extended grapheme cluster, as a string.
 - `func droppingSuffix(_ suffix: String) -> String`: The string without `suffix`, when it ends with it.
 - `func prefix(_ n: Int) -> String`: The first `n` characters (user-perceived).
 - `func suffix(_ n: Int) -> String`: The last `n` characters (user-perceived).
+- `func dropFirst(_ n: Int = 1) -> String`: Without the first `n` characters (user-perceived; one by default).
+- `func dropLast(_ n: Int = 1) -> String`: Without the last `n` characters (user-perceived; one by default).
 - `func truncated(to length: Int, ellipsis: String = "…") -> String`: At most `length` characters, with `ellipsis` in place of the rest.
 - `func trimmingStart() -> String`: Leading whitespace removed.
 - `func trimmingEnd() -> String`: Trailing whitespace removed.
@@ -135,11 +150,23 @@ An error with a message: what `throw` takes when no domain error type fits.
 
 - `let message: String`
 
+### `struct JSError: Equatable`
+
+A JS `Error` (a `TypeError`, a `RangeError`, a TS library's own): its name, message and stack trace. `error as? JSError` and `catch let e as JSError` read one from any thrown JS `Error`.
+
+- `let name: String`: `"TypeError"`, `"AbortError"`, …
+- `let message: String`
+- `let stack: String?`: The engine's stack trace, when it keeps one.
+
+### `extension JSError`
+
+- `static func cast(_ error: Error) -> JSError?`: The `JSError` an error is, or `none` when it is not a JS `Error`.
+
 ### `extension Error`
 
 - `var localizedDescription: String`: What the error says (JS's `message`, or the thrown value as text).
 
-### `func fatal<T>(_ message: String = "unreachable") -> T`
+### `func fatal(_ message: String = "unreachable") -> Never`
 
 Stops the program: a state the code holds impossible was reached.
 
@@ -198,16 +225,20 @@ The length of the vector (`a`, `b`).
 
 - `static let pi: Double`: π.
 - `static let e: Double`: Euler's number.
+- `static let infinity: Double`: Positive infinity (JS's `Infinity`): greater than every finite value.
+- `static let nan: Double`: Not a number (JS's `NaN`): the result of an undefined operation, unequal to itself.
+- `static let zero: Double`: Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
 - `var squareRoot: Double`: The square root.
 - `var isFinite: Bool`: Whether the value is neither infinite nor NaN.
 - `var isNaN: Bool`: Whether the value is NaN.
-- `func formatted(digits: Int = 0, locale: String = "") -> String`: The value with `digits` decimal places, as a person in `locale` writes it (`""`: the device's locale): `1234.5.formatted(digits: 1)` is `1,234.5` in English.
+- `func formatted(digits: Int? = none, fractionDigits: ClosedRange<Int>? = none, currency: String? = none, locale: String = "") -> String`: The value as a person in `locale` writes it (`""`: the device's locale), Swift's `FormatStyle` over `Intl.NumberFormat`:  - `formatted(digits: 1)`: exactly that many decimal places (`1234.5` is `1,234.5` in English); - `formatted(fractionDigits: 0...3)`: at least 0 and at most 3 (JS's `toLocaleString()`; `{ maximumFractionDigits: n }` is `0...n`); - `formatted(currency: "USD")`: in that currency (ISO 4217), with its own decimal places unless `fractionDigits` says otherwise (`$1,234.50`).  With none of them, no decimal places.
 - `func compact(locale: String = "") -> String`: Compact (`1.2K`, `3.4M`), as a person in `locale` writes it.
 - `static func random(in from: Double, to: Double) -> Double`: A uniformly distributed value in `from..<to`.
 
 ### `extension Int`
 
-- `func formatted(locale: String = "") -> String`: The value as a person in `locale` writes it (`1234` is `1,234` in English).
+- `static let zero: Int`: Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
+- `func formatted(currency: String? = none, locale: String = "") -> String`: The value as a person in `locale` writes it (`1234` is `1,234` in English); with `currency`, in that currency (`$1,234.00`).
 - `func compact(locale: String = "") -> String`: Compact (`1.2K`, `3.4M`): how Mention shows counts.
 - `var isEven: Bool`: Whether the value is even.
 - `static func random(in from: Int, to: Int) -> Int`: A uniformly distributed integer in `from..<to`.
@@ -216,19 +247,29 @@ The length of the vector (`a`, `b`).
 
 Bloom (time): `Date`, `Duration`, `Clock`, `Calendar` and formatting.
 
-A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encodes
-as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
+A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z (Swift's). At runtime and
+in TS it is a JS `Date`, in both directions, as Swift's `Date` bridges to `NSDate`: a TS function
+taking or returning a `Date` takes and gives this one. It is equal to another at the same
+instant, encodes as an ISO 8601 string (`Codable`), compares with `<`, moves with `+`/`-` (in
+seconds), and formats for a locale:
 
 ```swift
-Text(post.createdAt.formatted(.relative))   // "2 minutes ago"
-Text(event.startsAt.formatted(.dateTime(.medium, .short)))
+Text(post.createdAt.formatted(.relative))                       // "2 minutes ago"
+Text(event.startsAt.formatted(date: .abbreviated, time: .shortened)) // "Nov 26, 2026, 6:30 PM"
+Text(event.startsAt.formatted(.dateTime.month(.abbreviated).day()))   // "Nov 26"
 ```
 
-### `struct Date: Equatable`
+### `enum DateParseStrategy`
 
-An instant in time.
+How `Date(_:strategy:)` reads a date's text.
 
-- `let timeIntervalSince1970: Double`: Seconds since 1970-01-01T00:00:00Z.
+- `case iso8601`: ISO 8601 (`2026-11-26T18:30:00Z`), as JS's `Date.parse` reads it.
+
+### `struct DateParseError: Equatable`
+
+Text `Date(_:strategy:)` could not read as a date.
+
+- `let text: String`
 
 ### `struct Duration: Equatable`
 
@@ -238,22 +279,63 @@ A length of time, in seconds (negative: before).
 
 ### `enum DateStyle`
 
-How much of a date or a time a format shows.
+How much of a date `formatted(date:time:)` shows (Swift's `Date.FormatStyle.DateStyle`).
 
-- `case omitted`
-- `case short`
-- `case medium`
-- `case long`
-- `case full`
+- `case omitted`: No date.
+- `case numeric`: "11/26/2026": the numeric date with the full year, as Swift writes it (Intl's numeric `year`, `month` and `day`, not its `short` style's "11/26/26").
+- `case abbreviated`: "Nov 26, 2026" (Intl's `medium`).
+- `case long`: "November 26, 2026" (Intl's `long`).
+- `case complete`: "Thursday, November 26, 2026" (Intl's `full`).
 
-### `enum DateFormat`
+### `enum TimeStyle`
 
-How `Date.formatted(_:)` writes a date.
+How much of a time `formatted(date:time:)` shows (Swift's `Date.FormatStyle.TimeStyle`).
 
-- `case relative`: "2 minutes ago", "in 3 days", "yesterday".
-- `case abbreviated`: "2m", "3h", "4d": the short form timelines use.
-- `case dateTime(DateStyle, DateStyle)`: The date and the time, each in its style.
-- `case iso8601`: `2026-11-26T18:30:00.000Z`.
+- `case omitted`: No time.
+- `case shortened`: "6:30 PM" (Intl's `short`).
+- `case standard`: "6:30:00 PM" (Intl's `medium`).
+- `case complete`: "6:30:00 PM UTC" (Intl's `long`).
+
+### `enum DigitStyle`
+
+A field's digits: "6" or "06" (Intl's `numeric` and `2-digit`).
+
+- `case defaultDigits`
+- `case twoDigits`
+
+### `enum MonthStyle`
+
+How a month is written (Swift's `Date.FormatStyle.Symbol.Month`).
+
+- `case defaultDigits`: "11" (Intl's `numeric`).
+- `case twoDigits`: "11" padded: "01" (Intl's `2-digit`).
+- `case wide`: "November" (Intl's `long`).
+- `case abbreviated`: "Nov" (Intl's `short`).
+- `case narrow`: "N" (Intl's `narrow`).
+
+### `enum WeekdayStyle`
+
+How a weekday is written (Swift's `Date.FormatStyle.Symbol.Weekday`).
+
+- `case wide`: "Thursday" (Intl's `long`).
+- `case abbreviated`: "Thu" (Intl's `short`).
+- `case narrow`: "T" (Intl's `narrow`).
+
+### `struct DateFormat: Equatable`
+
+How `Date.formatted(_:)` writes a date (Swift's `FormatStyle`): `.relative`, `.abbreviated`, `.iso8601`, or `.dateTime` and the fields it shows, each in its style, as Intl writes them for the locale (`.dateTime.month(.abbreviated).day()` is "Nov 26" in English, "26 nov" in Spanish).
+
+- `static var relative: DateFormat`: "2 minutes ago", "in 3 days", "yesterday".
+- `static var abbreviated: DateFormat`: "2m", "3h", "4d": the short form timelines use.
+- `static var iso8601: DateFormat`: `2026-11-26T18:30:00.000Z`.
+- `static var dateTime: DateFormat`: The fields named after it (`.dateTime.year().month().day()`); with none, the numeric date and the time ("11/26/2026, 6:30 PM").
+- `func year(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The year: "2026" ("26" with `.twoDigits`).
+- `func month(_ style: MonthStyle = .abbreviated) -> DateFormat`: The month, "Nov" by default.
+- `func day(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The day of the month: "26".
+- `func weekday(_ style: WeekdayStyle = .abbreviated) -> DateFormat`: The weekday, "Thu" by default.
+- `func hour(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The hour, in the locale's clock: "6 PM".
+- `func minute(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The minute: "30".
+- `func second(_ style: DigitStyle = .defaultDigits) -> DateFormat`: The second: "05".
 
 ### `struct DateComponents: Equatable`
 
@@ -269,20 +351,26 @@ The calendar fields of a date (`month` 1–12, `weekday` 1 = Sunday … 7).
 
 ### `extension Date`
 
+- `init()`: The current instant: `Date()`.
+- `init(timeIntervalSince1970 seconds: Double)`: The instant `seconds` after 1970-01-01T00:00:00Z.
+- `init(millisecondsSince1970 ms: Double)`: The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
+- `init(_ text: String, strategy: DateParseStrategy) throws`: The instant `text` names, read by `strategy` (`try? Date(text, strategy: .iso8601)`); throws a `DateParseError` when it names none.
 - `static var now: Date`: The current instant.
-- `static func fromMilliseconds(_ ms: Double) -> Date`: The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
+- `static func fromMilliseconds(_ ms: Double) -> Date`: The instant `ms` milliseconds after 1970.
 - `static func parse(iso8601 text: String) -> Date?`: The instant an ISO 8601 string names (`2026-11-26T18:30:00Z`), or `none`.
+- `var timeIntervalSince1970: Double`: Seconds since 1970-01-01T00:00:00Z.
 - `var millisecondsSince1970: Double`: Milliseconds since 1970.
+- `func addingTimeInterval(_ seconds: Double) -> Date`: The instant `seconds` later (earlier when negative): `date + seconds`.
+- `func timeIntervalSince(_ other: Date) -> Double`: The seconds from `other` to this instant (negative when `other` is later).
 - `var iso8601: String`: The instant as ISO 8601, in UTC.
 - `func adding(_ duration: Duration) -> Date`: The instant `duration` later (earlier when negative).
 - `func distance(to other: Date) -> Duration`: How long from this instant to `other` (negative when `other` is earlier).
 - `func isBefore(_ other: Date) -> Bool`: Whether this instant is before `other`.
 - `func isAfter(_ other: Date) -> Bool`: Whether this instant is after `other`.
-- `func formatted(_ format: DateFormat = .dateTime(.medium, .short), locale: String = "", now: Date = Date.now) -> String`: The date written for a person in `locale` (`""`: the device's), relative to `now` for `.relative` and `.abbreviated`.
-- `case .relative:`
-- `case .abbreviated:`
-- `case .dateTime(let date, let time):`
-- `case .iso8601:`
+- `func formatted(_ format: DateFormat = .dateTime, date: DateStyle? = none, time: TimeStyle? = none, locale: String = "", timeZone: String = "", now: Date = Date.now) -> String`: The date written for a person in `locale` (`""`: the device's) and `timeZone` (`""`: the device's; an IANA name, `"UTC"`, `"Asia/Tokyo"`): in `format`, or, with `date:` or `time:`, in those styles (Swift's `formatted(date: .abbreviated, time: .shortened)`). `.relative` and `.abbreviated` are relative to `now`.
+- `case "relative":`
+- `case "abbreviated":`
+- `case "iso8601":`
 - `func components(utc: Bool = false) -> DateComponents`: The calendar fields in the device's time zone (in UTC with `utc`).
 
 ### `extension Duration`
@@ -411,6 +499,21 @@ throws a `DecodingError` naming the type and the field.
 ### `type JSONValue`
 
 A JSON value as parsed: what the derived decoders read.
+
+### `extension JSONValue`
+
+Lenient reads of a JSON value, each `none` when the value is not of that type, so a chain of them never throws: `body?["error"]?["message"]?.string`. `value["key"]` is the member of an object (`none` when it is not an object, or has no such key, or it is `null`), `value[i]` the element of an array.
+
+- `var string: String?`: The value as a string.
+- `var number: Double?`: The value as a number (finite).
+- `var int: Int?`: The value as an integer (a number with no fraction, within `Int`'s exact range).
+- `var bool: Bool?`: The value as a Boolean.
+- `var array: [JSONValue]?`: The value as an array's elements.
+- `var object: [String: JSONValue]?`: The value as an object's members.
+
+### `extension Error`
+
+- `var jsValue: JSONValue?`: The thrown value itself, to read leniently where no type fits it (a TS library's error object): `error.jsValue?["response"]?["data"]?["error"]?.string`. `none` when the thrown value was `null` or `undefined`.
 
 ### `struct DecodingError: Equatable`
 
@@ -727,8 +830,17 @@ The launch splash of a native build.
 Bloom (concurrency): `Task`, `TaskGroup`, `sleep(for:)` and `AsyncStream`.
 
 A view's work runs in `.task { }` (cancelled when the view leaves; `Task.signal` is its
-cancellation, which `HTTPClient` and `sleep(for:)` take). Work that outlives a view
-starts with `Task.run`:
+cancellation, which `HTTPClient` and `sleep(for:)` take, and take by themselves in a `.task`
+when given none). `await Task.cancellation` returns once the task is cancelled, so a setup's
+teardown is a `defer` before it:
+
+```swift
+.task(id: room) { let s = socket.join(room); defer { socket.leave(s) }; await Task.cancellation }
+
+```
+
+and a debounce is `.task(id: query) { try? await sleep(for: .milliseconds(300)); search(query) }`.
+Work that outlives a view starts with `Task.run`:
 
 ```swift
 let upload = Task.run { signal in try await api.perform(.post, "media", json: body, cancellation: signal) }
@@ -820,13 +932,18 @@ What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`
 
 ## Regex
 
-Bloom: `Regex`, regular expressions (JS's syntax).
+Bloom: `Regex`, regular expressions (JS's syntax), in Swift's shape.
 
 ```swift
-let mention = Regex(pattern: "@(\\w+)")
-let handles = mention.matches(in: text).map { $0.group(1) ?? "" }
-let plain = Regex(pattern: "\\s+").replacing(in: text, with: " ")
+let digits = try Regex("^\\d+$")
+if code.wholeMatch(of: digits) != none { … }
+let handles = text.matches(of: try Regex("@(\\w+)")).map { $0.group(1) ?? "" }
+let plain = text.replacing(try Regex("\\s+"), with: " ")
+
 ```
+
+A group that did not take part in a match is `none` (`group(n)`), as Swift's optional
+captures are. `Regex(pattern:flags:)` builds one unchecked, with flags.
 
 ### `struct Regex: Equatable`
 
@@ -841,8 +958,8 @@ One match: its text, where it starts (UTF-16 offset) and its groups.
 
 - `let text: String`
 - `let start: Int`
-- `let groups: [String]`: The numbered groups, from group 1 (`""` where a group did not take part).
-- `let named: [String: String]`: The named groups (`(?<handle>\\w+)`).
+- `let groups: [String?]`: The numbered groups, from group 1 (`none` where a group did not take part).
+- `let named: [String: String]`: The named groups that took part (`(?<handle>\\w+)`).
 
 ### `struct RegexError: Equatable`
 
@@ -853,6 +970,7 @@ A pattern that is not a valid expression.
 
 ### `extension Regex`
 
+- `init(_ pattern: String) throws`: The expression `pattern`, checked (Swift's `try Regex("…")`): throws a `RegexError` when it is invalid.
 - `static func compile(_ pattern: String, flags: String = "") throws -> Regex`: The expression, checked: throws a `RegexError` when `pattern` is invalid.
 - `func matches(in text: String) -> [RegexMatch]`: Every match in `text`, in order.
 - `func firstMatch(in text: String) -> RegexMatch?`: The first match in `text`, or `none`.
@@ -860,9 +978,18 @@ A pattern that is not a valid expression.
 - `func replacing(in text: String, with replacement: String) -> String`: `text` with every match replaced (`$1`, `$<name>` insert groups).
 - `func split(_ text: String) -> [String]`: The parts of `text` between matches.
 
+### `extension String`
+
+- `func wholeMatch(of regex: Regex) -> RegexMatch?`: The match of `regex` spanning the whole string, or `none`.
+- `func firstMatch(of regex: Regex) -> RegexMatch?`: The first match of `regex`, or `none`.
+- `func matches(of regex: Regex) -> [RegexMatch]`: Every match of `regex`, in order.
+- `func contains(_ regex: Regex) -> Bool`: Whether `regex` matches somewhere in the string.
+- `func replacing(_ regex: Regex, with replacement: String) -> String`: The string with every match of `regex` replaced (`$1`, `$<name>` insert groups).
+- `func split(separator: Regex) -> [String]`: The parts of the string between the matches of `separator`.
+
 ### `extension RegexMatch`
 
-- `func group(_ n: Int) -> String?`: Group `n` (1 is the first), or `none`.
+- `func group(_ n: Int) -> String?`: Group `n` (1 is the first, 0 the whole match), or `none`: past the last group, or where the group did not take part in the match.
 - `var end: Int`: Where the match ends (UTF-16 offset, exclusive).
 
 ## Logger

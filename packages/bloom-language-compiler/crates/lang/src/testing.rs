@@ -109,6 +109,7 @@ pub fn lower(file: &mut File, source: &str, allowed: bool) -> Vec<Diagnostic> {
             visibility: Visibility::Private,
             modifiers: Modifiers::default(),
             kind: ItemKind::Const(ConstDecl {
+                mutable: false,
                 name: Ident { name: format!("__registered{count}"), span },
                 ty: None,
                 value: register,
@@ -144,6 +145,7 @@ fn expect_in_stmt(stmt: &mut Stmt, source: &str) {
         StmtKind::Assign(s) => expect_in(&mut s.value, source),
         StmtKind::Return(Some(e)) | StmtKind::Expr(e) => expect_in(e, source),
         StmtKind::Return(None) => {}
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Defer(b) => expect_in_block(b, source),
         StmtKind::While(w) => expect_in_block(&mut w.body, source),
         StmtKind::For(f) => expect_in_block(&mut f.body, source),

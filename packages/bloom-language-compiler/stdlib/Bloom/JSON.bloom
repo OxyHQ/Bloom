@@ -41,6 +41,39 @@ extern module "./runtime" {
   private func jsonAbsent() -> JSONValue
   private func jsonOfArray(_ xs: [JSONValue]) -> JSONValue
   private func jsonOfObject(_ entries: [String: JSONValue]) -> JSONValue
+  private func jsonAsString(_ value: JSONValue) -> String?
+  private func jsonAsNumber(_ value: JSONValue) -> Double?
+  private func jsonAsInt(_ value: JSONValue) -> Int?
+  private func jsonAsBool(_ value: JSONValue) -> Bool?
+  private func jsonAsArray(_ value: JSONValue) -> [JSONValue]?
+  private func jsonAsObject(_ value: JSONValue) -> [String: JSONValue]?
+  private func errorValue(_ error: Error) -> JSONValue?
+}
+
+/// Lenient reads of a JSON value, each `none` when the value is not of that type, so a chain of
+/// them never throws: `body?["error"]?["message"]?.string`. `value["key"]` is the member of an
+/// object (`none` when it is not an object, or has no such key, or it is `null`), `value[i]` the
+/// element of an array.
+extension JSONValue {
+  /// The value as a string.
+  public var string: String? { jsonAsString(self) }
+  /// The value as a number (finite).
+  public var number: Double? { jsonAsNumber(self) }
+  /// The value as an integer (a number with no fraction, within `Int`'s exact range).
+  public var int: Int? { jsonAsInt(self) }
+  /// The value as a Boolean.
+  public var bool: Bool? { jsonAsBool(self) }
+  /// The value as an array's elements.
+  public var array: [JSONValue]? { jsonAsArray(self) }
+  /// The value as an object's members.
+  public var object: [String: JSONValue]? { jsonAsObject(self) }
+}
+
+extension Error {
+  /// The thrown value itself, to read leniently where no type fits it (a TS library's error
+  /// object): `error.jsValue?["response"]?["data"]?["error"]?.string`. `none` when the thrown
+  /// value was `null` or `undefined`.
+  public var jsValue: JSONValue? { errorValue(self) }
 }
 
 /// Why a JSON value did not decode: at `at` (`Post.author`), `expected` was wanted

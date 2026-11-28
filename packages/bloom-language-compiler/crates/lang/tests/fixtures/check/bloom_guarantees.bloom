@@ -1,0 +1,11 @@
+// A Bloom type is a guarantee: `?.` and `??` on a value Bloom says is always there stay B0201
+// (only a type read from TS is a claim, `emit/ts_claims`).
+struct Post {
+  let authors: [String]
+}
+
+func names(_ post: Post) -> [String] { post.authors ?? [] }
+
+func first(_ post: Post) -> String? { post?.authors.first }
+
+func tag(_ tags: [String]) -> String { tags?[0] ?? "" }

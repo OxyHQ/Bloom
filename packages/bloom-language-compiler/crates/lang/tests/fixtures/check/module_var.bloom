@@ -1,0 +1,3 @@
+// A module's mutable value is the file's own: `var` and `public var` at file scope stay B0106.
+var count = 0
+public var shared = 1

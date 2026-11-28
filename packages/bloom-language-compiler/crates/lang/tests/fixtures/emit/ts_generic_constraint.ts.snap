@@ -1,0 +1,9 @@
+import { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+
+function useCollapse(): number {
+const progress = useSharedValue(0.0);
+const style = useAnimatedStyle(() => ({ transform: [{ scale: interpolate(progress.value, [0, 1], [1, 0.5]) }, { translateY: interpolate(progress.value, [0, 1], [0, 8]) }] }));
+style;
+return progress.value + 1.0;
+}
+

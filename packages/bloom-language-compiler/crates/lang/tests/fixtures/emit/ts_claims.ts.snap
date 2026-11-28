@@ -1,0 +1,96 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { type FeedMeta, type FeedPost, currentPath, lookupPost, useViewPost } from "@/corpus";
+
+export function authorIds(viewPost: FeedPost | undefined): readonly string[] {
+return viewPost?.authors?.map((author: FeedPost["authors"][number]) => author.id) ?? [];
+}
+
+export function names(post: FeedPost): readonly string[] {
+return post.authors?.map((author: FeedPost["authors"][number]) => author.name) ?? [];
+}
+
+export function count(post: FeedPost): number {
+return post?.authors.length ?? 0;
+}
+
+export function authors(post: FeedPost): readonly string[] {
+const list = post.authors ?? [];
+return list.map((author: FeedPost["authors"][number]) => author.id);
+}
+
+export function open(post: FeedPost): void {
+post.onOpen?.();
+}
+
+export function useFirstAuthor(): string {
+const viewPost = useViewPost();
+return viewPost?.authors?.[0]?.name ?? "";
+}
+
+export function firstTag(post: FeedPost): string {
+return post?.tags?.[0] ?? "";
+}
+
+export function userId(id: string, post: FeedPost): string | undefined {
+const p = lookupPost(id) ?? post;
+return p?.user?.id;
+}
+
+export function authorCount(post: FeedPost): number {
+return (post.authors ?? []).length;
+}
+
+export function metadata(viewPost: FeedPost | undefined): FeedMeta {
+const meta: FeedMeta = viewPost?.metadata ?? ({});
+return meta;
+}
+
+export function lane(viewPost: FeedPost | undefined): string {
+const meta = viewPost?.metadata ?? ({});
+return meta.lane ?? "";
+}
+
+export function spoiler(viewPost: FeedPost | undefined): string {
+const state = viewPost?.state ?? (({} as Partial<NonNullable<FeedPost["state"]>>));
+const sensitive = state.sensitive === true;
+return sensitive ? (state.spoiler ?? "") : "";
+}
+
+export function isAbout(): boolean {
+const path = currentPath();
+return path?.endsWith("/about") ?? false;
+}
+
+export function pick(onSelect: (p0: FeedMeta) => void): void {
+}
+
+export function usePick(): void {
+pick((meta: FeedMeta | undefined) => {
+if (meta?.lane == null) {
+return;
+}
+});
+}
+
+export const Frame = view(function Frame() {
+"use no memo";
+const $ = $c(2);
+let path: string;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+path = currentPath();
+$[0] = path;
+} else {
+path = $[0];
+}
+let $t0;
+if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
+$t0 = Text((path?.endsWith("/about") ?? false) ? "about" : "other");
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

@@ -113,6 +113,7 @@ impl Reader {
                             };
                             let setter = TsType::Fn(Box::new(TsFn {
                                 type_params: Vec::new(),
+                                bounded: Vec::new(),
                                 params: vec![TsParam {
                                     name: "value".into(),
                                     ty: Some(value.clone()),

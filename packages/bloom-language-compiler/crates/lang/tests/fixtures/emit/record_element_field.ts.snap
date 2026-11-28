@@ -1,0 +1,44 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, toElement, view } from "@oxy.so/bloom-language";
+import { Dialog } from "@oxy.so/bloom-language/overlays";
+import type { Child } from "@oxy.so/bloom-language";
+import { present } from "@/ui/components";
+
+const $fn0 = () => {
+};
+const $view0 = Button(Text("Save")).onPress($fn0);
+const $view1 = Dialog(Text("Body"));
+export interface EditorProps {
+  readonly visible: boolean;
+  readonly onClose: () => void;
+}
+export const Editor = view(function Editor(props: EditorProps) {
+"use no memo";
+const $ = $c(4);
+const { visible, onClose } = props;
+let saveAction: Child;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+saveAction = $view0;
+$[0] = saveAction;
+} else {
+saveAction = $[0];
+}
+let $t0;
+if ($[1] !== visible || $[2] !== onClose) {
+$t0 = $view1.header({ title: "Create", largeTitle: false, right: toElement(saveAction) }).presented([visible, (_: boolean) => onClose()] as const);
+$[1] = visible;
+$[2] = onClose;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+
+const $view2 = Text("New");
+const $view3 = Text("1");
+export function show(badge: boolean): void {
+present({ title: "Saved", accessory: badge ? toElement($view2) : undefined, rows: [{ label: "a", trailing: toElement($view3) }] });
+}
+

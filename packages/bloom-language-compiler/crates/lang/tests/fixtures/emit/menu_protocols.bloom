@@ -1,0 +1,56 @@
+// A menu's actions and its content, the 2.0 way (#1038's Handoff): a struct conforming to
+// `MenuActions` is `actions(function X(props) { …; return { tag: action } })`, and one conforming
+// to `MenuContent` is `menu(function X(props) { …; return rows })`. Stored `let`s are the props,
+// members may call hooks (an actions body runs only when a row is chosen, a content body only
+// while its menu is open), and `body` is the result: no memo cache, no fiber of its own, as the
+// TS wrote them (PostMenu, ProfileMoreMenu, ReplySettingsMenu).
+import { useRouter } from "@/navigation/router"
+
+public struct Post {
+  let id: String
+  let title: String
+}
+
+public struct Action {
+  let label: String
+  let run: () -> Unit
+}
+
+func copyLink(_ post: Post) {}
+
+func usePostActions(_ post: Post) -> [Action] { [] }
+
+public struct PostMenuActions: MenuActions {
+  let post: Post
+  let router = useRouter()
+  var body: [String: () -> Unit] {
+    ["open": { router.push("/p/\(post.id)") }, "copy": { copyLink(post) }]
+  }
+}
+
+public struct PostMenu: MenuContent {
+  let post: Post
+  let actions = usePostActions(post)
+  var body: some View {
+    for a in actions {
+      Item(a.label).onPress(a.run)
+    }
+  }
+}
+
+public struct PostRow: View {
+  let post: Post
+  var body: some View {
+    HStack {
+      Text(post.title)
+      Menu(Text("More")) {
+        Item("Open").tag("open")
+        Item("Copy link").tag("copy")
+      }
+      .actions(PostMenuActions(post: post))
+      Menu(Text("All")) {
+        PostMenu(post: post)
+      }
+    }
+  }
+}

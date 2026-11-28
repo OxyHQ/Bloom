@@ -1,0 +1,29 @@
+/// Swift's FormatStyle over Intl: numbers, currencies and dates, for a locale and a time zone.
+public func number(_ x: Float, _ locale: String) -> String { x.formatted(fractionDigits: 0...3, locale: locale) }
+public func atMostOne(_ x: Float, _ locale: String) -> String { x.formatted(fractionDigits: 0...1, locale: locale) }
+public func exact(_ x: Float, _ locale: String) -> String { x.formatted(digits: 2, locale: locale) }
+public func fixed(_ x: Float) -> String { x.formatted(fractionDigits: 2) }
+public func price(_ x: Float, _ code: String, _ locale: String) -> String { x.formatted(currency: code, locale: locale) }
+public func wholePrice(_ n: Int, _ code: String, _ locale: String) -> String { n.formatted(currency: code, locale: locale) }
+
+public func monthDay(_ d: Date, _ locale: String) -> String {
+  d.formatted(.dateTime.month(.abbreviated).day(), locale: locale, timeZone: "UTC")
+}
+public func longDate(_ d: Date, _ locale: String) -> String {
+  d.formatted(.dateTime.weekday(.wide).year().month(.wide).day(), locale: locale, timeZone: "Asia/Tokyo")
+}
+public func clock(_ d: Date, _ locale: String) -> String {
+  d.formatted(.dateTime.hour().minute(.twoDigits), locale: locale, timeZone: "UTC")
+}
+public func styled(_ d: Date, _ locale: String) -> String {
+  d.formatted(date: .abbreviated, time: .shortened, locale: locale, timeZone: "UTC")
+}
+public func dateOnly(_ d: Date, _ locale: String) -> String { d.formatted(date: .long, locale: locale, timeZone: "UTC") }
+public func plain(_ d: Date, _ locale: String) -> String { d.formatted(locale: locale, timeZone: "UTC") }
+public func relative(_ d: Date, _ now: Date) -> String { d.formatted(.relative, locale: "en", now: now) }
+public func numericDate(_ d: Date, _ locale: String) -> String {
+  d.formatted(date: .numeric, time: .omitted, locale: locale, timeZone: "UTC")
+}
+public func numericDateTime(_ d: Date, _ locale: String) -> String {
+  d.formatted(date: .numeric, time: .shortened, locale: locale, timeZone: "UTC")
+}

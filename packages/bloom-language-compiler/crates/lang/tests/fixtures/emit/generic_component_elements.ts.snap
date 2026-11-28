@@ -1,0 +1,36 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, Text, toElement, view } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { GridList, type GridEntry } from "@/ui/components";
+
+export interface Entry {
+  readonly postId: string;
+}
+
+const $renderCell = (item: Entry, size: number): Child => {
+return Text(item.postId);
+};
+const $view0 = Text("Nothing yet");
+const $view1 = Text("Grid");
+export interface GridProps {
+  readonly data: readonly Entry[];
+}
+export const Grid = view(function Grid(props: GridProps) {
+"use no memo";
+const $ = $c(2);
+const { data } = props;
+let $t0;
+if ($[0] !== data) {
+const empty = (data.length === 0) ? $view0 : undefined;
+$t0 = Embed($jsx(GridList, { data: data, renderCell: ((...$a: Parameters<typeof $renderCell>) => toElement($renderCell(...$a))), emptyComponent: (empty == null ? undefined : toElement(empty)), header: toElement($view1) } satisfies ComponentProps<typeof GridList>));
+$[0] = data;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

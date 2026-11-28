@@ -1,0 +1,38 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, inlineView, view } from "@oxy.so/bloom-language";
+
+export interface RowContentProps {
+  readonly title: string;
+  readonly dense?: boolean | undefined;
+}
+export const RowContent = inlineView(function RowContent(props: RowContentProps) {
+"use no memo";
+const { title, dense = undefined } = props;
+return Text(title);
+});
+
+export const Row = RowContent;
+
+interface CardContentProps {
+  readonly label: string;
+}
+const CardContent = view(function CardContent(props: CardContentProps) {
+"use no memo";
+const $ = $c(2);
+const { label } = props;
+let $t0;
+if ($[0] !== label) {
+$t0 = Text(label);
+$[0] = label;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+}, (old: CardContentProps, new_: CardContentProps): boolean => {
+return old.label === new_.label;
+});
+
+export const Card = CardContent;
+

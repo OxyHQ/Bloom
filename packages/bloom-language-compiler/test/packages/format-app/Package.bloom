@@ -1,0 +1,6 @@
+let package = Package(
+  name: "FormatApp",
+  targets: [
+    .app("App"),
+  ]
+)

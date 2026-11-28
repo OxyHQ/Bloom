@@ -1,0 +1,86 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { useEffect } from "react";
+import { type Task, sleep } from "../../.bloom/std/Bloom/Concurrency.bloom";
+import { Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
+function $cancellation(signal: AbortSignal | undefined): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal === undefined || signal.aborted) resolve();
+    else signal.addEventListener("abort", () => resolve(), { once: true });
+  });
+}
+
+export interface SubscriptionProps {
+  readonly room: string;
+  readonly onStart: (p0: string) => void;
+  readonly onStop: (p0: string) => void;
+}
+export const Subscription = view(function Subscription(props: SubscriptionProps) {
+"use no memo";
+const $ = $c(2);
+const { room, onStart, onStop } = props;
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+onStart(room);
+const $t0 = () => {
+onStop(room);
+};
+$signal.addEventListener("abort", $t0);
+try {
+await ($cancellation($signal));
+} finally {
+$signal.removeEventListener("abort", $t0);
+if (!$signal.aborted) $t0();
+}
+})();
+return () => $controller.abort();
+}, [room]);
+let $t1;
+if ($[0] !== room) {
+$t1 = Text(room);
+$[0] = room;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+
+export interface DebouncedProps {
+  readonly query: string;
+  readonly onSearch: (p0: string) => void;
+}
+export const Debounced = view(function Debounced(props: DebouncedProps) {
+"use no memo";
+const $ = $c(2);
+const { query, onSearch } = props;
+useEffect(() => {
+const $controller = new AbortController();
+const $signal = $controller.signal;
+void (async () => {
+try {
+await (sleep((Duration$$milliseconds)(50), $signal));
+if ($signal.aborted) return;
+onSearch(query);
+} catch (error) {
+if ($signal.aborted) return;
+{
+}
+}
+})();
+return () => $controller.abort();
+}, [query]);
+let $t2;
+if ($[0] !== query) {
+$t2 = Text(query);
+$[0] = query;
+$[1] = $t2;
+} else {
+$t2 = $[1];
+}
+return $t2;
+});
+

@@ -1,0 +1,7 @@
+/// Literals where a TS type is expected: each element and field is TS's, not its sibling's type.
+public type Style = Foreign<"{ transform?: Array<{ scale: number } | { translateY: number }>; opacity?: number }">
+
+public func collapsed(_ y: Float) -> Style {
+  let style: Style = { transform: [{ scale: 0.5 }, { translateY: y }], opacity: 1 }
+  return style
+}

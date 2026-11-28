@@ -1,0 +1,8 @@
+export interface Stamp {
+  readonly at: Date;
+}
+export declare function stamp(d: Date): string;
+export declare function first(): Date;
+export declare function same(a: Stamp, b: Stamp): boolean;
+export declare function soon(d: Date): boolean;
+export declare function before(d: Date): Date;

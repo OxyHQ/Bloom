@@ -12,6 +12,7 @@ import {
   Button,
   Embed,
   FAB,
+  Group,
   Header,
   Icon,
   NavItem,
@@ -278,6 +279,25 @@ describe('screen() on Android', () => {
     const r = mount(createElement(Custom));
     expect(hosts(r, 'MyHeader')).toHaveLength(1);
     expect(hosts(r, 'PageHeader')).toHaveLength(0);
+  });
+
+  it('the chrome of the branch a root Group draws, the Group’s own first', () => {
+    const Job = screen((props: { loading: boolean }) =>
+      Group(
+        props.loading ? Text('…').header(false) : Text('job').title('Job').toolbar(Text('Edit')),
+      ),
+    );
+    expect(
+      only(mount(createElement(Job, { loading: true })), 'Screen').props.header,
+    ).toBeUndefined();
+    const loaded = mount(createElement(Job, { loading: false }));
+    expect(only(loaded, 'PageHeader').props.title).toBe('Job');
+    expect(only(loaded, 'PageHeader').props.actions).toBeTruthy();
+    // The Group's own title wins; two drawn children declare nothing for it.
+    const Own = screen(() => Group(Text('a').title('Inner')).title('Outer'));
+    expect(only(mount(createElement(Own)), 'PageHeader').props.title).toBe('Outer');
+    const Two = screen(() => Group(Text('a').title('A'), Text('b')));
+    expect(only(mount(createElement(Two)), 'PageHeader').props.title).toBeUndefined();
   });
 
   it('a back of the screen’s own, and the footer over the content following the keyboard', () => {

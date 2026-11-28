@@ -1,0 +1,2 @@
+export declare function previewChars(detail: boolean): number | undefined;
+export declare function missing(): number;

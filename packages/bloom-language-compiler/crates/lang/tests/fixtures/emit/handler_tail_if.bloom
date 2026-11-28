@@ -1,0 +1,28 @@
+// A handler's last `if … else` or `switch` is a statement, each branch's lines statements, as in a
+// Swift action (lang-mention-11's handler-tail-if: Mention's settings/pages/privacy).
+func note(_ s: String) {}
+
+func work(_ id: String) async {
+  note(id)
+}
+
+public enum Mode {
+  case on
+  case off
+}
+
+public struct Row: View {
+  let id: String?
+  let mode: Mode
+  var body: some View {
+    VStack {
+      Button(Text("a")).onPress { if let id = id { task { await work(id) } } else { note("none") } }
+      Button(Text("b")).onPress {
+        switch mode {
+        case .on: note("on")
+        case .off: task { await work("off") }
+        }
+      }
+    }
+  }
+}

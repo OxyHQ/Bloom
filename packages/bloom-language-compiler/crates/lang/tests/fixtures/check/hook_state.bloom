@@ -1,0 +1,18 @@
+// `@State var` is a hook: at the top of a hook function's body, written in its closures.
+public func notAHook() -> Int {
+  @State var n = 0
+  return n
+}
+
+public func useWrites() -> Int {
+  @State var n = 0
+  n = 1
+  return 0
+}
+
+public func useBranch(_ on: Bool) -> Int {
+  if on {
+    @State var m = 1
+  }
+  return 0
+}

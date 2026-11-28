@@ -2083,17 +2083,27 @@ export interface MenuActionsProps {
   readonly body: (props: object) => MenuActionTable;
   readonly props: object;
 }
-export interface ViewNodeProps {
-  /** The view's component: React's own memo of its host, so props compare key by key. */
-  readonly component: ComponentType<object>;
-  /** The props object the view was called with, handed to its body as is. */
-  readonly props: object;
-  /**
-   * The view's body, for a host that draws what it returns itself: the screen
-   * host's `throughViews`, which takes a screen's chrome from its body's root.
-   */
-  readonly body?: (props: object) => Child | (() => Child);
-}
+export type ViewNodeProps =
+  | {
+      /** The view's component: React's own memo of its host, so props compare key by key. */
+      readonly component: ComponentType<object>;
+      /** The props object the view was called with, handed to its body as is. */
+      readonly props: object;
+      /**
+       * The view's body, for a host that draws what it returns itself: the screen
+       * host's `throughViews`, which takes a screen's chrome from its body's root.
+       */
+      readonly body?: (props: object) => Child | (() => Child);
+    }
+  | {
+      readonly component?: undefined;
+      readonly props?: undefined;
+      /**
+       * An inlined view's body (`inlineView`), built where it is called: drawn
+       * where the view is, in its caller's tree, with no component of its own.
+       */
+      readonly body: Child;
+    };
 
 /**
  * What a node last rendered as, and where: the same node in the same

@@ -1,0 +1,63 @@
+import { Bool$$decode, Bool$$encode, type Codec, type JSONValue, Optional$$decode, String$$decode, String$$encode, decodeCase, encodeCase, jsonField, jsonObject, JSON$$decode, JSON$$encode } from "../../.bloom/std/Bloom/JSON.bloom";
+
+export interface Note {
+  readonly id: string;
+  readonly pinned: boolean;
+}
+
+export function Note$$decode(value: unknown, at: string): Note {
+return { id: String$$decode(jsonField(value, "id", at), "Note.id"), pinned: (Optional$$decode(jsonField(value, "pinned", at), "Note.pinned", Bool$$decode)) ?? false };
+}
+
+export function Note$$encode(value: Note): unknown {
+return jsonObject({ "id": String$$encode(value.id), "pinned": Bool$$encode(value.pinned) });
+}
+
+export const Note$$self: Codec<Note> = { decode: Note$$decode, encode: Note$$encode };
+
+export const Note$$empty: readonly Note[] = [];
+
+export const Note$$sample = { pinned: false, id: "sample" };
+
+export class Counter {
+  count: number = 0;
+}
+
+export const Counter$$shared = new Counter();
+
+export type Shade = "light" | "dark";
+
+export function Shade$$decode(value: unknown, at: string): Shade {
+return decodeCase(value, at, ["light", "dark"], "one of \"light\", \"dark\"");
+}
+
+export function Shade$$encode(value: Shade): unknown {
+return encodeCase(value);
+}
+
+export const Shade$$self: Codec<Shade> = { decode: Shade$$decode, encode: Shade$$encode };
+
+export const Shade$$all: readonly Shade[] = ["light", "dark"];
+
+export function encoded(note: Note): string {
+return JSON$$encode(Note$$self, note);
+}
+
+export function decoded(text: string): Note | undefined {
+return (() => {
+try {
+return JSON$$decode(Note$$self, text);
+} catch {
+return undefined;
+}
+})();
+}
+
+export function statics(): readonly number[] {
+return [Note$$empty.length, Shade$$all.length, Counter$$shared.count];
+}
+
+export function sampleID(): string {
+return Note$$sample.id;
+}
+

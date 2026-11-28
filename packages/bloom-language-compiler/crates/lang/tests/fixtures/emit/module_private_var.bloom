@@ -1,0 +1,18 @@
+// A file-scope `private var` (2.0, the lead's Q1): the file's own mutable value, a JS module `let` that
+// any function, closure or effect may read and write (Mention's ChannelInfoDialog registry callback).
+// Nothing re-renders on it: it is no dependency and no state. Swift's `f?()` calls it when present.
+private var globalShowChannelInfo: (() -> Unit)? = none
+
+public func showChannelInfo() {
+  globalShowChannelInfo?()
+}
+
+public struct ChannelInfoHost: View {
+  @State private var open = false
+
+  var body: some View {
+    Text("Channels")
+      .onAppear { globalShowChannelInfo = { open = true } }
+      .onDisappear { globalShowChannelInfo = none }
+  }
+}

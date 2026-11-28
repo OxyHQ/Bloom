@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface ToggleProps {
+  readonly shown: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Toggle())`), or from TSX as `toElement(Toggle())`. */
+export declare const Toggle: (props: ToggleProps) => ComposedView;

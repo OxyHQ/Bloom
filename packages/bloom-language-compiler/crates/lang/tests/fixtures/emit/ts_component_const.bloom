@@ -1,0 +1,17 @@
+// react-native's Switch is declared `const Switch: (props: Omit<SwitchProps, "ref"> & { ref?: … })
+// => React.ReactNode` (RN 0.81's types_generated). bloomc emits it as a call, `Switch({ … })`,
+// so its hooks run inside the caller: drawn only in a branch, React throws "Rendered more hooks
+// than during the previous render" (Mention: app/(app)/events/[id], EventScreen.test, 6 cases).
+// Expected: a TS component, `Embed($jsx(Switch, { … }))`, as for `const X: React.FC<P>`.
+import { Switch } from "react-native"
+public struct Toggle: View {
+  let shown: Bool
+  @State private var on = false
+  var body: some View {
+    VStack {
+      if shown {
+        Switch(accessibilityLabel: "On", value: on, onValueChange: { v in on = v })
+      }
+    }
+  }
+}

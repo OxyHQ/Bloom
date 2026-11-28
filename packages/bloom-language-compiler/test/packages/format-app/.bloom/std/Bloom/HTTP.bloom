@@ -1,0 +1,189 @@
+// Bloom (I/O): `HTTPClient`: async throws requests with typed decoding and cancellation.
+//
+//     let api = HTTPClient(baseURL: URL.parse("https://api.mention.earth") ?? fatal())
+//       .adding(header: "Authorization", value: "Bearer \(token)")
+//     let page = try await api.get("feeds/home", as: FeedPage.self, query: ["cursor": cursor])
+//
+// A status outside 200–299 throws an `HTTPError` (its status and body); a network
+// failure, a timeout or a cancellation throws the platform's error. In `.task { }`,
+// pass `cancellation: Task.signal`: leaving the view cancels the request.
+
+extern module "./runtime" {
+  private func request(
+    _ method: String,
+    _ url: String,
+    _ headers: [String: String],
+    _ body: String?,
+    _ signal: TaskSignal?,
+    _ timeoutMs: Double,
+  ) async throws -> HTTPReply
+  private func stringifyJSON(_ value: JSONValue, _ indent: Int) -> String
+  private func parseJSON(_ text: String) -> JSONValue
+  private func errorStatus(_ error: Error) -> Int?
+  private func errorBody(_ error: Error) -> String?
+  private func httpErrorFrom(_ error: Error) -> HTTPError?
+}
+
+/// What the runtime answers for a request.
+public struct HTTPReply: Equatable {
+  public let status: Int
+  public let text: String
+  public let headers: [String: String]
+}
+
+/// A request's verb.
+public enum HTTPMethod {
+  case get
+  case post
+  case put
+  case patch
+  case delete
+}
+
+private func verb(_ method: HTTPMethod) -> String {
+  switch method {
+  case .get:
+    "GET"
+  case .post:
+    "POST"
+  case .put:
+    "PUT"
+  case .patch:
+    "PATCH"
+  case .delete:
+    "DELETE"
+  }
+}
+
+/// A response: its status, headers (lower-cased names) and body.
+public struct HTTPResponse: Equatable {
+  public let status: Int
+  public let headers: [String: String]
+  public let text: String
+}
+
+/// A response whose status is outside 200–299.
+///
+///     do { try await api.post("posts", json: draft) }
+///     catch let error as HTTPError { toast(error.response.status == 409 ? "Already posted" : error.message) }
+///
+/// `error as? HTTPError` reads one from any error (a TS client's too, as Axios throws it).
+public struct HTTPError: Equatable {
+  public let status: Int
+  /// The response's body (often the server's error JSON).
+  public let body: String
+  /// "GET https://…: 404".
+  public let message: String
+  /// The response itself: its status, headers and body.
+  public let response: HTTPResponse
+}
+
+extension HTTPError {
+  /// The `HTTPError` an error is, or `none`: one `HTTPClient` threw, or a TS client's whose
+  /// `response` has a status (Axios's), its body as text. `as? HTTPError` and
+  /// `catch let e as HTTPError` call it.
+  public static func cast(_ error: Error) -> HTTPError? { httpErrorFrom(error) }
+}
+
+extension HTTPResponse {
+  /// Whether the status is 200–299.
+  public var isSuccess: Bool { self.status >= 200 && self.status < 300 }
+
+  /// The body as JSON.
+  public func json() throws -> JSONValue { parseJSON(self.text) }
+
+  /// The body decoded as a `T` (`response.decode(Post.self)`).
+  public func decode<T>(_ codec: Codec<T>) throws -> T { JSON.decode(codec, from: self.text) }
+}
+
+/// A client for one server: its base URL, the headers every request sends and a timeout.
+public struct HTTPClient: Equatable {
+  public let baseURL: URL
+  public var headers: [String: String] = [:]
+  /// Each request's timeout, in seconds (`timeout(_:)` sets it from a `Duration`).
+  public var timeoutSeconds: Double = 30.0
+}
+
+extension HTTPClient {
+  /// The client with one more header on every request.
+  public func adding(header name: String, value: String) -> HTTPClient {
+    HTTPClient(baseURL: self.baseURL, headers: self.headers.setting(name, value), timeoutSeconds: self.timeoutSeconds)
+  }
+
+  /// The client with this timeout per request.
+  public func timeout(_ duration: Duration) -> HTTPClient {
+    HTTPClient(baseURL: self.baseURL, headers: self.headers, timeoutSeconds: duration.seconds)
+  }
+
+  /// The URL of `path` (relative to `baseURL`) with `query`.
+  public func url(_ path: String, query: [String: String] = [:]) -> URL {
+    self.baseURL.appending(path: path).appendingQuery(query)
+  }
+
+  /// One request; throws an `HTTPError` unless its status is 200–299.
+  public func send(
+    _ method: HTTPMethod,
+    _ path: String,
+    query: [String: String] = [:],
+    json body: JSONValue? = none,
+    cancellation: TaskSignal? = none,
+  ) async throws -> HTTPResponse {
+    let target = self.url(path, query: query)
+    let headers = body == none ? self.headers : self.headers.setting("content-type", "application/json")
+    let text = body.map { stringifyJSON($0, 0) }
+    let reply = try await request(verb(method), target.absoluteString, headers, text, cancellation, self.timeoutSeconds * 1000.0)
+    let response = HTTPResponse(status: reply.status, headers: reply.headers, text: reply.text)
+    if !response.isSuccess {
+      throw HTTPError(
+        status: reply.status,
+        body: reply.text,
+        message: "\(verb(method)) \(target.absoluteString): \(reply.status)",
+        response: response,
+      )
+    }
+    return response
+  }
+
+  /// `GET path`, its body decoded as a `T`.
+  public func get<T>(
+    _ path: String,
+    as codec: Codec<T>,
+    query: [String: String] = [:],
+    cancellation: TaskSignal? = none,
+  ) async throws -> T {
+    let response = try await self.send(.get, path, query: query, cancellation: cancellation)
+    return try response.decode(codec)
+  }
+
+  /// `POST path` with `body` (encoded by `encoding`), the answer decoded as a `T`.
+  public func post<B, T>(
+    _ path: String,
+    body: B,
+    encoding: Codec<B>,
+    as codec: Codec<T>,
+    cancellation: TaskSignal? = none,
+  ) async throws -> T {
+    let encode = encoding.encode
+    let response = try await self.send(.post, path, json: encode(body), cancellation: cancellation)
+    return try response.decode(codec)
+  }
+
+  /// `method path` with a JSON body, the answer ignored (`POST /posts/:id/like`).
+  public func perform(
+    _ method: HTTPMethod,
+    _ path: String,
+    json body: JSONValue? = none,
+    cancellation: TaskSignal? = none,
+  ) async throws {
+    let _ = try await self.send(method, path, json: body, cancellation: cancellation)
+  }
+}
+
+extension Error {
+  /// The status, when this is an `HTTPError` (a response outside 200–299); else `none`
+  /// (a network failure, a timeout, a cancellation).
+  public var httpStatus: Int? { errorStatus(self) }
+
+  /// The response's body, when this is an `HTTPError`.
+  public var httpBody: String? { errorBody(self) }
+}

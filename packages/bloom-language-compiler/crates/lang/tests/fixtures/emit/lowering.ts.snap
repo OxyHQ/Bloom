@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
 import type { Child } from "@oxy.so/bloom-language";
 import { fetchCount, ping } from "@/api";
 type $Result<T, E> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
@@ -92,12 +90,9 @@ export interface CounterProps {
   readonly load: Load;
   readonly label: string | undefined;
 }
-export const Counter = view(function Counter(props: CounterProps) {
+export const Counter = inlineView(function Counter(props: CounterProps) {
 "use no memo";
-const $ = $c(3);
 const { load, label } = props;
-let $t11;
-if ($[0] !== label || $[1] !== load) {
 let $t9: Child;
 if (label != null) {
 const shown = label.toUpperCase();
@@ -112,13 +107,6 @@ $t10 = $view0;
 const line = `${load.count} items`;
 $t10 = Text(line);
 }
-$t11 = VStack($t9, $t10);
-$[0] = label;
-$[1] = load;
-$[2] = $t11;
-} else {
-$t11 = $[2];
-}
-return $t11;
+return VStack($t9, $t10);
 });
 

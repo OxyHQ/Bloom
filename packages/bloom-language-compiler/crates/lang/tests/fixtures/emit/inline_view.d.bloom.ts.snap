@@ -1,0 +1,30 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export interface PostErrorBoundaryProps {
+  readonly children: Child;
+  readonly postId?: string | undefined | null;
+  readonly onCrash?: (p0: string) => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(PostErrorBoundary())`), or from TSX as `toElement(PostErrorBoundary())`. */
+export declare const PostErrorBoundary: (props: PostErrorBoundaryProps) => ComposedView;
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Counted())`), or from TSX as `toElement(Counted())`. */
+export declare const Counted: () => ComposedView;
+export interface LoadedProps {
+  readonly id: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Loaded())`), or from TSX as `toElement(Loaded())`. */
+export declare const Loaded: (props: LoadedProps) => ComposedView;
+export interface KeyedProps {
+  readonly id: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Keyed())`), or from TSX as `toElement(Keyed())`. */
+export declare const Keyed: (props: KeyedProps) => ComposedView;
+export interface ChosenProps {
+  readonly on: boolean;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Chosen())`), or from TSX as `toElement(Chosen())`. */
+export declare const Chosen: (props: ChosenProps) => ComposedView;
+export interface HelpedProps {
+  readonly name: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Helped())`), or from TSX as `toElement(Helped())`. */
+export declare const Helped: (props: HelpedProps) => ComposedView;

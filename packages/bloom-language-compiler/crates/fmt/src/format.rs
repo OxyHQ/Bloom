@@ -368,7 +368,8 @@ impl<'a> Formatter<'a> {
             ItemKind::Fn(f) => self.fn_decl(f),
             ItemKind::View(v) => self.view_decl(v),
             ItemKind::Const(c) => {
-                self.binding_decl("let ", text(c.name.name.clone()), c.ty.as_ref(), &c.value)
+                let keyword = if c.mutable { "var " } else { "let " };
+                self.binding_decl(keyword, text(c.name.name.clone()), c.ty.as_ref(), &c.value)
             }
             ItemKind::Extension(e) => self.type_body("extension ", &e.name, &e.generics, &e.body, item.span),
             ItemKind::Class(c) => {
@@ -650,7 +651,8 @@ impl<'a> Formatter<'a> {
 
     fn view_decl(&mut self, v: &ViewDecl) -> Doc {
         let keyword = match v.kind {
-            ViewKind::View => "view ",
+            // A menu's actions or content is 2.0 only (`struct X: MenuActions`): printed as a struct.
+            ViewKind::View | ViewKind::MenuActions | ViewKind::MenuContent | ViewKind::Modifier => "view ",
             ViewKind::Screen => "screen ",
             ViewKind::Layout => "layout ",
         };
@@ -725,6 +727,9 @@ impl<'a> Formatter<'a> {
             ViewKind::View => "View",
             ViewKind::Screen => "Screen",
             ViewKind::Layout => "Layout",
+            ViewKind::MenuActions => "MenuActions",
+            ViewKind::MenuContent => "MenuContent",
+            ViewKind::Modifier => "ViewModifier",
         };
         let equatable =
             if v.members.iter().any(|m| matches!(m, Member::Equal(_))) { ", Equatable" } else { "" };
@@ -873,7 +878,10 @@ impl<'a> Formatter<'a> {
     fn stmt(&mut self, stmt: &Stmt) -> Doc {
         match &stmt.kind {
             StmtKind::Let(l) => self.let_stmt(l),
-            StmtKind::Var(v) => self.binding_decl("var ", text(v.name.name.clone()), v.ty.as_ref(), &v.value),
+            StmtKind::Var(v) => {
+                let keyword = if v.state.is_some() { "@State var " } else { "var " };
+                self.binding_decl(keyword, text(v.name.name.clone()), v.ty.as_ref(), &v.value)
+            }
             StmtKind::Assign(a) => {
                 concat(vec![self.expr(&a.target), text(format!(" {} ", a.op.text())), self.expr(&a.value)])
             }
@@ -881,10 +889,15 @@ impl<'a> Formatter<'a> {
                 Some(value) => concat(vec![text("return "), self.expr(value)]),
                 None => text("return"),
             },
-            StmtKind::While(w) => {
-                concat(vec![text("while "), self.expr(&w.cond), text(" "), self.block(&w.body, Layout::Own)])
-            }
+            StmtKind::While(w) => concat(vec![
+                text(label_text(w.label.as_ref())),
+                text("while "),
+                self.expr(&w.cond),
+                text(" "),
+                self.block(&w.body, Layout::Own),
+            ]),
             StmtKind::For(f) => concat(vec![
+                text(label_text(f.label.as_ref())),
                 text("for "),
                 self.pattern(&f.pattern),
                 text(" in "),
@@ -898,6 +911,12 @@ impl<'a> Formatter<'a> {
                 concat(vec![text("guard "), cond, text(" else "), self.block(&g.otherwise, Layout::Own)])
             }
             StmtKind::Throw(e) => concat(vec![text("throw "), self.expr(e)]),
+            StmtKind::Break(label) => {
+                text(format!("break{}", label.as_ref().map_or(String::new(), |l| format!(" {}", l.name))))
+            }
+            StmtKind::Continue(label) => {
+                text(format!("continue{}", label.as_ref().map_or(String::new(), |l| format!(" {}", l.name))))
+            }
             StmtKind::Do(d) => {
                 let mut parts = vec![text("do "), self.block(&d.body, Layout::Own)];
                 for catch in &d.catches {
@@ -970,7 +989,9 @@ impl<'a> Formatter<'a> {
             ExprKind::List(items) => self.commas(items, |i| i.span, Self::expr).bracketed("[", "]"),
             ExprKind::Spread(inner) => concat(vec![text(".."), self.expr(inner)]),
             ExprKind::Is(inner, ty) => concat(vec![self.expr(inner), text(" is "), self.ty(ty)]),
-            ExprKind::CastAs(inner, ty) => concat(vec![self.expr(inner), text(" as? "), self.ty(ty)]),
+            ExprKind::CastAs(inner, ty, forced) => {
+                concat(vec![self.expr(inner), text(if *forced { " as! " } else { " as? " }), self.ty(ty)])
+            }
             ExprKind::Map(entries) if entries.is_empty() => text("[:]"),
             ExprKind::Map(entries) => {
                 let entries = self.commas(
@@ -1006,7 +1027,8 @@ impl<'a> Formatter<'a> {
             | ExprKind::Force(_)
             | ExprKind::Field(..)
             | ExprKind::OptField(..)
-            | ExprKind::Index(..) => self.chain(e, context),
+            | ExprKind::Index(..)
+            | ExprKind::OptIndex(..) => self.chain(e, context),
             ExprKind::Call(call) if is_member(&call.callee) => self.chain(e, context),
             ExprKind::Call(call) => {
                 let callee = self.expr(&call.callee);
@@ -1086,7 +1108,11 @@ impl<'a> Formatter<'a> {
                     current = inner;
                 }
                 ExprKind::Index(inner, index) => {
-                    links.push(Link::Index(index));
+                    links.push(Link::Index(index, false));
+                    current = inner;
+                }
+                ExprKind::OptIndex(inner, index) => {
+                    links.push(Link::Index(index, true));
                     current = inner;
                 }
                 ExprKind::Try(inner) => {
@@ -1118,9 +1144,10 @@ impl<'a> Formatter<'a> {
                         None => lines.last_mut().expect("head").push(dot),
                     }
                 }
-                Link::Index(index) => {
+                Link::Index(index, optional) => {
                     let index = self.expr(index);
-                    lines.last_mut().expect("head").extend([text("["), index, text("]")]);
+                    let open = if *optional { "?[" } else { "[" };
+                    lines.last_mut().expect("head").extend([text(open), index, text("]")]);
                 }
                 Link::Try => lines.last_mut().expect("head").push(text("?")),
                 Link::Force => lines.last_mut().expect("head").push(text("!")),
@@ -1218,7 +1245,11 @@ impl<'a> Formatter<'a> {
                 })
                 .collect();
             let params = join(params, || text(", "));
-            vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }]
+            match &closure.ret {
+                // `{ () -> T in … }`, `{ (a: Int) -> T in … }`: Swift's signature.
+                Some(ret) => vec![concat(vec![text("("), params, text(") -> "), self.ty(ret)])],
+                None => vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }],
+            }
         } else {
             Vec::new()
         };
@@ -1407,6 +1438,10 @@ impl<'a> Formatter<'a> {
             TypeKind::Strings(values) => {
                 text(values.iter().map(|v| format!("{v:?}")).collect::<Vec<_>>().join(" | "))
             }
+            TypeKind::Composition(parts) => {
+                let parts = parts.iter().map(|p| self.ty(p)).collect();
+                join(parts, || text(" & "))
+            }
             TypeKind::Record(fields) => {
                 let fields: Vec<Doc> = fields
                     .iter()
@@ -1469,8 +1504,13 @@ enum Context {
 }
 
 enum Link<'e> {
-    Member { name: &'e Ident, optional: bool, call: Option<&'e Call> },
-    Index(&'e Expr),
+    Member {
+        name: &'e Ident,
+        optional: bool,
+        call: Option<&'e Call>,
+    },
+    /// `[i]`, or `?[i]` (optional).
+    Index(&'e Expr, bool),
     Try,
     Force,
 }
@@ -1570,4 +1610,9 @@ fn swift_interpolation(literal: &str) -> String {
         i += ch.len_utf8();
     }
     out
+}
+
+/// `outer: ` before a named loop.
+fn label_text(label: Option<&bloom_lang::ast::Ident>) -> String {
+    label.map_or_else(String::new, |l| format!("{}: ", l.name))
 }

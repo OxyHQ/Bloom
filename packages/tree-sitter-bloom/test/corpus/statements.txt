@@ -346,3 +346,64 @@ fn area(s: Shape) -> Float {
             (call_expression
               (identifier)
               (value_arguments))))))))
+
+================================================================================
+Labelled loops, break and continue with a label, and a hook function's state
+================================================================================
+
+func useCounter(start: Int) -> Int {
+  @State var n = start
+  outer: for row in grid {
+    for x in row {
+      if x > 1 { continue outer }
+      if x < 0 { break outer }
+    }
+  }
+  return n
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (user_type
+      (type_identifier))
+    (block
+      (state_statement
+        (attribute
+          (identifier))
+        (var_declaration
+          (identifier)
+          (identifier)))
+      (labeled_statement
+        (identifier)
+        (for_statement
+          (identifier)
+          (identifier)
+          (block
+            (for_statement
+              (identifier)
+              (identifier)
+              (block
+                (if_expression
+                  (binary_expression
+                    (identifier)
+                    (integer_literal))
+                  (block
+                    (control_transfer_statement
+                      (identifier))))
+                (if_expression
+                  (binary_expression
+                    (identifier)
+                    (integer_literal))
+                  (block
+                    (control_transfer_statement
+                      (identifier)))))))))
+      (return_statement
+        (identifier)))))

@@ -485,3 +485,49 @@ let c = Task { await save() }
           (call_expression
             (identifier)
             (value_arguments)))))))
+
+================================================================================
+Identity comparison, and a closure with its signature
+================================================================================
+
+func same(_ a: Session, _ b: Session?) -> Bool {
+  let rows = { () -> [Row] in [] }
+  return a === b || a !== b
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (parameter
+        (identifier)
+        (identifier)
+        (optional_type
+          (user_type
+            (type_identifier)))))
+    (user_type
+      (type_identifier))
+    (block
+      (let_declaration
+        (identifier)
+        (closure_expression
+          (closure_parameters
+            (array_type
+              (user_type
+                (type_identifier))))
+          (array_literal)))
+      (return_statement
+        (binary_expression
+          (binary_expression
+            (identifier)
+            (identifier))
+          (binary_expression
+            (identifier)
+            (identifier)))))))

@@ -1,0 +1,4 @@
+// `as? JSError` on a TS value (a `.catch` callback's error, a `JSONValue`), as Swift's
+// `Any as? Error`: the error when the value is one, else `none` (mention15 foreign-as-jserror).
+public func foreignErrorMessage(_ error: Foreign) -> String { (error as? JSError)?.message ?? "fallback" }
+public func jsonErrorMessage(_ error: JSONValue) -> String { (error as? JSError)?.message ?? "fallback" }

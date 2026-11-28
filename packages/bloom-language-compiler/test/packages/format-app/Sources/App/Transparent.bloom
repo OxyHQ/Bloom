@@ -1,0 +1,42 @@
+// `@Transparent` structs are their one field at run time, and `UniqueID` is a view's identity:
+// `@State private var id = UniqueID()` is React's `useId()`, read as `id.string`.
+
+/// A user's id: a `String` at run time, a type of its own to the checker.
+@Transparent
+public struct UserID: Codable, Equatable, Hashable {
+  public let raw: String
+  public var isGuest: Bool { raw.hasPrefix("guest-") }
+}
+
+public func userID(_ raw: String) -> UserID { UserID(raw: raw) }
+public func rawOf(_ id: UserID) -> String { id.raw }
+public func rawOfOptional(_ id: UserID?) -> String? { id?.raw }
+public func sameUser(_ a: UserID, _ b: UserID) -> Bool { a == b }
+public func sameUsers(_ a: [UserID], _ b: [UserID]) -> Bool { a == b }
+public func guests(_ ids: [UserID]) -> Int { ids.filter { $0.isGuest }.count }
+public func encodedUser(_ id: UserID) -> String { JSON.encode(UserID.self, id) }
+public func decodedUser(_ text: String) -> UserID? { try? JSON.decode(UserID.self, from: text) }
+
+/// A label and its field, paired by one identity per view.
+public struct LabeledField: View {
+  let label: String
+  @State private var id = UniqueID()
+  @State private var count = 0
+  var body: some View {
+    VStack {
+      Text(label).testID(id.string)
+      Button(Text("\(count)")).testID(id.string).onPress { count += 1 }
+    }
+  }
+}
+
+/// A hook function's identity: one `useId()` per caller.
+public func useRegistryKey() -> String {
+  @State var key = UniqueID()
+  return "player-" + key.string
+}
+
+public struct Player: View {
+  let key = useRegistryKey()
+  var body: some View { Text(key) }
+}

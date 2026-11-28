@@ -1,0 +1,11 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface DetailProps {
+  readonly data: { job?: { id: string; externalApplyUrl?: string } } | undefined;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Detail())`), or from TSX as `toElement(Detail())`. */
+export declare const Detail: (props: DetailProps) => ComposedView;
+export interface ClaimDetailProps {
+  readonly data: { job?: { id: string; externalApplyUrl?: string } } | undefined;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(ClaimDetail())`), or from TSX as `toElement(ClaimDetail())`. */
+export declare const ClaimDetail: (props: ClaimDetailProps) => ComposedView;

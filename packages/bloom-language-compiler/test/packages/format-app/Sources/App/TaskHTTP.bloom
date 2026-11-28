@@ -1,0 +1,21 @@
+// An HTTP request in a `.task` takes the task's cancellation: when the task is cancelled (the id
+// changes, the view leaves) mid-flight, the request is aborted and surfaces as cancellation only:
+// the `catch` does not run, nothing is set after it.
+public struct Loader: View {
+  let path: String
+  let onFailure: (String) -> Unit
+  @State private var text = "loading"
+  var body: some View {
+    Text(text)
+      .task(id: path) {
+        do {
+          let api = HTTPClient(baseURL: URL.parse("https://api.test") ?? fatal())
+          let response = try await api.send(.get, path)
+          text = response.text
+        } catch {
+          text = "failed"
+          onFailure(error.localizedDescription)
+        }
+      }
+  }
+}

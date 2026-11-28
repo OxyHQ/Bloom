@@ -1,0 +1,2 @@
+import type { SocialContext } from "@/corpus";
+export declare function names(context: SocialContext | undefined | null): readonly string[];

@@ -71,6 +71,48 @@ interface ScreenChrome {
   content: Child;
 }
 
+/** The header a screen composes from its root's values (`chromeOf`). */
+const HEADER_VALUES = [
+  'title',
+  'titleDisplay',
+  'subtitle',
+  'header',
+  'toolbar',
+  'toolbarLeading',
+  'onBack',
+  'backLabel',
+  'headingLevel',
+  'scrollEdge',
+] as const;
+
+/** A `Group`'s one drawn child (through nested groups), or none when it draws several or none. */
+function drawnBranch(group: Node): Node | undefined {
+  const drawn: Child[] = [];
+  const collect = (child: Child) => {
+    if (Array.isArray(child)) for (const item of child) collect(item);
+    else if (child !== null && child !== undefined && child !== false) drawn.push(child);
+  };
+  for (const child of group.children) collect(child);
+  const [only] = drawn;
+  if (drawn.length !== 1 || !isNode(only)) return undefined;
+  return only.kind === 'group' ? (drawnBranch(only) ?? only) : only;
+}
+
+/**
+ * A screen whose root is a `Group` drawing one branch (`Group { if loading { Skeleton()
+ * .header(false) } else { Page().title("Job") } }`): the header the drawn branch declares, as
+ * SwiftUI's `.navigationTitle` works from any branch, with the group's own taking precedence.
+ */
+function withBranchChrome(root: Node, values: Record<string, unknown>): Record<string, unknown> {
+  if (root.kind !== 'group') return values;
+  const branch = drawnBranch(root);
+  if (branch === undefined) return values;
+  const own = valuesOf(branch);
+  const merged: Record<string, unknown> = { ...values };
+  for (const key of HEADER_VALUES) if (!(key in merged) && key in own) merged[key] = own[key];
+  return merged;
+}
+
 /** The chrome a body's root declares. */
 function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
   const chrome: ScreenChrome = {
@@ -85,7 +127,7 @@ function chromeOf(root: Child, back: (() => void) | undefined): ScreenChrome {
     content: root,
   };
   if (!isNode(root)) return chrome;
-  const values = valuesOf(root);
+  const values = withBranchChrome(root, valuesOf(root));
   chrome.values = values;
   for (const modifier of root.modifiers) {
     if (modifier.kind === 'sheet') chrome.sheets.push(modifier);
@@ -167,8 +209,9 @@ export interface ScreenHostOptions {
 export function drawScreen(root: Child, options?: ScreenHostOptions): ReactNode {
   if (root === null || root === undefined || root === false) return null;
   if (options?.throughViews && isNode(root) && root.kind === 'view') {
-    const { body, props } = root.props as ViewNodeProps;
-    if (body) return <ViewScreen body={body} props={props} outer={root} options={options} />;
+    const view = root.props as ViewNodeProps;
+    if (view.component !== undefined && view.body)
+      return <ViewScreen body={view.body} props={view.props} outer={root} options={options} />;
   }
   if (!isNode(root) || valuesOf(root).ownScreen !== true)
     return <ScreenHost root={root} back={options?.back} />;
@@ -203,7 +246,7 @@ function ViewScreen({
   outer,
   options,
 }: {
-  body: NonNullable<ViewNodeProps['body']>;
+  body: NonNullable<Extract<ViewNodeProps, { component: object }>['body']>;
   props: object;
   outer: Node;
   options: ScreenHostOptions;

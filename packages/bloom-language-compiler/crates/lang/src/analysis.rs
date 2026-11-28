@@ -919,6 +919,7 @@ pub fn walk_stmt<'a>(stmt: &'a Stmt, f: &mut dyn FnMut(Node<'a>)) {
             }
             walk_block(&g.otherwise, f);
         }
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Throw(e) => walk_expr(e, f),
         StmtKind::Do(d) => {
             walk_block(&d.body, f);
@@ -957,6 +958,7 @@ pub fn walk_type<'a>(t: &'a TypeExpr, f: &mut dyn FnMut(Node<'a>)) {
         }
         TypeKind::Tuple(items) => items.iter().for_each(|a| walk_type(a, f)),
         TypeKind::Record(fields) => fields.iter().for_each(|(_, t)| walk_type(t, f)),
+        TypeKind::Composition(parts) => parts.iter().for_each(|t| walk_type(t, f)),
         TypeKind::Strings(_) => {}
         TypeKind::Fn { params, ret, .. } => {
             params.iter().for_each(|a| walk_type(a, f));
@@ -987,7 +989,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
         ExprKind::Paren(a)
         | ExprKind::Spread(a)
         | ExprKind::Is(a, _)
-        | ExprKind::CastAs(a, _)
+        | ExprKind::CastAs(a, ..)
         | ExprKind::Unary(_, a)
         | ExprKind::Await(a)
         | ExprKind::Try(a)
@@ -1001,7 +1003,7 @@ pub fn walk_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(Node<'a>)) {
             walk_expr(k, f);
             walk_expr(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
             walk_expr(a, f);
             walk_expr(b, f);
         }

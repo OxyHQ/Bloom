@@ -693,12 +693,18 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             Tok::Kw(Kw::View | Kw::Screen | Kw::Layout) => ItemKind::View(self.view_decl()),
             Tok::Kw(Kw::Let) => ItemKind::Const(self.const_decl()),
+            // `private var x: T = v` (2.0): the file's own mutable value (a registry callback).
+            Tok::Kw(Kw::Var) if visibility == Visibility::Private => {
+                let mut decl = self.const_decl();
+                decl.mutable = true;
+                ItemKind::Const(decl)
+            }
             Tok::Kw(Kw::Var) => {
                 let span = self.span();
                 self.error(
                     Diagnostic::error("B0106", span, "a module has no `var`")
                         .label("module-level values are constants")
-                        .help("write `let`; shared state lives in bloom-data stores")
+                        .help("write `let`, or `private var` for the file's own mutable value; shared state lives in bloom-data stores")
                         .fix(span, "let")
                         .spec("10-modules-and-interop"),
                 );
@@ -804,6 +810,9 @@ impl<'s, 'i> Parser<'s, 'i> {
                 "View" => Some(ViewKind::View),
                 "Screen" => Some(ViewKind::Screen),
                 "Layout" => Some(ViewKind::Layout),
+                "MenuActions" => Some(ViewKind::MenuActions),
+                "MenuContent" => Some(ViewKind::MenuContent),
+                "ViewModifier" => Some(ViewKind::Modifier),
                 _ => None,
             },
             _ => None,
@@ -815,9 +824,12 @@ impl<'s, 'i> Parser<'s, 'i> {
             return ItemKind::View(view);
         }
         self.unconstrained(&constraints);
-        // A data struct: its stored properties are its fields.
+        // A data struct: its stored properties are its fields. A `static let` is the type's,
+        // not a field (`crate::extensions` lowers it to `T$$name`), so never a constructor
+        // argument nor a Codable key.
         for member in &surface.members {
             match &member.kind {
+                TypeMemberKind::Stored { .. } if member.modifiers.is_static => {}
                 TypeMemberKind::Stored { name, ty: Some(ty), value, .. } => fields.push(Field {
                     name: name.clone(),
                     ty: ty.clone(),
@@ -980,6 +992,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut params = Vec::new();
         let mut members = Vec::new();
         let mut body: Option<(Span, Block)> = None;
+        let mut content: Option<Ident> = None;
         for member in &surface.members {
             let attr = member.modifiers.attrs.first();
             let attr_name = attr.map(|a| a.name.name.as_str());
@@ -1162,15 +1175,40 @@ impl<'s, 'i> Parser<'s, 'i> {
                         ),
                     }
                 }
+                // A `ViewModifier`'s `func body(content: Content) -> some View`: its body, with
+                // the view it wraps in scope.
+                TypeMemberKind::Func(f) if kind == ViewKind::Modifier && f.name.name == "body" => {
+                    match f.params.as_slice() {
+                        [param] => {
+                            content = Some(param.name.clone());
+                            body = Some((f.name.span, f.body.clone()));
+                        }
+                        _ => self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                f.name.span,
+                                "a modifier's `body` takes the view it wraps: `body(content: Content)`",
+                            )
+                            .label("expected one parameter")
+                            .help("write `func body(content: Content) -> some View { … }`")
+                            .spec("72b-view-modifiers"),
+                        ),
+                    }
+                }
                 TypeMemberKind::Func(f) => members.push(Member::Fn(f.clone())),
                 TypeMemberKind::Let(l) => members.push(Member::Let(l.clone())),
             }
         }
         let (body_keyword, mut body) = body.unwrap_or_else(|| {
+            let (what, help) = if kind == ViewKind::Modifier {
+                ("modifier", "add `func body(content: Content) -> some View { … }`")
+            } else {
+                ("view", "add `var body: some View { … }`")
+            };
             self.error(
-                Diagnostic::error("B0106", name.span, format!("view `{}` has no body", name.name))
+                Diagnostic::error("B0106", name.span, format!("{what} `{}` has no body", name.name))
                     .label("this view draws nothing")
-                    .help("add `var body: some View { … }`")
+                    .help(help)
                     .spec("71-a-view"),
             );
             (name.span, Block { stmts: Vec::new(), span: name.span })
@@ -1188,6 +1226,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             body,
             span,
             surface: Some(Box::new(surface)),
+            content,
         }
     }
 
@@ -1352,6 +1391,15 @@ impl<'s, 'i> Parser<'s, 'i> {
         let generics = self.generics();
         self.expect(P::Eq, "`=` and the type");
         let ty = self.type_expr();
+        // `type PQ = P & Q`: a protocol composition, for constraints.
+        if self.at(P::Amp) {
+            let mut parts = vec![ty];
+            while self.eat(P::Amp) {
+                parts.push(self.base_type());
+            }
+            let span = parts[0].span.to(parts.last().expect("two parts").span);
+            return AliasDecl { name, generics, ty: TypeExpr { kind: TypeKind::Composition(parts), span } };
+        }
         AliasDecl { name, generics, ty }
     }
 
@@ -1363,6 +1411,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             // `let version: String` in an extern module: the package's value of that name.
             let value = Expr { id: self.id(), kind: ExprKind::Name(name.name.clone()), span: name.span };
             return ConstDecl {
+                mutable: false,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
                 name,
                 ty,
@@ -1371,7 +1420,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         }
         self.expect(P::Eq, "`=` and the value");
         let value = self.expr(Ctx::Normal);
-        ConstDecl { name, ty, span: start.to(value.span), value }
+        ConstDecl { name, ty, span: start.to(value.span), value, mutable: false }
     }
 
     /// `extension Name[<T>][: P] { members }`.
@@ -1684,6 +1733,11 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = self.bump();
                 Ident { name: "==".into(), span }
             }
+            // `func body(content: Content) -> some View`: a `ViewModifier`'s requirement.
+            Tok::Kw(Kw::Body) => {
+                let span = self.bump();
+                Ident { name: "body".into(), span }
+            }
             _ => self.ident("the function's name"),
         };
         let (generics, mut constraints) = self.constrained_generics();
@@ -1771,7 +1825,13 @@ impl<'s, 'i> Parser<'s, 'i> {
             loop {
                 let name = self.ident("a type parameter");
                 self.expect(P::Colon, "`:` and a protocol");
-                constraints.push((name, self.base_type()));
+                // `where T: P & Q`: one constraint each, as `<T: P & Q>`.
+                loop {
+                    constraints.push((name.clone(), self.base_type()));
+                    if !self.eat(P::Amp) {
+                        break;
+                    }
+                }
                 if !self.eat(P::Comma) {
                     break;
                 }
@@ -1960,6 +2020,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             body,
             span: start.to(end),
             surface: None,
+            content: None,
         }
     }
 
@@ -2320,7 +2381,21 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
                 self.expect(P::Eq, "`=` and the value");
                 let value = self.expr(Ctx::Normal);
-                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value })
+                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value, state: None })
+            }
+            // `@State var x = v` (2.0): a hook function's state.
+            Tok::P(P::At)
+                if matches!(self.nth(1), Tok::Ident(n) if n == "State")
+                    && *self.nth(2) == Tok::Kw(Kw::Var) =>
+            {
+                let at = self.bump();
+                let attr = at.to(self.bump());
+                self.bump();
+                let name = self.ident("the state's name");
+                let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
+                self.expect(P::Eq, "`=` and the initial value");
+                let value = self.expr(Ctx::Normal);
+                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value, state: Some(attr) })
             }
             Tok::Kw(Kw::Return) => {
                 self.bump();
@@ -2339,7 +2414,35 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.bump();
                 let cond = self.expr(Ctx::Head);
                 let body = self.block();
-                StmtKind::While(WhileStmt { cond, body })
+                StmtKind::While(WhileStmt { cond, body, label: None })
+            }
+            // `outer: for x in xs { … }`, `outer: while c { … }` (2.0): a loop with a name.
+            Tok::Ident(_)
+                if matches!(self.nth(1), Tok::P(P::Colon))
+                    && matches!(self.nth(2), Tok::Kw(Kw::For | Kw::While)) =>
+            {
+                let label = self.ident("the loop's name");
+                self.bump();
+                let mut stmt = self.stmt()?;
+                match &mut stmt.kind {
+                    StmtKind::For(f) => f.label = Some(label),
+                    StmtKind::While(w) => w.label = Some(label),
+                    _ => {}
+                }
+                stmt.kind
+            }
+            // `break`, `continue`, each with the loop's name or not (2.0).
+            Tok::Ident(word)
+                if (word == "break" || word == "continue")
+                    && matches!(
+                        self.nth(1),
+                        Tok::Newline | Tok::Eof | Tok::Ident(_) | Tok::P(P::Semi | P::RBrace)
+                    ) =>
+            {
+                let is_break = word == "break";
+                self.bump();
+                let label = matches!(self.tok(), Tok::Ident(_)).then(|| self.ident("the loop's name"));
+                if is_break { StmtKind::Break(label) } else { StmtKind::Continue(label) }
             }
             // `guard let x = v else { return }`, `guard ok else { … }` (2.0).
             Tok::Ident(word) if word == "guard" && self.statement_word() => {
@@ -2397,7 +2500,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 let iter = self.expr(Ctx::Head);
                 let body = self.block();
-                StmtKind::For(ForStmt { pattern, iter, body })
+                StmtKind::For(ForStmt { pattern, iter, body, label: None })
             }
             _ => {
                 let expr = self.expr(Ctx::Normal);
@@ -2617,6 +2720,8 @@ impl<'s, 'i> Parser<'s, 'i> {
             Tok::P(P::Ge) => BinaryOp::Ge,
             Tok::P(P::EqEq) => BinaryOp::Eq,
             Tok::P(P::Ne) => BinaryOp::Ne,
+            Tok::P(P::EqEqEq) => BinaryOp::Identical,
+            Tok::P(P::NeEq) => BinaryOp::NotIdentical,
             Tok::P(P::AndAnd) => BinaryOp::And,
             Tok::P(P::OrOr) => BinaryOp::Or,
             Tok::P(P::QuestionQuestion) => BinaryOp::Default,
@@ -2637,16 +2742,17 @@ impl<'s, 'i> Parser<'s, 'i> {
                 lhs = self.expr_node(ExprKind::Is(Box::new(lhs), ty), span);
                 continue;
             }
-            // `x as? T`, at the comparisons' level too.
+            // `x as? T` and `x as! T`, at the comparisons' level too.
             if min <= BinaryOp::Eq.precedence()
                 && matches!(self.tok(), Tok::Kw(Kw::As))
-                && matches!(self.nth(1), Tok::P(P::Question))
+                && matches!(self.nth(1), Tok::P(P::Question | P::Bang))
             {
                 self.bump();
+                let forced = matches!(self.tok(), Tok::P(P::Bang));
                 self.bump();
                 let ty = self.type_expr();
                 let span = lhs.span.to(ty.span);
-                lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty), span);
+                lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty, forced), span);
                 continue;
             }
             let Some(op) = self.binary_op() else { break };
@@ -2836,8 +2942,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                     self.skip_newlines();
                 }
                 let end = Span::new(self.prev_end(), self.prev_end());
-                // `break`: an empty case.
-                stmts.retain(|s| !matches!(&s.kind, StmtKind::Expr(Expr { kind: ExprKind::Name(n), .. }) if n == "break"));
+                // `break` last in a case: the case ends there anyway (alone: an empty case).
+                if matches!(stmts.last(), Some(Stmt { kind: StmtKind::Break(None), .. })) {
+                    stmts.pop();
+                }
                 let body = match stmts.as_slice() {
                     [Stmt { kind: StmtKind::Expr(_), .. }] => {
                         let Some(Stmt { kind: StmtKind::Expr(expr), .. }) = stmts.pop() else {
@@ -2973,6 +3081,39 @@ impl<'s, 'i> Parser<'s, 'i> {
                     let span = expr.span.to(end);
                     expr = self.expr_node(ExprKind::Force(Box::new(expr)), span);
                 }
+                // `xs?[i]`: an optional subscript, as Swift's (not `xs?` then `[i]`).
+                Tok::P(P::Question)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::P(P::LBracket))
+                        && self.tokens.get(self.pos + 1).is_some_and(|t| !t.space_before) =>
+                {
+                    self.bump();
+                    let open = self.bump();
+                    let index = self.expr(Ctx::Normal);
+                    self.expect_close(P::RBracket, open);
+                    let span = expr.span.to(Span::new(self.prev_end(), self.prev_end()));
+                    expr = self.expr_node(ExprKind::OptIndex(Box::new(expr), Box::new(index)), span);
+                }
+                // `f?()` (Swift's optional call): a call only when `f` is not `none`, as `f?.()`.
+                Tok::P(P::Question)
+                    if !self.token().space_before
+                        && matches!(self.nth(1), Tok::P(P::LParen))
+                        && self.tokens.get(self.pos + 1).is_some_and(|t| !t.space_before) =>
+                {
+                    self.bump();
+                    let (args, end) = self.args();
+                    let span = expr.span.to(end);
+                    expr = self.expr_node(
+                        ExprKind::Call(Call {
+                            callee: Box::new(expr),
+                            args,
+                            parens: true,
+                            trailing: None,
+                            optional: true,
+                        }),
+                        span,
+                    );
+                }
                 Tok::P(P::Question) if !self.token().space_before => {
                     let end = self.bump();
                     if let Some(keyword) = awaiting.take() {
@@ -3107,11 +3248,25 @@ impl<'s, 'i> Parser<'s, 'i> {
         let quiet = self.diagnostics.len();
         let was_panicking = self.panicking;
         self.skip_newlines();
-        let tuple = matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
+        let mut ret = None;
+        // `{ () -> T in … }`: no parameter, and the result's type.
+        if matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::P(P::RParen)) {
+            self.bump();
+            self.bump();
+            if self.eat(P::Arrow) {
+                ret = Some(self.type_expr());
+            }
+            if self.at_kw(Kw::In) {
+                self.bump();
+                has_in = true;
+            }
+        }
+        let tuple =
+            !has_in && matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
         if tuple {
             self.bump();
         }
-        if matches!(self.tok(), Tok::Ident(_)) {
+        if !has_in && matches!(self.tok(), Tok::Ident(_)) {
             while let Tok::Ident(_) = self.tok() {
                 let name = self.ident("a parameter");
                 let ty = if self.at(P::Colon) {
@@ -3128,6 +3283,10 @@ impl<'s, 'i> Parser<'s, 'i> {
             if tuple && !self.eat(P::RParen) {
                 params.clear();
             }
+            // `{ (a: Int) -> String in … }`.
+            if tuple && !params.is_empty() && self.eat(P::Arrow) {
+                ret = Some(self.type_expr());
+            }
             if self.at_kw(Kw::In) && (!tuple || !params.is_empty()) {
                 self.bump();
                 has_in = true;
@@ -3137,6 +3296,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let tuple = tuple && has_in && params.len() != 1;
         if !has_in {
             params.clear();
+            ret = None;
             self.pos = save;
             self.diagnostics.truncate(quiet);
             self.panicking = was_panicking;
@@ -3151,7 +3311,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                 .collect();
         }
         self.expect_close(P::RBrace, open);
-        Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
+        Closure {
+            params,
+            has_in,
+            tuple,
+            ret,
+            body,
+            span: open.to(Span::new(self.prev_end(), self.prev_end())),
+        }
     }
 
     fn if_expr(&mut self) -> Expr {
@@ -3547,7 +3714,8 @@ fn contains_await_marker(expr: &Expr) -> bool {
         | ExprKind::OptField(inner, _)
         | ExprKind::Try(inner)
         | ExprKind::Force(inner)
-        | ExprKind::Index(inner, _) => contains_await_marker(inner),
+        | ExprKind::Index(inner, _)
+        | ExprKind::OptIndex(inner, _) => contains_await_marker(inner),
         ExprKind::Call(call) => contains_await_marker(&call.callee),
         _ => false,
     }

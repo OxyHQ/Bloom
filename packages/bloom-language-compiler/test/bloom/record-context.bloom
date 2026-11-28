@@ -1,0 +1,27 @@
+/// A literal typed from its context: a spec object parameter's, an annotation's.
+import Bloom
+
+public struct Tag {
+  var id: String
+  var label: String? = none
+  var count: Int? = none
+}
+
+public func tags(_ wide: Bool) -> [Tag] {
+  let first: Tag = wide ? { id: "w", label: "Wide" } : { id: "n", count: 1 }
+  let all: [Tag] = [first, { id: "b", count: 2 }]
+  return all
+}
+
+public func discard(_ onDiscard: () -> Unit) -> some View {
+  Dialog()
+    .title("Discard?")
+    .buttons([
+      { label: "Discard", color: "destructive", onPress: onDiscard },
+      { label: "Keep editing", color: "cancel" },
+    ])
+}
+
+public func progress(_ percent: Float?) -> some View {
+  Text("Upload").accessibilityValue(percent == none ? { text: "waiting" } : { min: 0, max: 100, now: percent })
+}

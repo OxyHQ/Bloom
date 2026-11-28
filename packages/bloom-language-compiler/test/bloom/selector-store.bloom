@@ -1,0 +1,12 @@
+// A zustand store hook, callable by each of its call signatures beside its members: the
+// selector's result takes the closure's type (`[Trend]`, a list with Swift's members).
+import { useTrendsStore } from "./trends-store"
+
+public struct TrendShelf: View {
+  let trends = useTrendsStore { s in s.trends }
+  let state = useTrendsStore()
+  var body: some View {
+    let titles = trends.enumerated().map { (index, trend) in "\(index + 1). \(trend.title)" }
+    Text("\(state.loaded ? "loaded" : "loading") \(titles.joined(separator: ", ")) \(useTrendsStore.getState().trends.count)")
+  }
+}

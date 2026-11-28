@@ -1,0 +1,8 @@
+// Swift's `sorted()`, `min()` and `max()` for `Comparable` elements (numbers, strings, dates),
+// beside `sorted(by:)`, `min(by:)` and `max(by:)`.
+public func ascendingInts(_ xs: [Int]) -> [Int] { xs.sorted() }
+public func ascendingNames(_ xs: [String]) -> [String] { xs.sorted() }
+public func leastInt(_ xs: [Int]) -> Int? { xs.min() }
+public func greatestFloat(_ xs: [Float]) -> Float? { xs.max() }
+public func latest(_ xs: [Date]) -> Date? { xs.max() }
+public func longestName(_ xs: [String]) -> String? { xs.max(by: { $0.count < $1.count }) }

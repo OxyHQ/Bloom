@@ -1,0 +1,20 @@
+// Views crossing into TS element props: a generic component's `emptyComponent` (optional) and
+// `renderCell` (a function giving views), and an optional `meta: View?` that is `none`.
+import { Grid, Card } from "./element-hosts"
+
+public struct Item { let postId: String }
+
+public struct Posts: View {
+  let items: [Item]
+  func renderCell(_ item: Item, _ size: Float) -> View { Text("cell " + item.postId) }
+  var body: some View {
+    let empty = items.count == 0 ? Text("Nothing yet") : none
+    Grid(data: items, renderCell: renderCell, emptyComponent: empty)
+  }
+}
+
+public struct Row: View {
+  let title: String
+  var meta: View? = none
+  var body: some View { Card(title: title, meta: meta) }
+}

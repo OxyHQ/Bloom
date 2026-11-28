@@ -1,0 +1,58 @@
+// A member Bloom respells keeps its spelling through `?.` and through the chain after it:
+// `query.data?.count` with `T = [Post]` is the list's `length` (it stayed `.count`, which is
+// `undefined` in JS). A lowering that wraps its object (`isEmpty`, a dictionary's `keys`, an
+// extension's property, a non-JS method) reads the object once and is `undefined` when it is
+// `none`, and the link after it carries the `?.`. Options left out are left out of the object:
+// TanStack merges `{ ...defaults, ...options }`, so `staleTime: undefined` would override the
+// QueryClient's default.
+extern module "@tanstack/react-query" {
+  public struct QueryResult<T> {
+    public let data: T?
+    public let isLoading: Bool
+  }
+  public struct QueryOptions<T> {
+    public let queryKey: [String]
+    public let queryFn: () async -> T
+    public var enabled: Bool? = none
+    public var staleTime: Float? = none
+    public var retry: Int = 3
+  }
+  public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>
+}
+
+public struct Post {
+  public let id: String
+  public let title: String
+}
+
+extension Post {
+  public var shout: String { title.uppercased() }
+}
+
+public struct Feed {
+  public let items: [Post]
+  public let tags: [String: Int]
+  public let name: String
+}
+
+private async func top() -> [Post] { [] }
+
+public func count(_ result: QueryResult<[Post]>) -> Int { result.data?.count ?? 0 }
+public func empty(_ feed: Feed?) -> Bool { feed?.items.isEmpty ?? true }
+public func tagCount(_ feed: Feed?) -> Int { feed?.tags.keys.count ?? 0 }
+public func lastId(_ feed: Feed?) -> String? { feed?.items.last?.id }
+public func shout(_ post: Post?) -> String? { post?.shout }
+public func number(_ feed: Feed?) -> Int? { feed?.name.toInt() }
+public func isEmpty(_ posts: [Post]?) -> Bool? { posts?.isEmpty }
+public func firstId(_ posts: [Post]?) -> String? { posts?.first?.id }
+
+public struct QueryCount: View {
+  let id: String
+  let query = useQuery(QueryOptions(queryKey: ["top", id], queryFn: { await top() }, enabled: none))
+  var body: some View {
+    VStack {
+      Text("\(query.data?.count ?? 0)")
+      Text(query.data?.first?.title ?? "")
+    }
+  }
+}

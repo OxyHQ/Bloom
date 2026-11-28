@@ -1,0 +1,17 @@
+// `@Transparent`: a struct with exactly one stored `let`, emitted as it (B0106 otherwise).
+// `UniqueID()` outside a `@State` is in tests/stdlib.rs (fixtures have no standard library).
+@Transparent
+public struct Pair {
+  public let a: String
+  public let b: String
+}
+
+@Transparent
+public struct Counter {
+  public var count: Int
+}
+
+@Transparent
+public enum Mode {
+  case on
+}

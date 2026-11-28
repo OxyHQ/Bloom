@@ -1,0 +1,11 @@
+// A conditional where a TS type is expected (RN's `DimensionValue`, `number | string | …`): each
+// branch is TS's to check, as a literal's elements are (b6130507c). bloomc joins the branches
+// first: B0201 expected `String`, found `Int` (ContentSkeleton's StyleSheet.create).
+import { Platform, StyleSheet } from "react-native"
+
+private let styles = StyleSheet.create(
+  video: {
+    padding: 24,
+    minHeight: Platform.OS == "web" ? "var(--bloom-screen-viewport-height)" : 384,
+  },
+)

@@ -69,6 +69,18 @@ fn a_package_file_uses_the_standard_library_without_importing_it() {
     );
 }
 
+/// `Double.infinity` and `Double.nan`: JS's `Infinity` and `NaN`, without a "js" import.
+#[test]
+fn infinity_and_nan_are_doubles() {
+    let source = "public func limit(_ detail: Bool) -> Double { detail ? Double.infinity : 280 }\npublic func unknown() -> Double { Double.nan }\n";
+    let root = package("infinity", &[("Sources/Model/Limits.bloom", source)]);
+    let path = root.join("Sources/Model/Limits.bloom");
+    let out = compile(source, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("detail ? Double$$infinity : 280"), "{}", out.code);
+    assert!(out.code.contains("return Double$$nan;"), "{}", out.code);
+}
+
 #[test]
 fn a_package_name_shadows_the_standard_library() {
     let root = package(
@@ -746,4 +758,257 @@ fn the_ui_kits_image_specs_are_generated_from_the_image_interface() {
             "src/image/{file} is stale: run BLOOM_BLESS=1 cargo test -p bloom_lang --test stdlib image_specs"
         );
     }
+}
+
+/// Swift's FormatStyle over Intl: `0...3` is a `ClosedRange` where one is expected, and
+/// `.dateTime.month(.abbreviated).day()` an implicit member chain from `DateFormat.dateTime`.
+const FORMATS: &str = r#"public func amounts(_ x: Float, _ n: Int) -> [String] {
+  [
+    x.formatted(fractionDigits: 0...3),
+    x.formatted(currency: "EUR", locale: "es"),
+    x.formatted(fractionDigits: 2),
+    n.formatted(currency: "JPY", locale: "ja"),
+  ]
+}
+
+public func days(_ d: Date) -> [String] {
+  [
+    d.formatted(.dateTime.month(.abbreviated).day(), locale: "en", timeZone: "UTC"),
+    d.formatted(date: .abbreviated, time: .shortened),
+    d.formatted(.relative),
+  ]
+}
+"#;
+
+#[test]
+fn format_styles_compile_to_intl() {
+    let root = package("formats", &[("Sources/Model/Formats.bloom", FORMATS)]);
+    let path = root.join("Sources/Model/Formats.bloom");
+    let out = compile(FORMATS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/format-style.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `Date` is the standard library's, a JS `Date` at runtime: Swift's initializers by their labels,
+/// `try? Date(_:strategy:)`, its members and operators. A `"js"` import of `Date` does not shadow it.
+const DATES: &str = r#"import { Date } from "js"
+
+public func dates(_ text: String, _ s: Double) -> [Date?] {
+  let a = Date(timeIntervalSince1970: s)
+  let b = Date(millisecondsSince1970: s * 1000.0)
+  let c = try? Date(text, strategy: .iso8601)
+  return [a, b, c, Date(), a + 60.0, a.addingTimeInterval(-1.0)]
+}
+
+public func reads(_ a: Date, _ b: Date) -> Bool {
+  a.timeIntervalSince1970 > 0.0 && a < b && a.timeIntervalSince(b) < 0.0 && a != b
+}
+"#;
+
+#[test]
+fn date_is_the_standard_librarys_over_a_js_date() {
+    let root = package("dates", &[("Sources/Model/Dates.bloom", DATES)]);
+    let path = root.join("Sources/Model/Dates.bloom");
+    // A migrating file's `"js"` import (`--allow-ts-imports`).
+    let out =
+        compile(DATES, &path.to_string_lossy(), &Options { allow_ts_imports: true, ..Options::default() });
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/date.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `p?.twice(2)`, `d?.timeIntervalSince(x)`, `a?.b()?.c()`, `p?.xs[0]`: a method lowered to a
+/// function of its receiver runs only when the receiver is not `none`, and `x ?? .nan` reads
+/// `.nan` from the left side's type. The runtime test is `test/optional-calls.test.ts`.
+const OPTIONAL_CALLS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/OptionalCalls.bloom");
+
+#[test]
+fn an_optional_call_guards_its_receiver() {
+    let root = package("optional-calls", &[("Sources/Model/OptionalCalls.bloom", OPTIONAL_CALLS)]);
+    let path = root.join("Sources/Model/OptionalCalls.bloom");
+    for (dev, name) in [(false, "optional-calls"), (true, "optional-calls.dev")] {
+        let out = compile(OPTIONAL_CALLS, &path.to_string_lossy(), &Options { dev, ..Options::default() });
+        assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+        let golden =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("tests/fixtures/stdlib/{name}.ts.snap"));
+        if std::env::var_os("BLOOM_BLESS").is_some() {
+            std::fs::write(&golden, &out.code).unwrap();
+        }
+        assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+    }
+}
+
+/// A struct's `static let` is the type's, never a field nor a Codable key (lang-native-android-2).
+/// The runtime round trip is `test/static-members.test.ts`.
+const STATIC_MEMBERS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/StaticMembers.bloom");
+
+#[test]
+fn a_static_let_is_not_a_field() {
+    let root = package("static-members", &[("Sources/Model/StaticMembers.bloom", STATIC_MEMBERS)]);
+    let path = root.join("Sources/Model/StaticMembers.bloom");
+    let out = compile(STATIC_MEMBERS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(!out.code.contains("\"empty\""), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/static-members.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `@Transparent` structs are their one field (`type UserID = string`), and
+/// `@State private var id = UniqueID()` is one `useId()`, read as `id.string`. The runtime
+/// test is `test/transparent.test.tsx`.
+const TRANSPARENT: &str = include_str!("../../../test/packages/format-app/Sources/App/Transparent.bloom");
+
+#[test]
+fn a_transparent_struct_is_its_field_and_unique_id_is_use_id() {
+    let root = package("transparent", &[("Sources/Model/Transparent.bloom", TRANSPARENT)]);
+    let path = root.join("Sources/Model/Transparent.bloom");
+    let out = compile(TRANSPARENT, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("export type UserID = string;"), "{}", out.code);
+    assert!(out.code.contains("const id = useId();"), "{}", out.code);
+    assert!(!out.code.contains("setId"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/transparent.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `UniqueID()` is a `@State`'s initial value only (B0420), and that state is never set (B0403).
+#[test]
+fn unique_id_is_only_a_states_initial_value() {
+    let source = "public func stray() -> UniqueID { UniqueID() }\n\
+public struct Field: View {\n  @State private var id = UniqueID()\n  var body: some View {\n    Button(Text(id.string)).onPress { id = UniqueID(string: \"x\") }\n  }\n}\n\
+public func useLate(_ on: Bool) -> Int {\n  let k = UniqueID()\n  return 0\n}\n";
+    let root = package("unique-id-errors", &[("Sources/Model/Field.bloom", source)]);
+    let path = root.join("Sources/Model/Field.bloom");
+    let out = compile(source, &path.to_string_lossy(), &Options::default());
+    let text = rendered(&out);
+    assert_eq!(out.diagnostics.iter().filter(|d| d.code == "B0420").count(), 2, "{text}");
+    assert_eq!(out.diagnostics.iter().filter(|d| d.code == "B0403").count(), 1, "{text}");
+    assert_eq!(out.diagnostics.len(), 3, "{text}");
+    assert!(text.contains("the view's identity for its life"), "{text}");
+}
+
+/// `JSError`, `error.jsValue` with lenient `JSONValue` reads, and `===` (mention11
+/// http-error-shape). The runtime test is `test/errors-identity.test.ts`.
+const ERRORS_IDENTITY: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/ErrorsIdentity.bloom");
+
+#[test]
+fn errors_read_leniently_and_objects_compare_by_identity() {
+    let root = package("errors-identity", &[("Sources/Model/ErrorsIdentity.bloom", ERRORS_IDENTITY)]);
+    let path = root.join("Sources/Model/ErrorsIdentity.bloom");
+    let out = compile(ERRORS_IDENTITY, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/errors-identity.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `await Task.cancellation` and a `.task`'s `sleep(for:)` taking its cancellation (mention15
+/// task-defer-runs-at-once). The runtime test is `test/task-cancellation.test.tsx`.
+const TASK_CANCELLATION: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/TaskCancellation.bloom");
+
+#[test]
+fn a_task_awaits_its_cancellation_and_hands_it_to_sleep() {
+    let root = package("task-cancellation", &[("Sources/Model/TaskCancellation.bloom", TASK_CANCELLATION)]);
+    let path = root.join("Sources/Model/TaskCancellation.bloom");
+    let out = compile(TASK_CANCELLATION, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("await ($cancellation($signal));"), "{}", out.code);
+    assert!(out.code.contains("sleep((Duration$$milliseconds)(50), $signal)"), "{}", out.code);
+    let golden =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/task-cancellation.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// An HTTP request in a `.task` takes the task's cancellation, and a throw once the task is
+/// cancelled runs no `catch`. The runtime test is `test/task-http.test.tsx`.
+const TASK_HTTP: &str = include_str!("../../../test/packages/format-app/Sources/App/TaskHTTP.bloom");
+
+#[test]
+fn a_tasks_request_is_cancelled_with_it_and_runs_no_catch() {
+    let root = package("task-http", &[("Sources/Model/TaskHTTP.bloom", TASK_HTTP)]);
+    let path = root.join("Sources/Model/TaskHTTP.bloom");
+    let out = compile(TASK_HTTP, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("path, undefined, undefined, $signal)"), "{}", out.code);
+    assert!(out.code.contains("} catch (error) {\nif ($signal.aborted) return;"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/task-http.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `x as? JSError` on a TS value: the cast takes it as an `Error` (mention15 foreign-as-jserror).
+/// The runtime test is `test/foreign-errors.test.ts`.
+const FOREIGN_ERRORS: &str =
+    include_str!("../../../test/packages/format-app/Sources/App/ForeignErrors.bloom");
+
+#[test]
+fn a_ts_value_casts_to_a_js_error() {
+    let root = package("foreign-errors", &[("Sources/Model/ForeignErrors.bloom", FOREIGN_ERRORS)]);
+    let path = root.join("Sources/Model/ForeignErrors.bloom");
+    let out = compile(FOREIGN_ERRORS, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    assert!(out.code.contains("(error as unknown as Error)"), "{}", out.code);
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/foreign-errors.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// Swift's `prefix`/`suffix`/`dropFirst`/`dropLast` on lists and strings. The runtime test is
+/// `test/slices.test.ts`.
+const SLICES: &str = include_str!("../../../test/packages/format-app/Sources/App/Slices.bloom");
+
+#[test]
+fn lists_and_strings_slice_as_swift_does() {
+    let root = package("slices", &[("Sources/Model/Slices.bloom", SLICES)]);
+    let path = root.join("Sources/Model/Slices.bloom");
+    let out = compile(SLICES, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/slices.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}
+
+/// `sorted()`, `min()`, `max()` for `Comparable` elements. The runtime test is
+/// `test/natural-order.test.ts`.
+const NATURAL_ORDER: &str = include_str!("../../../test/packages/format-app/Sources/App/NaturalOrder.bloom");
+
+#[test]
+fn comparable_elements_order_naturally() {
+    let root = package("natural-order", &[("Sources/Model/NaturalOrder.bloom", NATURAL_ORDER)]);
+    let path = root.join("Sources/Model/NaturalOrder.bloom");
+    let out = compile(NATURAL_ORDER, &path.to_string_lossy(), &Options::default());
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/natural-order.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }

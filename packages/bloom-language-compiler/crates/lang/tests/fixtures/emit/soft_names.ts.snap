@@ -1,6 +1,6 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
-import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
 import { useState } from "react";
 
 interface Notice {
@@ -17,24 +17,14 @@ export interface NoticeRowProps {
   readonly type: string;
   readonly body: string;
 }
-export const NoticeRow = view(function NoticeRow(props: NoticeRowProps) {
+export const NoticeRow = inlineView(function NoticeRow(props: NoticeRowProps) {
 "use no memo";
-const $ = $c(3);
 const { type, body } = props;
-let $t0;
-if ($[0] !== type || $[1] !== body) {
-$t0 = Text(`${type} ${body}`);
-$[0] = type;
-$[1] = body;
-$[2] = $t0;
-} else {
-$t0 = $[2];
-}
-return $t0;
+return Text(`${type} ${body}`);
 });
 
 function make(type: string, body: string): Notice {
-return { from: undefined, type: type, body: body };
+return { type: type, body: body };
 }
 
 const $view0 = Button(Text("Clear"));
@@ -47,18 +37,18 @@ const $ = $c(3);
 const { from } = props;
 const [body, setBody] = useState<string>("");
 const type = "note";
-let $t1;
+let $t0;
 if ($[0] !== from || $[1] !== body) {
-$t1 = VStack(Text(`${type} from ${from}: ${body}`), $view0.onPress(() => {
+$t0 = VStack(Text(`${type} from ${from}: ${body}`), $view0.onPress(() => {
 setBody("");
 }));
 $[0] = from;
 $[1] = body;
-$[2] = $t1;
+$[2] = $t0;
 } else {
-$t1 = $[2];
+$t0 = $[2];
 }
-return $t1;
+return $t0;
 });
 
 function label(n: number): string {

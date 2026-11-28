@@ -1,0 +1,9 @@
+// `xs.enumerated().map { (i, x) in … }` is `xs.map((x, i) => …)`; a closure that captures nothing
+// is hoisted out of the view (`$fn0`), and the call still passes it the index.
+public struct Numbered: View {
+  let titles: [String]
+  var body: some View {
+    let rows = titles.enumerated().map { (index, title) in "\(index + 1). \(title)" }
+    Text(rows.joined(separator: ", "))
+  }
+}

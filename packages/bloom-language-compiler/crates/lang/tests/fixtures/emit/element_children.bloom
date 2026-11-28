@@ -1,0 +1,29 @@
+// PostItem's last two runtime gaps (lang-mention-8's J and K).
+// J: a closure where TS takes a function returning a React node (`NestedRenderer`) returns its
+// view as an element, inside parentheses too: `toElement(Row(…))`, where React got the node.
+// K: a list given where a node takes its rest (`Text(runs)`, `RawText(parts)`) is its children,
+// spread as TS's `Text(...runs)` was; as one child it drew nothing ("Reposted by" was missing).
+import { FeedPost, NestedCard, NestedRenderer } from "@/corpus"
+
+private struct Row: View {
+  let post: FeedPost
+  var body: some View { Text(post.id) }
+}
+
+private let renderNested: NestedRenderer = { nested, depth in (Row(post: nested)) }
+
+private func contextText(_ runs: [String?]) -> View {
+  Text(runs)
+}
+
+public struct Card: View {
+  let post: FeedPost
+  let name: String
+  var body: some View {
+    VStack {
+      NestedCard(renderPost: renderNested, post: post)
+      contextText(["by", " ", name])
+      RawText([RawText("a"), RawText(name)])
+    }
+  }
+}

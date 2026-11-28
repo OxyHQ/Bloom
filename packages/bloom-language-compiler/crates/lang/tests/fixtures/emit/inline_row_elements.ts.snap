@@ -1,0 +1,8 @@
+import { Text, toElement } from "@oxy.so/bloom-language";
+import { presentInline } from "@/ui/components";
+
+const $view0 = Text("1");
+export function showInline(): void {
+presentInline({ title: "Saved", rows: [{ label: "a", trailing: toElement($view0) }] });
+}
+

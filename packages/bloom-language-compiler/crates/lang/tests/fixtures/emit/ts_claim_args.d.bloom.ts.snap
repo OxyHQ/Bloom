@@ -1,0 +1,9 @@
+import type { ClaimPost } from "@/types/claims";
+import type { ComposedView } from "@oxy.so/bloom-language";
+export declare function link(post: ClaimPost): string;
+export declare function direct(post: ClaimPost): string;
+export interface ShareProps {
+  readonly post: ClaimPost;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Share())`), or from TSX as `toElement(Share())`. */
+export declare const Share: (props: ShareProps) => ComposedView;

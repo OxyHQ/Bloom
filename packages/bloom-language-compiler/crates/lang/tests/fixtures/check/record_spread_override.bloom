@@ -1,0 +1,16 @@
+// Copy-and-change: only a key written twice is B0208, and a key written after a struct's spread
+// keeps that field's type.
+public struct Draft {
+  var q: String
+  var cursor: String? = none
+}
+
+public func twice(_ draft: Draft) -> Draft {
+  let next = { ..draft, q: "a", q: "b" }
+  return next
+}
+
+public func retyped(_ draft: Draft) -> Draft {
+  let next = { ..draft, q: 1 }
+  return next
+}

@@ -1,0 +1,111 @@
+// Bloom: `Regex`, regular expressions (JS's syntax), in Swift's shape.
+//
+//     let digits = try Regex("^\\d+$")
+//     if code.wholeMatch(of: digits) != none { … }
+//     let handles = text.matches(of: try Regex("@(\\w+)")).map { $0.group(1) ?? "" }
+//     let plain = text.replacing(try Regex("\\s+"), with: " ")
+//
+// A group that did not take part in a match is `none` (`group(n)`), as Swift's optional
+// captures are. `Regex(pattern:flags:)` builds one unchecked, with flags.
+
+extern module "./runtime" {
+  private func regexError(_ pattern: String, _ flags: String) -> String?
+  private func regexMatches(_ pattern: String, _ flags: String, _ s: String, _ limit: Int) -> [RegexMatch]
+  private func regexReplace(_ pattern: String, _ flags: String, _ s: String, _ replacement: String) -> String
+  private func regexSplit(_ pattern: String, _ flags: String, _ s: String) -> [String]
+  private func regexWhole(_ pattern: String, _ flags: String, _ s: String) -> RegexMatch?
+}
+
+/// A regular expression: its pattern and its flags (`i` ignores case, `m` multiline,
+/// `s` lets `.` match newlines, `u` Unicode).
+public struct Regex: Equatable {
+  public let pattern: String
+  public var flags: String = ""
+}
+
+/// One match: its text, where it starts (UTF-16 offset) and its groups.
+public struct RegexMatch: Equatable {
+  public let text: String
+  public let start: Int
+  /// The numbered groups, from group 1 (`none` where a group did not take part).
+  public let groups: [String?]
+  /// The named groups that took part (`(?<handle>\\w+)`).
+  public let named: [String: String]
+}
+
+/// A pattern that is not a valid expression.
+public struct RegexError: Equatable {
+  public let pattern: String
+  public let message: String
+}
+
+extension Regex {
+  /// The expression `pattern`, checked (Swift's `try Regex("…")`): throws a `RegexError` when it
+  /// is invalid.
+  public init(_ pattern: String) throws {
+    if let message = regexError(pattern, "") {
+      throw RegexError(pattern: pattern, message: message)
+    }
+    return Regex(pattern: pattern, flags: "")
+  }
+
+  /// The expression, checked: throws a `RegexError` when `pattern` is invalid.
+  public static func compile(_ pattern: String, flags: String = "") throws -> Regex {
+    if let message = regexError(pattern, flags) {
+      throw RegexError(pattern: pattern, message: message)
+    }
+    return Regex(pattern: pattern, flags: flags)
+  }
+
+  /// Every match in `text`, in order.
+  public func matches(in text: String) -> [RegexMatch] { regexMatches(self.pattern, self.flags, text, 0) }
+
+  /// The first match in `text`, or `none`.
+  public func firstMatch(in text: String) -> RegexMatch? { regexMatches(self.pattern, self.flags, text, 1).first }
+
+  /// Whether the expression matches somewhere in `text`.
+  public func isMatch(_ text: String) -> Bool { self.firstMatch(in: text) != none }
+
+  /// `text` with every match replaced (`$1`, `$<name>` insert groups).
+  public func replacing(in text: String, with replacement: String) -> String {
+    regexReplace(self.pattern, self.flags, text, replacement)
+  }
+
+  /// The parts of `text` between matches.
+  public func split(_ text: String) -> [String] { regexSplit(self.pattern, self.flags, text) }
+}
+
+extension String {
+  /// The match of `regex` spanning the whole string, or `none`.
+  public func wholeMatch(of regex: Regex) -> RegexMatch? { regexWhole(regex.pattern, regex.flags, self) }
+
+  /// The first match of `regex`, or `none`.
+  public func firstMatch(of regex: Regex) -> RegexMatch? { regex.firstMatch(in: self) }
+
+  /// Every match of `regex`, in order.
+  public func matches(of regex: Regex) -> [RegexMatch] { regex.matches(in: self) }
+
+  /// Whether `regex` matches somewhere in the string.
+  public func contains(_ regex: Regex) -> Bool { regex.isMatch(self) }
+
+  /// The string with every match of `regex` replaced (`$1`, `$<name>` insert groups).
+  public func replacing(_ regex: Regex, with replacement: String) -> String {
+    regex.replacing(in: self, with: replacement)
+  }
+
+  /// The parts of the string between the matches of `separator`.
+  public func split(separator: Regex) -> [String] { separator.split(self) }
+}
+
+extension RegexMatch {
+  /// Group `n` (1 is the first, 0 the whole match), or `none`: past the last group, or where the
+  /// group did not take part in the match.
+  public func group(_ n: Int) -> String? {
+    if n == 0 { return self.text }
+    if n < 0 || n > self.groups.count { return none }
+    return self.groups[n - 1]
+  }
+
+  /// Where the match ends (UTF-16 offset, exclusive).
+  public var end: Int { self.start + self.text.count }
+}

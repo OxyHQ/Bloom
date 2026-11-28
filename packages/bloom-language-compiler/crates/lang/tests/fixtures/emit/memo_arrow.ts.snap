@@ -1,10 +1,10 @@
-import { Embed, VStack, view } from "@oxy.so/bloom-language";
+import { Embed, VStack, inlineView } from "@oxy.so/bloom-language";
 import { jsx as $jsx } from "react/jsx-runtime";
 import type { ComponentProps } from "react";
 import { default as List } from "@/elements/List";
 
 const $view0 = VStack(Embed($jsx(List, { kind: "replies" } satisfies ComponentProps<typeof List>)));
-export const Replies = view(function Replies() {
+export const Replies = inlineView(function Replies() {
 "use no memo";
 return $view0;
 });

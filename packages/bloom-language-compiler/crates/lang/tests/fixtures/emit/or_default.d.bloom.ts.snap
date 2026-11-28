@@ -1,0 +1,3 @@
+import type { ClaimUser } from "@/types/claims";
+export declare function grouped(user: ClaimUser): string;
+export declare function flat(user: ClaimUser): string;

@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { HStack, Text, view } from "@oxy.so/bloom-language";
+import { HStack, Text, inlineView } from "@oxy.so/bloom-language";
 
 export function total(n: number): number {
 let sum = 0;
@@ -42,37 +40,19 @@ return turns;
 export interface DotsProps {
   readonly count: number;
 }
-export const Dots = view(function Dots(props: DotsProps) {
+export const Dots = inlineView(function Dots(props: DotsProps) {
 "use no memo";
-const $ = $c(2);
 const { count } = props;
-let $t3;
-if ($[0] !== count) {
-$t3 = HStack(...Array.from({ length: count }, ($_, i) => Text(`${i}`)));
-$[0] = count;
-$[1] = $t3;
-} else {
-$t3 = $[1];
-}
-return $t3;
+return HStack(...Array.from({ length: count }, ($_, i) => Text(`${i}`)));
 });
 
 const $view0 = Text("*");
 export interface StarsProps {
   readonly rating: number;
 }
-export const Stars = view(function Stars(props: StarsProps) {
+export const Stars = inlineView(function Stars(props: StarsProps) {
 "use no memo";
-const $ = $c(2);
 const { rating } = props;
-let $t4;
-if ($[0] !== rating) {
-$t4 = HStack(...Array.from({ length: rating }, ($_) => $view0));
-$[0] = rating;
-$[1] = $t4;
-} else {
-$t4 = $[1];
-}
-return $t4;
+return HStack(...Array.from({ length: rating }, ($_) => $view0));
 });
 

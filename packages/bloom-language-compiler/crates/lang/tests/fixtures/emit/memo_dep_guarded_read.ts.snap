@@ -1,0 +1,71 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, view } from "@oxy.so/bloom-language";
+import { recordJobMetric } from "@/services/jobsService";
+
+const $view0 = Button(Text("Apply"));
+export interface DetailProps {
+  readonly data: { job?: { id: string; externalApplyUrl?: string } } | undefined;
+}
+export const Detail = view(function Detail(props: DetailProps) {
+"use no memo";
+const $ = $c(4);
+const { data } = props;
+const job = data?.job;
+let apply: () => void;
+if ($[0] !== job) {
+apply = (): void => {
+if (job == null) {
+return;
+}
+recordJobMetric(job.id, "external_apply_click");
+};
+$[0] = job;
+$[1] = apply;
+} else {
+apply = $[1];
+}
+let $t0;
+if ($[2] !== apply) {
+$t0 = $view0.onPress(apply);
+$[2] = apply;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+
+export interface ClaimDetailProps {
+  readonly data: { job?: { id: string; externalApplyUrl?: string } } | undefined;
+}
+export const ClaimDetail = view(function ClaimDetail(props: ClaimDetailProps) {
+"use no memo";
+const $ = $c(5);
+const { data } = props;
+const job = data?.job;
+let apply: () => void;
+if ($[0] !== job?.externalApplyUrl || $[1] !== job?.id) {
+apply = (): void => {
+if (job?.externalApplyUrl == null) {
+return;
+}
+recordJobMetric(job.id, "external_apply_click");
+};
+$[0] = job?.externalApplyUrl;
+$[1] = job?.id;
+$[2] = apply;
+} else {
+apply = $[2];
+}
+let $t1;
+if ($[3] !== apply) {
+$t1 = $view0.onPress(apply);
+$[3] = apply;
+$[4] = $t1;
+} else {
+$t1 = $[4];
+}
+return $t1;
+});
+

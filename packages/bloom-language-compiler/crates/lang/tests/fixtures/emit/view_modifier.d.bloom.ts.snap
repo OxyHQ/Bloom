@@ -1,0 +1,15 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export interface CardProps {
+  readonly padded?: boolean;
+}
+/** A Bloom `ViewModifier`: `Gate(props)(view)` wraps a view; one that keeps state is called once per render, as a hook. */
+export declare function Card(props?: CardProps): (content: ComposedView) => Child;
+export interface GateProps {
+  readonly allow?: boolean;
+}
+/** A Bloom `ViewModifier`: `Gate(props)(view)` wraps a view; one that keeps state is called once per render, as a hook. */
+export declare function Gate(props?: GateProps): (content: ComposedView) => Child;
+export interface FeedsProps {
+  readonly names: readonly string[];
+}
+export declare const Feeds: import("react").ComponentType<FeedsProps>;

@@ -1,0 +1,14 @@
+// SwiftUI's buttons: `Button(_:action:)` (a title, the trailing closure its action) and
+// `Button(action:label:)` (the action, then the drawn content), beside `.onPress`.
+public struct ButtonCounter: View {
+  @State private var n = 0
+  var body: some View {
+    VStack {
+      Text("\(n)")
+      Button("Add \(n)") { n += 1 }
+      Button("Reset", action: { n = 0 })
+      Button(action: { n += 10 }) { Text("Ten") }
+      Button { n -= 1 } label: { Text("Less") }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+// A module that imports React's `useState` itself (a TS pass-through it still needs) and also has
+// a hook-local `@State var`: the emit adds its own `import { useState } from "react"` beside the
+// module's, so Babel fails, "Identifier 'useState' has already been declared".
+// Mention: components/Feed/PostItem.bloom (usePostRowModel's articleModalFor as @State var, its
+// hoverOwner identity token kept as TS's useState).
+// Expected: one import, or the emit's own under a name of its own.
+import { useState } from "react"
+public func useRow() -> (String?, Foreign) {
+  @State var open: String? = none
+  let (owner, _): (Foreign, Foreign) = useState({ ({}) })
+  return (open, owner)
+}

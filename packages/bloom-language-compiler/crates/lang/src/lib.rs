@@ -10,11 +10,13 @@
 
 pub mod analysis;
 pub mod ast;
+pub mod backend;
 pub mod bindgen;
 pub mod bloomui;
 mod chains;
 mod check;
 mod codable;
+mod composition;
 pub mod diagnostic;
 mod emit;
 mod extensions;
@@ -23,6 +25,7 @@ pub mod i18n;
 #[path = "icons.generated.rs"]
 pub mod icons;
 mod lexer;
+mod memo;
 mod model;
 pub mod modules;
 pub mod native;
@@ -49,6 +52,7 @@ pub use diagnostic::{Diagnostic, Label, Severity};
 
 /// The language's keywords (spec section 2), for editors and highlighters.
 pub const KEYWORDS: &[&str] = lexer::KEYWORDS;
+pub const CONTEXTUAL_KEYWORDS: &[&str] = lexer::CONTEXTUAL_KEYWORDS;
 
 /// What a compile needs from its host. Small on purpose.
 #[derive(Debug, Clone, Default)]
@@ -125,26 +129,13 @@ pub fn parse(source: &str, filename: &str) -> (Ast, Comments, Vec<Diagnostic>) {
 
 /// Parses and checks `source`, without emitting.
 pub fn check(source: &str, filename: &str, options: &Options) -> Checked {
-    ts::next_epoch();
-    codable::reset();
-    let (mut file, syntax) = lowered(source);
-    let resolution = modules::prepare(&mut file, source, filename, options);
-    let module_options = for_module(&resolution, options);
-    let options = module_options.as_ref().unwrap_or(options);
-    // A module's file is read by its absolute path: its root is the build directory.
-    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
-    let at = absolute.as_ref().map(|p| p.to_string_lossy().into_owned());
-    let at = at.as_deref().unwrap_or(filename);
-    let mut result = check::check(&file, source, at, options);
-    rules(&file, source, &mut result);
-    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut result.diagnostics));
-    resolved(resolution, &mut errors, &mut warnings, &mut result.dependencies, options);
+    let Front { mut checked, mut errors, mut warnings, .. } = check_source(source, filename, options, true);
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         codable::anchor(diagnostic);
         diagnostic.render(source, filename);
     }
-    let dependencies = std::mem::take(&mut result.dependencies).into_iter().collect();
-    Checked { types: result.types(source), diagnostics: errors, warnings, dependencies }
+    let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
+    Checked { types: checked.types(source), diagnostics: errors, warnings, dependencies }
 }
 
 /// What other files see of the `.bloom` file `source`, as text (see [`check::interface`]):
@@ -216,20 +207,9 @@ pub fn clear_caches() {
 
 /// Compiles one `.bloom` module to TypeScript.
 pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
-    ts::next_epoch();
-    codable::reset();
-    let (mut file, syntax) = lowered(source);
-    let resolution = modules::prepare(&mut file, source, filename, options);
-    let module_options = for_module(&resolution, options);
+    let Front { file, mut checked, mut errors, mut warnings, at, options: module_options } =
+        check_source(source, filename, options, false);
     let options = module_options.as_ref().unwrap_or(options);
-    // A module's file is read by its absolute path: its root is the build directory.
-    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
-    let at = absolute.as_ref().map(|p| p.to_string_lossy().into_owned());
-    let at = at.as_deref().unwrap_or(filename);
-    let mut checked = check::check_for_emit(&file, source, at, options);
-    rules(&file, source, &mut checked);
-    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
-    resolved(resolution, &mut errors, &mut warnings, &mut checked.dependencies, options);
     let dependencies = std::mem::take(&mut checked.dependencies).into_iter().collect();
     let mut output = Output {
         code: String::new(),
@@ -240,7 +220,7 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
         dependencies,
     };
     if errors.is_empty() {
-        let emitted = emit::emit(&file, &checked, source, at, options);
+        let emitted = emit::emit(&file, &checked, source, &at, options);
         errors.extend(emitted.diagnostics);
         if errors.is_empty() {
             output.map = Some(emitted.map.to_json(filename, source, &emitted.code));
@@ -248,21 +228,69 @@ pub fn compile(source: &str, filename: &str, options: &Options) -> Output {
             output.dts = Some(emitted.dts);
         }
     }
+    render_all(&mut errors, &mut warnings, source, filename);
+    output.diagnostics = errors;
+    output.warnings = warnings;
+    output
+}
+
+/// A file parsed, lowered and checked, before any backend emits it: what [`compile`] emits
+/// TypeScript from, [`check`] reports and [`backend::checked`] hands a native backend.
+pub(crate) struct Front {
+    pub file: Ast,
+    pub checked: check::CheckResult,
+    pub errors: Vec<Diagnostic>,
+    pub warnings: Vec<Diagnostic>,
+    /// The path the file is checked at (a module's file: its absolute path).
+    pub at: String,
+    /// The module's own options (its package's), when it is in one.
+    pub options: Option<Options>,
+}
+
+/// The front end every backend shares: parse, lower, resolve the module, check, and the
+/// file's rules. `spans`: keep every typed span (an analysis reads them; an emit does not).
+pub(crate) fn check_source(source: &str, filename: &str, options: &Options, spans: bool) -> Front {
+    ts::next_epoch();
+    codable::reset();
+    let (mut file, syntax) = lowered(source);
+    let resolution = modules::prepare(&mut file, source, filename, options);
+    let module_options = for_module(&resolution, options);
+    let effective = module_options.as_ref().unwrap_or(options);
+    // A module's file is read by its absolute path: its root is the build directory.
+    let absolute = resolution.in_module.then(|| modules::absolute(std::path::Path::new(filename)));
+    let at = absolute.as_ref().map_or_else(|| filename.to_string(), |p| p.to_string_lossy().into_owned());
+    let mut checked = if spans {
+        check::check(&file, source, &at, effective)
+    } else {
+        check::check_for_emit(&file, source, &at, effective)
+    };
+    rules(&file, source, &mut checked);
+    let (mut errors, mut warnings) = merge(syntax, std::mem::take(&mut checked.diagnostics));
+    resolved(resolution, &mut errors, &mut warnings, &mut checked.dependencies, effective);
+    Front { file, checked, errors, warnings, at, options: module_options }
+}
+
+/// Renders each diagnostic not yet rendered, at its Codable anchor.
+pub(crate) fn render_all(
+    errors: &mut [Diagnostic],
+    warnings: &mut [Diagnostic],
+    source: &str,
+    filename: &str,
+) {
     for diagnostic in errors.iter_mut().chain(warnings.iter_mut()) {
         if diagnostic.rendered.is_empty() {
             codable::anchor(diagnostic);
             diagnostic.render(source, filename);
         }
     }
-    output.diagnostics = errors;
-    output.warnings = warnings;
-    output
 }
 
 /// `source` parsed, with its 2.0 type members lowered for the checker (`extensions`).
 fn lowered(source: &str) -> (Ast, Vec<Diagnostic>) {
     let (mut file, _, syntax) = parser::parse(source);
     extensions::lower(&mut file);
+    memo::lower(&mut file);
+    composition::lower(&mut file);
     (file, syntax)
 }
 

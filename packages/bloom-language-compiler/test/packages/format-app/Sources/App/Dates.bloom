@@ -1,0 +1,20 @@
+/// The standard library's `Date`: Swift's API over a JS `Date`, which crosses to TS as itself.
+
+public func make(_ seconds: Double) -> Date { Date(timeIntervalSince1970: seconds) }
+public func makeMs(_ ms: Double) -> Date { Date(millisecondsSince1970: ms) }
+public func parsed(_ text: String) -> Date? { try? Date(text, strategy: .iso8601) }
+public func seconds(_ d: Date) -> Double { d.timeIntervalSince1970 }
+public func later(_ d: Date, _ by: Double) -> Date { d + by }
+public func earlier(_ d: Date, _ by: Double) -> Date { d - by }
+public func moved(_ d: Date, _ by: Double) -> Date { d.addingTimeInterval(by) }
+public func between(_ a: Date, _ b: Date) -> Double { a.timeIntervalSince(b) }
+public func same(_ a: Date, _ b: Date) -> Bool { a == b }
+public func before(_ a: Date, _ b: Date) -> Bool { a < b }
+public func nowIsRecent() -> Bool { Date().timeIntervalSince(Date.now) < 1.0 }
+
+public struct Stamp: Equatable {
+  let at: Date
+}
+public func sameStamp(_ a: Double, _ b: Double) -> Bool {
+  Stamp(at: Date(timeIntervalSince1970: a)) == Stamp(at: Date(timeIntervalSince1970: b))
+}

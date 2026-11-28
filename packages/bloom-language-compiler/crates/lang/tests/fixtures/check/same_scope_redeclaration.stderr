@@ -1,0 +1,21 @@
+error[B0217]: `xs` is declared twice in one scope
+  --> check/same_scope_redeclaration.bloom:10:7
+   |
+ 9 |   let { data: xs } = load()
+   |               -- first declared here
+10 |   let xs = xs ?? []
+   |       ^^ a second declaration
+   |
+help: give the first another name and read it here: `let { data: xsValue } = …` then `let xs = xsValue ?? …`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0217]: `y` is declared twice in one scope
+  --> check/same_scope_redeclaration.bloom:20:7
+   |
+19 |   let y = x + 1
+   |       - first declared here
+20 |   let y = y * 2
+   |       ^ a second declaration
+   |
+help: give the first another name and read it here: `let { data: yValue } = …` then `let y = yValue ?? …`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules

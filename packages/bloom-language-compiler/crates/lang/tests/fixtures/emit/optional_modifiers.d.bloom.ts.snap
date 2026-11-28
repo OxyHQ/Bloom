@@ -6,7 +6,7 @@ export interface FeedProps {
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Feed())`), or from TSX as `toElement(Feed())`. */
 export declare const Feed: (props: FeedProps) => ComposedView;
 export interface SectionProps {
-  readonly title: string | undefined;
+  readonly title: string | undefined | null;
 }
 /** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Section())`), or from TSX as `toElement(Section())`. */
 export declare const Section: (props: SectionProps) => ComposedView;

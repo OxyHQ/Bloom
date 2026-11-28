@@ -18,7 +18,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::Options;
-use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Ty};
+use crate::types::{Def, DefKind, FieldDef, FieldDefault, FnTy, Origin, ParamTy, StrSet, Tagged, Ty};
 
 mod infer;
 
@@ -69,6 +69,9 @@ pub struct TsMember {
 #[derive(Debug, Clone)]
 pub struct TsFn {
     pub type_params: Vec<String>,
+    /// Each type parameter's constraint, when it has one other than a view's
+    /// (`<Style extends DefaultStyle>`): the soft context of a literal given for it.
+    pub bounded: Vec<bool>,
     pub params: Vec<TsParam>,
     pub ret: Option<TsType>,
     /// What an unannotated function returns, read from its body (`infer`): mapped where `ret`
@@ -622,6 +625,7 @@ impl Reader {
         }
         TsFn {
             type_params: fn_type_params(type_parameters),
+            bounded: fn_type_bounds(type_parameters),
             params: out,
             ret: ret.map(|t| self.ty(t)),
             inferred: None,
@@ -660,10 +664,22 @@ impl Reader {
                     let value = self.ty(&index.type_annotation.type_annotation);
                     members.push(TsMember { name: "[index]".into(), optional: false, ty: value });
                 }
-                // `(content: string) => void` inside an interface: the value is callable.
-                TSSignature::TSCallSignatureDeclaration(_)
-                | TSSignature::TSConstructSignatureDeclaration(_) => {
-                    members.push(TsMember { name: "[call]".into(), optional: false, ty: TsType::Other });
+                // `(content: string) => void` inside an interface: the value is callable, by each
+                // signature (zustand's `UseBoundStore`: `(): S` and `<U>(selector) => U`).
+                TSSignature::TSCallSignatureDeclaration(call) => {
+                    let function = self.function(
+                        &call.type_parameters,
+                        &call.params,
+                        call.return_type.as_ref().map(|t| &t.type_annotation),
+                    );
+                    members.push(TsMember {
+                        name: CALL.into(),
+                        optional: false,
+                        ty: TsType::Fn(Box::new(function)),
+                    });
+                }
+                TSSignature::TSConstructSignatureDeclaration(_) => {
+                    members.push(TsMember { name: "[new]".into(), optional: false, ty: TsType::Other });
                 }
             }
         }
@@ -817,8 +833,40 @@ fn fn_type_params(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclara
         .unwrap_or_default()
 }
 
+/// Whether each type parameter has a constraint other than a view's (`<S extends DefaultStyle>`).
+fn fn_type_bounds(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclaration>>) -> Vec<bool> {
+    declaration
+        .as_ref()
+        .map(|d| {
+            d.params
+                .iter()
+                .map(|p| match &p.constraint {
+                    Some(TSType::TSTypeReference(r)) => {
+                        !matches!(type_name(&r.type_name).as_str(), "ViewModifiers" | "AnyView" | "ViewNode")
+                    }
+                    Some(TSType::TSUnknownKeyword(_) | TSType::TSAnyKeyword(_)) | None => false,
+                    Some(_) => true,
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// The mark of a type parameter bound by a view's modifiers.
 const VIEW_PARAM: &str = "\0view";
+
+/// The field a TS call signature becomes (one per signature, in order): a value of an object
+/// type with one is callable, as a Swift value with `callAsFunction` is (zustand's store hook,
+/// `useStore { s in s.items }`), and keeps its other members (`useStore.getState()`). Not a
+/// Bloom name, so no `.bloom` code reads it as a field.
+pub const CALL: &str = "[call]";
+
+/// Whether an object type's members are TS's to check (`Foreign`): an index signature takes any
+/// key, a construct signature makes a class, and one only callable stays the TS function it is.
+fn foreign_members(members: &[TsMember]) -> bool {
+    members.iter().any(|m| m.name == "[index]" || m.name == "[new]")
+        || members.iter().all(|m| m.name == CALL) && !members.is_empty()
+}
 
 fn type_name(name: &TSTypeName) -> String {
     match name {
@@ -1090,6 +1138,10 @@ pub struct Mapper<'m> {
     pub named: &'m mut HashMap<(PathBuf, String), Ty>,
     /// Every file the mapping reads (a compile's dependencies).
     pub reads: &'m mut std::collections::BTreeSet<PathBuf>,
+    /// The module a `.bloom` file imports, and the specifier it names it by: its exported
+    /// types are named `import("specifier").Name` where nothing else names them (a generic's
+    /// type argument, `UseBoundStore<TrendsState>`).
+    pub module: Option<(PathBuf, String)>,
 }
 
 /// The type parameters in scope while mapping a generic declaration.
@@ -1191,6 +1243,7 @@ impl Mapper<'_> {
         };
         let t = TsFn {
             type_params: Vec::new(),
+            bounded: Vec::new(),
             params: vec![param("key", TsType::String, false), param("options", TsType::Other, true)],
             ret: Some(TsType::String),
             inferred: None,
@@ -1198,6 +1251,7 @@ impl Mapper<'_> {
         let member = |name: &str, ty: TsType| TsMember { name: name.into(), optional: false, ty };
         let hook = TsFn {
             type_params: Vec::new(),
+            bounded: Vec::new(),
             params: vec![param("ns", TsType::Other, true), param("options", TsType::Other, true)],
             ret: Some(TsType::Object(vec![
                 member("t", TsType::Fn(Box::new(t))),
@@ -1380,6 +1434,12 @@ impl Mapper<'_> {
                 TsDecl::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
                     Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
                 }
+                // `declare const Switch: (props: P) => React.ReactNode; declare const $$Switch:
+                // typeof Switch` (react-native 0.81+): the const's own type.
+                TsDecl::Var(Some(ty)) => {
+                    let ty = ty.clone();
+                    self.component_in(file, &ty, depth + 1)
+                }
                 _ => None,
             },
             TsType::Ref(name, args) if args.is_empty() => {
@@ -1516,6 +1576,44 @@ impl Mapper<'_> {
                 rest: param.rest,
             });
         }
+        // A constrained type parameter (`<Style extends DefaultStyle>(updater: () => Style)`): the
+        // TS type a literal given for it is checked against, element by element, while the type
+        // itself is still inferred from the literal (TS's). Its path: the parameter TS reads with
+        // the constraint in place of the type parameter (`ReturnType<Parameters<f>[0]>`).
+        let mut shapes: Vec<(Ty, Ty)> = Vec::new();
+        for (index, param) in function.params.iter().enumerate() {
+            let param_path = format!("NonNullable<Parameters<{fn_path}>[{index}]>");
+            let bound = |name: &str| {
+                function
+                    .type_params
+                    .iter()
+                    .position(|p| p == name)
+                    .filter(|&k| function.bounded.get(k) == Some(&true))
+            };
+            let direct = |ty: &TsType| match ty {
+                TsType::Ref(name, args) if args.is_empty() => bound(name),
+                TsType::Intersection(items) => items.iter().find_map(|t| match t {
+                    TsType::Ref(name, args) if args.is_empty() => bound(name),
+                    _ => None,
+                }),
+                _ => None,
+            };
+            let found = match &param.ty {
+                Some(TsType::Fn(callback)) => {
+                    callback.ret.as_ref().and_then(direct).map(|k| (k, format!("ReturnType<{param_path}>")))
+                }
+                Some(ty) => direct(ty).map(|k| (k, param_path.clone())),
+                None => None,
+            };
+            if let Some((k, path)) = found
+                && !shapes.iter().any(|(p, _)| matches!(p, Ty::Param(i, _) if *i as usize == k))
+            {
+                shapes.push((
+                    Ty::Param(k as u32, function.type_params[k].clone().into()),
+                    Ty::Foreign(path.into()),
+                ));
+            }
+        }
         let ret_path = format!("ReturnType<{fn_path}>");
         let ret = match function.ret.as_ref().or(function.inferred.as_ref()) {
             Some(TsType::Ref(promise, args)) if promise == "Promise" && args.len() == 1 => {
@@ -1532,7 +1630,7 @@ impl Mapper<'_> {
             ts: true,
             throws: false,
             bounds: Vec::new(),
-            shapes: Vec::new(),
+            shapes,
         }))
     }
 
@@ -1630,6 +1728,8 @@ impl Mapper<'_> {
             Ty::Bool
         } else if let [only] = rest.as_slice() {
             self.ty(file, only, scope, &inner_path, depth)
+        } else if let Some(tagged) = self.tagged_union(file, &rest, scope, &inner_path, depth) {
+            tagged
         } else {
             return Ty::Foreign(path.into());
         };
@@ -1637,7 +1737,9 @@ impl Mapper<'_> {
         // `null` is `none`. An optional of a TS type Bloom does not map stays `Foreign` (not
         // `Foreign?`): TS checks the whole where it lands, as a TS field's (`server?.robots`
         // beside a `String?`).
-        if matches!(inner, Ty::Foreign(_)) {
+        // A React element's optional (`ReactElement | null`) stays one, so a Bloom view (or `none`)
+        // crosses into it as an element.
+        if matches!(&inner, Ty::Foreign(_)) && !crate::check::is_element(&inner) {
             return Ty::Foreign(path.into());
         }
         if nullable { Ty::Option(Box::new(inner)) } else { inner }
@@ -1691,6 +1793,8 @@ impl Mapper<'_> {
             // `ReturnType<typeof useX>` (R7): what the hook returns, inferred or annotated.
             "ReturnType" if args.len() == 1 => return self.returns(file, &args[0], scope, path, depth + 1),
             "Error" => return Ty::JsError,
+            // A JS `Date` is the standard library's `Date` (the same value).
+            "Date" => return Ty::Date,
             "AbortSignal" => return Ty::Foreign("AbortSignal".into()),
             _ => {}
         }
@@ -1705,18 +1809,39 @@ impl Mapper<'_> {
             return Ty::View(None);
         }
         if file.decls.contains_key(name) {
-            let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
+            let mapped: Vec<Ty> =
+                args.iter().map(|a| self.ty(file, a, scope, &self.arg_path(file, a, path), depth)).collect();
             return self.named(file, name, &mapped, path, depth + 1);
         }
         if let Some((specifier, imported)) = file.imports.get(name).cloned()
             && let Some(target) = self.open(&file.path, &specifier)
             && let Some(local) = self.exported_type(&target, &imported, depth)
         {
-            let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
+            let mapped: Vec<Ty> =
+                args.iter().map(|a| self.ty(file, a, scope, &self.arg_path(file, a, path), depth)).collect();
             let (target, local) = local;
             return self.named(&target, &local, &mapped, path, depth + 1);
         }
         Ty::Foreign(path.into())
+    }
+
+    /// How emitted TS names a generic's type argument: an exported type of the imported module
+    /// by its name (`import("@/stores/trends").TrendsState`), else `path` (the reference's own).
+    fn arg_path(&self, file: &Rc<TsFile>, arg: &TsType, path: &str) -> String {
+        if let TsType::Ref(name, args) = arg
+            && args.is_empty()
+            && let Some((module, specifier)) = &self.module
+            && *module == file.path
+            && let Some(exported) = file
+                .exports
+                .iter()
+                .filter(|(_, e)| matches!(e, Export::Local(local) if local == name))
+                .map(|(k, _)| k)
+                .min()
+        {
+            return format!("import({}).{exported}", crate::emit::string_literal(specifier));
+        }
+        path.to_string()
     }
 
     /// The type of the module value `name` (`typeof name`), named `path` in emitted TS: a
@@ -1894,9 +2019,9 @@ impl Mapper<'_> {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
-                // An index signature (`[key: string]: unknown`) takes any key, and a call
-                // signature makes it callable: TS checks those values (`Foreign`).
-                if all.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+                // An index signature (`[key: string]: unknown`) takes any key: TS checks those
+                // values (`Foreign`). One with call signatures beside members is callable.
+                if foreign_members(&all) {
                     return Ty::Foreign(path.into());
                 }
                 // Reserve the definition first, so a recursive field refers to it.
@@ -1907,6 +2032,7 @@ impl Mapper<'_> {
                     kind: DefKind::Struct(Vec::new()),
                     origin: Origin::Ts { path: path.to_string() },
                     class: None,
+                    tagged: None,
                 });
                 let ty = Ty::Adt(id, Vec::new());
                 if args.is_empty() {
@@ -1914,15 +2040,39 @@ impl Mapper<'_> {
                 }
                 let scope: Scope = params.clone();
                 let fields = self.fields(file, &all, &scope, path, depth);
-                let fields = fields
-                    .into_iter()
-                    .map(|f| FieldDef { ty: crate::types::substitute(&f.ty, args), ..f })
-                    .collect();
+                // `SharedValue<Value>` where `Value` is the enclosing function's type parameter
+                // (`useSharedValue<Value>(…): SharedValue<Value>`): the definition stays generic
+                // and the reference carries its arguments, so instantiating the function reaches
+                // its fields (`progress.value` is the call's `Value`, not the name `Value`).
+                let mapped: Vec<Ty> = args.to_vec();
+                if mapped.iter().any(mentions_param) {
+                    self.defs[id].generics = params.clone();
+                    self.defs[id].kind = DefKind::Struct(fields);
+                    return Ty::Adt(id, mapped);
+                }
+                let fields = fields.into_iter().map(|f| FieldDef { ty: given(&f.ty, args), ..f }).collect();
                 self.defs[id].kind = DefKind::Struct(fields);
                 return ty;
             }
             TsDecl::Alias { params, ty } => {
                 if !params.is_empty() {
+                    // `type UseBoundStore<S> = { (): S; getState(): S }` given its arguments: the
+                    // object type with them, as a generic interface is.
+                    if let TsType::Object(members) = &ty
+                        && params.len() == args.len()
+                        && !args.iter().any(mentions_param)
+                    {
+                        let mapped = self.object(file, members, &params, path, name, depth);
+                        if let Ty::Adt(id, _) = mapped {
+                            let fields: Vec<FieldDef> = self.defs[id]
+                                .fields()
+                                .iter()
+                                .map(|f| FieldDef { ty: given(&f.ty, args), ..f.clone() })
+                                .collect();
+                            self.defs[id].kind = DefKind::Struct(fields);
+                        }
+                        return mapped;
+                    }
                     return Ty::Foreign(path.into());
                 }
                 match &ty {
@@ -1938,6 +2088,79 @@ impl Mapper<'_> {
         ty
     }
 
+    /// A discriminated union of object types (`{ kind: "a"; … } | { kind: "b"; … }`): a def whose
+    /// field is the tag, every member's own field with one distinct string literal, and that
+    /// knows each member's type (`Extract<T, { kind: "a" }>`), which a `match` on the tag narrows to.
+    fn tagged_union(
+        &mut self,
+        file: &Rc<TsFile>,
+        members: &[&TsType],
+        scope: &Scope,
+        path: &str,
+        depth: usize,
+    ) -> Option<Ty> {
+        if members.len() < 2 {
+            return None;
+        }
+        let objects: Vec<&[TsMember]> = members
+            .iter()
+            .map(|m| if let TsType::Object(fields) = m { Some(fields.as_slice()) } else { None })
+            .collect::<Option<_>>()?;
+        let literal = |fields: &[TsMember], name: &str| {
+            fields.iter().find(|f| f.name == name && !f.optional).and_then(|f| match &f.ty {
+                TsType::StrLit(value) => Some(value.clone()),
+                _ => None,
+            })
+        };
+        let tag = objects[0].iter().map(|f| f.name.clone()).find(|name| {
+            let values: Vec<Option<String>> = objects.iter().map(|o| literal(o, name)).collect();
+            values.iter().all(Option::is_some)
+                && values.iter().collect::<std::collections::HashSet<_>>().len() == values.len()
+        })?;
+        let mut tagged = Vec::new();
+        for fields in &objects {
+            let value = literal(fields, &tag).expect("every member has the tag");
+            let member_path = format!("Extract<{path}, {{ {}: \"{value}\" }}>", crate::emit::prop_key(&tag));
+            let ty = self.object(file, fields, scope, &member_path, &member_path, depth);
+            tagged.push((value, ty));
+        }
+        let values: Vec<String> = tagged.iter().map(|(v, _)| v.clone()).collect();
+        let name = values.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(" | ");
+        let mut fields = vec![FieldDef {
+            name: tag.clone(),
+            ty: Ty::Strings(Rc::new(StrSet { name, values, token: false })),
+            default: FieldDefault::None,
+        }];
+        // A field every member has, with one type, is the union's too (`block.domain`), as TS
+        // reads it without narrowing.
+        let member_fields: Vec<Vec<FieldDef>> = tagged
+            .iter()
+            .map(|(_, ty)| match ty {
+                Ty::Adt(def, _) => self.defs[*def].fields().to_vec(),
+                _ => Vec::new(),
+            })
+            .collect();
+        if let Some((first, rest)) = member_fields.split_first() {
+            for field in first {
+                if field.name != tag
+                    && rest.iter().all(|m| m.iter().any(|f| f.name == field.name && f.ty == field.ty))
+                {
+                    fields.push(field.clone());
+                }
+            }
+        }
+        let id = self.defs.len();
+        self.defs.push(Def {
+            name: path.to_string(),
+            generics: Vec::new(),
+            kind: DefKind::Struct(fields),
+            origin: Origin::Ts { path: path.to_string() },
+            class: None,
+            tagged: Some(Rc::new(Tagged { tag, members: tagged })),
+        });
+        Some(Ty::Adt(id, Vec::new()))
+    }
+
     fn object(
         &mut self,
         file: &Rc<TsFile>,
@@ -1947,7 +2170,7 @@ impl Mapper<'_> {
         name: &str,
         depth: usize,
     ) -> Ty {
-        if members.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+        if foreign_members(members) {
             return Ty::Foreign(path.into());
         }
         let id = self.defs.len();
@@ -1957,6 +2180,7 @@ impl Mapper<'_> {
             kind: DefKind::Struct(Vec::new()),
             origin: Origin::Ts { path: path.to_string() },
             class: None,
+            tagged: None,
         });
         let fields = self.fields(file, members, scope, path, depth);
         self.defs[id].kind = DefKind::Struct(fields);
@@ -1995,7 +2219,12 @@ impl Mapper<'_> {
         members
             .iter()
             .map(|member| {
-                let field_path = format!("{path}[\"{}\"]", member.name);
+                // A call signature is the value's own (`Parameters<typeof useStore>`).
+                let field_path = if member.name == CALL {
+                    path.to_string()
+                } else {
+                    format!("{path}[\"{}\"]", member.name)
+                };
                 let mut ty = self.optional_member(file, member, scope, &field_path, depth);
                 if member.optional && !matches!(ty, Ty::Option(_) | Ty::Foreign(_)) {
                     ty = Ty::Option(Box::new(ty));
@@ -2069,7 +2298,54 @@ fn is_component_fn(file: &TsFile, name: &str, function: &TsFn) -> bool {
             matches!(m, TsType::Null)
                 || matches!(m, TsType::Ref(r, _) if REACT_ELEMENTS.contains(&r.as_str()))
         }),
-        None => file.tsx,
+        // An unannotated `.tsx` function is a component, unless what it returns is an
+        // embedded-language view's node (or nothing): `return AccountBadgeMarker(props)` with
+        // `AccountBadgeMarker = view(…)`. That is a node factory, called as TS calls it.
+        None => file.tsx && !function.inferred.as_ref().is_some_and(|ret| returns_view_node(file, ret)),
         _ => false,
     }
+}
+
+/// Whether an inferred result is a view node: a call of the file's `view()` factory, or
+/// `null` beside one.
+fn returns_view_node(file: &TsFile, ret: &TsType) -> bool {
+    let node = |ty: &TsType| match ty {
+        TsType::Ref(name, _) => name == "ViewNode",
+        TsType::Returns(inner) => matches!(&**inner, TsType::Query(name) if matches!(
+            file.decls.get(name),
+            Some(TsDecl::Fn(f)) if matches!(&f.ret, Some(TsType::Ref(r, _)) if r == "ViewNode")
+        )),
+        _ => false,
+    };
+    match ret {
+        TsType::Union(members) => {
+            members.iter().any(node)
+                && members.iter().all(|m| node(m) || matches!(m, TsType::Null | TsType::Undefined))
+        }
+        other => node(other),
+    }
+}
+
+/// Whether `ty` names a type parameter.
+/// A generic declaration's member type given its arguments: its own parameters (`Param(0..n)`)
+/// are the arguments, and a generic method's (`<U>(selector: (s: S) => U) => U`, mapped after
+/// them) become that method's own `Param(0..)`, as a call instantiates them.
+fn given(ty: &Ty, args: &[Ty]) -> Ty {
+    let n = args.len() as u32;
+    crate::types::map_ty(ty, &mut |t| match t {
+        Ty::Param(i, _) if *i < n => Some(args[*i as usize].clone()),
+        Ty::Param(i, name) => Some(Ty::Param(i - n, name.clone())),
+        _ => None,
+    })
+}
+
+fn mentions_param(ty: &Ty) -> bool {
+    let mut found = false;
+    crate::types::map_ty(ty, &mut |t| {
+        if matches!(t, Ty::Param(..)) {
+            found = true;
+        }
+        None
+    });
+    found
 }

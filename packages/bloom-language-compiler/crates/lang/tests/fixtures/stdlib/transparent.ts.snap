@@ -1,0 +1,105 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+import { useId, useState } from "react";
+import { type UniqueID, String$hasPrefix } from "../../.bloom/std/Bloom/Core.bloom";
+import { type Codec, type JSONValue, String$$decode, String$$encode, JSON$$decode, JSON$$encode } from "../../.bloom/std/Bloom/JSON.bloom";
+
+export type UserID = string;
+
+export function UserID$$decode(value: unknown, at: string): UserID {
+return String$$decode(value, "UserID");
+}
+
+export function UserID$$encode(value: UserID): unknown {
+return String$$encode(value);
+}
+
+export const UserID$$self: Codec<UserID> = { decode: UserID$$decode, encode: UserID$$encode };
+
+export function UserID$isGuest(self: UserID): boolean {
+return String$hasPrefix(self, "guest-");
+}
+
+export function userID(raw: string): UserID {
+return raw;
+}
+
+export function rawOf(id: UserID): string {
+return id;
+}
+
+export function rawOfOptional(id: UserID | undefined): string | undefined {
+return id;
+}
+
+export function sameUser(a: UserID, b: UserID): boolean {
+return a === b;
+}
+
+export function sameUsers(a: readonly UserID[], b: readonly UserID[]): boolean {
+return a.length === b.length && a.every(($x0, $i0) => $x0 === b[$i0]!);
+}
+
+export function guests(ids: readonly UserID[]): number {
+return ids.filter(($0: UserID) => UserID$isGuest($0)).length;
+}
+
+export function encodedUser(id: UserID): string {
+return JSON$$encode(UserID$$self, id);
+}
+
+export function decodedUser(text: string): UserID | undefined {
+return (() => {
+try {
+return JSON$$decode(UserID$$self, text);
+} catch {
+return undefined;
+}
+})();
+}
+
+export interface LabeledFieldProps {
+  readonly label: string;
+}
+export const LabeledField = view(function LabeledField(props: LabeledFieldProps) {
+"use no memo";
+const $ = $c(10);
+const { label } = props;
+const id = useId();
+const [count, setCount] = useState<number>(0);
+let $t0;
+if ($[6] !== label || $[7] !== id || $[8] !== count) {
+$t0 = VStack(($[0] !== label || $[1] !== id ? ($[0] = label, $[1] = id, $[2] = Text(label).testID(id)) : $[2]), ($[3] !== count || $[4] !== id ? ($[3] = count, $[4] = id, $[5] = Button(Text(`${count}`)).testID(id).onPress(() => {
+setCount((count) => count + (1));
+})) : $[5]));
+$[6] = label;
+$[7] = id;
+$[8] = count;
+$[9] = $t0;
+} else {
+$t0 = $[9];
+}
+return $t0;
+});
+
+export function useRegistryKey(): string {
+const key = useId();
+return "player-" + key;
+}
+
+export const Player = view(function Player() {
+"use no memo";
+const $ = $c(2);
+const key = useRegistryKey();
+let $t1;
+if ($[0] !== key) {
+$t1 = Text(key);
+$[0] = key;
+$[1] = $t1;
+} else {
+$t1 = $[1];
+}
+return $t1;
+});
+

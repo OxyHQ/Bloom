@@ -1,0 +1,37 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Item, Menu, Section, Text, menu, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+
+export type ReplyPermission = "anyone" | "followers" | "nobody";
+
+const $view0 = Section(Item("Anyone").tag("anyone"), Item("Nobody").tag("nobody"));
+export interface RowsProps {
+  readonly anyone: boolean;
+  readonly nobody: boolean;
+  readonly onChange: (p0: readonly ("anyone" | "followers" | "nobody")[]) => void;
+}
+export const Rows = menu(function Rows(props: RowsProps) {
+const { anyone, nobody, onChange } = props;
+return $view0.selection([anyone ? "anyone" : (nobody ? "nobody" : undefined), (value: "anyone" | "followers" | "nobody") => onChange([value])] as const);
+});
+
+const $view1 = Text("Who");
+const $view2 = Section(Item("Anyone").tag("anyone"));
+export const Picker = view(function Picker() {
+"use no memo";
+const $ = $c(2);
+const [choice, setChoice] = useState<"anyone" | "followers" | "nobody">("anyone");
+let $t0;
+if ($[0] !== choice) {
+$t0 = Menu($view1, $view2.selection([choice, (value: "anyone" | "followers" | "nobody") => {
+setChoice(value);
+}] as const));
+$[0] = choice;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+

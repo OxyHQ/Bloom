@@ -1,0 +1,23 @@
+import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
+
+export interface RowProps {
+  readonly title: string;
+  readonly onOpen?: (() => void) | undefined;
+}
+export const Row = inlineView(function Row(props: RowProps) {
+"use no memo";
+const { title, onOpen = undefined } = props;
+return Text(title);
+});
+
+export const RowAlias = Row;
+
+export interface ListProps {
+  readonly titles: readonly string[];
+}
+export const List = inlineView(function List(props: ListProps) {
+"use no memo";
+const { titles } = props;
+return VStack(...titles.map((t) => RowAlias({ title: t, onOpen: undefined })));
+});
+

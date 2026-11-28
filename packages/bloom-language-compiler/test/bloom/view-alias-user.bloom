@@ -1,0 +1,9 @@
+// The alias called from another module: the view's call, its props as one object.
+import { TitleRowAlias } from "./view-alias.bloom"
+
+public struct Titles: View {
+  let titles: [String]
+  var body: some View {
+    VStack { for t in titles { TitleRowAlias(title: t, onOpen: none) } }
+  }
+}

@@ -1,0 +1,18 @@
+// A view called through a `let` alias of it is emitted with positional arguments:
+// `public let PostItem = PostItemContent` (Mention's components/Feed/PostItem.bloom), and
+// `PostItem(post: post, openPostEngagement: f)` in another module emits `PostItem(post, f)`,
+// so the view's props object is the post itself (props.post is undefined).
+// Mention: components/insights/WeeklyRecapContent (its top posts), any .bloom caller of PostItem.
+// Expected: the view's call, `PostItem({ post, openPostEngagement: f })`, as for `PostItemContent(…)`.
+public struct Row: View {
+  let title: String
+  var onOpen: (() -> Unit)? = none
+  var body: some View { Text(title) }
+}
+public let RowAlias = Row
+public struct List: View {
+  let titles: [String]
+  var body: some View {
+    VStack { for t in titles { RowAlias(title: t, onOpen: none) } }
+  }
+}

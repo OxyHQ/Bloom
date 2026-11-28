@@ -1,0 +1,11 @@
+import { type JSError, JSError$$cast } from "../../.bloom/std/Bloom/Core.bloom";
+import { type JSONValue } from "../../.bloom/std/Bloom/JSON.bloom";
+
+export function foreignErrorMessage(error: unknown): string {
+return (JSError$$cast(error as unknown as Error))?.message ?? "fallback";
+}
+
+export function jsonErrorMessage(error: unknown): string {
+return (JSError$$cast(error as unknown as Error))?.message ?? "fallback";
+}
+

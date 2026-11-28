@@ -1,0 +1,6 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface NumberedProps {
+  readonly titles: readonly string[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Numbered())`), or from TSX as `toElement(Numbered())`. */
+export declare const Numbered: (props: NumberedProps) => ComposedView;

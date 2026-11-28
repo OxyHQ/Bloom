@@ -1,0 +1,9 @@
+// `Float.nan` and `Float.infinity`, Double's, and `.nan` where a `Float` is expected.
+public func ratio(_ a: Float?, _ b: Float) -> Float { b == 0 ? Float.infinity : (a ?? .nan) / b }
+public func floatNaN() -> Float { Float.nan }
+public func floatOrNaN(_ x: Float?) -> Float { x ?? .nan }
+public func bounded(_ xs: [Float]) -> Float {
+  var low: Float = .infinity
+  for x in xs { if x < low { low = x } }
+  return low
+}

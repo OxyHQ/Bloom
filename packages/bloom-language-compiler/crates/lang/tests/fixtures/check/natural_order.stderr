@@ -1,0 +1,8 @@
+error[B0201]: `sorted()` compares the elements, and `Point` is not `Comparable`
+ --> check/natural_order.bloom:5:53
+  |
+5 | func ordered(_ points: [Point]) -> [Point] { points.sorted() }
+  |                                                     ^^^^^^ numbers, strings and dates compare
+  |
+help: pass the order: `.sorted(by: { $0.x < $1.x })`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft

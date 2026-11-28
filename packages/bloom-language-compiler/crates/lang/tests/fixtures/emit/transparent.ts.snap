@@ -1,0 +1,56 @@
+
+export type Handle = string;
+
+export function Handle$short(self: Handle): string {
+return (self.length > 4) ? "long" : self;
+}
+
+export type Box<T> = T;
+
+export type Wrapped = Handle;
+
+export interface Account {
+  readonly handle: Handle;
+  readonly followers: number;
+}
+
+export function handle(raw: string): Handle {
+return raw;
+}
+
+export function raw(h: Handle): string {
+return h;
+}
+
+export function rawMaybe(a: Account | undefined): string | undefined {
+return a?.handle;
+}
+
+export function same(a: Handle, b: Handle): boolean {
+return a === b;
+}
+
+export function sameWrapped(a: Wrapped, b: Wrapped): boolean {
+return (a === b) && (a === b);
+}
+
+export function sameAccount(a: Account, b: Account): boolean {
+return a.handle === b.handle && a.followers === b.followers;
+}
+
+export function boxed(n: number): Box<number> {
+return n;
+}
+
+export function unboxed(b: Box<number>): number {
+return b + 1;
+}
+
+export function renamed(a: Account): Account {
+return { handle: "new", followers: a.followers };
+}
+
+export function shorts(hs: readonly Handle[]): readonly string[] {
+return hs.map(($0: Handle) => Handle$short($0));
+}
+

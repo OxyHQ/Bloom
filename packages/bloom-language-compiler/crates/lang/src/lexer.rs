@@ -49,6 +49,36 @@ pub const KEYWORDS: &[&str] = &[
     "true", "type", "var", "view", "while",
 ];
 
+/// The 2.0 words that are keywords where they stand but names elsewhere (Swift's contextual
+/// keywords): what an editor offers and highlights beside `KEYWORDS`.
+pub const CONTEXTUAL_KEYWORDS: &[&str] = &[
+    "actor",
+    "any",
+    "break",
+    "catch",
+    "class",
+    "continue",
+    "do",
+    "extension",
+    "fileprivate",
+    "final",
+    "func",
+    "guard",
+    "init",
+    "internal",
+    "private",
+    "protocol",
+    "public",
+    "rethrows",
+    "self",
+    "some",
+    "static",
+    "switch",
+    "throw",
+    "throws",
+    "try",
+];
+
 impl Kw {
     pub fn from_word(word: &str) -> Option<Kw> {
         Some(match word {
@@ -147,6 +177,10 @@ pub enum P {
     Eq,
     EqEq,
     Ne,
+    /// `===`: reference identity (Swift's).
+    EqEqEq,
+    /// `!==`.
+    NeEq,
     Lt,
     Le,
     Gt,
@@ -195,6 +229,8 @@ impl P {
             P::Eq => "=",
             P::EqEq => "==",
             P::Ne => "!=",
+            P::EqEqEq => "===",
+            P::NeEq => "!==",
             P::Lt => "<",
             P::Le => "<=",
             P::Gt => ">",
@@ -232,6 +268,8 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::EqEqEq
+                | P::NeEq
                 | P::Lt
                 | P::Le
                 | P::Ge
@@ -260,6 +298,8 @@ impl P {
                 | P::Percent
                 | P::EqEq
                 | P::Ne
+                | P::EqEqEq
+                | P::NeEq
                 | P::Lt
                 | P::Le
                 | P::Gt
@@ -431,6 +471,8 @@ impl Lexer<'_> {
             (b'?', b'?') => (P::QuestionQuestion, 2),
             (b'-', b'>') => (P::Arrow, 2),
             (b'=', b'>') => (P::FatArrow, 2),
+            (b'=', b'=') if self.peek(2) == b'=' => (P::EqEqEq, 3),
+            (b'!', b'=') if self.peek(2) == b'=' => (P::NeEq, 3),
             (b'=', b'=') => (P::EqEq, 2),
             (b'!', b'=') => (P::Ne, 2),
             (b'<', b'=') => (P::Le, 2),
@@ -580,9 +622,9 @@ impl Lexer<'_> {
             Diagnostic::error(
                 "B0105",
                 Span::new(start as u32, self.pos as u32),
-                "this integer does not fit in an Int",
+                "this integer is not exact on the JS backend",
             )
-            .label("an Int is a 53-bit safe integer")
+            .label("an Int is 64-bit; on the JS backend it is exact within ±(2^53 − 1)")
             .help("use a Float (`2e60`) or a smaller number")
             .spec("41-the-types"),
         );

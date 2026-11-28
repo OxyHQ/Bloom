@@ -1,0 +1,8 @@
+error[B0106]: a module has no `var`
+ --> check/module_var.bloom:2:1
+  |
+2 | var count = 0
+  | ^^^ module-level values are constants
+  |
+help: write `let`, or `private var` for the file's own mutable value; shared state lives in bloom-data stores
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#10-modules-and-interop

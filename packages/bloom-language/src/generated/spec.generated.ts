@@ -1509,6 +1509,11 @@ export const ENUMS = {
     "end",
     "bottom"
   ],
+  "dialogActionColor": [
+    "default",
+    "cancel",
+    "destructive"
+  ],
   "alertDefault": [
     "confirm",
     "cancel"
@@ -3029,6 +3034,30 @@ export const HOST_VIEWS: readonly string[] = [
 
 /** The object parameters (`frame`, `position`'s edges, `offset`): their keys and the token set of each value. */
 export const OBJECTS = {
+  "dialogButton": {
+    "keys": [
+      "label",
+      "color",
+      "onPress",
+      "disabled",
+      "loading",
+      "shouldCloseOnPress",
+      "initialFocus",
+      "testID"
+    ],
+    "tokens": "value",
+    "$comment": "A dialog's button: Bloom's DialogAction.",
+    "fields": {
+      "label": "string",
+      "color": "dialogActionColor?",
+      "onPress": "action?",
+      "disabled": "boolean?",
+      "loading": "boolean?",
+      "shouldCloseOnPress": "boolean?",
+      "initialFocus": "boolean?",
+      "testID": "string?"
+    }
+  },
   "refresh": {
     "keys": [
       "refreshing",

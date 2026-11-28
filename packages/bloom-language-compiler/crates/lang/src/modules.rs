@@ -448,8 +448,13 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
     }
 
     import_uses(file, source, &dir, &own, &offered, &derived, &mut out);
-    // Two files of a module declaring one name.
+    // Two files of a module declaring one name. A `private` declaration is its file's only,
+    // as TS's file scope is: it shadows a sibling's internal or public name inside this file
+    // (the sibling's is never imported here), and the sibling never sees it.
     for item in &file.items {
+        if item.visibility == Visibility::Private {
+            continue;
+        }
         let name = &item.kind.name().name;
         if let Some(offers) = offered.get(name)
             && let Some(Offer::Bloom { file: other, .. }) =
@@ -500,7 +505,9 @@ fn import_uses(
         if own.contains(name) {
             continue;
         }
-        if let Some((owner, "init", true)) = crate::extensions::demangle(name)
+        // A built-in type's (`Date$$init$timeIntervalSince1970`) too, by its labels.
+        if let Some((owner, member, true)) = crate::extensions::demangle(name)
+            && (member == "init" || member.starts_with("init$"))
             && let Some(span) = called.get(owner)
         {
             // Its own span: the class may be imported as a type only, its `init` never is.
@@ -540,6 +547,18 @@ fn import_uses(
     let mut seen = BTreeSet::new();
     uses.retain(|(name, _)| seen.insert(name.clone()));
     let mut synthesized: BTreeMap<String, (String, Vec<ImportSpec>)> = BTreeMap::new();
+    // `Date` is the standard library's (a JS `Date` itself): a `"js"` import of JS's does not
+    // shadow it, and is dropped.
+    if offered.get("Date$$get$now").is_some_and(|offers| offers.iter().any(Offer::is_std)) {
+        for import in &mut file.imports {
+            if import.source == "js"
+                && let ImportKind::Named(specs) = &mut import.kind
+            {
+                specs.retain(|s| s.local().name != "Date");
+            }
+        }
+        file.imports.retain(|i| !matches!(&i.kind, ImportKind::Named(specs) if specs.is_empty()));
+    }
     // A name the file imports itself (a TS import kept in the migration mode) is that import.
     let written: BTreeSet<String> = file
         .imports

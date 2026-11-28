@@ -1,0 +1,9 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface Entry {
+  readonly postId: string;
+}
+export interface GridProps {
+  readonly data: readonly Entry[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Grid())`), or from TSX as `toElement(Grid())`. */
+export declare const Grid: (props: GridProps) => ComposedView;

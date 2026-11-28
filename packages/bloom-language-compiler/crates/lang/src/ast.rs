@@ -374,6 +374,25 @@ pub enum ViewKind {
     Screen,
     /// A route layout, through `layout()`.
     Layout,
+    /// `struct X: MenuActions` (2.0): what a menu's tagged rows do, through `actions()`. Its
+    /// `body` is the tag → action table; it runs only when a row is chosen.
+    MenuActions,
+    /// `struct X: MenuContent` (2.0): a menu's rows, through `menu()`, built only while it is open.
+    MenuContent,
+    /// `struct X: ViewModifier` (2.0, SwiftUI's): `func body(content: Content) -> some View`
+    /// wraps the view it is applied to (`.modifier(X(…))`). Its result is that view's place in
+    /// the tree (a screen's root keeps its chrome through it). Emitted as a function from its
+    /// props to `(content) => node`; one with state or hooks is called once per render at the
+    /// top of the view applying it, as a hook is.
+    Modifier,
+}
+
+impl ViewKind {
+    /// A menu's actions or content: a body run by the menu (`actions()`, `menu()`), with no memo
+    /// cache, and no fiber of its own.
+    pub fn is_menu(self) -> bool {
+        matches!(self, ViewKind::MenuActions | ViewKind::MenuContent)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -395,6 +414,8 @@ pub struct ViewDecl {
     /// Its stored `let`s are the props, `@State` the states, `var body` the body, and
     /// `.task`, `.onAppear`, `.onDisappear` and `.onChange` on the body its effects.
     pub surface: Option<Box<TypeBody>>,
+    /// A `ViewModifier`'s `body(content:)` parameter: the view it wraps, in scope in the body.
+    pub content: Option<Ident>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -478,6 +499,9 @@ pub struct ConstDecl {
     pub ty: Option<TypeExpr>,
     pub value: Expr,
     pub span: Span,
+    /// `private var x: T = v` at file scope (2.0): the module's own mutable value, a JS module
+    /// `let`. Nothing re-renders on it: it is no dependency and no state.
+    pub mutable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -509,6 +533,10 @@ pub enum StmtKind {
     Throw(Expr),
     /// `do { … } catch … { … }` (2.0): a JS `try`/`catch`.
     Do(DoStmt),
+    /// `break`, `break outer` (2.0): leaves the innermost loop or `switch`, or the loop named.
+    Break(Option<Ident>),
+    /// `continue`, `continue outer` (2.0): the innermost loop's, or the named loop's, next turn.
+    Continue(Option<Ident>),
     Expr(Expr),
 }
 
@@ -552,6 +580,9 @@ pub struct VarStmt {
     pub ty: Option<TypeExpr>,
     pub value: Expr,
     pub span: Span,
+    /// `@State var x = v` in a hook function's body (2.0): the attribute's span. The variable is
+    /// the function's state (one `useState`): read as `x`, written as `x = …`, `$x` its binding.
+    pub state: Option<Span>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -586,6 +617,8 @@ pub struct AssignStmt {
 pub struct WhileStmt {
     pub cond: Expr,
     pub body: Block,
+    /// `outer: while …` (2.0): the name `break outer` and `continue outer` give.
+    pub label: Option<Ident>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -593,6 +626,8 @@ pub struct ForStmt {
     pub pattern: Pattern,
     pub iter: Expr,
     pub body: Block,
+    /// `outer: for …` (2.0): the name `break outer` and `continue outer` give.
+    pub label: Option<Ident>,
 }
 
 /// An expression's identity in the checker's side tables.
@@ -633,6 +668,10 @@ pub enum BinaryOp {
     Ge,
     Eq,
     Ne,
+    /// `a === b`: the same object (Swift's identity), for classes and TS objects.
+    Identical,
+    /// `a !== b`.
+    NotIdentical,
     And,
     Or,
     Default,
@@ -656,6 +695,8 @@ impl BinaryOp {
             BinaryOp::Ge => ">=",
             BinaryOp::Eq => "==",
             BinaryOp::Ne => "!=",
+            BinaryOp::Identical => "===",
+            BinaryOp::NotIdentical => "!==",
             BinaryOp::And => "&&",
             BinaryOp::Or => "||",
             BinaryOp::Default => "??",
@@ -677,7 +718,7 @@ impl BinaryOp {
             // Swift's `RangeFormationPrecedence`: below `+`, above the comparisons.
             BinaryOp::HalfOpen | BinaryOp::Closed => 6,
             BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge => 5,
-            BinaryOp::Eq | BinaryOp::Ne => 4,
+            BinaryOp::Eq | BinaryOp::Ne | BinaryOp::Identical | BinaryOp::NotIdentical => 4,
             BinaryOp::And => 3,
             BinaryOp::Or => 2,
             BinaryOp::Default => 1,
@@ -722,8 +763,10 @@ pub enum ExprKind {
     /// `Bool`, `[T]`); `if x is T { … }` narrows `x` there.
     Is(Box<Expr>, TypeExpr),
     /// `error as? HTTPError` (2.0, Swift's conditional cast): the value as a `T`, or `none`;
-    /// `T` says how (`static func cast(_ error: Error) -> T?`).
-    CastAs(Box<Expr>, TypeExpr),
+    /// `T` says how (`static func cast(_ error: Error) -> T?`). A string literal union
+    /// (`x as? Tab`) is a membership test. `forced`: `x as! Tab`, the value itself, a trap in a
+    /// dev build when it is not one.
+    CastAs(Box<Expr>, TypeExpr, bool),
     /// `[k: v, …]`; `[:]` is empty.
     Map(Vec<(Expr, Expr)>),
     /// `{ key: value, "quoted-key": v, ..spread }`: a record, typed by what is expected.
@@ -741,6 +784,9 @@ pub enum ExprKind {
     Field(Box<Expr>, Ident),
     OptField(Box<Expr>, Ident),
     Index(Box<Expr>, Box<Expr>),
+    /// `xs?[i]` (Swift's optional subscript): the element when `xs` is not `none`, as JS's
+    /// `xs?.[i]`; `none` from there through the chain.
+    OptIndex(Box<Expr>, Box<Expr>),
     Call(Call),
     Closure(Closure),
     If(IfExpr),
@@ -817,6 +863,8 @@ pub struct Closure {
     pub has_in: bool,
     /// `{ (i, x) in … }`: one tuple parameter, its items named.
     pub tuple: bool,
+    /// `{ () -> [Item] in … }`, `{ (a: Int) -> String in … }` (Swift's signature): the result type.
+    pub ret: Option<TypeExpr>,
     pub body: Vec<Stmt>,
     pub span: Span,
 }
@@ -929,6 +977,10 @@ pub enum TypeKind {
     Strings(Vec<String>),
     /// `{ a: Int, b: String? }`: a structural record type (an optional field may be absent).
     Record(Vec<(Ident, TypeExpr)>),
+    /// `P & Q` (2.0): a composition of protocols, Swift's. A constraint only (`<T: P & Q>`, `where
+    /// T: P & Q`, `type PQ = P & Q` named in one); `crate::composition` spreads it into one
+    /// constraint per protocol before checking.
+    Composition(Vec<TypeExpr>),
     /// What the parser put where it could not read a type.
     Error,
 }

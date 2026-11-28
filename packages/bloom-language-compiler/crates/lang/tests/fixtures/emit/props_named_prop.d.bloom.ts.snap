@@ -1,0 +1,12 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface IslandProps {
+  readonly name: string;
+  readonly props: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Island())`), or from TSX as `toElement(Island())`. */
+export declare const Island: (props: IslandProps) => ComposedView;
+export interface CountedProps {
+  readonly props: number;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Counted())`), or from TSX as `toElement(Counted())`. */
+export declare const Counted: (props: CountedProps) => ComposedView;

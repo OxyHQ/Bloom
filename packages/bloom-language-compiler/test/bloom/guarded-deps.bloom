@@ -1,0 +1,12 @@
+// A handler reading a TS value's field behind its own guard: its cache's dependencies read it
+// with `?.`, so a render while the value is `none` does not throw.
+import { recordJobMetric } from "./jobs-service"
+public struct Detail: View {
+  let data: Foreign<"{ job?: { id: string; externalApplyUrl?: string } } | undefined">
+  let job = data?.job
+  func apply() {
+    if !(job?.externalApplyUrl) { return }
+    recordJobMetric(job.id, "external_apply_click")
+  }
+  var body: some View { Button(Text("Apply")).onPress(apply) }
+}

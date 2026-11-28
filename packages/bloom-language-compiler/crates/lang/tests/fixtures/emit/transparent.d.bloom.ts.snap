@@ -1,0 +1,18 @@
+export type Handle = string;
+export declare function Handle$short(self: Handle): string;
+export type Box<T> = T;
+export type Wrapped = Handle;
+export interface Account {
+  readonly handle: Handle;
+  readonly followers: number;
+}
+export declare function handle(raw: string): Handle;
+export declare function raw(h: Handle): string;
+export declare function rawMaybe(a: Account | undefined | null): string | undefined;
+export declare function same(a: Handle, b: Handle): boolean;
+export declare function sameWrapped(a: Wrapped, b: Wrapped): boolean;
+export declare function sameAccount(a: Account, b: Account): boolean;
+export declare function boxed(n: number): Box<number>;
+export declare function unboxed(b: Box<number>): number;
+export declare function renamed(a: Account): Account;
+export declare function shorts(hs: readonly Handle[]): readonly string[];

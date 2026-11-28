@@ -1,0 +1,24 @@
+// A struct's `static let` is the type's, never a field: not a constructor argument, not a
+// Codable key (it was decoded and encoded as `"empty"`). Classes and enums keep theirs alike.
+public struct Note: Codable, Equatable {
+  public let id: String
+  public var pinned: Bool = false
+  public static let empty: [Note] = []
+  public static let sample = Note(id: "sample")
+}
+
+public final class Counter {
+  public var count = 0
+  public static let shared = Counter()
+}
+
+public enum Shade: Codable {
+  case light
+  case dark
+  public static let all: [Shade] = [.light, .dark]
+}
+
+public func encoded(_ note: Note) -> String { JSON.encode(Note.self, note) }
+public func decoded(_ text: String) -> Note? { try? JSON.decode(Note.self, from: text) }
+public func statics() -> [Int] { [Note.empty.count, Shade.all.count, Counter.shared.count] }
+public func sampleID() -> String { Note.sample.id }

@@ -1,0 +1,86 @@
+// A hook function's top-level `let`s are memoised in its one cache on their exact dependencies,
+// as a view's members are, so React's `useMemo`/`useCallback` there (TS the codemod kept) cost no
+// hook slot each (PostItem's `usePostRowModel`: 45 of them, +35 hooks per feed row). A `let` that
+// calls a hook, and a cheap read, stay plain; a value with no dependency is computed once.
+import { useCallback, useMemo } from "react"
+import { useInsets } from "@/hooks/useInsets"
+
+public struct Tagged {
+  let id: String
+  let title: String
+  let tags: [String]
+}
+
+func describe(_ tags: [String]) -> String { tags.joined(separator: ", ") }
+
+public func useTaggedRow(
+  item: Tagged,
+  isNested givenIsNested: Bool? = none,
+  onOpen: (() -> Unit)? = none,
+) {
+  let isNested = givenIsNested ?? false
+  let insets = useInsets()
+  let heading = item.title.uppercased()
+  let summary = useMemo({ describe(item.tags) }, [item.tags])
+  let label = "\(heading) (\(item.tags.count))"
+  let fallback = describe(["none"])
+  let open = useCallback({
+    if !isNested { onOpen?() }
+  }, [isNested, onOpen])
+  let longest = useMemo({
+    var best = ""
+    for tag in item.tags {
+      if tag.count > best.count { best = tag }
+    }
+    return best.isEmpty ? fallback : best
+  }, [item.tags])
+  let (first, rest) = (item.tags.first ?? fallback, item.tags.count - 1)
+  { heading: heading, summary: summary, label: label, open: open, longest: longest, first: first, rest: rest, top: insets.top }
+}
+
+public struct TaggedRow: View {
+  let item: Tagged
+  var onOpen: (() -> Unit)? = none
+  let row = useTaggedRow(item: item, onOpen: onOpen)
+  var body: some View {
+    VStack {
+      Button(Text(row.label)).onPress(row.open)
+      Text(row.summary)
+      Text("\(row.longest), \(row.first) +\(row.rest)")
+    }
+    .padding("top", row.top)
+  }
+}
+
+// In a view, a closure that reads only module names is a module constant. Each one has a name of
+// its own in the module: `Hint2`'s first was `$fn2` again (the name counted the item's hoisted
+// pieces, which are emptied after each item).
+func log(_ s: String) {}
+
+public struct Hint: View {
+  var body: some View {
+    VStack {
+      Text("Static")
+      Button(Text("Go")).onPress { log("go") }
+    }
+  }
+}
+
+public struct Hint2: View {
+  let n: Int
+  var body: some View {
+    VStack {
+      Text("Two")
+      Button(Text("\(n)")).onPress { log("a") }
+    }
+  }
+}
+
+// In a hook function it is each caller's own, built once in the caller's cache: what it builds can
+// be an identity (`useState({ ({}) })`, PostItem's per-row hover owner), which a module constant
+// would share between rows.
+public func useHandlers(n: Int) {
+  let first = { log("a") }
+  let second = { log("b") }
+  { first: first, second: second, doubled: n * 2 }
+}

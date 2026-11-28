@@ -1,0 +1,48 @@
+// A tree of TS components alone, where TS takes a React element, is the TS element itself
+// (lang-mention-9's ts-element, PostItem's sheets): `$jsx(Suspense, { children: $jsx(Panel, …) })`,
+// not a `LanguageRoot` around `Embed` layers, so TS reads `props.children.props.title` as it
+// wrote it, and the sheet mounts the fibers the TS did.
+import { Suspense } from "react"
+import { Frame } from "@/elements/Frame"
+import { Panel } from "@/elements/Panel"
+import { presentSheet } from "@/sheet"
+
+public func openPanel(label: String) async {
+  await presentSheet { surface in (Suspense(fallback: none) { Panel(title: label, onClose: { surface.dismiss() }) }) }
+}
+
+// Several children: `jsxs`, as TS's JSX writes a static list.
+public func openPanels(label: String) async {
+  await presentSheet { surface in
+    Frame {
+      Panel(title: label, onClose: { surface.dismiss() })
+      Panel(title: "\(label) 2", onClose: { surface.dismiss() })
+    }
+  }
+}
+
+// A Bloom node in the tree, or a modifier on a TS component: a Bloom view, crossing as one.
+public func openMixed(label: String) async {
+  await presentSheet { surface in
+    Frame {
+      Text(label)
+      Panel(title: label, onClose: { surface.dismiss() })
+    }
+  }
+}
+
+public func openModified(label: String) async {
+  await presentSheet { surface in Panel(title: label, onClose: { surface.dismiss() }).padding(.md) }
+}
+
+// Inside a Bloom tree, TS components all the way down are one `Embed` of the TS element: no
+// render function and no `Embed` per child.
+public struct Sheet: View {
+  let label: String
+  var body: some View {
+    VStack {
+      Text(label)
+      Suspense(fallback: none) { Panel(title: label, onClose: {}) }
+    }
+  }
+}

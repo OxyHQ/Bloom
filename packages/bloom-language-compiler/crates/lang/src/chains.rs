@@ -136,6 +136,7 @@ impl Walker<'_> {
                 }
                 self.stmts(&g.otherwise.stmts);
             }
+            StmtKind::Break(_) | StmtKind::Continue(_) => {}
             StmtKind::Throw(e) => self.expr(e),
             StmtKind::Do(d) => {
                 self.stmts(&d.body.stmts);
@@ -191,7 +192,7 @@ impl Walker<'_> {
             ExprKind::Paren(a)
             | ExprKind::Spread(a)
             | ExprKind::Is(a, _)
-            | ExprKind::CastAs(a, _)
+            | ExprKind::CastAs(a, ..)
             | ExprKind::Unary(_, a)
             | ExprKind::Await(a)
             | ExprKind::Try(a)
@@ -205,7 +206,7 @@ impl Walker<'_> {
                 self.expr(k);
                 self.expr(v);
             }),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
                 self.expr(a);
                 self.expr(b);
             }

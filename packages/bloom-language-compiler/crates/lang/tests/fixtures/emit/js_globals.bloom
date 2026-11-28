@@ -1,0 +1,11 @@
+// A name imported from "js" is the JS global as it is: `Infinity` was emitted `Infinity_` (a
+// keyword's mangling), a `ReferenceError` at run time (PostItem's `previewChars`). In a package,
+// the standard library's `Double.infinity` and `Double.nan` are the 2.0 way to write them
+// (`tests/stdlib.rs`).
+import { Infinity, NaN } from "js"
+
+public func previewChars(_ detail: Bool) -> Float? {
+  detail ? Infinity : none
+}
+
+public func missing() -> Float { NaN }

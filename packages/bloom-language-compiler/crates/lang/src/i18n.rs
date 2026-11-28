@@ -334,8 +334,8 @@ impl Lowering<'_> {
             | ExprKind::Field(x, _)
             | ExprKind::OptField(x, _)
             | ExprKind::Is(x, _)
-            | ExprKind::CastAs(x, _) => self.expr(x),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            | ExprKind::CastAs(x, ..) => self.expr(x),
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
                 self.expr(a);
                 self.expr(b);
             }
@@ -400,6 +400,7 @@ impl Lowering<'_> {
                 StmtKind::Assign(s) => self.expr(&mut s.value),
                 StmtKind::Return(Some(x)) | StmtKind::Expr(x) | StmtKind::Throw(x) => self.expr(x),
                 StmtKind::Return(None) => {}
+                StmtKind::Break(_) | StmtKind::Continue(_) => {}
                 StmtKind::Defer(b) => self.block(b),
                 StmtKind::While(w) => {
                     self.expr(&mut w.cond);

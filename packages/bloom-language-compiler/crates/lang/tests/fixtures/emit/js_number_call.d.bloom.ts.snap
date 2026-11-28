@@ -1,0 +1,2 @@
+export declare function tooBig(capacity: string): boolean;
+export declare function counted(n: number): string;

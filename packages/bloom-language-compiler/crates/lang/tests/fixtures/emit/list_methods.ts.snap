@@ -1,6 +1,4 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { Text, VStack, inlineView } from "@oxy.so/bloom-language";
 function $index(index: number): number | undefined {
   return index < 0 ? undefined : index;
 }
@@ -46,18 +44,9 @@ return best;
 export interface RowsProps {
   readonly ids: readonly string[];
 }
-export const Rows = view(function Rows(props: RowsProps) {
+export const Rows = inlineView(function Rows(props: RowsProps) {
 "use no memo";
-const $ = $c(2);
 const { ids } = props;
-let $t0;
-if ($[0] !== ids) {
-$t0 = VStack(...ids.map((id, i) => Text(`${i}: ${id}`)));
-$[0] = ids;
-$[1] = $t0;
-} else {
-$t0 = $[1];
-}
-return $t0;
+return VStack(...ids.map((id, i) => Text(`${i}: ${id}`)));
 });
 

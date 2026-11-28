@@ -6,7 +6,8 @@ use rustc_hash::FxHashMap as HashMap;
 use std::rc::Rc;
 
 use bloom_language_compiler::spec::{
-    MODIFIERS, NODES, NONE_MODIFIERS, NodeSpec, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
+    ELEMENT_FIELDS, MODIFIERS, NODES, NONE_MODIFIERS, NodeSpec, OBJECT_FIELDS, OBJECTS, POINT_PARAMS,
+    SIGNATURES, TOKEN_SETS,
 };
 use bloom_language_compiler::{Doc, Tour};
 
@@ -26,6 +27,12 @@ pub fn signature(constructor: &str) -> &'static [&'static str] {
 /// token argument may be `none` there, which leaves the modifier unapplied.
 pub fn takes_none(modifier: &str) -> bool {
     NONE_MODIFIERS.contains(&modifier)
+}
+
+/// The fields of a modifier's object that TS types as a React element (`spec::ELEMENT_FIELDS`):
+/// a Bloom view given there crosses as `toElement(view)`.
+pub fn element_fields(modifier: &str) -> &'static [&'static str] {
+    ELEMENT_FIELDS.iter().find(|(name, _)| *name == modifier).map_or(&[], |(_, fields)| fields)
 }
 
 pub fn node(kind: &str) -> Option<&'static NodeSpec> {
@@ -111,12 +118,15 @@ pub enum ParamKind {
     Token(Rc<StrSet>),
     /// Points as a computed number, or a token (`frame`, `padding`, …).
     TokenOrPoints(Rc<StrSet>),
-    /// An object (`.frame(width: "full")`): its keys and the set each value is in.
+    /// An object (`.frame(width: "full")`): its name, its keys and the set each value is in.
     Object {
+        name: &'static str,
         keys: &'static [&'static str],
         set: Option<Rc<StrSet>>,
         points: bool,
     },
+    /// `[dialogButton]`: a list of a typed object.
+    ObjectList(&'static str),
     Bool,
     View,
     Children,
@@ -137,9 +147,14 @@ pub fn param_kind(spec: &NodeSpec, param: &str) -> ParamKind {
         "blend" => ParamKind::Token(str_set(spec.blend.unwrap_or("blend"))),
         "density" => ParamKind::Token(density_set(spec)),
         param => {
-            if let Some((_, keys, set, _)) = OBJECTS.iter().find(|(name, _, _, _)| *name == param) {
+            if let Some((name, keys, set, _)) = OBJECTS.iter().find(|(name, _, _, _)| *name == param) {
                 let set = token_set(set).map(|_| str_set(set));
-                return ParamKind::Object { keys, set, points: POINT_PARAMS.contains(&param) };
+                return ParamKind::Object { name, keys, set, points: POINT_PARAMS.contains(&param) };
+            }
+            if let Some(listed) = param.strip_prefix('[').and_then(|p| p.strip_suffix(']'))
+                && let Some((name, _)) = OBJECT_FIELDS.iter().find(|(name, _)| *name == listed)
+            {
+                return ParamKind::ObjectList(name);
             }
             match token_set(param) {
                 Some(_) if POINT_PARAMS.contains(&param) => ParamKind::TokenOrPoints(str_set(param)),
@@ -148,6 +163,17 @@ pub fn param_kind(spec: &NodeSpec, param: &str) -> ParamKind {
             }
         }
     }
+}
+
+/// The type of each field of an object parameter, `?` when it may be left out: a typed object's
+/// own (`dialogButton`), or, for an object whose values are free (`accessibilityValue`), each key
+/// an optional `value`. `None` for an object whose values are tokens (`frame`), checked per key.
+pub fn object_fields(name: &str) -> Option<Vec<(&'static str, &'static str)>> {
+    if let Some((_, fields)) = OBJECT_FIELDS.iter().find(|(n, _)| *n == name) {
+        return Some(fields.to_vec());
+    }
+    let (_, keys, set, _) = OBJECTS.iter().find(|(n, _, _, _)| *n == name)?;
+    (*set == "value").then(|| keys.iter().map(|key| (*key, "value?")).collect())
 }
 
 /// Each argument index with its parameter: optional parameters take the

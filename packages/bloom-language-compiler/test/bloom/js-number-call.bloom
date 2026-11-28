@@ -1,0 +1,9 @@
+// A JS global from "js" is a function or a namespace, never a TS component, whatever its case:
+// `Number(capacity)` is JS's string-to-number conversion (Mention's EventEditor).
+import { Number, String } from "js"
+
+public func tooBig(_ capacity: String) -> Bool {
+  Number(capacity) > 1000000
+}
+
+public func counted(_ n: Float) -> String { String(n) }

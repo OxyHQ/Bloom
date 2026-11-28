@@ -1,0 +1,29 @@
+error[B0421]: `Gate` is a modifier, applied to a view
+  --> check/view_modifier.bloom:14:7
+   |
+14 |       Gate()
+   |       ^^^^^^ a `ViewModifier` is not a view
+   |
+help: apply it: `content.modifier(Gate(…))`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72b-view-modifiers
+
+error[B0422]: `Gate` keeps state, so it is applied in a view's `body`
+  --> check/view_modifier.bloom:16:29
+   |
+16 |         Text(name).modifier(Gate())
+   |                             ^^^^^^ in a closure, a `for` row or a member, which may run any number of times
+   |
+help: apply it outside the rows (`VStack { … }.modifier(Gate(…))`), or make `Gate` keep no state
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72b-view-modifiers
+
+error[B0422]: `Gate(…)` reads `limit`, declared in the body
+  --> check/view_modifier.bloom:19:15
+   |
+12 |     let limit = names.count
+   |         ----- declared here
+   |
+19 |     .modifier(Gate(allow: limit > 2))
+   |               ^^^^^^^^^^^^^^^^^^^^^^ a modifier that keeps state is set up before the body runs
+   |
+help: make `limit` a member of the view (`let limit = …` beside the props)
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#72b-view-modifiers

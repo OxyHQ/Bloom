@@ -1,0 +1,33 @@
+
+export interface Item {
+  readonly id: string;
+  readonly uri?: string | undefined;
+  readonly name?: string | undefined;
+}
+
+export function items(names: (readonly string[]) | undefined, uris: readonly string[]): readonly Item[] {
+const all: readonly Item[] = (() => {
+if (names != null) {
+return names.map((n: string) => ({ id: n, name: n }));
+}
+return uris.map((u: string) => ({ id: u, uri: u }));
+})();
+return all;
+}
+
+export interface Row {
+  readonly id: string;
+  readonly label?: string | undefined;
+}
+
+export function rows(ids: readonly string[]): number {
+const all = (() => {
+if ((ids.length === 0)) {
+return [];
+}
+return ids.map((i: string) => ({ id: i }));
+})();
+const twice = (n: number) => n * 2;
+return twice(all.length);
+}
+

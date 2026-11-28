@@ -64,3 +64,82 @@ export declare function useDrag(): Opaque<{ translationY: number }>;
 export declare function useRoutedName(): string;
 /** A hook that takes another's value (Mention's `useProfileAccount`). */
 export declare function useAccountOf(name: string): { loading: boolean; name: string };
+export interface IdentityHolder {
+  id: string;
+  name?: { displayName?: string };
+}
+export interface SocialContext {
+  actors: IdentityHolder[];
+}
+export declare function mergeIdentity<T extends IdentityHolder>(
+  actor: T,
+  entry: { id: string } | undefined,
+): T;
+export interface FeedAuthor {
+  id: string;
+  name: string;
+}
+/** TS says `authors` and `onOpen` are always there; the data at run time may lack them. */
+export interface FeedPost {
+  id: string;
+  authors: FeedAuthor[];
+  tags: string[];
+  user: { id: string };
+  metadata?: FeedMeta;
+  state?: FeedState;
+  onOpen: () => void;
+}
+/** Required fields: `post.state ?? {}` is TS's `FeedState | {}`. */
+export interface FeedState {
+  visibility: string;
+  createdAt: string;
+  spoiler?: string;
+  sensitive?: boolean;
+}
+export declare function currentPath(): string;
+/** Every field optional: `{}` is one. */
+export interface FeedMeta {
+  spoiler?: string;
+  lane?: string;
+}
+export declare function useViewPost(): FeedPost | undefined;
+export declare function lookupPost(id: string): FeedPost | undefined;
+/** Mention's `NestedPostRenderer`: a TS callback that returns a React node. */
+export type NestedRenderer = (post: FeedPost, depth: number) => import('react').ReactNode;
+export declare function NestedCard(props: {
+  renderPost: NestedRenderer;
+  post: FeedPost;
+}): import('react').ReactNode;
+/** An avatar of a group (Bloom's `AvatarGroupItem`): it has no `color`. */
+export interface AvatarItem {
+  id?: string;
+  uri?: string | null;
+  username?: string;
+}
+/** A list of optional-field records a TS function takes (record-context). */
+export declare function tagItems(
+  items: Array<{ id: string; label?: string; count?: number }>,
+): number;
+/** A transform list, each entry one transform (React Native's `transform`). */
+export interface Transformed {
+  transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>;
+  opacity?: number;
+}
+export declare function transformed(style: Transformed): number;
+/** A component whose props extend a mapped type Bloom does not read (as `ScrollViewProps` extend `ViewProps`). */
+interface BoxStyle {
+  borderBottomWidth?: number;
+  maxHeight?: number;
+  borderColor?: string;
+}
+interface BoxBase {
+  style?: BoxStyle | readonly BoxStyle[];
+  testID?: string;
+}
+export interface StyledBoxProps extends Omit<BoxBase, 'testID'> {
+  horizontal?: boolean;
+}
+export declare function StyledBox(props: StyledBoxProps): ReactNode;
+/** TS helpers that take and give a JS `Date`: Bloom's `Date` crosses as itself. */
+export declare function isoOf(date: Date): string;
+export declare function epoch(): Date;

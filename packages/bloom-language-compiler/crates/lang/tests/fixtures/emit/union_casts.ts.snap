@@ -1,0 +1,45 @@
+import { Button, HStack, Text, inlineView } from "@oxy.so/bloom-language";
+
+const TABS = ["videos", "following", "live"] as const;
+
+export type Tab = "videos" | "following" | "live";
+
+export function tab(raw: string): "videos" | "following" | "live" {
+return ((raw === "videos" || raw === "following" || raw === "live" ? raw as "videos" | "following" | "live" : undefined)) ?? "videos";
+}
+
+export function routed(params: Readonly<Record<string, string>>): ("videos" | "following" | "live") | undefined {
+const $t0 = params["tab"];
+return ($t0 === "videos" || $t0 === "following" || $t0 === "live" ? $t0 as "videos" | "following" | "live" : undefined);
+}
+
+export function forced(raw: string): "videos" | "following" | "live" {
+return (raw as "videos" | "following" | "live");
+}
+
+export function first(): "videos" | "following" | "live" {
+return TABS[0]!;
+}
+
+export function all(): readonly ("videos" | "following" | "live")[] {
+return TABS;
+}
+
+export function price(amount: number): string {
+return `$${amount.toFixed(2)}`;
+}
+
+export function score(value: number | undefined): string | undefined {
+return (value == null ? undefined : value.toFixed(1));
+}
+
+export interface TabsProps {
+  readonly selected: "videos" | "following" | "live";
+  readonly onSelect: (p0: "videos" | "following" | "live") => void;
+}
+export const Tabs = inlineView(function Tabs(props: TabsProps) {
+"use no memo";
+const { selected, onSelect } = props;
+return HStack(...TABS.map((tab) => Button(Text(tab)).foreground((tab === selected) ? ("foreground") : ("muted")).onPress(() => onSelect(tab))));
+});
+

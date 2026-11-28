@@ -26,7 +26,15 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { NO_TOKEN, paramsOf, tokenSetsOf, typeFamiliesOf, withoutComment } from './token-sets.mjs';
+import {
+  FIELD_TYPES,
+  NO_TOKEN,
+  objectsOf,
+  paramsOf,
+  tokenSetsOf,
+  typeFamiliesOf,
+  withoutComment,
+} from './token-sets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, '..');
@@ -42,7 +50,7 @@ const { enums } = spec;
 const scales = Object.fromEntries(
   Object.entries(spec.scales).map(([name, table]) => [name, withoutComment(table)]),
 );
-const objects = withoutComment(spec.objects);
+const objects = objectsOf(spec);
 const typeRamp = withoutComment(spec.typeRamp);
 const colors = withoutComment(spec.colors);
 const modifiers = withoutComment(spec.modifiers);
@@ -136,10 +144,20 @@ const paramTypes = new Set([
 ]);
 const checkParams = (where, params) => {
   for (const param of params) {
-    if (!paramTypes.has(param.replace(/\?$/, '')))
+    const name = param.replace(/\?$/, '');
+    // `[dialogButton]`: a list of a typed object.
+    const listed = /^\[(.+)\]$/.exec(name);
+    if (listed ? !objects[listed[1]]?.fields : !paramTypes.has(name))
       throw new Error(`${where}: unknown parameter type ${param}`);
   }
 };
+for (const [name, object] of Object.entries(objects)) {
+  for (const [key, type] of Object.entries(object.fields ?? {})) {
+    const bare = type.replace(/\?$/, '');
+    if (!FIELD_TYPES.includes(bare) && !tokenSetNames.has(bare))
+      throw new Error(`objects.${name}.fields.${key}: unknown field type ${type}`);
+  }
+}
 for (const [kind, node] of Object.entries(nodes)) {
   for (const [name, params] of Object.entries(node.params ?? {})) {
     if (!node.modifiers.includes(name))
@@ -665,6 +683,25 @@ ${Object.entries(withoutComment(spec.signatures ?? {}))
 /// \`none\` there), read from \`Node\`'s methods by \`generate-signatures.mjs\`.
 pub const NONE_MODIFIERS: &[&str] = ${rustList(spec.noneModifiers ?? [])};
 
+/// Each modifier's object fields TS types as a React element (\`header\`'s \`right\`): a Bloom view
+/// given there crosses as \`toElement(view)\` (\`elementFields\`, by \`generate-signatures.mjs\`).
+pub const ELEMENT_FIELDS: &[(&str, &[&str])] = &[
+${Object.entries(withoutComment(spec.elementFields ?? {}))
+  .map(([name, fields]) => `    (${rustStr(name)}, ${rustList(fields)}),`)
+  .join('\n')}
+];
+
+/// Each universal modifier's category (\`modifierCategories\`): what a backend that draws
+/// modifiers itself (the native runtimes, ADR 0003) does with it. A modifier not listed is
+/// \`node\`: an option its node's own implementation reads.
+pub const MODIFIER_CATEGORIES: &[(&str, &str)] = &[
+${Object.entries(spec.modifierCategories?.universal ?? {})
+  .flatMap(([category, names]) =>
+    names.map((name) => `    (${rustStr(name)}, ${rustStr(category)}),`),
+  )
+  .join('\n')}
+];
+
 /// A glass value's methods (\`regular.tint('primary', 'subtle')\`) → their parameter types.
 pub const GLASS_VALUE: &[(&str, &[&str])] = &[
 ${Object.entries(glassValue)
@@ -679,6 +716,20 @@ ${Object.entries(objects)
   .map(
     ([name, { keys, tokens, orToken }]) =>
       `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}, ${orToken === true}),`,
+  )
+  .join('\n')}
+];
+
+/// A typed object (\`dialogButton\`): each key's type (\`string\`, \`number\`, \`boolean\`, \`action\`,
+/// \`value\` or a token set), with \`?\` when it may be left out. A parameter \`[name]\` is a list of it.
+pub const OBJECT_FIELDS: &[(&str, &[(&str, &str)])] = &[
+${Object.entries(objects)
+  .filter(([, { fields }]) => fields)
+  .map(
+    ([name, { fields }]) =>
+      `    (${rustStr(name)}, &[${Object.entries(fields)
+        .map(([key, type]) => `(${rustStr(key)}, ${rustStr(type)})`)
+        .join(', ')}]),`,
   )
   .join('\n')}
 ];

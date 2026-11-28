@@ -1,0 +1,7 @@
+// A Bloom list's method on a TS value Bloom could not type is B0601: a JS array has no
+// `enumerated`, so it threw at run time (mention13 foreign-enumerated).
+public func shelf(_ trends: Foreign) -> [String] {
+  var out: [String] = []
+  for (index, trend) in trends.enumerated() { out = [..out, "\(index)"] }
+  return out
+}

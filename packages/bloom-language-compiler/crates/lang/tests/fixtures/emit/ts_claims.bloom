@@ -1,0 +1,90 @@
+// TS's types are claims, Bloom's are guarantees (lead decision, 2026-11-27). A `?.` or `??`
+// written on a value whose type comes from TS keeps its runtime form even where TS says the
+// value is always there: Mention's `viewPost?.authors?.map(…) ?? []` (PostItem) became
+// `viewPost.authors.map(…)`, and the row crashed on data without `authors`.
+import { FeedMeta, FeedPost, currentPath, lookupPost, useViewPost } from "@/corpus"
+
+// The exact case: `authors` is `FeedAuthor[]` in TS, and the guard stays.
+public func authorIds(_ viewPost: FeedPost?) -> [String] {
+  viewPost?.authors?.map { author in author.id } ?? []
+}
+
+public func names(_ post: FeedPost) -> [String] {
+  post.authors?.map { author in author.name } ?? []
+}
+
+public func count(_ post: FeedPost) -> Int {
+  post?.authors.count ?? 0
+}
+
+public func authors(_ post: FeedPost) -> [String] {
+  let list = post.authors ?? []
+  return list.map { author in author.id }
+}
+
+public func open(_ post: FeedPost) {
+  post.onOpen?.()
+}
+
+public func useFirstAuthor() -> String {
+  let viewPost = useViewPost()
+  return viewPost?.authors?.first?.name ?? ""
+}
+
+// `?[i]` is Swift's optional subscript (JS's `?.[i]`), kept on a TS list as `?.` is.
+public func firstTag(_ post: FeedPost) -> String {
+  post?.tags?[0] ?? ""
+}
+
+// A guarded link is optional from there through the chain.
+public func userId(_ id: String, _ post: FeedPost) -> String? {
+  let p = lookupPost(id) ?? post
+  return p?.user?.id
+}
+
+public func authorCount(_ post: FeedPost) -> Int {
+  (post.authors ?? []).count
+}
+
+// `{}` is the empty record where a struct's optional is expected too: PostItem's
+// `viewPost?.metadata ?? {}`, typed and not.
+public func metadata(_ viewPost: FeedPost?) -> FeedMeta {
+  let meta: FeedMeta = viewPost?.metadata ?? {}
+  return meta
+}
+
+public func lane(_ viewPost: FeedPost?) -> String {
+  let meta = viewPost?.metadata ?? {}
+  return meta.lane ?? ""
+}
+
+// A TS type with required fields: `{}` there is TS's `FeedState | {}`, read as a
+// `Partial<FeedState>` whose fields are optional.
+public func spoiler(_ viewPost: FeedPost?) -> String {
+  let state = viewPost?.state ?? {}
+  let sensitive = state.sensitive == true
+  return sensitive ? (state.spoiler ?? "") : ""
+}
+
+// A local keeps the claim of the TS value it holds.
+public func isAbout() -> Bool {
+  let path = currentPath()
+  return path?.endsWith("/about") ?? false
+}
+
+// A closure's parameter may take more than it is given, as Swift's `(T?) -> U` fits `(T) -> U`.
+public func pick(_ onSelect: (FeedMeta) -> Unit) {}
+
+public func usePick() {
+  pick { meta: FeedMeta? in
+    if meta?.lane == none { return }
+  }
+}
+
+// A view member keeps the claim too (expo-router's `usePathname()`, ProfileChromeFrame).
+public struct Frame: View {
+  let path = currentPath()
+  var body: some View {
+    Text(path?.endsWith("/about") ?? false ? "about" : "other")
+  }
+}

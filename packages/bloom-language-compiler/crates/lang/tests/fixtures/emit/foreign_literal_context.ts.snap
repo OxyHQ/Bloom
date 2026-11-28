@@ -1,0 +1,34 @@
+import { Embed, inlineView } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { StyledBox } from "@/corpus";
+
+const TABS = { borderBottomWidth: 1, maxHeight: 48 } as const;
+
+export interface TabsProps {
+  readonly border: string;
+}
+export const Tabs = inlineView(function Tabs(props: TabsProps) {
+"use no memo";
+const { border } = props;
+return Embed($jsx(StyledBox, { horizontal: true, style: [TABS, { borderColor: border }] } satisfies ComponentProps<typeof StyledBox>));
+});
+
+export type Style = { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };
+
+export type Steps = Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>;
+
+export function collapsed(y: number, wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number } {
+const style: { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number } = { transform: [{ scale: 0.5 }, { translateY: y }, { rotate: "45deg" }], opacity: wide ? 1 : 0.5 };
+return style;
+}
+
+export function steps(x: number): Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }> {
+const all: Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }> = [{ kind: "move", x: x }, { kind: "wait", ms: 300 }];
+return all;
+}
+
+export function either(wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number } {
+return wide ? ({ transform: [{ scale: 2 }] }) : ({ opacity: 0 });
+}
+

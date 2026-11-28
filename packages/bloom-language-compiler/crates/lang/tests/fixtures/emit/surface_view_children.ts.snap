@@ -1,44 +1,23 @@
-// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
-import { c as $c } from "react/compiler-runtime";
-import { HStack, Text, VStack, view } from "@oxy.so/bloom-language";
+import { HStack, Text, VStack, inlineView } from "@oxy.so/bloom-language";
 import type { Child } from "@oxy.so/bloom-language";
 
 export interface CardProps {
   readonly title: string;
   readonly children?: Child | undefined;
 }
-export const Card = view(function Card(props: CardProps) {
+export const Card = inlineView(function Card(props: CardProps) {
 "use no memo";
-const $ = $c(3);
 const { title, children = undefined } = props;
-let $t0;
-if ($[0] !== title || $[1] !== children) {
-$t0 = VStack(Text(title), (children != null) ? children : null);
-$[0] = title;
-$[1] = children;
-$[2] = $t0;
-} else {
-$t0 = $[2];
-}
-return $t0;
+return VStack(Text(title), (children != null) ? children : null);
 });
 
 export interface PanelProps {
   readonly content: Child;
 }
-export const Panel = view(function Panel(props: PanelProps) {
+export const Panel = inlineView(function Panel(props: PanelProps) {
 "use no memo";
-const $ = $c(2);
 const { content } = props;
-let $t1;
-if ($[0] !== content) {
-$t1 = HStack(content);
-$[0] = content;
-$[1] = $t1;
-} else {
-$t1 = $[1];
-}
-return $t1;
+return HStack(content);
 });
 
 const $view0 = Card({ title: "Hi", children: Text("inside") });
@@ -49,19 +28,9 @@ export interface PageProps {
   readonly signedIn: boolean;
   readonly names: readonly string[];
 }
-export const Page = view(function Page(props: PageProps) {
+export const Page = inlineView(function Page(props: PageProps) {
 "use no memo";
-const $ = $c(3);
 const { signedIn, names } = props;
-let $t2;
-if ($[0] !== signedIn || $[1] !== names) {
-$t2 = VStack($view0, $view1, Panel({ content: [$view2, (signedIn) ? $view3 : null, names.map((name) => Text(name))] }));
-$[0] = signedIn;
-$[1] = names;
-$[2] = $t2;
-} else {
-$t2 = $[2];
-}
-return $t2;
+return VStack($view0, $view1, Panel({ content: [$view2, (signedIn) ? $view3 : null, names.map((name) => Text(name))] }));
 });
 

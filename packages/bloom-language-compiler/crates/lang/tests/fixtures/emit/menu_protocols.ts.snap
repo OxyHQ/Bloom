@@ -1,0 +1,49 @@
+import { HStack, Item, Menu, Text, actions as $actions, inlineView, menu } from "@oxy.so/bloom-language";
+import { useRouter } from "@/navigation/router";
+
+export interface Post {
+  readonly id: string;
+  readonly title: string;
+}
+
+export interface Action {
+  readonly label: string;
+  readonly run: () => void;
+}
+
+function copyLink(post: Post): void {
+}
+
+function usePostActions(post: Post): readonly Action[] {
+return [];
+}
+
+export interface PostMenuActionsProps {
+  readonly post: Post;
+}
+export const PostMenuActions = $actions(function PostMenuActions(props: PostMenuActionsProps) {
+const { post } = props;
+const router = useRouter();
+return { "open": () => router.push(`/p/${post.id}`), "copy": () => copyLink(post) };
+});
+
+export interface PostMenuProps {
+  readonly post: Post;
+}
+export const PostMenu = menu(function PostMenu(props: PostMenuProps) {
+const { post } = props;
+const actions = usePostActions(post);
+return actions.map((a) => Item(a.label).onPress(a.run));
+});
+
+const $view0 = Menu(Text("More"), Item("Open").tag("open"), Item("Copy link").tag("copy"));
+const $view1 = Text("All");
+export interface PostRowProps {
+  readonly post: Post;
+}
+export const PostRow = inlineView(function PostRow(props: PostRowProps) {
+"use no memo";
+const { post } = props;
+return HStack(Text(post.title), $view0.actions(PostMenuActions({ post: post })), Menu($view1, PostMenu({ post: post })));
+});
+

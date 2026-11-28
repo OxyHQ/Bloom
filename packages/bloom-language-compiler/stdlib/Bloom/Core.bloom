@@ -24,10 +24,28 @@ extern module "./runtime" {
   @extern("intersection") private func setIntersection<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
   @extern("subtracting") private func setSubtracting<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
   private func errorMessage(_ error: Error) -> String
+  private func jsErrorFrom(_ error: Error) -> JSError?
 }
 
 /// One user-perceived character: an extended grapheme cluster, as a string.
 public type Character = String
+
+/// The values from `lowerBound` up to and including `upperBound`: the value of `a...b` where one
+/// is expected (`1234.5.formatted(fractionDigits: 0...2)`). Elsewhere `a...b` is its `Int`s.
+public struct ClosedRange<Bound> {
+  public let lowerBound: Bound
+  public let upperBound: Bound
+}
+
+/// A stable identity for a view's life: a label paired with its field, a key into a registry.
+/// Made only as a view's state, once, when the view first appears:
+/// `@State private var id = UniqueID()`, then read `id.string`. It is its string at run time
+/// (`@Transparent`): React's `useId()` on the web and in React Native (hydration-safe).
+@Transparent
+public struct UniqueID: Equatable, Hashable {
+  /// The identity as text, unique within the app while the view lives.
+  public let string: String
+}
 
 // ---- String ---------------------------------------------------------------------
 
@@ -82,10 +100,13 @@ extension String {
   public func prefix(_ n: Int) -> String { graphemes(self).prefix(n).joined("") }
 
   /// The last `n` characters (user-perceived).
-  public func suffix(_ n: Int) -> String {
-    let all = graphemes(self)
-    return all.dropFirst(all.count > n ? all.count - n : 0).joined("")
-  }
+  public func suffix(_ n: Int) -> String { graphemes(self).suffix(n).joined("") }
+
+  /// Without the first `n` characters (user-perceived; one by default).
+  public func dropFirst(_ n: Int = 1) -> String { graphemes(self).dropFirst(n).joined("") }
+
+  /// Without the last `n` characters (user-perceived; one by default).
+  public func dropLast(_ n: Int = 1) -> String { graphemes(self).dropLast(n).joined("") }
 
   /// At most `length` characters, with `ellipsis` in place of the rest.
   public func truncated(to length: Int, ellipsis: String = "…") -> String {
@@ -356,10 +377,25 @@ public struct RuntimeError: Equatable {
   public let message: String
 }
 
+/// A JS `Error` (a `TypeError`, a `RangeError`, a TS library's own): its name, message and stack
+/// trace. `error as? JSError` and `catch let e as JSError` read one from any thrown JS `Error`.
+public struct JSError: Equatable {
+  /// `"TypeError"`, `"AbortError"`, …
+  public let name: String
+  public let message: String
+  /// The engine's stack trace, when it keeps one.
+  public let stack: String?
+}
+
+extension JSError {
+  /// The `JSError` an error is, or `none` when it is not a JS `Error`.
+  public static func cast(_ error: Error) -> JSError? { jsErrorFrom(error) }
+}
+
 extension Error {
   /// What the error says (JS's `message`, or the thrown value as text).
   public var localizedDescription: String { errorMessage(self) }
 }
 
 /// Stops the program: a state the code holds impossible was reached.
-public func fatal<T>(_ message: String = "unreachable") -> T { throw RuntimeError(message: message) }
+public func fatal(_ message: String = "unreachable") -> Never { throw RuntimeError(message: message) }

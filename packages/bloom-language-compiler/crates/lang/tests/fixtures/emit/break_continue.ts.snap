@@ -1,0 +1,63 @@
+
+export type Kind = "skip" | "stop" | "keep";
+
+export function firstKeys(xs: readonly (string | undefined)[]): readonly string[] {
+let out: readonly string[] = [];
+for (const x of xs) {
+if (x == null) {
+continue;
+}
+if (out.length > 3) {
+break;
+}
+out = [...out, x!];
+}
+return out;
+}
+
+export function pairs(grid: readonly (readonly number[])[], target: number): number {
+let found = 0;
+outer: for (const row of grid) {
+for (const cell of row) {
+if (cell < 0) {
+continue outer;
+}
+if (cell === target) {
+found = cell;
+break outer;
+}
+}
+}
+return found;
+}
+
+export function countdown(n: number): number {
+let i = n;
+let seen = 0;
+while (i > 0) {
+i = i - (1);
+if ((i % 2) === 0) {
+continue;
+}
+seen = seen + (1);
+}
+return seen;
+}
+
+export function kept(kinds: readonly Kind[]): number {
+let count = 0;
+for (const [index, kind] of kinds.entries()) {
+$switch0: if (kind === "skip") {
+if (index > 0) {
+break $switch0;
+}
+count = count + (100);
+} else if (kind === "stop") {
+count = count + (1000);
+} else {
+count = count + (1);
+}
+}
+return count;
+}
+

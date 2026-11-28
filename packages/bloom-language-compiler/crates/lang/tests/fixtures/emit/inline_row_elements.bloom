@@ -1,0 +1,7 @@
+// A view in a `ReactNode` field of an anonymous object type inside a TS array (`rows?: { label:
+// string; trailing: ReactNode }[]`) crosses as an element, as it does in a named interface's.
+import { presentInline } from "@/ui/components"
+
+public func showInline() {
+  presentInline({ title: "Saved", rows: [{ label: "a", trailing: Text("1") }] })
+}

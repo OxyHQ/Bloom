@@ -1,0 +1,20 @@
+// The emitter's own names never collide with the module's: a prop named `props` (its parameter is
+// `$props`), and React's `useState` imported by the module beside a hook-local `@State var`.
+import { useState } from "react"
+
+public struct Island: View {
+  let name: String
+  let props: String
+  var body: some View { Text(name + " " + props) }
+}
+
+public func useLabel(_ start: String) -> String {
+  @State var label = start
+  let (count, _): (Int, Foreign) = useState(2)
+  return label + " \(count)"
+}
+
+public struct Labeled: View {
+  let label = useLabel("tags")
+  var body: some View { Text(label) }
+}

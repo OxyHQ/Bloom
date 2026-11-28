@@ -65,6 +65,7 @@ fn call(callee: Expr, args: Vec<Arg>, trailing: Option<Closure>, span: Span) -> 
 
 fn node(name: &str, args: Vec<Arg>, children: Option<Vec<Stmt>>, span: Span) -> Expr {
     let trailing = children.map(|body| Closure {
+        ret: None,
         params: Vec::new(),
         has_in: false,
         tuple: false,
@@ -120,7 +121,18 @@ fn icon_and_text(text: Expr, icon: Expr) -> Vec<Stmt> {
 }
 
 /// Mention's own glyphs in Bloom's icon set; every other name is a Remix icon.
-const OWN_ICONS: &[&str] = &["Like", "LikeFill", "Reply", "Repost", "MediaAttachment", "GifAttachment"];
+const OWN_ICONS: &[&str] = &[
+    "Like",
+    "LikeFill",
+    "Reply",
+    "Repost",
+    "Share",
+    "Bookmark",
+    "BookmarkFill",
+    "Menu",
+    "MediaAttachment",
+    "GifAttachment",
+];
 
 /// Names written for a glyph of another name in Bloom's set (SwiftUI's, or the obvious one).
 const ICON_ALIASES: &[(&str, &str)] = &[("verified", "verifiedBadge"), ("verifiedFill", "verifiedBadgeFill")];
@@ -508,8 +520,8 @@ impl Lowering<'_> {
             | ExprKind::Field(x, _)
             | ExprKind::OptField(x, _)
             | ExprKind::Is(x, _)
-            | ExprKind::CastAs(x, _) => self.expr(x),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            | ExprKind::CastAs(x, ..) => self.expr(x),
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
                 self.expr(a);
                 self.expr(b);
             }
@@ -563,6 +575,7 @@ impl Lowering<'_> {
                 StmtKind::Assign(x) => self.expr(&mut x.value),
                 StmtKind::Return(Some(x)) | StmtKind::Expr(x) | StmtKind::Throw(x) => self.expr(x),
                 StmtKind::Return(None) => {}
+                StmtKind::Break(_) | StmtKind::Continue(_) => {}
                 StmtKind::Defer(b) => self.stmts(&mut b.stmts),
                 StmtKind::While(w) => {
                     self.expr(&mut w.cond);
@@ -591,7 +604,7 @@ fn for_each(items: Expr, closure: Closure, span: Span) -> Stmt {
         None => Pattern { kind: PatternKind::Wildcard, span: fresh(span) },
     };
     let body = Block { stmts: closure.body, span: closure.span };
-    Stmt { kind: StmtKind::For(ForStmt { pattern, iter: items, body }), span }
+    Stmt { kind: StmtKind::For(ForStmt { pattern, iter: items, body, label: None }), span }
 }
 
 /// Lowers `file`'s BloomUI names in place; returns the standard library names it introduced.

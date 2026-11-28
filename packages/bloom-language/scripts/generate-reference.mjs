@@ -27,7 +27,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { NO_TOKEN, tokenSetsOf, withoutComment } from './token-sets.mjs';
+import { NO_TOKEN, objectsOf, tokenSetsOf, withoutComment } from './token-sets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, '..');
@@ -47,10 +47,30 @@ const typeRamp = withoutComment(spec.typeRamp);
 const motion = withoutComment(spec.motion);
 const easing = withoutComment(spec.easing);
 const loops = withoutComment(spec.loops);
-const objects = withoutComment(spec.objects);
+const objects = objectsOf(spec);
 const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const universal = new Set(spec.universal);
+/** Each modifier's category (`spec.modifierCategories`): a universal one's is listed, every other's is `node`. */
+const categoryOf = (() => {
+  const { categories, universal: listed } = spec.modifierCategories;
+  const of = new Map();
+  for (const [category, names] of Object.entries(listed)) {
+    if (!(category in categories))
+      throw new Error(`modifierCategories: unknown category ${category}`);
+    for (const name of names) {
+      if (!universal.has(name))
+        throw new Error(`modifierCategories: ${name} is not a universal modifier`);
+      if (of.has(name)) throw new Error(`modifierCategories: ${name} is listed twice`);
+      of.set(name, category);
+    }
+  }
+  for (const name of universal) {
+    if (!of.has(name))
+      throw new Error(`modifierCategories: the universal modifier ${name} has no category`);
+  }
+  return (name) => of.get(name) ?? 'node';
+})();
 const glassValue = withoutComment(spec.glassValue);
 
 const NODES_DOC = 'bloom-language-nodes.mdx';
@@ -247,11 +267,25 @@ const tokenList = (set) =>
     .map((t) => code(`'${t}'`))
     .join(', ');
 
+/** A typed object, its fields written out: `{ label: string, color?: dialogActionColor }`. */
+function objectType(name, from) {
+  const fields = Object.entries(objects[name].fields).map(([key, type]) => {
+    const bare = type.replace(/\?$/, '');
+    const shown = tokenSets[bare] ? tokenLink(bare, from) : code(bare);
+    return `${code(`${key}${type.endsWith('?') ? '?' : ''}`)}: ${shown}`;
+  });
+  return `${code(name)} (${fields.join(', ')})`;
+}
+
 /** A spec parameter type, linked: a token set, an object parameter or a free value. */
 function paramType(param, from) {
   const name = param.replace(/\?$/, '');
   const optional = param.endsWith('?') ? ' (optional)' : '';
   if (tokenSets[name]) return `${tokenLink(name, from)}${optional}`;
+  // `[dialogButton]`: a list of a typed object.
+  const listed = /^\[(.+)\]$/.exec(name);
+  if (listed && objects[listed[1]]) return `a list of ${objectType(listed[1], from)}${optional}`;
+  if (objects[name]?.fields) return `${objectType(name, from)}${optional}`;
   if (objects[name]) {
     return `${code(`{ ${objects[name].keys.join(', ')} }`)}, each ${tokenLink(objects[name].tokens, from)}${optional}`;
   }
@@ -387,6 +421,7 @@ function modifiersPage() {
     const doc = declared?.find((d) => d.doc)?.doc;
     if (doc) lines.push(prose(doc), '');
     lines.push(
+      `- Category: ${code(categoryOf(name))}, ${spec.modifierCategories.categories[categoryOf(name)]}`,
       `- Parameters: ${params.length ? params.map((p) => paramType(p, MODIFIERS_DOC)).join('; ') : 'none'}`,
     );
     if (declared) {

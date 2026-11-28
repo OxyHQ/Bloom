@@ -1,0 +1,6 @@
+export interface Player {
+  name: string;
+}
+export declare const Player: new () => Player;
+export declare function isCurrent(p: Player, current: Player | undefined | null): boolean;
+export declare function changed(a: Player, b: Player): boolean;

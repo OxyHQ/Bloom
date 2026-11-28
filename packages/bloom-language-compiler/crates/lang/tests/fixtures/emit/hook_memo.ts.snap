@@ -1,0 +1,147 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
+import { useCallback, useMemo } from "react";
+import { useInsets } from "@/hooks/useInsets";
+
+export interface Tagged {
+  readonly id: string;
+  readonly title: string;
+  readonly tags: readonly string[];
+}
+
+function describe(tags: readonly string[]): string {
+return tags.join(", ");
+}
+
+export function useTaggedRow(item: Tagged, givenIsNested: boolean | undefined = undefined, onOpen: (() => void) | undefined = undefined): { heading: string; summary: string; label: string; open: () => void; longest: string; first: string; rest: number; top: number } {
+"use no memo";
+const $ = $c(11);
+const isNested = givenIsNested ?? false;
+const insets = useInsets();
+let heading: string;
+if ($[0] !== item.title) {
+heading = item.title.toUpperCase();
+$[0] = item.title;
+$[1] = heading;
+} else {
+heading = $[1];
+}
+let summary: string;
+if ($[2] !== item.tags) {
+summary = describe(item.tags);
+$[2] = item.tags;
+$[3] = summary;
+} else {
+summary = $[3];
+}
+const label = `${heading} (${item.tags.length})`;
+let fallback: string;
+if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
+fallback = describe(["none"]);
+$[4] = fallback;
+} else {
+fallback = $[4];
+}
+let open;
+if ($[5] !== isNested || $[6] !== onOpen) {
+open = () => {
+if (!isNested) {
+onOpen?.();
+}
+};
+$[5] = isNested;
+$[6] = onOpen;
+$[7] = open;
+} else {
+open = $[7];
+}
+let longest: string;
+let $t0;
+if ($[8] !== item.tags) {
+longest = (() => {
+let best = "";
+for (const tag of item.tags) {
+if (tag.length > best.length) {
+best = tag;
+}
+}
+return (best.length === 0) ? fallback : best;
+})();
+$t0 = [item.tags[0] ?? fallback, item.tags.length - 1] as const;
+$[8] = item.tags;
+$[9] = longest;
+$[10] = $t0;
+} else {
+longest = $[9];
+$t0 = $[10];
+}
+const [first, rest] = $t0;
+return { heading: heading, summary: summary, label: label, open: open, longest: longest, first: first, rest: rest, top: insets.top };
+}
+
+export interface TaggedRowProps {
+  readonly item: Tagged;
+  readonly onOpen?: (() => void) | undefined;
+}
+export const TaggedRow = view(function TaggedRow(props: TaggedRowProps) {
+"use no memo";
+const $ = $c(15);
+const { item, onOpen = undefined } = props;
+const row = useTaggedRow(item, undefined, onOpen);
+let $t1;
+if ($[7] !== row.label || $[8] !== row.open || $[9] !== row.summary || $[10] !== row.longest || $[11] !== row.first || $[12] !== row.rest || $[13] !== row.top) {
+$t1 = VStack(($[0] !== row.label || $[1] !== row.open ? ($[0] = row.label, $[1] = row.open, $[2] = Button(Text(row.label)).onPress(row.open)) : $[2]), Text(row.summary), ($[3] !== row.longest || $[4] !== row.first || $[5] !== row.rest ? ($[3] = row.longest, $[4] = row.first, $[5] = row.rest, $[6] = Text(`${row.longest}, ${row.first} +${row.rest}`)) : $[6])).padding("top", row.top);
+$[7] = row.label;
+$[8] = row.open;
+$[9] = row.summary;
+$[10] = row.longest;
+$[11] = row.first;
+$[12] = row.rest;
+$[13] = row.top;
+$[14] = $t1;
+} else {
+$t1 = $[14];
+}
+return $t1;
+});
+
+function log(s: string): void {
+}
+
+const $view0 = Text("Static");
+const $view1 = Button(Text("Go"));
+const $fn2 = () => log("go");
+export const Hint = inlineView(function Hint() {
+"use no memo";
+return VStack($view0, $view1.onPress($fn2));
+});
+
+const $view2 = Text("Two");
+const $fn3 = () => log("a");
+export interface Hint2Props {
+  readonly n: number;
+}
+export const Hint2 = inlineView(function Hint2(props: Hint2Props) {
+"use no memo";
+const { n } = props;
+return VStack($view2, Button(Text(`${n}`)).onPress($fn3));
+});
+
+export function useHandlers(n: number): { first: () => void; second: () => void; doubled: number } {
+"use no memo";
+const $ = $c(2);
+let first;
+let second;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+first = () => log("a");
+second = () => log("b");
+$[0] = first;
+$[1] = second;
+} else {
+first = $[0];
+second = $[1];
+}
+return { first: first, second: second, doubled: n * 2 };
+}
+

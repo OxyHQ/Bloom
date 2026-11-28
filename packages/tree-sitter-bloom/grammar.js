@@ -155,6 +155,9 @@ export default grammar({
     // `case private(x)` (a case named so) or `private(set) var …`; `case init(x)` or `init(…) {`.
     [$._case_name, $.visibility_modifier],
     [$._case_name, $.init_declaration],
+    // `{ outer: for … }` (a labelled loop in a closure) or `{ a: b }` (a record).
+    [$._name, $._label_name, $.labeled_statement],
+    [$._name, $.labeled_statement],
   ],
 
   rules: {
@@ -573,8 +576,21 @@ export default grammar({
         $.throw_statement,
         $.do_statement,
         $.control_transfer_statement,
+        $.labeled_statement,
+        $.state_statement,
         $._expression,
       ),
+
+    /** `outer: for row in grid { … }`: a loop `break outer` / `continue outer` names. */
+    labeled_statement: ($) =>
+      seq(
+        field('label', $.identifier),
+        ':',
+        field('body', choice($.for_statement, $.while_statement)),
+      ),
+
+    /** `@State var n = 0` at the top of a hook function's body. */
+    state_statement: ($) => seq(repeat1($.attribute), $.var_declaration),
 
     /** `let x = v`, `let { t } = useTranslation()`, `async let x = f()`. */
     let_declaration: ($) =>
@@ -642,7 +658,8 @@ export default grammar({
         field('body', $.block),
       ),
 
-    control_transfer_statement: (_) => choice('break', 'continue'),
+    control_transfer_statement: ($) =>
+      prec.right(seq(choice('break', 'continue'), optional(field('label', $.identifier)))),
 
     // ---- expressions --------------------------------------------------------------------
 
@@ -746,7 +763,15 @@ export default grammar({
       ),
 
     closure_parameters: ($) =>
-      choice(commaSep1($._closure_parameter), seq('(', commaSep1($._closure_parameter), ')')),
+      choice(
+        commaSep1($._closure_parameter),
+        seq(
+          '(',
+          optional(commaSep1($._closure_parameter)),
+          ')',
+          optional(seq('->', field('return_type', $._type))),
+        ),
+      ),
 
     _closure_parameter: ($) =>
       seq(field('name', $._name), optional(seq(':', field('type', $._type)))),
@@ -874,7 +899,11 @@ export default grammar({
         $.existential_type,
         $.literal_union_type,
         $.record_type,
+        $.composition_type,
       ),
+
+    /** `Named & Counted`: a value of a type conforming to both. */
+    composition_type: ($) => prec.left(-1, seq($._type, '&', $._type)),
 
     user_type: ($) =>
       prec.right(seq(field('name', $._type_name), optional(field('arguments', $.type_arguments)))),
@@ -1056,7 +1085,7 @@ function expressionFamily(head) {
           [PREC.additive, choice('+', '-')],
           [PREC.range, choice('..<', '...')],
           [PREC.comparison, choice('<', '<=', '>', '>=')],
-          [PREC.equality, choice('==', '!=')],
+          [PREC.equality, choice('==', '!=', '===', '!==')],
           [PREC.and, '&&'],
           [PREC.or, '||'],
         ].map(([precedence, operator]) =>

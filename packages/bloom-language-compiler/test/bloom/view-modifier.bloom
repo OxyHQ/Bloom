@@ -1,0 +1,35 @@
+// A ViewModifier: a stateless one in rows, a stateful gate on a screen whose gated states hide
+// the header (`.header(false)`) while the content keeps its `.title`.
+public struct Card: ViewModifier {
+  var padded: Bool = true
+  func body(content: Content) -> some View {
+    content.padding(.md).background(.surface).disabled(!padded)
+  }
+}
+
+public struct Gate: ViewModifier {
+  var allow: Bool = false
+  @State private var ready = false
+  func body(content: Content) -> some View {
+    if !ready {
+      Button(Text("Loading")).onPress { ready = true }.header(false)
+    } else if !allow {
+      Text("Unavailable").header(false)
+    } else {
+      content
+    }
+  }
+}
+
+public struct Feeds: Screen {
+  let names: [String]
+  var body: some View {
+    VStack {
+      for name in names {
+        Text(name).modifier(Card())
+      }
+    }
+    .title("Feeds")
+    .modifier(Gate(allow: names.count < 3))
+  }
+}

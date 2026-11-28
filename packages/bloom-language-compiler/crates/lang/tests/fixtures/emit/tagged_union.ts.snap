@@ -1,0 +1,55 @@
+import { type SubmenuRows } from "@/types/rows";
+import { type Block, type Variant, type Prefs, PREF_KEYS } from "@/types/rows";
+
+export function count(rows: SubmenuRows): number {
+if (rows.kind === "sources") {
+return rows.sources.length;
+} else if (rows.kind === "replySettings") {
+return rows.postId.length;
+} else {
+return (rows.label ?? rows.laneId).length;
+}
+}
+
+export function describe(rows: SubmenuRows): string {
+return ((rows.kind === "sources") ? rows.sources.map((s: Extract<SubmenuRows, { kind: "sources" }>["sources"][number]) => s.url).join(", ") : rows.kind);
+}
+
+export function firstSource(rows: SubmenuRows): string | undefined {
+if (rows.kind === "sources") {
+return rows.sources[0]?.url;
+}
+return undefined;
+}
+
+export function lane(rows: SubmenuRows): string {
+if (rows.kind !== "lane") {
+return "";
+}
+return rows.laneId;
+}
+
+export function domain(block: Block): string {
+return block.domain;
+}
+
+export function ownMedia(item: Variant): (readonly string[]) | undefined {
+return (item.media.mode === "override") ? item.media.media : undefined;
+}
+
+export function alt(item: Variant, id: string): string | undefined {
+if (item.media.mode === "inherit") {
+return item.media.alt[id];
+} else {
+return undefined;
+}
+}
+
+export function showAll(): Prefs {
+let patch: Prefs = {};
+for (const key of PREF_KEYS) {
+patch[key] = "show";
+}
+return patch;
+}
+

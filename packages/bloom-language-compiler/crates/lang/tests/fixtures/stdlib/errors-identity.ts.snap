@@ -1,0 +1,88 @@
+import { type JSError, JSError$$cast } from "../../.bloom/std/Bloom/Core.bloom";
+import { type JSONValue, Error$jsValue, JSON$$parse, JSONValue$array, JSONValue$bool, JSONValue$int, JSONValue$number, JSONValue$object, JSONValue$string } from "../../.bloom/std/Bloom/JSON.bloom";
+function $json(value: unknown, key: string | number): unknown {
+  if (typeof key === "number") return Array.isArray(value) ? (value[key] ?? undefined) : undefined;
+  return value !== null && typeof value === "object" && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, key)
+    ? ((value as Record<string, unknown>)[key] ?? undefined)
+    : undefined;
+}
+function $sorted<T>(items: readonly T[], before: (a: T, b: T) => boolean): readonly T[] {
+  return [...items].sort((a, b) => (before(a, b) ? -1 : before(b, a) ? 1 : 0));
+}
+
+export class Session {
+  token: string = "";
+}
+
+export function serverMessage(error: Error): string {
+const $t0 = $json($json($json(Error$jsValue(error), "response"), "data"), "error");
+return ($t0 == null ? undefined : JSONValue$string($t0)) ?? "Could not save";
+}
+
+export function statusOf(error: Error): number | undefined {
+const $t1 = $json($json(Error$jsValue(error), "response"), "status");
+return ($t1 == null ? undefined : JSONValue$int($t1));
+}
+
+export function firstString(v: unknown): string | undefined {
+const $t2 = $json(v, 0);
+return ($t2 == null ? undefined : JSONValue$string($t2));
+}
+
+export function describeError(error: Error): string {
+const $t3 = JSError$$cast(error);
+if ($t3 != null) {
+return ($t3.name + ": ") + $t3.message;
+}
+return "?";
+}
+
+export function caughtError(): string {
+try {
+risky();
+return "ok";
+} catch ($error) {
+if (JSError$$cast($error) !== undefined) {
+const e = JSError$$cast($error)!;
+{
+return e.stack ?? e.message;
+}
+} else {
+const error = $error;
+{
+return "other";
+}
+}
+}
+}
+
+export function parsedJSON(text: string): unknown {
+return JSON$$parse(text);
+}
+
+export function numberField(v: unknown): number | undefined {
+const $t4 = $json(v, "n");
+return ($t4 == null ? undefined : JSONValue$number($t4));
+}
+
+export function flagsOf(v: unknown): readonly boolean[] {
+const $t5 = $json(v, "flags");
+return (($t5 == null ? undefined : JSONValue$array($t5)) ?? []).map(($0: unknown) => JSONValue$bool($0) ?? false);
+}
+
+export function objectKeys(v: unknown): readonly string[] {
+return $sorted(Object.keys((JSONValue$object(v) ?? ({}))), ($0: string, $1: string) => $0 < $1);
+}
+
+export function risky(): void {
+JSON$$parse("{");
+}
+
+export function sameSession(a: Session, b: Session | undefined): boolean {
+return a === b;
+}
+
+export function otherSession(a: Session, b: Session): boolean {
+return a !== b;
+}
+

@@ -3,12 +3,12 @@ import { c as $c } from "react/compiler-runtime";
 import { Button, HStack, Icon, Loading, ScrollView, Spacer, Text, VStack, view } from "@oxy.so/bloom-language";
 import { Toggle } from "@oxy.so/bloom-language/inputs";
 import { useState } from "react";
+import { BookmarkIcon } from "@oxy.so/bloom/icons/BookmarkIcon";
 import { LikeIcon } from "@oxy.so/bloom/icons/LikeIcon";
-import { RiBookmarkLine } from "@oxy.so/bloom/icons/RiBookmarkLine";
-import { type Date, Date$formatted } from "../../.bloom/std/Bloom/Time.bloom";
+import { Date$formatted, Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970, DateFormat$$get$relative } from "../../.bloom/std/Bloom/Time.bloom";
 
 const $view0 = Icon(LikeIcon);
-const $view1 = HStack(Icon(RiBookmarkLine), Text("Saved")).spacing("xs");
+const $view1 = HStack(Icon(BookmarkIcon), Text("Saved")).spacing("xs");
 const $view2 = Text("Likes");
 const $view3 = Spacer();
 const $view4 = VStack(Text("Reposts"), Text("When someone reposts you").foreground("muted").font("body-2")).align("start");
@@ -27,7 +27,7 @@ let $t0;
 if ($[13] !== names || $[14] !== likes || $[15] !== on || $[16] !== createdAt) {
 $t0 = VStack(names.map((name) => Text(name).foreground("muted").lines(1)), ($[9] !== likes || $[10] !== on || $[11] !== createdAt ? ($[9] = likes, $[10] = on, $[11] = createdAt, $[12] = HStack(($[0] !== likes || $[1] !== on ? ($[0] = likes, $[1] = on, $[2] = Button($view0, Text(`${likes}`)).style("plain").size("sm").onPress(() => {
 setOn((on) => !on);
-})) : $[2]), $view1, ($[3] !== createdAt ? ($[3] = createdAt, $[4] = Text(Date$formatted(createdAt, "relative"))) : $[4]), ($[5] !== on ? ($[5] = on, $[6] = HStack($view2, $view3, Toggle([on, setOn] as const).label("Likes"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = HStack($view4, $view3, Toggle([on, setOn] as const).label("Reposts"))) : $[8])).align("center").spacing("xs")) : $[12]), ScrollView(VStack(...names.map((name) => Text(name)))), $view5).spacing("sm");
+})) : $[2]), $view1, ($[3] !== createdAt ? ($[3] = createdAt, $[4] = Text(Date$formatted(createdAt, DateFormat$$get$relative()))) : $[4]), ($[5] !== on ? ($[5] = on, $[6] = HStack($view2, $view3, Toggle([on, setOn] as const).label("Likes"))) : $[6]), ($[7] !== on ? ($[7] = on, $[8] = HStack($view4, $view3, Toggle([on, setOn] as const).label("Reposts"))) : $[8])).align("center").spacing("xs")) : $[12]), ScrollView(VStack(...names.map((name) => Text(name)))), $view5).spacing("sm");
 $[13] = names;
 $[14] = likes;
 $[15] = on;

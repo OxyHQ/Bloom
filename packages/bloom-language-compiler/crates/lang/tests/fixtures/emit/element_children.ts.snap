@@ -1,0 +1,32 @@
+import { Embed, RawText, Text, VStack, inlineView, toElement } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { Child } from "@oxy.so/bloom-language";
+import type { ComponentProps } from "react";
+import { type FeedPost, NestedCard, type NestedRenderer } from "@/corpus";
+
+interface RowProps {
+  readonly post: FeedPost;
+}
+const Row = inlineView(function Row(props: RowProps) {
+"use no memo";
+const { post } = props;
+return Text(post.id);
+});
+
+const renderNested: (post: FeedPost, depth: number) => import("react").ReactNode = (nested: FeedPost, depth: number) => (toElement(Row({ post: nested })));
+
+function contextText(runs: readonly (string | undefined)[]): Child {
+return Text(...runs);
+}
+
+const $view0 = RawText("a");
+export interface CardProps {
+  readonly post: FeedPost;
+  readonly name: string;
+}
+export const Card = inlineView(function Card(props: CardProps) {
+"use no memo";
+const { post, name } = props;
+return VStack(Embed($jsx(NestedCard, { renderPost: renderNested, post: post } satisfies ComponentProps<typeof NestedCard>)), contextText(["by", " ", name]), RawText(...[$view0, RawText(name)]));
+});
+

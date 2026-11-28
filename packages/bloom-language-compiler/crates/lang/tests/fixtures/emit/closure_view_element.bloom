@@ -1,0 +1,23 @@
+// A closure given to a TS component's function prop that Bloom cannot type (React Native's
+// `FlatList`'s `renderItem: ListRenderItem<ItemT>`; here a stub whose props have an index
+// signature) and that gives a Bloom view: the view crosses as an element (`toElement(Row(…))`);
+// React cannot draw a Bloom node.
+import { RowList } from "@/ui/rowlist"
+
+private struct Row: View {
+  let title: String
+  var body: some View { Text(title) }
+}
+
+public struct Titles: View {
+  let titles: [String]
+  var body: some View {
+    RowList(
+      data: titles,
+      renderItem: { arg in
+        let { item } = arg
+        Row(title: item)
+      },
+    )
+  }
+}

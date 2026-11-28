@@ -1,0 +1,11 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface TabsProps {
+  readonly border: string;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Tabs())`), or from TSX as `toElement(Tabs())`. */
+export declare const Tabs: (props: TabsProps) => ComposedView;
+export type Style = { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };
+export type Steps = Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>;
+export declare function collapsed(y: number, wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };
+export declare function steps(x: number): Array<{ kind: 'move'; x: number } | { kind: 'wait'; ms: number }>;
+export declare function either(wide: boolean): { transform?: Array<{ scale: number } | { translateY: number } | { rotate: string }>; opacity?: number };

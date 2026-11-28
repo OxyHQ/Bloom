@@ -1,0 +1,17 @@
+// A TS value typed as a component is drawn as an element, never called (its hooks would run in
+// the caller, and "Rendered more hooks" in a branch): `FC<P>`, `NamedExoticComponent<P>`, and a
+// function const exported through `typeof` (react-native 0.81's `Switch`), each in a branch.
+import { Card as FcCard, Named, Toggle } from "@/ui/components"
+
+public struct Kinds: View {
+  let shown: Bool
+  var body: some View {
+    VStack {
+      if shown {
+        FcCard(label: "fc")
+        Named(label: "named")
+        Toggle(label: "toggle")
+      }
+    }
+  }
+}

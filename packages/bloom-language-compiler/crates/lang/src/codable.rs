@@ -291,6 +291,7 @@ fn written(ty: &TypeExpr) -> String {
         TypeKind::Fn { .. } => "a function".into(),
         TypeKind::Record(_) => "a record".into(),
         TypeKind::Strings(_) => "a string union".into(),
+        TypeKind::Composition(_) => "a protocol composition".into(),
         TypeKind::Error => "?".into(),
     }
 }
@@ -360,7 +361,14 @@ fn derive(item: &Item, names: &mut BTreeSet<String>, diagnostics: &mut Vec<Diagn
                 return Vec::new();
             }
             let mut g = Gen { span: s.name.span, names: BTreeSet::new() };
-            match derive_struct(&mut g, s, surface, item.visibility, dec, enc) {
+            let transparent =
+                item.modifiers.attrs.iter().any(|a| a.name.name == "Transparent") && s.fields.len() == 1;
+            let derived = if transparent {
+                derive_transparent(&mut g, s, item.visibility, dec, enc)
+            } else {
+                derive_struct(&mut g, s, surface, item.visibility, dec, enc)
+            };
+            match derived {
                 Ok(items) => {
                     names.extend(g.names);
                     items
@@ -471,6 +479,46 @@ fn derive_struct(
     Ok(items)
 }
 
+/// A `@Transparent` struct's codec is its field's: `UserID(raw: "u1")` is the JSON `"u1"`, as a
+/// Swift `RawRepresentable` with a single value container.
+fn derive_transparent(
+    g: &mut Gen,
+    s: &StructDecl,
+    visibility: Visibility,
+    dec: bool,
+    enc: bool,
+) -> Result<Vec<Item>, String> {
+    let ty = s.name.name.clone();
+    let field = &s.fields[0];
+    let self_ty = g.named_type(&ty, Vec::new());
+    let json = g.named_type("JSONValue", Vec::new());
+    let string = g.named_type("String", Vec::new());
+    let mut items = Vec::new();
+    if dec {
+        let value = g.local("value");
+        let decoded = g.decode(&field.ty, value, &ty)?;
+        let ctor = g.name(&ty);
+        let value = g.call(ctor, vec![(Some(field.name.name.as_str()), decoded)]);
+        let params = vec![g.param("value", json.clone()), g.param("at", string)];
+        let name = crate::extensions::mangle(&ty, "decode", true);
+        items.push(g.func(name, params, true, self_ty.clone(), value, visibility));
+    }
+    if enc {
+        let read = {
+            let base = g.local("value");
+            g.expr(ExprKind::Field(Box::new(base), g.ident(&field.name.name)))
+        };
+        let value = g.encode(&field.ty, read)?;
+        let params = vec![g.param("value", self_ty)];
+        let name = crate::extensions::mangle(&ty, "encode", true);
+        items.push(g.func(name, params, false, json, value, visibility));
+    }
+    if dec && enc {
+        items.push(codec(g, &ty, visibility));
+    }
+    Ok(items)
+}
+
 fn derive_enum(g: &mut Gen, e: &EnumDecl, visibility: Visibility, dec: bool, enc: bool) -> Vec<Item> {
     let ty = e.name.name.clone();
     let self_ty = g.named_type(&ty, Vec::new());
@@ -536,6 +584,7 @@ fn codec(g: &mut Gen, ty: &str, visibility: Visibility) -> Item {
         visibility,
         modifiers: Modifiers::default(),
         kind: ItemKind::Const(ConstDecl {
+            mutable: false,
             name: Ident { name: crate::extensions::mangle(ty, "self", true), span },
             ty: Some(codec_ty),
             value,

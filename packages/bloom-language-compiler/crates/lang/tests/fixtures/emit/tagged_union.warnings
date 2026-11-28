@@ -1,0 +1,8 @@
+warning[B0950]: `match` is Bloom 0.x (once in this file)
+  --> emit/tagged_union.bloom:19:3
+   |
+19 |   match rows.kind {
+   |   ^^^^^ retired in 2.0
+   |
+help: write `switch x { case .a: … }`, or run `bloomc migrate --from 0.x` on the file
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#141-bloomc-migrate---from-0x-20

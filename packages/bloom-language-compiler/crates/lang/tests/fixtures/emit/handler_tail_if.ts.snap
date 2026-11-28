@@ -1,0 +1,39 @@
+import { Button, Text, VStack, inlineView } from "@oxy.so/bloom-language";
+
+function note(s: string): void {
+}
+
+async function work(id: string): Promise<void> {
+note(id);
+}
+
+export type Mode = "on" | "off";
+
+const $view0 = Button(Text("a"));
+const $view1 = Button(Text("b"));
+export interface RowProps {
+  readonly id: string | undefined;
+  readonly mode: Mode;
+}
+export const Row = inlineView(function Row(props: RowProps) {
+"use no memo";
+const { id, mode } = props;
+return VStack($view0.onPress(() => {
+if (id != null) {
+void (async () => {
+await (work(id));
+})();
+} else {
+note("none");
+}
+}), $view1.onPress(() => {
+if (mode === "on") {
+note("on");
+} else {
+void (async () => {
+await (work("off"));
+})();
+}
+}));
+});
+

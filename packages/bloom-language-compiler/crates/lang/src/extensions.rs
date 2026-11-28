@@ -23,6 +23,21 @@ pub fn mangle(owner: &str, member: &str, is_static: bool) -> String {
     format!("{owner}{}{member}", if is_static { "$$" } else { "$" })
 }
 
+/// The built-in types an extension extends under their Bloom names.
+pub const BUILTIN: &[&str] =
+    &["String", "Int", "Double", "Bool", "Array", "Dictionary", "Set", "Optional", "Error", "Date"];
+
+/// A built-in type's `init` by its labels (`_` for an unlabelled parameter): `T$$init` when it
+/// takes none, else `T$$init$label$…`.
+pub fn init_name<'a>(owner: &str, labels: impl Iterator<Item = Option<&'a str>>) -> String {
+    let mut name = mangle(owner, "init", true);
+    for label in labels {
+        name.push('$');
+        name.push_str(label.unwrap_or("_"));
+    }
+    name
+}
+
 /// A written type name's extension key: `Float` is `Double`.
 pub fn key(name: &str) -> &str {
     match name {
@@ -103,6 +118,7 @@ fn replace_self(ty: &mut TypeExpr, with: &TypeExpr) {
             replace_self(ret, with);
         }
         TypeKind::Record(fields) => fields.iter_mut().for_each(|(_, t)| replace_self(t, with)),
+        TypeKind::Composition(parts) => parts.iter_mut().for_each(|t| replace_self(t, with)),
         TypeKind::Strings(_) | TypeKind::Error => {}
     }
 }
@@ -117,6 +133,9 @@ struct Owner<'a> {
     /// The names a member's body reads as `self.name` when it binds none of them itself
     /// (Swift's implicit `self`): the type's stored properties and instance members.
     members: &'a [String],
+    /// A value type (a built-in one, or a struct): its `init`s are told apart by their labels and
+    /// each body gives the value it makes. A class's `init` makes `self` (`T$$init`).
+    value_init: bool,
 }
 
 /// Fresh expression ids for the nodes lowering adds (`self`, `T.case`), past the parser's.
@@ -157,7 +176,20 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
         // `init(…)`: the static `T$$init`, which makes `self` and returns it (a class's).
         TypeMemberKind::Func(f) if f.name.name == "init" => {
             let mut f = f.clone();
-            f.name = Ident { name: mangle(&owner.key, "init", true), span: f.name.span };
+            // A built-in type's `init`s (`Date(timeIntervalSince1970:)`, `Date(_:strategy:)`) are
+            // told apart by their labels, as Swift's are: `Date$$init$timeIntervalSince1970`. Each
+            // body gives the value it makes.
+            let name = if owner.value_init {
+                init_name(
+                    &owner.key,
+                    f.params
+                        .iter()
+                        .map(|p| Some(p.label.as_ref().map_or(p.name.name.as_str(), |l| l.name.as_str()))),
+                )
+            } else {
+                mangle(&owner.key, "init", true)
+            };
+            f.name = Ident { name, span: f.name.span };
             f.generics = owner.generics.iter().cloned().chain(f.generics).collect();
             for p in &mut f.params {
                 replace_self(&mut p.ty, &owner.self_ty);
@@ -219,6 +251,7 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
                 replace_self(t, &owner.self_ty);
             }
             ItemKind::Const(ConstDecl {
+                mutable: false,
                 name: Ident { name: mangle(&owner.key, &name.name, true), span: name.span },
                 ty,
                 value: value.clone(),
@@ -351,6 +384,7 @@ fn queued(visibility: Visibility, modifiers: &Modifiers, at: Span, f: &FnDecl, i
         work = expr(ExprKind::Throwing(TryKind::Plain, Box::new(work)));
     }
     let closure = Closure {
+        ret: None,
         params: Vec::new(),
         has_in: false,
         tuple: false,
@@ -469,6 +503,16 @@ pub fn lower(file: &mut File) {
             _ => None,
         })
         .collect();
+    // A class declared here: an `extension` of it adds members, its `init` makes `self`.
+    let classes: Vec<String> = file
+        .items
+        .iter()
+        .filter_map(|i| match &i.kind {
+            ItemKind::Class(c) => Some(c.name.name.clone()),
+            _ => None,
+        })
+        .collect();
+    let classes: Vec<&str> = classes.iter().map(String::as_str).collect();
     let names = member_names(file);
     let none = Vec::new();
     let names_of = |owner: &str| names.iter().find(|(n, _)| n == owner).map_or(&none, |(_, m)| m);
@@ -501,6 +545,8 @@ pub fn lower(file: &mut File) {
             span: item.modifiers.visibility_span.unwrap_or(name.span),
             name,
             members: names_of(key(&name.name)),
+            value_init: BUILTIN.contains(&key(&name.name))
+                || !(matches!(item.kind, ItemKind::Class(_)) || classes.contains(&name.name.as_str())),
         };
         let mut lowered = Vec::new();
         for member in members {
@@ -550,6 +596,7 @@ fn all_cases(e: &EnumDecl, item: &Item, ids: &mut Ids, out: &mut Vec<Item>) {
         visibility: item.visibility,
         modifiers: Modifiers::default(),
         kind: ItemKind::Const(ConstDecl {
+            mutable: false,
             name: Ident { name: mangle(&e.name.name, "allCases", true), span },
             ty: Some(TypeExpr { kind: TypeKind::List(Box::new(element)), span }),
             value: Expr { id: ids.next(), kind: ExprKind::List(cases), span },
@@ -665,6 +712,7 @@ fn walk_stmt(stmt: &mut Stmt, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
             walk_cond(&mut g.cond, f, bind);
             walk_block(&mut g.otherwise, f, bind);
         }
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Throw(e) | StmtKind::Expr(e) => walk_expr(e, f, bind),
         StmtKind::Do(d) => {
             walk_block(&mut d.body, f, bind);
@@ -692,7 +740,7 @@ fn walk_expr(expr: &mut Expr, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
         ExprKind::Paren(e)
         | ExprKind::Spread(e)
         | ExprKind::Is(e, _)
-        | ExprKind::CastAs(e, _)
+        | ExprKind::CastAs(e, ..)
         | ExprKind::Unary(_, e)
         | ExprKind::Await(e)
         | ExprKind::Try(e)
@@ -718,7 +766,7 @@ fn walk_expr(expr: &mut Expr, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
                 }
             }
         }
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
             walk_expr(a, f, bind);
             walk_expr(b, f, bind);
         }

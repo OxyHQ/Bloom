@@ -14,14 +14,14 @@ const $ = $c(5);
 const page = usePage();
 const drag = useDrag();
 let $t0;
-if ($[0] !== page.page || $[1] !== page.totalPages || $[2] !== drag.translationY || $[3] !== page.label) {
+if ($[0] !== page?.page || $[1] !== page?.totalPages || $[2] !== drag?.translationY || $[3] !== page?.label) {
 const next = (page.page < page.totalPages) ? ((page.page satisfies number) + 1) : undefined;
 const pull = -(drag.translationY satisfies number);
 $t0 = VStack(((page.page satisfies number) > 1) ? $view0 : null, ((page.label satisfies string) >= "m") ? $view1 : null, (0 < (page.totalPages satisfies number)) ? $view2 : null, Text(`${next ?? 0} ${pull}`));
-$[0] = page.page;
-$[1] = page.totalPages;
-$[2] = drag.translationY;
-$[3] = page.label;
+$[0] = page?.page;
+$[1] = page?.totalPages;
+$[2] = drag?.translationY;
+$[3] = page?.label;
 $[4] = $t0;
 } else {
 $t0 = $[4];

@@ -1,0 +1,24 @@
+
+export function label(a: number | undefined): string | undefined {
+const amount: string | undefined = (a != null) ? `x${a}` : undefined;
+if (amount == null) {
+return undefined;
+}
+return `${amount}!`;
+}
+
+export function total(values: (readonly number[]) | undefined): number {
+let sum = 0;
+const xs = values;
+if (!(xs != null)) {
+return -1;
+}
+if (xs == null) {
+return -2;
+}
+for (const v of xs) {
+sum = sum + (v);
+}
+return sum;
+}
+

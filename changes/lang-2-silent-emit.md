@@ -1,0 +1,18 @@
+---
+package: '@oxy.so/bloom-language-compiler'
+bump: patch
+section: Fixed
+---
+
+- A member Bloom respells keeps its spelling through `?.`: `query.data?.count` with a generic `data: T?` and `T = [Post]` is `query.data?.length`, and `xs?.first` is `xs?.[0]`, where both stayed as written and read `undefined` in JS. A view's cache depends on the object, not on the respelled member, so it redraws when the data changes.
+- A member that wraps its object, read through an optional chain (`feed?.items.isEmpty`, `feed?.tags.keys`, an extension's property, `feed?.name.toInt()`), is `none` when the object is, where it gave `false`, threw, or was handed `undefined`; the link after it carries the `?.`.
+- A struct construction leaves a field out of the object when its default is `none` and the call leaves it out or gives `none`, where it wrote `field: undefined` and so overrode a library's merged defaults (TanStack Query's `staleTime`).
+- A TS value given to a TS generic's type parameter (`mergeIdentity<T extends IdentityHolder>(actor: T, …): T` with a `Foreign` actor) makes `T` that value's type, where `T` was left unsolved and the result's members were B0205 (`_` has no member `name`).
+- A module constant that names a view (`public let PostItem = PostItemContent`) is declared as that view (`typeof PostItemContent`, with a private view declared beside it), where its `.d.bloom.ts` was a function of the view's fields, so every TS `PostItem({ post })` failed tsc.
+- An untyped `Foreign` (TS's `unknown`) stays untyped through a call, a member read and an index, where its TS type was `ReturnType<>` or `["name"]`, which Babel refuses ("Type argument list cannot be empty") in a hook's inferred return type.
+- A `let` or `var` that shadows a parameter, a prop or an outer local (`let x = x ?? 0`, `let isNested = isNested ?? false` in a view's body) takes a JS name of its own (`x$1`), where it was a second `const x` in the parameters' scope (Babel: "has already been declared") or a `const x = x` that read itself before it was set.
+- A view member of a stored property's name (`var isNested: Bool? = none` and `let isNested = isNested ?? false`) is B0217, where it emitted a second `const isNested` beside the props' destructuring, which Babel refuses. The stored property takes the default itself (`var isNested: Bool = false`).
+- An unannotated `.tsx` function that returns an embedded-language `view()`'s node, or `null` (Mention's `AccountBadge`), is called as TS called it, where it was mounted as a React component and React got the node object ("Objects are not valid as a React child").
+- In a `.d.bloom.ts`, a view's `T?` prop and a function's `T?` parameter also take TS's `null` (`T | undefined | null`), which Bloom reads as `none`, so a TS caller passing `OpenPostPanel | null` type-checks.
+- A closure where TS takes a function returning a React node returns its view as an element inside parentheses too (`{ p in (Row(post: p)) }` is `toElement(Row(…))`), where React got the node object.
+- A list given where a node takes its rest children (`Text(runs)`, `RawText(parts)`) is spread into them (`Text(...runs)`), where the list as one child drew nothing.

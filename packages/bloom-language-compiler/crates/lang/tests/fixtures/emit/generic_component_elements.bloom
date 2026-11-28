@@ -1,0 +1,15 @@
+// A GENERIC TS component's element props: a view given to `emptyComponent: ReactElement | null`
+// (an optional one, `none` when there is none) and `header: ReactNode`, and a render function
+// `renderCell: (item: T, size: number) => ReactElement` whose views cross as elements.
+import { GridList, type GridEntry } from "@/ui/components"
+
+public struct Entry { let postId: String }
+
+public struct Grid: View {
+  let data: [Entry]
+  func renderCell(_ item: Entry, _ size: Float) -> View { Text(item.postId) }
+  var body: some View {
+    let empty = data.count == 0 ? Text("Nothing yet") : none
+    GridList(data: data, renderCell: renderCell, emptyComponent: empty, header: Text("Grid"))
+  }
+}

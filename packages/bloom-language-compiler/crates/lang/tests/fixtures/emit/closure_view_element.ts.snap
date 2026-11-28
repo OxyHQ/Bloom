@@ -1,0 +1,26 @@
+import { Embed, Text, inlineView, toElement } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { RowList } from "@/ui/rowlist";
+
+interface RowProps {
+  readonly title: string;
+}
+const Row = inlineView(function Row(props: RowProps) {
+"use no memo";
+const { title } = props;
+return Text(title);
+});
+
+export interface TitlesProps {
+  readonly titles: readonly string[];
+}
+export const Titles = inlineView(function Titles(props: TitlesProps) {
+"use no memo";
+const { titles } = props;
+return Embed($jsx(RowList, { data: titles, renderItem: (arg) => {
+const { item } = arg;
+return toElement(Row({ title: (item satisfies string) }));
+} } satisfies ComponentProps<typeof RowList>));
+});
+

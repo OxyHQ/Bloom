@@ -1,0 +1,17 @@
+error[B0213]: a cast to `"videos" | "following"` tests a string, and this is `Int`
+ --> check/union_casts.bloom:4:32
+  |
+4 | func count(_ n: Int) -> Tab? { n as? Tab }
+  |                                ^ not a string
+  |
+help: cast a `String` (or a `String?`)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20
+
+error[B0213]: `as!` casts to a string literal union, and `Int` is not one
+ --> check/union_casts.bloom:7:45
+  |
+7 | func forced(_ raw: String) -> Int { raw as! Int }
+  |                                             ^^^ not a literal union
+  |
+help: write `as?` and handle `none`, or `x!` on an optional
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20

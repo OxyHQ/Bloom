@@ -1,0 +1,26 @@
+error[B0420]: `@State var n` is outside a hook function's body
+ --> check/hook_state.bloom:3:3
+  |
+3 |   @State var n = 0
+  |   ^^^^^^^^^^^^ a state is a hook: it is kept across renders, in the same order
+  |
+help: declare it at the top of a hook function (`func useX`), or as a view's `@State private var`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0401]: `n` is written while the view draws
+ --> check/hook_state.bloom:9:3
+  |
+9 |   n = 1
+  |   ^ a state changes in an event, not in the body or a derived value
+  |
+help: write it in a handler (`fn`, `.onPress { … }`) or a `.task { … }`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time
+
+error[B0420]: `@State var m` is outside a hook function's body
+  --> check/hook_state.bloom:15:5
+   |
+15 |     @State var m = 1
+   |     ^^^^^^^^^^^^ a state is a hook: it is kept across renders, in the same order
+   |
+help: declare it at the top of a hook function (`func useX`), or as a view's `@State private var`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#73-reactivity-compile-time

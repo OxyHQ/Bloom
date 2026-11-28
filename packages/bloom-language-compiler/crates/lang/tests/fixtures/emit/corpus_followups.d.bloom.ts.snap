@@ -13,9 +13,9 @@ export declare function useQuery<T>(options: QueryOptions<T>): QueryResult<T>;
 export interface Post {
   readonly id: string;
 }
-export declare function label(c: boolean, name: string, selected: Selected | undefined): string | undefined;
+export declare function label(c: boolean, name: string, selected: Selected | undefined | null): string | undefined;
 export interface FollowupsProps {
-  readonly value: ("videos" | "following") | undefined;
+  readonly value: ("videos" | "following") | undefined | null;
   readonly support: boolean;
   readonly size: "small" | "medium" | "large";
   readonly tabs: readonly string[];
