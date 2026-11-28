@@ -1,0 +1,8 @@
+// A view's dictionary `@State` starting empty: `useState(() => ({}))`, never `() => {}` (a
+// function that gives nothing).
+public struct Tally: View {
+  @State var counts: [String: Int] = [:]
+  var body: some View {
+    Button(Text("Count")).onPress { counts = counts.setting("a", (counts["a"] ?? 0) + 1) }
+  }
+}

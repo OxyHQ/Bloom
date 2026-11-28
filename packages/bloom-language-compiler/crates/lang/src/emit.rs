@@ -6859,7 +6859,9 @@ impl<'a> Emitter<'a> {
                             line.f(value);
                         } else {
                             line.s("() => ").f(
-                                if matches!(state.value.kind, ExprKind::Call(_))
+                                // An object literal as the arrow's body is parenthesised (`{`
+                                // would open a block): a call's, and a dictionary's (`[:]`).
+                                if matches!(state.value.kind, ExprKind::Call(_) | ExprKind::Map(_))
                                     && value.text.starts_with('{')
                                 {
                                     value.wrap("(", ")")
