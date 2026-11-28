@@ -16,6 +16,8 @@ rm -rf "$out" && mkdir -p "$out/.bloom/std/Bloom"
 # tsc reads `./X.bloom` as the module `./X`, which the copy is.
 unbloom() { sed -E 's/from "([^"]+)\.bloom"/from "\1"/' "$1" > "$2"; }
 cp "$compiler/stdlib/Bloom/runtime.ts" "$out/.bloom/std/Bloom/"
+# The string helpers' break table, beside the standard library's `text.ts`.
+mkdir -p "$out/.bloom/std/Bloom/generated" && cp "$std"/generated/*.ts "$out/.bloom/std/Bloom/generated/"
 for ts in "$std"/*.ts; do
   [ "$(basename "$ts")" = "runtime.ts" ] && continue
   unbloom "$ts" "$out/.bloom/std/Bloom/$(basename "$ts")"

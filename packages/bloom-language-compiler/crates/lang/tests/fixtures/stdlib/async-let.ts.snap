@@ -1,4 +1,4 @@
-import { characterCount as $characterCount } from "@oxy.so/bloom-language";
+import { characterCount as $characterCount } from "../../.bloom/std/Bloom/text";
 import { sleep } from "../../.bloom/std/Bloom/Concurrency.bloom";
 import { type Duration, Duration$$milliseconds } from "../../.bloom/std/Bloom/Time.bloom";
 
