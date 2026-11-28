@@ -11,6 +11,10 @@ use crate::Program;
 const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/std/Std.kt", include_str!("../runtime/android/so/oxy/bloom/std/Std.kt")),
     ("so/oxy/bloom/ui/Tokens.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Tokens.kt")),
+    (
+        "so/oxy/bloom/ui/BloomTheme.generated.kt",
+        include_str!("../runtime/android/so/oxy/bloom/ui/BloomTheme.generated.kt"),
+    ),
     ("so/oxy/bloom/ui/Views.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Views.kt")),
     ("so/oxy/bloom/ui/Modifiers.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Modifiers.kt")),
     ("so/oxy/bloom/ui/Image.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Image.kt")),
@@ -152,7 +156,7 @@ dependencies {{
     write(
         &dir.join("app/src/main/kotlin").join(id_dir).join("MainActivity.kt"),
         &format!(
-            "{header}package {id}\n\nimport android.os.Bundle\nimport androidx.activity.ComponentActivity\nimport androidx.activity.compose.setContent\nimport androidx.activity.enableEdgeToEdge\nimport {app_package}.App\n\nclass MainActivity : ComponentActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    enableEdgeToEdge()\n    super.onCreate(savedInstanceState)\n    setContent {{ App() }}\n  }}\n}}\n"
+            "{header}package {id}\n\nimport android.os.Bundle\nimport androidx.activity.ComponentActivity\nimport androidx.activity.compose.setContent\nimport androidx.activity.enableEdgeToEdge\nimport {app_package}.App\nimport so.oxy.bloom.ui.BloomThemeProvider\n\nclass MainActivity : ComponentActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    enableEdgeToEdge()\n    super.onCreate(savedInstanceState)\n    setContent {{ BloomThemeProvider {{ App() }} }}\n  }}\n}}\n"
         ),
     )?;
     for (path, text) in RUNTIME {
