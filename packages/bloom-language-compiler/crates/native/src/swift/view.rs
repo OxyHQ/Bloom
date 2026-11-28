@@ -59,7 +59,10 @@ impl Emitter<'_> {
         let saved = self.enter_type(&v.name.name, vis == "public ", &conforms);
         let was_in_view = std::mem::replace(&mut self.in_view, true);
         let mut props: Vec<Param> = Vec::new();
-        let has_init = surface.members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"));
+        let has_init = surface
+            .members
+            .iter()
+            .any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"));
         for m in &surface.members {
             let mvis = Self::visibility(m.visibility);
             let attr = m.modifiers.attrs.first();
@@ -70,7 +73,8 @@ impl Emitter<'_> {
                     match attr.map(|a| a.name.name.as_str()) {
                         Some("State") => {
                             let value = value.as_ref().map(|v| self.expr_value(v, 1)).unwrap_or_default();
-                            let _ = writeln!(out, "  @State {mvis}var {}{annotated} = {value}", kw(&name.name));
+                            let _ =
+                                writeln!(out, "  @State {mvis}var {}{annotated} = {value}", kw(&name.name));
                         }
                         Some("Binding") => {
                             let _ = writeln!(out, "  @Binding {mvis}var {}{annotated}", kw(&name.name));
@@ -86,7 +90,10 @@ impl Emitter<'_> {
                             for arg in &mut a.args {
                                 if let ExprKind::KeyPath { root: None, path } = &mut arg.value.kind
                                     && let [only] = path.as_mut_slice()
-                                    && matches!(only.name.as_str(), "disabled" | "controlSize" | "buttonStyle")
+                                    && matches!(
+                                        only.name.as_str(),
+                                        "disabled" | "controlSize" | "buttonStyle"
+                                    )
                                 {
                                     only.name = format!("bloom{}", crate::upper_first(&only.name));
                                 }
@@ -99,7 +106,11 @@ impl Emitter<'_> {
                                 trailing: None,
                                 optional: false,
                             });
-                            let _ = writeln!(out, "  @{attr_name}({args}) {mvis}var {}{annotated}", kw(&name.name));
+                            let _ = writeln!(
+                                out,
+                                "  @{attr_name}({args}) {mvis}var {}{annotated}",
+                                kw(&name.name)
+                            );
                         }
                         Some(other) => {
                             self.unsupported(a_span(attr), format!("`@{other}` on a view's property"));
@@ -107,10 +118,12 @@ impl Emitter<'_> {
                         // `let x = v`: computed each render, so a computed property.
                         None if !*mutable && value.is_some() => {
                             let value = self.expr_value(value.as_ref().expect("a value"), 2);
-                            let rt = ty_text.or_else(|| self.type_at(name.span).map(|t| self.swift_type_text(t)));
+                            let rt =
+                                ty_text.or_else(|| self.type_at(name.span).map(|t| self.swift_type_text(t)));
                             match rt {
                                 Some(rt) => {
-                                    let _ = writeln!(out, "  {mvis}var {}: {rt} {{ {value} }}", kw(&name.name));
+                                    let _ =
+                                        writeln!(out, "  {mvis}var {}: {rt} {{ {value} }}", kw(&name.name));
                                 }
                                 None => {
                                     self.unsupported(name.span, "a view's `let` whose type is unknown");
@@ -129,8 +142,12 @@ impl Emitter<'_> {
                             children.push((name.name.clone(), param, optional));
                         }
                         // `let rows: (Post) -> View`: a view builder the view calls, generic too.
-                        None if matches!(ty.as_ref().map(|t| &t.kind), Some(TypeKind::Fn { ret, .. }) if view_prop(ret) == Some(false)) => {
-                            let Some(TypeKind::Fn { params, is_async, .. }) = ty.as_ref().map(|t| &t.kind) else { unreachable!() };
+                        None if matches!(ty.as_ref().map(|t| &t.kind), Some(TypeKind::Fn { ret, .. }) if view_prop(ret) == Some(false)) =>
+                        {
+                            let Some(TypeKind::Fn { params, is_async, .. }) = ty.as_ref().map(|t| &t.kind)
+                            else {
+                                unreachable!()
+                            };
                             let mut param = crate::upper_first(&name.name);
                             if param == v.name.name {
                                 param.push_str("Content");
@@ -160,7 +177,8 @@ impl Emitter<'_> {
                 _ => out.push_str(&self.type_member(m, 1, false)),
             }
         }
-        if !has_init && (!props.is_empty() || !vis.is_empty() || !children.is_empty() || !builders.is_empty()) {
+        if !has_init && (!props.is_empty() || !vis.is_empty() || !children.is_empty() || !builders.is_empty())
+        {
             self.view_builders = builders.clone();
             out.push_str(&self.view_init(vis, &props, &children, None));
             for (i, (_, param, optional)) in children.iter().enumerate() {
@@ -192,12 +210,19 @@ impl Emitter<'_> {
     /// The view's `init`: each prop labelled by its name, a `@Binding`'s through `_name`, its
     /// children last as `@ViewBuilder` closures. `without`: the `init` that leaves out the
     /// optional children `i` (`where Children == EmptyView`).
-    fn view_init(&mut self, vis: &str, props: &[Param], children: &[(String, String, bool)], without: Option<(usize, &String)>) -> String {
+    fn view_init(
+        &mut self,
+        vis: &str,
+        props: &[Param],
+        children: &[(String, String, bool)],
+        without: Option<(usize, &String)>,
+    ) -> String {
         let mut params: Vec<String> = props
             .iter()
             .map(|p| {
                 let ty = self.param_type(&p.ty);
-                let default = p.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 2))).unwrap_or_default();
+                let default =
+                    p.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 2))).unwrap_or_default();
                 format!("{}: {ty}{default}", kw(&p.name.name))
             })
             .collect();
@@ -258,7 +283,10 @@ impl Emitter<'_> {
                 }
                 Member::Let(l) => {
                     if let PatternKind::Bind(n) = &l.pattern.kind {
-                        let rt = l.ty.as_ref().map(|t| self.ty(t)).or_else(|| self.type_at(n.span).map(|t| self.swift_type_text(t)));
+                        let rt =
+                            l.ty.as_ref()
+                                .map(|t| self.ty(t))
+                                .or_else(|| self.type_at(n.span).map(|t| self.swift_type_text(t)));
                         let value = self.expr_value(&l.value, 2);
                         match rt {
                             Some(rt) => {
@@ -386,13 +414,29 @@ impl Emitter<'_> {
             })
             .collect();
         let trailing = match call.trailing.as_deref() {
-            Some(c) if matches!(name.name.as_str(), "overlay" | "background" | "trailing" | "leadingView" | "safeAreaInset" | "toolbar" | "sheet" | "contextMenu") => {
+            Some(c)
+                if matches!(
+                    name.name.as_str(),
+                    "overlay"
+                        | "background"
+                        | "trailing"
+                        | "leadingView"
+                        | "safeAreaInset"
+                        | "toolbar"
+                        | "sheet"
+                        | "contextMenu"
+                ) =>
+            {
                 format!(" {}", self.view_closure(c, indent))
             }
             Some(c) => format!(" {}", self.closure(c, c.span.to(span), indent)),
             None => String::new(),
         };
-        let parens = if args.is_empty() && call.trailing.is_some() && !call.parens { String::new() } else { format!("({})", args.join(", ")) };
+        let parens = if args.is_empty() && call.trailing.is_some() && !call.parens {
+            String::new()
+        } else {
+            format!("({})", args.join(", "))
+        };
         format!("\n{}.{}{parens}{trailing}", pad(indent), swift_modifier(&name.name, own))
     }
 
@@ -422,7 +466,11 @@ impl Emitter<'_> {
             .map(|a| {
                 let value = match &a.value.kind {
                     // `VirtualList(posts, { row in PostRow(…) })`: a row builder.
-                    ExprKind::Closure(c) if matches!(name, "VirtualList" | "List" | "ForEach" | "NavigationStack") => self.view_closure(c, indent),
+                    ExprKind::Closure(c)
+                        if matches!(name, "VirtualList" | "List" | "ForEach" | "NavigationStack") =>
+                    {
+                        self.view_closure(c, indent)
+                    }
                     _ => self.view_arg(&a.value, indent),
                 };
                 match &a.label {
@@ -446,7 +494,10 @@ impl Emitter<'_> {
 
     /// Whether a view of the program takes children (a `content` prop of a builder type).
     fn view_has_children(&self, name: &str) -> bool {
-        self.decls.views.get(name).is_some_and(|props| props.iter().any(|p| p.name == "content" || p.name == "children"))
+        self.decls
+            .views
+            .get(name)
+            .is_some_and(|props| props.iter().any(|p| p.name == "content" || p.name == "children"))
             || self.takes_view_children(name)
     }
 
@@ -454,7 +505,8 @@ impl Emitter<'_> {
     pub(crate) fn view_closure(&mut self, c: &Closure, indent: usize) -> String {
         let params: Vec<String> = c.params.iter().map(|q| kw(&q.name.name)).collect();
         let shorthand = !c.has_in && c.params.iter().all(|q| q.name.name.starts_with('$'));
-        let head = if params.is_empty() || shorthand { String::new() } else { format!(" {} in", params.join(", ")) };
+        let head =
+            if params.is_empty() || shorthand { String::new() } else { format!(" {} in", params.join(", ")) };
         let body = self.view_block(&c.body, indent + 1);
         format!("{{{head}\n{body}{}}}", pad(indent))
     }
@@ -488,7 +540,16 @@ fn a_span(attr: Option<&Attr>) -> Span {
 
 /// A view's prop as its `init` takes it (`rest` marks a `@Binding`, set through `_name`).
 fn prop(name: &Ident, ty: TypeExpr, default: Option<Expr>, binding: bool) -> Param {
-    Param { label: None, name: name.clone(), rest: binding, spread: false, whole: None, ty, default, span: name.span }
+    Param {
+        label: None,
+        name: name.clone(),
+        rest: binding,
+        spread: false,
+        whole: None,
+        ty,
+        default,
+        span: name.span,
+    }
 }
 
 fn binding_of(t: &TypeExpr) -> TypeExpr {

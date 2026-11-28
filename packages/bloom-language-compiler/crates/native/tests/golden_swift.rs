@@ -114,3 +114,34 @@ fn coverage_is_reported() {
     }
     eprintln!("swiftui: {uncovered} uncovered constructs over {} cases", cases().len());
 }
+
+/// `--ios-project`: the bench's Xcode project (XcodeGen), its modules, the runtime, the fonts.
+#[test]
+fn the_ios_project_is_written() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/NativeBench");
+    let program = bloom_native::load(&dir).unwrap_or_else(|p| panic!("{}", p[0].message));
+    let emitted = bloom_native::emit(&program, bloom_native::Target::SwiftUI)
+        .unwrap_or_else(|p| panic!("{}", p[0].message));
+    let out = std::env::temp_dir().join(format!("bloom-ios-project-{}", std::process::id()));
+    bloom_native::swift::project::write_project(&out, &program, &emitted, "so.bloom.test").expect("project");
+    for file in [
+        "project.yml",
+        "Package.swift",
+        "App/NativeBenchApp.swift",
+        "App/Fonts/InterVariable.ttf",
+        "UITests/NativeBenchBench.swift",
+        "Sources/Feed/PostRow.swift",
+        "Sources/NativeBench/App.swift",
+        "BloomRuntime/Package.swift",
+        "BloomRuntime/Sources/BloomUI/Nodes/ActionBar.swift",
+    ] {
+        assert!(out.join(file).is_file(), "{file}");
+    }
+    let package = std::fs::read_to_string(out.join("Package.swift")).unwrap_or_default();
+    assert!(
+        package.contains(".target(name: \"NativeBench\", dependencies: [\"Feed\", \"Settings\""),
+        "{package}"
+    );
+    assert!(!out.join("BloomRuntime/Stubs").exists(), "the SwiftUI stub is never shipped");
+    let _ = std::fs::remove_dir_all(&out);
+}

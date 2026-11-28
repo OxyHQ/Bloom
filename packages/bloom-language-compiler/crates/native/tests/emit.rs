@@ -36,9 +36,9 @@ fn the_bench_emits_every_file() {
 fn values_are_data_classes_and_enums() {
     let kt = kotlin();
     assert!(kt.contains("data class Post(\n  override val id: String,"), "{kt}");
-    assert!(
-        kt.contains("enum class PrefKey {\n  pushEnabled, likes, boosts, follows, mentions, replies, quotes\n}")
-    );
+    assert!(kt.contains(
+        "enum class PrefKey {\n  pushEnabled, likes, boosts, follows, mentions, replies, quotes\n}"
+    ));
     assert!(kt.contains("sealed interface PostKind {\n  data object Text : PostKind\n  data class Image(val url: String, val aspect: Double) : PostKind"));
     // A type the program declares takes its extensions' members inside its class.
     assert!(kt.contains("  fun setting(key: PrefKey, on: Boolean): Prefs {"));
@@ -87,7 +87,10 @@ fn the_android_project_is_written() {
 }
 
 #[test]
-fn swiftui_is_reported_not_built() {
+fn the_bench_emits_every_file_as_swift() {
     let program = bench();
-    assert!(bloom_native::emit(&program, bloom_native::Target::SwiftUI).is_err());
+    let files: usize = program.modules.iter().map(|m| m.files.len()).sum();
+    let emitted = bloom_native::emit(&program, bloom_native::Target::SwiftUI)
+        .unwrap_or_else(|p| panic!("{}", p.iter().map(|p| p.message.clone()).collect::<Vec<_>>().join("\n")));
+    assert_eq!(emitted.len(), files);
 }

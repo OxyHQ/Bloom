@@ -62,7 +62,9 @@ impl Emitter<'_> {
         single(&i.then)
             && match i.otherwise.as_deref() {
                 Some(Else::Block(b)) => single(b),
-                Some(Else::If(x)) => matches!(&x.kind, ExprKind::If(inner) if !matches!(inner.cond, Cond::Let(..)) && self.simple_if(inner)),
+                Some(Else::If(x)) => {
+                    matches!(&x.kind, ExprKind::If(inner) if !matches!(inner.cond, Cond::Let(..)) && self.simple_if(inner))
+                }
                 None => false,
             }
     }
@@ -87,7 +89,11 @@ impl Emitter<'_> {
             ExprKind::Int(n) => n.to_string(),
             ExprKind::Float(f) => {
                 let s = f.to_string();
-                if s.contains('.') || s.contains('e') || s.contains("inf") || s.contains("NaN") { s } else { format!("{s}.0") }
+                if s.contains('.') || s.contains('e') || s.contains("inf") || s.contains("NaN") {
+                    s
+                } else {
+                    format!("{s}.0")
+                }
             }
             ExprKind::Bool(b) => b.to_string(),
             ExprKind::None => "nil".into(),
@@ -204,7 +210,11 @@ impl Emitter<'_> {
     fn operand(&mut self, e: &Expr) -> String {
         let text = self.expr(e);
         match &e.kind {
-            ExprKind::Binary(..) | ExprKind::Ternary(..) | ExprKind::Await(_) | ExprKind::Throwing(..) | ExprKind::Is(..) => {
+            ExprKind::Binary(..)
+            | ExprKind::Ternary(..)
+            | ExprKind::Await(_)
+            | ExprKind::Throwing(..)
+            | ExprKind::Is(..) => {
                 format!("({text})")
             }
             _ => text,
@@ -234,8 +244,7 @@ impl Emitter<'_> {
             let wrap = match &child.kind {
                 ExprKind::Binary(cop, ..) => {
                     let (cprec, _) = swift_precedence(*cop);
-                    cprec < prec
-                        || (cprec == prec && (is_comparison(op) || is_right != right))
+                    cprec < prec || (cprec == prec && (is_comparison(op) || is_right != right))
                 }
                 ExprKind::Ternary(..) | ExprKind::Is(..) | ExprKind::CastAs(..) => true,
                 ExprKind::Await(_) | ExprKind::Throwing(..) => !is_right || matches!(op, BinaryOp::Default),
@@ -278,7 +287,10 @@ impl Emitter<'_> {
     fn record(&mut self, e: &Expr, entries: &[RecordEntry]) -> String {
         let ty = self.type_at(e.span).map(|t| t.trim_end_matches('?').to_string());
         match ty {
-            Some(t) if self.decls.structs.contains_key(&t) && entries.iter().all(|x| matches!(x, RecordEntry::Field { .. })) => {
+            Some(t)
+                if self.decls.structs.contains_key(&t)
+                    && entries.iter().all(|x| matches!(x, RecordEntry::Field { .. })) =>
+            {
                 let order = self.decls.structs.get(&t).cloned().unwrap_or_default();
                 let mut args: Vec<(usize, String)> = entries
                     .iter()
@@ -333,14 +345,8 @@ impl Emitter<'_> {
     /// `x.field`. A string's `count` is Swift's own: grapheme clusters, as Bloom defines it on
     /// every backend (ADR 0003).
     fn field(&mut self, base: &Expr, field: &Ident) -> String {
-        let ty = self.receiver_type(base).unwrap_or_default();
         let b = self.postfix_base(base);
-        match field.name.as_str() {
-            name => {
-                let _ = ty;
-                format!("{b}.{}", kw(name))
-            }
-        }
+        format!("{b}.{}", kw(&field.name))
     }
 
     /// The arguments of a call, labels as written: Bloom's labels are Swift's.
@@ -386,7 +392,11 @@ impl Emitter<'_> {
             for a in &call.args {
                 let label = a.label.as_ref().map(|l| l.name.as_str()).unwrap_or("");
                 let value = self.arg_value(&a.value);
-                items.push(if label == "get" { format!("get: {{ {value} }}") } else { format!("{label}: {value}") });
+                items.push(if label == "get" {
+                    format!("get: {{ {value} }}")
+                } else {
+                    format!("{label}: {value}")
+                });
             }
             return format!("Binding({})", items.join(", "));
         }
@@ -402,14 +412,18 @@ impl Emitter<'_> {
         let trailing = self.trailing(call, e.span);
         let text = if call.parens || call.trailing.is_none() {
             format!("{callee}{q}({args}){trailing}")
-        } else if call.args.iter().all(|a| a.label.is_some() && matches!(a.value.kind, ExprKind::Closure(_))) {
+        } else if call.args.iter().all(|a| a.label.is_some() && matches!(a.value.kind, ExprKind::Closure(_)))
+        {
             // `row { } label: { "Go" }`: Swift's labelled trailing closures, as written.
             let rest: Vec<String> = call
                 .args
                 .iter()
                 .map(|a| {
                     let value = self.arg_value(&a.value);
-                    format!("{}: {value}", label(&a.label.as_ref().map(|l| l.name.clone()).unwrap_or_default()))
+                    format!(
+                        "{}: {value}",
+                        label(&a.label.as_ref().map(|l| l.name.clone()).unwrap_or_default())
+                    )
                 })
                 .collect();
             format!("{callee}{q}{trailing} {}", rest.join(" "))

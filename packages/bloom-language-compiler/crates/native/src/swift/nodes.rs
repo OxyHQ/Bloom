@@ -1,6 +1,7 @@
 //! BloomUI's nodes as the Swift backend sees them (generated from the spec).
 
 #[allow(dead_code)]
+#[rustfmt::skip]
 #[path = "nodes.generated.rs"]
 mod table;
 
@@ -45,10 +46,14 @@ pub fn is_node(name: &str) -> bool {
 
 /// BloomUI's SwiftUI spellings that are not spec constructors (lowered for TypeScript by
 /// `bloom_lang::bloomui`), and the router's stack.
-const EXTRA: &[&str] = &["ProgressView", "Toggle", "ForEach", "NavigationStack", "Label", "VirtualList", "List", "Spacer"];
+const EXTRA: &[&str] =
+    &["ProgressView", "Toggle", "ForEach", "NavigationStack", "Label", "VirtualList", "List", "Spacer"];
 
 /// Whether `name`'s trailing closure is a view builder (`VStack { … }`), not an action.
 pub fn takes_children(name: &str) -> bool {
     table::CHILDREN.contains(&name) && name != "Button"
-        || matches!(name, "NavigationStack" | "ForEach" | "List" | "ScrollView" | "VStack" | "HStack" | "ZStack")
+        || matches!(
+            name,
+            "NavigationStack" | "ForEach" | "List" | "ScrollView" | "VStack" | "HStack" | "ZStack"
+        )
 }

@@ -170,7 +170,10 @@ pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
             let text = e.file(&module.name, &modules);
             problems.extend(e.problems);
             let stem = file.path.file_stem().unwrap_or_default().to_string_lossy().into_owned();
-            out.push(Emitted { path: PathBuf::from("Sources").join(&module.name).join(format!("{stem}.swift")), text });
+            out.push(Emitted {
+                path: PathBuf::from("Sources").join(&module.name).join(format!("{stem}.swift")),
+                text,
+            });
         }
     }
     (out, problems)
@@ -215,7 +218,18 @@ pub(crate) fn pad(indent: usize) -> String {
 
 impl<'a> Emitter<'a> {
     pub(crate) fn new(decls: &'a Decls, file: &'a SourceFile, sendable_types: &'a HashSet<String>) -> Self {
-        Emitter { decls, file, sendable_types, problems: Vec::new(), uses_observation: false, indent: 0, program_witnesses: None, witness_names: HashSet::new(), in_view: false, view_builders: Vec::new() }
+        Emitter {
+            decls,
+            file,
+            sendable_types,
+            problems: Vec::new(),
+            uses_observation: false,
+            indent: 0,
+            program_witnesses: None,
+            witness_names: HashSet::new(),
+            in_view: false,
+            view_builders: Vec::new(),
+        }
     }
 
     pub(crate) fn unsupported(&mut self, span: Span, what: impl Into<String>) -> String {
@@ -344,7 +358,11 @@ impl<'a> Emitter<'a> {
 
     /// A member's visibility: `public` when it witnesses a public protocol of a public type.
     pub(crate) fn member_visibility(&self, v: Visibility, name: &str) -> &'static str {
-        if v == Visibility::Internal && self.witness_names.contains(name) { "public " } else { Self::visibility(v) }
+        if v == Visibility::Internal && self.witness_names.contains(name) {
+            "public "
+        } else {
+            Self::visibility(v)
+        }
     }
 
     pub(crate) fn visibility(v: Visibility) -> &'static str {
@@ -382,7 +400,8 @@ impl<'a> Emitter<'a> {
                         .map(|(_, s)| s.to_string())
                         .unwrap_or_else(|| other.to_string()),
                 };
-                let some = if self.source_of(t.span).trim_start().starts_with("some ") { "some " } else { "" };
+                let some =
+                    if self.source_of(t.span).trim_start().starts_with("some ") { "some " } else { "" };
                 if args.is_empty() {
                     format!("{some}{base}")
                 } else {
@@ -396,7 +415,10 @@ impl<'a> Emitter<'a> {
             TypeKind::Map(k, v) => format!("OrderedDictionary<{}, {}>", self.ty(k), self.ty(v)),
             TypeKind::Optional(inner) => {
                 let inner_text = self.ty(inner);
-                if matches!(inner.kind, TypeKind::Fn { .. }) || inner_text.starts_with("any ") || inner_text.starts_with("some ") {
+                if matches!(inner.kind, TypeKind::Fn { .. })
+                    || inner_text.starts_with("any ")
+                    || inner_text.starts_with("some ")
+                {
                     format!("({inner_text})?")
                 } else {
                     format!("{inner_text}?")
@@ -420,7 +442,9 @@ impl<'a> Emitter<'a> {
             }
             // A union of string literals is TypeScript-shaped data: a `String` here.
             TypeKind::Strings(_) => "String".into(),
-            TypeKind::Record(_) => self.unsupported(t.span, "a structural record type").replace("fatal(\"unsupported\")", "Never"),
+            TypeKind::Record(_) => self
+                .unsupported(t.span, "a structural record type")
+                .replace("fatal(\"unsupported\")", "Never"),
             TypeKind::Error => "Never".into(),
         }
     }
@@ -470,11 +494,8 @@ impl<'a> Emitter<'a> {
         let items: Vec<String> = generics
             .iter()
             .map(|g| {
-                let bounds: Vec<String> = constraints
-                    .iter()
-                    .filter(|(n, _)| n.name == g.name)
-                    .map(|(_, t)| self.ty(t))
-                    .collect();
+                let bounds: Vec<String> =
+                    constraints.iter().filter(|(n, _)| n.name == g.name).map(|(_, t)| self.ty(t)).collect();
                 if bounds.is_empty() { g.name.clone() } else { format!("{}: {}", g.name, bounds.join(" & ")) }
             })
             .collect();
@@ -519,7 +540,9 @@ impl<'a> Emitter<'a> {
                 format!("{attrs}{}", self.func(vis, f, false, 0, None))
             }
             ItemKind::View(v) => self.view_decl(vis, v),
-            ItemKind::Const(c) if self.environment_key(c).is_some() => self.environment_key(c).unwrap_or_default(),
+            ItemKind::Const(c) if self.environment_key(c).is_some() => {
+                self.environment_key(c).unwrap_or_default()
+            }
             ItemKind::Const(c) => {
                 let ty = c.ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
                 let value = self.expr_value(&c.value, 0);
@@ -535,7 +558,10 @@ impl<'a> Emitter<'a> {
             ItemKind::Class(c) => self.class(vis, &item.modifiers, c),
             ItemKind::Extern(x) if x.native => self.extern_native(vis, x),
             ItemKind::Extern(x) => {
-                self.unsupported(x.package.span, "an `extern module` (a TypeScript or npm module has no native side)");
+                self.unsupported(
+                    x.package.span,
+                    "an `extern module` (a TypeScript or npm module has no native side)",
+                );
                 String::new()
             }
             // `test "…" { }` runs on the TypeScript backend (`bloom test`).
@@ -575,14 +601,16 @@ impl<'a> Emitter<'a> {
         if self.is_thrown(&s.name.name) && !conforms.iter().any(|c| c == "Error") {
             conforms.insert(0, "Error".into());
         }
-        if s.generics.is_empty() && self.sendable(&field_tys, 0) && !conforms.iter().any(|c| c == "Sendable") {
+        if s.generics.is_empty() && self.sendable(&field_tys, 0) && !conforms.iter().any(|c| c == "Sendable")
+        {
             conforms.push("Sendable".into());
         }
         let head = if conforms.is_empty() { String::new() } else { format!(": {}", conforms.join(", ")) };
         let saved = self.enter_type(&s.name.name, !vis.is_empty() && vis != "private ", &conforms);
         let mut out = format!("{attrs}{vis}struct {}{generics}{head} {{\n", kw(&s.name.name));
         let members: Vec<TypeMember> = s.surface.as_ref().map(|b| b.members.clone()).unwrap_or_default();
-        let has_init = members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"));
+        let has_init =
+            members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init"));
         // The stored properties, without their defaults: those are the `init`'s.
         if s.surface.is_some() {
             for m in &members {
@@ -630,7 +658,8 @@ impl<'a> Emitter<'a> {
             .iter()
             .map(|f| {
                 let ty = self.param_type(&f.ty);
-                let default = f.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 2))).unwrap_or_default();
+                let default =
+                    f.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 2))).unwrap_or_default();
                 format!("{}: {ty}{default}", kw(&f.name.name))
             })
             .collect();
@@ -645,9 +674,14 @@ impl<'a> Emitter<'a> {
     fn enum_decl(&mut self, vis: &str, e: &EnumDecl) -> String {
         let generics = self.generics(&e.generics, &[]);
         let mut conforms = self.conformances(&e.conformances);
-        let payload_tys: Vec<&TypeExpr> = e.variants.iter().flat_map(|v| v.payload.iter().map(|p| &p.ty)).collect();
+        let payload_tys: Vec<&TypeExpr> =
+            e.variants.iter().flat_map(|v| v.payload.iter().map(|p| &p.ty)).collect();
         let recursive = payload_tys.iter().any(|t| self.mentions(t, &e.name.name));
-        if e.generics.is_empty() && !recursive && self.sendable(&payload_tys, 0) && !conforms.iter().any(|c| c == "Sendable") {
+        if e.generics.is_empty()
+            && !recursive
+            && self.sendable(&payload_tys, 0)
+            && !conforms.iter().any(|c| c == "Sendable")
+        {
             conforms.push("Sendable".into());
         }
         if self.is_thrown(&e.name.name) && !conforms.iter().any(|c| c == "Error") {
@@ -694,7 +728,8 @@ impl<'a> Emitter<'a> {
             .variants
             .iter()
             .map(|v| {
-                let labels: Vec<String> = v.payload.iter().enumerate().map(|(i, p)| format!("{:?}", label(i, p))).collect();
+                let labels: Vec<String> =
+                    v.payload.iter().enumerate().map(|(i, p)| format!("{:?}", label(i, p))).collect();
                 format!("{:?}: [{}]", v.name.name, labels.join(", "))
             })
             .collect();
@@ -710,7 +745,8 @@ impl<'a> Emitter<'a> {
                 continue;
             }
             let binds: Vec<String> = (0..v.payload.len()).map(|i| format!("let v{i}")).collect();
-            let texts: Vec<String> = (0..v.payload.len()).map(|i| format!("String(describing: v{i})")).collect();
+            let texts: Vec<String> =
+                (0..v.payload.len()).map(|i| format!("String(describing: v{i})")).collect();
             let _ = writeln!(values, "    case .{case}({}): [{}]", binds.join(", "), texts.join(", "));
             // Each parameter read back by its type; a route whose parameter does not read is none.
             let mut guards = Vec::new();
@@ -723,7 +759,10 @@ impl<'a> Emitter<'a> {
                     Some("Float" | "Double") => format!("params[{key}].flatMap {{ Double($0) }}"),
                     Some("Bool") => format!("params[{key}].flatMap {{ Bool($0) }}"),
                     _ => {
-                        self.unsupported(p.span, "a route parameter that is not a String, Int, Double or Bool");
+                        self.unsupported(
+                            p.span,
+                            "a route parameter that is not a String, Int, Double or Bool",
+                        );
                         "nil as String?".into()
                     }
                 };
@@ -749,7 +788,9 @@ impl<'a> Emitter<'a> {
 
     fn mentions(&self, t: &TypeExpr, name: &str) -> bool {
         match &t.kind {
-            TypeKind::Named { name: n, args } => n.name == name || args.iter().any(|a| self.mentions(a, name)),
+            TypeKind::Named { name: n, args } => {
+                n.name == name || args.iter().any(|a| self.mentions(a, name))
+            }
             // An array or a dictionary is already a reference: no `indirect` needed for it.
             TypeKind::List(_) | TypeKind::Map(..) => false,
             TypeKind::Optional(i) => self.mentions(i, name),
@@ -867,7 +908,10 @@ impl<'a> Emitter<'a> {
                     ItemKind::Fn(f) => Some(f.clone()),
                     _ => None,
                 })
-                .map(|f| format!("  {} {{ fatalError(\"{name}: no native implementation is registered\") }}\n", self.signature(&f, false)))
+                .map(|f| format!(
+                    "  {} {{ fatalError(\"{name}: no native implementation is registered\") }}\n",
+                    self.signature(&f, false)
+                ))
                 .collect::<String>()
         );
         format!("{proto}\n{registry}\n{calls}")
@@ -910,7 +954,10 @@ impl<'a> Emitter<'a> {
                 let setter = Self::setter(&m.modifiers);
                 let word = if *mutable { "var" } else { "let" };
                 let ty_text = ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
-                let value = value.as_ref().map(|v| format!(" = {}", self.expr_value(v, indent + 1))).unwrap_or_default();
+                let value = value
+                    .as_ref()
+                    .map(|v| format!(" = {}", self.expr_value(v, indent + 1)))
+                    .unwrap_or_default();
                 let _ = class;
                 format!("{p}{vis}{setter}{st}{word} {}{ty_text}{value}\n", kw(&name.name))
             }
@@ -941,7 +988,8 @@ impl<'a> Emitter<'a> {
             }
             let ty = self.param_type(&p.ty);
             let rest = if p.rest { "..." } else { "" };
-            let default = p.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 0))).unwrap_or_default();
+            let default =
+                p.default.as_ref().map(|d| format!(" = {}", self.expr_value(d, 0))).unwrap_or_default();
             out.push(format!("{head}: {ty}{rest}{default}"));
         }
         out.join(", ")
@@ -964,13 +1012,27 @@ impl<'a> Emitter<'a> {
         let builder = if view_builder { "@ViewBuilder " } else { "" };
         let name = if f.name.name == "==" { "==".to_string() } else { kw(&f.name.name) };
         // A view is main-actor isolated; `Equatable`'s `==` is not, and reads only its props.
-        let builder = if f.name.name == "==" && self.in_view { format!("{builder}nonisolated ") } else { builder.to_string() };
+        let builder = if f.name.name == "==" && self.in_view {
+            format!("{builder}nonisolated ")
+        } else {
+            builder.to_string()
+        };
         let space = if name == "==" { " " } else { "" };
         format!("{builder}func {name}{space}{generics}({params}){asynchronous}{throws}{ret}")
     }
 
-    pub(crate) fn func(&mut self, vis: &str, f: &FnDecl, is_static: bool, indent: usize, _owner: Option<&str>) -> String {
-        let returns_view = f.ret.as_ref().is_some_and(|t| matches!(&t.kind, TypeKind::Named { name, .. } if name.name == "View"));
+    pub(crate) fn func(
+        &mut self,
+        vis: &str,
+        f: &FnDecl,
+        is_static: bool,
+        indent: usize,
+        _owner: Option<&str>,
+    ) -> String {
+        let returns_view = f
+            .ret
+            .as_ref()
+            .is_some_and(|t| matches!(&t.kind, TypeKind::Named { name, .. } if name.name == "View"));
         let sig = self.signature(f, returns_view && f.body.stmts.len() > 1);
         let returns = f.ret.as_ref().is_some_and(|t| !matches!(&t.kind, TypeKind::Tuple(items) if items.is_empty()))
             && !f.ret.as_ref().is_some_and(|t| matches!(&t.kind, TypeKind::Named { name, .. } if name.name == "Void" || name.name == "Unit"));
@@ -1018,7 +1080,9 @@ impl Witnesses {
                 ItemKind::View(v) => {
                     let viewish = |t: &TypeExpr| match &t.kind {
                         TypeKind::Named { name, .. } => name.name == "View",
-                        TypeKind::Optional(i) => matches!(&i.kind, TypeKind::Named { name, .. } if name.name == "View"),
+                        TypeKind::Optional(i) => {
+                            matches!(&i.kind, TypeKind::Named { name, .. } if name.name == "View")
+                        }
                         _ => false,
                     };
                     if v.params.iter().flatten().any(|p| viewish(&p.ty)) {
@@ -1173,7 +1237,18 @@ fn sendable_ty(t: &TypeExpr, known: &HashSet<String>, depth: usize) -> bool {
         TypeKind::Named { name, args } => {
             let base = matches!(
                 name.name.as_str(),
-                "Bool" | "Int" | "Float" | "Double" | "String" | "Character" | "Date" | "Duration" | "URL" | "UniqueID" | "JSONValue" | "Set"
+                "Bool"
+                    | "Int"
+                    | "Float"
+                    | "Double"
+                    | "String"
+                    | "Character"
+                    | "Date"
+                    | "Duration"
+                    | "URL"
+                    | "UniqueID"
+                    | "JSONValue"
+                    | "Set"
             ) || known.contains(&name.name);
             base && args.iter().all(|a| sendable_ty(a, known, depth + 1))
         }
@@ -1198,10 +1273,14 @@ fn sendable_types(program: &Program) -> HashSet<String> {
                         known.insert(s.name.name.clone());
                     }
                 }
-                ItemKind::Enum(e) if e.generics.is_empty() => {
-                    if e.variants.iter().flat_map(|v| v.payload.iter()).all(|p| sendable_ty(&p.ty, &known, 0)) {
-                        known.insert(e.name.name.clone());
-                    }
+                ItemKind::Enum(e)
+                    if e.generics.is_empty()
+                        && e.variants
+                            .iter()
+                            .flat_map(|v| v.payload.iter())
+                            .all(|p| sendable_ty(&p.ty, &known, 0)) =>
+                {
+                    known.insert(e.name.name.clone());
                 }
                 _ => {}
             }
@@ -1211,4 +1290,3 @@ fn sendable_types(program: &Program) -> HashSet<String> {
         }
     }
 }
-

@@ -118,7 +118,8 @@ impl Emitter<'_> {
                 (_, ExprKind::If(i)) => self.if_stmt(i, indent, mode),
                 (_, ExprKind::Match(m)) => self.switch_stmt(m, indent, mode),
                 // `fatal()` and a `throw` in value position need no `return`.
-                (Mode::Value, ExprKind::Call(c)) if matches!(&c.callee.kind, ExprKind::Name(n) if n == "fatal") => {
+                (Mode::Value, ExprKind::Call(c)) if matches!(&c.callee.kind, ExprKind::Name(n) if n == "fatal") =>
+                {
                     format!("{p}{}\n", self.expr(e))
                 }
                 (Mode::Value, ExprKind::None) => format!("{p}return nil\n"),
@@ -177,7 +178,9 @@ impl Emitter<'_> {
     /// enum of the program (the checker proved every case is handled), a `Bool`, or a
     /// wildcard arm.
     fn exhaustive(&self, m: &MatchExpr) -> bool {
-        if m.arms.iter().any(|a| matches!(a.pattern.kind, PatternKind::Wildcard | PatternKind::Bind(_)) && a.guard.is_none()) {
+        if m.arms.iter().any(|a| {
+            matches!(a.pattern.kind, PatternKind::Wildcard | PatternKind::Bind(_)) && a.guard.is_none()
+        }) {
             return true;
         }
         let ty = self.type_at(m.scrutinee.span).map(|t| t.trim_end_matches('?').to_string());
@@ -185,7 +188,9 @@ impl Emitter<'_> {
             Some("Bool") => true,
             Some(t) => self.decls.enums.contains_key(t) || self.is_runtime_enum(t),
             // Unknown: trust the patterns when they are all cases.
-            None => m.arms.iter().all(|a| matches!(a.pattern.kind, PatternKind::Case { .. } | PatternKind::Or(_))),
+            None => {
+                m.arms.iter().all(|a| matches!(a.pattern.kind, PatternKind::Case { .. } | PatternKind::Or(_)))
+            }
         }
     }
 
