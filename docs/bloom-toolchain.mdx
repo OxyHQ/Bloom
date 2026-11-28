@@ -124,6 +124,7 @@ nothing published in the last week resolves, except first-party packages.
 | Command | Does |
 |---|---|
 | `bloom new <Name> [--template app\|module]` | a package with `Package.bloom`, `Sources/`, `Tests/` and a `.gitignore` |
+| `bloom init --adopt` | an existing Expo app becomes a package: `Package.bloom` and its native config's override layer (below) |
 | `bloom check [--tsc] [--allow-ts-imports] [paths…]` | the manifest and every module; with `--tsc`, also runs `tsc` over the binding modules' emitted TS |
 | `bloom fmt [--check] [paths…]` | formats the package's files |
 | `bloom lsp` | the language server, module-aware |
@@ -189,6 +190,45 @@ Native's own Gradle plugin (ADR 0002, section 7):
   `expo-font`, `expo`'s lens check) are answered by small shims until their Bloom modules
   land. Any other Expo package does not resolve: an optional `require` falls back, and an
   import fails the build.
+
+### An existing Expo app (hybrid mode)
+
+An Expo app adopts the toolchain without a rewrite: `bloom init --adopt`, in the app's
+directory with its packages installed, writes `Package.bloom` from its `package.json` and app
+config (evaluated once by Expo's CLI):
+
+```swift
+let package = Package(
+  name: "Mention",
+  app: App(id: "org.mention.app", version: "2.2.0", build: 2002000, schemes: ["mention"],
+           icon: "assets/images/mention-icon.png", splash: "#0B0B0F", permissions: [.camera, .microphone],
+           reactNativeFromSource: true),
+  adopt: Expo(entry: "expo-router/entry", overrides: "Native"),
+  stopgaps: [
+    .expo("expo-image", until: "BloomUI.Image"),
+    .expo("expo-router", until: "the Bloom router"),
+    // …
+  ],
+  targets: []
+)
+```
+
+- **The app's JS stays where it is**, installed by its own package manager, and bundles over its
+  own `metro.config.js` (with its tsconfig path aliases, which Expo's CLI used to resolve).
+- **Stopgaps.** Each `.expo(…)` line is an Expo package with no Bloom module yet. `bloom build
+  android` links them through Expo Modules autolinking, limited to them and the Expo modules
+  they depend on, with Expo's lifecycle wrappers in the generated application and activity.
+  Every other Expo module is left out, and an import of one fails the bundle naming the line to
+  add, so the Expo surface that remains is the list. When a Bloom module replaces a package,
+  its line goes. `init` leaves out the packages a Bloom build already replaces (`expo-video`,
+  `expo-splash-screen`, `expo-dev-client`, `expo-build-properties`).
+- **Overrides.** What the app config's plugins write into the native project is kept in
+  `Native/android/`, a layer over the generated project: its `AndroidManifest.xml` merges over
+  the app's (as the build type's manifest), and its `res/`, `gradle.properties`,
+  `proguard-rules.pro` and `app.gradle` are added. `init` writes it from Expo's introspection
+  and reports what it left out (attributes naming resources a plugin generates).
+- **`reactNativeFromSource: true`** builds React Native's Android libraries from the installed
+  `react-native`, its patches included.
 
 ## Native modules
 

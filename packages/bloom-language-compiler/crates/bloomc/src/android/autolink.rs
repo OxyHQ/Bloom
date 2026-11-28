@@ -32,9 +32,15 @@ pub fn is_expo(name: &str) -> bool {
 
 /// The `ReactPackage` class of an Android source tree: (its package, its class name).
 fn package_class(source_dir: &Path) -> Option<(String, String)> {
+    // As React Native's CLI finds it: anywhere in the sources (some libraries keep their
+    // package outside `src/main`, in per-language source sets), tests aside, `*Package` first.
     let mut files = Vec::new();
-    collect(&source_dir.join("src/main"), &["java", "kt"], &mut files);
-    files.sort();
+    collect(&source_dir.join("src"), &["java", "kt"], &mut files);
+    files.retain(|f| !f.components().any(|c| c.as_os_str() == "test" || c.as_os_str() == "androidTest"));
+    files.sort_by_key(|f| {
+        let stem = f.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+        (!stem.ends_with("Package"), f.clone())
+    });
     for file in files {
         let Ok(text) = std::fs::read_to_string(&file) else { continue };
         if !text.contains("ReactPackage") {
@@ -107,21 +113,29 @@ fn component_descriptors(root: &Path) -> Vec<String> {
 
 /// Each listed package's `react-native.config.js` `dependency.platforms.android`, by name
 /// (`null` for a package that opts out of Android).
-fn configs(build: &Path, names: &[String]) -> Result<BTreeMap<String, Value>, String> {
-    let with_config: Vec<&String> = names
-        .iter()
-        .filter(|n| build.join("node_modules").join(n).join("react-native.config.js").is_file())
-        .collect();
+fn configs(cwd: &Path, packages: &[(String, PathBuf)]) -> Result<BTreeMap<String, Value>, String> {
+    let with_config: Vec<&(String, PathBuf)> =
+        packages.iter().filter(|(_, dir)| dir.join("react-native.config.js").is_file()).collect();
     if with_config.is_empty() {
         return Ok(BTreeMap::new());
     }
-    let list = json::write(&Value::Array(with_config.iter().map(|n| Value::String((*n).clone())).collect()));
+    let list = json::write(&Value::Array(
+        with_config
+            .iter()
+            .map(|(n, dir)| {
+                Value::Array(vec![
+                    Value::String(n.clone()),
+                    Value::String(dir.join("react-native.config.js").to_string_lossy().into_owned()),
+                ])
+            })
+            .collect(),
+    ));
     let script = format!(
-        "const path = require('node:path');\nconst out = {{}};\nfor (const name of {list}) {{\n  const config = require(path.resolve('node_modules', name, 'react-native.config.js'));\n  const platforms = config && config.dependency && config.dependency.platforms;\n  if (platforms && 'android' in platforms) out[name] = platforms.android;\n}}\nprocess.stdout.write(JSON.stringify(out));\n"
+        "const out = {{}};\nfor (const [name, file] of {list}) {{\n  const config = require(file);\n  const platforms = config && config.dependency && config.dependency.platforms;\n  if (platforms && 'android' in platforms) out[name] = platforms.android;\n}}\nprocess.stdout.write(JSON.stringify(out));\n"
     );
     let output = Command::new("node")
         .args(["-e", &script])
-        .current_dir(build)
+        .current_dir(cwd)
         .output()
         .map_err(|e| format!("node (reading the libraries' react-native.config.js): {e}"))?;
     if !output.status.success() {
@@ -143,30 +157,38 @@ fn dependencies(manifest: &Value) -> Vec<String> {
     }
 }
 
-/// The libraries with Android code among the generated app's `package.json` dependencies,
-/// and among the dependencies of the Expo packages whose JS a Bloom build keeps (`kept`:
-/// their JS draws with them).
-pub fn libraries(build: &Path, kept: &[&str]) -> Result<Vec<Library>, String> {
+/// The libraries with Android code among the `package.json` dependencies of `manifest_dir`
+/// (the generated app's, or an adopted app's own), and among the dependencies of the Expo
+/// packages whose JS a Bloom build keeps (`kept`: their JS draws with them). Packages resolve
+/// through `layout`; Expo packages, and any package `skip` names (an Expo module under another
+/// name), are not React Native libraries here.
+pub fn libraries(
+    manifest_dir: &Path,
+    layout: &super::hybrid::Layout,
+    kept: &[&str],
+    skip: &dyn Fn(&str) -> bool,
+) -> Result<Vec<Library>, String> {
     let manifest =
-        json::parse(&std::fs::read_to_string(build.join("package.json")).map_err(|e| e.to_string())?)
+        json::parse(&std::fs::read_to_string(manifest_dir.join("package.json")).map_err(|e| e.to_string())?)
             .map_err(|e| format!("package.json: {e}"))?;
     let mut names = dependencies(&manifest);
     for pkg in kept {
-        let path = build.join("node_modules").join(pkg).join("package.json");
-        if let Ok(Ok(kept)) = std::fs::read_to_string(path).map(|t| json::parse(&t)) {
+        let Some(dir) = layout.resolve(pkg) else { continue };
+        if let Ok(Ok(kept)) = std::fs::read_to_string(dir.join("package.json")).map(|t| json::parse(&t)) {
             for name in dependencies(&kept) {
-                if !names.contains(&name) && build.join("node_modules").join(&name).is_dir() {
+                if !names.contains(&name) && layout.resolve(&name).is_some() {
                     names.push(name);
                 }
             }
         }
     }
-    names.retain(|n| !is_expo(n) && n != "react-native" && n != "react" && n != "react-dom");
+    names.retain(|n| !is_expo(n) && !skip(n) && n != "react-native" && n != "react" && n != "react-dom");
     names.sort();
-    let configs = configs(build, &names)?;
+    let packages: Vec<(String, PathBuf)> =
+        names.iter().filter_map(|n| layout.resolve(n).map(|dir| (n.clone(), dir))).collect();
+    let configs = configs(manifest_dir, &packages)?;
     let mut out = Vec::new();
-    for name in names {
-        let root = build.join("node_modules").join(&name);
+    for (name, root) in packages {
         let config = configs.get(&name);
         if matches!(config, Some(Value::Null)) {
             continue;
@@ -221,7 +243,7 @@ fn path(p: &Path) -> Value {
 }
 
 /// `autolinking.json`, as React Native's Gradle plugin reads it.
-pub fn config_json(build: &Path, package_name: &str, libraries: &[Library]) -> String {
+pub fn config_json(build: &Path, react_native: &Path, package_name: &str, libraries: &[Library]) -> String {
     let mut dependencies = BTreeMap::new();
     for lib in libraries {
         let mut android = BTreeMap::new();
@@ -256,7 +278,7 @@ pub fn config_json(build: &Path, package_name: &str, libraries: &[Library]) -> S
     project.insert("android".to_string(), Value::Object(android.into_iter().collect()));
     let mut root = BTreeMap::new();
     root.insert("root".to_string(), path(build));
-    root.insert("reactNativePath".to_string(), path(&build.join("node_modules/react-native")));
+    root.insert("reactNativePath".to_string(), path(react_native));
     root.insert("dependencies".to_string(), Value::Object(dependencies.into_iter().collect()));
     root.insert("project".to_string(), Value::Object(project.into_iter().collect()));
     json::write(&Value::Object(root.into_iter().collect()))
