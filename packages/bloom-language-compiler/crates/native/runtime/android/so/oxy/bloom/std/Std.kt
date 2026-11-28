@@ -20,19 +20,67 @@ fun print(message: String) {
 }
 
 /** `range(n)`: `[0, 1, …, n-1]`. */
-fun range(n: Int): List<Int> = List(n) { it }
+fun range(n: Long): List<Long> = List(n.toInt()) { it.toLong() }
 
-fun stride(from: Int, to: Int, by: Int = 1): List<Int> = (from until to step by).toList()
+fun stride(from: Long, to: Long, by: Long = 1L): List<Long> = (from until to step by).toList()
+
+// `Int` is 64-bit (ADR 0003): counts and indices are `Long`; the JVM's collections take `Int`.
+
+/** `xs.count`, `d.count`: a `Long`. */
+val <T> Collection<T>.count: Long get() = size.toLong()
+val <K, V> Map<K, V>.count: Long get() = size.toLong()
+
+/** `s.count`: the user-perceived characters (extended grapheme clusters), as Swift counts them. */
+val String.count: Long get() = characters().size.toLong()
+
+/** `s.characters`: the extended grapheme clusters, each a `String`. */
+fun String.characters(): List<String> {
+  val it = java.text.BreakIterator.getCharacterInstance()
+  it.setText(this)
+  val out = ArrayList<String>()
+  var start = it.first()
+  var end = it.next()
+  while (end != java.text.BreakIterator.DONE) {
+    out.add(substring(start, end))
+    start = end
+    end = it.next()
+  }
+  return out
+}
+
+/** `xs[i]` with a 64-bit index. */
+operator fun <T> List<T>.get(index: Long): T = get(index.toInt())
+
+/** `xs.at(i)`: the element, or none past either end. */
+fun <T> List<T>.at(index: Long): T? = if (index in 0 until size) get(index.toInt()) else null
+
+/** `xs.enumerated()`: `(offset, element)` pairs. */
+fun <T> List<T>.enumerated(): List<Pair<Long, T>> = mapIndexed { i, x -> i.toLong() to x }
 
 /** `xs.updating(where:_:)`: a copy with the matching elements replaced. */
 fun <T> List<T>.updating(where: (T) -> Boolean, update: (T) -> T): List<T> =
   map { if (where(it)) update(it) else it }
 
-fun <T> List<T>.replacing(at: Int, with: T): List<T> = mapIndexed { i, x -> if (i == at) with else x }
+fun <T> List<T>.replacing(at: Long, with: T): List<T> = mapIndexed { i, x -> if (i.toLong() == at) with else x }
 
 fun String.replacingOccurrences(of: String, with: String): String = replace(of, with)
 
 fun String.hasPrefix(prefix: String): Boolean = startsWith(prefix)
+
+// The compiler's built-in members of String and Array (spec 4), as Kotlin.
+
+/** `s.trimmed()`: without leading and trailing whitespace. */
+fun String.trimmed(): String = trim()
+
+fun String.lowercased(): String = lowercase()
+
+fun String.uppercased(): String = uppercase()
+
+/** `s.split(separator: ",")`. */
+fun String.split(separator: String): List<String> = split(separator, ignoreCase = false, limit = 0)
+
+/** `xs.joined(separator: ", ")`. */
+fun List<String>.joined(separator: String = ""): String = joinToString(separator)
 
 fun String.hasSuffix(suffix: String): Boolean = endsWith(suffix)
 
@@ -77,4 +125,12 @@ abstract class BloomActor {
 
   protected suspend fun <T> isolated(block: suspend () -> T): T =
     kotlinx.coroutines.withContext(dispatcher) { block() }
+}
+
+/** `EnvironmentKey("session", default: v)`: an app's environment value, provided by `.environment(\.k, v)`. */
+class EnvironmentKey<T>(val name: String, default: T) {
+  val local: androidx.compose.runtime.ProvidableCompositionLocal<T> = androidx.compose.runtime.compositionLocalOf { default }
+
+  val current: T
+    @androidx.compose.runtime.Composable get() = local.current
 }

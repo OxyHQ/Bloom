@@ -12,7 +12,7 @@ import so.oxy.bloom.std.*
 @Immutable
 data class Post(
   val id: String,
-  val likes: Int,
+  val likes: Long,
   val isLiked: Boolean,
 )
 
@@ -34,25 +34,25 @@ class FeedModel(source: String) {
     get() = posts.isEmpty()
   fun load() {
     isLoading = true
-    posts = listOf(Post("1", 0, false))
+    posts = listOf(Post("1", 0L, false))
     cursor = source
     isLoading = false
   }
   fun like(post: Post) {
-    for ((i, p) in posts.withIndex()) {
+    for ((i, p) in posts.enumerated()) {
       if (p.id == post.id) {
         posts = posts.replacing(i, posts[i].copy(isLiked = true))
-        posts = posts.replacing(i, posts[i].copy(likes = posts[i].likes + 1))
+        posts = posts.replacing(i, posts[i].copy(likes = posts[i].likes + 1L))
       }
     }
   }
 }
 
 class Counter {
-  var count = 0
+  var count = 0L
 
   fun bump() {
-    count = count + 1
+    count = count + 1L
   }
 }
 
@@ -66,7 +66,7 @@ fun FeedScreen(modifier: Modifier = Modifier) {
     if (model.isLoading) {
       Text("Loading")
     }
-    Text("${model.posts.size} posts")
+    Text("${model.posts.count} posts")
     Button({
       Text("Like")
     }, onPress = { 
@@ -90,7 +90,7 @@ fun FilterBar(model: FeedModel, modifier: Modifier = Modifier) {
   }
 }
 
-fun tally(): Int {
+fun tally(): Long {
   val counter = Counter()
   counter.bump()
   return counter.count

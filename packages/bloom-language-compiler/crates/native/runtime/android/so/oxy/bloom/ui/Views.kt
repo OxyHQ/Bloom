@@ -139,12 +139,12 @@ fun ScrollView(modifier: Modifier = Modifier, content: @Composable ColumnScope.(
 @Composable
 fun <T : Identifiable> VirtualList(items: List<T>, modifier: Modifier = Modifier, row: @Composable (VirtualListRow<T>) -> Unit) {
   LazyColumn(modifier.fillMaxSize()) {
-    itemsIndexed(items, key = { _, item -> item.id }, contentType = { _, _ -> 0 }) { index, item -> row(VirtualListRow(item, index)) }
+    itemsIndexed(items, key = { _, item -> item.id }, contentType = { _, _ -> 0 }) { index, item -> row(VirtualListRow(item, index.toLong())) }
   }
 }
 
 /** What a list's row is handed: the item and its index (as the TypeScript runtime's FlashList row). */
-class VirtualListRow<T>(val item: T, val index: Int)
+class VirtualListRow<T>(val item: T, val index: Long)
 
 // ---- text and images -----------------------------------------------------------------
 
@@ -153,7 +153,7 @@ fun Text(
   text: String,
   font: androidx.compose.ui.text.TextStyle = Font.body,
   foreground: Color? = null,
-  lines: Int? = null,
+  lines: Long? = null,
   modifier: Modifier = Modifier,
 ) {
   val color = foreground ?: LocalForeground.current
@@ -161,7 +161,7 @@ fun Text(
     text,
     modifier,
     style = font.copy(color = color),
-    maxLines = lines ?: Int.MAX_VALUE,
+    maxLines = lines?.toInt() ?: Int.MAX_VALUE,
     overflow = if (lines != null) TextOverflow.Ellipsis else TextOverflow.Clip,
   )
 }
@@ -237,6 +237,23 @@ fun Toggle(isOn: Binding<Boolean>, label: String = "", tint: Tone = Tone.primary
   }
 }
 
+/** `TextField($text, "Placeholder")`: a single-line field over a binding. */
+@Composable
+fun TextField(text: Binding<String>, placeholder: String = "", modifier: Modifier = Modifier) {
+  val value = text.get()
+  val fg = LocalForeground.current
+  Box(modifier.fillMaxWidth().clip(RoundedCornerShape(Corner.md)).background(Colors.mutedFill).padding(horizontal = Space.md, vertical = Space.sm)) {
+    if (value.isEmpty()) BasicText(placeholder, style = Font.body.copy(color = Colors.muted))
+    androidx.compose.foundation.text.BasicTextField(
+      value = value,
+      onValueChange = { text.set(it) },
+      singleLine = true,
+      textStyle = Font.body.copy(color = fg),
+      modifier = Modifier.fillMaxWidth(),
+    )
+  }
+}
+
 /** `Button("Save") { … }`: a label's button. */
 @Composable
 fun Button(
@@ -261,7 +278,7 @@ private fun buttonFont(size: ControlSize) = when (size) {
 @Composable
 fun Button(
   content: @Composable () -> Unit,
-  onPress: () -> Unit,
+  onPress: () -> Unit = {},
   size: ControlSize = ControlSize.md,
   style: ButtonStyle = ButtonStyle.solid,
   tint: Tone = Tone.primary,
@@ -366,7 +383,7 @@ fun ActionBar(modifier: Modifier = Modifier, content: @Composable RowScope.() ->
 fun Action(
   icon: IconData,
   label: String,
-  count: Int = 0,
+  count: Long = 0L,
   active: Boolean = false,
   tint: Tone = Tone.primary,
   onPress: (() -> Unit)? = null,
@@ -388,7 +405,7 @@ fun Action(
   }
 }
 
-private fun compact(n: Int): String = when {
+private fun compact(n: Long): String = when {
   n >= 1_000_000 -> "${n / 100_000 / 10.0}M"
   n >= 1_000 -> "${n / 100 / 10.0}K"
   else -> n.toString()

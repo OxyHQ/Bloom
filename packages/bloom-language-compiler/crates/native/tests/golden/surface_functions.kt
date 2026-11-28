@@ -11,11 +11,11 @@ import so.oxy.bloom.std.*
 
 @Immutable
 data class Point(
-  val x: Int,
-  val y: Int,
+  val x: Long,
+  val y: Long,
 )
 
-fun move(point: Point, to: Point, by: Int = 1): Point {
+fun move(point: Point, to: Point, by: Long = 1L): Point {
   val target = to
   val step = by
   return Point(point.x + (target.x - point.x) * step, point.y + (target.y - point.y) * step)
@@ -31,11 +31,11 @@ fun label(`for`: Point): String {
 }
 
 fun farthest(points: List<Point>): List<String> {
-  val moved = points.map({ move(it, Point(0, 0)) })
-  return moved.filter({ it.x > 1 }).map({ label(it) })
+  val moved = points.map({ move(it, Point(0L, 0L)) })
+  return moved.filter({ it.x > 1L }).map({ label(it) })
 }
 
-fun total(points: List<Point>): Int {
-  return points.map({ p -> p.x + p.y }).fold(0, { p0, p1 -> p0 + p1 })
+fun total(points: List<Point>): Long {
+  return points.map({ p -> p.x + p.y }).fold(0L, { p0, p1 -> p0 + p1 })
 }
 

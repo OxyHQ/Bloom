@@ -15,36 +15,36 @@ data class User(
 )
 
 fun first(xs: List<String>): String {
-  return xs[0]
+  return xs[0L]
 }
 
 fun lastName(users: List<User>): String {
   if (users.isEmpty()) {
     return ""
   }
-  return users[users.size - 1].name
+  return users[users.count - 1L].name
 }
 
-fun maybe(xs: List<String>, i: Int): String {
+fun maybe(xs: List<String>, i: Long): String {
   return xs.at(i) ?: "none"
 }
 
-fun nested(grid: List<List<Int>>): Int {
-  return grid[0][1]
+fun nested(grid: List<List<Long>>): Long {
+  return grid[0L][1L]
 }
 
-fun holes(xs: List<Int?>): Int {
-  return xs[0] ?: -1
+fun holes(xs: List<Long?>): Long {
+  return xs[0L] ?: -1L
 }
 
-fun lookup(d: Map<String, Int>, key: String): Int {
-  return d[key] ?: 0
+fun lookup(d: Map<String, Long>, key: String): Long {
+  return d[key] ?: 0L
 }
 
 @Composable
 fun Row(users: List<User>, modifier: Modifier = Modifier) {
-  if (users.size > 0) {
-    Text(users[0].name, modifier = modifier)
+  if (users.count > 0L) {
+    Text(users[0L].name, modifier = modifier)
   }
 }
 

@@ -36,9 +36,9 @@ fn the_bench_emits_every_file() {
 fn values_are_data_classes_and_enums() {
     let kt = kotlin();
     assert!(kt.contains("data class Post(\n  override val id: String,"), "{kt}");
-    assert!(
-        kt.contains("enum class PrefKey {\n  pushEnabled, likes, boosts, follows, mentions, replies, quotes\n}")
-    );
+    assert!(kt.contains(
+        "enum class PrefKey {\n  pushEnabled, likes, boosts, follows, mentions, replies, quotes\n}"
+    ));
     assert!(kt.contains("sealed interface PostKind {\n  data object Text : PostKind\n  data class Image(val url: String, val aspect: Double) : PostKind"));
     // A type the program declares takes its extensions' members inside its class.
     assert!(kt.contains("  fun setting(key: PrefKey, on: Boolean): Prefs {"));
