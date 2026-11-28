@@ -46,3 +46,7 @@ section: Added
   - `break`/`continue` in a loop are Swift's; `!=` on a type parameter makes it `T: Equatable`; a `slice` bound is `n.truncated()`; `x?.[0]` on a present tuple is `x.0`; `f<T>()` returning `G<T>` is typed `G<T>`;
   - `{ data: xs = [] }` binds `xsOrNone` (no `let` shadows another in its scope); a `screen()` the route draws inside a wrapper is refused until `ViewModifier`;
   - `--write`: a migrated route's screen stays `<X />` in its TS importers, `.bloom` importers take a default by its name, and a `jest.mock` of a migrated module's views draws each mocked component as the view's node.
+- Round 14 (lang-mention-14):
+  - a Bloom list method on a TS value Bloom could not type (B0601) types the value's binding, `let names: [String]` for `joined`, `[Foreign]` otherwise (a closure's parameter too); on a member chain the renamed member is TS's own again;
+  - `x || undefined` of a member is JS's falsy `none`; `Boolean(x)` of a TS value stays `!!x` where it is a value (`enabled:`), and is dropped where bloomc types `x` a `Bool` or in an `if` head;
+  - `--write`: `export { default } from` and `lazy(() => import(…))` take the default by its name; a non-route module's default `screen()` is named; a renamed default with a platform fork beside it is refused (`module:platform-fork`), and a forked module's importers keep the bare path.
