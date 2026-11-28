@@ -60,6 +60,38 @@ fn a_module_sees_its_other_files() {
     assert!(out.dependencies.iter().any(|d| d.ends_with("Package.bloom")));
 }
 
+/// A TS-style import of a file of the module's own (`@/Feed/Card`, kept by the codemod from
+/// before `Card.tsx` was Bloom): dropped with a warning, so it never hides the sibling's
+/// declarations behind a TS import (Mention's lists, marketplace).
+#[test]
+fn a_path_import_of_an_own_file_is_dropped() {
+    let root = package(
+        "own-path",
+        &[
+            ("Package.bloom", MANIFEST),
+            ("Sources/Feed/Card.bloom", "public struct CardData {\n  let id: String\n}\n"),
+            (
+                "Sources/Feed/Use.bloom",
+                "import { type CardData } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> CardData { CardData(id: id) }\n",
+            ),
+        ],
+    );
+    let mut options = Options { allow_ts_imports: true, root: Some(root.clone()), ..Options::default() };
+    options.paths.insert("@/*".into(), vec!["Sources/*".into()]);
+    let out = build(&root, "Sources/Feed/Use.bloom", &options);
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert_eq!(out.warnings.iter().map(|d| d.code).collect::<Vec<_>>(), ["B0901"], "{:?}", out.warnings);
+    assert!(out.code.contains("from \"./Card.bloom\""), "{}", out.code);
+    // A renaming import is the only way to rename, so it is kept.
+    std::fs::write(
+        root.join("Sources/Feed/Use.bloom"),
+        "import { type CardData as Card } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> Card { Card(id: id) }\n",
+    )
+    .unwrap();
+    let out = build(&root, "Sources/Feed/Use.bloom", &options);
+    assert!(!out.warnings.iter().any(|d| d.code == "B0901"), "{:?}", out.warnings);
+}
+
 #[test]
 fn app_modules_import_no_paths() {
     let root = package(
