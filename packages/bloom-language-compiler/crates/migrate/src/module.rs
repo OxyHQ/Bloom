@@ -105,6 +105,9 @@ pub struct Tr<'s> {
     pub unions: HashMap<String, Vec<String>>,
     /// Local object types (interfaces, object aliases) → their members' names.
     pub objects: HashSet<String>,
+    /// The fields of the file's object types (`interface P { … }`, `type P = { … }`), as record
+    /// fields: an inline intersection of them is one record type (`crate::types`).
+    pub object_fields: HashMap<String, Vec<String>>,
     /// Object types that only type a view's props: they become its parameters.
     pub props_types: HashSet<String>,
     /// Local views (and the module functions a `view(F)` wraps).
@@ -372,6 +375,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         modifiers: HashMap::new(),
         unions: HashMap::new(),
         objects: HashSet::new(),
+        object_fields: HashMap::new(),
         props_types: HashSet::new(),
         views: HashSet::new(),
         components: HashSet::new(),
@@ -489,6 +493,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     let header = tr.comments.before(first, false);
     tr.scan(&program.body);
     tr.scan_memo_aliases(&program.body);
+    tr.scan_object_fields(&program.body);
 
     let defaults = default_exports(&program.body);
     for statement in &program.body {
@@ -1213,6 +1218,34 @@ impl<'s> Tr<'s> {
                 }
             }
         }
+    }
+
+    /// [`Tr::object_fields`]: each object type's fields, translated quietly (their own
+    /// declarations report what they refuse).
+    fn scan_object_fields(&mut self, body: &[Statement]) {
+        let names: Vec<String> = self.objects.iter().cloned().collect();
+        let reasons = self.reasons.len();
+        let quiet = std::mem::replace(&mut self.quiet, true);
+        for name in names {
+            let Some(members) = crate::view::local_object(body, &name) else { continue };
+            let mut fields = Vec::new();
+            for member in members {
+                match self.field(member) {
+                    Some((field, ty, optional)) => {
+                        fields.push(format!("{field}: {}", if optional { optional_ty(&ty) } else { ty }))
+                    }
+                    None => {
+                        fields.clear();
+                        break;
+                    }
+                }
+            }
+            if !fields.is_empty() {
+                self.object_fields.insert(name, fields);
+            }
+        }
+        self.quiet = quiet;
+        self.reasons.truncate(reasons);
     }
 
     fn scan(&mut self, body: &[Statement]) {
